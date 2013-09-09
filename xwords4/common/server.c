@@ -2495,6 +2495,7 @@ endGameInternal( ServerCtxt* server, GameEndReason XP_UNUSED(why), XP_S16 quitte
         XWStreamCtxt* stream;
         stream = messageStreamWithHeader( server, SERVER_DEVICE,
                                           XWPROTO_CLIENT_REQ_END_GAME );
+        putQuitter( server, stream, quitter );
         stream_destroy( stream );
 
         /* Do I want to change the state I'm in?  I don't think so.... */

@@ -446,6 +446,7 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
     return result;
 }
 
+#ifdef XWFEATURE_CHAT
 static void
 and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR const* msg )
 {
@@ -455,6 +456,7 @@ and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR const* msg )
     deleteLocalRef( env, jmsg );
     UTIL_CBK_TAIL();
 }
+#endif
 
 static void
 and_util_remSelected(XW_UtilCtxt* uc)
@@ -691,7 +693,9 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(makeEmptyDict);
     SET_PROC(getUserString);
     SET_PROC(warnIllegalWord);
+#ifdef XWFEATURE_CHAT
     SET_PROC(showChat);
+#endif
     SET_PROC(remSelected);
 
 #ifndef XWFEATURE_MINIWIN

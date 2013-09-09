@@ -1375,6 +1375,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
     XWJNI_END();
 }
 
+#ifdef XWFEATURE_CHAT
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat
 ( JNIEnv* env, jclass C, jint gamePtr, jstring jmsg )
@@ -1386,6 +1387,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat
     (*env)->ReleaseStringUTFChars( env, jmsg, msg );
     XWJNI_END();
 }
+#endif
 
 #ifdef XWFEATURE_WALKDICT
 ////////////////////////////////////////////////////////////

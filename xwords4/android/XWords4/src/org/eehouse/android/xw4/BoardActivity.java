@@ -130,7 +130,7 @@ public class BoardActivity extends XWActivity
     private Button m_exchCommmitButton;
     private Button m_exchCancelButton;
 
-    private ArrayList<String> m_pendingChats = new ArrayList<String>();
+    private ArrayList<String> m_pendingChats;
 
     private String m_dlgBytes = null;
     private EditText m_passwdEdit = null;
@@ -541,6 +541,10 @@ public class BoardActivity extends XWActivity
             requestWindowFeature( Window.FEATURE_NO_TITLE );
         }
 
+        if ( XWApp.CHAT_SUPPORTED ) {
+            m_pendingChats = new ArrayList<String>();
+        }
+
         m_utils = new BoardUtilCtxt();
         m_jniu = JNIUtilsImpl.get( this );
         setContentView( R.layout.board );
@@ -625,10 +629,12 @@ public class BoardActivity extends XWActivity
         if ( Activity.RESULT_CANCELED != resultCode ) {
             switch ( requestCode ) {
             case CHAT_REQUEST:
-                String msg = data.getStringExtra( INTENT_KEY_CHAT );
-                if ( null != msg && msg.length() > 0 ) {
-                    m_pendingChats.add( msg );
-                    trySendChats();
+                if ( XWApp.CHAT_SUPPORTED ) {
+                    String msg = data.getStringExtra( INTENT_KEY_CHAT );
+                    if ( null != msg && msg.length() > 0 ) {
+                        m_pendingChats.add( msg );
+                        trySendChats();
+                    }
                 }
                 break;
             case BT_INVITE_RESULT:
@@ -831,13 +837,11 @@ public class BoardActivity extends XWActivity
             break;
 
         case R.id.board_menu_game_history:
-            m_jniThread.handle( JNICmd.CMD_HISTORY,
-                                R.string.history_title );
+            m_jniThread.handle( JNICmd.CMD_HISTORY, R.string.history_title );
             break;
 
         case R.id.board_menu_game_resign:
-            m_jniThread.handle( JNICmd.CMD_FINAL,
-                                R.string.history_title );
+            m_jniThread.handle( JNICmd.CMD_FINAL, R.string.history_title );
             break;
 
         case R.id.board_menu_game_resend:
@@ -1710,13 +1714,15 @@ public class BoardActivity extends XWActivity
         @Override
         public void showChat( final String msg )
         {
-            post( new Runnable() {
-                    public void run() {
-                        DBUtils.appendChatHistory( BoardActivity.this, 
-                                                   m_rowid, msg, false );
-                        startChatActivity();
-                    }
-                } );
+            if ( XWApp.CHAT_SUPPORTED ) {
+                post( new Runnable() {
+                        public void run() {
+                            DBUtils.appendChatHistory( BoardActivity.this, 
+                                                       m_rowid, msg, false );
+                            startChatActivity();
+                        }
+                    } );
+            }
         }
     } // class BoardUtilCtxt 
 
@@ -1901,10 +1907,12 @@ public class BoardActivity extends XWActivity
                                R.string.not_again_undo,
                                R.string.key_notagain_undo,
                                UNDO_ACTION );
-        m_toolbar.setListener( Toolbar.BUTTON_CHAT,
-                               R.string.not_again_chat, 
-                               R.string.key_notagain_chat,
-                               CHAT_ACTION );
+        if ( XWApp.CHAT_SUPPORTED ) {
+            m_toolbar.setListener( Toolbar.BUTTON_CHAT,
+                                   R.string.not_again_chat, 
+                                   R.string.key_notagain_chat,
+                                   CHAT_ACTION );
+        }
     } // populateToolbar
 
     private OnDismissListener makeODLforBlocking( final int id )
@@ -1988,9 +1996,11 @@ public class BoardActivity extends XWActivity
 
     private void startChatActivity()
     {
-        Intent intent = new Intent( this, ChatActivity.class );
-        intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
-        startActivityForResult( intent, CHAT_REQUEST );
+        if ( XWApp.CHAT_SUPPORTED ) {
+            Intent intent = new Intent( this, ChatActivity.class );
+            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
+            startActivityForResult( intent, CHAT_REQUEST );
+        }
     }
 
     private void waitCloseGame( boolean save ) 
@@ -2034,7 +2044,7 @@ public class BoardActivity extends XWActivity
     
     private void trySendChats()
     {
-        if ( null != m_jniThread ) {
+        if ( XWApp.CHAT_SUPPORTED && null != m_jniThread ) {
             Iterator<String> iter = m_pendingChats.iterator();
             while ( iter.hasNext() ) {
                 m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
@@ -2081,7 +2091,8 @@ public class BoardActivity extends XWActivity
         m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
         m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
-        m_toolbar.update( Toolbar.BUTTON_CHAT, m_gsi.canChat );
+        m_toolbar.update( Toolbar.BUTTON_CHAT, 
+                          XWApp.CHAT_SUPPORTED && m_gsi.canChat );
         m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
                           null != m_gi.dictName( m_view.getCurPlayer() ) );
     }
@@ -2103,7 +2114,8 @@ public class BoardActivity extends XWActivity
             hideShowItem( menu, R.id.board_menu_undo_current, m_gsi.canRedo );
             hideShowItem( menu, R.id.board_menu_hint_prev, m_gsi.canHint );
             hideShowItem( menu, R.id.board_menu_hint_next, m_gsi.canHint );
-            hideShowItem( menu, R.id.board_menu_chat, m_gsi.canChat );
+            hideShowItem( menu, R.id.board_menu_chat, 
+                          XWApp.CHAT_SUPPORTED && m_gsi.canChat );
         }
     }
 
