@@ -813,13 +813,11 @@ public class BoardActivity extends XWActivity
             break;
 
         case R.id.board_menu_game_history:
-            m_jniThread.handle( JNICmd.CMD_HISTORY,
-                                R.string.history_title );
+            m_jniThread.handle( JNICmd.CMD_HISTORY, R.string.history_title );
             break;
 
         case R.id.board_menu_game_resign:
-            m_jniThread.handle( JNICmd.CMD_FINAL,
-                                R.string.history_title );
+            m_jniThread.handle( JNICmd.CMD_FINAL, R.string.history_title );
             break;
 
         case R.id.board_menu_game_resend:
