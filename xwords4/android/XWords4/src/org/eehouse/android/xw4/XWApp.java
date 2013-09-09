@@ -31,6 +31,7 @@ public class XWApp extends Application {
     public static final boolean BTSUPPORTED = false;
     public static final boolean SMSSUPPORTED = true;
     public static final boolean GCMSUPPORTED = true;
+    public static final boolean CHAT_SUPPORTED = false;
     public static final boolean ATTACH_SUPPORTED = true;
     public static final boolean REMATCH_SUPPORTED = false;
     public static final boolean DEBUG = false;
