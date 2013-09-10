@@ -12,8 +12,8 @@
   <li>Fix menu missing on some tablets</li>
 
   <li>Disable in-game Chat feature.  (It has bugs that cause games to
-    stop syncing moves.  I&amp;ll fix eventually. Let me know if you
-    use this feature and I&amp;ll up the priority.)</li>
+    stop syncing moves.  I'll fix eventually. Let me know if you
+    use this feature and I'll up the priority.)</li>
 
   <li>Fix crash triggered by resignation</li>
 </ul>
