@@ -40,32 +40,39 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
     @Override
     public void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
+        if ( XWApp.CHAT_SUPPORTED ) {
+            super.onCreate( savedInstanceState );
 
-        setContentView( R.layout.chat );
+            setContentView( R.layout.chat );
 
-        m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+            m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
      
-        DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( this, m_rowid );
-        if ( null != pairs ) {
-            LinearLayout layout = (LinearLayout)findViewById( R.id.chat_history );
-            LayoutInflater factory = LayoutInflater.from( this );
+            DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( this, m_rowid );
+            if ( null != pairs ) {
+                LinearLayout layout = (LinearLayout)
+                    findViewById( R.id.chat_history );
+                LayoutInflater factory = LayoutInflater.from( this );
 
-            for ( DBUtils.HistoryPair pair : pairs ) {
-                TextView view = 
-                    (TextView)factory.inflate( pair.sourceLocal
-                                               ? R.layout.chat_history_local
-                                               : R.layout.chat_history_remote, 
-                                               null );
-                view.setText( pair.msg );
-                layout.addView( view );
+                for ( DBUtils.HistoryPair pair : pairs ) {
+                    TextView view = (TextView)factory
+                        .inflate( pair.sourceLocal
+                                  ? R.layout.chat_history_local
+                                  : R.layout.chat_history_remote, 
+                                  null );
+                    view.setText( pair.msg );
+                    layout.addView( view );
+                }
             }
+
+            ((Button)findViewById( R.id.send_button ))
+                .setOnClickListener( this );
+
+            setTitle( getString( R.string.chat_titlef, 
+                                 GameUtils.getName( this, m_rowid ) ) );
+        } else {
+            // Should really assert....
+            finish();
         }
-
-        ((Button)findViewById( R.id.send_button )).setOnClickListener( this );
-
-        setTitle( getString( R.string.chat_titlef, 
-                             GameUtils.getName( this, m_rowid ) ) );
     }
 
     @Override
