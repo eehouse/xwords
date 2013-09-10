@@ -847,15 +847,17 @@ public class DBUtils {
     public static HistoryPair[] getChatHistory( Context context, long rowid )
     {
         HistoryPair[] result = null;
-        final String localPrefix = context.getString( R.string.chat_local_id );
-        String history = getChatHistoryStr( context, rowid );
-        if ( null != history ) {
-            String[] msgs = history.split( "\n" );
-            result = new HistoryPair[msgs.length];
-            for ( int ii = 0; ii < result.length; ++ii ) {
-                String msg = msgs[ii];
-                boolean isLocal = msg.startsWith( localPrefix );
-                result[ii] = new HistoryPair( msg, isLocal );
+        if ( XWApp.CHAT_SUPPORTED ) {
+            final String localPrefix = context.getString( R.string.chat_local_id );
+            String history = getChatHistoryStr( context, rowid );
+            if ( null != history ) {
+                String[] msgs = history.split( "\n" );
+                result = new HistoryPair[msgs.length];
+                for ( int ii = 0; ii < result.length; ++ii ) {
+                    String msg = msgs[ii];
+                    boolean isLocal = msg.startsWith( localPrefix );
+                    result[ii] = new HistoryPair( msg, isLocal );
+                }
             }
         }
         return result;
@@ -1107,21 +1109,24 @@ public class DBUtils {
     private static String getChatHistoryStr( Context context, long rowid )
     {
         String result = null;
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+        if ( XWApp.CHAT_SUPPORTED ) {
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-            String[] columns = { DBHelper.CHAT_HISTORY };
-            String selection = String.format( ROW_ID_FMT, rowid );
-            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                      selection, null, null, null, null );
-            if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
-                result = 
-                    cursor.getString( cursor
-                                      .getColumnIndex(DBHelper.CHAT_HISTORY));
+                String[] columns = { DBHelper.CHAT_HISTORY };
+                String selection = String.format( ROW_ID_FMT, rowid );
+                Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                          selection, null, null, null, null );
+                if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                    result = 
+                        cursor.getString( cursor
+                                          .getColumnIndex(DBHelper
+                                                          .CHAT_HISTORY));
+                }
+                cursor.close();
+                db.close();
             }
-            cursor.close();
-            db.close();
         }
         return result;
     }
@@ -1129,16 +1134,18 @@ public class DBUtils {
     public static void appendChatHistory( Context context, long rowid,
                                           String msg, boolean local )
     {
-        Assert.assertNotNull( msg );
-        int id = local ? R.string.chat_local_id : R.string.chat_other_id;
-        msg = context.getString( id ) + msg;
+        if ( XWApp.CHAT_SUPPORTED ) {
+            Assert.assertNotNull( msg );
+            int id = local ? R.string.chat_local_id : R.string.chat_other_id;
+            msg = context.getString( id ) + msg;
 
-        String cur = getChatHistoryStr( context, rowid );
-        if ( null != cur ) {
-            msg = cur + "\n" + msg;
+            String cur = getChatHistoryStr( context, rowid );
+            if ( null != cur ) {
+                msg = cur + "\n" + msg;
+            }
+
+            saveChatHistory( context, rowid, msg );
         }
-
-        saveChatHistory( context, rowid, msg );
     } // appendChatHistory
 
     public static void clearChatHistory( Context context, long rowid )
