@@ -120,7 +120,6 @@
 
     <string name="confirm_save_title">Confirmeu els canvis</string>
     <string name="confirm_save">Aquesta partida es troba en joc. Si deseu els canvis haureu de tornar a començar. Voleu desar o descartar els canvis?</string>
-    <string name="confirm_delete_all">Esteu segur de voler suprimir totes les partides?  Aquesta acció no es pot desfer.</string>
     
     <string name="hints_allowed">Permet pistes</string>
     <string name="use_timer">Habilita el temps</string>

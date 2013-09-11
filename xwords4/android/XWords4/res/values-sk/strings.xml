@@ -119,8 +119,6 @@
     <string name="confirm_save_title">Potvrdiť uloženie</string>
     <string name="confirm_save">Táto hra je rozohraná. Ak tieto zmeny uložíte, musí byť hra spustená znovu.
     Chcete tieto zmeny uložiť alebo ich chcete zrušiť?</string>
-    <string name="confirm_delete_all">Určite chcete vymazat všetky hry?
-    Táto akcia sa nedá vrátiť späť.</string>
     
     <string name="hints_allowed">Povoliť nápovedu</string>
     <string name="use_timer">Povoliť časovač</string>
