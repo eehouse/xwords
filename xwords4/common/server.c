@@ -706,6 +706,10 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
 #endif
         for ( ; ii < playersInMsg; ++ii ) {
             clientIndex = registerRemotePlayer( server, stream );
+            if ( -1 == clientIndex ) {
+                success = XP_FALSE;
+                break;
+            }
 
             /* This is abusing the semantics of turn change -- at least in the
                case where there is another device yet to register -- but we
@@ -1133,15 +1137,19 @@ findFirstPending( ServerCtxt* server, ServerPlayer** playerP )
             }
         }
     }
-    XP_ASSERT( lp >= gi->players ); /* did we find a slot? */
-    *playerP = server->players + nPlayers;
+    if ( lp < gi->players ) { /* did we find a slot? */
+        XP_LOGF( "%s: no slot found for player; duplicate packet?", __func__ );
+        lp = NULL;
+    } else {
+        *playerP = server->players + nPlayers;
+    }
     return lp;
 } /* findFirstPending */
 
 static XP_S8
 registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
 {
-    XP_S8 deviceIndex;
+    XP_S8 deviceIndex = -1;
     XP_PlayerAddr channelNo;
     XP_UCHAR* name;
     XP_U16 nameLen;
@@ -1154,40 +1162,42 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
 
     /* find the slot to use */
     lp = findFirstPending( server, &player );
+    if ( NULL != lp ) {
 
-    /* get data from stream */
-    lp->robotIQ = 1 == stream_getBits( stream, 1 )? 1 : 0;
-    nameLen = stream_getBits( stream, NAME_LEN_NBITS );
-    name = (XP_UCHAR*)XP_MALLOC( server->mpool, nameLen + 1 );
-    stream_getBytes( stream, name, nameLen );
-    name[nameLen] = '\0';
+        /* get data from stream */
+        lp->robotIQ = 1 == stream_getBits( stream, 1 )? 1 : 0;
+        nameLen = stream_getBits( stream, NAME_LEN_NBITS );
+        name = (XP_UCHAR*)XP_MALLOC( server->mpool, nameLen + 1 );
+        stream_getBytes( stream, name, nameLen );
+        name[nameLen] = '\0';
 
-    replaceStringIfDifferent( server->mpool, &lp->name, name );
-    XP_FREE( server->mpool, name );
+        replaceStringIfDifferent( server->mpool, &lp->name, name );
+        XP_FREE( server->mpool, name );
 
-    channelNo = stream_getAddress( stream );
-    deviceIndex = getIndexForDevice( server, channelNo );
+        channelNo = stream_getAddress( stream );
+        deviceIndex = getIndexForDevice( server, channelNo );
 
-    --server->nv.pendingRegistrations;
+        --server->nv.pendingRegistrations;
 
-    if ( deviceIndex == -1 ) {
-        RemoteAddress* addr; 
-        addr = &server->nv.addresses[server->nv.nDevices];
+        if ( deviceIndex == -1 ) {
+            RemoteAddress* addr; 
+            addr = &server->nv.addresses[server->nv.nDevices];
 
-        XP_ASSERT( channelNo != 0 );
-        addr->channelNo = channelNo;
-        XP_LOGF( "%s: set channelNo to %x for device %d", __func__,
-                 channelNo, server->nv.nDevices );
+            XP_ASSERT( channelNo != 0 );
+            addr->channelNo = channelNo;
+            XP_LOGF( "%s: set channelNo to %x for device %d", __func__,
+                     channelNo, server->nv.nDevices );
 
-        deviceIndex = server->nv.nDevices++;
+            deviceIndex = server->nv.nDevices++;
 #ifdef STREAM_VERS_BIGBOARD
-        addr->streamVersion = STREAM_SAVE_PREVWORDS;
+            addr->streamVersion = STREAM_SAVE_PREVWORDS;
 #endif
-    } else {
-        XP_LOGF( "%s: deviceIndex already set", __func__ );
-    }
+        } else {
+            XP_LOGF( "%s: deviceIndex already set", __func__ );
+        }
 
-    player->deviceIndex = deviceIndex;
+        player->deviceIndex = deviceIndex;
+    }
     return deviceIndex;
 } /* registerRemotePlayer */
 
