@@ -39,7 +39,7 @@ LINE_LEN = 76
 def init():
     global g_sent
     try:
-        con = psycopg2.connect(database='xwgames', user=getpass.getuser())
+        con = psycopg2.connect(port=mykey.psqlPort, database='xwgames', user=getpass.getuser())
     except psycopg2.DatabaseError, e:
         print 'Error %s' % e 
         sys.exit(1)
@@ -113,10 +113,9 @@ def notifyGCM( devids, typ, target ):
     success = False
     if typ == DEVTYPE_GCM:
         if 3 <= target['clntVers'] and target['msg64']:
-            connname = "%s/%d" % (target['connname'], target['hid'])
-            data = { 'msgs64': [ target['msg64'] ],
-                     'connname': connname,
-                     }
+            data = { 'msgs64': [ target['msg64'] ] }
+            if target['connname'] and target['hid']:
+                data['connname'] = "%s/%d" % (target['connname'], target['hid'])
         else:
             data = { 'getMoves': True, }
         values = {
