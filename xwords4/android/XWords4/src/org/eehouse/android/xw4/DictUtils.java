@@ -47,6 +47,10 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class DictUtils {
 
+    public interface DownProgListener {
+        void progressMade( int nBytes );
+    }
+
     // Standard hack for using APIs from an SDK in code to ship on
     // older devices that don't support it: prevent class loader from
     // seeing something it'll barf on by loading it manually
@@ -431,7 +435,8 @@ public class DictUtils {
     }
 
     public static boolean saveDict( Context context, InputStream in,
-                                    String name, DictLoc loc )
+                                    String name, DictLoc loc, 
+                                    DownProgListener dpl )
     {
         boolean success = false;
         File sdFile = null;
@@ -454,6 +459,7 @@ public class DictUtils {
                 int nRead;
                 while( 0 <= (nRead = in.read( buf, 0, buf.length )) ) {
                     fos.write( buf, 0, nRead );
+                    dpl.progressMade( nRead );
                 }
                 fos.close();
                 invalDictList();

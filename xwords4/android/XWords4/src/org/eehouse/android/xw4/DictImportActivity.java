@@ -26,13 +26,17 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+
 import java.net.URI;
+import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.util.HashMap;
 
@@ -43,6 +47,9 @@ public class DictImportActivity extends XWActivity {
     // URIs coming in in intents
     private static final String APK_EXTRA = "APK";
     private static final String DICT_EXTRA = "XWD";
+
+    private ProgressBar m_progressBar;
+    private Handler m_handler;
 
     public interface DownloadFinishedListener {
         void downloadFinished( String name, boolean success );
@@ -61,11 +68,13 @@ public class DictImportActivity extends XWActivity {
     private static HashMap<String,ListenerData> s_listeners =
         new HashMap<String,ListenerData>();
 
-    private class DownloadFilesTask extends AsyncTask<Uri, Integer, Long> {
+    private class DownloadFilesTask extends AsyncTask<Uri, Integer, Long> 
+        implements DictUtils.DownProgListener {
         private String m_savedDict = null;
         private String m_url = null;
         private boolean m_isApp = false;
         private File m_appFile = null;
+        private int m_totalRead = 0;
 
         public DownloadFilesTask( boolean isApp )
         {
@@ -95,12 +104,19 @@ public class DictImportActivity extends XWActivity {
                     URI jUri = new URI( uri.getScheme(), 
                                         uri.getSchemeSpecificPart(), 
                                         uri.getFragment() );
-                    InputStream is = jUri.toURL().openStream();
+                    URLConnection conn = jUri.toURL().openConnection();
+                    final int fileLen = conn.getContentLength();
+                    m_handler.post( new Runnable() {
+                            public void run() {
+                                m_progressBar.setMax( fileLen );
+                            }
+                        });
+                    InputStream is = conn.getInputStream();
                     String name = basename( uri.getPath() );
                     if ( m_isApp ) {
-                        m_appFile = saveToDownloads( is, name );
+                        m_appFile = saveToDownloads( is, name, this );
                     } else {
-                        m_savedDict = saveDict( is, name );
+                        m_savedDict = saveDict( is, name, this );
                     }
                     is.close();
                 } catch ( java.net.URISyntaxException use ) {
@@ -134,6 +150,17 @@ public class DictImportActivity extends XWActivity {
             }
             finish();
         }
+
+        // interface DictUtils.DownProgListener
+        public void progressMade( int nBytes )
+        {
+            m_totalRead += nBytes;
+            m_handler.post( new Runnable() {
+                    public void run() {
+                        m_progressBar.setProgress( m_totalRead );
+                    }
+                });
+        }
     } // class DownloadFilesTask
 
     @Override
@@ -142,12 +169,14 @@ public class DictImportActivity extends XWActivity {
         super.onCreate( savedInstanceState );
         DownloadFilesTask dft = null;
 
+        m_handler = new Handler();
+
         requestWindowFeature( Window.FEATURE_LEFT_ICON );
         setContentView( R.layout.import_dict );
         getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
                                                 R.drawable.icon48x48 );
 
-        ProgressBar progressBar = (ProgressBar)findViewById( R.id.progress_bar );
+        m_progressBar = (ProgressBar)findViewById( R.id.progress_bar );
 
         Intent intent = getIntent();
         Uri uri = intent.getData();
@@ -180,7 +209,8 @@ public class DictImportActivity extends XWActivity {
         }
     }
 
-    private File saveToDownloads( InputStream is, String name )
+    private File saveToDownloads( InputStream is, String name, 
+                                  DictUtils.DownProgListener dpl )
     {
         boolean success = false;
         File appFile = new File( DictUtils.getDownloadDir( this ), name );
@@ -191,6 +221,7 @@ public class DictImportActivity extends XWActivity {
             int nRead;
             while ( 0 <= (nRead = is.read( buf, 0, buf.length )) ) {
                 fos.write( buf, 0, nRead );
+                dpl.progressMade( nRead );
             }
             fos.close();
             success = true;
@@ -207,10 +238,11 @@ public class DictImportActivity extends XWActivity {
         return appFile;
     }
 
-    private String saveDict( InputStream inputStream, String name )
+    private String saveDict( InputStream inputStream, String name, 
+                             DictUtils.DownProgListener dpl )
     {
         DictUtils.DictLoc loc = XWPrefs.getDefaultLoc( this );
-        if ( !DictUtils.saveDict( this, inputStream, name, loc ) ) {
+        if ( !DictUtils.saveDict( this, inputStream, name, loc, dpl ) ) {
             name = null;
         }
         return name;
