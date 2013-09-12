@@ -41,6 +41,10 @@ local_DEFINES += \
 	-DRELAY_ROOM_DEFAULT=\"\" \
 	-D__LITTLE_ENDIAN \
 
+ifeq ($(CHAT_ENABLED),true)
+	local_DEFINES += -DXWFEATURE_CHAT
+endif
+
 #	-DXWFEATURE_SCOREONEPASS \
 
 local_SRC_FILES +=         \

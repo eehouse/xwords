@@ -57,12 +57,14 @@
       </target>
 
     <target name="-pre-build">
+        <property name="CHAT_ENABLED" value="true" />
         <exec dir="." executable="../scripts/ndkbuild.sh" >
             <arg value="BUILD_TARGET=${build.target}" />
             <arg value="-j3"/>
             <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
-
+            <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
         </exec>
+
         <exec dir="." executable="../scripts/gen_gcmid.sh"
               output="src/org/eehouse/android/xw4/GCMConsts.java"
               logError="true"
@@ -71,6 +73,7 @@
           <arg value="XWords4"/>
           <arg value="xw4"/>
           <arg value="${INITIAL_CLIENT_VERS}" />
+          <arg value="${CHAT_ENABLED}" />
         </exec>
     </target>
 <!--

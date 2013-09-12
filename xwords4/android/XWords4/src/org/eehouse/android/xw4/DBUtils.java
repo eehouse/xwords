@@ -855,7 +855,7 @@ public class DBUtils {
     public static HistoryPair[] getChatHistory( Context context, long rowid )
     {
         HistoryPair[] result = null;
-        if ( XWApp.CHAT_SUPPORTED ) {
+        if ( GitVersion.CHAT_SUPPORTED ) {
             final String localPrefix = context.getString( R.string.chat_local_id );
             String history = getChatHistoryStr( context, rowid );
             if ( null != history ) {
@@ -1117,7 +1117,7 @@ public class DBUtils {
     private static String getChatHistoryStr( Context context, long rowid )
     {
         String result = null;
-        if ( XWApp.CHAT_SUPPORTED ) {
+        if ( GitVersion.CHAT_SUPPORTED ) {
             initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getReadableDatabase();
@@ -1142,7 +1142,7 @@ public class DBUtils {
     public static void appendChatHistory( Context context, long rowid,
                                           String msg, boolean local )
     {
-        if ( XWApp.CHAT_SUPPORTED ) {
+        if ( GitVersion.CHAT_SUPPORTED ) {
             Assert.assertNotNull( msg );
             int id = local ? R.string.chat_local_id : R.string.chat_other_id;
             msg = context.getString( id ) + msg;

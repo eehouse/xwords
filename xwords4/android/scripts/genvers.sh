@@ -5,6 +5,7 @@ set -e -u
 DIR=$1
 VARIANT=$2
 CLIENT_VERS_RELAY=$3
+CHAT_SUPPORTED=$4
 
 cd $(dirname $0)
 cd ../../
@@ -33,6 +34,7 @@ package org.eehouse.android.${VARIANT};
 class GitVersion {
     public static final String VERS = "$SHORTVERS";
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
+    public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
 }
 EOF
 

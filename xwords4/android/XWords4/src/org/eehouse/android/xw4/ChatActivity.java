@@ -40,7 +40,7 @@ public class ChatActivity extends XWActivity implements View.OnClickListener {
     @Override
     public void onCreate( Bundle savedInstanceState ) 
     {
-        if ( XWApp.CHAT_SUPPORTED ) {
+        if ( GitVersion.CHAT_SUPPORTED ) {
             super.onCreate( savedInstanceState );
 
             setContentView( R.layout.chat );

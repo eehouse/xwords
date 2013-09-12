@@ -541,7 +541,7 @@ public class BoardActivity extends XWActivity
             requestWindowFeature( Window.FEATURE_NO_TITLE );
         }
 
-        if ( XWApp.CHAT_SUPPORTED ) {
+        if ( GitVersion.CHAT_SUPPORTED ) {
             m_pendingChats = new ArrayList<String>();
         }
 
@@ -629,7 +629,7 @@ public class BoardActivity extends XWActivity
         if ( Activity.RESULT_CANCELED != resultCode ) {
             switch ( requestCode ) {
             case CHAT_REQUEST:
-                if ( XWApp.CHAT_SUPPORTED ) {
+                if ( GitVersion.CHAT_SUPPORTED ) {
                     String msg = data.getStringExtra( INTENT_KEY_CHAT );
                     if ( null != msg && msg.length() > 0 ) {
                         m_pendingChats.add( msg );
@@ -1714,7 +1714,7 @@ public class BoardActivity extends XWActivity
         @Override
         public void showChat( final String msg )
         {
-            if ( XWApp.CHAT_SUPPORTED ) {
+            if ( GitVersion.CHAT_SUPPORTED ) {
                 post( new Runnable() {
                         public void run() {
                             DBUtils.appendChatHistory( BoardActivity.this, 
@@ -1907,7 +1907,7 @@ public class BoardActivity extends XWActivity
                                R.string.not_again_undo,
                                R.string.key_notagain_undo,
                                UNDO_ACTION );
-        if ( XWApp.CHAT_SUPPORTED ) {
+        if ( GitVersion.CHAT_SUPPORTED ) {
             m_toolbar.setListener( Toolbar.BUTTON_CHAT,
                                    R.string.not_again_chat, 
                                    R.string.key_notagain_chat,
@@ -1996,7 +1996,7 @@ public class BoardActivity extends XWActivity
 
     private void startChatActivity()
     {
-        if ( XWApp.CHAT_SUPPORTED ) {
+        if ( GitVersion.CHAT_SUPPORTED ) {
             Intent intent = new Intent( this, ChatActivity.class );
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
             startActivityForResult( intent, CHAT_REQUEST );
@@ -2044,7 +2044,7 @@ public class BoardActivity extends XWActivity
     
     private void trySendChats()
     {
-        if ( XWApp.CHAT_SUPPORTED && null != m_jniThread ) {
+        if ( GitVersion.CHAT_SUPPORTED && null != m_jniThread ) {
             Iterator<String> iter = m_pendingChats.iterator();
             while ( iter.hasNext() ) {
                 m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
@@ -2092,7 +2092,7 @@ public class BoardActivity extends XWActivity
         m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_CHAT, 
-                          XWApp.CHAT_SUPPORTED && m_gsi.canChat );
+                          GitVersion.CHAT_SUPPORTED && m_gsi.canChat );
         m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
                           null != m_gi.dictName( m_view.getCurPlayer() ) );
     }
@@ -2115,7 +2115,7 @@ public class BoardActivity extends XWActivity
             hideShowItem( menu, R.id.board_menu_hint_prev, m_gsi.canHint );
             hideShowItem( menu, R.id.board_menu_hint_next, m_gsi.canHint );
             hideShowItem( menu, R.id.board_menu_chat, 
-                          XWApp.CHAT_SUPPORTED && m_gsi.canChat );
+                          GitVersion.CHAT_SUPPORTED && m_gsi.canChat );
         }
     }
 
