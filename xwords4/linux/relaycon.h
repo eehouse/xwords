@@ -25,8 +25,8 @@
 typedef struct _Procs {
     void (*msgReceived)( void* closure, const XP_U8* buf, XP_U16 len );
     void (*msgNoticeReceived)( void* closure );
-    void (*devIDChanged)( void* closure, const XP_UCHAR* devID, 
-                          XP_U16 maxInterval );
+    void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
+                           XP_U16 maxInterval );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
     void (*socketChanged)( void* closure, int newSock, int oldSock, 
                            SockReceiver proc, void* procClosure );
@@ -35,7 +35,8 @@ typedef struct _Procs {
 
 void relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 
                     void* procsClosure, const char* host, int port );
-void relaycon_reg( LaunchParams* params, const XP_UCHAR* devID, DevIDType typ );
+void relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID, 
+                   DevIDType typ, const XP_UCHAR* devID );
 XP_S16 relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
                       XP_U32 gameToken, const CommsAddrRec* addrRec );
 XP_S16 relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, 

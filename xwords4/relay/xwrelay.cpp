@@ -333,7 +333,6 @@ getVLIString( const uint8_t** bufpp, const uint8_t* end,
         out.append( (const char*)*bufpp, len );
         *bufpp += len;
         success = true;
-        logf( XW_LOGINFO, "%s=>%s", __func__, out.c_str() );
     }
     return success;
 }
@@ -342,7 +341,8 @@ static bool
 getRelayDevID( const uint8_t** bufpp, const uint8_t* end, 
                DevID& devID )
 {
-    return getVLIString( bufpp, end, devID.m_devIDString );
+    return ID_TYPE_NONE == devID.m_devIDType // nothing to read
+        || getVLIString( bufpp, end, devID.m_devIDString );
 }
 
 static bool
@@ -374,11 +374,14 @@ getDevID( const uint8_t** bufpp, const uint8_t* end,
           unsigned short flags, DevID* devID ) 
 {
     if ( XWRELAY_PROTO_VERSION_CLIENTID <= flags ) {
-        uint8_t devIDType = 0;
-        if ( getNetByte( bufpp, end, &devIDType ) && 0 != devIDType ) {
-            if ( getNetString( bufpp, end, devID->m_devIDString )
-                 && 0 < devID->m_devIDString.length() ) {
-                devID->m_devIDType = (DevIDType)devIDType;
+        uint8_t byt = 0;
+        if ( getNetByte( bufpp, end, &byt ) && 0 != byt ) {
+            if ( getNetString( bufpp, end, devID->m_devIDString ) ) {
+                DevIDType typ = (DevIDType)byt;
+                size_t len = devID->m_devIDString.length();
+                if ( ( ID_TYPE_ANON == typ && 0 == len ) || ( 0 < len ) ) {
+                    devID->m_devIDType = typ;
+                } 
             }
         }
     }
@@ -1483,36 +1486,48 @@ addRegID( uint8_t* ptr, DevIDRelay relayID )
 }
 
 static void 
-registerDevice( const DevID* devID, const AddrInfo* addr, int clientVers,
-                string& devDesc, string& model, string& osVers )
+registerDevice( const string& relayIDStr, const DevID* devID, 
+                const AddrInfo* addr, int clientVers, const string& devDesc, 
+                const string& model, const string& osVers )
 {
-    DevIDRelay relayID;
+    DevIDRelay relayID = DBMgr::DEVID_NONE;
     DBMgr* dbMgr = DBMgr::Get();
-    short indx = 0;
-    uint8_t buf[32];
+    bool checkMsgs = false;
 
-    if ( ID_TYPE_RELAY == devID->m_devIDType ) { // known to us; just update the time
-        relayID = devID->asRelayID();
-        if ( dbMgr->UpdateDevice( relayID, clientVers, devDesc.c_str(), 
-                                  model.c_str(), osVers.c_str(), true ) ) {
-            int nMsgs = dbMgr->CountStoredMessages( relayID );
-            if ( 0 < nMsgs ) {
-                send_havemsgs( addr );
-            }
-        } else {
-            indx += addRegID( &buf[indx], relayID );
-            send_via_udp( addr, NULL, XWPDEV_BADREG, buf, indx, NULL );
+    if ( '\0' != relayIDStr[0] ) {
+        relayID = strtoul( relayIDStr.c_str(), NULL, 16 ); 
+    }
 
-            relayID = DBMgr::DEVID_NONE;
-        } 
-    } else {
+    if ( DBMgr::DEVID_NONE == relayID ) { // new device
         relayID = dbMgr->RegisterDevice( devID, clientVers, devDesc.c_str(), 
                                          model.c_str(), osVers.c_str() );
+    } else if ( ID_TYPE_NONE != devID->m_devIDType ) { // re-registering
+        dbMgr->ReregisterDevice( relayID, devID, devDesc.c_str(), clientVers, 
+                                 model.c_str(), osVers.c_str() );
+        checkMsgs = true;
+    } else {
+        // No new information; just update the time
+        checkMsgs = dbMgr->UpdateDevice( relayID, devDesc.c_str(), clientVers, 
+                                         model.c_str(), osVers.c_str(), true );
+        if ( !checkMsgs ) {
+            uint8_t buf[32];
+            int indx = addRegID( &buf[0], relayID );
+            send_via_udp( addr, NULL, XWPDEV_BADREG, buf, indx, NULL );
+            relayID = DBMgr::DEVID_NONE;
+        }
+    }
+
+    if ( checkMsgs ) {
+        int nMsgs = dbMgr->CountStoredMessages( relayID );
+        if ( 0 < nMsgs ) {
+            send_havemsgs( addr );
+        }
     }
 
     if ( DBMgr::DEVID_NONE != relayID ) {
         // send it back to the device
-        indx += addRegID( &buf[indx], relayID );
+        uint8_t buf[32];
+        int indx = addRegID( &buf[0], relayID );
 
         uint16_t maxInterval = UDPAger::Get()->MaxIntervalSeconds();
         maxInterval = ntohs(maxInterval);
@@ -1623,19 +1638,22 @@ handle_udp_packet( UdpThreadClosure* utc )
         logf( XW_LOGINFO, "%s(msg=%s)", __func__, msgToStr( header.cmd ) );
         switch( header.cmd ) {
         case XWPDEV_REG: {
-            DevIDType typ = (DevIDType)*ptr++;
-            DevID devID( typ );
-            if ( getRelayDevID( &ptr, end, devID ) ) {
-                uint16_t clientVers;
-                string devDesc;
-                string model;
-                string osVers;
-                if ( getNetShort( &ptr, end, &clientVers )
-                     && getVLIString( &ptr, end, devDesc )
-                     && getVLIString( &ptr, end, model )
-                     && getVLIString( &ptr, end, osVers ) ) {
-                    registerDevice( &devID, utc->addr(), clientVers, 
-                                    devDesc, model, osVers );
+            string relayID;
+            if ( getVLIString( &ptr, end, relayID ) ) {
+                DevIDType typ = (DevIDType)*ptr++;
+                DevID devID( typ );
+                if ( getRelayDevID( &ptr, end, devID ) ) {
+                    uint16_t clientVers;
+                    string devDesc;
+                    string model;
+                    string osVers;
+                    if ( getNetShort( &ptr, end, &clientVers )
+                         && getVLIString( &ptr, end, devDesc )
+                         && getVLIString( &ptr, end, model )
+                         && getVLIString( &ptr, end, osVers ) ) {
+                        registerDevice( relayID, &devID, utc->addr(), 
+                                        clientVers, devDesc, model, osVers );
+                    }
                 }
             }
             break;

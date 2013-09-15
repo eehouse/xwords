@@ -514,7 +514,7 @@ keepalive_timer( gpointer data )
 }
 
 static void
-gtkDevIDChanged( void* closure, const XP_UCHAR* devID, XP_U16 maxInterval )
+gtkDevIDReceived( void* closure, const XP_UCHAR* devID, XP_U16 maxInterval )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;
@@ -528,7 +528,7 @@ gtkDevIDChanged( void* closure, const XP_UCHAR* devID, XP_U16 maxInterval )
 
         DevIDType typ;
         const XP_UCHAR* devID = linux_getDevID( params, &typ );
-        relaycon_reg( params, devID, typ );
+        relaycon_reg( params, NULL, typ, devID );
     }
 }
 
@@ -584,13 +584,18 @@ gtkmain( LaunchParams* params )
 
     apg.selRows = g_array_new( FALSE, FALSE, sizeof( sqlite3_int64 ) );
     apg.params = params;
+    XP_ASSERT( !!params->dbName );
     params->pDb = openGamesDB( params->dbName );
+
+    /* Check if we have a local ID already.  If we do and it's
+       changed, we care. */
+    XP_Bool idIsNew = linux_setupDevidParams( params );
 
     if ( params->useUdp ) {
         RelayConnProcs procs = {
             .msgReceived = gtkGotBuf,
             .msgNoticeReceived = gtkNoticeRcvd,
-            .devIDChanged = gtkDevIDChanged,
+            .devIDReceived = gtkDevIDReceived,
             .msgErrorMsg = gtkErrorMsgRcvd,
             .socketChanged = gtkSocketChanged,
         };
@@ -599,9 +604,7 @@ gtkmain( LaunchParams* params )
                        params->connInfo.relay.relayName,
                        params->connInfo.relay.defaultSendPort );
 
-        DevIDType typ;
-        const XP_UCHAR* devID = linux_getDevID( params, &typ );
-        relaycon_reg( params, devID, typ );
+        linux_doInitialReg( params, idIsNew );
     }
 
     apg.window = makeGamesWindow( &apg );

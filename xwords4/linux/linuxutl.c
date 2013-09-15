@@ -33,6 +33,7 @@
 #include "main.h"
 #include "linuxdict.h"
 #include "linuxmain.h"
+#include "gamesdb.h"
 #include "LocalizedStrIncludes.h"
 
 #ifdef DEBUG
@@ -364,11 +365,12 @@ linux_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ,
     switch( typ ) {
     case ID_TYPE_NONE: /* error case */
         XP_LOGF( "%s: id rejected", __func__ );
-        cGlobals->params->rDevID = cGlobals->params->devID = NULL;
+        cGlobals->params->lDevID = NULL;
         break;
     case ID_TYPE_RELAY:
         if ( 0 < strlen( idRelay ) ) {
             XP_LOGF( "%s: new id: %s", __func__, idRelay );
+            db_store( cGlobals->pDb, KEY_RDEVID, idRelay );
         }
         break;
     default:

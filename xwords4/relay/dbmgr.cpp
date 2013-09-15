@@ -237,6 +237,33 @@ DBMgr::FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken token,
 } // FindPlayer
 
 bool
+DBMgr::FindRelayIDFor( const char* connName, HostID hid, 
+                       unsigned short seed, const DevID* host,
+                       DevIDRelay* devIDP )
+{
+    DevIDRelay devID = DEVID_NONE;
+    StrWPF query;
+    query.printf( "SELECT devids[%d] FROM " GAMES_TABLE " WHERE "
+                  "connname = '%s' AND seeds[%d] = %d", hid, 
+                  connName, hid, seed );
+    PGresult* result = PQexec( getThreadConn(), query.c_str() );
+    int nTuples = PQntuples( result );
+    assert( nTuples <= 1 );
+    bool found = nTuples == 1;
+    if ( found ) {
+        devID = (DevIDRelay)strtoul( PQgetvalue( result, 0, 0 ), NULL, 10 );
+        *devIDP = devID;
+        ReregisterDevice( devID, host, NULL, 0, NULL, NULL );
+    }
+    PQclear( result );
+    if ( !found ) {
+        logf( XW_LOGERROR, "%s: relayid not found for slot %d of %s)", 
+              __func__, hid, connName );
+    }
+    return found;
+}
+
+bool
 DBMgr::SeenSeed( const char* cookie, unsigned short seed,
                  int langCode, int nPlayersT, bool wantsPublic, 
                  char* connNameBuf, int bufLen, int* nPlayersHP, 
@@ -400,31 +427,39 @@ DBMgr::RegisterDevice( const DevID* host )
     return RegisterDevice( host, 0, NULL, NULL, NULL );
 }
 
+void
+DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host, 
+                         const char* const desc, int clientVersion, 
+                         const char* const model, const char* const osVers )
+{
+    // First update the existing
+    StrWPF query;
+    query.printf( "UPDATE " DEVICES_TABLE " SET "
+                  "rrcount = rrcount + 1, devType = %d, devid = '%s', ", 
+                  host->m_devIDType, host->m_devIDString.c_str() );
+
+    formatUpdate( query, desc, clientVersion, model, osVers, relayID );
+    
+    execSql( query );
+}
+
+// Return true if the relayID exists in the DB already
 bool
-DBMgr::UpdateDevice( DevIDRelay relayID, int clientVersion, 
-                     const char* const desc, const char* const model,
+DBMgr::UpdateDevice( DevIDRelay relayID, const char* const desc, 
+                     int clientVersion, const char* const model,
                      const char* const osVers, bool check )
 {
     bool exists = !check;
     if ( !exists ) {
         StrWPF test;
         test.printf( "id = %d", relayID );
-        exists = 1 == getCountWhere( DEVICES_TABLE, test );
+        exists = 1 <= getCountWhere( DEVICES_TABLE, test );
     }
 
     if ( exists ) {
         StrWPF query;
-        query.printf( "UPDATE " DEVICES_TABLE " SET mtime='now'" );
-        if ( NULL != desc && '\0' != desc[0] ) {
-            query.printf( ", clntVers=%d, versDesc='%s'", clientVersion, desc );
-        }
-        if ( NULL != model && '\0' != model[0] ) {
-            query.printf( ", model='%s'", model );
-        }
-        if ( NULL != osVers && '\0' != osVers[0] ) {
-            query.printf( ", osvers='%s'", osVers );
-        }
-        query.printf( " WHERE id = %d", relayID );
+        query.printf( "UPDATE " DEVICES_TABLE " SET " );
+        formatUpdate( query, desc, clientVersion, model, osVers, relayID );
         execSql( query );
     }
     return exists;
@@ -433,11 +468,29 @@ DBMgr::UpdateDevice( DevIDRelay relayID, int clientVersion,
 bool
 DBMgr::UpdateDevice( DevIDRelay relayID )
 {
-    return UpdateDevice( relayID, 0, NULL, NULL, NULL, false );
+    return UpdateDevice( relayID, NULL, 0, NULL, NULL, false );
+}
+
+void
+DBMgr::formatUpdate( StrWPF& query, const char* const desc, int clientVersion, 
+                     const char* const model, const char* const osVers, 
+                     DevIDRelay relayID )
+{
+    query.printf( "mtime='now'" );
+    if ( NULL != desc && '\0' != desc[0] ) {
+        query.printf( ", clntVers=%d, versDesc='%s'", clientVersion, desc );
+    }
+    if ( NULL != model && '\0' != model[0] ) {
+        query.printf( ", model='%s'", model );
+    }
+    if ( NULL != osVers && '\0' != osVers[0] ) {
+        query.printf( ", osvers='%s'", osVers );
+    }
+    query.printf( " WHERE id = %d", relayID );
 }
 
 HostID
-DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion, 
+DBMgr::AddToGame( const char* connName, HostID curID, int clientVersion, 
                   int nToAdd, unsigned short seed, const AddrInfo* addr,
                   DevIDRelay devID, bool ackd )
 {
@@ -490,7 +543,7 @@ DBMgr::AddDevice( const char* connName, HostID curID, int clientVersion,
     execSql( query );
 
     return newID;
-} /* AddDevice */
+} /* AddToGame */
 
 void
 DBMgr::NoteAckd( const char* const connName, HostID id )
@@ -834,9 +887,10 @@ DBMgr::getDevID( const DevID* devID )
             query.printf( fmt, cur );
         }
     } else if ( 0 < devID->m_devIDString.size() ) {
-        const char* fmt = "SELECT id FROM " DEVICES_TABLE 
-            " WHERE devtype=%d and devid = '%s'";
-        query.printf( fmt, devIDType, devID->m_devIDString.c_str() );
+        query.printf( "SELECT id FROM " DEVICES_TABLE 
+                      " WHERE devtype=%d and devid = '%s'"
+                      " ORDER BY ctime DESC LIMIT 1", 
+                      devIDType, devID->m_devIDString.c_str() );
     }
 
     if ( 0 < query.size() ) {

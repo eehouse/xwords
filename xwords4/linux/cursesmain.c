@@ -1810,15 +1810,23 @@ keepalive_timer( gpointer data )
 }
 
 static void
-cursesDevIDChanged( void* closure, const XP_UCHAR* devID, 
-                    XP_U16 maxInterval )
+cursesDevIDReceived( void* closure, const XP_UCHAR* devID, 
+                     XP_U16 maxInterval )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     CommonGlobals* cGlobals = &globals->cGlobals;
     sqlite3* pDb = cGlobals->pDb;
     if ( !!devID ) {
         XP_LOGF( "%s(devID=%s)", __func__, devID );
-        db_store( pDb, KEY_RDEVID, devID );
+
+        /* If we already have one, make sure it's the same! Else store. */
+        gchar buf[64];
+        XP_Bool have = db_fetch( pDb, KEY_RDEVID, buf, sizeof(buf) );
+        if ( !have ) {
+            db_store( pDb, KEY_RDEVID, devID );
+        } else {
+            XP_ASSERT( 0 == strcmp( buf, devID ) );
+        }
         (void)g_timeout_add_seconds( maxInterval, keepalive_timer, globals );
     } else {
         XP_LOGF( "%s: bad relayid", __func__ );
@@ -1826,7 +1834,7 @@ cursesDevIDChanged( void* closure, const XP_UCHAR* devID,
 
         DevIDType typ;
         const XP_UCHAR* devID = linux_getDevID( cGlobals->params, &typ );
-        relaycon_reg( cGlobals->params, devID, typ );
+        relaycon_reg( cGlobals->params, NULL, typ, devID );
     }
 }
 
@@ -2023,11 +2031,22 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         g_globals.draw = (struct CursesDrawCtx*)
             cursesDrawCtxtMake( g_globals.boardWin );
 
+        XP_Bool idIsNew = XP_TRUE;
+        if ( !!params->dbName ) {
+            sqlite3* pDb = openGamesDB( params->dbName );
+            /* Gross that both need to be set, but they do. */
+            params->pDb = g_globals.cGlobals.pDb = pDb;
+
+            /* Check if we have a local ID already.  If we do and it's
+               changed, we care. */
+            idIsNew = linux_setupDevidParams( params );
+        }
+
         if ( params->useUdp ) {
             RelayConnProcs procs = {
                 .msgReceived = cursesGotBuf,
                 .msgNoticeReceived = cursesNoticeRcvd,
-                .devIDChanged = cursesDevIDChanged,
+                .devIDReceived = cursesDevIDReceived,
                 .msgErrorMsg = cursesErrorMsgRcvd,
                 .socketChanged = cursesUDPSocketChanged,
             };
@@ -2035,24 +2054,20 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             relaycon_init( params, &procs, &g_globals,
                            params->connInfo.relay.relayName,
                            params->connInfo.relay.defaultSendPort );
-            DevIDType typ;
-            const XP_UCHAR* devID = linux_getDevID( params, &typ );
-            relaycon_reg( params, devID, typ );
+
+            linux_doInitialReg( params, idIsNew );
         }
 
         XWStreamCtxt* stream = NULL;
         if ( !!params->dbName ) {
-            sqlite3* pDb = openGamesDB( params->dbName );
-            /* Gross that both need to be set, but they do. */
-            params->pDb = g_globals.cGlobals.pDb = pDb;
-
-            GSList* games = listGames( pDb );
+            GSList* games = listGames( params->pDb );
             if ( !!games ) {
+                XP_ASSERT( 1 == g_slist_length(games) ); /* for now */
                 stream = mem_stream_make( MEMPOOL params->vtMgr,
                                           &g_globals.cGlobals, CHANNEL_NONE,
                                           NULL );
                 sqlite3_int64 selRow = *(sqlite3_int64*)games->data;
-                if ( loadGame( stream, pDb, selRow ) ) {
+                if ( loadGame( stream, params->pDb, selRow ) ) {
                     g_globals.cGlobals.selRow = selRow;
                 } else {
                     stream_destroy( stream );

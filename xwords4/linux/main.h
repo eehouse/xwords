@@ -67,8 +67,7 @@ typedef struct LaunchParams {
     char* nbs;
     char* bonusFile;
 #ifdef XWFEATURE_DEVID
-    char* devID;
-    char* rDevID;
+    char* lDevID;
     XP_Bool noAnonDevid;
     XP_UCHAR devIDStore[16];
 #endif

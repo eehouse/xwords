@@ -83,6 +83,7 @@ CREATE TABLE devices (
 id INTEGER UNIQUE PRIMARY KEY
 ,devType INTEGER
 ,clntVers INTEGER
+,rrcount INTEGER DEFAULT 0
 ,versDesc TEXT
 ,devid TEXT
 ,model TEXT

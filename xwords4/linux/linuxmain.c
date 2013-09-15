@@ -592,8 +592,7 @@ typedef enum {
     ,CMD_PLAYERDICT
     ,CMD_SEED
 #ifdef XWFEATURE_DEVID
-    ,CMD_DEVID
-    ,CMD_RDEVID
+    ,CMD_LDEVID
     ,CMD_NOANONDEVID
 #endif
     ,CMD_GAMESEED
@@ -695,9 +694,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_PLAYERDICT, true, "player-dict", "dictionary name for player (in sequence)" }
     ,{ CMD_SEED, true, "seed", "random seed" }
 #ifdef XWFEATURE_DEVID
-    ,{ CMD_DEVID, true, "devid", "device ID (for testing GCM stuff)" }
-    ,{ CMD_RDEVID, true, "rdevid", "relay's converted device ID (for testing GCM stuff)" }
-    ,{CMD_NOANONDEVID, false, "no-anon-devid",
+    ,{ CMD_LDEVID, true, "ldevid", "local device ID (for testing GCM stuff)" }
+    ,{ CMD_NOANONDEVID, false, "no-anon-devid",
       "override default of using anonymous devid registration when no id provided" }
 #endif
     ,{ CMD_GAMESEED, true, "game-seed", "game seed (for relay play)" }
@@ -868,21 +866,52 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
 
     /* commandline takes precedence over stored values */
 
-    if ( !!params->rDevID ) {
-        result = params->rDevID;
-        *typ = ID_TYPE_RELAY;
-    } else if ( !!params->devID ) {
-        result = params->devID;
+    if ( !!params->lDevID ) {
+        result = params->lDevID;
         *typ = ID_TYPE_LINUX;
-    } else if ( db_fetch( params->pDb, KEY_RDEVID, params->devIDStore, 
+    } else if ( db_fetch( params->pDb, KEY_LDEVID, params->devIDStore, 
                           sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
-        *typ = ID_TYPE_RELAY;
+        *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_LINUX;
     } else if ( !params->noAnonDevid ) {
         *typ = ID_TYPE_ANON;
         result = "";
     }
     return result;
+}
+
+void
+linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew )
+{
+    gchar rDevIDBuf[64];
+    if ( !db_fetch( params->pDb, KEY_RDEVID, rDevIDBuf, 
+                    sizeof(rDevIDBuf) ) ) {
+        rDevIDBuf[0] = '\0';
+    }
+    DevIDType typ = ID_TYPE_NONE;
+    const XP_UCHAR* devID = NULL;
+    if ( idIsNew || '\0' == rDevIDBuf[0] ) {
+        devID = linux_getDevID( params, &typ );
+    }
+    relaycon_reg( params, rDevIDBuf, typ, devID );
+}
+
+XP_Bool
+linux_setupDevidParams( LaunchParams* params )
+{
+    XP_Bool idIsNew = XP_TRUE;
+    gchar oldLDevID[256];
+    if ( db_fetch( params->pDb, KEY_LDEVID, oldLDevID, sizeof(oldLDevID) )
+         && (!params->lDevID || 0 == strcmp( oldLDevID, params->lDevID )) ) {
+        idIsNew = XP_FALSE;
+    } else {
+        const XP_UCHAR* lDevID = params->lDevID;
+        if ( NULL == lDevID ) {
+            lDevID = "";        /* we'll call this ANONYMOUS */
+        }
+        db_store( params->pDb, KEY_LDEVID, lDevID );
+    }
+    return idIsNew;
 }
 
 #ifdef XWFEATURE_RELAY
@@ -2067,14 +2096,12 @@ main( int argc, char** argv )
             seed = atoi(optarg);
             break;
 #ifdef XWFEATURE_DEVID
-        case CMD_DEVID:
-            mainParams.devID = optarg;
-            break;
-        case CMD_RDEVID:
-            mainParams.rDevID = optarg;
+        case CMD_LDEVID:
+            mainParams.lDevID = optarg;
             break;
         case CMD_NOANONDEVID:
             mainParams.noAnonDevid = true;
+            break;
 #endif
         case CMD_GAMESEED:
             mainParams.gameSeed = atoi(optarg);

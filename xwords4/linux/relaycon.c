@@ -76,18 +76,25 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     storage->proto = XWPDEV_PROTO_VERSION_1;
 }
 
+/* Send existing relay-assigned rDevID to relay, or empty string if we have
+   none.  Send local devID and type, ID_TYPE_NONE, if we aren't providing an
+   update.  It's an error for neither to be provided. */
 void
-relaycon_reg( LaunchParams* params, const XP_UCHAR* devID, DevIDType typ )
+relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID, 
+              DevIDType typ, const XP_UCHAR* devID )
 {
-    LOG_FUNC();
+    XP_LOGF( "%s(typ=%d)", __func__, typ );
     XP_U8 tmpbuf[256];
     int indx = 0;
-    
+
     RelayConStorage* storage = getStorage( params );
-    XP_ASSERT( !!devID || typ == ID_TYPE_ANON );
     indx += writeHeader( storage, tmpbuf, XWPDEV_REG );
+    indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, rDevID );
+
     tmpbuf[indx++] = typ;
-    indx += writeDevID( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
+    if ( ID_TYPE_NONE != typ ) {
+        indx += writeDevID( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
+    }
     indx += writeShort( &tmpbuf[indx], sizeof(tmpbuf) - indx, 
                         INITIAL_CLIENT_VERS );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, SVN_REV );
@@ -228,8 +235,8 @@ relaycon_receive( void* closure, int socket )
                 getNetString( &ptr, len, devID );
                 XP_U16 maxInterval = getNetShort( &ptr );
                 XP_LOGF( "%s: maxInterval=%d", __func__, maxInterval );
-                (*storage->procs.devIDChanged)( storage->procsClosure, devID,
-                                                maxInterval );
+                (*storage->procs.devIDReceived)( storage->procsClosure, devID,
+                                                 maxInterval );
             }
                 break;
             case XWPDEV_MSG:
@@ -237,7 +244,7 @@ relaycon_receive( void* closure, int socket )
                                                ptr, end - ptr );
                 break;
             case XWPDEV_BADREG:
-                (*storage->procs.devIDChanged)( storage->procsClosure, NULL, 0 );
+                (*storage->procs.devIDReceived)( storage->procsClosure, NULL, 0 );
                 break;
             case XWPDEV_HAVEMSGS: {
                 (*storage->procs.msgNoticeReceived)( storage->procsClosure );

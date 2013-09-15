@@ -28,6 +28,7 @@
 #include "xwrelay.h"
 #include "xwrelay_priv.h"
 #include "devid.h"
+#include "strwpf.h"
 #include <libpq-fe.h>
 
 using namespace std;
@@ -66,6 +67,8 @@ class DBMgr {
 
     bool FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken, 
                      string& connName, HostID* hid, unsigned short* seed );
+    bool FindRelayIDFor( const char* connName, HostID hid, unsigned short seed,
+                         const DevID* host, DevIDRelay* devID );
 
     CookieID FindGame( const char* connName, char* cookieBuf, int bufLen,
                        int* langP, int* nPlayersTP, int* nPlayersHP,
@@ -90,11 +93,14 @@ class DBMgr {
     DevIDRelay RegisterDevice( const DevID* host, int clientVersion, 
                                const char* const desc, const char* const model,
                                const char* const osVers );
-    bool UpdateDevice( DevIDRelay relayID, int clientVersion, 
-                       const char* const desc, const char* const model, 
+    void ReregisterDevice( DevIDRelay relayID, const DevID* host, 
+                           const char* const desc, int clientVersion, 
+                           const char* const model, const char* const osVers );
+    bool UpdateDevice( DevIDRelay relayID, const char* const desc, 
+                       int clientVersion, const char* const model, 
                        const char* const osVers, bool check );
 
-    HostID AddDevice( const char* const connName, HostID curID, int clientVersion,
+    HostID AddToGame( const char* const connName, HostID curID, int clientVersion,
                       int nToAdd, unsigned short seed, const AddrInfo* addr,
                       DevIDRelay devID, bool unAckd );
     void NoteAckd( const char* const connName, HostID id );
@@ -152,6 +158,9 @@ class DBMgr {
                              bool nullConnnameOK );
     int CountStoredMessages( const char* const connName, int hid );
     bool UpdateDevice( DevIDRelay relayID );
+    void formatUpdate( StrWPF& query, const char* const desc, int clientVersion,
+                       const char* const model, const char* const osVers,
+                       DevIDRelay relayID );
 
     PGconn* getThreadConn( void );
     void clearThreadConn();

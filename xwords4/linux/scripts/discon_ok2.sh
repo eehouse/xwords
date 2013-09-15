@@ -231,7 +231,7 @@ build_cmds() {
             LOGS[$COUNTER]=$LOG
             PIDS[$COUNTER]=0
             ARGS_DEVID[$COUNTER]=""
-            update_devid_cmd $COUNTER
+            update_ldevid $COUNTER
 
             print_cmdline $COUNTER
 
@@ -272,9 +272,10 @@ read_resume_cmds() {
 }
 
 launch() {
-    LOG=${LOGS[$1]}
-    APP="${APPS[$1]}"
-    PARAMS="${NEW_ARGS[$1]} ${ARGS[$1]} ${ARGS_DEVID[$1]}"
+    KEY=$1
+    LOG=${LOGS[$KEY]}
+    APP="${APPS[$KEY]}"
+    PARAMS="${NEW_ARGS[$KEY]} ${ARGS[$KEY]} ${ARGS_DEVID[$KEY]}"
     exec $APP $PARAMS >/dev/null 2>>$LOG
 }
 
@@ -428,42 +429,19 @@ increment_drop() {
     fi
 }
 
-get_relayid() {
-    KEY=$1
-    RELAY_ID=$(grep 'deviceRegistered: new id: ' ${LOGS[$KEY]} | tail -n 1)
-    if [ -n "$RELAY_ID" ]; then
-        RELAY_ID=$(echo $RELAY_ID | sed 's,^.*new id: ,,')
-    else
-        usage "new id string not in $LOG"
-    fi
-    echo $RELAY_ID
-}
-
-update_devid_cmd() {
+update_ldevid() {
     KEY=$1
     HELP="$(${APPS[$KEY]} --help 2>&1 || /bin/true)"
-    if echo $HELP | grep -q '\-\-devid'; then
-        CMD="--devid LINUX_TEST_$(printf %.5d ${KEY})"
-        LOG=${LOGS[$KEY]}
-        if [ -z "${ARGS_DEVID[$KEY]}" -o ! -e $LOG ]; then # upgrade or first run
-            :
-        else
-            # otherwise, we should have successfully registered.  If
-            # we have AND the reg has been rejected, make without
-            # --rdevid so will reregister.
-            LAST_GOOD=$(grep -h -n 'linux_util_deviceRegistered: new id' $LOG | tail -n 1 | sed 's,:.*$,,')
-            LAST_REJ=$(grep -h -n 'linux_util_deviceRegistered: id rejected' $LOG | tail -n 1 | sed 's,:.*$,,')
-            # echo "LAST_GOOD: $LAST_GOOD; LAST_REJ: $LAST_REJ"
-            if [ -z "$LAST_GOOD" ]; then # not yet registered
-                :
-            elif [ -z "$LAST_REJ" ]; then
-                CMD="$CMD --rdevid $(get_relayid $KEY)"
-            elif [ "$LAST_REJ" -lt "$LAST_GOOD" ]; then # registered and not more recently rejected
-                CMD="$CMD --rdevid $(get_relayid $KEY)"
+    if echo $HELP | grep -q '\-\-ldevid'; then
+        if [ $((RANDOM % 100)) -lt 33 ]; then
+            CMD="${ARGS_DEVID[$KEY]}"
+            if [ -z "$CMD" ]; then             # upgrade or first run
+                CMD="--ldevid LINUX_TEST_$(printf %.5d ${KEY})_"
+            else
+                CMD="${CMD}x"                  # give it a new local ID
             fi
+            ARGS_DEVID[$KEY]="$CMD"
         fi
-        # echo $CMD
-        ARGS_DEVID[$KEY]=$CMD
     fi
 }
 
@@ -507,7 +485,7 @@ run_cmds() {
             PIDS[$KEY]=0
             ROOM_PIDS[$ROOM]=0
             [ "$DROP_N" -ge 0 ] && increment_drop $KEY
-            update_devid_cmd $KEY
+            update_ldevid $KEY
             check_game $KEY
         fi
     done

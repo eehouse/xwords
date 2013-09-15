@@ -945,8 +945,17 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
     if ( !!devIDp ) {
         DevIDType devIDType = evt->u.con.devID->m_devIDType;
         // does client support devID
-        if ( ID_TYPE_NONE != devIDType ) { 
-            devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
+        if ( ID_TYPE_RELAY == devIDType ) { 
+            // do nothing; it's registered already
+        } else if ( ID_TYPE_NONE != devIDType ) { 
+            if ( reconn     // should have a relay id; can we look it up?
+                 && DBMgr::Get()->FindRelayIDFor( ConnName(), evt->u.con.srcID, 
+                                                  seed, evt->u.con.devID, 
+                                                  &devID ) ) {
+                // do nothing; we have our relayID!!
+            } else {
+                devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
+            }
             if ( addr->isUDP() ) {
                 DevMgr::Get()->rememberDevice( devID, addr );
             }
@@ -955,7 +964,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
     }
 
     HostID hostid =
-        DBMgr::Get()->AddDevice( ConnName(), evt->u.con.srcID, 
+        DBMgr::Get()->AddToGame( ConnName(), evt->u.con.srcID, 
                                  evt->u.con.clientVersion, nPlayersH, seed, 
                                  addr, devID, reconn );
     evt->u.con.srcID = hostid;
