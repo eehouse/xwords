@@ -2132,9 +2132,13 @@ public class BoardActivity extends XWActivity
 
     private void setBackgroundColor()
     {
-        int back = CommonPrefs.get( this )
-            .otherColors[CommonPrefs.COLOR_BACKGRND];
-        findViewById(R.id.board_root).setBackgroundColor( back );
+        View view = findViewById( R.id.board_root );
+        // Google's reported an NPE here, so test
+        if ( null != view ) {
+            int back = CommonPrefs.get( this )
+                .otherColors[CommonPrefs.COLOR_BACKGRND];
+            view.setBackgroundColor( back );
+        }
     }
 
     private void setKeepScreenOn()
