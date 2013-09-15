@@ -25,6 +25,7 @@
 #include <string>
 #include <set>
 
+#include "strwpf.h"
 #include "xwrelay.h"
 #include "xwrelay_priv.h"
 #include "devid.h"
@@ -165,6 +166,11 @@ class DBMgr {
     PGconn* getThreadConn( void );
     void clearThreadConn();
 
+    bool hasNoMessages( const char* const connName, HostID hid );
+    void setHasNoMessages( const char* const connName, HostID hid );
+    void clearHasNoMessages( const char* const connName, HostID hid );
+    void formatKey( StrWPF& key, const char* const connName, HostID hid );
+
     bool hasNoMessages( DevIDRelay devid );
     void setHasNoMessages( DevIDRelay devid );
     void clearHasNoMessages( DevIDRelay devid );
@@ -174,8 +180,8 @@ class DBMgr {
     bool m_useB64;
 
     pthread_mutex_t m_haveNoMessagesMutex;
-    set<DevIDRelay> m_haveNoMessages;
-
+    set<DevIDRelay> m_haveNoMessagesDevID;
+    set<StrWPF> m_haveNoMessagesConnname;
 }; /* DBMgr */
 
 
