@@ -81,11 +81,10 @@ EOF
     cat | psql $DBNAME --file - <<EOF
 CREATE TABLE devices ( 
 id INTEGER UNIQUE PRIMARY KEY
-,devType INTEGER
+,devTypes INTEGER[]
+,devids TEXT[]
 ,clntVers INTEGER
-,rrcount INTEGER DEFAULT 0
 ,versDesc TEXT
-,devid TEXT
 ,model TEXT
 ,osvers TEXT
 ,ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP

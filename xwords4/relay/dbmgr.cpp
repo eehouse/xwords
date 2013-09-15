@@ -395,7 +395,7 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
             } while ( DEVID_NONE == devID );
 
             const char* command = "INSERT INTO " DEVICES_TABLE
-                " (id, devType, devid, clntVers, versDesc, model, osvers)"
+                " (id, devTypes[1], devids[1], clntVers, versDesc, model, osvers)"
                 " VALUES( $1, $2, $3, $4, $5, $6, $7 )";
             int nParams = 7;
             char* paramValues[nParams];
@@ -435,7 +435,8 @@ DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host,
     // First update the existing
     StrWPF query;
     query.printf( "UPDATE " DEVICES_TABLE " SET "
-                  "rrcount = rrcount + 1, devType = %d, devid = '%s', ", 
+                  "devTypes = array_prepend( %d, devTypes), "
+                  "devids = array_prepend('%s', devids), ", 
                   host->m_devIDType, host->m_devIDString.c_str() );
 
     formatUpdate( query, desc, clientVersion, model, osVers, relayID );
@@ -888,7 +889,7 @@ DBMgr::getDevID( const DevID* devID )
         }
     } else if ( 0 < devID->m_devIDString.size() ) {
         query.printf( "SELECT id FROM " DEVICES_TABLE 
-                      " WHERE devtype=%d and devid = '%s'"
+                      " WHERE devtypes[1]=%d and devids[1] = '%s'"
                       " ORDER BY ctime DESC LIMIT 1", 
                       devIDType, devID->m_devIDString.c_str() );
     }
