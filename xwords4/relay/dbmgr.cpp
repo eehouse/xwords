@@ -436,11 +436,10 @@ DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host,
     StrWPF query;
     query.printf( "UPDATE " DEVICES_TABLE " SET "
                   "devTypes = array_prepend( %d, devTypes), "
-                  "devids = array_prepend('%s', devids), ", 
+                  "devids = array_prepend('%s', devids), ",
                   host->m_devIDType, host->m_devIDString.c_str() );
 
     formatUpdate( query, desc, clientVersion, model, osVers, relayID );
-    
     execSql( query );
 }
 
@@ -477,7 +476,8 @@ DBMgr::formatUpdate( StrWPF& query, const char* const desc, int clientVersion,
                      const char* const model, const char* const osVers, 
                      DevIDRelay relayID )
 {
-    query.printf( "mtime='now'" );
+    // query.printf( "mtimes=array_prepend('now', mtimes)" ); // FIXME: too many
+    query.printf( "mtimes[1]='now'" );
     if ( NULL != desc && '\0' != desc[0] ) {
         query.printf( ", clntVers=%d, versDesc='%s'", clientVersion, desc );
     }

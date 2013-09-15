@@ -37,6 +37,6 @@ echo "SELECT connname, hid, devid, count(*), sum(msglen) "\
      "GROUP BY connname, hid, devid ORDER BY connname LIMIT $LIMIT;" \
     | psql xwgames
 
-echo "SELECT id, model, osvers, mtime, array_length(devTypes, 1) as cnt, devTypes[1] as dTyp, devids[1] as devid FROM devices WHERE id IN (select UNNEST(devids) FROM games $QUERY) ORDER BY id LIMIT $LIMIT;" \
+echo "SELECT id, model, osvers, array_length(mtimes, 1) as mcnt, mtimes[1] as mtime, array_length(devTypes, 1) as dcnt, devTypes[1] as dTyp, devids[1] as devid FROM devices WHERE id IN (select UNNEST(devids) FROM games $QUERY) ORDER BY id LIMIT $LIMIT;" \
     | psql xwgames
 
