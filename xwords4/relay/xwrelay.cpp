@@ -130,6 +130,9 @@ logf( XW_LogLevel level, const char* format, ... )
 
         RelayConfigs* rc = RelayConfigs::GetConfigs();
         useFile = rc->GetValueFor( "LOGFILE_PATH", logFile, sizeof(logFile) );
+        if ( useFile && 0 == strcmp( "-", logFile ) ) {
+            useFile = false;
+        }
 
         if ( useFile ) {
             where = fopen( logFile, "a" );
