@@ -159,9 +159,9 @@ class DBMgr {
                              bool nullConnnameOK );
     int CountStoredMessages( const char* const connName, int hid );
     bool UpdateDevice( DevIDRelay relayID );
-    void formatUpdate( StrWPF& query, const char* const desc, int clientVersion,
-                       const char* const model, const char* const osVers,
-                       DevIDRelay relayID );
+    void formatUpdate( StrWPF& query, bool append, const char* const desc, 
+                       int clientVersion, const char* const model, 
+                       const char* const osVers, DevIDRelay relayID );
 
     PGconn* getThreadConn( void );
     void clearThreadConn();

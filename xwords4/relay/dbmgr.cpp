@@ -439,7 +439,7 @@ DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host,
                   "devids = array_prepend('%s', devids), ",
                   host->m_devIDType, host->m_devIDString.c_str() );
 
-    formatUpdate( query, desc, clientVersion, model, osVers, relayID );
+    formatUpdate( query, true, desc, clientVersion, model, osVers, relayID );
     execSql( query );
 }
 
@@ -459,7 +459,7 @@ DBMgr::UpdateDevice( DevIDRelay relayID, const char* const desc,
     if ( exists ) {
         StrWPF query;
         query.printf( "UPDATE " DEVICES_TABLE " SET " );
-        formatUpdate( query, desc, clientVersion, model, osVers, relayID );
+        formatUpdate( query, false, desc, clientVersion, model, osVers, relayID );
         execSql( query );
     }
     return exists;
@@ -472,12 +472,16 @@ DBMgr::UpdateDevice( DevIDRelay relayID )
 }
 
 void
-DBMgr::formatUpdate( StrWPF& query, const char* const desc, int clientVersion, 
-                     const char* const model, const char* const osVers, 
-                     DevIDRelay relayID )
+DBMgr::formatUpdate( StrWPF& query, bool append, const char* const desc, 
+                     int clientVersion, const char* const model, 
+                     const char* const osVers, DevIDRelay relayID )
 {
-    // query.printf( "mtimes=array_prepend('now', mtimes)" ); // FIXME: too many
-    query.printf( "mtimes[1]='now'" );
+    if ( append ) {
+        query.printf( "mtimes=array_prepend('now', mtimes)" ); // FIXME: too many
+    } else {
+        query.printf( "mtimes[1]='now'" );
+    }
+
     if ( NULL != desc && '\0' != desc[0] ) {
         query.printf( ", clntVers=%d, versDesc='%s'", clientVersion, desc );
     }
