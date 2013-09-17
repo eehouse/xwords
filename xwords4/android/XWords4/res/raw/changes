@@ -5,21 +5,16 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 66 release</b>
+<b>Crosswords 4.4 beta 67 release</b>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Fix menu missing on some tablets</li>
-
-  <li>Disable in-game Chat feature.  (It has bugs that cause games to
-    stop syncing moves.  I'll fix eventually. Let me know if you
-    use this feature and I'll up the priority.)</li>
-
-  <li>Fix crash triggered by resignation</li>
+  <li>Quick fix: crash (in setBackgroundColor) on some devices</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
+  <li>Put chat feature back</li>
   <li>Improve communication with relay, part 2.  (Really, I'm almost done!)</li>
 </ul>
 
