@@ -946,7 +946,7 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
         DevIDType devIDType = evt->u.con.devID->m_devIDType;
         // does client support devID
         if ( ID_TYPE_RELAY == devIDType ) { 
-            // do nothing; it's registered already
+            devID = evt->u.con.devID->asRelayID();
         } else if ( ID_TYPE_NONE != devIDType ) { 
             if ( reconn     // should have a relay id; can we look it up?
                  && DBMgr::Get()->FindRelayIDFor( ConnName(), evt->u.con.srcID, 
@@ -956,9 +956,9 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
             } else {
                 devID = DBMgr::Get()->RegisterDevice( evt->u.con.devID );
             }
-            if ( addr->isUDP() ) {
-                DevMgr::Get()->rememberDevice( devID, addr );
-            }
+        }
+        if ( addr->isUDP() ) {
+            DevMgr::Get()->rememberDevice( devID, addr );
         }
         *devIDp = devID;
     }
