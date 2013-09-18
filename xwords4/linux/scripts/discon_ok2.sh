@@ -433,15 +433,18 @@ update_ldevid() {
     KEY=$1
     HELP="$(${APPS[$KEY]} --help 2>&1 || /bin/true)"
     if echo $HELP | grep -q '\-\-ldevid'; then
-        if [ $((RANDOM % 100)) -lt 33 ]; then
-            CMD="${ARGS_DEVID[$KEY]}"
-            if [ -z "$CMD" ]; then             # upgrade or first run
+        RNUM=$((RANDOM % 100))
+        CMD="${ARGS_DEVID[$KEY]}"
+        if [ -z "$CMD" ]; then
+            if [ $RNUM -lt 30 ]; then        # upgrade or first run
                 CMD="--ldevid LINUX_TEST_$(printf %.5d ${KEY})_"
-            else
-                CMD="${CMD}x"                  # give it a new local ID
             fi
-            ARGS_DEVID[$KEY]="$CMD"
+        else
+            if [ $RNUM -lt 10 ]; then
+                CMD="${CMD}x"                             # give it a new local ID
+            fi
         fi
+        ARGS_DEVID[$KEY]="$CMD"
     fi
 }
 
