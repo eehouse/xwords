@@ -57,7 +57,7 @@ def init():
 def getPendingMsgs( con, typ ):
     cur = con.cursor()
     query = """SELECT %s FROM msgs 
-        WHERE devid IN (SELECT id FROM devices WHERE devtype=%d and NOT unreg) 
+        WHERE devid IN (SELECT id FROM devices WHERE devtypes[1]=%d and NOT unreg) 
         AND NOT connname IN (SELECT connname FROM games WHERE dead); """
     cur.execute(query % (",".join( g_columns ), typ))
 
@@ -104,7 +104,7 @@ def unregister( gcmid ):
 
 def asGCMIds(con, devids, typ):
     cur = con.cursor()
-    query = "SELECT devid FROM devices WHERE devtype = %d AND id IN (%s)" \
+    query = "SELECT devids[1] FROM devices WHERE devtypes[1] = %d AND id IN (%s)" \
         % (typ, ",".join([str(y) for y in devids]))
     cur.execute( query )
     return [elem[0] for elem in cur.fetchall()]
