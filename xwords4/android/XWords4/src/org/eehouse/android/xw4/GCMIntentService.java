@@ -53,6 +53,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     {
         DbgUtils.logf( "GCMIntentService.onUnregistered(%s)", regId );
         XWPrefs.clearGCMDevID( context );
+        RelayService.devIDChanged();
         notifyRelayService( false );
     }
 

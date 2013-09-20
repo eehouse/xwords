@@ -82,6 +82,7 @@ public class RelayService extends XWService
     private static HashSet<Integer> s_packetsSent = new HashSet<Integer>();
     private static int s_nextPacketID = 1;
     private static boolean s_gcmWorking = false;
+    private static boolean s_registered = false;
 
     private Thread m_fetchThread = null;
     private Thread m_UDPReadThread = null;
@@ -125,8 +126,8 @@ public class RelayService extends XWService
         if ( s_gcmWorking != confirmed ) {
             DbgUtils.logf( "RelayService.gcmConfirmed(): changing "
                            + "s_gcmWorking to %b", confirmed );
+            s_gcmWorking = confirmed;
         }
-        s_gcmWorking = confirmed;
     }
 
     public static void startService( Context context )
@@ -162,6 +163,11 @@ public class RelayService extends XWService
             DbgUtils.logf( "RelayService.sendPacket: network down" );
         }
         return result;
+    }
+
+    public static void devIDChanged()
+    {
+        s_registered = false;
     }
 
     // Exists to get incoming data onto the main thread
@@ -290,7 +296,7 @@ public class RelayService extends XWService
                         DbgUtils.logf( "not connecting: no network" );
                     } else if ( startFetchThreadIf() ) {
                         // do nothing
-                    } else {
+                    } else if ( registerWithRelayIfNot() ) {
                         requestMessages();
                     }
                     break;
@@ -555,6 +561,7 @@ public class RelayService extends XWService
                     str = getVLIString( dis );
                     DbgUtils.logf( "bad relayID \"%s\" reported", str );
                     XWPrefs.clearRelayDevID( this );
+                    s_registered = false;
                     registerWithRelay();
                     break;
                 case XWPDEV_REGRSP:
@@ -564,6 +571,7 @@ public class RelayService extends XWService
                                    maxIntervalSeconds );
                     setMaxIntervalSeconds( maxIntervalSeconds );
                     XWPrefs.setRelayDevID( this, str );
+                    s_registered = true;
                     break;
                 case XWPDEV_HAVEMSGS:
                     requestMessages();
@@ -610,18 +618,50 @@ public class RelayService extends XWService
         gotPacket( data, false );
     } // gotPacket
 
+    private boolean shouldRegister()
+    {
+        String relayID = XWPrefs.getRelayDevID( this );
+        boolean registered = null != relayID;
+        if ( registered ) {
+            registered = XWPrefs
+                .getPrefsBoolean( this, R.string.key_relay_regid_ackd, false );
+        }
+        DbgUtils.logf( "shouldRegister()=>%b", !registered );
+        return !registered;
+    }
+
+    // Register: pass both the relay-assigned relayID (or empty string
+    // if none has been assigned yet) and the deviceID IFF it's
+    // changed since we last registered (Otherwise just ID_TYPE_NONE
+    // and no string)
+    // 
+    // How do we know if we need to register?  We keep a timestamp
+    // indicating when we last got a reg-response.  When the GCM id
+    // changes, that timestamp is cleared.
     private void registerWithRelay()
     {
-        DevIDType[] typ = new DevIDType[1];
-        String devid = getDevID( typ );
+        boolean ackd = 
+            XWPrefs.getPrefsBoolean( this, R.string.key_relay_regid_ackd, 
+                                     false );
+        String relayID = XWPrefs.getRelayDevID( this );
+        DevIDType[] typa = new DevIDType[1];
+        String devid = getDevID( typa );
+        DevIDType typ = typa[0];
 
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
             DataOutputStream out = new DataOutputStream( bas );
-            out.writeByte( typ[0].ordinal() );
-            writeVLIString( out, devid );
+
+            writeVLIString( out, relayID );                 // may be empty
+            if ( ackd && DevIDType.ID_TYPE_RELAY == typ ) { // all's well
+                out.writeByte( DevIDType.ID_TYPE_NONE.ordinal() );
+            } else {
+                out.writeByte( typ.ordinal() );
+                writeVLIString( out, devid );
+            }
+
             DbgUtils.logf( "registering devID \"%s\" (type=%s)", devid, 
-                           typ[0].toString() );
+                           typ.toString() );
 
             out.writeShort( GitVersion.CLIENT_VERS_RELAY );
             writeVLIString( out, GitVersion.VERS );
@@ -632,6 +672,14 @@ public class RelayService extends XWService
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
         }
+    }
+
+    private boolean registerWithRelayIfNot()
+    {
+        if ( !s_registered && shouldRegister() ) {
+            registerWithRelay();
+        }
+        return s_registered;
     }
 
     private void requestMessagesImpl( XWRelayReg reg )
@@ -654,10 +702,10 @@ public class RelayService extends XWService
         requestMessagesImpl( XWRelayReg.XWPDEV_RQSTMSGS );
     }
 
-    private void sendKeepAlive()
-    {
-        requestMessagesImpl( XWRelayReg.XWPDEV_KEEPALIVE );
-    }
+    // private void sendKeepAlive()
+    // {
+    //     requestMessagesImpl( XWRelayReg.XWPDEV_KEEPALIVE );
+    // }
 
     private void sendMessage( long rowid, byte[] msg )
     {
@@ -1063,6 +1111,9 @@ public class RelayService extends XWService
     private static void writeVLIString( DataOutputStream os, String str )
         throws java.io.IOException
     {
+        if ( null == str ) {
+            str = "";
+        }
         int len = str.length();
         un2vli( len, os );
         os.writeBytes( str );

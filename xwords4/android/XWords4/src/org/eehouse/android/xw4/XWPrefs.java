@@ -225,7 +225,7 @@ public class XWPrefs {
     {
         int curVers = Utils.getAppVersion( context );
         setPrefsInt( context, R.string.key_gcmvers_regid, curVers );
-        clearPrefsKey( context, R.string.key_relay_regid );
+        setPrefsBoolean( context, R.string.key_relay_regid_ackd, false );
     }
 
     public static String getGCMDevID( Context context )
@@ -243,7 +243,7 @@ public class XWPrefs {
 
     public static void clearGCMDevID( Context context )
     {
-        clearRelayDevID( context );
+        setPrefsBoolean( context, R.string.key_relay_regid_ackd, false );
     }
 
     public static String getRelayDevID( Context context )
@@ -258,6 +258,7 @@ public class XWPrefs {
     public static void setRelayDevID( Context context, String idRelay )
     {
         setPrefsString( context, R.string.key_relay_regid, idRelay );
+        setPrefsBoolean( context, R.string.key_relay_regid_ackd, true );
     }
 
     public static void clearRelayDevID( Context context )
