@@ -1207,7 +1207,6 @@ DBMgr::hasNoMessages( const char* const connName, HostID hid )
     formatKey( key, connName, hid );
     MutexLock ml( &m_haveNoMessagesMutex );
     bool result = m_haveNoMessagesConnname.find(key) != m_haveNoMessagesConnname.end();
-    logf( XW_LOGINFO, "%s(key=%s)=>%d", __func__, key.c_str(), result );
     return result;
 }
 
@@ -1216,7 +1215,6 @@ DBMgr::setHasNoMessages( const char* const connName, HostID hid )
 {
     StrWPF key;
     formatKey( key, connName, hid );
-    logf( XW_LOGINFO, "%s(key=%s)", __func__, key.c_str() );
     {
         MutexLock ml( &m_haveNoMessagesMutex );
         m_haveNoMessagesConnname.insert( key );
@@ -1229,7 +1227,6 @@ DBMgr::clearHasNoMessages( const char* const connName, HostID hid )
 {
     StrWPF key;
     formatKey( key, connName, hid );
-    logf( XW_LOGINFO, "%s(key=%s)", __func__, key.c_str() );
     {
         MutexLock ml( &m_haveNoMessagesMutex );
         m_haveNoMessagesConnname.erase( key );
@@ -1241,13 +1238,11 @@ bool DBMgr::hasNoMessages( DevIDRelay devid )
 {
     MutexLock ml( &m_haveNoMessagesMutex );
     bool result = m_haveNoMessagesDevID.find(devid) != m_haveNoMessagesDevID.end();
-    logf( XW_LOGINFO, "%s(devid=%d)=>%d", __func__, devid, result );
     return result;
 }
 
 void DBMgr::setHasNoMessages( DevIDRelay devid )
 {
-    logf( XW_LOGINFO, "%s(devid=%d)", __func__, devid );
     {
         MutexLock ml( &m_haveNoMessagesMutex );
         m_haveNoMessagesDevID.insert( devid );
@@ -1257,7 +1252,6 @@ void DBMgr::setHasNoMessages( DevIDRelay devid )
 
 void DBMgr::clearHasNoMessages( DevIDRelay devid )
 {
-    logf( XW_LOGINFO, "%s(devid=%d)", __func__, devid );
     {
         MutexLock ml( &m_haveNoMessagesMutex );
         m_haveNoMessagesDevID.erase( devid );
