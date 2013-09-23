@@ -32,6 +32,7 @@ g_con = None
 g_sent = None
 g_debug = False
 g_skipSend = False               # for debugging
+g_sendAll = False
 g_columns = [ 'id', 'devid', 'connname', 'hid', 'msg64' ]
 DEVTYPE_GCM = 3                     # 3 == GCM
 LINE_LEN = 76
@@ -48,7 +49,7 @@ def init():
     if k_SENT in shelf: g_sent = shelf[k_SENT]
     else: g_sent = {}
     shelf.close();
-    if g_debug: print 'g_sent:', g_sent
+    if g_debug: print 'init(): g_sent:', g_sent
 
     return con
 
@@ -58,7 +59,7 @@ def getPendingMsgs( con, typ ):
     cur = con.cursor()
     query = """SELECT %s FROM msgs 
         WHERE devid IN (SELECT id FROM devices WHERE devtypes[1]=%d and NOT unreg) 
-        AND NOT connname IN (SELECT connname FROM games WHERE dead); """
+        AND (connname IS NULL OR NOT connname IN (SELECT connname FROM games WHERE dead));"""
     cur.execute(query % (",".join( g_columns ), typ))
 
     result = []
@@ -71,10 +72,10 @@ def getPendingMsgs( con, typ ):
     return result
 
 def addClntVers( con, rows ):
-    query = """select clntVers[%s] from games where connname = '%s';"""
+    query = """select clntVers from devices where id = %d;"""
     cur = con.cursor()
     for row in rows:
-        cur.execute( query % (row['hid'], row['connname']))
+        cur.execute( query % (row['devid']) )
         if cur.rowcount == 1: row['clntVers'] = cur.fetchone()[0]
         else: print "bad row count: ", cur.rowcount
     con.commit()
@@ -98,7 +99,7 @@ def deleteMsgs( con, msgIDs ):
 def unregister( gcmid ):
     global g_con
     print "unregister(", gcmid, ")"
-    query = "UPDATE devices SET unreg=TRUE WHERE devid = '%s' and devtype = 3" % gcmid
+    query = "UPDATE devices SET unreg=TRUE WHERE devids[1] = '%s' and devtypes[1] = 3" % gcmid
     g_con.cursor().execute( query )
     g_con.commit()
 
@@ -112,7 +113,7 @@ def asGCMIds(con, devids, typ):
 def notifyGCM( devids, typ, target ):
     success = False
     if typ == DEVTYPE_GCM:
-        if 3 <= target['clntVers'] and target['msg64']:
+        if 'clntVers' in target and 3 <= target['clntVers'] and target['msg64']:
             data = { 'msgs64': [ target['msg64'] ] }
             if target['connname'] and target['hid']:
                 data['connname'] = "%s/%d" % (target['connname'], target['hid'])
@@ -124,25 +125,30 @@ def notifyGCM( devids, typ, target ):
             }
         params = json.dumps( values )
 
-        req = urllib2.Request("https://android.googleapis.com/gcm/send", params )
-        req.add_header( 'Content-Type' , 'application/x-www-form-urlencoded;charset=UTF-8' )
-        req.add_header( 'Authorization' , 'key=' + mykey.myKey )
-        req.add_header('Content-Type', 'application/json' )
-        response = urllib2.urlopen( req ).read()
-        asJson = json.loads( response  )
-
-        if 'success' in asJson and 'failure' in asJson and len(devids) == asJson['success'] and 0 == asJson['failure']:
-            print "OK"
-            success = True
+        if g_skipSend:
+            print
+            print "not sending:", params
         else:
-            print "Errors: "
-            print response
+            req = urllib2.Request("https://android.googleapis.com/gcm/send", params )
+            req.add_header( 'Content-Type' , 'application/x-www-form-urlencoded;charset=UTF-8' )
+            req.add_header( 'Authorization' , 'key=' + mykey.myKey )
+            req.add_header('Content-Type', 'application/json' )
+            response = urllib2.urlopen( req ).read()
+            asJson = json.loads( response  )
+
+            if 'success' in asJson and 'failure' in asJson and len(devids) == asJson['success'] \
+                    and 0 == asJson['failure']:
+                print "OK; no failures"
+                success = True
+            else:
+                print "Errors: "
+                print response
     else:
         print "not sending to", len(devids), "devices because typ ==", typ
     return success
 
 def shouldSend(val):
-    return val == 1
+    return g_sendAll or val == 1
     # pow = 1
     # while pow < val:
     #     pow *= 3
