@@ -11,7 +11,7 @@ local_C_INCLUDES+= \
 local_LDLIBS += -llog
 
 ifeq ($(BUILD_TARGET),debug)
-	local_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DCOMMS_CHECKSUM
+	local_DEBUG = -DMEM_DEBUG -DDEBUG -DENABLE_LOGGING -DCOMMS_CHECKSUM -Wno-unused-but-set-variable
 endif
 local_DEFINES += \
 	$(local_DEBUG) \
