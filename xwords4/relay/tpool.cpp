@@ -127,8 +127,6 @@ XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* fro
         si.m_proc = proc;
         si.m_addr = *from;
         m_activeSockets.insert( pair<int, SockInfo>( sock, si ) );
-        logf( XW_LOGINFO, "%s(sock=%d): %d sockets active", __func__, sock,
-              m_activeSockets.size() );
     }
     interrupt_poll();
 }
