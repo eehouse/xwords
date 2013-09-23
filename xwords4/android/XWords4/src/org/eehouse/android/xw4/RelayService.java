@@ -740,7 +740,6 @@ public class RelayService extends XWService
 
     private void sendAckIf( PacketHeader header )
     {
-        DbgUtils.logf( "sendAckIf" );
         if ( 0 != header.m_packetID ) {
             ByteArrayOutputStream bas = new ByteArrayOutputStream();
             try {
