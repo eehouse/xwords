@@ -101,8 +101,8 @@ public class NetStateCache {
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo.State state = ni.getState();
-                DbgUtils.logf( "CommsBroadcastReceiver.onReceive: %s", 
-                               state.toString() );
+                DbgUtils.logf( "CommsBroadcastReceiver.onReceive: "
+                               + "new network state: %s", state.toString() );
 
                 boolean netAvail;
                 switch ( state ) {
