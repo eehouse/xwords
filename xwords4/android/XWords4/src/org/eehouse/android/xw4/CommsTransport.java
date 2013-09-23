@@ -82,129 +82,133 @@ public class CommsTransport implements TransportProcs,
         @Override
         public void run()
         {
-            m_done = false;
-            boolean failed = true;
-            try {   
-                if ( Build.PRODUCT.contains("sdk") ) {
-                    System.setProperty("java.net.preferIPv6Addresses", "false");
+            if ( !XWApp.UDP_ENABLED ) {
+                m_done = false;
+                boolean failed = true;
+                try {   
+                    if ( Build.PRODUCT.contains("sdk") ) {
+                        System.setProperty("java.net.preferIPv6Addresses", "false");
+                    }
+
+                    m_selector = Selector.open();
+
+                    failed = loop();
+
+                    closeSocket();
+                } catch ( java.io.IOException ioe ) {
+                    DbgUtils.loge( ioe );
+                } catch ( UnresolvedAddressException uae ) {
+                    DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
+                                   m_relayAddr.ip_relay_hostName, 
+                                   m_relayAddr.ip_relay_port, 
+                                   uae.toString() );
                 }
 
-                m_selector = Selector.open();
-
-                failed = loop();
-
-                closeSocket();
-            } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
-            } catch ( UnresolvedAddressException uae ) {
-                DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
-                               m_relayAddr.ip_relay_hostName, 
-                               m_relayAddr.ip_relay_port, 
-                               uae.toString() );
-            }
-
-            m_thread = null;
-            if ( failed ) {
-                m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+                m_thread = null;
+                if ( failed ) {
+                    m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+                }
             }
         }
 
         private boolean loop()
         {
             boolean failed = false;
-            outer_loop:
-            while ( !m_done ) {
-                try {
-                    synchronized( this ) {
+            if ( !XWApp.UDP_ENABLED ) {
+                outer_loop:
+                while ( !m_done ) {
+                    try {
+                        synchronized( this ) {
 
-                        // if we have data and no socket, try to connect.
-                        if ( null == m_socketChannel
-                             && 0 < m_buffersOut.size() ) {
-                            try {
-                                m_socketChannel = SocketChannel.open();
-                                m_socketChannel.configureBlocking( false );
-                                DbgUtils.logf( "connecting to %s:%d",
-                                               m_relayAddr.ip_relay_hostName, 
-                                               m_relayAddr.ip_relay_port );
-                                InetSocketAddress isa = new 
-                                    InetSocketAddress(m_relayAddr.ip_relay_hostName,
-                                                      m_relayAddr.ip_relay_port );
-                                m_socketChannel.connect( isa );
-                            } catch ( java.io.IOException ioe ) {
-                                DbgUtils.loge( ioe );
-                                failed = true;
-                                break outer_loop;
+                            // if we have data and no socket, try to connect.
+                            if ( null == m_socketChannel
+                                 && 0 < m_buffersOut.size() ) {
+                                try {
+                                    m_socketChannel = SocketChannel.open();
+                                    m_socketChannel.configureBlocking( false );
+                                    DbgUtils.logf( "connecting to %s:%d",
+                                                   m_relayAddr.ip_relay_hostName, 
+                                                   m_relayAddr.ip_relay_port );
+                                    InetSocketAddress isa = new 
+                                        InetSocketAddress(m_relayAddr.ip_relay_hostName,
+                                                          m_relayAddr.ip_relay_port );
+                                    m_socketChannel.connect( isa );
+                                } catch ( java.io.IOException ioe ) {
+                                    DbgUtils.loge( ioe );
+                                    failed = true;
+                                    break outer_loop;
+                                }
                             }
-                        }
 
-                        if ( null != m_socketChannel ) {
-                            int ops = figureOps();
-                            // DbgUtils.logf( "calling with ops=%x", ops );
-                            m_socketChannel.register( m_selector, ops );
-                        }
-                    }
-                    m_selector.select();
-                } catch ( ClosedChannelException cce ) {
-                    // we get this when relay goes down.  Need to notify!
-                    failed = true;
-                    closeSocket();
-                    DbgUtils.logf( "exiting: %s", cce.toString() );
-                    break;          // don't try again
-                } catch ( java.io.IOException ioe ) {
-                    closeSocket();
-                    DbgUtils.logf( "exiting: %s", ioe.toString() );
-                    DbgUtils.logf( ioe.toString() );
-                } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
-                    DbgUtils.loge( ncp );
-                    closeSocket();
-                    break;
-                }
-
-                Iterator<SelectionKey> iter = m_selector.selectedKeys().iterator();
-                while ( iter.hasNext() ) {
-                    SelectionKey key = iter.next();
-                    SocketChannel channel = (SocketChannel)key.channel();
-                    iter.remove();
-                    try { 
-                        if (key.isValid() && key.isConnectable()) {
-                            if ( !channel.finishConnect() ) {
-                                key.cancel(); 
+                            if ( null != m_socketChannel ) {
+                                int ops = figureOps();
+                                // DbgUtils.logf( "calling with ops=%x", ops );
+                                m_socketChannel.register( m_selector, ops );
                             }
                         }
-                        if (key.isValid() && key.isReadable()) {
-                            m_bytesIn.clear(); // will wipe any pending data!
-                            // DbgUtils.logf( "socket is readable; buffer has space for "
-                            //             + m_bytesIn.remaining() );
-                            int nRead = channel.read( m_bytesIn );
-                            if ( nRead == -1 ) {
-                                channel.close();
-                            } else {
-                                addIncoming();
-                            }
-                            ConnStatusHandler.
-                                updateStatusIn( m_context, null,
-                                                CommsConnType.COMMS_CONN_RELAY, 
-                                                0 <= nRead );
-                        }
-                        if (key.isValid() && key.isWritable()) {
-                            getOut();
-                            if ( null != m_bytesOut ) {
-                                int nWritten = channel.write( m_bytesOut );
-                                ConnStatusHandler.
-                                    updateStatusOut( m_context, null,
-                                                     CommsConnType.COMMS_CONN_RELAY,
-                                                     0 < nWritten );
-                            }
-                        }
-                    } catch ( java.io.IOException ioe ) {
-                        DbgUtils.logf( "%s: cancelling key", ioe.toString() );
-                        key.cancel(); 
+                        m_selector.select();
+                    } catch ( ClosedChannelException cce ) {
+                        // we get this when relay goes down.  Need to notify!
                         failed = true;
-                        break outer_loop;
-                    } catch ( java.nio.channels.
-                              NoConnectionPendingException ncp ) {
+                        closeSocket();
+                        DbgUtils.logf( "exiting: %s", cce.toString() );
+                        break;          // don't try again
+                    } catch ( java.io.IOException ioe ) {
+                        closeSocket();
+                        DbgUtils.logf( "exiting: %s", ioe.toString() );
+                        DbgUtils.logf( ioe.toString() );
+                    } catch ( java.nio.channels.NoConnectionPendingException ncp ) {
                         DbgUtils.loge( ncp );
-                        break outer_loop;
+                        closeSocket();
+                        break;
+                    }
+
+                    Iterator<SelectionKey> iter = m_selector.selectedKeys().iterator();
+                    while ( iter.hasNext() ) {
+                        SelectionKey key = iter.next();
+                        SocketChannel channel = (SocketChannel)key.channel();
+                        iter.remove();
+                        try { 
+                            if (key.isValid() && key.isConnectable()) {
+                                if ( !channel.finishConnect() ) {
+                                    key.cancel(); 
+                                }
+                            }
+                            if (key.isValid() && key.isReadable()) {
+                                m_bytesIn.clear(); // will wipe any pending data!
+                                // DbgUtils.logf( "socket is readable; buffer has space for "
+                                //             + m_bytesIn.remaining() );
+                                int nRead = channel.read( m_bytesIn );
+                                if ( nRead == -1 ) {
+                                    channel.close();
+                                } else {
+                                    addIncoming();
+                                }
+                                ConnStatusHandler.
+                                    updateStatusIn( m_context, null,
+                                                    CommsConnType.COMMS_CONN_RELAY, 
+                                                    0 <= nRead );
+                            }
+                            if (key.isValid() && key.isWritable()) {
+                                getOut();
+                                if ( null != m_bytesOut ) {
+                                    int nWritten = channel.write( m_bytesOut );
+                                    ConnStatusHandler.
+                                        updateStatusOut( m_context, null,
+                                                         CommsConnType.COMMS_CONN_RELAY,
+                                                         0 < nWritten );
+                                }
+                            }
+                        } catch ( java.io.IOException ioe ) {
+                            DbgUtils.logf( "%s: cancelling key", ioe.toString() );
+                            key.cancel(); 
+                            failed = true;
+                            break outer_loop;
+                        } catch ( java.nio.channels.
+                                  NoConnectionPendingException ncp ) {
+                            DbgUtils.loge( ncp );
+                            break outer_loop;
+                        }
                     }
                 }
             }
@@ -254,22 +258,24 @@ public class CommsTransport implements TransportProcs,
 
     private synchronized void putOut( final byte[] buf )
     {
-        int len = buf.length;
-        ByteBuffer netbuf = ByteBuffer.allocate( len + 2 );
-        netbuf.putShort( (short)len );
-        netbuf.put( buf );
-        m_buffersOut.add( netbuf );
-        Assert.assertEquals( netbuf.remaining(), 0 );
+        if ( !XWApp.UDP_ENABLED ) {
+            int len = buf.length;
+            ByteBuffer netbuf = ByteBuffer.allocate( len + 2 );
+            netbuf.putShort( (short)len );
+            netbuf.put( buf );
+            m_buffersOut.add( netbuf );
+            Assert.assertEquals( netbuf.remaining(), 0 );
 
-        if ( null != m_selector ) {
-            // tell it it's got some writing to do
-            m_selector.wakeup(); // getting NPE inside here -- see below
+            if ( null != m_selector ) {
+                // tell it it's got some writing to do
+                m_selector.wakeup(); // getting NPE inside here -- see below
+            }
         }
     }
 
     private synchronized void closeSocket()
     {
-        if ( null != m_socketChannel ) {
+        if ( !XWApp.UDP_ENABLED && null != m_socketChannel ) {
             try {
                 m_socketChannel.close();
             } catch ( Exception e ) {
@@ -309,33 +315,35 @@ public class CommsTransport implements TransportProcs,
 
     private void addIncoming( )
     {
-        m_bytesIn.flip();
+        if ( !XWApp.UDP_ENABLED ) {
+            m_bytesIn.flip();
         
-        for ( ; ; ) {
-            int len = m_bytesIn.remaining();
-            if ( len <= 0 ) {
-                break;
-            }
+            for ( ; ; ) {
+                int len = m_bytesIn.remaining();
+                if ( len <= 0 ) {
+                    break;
+                }
 
-            if ( null == m_packetIn ) { // we're not mid-packet
-                Assert.assertTrue( len > 1 ); // tell me if I see this case
-                if ( len == 1 ) {       // half a length byte...
-                    break;              // can I leave it in the buffer?
-                } else {                
-                    m_packetIn = new byte[m_bytesIn.getShort()];
-                    m_haveLen = 0;
-                }
-            } else {                    // we're mid-packet
-                int wantLen = m_packetIn.length - m_haveLen;
-                if ( wantLen > len ) {
-                    wantLen = len;
-                }
-                m_bytesIn.get( m_packetIn, m_haveLen, wantLen );
-                m_haveLen += wantLen;
-                if ( m_haveLen == m_packetIn.length ) {
-                    // send completed packet
-                    m_jniThread.handle( JNICmd.CMD_RECEIVE, m_packetIn, null );
-                    m_packetIn = null;
+                if ( null == m_packetIn ) { // we're not mid-packet
+                    Assert.assertTrue( len > 1 ); // tell me if I see this case
+                    if ( len == 1 ) {       // half a length byte...
+                        break;              // can I leave it in the buffer?
+                    } else {                
+                        m_packetIn = new byte[m_bytesIn.getShort()];
+                        m_haveLen = 0;
+                    }
+                } else {                    // we're mid-packet
+                    int wantLen = m_packetIn.length - m_haveLen;
+                    if ( wantLen > len ) {
+                        wantLen = len;
+                    }
+                    m_bytesIn.get( m_packetIn, m_haveLen, wantLen );
+                    m_haveLen += wantLen;
+                    if ( m_haveLen == m_packetIn.length ) {
+                        // send completed packet
+                        m_jniThread.handle( JNICmd.CMD_RECEIVE, m_packetIn, null );
+                        m_packetIn = null;
+                    }
                 }
             }
         }
@@ -343,17 +351,19 @@ public class CommsTransport implements TransportProcs,
 
     private void waitToStopImpl()
     {
-        m_done = true;          // this is in a race!
-        if ( null != m_selector ) {
-            m_selector.wakeup(); // getting NPE inside here -- see below
-        }
-        if ( null != m_thread ) {     // synchronized this?  Or use Thread method
-            try {
-                m_thread.join(100);   // wait up to 1/10 second
-            } catch ( java.lang.InterruptedException ie ) {
-                DbgUtils.loge( ie );
+        if ( !XWApp.UDP_ENABLED ) {
+            m_done = true;          // this is in a race!
+            if ( null != m_selector ) {
+                m_selector.wakeup(); // getting NPE inside here -- see below
             }
-            m_thread = null;
+            if ( null != m_thread ) {     // synchronized this?  Or use Thread method
+                try {
+                    m_thread.join(100);   // wait up to 1/10 second
+                } catch ( java.lang.InterruptedException ie ) {
+                    DbgUtils.loge( ie );
+                }
+                m_thread = null;
+            }
         }
     }
 
@@ -373,7 +383,7 @@ public class CommsTransport implements TransportProcs,
             addr = faddr;
         }
 
-        if ( null == m_relayAddr ) {
+        if ( !XWApp.UDP_ENABLED && null == m_relayAddr ) {
             m_relayAddr = new CommsAddrRec( addr );
         }
 
