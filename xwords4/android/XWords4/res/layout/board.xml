@@ -24,6 +24,7 @@
                 android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:background="#FF000000"
                 >
     <Button android:id="@+id/exchange_commit"
             android:text="@string/button_trade_commit" 
