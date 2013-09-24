@@ -74,7 +74,7 @@ id SERIAL
 ,msg BYTEA
 ,msg64 TEXT
 ,msglen INTEGER
-,UNIQUE ( connName, hid, msg )
+,oneOnly UNIQUE ( connName, hid, msg64, stime )
 );
 EOF
 
