@@ -25,12 +25,13 @@
 #include <string>
 #include <set>
 
+#include <libpq-fe.h>
+
 #include "strwpf.h"
 #include "xwrelay.h"
 #include "xwrelay_priv.h"
 #include "devid.h"
 #include "strwpf.h"
-#include <libpq-fe.h>
 
 using namespace std;
 
