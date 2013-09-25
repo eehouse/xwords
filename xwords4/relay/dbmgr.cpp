@@ -927,7 +927,7 @@ DBMgr::CountStoredMessages( const char* const connName, int hid )
     StrWPF test;
     test.printf( "connname = '%s'", connName );
 #ifdef HAVE_STIME
-    test.printf( " AND stime IS NULL" );
+    test.printf( " AND stime = 'epoch'" );
 #endif
     if ( hid != -1 ) {
         test.printf( " AND hid = %d", hid );
@@ -948,7 +948,7 @@ DBMgr::CountStoredMessages( DevIDRelay relayID )
     StrWPF test;
     test.printf( "devid = %d", relayID );
 #ifdef HAVE_STIME
-    test.printf( "AND stime IS NULL" );
+    test.printf( "AND stime = 'epoch'" );
 #endif
 
     return getCountWhere( MSGS_TABLE, test );
@@ -1069,7 +1069,7 @@ DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs,
     query.printf( "SELECT id, msg64, msg, msglen, token, connname FROM "
                   MSGS_TABLE " WHERE %s "
 #ifdef HAVE_STIME 
-                   " AND stime IS NULL "
+                   " AND stime = 'epoch' "
 #endif
                    " AND (connname IN (SELECT connname FROM " GAMES_TABLE
                    " WHERE NOT " GAMES_TABLE ".dead)", test.c_str() );
