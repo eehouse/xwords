@@ -998,15 +998,23 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     size_t newLen;
     const char* fmt = "INSERT INTO " MSGS_TABLE " "
         "(connname, hid, devid, token, %s, msglen) "
-        "VALUES( '%s', %d, %d, "
+        "SELECT '%s', %d, %d, "
         "(SELECT tokens[%d] from " GAMES_TABLE " where connname='%s'), "
-        "%s'%s', %d)";
+        "%s'%s', %d "
+        ;
     
     StrWPF query;
     if ( m_useB64 ) {
         gchar* b64 = g_base64_encode( buf, len );
         query.printf( fmt, "msg64", connName, hid, devID, hid, connName, 
                       "", b64, len );
+        
+        query.printf( " WHERE NOT EXISTS (SELECT 1 FROM " MSGS_TABLE
+                      " WHERE connname='%s' AND hid=%d AND msg64='%s'"
+#ifdef HAVE_STIME
+                      " AND stime='epoch'" 
+#endif
+                      " );", connName, hid, b64 );
         g_free( b64 );
     } else {
         uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 

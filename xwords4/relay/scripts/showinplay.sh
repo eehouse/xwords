@@ -39,8 +39,9 @@ echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,
 
 # Messages
 echo "SELECT connname, hid, devid, count(*), sum(msglen) "\
-     "FROM msgs where connname in (SELECT connname from games where not games.dead group by connname) "\
-     "OR devid IN (SELECT unnest(devids) from games where not games.dead) "\
+     "FROM msgs WHERE stime = 'epoch' "\
+     "AND (connname IN (SELECT connname from games where not games.dead group by connname) "\
+     "OR devid IN (SELECT unnest(devids) from games where not games.dead)) "\
      "GROUP BY connname, hid, devid ORDER BY connname LIMIT $LIMIT;" \
     | psql xwgames
 

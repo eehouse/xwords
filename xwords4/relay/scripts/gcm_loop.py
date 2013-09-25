@@ -28,6 +28,7 @@ import mykey
 
 k_shelfFile = path.splitext( path.basename( sys.argv[0]) )[0] + ".shelf"
 k_SENT = 'SENT'
+g_useStime = True
 g_con = None
 g_sent = None
 g_debug = False
@@ -57,8 +58,10 @@ def init():
 
 def getPendingMsgs( con, typ ):
     cur = con.cursor()
-    query = """SELECT %s FROM msgs 
-        WHERE devid IN (SELECT id FROM devices WHERE devtypes[1]=%d and NOT unreg) 
+    query = "SELECT %s FROM msgs WHERE "
+    if g_useStime:
+        query += " stime = 'epoch' AND "
+    query += """ devid IN (SELECT id FROM devices WHERE devtypes[1]=%d and NOT unreg) 
         AND (connname IS NULL OR NOT connname IN (SELECT connname FROM games WHERE dead));"""
     cur.execute(query % (",".join( g_columns ), typ))
 
@@ -83,7 +86,10 @@ def addClntVers( con, rows ):
 
 def deleteMsgs( con, msgIDs ):
     if 0 < len( msgIDs ):
-        query = "DELETE from msgs where id in (%s);" % ",".join(msgIDs)
+        if g_useStime:
+            query = "UPDATE msgs SET stime = 'now' where id in (%s);" % ",".join(msgIDs)
+        else:
+            query = "DELETE from msgs where id in (%s);" % ",".join(msgIDs)
         try:
             cur = con.cursor()
             cur.execute(query)
