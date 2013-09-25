@@ -58,7 +58,7 @@
 
     <target name="-pre-build">
         <property name="CHAT_ENABLED" value="true" />
-        <exec dir="." executable="../scripts/ndkbuild.sh" >
+        <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true">
             <arg value="BUILD_TARGET=${build.target}" />
             <arg value="-j3"/>
             <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
