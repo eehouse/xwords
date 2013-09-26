@@ -1504,7 +1504,7 @@ registerDevice( const string& relayIDStr, const DevID* devID,
     if ( DBMgr::DEVID_NONE == relayID ) { // new device
         relayID = dbMgr->RegisterDevice( devID, clientVers, devDesc.c_str(), 
                                          model.c_str(), osVers.c_str() );
-    } else if ( ID_TYPE_NONE != devID->m_devIDType ) { // re-registering
+    } else if ( ID_TYPE_RELAY < devID->m_devIDType ) { // re-registering
         dbMgr->ReregisterDevice( relayID, devID, devDesc.c_str(), clientVers, 
                                  model.c_str(), osVers.c_str() );
         checkMsgs = true;
