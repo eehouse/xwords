@@ -250,6 +250,8 @@ class CookieRef {
     void setAckTimer( HostID hid );
     void cancelAckTimer( HostID hid );
 
+    static void storeNoAck( bool acked, uint32_t packetID, void* data );
+
     void forward_or_store( const CRefEvent* evt );
     void send_denied( const CRefEvent* evt, XWREASON why );
     void send_trytell( const CRefEvent* evt );

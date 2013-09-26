@@ -1188,6 +1188,25 @@ CookieRef::sendAnyStored( const CRefEvent* evt )
     }
 }
 
+typedef struct _StoreData {
+    string connName;
+    HostID dest;
+    uint8_t* buf;
+    int buflen;
+} StoreData;
+
+void
+CookieRef::storeNoAck( bool acked, uint32_t packetID, void* data )
+{
+    StoreData* sdata = (StoreData*)data;
+    if ( !acked ) {
+        DBMgr::Get()->StoreMessage( sdata->connName.c_str(), sdata->dest, 
+                                    sdata->buf, sdata->buflen );
+    }
+    free( sdata->buf );
+    free( sdata );
+}
+
 void
 CookieRef::forward_or_store( const CRefEvent* evt )
 {
@@ -1214,9 +1233,19 @@ CookieRef::forward_or_store( const CRefEvent* evt )
             usleep( m_delayMicros );
         }
 
+        uint32_t packetID = 0;
         if ( (NULL == destAddr)
-             || !send_with_length( destAddr, dest, buf, buflen, true ) ) {
+             || !send_with_length( destAddr, dest, buf, buflen, true, 
+                                   &packetID ) ) {
             store_message( dest, buf, buflen );
+        } else if ( 0 != packetID ) { // sent via UDP
+            StoreData* data = new StoreData;
+            data->connName = m_connName;
+            data->dest = dest;
+            data->buf = (uint8_t*)malloc( buflen );
+            memcpy( data->buf, buf, buflen );
+            data->buflen = buflen;
+            UDPAckTrack::setOnAck( storeNoAck, packetID, data );
         }
 
         // If recipient GAME isn't connected, see if owner device is and can
