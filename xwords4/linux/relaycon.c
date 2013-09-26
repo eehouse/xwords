@@ -91,6 +91,7 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID,
     indx += writeHeader( storage, tmpbuf, XWPDEV_REG );
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, rDevID );
 
+    assert( ID_TYPE_RELAY != typ );
     tmpbuf[indx++] = typ;
     if ( ID_TYPE_NONE != typ ) {
         indx += writeDevID( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
