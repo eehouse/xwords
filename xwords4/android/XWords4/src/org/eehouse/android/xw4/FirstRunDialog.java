@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,7 +34,7 @@ import java.io.Reader;
  */
 
 public class FirstRunDialog {
-    public static void show( Context context )
+    public static void show( final Context context )
     {
         String page = null;
         InputStream inputStream = null;
@@ -71,6 +72,19 @@ public class FirstRunDialog {
         // This won't support e.g mailto refs.  Probably want to
         // launch the browser with an intent eventually.
         WebView view = new WebView( context );
+        view.setWebViewClient( new WebViewClient() {
+                @Override
+                public boolean shouldOverrideUrlLoading( WebView view, 
+                                                         String url ) {
+                    boolean result = false;
+                    if ( url.startsWith("mailto:") ){
+                        Utils.emailAuthor( context );
+                        result = true;
+                    }
+                    return result;
+                }
+            });
+
         view.loadData( page, "text/html", "utf-8" );
 
         AlertDialog dialog = new AlertDialog.Builder( context )
