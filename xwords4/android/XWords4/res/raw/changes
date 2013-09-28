@@ -5,17 +5,29 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 67 release</b>
+<b>Crosswords 4.4 beta 68 release</b>
+
+<p>This release features a major upgrade to how the app communicates
+  with the relay, in essence switching from each game communicating
+  individually (and only when open) to the app communicating on behalf
+  of all games.  You should notice only that moves are transmitted
+  more reliably.  But this being new code you may also notice bugs.
+  If you don't tell me about them (see the &quot;Email author&quot;
+  menuitem) they will not get fixed.
+</p>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Quick fix: crash (in setBackgroundColor) on some devices</li>
+    <li>Rewrite of networking code</li>
+    <li>Turn chat back on</li>
+    <li>Progress bar added for download of wordlists and upgrades</li>
+    <li>Fix Exchange tiles buttons</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>Put chat feature back</li>
-  <li>Improve communication with relay, part 2.  (Really, I'm almost done!)</li>
+  <li>Take advantage of newer Android UI features, e.g. Action Bar</li>
+  <li>Offer "Rematch" when game's over</li>
 </ul>
 
 <p>(The full changelog 
