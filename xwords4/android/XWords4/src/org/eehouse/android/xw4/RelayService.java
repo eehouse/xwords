@@ -62,7 +62,6 @@ public class RelayService extends XWService
 
     private static final String CMD_STR = "CMD";
 
-    // These should be enums
     private static enum MsgCmds { INVALID
             , PROCESS_GAME_MSGS
             , PROCESS_DEV_MSGS

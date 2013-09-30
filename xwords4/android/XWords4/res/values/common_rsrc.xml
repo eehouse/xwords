@@ -132,9 +132,6 @@
   <string name="name_dict_fmt">%1$s/%2$s</string>
   <string name="gamel_menu_storedb">Write DB to SD card</string>
   <string name="gamel_menu_loaddb">Load DB from SD card</string>
-  <string name="udp_relay">New/Experimental relay connection</string>
-  <string name="drop_gcm_title">Ignore GCM notices</string>
-  <string name="drop_gcm_summary">(for testing relay proxy)</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
