@@ -215,6 +215,7 @@ public class XwJNI {
     public static native String model_writeGameHistory( int gamePtr, 
                                                         boolean gameOver );
     public static native int model_getNMoves( int gamePtr );
+    public static native int model_getNumTilesInTray( int gamePtr, int player );
     public static native String model_getPlayersLastScore( int gamePtr, 
                                                            int player );
     // Server

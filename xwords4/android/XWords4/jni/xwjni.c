@@ -935,6 +935,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getNMoves
     return result;
 }
 
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_model_1getNumTilesInTray
+( JNIEnv* env, jclass C, jint gamePtr, jint player )
+{
+    jint result;
+    XWJNI_START();
+    XP_ASSERT( !!state->game.model );
+    result = model_getNumTilesInTray( state->game.model, player );
+    XWJNI_END();
+    return result;
+}
+
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
 (JNIEnv* env, jclass C, jint gamePtr, jint player )
