@@ -40,6 +40,7 @@ public class XWApp extends Application {
     public static final boolean UDP_ENABLED = true;
     
     public static final String SMS_PUBLIC_HEADER = "-XW4";
+    public static final int MAX_TRAY_TILES = 7; // comtypes.h
 
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;

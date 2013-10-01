@@ -772,8 +772,15 @@ public class BoardActivity extends XWActivity
         int id = item.getItemId();
         switch ( id ) {
         case R.id.board_menu_done:
-            showNotAgainDlgThen( R.string.not_again_done, 
-                                 R.string.key_notagain_done, COMMIT_ACTION );
+            int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr, 
+                                                  m_view.getCurPlayer() );
+            DbgUtils.logf( "getNumTilesInTray=>%d", nTiles );
+            if ( XWApp.MAX_TRAY_TILES > nTiles ) {
+                showNotAgainDlgThen( R.string.not_again_done, 
+                                     R.string.key_notagain_done, COMMIT_ACTION );
+            } else {
+                dlgButtonClicked( COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE );
+            }
             break;
 
         case R.id.board_menu_trade_commit:
