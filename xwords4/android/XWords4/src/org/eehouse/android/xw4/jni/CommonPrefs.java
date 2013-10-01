@@ -239,7 +239,7 @@ public class CommonPrefs extends XWPrefs {
 
     public static boolean getHideTitleBar( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_hide_title, true );
+        return getPrefsBoolean( context, R.string.key_hide_title, false );
     }
 
     public static boolean getSoundNotify( Context context )
