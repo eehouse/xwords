@@ -51,6 +51,7 @@
 #include <syslog.h>
 #include <sys/wait.h>
 #include <sys/prctl.h>
+#include <ifaddrs.h>
 #include <glib.h>
 
 #if defined(__FreeBSD__)
@@ -1876,6 +1877,40 @@ maint_str_loop( int udpsock, const char* str )
     } // for
 } // maint_str_loop
 
+static uint32_t
+getIPAddr( void )
+{
+    uint32_t result = INADDR_ANY;
+    char iface[16] = {0};
+    if ( RelayConfigs::GetConfigs()->GetValueFor( "UDP_IFACE", iface, 
+                                                  sizeof(iface) ) ) {
+        struct ifaddrs* ifa;
+        if ( 0 != getifaddrs( &ifa ) ) {
+            assert(0);
+        }
+        struct ifaddrs* next;
+        for ( next = ifa; !!next; next = next->ifa_next ) {
+            if ( 0 != strcmp( iface, next->ifa_name ) ) {
+                continue;
+            }
+            if ( !next->ifa_addr ) {
+                continue;
+            }
+            int family = next->ifa_addr->sa_family;
+            if ( AF_INET != family ) {
+                continue;
+            }
+            struct sockaddr_in* sin = (struct sockaddr_in*)next->ifa_addr;
+            result = sin->sin_addr.s_addr;
+            break;
+        }
+
+        freeifaddrs( ifa );
+    }
+    logf( XW_LOGINFO, "%s(iface=%s)=>%x", __func__, iface, result );
+    return result;
+}
+
 int
 main( int argc, char** argv )
 {
@@ -2070,7 +2105,7 @@ main( int argc, char** argv )
         struct sockaddr_in saddr;
         g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
         saddr.sin_family = PF_INET;
-        saddr.sin_addr.s_addr = htonl(INADDR_ANY);
+        saddr.sin_addr.s_addr = getIPAddr();
         saddr.sin_port = htons(udpport);
         int err = bind( g_udpsock, (struct sockaddr*)&saddr, sizeof(saddr) );
         if ( 0 == err ) {

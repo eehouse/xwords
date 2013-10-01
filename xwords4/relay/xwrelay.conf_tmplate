@@ -28,6 +28,9 @@ DEVICE_PORTS=10998
 
 # Port for per-device UDP interface (experimental)
 UDP_PORT=10997
+# interface to listen on -- may get dup packets if not specified
+UDP_IFACE=eth0
+
 # How long after we've read from an address before we assume it's
 # recycled.  Also sent to clients as a suggested ping interval
 UDP_RECYLE_INTERVAL=60
