@@ -10,7 +10,7 @@ SHOW_SENT=""
 LIMIT=10000
 
 usage() {
-    echo "usage: $0 [--connname <n>] [--room <room>]* [--devid <id>] [--show-sent]"
+    echo "usage: $0 [--connname <n>] [--room <room>]* [--devid <id>] [--limit] [--show-sent]"
     exit 1
 }
 
@@ -32,6 +32,10 @@ while [ $# -gt 0 ]; do
 	    fi
             shift
             ;;
+	--limit)
+	    LIMIT=$2
+	    shift
+	    ;;
 	--show-sent)
 	    SHOW_SENT=1
 	    ;;
@@ -55,8 +59,8 @@ fi
 echo "relay pids: $(pidof xwrelay)"
 
 # Games
-echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,nperdevice as nPerDev,nsents as snts, seeds,devids,tokens,ack, mtimes "\
-     "FROM games $QUERY ORDER BY NOT dead, connname LIMIT $LIMIT;" \
+echo "SELECT connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,nperdevice as nPerDev,nsents as snts, seeds,devids,tokens,ack, mtimes "\
+     "FROM games $QUERY ORDER BY ctime desc, NOT dead LIMIT $LIMIT;" \
     | psql xwgames
 
 # Messages
@@ -70,7 +74,7 @@ CMD="$CMD ORDER BY ctime, connname LIMIT $LIMIT;"
 echo "$CMD" | psql xwgames
 
 # Devices
-LINE="SELECT id, model, osvers, array_length(mtimes, 1) as mcnt, mtimes[1] as mtime, array_length(devTypes, 1) as dcnt, devTypes FROM devices "
-LINE="$LINE WHERE id IN (SELECT unnest(devids) from games $QUERY);"
+LINE="SELECT id, ctime, model, osvers, array_length(mtimes, 1) as mcnt, mtimes[1] as mtime, array_length(devTypes, 1) as dcnt, devTypes FROM devices "
+LINE="$LINE WHERE id IN (SELECT unnest(devids) from games $QUERY LIMIT $LIMIT) ORDER BY id;"
 echo "$LINE" | psql xwgames
 
