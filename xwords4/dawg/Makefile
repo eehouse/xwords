@@ -25,7 +25,9 @@ byodfiles.tar:
 	rm -f $@ langinfo
 	tar cvf $@ ./dict2dawg.cpp ./par.pl ./xloc.pl ./xloc.pm
 	for dir in $$(ls .); do \
-		if [ -f $$dir/info.txt ] && [ -f $$dir/Makefile ]; then \
+		if [ $$dir = "Hëx" ]; then \
+			:; \
+		elif [ -f $$dir/info.txt ] && [ -f $$dir/Makefile ]; then \
 			mkdir -p langinfo/$$dir; \
 			(cd $$dir; make TARGET_TYPE=PALM table.bin values.bin palmvalues.bin); \
 			(cd $$dir; make TARGET_TYPE=FRANK frankspecials.bin); \
