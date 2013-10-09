@@ -163,7 +163,7 @@ sub TileFace($) {
 
     my $str = ${$tileR}[2];
 
-    if ( $str =~ /\'(.)\'/ ) {
+    if ( $str =~ /\'(.(\|.)*)\'/ ) {
         return $1;
     } elsif ( $str =~ /\"(.+)\"/ ) {
         return $1;
