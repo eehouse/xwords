@@ -118,7 +118,7 @@ summarize( CommonGlobals* cGlobals )
     XP_S16 nMoves = model_getNMoves( cGlobals->game.model );
     XP_Bool gameOver = server_getGameIsOver( cGlobals->game.server );
     XP_S16 turn = server_getCurrentTurn( cGlobals->game.server );
-    XP_U16 seed = comms_getChannelSeed( cGlobals->game.comms );
+    XP_U16 seed = 0;
     XP_S16 nMissing = 0;
     CommsAddrRec addr = {0};
     gchar* room = "";
@@ -129,6 +129,7 @@ summarize( CommonGlobals* cGlobals )
         if ( COMMS_CONN_RELAY == addr.conType ) {
             room = addr.u.ip_relay.invite;
         }
+        seed = comms_getChannelSeed( cGlobals->game.comms );
     }
 
     const char* fmt = "UPDATE games "
