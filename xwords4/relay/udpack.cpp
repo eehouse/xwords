@@ -149,8 +149,8 @@ UDPAckTrack::printAcksImpl( StrWPF& out )
     MutexLock ml( &m_mutex );
     map<uint32_t, AckRecord>::const_iterator iter;
     for ( iter = m_pendings.begin(); m_pendings.end() != iter; ++iter ) {
-        out.printf( "id: % 8d; stl: %04d\n", iter->first, 
-                    (iter->second.m_createTime + limit) - now );
+        out.catf( "id: % 8d; stl: %04d\n", iter->first, 
+                  (iter->second.m_createTime + limit) - now );
     }
 }
 
@@ -215,11 +215,11 @@ UDPAckTrack::threadProc()
             StrWPF leaked;
             vector<uint32_t>::const_iterator iter = older.begin();
             for ( ; ; ) {
-                leaked.printf( "%d", *iter );
+                leaked.catf( "%d", *iter );
                 if ( ++iter == older.end() ) {
                     break;
                 }
-                leaked.printf( ", " );
+                leaked.catf( ", " );
             }
             logf( XW_LOGERROR, "%s: these packets leaked (were not ack'd "
                   "within %d seconds): %s", __func__, 

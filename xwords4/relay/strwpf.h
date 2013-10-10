@@ -24,7 +24,7 @@
 
 class StrWPF : public std::string  {
  public:
-    void printf( const char* fmt, ... );
+    void catf( const char* fmt, ... );
 };
 
 #endif

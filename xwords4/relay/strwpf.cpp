@@ -28,7 +28,7 @@
  */
 
 void 
-StrWPF::printf( const char* fmt, ... )
+StrWPF::catf( const char* fmt, ... )
 {
     const int origsiz = size();
     int addsiz = 100;

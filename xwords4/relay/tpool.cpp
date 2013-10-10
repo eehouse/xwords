@@ -496,7 +496,7 @@ XWThreadPool::print_in_use( void )
 
     for ( iter = m_sockets_in_use.begin(); 
           iter != m_sockets_in_use.end(); ++iter ) {
-        str.printf( "%d ", *iter );
+        str.catf( "%d ", *iter );
     }
     if ( 0 < str.size() ) {
         logf( XW_LOGINFO, "Sockets in use: %s", str.c_str() );

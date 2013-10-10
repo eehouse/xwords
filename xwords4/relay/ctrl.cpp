@@ -581,7 +581,7 @@ cmd_acks( int socket, const char* cmd, int argc, gchar** argv )
         };
         StrWPF help;
         for ( size_t ii = 0; ii < VSIZE(strs); ++ii ) {
-            help.printf( strs[ii], cmd );
+            help.catf( strs[ii], cmd );
         }
         send( socket, help.c_str(), help.size(), 0 );
     }
@@ -630,7 +630,7 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
                     }
                 } else {
                     int deleted = DevMgr::Get()->forgetDevices( devids );
-                    result.printf( "Deleted %d devices\n", deleted );
+                    result.catf( "Deleted %d devices\n", deleted );
                 }
             }
         } else if ( 0 == strcmp( "ping", arg1 ) ) {
@@ -655,10 +655,10 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
                 if ( 0 != devid ) {
                     if ( post_message( devid, unesc, onAckProc, 
                                        (void*)socket ) ) {
-                        result.printf( "posted message: %s\n", unesc );
+                        result.catf( "posted message: %s\n", unesc );
                     } else {
-                        result.printf( "unable to post; does "
-                                       "dev %d exist\n", devid );
+                        result.catf( "unable to post; does dev %d exist\n",
+                                     devid );
                     }
                 }
             }
@@ -684,7 +684,7 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
 
         StrWPF help;
         for ( size_t ii = 0; ii < VSIZE(strs); ++ii ) {
-            help.printf( strs[ii], cmd );
+            help.catf( strs[ii], cmd );
         }
         send( socket, help.c_str(), help.size(), 0 );
     }

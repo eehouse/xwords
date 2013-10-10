@@ -177,8 +177,8 @@ DevMgr::printDevices( StrWPF& str, const vector<DevIDRelay>& devids )
         uint32_t age = *keysIter;
         DevIDRelay devid = agedDevs.find( age )->second;
         age = now - age;
-        str.printf( "%.3d: devid: % 10d; age: %.3d seconds\n", ++row, 
-                    devid, age );
+        str.catf( "%.3d: devid: % 10d; age: %.3d seconds\n", ++row, 
+                  devid, age );
     }
 }
 

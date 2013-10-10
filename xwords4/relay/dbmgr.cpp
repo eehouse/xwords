@@ -142,7 +142,7 @@ DBMgr::FindGameFor( const char* connName, char* cookieBuf, int bufLen,
         "AND %d = seeds[%d] AND 'A' = ack[%d] "
         ;
     StrWPF query;
-    query.printf( fmt, connName, nPlayersS, seed, hid, hid );
+    query.catf( fmt, connName, nPlayersS, seed, hid, hid );
     logf( XW_LOGINFO, "query: %s", query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -171,7 +171,7 @@ DBMgr::FindGame( const char* connName, char* cookieBuf, int bufLen,
         // " LIMIT 1"
         ;
     StrWPF query;
-    query.printf( fmt, connName );
+    query.catf( fmt, connName );
     logf( XW_LOGINFO, "query: %s", query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -199,7 +199,7 @@ DBMgr::FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken token,
     const char* fmt = 
         "SELECT connName FROM %s WHERE %d = ANY(devids) AND %d = ANY(tokens)";
     StrWPF query;
-    query.printf( fmt, GAMES_TABLE, relayID, token );
+    query.catf( fmt, GAMES_TABLE, relayID, token );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     int nTuples = PQntuples( result );
@@ -217,8 +217,8 @@ DBMgr::FindPlayer( DevIDRelay relayID, AddrInfo::ClientToken token,
             fmt = "SELECT seeds[%d] FROM %s WHERE connname = '%s' "
                 "AND devids[%d] = %d AND tokens[%d] = %d";
             StrWPF query;
-            query.printf( fmt, hid, GAMES_TABLE, name,
-                          hid, relayID, hid, token );
+            query.catf( fmt, hid, GAMES_TABLE, name,
+                        hid, relayID, hid, token );
             result = PQexec( getThreadConn(), query.c_str() );
             int nTuples2 = PQntuples( result );
             for ( int jj = 0; jj < nTuples2; ++jj ) {
@@ -245,9 +245,9 @@ DBMgr::FindRelayIDFor( const char* connName, HostID hid,
 {
     DevIDRelay devID = DEVID_NONE;
     StrWPF query;
-    query.printf( "SELECT devids[%d] FROM " GAMES_TABLE " WHERE "
-                  "connname = '%s' AND seeds[%d] = %d", hid, 
-                  connName, hid, seed );
+    query.catf( "SELECT devids[%d] FROM " GAMES_TABLE " WHERE "
+                "connname = '%s' AND seeds[%d] = %d", hid, 
+                connName, hid, seed );
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     int nTuples = PQntuples( result );
     assert( nTuples <= 1 );
@@ -354,7 +354,7 @@ DBMgr::AllDevsAckd( const char* const connName )
     const char* cmd = "SELECT ntotal=sum_array(nperdevice) AND 'A'=ALL(ack) from " GAMES_TABLE
         " WHERE connName='%s'";
     StrWPF query;
-    query.printf( cmd, connName );
+    query.catf( cmd, connName );
     logf( XW_LOGINFO, "query: %s", query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -436,10 +436,10 @@ DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host,
 {
     // First update the existing
     StrWPF query;
-    query.printf( "UPDATE " DEVICES_TABLE " SET "
-                  "devTypes = array_prepend( %d, devTypes), "
-                  "devids = array_prepend('%s', devids), ",
-                  host->m_devIDType, host->m_devIDString.c_str() );
+    query.catf( "UPDATE " DEVICES_TABLE " SET "
+                "devTypes = array_prepend( %d, devTypes), "
+                "devids = array_prepend('%s', devids), ",
+                host->m_devIDType, host->m_devIDString.c_str() );
 
     formatUpdate( query, true, desc, clientVersion, model, osVers, relayID );
     execSql( query );
@@ -454,13 +454,13 @@ DBMgr::UpdateDevice( DevIDRelay relayID, const char* const desc,
     bool exists = !check;
     if ( !exists ) {
         StrWPF test;
-        test.printf( "id = %d", relayID );
+        test.catf( "id = %d", relayID );
         exists = 1 <= getCountWhere( DEVICES_TABLE, test );
     }
 
     if ( exists ) {
         StrWPF query;
-        query.printf( "UPDATE " DEVICES_TABLE " SET " );
+        query.catf( "UPDATE " DEVICES_TABLE " SET " );
         formatUpdate( query, false, desc, clientVersion, model, osVers, relayID );
         execSql( query );
     }
@@ -479,21 +479,21 @@ DBMgr::formatUpdate( StrWPF& query, bool append, const char* const desc,
                      const char* const osVers, DevIDRelay relayID )
 {
     if ( append ) {
-        query.printf( "mtimes=array_prepend('now', mtimes)" ); // FIXME: too many
+        query.catf( "mtimes=array_prepend('now', mtimes)" ); // FIXME: too many
     } else {
-        query.printf( "mtimes[1]='now'" );
+        query.catf( "mtimes[1]='now'" );
     }
 
     if ( NULL != desc && '\0' != desc[0] ) {
-        query.printf( ", clntVers=%d, versDesc='%s'", clientVersion, desc );
+        query.catf( ", clntVers=%d, versDesc='%s'", clientVersion, desc );
     }
     if ( NULL != model && '\0' != model[0] ) {
-        query.printf( ", model='%s'", model );
+        query.catf( ", model='%s'", model );
     }
     if ( NULL != osVers && '\0' != osVers[0] ) {
-        query.printf( ", osvers='%s'", osVers );
+        query.catf( ", osvers='%s'", osVers );
     }
-    query.printf( " WHERE id = %d", relayID );
+    query.catf( " WHERE id = %d", relayID );
 }
 
 HostID
@@ -528,22 +528,22 @@ DBMgr::AddToGame( const char* connName, HostID curID, int clientVersion,
     assert( newID <= 4 );
 
     StrWPF query;
-    query.printf( "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
-                   " clntVers[%d] = %d, seeds[%d] = %d, addrs[%d] = \'%s\', ", 
-                   newID, nToAdd, newID, clientVersion, newID, seed, newID, 
-                   inet_ntoa( addr->sin_addr() ) );
+    query.catf( "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = %d,"
+                " clntVers[%d] = %d, seeds[%d] = %d, addrs[%d] = \'%s\', ", 
+                newID, nToAdd, newID, clientVersion, newID, seed, newID, 
+                inet_ntoa( addr->sin_addr() ) );
     if ( DEVID_NONE != devID ) {
-        query.printf( "devids[%d] = %d, ", newID, devID );
+        query.catf( "devids[%d] = %d, ", newID, devID );
     }
-    query.printf( " tokens[%d] = %d, mtimes[%d]='now', ack[%d]=\'%c\'"
-                  " WHERE connName = '%s'", newID, addr->clientToken(), 
-                  newID, newID, ackd?'A':'a', connName );
+    query.catf( " tokens[%d] = %d, mtimes[%d]='now', ack[%d]=\'%c\'"
+                " WHERE connName = '%s'", newID, addr->clientToken(), 
+                newID, newID, ackd?'A':'a', connName );
 
     // Update the devices table too.  Eventually the clntVers field of the
     // games table should go away.
     if ( DEVID_NONE != devID ) {
-        query.printf( "; UPDATE " DEVICES_TABLE " SET clntVers = %d"
-                       " WHERE id = %d", clientVersion, devID );
+        query.catf( "; UPDATE " DEVICES_TABLE " SET clntVers = %d"
+                    " WHERE id = %d", clientVersion, devID );
     }
 
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
@@ -558,7 +558,7 @@ DBMgr::NoteAckd( const char* const connName, HostID id )
     const char* fmt = "UPDATE " GAMES_TABLE " SET ack[%d]='A'"
         " WHERE connName = '%s'";
     StrWPF query;
-    query.printf( fmt, id, connName );
+    query.catf( fmt, id, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
@@ -570,7 +570,7 @@ DBMgr::RmDeviceByHid( const char* connName, HostID hid )
     const char* fmt = "UPDATE " GAMES_TABLE " SET nPerDevice[%d] = 0, "
         "seeds[%d] = 0, ack[%d]='-', mtimes[%d]='now' WHERE connName = '%s'";
     StrWPF query;
-    query.printf( fmt, hid, hid, hid, hid, connName );
+    query.catf( fmt, hid, hid, hid, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     return execSql( query );
@@ -585,7 +585,7 @@ DBMgr::HIDForSeed( const char* const connName, unsigned short seed )
         " WHERE connName = '%s'"
         " AND %d = ANY(seeds)";
     StrWPF query;
-    query.printf( fmt, connName, seed );
+    query.catf( fmt, connName, seed );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     if ( 1 == PQntuples( result ) ) {
@@ -632,7 +632,7 @@ DBMgr::HaveDevice( const char* connName, HostID hid, int seed )
     const char* fmt = "SELECT * from " GAMES_TABLE 
         " WHERE connName = '%s' AND seeds[%d] = %d";
     StrWPF query;
-    query.printf( fmt, connName, hid, seed );
+    query.catf( fmt, connName, hid, seed );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     found = 1 == PQntuples( result );
@@ -646,7 +646,7 @@ DBMgr::AddCID( const char* const connName, CookieID cid )
     const char* fmt = "UPDATE " GAMES_TABLE " SET cid = %d "
         " WHERE connName = '%s' AND cid IS NULL";
     StrWPF query;
-    query.printf( fmt, cid, connName );
+    query.catf( fmt, cid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     bool result = execSql( query );
@@ -660,7 +660,7 @@ DBMgr::ClearCID( const char* connName )
     const char* fmt = "UPDATE " GAMES_TABLE " SET cid = null "
         "WHERE connName = '%s'";
     StrWPF query;
-    query.printf( fmt, connName );
+    query.catf( fmt, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
@@ -674,7 +674,7 @@ DBMgr::RecordSent( const char* const connName, HostID hid, int nBytes )
         " nsents[%d] = nsents[%d] + %d, mtimes[%d] = 'now'"
         " WHERE connName = '%s'";
     StrWPF query;
-    query.printf( fmt, hid, hid, nBytes, hid, connName );
+    query.catf( fmt, hid, hid, nBytes, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
@@ -685,10 +685,10 @@ DBMgr::RecordSent( const int* msgIDs, int nMsgIDs )
 {
     if ( nMsgIDs > 0 ) {
         StrWPF query;
-        query.printf( "SELECT connname,hid,sum(msglen)"
-                      " FROM " MSGS_TABLE " WHERE id IN (" );
+        query.catf( "SELECT connname,hid,sum(msglen)"
+                    " FROM " MSGS_TABLE " WHERE id IN (" );
         for ( int ii = 0; ; ) {
-            query.printf( "%d", msgIDs[ii] );
+            query.catf( "%d", msgIDs[ii] );
             if ( ++ii == nMsgIDs ) {
                 break;
             } else {
@@ -719,7 +719,7 @@ DBMgr::RecordAddress( const char* const connName, HostID hid,
         " WHERE connName = '%s'";
     StrWPF query;
     char* ntoa = inet_ntoa( addr->sin_addr() );
-    query.printf( fmt, hid, ntoa, connName );
+    query.catf( fmt, hid, ntoa, connName );
     logf( XW_LOGVERBOSE0, "%s: query: %s", __func__, query.c_str() );
 
     execSql( query );
@@ -731,7 +731,7 @@ DBMgr::GetPlayerCounts( const char* const connName, int* nTotal, int* nHere )
     const char* fmt = "SELECT ntotal, sum_array(nperdevice) FROM " GAMES_TABLE
         " WHERE connName = '%s'";
     StrWPF query;
-    query.printf( fmt, connName );
+    query.catf( fmt, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -748,7 +748,7 @@ DBMgr::KillGame( const char* const connName, int hid )
         " nperdevice[%d] = - nperdevice[%d]"
         " WHERE connName = '%s'";
     StrWPF query;
-    query.printf( fmt, hid, hid, connName );
+    query.catf( fmt, hid, hid, connName );
     execSql( query );
 }
 
@@ -771,7 +771,7 @@ DBMgr::PublicRooms( int lang, int nPlayers, int* nNames, string& names )
         " AND nTotal = %d";
 
     StrWPF query;
-    query.printf( fmt, lang, nPlayers );
+    query.catf( fmt, lang, nPlayers );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -796,7 +796,7 @@ DBMgr::TokenFor( const char* const connName, int hid, DevIDRelay* devid,
     const char* fmt = "SELECT tokens[%d], devids[%d] FROM " GAMES_TABLE
         " WHERE connName='%s'";
     StrWPF query;
-    query.printf( fmt, hid, hid, connName );
+    query.catf( fmt, hid, hid, connName );
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     if ( 1 == PQntuples( result ) ) {
         AddrInfo::ClientToken token_tmp = atoi( PQgetvalue( result, 0, 0 ) );
@@ -851,7 +851,7 @@ DBMgr::readArray( const char* const connName, const char* column, int arr[]  ) /
     const char* fmt = "SELECT %s FROM " GAMES_TABLE " WHERE connName='%s'";
 
     StrWPF query;
-    query.printf( fmt, column, connName );
+    query.catf( fmt, column, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -868,7 +868,7 @@ DBMgr::getDevID( const char* connName, int hid )
     DevIDRelay devID = DEVID_NONE;
     const char* fmt = "SELECT devids[%d] FROM " GAMES_TABLE " WHERE connName='%s'";
     StrWPF query;
-    query.printf( fmt, hid, connName );
+    query.catf( fmt, hid, connName );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -891,13 +891,13 @@ DBMgr::getDevID( const DevID* devID )
         DevIDRelay cur = devID->asRelayID();
         if ( DEVID_NONE != cur ) {
             const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE id=%d";
-            query.printf( fmt, cur );
+            query.catf( fmt, cur );
         }
     } else if ( 0 < devID->m_devIDString.size() ) {
-        query.printf( "SELECT id FROM " DEVICES_TABLE 
-                      " WHERE devtypes[1]=%d and devids[1] = '%s'"
-                      " ORDER BY ctime DESC LIMIT 1", 
-                      devIDType, devID->m_devIDString.c_str() );
+        query.catf( "SELECT id FROM " DEVICES_TABLE 
+                    " WHERE devtypes[1]=%d and devids[1] = '%s'"
+                    " ORDER BY ctime DESC LIMIT 1", 
+                    devIDType, devID->m_devIDString.c_str() );
     }
 
     if ( 0 < query.size() ) {
@@ -927,12 +927,12 @@ int
 DBMgr::CountStoredMessages( const char* const connName, int hid )
 {
     StrWPF test;
-    test.printf( "connname = '%s'", connName );
+    test.catf( "connname = '%s'", connName );
 #ifdef HAVE_STIME
-    test.printf( " AND stime = 'epoch'" );
+    test.catf( " AND stime = 'epoch'" );
 #endif
     if ( hid != -1 ) {
-        test.printf( " AND hid = %d", hid );
+        test.catf( " AND hid = %d", hid );
     }
 
     return getCountWhere( MSGS_TABLE, test );
@@ -948,9 +948,9 @@ int
 DBMgr::CountStoredMessages( DevIDRelay relayID )
 {
     StrWPF test;
-    test.printf( "devid = %d", relayID );
+    test.catf( "devid = %d", relayID );
 #ifdef HAVE_STIME
-    test.printf( "AND stime = 'epoch'" );
+    test.catf( "AND stime = 'epoch'" );
 #endif
 
     return getCountWhere( MSGS_TABLE, test );
@@ -969,13 +969,13 @@ DBMgr::StoreMessage( DevIDRelay devID, const uint8_t* const buf,
     StrWPF query;
     if ( m_useB64 ) {
         gchar* b64 = g_base64_encode( buf, len );
-        query.printf( fmt, "msg64", devID, "", b64, len );
+        query.catf( fmt, "msg64", devID, "", b64, len );
         g_free( b64 );
     } else {
         uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 
                                                   len, &newLen );
         assert( NULL != bytes );
-        query.printf( fmt, "msg",  devID, "E", bytes, len );
+        query.catf( fmt, "msg",  devID, "E", bytes, len );
         PQfreemem( bytes );
     }
 
@@ -1008,23 +1008,23 @@ DBMgr::StoreMessage( const char* const connName, int hid,
     StrWPF query;
     if ( m_useB64 ) {
         gchar* b64 = g_base64_encode( buf, len );
-        query.printf( fmt, "msg64", connName, hid, devID, hid, connName, 
-                      "", b64, len );
+        query.catf( fmt, "msg64", connName, hid, devID, hid, connName, 
+                    "", b64, len );
         
-        query.printf( " WHERE NOT EXISTS (SELECT 1 FROM " MSGS_TABLE
-                      " WHERE connname='%s' AND hid=%d AND msg64='%s'"
+        query.catf( " WHERE NOT EXISTS (SELECT 1 FROM " MSGS_TABLE
+                    " WHERE connname='%s' AND hid=%d AND msg64='%s'"
 #ifdef HAVE_STIME
-                      " AND stime='epoch'" 
+                    " AND stime='epoch'" 
 #endif
-                      " );", connName, hid, b64 );
+                    " );", connName, hid, b64 );
         g_free( b64 );
     } else {
         uint8_t* bytes = PQescapeByteaConn( getThreadConn(), buf, 
                                                   len, &newLen );
         assert( NULL != bytes );
     
-        query.printf( fmt, "msg", connName, hid, devID, hid, connName, 
-                      "E", bytes, len );
+        query.catf( fmt, "msg", connName, hid, devID, hid, connName, 
+                    "E", bytes, len );
         PQfreemem( bytes );
     }
 
@@ -1068,18 +1068,18 @@ DBMgr::storedMessagesImpl( string test, vector<DBMgr::MsgInfo>& msgs,
                            bool nullConnnameOK )
 {
     StrWPF query;
-    query.printf( "SELECT id, msg64, msg, msglen, token, connname FROM "
-                  MSGS_TABLE " WHERE %s "
+    query.catf( "SELECT id, msg64, msg, msglen, token, connname FROM "
+                MSGS_TABLE " WHERE %s "
 #ifdef HAVE_STIME 
-                   " AND stime = 'epoch' "
+                " AND stime = 'epoch' "
 #endif
-                   " AND (connname IN (SELECT connname FROM " GAMES_TABLE
-                   " WHERE NOT " GAMES_TABLE ".dead)", test.c_str() );
+                " AND (connname IN (SELECT connname FROM " GAMES_TABLE
+                " WHERE NOT " GAMES_TABLE ".dead)", test.c_str() );
 
     if ( nullConnnameOK ) {
-        query.printf( " OR connname IS NULL ");
+        query.catf( " OR connname IS NULL ");
     }
-    query.printf( ") ORDER BY id" );
+    query.catf( ") ORDER BY id" );
 
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
@@ -1108,7 +1108,7 @@ DBMgr::GetStoredMessages( DevIDRelay relayID, vector<MsgInfo>& msgs )
 {
     if ( !hasNoMessages( relayID ) ) {
         StrWPF query;
-        query.printf( "devid=%d", relayID );
+        query.catf( "devid=%d", relayID );
         storedMessagesImpl( query, msgs, true );
 
         if ( 0 == msgs.size() ) {
@@ -1123,7 +1123,7 @@ DBMgr::GetStoredMessages( const char* const connName, HostID hid,
 {
     if ( !hasNoMessages( connName, hid ) ) {
         StrWPF query;
-        query.printf( "hid = %d AND connname = '%s'", hid, connName );
+        query.catf( "hid = %d AND connname = '%s'", hid, connName );
         storedMessagesImpl( query, msgs, false );
 
         if ( 0 == msgs.size() ) {
@@ -1143,7 +1143,7 @@ DBMgr::RemoveStoredMessages( string& msgids )
 #endif
         " WHERE id IN (%s)";
     StrWPF query;
-    query.printf( fmt, msgids.c_str() );
+    query.catf( fmt, msgids.c_str() );
     logf( XW_LOGINFO, "%s: query: %s", __func__, query.c_str() );
     execSql( query );
 }
@@ -1156,7 +1156,7 @@ DBMgr::RemoveStoredMessages( const int* msgIDs, int nMsgIDs )
         size_t len = 0;
         int ii;
         for ( ii = 0; ; ) {
-            ids.printf( "%d", msgIDs[ii] );
+            ids.catf( "%d", msgIDs[ii] );
             assert( len < sizeof(ids) );
             if ( ++ii == nMsgIDs ) {
                 break;
@@ -1175,11 +1175,11 @@ DBMgr::RemoveStoredMessages( vector<int>& idv )
         StrWPF ids;
         vector<int>::const_iterator iter = idv.begin();
         for ( ; ; ) {
-            ids.printf( "%d", *iter );
+            ids.catf( "%d", *iter );
             if ( ++iter == idv.end() ) {
                 break;
             }
-            ids.printf( "," );
+            ids.catf( "," );
         }
         RemoveStoredMessages( ids );
     }
@@ -1195,7 +1195,7 @@ int
 DBMgr::getCountWhere( const char* table, string& test )
 {
     StrWPF query;
-    query.printf( "SELECT count(*) FROM %s WHERE %s", table, test.c_str() );
+    query.catf( "SELECT count(*) FROM %s WHERE %s", table, test.c_str() );
 
     PGresult* result = PQexec( getThreadConn(), query.c_str() );
     assert( 1 == PQntuples( result ) );
@@ -1207,7 +1207,7 @@ DBMgr::getCountWhere( const char* table, string& test )
 void
 DBMgr::formatKey( StrWPF& key, const char* const connName, HostID hid )
 {
-    key.printf( "%s:%d", connName, hid );
+    key.catf( "%s:%d", connName, hid );
 }
 
 bool
@@ -1338,8 +1338,8 @@ DBMgr::getThreadConn( void )
             assert( 0 );
         }
         StrWPF params;
-        params.printf( "dbname = %s ", buf );
-        params.printf( "port = %d ", port );
+        params.catf( "dbname = %s ", buf );
+        params.catf( "port = %d ", port );
 
         conn = PQconnectdb( params.c_str() );
         pthread_setspecific( m_conn_key, conn );
