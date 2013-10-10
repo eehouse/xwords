@@ -396,32 +396,18 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
                 devID = (DevIDRelay)random();
             } while ( DEVID_NONE == devID );
 
-            const char* command = "INSERT INTO " DEVICES_TABLE
-                " (id, devTypes[1], devids[1], clntVers, versDesc, model, osvers)"
-                " VALUES( $1, $2, $3, $4, $5, $6, $7 )";
-            int nParams = 7;
-            char* paramValues[nParams];
-            char buf[1024];
-            formatParams( paramValues, nParams,
-                          "%d"DELIM"%d"DELIM"%s"DELIM"%d"DELIM"%s"DELIM"%s"DELIM"%s", 
-                          buf, sizeof(buf), devID, host->m_devIDType, 
-                          devidStr, clientVersion, desc, model, osVers );
-
-            PGresult* result = PQexecParams( getThreadConn(), command,
-                                             nParams, NULL,
-                                             paramValues, 
-                                             NULL, NULL, 0 );
-            success = PGRES_COMMAND_OK == PQresultStatus(result);
-            if ( !success ) {
-                logf( XW_LOGERROR, "%s: PQexec=>%s;%s", __func__, 
-                      PQresStatus(PQresultStatus(result)), 
-                      PQresultErrorMessage(result) );
-            }
-            PQclear( result );
+            StrWPF query;
+            query.catf( "INSERT INTO " DEVICES_TABLE " (id, devTypes[1],"
+                        " devids[1], clntVers, versdesc, model, osvers)"
+                        " VALUES( %d, %d, '%s', %d, '%s', '%s', '%s' )",
+                        devID, host->m_devIDType, devidStr, clientVersion, 
+                        desc, model, osVers );
+            logf( XW_LOGINFO, "%s: %s", __func__, query.c_str() );
+            success = execSql( query );
         }
     }
     return devID;
-}
+} // RegisterDevice
 
 DevIDRelay 
 DBMgr::RegisterDevice( const DevID* host )
