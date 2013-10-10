@@ -78,7 +78,7 @@ XLOC_HEADER:0x8C00
 1	10    {"L·L|L-L|ĿL|l·l|l-l|ŀl"}
 3	2     'M|m'
 6	1     'N|n'
-1	10    {"ny|ny"}
+1	10    {"NY|ny"}
 5	1     'O|o'
 2	3     'P|p'
 1	8     {"QU|qu"}

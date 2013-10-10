@@ -72,6 +72,24 @@ public class Utils {
     private static Boolean s_hasSmallScreen = null;
     private static Random s_random = new Random();
 
+    private static interface SafeInvalOptionsMenu {
+        public void doInval( Activity activity );
+    }
+
+    private static class SafeInvalOptionsMenuImpl 
+        implements SafeInvalOptionsMenu {
+        public void doInval( Activity activity ) {
+            activity.invalidateOptionsMenu();
+        }
+    }
+    private static SafeInvalOptionsMenu s_safeInval = null;
+    static {
+        int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
+        if ( 11 <= sdkVersion ) {
+            s_safeInval = new SafeInvalOptionsMenuImpl();
+        }
+    }
+
     private Utils() {}
 
     public static int nextRandomInt()
@@ -356,6 +374,13 @@ public class Utils {
     {
         MenuItem item = menu.findItem( id );
         item.setEnabled( enabled );
+    }
+
+    public static void invalidateOptionsMenuIf( Activity activity )
+    {
+        if ( null != s_safeInval ) {
+            s_safeInval.doInval( activity );
+        }
     }
 
     public static boolean hasSmallScreen( Context context )

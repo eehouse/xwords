@@ -125,7 +125,7 @@
     <CheckBoxPreference android:key="@string/key_hide_title"
                         android:title="@string/hide_title"
                         android:summary="@string/hide_title_summary"
-                        android:defaultValue="true"
+                        android:defaultValue="false"
                         />
     <CheckBoxPreference android:key="@string/key_show_arrow"
                         android:title="@string/show_arrow"

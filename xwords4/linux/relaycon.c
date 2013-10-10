@@ -333,9 +333,9 @@ hostNameToIP( const XP_UCHAR* name )
 static ssize_t
 sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
 {
-    ssize_t nSent =  sendto( storage->socket, msgbuf, len, 0, /* flags */
-                             (struct sockaddr*)&storage->saddr, 
-                             sizeof(storage->saddr) );
+    ssize_t nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
+                            (struct sockaddr*)&storage->saddr, 
+                            sizeof(storage->saddr) );
     XP_LOGF( "%s()=>%d", __func__, nSent );
     return nSent;
 }

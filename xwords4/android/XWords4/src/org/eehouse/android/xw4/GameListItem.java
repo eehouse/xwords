@@ -24,7 +24,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.os.AsyncTask;
 import android.os.Handler;
-// import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
@@ -34,7 +33,6 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashSet;
-// import java.util.Iterator;
 
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -205,7 +203,7 @@ public class GameListItem extends LinearLayout
     private void setData( final GameSummary summary )
     {
         if ( null != summary ) {
-            TextView view;
+            TextView tview;
             String state = setName();
 
             setOnClickListener( new View.OnClickListener() {
@@ -224,10 +222,10 @@ public class GameListItem extends LinearLayout
             for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
                 ExpiringLinearLayout tmp = (ExpiringLinearLayout)
                     Utils.inflate( m_context, R.layout.player_list_elem );
-                view = (TextView)tmp.findViewById( R.id.item_name );
-                view.setText( summary.summarizePlayer( ii ) );
-                view = (TextView)tmp.findViewById( R.id.item_score );
-                view.setText( String.format( "  %d", summary.scores[ii] ) );
+                tview = (TextView)tmp.findViewById( R.id.item_name );
+                tview.setText( summary.summarizePlayer( ii ) );
+                tview = (TextView)tmp.findViewById( R.id.item_score );
+                tview.setText( String.format( "  %d", summary.scores[ii] ) );
                 boolean thisHasTurn = summary.isNextToPlay( ii, isLocal );
                 if ( thisHasTurn ) {
                     haveATurn = true;
@@ -240,15 +238,15 @@ public class GameListItem extends LinearLayout
                 list.addView( tmp, ii );
             }
 
-            view = (TextView)findViewById( R.id.state );
-            view.setText( state );
-            view = (TextView)findViewById( R.id.modtime );
+            tview = (TextView)findViewById( R.id.state );
+            tview.setText( state );
+            tview = (TextView)findViewById( R.id.modtime );
             long lastMoveTime = summary.lastMoveTime;
             lastMoveTime *= 1000;
 
             DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
                                                             DateFormat.SHORT );
-            view.setText( df.format( new Date( lastMoveTime ) ) );
+            tview.setText( df.format( new Date( lastMoveTime ) ) );
 
             int iconID;
             ImageView marker =
@@ -265,12 +263,12 @@ public class GameListItem extends LinearLayout
             }
             marker.setImageResource( iconID );
 
-            view = (TextView)findViewById( R.id.role );
+            tview = (TextView)findViewById( R.id.role );
             String roleSummary = summary.summarizeRole();
             if ( null != roleSummary ) {
-                view.setText( roleSummary );
+                tview.setText( roleSummary );
             } else {
-                view.setVisibility( View.GONE );
+                tview.setVisibility( View.GONE );
             }
 
             boolean expanded = DBUtils.getExpanded( m_context, m_rowid );

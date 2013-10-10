@@ -738,15 +738,22 @@ public class BoardActivity extends XWActivity
             item.setTitle( strId );
         }
 
+        Utils.setItemVisible( menu, R.id.board_menu_undo_last, !inTrade );
+        Utils.setItemVisible( menu, R.id.board_menu_tray, !inTrade );
+        Utils.setItemVisible( menu, R.id.board_submenu_game, !inTrade );
+
         if ( !inTrade ) {
+            boolean enabled = null == m_gsi || m_gsi.curTurnSelected;
             item = menu.findItem( R.id.board_menu_done );
-            if ( 0 >= m_view.curPending() ) {
-                strId = R.string.board_menu_pass;
-            } else {
-                strId = R.string.board_menu_done;
+            item.setVisible( enabled );
+            if ( enabled ) {
+                if ( 0 >= m_view.curPending() ) {
+                    strId = R.string.board_menu_pass;
+                } else {
+                    strId = R.string.board_menu_done;
+                }
+                item.setTitle( strId );
             }
-            item.setTitle( strId );
-            item.setEnabled( null == m_gsi || m_gsi.curTurnSelected );
         }
 
         if ( m_gameOver || DBUtils.gameOver( this, m_rowid ) ) {
@@ -772,8 +779,15 @@ public class BoardActivity extends XWActivity
         int id = item.getItemId();
         switch ( id ) {
         case R.id.board_menu_done:
-            showNotAgainDlgThen( R.string.not_again_done, 
-                                 R.string.key_notagain_done, COMMIT_ACTION );
+            int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr, 
+                                                  m_view.getCurPlayer() );
+            DbgUtils.logf( "getNumTilesInTray=>%d", nTiles );
+            if ( XWApp.MAX_TRAY_TILES > nTiles ) {
+                showNotAgainDlgThen( R.string.not_again_done, 
+                                     R.string.key_notagain_done, COMMIT_ACTION );
+            } else {
+                dlgButtonClicked( COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE );
+            }
             break;
 
         case R.id.board_menu_trade_commit:
@@ -1789,6 +1803,8 @@ public class BoardActivity extends XWActivity
                                             m_view.setInTrade( m_inTrade );
                                         }
                                         adjustTradeVisibility();
+                                        Activity self = BoardActivity.this;
+                                        Utils.invalidateOptionsMenuIf( self );
                                     }
                                     break;
                                 case JNIThread.GOT_WORDS:
