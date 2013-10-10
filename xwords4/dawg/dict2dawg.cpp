@@ -961,6 +961,7 @@ makeTableHash( void )
 static void
 printTableHash( void )
 {
+#ifdef DEBUG
     if ( gDebug ) {
         std::vector<wchar_t>::iterator iter = gRevMap.begin();
         int count = 0;              // 0th entry is 0
@@ -976,6 +977,7 @@ printTableHash( void )
             ++count;
         }
     }
+#endif
 }
 
 // emitNodes. "input" is $gNodes.  From it we write up to
