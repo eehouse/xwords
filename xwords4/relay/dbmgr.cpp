@@ -70,6 +70,8 @@ DBMgr::DBMgr()
 
     pthread_key_create( &m_conn_key, destr_function );
 
+    pthread_mutex_init( &m_haveNoMessagesMutex, NULL );
+
     /* Now figure out what the largest cid currently is.  There must be a way
        to get postgres to do this for me.... */
     /* const char* query = "SELECT cid FROM games ORDER BY cid DESC LIMIT 1"; */
