@@ -72,7 +72,7 @@ CidLock::print_claimed( const char* caller )
 {
     int unclaimed = 0;
     StrWPF str;
-    str.printf( "after %s: ", caller );
+    str.catf( "after %s: ", caller );
     // Assume we have the mutex!!!!
     map< CookieID, CidInfo*>::const_iterator iter;
     for ( iter = m_infos.begin(); iter != m_infos.end(); ++iter ) {
@@ -80,10 +80,10 @@ CidLock::print_claimed( const char* caller )
         if ( 0 == info->GetOwner() ) {
             ++unclaimed;
         } else {
-            str.printf( "%d,", info->GetCid() );
+            str.catf( "%d,", info->GetCid() );
         }
     }
-    str.printf( " (plus %d unclaimed.)", unclaimed );
+    str.catf( " (plus %d unclaimed.)", unclaimed );
     logf( XW_LOGINFO, "%s: claimed: %s", __func__, str.c_str() );
 }
 #else
