@@ -62,6 +62,7 @@ function cleanup() {
     fi
 
     echo "DELETE FROM games WHERE room LIKE 'ROOM_%';" | psql -q -t xwgames
+    echo "DELETE FROM msgs WHERE NOT devid in (SELECT unnest(devids) from games);" | psql -q -t xwgames
 }
 
 function connName() {
