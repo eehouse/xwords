@@ -45,7 +45,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     {
         DbgUtils.logf( "GCMIntentService.onRegistered(%s)", regId );
         XWPrefs.setGCMDevID( context, regId );
-        notifyRelayService( true );
+        notifyRelayService( context, true );
     }
 
     @Override
@@ -54,14 +54,14 @@ public class GCMIntentService extends GCMBaseIntentService {
         DbgUtils.logf( "GCMIntentService.onUnregistered(%s)", regId );
         XWPrefs.clearGCMDevID( context );
         RelayService.devIDChanged();
-        notifyRelayService( false );
+        notifyRelayService( context, false );
     }
 
     @Override
     protected void onMessage( Context context, Intent intent ) 
     {
         DbgUtils.logf( "GCMIntentService.onMessage()" );
-        notifyRelayService( true );
+        notifyRelayService( context, true );
 
         String value;
         boolean ignoreIt = XWApp.GCM_IGNORED;
@@ -128,12 +128,12 @@ public class GCMIntentService extends GCMBaseIntentService {
         }
     }
 
-    private void notifyRelayService( boolean working )
+    private void notifyRelayService( Context context, boolean working )
     {
         if ( working && XWApp.GCM_IGNORED ) {
             working = false;
         }
-        RelayService.gcmConfirmed( working );
+        RelayService.gcmConfirmed( context, working );
     }
 
 }

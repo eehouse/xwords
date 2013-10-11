@@ -93,6 +93,7 @@ public class RelayService extends XWService
     private Runnable m_onInactivity;
     private int m_maxIntervalSeconds = 0;
     private long m_lastGamePacketReceived;
+    private static DevIDType s_curType = DevIDType.ID_TYPE_NONE;
 
     // These must match the enum XWPDevProto in xwrelay.h
     private static enum XWPDevProto { XWPDEV_PROTO_VERSION_INVALID
@@ -120,12 +121,18 @@ public class RelayService extends XWService
             ,XWPDEV_UPGRADE
             };
 
-    public static void gcmConfirmed( boolean confirmed )
+    public static void gcmConfirmed( Context context, boolean confirmed )
     {
         if ( s_gcmWorking != confirmed ) {
             DbgUtils.logf( "RelayService.gcmConfirmed(): changing "
                            + "s_gcmWorking to %b", confirmed );
             s_gcmWorking = confirmed;
+        }
+
+        // If we've gotten a GCM id and haven't registered it, do so!
+        if ( confirmed && !s_curType.equals( DevIDType.ID_TYPE_ANDROID_GCM ) ) {
+            devIDChanged();
+            timerFired( context );
         }
     }
 
@@ -143,7 +150,6 @@ public class RelayService extends XWService
     }
 
     public static void timerFired( Context context )
-
     {
         Intent intent = getIntentTo( context, MsgCmds.TIMER_FIRED );
         context.startService( intent );
@@ -646,6 +652,7 @@ public class RelayService extends XWService
         DevIDType[] typa = new DevIDType[1];
         String devid = getDevID( typa );
         DevIDType typ = typa[0];
+        s_curType = typ;
 
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
