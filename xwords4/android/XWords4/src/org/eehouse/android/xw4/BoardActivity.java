@@ -781,7 +781,6 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_done:
             int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr, 
                                                   m_view.getCurPlayer() );
-            DbgUtils.logf( "getNumTilesInTray=>%d", nTiles );
             if ( XWApp.MAX_TRAY_TILES > nTiles ) {
                 showNotAgainDlgThen( R.string.not_again_done, 
                                      R.string.key_notagain_done, COMMIT_ACTION );
