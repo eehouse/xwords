@@ -19,6 +19,7 @@
 <h3>New with this release</h3>
 <ul>
     <li>Fix relay registration problem (Thanks DS!)</li>
+    <li>Show Turn done/Pass in actionbar where possible</li>
 </ul>
 
 <h3>Next up</h3>
