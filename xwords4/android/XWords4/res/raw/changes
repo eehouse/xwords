@@ -5,7 +5,7 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 68 release</b>
+<b>Crosswords 4.4 beta 69 release</b>
 
 <p>This release features a major upgrade to how the app communicates
   with the relay, in essence switching from each game communicating
@@ -18,10 +18,7 @@
 
 <h3>New with this release</h3>
 <ul>
-    <li>Rewrite of networking code</li>
-    <li>Turn chat back on</li>
-    <li>Progress bar added for download of wordlists and upgrades</li>
-    <li>Fix Exchange tiles buttons</li>
+    <li>Fix relay registration problem</li>
 </ul>
 
 <h3>Next up</h3>
