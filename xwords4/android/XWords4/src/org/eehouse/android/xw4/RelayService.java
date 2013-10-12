@@ -56,6 +56,7 @@ public class RelayService extends XWService
     implements NetStateCache.StateChangedIf {
     private static final int MAX_SEND = 1024;
     private static final int MAX_BUF = MAX_SEND - 2;
+    private static final int REG_WAIT_INTERVAL = 10;
 
     // One week, in seconds.  Probably should be configurable.
     private static final long MAX_KEEPALIVE_SECS = 7 * 24 * 60 * 60;
@@ -94,6 +95,7 @@ public class RelayService extends XWService
     private int m_maxIntervalSeconds = 0;
     private long m_lastGamePacketReceived;
     private static DevIDType s_curType = DevIDType.ID_TYPE_NONE;
+    private static long s_regStartTime = 0;
 
     // These must match the enum XWPDevProto in xwrelay.h
     private static enum XWPDevProto { XWPDEV_PROTO_VERSION_INVALID
@@ -131,6 +133,7 @@ public class RelayService extends XWService
 
         // If we've gotten a GCM id and haven't registered it, do so!
         if ( confirmed && !s_curType.equals( DevIDType.ID_TYPE_ANDROID_GCM ) ) {
+            s_regStartTime = 0;      // so we're sure to register
             devIDChanged();
             timerFired( context );
         }
@@ -645,38 +648,47 @@ public class RelayService extends XWService
     // changes, that timestamp is cleared.
     private void registerWithRelay()
     {
-        boolean ackd = 
-            XWPrefs.getPrefsBoolean( this, R.string.key_relay_regid_ackd, 
-                                     false );
-        String relayID = XWPrefs.getRelayDevID( this );
-        DevIDType[] typa = new DevIDType[1];
-        String devid = getDevID( typa );
-        DevIDType typ = typa[0];
-        s_curType = typ;
+        long now = Utils.getCurSeconds();
+        long interval = now - s_regStartTime;
+        if ( interval < REG_WAIT_INTERVAL ) {
+            DbgUtils.logf( "registerWithRelay: skipping because only %d "
+                           + "seconds since last start", interval );
+        } else {
+            s_regStartTime = now;
 
-        ByteArrayOutputStream bas = new ByteArrayOutputStream();
-        try {
-            DataOutputStream out = new DataOutputStream( bas );
+            boolean ackd = 
+                XWPrefs.getPrefsBoolean( this, R.string.key_relay_regid_ackd, 
+                                         false );
+            String relayID = XWPrefs.getRelayDevID( this );
+            DevIDType[] typa = new DevIDType[1];
+            String devid = getDevID( typa );
+            DevIDType typ = typa[0];
+            s_curType = typ;
 
-            writeVLIString( out, relayID );                 // may be empty
-            if ( ackd && DevIDType.ID_TYPE_RELAY == typ ) { // all's well
-                out.writeByte( DevIDType.ID_TYPE_NONE.ordinal() );
-            } else {
-                out.writeByte( typ.ordinal() );
-                writeVLIString( out, devid );
+            ByteArrayOutputStream bas = new ByteArrayOutputStream();
+            try {
+                DataOutputStream out = new DataOutputStream( bas );
+
+                writeVLIString( out, relayID );                 // may be empty
+                if ( ackd && DevIDType.ID_TYPE_RELAY == typ ) { // all's well
+                    out.writeByte( DevIDType.ID_TYPE_NONE.ordinal() );
+                } else {
+                    out.writeByte( typ.ordinal() );
+                    writeVLIString( out, devid );
+                }
+
+                DbgUtils.logf( "registering devID \"%s\" (type=%s)", devid, 
+                               typ.toString() );
+
+                out.writeShort( GitVersion.CLIENT_VERS_RELAY );
+                writeVLIString( out, GitVersion.VERS );
+                writeVLIString( out, Build.MODEL );
+                writeVLIString( out, Build.VERSION.RELEASE );
+
+                postPacket( bas, XWRelayReg.XWPDEV_REG );
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.loge( ioe );
             }
-
-            DbgUtils.logf( "registering devID \"%s\" (type=%s)", devid, 
-                           typ.toString() );
-
-            out.writeShort( GitVersion.CLIENT_VERS_RELAY );
-            writeVLIString( out, GitVersion.VERS );
-            writeVLIString( out, Build.MODEL );
-            writeVLIString( out, Build.VERSION.RELEASE );
-
-            postPacket( bas, XWRelayReg.XWPDEV_REG );
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
         }
     }
 
