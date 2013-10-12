@@ -654,11 +654,6 @@ public class RelayService extends XWService
             DbgUtils.logf( "registerWithRelay: skipping because only %d "
                            + "seconds since last start", interval );
         } else {
-            s_regStartTime = now;
-
-            boolean ackd = 
-                XWPrefs.getPrefsBoolean( this, R.string.key_relay_regid_ackd, 
-                                         false );
             String relayID = XWPrefs.getRelayDevID( this );
             DevIDType[] typa = new DevIDType[1];
             String devid = getDevID( typa );
@@ -669,8 +664,8 @@ public class RelayService extends XWService
             try {
                 DataOutputStream out = new DataOutputStream( bas );
 
-                writeVLIString( out, relayID );                 // may be empty
-                if ( ackd && DevIDType.ID_TYPE_RELAY == typ ) { // all's well
+                writeVLIString( out, relayID );             // may be empty
+                if ( DevIDType.ID_TYPE_RELAY == typ ) {     // all's well
                     out.writeByte( DevIDType.ID_TYPE_NONE.ordinal() );
                 } else {
                     out.writeByte( typ.ordinal() );
@@ -686,6 +681,7 @@ public class RelayService extends XWService
                 writeVLIString( out, Build.VERSION.RELEASE );
 
                 postPacket( bas, XWRelayReg.XWPDEV_REG );
+                s_regStartTime = now;
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
             }
@@ -807,8 +803,13 @@ public class RelayService extends XWService
 
     private String getDevID( DevIDType[] typp )
     {
+        String devid = null;
         DevIDType typ;
-        String devid = XWPrefs.getRelayDevID( this );
+
+        if ( XWPrefs.getPrefsBoolean( this, R.string.key_relay_regid_ackd, 
+                                      false ) ) {
+            devid = XWPrefs.getRelayDevID( this );
+        }
         if ( null != devid && 0 < devid.length() ) {
             typ = DevIDType.ID_TYPE_RELAY;
         } else {
