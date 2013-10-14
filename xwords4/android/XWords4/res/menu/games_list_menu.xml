@@ -3,7 +3,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/gamel_menu_newgame"
           android:title="@string/button_new_game"
-          android:icon="@android:drawable/ic_menu_add"
+          android:icon="@drawable/content_new"
           android:showAsAction="ifRoom"
           />
     <item android:id="@+id/gamel_menu_newgroup"
