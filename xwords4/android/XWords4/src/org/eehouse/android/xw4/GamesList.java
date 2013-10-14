@@ -689,6 +689,9 @@ public class GamesList extends XWExpandableListActivity
             item.setVisible( false );
         }
 
+        int nSelected = m_selected.size();
+        Utils.setItemVisible( menu, R.id.gamel_menu_delete, 0 < nSelected );
+
         return super.onPrepareOptionsMenu( menu );
     }
 

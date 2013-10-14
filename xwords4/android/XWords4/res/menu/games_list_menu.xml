@@ -4,10 +4,16 @@
     <item android:id="@+id/gamel_menu_newgame"
           android:title="@string/button_new_game"
           android:icon="@android:drawable/ic_menu_add"
+          android:showAsAction="ifRoom"
           />
     <item android:id="@+id/gamel_menu_newgroup"
           android:title="@string/button_new_group"
           android:icon="@android:drawable/ic_menu_add"
+          />
+    <item android:id="@+id/gamel_menu_delete"
+          android:title="@string/list_item_delete"
+          android:icon="@drawable/ic_action_delete"
+          android:showAsAction="ifRoom"
           />
     <item android:id="@+id/gamel_menu_prefs"
           android:title="@string/menu_prefs"
