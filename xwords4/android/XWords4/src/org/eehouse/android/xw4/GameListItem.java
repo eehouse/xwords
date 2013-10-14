@@ -321,8 +321,7 @@ public class GameListItem extends LinearLayout
                 }
             }
 
-            if ( m_cb.getSelected( m_rowid ) ) {
-                Assert.assertNull( m_origDrawable );
+            if ( m_cb.getSelected( m_rowid ) && null == m_origDrawable ) {
                 toggleSelected();
             }
         }
