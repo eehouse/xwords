@@ -352,7 +352,7 @@ public class BoardActivity extends XWActivity
                             finish();
                         }
                     };
-                ab.setNegativeButton( R.string.button_discard, lstnr );
+                ab.setNegativeButton( R.string.button_delete, lstnr );
                 dialog = ab.create();
                 break;
 
