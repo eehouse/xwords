@@ -102,6 +102,14 @@ public class GameListItem extends LinearLayout
         setName();
     }
 
+    public void setSelected( boolean selected )
+    {
+        // If new value and state not in sync, force change in state
+        if ( selected != (null != m_origDrawable) ) {
+            toggleSelected();
+        }
+    }
+
     @Override
     protected void onDraw( Canvas canvas ) 
     {
@@ -321,7 +329,7 @@ public class GameListItem extends LinearLayout
                 }
             }
 
-            if ( m_cb.getSelected( m_rowid ) && null == m_origDrawable ) {
+            if ( m_cb.getSelected( m_rowid ) && null != m_origDrawable ) {
                 toggleSelected();
             }
         }
