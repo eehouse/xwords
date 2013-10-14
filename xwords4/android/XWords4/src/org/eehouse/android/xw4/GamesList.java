@@ -45,8 +45,11 @@ import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+
 import java.io.File;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 
 // import android.telephony.PhoneStateListener;
 // import android.telephony.TelephonyManager;
@@ -104,6 +107,7 @@ public class GamesList extends XWExpandableListActivity
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
     private boolean m_gameLaunched = false;
+    private HashSet<Long> m_selected;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -330,6 +334,8 @@ public class GamesList extends XWExpandableListActivity
         // scary, but worth playing with:
         // Assert.assertTrue( isTaskRoot() );
 
+        loadSelectedRows();
+
         getBundledData( savedInstanceState );
 
         setContentView(R.layout.game_list);
@@ -412,6 +418,13 @@ public class GamesList extends XWExpandableListActivity
         // m_phoneStateListener = new XWPhoneStateListener();
         // mgr.listen( m_phoneStateListener,
         //             PhoneStateListener.LISTEN_DATA_CONNECTION_STATE );
+    }
+
+    @Override
+    protected void onPause()
+    {
+        saveSelectedRows();
+        super.onPause();
     }
 
     @Override
@@ -504,6 +517,22 @@ public class GamesList extends XWExpandableListActivity
                 }
             }
         }
+    }
+
+    public void itemToggled( long rowid, boolean selected )
+    {
+        int countBefore = m_selected.size();
+        if ( selected ) {
+            m_selected.add( rowid );
+        } else {
+            m_selected.remove( rowid );
+        }
+        Utils.invalidateOptionsMenuIf( this );
+    }
+
+    public boolean getSelected( long rowid )
+    {
+        return m_selected.contains( rowid );
     }
 
     // BTService.MultiEventListener interface
@@ -1119,6 +1148,28 @@ public class GamesList extends XWExpandableListActivity
         startHasGameID( intent );
         startHasRowID( intent );
         tryAlert( intent );
+    }
+
+    private void saveSelectedRows()
+    {
+        String[] rows = new String[m_selected.size()];
+        int ii = 0;
+        for ( Iterator<Long> iter = m_selected.iterator(); iter.hasNext(); ) {
+            rows[ii++] = String.format( "%d", iter.next() );
+        }
+        int keyID = R.string.key_selected_games;
+        XWPrefs.setPrefsStringArray( this, keyID, rows );
+    }
+
+    private void loadSelectedRows()
+    {
+        int keyID = R.string.key_selected_games;
+        String[] asStrings = XWPrefs.getPrefsStringArray( this, keyID );
+        HashSet<Long> result = new HashSet<Long>(asStrings.length);
+        for ( String str : asStrings ) {
+            result.add( Long.parseLong( str ) );
+        }
+        m_selected = result;
     }
 
     public static void onGameDictDownload( Context context, Intent intent )

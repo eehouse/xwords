@@ -48,6 +48,8 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public interface LoadItemCB {
         public void itemClicked( long rowid, GameSummary summary );
+        public void itemToggled( long rowid, boolean selected );
+        public boolean getSelected( long rowid );
     }
 
     public GameListAdapter( Context context, ExpandableListView list, 

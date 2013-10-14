@@ -22,6 +22,8 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.AttributeSet;
@@ -30,12 +32,15 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashSet;
 
-import org.eehouse.android.xw4.jni.GameSummary;
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.GameSummary;
 
 public class GameListItem extends LinearLayout 
     implements View.OnClickListener {
@@ -56,6 +61,7 @@ public class GameListItem extends LinearLayout
     private int m_fieldID;
     private int m_loadingCount;
     private int m_groupPosition;
+    private Drawable m_origDrawable;
 
     public GameListItem( Context cx, AttributeSet as ) 
     {
@@ -262,6 +268,12 @@ public class GameListItem extends LinearLayout
                 iconID = R.drawable.sologame;
             }
             marker.setImageResource( iconID );
+            marker.setOnClickListener( new View.OnClickListener() {
+                    @Override
+                    public void onClick( View view ) {
+                        toggleSelected();
+                    }
+                } );
 
             tview = (TextView)findViewById( R.id.role );
             String roleSummary = summary.summarizeRole();
@@ -276,6 +288,18 @@ public class GameListItem extends LinearLayout
             update( expanded, summary.lastMoveTime, haveATurn, 
                     haveALocalTurn );
         }
+    }
+
+    private void toggleSelected()
+    {
+        if ( null == m_origDrawable ) {
+            m_origDrawable = getBackground();
+            setBackgroundColor( Color.RED );
+        } else {
+            setBackgroundDrawable( m_origDrawable );
+            m_origDrawable = null;
+        }
+        m_cb.itemToggled( m_rowid, null != m_origDrawable );
     }
 
     private class LoadItemTask extends AsyncTask<Void, Void, GameSummary> {
@@ -296,9 +320,11 @@ public class GameListItem extends LinearLayout
                     s_invalRows.remove( m_rowid );
                 }
             }
-            // DbgUtils.logf( "LoadItemTask for row %d finished; "
-            //                + "inval rows now %s", 
-            //                m_rowid, invalRowsToString() );
+
+            if ( m_cb.getSelected( m_rowid ) ) {
+                Assert.assertNull( m_origDrawable );
+                toggleSelected();
+            }
         }
     } // class LoadItemTask
 
