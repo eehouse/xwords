@@ -169,6 +169,14 @@ public class GameListAdapter implements ExpandableListAdapter {
     {
         long groupid = getGroupIDFor( groupPosition );
         DBUtils.setGroupExpanded( m_context, groupid, false );
+
+        long[] rowids = DBUtils.getGroupGames( m_context, groupid );
+        for ( long rowid : rowids ) {
+            // this is horribly ineffecient. Can groupid be used as a
+            // hint?
+            GameListItem item = getGameItemFor( rowid );
+            item.setSelected( false );
+        }
     }
 
     public void onGroupExpanded( int groupPosition )
