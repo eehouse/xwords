@@ -294,7 +294,7 @@ public class GameListItem extends LinearLayout
     {
         if ( null == m_origDrawable ) {
             m_origDrawable = getBackground();
-            setBackgroundColor( Color.RED );
+            setBackgroundColor( XWApp.SEL_COLOR );
         } else {
             setBackgroundDrawable( m_origDrawable );
             m_origDrawable = null;

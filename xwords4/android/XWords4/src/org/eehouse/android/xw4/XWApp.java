@@ -22,7 +22,9 @@ package org.eehouse.android.xw4;
 
 import android.app.Application;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Build;
+
 import java.util.UUID;
 
 import org.eehouse.android.xw4.jni.XwJNI;
@@ -41,6 +43,7 @@ public class XWApp extends Application {
     
     public static final String SMS_PUBLIC_HEADER = "-XW4";
     public static final int MAX_TRAY_TILES = 7; // comtypes.h
+    public static final int SEL_COLOR = Color.argb( 255, 127, 127, 255 );
 
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;
