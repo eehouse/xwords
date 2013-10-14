@@ -88,6 +88,7 @@ public class GamesList extends XWExpandableListActivity
     private static final int SYNC_MENU_ACTION = 4;
     private static final int NEW_FROM_ACTION = 5;
     private static final int DELETE_GROUP_ACTION = 6;
+    private static final int DELETE_SELGAMES_ACTION = 7;
     private static final int[] DEBUGITEMS = { R.id.gamel_menu_loaddb
                                               , R.id.gamel_menu_storedb
                                               , R.id.gamel_menu_checkupdates
@@ -587,6 +588,9 @@ public class GamesList extends XWExpandableListActivity
                 GameUtils.deleteGroup( this, m_groupid );
                 onContentChanged();
                 break;
+            case DELETE_SELGAMES_ACTION:
+                deleteSelected();
+                break;
             default:
                 Assert.fail();
             }
@@ -706,6 +710,11 @@ public class GamesList extends XWExpandableListActivity
 
         case R.id.gamel_menu_newgroup:
             showDialog( NEW_GROUP );
+            break;
+
+        case R.id.gamel_menu_delete:
+            showConfirmThen( R.string.confirm_seldeletes, R.string.button_delete, 
+                             DELETE_SELGAMES_ACTION );
             break;
 
         case R.id.gamel_menu_dicts:
@@ -1103,6 +1112,17 @@ public class GamesList extends XWExpandableListActivity
             .create();
         Utils.setRemoveOnDismiss( this, dialog, dlgID );
         return dialog;
+    }
+
+    private void deleteSelected()
+    {
+        for ( Iterator<Long> iter = m_selected.iterator(); iter.hasNext(); ) {
+            long rowid = iter.next();
+            GameUtils.deleteGame( this, rowid, false );
+        }
+        m_selected.clear();
+
+        NetUtils.informOfDeaths( this );
     }
 
     private boolean makeNewNetGameIf()

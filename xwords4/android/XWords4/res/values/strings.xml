@@ -179,6 +179,9 @@
     <string name="confirm_delete">Are you sure you want to delete this
       game?</string>
 
+    <string name="confirm_seldeletes">Are you sure you want to delete
+      all selected games? This action cannot be undone.</string>
+
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
     <string name="confirm_reset">Are you sure you want to reset this
