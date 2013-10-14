@@ -37,6 +37,8 @@
 	               android:layout_height="fill_parent"
                    android:layout_gravity="center_vertical|center_horizontal"
                    android:layout_weight="0"
+                   android:paddingLeft="8dip"
+                   android:paddingRight="8dip"
                    />
 
         <!-- this layout is vertical, holds everything but the status
