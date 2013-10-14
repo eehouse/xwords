@@ -393,19 +393,11 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     private GameListItem getGameItemFor( long rowid )
     {
-        GameListItem result = null;
-        int count = m_list.getChildCount();
-        for ( int ii = 0; ii < count; ++ii ) {
-            View view = m_list.getChildAt( ii );
-            if ( view instanceof GameListItem ) {
-                GameListItem tryme = (GameListItem)view;
-                if ( tryme.getRowID() == rowid ) {
-                    result = tryme;
-                    break;
-                }
-            }
-        }
-        return result;
+        Set<Long> rowids = new HashSet<Long>(1);
+        rowids.add( rowid );
+        GameListItem[] items = new GameListItem[1];
+        getGameItemsFor( rowids, items );
+        return items[0];
     }
 
     private GameListGroup getGroupItemFor( int groupPosition )
