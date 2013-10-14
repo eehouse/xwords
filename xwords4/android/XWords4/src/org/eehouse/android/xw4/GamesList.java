@@ -50,6 +50,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 // import android.telephony.PhoneStateListener;
 // import android.telephony.TelephonyManager;
@@ -335,8 +336,6 @@ public class GamesList extends XWExpandableListActivity
         // scary, but worth playing with:
         // Assert.assertTrue( isTaskRoot() );
 
-        loadSelectedRows();
-
         getBundledData( savedInstanceState );
 
         setContentView(R.layout.game_list);
@@ -419,6 +418,13 @@ public class GamesList extends XWExpandableListActivity
         // m_phoneStateListener = new XWPhoneStateListener();
         // mgr.listen( m_phoneStateListener,
         //             PhoneStateListener.LISTEN_DATA_CONNECTION_STATE );
+    }
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        loadSelectedRows();
     }
 
     @Override
@@ -1188,9 +1194,13 @@ public class GamesList extends XWExpandableListActivity
     {
         int keyID = R.string.key_selected_games;
         String[] asStrings = XWPrefs.getPrefsStringArray( this, keyID );
+        Set<Long> allGames = DBUtils.getAllGames( this );
         HashSet<Long> result = new HashSet<Long>(asStrings.length);
         for ( String str : asStrings ) {
-            result.add( Long.parseLong( str ) );
+            long rowid = Long.parseLong( str );
+            if ( allGames.contains( rowid ) ) {
+                result.add( rowid );
+            }
         }
         m_selected = result;
     }

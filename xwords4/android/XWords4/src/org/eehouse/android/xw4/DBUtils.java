@@ -1020,6 +1020,33 @@ public class DBUtils {
         return result;
     }
 
+    public static Set<Long> getAllGames( Context context )
+    {
+        HashSet<Long> result = null;
+        initDB( context );
+        String[] columns = { ROW_ID };
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      null, // selection
+                                      null, // args
+                                      null, // groupBy
+                                      null, // having
+                                      null
+                                      );
+            int index = cursor.getColumnIndex( ROW_ID );
+            result = new HashSet<Long>( cursor.getCount() );
+            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                long rowid = cursor.getInt( index );
+                result.add( rowid );
+            }
+            cursor.close();
+            db.close();
+        }
+
+        return result;
+    }
+
     public static long getGroupForGame( Context context, long rowid )
     {
         long result = ROWID_NOTFOUND;
