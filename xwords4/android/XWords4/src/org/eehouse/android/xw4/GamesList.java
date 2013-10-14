@@ -338,6 +338,8 @@ public class GamesList extends XWExpandableListActivity
 
         getBundledData( savedInstanceState );
 
+        m_selected = new HashSet<Long>();
+
         setContentView(R.layout.game_list);
         registerForContextMenu( getExpandableListView() );
         DBUtils.setDBChangeListener( this );
@@ -418,20 +420,6 @@ public class GamesList extends XWExpandableListActivity
         // m_phoneStateListener = new XWPhoneStateListener();
         // mgr.listen( m_phoneStateListener,
         //             PhoneStateListener.LISTEN_DATA_CONNECTION_STATE );
-    }
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        loadSelectedRows();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        saveSelectedRows();
-        super.onPause();
     }
 
     @Override
@@ -609,6 +597,15 @@ public class GamesList extends XWExpandableListActivity
         super.onContentChanged();
         if ( null != m_adapter ) {
             m_adapter.expandGroups( getExpandableListView() );
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if ( 0 == m_selected.size() ) {
+            super.onBackPressed();
+        } else {
+            clearSelected();
         }
     }
 
@@ -1141,6 +1138,15 @@ public class GamesList extends XWExpandableListActivity
         return madeGame;
     }
 
+    private void clearSelected()
+    {
+        // clear any selection
+        if ( 0 < m_selected.size() ) {
+            m_adapter.clearSelected( m_selected );
+            m_selected.clear();
+        }
+    }
+
     private boolean launchGameIf()
     {
         boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
@@ -1156,6 +1162,7 @@ public class GamesList extends XWExpandableListActivity
         if ( !m_gameLaunched ) {
             m_gameLaunched = true;
             GameUtils.launchGame( this, rowid, invited );
+            clearSelected();
         }
     }
 
@@ -1177,32 +1184,6 @@ public class GamesList extends XWExpandableListActivity
         startHasGameID( intent );
         startHasRowID( intent );
         tryAlert( intent );
-    }
-
-    private void saveSelectedRows()
-    {
-        String[] rows = new String[m_selected.size()];
-        int ii = 0;
-        for ( Iterator<Long> iter = m_selected.iterator(); iter.hasNext(); ) {
-            rows[ii++] = String.format( "%d", iter.next() );
-        }
-        int keyID = R.string.key_selected_games;
-        XWPrefs.setPrefsStringArray( this, keyID, rows );
-    }
-
-    private void loadSelectedRows()
-    {
-        int keyID = R.string.key_selected_games;
-        String[] asStrings = XWPrefs.getPrefsStringArray( this, keyID );
-        Set<Long> allGames = DBUtils.getAllGames( this );
-        HashSet<Long> result = new HashSet<Long>(asStrings.length);
-        for ( String str : asStrings ) {
-            long rowid = Long.parseLong( str );
-            if ( allGames.contains( rowid ) ) {
-                result.add( rowid );
-            }
-        }
-        m_selected = result;
     }
 
     public static void onGameDictDownload( Context context, Intent intent )

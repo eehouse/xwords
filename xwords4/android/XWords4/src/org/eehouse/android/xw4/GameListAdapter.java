@@ -26,10 +26,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
+
+import java.util.Collections;
 import java.util.HashMap;       // class is not synchronized
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Iterator;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -150,6 +152,11 @@ public class GameListAdapter implements ExpandableListAdapter {
         return ggi.m_name;
     }
 
+    public void clearSelected( Set<Long> rowids )
+    {
+        deselect( rowids );
+    }
+
     //////////////////////////////////////////////////////////////////////////
     // ExpandableListAdapter interface
     //////////////////////////////////////////////////////////////////////////
@@ -171,12 +178,11 @@ public class GameListAdapter implements ExpandableListAdapter {
         DBUtils.setGroupExpanded( m_context, groupid, false );
 
         long[] rowids = DBUtils.getGroupGames( m_context, groupid );
+        HashSet<Long> asSet = new HashSet<Long>(rowids.length);
         for ( long rowid : rowids ) {
-            // this is horribly ineffecient. Can groupid be used as a
-            // hint?
-            GameListItem item = getGameItemFor( rowid );
-            item.setSelected( false );
+            asSet.add( rowid );
         }
+        deselect( asSet );
     }
 
     public void onGroupExpanded( int groupPosition )
@@ -356,6 +362,33 @@ public class GameListAdapter implements ExpandableListAdapter {
     private GameGroupInfo getInfoForGroup( int groupPosition )
     {
         return gameInfo().get( getPositions()[groupPosition] );
+    }
+
+    private void deselect( Set<Long> rowids )
+    {
+        GameListItem[] items = new GameListItem[rowids.size()];
+        getGameItemsFor( rowids, items );
+        for ( GameListItem item : items ) {
+            item.setSelected( false );
+        }
+    }
+
+    private void getGameItemsFor( Set<Long> rowids, GameListItem[] items )
+    {
+        int next = 0;
+        int count = m_list.getChildCount();
+        for ( int ii = 0; ii < count; ++ii ) {
+            View view = m_list.getChildAt( ii );
+            if ( view instanceof GameListItem ) {
+                GameListItem tryme = (GameListItem)view;
+                if ( rowids.contains( tryme.getRowID() ) ) {
+                    items[next++] = tryme;
+                    if ( next >= items.length ) {
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     private GameListItem getGameItemFor( long rowid )

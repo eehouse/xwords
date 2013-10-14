@@ -63,7 +63,6 @@
 
   <!-- database keys whose entries aren't visible prefs -->
   <string name="key_closed_langs">key_closed_langs</string>
-  <string name="key_selected_games">key_selected_games</string>
   <string name="key_bt_names">key_bt_names</string>
   <string name="key_bt_addrs">key_bt_addrs</string>
   <string name="key_sms_phones">key_sms_phones</string>
