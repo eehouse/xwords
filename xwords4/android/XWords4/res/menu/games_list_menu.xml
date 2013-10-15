@@ -8,7 +8,7 @@
           />
     <item android:id="@+id/gamel_menu_newgroup"
           android:title="@string/button_new_group"
-          android:icon="@android:drawable/ic_menu_add"
+          android:icon="@drawable/content_new"
           />
     <item android:id="@+id/gamel_menu_delete"
           android:title="@string/list_item_delete"
