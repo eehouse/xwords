@@ -43,7 +43,7 @@ public class XWApp extends Application {
     
     public static final String SMS_PUBLIC_HEADER = "-XW4";
     public static final int MAX_TRAY_TILES = 7; // comtypes.h
-    public static final int SEL_COLOR = Color.argb( 255, 127, 127, 255 );
+    public static final int SEL_COLOR = Color.argb( 0xFF, 0xCF, 0XE9, 0XF3 );
 
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;
