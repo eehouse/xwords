@@ -29,6 +29,7 @@ public class DlgState implements Parcelable {
     public int m_posButton;
     public int m_cbckID = 0;
     public int m_prefsKey;
+    public Object[] m_params;
 
     public DlgState( int id, String msg, int cbckID )
     {

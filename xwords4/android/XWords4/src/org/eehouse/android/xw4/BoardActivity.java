@@ -785,7 +785,7 @@ public class BoardActivity extends XWActivity
                 showNotAgainDlgThen( R.string.not_again_done, 
                                      R.string.key_notagain_done, COMMIT_ACTION );
             } else {
-                dlgButtonClicked( COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE );
+                dlgButtonClicked( COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
             }
             break;
 
@@ -891,7 +891,7 @@ public class BoardActivity extends XWActivity
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         if ( LAUNCH_INVITE_ACTION == id ) {
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
@@ -1302,7 +1302,7 @@ public class BoardActivity extends XWActivity
             m_toastStr = toastStr;
             if ( naMsg == 0 ) {
                 dlgButtonClicked( SHOW_EXPL_ACTION, 
-                                  AlertDialog.BUTTON_POSITIVE );
+                                  AlertDialog.BUTTON_POSITIVE, null );
             } else {
                 showNotAgainDlgThen( naMsg, naKey, SHOW_EXPL_ACTION );
             }

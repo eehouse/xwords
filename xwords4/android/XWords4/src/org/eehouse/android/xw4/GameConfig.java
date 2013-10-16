@@ -600,7 +600,7 @@ public class GameConfig extends XWActivity
     }
 
     @Override
-    public void dlgButtonClicked( int id, int button )
+    public void dlgButtonClicked( int id, int button, Object[] params )
     {
         switch( id ) {
         case LOCKED_CHANGE_ACTION:

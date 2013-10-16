@@ -644,7 +644,7 @@ public class DictsActivity extends XWExpandableListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         switch( id ) {
         case DELETE_DICT_ACTION:

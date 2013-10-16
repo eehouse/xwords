@@ -552,7 +552,7 @@ public class GamesList extends XWExpandableListActivity
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
             switch( id ) {

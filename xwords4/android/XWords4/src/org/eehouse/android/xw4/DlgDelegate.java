@@ -56,7 +56,7 @@ public class DlgDelegate {
     private static final String STATE_KEYF = "STATE_%d";
 
     public interface DlgClickNotify {
-        void dlgButtonClicked( int id, int button );
+        void dlgButtonClicked( int id, int button, Object[] params );
     }
 
     private Activity m_activity;
@@ -164,7 +164,8 @@ public class DlgDelegate {
             // dialog
             if ( SKIP_CALLBACK != callbackID ) {
                 m_clickCallback.dlgButtonClicked( callbackID, 
-                                                  AlertDialog.BUTTON_POSITIVE );
+                                                  AlertDialog.BUTTON_POSITIVE,
+                                                  null );
             }
         } else {
             String msg = m_activity.getString( msgID );
@@ -202,7 +203,7 @@ public class DlgDelegate {
         } else {
             post( new Runnable() {
                     public void run() {
-                        m_clickCallback.dlgButtonClicked( callbackID, EMAIL_BTN );
+                        m_clickCallback.dlgButtonClicked( callbackID, EMAIL_BTN, null );
                     } 
                 });
         }
@@ -345,7 +346,7 @@ public class DlgDelegate {
                     if ( SKIP_CALLBACK != state.m_cbckID ) {
                         m_clickCallback.
                             dlgButtonClicked( state.m_cbckID, 
-                                              AlertDialog.BUTTON_POSITIVE );
+                                              AlertDialog.BUTTON_POSITIVE, null );
                     }
                 }
             };
@@ -411,7 +412,8 @@ public class DlgDelegate {
                 public void onClick( DialogInterface dlg, int button ) {
                     if ( SKIP_CALLBACK != state.m_cbckID ) {
                         m_clickCallback.dlgButtonClicked( state.m_cbckID, 
-                                                          button );
+                                                          button, 
+                                                          state.m_params );
                     }
                 }
             };
@@ -428,7 +430,8 @@ public class DlgDelegate {
                         dropState( state );
                         if ( SKIP_CALLBACK != state.m_cbckID ) {
                             m_clickCallback.dlgButtonClicked( state.m_cbckID, 
-                                                              DISMISS_BUTTON );
+                                                              DISMISS_BUTTON, 
+                                                              state.m_params );
                         }
                         m_activity.removeDialog( id );
                     }

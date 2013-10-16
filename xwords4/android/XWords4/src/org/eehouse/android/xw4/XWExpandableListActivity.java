@@ -127,7 +127,7 @@ public class XWExpandableListActivity extends ExpandableListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         Assert.fail();
     }

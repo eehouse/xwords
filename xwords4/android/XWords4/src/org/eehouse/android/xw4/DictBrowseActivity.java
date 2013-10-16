@@ -301,7 +301,7 @@ public class DictBrowseActivity extends XWListActivity
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         Assert.assertTrue( FINISH_ACTION == id ); 
         finish();

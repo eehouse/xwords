@@ -149,7 +149,7 @@ public class NewGameActivity extends XWActivity {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         switch( id ) {
         case NEW_GAME_ACTION:
