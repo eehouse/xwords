@@ -85,12 +85,11 @@ public class GamesList extends XWExpandableListActivity
 
     private static final int NEW_NET_GAME_ACTION = 1;
     private static final int RESET_GAME_ACTION = 2;
-    private static final int DELETE_GAME_ACTION = 3;
-    private static final int SYNC_MENU_ACTION = 4;
-    private static final int NEW_FROM_ACTION = 5;
-    private static final int DELETE_GROUP_ACTION = 6;
-    private static final int DELETE_SELGAMES_ACTION = 7;
-    private static final int OPEN_GAME_ACTION = 8;
+    private static final int SYNC_MENU_ACTION = 3;
+    private static final int NEW_FROM_ACTION = 4;
+    private static final int DELETE_GROUP_ACTION = 5;
+    private static final int DELETE_SELGAMES_ACTION = 6;
+    private static final int OPEN_GAME_ACTION = 7;
     private static final int[] DEBUGITEMS = { R.id.gamel_menu_loaddb
                                               , R.id.gamel_menu_storedb
                                               , R.id.gamel_menu_checkupdates
@@ -552,9 +551,6 @@ public class GamesList extends XWExpandableListActivity
                 GameUtils.resetGame( this, m_rowid );
                 onContentChanged(); // required because position may change
                 break;
-            case DELETE_GAME_ACTION:
-                GameUtils.deleteGame( this, m_rowid, true );
-                break;
             case SYNC_MENU_ACTION:
                 doSyncMenuitem();
                 break;
@@ -780,8 +776,9 @@ public class GamesList extends XWExpandableListActivity
         m_rowid = rowid;
         
         if ( R.id.list_item_delete == menuID ) {
-            showConfirmThen( R.string.confirm_delete, R.string.button_delete, 
-                             DELETE_GAME_ACTION );
+            showOKOnlyDialog( "This menu is going away soon. To delete games, "
+                              + "select them by tapping the left icon then use "
+                              + "action bar or screen menu's new delete item." );
         } else {
             if ( checkWarnNoDict( m_rowid ) ) {
                 switch ( menuID ) {
