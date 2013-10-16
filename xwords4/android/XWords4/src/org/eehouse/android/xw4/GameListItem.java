@@ -223,7 +223,12 @@ public class GameListItem extends LinearLayout
             setOnClickListener( new View.OnClickListener() {
                     @Override
                     public void onClick( View v ) {
-                        m_cb.itemClicked( m_rowid, summary );
+                        // if selected, just un-select
+                        if ( null != m_origDrawable ) {
+                            toggleSelected();
+                        } else {
+                            m_cb.itemClicked( m_rowid, summary );
+                        }
                     }
                 } );
 
