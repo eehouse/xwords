@@ -80,6 +80,7 @@
   <string name="key_udp_interval">key_udp_interval</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
+  <string name="key_notagain_newselect">key_notagain_newselect</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
   <string name="key_notagain_relay">key_notagain_relay</string>
   <string name="key_notagain_hintprev">key_notagain_hintprev</string>
