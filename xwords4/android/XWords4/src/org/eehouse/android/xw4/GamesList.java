@@ -83,13 +83,14 @@ public class GamesList extends XWExpandableListActivity
     private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
     private static final String ALERT_MSG = "alert_msg";
 
-    private static final int NEW_NET_GAME_ACTION = 1;
-    private static final int RESET_GAME_ACTION = 2;
-    private static final int SYNC_MENU_ACTION = 3;
-    private static final int NEW_FROM_ACTION = 4;
-    private static final int DELETE_GROUP_ACTION = 5;
-    private static final int DELETE_SELGAMES_ACTION = 6;
-    private static final int OPEN_GAME_ACTION = 7;
+    private static enum GamesActions { NEW_NET_GAME,
+            RESET_GAME,
+            SYNC_MENU,
+            NEW_FROM,
+            DELETE_GROUP,
+            DELETE_SELGAMES,
+            OPEN_GAME
+            };
     private static final int[] DEBUGITEMS = { R.id.gamel_menu_loaddb
                                               , R.id.gamel_menu_storedb
                                               , R.id.gamel_menu_checkupdates
@@ -496,7 +497,8 @@ public class GamesList extends XWExpandableListActivity
         if ( !m_gameLaunched ) {
             showNotAgainDlgThen( R.string.not_again_newselect, 
                                  R.string.key_notagain_newselect,
-                                 OPEN_GAME_ACTION, rowid, summary );
+                                 GamesActions.OPEN_GAME.ordinal(), 
+                                 rowid, summary );
         }
     }
 
@@ -541,34 +543,35 @@ public class GamesList extends XWExpandableListActivity
     public void dlgButtonClicked( int id, int which, Object[] params )
     {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
-            switch( id ) {
-            case NEW_NET_GAME_ACTION:
+            GamesActions action = GamesActions.values()[id];
+            switch( action ) {
+            case NEW_NET_GAME:
                 if ( checkWarnNoDict( m_netLaunchInfo ) ) {
                     makeNewNetGameIf();
                 }
                 break;
-            case RESET_GAME_ACTION:
+            case RESET_GAME:
                 GameUtils.resetGame( this, m_rowid );
                 onContentChanged(); // required because position may change
                 break;
-            case SYNC_MENU_ACTION:
+            case SYNC_MENU:
                 doSyncMenuitem();
                 break;
-            case NEW_FROM_ACTION:
+            case NEW_FROM:
                 long newid = GameUtils.dupeGame( GamesList.this, m_rowid );
                 if ( null != m_adapter ) {
                     m_adapter.inval( newid );
                 }
                 break;
 
-            case DELETE_GROUP_ACTION:
+            case DELETE_GROUP:
                 GameUtils.deleteGroup( this, m_groupid );
                 onContentChanged();
                 break;
-            case DELETE_SELGAMES_ACTION:
+            case DELETE_SELGAMES:
                 deleteSelected();
                 break;
-            case OPEN_GAME_ACTION:
+            case OPEN_GAME:
                 doOpenGame( params );
                 break;
             default:
@@ -703,7 +706,7 @@ public class GamesList extends XWExpandableListActivity
 
         case R.id.gamel_menu_delete:
             showConfirmThen( R.string.confirm_seldeletes, R.string.button_delete, 
-                             DELETE_SELGAMES_ACTION );
+                             GamesActions.DELETE_SELGAMES.ordinal() );
             break;
 
         case R.id.gamel_menu_dicts:
@@ -713,7 +716,7 @@ public class GamesList extends XWExpandableListActivity
         case R.id.gamel_menu_checkmoves:
             showNotAgainDlgThen( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
-                                 SYNC_MENU_ACTION );
+                                 GamesActions.SYNC_MENU.ordinal() );
             break;
 
         case R.id.gamel_menu_checkupdates:
@@ -784,7 +787,8 @@ public class GamesList extends XWExpandableListActivity
                 switch ( menuID ) {
                 case R.id.list_item_reset:
                     showConfirmThen( R.string.confirm_reset, 
-                                     R.string.button_reset, RESET_GAME_ACTION );
+                                     R.string.button_reset, 
+                                     GamesActions.RESET_GAME.ordinal() );
                     break;
                 case R.id.list_item_config:
                     GameUtils.doConfig( this, m_rowid, GameConfig.class );
@@ -802,7 +806,7 @@ public class GamesList extends XWExpandableListActivity
                 case R.id.list_item_new_from:
                     showNotAgainDlgThen( R.string.not_again_newfrom,
                                          R.string.key_notagain_newfrom, 
-                                         NEW_FROM_ACTION );
+                                         GamesActions.NEW_FROM.ordinal() );
                     break;
 
                 case R.id.list_item_copy:
@@ -850,7 +854,7 @@ public class GamesList extends XWExpandableListActivity
                 if ( 0 < nGames ) {
                     msg += getString( R.string.group_confirm_delf, nGames );
                 }
-                showConfirmThen( msg, DELETE_GROUP_ACTION );
+                showConfirmThen( msg, GamesActions.DELETE_GROUP.ordinal() );
             }
             break;
         case R.id.list_group_rename:
@@ -1014,7 +1018,7 @@ public class GamesList extends XWExpandableListActivity
             String msg = getString( R.string.dup_game_queryf, 
                                     create.toString() );
             m_netLaunchInfo = nli;
-            showConfirmThen( msg, NEW_NET_GAME_ACTION );
+            showConfirmThen( msg, GamesActions.NEW_NET_GAME.ordinal() );
         }
     } // startNewNetGame
 
