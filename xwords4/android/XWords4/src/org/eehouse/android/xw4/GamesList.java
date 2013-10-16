@@ -687,6 +687,7 @@ public class GamesList extends XWExpandableListActivity
 
         int nSelected = m_selected.size();
         Utils.setItemVisible( menu, R.id.gamel_menu_delete, 0 < nSelected );
+        Utils.setItemVisible( menu, R.id.listl_item_config, 1 == nSelected );
 
         return super.onPrepareOptionsMenu( menu );
     }
@@ -702,6 +703,11 @@ public class GamesList extends XWExpandableListActivity
 
         case R.id.gamel_menu_newgroup:
             showDialog( NEW_GROUP );
+            break;
+
+        case R.id.listl_item_config:
+            long rowid = m_selected.iterator().next();
+            GameUtils.doConfig( this, rowid, GameConfig.class );
             break;
 
         case R.id.gamel_menu_delete:
@@ -778,10 +784,11 @@ public class GamesList extends XWExpandableListActivity
 
         m_rowid = rowid;
         
-        if ( R.id.list_item_delete == menuID ) {
-            showOKOnlyDialog( "This menu is going away soon. To delete games, "
-                              + "select them by tapping the left icon then use "
-                              + "action bar or screen menu's new delete item." );
+        if ( R.id.list_item_delete == menuID
+             || R.id.list_item_config == menuID ) {
+            showOKOnlyDialog( "This menu is going away soon. Please select games"
+                              + " by tapping the left icons then use action bar"
+                              + " or the screen menu to operate on the selection.");
         } else {
             if ( checkWarnNoDict( m_rowid ) ) {
                 switch ( menuID ) {
@@ -789,9 +796,6 @@ public class GamesList extends XWExpandableListActivity
                     showConfirmThen( R.string.confirm_reset, 
                                      R.string.button_reset, 
                                      GamesActions.RESET_GAME.ordinal() );
-                    break;
-                case R.id.list_item_config:
-                    GameUtils.doConfig( this, m_rowid, GameConfig.class );
                     break;
                 case R.id.list_item_rename:
                     showDialog( RENAME_GAME );

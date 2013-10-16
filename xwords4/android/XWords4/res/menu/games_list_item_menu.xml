@@ -1,17 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/list_item_config"
-          android:title="@string/list_item_config"
-          />
     <item android:id="@+id/list_item_rename"
           android:title="@string/list_item_rename"
           />
     <item android:id="@+id/list_item_move"
           android:title="@string/list_item_move"
-          />
-    <item android:id="@+id/list_item_delete"
-          android:title="@string/list_item_delete"
           />
     <item android:id="@+id/list_item_reset"
           android:title="@string/list_item_reset"
@@ -22,6 +16,16 @@
     <item android:id="@+id/list_item_copy"
           android:title="@string/list_item_copy"
           />
+
+    <item android:title="(rest deprecated)"/>
+
+    <item android:id="@+id/list_item_delete"
+          android:title="@string/list_item_delete"
+          />
+    <item android:id="@+id/list_item_config"
+          android:title="@string/list_item_config"
+          />
+  
     <!-- <item android:id="@+id/list_item_hide" -->
     <!--       android:title="@string/list_item_hide" -->
     <!--       /> -->

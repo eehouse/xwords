@@ -6,14 +6,19 @@
           android:icon="@drawable/content_new"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/gamel_menu_newgroup"
-          android:title="@string/button_new_group"
-          android:icon="@drawable/content_new"
-          />
     <item android:id="@+id/gamel_menu_delete"
           android:title="@string/list_item_delete"
           android:icon="@drawable/ic_action_delete"
           android:showAsAction="ifRoom"
+          />
+    <item android:id="@+id/listl_item_config"
+          android:title="@string/list_item_config"
+          android:icon="@drawable/action_settings"
+          android:showAsAction="ifRoom"
+          />
+    <item android:id="@+id/gamel_menu_newgroup"
+          android:title="@string/button_new_group"
+          android:icon="@drawable/content_new"
           />
     <item android:id="@+id/gamel_menu_prefs"
           android:title="@string/menu_prefs"
