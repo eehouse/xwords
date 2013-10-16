@@ -369,7 +369,9 @@ public class GameListAdapter implements ExpandableListAdapter {
         GameListItem[] items = new GameListItem[rowids.size()];
         getGameItemsFor( rowids, items );
         for ( GameListItem item : items ) {
-            item.setSelected( false );
+            if ( null != item ) {
+                item.setSelected( false );
+            }
         }
     }
 
