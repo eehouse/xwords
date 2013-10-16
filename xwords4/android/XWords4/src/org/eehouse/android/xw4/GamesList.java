@@ -786,9 +786,10 @@ public class GamesList extends XWExpandableListActivity
         
         if ( R.id.list_item_delete == menuID
              || R.id.list_item_config == menuID ) {
-            showOKOnlyDialog( "This menu is going away soon. Please select games"
-                              + " by tapping the left icons then use action bar"
-                              + " or the screen menu to operate on the selection.");
+            showOKOnlyDialog( "This menu item is going away soon. Please select"
+                              + " games by tapping the left icons then use"
+                              + " action bar icons or the screen menu to operate"
+                              + " on the selection." );
         } else {
             if ( checkWarnNoDict( m_rowid ) ) {
                 switch ( menuID ) {
