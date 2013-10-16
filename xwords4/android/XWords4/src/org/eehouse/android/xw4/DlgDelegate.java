@@ -353,7 +353,8 @@ public class DlgDelegate {
                     if ( SKIP_CALLBACK != state.m_cbckID ) {
                         m_clickCallback.
                             dlgButtonClicked( state.m_cbckID, 
-                                              AlertDialog.BUTTON_POSITIVE, null );
+                                              AlertDialog.BUTTON_POSITIVE, 
+                                              state.m_params );
                     }
                 }
             };
