@@ -711,7 +711,9 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.gamel_menu_delete:
-            showConfirmThen( R.string.confirm_seldeletes, R.string.button_delete, 
+            String msg = Utils.format( this, R.string.confirm_seldeletesf, 
+                                       m_selected.size() );
+            showConfirmThen( msg, R.string.button_delete, 
                              GamesActions.DELETE_SELGAMES.ordinal() );
             break;
 
