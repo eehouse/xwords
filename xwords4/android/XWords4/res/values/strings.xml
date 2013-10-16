@@ -2176,7 +2176,7 @@
     <string name="relay_alert_title">Message from relay</string>
 
     <string name="not_again_newselect">Tapping a game opens it.\n\nYou
-    can instead tap the icon at the left to select or deselect games,
+    can instead tap the icons at the left to select or deselect games,
     then act on selected games, e.g. to delete them, using the menu or
     \"Actionbar.\"</string>
 </resources>

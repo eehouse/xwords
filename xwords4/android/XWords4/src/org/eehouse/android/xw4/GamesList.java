@@ -90,6 +90,7 @@ public class GamesList extends XWExpandableListActivity
     private static final int NEW_FROM_ACTION = 5;
     private static final int DELETE_GROUP_ACTION = 6;
     private static final int DELETE_SELGAMES_ACTION = 7;
+    private static final int OPEN_GAME_ACTION = 8;
     private static final int[] DEBUGITEMS = { R.id.gamel_menu_loaddb
                                               , R.id.gamel_menu_storedb
                                               , R.id.gamel_menu_checkupdates
@@ -494,23 +495,9 @@ public class GamesList extends XWExpandableListActivity
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
         if ( !m_gameLaunched ) {
-            if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
-                 && summary.roomName.length() == 0 ) {
-                // If it's unconfigured and of the type RelayGameActivity
-                // can handle send it there, otherwise use the full-on
-                // config.
-                Class clazz;
-                if ( RelayGameActivity.isSimpleGame( summary ) ) {
-                    clazz = RelayGameActivity.class;
-                } else {
-                    clazz = GameConfig.class;
-                }
-                GameUtils.doConfig( this, rowid, clazz );
-            } else {
-                if ( checkWarnNoDict( rowid ) ) {
-                    launchGame( rowid );
-                }
-            }
+            showNotAgainDlgThen( R.string.not_again_newselect, 
+                                 R.string.key_notagain_newselect,
+                                 OPEN_GAME_ACTION, rowid, summary );
         }
     }
 
@@ -584,6 +571,9 @@ public class GamesList extends XWExpandableListActivity
                 break;
             case DELETE_SELGAMES_ACTION:
                 deleteSelected();
+                break;
+            case OPEN_GAME_ACTION:
+                doOpenGame( params );
                 break;
             default:
                 Assert.fail();
@@ -1184,6 +1174,31 @@ public class GamesList extends XWExpandableListActivity
         startHasGameID( intent );
         startHasRowID( intent );
         tryAlert( intent );
+    }
+
+    private void doOpenGame( Object[] params )
+    {
+        GameSummary summary = (GameSummary)params[1];
+        long rowid = (Long)params[0];
+
+        if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
+             && summary.roomName.length() == 0 ) {
+            // If it's unconfigured and of the type RelayGameActivity
+            // can handle send it there, otherwise use the full-on
+            // config.
+            Class clazz;
+            
+            if ( RelayGameActivity.isSimpleGame( summary ) ) {
+                clazz = RelayGameActivity.class;
+            } else {
+                clazz = GameConfig.class;
+            }
+            GameUtils.doConfig( this, rowid, clazz );
+        } else {
+            if ( checkWarnNoDict( rowid ) ) {
+                launchGame( rowid );
+            }
+        }
     }
 
     public static void onGameDictDownload( Context context, Intent intent )

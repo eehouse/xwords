@@ -85,6 +85,12 @@ public class XWExpandableListActivity extends ExpandableListActivity
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
+                                        int action, Object... params )
+    {
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action, params );
+    }
+
+    protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         int action )
     {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );

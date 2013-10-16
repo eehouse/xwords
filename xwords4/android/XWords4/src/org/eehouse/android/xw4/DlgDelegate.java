@@ -157,7 +157,7 @@ public class DlgDelegate {
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     int callbackID )
+                                     int callbackID, Object[] params )
     {
         if ( XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
             // If it's set, do the action without bothering with the
@@ -165,15 +165,22 @@ public class DlgDelegate {
             if ( SKIP_CALLBACK != callbackID ) {
                 m_clickCallback.dlgButtonClicked( callbackID, 
                                                   AlertDialog.BUTTON_POSITIVE,
-                                                  null );
+                                                  params );
             }
         } else {
             String msg = m_activity.getString( msgID );
             DlgState state = 
-                new DlgState( DIALOG_NOTAGAIN, msg, callbackID, prefsKey );
+                new DlgState( DIALOG_NOTAGAIN, msg, callbackID, prefsKey, 
+                              params );
             addState( state );
             m_activity.showDialog( DIALOG_NOTAGAIN );
         }
+    }
+
+    public void showNotAgainDlgThen( int msgID, int prefsKey,
+                                     int callbackID  )
+    {
+        showNotAgainDlgThen( msgID, prefsKey, callbackID, null );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey )
