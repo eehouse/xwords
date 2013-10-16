@@ -13,27 +13,10 @@
        # This is the first screen you see when you launch Crosswords
        ############################################################ 
       -->
-    <!-- These two messages appear at the top of the list of games
-         (unless the hide_intro preferences checkbox is checked.)-->
-    <string name="empty_games_list">Use the button below to create a
-      game. Tap an existing game to play it or long-tap it for other
-      options.</string>
-      <!--  -->
-    <string name="empty_games_list2">You can hide this and the buttons
-      below in the Appearance section of Settings (accessed via your
-      device\'s menu key.)</string>
 
-    <!-- Text of button at bottom of main games-list screen and of
-         menuitem in main games-list screen's menu.  (The botton can
-         be hidden in the same way as the above text.) -->
+    <!-- Text of menuitem in main games-list screen's menu -->
     <string name="button_new_game">Add game</string>
     <string name="button_new_group">Add group</string>
-
-    <!-- When the game list is empty and the above messages and button
-         are hidden via preferences, this text is shown -->
-    <string name="empty_list_msg">Use the menu key to add a
-      game.</string>
-
 
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name

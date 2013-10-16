@@ -56,7 +56,6 @@
   <string name="key_notify_sound">key_notify_sound</string>
   <string name="key_notify_vibrate">key_notify_vibrate</string>
   <string name="key_enable_sms">key_enable_sms</string>
-  <string name="key_hide_intro">key_hide_intro</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>

@@ -117,11 +117,6 @@
 	   android:entryValues="@array/game_summary_values"
        android:defaultValue="@string/game_summary_field_opponents"
        />
-    <CheckBoxPreference android:key="@string/key_hide_intro"
-                        android:title="@string/hide_intro"
-                        android:summary="@string/hide_intro_summary"
-                        android:defaultValue="false"
-                        />
     <CheckBoxPreference android:key="@string/key_hide_title"
                         android:title="@string/hide_title"
                         android:summary="@string/hide_title_summary"

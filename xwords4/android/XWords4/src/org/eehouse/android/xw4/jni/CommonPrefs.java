@@ -252,11 +252,6 @@ public class CommonPrefs extends XWPrefs {
         return getPrefsBoolean( context, R.string.key_notify_vibrate, false );
     }
 
-    public static boolean getHideIntro( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_hide_intro, false );
-    }
-
     public static boolean getKeepScreenOn( Context context )
     {
         return getPrefsBoolean( context, R.string.key_keep_screenon, false );

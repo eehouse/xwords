@@ -352,26 +352,6 @@ public class GamesList extends XWExpandableListActivity
         }
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, isUpgrade );
 
-        // setDefaultKeyMode(DEFAULT_KEYS_SHORTCUT);
-
-        Button newGameB = (Button)findViewById(R.id.new_game);
-        newGameB.setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View v ) {
-                    // addGame( false );
-                    startNewGameActivity();
-                    // showNotAgainDlg( R.string.not_again_newgame, 
-                    //                  R.string.key_notagain_newgame );
-                }
-            });
-        newGameB = (Button)findViewById(R.id.new_group);
-        newGameB.setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View v ) {
-                    showDialog( NEW_GROUP );
-                }
-            });
-
         String field = CommonPrefs.getSummaryField( this );
         long[] positions = XWPrefs.getGroupPositions( this );
         m_adapter = new GameListAdapter( this, getExpandableListView(),
@@ -398,29 +378,6 @@ public class GamesList extends XWExpandableListActivity
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         invalRowID( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         tryStartsFromIntent( intent );
-    }
-
-    @Override
-    protected void onStart()
-    {
-        super.onStart();
-
-        boolean hide = CommonPrefs.getHideIntro( this );
-        int hereOrGone = hide ? View.GONE : View.VISIBLE;
-        for ( int id : new int[]{ R.id.empty_games_list, 
-                                  R.id.new_buttons } ) {
-            View view = findViewById( id );
-            view.setVisibility( hereOrGone );
-        }
-        View empty = findViewById( R.id.empty_list_msg );
-        empty.setVisibility( hide ? View.VISIBLE : View.GONE );
-        getExpandableListView().setEmptyView( hide? empty : null );
-
-        // TelephonyManager mgr = 
-        //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
-        // m_phoneStateListener = new XWPhoneStateListener();
-        // mgr.listen( m_phoneStateListener,
-        //             PhoneStateListener.LISTEN_DATA_CONNECTION_STATE );
     }
 
     @Override
