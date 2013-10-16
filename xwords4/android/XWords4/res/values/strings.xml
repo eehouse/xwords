@@ -105,7 +105,7 @@
     <string name="gamel_menu_dicts">Wordlists</string>
 
     <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">Settings</string>
+    <string name="menu_prefs">App Settings...</string>
 
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
@@ -309,7 +309,7 @@
        ############################################################ 
       -->
     <!-- window title (game name substituted for %s) -->
-    <string name="title_game_configf">%s settings</string>  
+    <string name="title_game_configf">Settings for %s</string>  
 
     <!-- alternate window title used when game is networked -->
     <string name="title_gamenet_configf">%s settings (networked)</string>  
@@ -527,8 +527,8 @@
 
     <!-- Buttons shown at bottom when board is in exchange mode,
          i.e. after user has picked board_menu_trade menu item -->
-    <string name="button_trade_commit">Commit exchange</string>
-    <string name="button_trade_cancel">Cancel exchange</string>
+    <string name="button_trade_commit">Commit trade</string>
+    <string name="button_trade_cancel">Cancel trade</string>
 
     <string name="entering_trade">Tap tiles to select...</string>
 
@@ -653,7 +653,7 @@
 
     <!-- This menu begins an exchange of tiles: puts the board into
          trade mode. -->
-    <string name="board_menu_trade">Exchange tiles</string>
+    <string name="board_menu_trade">Trade</string>
 
     <!-- hide and shows the tray.  On devices where there is enough
          room for the full board and tray to be shown then hiding the
@@ -797,7 +797,7 @@
        ############################################################
       -->
     <!-- window title -->
-    <string name="title_prefs">Crosswords settings</string>  
+    <string name="title_prefs">Crosswords Settings</string>
 
     <!--
        ############################################################
