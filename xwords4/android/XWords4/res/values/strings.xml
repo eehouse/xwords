@@ -666,7 +666,7 @@
     <string name="board_menu_undo_last">Undo last</string>
 
     <!-- Title of submenu -->
-    <string name="board_submenu_game">Game</string>
+    <string name="board_submenu_game">Game -></string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles in
          the language of the game along with how many of each there
