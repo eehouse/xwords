@@ -1081,7 +1081,7 @@ public class GamesList extends XWExpandableListActivity
             GameUtils.deleteGame( this, rowid, false );
         }
         m_selected.clear();
-
+        Utils.invalidateOptionsMenuIf( this );
         NetUtils.informOfDeaths( this );
     }
 
