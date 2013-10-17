@@ -740,7 +740,6 @@ public class BoardActivity extends XWActivity
 
         Utils.setItemVisible( menu, R.id.board_menu_undo_last, !inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_tray, !inTrade );
-        Utils.setItemVisible( menu, R.id.board_submenu_game, !inTrade );
 
         if ( !inTrade ) {
             boolean enabled = null == m_gsi || m_gsi.curTurnSelected;
