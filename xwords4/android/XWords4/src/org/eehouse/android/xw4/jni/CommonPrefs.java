@@ -24,7 +24,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Paint;
+import android.os.Build;
 import android.preference.PreferenceManager;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.XWPrefs;
@@ -239,7 +241,9 @@ public class CommonPrefs extends XWPrefs {
 
     public static boolean getHideTitleBar( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_hide_title, false );
+        boolean hideByDefault = 11 > Integer.valueOf( Build.VERSION.SDK );
+        return getPrefsBoolean( context, R.string.key_hide_title, 
+                                hideByDefault );
     }
 
     public static boolean getSoundNotify( Context context )
