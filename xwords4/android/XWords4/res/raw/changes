@@ -5,7 +5,7 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 69 release</b>
+<b>Crosswords 4.4 beta 70 release</b>
 
 <p>This release features a major upgrade to how the app communicates
   with the relay, in essence switching from each game communicating
@@ -18,8 +18,7 @@
 
 <h3>New with this release</h3>
 <ul>
-    <li>Fix relay registration problem (Thanks DS!)</li>
-    <li>Show Turn done/Pass in actionbar where possible</li>
+    <li>Work around bug in 2.3.x Android (Thanks O!)</li>
 </ul>
 
 <h3>Next up</h3>
