@@ -8,13 +8,13 @@
           />
     <item android:id="@+id/gamel_menu_delete"
           android:title="@string/list_item_delete"
-          android:icon="@drawable/ic_action_delete"
+          android:icon="@drawable/content_discard__gen"
           android:showAsAction="ifRoom"
           />
 
     <item android:id="@+id/list_group_delete"
           android:title="@string/list_group_delete"
-          android:icon="@drawable/ic_action_delete"
+          android:icon="@drawable/content_discard__gen"
           android:showAsAction="ifRoom"
           />
 
