@@ -195,8 +195,14 @@ public class DlgDelegate {
 
     public void showConfirmThen( String msg, int posButton, int callbackID )
     {
+        showConfirmThen( msg, posButton, callbackID, null );
+    }
+
+    public void showConfirmThen( String msg, int posButton, int callbackID,
+                                 Object[] params )
+    {
         DlgState state = new DlgState( CONFIRM_THEN, msg, posButton, 
-                                       callbackID, 0 );
+                                       callbackID, 0, params );
         addState( state );
         m_activity.showDialog( CONFIRM_THEN );
     }
