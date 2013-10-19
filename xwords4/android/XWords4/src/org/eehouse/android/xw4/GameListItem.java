@@ -43,7 +43,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.GameSummary;
 
 public class GameListItem extends LinearLayout 
-    implements View.OnClickListener {
+    implements View.OnClickListener, GameListAdapter.ClickHandler {
 
     private static HashSet<Long> s_invalRows = new HashSet<Long>();
 
@@ -62,6 +62,7 @@ public class GameListItem extends LinearLayout
     private int m_loadingCount;
     private int m_groupPosition;
     private Drawable m_origDrawable;
+    private boolean m_selected = false;
 
     public GameListItem( Context cx, AttributeSet as ) 
     {
@@ -71,6 +72,18 @@ public class GameListItem extends LinearLayout
         m_rowid = DBUtils.ROWID_NOTFOUND;
         m_lastMoveTime = 0;
         m_loadingCount = 0;
+
+        setOnClickListener( new View.OnClickListener() {
+                @Override
+                public void onClick( View v ) {
+                    // if selected, just un-select
+                    if ( m_selected ) {
+                        toggleSelected();
+                    } else if ( null != m_summary ) {
+                        m_cb.itemClicked( this, m_summary );
+                    }
+                }
+            } );
     }
 
     private void init( Handler handler, long rowid, int groupPosition,
@@ -105,7 +118,7 @@ public class GameListItem extends LinearLayout
     public void setSelected( boolean selected )
     {
         // If new value and state not in sync, force change in state
-        if ( selected != (null != m_origDrawable) ) {
+        if ( selected != m_selected ) {
             toggleSelected();
         }
     }
@@ -214,23 +227,11 @@ public class GameListItem extends LinearLayout
         return state;
     }
 
-    private void setData( final GameSummary summary )
+    private void setData( GameSummary summary )
     {
         if ( null != summary ) {
             TextView tview;
             String state = setName();
-
-            setOnClickListener( new View.OnClickListener() {
-                    @Override
-                    public void onClick( View v ) {
-                        // if selected, just un-select
-                        if ( null != m_origDrawable ) {
-                            toggleSelected();
-                        } else {
-                            m_cb.itemClicked( m_rowid, summary );
-                        }
-                    }
-                } );
 
             LinearLayout list =
                 (LinearLayout)findViewById( R.id.player_list );
@@ -305,14 +306,14 @@ public class GameListItem extends LinearLayout
 
     private void toggleSelected()
     {
-        if ( null == m_origDrawable ) {
+        m_selected = !m_selected;
+        if ( m_selected ) {
             m_origDrawable = getBackground();
             setBackgroundColor( XWApp.SEL_COLOR );
         } else {
             setBackgroundDrawable( m_origDrawable );
-            m_origDrawable = null;
         }
-        m_cb.itemToggled( m_rowid, null != m_origDrawable );
+        m_cb.itemToggled( this, m_selected );
     }
 
     private class LoadItemTask extends AsyncTask<Void, Void, GameSummary> {
@@ -334,7 +335,7 @@ public class GameListItem extends LinearLayout
                 }
             }
 
-            if ( m_cb.getSelected( m_rowid ) && null != m_origDrawable ) {
+            if ( m_cb.getSelected( m_rowid ) && m_selected ) {
                 toggleSelected();
             }
         }
@@ -372,5 +373,11 @@ public class GameListItem extends LinearLayout
     //     }
     //     return TextUtils.join(",", strs );
     // }
+    // GameListAdapter.ClickHandler interface
+
+    public void longClicked()
+    {
+        toggleSelected();
+    }
 
 }

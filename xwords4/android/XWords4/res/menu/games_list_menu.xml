@@ -11,6 +11,13 @@
           android:icon="@drawable/ic_action_delete"
           android:showAsAction="ifRoom"
           />
+
+    <item android:id="@+id/list_group_delete"
+          android:title="@string/list_group_delete"
+          android:icon="@drawable/ic_action_delete"
+          android:showAsAction="ifRoom"
+          />
+
     <item android:id="@+id/listl_item_config"
           android:title="@string/list_item_config"
           android:icon="@drawable/content_edit"
@@ -42,6 +49,38 @@
           android:title="@string/gamel_menu_checkmoves"
           android:icon="@drawable/stat_notify_sync"
           />
+
+    <!-- Game items -->
+    <item android:id="@+id/list_item_rename"
+          android:title="@string/list_item_rename"
+          />
+    <item android:id="@+id/list_item_move"
+          android:title="@string/list_item_move"
+          />
+    <item android:id="@+id/list_item_reset"
+          android:title="@string/list_item_reset"
+          />
+    <item android:id="@+id/list_item_new_from"
+          android:title="@string/list_item_new_from"
+          />
+    <item android:id="@+id/list_item_copy"
+          android:title="@string/list_item_copy"
+          />
+
+    <!-- Group items -->
+    <item android:id="@+id/list_group_default"
+          android:title="@string/list_group_default"
+          />
+    <item android:id="@+id/list_group_rename"
+          android:title="@string/list_group_rename"
+          />
+    <item android:id="@+id/list_group_moveup"
+          android:title="@string/list_group_moveup"
+          />
+    <item android:id="@+id/list_group_movedown"
+          android:title="@string/list_group_movedown"
+          />
+
     <!-- Debug only menuitems -->
     <item android:id="@+id/gamel_menu_checkupdates"
           android:title="@string/gamel_menu_checkupdates"
@@ -53,5 +92,4 @@
           android:title="@string/gamel_menu_loaddb"
           />
 
-    <!-- ic_menu_archive.png -->
 </menu>

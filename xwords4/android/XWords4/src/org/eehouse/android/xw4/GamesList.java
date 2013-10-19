@@ -32,16 +32,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
+// import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -59,7 +58,8 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 
 public class GamesList extends XWExpandableListActivity 
-    implements DBUtils.DBChangeListener,
+    implements OnItemLongClickListener,
+               DBUtils.DBChangeListener,
                GameListAdapter.LoadItemCB, 
                DictImportActivity.DownloadFinishedListener {
 
@@ -91,9 +91,32 @@ public class GamesList extends XWExpandableListActivity
             DELETE_SELGAMES,
             OPEN_GAME
             };
-    private static final int[] DEBUGITEMS = { R.id.gamel_menu_loaddb
-                                              , R.id.gamel_menu_storedb
-                                              , R.id.gamel_menu_checkupdates
+    private static final int[] DEBUGITEMS = { 
+        R.id.gamel_menu_loaddb
+        , R.id.gamel_menu_storedb
+        , R.id.gamel_menu_checkupdates
+    };
+    private static final int[] NOSEL_ITEMS = { 
+        R.id.gamel_menu_newgame
+        ,R.id.gamel_menu_newgroup
+        ,R.id.gamel_menu_prefs
+        ,R.id.gamel_menu_dicts
+        ,R.id.gamel_menu_about
+        ,R.id.gamel_menu_email
+        ,R.id.gamel_menu_checkmoves
+    };
+    private static final int[] ONEGAME_ITEMS = {
+        R.id.listl_item_config
+        ,R.id.list_item_rename
+        ,R.id.list_item_new_from
+        ,R.id.list_item_copy
+    };
+
+    private static final int[] ONEGROUP_ITEMS = {
+        R.id.list_group_default
+        ,R.id.list_group_rename
+        ,R.id.list_group_moveup
+        ,R.id.list_group_movedown
     };
 
     private static boolean s_firstShown = false;
@@ -110,7 +133,8 @@ public class GamesList extends XWExpandableListActivity
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
     private boolean m_gameLaunched = false;
-    private HashSet<Long> m_selected;
+    private HashSet<Long> m_selectedRows;
+    private HashSet<Integer> m_selectedGroups;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -339,10 +363,11 @@ public class GamesList extends XWExpandableListActivity
 
         getBundledData( savedInstanceState );
 
-        m_selected = new HashSet<Long>();
+        m_selectedRows = new HashSet<Long>();
+        m_selectedGroups = new HashSet<Integer>();
 
         setContentView(R.layout.game_list);
-        registerForContextMenu( getExpandableListView() );
+        ExpandableListView listview = getExpandableListView();
         DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = Utils.firstBootThisVersion( this );
@@ -354,11 +379,12 @@ public class GamesList extends XWExpandableListActivity
 
         String field = CommonPrefs.getSummaryField( this );
         long[] positions = XWPrefs.getGroupPositions( this );
-        m_adapter = new GameListAdapter( this, getExpandableListView(),
-                                         new Handler(), this, positions, 
-                                         field );
+        m_adapter = new GameListAdapter( this, listview, new Handler(), 
+                                         this, positions, field );
         setListAdapter( m_adapter );
-        m_adapter.expandGroups( getExpandableListView() );
+        listview.setOnItemLongClickListener( this );
+
+        m_adapter.expandGroups( listview );
 
         NetUtils.informOfDeaths( this );
 
@@ -431,6 +457,16 @@ public class GamesList extends XWExpandableListActivity
         }
     }
 
+    // OnItemLongClickListener interface
+    public boolean onItemLongClick( AdapterView<?> parent, View view, 
+                                    int position, long id ) {
+        boolean success = view instanceof GameListAdapter.ClickHandler;
+        if ( success ) {
+            ((GameListAdapter.ClickHandler)view).longClicked();
+        }
+        return success;
+    }
+
     // DBUtils.DBChangeListener interface
     public void gameSaved( final long rowid, final boolean countChanged )
     {
@@ -446,33 +482,47 @@ public class GamesList extends XWExpandableListActivity
     }
 
     // GameListAdapter.LoadItemCB interface
-    public void itemClicked( long rowid, GameSummary summary )
+    public void itemClicked( Object clicked, GameSummary summary )
     {
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
-        if ( !m_gameLaunched ) {
-            showNotAgainDlgThen( R.string.not_again_newselect, 
-                                 R.string.key_notagain_newselect,
-                                 GamesActions.OPEN_GAME.ordinal(), 
-                                 rowid, summary );
+        if ( clicked instanceof GameListItem ) {
+            if ( !m_gameLaunched ) {
+                long rowid = ((GameListItem)clicked).getRowID();
+                showNotAgainDlgThen( R.string.not_again_newselect, 
+                                     R.string.key_notagain_newselect,
+                                     GamesActions.OPEN_GAME.ordinal(), 
+                                     rowid, summary );
+            }
         }
     }
 
-    public void itemToggled( long rowid, boolean selected )
+    public void itemToggled( Object toggled, boolean selected )
     {
-        int countBefore = m_selected.size();
-        if ( selected ) {
-            m_selected.add( rowid );
-        } else {
-            m_selected.remove( rowid );
+        if ( toggled instanceof GameListItem ) {
+            long rowid = ((GameListItem)toggled).getRowID();
+            if ( selected ) {
+                m_selectedRows.add( rowid );
+                clearSelectedGroups();
+            } else {
+                m_selectedRows.remove( rowid );
+            }
+        } else if ( toggled instanceof GameListGroup ) {
+            int position = ((GameListGroup)toggled).getGroupPosition();
+            if ( selected ) {
+                m_selectedGroups.add( position );
+                clearSelectedRows();
+            } else {
+                m_selectedGroups.remove( position );
+            }
         }
         Utils.invalidateOptionsMenuIf( this );
     }
 
     public boolean getSelected( long rowid )
     {
-        return m_selected.contains( rowid );
+        return m_selectedRows.contains( rowid );
     }
 
     // BTService.MultiEventListener interface
@@ -548,76 +598,12 @@ public class GamesList extends XWExpandableListActivity
 
     @Override
     public void onBackPressed() {
-        if ( 0 == m_selected.size() ) {
+        if ( 0 == m_selectedRows.size() ) {
             super.onBackPressed();
         } else {
-            clearSelected();
+            clearSelectedRows();
         }
     }
-
-    @Override
-    public void onCreateContextMenu( ContextMenu menu, View view, 
-                                     ContextMenuInfo menuInfo ) 
-    {
-        ExpandableListView.ExpandableListContextMenuInfo info
-            = (ExpandableListView.ExpandableListContextMenuInfo)menuInfo;
-        long packedPos = info.packedPosition;
-        int childPos = ExpandableListView.getPackedPositionChild( packedPos );
-
-        String name;
-        if ( 0 <= childPos ) {  // game case
-            MenuInflater inflater = getMenuInflater();
-            inflater.inflate( R.menu.games_list_item_menu, menu );
-
-            long rowid = m_adapter.getRowIDFor( packedPos );
-            name = GameUtils.getName( this, rowid );
-        } else {                // group case
-            MenuInflater inflater = getMenuInflater();
-            inflater.inflate( R.menu.games_list_group_menu, menu );
-
-            int pos = ExpandableListView.getPackedPositionGroup( packedPos );
-            name = m_adapter.groupNames()[pos];
-
-            if ( 0 == pos ) {
-                Utils.setItemEnabled( menu, R.id.list_group_moveup, false );
-            }
-            if ( pos + 1 == m_adapter.getGroupCount() ) {
-                Utils.setItemEnabled( menu, R.id.list_group_movedown, false );
-            }
-            if ( XWPrefs.getDefaultNewGameGroup( this ) 
-                 == m_adapter.getGroupIDFor( pos ) ) {
-                Utils.setItemEnabled( menu, R.id.list_group_default, false );
-                Utils.setItemEnabled( menu, R.id.list_group_delete, false );
-            }
-        }
-        menu.setHeaderTitle( getString( R.string.game_item_menu_titlef, 
-                                        name ) );
-    }
-        
-    @Override
-    public boolean onContextItemSelected( MenuItem item ) 
-    {
-        ExpandableListContextMenuInfo info;
-        try {
-            info = (ExpandableListContextMenuInfo)item.getMenuInfo();
-        } catch (ClassCastException cce) {
-            DbgUtils.loge( cce );
-            return false;
-        }
-
-        long packedPos = info.packedPosition;
-        int childPos = ExpandableListView.getPackedPositionChild( packedPos );
-        int groupPos = ExpandableListView.getPackedPositionGroup(packedPos);
-        int menuID = item.getItemId();
-        boolean handled;
-        if ( 0 <= childPos ) {
-            long rowid = m_adapter.getRowIDFor( groupPos, childPos );
-            handled = handleGameMenuItem( menuID, rowid );
-        } else {
-            handled = handleGroupMenuItem( menuID, groupPos );
-        }
-        return handled;
-    } // onContextItemSelected
 
     @Override
     public boolean onCreateOptionsMenu( Menu menu )
@@ -631,22 +617,38 @@ public class GamesList extends XWExpandableListActivity
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
+        int nGamesSelected = m_selectedRows.size();
+        int nGroupsSelected = m_selectedGroups.size();
+        boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
+        Assert.assertTrue( 0 == nGamesSelected || 0 == nGroupsSelected );
+        
         boolean visible = XWPrefs.getDebugEnabled( this );
         for ( int id : DEBUGITEMS ) {
-            MenuItem item = menu.findItem( id );
-            item.setVisible( visible );
+            Utils.setItemVisible( menu, id, nothingSelected && visible );
         }
 
         if ( visible && !DBUtils.gameDBExists( this ) ) {
-            MenuItem item = menu.findItem( R.id.gamel_menu_loaddb );
-            item.setVisible( false );
+            Utils.setItemVisible( menu, R.id.gamel_menu_loaddb, false );
         }
 
-        int nSelected = m_selected.size();
+        for ( int id : NOSEL_ITEMS ) {
+            Utils.setItemVisible( menu, id, nothingSelected );
+        }
+        for ( int id : ONEGAME_ITEMS ) {
+            Utils.setItemVisible( menu, id, 1 == nGamesSelected );
+        }
+        for ( int id : ONEGROUP_ITEMS ) {
+            Utils.setItemVisible( menu, id, 1 == nGroupsSelected );
+        }
         
-        Utils.setItemVisible( menu, R.id.gamel_menu_newgame, 0 == nSelected );
-        Utils.setItemVisible( menu, R.id.gamel_menu_delete, 0 < nSelected );
-        Utils.setItemVisible( menu, R.id.listl_item_config, 1 == nSelected );
+        // Multiples can be deleted
+        Utils.setItemVisible( menu, R.id.gamel_menu_delete, 
+                              0 < nGamesSelected );
+        Utils.setItemVisible( menu, R.id.list_group_delete, 
+                              0 < nGroupsSelected );
+        // multiple games can be regrouped/reset
+        Utils.setItemVisible( menu, R.id.list_item_move, 0 < nGroupsSelected );
+        Utils.setItemVisible( menu, R.id.list_item_reset, 0 < nGroupsSelected );
 
         return super.onPrepareOptionsMenu( menu );
     }
@@ -665,13 +667,13 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.listl_item_config:
-            long rowid = m_selected.iterator().next();
+            long rowid = m_selectedRows.iterator().next();
             GameUtils.doConfig( this, rowid, GameConfig.class );
             break;
 
         case R.id.gamel_menu_delete:
             String msg = Utils.format( this, R.string.confirm_seldeletesf, 
-                                       m_selected.size() );
+                                       m_selectedRows.size() );
             showConfirmThen( msg, R.string.button_delete, 
                              GamesActions.DELETE_SELGAMES.ordinal() );
             break;
@@ -745,61 +747,53 @@ public class GamesList extends XWExpandableListActivity
 
         m_rowid = rowid;
         
-        if ( R.id.list_item_delete == menuID
-             || R.id.list_item_config == menuID ) {
-            showOKOnlyDialog( "This menu item is going away soon. Please select"
-                              + " games by tapping the left icons then use"
-                              + " action bar icons or the screen menu to operate"
-                              + " on the selection." );
-        } else {
-            if ( checkWarnNoDict( m_rowid ) ) {
-                switch ( menuID ) {
-                case R.id.list_item_reset:
-                    showConfirmThen( R.string.confirm_reset, 
-                                     R.string.button_reset, 
-                                     GamesActions.RESET_GAME.ordinal() );
-                    break;
-                case R.id.list_item_rename:
-                    showDialog( RENAME_GAME );
-                    break;
-                case R.id.list_item_move:
-                    if ( 1 >= m_adapter.getGroupCount() ) {
-                        showOKOnlyDialog( R.string.no_move_onegroup );
-                    } else {
-                        showDialog( CHANGE_GROUP );
-                    }
-                    break;
-                case R.id.list_item_new_from:
-                    showNotAgainDlgThen( R.string.not_again_newfrom,
-                                         R.string.key_notagain_newfrom, 
-                                         GamesActions.NEW_FROM.ordinal() );
-                    break;
-
-                case R.id.list_item_copy:
-                    GameSummary summary = DBUtils.getSummary( this, m_rowid );
-                    if ( summary.inNetworkGame() ) {
-                        showOKOnlyDialog( R.string.no_copy_network );
-                    } else {
-                        byte[] stream = GameUtils.savedGame( this, m_rowid );
-                        GameLock lock = GameUtils.saveNewGame( this, stream );
-                        DBUtils.saveSummary( this, lock, summary );
-                        lock.unlock();
-                    }
-                    break;
-
-                    // These require some notion of predictable sort order.
-                    // Maybe put off until I'm using a db?
-                    // case R.id.list_item_hide:
-                    // case R.id.list_item_move_up:
-                    // case R.id.list_item_move_down:
-                    // case R.id.list_item_move_to_top:
-                    // case R.id.list_item_move_to_bottom:
-                    // Utils.notImpl( this );
-                    // break;
-                default:
-                    handled = false;
-                    break;
+        if ( checkWarnNoDict( m_rowid ) ) {
+            switch ( menuID ) {
+            case R.id.list_item_reset:
+                showConfirmThen( R.string.confirm_reset, 
+                                 R.string.button_reset, 
+                                 GamesActions.RESET_GAME.ordinal() );
+                break;
+            case R.id.list_item_rename:
+                showDialog( RENAME_GAME );
+                break;
+            case R.id.list_item_move:
+                if ( 1 >= m_adapter.getGroupCount() ) {
+                    showOKOnlyDialog( R.string.no_move_onegroup );
+                } else {
+                    showDialog( CHANGE_GROUP );
                 }
+                break;
+            case R.id.list_item_new_from:
+                showNotAgainDlgThen( R.string.not_again_newfrom,
+                                     R.string.key_notagain_newfrom, 
+                                     GamesActions.NEW_FROM.ordinal() );
+                break;
+
+            case R.id.list_item_copy:
+                GameSummary summary = DBUtils.getSummary( this, m_rowid );
+                if ( summary.inNetworkGame() ) {
+                    showOKOnlyDialog( R.string.no_copy_network );
+                } else {
+                    byte[] stream = GameUtils.savedGame( this, m_rowid );
+                    GameLock lock = GameUtils.saveNewGame( this, stream );
+                    DBUtils.saveSummary( this, lock, summary );
+                    lock.unlock();
+                }
+                break;
+
+                // These require some notion of predictable sort order.
+                // Maybe put off until I'm using a db?
+                // case R.id.list_item_hide:
+                // case R.id.list_item_move_up:
+                // case R.id.list_item_move_down:
+                // case R.id.list_item_move_to_top:
+                // case R.id.list_item_move_to_bottom:
+                // Utils.notImpl( this );
+                // break;
+            default:
+                handled = false;
+                break;
             }
         }
 
@@ -1076,11 +1070,11 @@ public class GamesList extends XWExpandableListActivity
 
     private void deleteSelected()
     {
-        for ( Iterator<Long> iter = m_selected.iterator(); iter.hasNext(); ) {
+        for ( Iterator<Long> iter = m_selectedRows.iterator(); iter.hasNext(); ) {
             long rowid = iter.next();
             GameUtils.deleteGame( this, rowid, false );
         }
-        m_selected.clear();
+        m_selectedRows.clear();
         Utils.invalidateOptionsMenuIf( this );
         NetUtils.informOfDeaths( this );
     }
@@ -1095,12 +1089,21 @@ public class GamesList extends XWExpandableListActivity
         return madeGame;
     }
 
-    private void clearSelected()
+    private void clearSelectedRows()
     {
         // clear any selection
-        if ( 0 < m_selected.size() ) {
-            m_adapter.clearSelected( m_selected );
-            m_selected.clear();
+        if ( 0 < m_selectedRows.size() ) {
+            m_adapter.clearSelectedRows( m_selectedRows );
+            m_selectedRows.clear();
+        }
+    }
+
+    private void clearSelectedGroups()
+    {
+        // clear any selection
+        if ( 0 < m_selectedGroups.size() ) {
+            m_adapter.clearSelectedGroups( m_selectedGroups );
+            m_selectedGroups.clear();
         }
     }
 
@@ -1119,7 +1122,7 @@ public class GamesList extends XWExpandableListActivity
         if ( !m_gameLaunched ) {
             m_gameLaunched = true;
             GameUtils.launchGame( this, rowid, invited );
-            clearSelected();
+            clearSelectedRows();
         }
     }
 

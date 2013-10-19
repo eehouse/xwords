@@ -21,6 +21,7 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.widget.TextView;
@@ -28,6 +29,8 @@ import android.widget.TextView;
 class ExpiringTextView extends TextView {
     private ExpiringDelegate m_delegate = null;
     private Context m_context;
+    private Drawable m_origDrawable;
+    protected boolean m_selected = false;
 
     public ExpiringTextView( Context context, AttributeSet attrs )
     {
@@ -49,6 +52,17 @@ class ExpiringTextView extends TextView {
     {
         if ( null != m_delegate ) {
             m_delegate.configure( haveTurn, haveTurnLocal, startSecs );
+        }
+    }
+
+    protected void toggleSelected()
+    {
+        m_selected = !m_selected;
+        if ( m_selected ) {
+            m_origDrawable = getBackground();
+            setBackgroundColor( XWApp.SEL_COLOR );
+        } else {
+            setBackgroundDrawable( m_origDrawable );
         }
     }
 

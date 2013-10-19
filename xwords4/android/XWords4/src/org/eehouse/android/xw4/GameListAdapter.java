@@ -49,9 +49,13 @@ public class GameListAdapter implements ExpandableListAdapter {
     private long[] m_positions;
 
     public interface LoadItemCB {
-        public void itemClicked( long rowid, GameSummary summary );
-        public void itemToggled( long rowid, boolean selected );
+        public void itemClicked( Object clicked, GameSummary summary );
+        public void itemToggled( Object toggled, boolean selected );
         public boolean getSelected( long rowid );
+    }
+
+    public interface ClickHandler {
+        public void longClicked();
     }
 
     public GameListAdapter( Context context, ExpandableListView list, 
@@ -152,9 +156,14 @@ public class GameListAdapter implements ExpandableListAdapter {
         return ggi.m_name;
     }
 
-    public void clearSelected( Set<Long> rowids )
+    public void clearSelectedRows( Set<Long> rowids )
     {
-        deselect( rowids );
+        deselectRows( rowids );
+    }
+
+    public void clearSelectedGroups( HashSet<Integer> groups )
+    {
+        deselectGroups( groups );
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -182,7 +191,7 @@ public class GameListAdapter implements ExpandableListAdapter {
         for ( long rowid : rowids ) {
             asSet.add( rowid );
         }
-        deselect( asSet );
+        deselectRows( asSet );
     }
 
     public void onGroupExpanded( int groupPosition )
@@ -232,9 +241,8 @@ public class GameListAdapter implements ExpandableListAdapter {
         // if ( null != convertView ) {
         //     DbgUtils.logf( "getGroupView gave non-null convertView" );
         // }
-        GameListGroup view = (GameListGroup)
-            Utils.inflate(m_context, R.layout.game_list_group );
-        view.setGroupPosition( groupPosition );
+        GameListGroup view = 
+            GameListGroup.makeForPosition( m_context, groupPosition, m_cb );
 
         if ( !isExpanded ) {
             GameGroupInfo ggi = getInfoForGroup( groupPosition );
@@ -364,7 +372,7 @@ public class GameListAdapter implements ExpandableListAdapter {
         return gameInfo().get( getPositions()[groupPosition] );
     }
 
-    private void deselect( Set<Long> rowids )
+    private void deselectRows( Set<Long> rowids )
     {
         GameListItem[] items = new GameListItem[rowids.size()];
         getGameItemsFor( rowids, items );
@@ -372,6 +380,16 @@ public class GameListAdapter implements ExpandableListAdapter {
             if ( null != item ) {
                 item.setSelected( false );
             }
+        }
+    }
+
+    private void deselectGroups( HashSet<Integer> groups )
+    {
+        groups = (HashSet<Integer>)groups.clone();
+        for ( Iterator<Integer>iter = groups.iterator();
+              iter.hasNext(); ) {
+            GameListGroup group = getGroupItemFor( iter.next() );
+            group.setSelected( false );
         }
     }
 

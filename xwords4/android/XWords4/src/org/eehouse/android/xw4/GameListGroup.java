@@ -23,11 +23,27 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
+import android.view.View;
 
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 
-public class GameListGroup extends ExpiringTextView {
+public class GameListGroup extends ExpiringTextView 
+    implements GameListAdapter.ClickHandler 
+{
     private int m_groupPosition;
+    private boolean m_expanded;
+    private GameListAdapter.LoadItemCB m_cb;
+
+    public static GameListGroup makeForPosition( Context context,
+                                                 int groupPosition,
+                                                 GameListAdapter.LoadItemCB cb )
+    {
+        GameListGroup result = 
+            (GameListGroup)Utils.inflate( context, R.layout.game_list_group );
+        result.m_cb = cb;
+        result.m_groupPosition = groupPosition;
+        return result;
+    }
 
     public GameListGroup( Context cx, AttributeSet as ) 
     {
@@ -43,4 +59,25 @@ public class GameListGroup extends ExpiringTextView {
     {
         return m_groupPosition;
     }
+
+    public void setSelected( boolean selected )
+    {
+        // If new value and state not in sync, force change in state
+        if ( selected != m_selected ) {
+            toggleSelected();
+        }
+    }
+
+    // GameListAdapter.ClickHandler interface
+    public void longClicked()
+    {
+        toggleSelected();
+    }
+
+    protected void toggleSelected()
+    {
+        super.toggleSelected();
+        m_cb.itemToggled( this, m_selected );
+    }
+
 }
