@@ -133,7 +133,7 @@ public class GamesList extends XWExpandableListActivity
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
     private boolean m_gameLaunched = false;
-    private HashSet<Long> m_selectedRows;
+    private HashSet<Long> m_selectedGames;
     private HashSet<Integer> m_selectedGroups;
 
     @Override
@@ -363,7 +363,7 @@ public class GamesList extends XWExpandableListActivity
 
         getBundledData( savedInstanceState );
 
-        m_selectedRows = new HashSet<Long>();
+        m_selectedGames = new HashSet<Long>();
         m_selectedGroups = new HashSet<Integer>();
 
         setContentView(R.layout.game_list);
@@ -503,10 +503,10 @@ public class GamesList extends XWExpandableListActivity
         if ( toggled instanceof GameListItem ) {
             long rowid = ((GameListItem)toggled).getRowID();
             if ( selected ) {
-                m_selectedRows.add( rowid );
+                m_selectedGames.add( rowid );
                 clearSelectedGroups();
             } else {
-                m_selectedRows.remove( rowid );
+                m_selectedGames.remove( rowid );
             }
         } else if ( toggled instanceof GameListGroup ) {
             int position = ((GameListGroup)toggled).getGroupPosition();
@@ -522,7 +522,7 @@ public class GamesList extends XWExpandableListActivity
 
     public boolean getSelected( long rowid )
     {
-        return m_selectedRows.contains( rowid );
+        return m_selectedGames.contains( rowid );
     }
 
     // BTService.MultiEventListener interface
@@ -599,7 +599,7 @@ public class GamesList extends XWExpandableListActivity
 
     @Override
     public void onBackPressed() {
-        if ( 0 == m_selectedRows.size() ) {
+        if ( 0 == m_selectedGames.size() ) {
             super.onBackPressed();
         } else {
             clearSelectedRows();
@@ -618,7 +618,7 @@ public class GamesList extends XWExpandableListActivity
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
-        int nGamesSelected = m_selectedRows.size();
+        int nGamesSelected = m_selectedGames.size();
         int nGroupsSelected = m_selectedGroups.size();
         boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
         Assert.assertTrue( 0 == nGamesSelected || 0 == nGroupsSelected );
@@ -679,13 +679,13 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.listl_item_config:
-            long rowid = m_selectedRows.iterator().next();
+            long rowid = m_selectedGames.iterator().next();
             GameUtils.doConfig( this, rowid, GameConfig.class );
             break;
 
         case R.id.gamel_menu_delete:
             String msg = Utils.format( this, R.string.confirm_seldeletesf, 
-                                       m_selectedRows.size() );
+                                       m_selectedGames.size() );
             showConfirmThen( msg, R.string.button_delete, 
                              GamesActions.DELETE_SELGAMES.ordinal() );
             break;
@@ -1049,11 +1049,11 @@ public class GamesList extends XWExpandableListActivity
 
     private void deleteSelected()
     {
-        for ( Iterator<Long> iter = m_selectedRows.iterator(); iter.hasNext(); ) {
+        for ( Iterator<Long> iter = m_selectedGames.iterator(); iter.hasNext(); ) {
             long rowid = iter.next();
             GameUtils.deleteGame( this, rowid, false );
         }
-        m_selectedRows.clear();
+        m_selectedGames.clear();
         Utils.invalidateOptionsMenuIf( this );
         NetUtils.informOfDeaths( this );
     }
@@ -1071,9 +1071,9 @@ public class GamesList extends XWExpandableListActivity
     private void clearSelectedRows()
     {
         // clear any selection
-        if ( 0 < m_selectedRows.size() ) {
-            m_adapter.clearSelectedRows( m_selectedRows );
-            m_selectedRows.clear();
+        if ( 0 < m_selectedGames.size() ) {
+            m_adapter.clearSelectedRows( m_selectedGames );
+            m_selectedGames.clear();
         }
     }
 
@@ -1153,8 +1153,8 @@ public class GamesList extends XWExpandableListActivity
     private long getSelRowID()
     {
         long result = -1;
-        if ( 1 == m_selectedRows.size() ) {
-            result = m_selectedRows.iterator().next();
+        if ( 1 == m_selectedGames.size() ) {
+            result = m_selectedGames.iterator().next();
         }
         return result;
     }
