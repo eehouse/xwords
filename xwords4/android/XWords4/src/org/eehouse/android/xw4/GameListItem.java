@@ -80,7 +80,7 @@ public class GameListItem extends LinearLayout
                     if ( m_selected ) {
                         toggleSelected();
                     } else if ( null != m_summary ) {
-                        m_cb.itemClicked( this, m_summary );
+                        m_cb.itemClicked( GameListItem.this, m_summary );
                     }
                 }
             } );
