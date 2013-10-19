@@ -25,7 +25,8 @@
           />
     <item android:id="@+id/gamel_menu_newgroup"
           android:title="@string/button_new_group"
-          android:icon="@drawable/content_new"
+          android:icon="@drawable/new_group__gen"
+          android:showAsAction="ifRoom"
           />
     <item android:id="@+id/gamel_menu_prefs"
           android:title="@string/menu_prefs"

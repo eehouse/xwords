@@ -6,3 +6,4 @@ gen
 libs
 proguard.cfg
 obj
+res/drawable*/*gen.png
