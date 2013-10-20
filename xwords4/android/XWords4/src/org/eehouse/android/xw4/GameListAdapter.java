@@ -156,7 +156,7 @@ public class GameListAdapter implements ExpandableListAdapter {
         return ggi.m_name;
     }
 
-    public void clearSelectedRows( Set<Long> rowids )
+    public void clearSelectedGames( long[] rowids )
     {
         deselectRows( rowids );
     }
@@ -187,11 +187,11 @@ public class GameListAdapter implements ExpandableListAdapter {
         DBUtils.setGroupExpanded( m_context, groupid, false );
 
         long[] rowids = DBUtils.getGroupGames( m_context, groupid );
-        HashSet<Long> asSet = new HashSet<Long>(rowids.length);
-        for ( long rowid : rowids ) {
-            asSet.add( rowid );
-        }
-        deselectRows( asSet );
+        // HashSet<Long> asSet = new HashSet<Long>(rowids.length);
+        // for ( long rowid : rowids ) {
+        //     asSet.add( rowid );
+        // }
+        deselectRows( rowids );
     }
 
     public void onGroupExpanded( int groupPosition )
@@ -282,7 +282,12 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public int getChildrenCount( int groupPosition )
     {
-        long[] rows = getRows( getPositions()[groupPosition] );
+        return getChildrenCount( getPositions()[groupPosition] );
+    }
+
+    public int getChildrenCount( long groupID )
+    {
+        long[] rows = getRows( groupID );
         return rows.length;
     }
 
@@ -372,9 +377,9 @@ public class GameListAdapter implements ExpandableListAdapter {
         return gameInfo().get( getPositions()[groupPosition] );
     }
 
-    private void deselectRows( Set<Long> rowids )
+    private void deselectRows( long[] rowids )
     {
-        GameListItem[] items = new GameListItem[rowids.size()];
+        GameListItem[] items = new GameListItem[rowids.length];
         getGameItemsFor( rowids, items );
         for ( GameListItem item : items ) {
             if ( null != item ) {
@@ -393,15 +398,20 @@ public class GameListAdapter implements ExpandableListAdapter {
         }
     }
 
-    private void getGameItemsFor( Set<Long> rowids, GameListItem[] items )
+    private void getGameItemsFor( long[] rowids, GameListItem[] items )
     {
+        Set<Long> rowidsSet = new HashSet<Long>();
+        for ( long rowid : rowids ) {
+            rowidsSet.add( rowid );
+        }
+
         int next = 0;
         int count = m_list.getChildCount();
         for ( int ii = 0; ii < count; ++ii ) {
             View view = m_list.getChildAt( ii );
             if ( view instanceof GameListItem ) {
                 GameListItem tryme = (GameListItem)view;
-                if ( rowids.contains( tryme.getRowID() ) ) {
+                if ( rowidsSet.contains( tryme.getRowID() ) ) {
                     items[next++] = tryme;
                     if ( next >= items.length ) {
                         break;
@@ -413,8 +423,7 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     private GameListItem getGameItemFor( long rowid )
     {
-        Set<Long> rowids = new HashSet<Long>(1);
-        rowids.add( rowid );
+        long[] rowids = { rowid };
         GameListItem[] items = new GameListItem[1];
         getGameItemsFor( rowids, items );
         return items[0];

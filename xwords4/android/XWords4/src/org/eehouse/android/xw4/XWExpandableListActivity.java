@@ -117,9 +117,9 @@ public class XWExpandableListActivity extends ExpandableListActivity
         m_delegate.showOKOnlyDialog( msg );
     }
 
-    protected void showConfirmThen( String msg, int action )
+    protected void showConfirmThen( String msg, int action, Object... params )
     {
-        m_delegate.showConfirmThen( msg, action );
+        m_delegate.showConfirmThen( msg, action, params );
     }
 
     protected void showConfirmThen( String msg, int posButton, int action,

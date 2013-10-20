@@ -87,36 +87,34 @@ public class GamesList extends XWExpandableListActivity
             RESET_GAME,
             SYNC_MENU,
             NEW_FROM,
-            DELETE_GROUP,
+            DELETE_GROUPS,
             DELETE_GAMES,
             OPEN_GAME
             };
     private static final int[] DEBUGITEMS = { 
-        R.id.gamel_menu_loaddb
-        , R.id.gamel_menu_storedb
-        , R.id.gamel_menu_checkupdates
+        R.id.gamel_menu_loaddb,
+        R.id.gamel_menu_storedb,
+        R.id.gamel_menu_checkupdates,
     };
     private static final int[] NOSEL_ITEMS = { 
-        R.id.gamel_menu_newgame
-        ,R.id.gamel_menu_newgroup
-        ,R.id.gamel_menu_prefs
-        ,R.id.gamel_menu_dicts
-        ,R.id.gamel_menu_about
-        ,R.id.gamel_menu_email
-        ,R.id.gamel_menu_checkmoves
+        R.id.gamel_menu_newgroup,
+        R.id.gamel_menu_prefs,
+        R.id.gamel_menu_dicts,
+        R.id.gamel_menu_about,
+        R.id.gamel_menu_email,
+        R.id.gamel_menu_checkmoves,
     };
     private static final int[] ONEGAME_ITEMS = {
-        R.id.listl_item_config
-        ,R.id.list_item_rename
-        ,R.id.list_item_new_from
-        ,R.id.list_item_copy
+        R.id.listl_item_config,
+        R.id.list_item_rename,
+        R.id.list_item_new_from,
+        R.id.list_item_copy,
     };
 
     private static final int[] ONEGROUP_ITEMS = {
-        R.id.list_group_default
-        ,R.id.list_group_rename
-        ,R.id.list_group_moveup
-        ,R.id.list_group_movedown
+        R.id.list_group_rename,
+        R.id.list_group_moveup,
+        R.id.list_group_movedown,
     };
 
     private static boolean s_firstShown = false;
@@ -512,7 +510,7 @@ public class GamesList extends XWExpandableListActivity
             int position = ((GameListGroup)toggled).getGroupPosition();
             if ( selected ) {
                 m_selectedGroups.add( position );
-                clearSelectedRows();
+                clearSelectedGames();
             } else {
                 m_selectedGroups.remove( position );
             }
@@ -572,8 +570,11 @@ public class GamesList extends XWExpandableListActivity
                 }
                 break;
 
-            case DELETE_GROUP:
-                GameUtils.deleteGroup( this, m_groupid );
+            case DELETE_GROUPS:
+                long[] groupIDs = (long[])params[0];
+                for ( long groupID : groupIDs ) {
+                    GameUtils.deleteGroup( this, groupID );
+                }
                 onContentChanged();
                 break;
             case DELETE_GAMES:
@@ -602,7 +603,7 @@ public class GamesList extends XWExpandableListActivity
         if ( 0 == m_selectedGames.size() ) {
             super.onBackPressed();
         } else {
-            clearSelectedRows();
+            clearSelections();
         }
     }
 
@@ -641,7 +642,21 @@ public class GamesList extends XWExpandableListActivity
         for ( int id : ONEGROUP_ITEMS ) {
             Utils.setItemVisible( menu, id, 1 == nGroupsSelected );
         }
-        
+
+        // You can't delete the default group, nor make it the default
+        boolean defaultAvail = 1 == nGroupsSelected;
+        if ( defaultAvail ) {
+            int selPos = m_selectedGroups.iterator().next();
+            long selID = m_adapter.getGroupIDFor( selPos );
+            defaultAvail = selID != XWPrefs.getDefaultNewGameGroup( this );
+        }
+        Utils.setItemVisible( menu, R.id.list_group_default, defaultAvail );
+        Utils.setItemVisible( menu, R.id.list_group_delete, defaultAvail );
+
+        // New game available when nothing selected or one group
+        Utils.setItemVisible( menu, R.id.gamel_menu_newgame,
+                              nothingSelected || 1 == nGroupsSelected );
+                
         // Multiples can be deleted
         Utils.setItemVisible( menu, R.id.gamel_menu_delete, 
                               0 < nGamesSelected );
@@ -661,7 +676,7 @@ public class GamesList extends XWExpandableListActivity
         int groupPos = getSelGroupPos();
         long groupID = -1;
         if ( 0 <= groupPos ) {
-            m_adapter.getGroupIDFor( groupPos );
+            groupID = m_adapter.getGroupIDFor( groupPos );
         }
         long[] selRowIDs = getSelRowIDs();
 
@@ -671,7 +686,7 @@ public class GamesList extends XWExpandableListActivity
 
         switch ( item.getItemId() ) {
         case R.id.gamel_menu_newgame:
-            startNewGameActivity();
+            startNewGameActivity( groupID );
             break;
 
         case R.id.gamel_menu_newgroup:
@@ -764,16 +779,23 @@ public class GamesList extends XWExpandableListActivity
 
             // Group menus
         case R.id.list_group_delete:
-            m_groupid = groupID;
             if ( groupID == XWPrefs.getDefaultNewGameGroup( this ) ) {
                 showOKOnlyDialog( R.string.cannot_delete_default_group );
             } else {
-                msg = getString( R.string.group_confirm_del );
-                int nGames = m_adapter.getChildrenCount( groupPos );
-                if ( 0 < nGames ) {
-                    msg += getString( R.string.group_confirm_delf, nGames );
+                long[] groupIDs = getSelGroupIDs();
+                msg = getString( 1 == groupIDs.length ? R.string.group_confirm_del
+                                 : R.string.groups_confirm_del );
+                int nGames = 0;
+                for ( long tmp : groupIDs ) {
+                    nGames += m_adapter.getChildrenCount( tmp );
                 }
-                showConfirmThen( msg, GamesActions.DELETE_GROUP.ordinal() );
+                if ( 0 < nGames ) {
+                    int fmtID = 1 == groupIDs.length ? R.string.group_confirm_delf 
+                        : R.string.groups_confirm_delf;
+                    msg += getString( fmtID, nGames );
+                }
+                showConfirmThen( msg, GamesActions.DELETE_GROUPS.ordinal(),
+                                 groupIDs );
             }
             break;
         case R.id.list_group_default:
@@ -944,9 +966,12 @@ public class GamesList extends XWExpandableListActivity
         }
     }
 
-    private void startNewGameActivity()
+    private void startNewGameActivity( long groupID )
     {
-        startActivity( new Intent( this, NewGameActivity.class ) );
+        if ( 0 > groupID ) {
+            groupID = XWPrefs.getDefaultNewGameGroup( this );
+        }
+        NewGameActivity.startActivity( this, groupID );
     }
 
     private void startNewNetGame( NetLaunchInfo nli )
@@ -1073,39 +1098,38 @@ public class GamesList extends XWExpandableListActivity
     private void clearSelections()
     {
         boolean inval = false;
-        if ( 0 < m_selectedGames.size() ) {
-            m_adapter.clearSelectedRows( m_selectedGames );
-            m_selectedGames.clear();
+        if ( clearSelectedGames() ) {
             inval = true;
         }
-
-        if ( 0 < m_selectedGroups.size() ) {
-            m_adapter.clearSelectedGroups( m_selectedGroups );
-            m_selectedGroups.clear();
+        if ( clearSelectedGroups() ) {
             inval = true;
         }
-
-        if ( inval ) {
+        if ( !inval ) {
             Utils.invalidateOptionsMenuIf( this );
         }
     }
 
-    private void clearSelectedRows()
+    private boolean clearSelectedGames()
     {
         // clear any selection
-        if ( 0 < m_selectedGames.size() ) {
-            m_adapter.clearSelectedRows( m_selectedGames );
+        boolean needsClear = 0 < m_selectedGames.size();
+        if ( needsClear ) {
+            long[] rowIDs = getSelRowIDs();
             m_selectedGames.clear();
+            m_adapter.clearSelectedGames( rowIDs );
         }
+        return needsClear;
     }
 
-    private void clearSelectedGroups()
+    private boolean clearSelectedGroups()
     {
         // clear any selection
-        if ( 0 < m_selectedGroups.size() ) {
+        boolean needsClear = 0 < m_selectedGroups.size();
+        if ( needsClear ) {
             m_adapter.clearSelectedGroups( m_selectedGroups );
             m_selectedGroups.clear();
         }
+        return needsClear;
     }
 
     private boolean launchGameIf()
@@ -1123,7 +1147,7 @@ public class GamesList extends XWExpandableListActivity
         if ( !m_gameLaunched ) {
             m_gameLaunched = true;
             GameUtils.launchGame( this, rowid, invited );
-            clearSelectedRows();
+            // clearSelectedGames();
         }
     }
 
@@ -1188,6 +1212,17 @@ public class GamesList extends XWExpandableListActivity
         int result = -1;
         if ( 1 == m_selectedGroups.size() ) {
             result = m_selectedGroups.iterator().next();
+        }
+        return result;
+    }
+
+    private long[] getSelGroupIDs()
+    {
+        long[] result = new long[m_selectedGroups.size()];
+        int ii = 0;
+        for ( Iterator<Integer> iter = m_selectedGroups.iterator(); 
+              iter.hasNext(); ) {
+            result[ii++] = m_adapter.getGroupIDFor( iter.next() );
         }
         return result;
     }

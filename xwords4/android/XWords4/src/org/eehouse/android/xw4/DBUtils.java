@@ -695,6 +695,14 @@ public class DBUtils {
 
     public static GameLock saveNewGame( Context context, byte[] bytes )
     {
+        long groupID = XWPrefs.getDefaultNewGameGroup( context );
+        return saveNewGame( context, bytes, groupID );
+    }
+
+    public static GameLock saveNewGame( Context context, byte[] bytes,
+                                        long groupID )
+    {
+        Assert.assertTrue( -1 != groupID ); // DON'T SHIP
         GameLock lock = null;
 
         initDB( context );
@@ -707,8 +715,7 @@ public class DBUtils {
             long timestamp = new Date().getTime();
             values.put( DBHelper.CREATE_TIME, timestamp );
             values.put( DBHelper.LASTPLAY_TIME, timestamp );
-            values.put( DBHelper.GROUPID, 
-                        XWPrefs.getDefaultNewGameGroup( context ) );
+            values.put( DBHelper.GROUPID, groupID );
             values.put( DBHelper.VISID, maxVISID( db ) );
 
             long rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );

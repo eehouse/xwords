@@ -190,7 +190,12 @@ public class DlgDelegate {
 
     public void showConfirmThen( String msg, int callbackID )
     {
-        showConfirmThen( msg, R.string.button_ok, callbackID );
+        showConfirmThen( msg, R.string.button_ok, callbackID, null );
+    }
+
+    public void showConfirmThen( String msg, int callbackID, Object[] params )
+    {
+        showConfirmThen( msg, R.string.button_ok, callbackID, params );
     }
 
     public void showConfirmThen( String msg, int posButton, int callbackID )

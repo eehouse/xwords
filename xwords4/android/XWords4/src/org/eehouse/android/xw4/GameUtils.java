@@ -320,10 +320,16 @@ public class GameUtils {
 
     public static long saveNew( Context context, CurGameInfo gi )
     {
+        long groupID = XWPrefs.getDefaultNewGameGroup( context );
+        return saveNew( context, gi, groupID );
+    }
+
+    public static long saveNew( Context context, CurGameInfo gi, long groupID )
+    {
         long rowid = DBUtils.ROWID_NOTFOUND;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            GameLock lock = DBUtils.saveNewGame( context, bytes );
+            GameLock lock = DBUtils.saveNewGame( context, bytes, groupID );
             rowid = lock.getRowid();
             lock.unlock();
         }

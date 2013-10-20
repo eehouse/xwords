@@ -51,6 +51,7 @@ public class NewGameActivity extends XWActivity {
     private static final String SAVE_REMOTEGAME = "REMOTEGAME";
     private static final String SAVE_GAMEID = "GAMEID";
     private static final String SAVE_NAMEFOR = "SAVE_NAMEFOR";
+    private static final String GROUPID_EXTRA = "groupid";
     private static final int CONFIG_FOR_BT = 1;
     private static final int CONFIG_FOR_SMS = 2;
     private static final int INVITE_FOR_BT = 3;
@@ -68,6 +69,7 @@ public class NewGameActivity extends XWActivity {
     private long m_newRowID = -1;
     private String m_gameName;
     private int m_gameID;
+    private long m_groupID;
     private String m_remoteDev;
 
     @Override
@@ -75,6 +77,8 @@ public class NewGameActivity extends XWActivity {
     {
         super.onCreate( savedInstanceState );
         getBundledData( savedInstanceState );
+
+        m_groupID = getIntent().getLongExtra( GROUPID_EXTRA, -1 );
 
         setContentView( R.layout.new_game );
 
@@ -327,7 +331,7 @@ public class NewGameActivity extends XWActivity {
             rowid = GameUtils.makeNewNetGame( this, room, inviteID, lang, 
                                               dict, nPlayers, 1 );
         } else {
-            rowid = GameUtils.saveNew( this, new CurGameInfo( this ) );
+            rowid = GameUtils.saveNew( this, new CurGameInfo( this ), m_groupID );
         }
 
         if ( launch ) {
@@ -467,5 +471,12 @@ public class NewGameActivity extends XWActivity {
                     } );
             }
         }
+    }
+
+    public static void startActivity( Activity parent, long groupID )
+    {
+        Intent intent = new Intent( parent, NewGameActivity.class );
+        intent.putExtra( GROUPID_EXTRA, groupID );
+        parent.startActivity( intent );
     }
 }
