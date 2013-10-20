@@ -113,8 +113,6 @@ public class GamesList extends XWExpandableListActivity
 
     private static final int[] ONEGROUP_ITEMS = {
         R.id.list_group_rename,
-        R.id.list_group_moveup,
-        R.id.list_group_movedown,
     };
 
     private static boolean s_firstShown = false;
@@ -643,15 +641,26 @@ public class GamesList extends XWExpandableListActivity
             Utils.setItemVisible( menu, id, 1 == nGroupsSelected );
         }
 
+        int selGroupPos = -1;
+        if ( 1 == nGroupsSelected ) {
+            selGroupPos = m_selectedGroups.iterator().next();
+        }
+
         // You can't delete the default group, nor make it the default
         boolean defaultAvail = 1 == nGroupsSelected;
         if ( defaultAvail ) {
-            int selPos = m_selectedGroups.iterator().next();
-            long selID = m_adapter.getGroupIDFor( selPos );
+            long selID = m_adapter.getGroupIDFor( selGroupPos );
             defaultAvail = selID != XWPrefs.getDefaultNewGameGroup( this );
         }
         Utils.setItemVisible( menu, R.id.list_group_default, defaultAvail );
         Utils.setItemVisible( menu, R.id.list_group_delete, defaultAvail );
+
+        // Move up/down enabled for groups if not the top-most or bottommost
+        // selected
+        boolean enable = 0 < selGroupPos;
+        Utils.setItemVisible( menu, R.id.list_group_moveup, enable );
+        enable = 0 <= selGroupPos && selGroupPos + 1 < m_adapter.getGroupCount();
+        Utils.setItemVisible( menu, R.id.list_group_movedown, enable );
 
         // New game available when nothing selected or one group
         Utils.setItemVisible( menu, R.id.gamel_menu_newgame,

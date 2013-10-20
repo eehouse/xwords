@@ -69,17 +69,21 @@
           />
 
     <!-- Group items -->
+    <item android:id="@+id/list_group_moveup"
+          android:title="@string/list_group_moveup"
+          android:showAsAction="ifRoom"
+          android:icon="@drawable/up__gen"
+          />
+    <item android:id="@+id/list_group_movedown"
+          android:title="@string/list_group_movedown"
+          android:showAsAction="ifRoom"
+          android:icon="@drawable/down__gen"
+          />
     <item android:id="@+id/list_group_default"
           android:title="@string/list_group_default"
           />
     <item android:id="@+id/list_group_rename"
           android:title="@string/list_group_rename"
-          />
-    <item android:id="@+id/list_group_moveup"
-          android:title="@string/list_group_moveup"
-          />
-    <item android:id="@+id/list_group_movedown"
-          android:title="@string/list_group_movedown"
           />
 
     <!-- Debug only menuitems -->
