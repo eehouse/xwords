@@ -617,66 +617,73 @@ public class GamesList extends XWExpandableListActivity
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
+        boolean show;
+
         int nGamesSelected = m_selectedGames.size();
         int nGroupsSelected = m_selectedGroups.size();
-        boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
-        Assert.assertTrue( 0 == nGamesSelected || 0 == nGroupsSelected );
+        if ( 0 < nGamesSelected && 0 < nGroupsSelected ) {
+            DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
+            show = false;
+        } else {
+            boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
         
-        boolean visible = XWPrefs.getDebugEnabled( this );
-        for ( int id : DEBUGITEMS ) {
-            Utils.setItemVisible( menu, id, nothingSelected && visible );
-        }
+            boolean visible = XWPrefs.getDebugEnabled( this );
+            for ( int id : DEBUGITEMS ) {
+                Utils.setItemVisible( menu, id, nothingSelected && visible );
+            }
 
-        if ( visible && !DBUtils.gameDBExists( this ) ) {
-            Utils.setItemVisible( menu, R.id.gamel_menu_loaddb, false );
-        }
+            if ( visible && !DBUtils.gameDBExists( this ) ) {
+                Utils.setItemVisible( menu, R.id.gamel_menu_loaddb, false );
+            }
 
-        for ( int id : NOSEL_ITEMS ) {
-            Utils.setItemVisible( menu, id, nothingSelected );
-        }
-        for ( int id : ONEGAME_ITEMS ) {
-            Utils.setItemVisible( menu, id, 1 == nGamesSelected );
-        }
-        for ( int id : ONEGROUP_ITEMS ) {
-            Utils.setItemVisible( menu, id, 1 == nGroupsSelected );
-        }
+            for ( int id : NOSEL_ITEMS ) {
+                Utils.setItemVisible( menu, id, nothingSelected );
+            }
+            for ( int id : ONEGAME_ITEMS ) {
+                Utils.setItemVisible( menu, id, 1 == nGamesSelected );
+            }
+            for ( int id : ONEGROUP_ITEMS ) {
+                Utils.setItemVisible( menu, id, 1 == nGroupsSelected );
+            }
 
-        int selGroupPos = -1;
-        if ( 1 == nGroupsSelected ) {
-            selGroupPos = m_selectedGroups.iterator().next();
-        }
+            int selGroupPos = -1;
+            if ( 1 == nGroupsSelected ) {
+                selGroupPos = m_selectedGroups.iterator().next();
+            }
 
-        // You can't delete the default group, nor make it the default
-        boolean defaultAvail = 1 == nGroupsSelected;
-        if ( defaultAvail ) {
-            long selID = m_adapter.getGroupIDFor( selGroupPos );
-            defaultAvail = selID != XWPrefs.getDefaultNewGameGroup( this );
-        }
-        Utils.setItemVisible( menu, R.id.list_group_default, defaultAvail );
-        Utils.setItemVisible( menu, R.id.list_group_delete, defaultAvail );
+            // You can't delete the default group, nor make it the default
+            boolean defaultAvail = 1 == nGroupsSelected;
+            if ( defaultAvail ) {
+                long selID = m_adapter.getGroupIDFor( selGroupPos );
+                defaultAvail = selID != XWPrefs.getDefaultNewGameGroup( this );
+            }
+            Utils.setItemVisible( menu, R.id.list_group_default, defaultAvail );
+            Utils.setItemVisible( menu, R.id.list_group_delete, defaultAvail );
 
-        // Move up/down enabled for groups if not the top-most or bottommost
-        // selected
-        boolean enable = 0 < selGroupPos;
-        Utils.setItemVisible( menu, R.id.list_group_moveup, enable );
-        enable = 0 <= selGroupPos && selGroupPos + 1 < m_adapter.getGroupCount();
-        Utils.setItemVisible( menu, R.id.list_group_movedown, enable );
+            // Move up/down enabled for groups if not the top-most or bottommost
+            // selected
+            boolean enable = 0 < selGroupPos;
+            Utils.setItemVisible( menu, R.id.list_group_moveup, enable );
+            enable = 0 <= selGroupPos && selGroupPos + 1 < m_adapter.getGroupCount();
+            Utils.setItemVisible( menu, R.id.list_group_movedown, enable );
 
-        // New game available when nothing selected or one group
-        Utils.setItemVisible( menu, R.id.gamel_menu_newgame,
-                              nothingSelected || 1 == nGroupsSelected );
+            // New game available when nothing selected or one group
+            Utils.setItemVisible( menu, R.id.gamel_menu_newgame,
+                                  nothingSelected || 1 == nGroupsSelected );
                 
-        // Multiples can be deleted
-        Utils.setItemVisible( menu, R.id.gamel_menu_delete, 
-                              0 < nGamesSelected );
-        Utils.setItemVisible( menu, R.id.list_group_delete, 
-                              0 < nGroupsSelected );
+            // Multiples can be deleted
+            Utils.setItemVisible( menu, R.id.gamel_menu_delete, 
+                                  0 < nGamesSelected );
+            Utils.setItemVisible( menu, R.id.list_group_delete, 
+                                  0 < nGroupsSelected );
 
-        // multiple games can be regrouped/reset.  (Later....)
-        Utils.setItemVisible( menu, R.id.list_item_move, 1 == nGamesSelected );
-        Utils.setItemVisible( menu, R.id.list_item_reset, 1 == nGamesSelected );
+            // multiple games can be regrouped/reset.  (Later....)
+            Utils.setItemVisible( menu, R.id.list_item_move, 1 == nGamesSelected );
+            Utils.setItemVisible( menu, R.id.list_item_reset, 1 == nGamesSelected );
 
-        return super.onPrepareOptionsMenu( menu );
+            show = super.onPrepareOptionsMenu( menu );
+        }
+        return show;
     }
 
     public boolean onOptionsItemSelected( MenuItem item )
