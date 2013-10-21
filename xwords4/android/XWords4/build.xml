@@ -55,7 +55,8 @@
             <arg value="clean"/>
         </exec>
 
-        <exec dir="." executable="../scripts/mkimages.sh" failonerror="true">
+        <exec dir="." executable="../scripts/mkimages.sh" 
+              failonerror="true" output="/dev/null" >
             <arg value="--clean"/>
         </exec>
       </target>
@@ -69,7 +70,9 @@
             <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
         </exec>
 
-        <exec dir="." executable="../scripts/mkimages.sh" failonerror="true"/>
+        <exec dir="." executable="../scripts/mkimages.sh" 
+              failonerror="true" output="/dev/null" 
+              />
 
         <exec dir="." executable="../scripts/gen_gcmid.sh"
               output="src/org/eehouse/android/xw4/GCMConsts.java"
