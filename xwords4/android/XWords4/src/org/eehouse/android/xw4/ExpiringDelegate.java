@@ -26,6 +26,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.view.View;
@@ -47,10 +48,13 @@ public class ExpiringDelegate {
     private boolean m_haveTurnLocal = false;
     private long m_startSecs;
     private Runnable m_runnable = null;
+    private boolean m_selected;
+    private Drawable m_origDrawable;
     // these can be static as drawing's all in same thread.
     private static Rect s_rect;
     private static Paint s_paint;
     private static float[] s_points;
+    private static Drawable s_selDrawable;
 
     static {
         s_rect = new Rect();
@@ -58,12 +62,18 @@ public class ExpiringDelegate {
         s_paint.setStyle(Paint.Style.STROKE);  
         s_paint.setStrokeWidth( 1 );
         s_points = new float[4*6];
+        s_selDrawable = new ColorDrawable( XWApp.SEL_COLOR );
     }
 
-    public ExpiringDelegate( Context context, View view, Handler handler )
+    public ExpiringDelegate( Context context, View view )
     {
         m_context = context;
         m_view = view;
+        m_origDrawable = view.getBackground();
+    }
+
+    public void setHandler( Handler handler )
+    {
         m_handler = handler;
     }
 
@@ -85,9 +95,22 @@ public class ExpiringDelegate {
         }
     }
 
+    public void setSelected( boolean selected )
+    {
+        m_selected = selected;
+        if ( selected ) {
+            m_origDrawable = m_view.getBackground();
+            m_view.setBackgroundDrawable( s_selDrawable );
+        } else {
+            m_view.setBackgroundDrawable( m_origDrawable );
+        }
+    }
+
     public void onDraw( Canvas canvas ) 
     {
-        if ( m_active && m_doFrame ) {
+        if ( m_selected ) {
+            // do nothing; the drawable's set already
+        } else if ( m_active && m_doFrame ) {
             Assert.assertTrue( 0 <= m_pct && m_pct <= 100 );
             m_view.getDrawingRect( s_rect );
             int width = s_rect.width();

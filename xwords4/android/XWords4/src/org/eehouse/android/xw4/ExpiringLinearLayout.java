@@ -38,7 +38,8 @@ public class ExpiringLinearLayout extends LinearLayout {
                         boolean haveTurnLocal, long startSecs )
     {
         if ( null == m_delegate ) {
-            m_delegate = new ExpiringDelegate( m_context, this, handler );
+            m_delegate = new ExpiringDelegate( m_context, this );
+            m_delegate.setHandler( handler );
         }
         m_delegate.configure( haveTurn, haveTurnLocal, startSecs );
     }

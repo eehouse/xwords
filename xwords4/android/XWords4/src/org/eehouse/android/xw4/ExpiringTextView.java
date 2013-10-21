@@ -21,8 +21,6 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.widget.TextView;
@@ -30,13 +28,7 @@ import android.widget.TextView;
 class ExpiringTextView extends TextView {
     private ExpiringDelegate m_delegate = null;
     private Context m_context;
-    private Drawable m_origDrawable;
-    private static Drawable s_selDrawable;
     protected boolean m_selected = false;
-
-    static {
-        s_selDrawable = new ColorDrawable( XWApp.SEL_COLOR );
-    }
 
     public ExpiringTextView( Context context, AttributeSet attrs )
     {
@@ -47,9 +39,9 @@ class ExpiringTextView extends TextView {
     public void setPct( Handler handler, boolean haveTurn, 
                         boolean haveTurnLocal, long startSecs )
     {
-        if ( null == m_delegate ) {
-            m_delegate = new ExpiringDelegate( m_context, this, handler );
-        }
+        ExpiringDelegate delegate = getDelegate();
+        delegate.setHandler( handler );
+
         setPct( haveTurn, haveTurnLocal, startSecs );
     }
 
@@ -64,12 +56,7 @@ class ExpiringTextView extends TextView {
     protected void toggleSelected()
     {
         m_selected = !m_selected;
-        if ( m_selected ) {
-            m_origDrawable = getBackground();
-            setBackgroundDrawable( s_selDrawable );
-        } else {
-            setBackgroundDrawable( m_origDrawable );
-        }
+        getDelegate().setSelected( m_selected );
     }
 
     @Override
@@ -79,5 +66,13 @@ class ExpiringTextView extends TextView {
         if ( null != m_delegate ) {
             m_delegate.onDraw( canvas );
         }
+    }
+
+    private ExpiringDelegate getDelegate()
+    {
+        if ( null == m_delegate ) {
+            m_delegate = new ExpiringDelegate( m_context, this );
+        }
+        return m_delegate;
     }
 }
