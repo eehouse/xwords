@@ -411,7 +411,7 @@ public class GamesList extends XWExpandableListActivity
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
         // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
         // m_phoneStateListener = null;
-        long[] positions = m_adapter.getPositions();
+        long[] positions = m_adapter.getGroupPositions();
         XWPrefs.setGroupPositions( this, positions );
         super.onStop();
     }
@@ -771,7 +771,8 @@ public class GamesList extends XWExpandableListActivity
         case R.id.list_item_new_from:
             showNotAgainDlgThen( R.string.not_again_newfrom,
                                  R.string.key_notagain_newfrom, 
-                                 GamesActions.NEW_FROM.ordinal(), selRowIDs[0] );
+                                 GamesActions.NEW_FROM.ordinal(), 
+                                 selRowIDs[0] );
             break;
         case R.id.list_item_copy:
             GameSummary summary = DBUtils.getSummary( this, selRowIDs[0] );
