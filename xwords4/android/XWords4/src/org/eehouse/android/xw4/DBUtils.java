@@ -1087,7 +1087,7 @@ public class DBUtils {
             if ( null == gameInfo.get( name ) ) {
                 ContentValues values = new ContentValues();
                 values.put( DBHelper.GROUPNAME, name );
-                values.put( DBHelper.EXPANDED, 0 );
+                values.put( DBHelper.EXPANDED, 1 );
 
                 initDB( context );
                 synchronized( s_dbHelper ) {
