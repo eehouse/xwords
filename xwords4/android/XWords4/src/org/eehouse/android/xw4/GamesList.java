@@ -129,6 +129,7 @@ public class GamesList extends XWExpandableListActivity
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
     private boolean m_gameLaunched = false;
+    private boolean m_menuPrepared;
     private HashSet<Long> m_selectedGames;
     private HashSet<Integer> m_selectedGroups;
 
@@ -617,14 +618,10 @@ public class GamesList extends XWExpandableListActivity
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
-        boolean show;
-
         int nGamesSelected = m_selectedGames.size();
         int nGroupsSelected = m_selectedGroups.size();
-        if ( 0 < nGamesSelected && 0 < nGroupsSelected ) {
-            DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
-            show = false;
-        } else {
+        m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
+        if ( m_menuPrepared ) {
             boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
         
             boolean visible = XWPrefs.getDebugEnabled( this );
@@ -681,13 +678,17 @@ public class GamesList extends XWExpandableListActivity
             Utils.setItemVisible( menu, R.id.list_item_move, 1 == nGamesSelected );
             Utils.setItemVisible( menu, R.id.list_item_reset, 1 == nGamesSelected );
 
-            show = super.onPrepareOptionsMenu( menu );
+            m_menuPrepared = super.onPrepareOptionsMenu( menu );
+        } else {
+            DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
         }
-        return show;
+        return m_menuPrepared;
     }
 
     public boolean onOptionsItemSelected( MenuItem item )
     {
+        Assert.assertTrue( m_menuPrepared );
+
         boolean handled = true;
         int groupPos = getSelGroupPos();
         long groupID = -1;
