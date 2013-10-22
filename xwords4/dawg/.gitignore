@@ -5,3 +5,5 @@
 *.dict
 *.dict.gz
 dict2dawg
+byodfiles.tar
+byodfiles.tgz
