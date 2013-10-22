@@ -236,8 +236,8 @@ public class NewGameActivity extends XWActivity {
                                                          m_gameID, m_gameName, 
                                                          m_lang, m_dict, 2, 1 );
                                 long rowid = GameUtils.
-                                    makeNewSMSGame( thiz, m_gameID, null, 
-                                                    m_lang, m_dict, 2, 1 );
+                                    makeNewSMSGame( thiz, m_groupID, m_gameID, 
+                                                    null, m_lang, m_dict, 2, 1 );
                                 DBUtils.setName( thiz, rowid, m_gameName );
                                 GameUtils.launchGame( thiz, rowid, true );
                                 finish();
@@ -289,8 +289,8 @@ public class NewGameActivity extends XWActivity {
                     public void run() {
                         long rowid = 
                             GameUtils.makeNewBTGame( NewGameActivity.this, 
-                                                     gameID, null, m_lang, 
-                                                     2, 1 );
+                                                     m_groupID, gameID, null, 
+                                                     m_lang, 2, 1 );
                         DBUtils.setName( NewGameActivity.this, 
                                          rowid, m_gameName );
                         GameUtils.launchGame( NewGameActivity.this, 
@@ -328,8 +328,8 @@ public class NewGameActivity extends XWActivity {
         if ( networked ) {
             room = GameUtils.makeRandomID();
             inviteID = GameUtils.makeRandomID();
-            rowid = GameUtils.makeNewNetGame( this, room, inviteID, lang, 
-                                              dict, nPlayers, 1 );
+            rowid = GameUtils.makeNewNetGame( this, m_groupID, room, inviteID, 
+                                              lang, dict, nPlayers, 1 );
         } else {
             rowid = GameUtils.saveNew( this, new CurGameInfo( this ), m_groupID );
         }
@@ -350,18 +350,20 @@ public class NewGameActivity extends XWActivity {
 
     private void makeNewBTGame( boolean useDefaults )
     {
-        int gameID = GameUtils.newGameID();
-        if ( !useDefaults ) {
-            m_newRowID = GameUtils.makeNewBTGame( NewGameActivity.this, 
-                                                 gameID, null, m_lang, 
-                                                 2, 1 ); // initial defaults
-            Intent intent = new Intent( this, GameConfig.class );
-            intent.setAction( Intent.ACTION_EDIT );
-            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
-            intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
-            startActivityForResult( intent, CONFIG_FOR_BT );
-        } else {
-            BTInviteActivity.launchForResult( this, 1, INVITE_FOR_BT );
+        if ( XWApp.BTSUPPORTED ) {
+            int gameID = GameUtils.newGameID();
+            if ( !useDefaults ) {
+                m_newRowID = GameUtils.makeNewBTGame( NewGameActivity.this, 
+                                                      m_groupID, gameID, null, 
+                                                      m_lang, 2, 1 );
+                Intent intent = new Intent( this, GameConfig.class );
+                intent.setAction( Intent.ACTION_EDIT );
+                intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
+                intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
+                startActivityForResult( intent, CONFIG_FOR_BT );
+            } else {
+                BTInviteActivity.launchForResult( this, 1, INVITE_FOR_BT );
+            }
         }
     }
 
@@ -370,8 +372,8 @@ public class NewGameActivity extends XWActivity {
         int gameID = GameUtils.newGameID();
         if ( !useDefaults ) {
             m_newRowID = GameUtils.makeNewSMSGame( NewGameActivity.this, 
-                                                   gameID, null, m_lang, 
-                                                   m_dict, 2, 1 );
+                                                   m_groupID, gameID, null, 
+                                                   m_lang, m_dict, 2, 1 );
             String name = Utils.format( this, R.string.dft_sms_namef, 
                                         gameID & 0xFFFF );
             DBUtils.setName( this, m_newRowID, name );

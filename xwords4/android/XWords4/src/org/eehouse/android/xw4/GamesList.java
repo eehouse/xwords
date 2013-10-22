@@ -91,6 +91,7 @@ public class GamesList extends XWExpandableListActivity
             DELETE_GROUPS,
             OPEN_GAME
             };
+
     private static final int[] DEBUGITEMS = { 
         R.id.gamel_menu_loaddb,
         R.id.gamel_menu_storedb,
@@ -987,9 +988,6 @@ public class GamesList extends XWExpandableListActivity
 
     private void startNewGameActivity( long groupID )
     {
-        if ( 0 > groupID ) {
-            groupID = XWPrefs.getDefaultNewGameGroup( this );
-        }
         NewGameActivity.startActivity( this, groupID );
     }
 
