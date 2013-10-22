@@ -43,7 +43,7 @@ SRC = \
 GITINFO = gitversion.txt
 HASH=$(shell git describe)
 
-OBJ = $(patsubst %.cpp,%.o,$(SRC))
+OBJ = $(patsubst %.cpp,obj/%.o,$(SRC))
 #LDFLAGS += -pthread -g -lmcheck $(STATIC)
 LDFLAGS += -pthread -g $(STATIC)
 LDFLAGS += 	-L$(shell pg_config --libdir)
@@ -67,6 +67,10 @@ memdebug all: xwrelay rq
 # required by something Ubuntu did upgrading natty to oneiric
 xwrelay: $(OBJ)
 	$(CXX) $(CPPFLAGS) -o $@ $^ -lpq $(LDFLAGS)
+
+obj/%.o: %.cpp
+	@mkdir -p obj
+	$(CXX) -c $(CPPFLAGS) -o $@ $^
 
 rq: rq.c
 
