@@ -161,9 +161,9 @@ public class GameListAdapter implements ExpandableListAdapter {
         deselectRows( rowids );
     }
 
-    public void clearSelectedGroups( HashSet<Integer> groups )
+    public void clearSelectedGroups( HashSet<Long> groupIDs )
     {
-        deselectGroups( groups );
+        deselectGroups( groupIDs );
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -241,8 +241,10 @@ public class GameListAdapter implements ExpandableListAdapter {
         // if ( null != convertView ) {
         //     DbgUtils.logf( "getGroupView gave non-null convertView" );
         // }
+        long groupID = getGroupIDFor( groupPosition );
         GameListGroup view = 
-            GameListGroup.makeForPosition( m_context, groupPosition, m_cb );
+            GameListGroup.makeForPosition( m_context, groupPosition, groupID, 
+                                           m_cb );
 
         if ( !isExpanded ) {
             GameGroupInfo ggi = getInfoForGroup( groupPosition );
@@ -388,12 +390,13 @@ public class GameListAdapter implements ExpandableListAdapter {
         }
     }
 
-    private void deselectGroups( HashSet<Integer> groups )
+    private void deselectGroups( HashSet<Long> groupids )
     {
-        groups = (HashSet<Integer>)groups.clone();
-        for ( Iterator<Integer>iter = groups.iterator();
+        groupids = (HashSet<Long>)groupids.clone();
+        for ( Iterator<Long>iter = groupids.iterator();
               iter.hasNext(); ) {
-            GameListGroup group = getGroupItemFor( iter.next() );
+            int pos = getGroupPosition( iter.next() );
+            GameListGroup group = getGroupItemFor( pos );
             group.setSelected( false );
         }
     }

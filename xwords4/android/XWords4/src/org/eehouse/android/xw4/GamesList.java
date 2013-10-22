@@ -87,8 +87,8 @@ public class GamesList extends XWExpandableListActivity
             RESET_GAME,
             SYNC_MENU,
             NEW_FROM,
-            DELETE_GROUPS,
             DELETE_GAMES,
+            DELETE_GROUPS,
             OPEN_GAME
             };
     private static final int[] DEBUGITEMS = { 
@@ -131,7 +131,7 @@ public class GamesList extends XWExpandableListActivity
     private boolean m_gameLaunched = false;
     private boolean m_menuPrepared;
     private HashSet<Long> m_selectedGames;
-    private HashSet<Integer> m_selectedGroups;
+    private HashSet<Long> m_selectedGroupIDs;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -361,7 +361,7 @@ public class GamesList extends XWExpandableListActivity
         getBundledData( savedInstanceState );
 
         m_selectedGames = new HashSet<Long>();
-        m_selectedGroups = new HashSet<Integer>();
+        m_selectedGroupIDs = new HashSet<Long>();
 
         setContentView(R.layout.game_list);
         ExpandableListView listview = getExpandableListView();
@@ -506,12 +506,12 @@ public class GamesList extends XWExpandableListActivity
                 m_selectedGames.remove( rowid );
             }
         } else if ( toggled instanceof GameListGroup ) {
-            int position = ((GameListGroup)toggled).getGroupPosition();
+            long id = ((GameListGroup)toggled).getGroupID();
             if ( selected ) {
-                m_selectedGroups.add( position );
+                m_selectedGroupIDs.add( id );
                 clearSelectedGames();
             } else {
-                m_selectedGroups.remove( position );
+                m_selectedGroupIDs.remove( id );
             }
         }
         Utils.invalidateOptionsMenuIf( this );
@@ -619,7 +619,7 @@ public class GamesList extends XWExpandableListActivity
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
         int nGamesSelected = m_selectedGames.size();
-        int nGroupsSelected = m_selectedGroups.size();
+        int nGroupsSelected = m_selectedGroupIDs.size();
         m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
         if ( m_menuPrepared ) {
             boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
@@ -645,7 +645,8 @@ public class GamesList extends XWExpandableListActivity
 
             int selGroupPos = -1;
             if ( 1 == nGroupsSelected ) {
-                selGroupPos = m_selectedGroups.iterator().next();
+                long id = m_selectedGroupIDs.iterator().next();
+                selGroupPos = m_adapter.getGroupPosition( id );
             }
 
             // You can't delete the default group, nor make it the default
@@ -690,6 +691,7 @@ public class GamesList extends XWExpandableListActivity
         Assert.assertTrue( m_menuPrepared );
 
         boolean handled = true;
+        boolean changeContent = false;
         int groupPos = getSelGroupPos();
         long groupID = -1;
         if ( 0 <= groupPos ) {
@@ -750,7 +752,7 @@ public class GamesList extends XWExpandableListActivity
 
         case R.id.gamel_menu_loaddb:
             DBUtils.loadDB( this );
-            onContentChanged();
+            changeContent = true;
             break;
         case R.id.gamel_menu_storedb:
             DBUtils.saveDB( this );
@@ -800,6 +802,7 @@ public class GamesList extends XWExpandableListActivity
                 showOKOnlyDialog( R.string.cannot_delete_default_group );
             } else {
                 long[] groupIDs = getSelGroupIDs();
+                Assert.assertTrue( 0 < groupIDs.length );
                 msg = getString( 1 == groupIDs.length ? R.string.group_confirm_del
                                  : R.string.groups_confirm_del );
                 int nGames = 0;
@@ -823,14 +826,10 @@ public class GamesList extends XWExpandableListActivity
             showDialog( RENAME_GROUP );
             break;
         case R.id.list_group_moveup:
-            if ( m_adapter.moveGroup( groupID, -1 ) ) {
-                onContentChanged();
-            }
+            changeContent = m_adapter.moveGroup( groupID, -1 );
             break;
         case R.id.list_group_movedown:
-            if ( m_adapter.moveGroup( groupID, 1 ) ) {
-                onContentChanged();
-            }
+            changeContent = m_adapter.moveGroup( groupID, 1 );
             break;
 
         default:
@@ -840,6 +839,9 @@ public class GamesList extends XWExpandableListActivity
 
         if ( handled ) {
             clearSelections();
+        }
+        if ( changeContent ) {
+            onContentChanged();
         }
 
         return handled;
@@ -1121,7 +1123,7 @@ public class GamesList extends XWExpandableListActivity
         if ( clearSelectedGroups() ) {
             inval = true;
         }
-        if ( !inval ) {
+        if ( inval ) {
             Utils.invalidateOptionsMenuIf( this );
         }
     }
@@ -1141,10 +1143,10 @@ public class GamesList extends XWExpandableListActivity
     private boolean clearSelectedGroups()
     {
         // clear any selection
-        boolean needsClear = 0 < m_selectedGroups.size();
+        boolean needsClear = 0 < m_selectedGroupIDs.size();
         if ( needsClear ) {
-            m_adapter.clearSelectedGroups( m_selectedGroups );
-            m_selectedGroups.clear();
+            m_adapter.clearSelectedGroups( m_selectedGroupIDs );
+            m_selectedGroupIDs.clear();
         }
         return needsClear;
     }
@@ -1227,19 +1229,20 @@ public class GamesList extends XWExpandableListActivity
     private int getSelGroupPos()
     {
         int result = -1;
-        if ( 1 == m_selectedGroups.size() ) {
-            result = m_selectedGroups.iterator().next();
+        if ( 1 == m_selectedGroupIDs.size() ) {
+            long id = m_selectedGroupIDs.iterator().next();
+            result = m_adapter.getGroupPosition( id );
         }
         return result;
     }
 
     private long[] getSelGroupIDs()
     {
-        long[] result = new long[m_selectedGroups.size()];
+        long[] result = new long[m_selectedGroupIDs.size()];
         int ii = 0;
-        for ( Iterator<Integer> iter = m_selectedGroups.iterator(); 
+        for ( Iterator<Long> iter = m_selectedGroupIDs.iterator(); 
               iter.hasNext(); ) {
-            result[ii++] = m_adapter.getGroupIDFor( iter.next() );
+            result[ii++] = iter.next();
         }
         return result;
     }

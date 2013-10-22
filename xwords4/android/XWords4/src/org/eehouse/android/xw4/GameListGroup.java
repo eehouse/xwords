@@ -31,17 +31,20 @@ public class GameListGroup extends ExpiringTextView
     implements GameListAdapter.ClickHandler 
 {
     private int m_groupPosition;
+    private long m_groupID;
     private boolean m_expanded;
     private GameListAdapter.LoadItemCB m_cb;
 
     public static GameListGroup makeForPosition( Context context,
-                                                 int groupPosition,
+                                                 int groupPosition, 
+                                                 long groupID,
                                                  GameListAdapter.LoadItemCB cb )
     {
         GameListGroup result = 
             (GameListGroup)Utils.inflate( context, R.layout.game_list_group );
         result.m_cb = cb;
         result.m_groupPosition = groupPosition;
+        result.m_groupID = groupID;
         return result;
     }
 
@@ -58,6 +61,11 @@ public class GameListGroup extends ExpiringTextView
     public int getGroupPosition()
     {
         return m_groupPosition;
+    }
+
+    public long getGroupID()
+    {
+        return m_groupID;
     }
 
     public void setSelected( boolean selected )
