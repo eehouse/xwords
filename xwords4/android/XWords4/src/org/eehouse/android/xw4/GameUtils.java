@@ -116,7 +116,8 @@ public class GameUtils {
         }
 
         if ( null == lockDest ) {
-            long rowid = saveNewGame( context, gamePtr, gi );
+            long groupID = DBUtils.getGroupForGame( context, lockSrc.getRowid() );
+            long rowid = saveNewGame( context, gamePtr, gi, groupID );
             lockDest = new GameLock( rowid, true ).lock();
         } else {
             saveGame( context, gamePtr, gi, lockDest, true );
@@ -300,10 +301,10 @@ public class GameUtils {
     }
 
     public static long saveNewGame( Context context, int gamePtr,
-                                    CurGameInfo gi )
+                                    CurGameInfo gi, long groupID )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
-        GameLock lock = DBUtils.saveNewGame( context, stream );
+        GameLock lock = DBUtils.saveNewGame( context, stream, groupID );
         long rowid = lock.getRowid();
         lock.unlock();
         return rowid;
