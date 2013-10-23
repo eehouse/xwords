@@ -128,9 +128,10 @@ public class XWExpandableListActivity extends ExpandableListActivity
         m_delegate.showConfirmThen( msg, posButton, action, params );
     }
 
-    protected void showConfirmThen( int msg, int posButton, int action )
+    protected void showConfirmThen( int msg, int posButton, int action, 
+                                    Object... params )
     {
-        m_delegate.showConfirmThen( getString(msg), posButton, action );
+        m_delegate.showConfirmThen( getString(msg), posButton, action, params );
     }
 
     // DlgDelegate.DlgClickNotify interface
