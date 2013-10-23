@@ -201,14 +201,14 @@ public class ExpiringDelegate {
             m_pct = (int)((100 * passed) / INTERVAL_SECS);
             if ( m_pct > 100 ) {
                 m_pct = 100;
-            } else {
+            } else if ( null != m_handler ) {
                 long onePct = INTERVAL_SECS / 100;
                 long lastStart = m_startSecs + (onePct * m_pct);
                 Assert.assertTrue( lastStart <= now );
                 long nextStartIn = lastStart + onePct - now;
                 // DbgUtils.logf( "pct change %d seconds from now", nextStartIn );
 
-                m_handler.postDelayed( mkRunnable(), 1000 * nextStartIn );
+                m_handler.postDelayed( mkRunnable(), 1000 * nextStartIn ); // NPE
             }
         }
     }
