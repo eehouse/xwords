@@ -800,7 +800,8 @@ public class GamesList extends XWExpandableListActivity
 
             // Group menus
         case R.id.list_group_delete:
-            if ( groupID == XWPrefs.getDefaultNewGameGroup( this ) ) {
+            if ( m_selGroupIDs
+                 .contains( XWPrefs.getDefaultNewGameGroup( this ) ) ) {
                 showOKOnlyDialog( R.string.cannot_delete_default_group );
             } else {
                 long[] groupIDs = getSelGroupIDs();
