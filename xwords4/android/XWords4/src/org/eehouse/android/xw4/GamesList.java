@@ -131,8 +131,8 @@ public class GamesList extends XWExpandableListActivity
     private GameNamer m_namer;
     private boolean m_gameLaunched = false;
     private boolean m_menuPrepared;
-    private HashSet<Long> m_selectedGames;
-    private HashSet<Long> m_selectedGroupIDs;
+    private HashSet<Long> m_selGames;
+    private HashSet<Long> m_selGroupIDs;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -361,8 +361,8 @@ public class GamesList extends XWExpandableListActivity
 
         getBundledData( savedInstanceState );
 
-        m_selectedGames = new HashSet<Long>();
-        m_selectedGroupIDs = new HashSet<Long>();
+        m_selGames = new HashSet<Long>();
+        m_selGroupIDs = new HashSet<Long>();
 
         setContentView(R.layout.game_list);
         ExpandableListView listview = getExpandableListView();
@@ -501,18 +501,18 @@ public class GamesList extends XWExpandableListActivity
         if ( toggled instanceof GameListItem ) {
             long rowid = ((GameListItem)toggled).getRowID();
             if ( selected ) {
-                m_selectedGames.add( rowid );
+                m_selGames.add( rowid );
                 clearSelectedGroups();
             } else {
-                m_selectedGames.remove( rowid );
+                m_selGames.remove( rowid );
             }
         } else if ( toggled instanceof GameListGroup ) {
             long id = ((GameListGroup)toggled).getGroupID();
             if ( selected ) {
-                m_selectedGroupIDs.add( id );
+                m_selGroupIDs.add( id );
                 clearSelectedGames();
             } else {
-                m_selectedGroupIDs.remove( id );
+                m_selGroupIDs.remove( id );
             }
         }
         Utils.invalidateOptionsMenuIf( this );
@@ -520,7 +520,7 @@ public class GamesList extends XWExpandableListActivity
 
     public boolean getSelected( long rowid )
     {
-        return m_selectedGames.contains( rowid );
+        return m_selGames.contains( rowid );
     }
 
     // BTService.MultiEventListener interface
@@ -600,7 +600,7 @@ public class GamesList extends XWExpandableListActivity
 
     @Override
     public void onBackPressed() {
-        if ( 0 == m_selectedGames.size() ) {
+        if ( 0 == m_selGames.size() ) {
             super.onBackPressed();
         } else {
             clearSelections();
@@ -619,8 +619,8 @@ public class GamesList extends XWExpandableListActivity
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
-        int nGamesSelected = m_selectedGames.size();
-        int nGroupsSelected = m_selectedGroupIDs.size();
+        int nGamesSelected = m_selGames.size();
+        int nGroupsSelected = m_selGroupIDs.size();
         m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
         if ( m_menuPrepared ) {
             boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
@@ -646,7 +646,7 @@ public class GamesList extends XWExpandableListActivity
 
             int selGroupPos = -1;
             if ( 1 == nGroupsSelected ) {
-                long id = m_selectedGroupIDs.iterator().next();
+                long id = m_selGroupIDs.iterator().next();
                 selGroupPos = m_adapter.getGroupPosition( id );
             }
 
@@ -714,7 +714,7 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.listl_item_config:
-            long rowid = m_selectedGames.iterator().next();
+            long rowid = m_selGames.iterator().next();
             GameUtils.doConfig( this, rowid, GameConfig.class );
             break;
 
@@ -1130,10 +1130,10 @@ public class GamesList extends XWExpandableListActivity
     private boolean clearSelectedGames()
     {
         // clear any selection
-        boolean needsClear = 0 < m_selectedGames.size();
+        boolean needsClear = 0 < m_selGames.size();
         if ( needsClear ) {
             long[] rowIDs = getSelRowIDs();
-            m_selectedGames.clear();
+            m_selGames.clear();
             m_adapter.clearSelectedGames( rowIDs );
         }
         return needsClear;
@@ -1142,10 +1142,10 @@ public class GamesList extends XWExpandableListActivity
     private boolean clearSelectedGroups()
     {
         // clear any selection
-        boolean needsClear = 0 < m_selectedGroupIDs.size();
+        boolean needsClear = 0 < m_selGroupIDs.size();
         if ( needsClear ) {
-            m_adapter.clearSelectedGroups( m_selectedGroupIDs );
-            m_selectedGroupIDs.clear();
+            m_adapter.clearSelectedGroups( m_selGroupIDs );
+            m_selGroupIDs.clear();
         }
         return needsClear;
     }
@@ -1216,9 +1216,9 @@ public class GamesList extends XWExpandableListActivity
 
     private long[] getSelRowIDs()
     {
-        long[] result = new long[m_selectedGames.size()];
+        long[] result = new long[m_selGames.size()];
         int ii = 0;
-        for ( Iterator<Long> iter = m_selectedGames.iterator(); 
+        for ( Iterator<Long> iter = m_selGames.iterator(); 
               iter.hasNext(); ) {
             result[ii++] = iter.next();
         }
@@ -1228,8 +1228,8 @@ public class GamesList extends XWExpandableListActivity
     private int getSelGroupPos()
     {
         int result = -1;
-        if ( 1 == m_selectedGroupIDs.size() ) {
-            long id = m_selectedGroupIDs.iterator().next();
+        if ( 1 == m_selGroupIDs.size() ) {
+            long id = m_selGroupIDs.iterator().next();
             result = m_adapter.getGroupPosition( id );
         }
         return result;
@@ -1237,9 +1237,9 @@ public class GamesList extends XWExpandableListActivity
 
     private long[] getSelGroupIDs()
     {
-        long[] result = new long[m_selectedGroupIDs.size()];
+        long[] result = new long[m_selGroupIDs.size()];
         int ii = 0;
-        for ( Iterator<Long> iter = m_selectedGroupIDs.iterator(); 
+        for ( Iterator<Long> iter = m_selGroupIDs.iterator(); 
               iter.hasNext(); ) {
             result[ii++] = iter.next();
         }
