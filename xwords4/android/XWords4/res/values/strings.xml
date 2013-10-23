@@ -167,9 +167,9 @@
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-    <string name="confirm_reset">Are you sure you want to reset this
-      game? Resetting erases all moves and any connection
-      information.</string>
+    <string name="confirm_reset">Are you sure you want to reset the
+    selected game[s]? (Resetting erases all moves and any connection
+    information.)</string>
 
     <!--
        ############################################################
@@ -2156,7 +2156,7 @@
     <string name="square_tiles">Square rack tiles</string>
     <string name="square_tiles_summary">Even if they can be taller</string>
 
-    <string name="change_groupf">Move game %s</string>
+    <string name="change_group">Move games</string>
 
     <string name="show_wordlist_browser">Wordlist browser</string>
 

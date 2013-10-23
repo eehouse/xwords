@@ -85,7 +85,7 @@ public class GamesList extends XWExpandableListActivity
     private static final String ALERT_MSG = "alert_msg";
 
     private static enum GamesActions { NEW_NET_GAME,
-            RESET_GAME,
+            RESET_GAMES,
             SYNC_MENU,
             NEW_FROM,
             DELETE_GAMES,
@@ -569,8 +569,11 @@ public class GamesList extends XWExpandableListActivity
                     makeNewNetGameIf();
                 }
                 break;
-            case RESET_GAME:
-                GameUtils.resetGame( this, m_rowid );
+            case RESET_GAMES:
+                long[] rowids = (long[])params[0];
+                for ( long rowid : rowids ) {
+                    GameUtils.resetGame( this, rowid );
+                }
                 onContentChanged(); // required because position may change
                 break;
             case SYNC_MENU:
@@ -694,7 +697,7 @@ public class GamesList extends XWExpandableListActivity
             Utils.setItemVisible( menu, R.id.list_item_move, 
                                   (1 < m_adapter.getGroupCount()
                                     && 0 < nGamesSelected) );
-            Utils.setItemVisible( menu, R.id.list_item_reset, 1 == nGamesSelected );
+            Utils.setItemVisible( menu, R.id.list_item_reset, 0 < nGamesSelected );
 
             m_menuPrepared = super.onPrepareOptionsMenu( menu );
         } else {
@@ -803,10 +806,8 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.list_item_reset:
-            m_rowid = selRowIDs[0];
-            showConfirmThen( R.string.confirm_reset, 
-                             R.string.button_reset, 
-                             GamesActions.RESET_GAME.ordinal() );
+            showConfirmThen( R.string.confirm_reset, R.string.button_reset, 
+                             GamesActions.RESET_GAMES.ordinal(), selRowIDs );
             break;
 
         case R.id.list_item_rename:
