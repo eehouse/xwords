@@ -74,6 +74,7 @@ public class GamesList extends XWExpandableListActivity
     private static final int WARN_NODICT_NEW   = WARN_NODICT + 8;
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
+    private static final String SAVE_ROWIDS = "SAVE_ROWIDS";
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
 
@@ -125,6 +126,7 @@ public class GamesList extends XWExpandableListActivity
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
     private long m_rowid;
+    private long[] m_rowids;
     private long m_groupid;
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
@@ -275,7 +277,8 @@ public class GamesList extends XWExpandableListActivity
                 break;
 
             case CHANGE_GROUP:
-                final long startGroup = DBUtils.getGroupForGame( this, m_rowid );
+                final long startGroup = ( 1 == m_rowids.length )
+                    ? DBUtils.getGroupForGame( this, m_rowids[0] ) : -1;
                 final int[] selItem = {-1}; // hack!!!!
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlgi, int item ) {
@@ -283,23 +286,28 @@ public class GamesList extends XWExpandableListActivity
                             AlertDialog dlg = (AlertDialog)dlgi;
                             Button btn = 
                                 dlg.getButton( AlertDialog.BUTTON_POSITIVE );
-                            long newGroup = m_adapter.getGroupIDFor( item );
-                            btn.setEnabled( newGroup != startGroup );
+                            boolean enabled = startGroup == -1;
+                            if ( !enabled ) {
+                                long newGroup = m_adapter.getGroupIDFor( item );
+                                enabled = newGroup != startGroup;
+                            }
+                            btn.setEnabled( enabled );
                         }
                     };
                 lstnr2 = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
                             Assert.assertTrue( -1 != selItem[0] );
                             long gid = m_adapter.getGroupIDFor( selItem[0] );
-                            DBUtils.moveGame( GamesList.this, m_rowid, gid );
+                            for ( long rowid : m_rowids ) {
+                                DBUtils.moveGame( GamesList.this, rowid, gid );
+                            }
                             onContentChanged();
                         }
                     };
                 String[] groups = m_adapter.groupNames();
                 int curGroupPos = m_adapter.getGroupPosition( startGroup );
-                String name = GameUtils.getName( this, m_rowid );
                 dialog = new AlertDialog.Builder( this )
-                    .setTitle( getString( R.string.change_groupf, name ) )
+                    .setTitle( getString( R.string.change_group ) )
                     .setSingleChoiceItems( groups, curGroupPos, lstnr )
                     .setPositiveButton( R.string.button_move, lstnr2 )
                     .setNegativeButton( R.string.button_cancel, null )
@@ -431,6 +439,7 @@ public class GamesList extends XWExpandableListActivity
     {
         super.onSaveInstanceState( outState );
         outState.putLong( SAVE_ROWID, m_rowid );
+        outState.putLongArray( SAVE_ROWIDS, m_rowids );
         outState.putLong( SAVE_GROUPID, m_groupid );
         outState.putString( SAVE_DICTNAMES, m_missingDictName );
         if ( null != m_netLaunchInfo ) {
@@ -442,6 +451,7 @@ public class GamesList extends XWExpandableListActivity
     {
         if ( null != bundle ) {
             m_rowid = bundle.getLong( SAVE_ROWID );
+            m_rowids = bundle.getLongArray( SAVE_ROWIDS );
             m_groupid = bundle.getLong( SAVE_GROUPID );
             m_netLaunchInfo = new NetLaunchInfo( bundle );
             m_missingDictName = bundle.getString( SAVE_DICTNAMES );
@@ -681,7 +691,9 @@ public class GamesList extends XWExpandableListActivity
                                   0 < nGroupsSelected );
 
             // multiple games can be regrouped/reset.  (Later....)
-            Utils.setItemVisible( menu, R.id.list_item_move, 1 == nGamesSelected );
+            Utils.setItemVisible( menu, R.id.list_item_move, 
+                                  (1 < m_adapter.getGroupCount()
+                                    && 0 < nGamesSelected) );
             Utils.setItemVisible( menu, R.id.list_item_reset, 1 == nGamesSelected );
 
             m_menuPrepared = super.onPrepareOptionsMenu( menu );
@@ -768,7 +780,7 @@ public class GamesList extends XWExpandableListActivity
             if ( 1 >= m_adapter.getGroupCount() ) {
                 showOKOnlyDialog( R.string.no_move_onegroup );
             } else {
-                m_rowid = selRowIDs[0];
+                m_rowids = selRowIDs;
                 showDialog( CHANGE_GROUP );
             }
             break;
