@@ -91,7 +91,8 @@ public class GameLock {
         long sleptTime = 0;
 
         if ( XWApp.DEBUG_LOCKS ) {
-            DbgUtils.logf( "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid, maxMillis );
+            DbgUtils.logf( "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid, 
+                           maxMillis );
         }
 
         for ( ; ; ) {
