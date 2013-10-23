@@ -133,6 +133,7 @@ public class GamesList extends XWExpandableListActivity
     private boolean m_menuPrepared;
     private HashSet<Long> m_selGames;
     private HashSet<Long> m_selGroupIDs;
+    private CharSequence m_origTitle;
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -389,6 +390,8 @@ public class GamesList extends XWExpandableListActivity
         tryStartsFromIntent( getIntent() );
 
         askDefaultNameIf();
+
+        m_origTitle = getTitle();
     } // onCreate
 
     @Override
@@ -516,6 +519,7 @@ public class GamesList extends XWExpandableListActivity
             }
         }
         Utils.invalidateOptionsMenuIf( this );
+        setTitleBar();
     }
 
     public boolean getSelected( long rowid )
@@ -868,6 +872,26 @@ public class GamesList extends XWExpandableListActivity
             } );
     }
 
+    private void setTitleBar()
+    {
+        int fmt = 0;
+        int nSels = m_selGames.size();
+        if ( 0 < nSels ) {
+            fmt = R.string.sel_gamesf;
+        } else {
+            nSels = m_selGroupIDs.size();
+            if ( 0 < nSels ) {
+                fmt = R.string.sel_groupsf;
+            }
+        }
+
+        if ( 0 == fmt ) {
+            setTitle( m_origTitle );
+        } else {
+            setTitle( getString( fmt, nSels ) );
+        }
+    }
+
     private boolean checkWarnNoDict( NetLaunchInfo nli )
     {
         // check that we have the dict required
@@ -1125,6 +1149,7 @@ public class GamesList extends XWExpandableListActivity
         }
         if ( inval ) {
             Utils.invalidateOptionsMenuIf( this );
+            setTitleBar();
         }
     }
 
