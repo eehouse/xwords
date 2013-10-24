@@ -335,7 +335,7 @@ public class GameListItem extends LinearLayout
                 }
             }
 
-            if ( m_cb.getSelected( m_rowid ) && m_selected ) {
+            if ( m_cb.getSelected( GameListItem.this ) && m_selected ) {
                 toggleSelected();
             }
         }

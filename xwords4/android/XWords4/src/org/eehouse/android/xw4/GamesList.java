@@ -493,7 +493,8 @@ public class GamesList extends XWExpandableListActivity
     }
 
     // GameListAdapter.LoadItemCB interface
-    public void itemClicked( Object clicked, GameSummary summary )
+    public void itemClicked( GameListAdapter.ClickHandler clicked,
+                             GameSummary summary )
     {
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
@@ -509,7 +510,8 @@ public class GamesList extends XWExpandableListActivity
         }
     }
 
-    public void itemToggled( Object toggled, boolean selected )
+    public void itemToggled( GameListAdapter.ClickHandler toggled, 
+                             boolean selected )
     {
         if ( toggled instanceof GameListItem ) {
             long rowid = ((GameListItem)toggled).getRowID();
@@ -532,9 +534,20 @@ public class GamesList extends XWExpandableListActivity
         setTitleBar();
     }
 
-    public boolean getSelected( long rowid )
+    public boolean getSelected( GameListAdapter.ClickHandler obj )
     {
-        return m_selGames.contains( rowid );
+        boolean selected;
+        if ( obj instanceof GameListItem ) {
+            long rowid = ((GameListItem)obj).getRowID();
+            selected = m_selGames.contains( rowid );
+        } else if ( obj instanceof GameListGroup ) {
+            long groupID = ((GameListGroup)obj).getGroupID();
+            selected = m_selGroupIDs.contains( groupID );
+        } else {
+            Assert.fail();
+            selected = false;
+        }
+        return selected;
     }
 
     // BTService.MultiEventListener interface

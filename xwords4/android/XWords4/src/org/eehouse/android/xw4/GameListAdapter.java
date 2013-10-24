@@ -49,9 +49,11 @@ public class GameListAdapter implements ExpandableListAdapter {
     private long[] m_positions;
 
     public interface LoadItemCB {
-        public void itemClicked( Object clicked, GameSummary summary );
-        public void itemToggled( Object toggled, boolean selected );
-        public boolean getSelected( long rowid );
+        public void itemClicked( GameListAdapter.ClickHandler clicked, 
+                                 GameSummary summary );
+        public void itemToggled( GameListAdapter.ClickHandler toggled, 
+                                 boolean selected );
+        public boolean getSelected( GameListAdapter.ClickHandler obj );
     }
 
     public interface ClickHandler {
@@ -158,7 +160,7 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public void clearSelectedGames( long[] rowids )
     {
-        deselectRows( rowids );
+        deselectGames( rowids );
     }
 
     public void clearSelectedGroups( HashSet<Long> groupIDs )
@@ -191,7 +193,7 @@ public class GameListAdapter implements ExpandableListAdapter {
         // for ( long rowid : rowids ) {
         //     asSet.add( rowid );
         // }
-        deselectRows( rowids );
+        deselectGames( rowids );
     }
 
     public void onGroupExpanded( int groupPosition )
@@ -256,6 +258,8 @@ public class GameListAdapter implements ExpandableListAdapter {
         String name = m_context.getString( R.string.group_namef, 
                                            groupNames()[groupPosition], nKids );
         view.setText( name );
+
+        view.setSelected( m_cb.getSelected( view ) );
 
         return view;
     }
@@ -379,7 +383,7 @@ public class GameListAdapter implements ExpandableListAdapter {
         return gameInfo().get( getGroupPositions()[groupPosition] );
     }
 
-    private void deselectRows( long[] rowids )
+    private void deselectGames( long[] rowids )
     {
         GameListItem[] items = new GameListItem[rowids.length];
         getGameItemsFor( rowids, items );
