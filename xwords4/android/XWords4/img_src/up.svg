@@ -31,23 +31,22 @@
    id="namedview7"
    showgrid="false"
    inkscape:zoom="1.9666667"
-   inkscape:cx="60.000001"
-   inkscape:cy="60.000001"
+   inkscape:cx="60"
+   inkscape:cy="60"
    inkscape:window-x="0"
    inkscape:window-y="24"
    inkscape:window-maximized="0"
    inkscape:current-layer="svg2" />
 <g
    id="g12"
-   transform="matrix(-1.25,0,0,1.25,116.39005,-0.58771313)">
+   transform="matrix(0,-1.25,-1.25,0,119.99375,119.99375)">
 <g
-   transform="translate(47.72,32.35)"
-   id="g676">
+   transform="translate(49.96,79.76)"
+   id="g1580">
   <path
    style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
-   d="m -1.163978,-15.143535 -23.537465,32.092623 14.683237,0 0,29.964616 17.5617961,0 0,-29.964616 14.8298969,0 z"
-   id="path678"
-   inkscape:connector-curvature="0"
-   sodipodi:nodetypes="cccccccc" />
+   d="m 0,0 -5.498,-5.502 22.368,-22.368 -52.57,0 0,-7.78 52.57,0 L -5.498,-58.02 0,-63.52 31.77,-31.77 0,0 z"
+   id="path1582"
+   inkscape:connector-curvature="0" />
 </g></g>
 </svg>
