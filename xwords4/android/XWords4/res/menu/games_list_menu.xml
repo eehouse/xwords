@@ -6,23 +6,6 @@
           android:icon="@drawable/content_new__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/gamel_menu_delete"
-          android:title="@string/list_item_delete"
-          android:icon="@drawable/content_discard__gen"
-          android:showAsAction="ifRoom"
-          />
-
-    <item android:id="@+id/list_group_delete"
-          android:title="@string/list_group_delete"
-          android:icon="@drawable/content_discard__gen"
-          android:showAsAction="ifRoom"
-          />
-
-    <item android:id="@+id/listl_item_config"
-          android:title="@string/list_item_config"
-          android:icon="@drawable/content_edit"
-          android:showAsAction="ifRoom"
-          />
     <item android:id="@+id/gamel_menu_newgroup"
           android:title="@string/button_new_group"
           android:icon="@drawable/new_group__gen"
@@ -30,39 +13,52 @@
           />
     <item android:id="@+id/gamel_menu_prefs"
           android:title="@string/menu_prefs"
-          android:icon="@android:drawable/ic_menu_preferences"
+          android:icon="@drawable/prefs__gen"
+          android:showAsAction="ifRoom"
           />
     <item android:id="@+id/gamel_menu_dicts"
           android:title="@string/gamel_menu_dicts"
-          android:icon="@drawable/dicticon"
+          android:icon="@drawable/dict__gen"
+          android:showAsAction="ifRoom"
+          />
+    <item android:id="@+id/gamel_menu_email"
+          android:title="@string/board_menu_file_email"
+          android:icon="@drawable/email__gen"
+          android:showAsAction="ifRoom"
           />
     <item android:id="@+id/gamel_menu_about"
           android:title="@string/board_menu_file_about"
           android:icon="@android:drawable/ic_menu_info_details"
           />
-
-    <item android:id="@+id/gamel_menu_email"
-          android:title="@string/board_menu_file_email"
-          android:icon="@android:drawable/ic_menu_send"
-          />
-
     <item android:id="@+id/gamel_menu_checkmoves"
           android:title="@string/gamel_menu_checkmoves"
           android:icon="@drawable/stat_notify_sync"
           />
 
     <!-- Game items -->
-    <item android:id="@+id/list_item_rename"
-          android:title="@string/list_item_rename"
+    <item android:id="@+id/gamel_menu_delete"
+          android:title="@string/list_item_delete"
+          android:icon="@drawable/content_discard__gen"
+          android:showAsAction="ifRoom"
+          />
+    <item android:id="@+id/listl_item_config"
+          android:title="@string/list_item_config"
+          android:icon="@drawable/content_edit"
+          android:showAsAction="ifRoom"
           />
     <item android:id="@+id/list_item_move"
           android:title="@string/list_item_move"
-          />
-    <item android:id="@+id/list_item_reset"
-          android:title="@string/list_item_reset"
+          android:icon="@drawable/relabel__gen"
+          android:showAsAction="ifRoom"
           />
     <item android:id="@+id/list_item_new_from"
           android:title="@string/list_item_new_from"
+          />
+    <item android:id="@+id/list_item_rename"
+          android:title="@string/list_item_rename"
+          />
+    <item android:id="@+id/list_item_reset"
+          android:title="@string/list_item_reset"
           />
     <item android:id="@+id/list_item_copy"
           android:title="@string/list_item_copy"
@@ -71,13 +67,18 @@
     <!-- Group items -->
     <item android:id="@+id/list_group_moveup"
           android:title="@string/list_group_moveup"
-          android:showAsAction="ifRoom"
           android:icon="@drawable/up__gen"
+          android:showAsAction="ifRoom"
           />
     <item android:id="@+id/list_group_movedown"
           android:title="@string/list_group_movedown"
-          android:showAsAction="ifRoom"
           android:icon="@drawable/down__gen"
+          android:showAsAction="ifRoom"
+          />
+    <item android:id="@+id/list_group_delete"
+          android:title="@string/list_group_delete"
+          android:icon="@drawable/content_discard__gen"
+          android:showAsAction="ifRoom"
           />
     <item android:id="@+id/list_group_default"
           android:title="@string/list_group_default"
