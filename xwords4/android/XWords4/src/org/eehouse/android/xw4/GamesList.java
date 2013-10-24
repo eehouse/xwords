@@ -725,6 +725,7 @@ public class GamesList extends XWExpandableListActivity
 
         boolean handled = true;
         boolean changeContent = false;
+        boolean keepSels = false;
         int groupPos = getSelGroupPos();
         long groupID = -1;
         if ( 0 <= groupPos ) {
@@ -860,9 +861,11 @@ public class GamesList extends XWExpandableListActivity
             break;
         case R.id.list_group_moveup:
             changeContent = m_adapter.moveGroup( groupID, -1 );
+            keepSels = true;
             break;
         case R.id.list_group_movedown:
             changeContent = m_adapter.moveGroup( groupID, 1 );
+            keepSels = true;
             break;
 
         default:
@@ -870,7 +873,7 @@ public class GamesList extends XWExpandableListActivity
             handled = false;
         }
 
-        if ( handled ) {
+        if ( handled && !keepSels ) {
             clearSelections();
         }
         if ( changeContent ) {
