@@ -1,11 +1,53 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="120"
-	 height="120" xml:space="preserve">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="120"
+   height="120"
+   xml:space="preserve"
+   id="svg2"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="down.svg"><metadata
+   id="metadata11"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs9" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview7"
+   showgrid="false"
+   inkscape:zoom="1.9666667"
+   inkscape:cx="60"
+   inkscape:cy="60"
+   inkscape:window-x="0"
+   inkscape:window-y="24"
+   inkscape:window-maximized="0"
+   inkscape:current-layer="svg2" />
 <g
-     id="g12"
-     transform="matrix(1.25,0,0,-1.25,0,120)">
-<g transform='translate(47.72,32.35)' id='g676'>
-  <path style='fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none' d='M 0,0 -16.37,22.32 -6.158,22.32 -6.158,43.16 6.056,43.16 6.056,22.32 16.37,22.32 0,0 z M -33.34,-5.839 -33.34,-11.85 33.9,-11.85 33.89,-5.839 -33.34,-5.839 z' id='path678'/>
+   id="g12"
+   transform="matrix(1.25,0,0,-1.25,0,120)">
+<g
+   transform="translate(47.72,32.35)"
+   id="g676">
+  <path
+   style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+   d="m -1.163978,-15.143535 -23.537465,32.092623 14.683237,0 0,29.964616 17.5617961,0 0,-29.964616 14.8298969,0 z"
+   id="path678"
+   inkscape:connector-curvature="0"
+   sodipodi:nodetypes="cccccccc" />
 </g></g>
 </svg>
