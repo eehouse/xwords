@@ -5,24 +5,29 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 70 release</b>
+<b>Crosswords 4.4 beta 71 release</b>
 
-<p>Recent releases feature a major upgrade to how the app communicates
-  with the relay, in essence switching from each game communicating
-  individually (and only when open) to the app communicating on behalf
-  of all games.  You should notice only that moves are transmitted
-  more reliably.  But this being new code you may also notice bugs.
-  If you don't <a href="mailto:xwords@eehouse.org">tell me about
-  them</a> they will not get fixed.  </p>
+<p>For this release I've redone how you work with games and groups of
+  games in the main Games List screen. Now you select one or more
+  games, and then the screen's main menu (including the right of the
+  action bar for newer devices) changes based on the
+  selection. Long-tap to select.  "Context menus" are gone.</p>
+
+<p>Please let me know what you think of this. Suggest tweaks. Should I
+  redo the rest of the screens in this style; or, to the contrary, put
+  things back the way they were? As always, you
+  can <a href="mailto:xwords@eehouse.org">email me here</a>.</p>
 
 <h3>New with this release</h3>
 <ul>
-    <li>Work around bug in 2.3.x Android (Thanks O!)</li>
+  <li>Catch up with Android UI 4.0: make interaction with games and
+  groups selection-based</li>
+  <li>Fix bug on tiny-screen phones (Thanks O!)</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>Take advantage of newer Android UI features, e.g. Action Bar</li>
+  <li>Use Actionbar and select/act pattern on more screens</li>
   <li>Offer "Rematch" when game's over</li>
 </ul>
 
