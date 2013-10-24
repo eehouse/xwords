@@ -27,16 +27,32 @@ import android.util.AttributeSet;
 import junit.framework.Assert;
 
 public class XWListPreference extends ListPreference {
+    private Context m_context;
 
     public XWListPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
+        m_context = context;
     }
 
     protected void onAttachedToActivity()
     {
         super.onAttachedToActivity();
         setSummary( getPersistedString( "" ) );
+
+        if ( XWPrefs.getDebugEnabled( m_context ) ) {
+            CharSequence[] entries = getEntries();
+            String lastRow 
+                = m_context.getString( R.string.game_summary_field_rowid );
+            if ( !entries[entries.length - 1].equals( lastRow ) ) {
+                CharSequence[] newEntries = new CharSequence[1 + entries.length];
+                System.arraycopy( entries, 0, newEntries, 0, entries.length );
+                newEntries[entries.length] = lastRow;
+                setEntries( newEntries );
+
+                setEntryValues( newEntries );
+            }
+        }
     }
 
     protected boolean persistString( String value )

@@ -113,6 +113,7 @@
   <string name="invite_host">eehouse.org</string>
   <string name="invite_prefix">/and/</string>
   <string name="invite_mime">application/x-xwordsinvite</string>
+  <string name="game_summary_field_rowid">rowid</string>
   <!--string name="invite_mime">text/plain</string-->
 
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
