@@ -400,8 +400,10 @@ public class GameListAdapter implements ExpandableListAdapter {
         for ( Iterator<Long>iter = groupids.iterator();
               iter.hasNext(); ) {
             int pos = getGroupPosition( iter.next() );
-            GameListGroup group = getGroupItemFor( pos );
-            group.setSelected( false );
+            if ( 0 <= pos ) {   // still exists?
+                GameListGroup group = getGroupItemFor( pos );
+                group.setSelected( false );
+            }
         }
     }
 

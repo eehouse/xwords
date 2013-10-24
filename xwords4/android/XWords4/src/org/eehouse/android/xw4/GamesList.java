@@ -605,6 +605,7 @@ public class GamesList extends XWExpandableListActivity
                 for ( long groupID : groupIDs ) {
                     GameUtils.deleteGroup( this, groupID );
                 }
+                clearSelections();
                 onContentChanged();
                 break;
             case DELETE_GAMES:
@@ -752,6 +753,7 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.gamel_menu_delete:
+            keepSels = true;
             String msg = Utils.format( this, R.string.confirm_seldeletesf, 
                                        selRowIDs.length );
             showConfirmThen( msg, R.string.button_delete, 
@@ -831,6 +833,7 @@ public class GamesList extends XWExpandableListActivity
 
             // Group menus
         case R.id.list_group_delete:
+            keepSels = true;
             if ( m_selGroupIDs
                  .contains( XWPrefs.getDefaultNewGameGroup( this ) ) ) {
                 showOKOnlyDialog( R.string.cannot_delete_default_group );
@@ -854,6 +857,7 @@ public class GamesList extends XWExpandableListActivity
             break;
         case R.id.list_group_default:
             XWPrefs.setDefaultNewGameGroup( this, groupID );
+            keepSels = true;
             break;
         case R.id.list_group_rename:
             m_groupid = groupID;
@@ -1155,6 +1159,7 @@ public class GamesList extends XWExpandableListActivity
         }
 
         NetUtils.informOfDeaths( this );
+        clearSelections();
     }
 
     private boolean makeNewNetGameIf()
