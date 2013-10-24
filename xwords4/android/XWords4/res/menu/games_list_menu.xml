@@ -51,14 +51,16 @@
           android:icon="@drawable/relabel__gen"
           android:showAsAction="ifRoom"
           />
+    <item android:id="@+id/list_item_reset"
+          android:title="@string/list_item_reset"
+          android:icon="@drawable/reset__gen"
+          android:showAsAction="ifRoom"
+          />
     <item android:id="@+id/list_item_new_from"
           android:title="@string/list_item_new_from"
           />
     <item android:id="@+id/list_item_rename"
           android:title="@string/list_item_rename"
-          />
-    <item android:id="@+id/list_item_reset"
-          android:title="@string/list_item_reset"
           />
     <item android:id="@+id/list_item_copy"
           android:title="@string/list_item_copy"
