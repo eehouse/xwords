@@ -337,10 +337,6 @@ public class GameListItem extends LinearLayout
                     s_invalRows.remove( m_rowid );
                 }
             }
-
-            if ( m_cb.getSelected( GameListItem.this ) && m_selected ) {
-                toggleSelected();
-            }
         }
     } // class LoadItemTask
 

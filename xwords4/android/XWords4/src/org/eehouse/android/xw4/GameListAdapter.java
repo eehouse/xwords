@@ -234,6 +234,7 @@ public class GameListAdapter implements ExpandableListAdapter {
         GameListItem result = 
             GameListItem.makeForRow( m_context, rowid, m_handler, 
                                      groupPosition, m_fieldID, m_cb );
+        result.setSelected( m_cb.getSelected( result ) );
         return result;
     }
 

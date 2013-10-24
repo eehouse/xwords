@@ -301,6 +301,8 @@ public class GamesList extends XWExpandableListActivity
                             for ( long rowid : m_rowids ) {
                                 DBUtils.moveGame( GamesList.this, rowid, gid );
                             }
+                            DBUtils.setGroupExpanded( GamesList.this, gid, 
+                                                      true );
                             onContentChanged();
                         }
                     };
@@ -631,7 +633,7 @@ public class GamesList extends XWExpandableListActivity
 
     @Override
     public void onBackPressed() {
-        if ( 0 == m_selGames.size() ) {
+        if ( 0 == m_selGames.size() && 0 == m_selGroupIDs.size() ) {
             super.onBackPressed();
         } else {
             clearSelections();
@@ -796,6 +798,7 @@ public class GamesList extends XWExpandableListActivity
 
             // Game menus
         case R.id.list_item_move:
+            keepSels = true;
             if ( 1 >= m_adapter.getGroupCount() ) {
                 showOKOnlyDialog( R.string.no_move_onegroup );
             } else {
