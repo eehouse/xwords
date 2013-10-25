@@ -598,6 +598,7 @@ public class GamesList extends XWExpandableListActivity
             case NEW_FROM:
                 long curID = (Long)params[0];
                 long newid = GameUtils.dupeGame( GamesList.this, curID );
+                m_selGames.add( newid );
                 if ( null != m_adapter ) {
                     m_adapter.inval( newid );
                 }
@@ -831,6 +832,7 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.list_item_reset:
+            keepSels = true;
             showConfirmThen( R.string.confirm_reset, R.string.button_reset, 
                              GamesActions.RESET_GAMES.ordinal(), selRowIDs );
             break;
