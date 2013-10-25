@@ -34,7 +34,7 @@
          they aren't available yet because the connection is not
          complete.  Displayed in the lists of players found in each
          game listing. -->
-    <string name="missing_player">(not here yet...)</string>
+    <string name="missing_player">(not here yet…)</string>
 
     <!-- The display of each networked game includes one of three
          states it can be in in the process of connecting to the
@@ -85,10 +85,10 @@
       -->
 
     <!-- Brings up the Wordlists (formerly Dictionaries) screen -->
-    <string name="gamel_menu_dicts">Wordlists</string>
+    <string name="gamel_menu_dicts">Wordlists…</string>
 
     <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">App Settings...</string>
+    <string name="menu_prefs">App Settings…</string>
 
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
@@ -98,7 +98,7 @@
 
     <!-- Text of progress indicator shown while check is being conducted -->
     <string name="msgs_progress">Checking relay for moves
-      etc...</string>
+      etc…</string>
 
     <!-- If you choose the above option and have no networked games
          you get this error message -->
@@ -109,7 +109,7 @@
     <string name="gamel_menu_delete_all">Delete all</string>
 
     <!-- Brings up "About Crosswords" dialog -->
-    <string name="board_menu_file_about">About Crosswords</string>
+    <string name="board_menu_file_about">About Crosswords…</string>
 
     <!-- 
        ############################################################
@@ -123,11 +123,11 @@
 
     <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
-    <string name="list_item_config">Game settings...</string>
+    <string name="list_item_config">Game settings…</string>
     <!-- pulls up dialog to rename (change name of) the selected game -->
-    <string name="list_item_rename">Rename...</string>
+    <string name="list_item_rename">Rename…</string>
     <!-- pulls up dialog to change the group of the selected game -->
-    <string name="list_item_move">Move to group...</string>
+    <string name="list_item_move">Move to group…</string>
 
     <!-- pulls up dialog to delete the selected game -->
     <string name="list_item_delete">Delete</string>
@@ -185,7 +185,7 @@
     <!-- text of button at the bottom of the screen.  It launches the
          browser pointed at the site where additional wordlists can be
          found. -->
-    <string name="download_dicts">Download more...</string>
+    <string name="download_dicts">Download more…</string>
 
     <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
@@ -513,7 +513,7 @@
     <string name="button_trade_commit">Commit trade</string>
     <string name="button_trade_cancel">Cancel trade</string>
 
-    <string name="entering_trade">Tap tiles to select...</string>
+    <string name="entering_trade">Tap tiles to select…</string>
 
 
     <!-- Bonus value hint that's displayed in gray text in the colored
@@ -658,17 +658,17 @@
          the language of the game along with how many of each there
          are and how many points each is worth.  This display is the
          same throughout the game. -->
-    <string name="board_menu_game_counts">Counts and values</string>
+    <string name="board_menu_game_counts">Counts and values…</string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles not
          yet played and not in the rack of the player whose rack is
          visible (whose turn it is, generally).  This display will
          change as tiles are used and depending on what player is
          asking. -->
-    <string name="board_menu_game_left">Tiles remaining</string>
+    <string name="board_menu_game_left">Tiles remaining…</string>
 
     <!-- Brings up listing of all moves played so far this game.  -->
-    <string name="board_menu_game_history">Game history</string>
+    <string name="board_menu_game_history">Game history…</string>
 
     <!-- Brings up explanation of the game's final score.  If the game
          is not yet over, gives you a choice whether to end it now,
@@ -834,7 +834,7 @@
 
     <!-- Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. -->
-    <string name="tell_unused">Not used yet...</string>
+    <string name="tell_unused">Not used yet…</string>
 
     <!-- sub-preference for dictionaries (soon to be called "word lists") -->
     <string name="prefs_dicts">Wordlists</string>
@@ -911,7 +911,7 @@
     <string name="hide_intro">Hide main-page hint</string>
     <!-- clarification of above -->
     <string name="hide_intro_summary">It\'s useful only when you\'re
-        starting out...</string>
+        starting out…</string>
 
     <!-- Checkbox that when set prevents showing a title bar in the
          game board window to save space -->
@@ -1414,7 +1414,7 @@
       Guest wordlists; Host wins.</string>
 
 
-    <string name="downloading_dictf">Downloading %s...</string>
+    <string name="downloading_dictf">Downloading %s…</string>
 
     <!-- 
        ############################################################
@@ -1541,7 +1541,7 @@
     sure you want to create another?</string>
 
     <!-- Title of generic dialog used to display information -->
-    <string name="info_title">FYI...</string>
+    <string name="info_title">FYI…</string>
 
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
@@ -1579,7 +1579,7 @@
 
     <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
-    <string name="query_title">A question...</string>
+    <string name="query_title">A question…</string>
 
     <!--
        ###########################################################
@@ -1881,7 +1881,7 @@
       <!--  -->
     <string name="scan_progress">Scanning for Crosswords on paired devices</string>
       <!--  -->
-    <string name="invite_progress">Sending new game info...</string>
+    <string name="invite_progress">Sending new game info…</string>
 
       <!--  -->
     <string name="summary_wait_host">Waiting for connection[s]</string>
@@ -2007,7 +2007,7 @@
     <string name="board_menu_dict">Browse wordlist</string>
 
     <!--  -->
-    <string name="game_list_tmp">Loading game summary...</string>
+    <string name="game_list_tmp">Loading game summary…</string>
 
     <!--  -->
     <string name="connstat_nonet">This is a standalone game. There is
@@ -2107,7 +2107,7 @@
     wordlist?</string>
     <string name="button_decline">Decline</string>
 
-    <string name="downloadingf">Downloading %s...</string>
+    <string name="downloadingf">Downloading %s…</string>
     <string name="download_done">Download finished</string>
     <string name="download_failed">Download unsuccessful</string>
 
