@@ -157,15 +157,21 @@ public class DlgDelegate {
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     int callbackID, Object[] params )
+                                     final int callbackID, 
+                                     final Object[] params )
     {
         if ( XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
             // If it's set, do the action without bothering with the
             // dialog
             if ( SKIP_CALLBACK != callbackID ) {
-                m_clickCallback.dlgButtonClicked( callbackID, 
-                                                  AlertDialog.BUTTON_POSITIVE,
-                                                  params );
+                post( new Runnable() {
+                        public void run() {
+                            m_clickCallback
+                                .dlgButtonClicked( callbackID, 
+                                                   AlertDialog.BUTTON_POSITIVE,
+                                                   params );
+                        }
+                    });
             }
         } else {
             String msg = m_activity.getString( msgID );
@@ -221,7 +227,8 @@ public class DlgDelegate {
         } else {
             post( new Runnable() {
                     public void run() {
-                        m_clickCallback.dlgButtonClicked( callbackID, EMAIL_BTN, null );
+                        m_clickCallback.dlgButtonClicked( callbackID, EMAIL_BTN,
+                                                          null );
                     } 
                 });
         }
