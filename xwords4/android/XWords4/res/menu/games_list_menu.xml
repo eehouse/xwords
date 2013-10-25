@@ -1,102 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/gamel_menu_newgame"
+    <item android:id="@+id/games_menu_newgame"
           android:title="@string/button_new_game"
           android:icon="@drawable/content_new__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/gamel_menu_newgroup"
+    <item android:id="@+id/games_menu_newgroup"
           android:title="@string/button_new_group"
           android:icon="@drawable/new_group__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/gamel_menu_prefs"
+    <item android:id="@+id/games_menu_prefs"
           android:title="@string/menu_prefs"
           android:icon="@drawable/prefs__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/gamel_menu_dicts"
+    <item android:id="@+id/games_menu_dicts"
           android:title="@string/gamel_menu_dicts"
           android:icon="@drawable/dict__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/gamel_menu_email"
+    <item android:id="@+id/games_menu_email"
           android:title="@string/board_menu_file_email"
           android:icon="@drawable/email__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/gamel_menu_about"
+    <item android:id="@+id/games_menu_about"
           android:title="@string/board_menu_file_about"
           android:icon="@android:drawable/ic_menu_info_details"
           />
-    <item android:id="@+id/gamel_menu_checkmoves"
+    <item android:id="@+id/games_menu_checkmoves"
           android:title="@string/gamel_menu_checkmoves"
           android:icon="@drawable/stat_notify_sync"
           />
 
     <!-- Game items -->
-    <item android:id="@+id/gamel_menu_delete"
+    <item android:id="@+id/games_game_delete"
           android:title="@string/list_item_delete"
           android:icon="@drawable/content_discard__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/listl_item_config"
+    <item android:id="@+id/games_game_config"
           android:title="@string/list_item_config"
           android:icon="@drawable/content_edit"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/list_item_move"
+    <item android:id="@+id/games_game_move"
           android:title="@string/list_item_move"
           android:icon="@drawable/relabel__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/list_item_reset"
+    <item android:id="@+id/games_game_reset"
           android:title="@string/list_item_reset"
           android:icon="@drawable/reset__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/list_item_new_from"
+    <item android:id="@+id/games_game_new_from"
           android:title="@string/list_item_new_from"
           />
-    <item android:id="@+id/list_item_rename"
+    <item android:id="@+id/games_game_rename"
           android:title="@string/list_item_rename"
           />
-    <item android:id="@+id/list_item_copy"
+    <item android:id="@+id/games_game_copy"
           android:title="@string/list_item_copy"
           />
 
     <!-- Group items -->
-    <item android:id="@+id/list_group_moveup"
+    <item android:id="@+id/games_group_moveup"
           android:title="@string/list_group_moveup"
           android:icon="@drawable/up__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/list_group_movedown"
+    <item android:id="@+id/games_group_movedown"
           android:title="@string/list_group_movedown"
           android:icon="@drawable/down__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/list_group_delete"
+    <item android:id="@+id/games_group_delete"
           android:title="@string/list_group_delete"
           android:icon="@drawable/content_discard__gen"
           android:showAsAction="ifRoom"
           />
-    <item android:id="@+id/list_group_default"
+    <item android:id="@+id/games_group_default"
           android:title="@string/list_group_default"
           />
-    <item android:id="@+id/list_group_rename"
+    <item android:id="@+id/games_group_rename"
           android:title="@string/list_group_rename"
           />
 
     <!-- Debug only menuitems -->
-    <item android:id="@+id/gamel_menu_checkupdates"
+    <item android:id="@+id/games_menu_checkupdates"
           android:title="@string/gamel_menu_checkupdates"
           />
-    <item android:id="@+id/gamel_menu_storedb"
+    <item android:id="@+id/games_menu_storedb"
           android:title="@string/gamel_menu_storedb"
           />
-    <item android:id="@+id/gamel_menu_loaddb"
+    <item android:id="@+id/games_menu_loaddb"
           android:title="@string/gamel_menu_loaddb"
           />
 

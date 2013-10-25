@@ -95,27 +95,27 @@ public class GamesList extends XWExpandableListActivity
             };
 
     private static final int[] DEBUGITEMS = { 
-        R.id.gamel_menu_loaddb,
-        R.id.gamel_menu_storedb,
-        R.id.gamel_menu_checkupdates,
+        R.id.games_menu_loaddb,
+        R.id.games_menu_storedb,
+        R.id.games_menu_checkupdates,
     };
     private static final int[] NOSEL_ITEMS = { 
-        R.id.gamel_menu_newgroup,
-        R.id.gamel_menu_prefs,
-        R.id.gamel_menu_dicts,
-        R.id.gamel_menu_about,
-        R.id.gamel_menu_email,
-        R.id.gamel_menu_checkmoves,
+        R.id.games_menu_newgroup,
+        R.id.games_menu_prefs,
+        R.id.games_menu_dicts,
+        R.id.games_menu_about,
+        R.id.games_menu_email,
+        R.id.games_menu_checkmoves,
     };
     private static final int[] ONEGAME_ITEMS = {
-        R.id.listl_item_config,
-        R.id.list_item_rename,
-        R.id.list_item_new_from,
-        R.id.list_item_copy,
+        R.id.games_game_config,
+        R.id.games_game_rename,
+        R.id.games_game_new_from,
+        R.id.games_game_copy,
     };
 
     private static final int[] ONEGROUP_ITEMS = {
-        R.id.list_group_rename,
+        R.id.games_group_rename,
     };
 
     private static boolean s_firstShown = false;
@@ -671,7 +671,7 @@ public class GamesList extends XWExpandableListActivity
             }
 
             if ( visible && !DBUtils.gameDBExists( this ) ) {
-                Utils.setItemVisible( menu, R.id.gamel_menu_loaddb, false );
+                Utils.setItemVisible( menu, R.id.games_menu_loaddb, false );
             }
 
             for ( int id : NOSEL_ITEMS ) {
@@ -696,31 +696,31 @@ public class GamesList extends XWExpandableListActivity
                 long selID = m_adapter.getGroupIDFor( selGroupPos );
                 defaultAvail = selID != XWPrefs.getDefaultNewGameGroup( this );
             }
-            Utils.setItemVisible( menu, R.id.list_group_default, defaultAvail );
-            Utils.setItemVisible( menu, R.id.list_group_delete, defaultAvail );
+            Utils.setItemVisible( menu, R.id.games_group_default, defaultAvail );
+            Utils.setItemVisible( menu, R.id.games_group_delete, defaultAvail );
 
             // Move up/down enabled for groups if not the top-most or bottommost
             // selected
             boolean enable = 0 < selGroupPos;
-            Utils.setItemVisible( menu, R.id.list_group_moveup, enable );
+            Utils.setItemVisible( menu, R.id.games_group_moveup, enable );
             enable = 0 <= selGroupPos && selGroupPos + 1 < m_adapter.getGroupCount();
-            Utils.setItemVisible( menu, R.id.list_group_movedown, enable );
+            Utils.setItemVisible( menu, R.id.games_group_movedown, enable );
 
             // New game available when nothing selected or one group
-            Utils.setItemVisible( menu, R.id.gamel_menu_newgame,
+            Utils.setItemVisible( menu, R.id.games_menu_newgame,
                                   nothingSelected || 1 == nGroupsSelected );
                 
             // Multiples can be deleted
-            Utils.setItemVisible( menu, R.id.gamel_menu_delete, 
+            Utils.setItemVisible( menu, R.id.games_game_delete, 
                                   0 < nGamesSelected );
-            Utils.setItemVisible( menu, R.id.list_group_delete, 
+            Utils.setItemVisible( menu, R.id.games_group_delete, 
                                   0 < nGroupsSelected );
 
             // multiple games can be regrouped/reset.  (Later....)
-            Utils.setItemVisible( menu, R.id.list_item_move, 
+            Utils.setItemVisible( menu, R.id.games_game_move, 
                                   (1 < m_adapter.getGroupCount()
                                     && 0 < nGamesSelected) );
-            Utils.setItemVisible( menu, R.id.list_item_reset, 0 < nGamesSelected );
+            Utils.setItemVisible( menu, R.id.games_game_reset, 0 < nGamesSelected );
 
             m_menuPrepared = super.onPrepareOptionsMenu( menu );
         } else {
@@ -748,20 +748,24 @@ public class GamesList extends XWExpandableListActivity
         }
 
         switch ( item.getItemId() ) {
-        case R.id.gamel_menu_newgame:
+        case R.id.games_menu_newgame:
             startNewGameActivity( groupID );
             break;
 
-        case R.id.gamel_menu_newgroup:
+        case R.id.games_menu_newgroup:
             showDialog( NEW_GROUP );
             break;
 
-        case R.id.listl_item_config:
+        case R.id.games_game_config:
             long rowid = m_selGames.iterator().next();
             GameUtils.doConfig( this, rowid, GameConfig.class );
             break;
 
-        case R.id.gamel_menu_delete:
+        case R.id.games_menu_dicts:
+            DictsActivity.start( this );
+            break;
+
+        case R.id.games_game_delete:
             keepSels = true;
             String msg = Utils.format( this, R.string.confirm_seldeletesf, 
                                        selRowIDs.length );
@@ -769,42 +773,38 @@ public class GamesList extends XWExpandableListActivity
                              GamesActions.DELETE_GAMES.ordinal(), selRowIDs );
             break;
 
-        case R.id.gamel_menu_dicts:
-            DictsActivity.start( this );
-            break;
-
-        case R.id.gamel_menu_checkmoves:
+        case R.id.games_menu_checkmoves:
             showNotAgainDlgThen( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
                                  GamesActions.SYNC_MENU.ordinal() );
             break;
 
-        case R.id.gamel_menu_checkupdates:
+        case R.id.games_menu_checkupdates:
             UpdateCheckReceiver.checkVersions( this, true );
             break;
 
-        case R.id.gamel_menu_prefs:
+        case R.id.games_menu_prefs:
             Utils.launchSettings( this );
             break;
 
-        case R.id.gamel_menu_about:
+        case R.id.games_menu_about:
             showAboutDialog();
             break;
 
-        case R.id.gamel_menu_email:
+        case R.id.games_menu_email:
             Utils.emailAuthor( this );
             break;
 
-        case R.id.gamel_menu_loaddb:
+        case R.id.games_menu_loaddb:
             DBUtils.loadDB( this );
             changeContent = true;
             break;
-        case R.id.gamel_menu_storedb:
+        case R.id.games_menu_storedb:
             DBUtils.saveDB( this );
             break;
 
             // Game menus
-        case R.id.list_item_move:
+        case R.id.games_game_move:
             keepSels = true;
             if ( 1 >= m_adapter.getGroupCount() ) {
                 showOKOnlyDialog( R.string.no_move_onegroup );
@@ -813,13 +813,13 @@ public class GamesList extends XWExpandableListActivity
                 showDialog( CHANGE_GROUP );
             }
             break;
-        case R.id.list_item_new_from:
+        case R.id.games_game_new_from:
             showNotAgainDlgThen( R.string.not_again_newfrom,
                                  R.string.key_notagain_newfrom, 
                                  GamesActions.NEW_FROM.ordinal(), 
                                  selRowIDs[0] );
             break;
-        case R.id.list_item_copy:
+        case R.id.games_game_copy:
             GameSummary summary = DBUtils.getSummary( this, selRowIDs[0] );
             if ( summary.inNetworkGame() ) {
                 showOKOnlyDialog( R.string.no_copy_network );
@@ -832,20 +832,20 @@ public class GamesList extends XWExpandableListActivity
             }
             break;
 
-        case R.id.list_item_reset:
+        case R.id.games_game_reset:
             keepSels = true;
             showConfirmThen( R.string.confirm_reset, R.string.button_reset, 
                              GamesActions.RESET_GAMES.ordinal(), selRowIDs );
             break;
 
-        case R.id.list_item_rename:
+        case R.id.games_game_rename:
             keepSels = true;
             m_rowid = selRowIDs[0];
             showDialog( RENAME_GAME );
             break;
 
             // Group menus
-        case R.id.list_group_delete:
+        case R.id.games_group_delete:
             keepSels = true;
             long dftGroup = XWPrefs.getDefaultNewGameGroup( this );
             if ( m_selGroupIDs.contains( dftGroup ) ) {
@@ -870,19 +870,19 @@ public class GamesList extends XWExpandableListActivity
                                  groupIDs );
             }
             break;
-        case R.id.list_group_default:
+        case R.id.games_group_default:
             XWPrefs.setDefaultNewGameGroup( this, groupID );
             keepSels = true;
             break;
-        case R.id.list_group_rename:
+        case R.id.games_group_rename:
             m_groupid = groupID;
             showDialog( RENAME_GROUP );
             break;
-        case R.id.list_group_moveup:
+        case R.id.games_group_moveup:
             changeContent = m_adapter.moveGroup( groupID, -1 );
             keepSels = true;
             break;
-        case R.id.list_group_movedown:
+        case R.id.games_group_movedown:
             changeContent = m_adapter.moveGroup( groupID, 1 );
             keepSels = true;
             break;
