@@ -735,19 +735,21 @@ public class GamesList extends XWExpandableListActivity
 
         boolean handled = true;
         boolean changeContent = false;
-        boolean keepSels = false;
+        boolean dropSels = false;
         int groupPos = getSelGroupPos();
         long groupID = -1;
         if ( 0 <= groupPos ) {
             groupID = m_adapter.getGroupIDFor( groupPos );
         }
-        long[] selRowIDs = getSelRowIDs();
+        final long[] selRowIDs = getSelRowIDs();
 
         if ( 1 == selRowIDs.length && !checkWarnNoDict( selRowIDs[0] ) ) {
             return true;        // FIXME: RETURN FROM MIDDLE!!!
         }
 
         switch ( item.getItemId() ) {
+
+            // There's no selection for these items, so nothing to clear
         case R.id.games_menu_newgame:
             startNewGameActivity( groupID );
             break;
@@ -763,14 +765,6 @@ public class GamesList extends XWExpandableListActivity
 
         case R.id.games_menu_dicts:
             DictsActivity.start( this );
-            break;
-
-        case R.id.games_game_delete:
-            keepSels = true;
-            String msg = Utils.format( this, R.string.confirm_seldeletesf, 
-                                       selRowIDs.length );
-            showConfirmThen( msg, R.string.button_delete, 
-                             GamesActions.DELETE_GAMES.ordinal(), selRowIDs );
             break;
 
         case R.id.games_menu_checkmoves:
@@ -803,9 +797,15 @@ public class GamesList extends XWExpandableListActivity
             DBUtils.saveDB( this );
             break;
 
-            // Game menus
+            // Game menus: one or more games selected
+        case R.id.games_game_delete:
+            String msg = Utils.format( this, R.string.confirm_seldeletesf, 
+                                       selRowIDs.length );
+            showConfirmThen( msg, R.string.button_delete, 
+                             GamesActions.DELETE_GAMES.ordinal(), selRowIDs );
+            break;
+
         case R.id.games_game_move:
-            keepSels = true;
             if ( 1 >= m_adapter.getGroupCount() ) {
                 showOKOnlyDialog( R.string.no_move_onegroup );
             } else {
@@ -814,39 +814,45 @@ public class GamesList extends XWExpandableListActivity
             }
             break;
         case R.id.games_game_new_from:
+            dropSels = true;    // will select the new game instead
             showNotAgainDlgThen( R.string.not_again_newfrom,
                                  R.string.key_notagain_newfrom, 
                                  GamesActions.NEW_FROM.ordinal(), 
                                  selRowIDs[0] );
             break;
         case R.id.games_game_copy:
-            GameSummary summary = DBUtils.getSummary( this, selRowIDs[0] );
-            if ( summary.inNetworkGame() ) {
+            final GameSummary smry = DBUtils.getSummary( this, selRowIDs[0] );
+            if ( smry.inNetworkGame() ) {
                 showOKOnlyDialog( R.string.no_copy_network );
             } else {
-                byte[] stream = GameUtils.savedGame( this, selRowIDs[0] );
-                GameLock lock = GameUtils.saveNewGame( this, stream );
-                DBUtils.saveSummary( this, lock, summary );
-                m_selGames.add( lock.getRowid() );
-                lock.unlock();
+                dropSels = true;    // will select the new game instead
+                post( new Runnable() {
+                        public void run() {
+                            byte[] stream = GameUtils.savedGame( GamesList.this,
+                                                                 selRowIDs[0] );
+                            GameLock lock = 
+                                GameUtils.saveNewGame( GamesList.this, stream );
+                            DBUtils.saveSummary( GamesList.this, lock, smry );
+                            m_selGames.add( lock.getRowid() );
+                            lock.unlock();
+                            onContentChanged();
+                        }
+                    });
             }
             break;
 
         case R.id.games_game_reset:
-            keepSels = true;
             showConfirmThen( R.string.confirm_reset, R.string.button_reset, 
                              GamesActions.RESET_GAMES.ordinal(), selRowIDs );
             break;
 
         case R.id.games_game_rename:
-            keepSels = true;
             m_rowid = selRowIDs[0];
             showDialog( RENAME_GAME );
             break;
 
             // Group menus
         case R.id.games_group_delete:
-            keepSels = true;
             long dftGroup = XWPrefs.getDefaultNewGameGroup( this );
             if ( m_selGroupIDs.contains( dftGroup ) ) {
                 msg = getString( R.string.cannot_delete_default_groupf,
@@ -872,7 +878,6 @@ public class GamesList extends XWExpandableListActivity
             break;
         case R.id.games_group_default:
             XWPrefs.setDefaultNewGameGroup( this, groupID );
-            keepSels = true;
             break;
         case R.id.games_group_rename:
             m_groupid = groupID;
@@ -880,18 +885,16 @@ public class GamesList extends XWExpandableListActivity
             break;
         case R.id.games_group_moveup:
             changeContent = m_adapter.moveGroup( groupID, -1 );
-            keepSels = true;
             break;
         case R.id.games_group_movedown:
             changeContent = m_adapter.moveGroup( groupID, 1 );
-            keepSels = true;
             break;
 
         default:
             handled = false;
         }
 
-        if ( handled && !keepSels ) {
+        if ( dropSels ) {
             clearSelections();
         }
         if ( changeContent ) {
