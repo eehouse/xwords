@@ -2139,7 +2139,7 @@
     <string name="rename_group_label">Change the name of this group to:</string>
     <string name="game_name_group_title">Name group</string>
 
-    <string name="cannot_delete_default_group">The group for new games
+    <string name="cannot_delete_default_groupf">The group for new games, %s, 
     cannot be deleted.</string>
 
     <string name="no_move_onegroup">Moving is impossible until there

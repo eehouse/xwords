@@ -827,6 +827,7 @@ public class GamesList extends XWExpandableListActivity
                 byte[] stream = GameUtils.savedGame( this, selRowIDs[0] );
                 GameLock lock = GameUtils.saveNewGame( this, stream );
                 DBUtils.saveSummary( this, lock, summary );
+                m_selGames.add( lock.getRowid() );
                 lock.unlock();
             }
             break;
@@ -838,6 +839,7 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.list_item_rename:
+            keepSels = true;
             m_rowid = selRowIDs[0];
             showDialog( RENAME_GAME );
             break;
@@ -845,9 +847,11 @@ public class GamesList extends XWExpandableListActivity
             // Group menus
         case R.id.list_group_delete:
             keepSels = true;
-            if ( m_selGroupIDs
-                 .contains( XWPrefs.getDefaultNewGameGroup( this ) ) ) {
-                showOKOnlyDialog( R.string.cannot_delete_default_group );
+            long dftGroup = XWPrefs.getDefaultNewGameGroup( this );
+            if ( m_selGroupIDs.contains( dftGroup ) ) {
+                msg = getString( R.string.cannot_delete_default_groupf,
+                                 m_adapter.groupName( dftGroup ) );
+                showOKOnlyDialog( msg );
             } else {
                 long[] groupIDs = getSelGroupIDs();
                 Assert.assertTrue( 0 < groupIDs.length );
