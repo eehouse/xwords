@@ -20,8 +20,27 @@
 
 <h3>New with this release</h3>
 <ul>
-  <li>Catch up with Android UI 4.0: make interaction with games and
-  groups selection-based</li>
+  <li>More closely follow Android UI guidelines for main Games List
+  screen<ul>
+      <li>Show count of selected games or groups in title bar</li>
+      <li>Long-tap on games and groups selects or deselects rather
+        than bringing up a menu</li>
+      <li>Tap on icon at left of game row selects or deselects</li>
+      <li>Tap on selected game deselects</li>
+      <li>Selecting any group deselects all games, and vice versa</li>
+      <li>Back button clears any selection, or exits if there is
+      none</li>
+      <li>Most common actions now have icons for the action bar</li>
+      <li>A new game created when a group is selected is placed in
+      that group</li>
+      <li>Clear selected games inside collapsing group</li>
+  </ul></li>
+
+  <li>Add a couple of menu items to action bar for Board screen, as
+  text for now pending getting icons</li>
+
+  <li>Remove introductory verbiage from main Games List screen</li>
+
   <li>Fix bug on tiny-screen phones (Thanks O!)</li>
 </ul>
 
