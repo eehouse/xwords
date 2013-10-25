@@ -2167,6 +2167,10 @@
     then act on selected games, e.g. to delete them, using the menu or
     \"Actionbar.\"</string>
 
+    <string name="not_again_backclears">New feature: The back button
+    now clears any selection instead of exiting. Hit it again to exit
+    the app.</string>
+
     <string name="sel_gamesf">Games: %d"</string>
     <string name="sel_groupsf">Groups: %d"</string>
 </resources>

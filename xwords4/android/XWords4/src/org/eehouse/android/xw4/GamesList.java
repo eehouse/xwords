@@ -84,13 +84,14 @@ public class GamesList extends XWExpandableListActivity
     private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
     private static final String ALERT_MSG = "alert_msg";
 
-    private static enum GamesActions { NEW_NET_GAME,
-            RESET_GAMES,
-            SYNC_MENU,
-            NEW_FROM,
-            DELETE_GAMES,
-            DELETE_GROUPS,
-            OPEN_GAME
+    private static enum GamesActions { NEW_NET_GAME
+            ,RESET_GAMES
+            ,SYNC_MENU
+            ,NEW_FROM
+            ,DELETE_GAMES
+            ,DELETE_GROUPS
+            ,OPEN_GAME
+            ,CLEAR_SELS
             };
 
     private static final int[] DEBUGITEMS = { 
@@ -616,6 +617,9 @@ public class GamesList extends XWExpandableListActivity
             case OPEN_GAME:
                 doOpenGame( params );
                 break;
+            case CLEAR_SELS:
+                clearSelections();
+                break;
             default:
                 Assert.fail();
             }
@@ -636,7 +640,9 @@ public class GamesList extends XWExpandableListActivity
         if ( 0 == m_selGames.size() && 0 == m_selGroupIDs.size() ) {
             super.onBackPressed();
         } else {
-            clearSelections();
+            showNotAgainDlgThen( R.string.not_again_backclears, 
+                                 R.string.key_notagain_backclears,
+                                 GamesActions.CLEAR_SELS.ordinal() );
         }
     }
 
