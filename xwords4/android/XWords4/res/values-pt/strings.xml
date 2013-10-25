@@ -13,27 +13,12 @@
        # This is the first screen you see when you launch Crosswords
        ############################################################ 
       -->
-    <!-- These two messages appear at the top of the list of games
-         (unless the hide_intro preferences checkbox is checked.)-->
-    <string name="empty_games_list">Use o botão abaixo para criar um novo
-    jogo. Selecione um jogo existente para continuá-lo ou dê um toque
-    longo para outras opções.</string>
-      <!--  -->
-    <string name="empty_games_list2">Você pode esconder essa mensagem
-    e os botões abaixo na seção Aparência das Configurações (acessada
-    através do botão menu do seu dispositivo.)</string>
 
     <!-- Text of button at bottom of main games-list screen and of
          menuitem in main games-list screen's menu.  (The botton can
          be hidden in the same way as the above text.) -->
     <string name="button_new_game">Novo jogo</string>
     <string name="button_new_group">Novo grupo</string>
-
-    <!-- When the game list is empty and the above messages and button
-         are hidden via preferences, this text is shown -->
-    <string name="empty_list_msg">Use a tecla menu para adicionar um
-    jogo.</string>
-
 
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
@@ -2184,9 +2169,6 @@
     <string name="rename_group_label">Mudar o nome desse grupo para:</string>
     <string name="game_name_group_title">Nomear grupo</string>
 
-    <string name="cannot_delete_default_group">O grupo para novos jogos
-    não pode ser apagado."</string>
-
     <string name="no_move_onegroup">Não é possível mover até que exista
     mais de um grupo.</string>
     <string name="group_namef">%1$s (%2$d jogos)</string>
@@ -2198,8 +2180,6 @@
 
     <string name="square_tiles">Peças quadradas</string>
     <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
-
-    <string name="change_groupf">Mover jogo %s</string>
 
     <string name="show_wordlist_browser">Listas de palavras</string>
 
