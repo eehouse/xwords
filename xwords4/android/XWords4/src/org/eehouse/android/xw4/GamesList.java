@@ -888,7 +888,6 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         default:
-            Assert.fail();
             handled = false;
         }
 
@@ -899,7 +898,7 @@ public class GamesList extends XWExpandableListActivity
             onContentChanged();
         }
 
-        return handled;
+        return handled || super.onOptionsItemSelected( item );
     }
 
     // DictImportActivity.DownloadFinishedListener interface
