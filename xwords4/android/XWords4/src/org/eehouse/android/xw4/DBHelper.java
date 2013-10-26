@@ -37,7 +37,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_DICTINFO = "dictinfo";
     public static final String TABLE_NAME_GROUPS = "groups";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 17;
+    private static final int DB_VERSION = 18;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -59,6 +59,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String HASMSGS = "HASMSGS";
     public static final String CONTRACTED = "CONTRACTED";
     public static final String SNAPSHOT = "SNAPSHOT";
+    public static final String THUMBNAIL = "THUMBNAIL";
     public static final String CONTYPE = "CONTYPE";
     public static final String SERVERROLE = "SERVERROLE";
     public static final String ROOMNAME = "ROOMNAME";
@@ -120,6 +121,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ CREATE_TIME,  "INTEGER" }
         ,{ LASTPLAY_TIME,"INTEGER" }
         ,{ SNAPSHOT,     "BLOB" }
+        ,{ THUMBNAIL,    "BLOB" }
     };
 
     private static final String[][] s_obitsColsAndTypes = {
@@ -211,6 +213,8 @@ public class DBHelper extends SQLiteOpenHelper {
             addSumColumn( db, VISID );
             setColumnsEqual( db, TABLE_NAME_SUM, VISID, "rowid" );
             makeAutoincrement( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
+        case 17:
+            addSumColumn( db, THUMBNAIL );
             // nothing yet
             break;
         default:
