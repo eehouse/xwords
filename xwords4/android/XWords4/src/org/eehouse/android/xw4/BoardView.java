@@ -937,6 +937,19 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
         }
     }
 
+    public Bitmap getScaledBoard()
+    {
+        Bitmap result = null;
+        int divisor = XWPrefs.getThumbScale( m_context );
+        if ( 0 < divisor ) {
+            result = Bitmap.createScaledBitmap( s_bitmap, 
+                                                m_layoutWidth / divisor,
+                                                m_layoutHeight / divisor,
+                                                false );
+        }
+        return result;
+    }
+
     private void drawTileImpl( Rect rect, String text, int val, 
                                int flags, boolean clearBack )
     {

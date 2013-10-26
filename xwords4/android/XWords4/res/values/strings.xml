@@ -2173,4 +2173,6 @@
 
     <string name="sel_gamesf">Games: %d"</string>
     <string name="sel_groupsf">Groups: %d"</string>
+
+    <string name="summary_thumbsize">Thumbnail size</string>
 </resources>

@@ -21,34 +21,39 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+
+import android.content.DialogInterface.OnDismissListener;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+
+import android.graphics.Bitmap;
+
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuInflater;
-import android.view.KeyEvent;
-import android.view.Window;
 import android.os.Handler;
 import android.os.Message;
-import android.content.Intent;
-import java.util.concurrent.Semaphore;
-import java.util.ArrayList;
-import java.util.Iterator;
-import android.app.Dialog;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
+
+import android.text.TextUtils;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.concurrent.Semaphore;
 import junit.framework.Assert;
-import android.content.res.Configuration;
-import android.content.pm.ActivityInfo;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -2028,7 +2033,8 @@ public class BoardActivity extends XWActivity
             interruptBlockingThread();
 
             if ( null != m_jniThread ) {
-                m_jniThread.waitToStop( save );
+                Bitmap thumb = m_view.getScaledBoard();
+                m_jniThread.waitToStop( save, thumb );
                 m_jniThread = null;
             }
 

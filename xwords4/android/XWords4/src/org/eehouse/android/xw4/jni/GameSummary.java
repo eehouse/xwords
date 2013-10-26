@@ -21,11 +21,14 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.text.TextUtils;
+
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
-import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
@@ -66,6 +69,7 @@ public class GameSummary {
     private CurGameInfo m_gi;
     private Context m_context;
     private String[] m_remotePhones;
+    private Bitmap m_thumb;
 
     private GameSummary() {}
 
@@ -83,6 +87,16 @@ public class GameSummary {
         serverRole = gi.serverRole;
         gameID = gi.gameID;
         m_gi = gi;
+    }
+
+    public void setThumbnail( Bitmap thumb )
+    {
+        m_thumb = thumb;
+    }
+
+    public Bitmap getThumbnail()
+    {
+        return m_thumb;
     }
 
     public boolean inNetworkGame()

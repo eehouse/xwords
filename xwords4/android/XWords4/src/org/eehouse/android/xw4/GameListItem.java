@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -51,6 +52,7 @@ public class GameListItem extends LinearLayout
     private boolean m_loaded;
     private long m_rowid;
     private View m_hideable;
+    private ImageView m_thumb;
     private ExpiringTextView m_name;
     private boolean m_expanded, m_haveTurn, m_haveTurnLocal;
     private long m_lastMoveTime;
@@ -185,6 +187,7 @@ public class GameListItem extends LinearLayout
                                          R.drawable.expander_ic_maximized :
                                          R.drawable.expander_ic_minimized);
         m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
+        m_thumb.setVisibility( m_expanded? View.VISIBLE : View.GONE );
 
         m_name.setBackgroundColor( android.R.color.transparent );
         m_name.setPct( m_handler, m_haveTurn && !m_expanded, 
@@ -291,6 +294,14 @@ public class GameListItem extends LinearLayout
                         toggleSelected();
                     }
                 } );
+
+            m_thumb = (ImageView)findViewById( R.id.thumbnail );
+            Bitmap bmp = summary.getThumbnail();
+            if ( null == bmp ) {
+                m_thumb.setVisibility( View.GONE );
+            } else {
+                m_thumb.setImageBitmap( bmp );
+            }
 
             tview = (TextView)findViewById( R.id.role );
             String roleSummary = summary.summarizeRole();

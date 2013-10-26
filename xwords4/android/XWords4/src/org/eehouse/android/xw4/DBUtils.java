@@ -25,15 +25,21 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,7 +47,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.StringTokenizer;
-
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -132,7 +137,7 @@ public class DBUtils {
                                  DBHelper.DICTLANG, DBHelper.GAMEID,
                                  DBHelper.SCORES, DBHelper.HASMSGS,
                                  DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
-                                 DBHelper.LASTMOVE
+                                 DBHelper.LASTMOVE, DBHelper.THUMBNAIL
             };
             String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -178,6 +183,14 @@ public class DBUtils {
                 summary.gameOver = tmp != 0;
                 summary.lastMoveTime = 
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
+
+                byte[] data =
+                    cursor.getBlob( cursor.getColumnIndex(DBHelper.THUMBNAIL));
+                if ( null != data ) {
+                    Bitmap thumb = BitmapFactory.decodeByteArray( data, 0, 
+                                                                  data.length );
+                    summary.setThumbnail( thumb );
+                }
 
                 String scoresStr = 
                     cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
@@ -308,6 +321,17 @@ public class DBUtils {
                         break;
                     }
                 }
+
+                Bitmap thumb = summary.getThumbnail();
+                if ( null == thumb ) {
+                    values.putNull( DBHelper.THUMBNAIL );
+                } else {
+                    ByteArrayOutputStream bas = new ByteArrayOutputStream();
+                    thumb.compress( CompressFormat.PNG, 0 , bas );
+                    byte[] data = bas.toByteArray();
+                    values.put( DBHelper.THUMBNAIL, data );
+                }
+
                 values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
 
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
