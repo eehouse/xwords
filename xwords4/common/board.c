@@ -1456,6 +1456,60 @@ board_invalRect( BoardCtxt* board, XP_Rect* rect )
     }
 } /* board_invalRect */
 
+#ifdef XWFEATURE_ACTIVERECT
+XP_Bool
+board_getActiveRect( const BoardCtxt* board, XP_Rect* rect )
+{
+    XP_Bool found = XP_FALSE;
+    XP_USE( rect );
+    XP_U16 minCol = 1000;
+    XP_U16 maxCol = 0;
+    XP_U16 minRow = 1000;
+    XP_U16 maxRow = 0;
+    const ModelCtxt* model = board->model;
+    XP_U16 nCols = model_numCols( board->model );
+    XP_S16 turn = board->selPlayer;
+    XP_U16 col, row;
+
+    for ( col = 0; col < nCols; ++col ) {
+        for ( row = 0; row < nCols; ++row ) {
+            if ( model_getTile( model, col, row, XP_TRUE, turn, NULL, NULL, 
+                                NULL, NULL ) ) {
+                found = XP_TRUE;
+                if ( row < minRow ) {
+                    minRow = row;
+                }
+                if ( row > maxRow ) {
+                    maxRow = row;
+                }
+                if ( col < minCol ) {
+                    minCol = col;
+                }
+                if ( col > maxCol ) {
+                    maxCol = col;
+                }
+            }
+        }
+    }
+
+    if ( !found ) {
+        minCol = maxCol = nCols / 2;
+        minRow = maxRow = nCols / 2;
+        found = XP_TRUE;
+    }
+
+    XP_Rect upperLeft, lowerRight;
+    getCellRect( board, minCol, minRow, &upperLeft );
+    getCellRect( board, maxCol, maxRow, &lowerRight );
+    rect->left = upperLeft.left;
+    rect->top = upperLeft.top;
+    rect->width = (lowerRight.left + lowerRight.width) - upperLeft.left;
+    rect->height = (lowerRight.top + lowerRight.height) - upperLeft.top;
+
+    return found;
+}
+#endif
+
 /* When the tray's hidden, check if it overlaps where the board wants to be,
  * and adjust the board's rect if needed so that hit-testing will work
  * "through" where the tray used to be.
