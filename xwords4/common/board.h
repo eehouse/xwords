@@ -96,6 +96,9 @@ void board_setTimerLoc( BoardCtxt* board,
                         XP_U16 timerWidth, XP_U16 timerHeight );
 void board_invalAll( BoardCtxt* board );
 void board_invalRect( BoardCtxt* board, XP_Rect* rect );
+#ifdef XWFEATURE_ACTIVERECT
+XP_Bool board_getActiveRect( const BoardCtxt* board, XP_Rect* rect );
+#endif
 
 XP_Bool board_draw( BoardCtxt* board );
 
@@ -118,6 +121,7 @@ XP_Bool board_prefsChanged( BoardCtxt* board, CommonPrefs* cp );
 BoardObjectType board_getFocusOwner( BoardCtxt* board );
 
 void board_hiliteCellAt( BoardCtxt* board, XP_U16 col, XP_U16 row );
+
 
 void board_resetEngine( BoardCtxt* board );
 

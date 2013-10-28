@@ -1299,9 +1299,9 @@ allocAndSet( GdkColormap* map, GdkColor* color, unsigned short red,
     gboolean success = 
 #endif
         gdk_colormap_alloc_color( map,
-                                        color,
-                                        TRUE, /* writeable */
-                                        TRUE ); /* best-match */
+                                  color,
+                                  TRUE, /* writeable */
+                                  TRUE ); /* best-match */
     XP_ASSERT( success );
 } /* allocAndSet */
 
@@ -1438,6 +1438,12 @@ draw_gtk_status( GtkDrawCtx* dctx, char ch )
     draw_string_at( dctx, NULL, str, GTKMIN_W_HT,
                     &rect, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
+}
+
+void
+frame_active_rect( GtkDrawCtx* dctx, const XP_Rect* rect )
+{
+    gtkFillRect( dctx, rect, &dctx->grey );
 }
 
 #endif /* PLATFORM_GTK */
