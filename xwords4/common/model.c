@@ -596,6 +596,7 @@ model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
 {
     CellTile cellTile = getModelTileRaw( model, col, row );
     XP_Bool pending = XP_FALSE;
+    XP_Bool inUse = XP_TRUE;
     
     if ( (cellTile & TILE_PENDING_BIT) != 0 ) {
         if ( getPending
@@ -609,24 +610,22 @@ model_getTile( const ModelCtxt* model, XP_U16 col, XP_U16 row,
     }
 
     /* this needs to happen after the above b/c cellTile gets changed */
-    if ( (cellTile & TILE_EMPTY_BIT) != 0 ) {
-        return XP_FALSE;
+    inUse = 0 == (cellTile & TILE_EMPTY_BIT);
+    if ( inUse ) {
+        if ( NULL != tileP ) {
+            *tileP = cellTile & TILE_VALUE_MASK;
+        }
+        if ( NULL != isBlank ) {
+            *isBlank = IS_BLANK(cellTile);
+        }
+        if ( NULL != pendingP ) {
+            *pendingP = pending;
+        }
+        if ( !!recentP ) {
+            *recentP = (cellTile & PREV_MOVE_BIT) != 0;
+        }
     }
-    
-    if ( NULL != tileP ) {
-        *tileP = cellTile & TILE_VALUE_MASK;
-    }
-    if ( NULL != isBlank ) {
-        *isBlank = IS_BLANK(cellTile);
-    }
-    if ( NULL != pendingP ) {
-        *pendingP = pending;
-    }
-    if ( !!recentP ) {
-        *recentP = (cellTile & PREV_MOVE_BIT) != 0;
-    }
-
-    return XP_TRUE;
+    return inUse;
 } /* model_getTile */
 
 void

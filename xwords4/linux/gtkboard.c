@@ -1071,6 +1071,28 @@ handle_memstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 } /* handle_memstats */
 #endif
 
+#ifdef XWFEATURE_ACTIVERECT
+static gint
+inval_board_ontimer( gpointer data )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+    BoardCtxt* board = globals->cGlobals.game.board;
+    board_draw( board );
+    return XP_FALSE;
+} /* pen_timer_func */
+
+static void
+frame_active( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    XP_Rect rect;
+    BoardCtxt* board = globals->cGlobals.game.board;
+    board_getActiveRect( board, &rect );
+    frame_active_rect( globals->draw, &rect );
+    board_invalRect( board, &rect );
+    (void)g_timeout_add( 1000, inval_board_ontimer, globals );
+}
+#endif
+
 static GtkWidget*
 createAddItem( GtkWidget* parent, gchar* label, 
                GtkSignalFunc handlerFunc, GtkGameGlobals* globals ) 
@@ -1157,6 +1179,11 @@ makeMenus( GtkGameGlobals* globals )
                          GTK_SIGNAL_FUNC(handle_memstats), globals );
 #endif
 
+#ifdef XWFEATURE_ACTIVERECT
+    fileMenu = makeAddSubmenu( menubar, "Test" );
+    (void)createAddItem( fileMenu, "Frame active area", 
+                         GTK_SIGNAL_FUNC(frame_active), globals );
+#endif
     /*     (void)createAddItem( fileMenu, "Print board",  */
     /* 			 GTK_SIGNAL_FUNC(handle_print_board), globals ); */
 

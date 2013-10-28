@@ -25,5 +25,6 @@
 DrawCtx* gtkDrawCtxtMake( GtkWidget *widget, GtkGameGlobals* globals );
 
 void draw_gtk_status( GtkDrawCtx* draw, char ch );
+void frame_active_rect( GtkDrawCtx* dctx, const XP_Rect* rect );
 
 #endif
