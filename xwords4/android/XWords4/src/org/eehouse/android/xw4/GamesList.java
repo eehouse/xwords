@@ -94,7 +94,7 @@ public class GamesList extends XWExpandableListActivity
             ,CLEAR_SELS
             };
 
-    private static final int[] DEBUGITEMS = { 
+    private static final int[] DEBUG_ITEMS = { 
         R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
         R.id.games_menu_checkupdates,
@@ -665,24 +665,14 @@ public class GamesList extends XWExpandableListActivity
         if ( m_menuPrepared ) {
             boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
         
-            boolean visible = XWPrefs.getDebugEnabled( this );
-            for ( int id : DEBUGITEMS ) {
-                Utils.setItemVisible( menu, id, nothingSelected && visible );
-            }
+            boolean showDbg = XWPrefs.getDebugEnabled( this );
+            showItemsIf( DEBUG_ITEMS, menu, nothingSelected && showDbg );
+            Utils.setItemVisible( menu, R.id.games_menu_loaddb, 
+                                  showDbg && !DBUtils.gameDBExists( this ) );
 
-            if ( visible && !DBUtils.gameDBExists( this ) ) {
-                Utils.setItemVisible( menu, R.id.games_menu_loaddb, false );
-            }
-
-            for ( int id : NOSEL_ITEMS ) {
-                Utils.setItemVisible( menu, id, nothingSelected );
-            }
-            for ( int id : ONEGAME_ITEMS ) {
-                Utils.setItemVisible( menu, id, 1 == nGamesSelected );
-            }
-            for ( int id : ONEGROUP_ITEMS ) {
-                Utils.setItemVisible( menu, id, 1 == nGroupsSelected );
-            }
+            showItemsIf( NOSEL_ITEMS, menu, nothingSelected );
+            showItemsIf( ONEGAME_ITEMS, menu, 1 == nGamesSelected );
+            showItemsIf( ONEGROUP_ITEMS, menu, 1 == nGroupsSelected );
 
             int selGroupPos = -1;
             if ( 1 == nGroupsSelected ) {
@@ -701,9 +691,10 @@ public class GamesList extends XWExpandableListActivity
 
             // Move up/down enabled for groups if not the top-most or bottommost
             // selected
-            boolean enable = 0 < selGroupPos;
-            Utils.setItemVisible( menu, R.id.games_group_moveup, enable );
-            enable = 0 <= selGroupPos && selGroupPos + 1 < m_adapter.getGroupCount();
+            Utils.setItemVisible( menu, R.id.games_group_moveup, 
+                                  0 < selGroupPos );
+            boolean enable = 0 <= selGroupPos
+                && (selGroupPos + 1) < m_adapter.getGroupCount();
             Utils.setItemVisible( menu, R.id.games_group_movedown, enable );
 
             // New game available when nothing selected or one group
@@ -716,7 +707,7 @@ public class GamesList extends XWExpandableListActivity
             Utils.setItemVisible( menu, R.id.games_group_delete, 
                                   0 < nGroupsSelected );
 
-            // multiple games can be regrouped/reset.  (Later....)
+            // multiple games can be regrouped/reset.
             Utils.setItemVisible( menu, R.id.games_game_move, 
                                   (1 < m_adapter.getGroupCount()
                                     && 0 < nGamesSelected) );
@@ -1321,6 +1312,13 @@ public class GamesList extends XWExpandableListActivity
             result[ii++] = iter.next();
         }
         return result;
+    }
+
+    private void showItemsIf( int[] items, Menu menu, boolean select )
+    {
+        for ( int item : items ) {
+            Utils.setItemVisible( menu, item, select );
+        }
     }
 
     public static void onGameDictDownload( Context context, Intent intent )
