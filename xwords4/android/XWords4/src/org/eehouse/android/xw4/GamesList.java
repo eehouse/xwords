@@ -749,8 +749,7 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.games_game_config:
-            long rowid = m_selGames.iterator().next();
-            GameUtils.doConfig( this, rowid, GameConfig.class );
+            GameUtils.doConfig( this, selRowIDs[0], GameConfig.class );
             break;
 
         case R.id.games_menu_dicts:
@@ -1232,7 +1231,6 @@ public class GamesList extends XWExpandableListActivity
         if ( !m_gameLaunched ) {
             m_gameLaunched = true;
             GameUtils.launchGame( this, rowid, invited );
-            // clearSelectedGames();
         }
     }
 
