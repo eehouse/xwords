@@ -187,7 +187,9 @@ public class GameListItem extends LinearLayout
                                          R.drawable.expander_ic_maximized :
                                          R.drawable.expander_ic_minimized);
         m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
-        m_thumb.setVisibility( m_expanded? View.VISIBLE : View.GONE );
+        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+            m_thumb.setVisibility( m_expanded ? View.VISIBLE : View.GONE );
+        }
 
         m_name.setBackgroundColor( android.R.color.transparent );
         m_name.setPct( m_handler, m_haveTurn && !m_expanded, 
@@ -295,12 +297,14 @@ public class GameListItem extends LinearLayout
                     }
                 } );
 
-            m_thumb = (ImageView)findViewById( R.id.thumbnail );
-            Bitmap bmp = summary.getThumbnail();
-            if ( null == bmp ) {
-                m_thumb.setVisibility( View.GONE );
-            } else {
-                m_thumb.setImageBitmap( bmp );
+            if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+                m_thumb = (ImageView)findViewById( R.id.thumbnail );
+                Bitmap bmp = summary.getThumbnail();
+                if ( null == bmp ) {
+                    m_thumb.setVisibility( View.GONE );
+                } else {
+                    m_thumb.setImageBitmap( bmp );
+                }
             }
 
             tview = (TextView)findViewById( R.id.role );

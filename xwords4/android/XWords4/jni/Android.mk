@@ -44,6 +44,9 @@ local_DEFINES += \
 ifeq ($(CHAT_ENABLED),true)
 	local_DEFINES += -DXWFEATURE_CHAT
 endif
+ifeq ($(THUMBNAIL_ENABLED),true)
+	local_DEFINES += -DXWFEATURE_ACTIVERECT
+endif
 
 #	-DXWFEATURE_SCOREONEPASS \
 

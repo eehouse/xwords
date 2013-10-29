@@ -184,12 +184,16 @@ public class DBUtils {
                 summary.lastMoveTime = 
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
 
-                byte[] data =
-                    cursor.getBlob( cursor.getColumnIndex(DBHelper.THUMBNAIL));
-                if ( null != data ) {
-                    Bitmap thumb = BitmapFactory.decodeByteArray( data, 0, 
-                                                                  data.length );
-                    summary.setThumbnail( thumb );
+                if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+                    byte[] data =
+                        cursor.getBlob( cursor.
+                                        getColumnIndex(DBHelper.THUMBNAIL));
+                    if ( null != data ) {
+                        Bitmap thumb = 
+                            BitmapFactory.decodeByteArray( data, 0, 
+                                                           data.length );
+                        summary.setThumbnail( thumb );
+                    }
                 }
 
                 String scoresStr = 
@@ -322,14 +326,16 @@ public class DBUtils {
                     }
                 }
 
-                Bitmap thumb = summary.getThumbnail();
-                if ( null == thumb ) {
-                    values.putNull( DBHelper.THUMBNAIL );
-                } else {
-                    ByteArrayOutputStream bas = new ByteArrayOutputStream();
-                    thumb.compress( CompressFormat.PNG, 0 , bas );
-                    byte[] data = bas.toByteArray();
-                    values.put( DBHelper.THUMBNAIL, data );
+                if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+                    Bitmap thumb = summary.getThumbnail();
+                    if ( null == thumb ) {
+                        values.putNull( DBHelper.THUMBNAIL );
+                    } else {
+                        ByteArrayOutputStream bas = new ByteArrayOutputStream();
+                        thumb.compress( CompressFormat.PNG, 0 , bas );
+                        byte[] data = bas.toByteArray();
+                        values.put( DBHelper.THUMBNAIL, data );
+                    }
                 }
 
                 values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );

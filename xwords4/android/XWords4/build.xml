@@ -63,11 +63,13 @@
 
     <target name="-pre-build">
         <property name="CHAT_ENABLED" value="true" />
+        <property name="THUMBNAIL_ENABLED" value="true" />
         <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true">
             <arg value="BUILD_TARGET=${build.target}" />
             <arg value="-j3"/>
             <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
             <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
+            <arg value="THUMBNAIL_ENABLED=${THUMBNAIL_ENABLED}" />
         </exec>
 
         <exec dir="." executable="../scripts/mkimages.sh" 
@@ -83,6 +85,7 @@
           <arg value="xw4"/>
           <arg value="${INITIAL_CLIENT_VERS}" />
           <arg value="${CHAT_ENABLED}" />
+          <arg value="${THUMBNAIL_ENABLED}" />
         </exec>
     </target>
 <!--

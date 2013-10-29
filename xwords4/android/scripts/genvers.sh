@@ -6,6 +6,7 @@ DIR=$1
 VARIANT=$2
 CLIENT_VERS_RELAY=$3
 CHAT_SUPPORTED=$4
+THUMBNAIL_SUPPORTED=$5
 
 cd $(dirname $0)
 cd ../../
@@ -35,6 +36,7 @@ class GitVersion {
     public static final String VERS = "$SHORTVERS";
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
+    public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
 }
 EOF
 
