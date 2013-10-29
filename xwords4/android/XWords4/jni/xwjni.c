@@ -640,6 +640,29 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setTrayLoc
     XWJNI_END();
 }
 
+#ifdef XWFEATURE_ACTIVERECT
+JNIEXPORT jboolean JNICALL 
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1getActiveRect
+( JNIEnv* env, jclass C, jint gamePtr, jobject jrect, jintArray dims )
+{
+    jboolean result;
+    XWJNI_START();
+    XP_Rect rect;
+    XP_U16 nCols, nRows;
+    result = board_getActiveRect( state->game.board, &rect, &nCols, &nRows );
+    if ( result ) {
+        setInt( env, jrect, "left", rect.left );
+        setInt( env, jrect, "top", rect.top );
+        setInt( env, jrect, "right", rect.left + rect.width );
+        setInt( env, jrect, "bottom", rect.top + rect.height );
+        setIntInArray( env, dims, 0, nCols );
+        setIntInArray( env, dims, 1, nRows );
+    }
+    XWJNI_END();
+    return result;
+}
+#endif
+
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenDown
 (JNIEnv *env, jclass C, jint gamePtr, jint xx, jint yy, jbooleanArray barray )

@@ -48,6 +48,7 @@ bool getObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
 
 jintArray makeIntArray( JNIEnv *env, int size, const jint* vals );
 int getIntFromArray( JNIEnv* env, jintArray arr, bool del );
+void setIntInArray( JNIEnv* env, jintArray arr, int index, int val );
 
 jbyteArray makeByteArray( JNIEnv* env, int size, const jbyte* vals );
 

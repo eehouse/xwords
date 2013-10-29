@@ -940,12 +940,23 @@ public class BoardView extends View implements DrawCtx, BoardHandler,
     public Bitmap getScaledBoard()
     {
         Bitmap result = null;
-        int divisor = XWPrefs.getThumbScale( m_context );
-        if ( 0 < divisor ) {
-            result = Bitmap.createScaledBitmap( s_bitmap, 
-                                                m_layoutWidth / divisor,
-                                                m_layoutHeight / divisor,
-                                                false );
+        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+            int divisor = XWPrefs.getThumbScale( m_context );
+
+            if ( 0 < divisor ) {
+                int[] dims = new int[2];
+                Rect rect = new Rect();
+                XwJNI.board_getActiveRect( m_jniGamePtr, rect, dims );
+
+                Bitmap tmpb = 
+                    Bitmap.createBitmap( s_bitmap, rect.left, rect.top,
+                                         1 + rect.width(), 1 + rect.height() );
+
+                result = Bitmap.createScaledBitmap( tmpb,
+                                                    rect.width() / divisor,
+                                                    rect.height() / divisor,
+                                                    false );
+            }
         }
         return result;
     }

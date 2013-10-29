@@ -20,6 +20,9 @@
 
 package org.eehouse.android.xw4.jni;
 
+import android.graphics.Rect;
+
+
 // Collection of native methods
 public class XwJNI {
 
@@ -159,6 +162,8 @@ public class XwJNI {
     public static native void board_setTimerLoc( int gamePtr,
                                                  int timerLeft, int timerTop,
                                                  int timerWidth, int timerHeight );
+    public static native boolean board_getActiveRect( int gamePtr, Rect rect,
+                                                      int[] dims );
 
     public static native boolean board_handlePenDown( int gamePtr, 
                                                       int xx, int yy, 

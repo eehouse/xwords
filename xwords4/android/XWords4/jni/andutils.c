@@ -275,11 +275,23 @@ getIntFromArray( JNIEnv* env, jintArray arr, bool del )
 {
     jint* ints = (*env)->GetIntArrayElements(env, arr, 0);
     int result = ints[0];
-    (*env)->ReleaseIntArrayElements( env, arr, ints, 0);
+    (*env)->ReleaseIntArrayElements( env, arr, ints, 0 );
     if ( del ) {
         deleteLocalRef( env, arr );
     }
     return result;
+}
+
+void
+setIntInArray( JNIEnv* env, jintArray arr, int index, int val )
+{
+    jint* ints = (*env)->GetIntArrayElements( env, arr, 0 );
+#ifdef DEBUG
+    jsize len = (*env)->GetArrayLength( env, arr );
+    XP_ASSERT( len > index );
+#endif
+    ints[index] = val;
+    (*env)->ReleaseIntArrayElements( env, arr, ints, 0 );
 }
 
 jobjectArray
