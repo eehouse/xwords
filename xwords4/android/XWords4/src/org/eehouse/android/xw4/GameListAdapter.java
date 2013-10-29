@@ -189,10 +189,6 @@ public class GameListAdapter implements ExpandableListAdapter {
         DBUtils.setGroupExpanded( m_context, groupid, false );
 
         long[] rowids = DBUtils.getGroupGames( m_context, groupid );
-        // HashSet<Long> asSet = new HashSet<Long>(rowids.length);
-        // for ( long rowid : rowids ) {
-        //     asSet.add( rowid );
-        // }
         deselectGames( rowids );
     }
 

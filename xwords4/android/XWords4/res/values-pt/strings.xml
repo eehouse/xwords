@@ -107,9 +107,6 @@
     <string name="no_games_to_refresh">Nenhum jogo encontrado que conecta
     pelo servidor.</string>
 
-    <!-- Deletes all games on the device (after confirmation) -->
-    <string name="gamel_menu_delete_all">Excluir todos</string>
-
     <!-- Brings up "About Crosswords" dialog -->
     <string name="board_menu_file_about">Sobre Crosswords</string>
 
@@ -159,11 +156,6 @@
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
     <string name="rename_label">Mudar o nome desse jogo para:</string>
-
-    <!-- Text of confirmation dialog posted when list_item_delete menu is
-         selected -->
-    <string name="confirm_delete">Você tem certeza que quer excluir
-    esse jogo?</string>
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
@@ -915,14 +907,6 @@
     <!-- List the state of the game, "Game over" or "10 moves made"
          etc. -->
     <string name="game_summary_field_state">Estado do jogo</string>
-
-    <!-- The main screen, by default, has a "add game" button and some
-         text at the top that take up space and are unnecessary for
-         experienced users.  This checkbox hides them. -->
-    <string name="hide_intro">Esconder dicas da tela principal</string>
-    <!-- clarification of above -->
-    <string name="hide_intro_summary">São úteis somente quando você
-    está começando...</string>
 
     <!-- Checkbox that when set prevents showing a title bar in the
          game board window to save space -->
@@ -2141,7 +2125,6 @@
     lista de palavras?</string>
     <string name="button_decline">Recusar</string>
 
-    <string name="downloadingf">Baixando %s...</string>
     <string name="download_done">Download concluído</string>
     <string name="download_failed">Download falhou</string>
 

@@ -105,9 +105,6 @@
     <string name="no_games_to_refresh">No games found that connect via
       the relay.</string>
 
-    <!-- Deletes all games on the device (after confirmation) -->
-    <string name="gamel_menu_delete_all">Delete all</string>
-
     <!-- Brings up "About Crosswords" dialog -->
     <string name="board_menu_file_about">About Crosswords…</string>
 
@@ -156,11 +153,6 @@
     <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
     <string name="rename_label">Change the name of this game to:</string>
-
-    <!-- Text of confirmation dialog posted when list_item_delete menu is
-         selected -->
-    <string name="confirm_delete">Are you sure you want to delete this
-      game?</string>
 
     <string name="confirm_seldeletesf">Are you sure you want to delete
     the %d selected game[s]? This action cannot be undone.</string>
@@ -904,14 +896,6 @@
     <!-- List the state of the game, "Game over" or "10 moves made"
          etc. -->
     <string name="game_summary_field_state">Game state</string>
-
-    <!-- The main screen, by default, has a "add game" button and some
-         text at the top that take up space and are unnecessary for
-         experienced users.  This checkbox hides them. -->
-    <string name="hide_intro">Hide main-page hint</string>
-    <!-- clarification of above -->
-    <string name="hide_intro_summary">It\'s useful only when you\'re
-        starting out…</string>
 
     <!-- Checkbox that when set prevents showing a title bar in the
          game board window to save space -->
@@ -2107,7 +2091,6 @@
     wordlist?</string>
     <string name="button_decline">Decline</string>
 
-    <string name="downloadingf">Downloading %s…</string>
     <string name="download_done">Download finished</string>
     <string name="download_failed">Download unsuccessful</string>
 
