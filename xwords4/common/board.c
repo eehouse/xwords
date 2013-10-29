@@ -1458,7 +1458,8 @@ board_invalRect( BoardCtxt* board, XP_Rect* rect )
 
 #ifdef XWFEATURE_ACTIVERECT
 XP_Bool
-board_getActiveRect( const BoardCtxt* board, XP_Rect* rect )
+board_getActiveRect( const BoardCtxt* board, XP_Rect* rect, 
+                     XP_U16* nColsP, XP_U16* nRowsP )
 {
     XP_Bool found = XP_FALSE;
     XP_USE( rect );
@@ -1505,6 +1506,9 @@ board_getActiveRect( const BoardCtxt* board, XP_Rect* rect )
     rect->top = upperLeft.top;
     rect->width = (lowerRight.left + lowerRight.width) - upperLeft.left;
     rect->height = (lowerRight.top + lowerRight.height) - upperLeft.top;
+
+    *nColsP = maxCol - minCol + 1;
+    *nRowsP = maxRow - minRow + 1;
 
     return found;
 }

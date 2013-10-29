@@ -97,7 +97,8 @@ void board_setTimerLoc( BoardCtxt* board,
 void board_invalAll( BoardCtxt* board );
 void board_invalRect( BoardCtxt* board, XP_Rect* rect );
 #ifdef XWFEATURE_ACTIVERECT
-XP_Bool board_getActiveRect( const BoardCtxt* board, XP_Rect* rect );
+XP_Bool board_getActiveRect( const BoardCtxt* board, XP_Rect* rect,
+                             XP_U16* nCols, XP_U16* nRows );
 #endif
 
 XP_Bool board_draw( BoardCtxt* board );
