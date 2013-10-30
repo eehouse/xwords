@@ -143,7 +143,7 @@
         android:title="@string/summary_thumbsize"
         android:entries="@array/game_thumb_values"
         android:entryValues="@array/game_thumb_values"
-        android:defaultValue="@string/game_thumb_off"
+        android:defaultValue="@string/game_thumb_quarter"
        />
 
     <PreferenceScreen android:title="@string/prefs_colors"
