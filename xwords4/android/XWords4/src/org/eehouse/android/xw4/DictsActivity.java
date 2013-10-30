@@ -33,8 +33,6 @@ import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,23 +41,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView.ExpandableListContextMenuInfo;
 import android.widget.ExpandableListView;
+import android.widget.AdapterView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
+import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 
 public class DictsActivity extends XWExpandableListActivity 
-    implements View.OnClickListener, XWListItem.DeleteCallback,
+    implements View.OnClickListener, 
+               AdapterView.OnItemLongClickListener,
+               XWListItem.DeleteCallback, SelectableItem,
                MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify,
                DictImportActivity.DownloadFinishedListener {
 
@@ -98,6 +101,8 @@ public class DictsActivity extends XWExpandableListActivity
     private ExpandableListView m_expView;
     private String[] m_locNames;
     private DictListAdapter m_adapter;
+    private HashSet<XWListItem> m_selDicts;
+    private CharSequence m_origTitle;
 
     private long m_packedPosition;
     private DictLoc m_moveFromLoc;
@@ -144,6 +149,7 @@ public class DictsActivity extends XWExpandableListActivity
             if ( null == view ) {
                 view = (XWListItem)
                     m_factory.inflate( R.layout.list_item, null );
+                view.setSelCB( DictsActivity.this );
 
                 int lang = (int)getGroupId( groupPosition );
                 DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, 
@@ -411,15 +417,13 @@ public class DictsActivity extends XWExpandableListActivity
             
         setContentView( R.layout.dict_browse );
         m_expView = getExpandableListView();
-        registerForContextMenu( m_expView );
-
+        m_expView.setOnItemLongClickListener( this );
+        
         Button download = (Button)findViewById( R.id.download );
         download.setOnClickListener( this );
 
         mkListAdapter();
-
-        // showNotAgainDlg( R.string.not_again_dicts, 
-        //                  R.string.key_notagain_dicts );
+        m_selDicts = new HashSet<XWListItem>();
 
         Intent intent = getIntent();
         if ( null != intent ) {
@@ -436,6 +440,8 @@ public class DictsActivity extends XWExpandableListActivity
                 downloadNewDict( intent );
             }
         }
+
+        m_origTitle = getTitle();
     } // onCreate
 
     @Override
@@ -495,66 +501,109 @@ public class DictsActivity extends XWExpandableListActivity
     }
 
     @Override
-    public void onCreateContextMenu( ContextMenu menu, View view, 
-                                     ContextMenuInfo menuInfo ) 
-    {
-        super.onCreateContextMenu( menu, view, menuInfo );
-
-        ExpandableListView.ExpandableListContextMenuInfo info
-            = (ExpandableListView.ExpandableListContextMenuInfo)menuInfo;
-        long packedPosition = info.packedPosition;
-        int childPosition = ExpandableListView.
-            getPackedPositionChild( packedPosition );
-        // int groupPosition = ExpandableListView.
-        //     getPackedPositionGroup( packedPosition );
-        // DbgUtils.logf( "onCreateContextMenu: group: %d; child: %d", 
-        //             groupPosition, childPosition );
-
-        // We don't have a menu yet for languages, just for their dict
-        // children
-        if ( childPosition >= 0 ) {
-            MenuInflater inflater = getMenuInflater();
-            inflater.inflate( R.menu.dicts_item_menu, menu );
-            
-            XWListItem row = (XWListItem)info.targetView;
-            DictLoc loc = (DictLoc)row.getCached();
-            if ( loc == DictLoc.BUILT_IN
-                 || ! DictUtils.haveWriteableSD() ) {
-                menu.removeItem( R.id.dicts_item_move );
-            }
-
-            String title = getString( R.string.game_item_menu_titlef,
-                                      row.getText() );
-            menu.setHeaderTitle( title );
+    public void onBackPressed() {
+        if ( 0 == m_selDicts.size() ) {
+            super.onBackPressed();
+        } else {
+            clearSelections();
         }
     }
-   
+
     @Override
-    public boolean onContextItemSelected( MenuItem item ) 
+    public boolean onCreateOptionsMenu( Menu menu )
     {
-        boolean handled = false;
-        ExpandableListContextMenuInfo info = null;
-        try {
-            info = (ExpandableListContextMenuInfo)item.getMenuInfo();
-        } catch (ClassCastException cce) {
-            DbgUtils.loge( cce );
-            return false;
-        }
-        
-        m_packedPosition = info.packedPosition;
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate( R.menu.dicts_menu, menu );
 
-        int id = item.getItemId();
-        switch( id ) {
-        case R.id.dicts_item_move:
-            askMoveDict( (XWListItem)info.targetView );
-            break;
-        case R.id.dicts_item_select:
-            showDialog( SET_DEFAULT );
-            break;
-        }
-
-        return handled;
+        return true;
     }
+
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
+    {
+        return super.onPrepareOptionsMenu( menu );
+    }
+
+    public boolean onOptionsItemSelected( MenuItem item )
+    {
+        boolean handled = true;
+
+        switch ( item.getItemId() ) {
+        case R.id.dicts_download:
+        case R.id.dicts_delete:
+        case R.id.dicts_move:
+        case R.id.dicts_select:
+            break;
+        default:
+
+            handled = false;
+        }
+
+        return handled || super.onOptionsItemSelected( item );
+    }
+
+
+    // @Override
+    // public void onCreateContextMenu( ContextMenu menu, View view, 
+    //                                  ContextMenuInfo menuInfo ) 
+    // {
+    //     super.onCreateContextMenu( menu, view, menuInfo );
+
+    //     ExpandableListView.ExpandableListContextMenuInfo info
+    //         = (ExpandableListView.ExpandableListContextMenuInfo)menuInfo;
+    //     long packedPosition = info.packedPosition;
+    //     int childPosition = ExpandableListView.
+    //         getPackedPositionChild( packedPosition );
+    //     // int groupPosition = ExpandableListView.
+    //     //     getPackedPositionGroup( packedPosition );
+    //     // DbgUtils.logf( "onCreateContextMenu: group: %d; child: %d", 
+    //     //             groupPosition, childPosition );
+
+    //     // We don't have a menu yet for languages, just for their dict
+    //     // children
+    //     if ( childPosition >= 0 ) {
+    //         MenuInflater inflater = getMenuInflater();
+    //         inflater.inflate( R.menu.dicts_item_menu, menu );
+            
+    //         XWListItem row = (XWListItem)info.targetView;
+    //         DictLoc loc = (DictLoc)row.getCached();
+    //         if ( loc == DictLoc.BUILT_IN
+    //              || ! DictUtils.haveWriteableSD() ) {
+    //             menu.removeItem( R.id.dicts_item_move );
+    //         }
+
+    //         String title = getString( R.string.game_item_menu_titlef,
+    //                                   row.getText() );
+    //         menu.setHeaderTitle( title );
+    //     }
+    // }
+   
+    // @Override
+    // public boolean onContextItemSelected( MenuItem item ) 
+    // {
+    //     boolean handled = false;
+    //     ExpandableListContextMenuInfo info = null;
+    //     try {
+    //         info = (ExpandableListContextMenuInfo)item.getMenuInfo();
+    //     } catch (ClassCastException cce) {
+    //         DbgUtils.loge( cce );
+    //         return false;
+    //     }
+        
+    //     m_packedPosition = info.packedPosition;
+
+    //     int id = item.getItemId();
+    //     switch( id ) {
+    //     case R.id.dicts_item_move:
+    //         askMoveDict( (XWListItem)info.targetView );
+    //         break;
+    //     case R.id.dicts_item_select:
+    //         showDialog( SET_DEFAULT );
+    //         break;
+    //     }
+
+    //     return handled;
+    // }
 
     private void downloadNewDict( Intent intent )
     {
@@ -586,6 +635,16 @@ public class DictsActivity extends XWExpandableListActivity
     {
         m_moveFromLoc = (DictLoc)item.getCached();
         showDialog( MOVE_DICT );
+    }
+
+    // OnItemLongClickListener interface
+    public boolean onItemLongClick( AdapterView<?> parent, View view, 
+                                    int position, long id ) {
+        boolean success = view instanceof SelectableItem.LongClickHandler;
+        if ( success ) {
+            ((SelectableItem.LongClickHandler)view).longClicked();
+        }
+        return success;
     }
 
     // XWListItem.DeleteCallback interface
@@ -711,6 +770,32 @@ public class DictsActivity extends XWExpandableListActivity
         XWPrefs.setClosedLangs( this, asArray );
     }
 
+    private void clearSelections()
+    {
+        if ( 0 < m_selDicts.size() ) {
+            XWListItem[] items = new XWListItem[m_selDicts.size()];
+            int indx = 0;
+            for ( Iterator<XWListItem> iter = m_selDicts.iterator(); 
+                  iter.hasNext(); ) {
+                items[indx++] = iter.next();
+            }
+
+            m_selDicts.clear();
+            for ( XWListItem item : items ) {
+                item.setSelected( false );
+            }
+        }
+    }
+
+    private void setTitleBar()
+    {
+        int nSels = m_selDicts.size();
+        if ( 0 < nSels ) {
+            setTitle( getString( R.string.sel_dictsf, nSels ) );
+        } else {
+            setTitle( m_origTitle );
+        }
+    }
 
     private String[] makeDictDirItems() 
     {
@@ -791,6 +876,32 @@ public class DictsActivity extends XWExpandableListActivity
                     }
                 } );
         }
+    }
+
+    // SelectableItem interface
+    public void itemClicked( SelectableItem.LongClickHandler clicked,
+                             GameSummary summary )
+    {
+        DbgUtils.logf( "itemClicked not implemented" );
+    }
+
+    public void itemToggled( SelectableItem.LongClickHandler toggled, 
+                             boolean selected )
+    {
+        XWListItem dictView = (XWListItem)toggled;
+        if ( selected ) {
+            m_selDicts.add( dictView );
+        } else {
+            m_selDicts.remove( dictView );
+        }
+        Utils.invalidateOptionsMenuIf( this );
+        setTitleBar();
+    }
+
+    public boolean getSelected( SelectableItem.LongClickHandler obj )
+    {
+        XWListItem dictView = (XWListItem)obj;
+        return m_selDicts.contains( dictView );
     }
 
     private static class SafePopupImpl implements SafePopup {

@@ -2156,4 +2156,5 @@
 
     <string name="sel_gamesf">Games: %d"</string>
     <string name="sel_groupsf">Groups: %d"</string>
+    <string name="sel_dictsf">Wordlists: %d"</string>
 </resources>
