@@ -58,8 +58,7 @@ import org.eehouse.android.xw4.jni.*;
 
 public class GamesList extends XWExpandableListActivity 
     implements OnItemLongClickListener,
-               DBUtils.DBChangeListener,
-               GameListAdapter.LoadItemCB, 
+               DBUtils.DBChangeListener, SelectableItem, 
                DictImportActivity.DownloadFinishedListener {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
@@ -473,9 +472,9 @@ public class GamesList extends XWExpandableListActivity
     // OnItemLongClickListener interface
     public boolean onItemLongClick( AdapterView<?> parent, View view, 
                                     int position, long id ) {
-        boolean success = view instanceof GameListAdapter.ClickHandler;
+        boolean success = view instanceof SelectableItem.LongClickHandler;
         if ( success ) {
-            ((GameListAdapter.ClickHandler)view).longClicked();
+            ((SelectableItem.LongClickHandler)view).longClicked();
         }
         return success;
     }
@@ -494,8 +493,8 @@ public class GamesList extends XWExpandableListActivity
             } );
     }
 
-    // GameListAdapter.LoadItemCB interface
-    public void itemClicked( GameListAdapter.ClickHandler clicked,
+    // SelectableItem interface
+    public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
         // We need a way to let the user get back to the basic-config
@@ -512,7 +511,7 @@ public class GamesList extends XWExpandableListActivity
         }
     }
 
-    public void itemToggled( GameListAdapter.ClickHandler toggled, 
+    public void itemToggled( SelectableItem.LongClickHandler toggled, 
                              boolean selected )
     {
         if ( toggled instanceof GameListItem ) {
@@ -536,7 +535,7 @@ public class GamesList extends XWExpandableListActivity
         setTitleBar();
     }
 
-    public boolean getSelected( GameListAdapter.ClickHandler obj )
+    public boolean getSelected( SelectableItem.LongClickHandler obj )
     {
         boolean selected;
         if ( obj instanceof GameListItem ) {

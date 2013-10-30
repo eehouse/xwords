@@ -43,7 +43,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.GameSummary;
 
 public class GameListItem extends LinearLayout 
-    implements View.OnClickListener, GameListAdapter.ClickHandler {
+    implements View.OnClickListener, SelectableItem.LongClickHandler {
 
     private static HashSet<Long> s_invalRows = new HashSet<Long>();
 
@@ -57,7 +57,7 @@ public class GameListItem extends LinearLayout
     private ImageButton m_expandButton;
     private Handler m_handler;
     private GameSummary m_summary;
-    private GameListAdapter.LoadItemCB m_cb;
+    private SelectableItem m_cb;
     private int m_fieldID;
     private int m_loadingCount;
     private int m_groupPosition;
@@ -87,7 +87,7 @@ public class GameListItem extends LinearLayout
     }
 
     private void init( Handler handler, long rowid, int groupPosition,
-                       int fieldID, GameListAdapter.LoadItemCB cb )
+                       int fieldID, SelectableItem cb )
     {
         m_handler = handler;
         m_rowid = rowid;
@@ -343,7 +343,7 @@ public class GameListItem extends LinearLayout
     public static GameListItem makeForRow( Context context, long rowid, 
                                            Handler handler, int groupPosition,
                                            int fieldID, 
-                                           GameListAdapter.LoadItemCB cb )
+                                           SelectableItem cb )
     {
         GameListItem result = 
             (GameListItem)Utils.inflate( context, R.layout.game_list_item );

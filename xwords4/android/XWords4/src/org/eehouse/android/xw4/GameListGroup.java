@@ -28,17 +28,17 @@ import android.view.View;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 
 public class GameListGroup extends ExpiringTextView 
-    implements GameListAdapter.ClickHandler 
+    implements SelectableItem.LongClickHandler 
 {
     private int m_groupPosition;
     private long m_groupID;
     private boolean m_expanded;
-    private GameListAdapter.LoadItemCB m_cb;
+    private SelectableItem m_cb;
 
     public static GameListGroup makeForPosition( Context context,
                                                  int groupPosition, 
                                                  long groupID,
-                                                 GameListAdapter.LoadItemCB cb )
+                                                 SelectableItem cb )
     {
         GameListGroup result = 
             (GameListGroup)Utils.inflate( context, R.layout.game_list_group );
