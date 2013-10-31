@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.text.TextUtils;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -60,10 +61,9 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 
 public class DictsActivity extends XWExpandableListActivity 
-    implements View.OnClickListener, 
-               AdapterView.OnItemLongClickListener,
-               XWListItem.DeleteCallback, SelectableItem,
-               MountEventReceiver.SDCardNotifiee, DlgDelegate.DlgClickNotify,
+    implements View.OnClickListener, AdapterView.OnItemLongClickListener,
+               SelectableItem, MountEventReceiver.SDCardNotifiee, 
+               DlgDelegate.DlgClickNotify,
                DictImportActivity.DownloadFinishedListener {
 
     private static interface SafePopup {
@@ -75,7 +75,6 @@ public class DictsActivity extends XWExpandableListActivity
     private static final String DICT_LANG_EXTRA = "use_lang";
     private static final String DICT_NAME_EXTRA = "use_dict";
     private static final String PACKED_POSITION = "packed_position";
-    private static final String DELETE_DICT = "delete_dict";
     private static final String NAME = "name";
     private static final String LANG = "lang";
     private static final String MOVEFROMLOC = "movefromloc";
@@ -96,7 +95,6 @@ public class DictsActivity extends XWExpandableListActivity
     private int m_lang = 0;
     private String[] m_langs;
     private String m_name = null;
-    private String m_deleteDict = null;
     private String m_download;
     private ExpandableListView m_expView;
     private String[] m_locNames;
@@ -163,9 +161,6 @@ public class DictsActivity extends XWExpandableListActivity
                     DictLoc loc = dal.loc;
                     view.setComment( m_locNames[loc.ordinal()] );
                     view.cache( loc );
-                    if ( DictLoc.BUILT_IN != loc ) {
-                        view.setDeleteCallback( DictsActivity.this );
-                    }
                 } else {
                     view.setText( m_download );
                 }
@@ -243,11 +238,8 @@ public class DictsActivity extends XWExpandableListActivity
 
         protected XWListItem getSelChildView()
         {
-            int groupPosition = 
-                ExpandableListView.getPackedPositionGroup( m_packedPosition );
-            int childPosition = 
-                ExpandableListView.getPackedPositionChild( m_packedPosition );
-            return (XWListItem)getChildView( groupPosition, childPosition );
+            Assert.assertTrue( 1 == m_selDicts.size() );
+            return m_selDicts.iterator().next();
         }
 
         private void addToCache( int group, int child, XWListItem view )
@@ -320,22 +312,22 @@ public class DictsActivity extends XWExpandableListActivity
             break;
 
         case SET_DEFAULT:
+            final XWListItem row = m_selDicts.iterator().next();
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_POSITIVE == item ) {
-                            setDefault( R.string.key_default_dict );
+                            setDefault( row, R.string.key_default_dict );
                         }
                         if ( DialogInterface.BUTTON_NEGATIVE == item 
                              || DialogInterface.BUTTON_NEUTRAL == item ) {
-                            setDefault( R.string.key_default_robodict );
+                            setDefault( row, R.string.key_default_robodict );
                         }
                     }
                 };
-            XWListItem rowView = m_adapter.getSelChildView();
-            String lang = 
-                DictLangCache.getLangName( this, rowView.getText() );
-            message = getString( R.string.set_default_messagef, lang );
+            String name = row.getText();
+            String lang = DictLangCache.getLangName( this, name);
+            message = getString( R.string.set_default_messagef, name, lang );
             dialog = new AlertDialog.Builder( this )
                 .setTitle( R.string.query_title )
                 .setMessage( message )
@@ -462,7 +454,6 @@ public class DictsActivity extends XWExpandableListActivity
         outState.putLong( PACKED_POSITION, m_packedPosition );
         outState.putString( NAME, m_name );
         outState.putInt( LANG, m_lang );
-        outState.putString( DELETE_DICT, m_deleteDict );
         if ( null != m_moveFromLoc ) {
             outState.putInt( MOVEFROMLOC, m_moveFromLoc.ordinal() );
         }
@@ -474,7 +465,6 @@ public class DictsActivity extends XWExpandableListActivity
             m_packedPosition = savedInstanceState.getLong( PACKED_POSITION );
             m_name = savedInstanceState.getString( NAME );
             m_lang = savedInstanceState.getInt( LANG );
-            m_deleteDict = savedInstanceState.getString( DELETE_DICT );
 
             int tmp = savedInstanceState.getInt( MOVEFROMLOC, -1 );
             if ( -1 != tmp ) {
@@ -521,6 +511,15 @@ public class DictsActivity extends XWExpandableListActivity
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
+        int nSel = m_selDicts.size();
+        Utils.setItemVisible( menu, R.id.dicts_download, 0 == nSel );
+        Utils.setItemVisible( menu, R.id.dicts_select, 1 == nSel );
+
+        boolean allVolatile = selItemsVolatile();
+        Utils.setItemVisible( menu, R.id.dicts_move, 
+                              allVolatile && DictUtils.haveWriteableSD() );
+        Utils.setItemVisible( menu, R.id.dicts_delete, allVolatile );
+
         return super.onPrepareOptionsMenu( menu );
     }
 
@@ -530,12 +529,17 @@ public class DictsActivity extends XWExpandableListActivity
 
         switch ( item.getItemId() ) {
         case R.id.dicts_download:
+            startDownload( 0, null );
+            break;
         case R.id.dicts_delete:
+            deleteSelected();
+            break;
         case R.id.dicts_move:
+            break;
         case R.id.dicts_select:
+            showDialog( SET_DEFAULT );
             break;
         default:
-
             handled = false;
         }
 
@@ -616,9 +620,8 @@ public class DictsActivity extends XWExpandableListActivity
         }
     }
 
-    private void setDefault( int keyId )
+    private void setDefault( XWListItem view, int keyId )
     {
-        XWListItem view = m_adapter.getSelChildView();
         SharedPreferences sp
             = PreferenceManager.getDefaultSharedPreferences( this );
         SharedPreferences.Editor editor = sp.edit();
@@ -647,14 +650,29 @@ public class DictsActivity extends XWExpandableListActivity
         return success;
     }
 
-    // XWListItem.DeleteCallback interface
-    public void deleteCalled( XWListItem item )
+    private boolean selItemsVolatile() 
     {
-        String dict = item.getText();
-        String msg = getString( R.string.confirm_delete_dictf, dict );
+        boolean result = 0 < m_selDicts.size();
+        for ( Iterator<XWListItem> iter = m_selDicts.iterator(); 
+              result && iter.hasNext(); ) {
+            DictLoc loc = (DictLoc)iter.next().getCached();
+            if ( loc == DictLoc.BUILT_IN ) {
+                result = false;
+            }
+        }
+        return result;
+    }
 
-        m_deleteDict = dict;
-        m_moveFromLoc = (DictLoc)item.getCached();
+    private void deleteSelected()
+    {
+        XWListItem[] items = getSelItems();
+        String[] names = new String[items.length];
+        int ii = 0;
+        for ( XWListItem item : items ) {
+            names[ii++] = item.getText();
+        }
+        String msg = getString( R.string.confirm_delete_dictf, 
+                                TextUtils.join( ", ", names ) );
 
         // When and what to warn about.  First off, if there's another
         // identical dict, simply confirm.  Or if nobody's using this
@@ -663,30 +681,35 @@ public class DictsActivity extends XWExpandableListActivity
         // want different warnings depending on whether it's the last
         // available dict in its language.
 
-        if ( 1 < DictLangCache.getDictCount( this, dict ) ) {
-            // there's another; do nothing
-        } else {
-            int fmtid = 0;
-            int langcode = DictLangCache.getDictLangCode( this, dict );
-            DictAndLoc[] langDals = DictLangCache.getDALsHaveLang( this, 
-                                                                   langcode );
-            int nUsingLang = DBUtils.countGamesUsingLang( this, langcode );
+        for ( String dict : names ) {
+            if ( 1 < DictLangCache.getDictCount( this, dict ) ) {
+                // there's another; do nothing
+            } else {
+                String newMsg = null;
+                int langcode = DictLangCache.getDictLangCode( this, dict );
+                String langName = DictLangCache.getLangName( this, langcode );
+                DictAndLoc[] langDals = DictLangCache.getDALsHaveLang( this, 
+                                                                       langcode );
+                int nUsingLang = DBUtils.countGamesUsingLang( this, langcode );
 
-            if ( 1 == langDals.length ) { // last in this language?
-                if ( 0 < nUsingLang ) {
-                    fmtid = R.string.confirm_deleteonly_dictf;
+                if ( 1 == langDals.length ) { // last in this language?
+                    if ( 0 < nUsingLang ) {
+                        newMsg = getString( R.string.confirm_deleteonly_dictf,
+                                            dict, langName );
+                    }
+                } else if ( 0 < DBUtils.countGamesUsingDict( this, dict ) ) {
+                    newMsg = getString( R.string.confirm_deletemore_dictf,
+                                        langName );
                 }
-            } else if ( 0 < DBUtils.countGamesUsingDict( this, dict ) ) {
-                fmtid = R.string.confirm_deletemore_dictf;
-            }
-            if ( 0 != fmtid ) {
-                msg += getString( fmtid, DictLangCache.
-                                  getLangName( this, langcode ) );
+                if ( null != newMsg ) {
+                    msg += "\n\n" + newMsg;
+                }
             }
         }
 
-        showConfirmThen( msg, R.string.button_delete, DELETE_DICT_ACTION );
-    }
+        showConfirmThen( msg, R.string.button_delete, DELETE_DICT_ACTION,
+                         (Object)items );
+    } // deleteSelected
 
     // MountEventReceiver.SDCardNotifiee interface
     public void cardMounted( boolean nowMounted )
@@ -708,7 +731,13 @@ public class DictsActivity extends XWExpandableListActivity
         switch( id ) {
         case DELETE_DICT_ACTION:
             if ( DialogInterface.BUTTON_POSITIVE == which ) {
-                deleteDict( m_deleteDict, m_moveFromLoc );
+                XWListItem[] items = (XWListItem[])params[0];
+                for ( XWListItem item : items ) {
+                    String name = item.getText();
+                    DictLoc loc = (DictLoc)item.getCached();
+                    deleteDict( name, loc );
+                }
+                clearSelections();
             }
             break;
         default:
@@ -773,18 +802,25 @@ public class DictsActivity extends XWExpandableListActivity
     private void clearSelections()
     {
         if ( 0 < m_selDicts.size() ) {
-            XWListItem[] items = new XWListItem[m_selDicts.size()];
-            int indx = 0;
-            for ( Iterator<XWListItem> iter = m_selDicts.iterator(); 
-                  iter.hasNext(); ) {
-                items[indx++] = iter.next();
-            }
+            XWListItem[] items = getSelItems();
 
             m_selDicts.clear();
+
             for ( XWListItem item : items ) {
                 item.setSelected( false );
             }
         }
+    }
+
+    private XWListItem[] getSelItems()
+    {
+        XWListItem[] items = new XWListItem[m_selDicts.size()];
+        int indx = 0;
+        for ( Iterator<XWListItem> iter = m_selDicts.iterator(); 
+              iter.hasNext(); ) {
+            items[indx++] = iter.next();
+        }
+        return items;
     }
 
     private void setTitleBar()
