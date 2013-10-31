@@ -624,7 +624,7 @@ drawTradeWindowIf( BoardCtxt* board )
 XP_Bool
 board_draw( BoardCtxt* board )
 {
-    if ( board->boardBounds.width > 0 ) {
+    if ( !!board->draw && board->boardBounds.width > 0 ) {
 
         drawScoreBoard( board );
 
