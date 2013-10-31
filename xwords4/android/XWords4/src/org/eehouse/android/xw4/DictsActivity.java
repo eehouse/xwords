@@ -74,10 +74,6 @@ public class DictsActivity extends XWExpandableListActivity
     private static final String DICT_DOLAUNCH = "do_launch";
     private static final String DICT_LANG_EXTRA = "use_lang";
     private static final String DICT_NAME_EXTRA = "use_dict";
-    private static final String PACKED_POSITION = "packed_position";
-    private static final String NAME = "name";
-    private static final String LANG = "lang";
-    private static final String MOVEFROMLOC = "movefromloc";
 
     private HashSet<String> m_closedLangs;
 
@@ -92,9 +88,7 @@ public class DictsActivity extends XWExpandableListActivity
     // settle for a hash on the side.
     private static HashMap<MenuItem, DictAndLoc> s_itemData;
 
-    private int m_lang = 0;
     private String[] m_langs;
-    private String m_name = null;
     private String m_download;
     private ExpandableListView m_expView;
     private String[] m_locNames;
@@ -102,10 +96,6 @@ public class DictsActivity extends XWExpandableListActivity
     private HashSet<XWListItem> m_selDicts;
     private CharSequence m_origTitle;
 
-    private long m_packedPosition;
-    private DictLoc m_moveFromLoc;
-    private int m_moveFromItem;
-    private int m_moveToItm;
     private boolean m_launchedForMissing = false;
 
     private LayoutInflater m_factory;
@@ -266,45 +256,48 @@ public class DictsActivity extends XWExpandableListActivity
 
         switch( id ) {
         case MOVE_DICT:
+            final XWListItem[] selItems = getSelItems();
+            final int[] moveTo = { -1 };
             message = Utils.format( this, R.string.move_dictf,
-                                    m_adapter.getSelChildView().getText() );
+                                    getJoinedNames( selItems ) );
 
             OnClickListener newSelLstnr =
                 new OnClickListener() {
                     public void onClick( DialogInterface dlgi, int item ) {
-                        m_moveToItm = item;
+                        moveTo[0] = item;
                         AlertDialog dlg = (AlertDialog)dlgi;
                         Button btn = 
                             dlg.getButton( AlertDialog.BUTTON_POSITIVE ); 
-                        btn.setEnabled( m_moveToItm != m_moveFromItem );
+                        btn.setEnabled( true );
                     }
                 };
 
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        XWListItem rowView = m_adapter.getSelChildView();
-                        Assert.assertTrue( m_moveToItm != m_moveFromItem );
-                        DictLoc toLoc = itemToRealLoc( m_moveToItm );
-                        if ( DictUtils.moveDict( DictsActivity.this,
-                                                 rowView.getText(),
-                                                 m_moveFromLoc,
-                                                 toLoc ) ) {
-                            rowView.setComment( m_locNames[toLoc.ordinal()] );
-                            rowView.cache( toLoc );
-                            rowView.invalidate();
-                            DBUtils.dictsMoveInfo( DictsActivity.this,
-                                                   rowView.getText(),
-                                                   m_moveFromLoc, toLoc );
-                        } else {
-                            DbgUtils.logf( "moveDict(%s) failed", 
-                                           rowView.getText() );
+                        DictLoc toLoc = itemToRealLoc( moveTo[0] );
+                        for ( XWListItem selItem : selItems ) {
+                            DictLoc fromLoc = (DictLoc)selItem.getCached();
+                            String name = selItem.getText();
+                            if ( fromLoc == toLoc ) {
+                                DbgUtils.logf( "not moving %s: same loc", name );
+                            } else if ( DictUtils.moveDict( DictsActivity.this,
+                                                            name, fromLoc, 
+                                                            toLoc ) ) {
+                                selItem.setComment( m_locNames[toLoc.ordinal()] );
+                                selItem.cache( toLoc );
+                                selItem.invalidate();
+                                DBUtils.dictsMoveInfo( DictsActivity.this,
+                                                       name, fromLoc, toLoc );
+                            } else {
+                                DbgUtils.logf( "moveDict(%s) failed", name );
+                            }
                         }
                     }
                 };
 
             dialog = new AlertDialog.Builder( this )
                 .setTitle( message )
-                .setSingleChoiceItems( makeDictDirItems(), m_moveFromItem, 
+                .setSingleChoiceItems( makeDictDirItems(), moveTo[0],
                                        newSelLstnr )
                 .setPositiveButton( R.string.button_move, lstnr )
                 .setNegativeButton( R.string.button_cancel, null )
@@ -390,7 +383,6 @@ public class DictsActivity extends XWExpandableListActivity
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
-        getBundledData( savedInstanceState );
 
         m_closedLangs = new HashSet<String>();
         String[] closed = XWPrefs.getClosedLangs( this );
@@ -444,33 +436,6 @@ public class DictsActivity extends XWExpandableListActivity
 
         mkListAdapter();
         expandGroups();
-    }
-
-    @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-
-        outState.putLong( PACKED_POSITION, m_packedPosition );
-        outState.putString( NAME, m_name );
-        outState.putInt( LANG, m_lang );
-        if ( null != m_moveFromLoc ) {
-            outState.putInt( MOVEFROMLOC, m_moveFromLoc.ordinal() );
-        }
-    }
-
-    private void getBundledData( Bundle savedInstanceState )
-    {
-        if ( null != savedInstanceState ) {
-            m_packedPosition = savedInstanceState.getLong( PACKED_POSITION );
-            m_name = savedInstanceState.getString( NAME );
-            m_lang = savedInstanceState.getInt( LANG );
-
-            int tmp = savedInstanceState.getInt( MOVEFROMLOC, -1 );
-            if ( -1 != tmp ) {
-                m_moveFromLoc = DictLoc.values()[tmp];
-            }
-        }
     }
 
     @Override
@@ -535,6 +500,7 @@ public class DictsActivity extends XWExpandableListActivity
             deleteSelected();
             break;
         case R.id.dicts_move:
+            askMoveSelDicts();
             break;
         case R.id.dicts_select:
             showDialog( SET_DEFAULT );
@@ -545,69 +511,6 @@ public class DictsActivity extends XWExpandableListActivity
 
         return handled || super.onOptionsItemSelected( item );
     }
-
-
-    // @Override
-    // public void onCreateContextMenu( ContextMenu menu, View view, 
-    //                                  ContextMenuInfo menuInfo ) 
-    // {
-    //     super.onCreateContextMenu( menu, view, menuInfo );
-
-    //     ExpandableListView.ExpandableListContextMenuInfo info
-    //         = (ExpandableListView.ExpandableListContextMenuInfo)menuInfo;
-    //     long packedPosition = info.packedPosition;
-    //     int childPosition = ExpandableListView.
-    //         getPackedPositionChild( packedPosition );
-    //     // int groupPosition = ExpandableListView.
-    //     //     getPackedPositionGroup( packedPosition );
-    //     // DbgUtils.logf( "onCreateContextMenu: group: %d; child: %d", 
-    //     //             groupPosition, childPosition );
-
-    //     // We don't have a menu yet for languages, just for their dict
-    //     // children
-    //     if ( childPosition >= 0 ) {
-    //         MenuInflater inflater = getMenuInflater();
-    //         inflater.inflate( R.menu.dicts_item_menu, menu );
-            
-    //         XWListItem row = (XWListItem)info.targetView;
-    //         DictLoc loc = (DictLoc)row.getCached();
-    //         if ( loc == DictLoc.BUILT_IN
-    //              || ! DictUtils.haveWriteableSD() ) {
-    //             menu.removeItem( R.id.dicts_item_move );
-    //         }
-
-    //         String title = getString( R.string.game_item_menu_titlef,
-    //                                   row.getText() );
-    //         menu.setHeaderTitle( title );
-    //     }
-    // }
-   
-    // @Override
-    // public boolean onContextItemSelected( MenuItem item ) 
-    // {
-    //     boolean handled = false;
-    //     ExpandableListContextMenuInfo info = null;
-    //     try {
-    //         info = (ExpandableListContextMenuInfo)item.getMenuInfo();
-    //     } catch (ClassCastException cce) {
-    //         DbgUtils.loge( cce );
-    //         return false;
-    //     }
-        
-    //     m_packedPosition = info.packedPosition;
-
-    //     int id = item.getItemId();
-    //     switch( id ) {
-    //     case R.id.dicts_item_move:
-    //         askMoveDict( (XWListItem)info.targetView );
-    //         break;
-    //     case R.id.dicts_item_select:
-    //         showDialog( SET_DEFAULT );
-    //         break;
-    //     }
-
-    //     return handled;
-    // }
 
     private void downloadNewDict( Intent intent )
     {
@@ -634,9 +537,8 @@ public class DictsActivity extends XWExpandableListActivity
     // Move dict.  Put up dialog asking user to confirm move from XX
     // to YY.  So we need both XX and YY.  There may be several
     // options for YY?
-    private void askMoveDict( XWListItem item )
+    private void askMoveSelDicts()
     {
-        m_moveFromLoc = (DictLoc)item.getCached();
         showDialog( MOVE_DICT );
     }
 
@@ -666,13 +568,8 @@ public class DictsActivity extends XWExpandableListActivity
     private void deleteSelected()
     {
         XWListItem[] items = getSelItems();
-        String[] names = new String[items.length];
-        int ii = 0;
-        for ( XWListItem item : items ) {
-            names[ii++] = item.getText();
-        }
         String msg = getString( R.string.confirm_delete_dictf, 
-                                TextUtils.join( ", ", names ) );
+                                getJoinedNames( items ) );
 
         // When and what to warn about.  First off, if there's another
         // identical dict, simply confirm.  Or if nobody's using this
@@ -681,7 +578,8 @@ public class DictsActivity extends XWExpandableListActivity
         // want different warnings depending on whether it's the last
         // available dict in its language.
 
-        for ( String dict : names ) {
+        for ( XWListItem item : items ) {
+            String dict = item.getText();
             if ( 1 < DictLangCache.getDictCount( this, dict ) ) {
                 // there's another; do nothing
             } else {
@@ -812,6 +710,16 @@ public class DictsActivity extends XWExpandableListActivity
         }
     }
 
+    private String getJoinedNames( XWListItem[] items )
+    {
+        String[] names = new String[items.length];
+        int ii = 0;
+        for ( XWListItem item : items ) {
+            names[ii++] = item.getText();
+        }
+        return TextUtils.join( ", ", names );
+    }
+
     private XWListItem[] getSelItems()
     {
         XWListItem[] items = new XWListItem[m_selDicts.size()];
@@ -843,9 +751,6 @@ public class DictsActivity extends XWExpandableListActivity
             DictLoc loc = itemToRealLoc(ii);
             if ( !showDownload && DictLoc.DOWNLOAD == loc ) {
                 continue;
-            }
-            if ( loc.equals( m_moveFromLoc ) ) {
-                m_moveFromItem = nextI;
             }
             items[nextI++] = m_locNames[loc.ordinal()];
         }
