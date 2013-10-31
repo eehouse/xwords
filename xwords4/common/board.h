@@ -64,6 +64,7 @@ BoardCtxt* board_makeFromStream( MPFORMAL XWStreamCtxt* stream,
                                  ModelCtxt* model, ServerCtxt* server, 
                                  DrawCtx* draw, XW_UtilCtxt* util,
                                  XP_U16 nPlayers );
+void board_setDraw( BoardCtxt* board, DrawCtx* draw );
 
 void board_destroy( BoardCtxt* board );
 

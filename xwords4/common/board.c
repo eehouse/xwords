@@ -285,6 +285,16 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
 } /* board_makeFromStream */
 
 void
+board_setDraw( BoardCtxt* board, DrawCtx* draw )
+{
+    board->draw = draw;
+    if ( !!draw ) {
+        DictionaryCtxt* langDict = model_getDictionary( board->model );
+        draw_dictChanged( draw, -1, langDict );
+    }
+}
+
+void
 board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
 {
     XP_U16 nPlayers, ii;
