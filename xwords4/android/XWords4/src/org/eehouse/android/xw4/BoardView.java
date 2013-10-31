@@ -415,6 +415,30 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         return m_pendingScore;
     }
 
+    public Bitmap getScaledBoard()
+    {
+        Bitmap result = null;
+        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+            int divisor = XWPrefs.getThumbScale( m_context );
+
+            if ( 0 < divisor ) {
+                int[] dims = new int[2];
+                Rect rect = new Rect();
+                XwJNI.board_getActiveRect( m_jniGamePtr, rect, dims );
+
+                Bitmap tmpb = 
+                    Bitmap.createBitmap( s_bitmap, rect.left, rect.top,
+                                         1 + rect.width(), 1 + rect.height() );
+
+                result = Bitmap.createScaledBitmap( tmpb,
+                                                    rect.width() / divisor,
+                                                    rect.height() / divisor,
+                                                    false );
+            }
+        }
+        return result;
+    }
+
     private int getSpacing( MotionEvent event ) 
     {
         int result;
