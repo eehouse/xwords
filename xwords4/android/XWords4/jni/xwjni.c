@@ -417,7 +417,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     globals->util = makeUtil( MPPARM(mpool) &state->env, j_util, gi, 
                               globals );
     globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
-    DrawCtx* dctx = makeDraw( MPPARM(mpool) &state->env, j_draw );
+    DrawCtx* dctx = NULL;
+    if ( !!j_draw ) {
+        dctx = makeDraw( MPPARM(mpool) &state->env, j_draw );
+    }
     globals->dctx = dctx;
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, j_procs );
     CommonPrefs cp;
@@ -486,7 +489,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
     makeDicts( MPPARM(mpool) env, globals->jniutil, &dict, &dicts, jdictNames,
                jdicts, jpaths,  jlang );
-    globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
+    if ( !!jdraw ) {
+        globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
+    }
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
 
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, 
