@@ -1773,13 +1773,15 @@ public class BoardActivity extends XWActivity
                     CommonPrefs cp = CommonPrefs.get( this );
                     if ( null == stream ||
                          ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                                      m_gi, dictNames, pairs.m_bytes, 
-                                                      pairs.m_paths, langName, m_utils,
-                                                      m_jniu, m_view, cp, m_xport ) ) {
-                        XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, m_jniu, 
-                                                m_view, cp, m_xport, dictNames, 
-                                                pairs.m_bytes, pairs.m_paths,
-                                                langName );
+                                                      m_gi, dictNames, 
+                                                      pairs.m_bytes, 
+                                                      pairs.m_paths, langName, 
+                                                      m_utils, m_jniu, 
+                                                      null, cp, m_xport ) ) {
+                        XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
+                                                m_jniu, null, cp, m_xport, 
+                                                dictNames, pairs.m_bytes, 
+                                                pairs.m_paths, langName );
                     }
 
                     Handler handler = new Handler() {

@@ -644,21 +644,23 @@ makeDraw( MPFORMAL JNIEnv** envp, jobject jdraw )
 void
 destroyDraw( DrawCtx** dctx )
 {
-    AndDraw* draw = (AndDraw*)*dctx;
-    JNIEnv* env = *draw->env;
-    if ( NULL != draw->jdraw ) {
-        (*env)->DeleteGlobalRef( env, draw->jdraw );
-    }
-
-    int ii;
-    for ( ii = 0; ii < JCACHE_COUNT; ++ii ) {
-        jobject jobj = draw->jCache[ii];
-        if ( !!jobj ) {
-            (*env)->DeleteGlobalRef( env, jobj );
+    if ( !!*dctx ) {
+        AndDraw* draw = (AndDraw*)*dctx;
+        JNIEnv* env = *draw->env;
+        if ( NULL != draw->jdraw ) {
+            (*env)->DeleteGlobalRef( env, draw->jdraw );
         }
-    }
 
-    XP_FREE( draw->mpool, draw->vtable );
-    XP_FREE( draw->mpool, draw );
-    *dctx = NULL;
+        int ii;
+        for ( ii = 0; ii < JCACHE_COUNT; ++ii ) {
+            jobject jobj = draw->jCache[ii];
+            if ( !!jobj ) {
+                (*env)->DeleteGlobalRef( env, jobj );
+            }
+        }
+
+        XP_FREE( draw->mpool, draw->vtable );
+        XP_FREE( draw->mpool, draw );
+        *dctx = NULL;
+    }
 }

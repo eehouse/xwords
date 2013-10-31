@@ -127,10 +127,11 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 #endif
                                 util );
     game->board = board_make( MPPARM(mpool) game->model, game->server, 
-                              draw, util );
+                              NULL, util );
 
     server_prefsChanged( game->server, cp );
     board_prefsChanged( game->board, cp );
+    board_setDraw( game->board, draw );
 } /* game_makeNewGame */
 
 XP_Bool
@@ -266,15 +267,11 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                                                   util, gi->nPlayers );
 
             game->board = board_makeFromStream( MPPARM(mpool) stream, game->model, 
-                                                game->server, draw, util, 
+                                                game->server, NULL, util, 
                                                 gi->nPlayers );
             server_prefsChanged( game->server, cp );
             board_prefsChanged( game->board, cp );
-            if ( !!draw ) {
-                /* pick one representative dictionary */
-                DictionaryCtxt* langDict = model_getDictionary( game->model );
-                draw_dictChanged( draw, -1, langDict );
-            }
+            board_setDraw( game->board, draw );
             success = XP_TRUE;
         } while( XP_FALSE );
     }
