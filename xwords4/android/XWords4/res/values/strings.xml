@@ -225,13 +225,13 @@
          wordlist is substituted for %s.  Sometimes one of the two
          strings below is appended. -->
     <string name="confirm_delete_dictf">Are you sure you want to
-    delete %s?</string>
+    delete the wordlist[s] %s?</string>
 
     <!-- Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is the last in its language.  The name
          of the language is substituted for %s. -->
-    <string name="confirm_deleteonly_dictf">\u0020It is the only %s
+    <string name="confirm_deleteonly_dictf">%1$s is the only %2$s
       wordlist installed. One or more games will be unopenable
       without it.</string>
     <!-- Additional text appended to text confirm_delete_dictf in the
@@ -252,9 +252,9 @@
     <!-- Used as the text fo the confirming/querying dialog that goes
          up when the dicts_item_select menuitem is chosen.  The
          possible answers are the three button text strings below. -->
-    <string name="set_default_messagef">For what players should this
-      wordlist be the default for new games? (The language %s will be
-      the default for both.)</string>
+    <string name="set_default_messagef">For what players should the
+    wordlist %1$s be the default for new games? (The language %2$s will be
+    the default for both.)</string>
 
     <!-- These three strings are the text for three buttons giving
          choices in respose to the dialog launched in response to the
@@ -2156,6 +2156,6 @@
 
     <string name="sel_gamesf">Games: %d"</string>
     <string name="sel_groupsf">Groups: %d"</string>
-
     <string name="summary_thumbsize">Thumbnail size</string>
+    <string name="sel_dictsf">Wordlists: %d"</string>
 </resources>

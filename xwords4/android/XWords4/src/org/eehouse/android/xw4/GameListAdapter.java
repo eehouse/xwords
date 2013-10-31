@@ -45,24 +45,12 @@ public class GameListAdapter implements ExpandableListAdapter {
     private ExpandableListView m_list;
     private int m_fieldID;
     private Handler m_handler;
-    private LoadItemCB m_cb;
+    private SelectableItem m_cb;
     private long[] m_positions;
 
-    public interface LoadItemCB {
-        public void itemClicked( GameListAdapter.ClickHandler clicked, 
-                                 GameSummary summary );
-        public void itemToggled( GameListAdapter.ClickHandler toggled, 
-                                 boolean selected );
-        public boolean getSelected( GameListAdapter.ClickHandler obj );
-    }
-
-    public interface ClickHandler {
-        public void longClicked();
-    }
-
     public GameListAdapter( Context context, ExpandableListView list, 
-                            Handler handler, LoadItemCB cb, long[] positions,
-                            String fieldName ) 
+                            Handler handler, SelectableItem cb, 
+                            long[] positions, String fieldName ) 
     {
         m_context = context;
         m_list = list;
