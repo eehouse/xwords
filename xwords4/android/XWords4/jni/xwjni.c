@@ -566,6 +566,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveSucceeded
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1setDraw
+( JNIEnv* env, jclass C, jint gamePtr, jobject jdraw )
+{
+    LOG_FUNC();
+    XWJNI_START_GLOBALS();
+    XP_ASSERT( !globals->dctx );
+    globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
+    board_setDraw( state->game.board, globals->dctx );
+    XWJNI_END();
+    LOG_RETURN_VOID();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1invalAll
 ( JNIEnv *env, jclass C, jint gamePtr )
 {

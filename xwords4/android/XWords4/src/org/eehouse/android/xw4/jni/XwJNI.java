@@ -142,6 +142,7 @@ public class XwJNI {
     public static native void game_dispose( int gamePtr );
 
     // Board methods
+    public static native void board_setDraw( int gamePtr, DrawCtx draw );
     public static native void board_invalAll( int gamePtr );
     public static native boolean board_draw( int gamePtr );
     public static native void board_setPos( int gamePtr, int left, int top,
