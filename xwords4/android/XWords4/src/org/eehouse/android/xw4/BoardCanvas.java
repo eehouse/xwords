@@ -150,6 +150,15 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
         fillRect( new Rect( 0, 0, bitmap.getWidth(), bitmap.getHeight() ),
                   WHITE );
+
+        m_bonusSummaries = new String[5];
+        int[] ids = { R.string.bonus_l2x_summary,
+                      R.string.bonus_w2x_summary ,
+                      R.string.bonus_l3x_summary,
+                      R.string.bonus_w3x_summary };
+        for ( int ii = 0; ii < ids.length; ++ii ) {
+            m_bonusSummaries[ ii+1 ] = res.getString( ids[ii] );
+        }
     }
 
     // DrawCtxt interface implementation
@@ -257,17 +266,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             color = adjustColor( color );
         }
         m_fillPaint.setColor( color );
-
-        // PENDING: Shouldn't this be one once at startup?
-        m_bonusSummaries = new String[5];
-        int[] ids = { R.string.bonus_l2x_summary,
-                      R.string.bonus_w2x_summary ,
-                      R.string.bonus_l3x_summary,
-                      R.string.bonus_w3x_summary };
-        Resources res = m_context.getResources();
-        for ( int ii = 0; ii < ids.length; ++ii ) {
-            m_bonusSummaries[ ii+1 ] = res.getString( ids[ii] );
-        }
 
         int height = rOuter.height() / texts.length;
         rOuter.bottom = rOuter.top + height;
