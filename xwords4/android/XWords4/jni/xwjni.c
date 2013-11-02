@@ -39,47 +39,54 @@
 #include "jniutlswrapper.h"
 #include "paths.h"
 
+static const SetInfo gi_ints[] = {
+    ARR_MEMBER( CurGameInfo, nPlayers )
+    ,ARR_MEMBER( CurGameInfo, gameSeconds )
+    ,ARR_MEMBER( CurGameInfo, boardSize )
+    ,ARR_MEMBER( CurGameInfo, gameID )
+    ,ARR_MEMBER( CurGameInfo, dictLang )
+};
+
+static const SetInfo gi_bools[] = {
+    ARR_MEMBER( CurGameInfo, hintsNotAllowed )
+    ,ARR_MEMBER( CurGameInfo, timerEnabled )
+    ,ARR_MEMBER( CurGameInfo, allowPickTiles )
+    ,ARR_MEMBER( CurGameInfo, allowHintRect )
+};
+
 static CurGameInfo*
-makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
+makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 {
     CurGameInfo* gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*gi) );
     XP_UCHAR buf[256];          /* in case needs whole path */
 
-    gi->nPlayers = getInt( env, j_gi, "nPlayers");
-    gi->gameSeconds = getInt( env, j_gi, "gameSeconds");
-    gi->boardSize = getInt( env, j_gi, "boardSize" );
+    getInts( env, (void*)gi, jgi, gi_ints, VSIZE(gi_ints) );
+    getBools( env, (void*)gi, jgi, gi_bools, VSIZE(gi_bools) );
 
     /* Unlike on other platforms, gi is created without a call to
        game_makeNewGame, which sets gameID.  So check here if it's still unset
        and if necessary set it -- including back in the java world. */
-    gi->gameID = getInt( env, j_gi, "gameID" );
     if ( 0 == gi->gameID ) {
         while ( 0 == gi->gameID ) {
             gi->gameID = getCurSeconds( env );
         }
-        setInt( env, j_gi, "gameID", gi->gameID );
+        setInt( env, jgi, "gameID", gi->gameID );
     }
 
-    gi->dictLang = getInt( env, j_gi, "dictLang" );
-    gi->hintsNotAllowed = getBool( env, j_gi, "hintsNotAllowed" );
-    gi->timerEnabled =  getBool( env, j_gi, "timerEnabled" );
-    gi->allowPickTiles = getBool( env, j_gi, "allowPickTiles" );
-    gi->allowHintRect = getBool( env, j_gi, "allowHintRect" );
-
     gi->phoniesAction = 
-        jenumFieldToInt( env, j_gi, "phoniesAction",
+        jenumFieldToInt( env, jgi, "phoniesAction",
                          PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
     gi->serverRole = 
-        jenumFieldToInt( env, j_gi, "serverRole", 
+        jenumFieldToInt( env, jgi, "serverRole", 
                          PKG_PATH("jni/CurGameInfo$DeviceRole"));
 
-    getString( env, j_gi, "dictName", buf, VSIZE(buf) );
+    getString( env, jgi, "dictName", buf, VSIZE(buf) );
     gi->dictName = copyString( mpool, buf );
 
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
 
     jobject jplayers;
-    if ( getObject( env, j_gi, "players", "[L" PKG_PATH("jni/LocalPlayer") ";",
+    if ( getObject( env, jgi, "players", "[L" PKG_PATH("jni/LocalPlayer") ";",
                     &jplayers ) ) {
         int ii;
         for ( ii = 0; ii < gi->nPlayers; ++ii ) {
@@ -114,14 +121,10 @@ static void
 setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 {
     // set fields
-    setInt( env, jgi, "nPlayers", gi->nPlayers );
-    setInt( env, jgi, "gameSeconds", gi->gameSeconds );
-    setInt( env, jgi, "boardSize", gi->boardSize );
-    setInt( env, jgi, "gameID", gi->gameID );
-    setInt( env, jgi, "dictLang", gi->dictLang );
-    setBool( env, jgi, "hintsNotAllowed", gi->hintsNotAllowed );
-    setBool( env, jgi, "timerEnabled", gi->timerEnabled );
-    setBool( env, jgi, "allowPickTiles", gi->allowPickTiles );
+
+    setInts( env, jgi, (void*)gi, gi_ints, VSIZE(gi_ints) );
+    setBools( env, jgi, (void*)gi, gi_bools, VSIZE(gi_bools) );
+
     setString( env, jgi, "dictName", gi->dictName );
 
     intToJenumField( env, jgi, gi->phoniesAction, "phoniesAction",

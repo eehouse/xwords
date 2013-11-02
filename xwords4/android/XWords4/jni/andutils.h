@@ -33,10 +33,28 @@
 void and_send_on_close( XWStreamCtxt* stream, void* closure );
 XWStreamCtxt* and_empty_stream( MPFORMAL AndGlobals* globals );
 
+typedef struct _SetInfo {
+    const char* name; 
+    int offset; 
+    int siz; 
+} SetInfo;
+#define ARR_MEMBER(obj, fld) { .name = #fld, \
+            .offset = OFFSET_OF(obj, fld),   \
+            .siz = sizeof(((obj *)0)->fld)   \
+            }
+
 int getInt( JNIEnv* env, jobject obj, const char* name );
 void setInt( JNIEnv* env, jobject obj, const char* name, int value );
+void setInts( JNIEnv* env, jobject jobj, void* cobj, 
+              const SetInfo* sis, XP_U16 nSis );
+void getInts( JNIEnv* env, void* cobj, jobject jobj, 
+              const SetInfo* sis, XP_U16 nSis );
 bool getBool( JNIEnv* env, jobject obj, const char* name );
+void getBools( JNIEnv* env, void* cobj, jobject jobj, 
+               const SetInfo* sis, XP_U16 nSis );
 bool setBool( JNIEnv* env, jobject obj, const char* name, bool value );
+void setBools( JNIEnv* env, jobject jobj, void* cobj, 
+               const SetInfo* sis, XP_U16 nSis );
 bool setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value );
 void getString( JNIEnv* env, jobject jlp, const char* name, XP_UCHAR* buf,
                 int bufLen );
