@@ -73,6 +73,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private int m_lastSecsLeft;
     private int m_lastTimerPlayer;
     private int m_pendingScore;
+    private boolean m_useCommon;
     private CommsAddrRec.CommsConnType m_connType = 
         CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
 
@@ -188,6 +189,9 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         int heightMode = View.MeasureSpec.getMode( heightMeasureSpec );
         // printMode( "heightMode", heightMode );
 
+        m_useCommon = 
+            XWPrefs.getPrefsBoolean( m_context, 
+                                     R.string.key_enable_commlayt, false );
         BoardDims dims = figureBoardDims( width, height );
         // If I let the spec tell me whether I can reduce the width
         // then I don't change it on the second pass, but if I ignore
@@ -247,80 +251,91 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private BoardDims figureBoardDims( int width, int height )
     {
         BoardDims result = new BoardDims();
-        int nCells = m_gi.boardSize;
-        int maxCellSize = 4 * m_defaultFontHt;
-        int trayHt;
-        int scoreHt;
-        int wantHt;
-        int nToScroll;
+        boolean squareTiles = XWPrefs.getSquareTiles( m_context );
 
-        for ( boolean firstPass = true; ; ) {
-            result.width = width;
+        Paint paint = new Paint();
+        paint.setTextSize( m_mediumFontHt );
+        paint.getTextBounds( "-00:00", 0, 6, m_boundsScratch );
+        int timerWidth = m_boundsScratch.width();
 
-            int cellSize = width / nCells;
-            if ( cellSize > maxCellSize ) {
-                cellSize = maxCellSize;
+        if ( m_useCommon ) {
+            Rect bounds = new Rect( 0, 0, width, height );
+            int fontWidth = timerWidth / 6;
+            XwJNI.board_figureLayout( m_jniGamePtr, m_gi, m_defaultFontHt, 
+                                      fontWidth, squareTiles, bounds, result );
+    
+        } else {
+            int nCells = m_gi.boardSize;
+            int maxCellSize = 4 * m_defaultFontHt;
+            int trayHt;
+            int scoreHt;
+            int wantHt;
+            int nToScroll;
 
-                int boardWidth = nCells * cellSize;
-                result.width = boardWidth;
-            }
-            result.maxCellSize = maxCellSize;
+            for ( boolean firstPass = true; ; ) {
+                result.width = width;
 
-            // Now determine if vertical scrolling will be necessary.
-            // There's a minimum tray and scoreboard height.  If we can
-            // fit them and all cells no scrolling's needed.  Otherwise
-            // determine the minimum number that must be hidden to fit.
-            // Finally grow scoreboard and tray to use whatever's left.
-            trayHt = 2 * cellSize;
-            scoreHt = (cellSize * 3) / 2;
-            wantHt = trayHt + scoreHt + (cellSize * nCells);
-            if ( wantHt <= height ) {
-                nToScroll = 0;
-            } else {
-                // Scrolling's required if we use cell width sufficient to
-                // fill the screen.  But perhaps we don't need to.
-                int cellWidth = 2 * (height / ( 4 + 3 + (2*nCells)));
-                if ( firstPass && cellWidth >= m_defaultFontHt ) {
-                    firstPass = false;
-                    width = nCells * cellWidth;
-                    continue;
+                int cellSize = width / nCells;
+                if ( cellSize > maxCellSize ) {
+                    cellSize = maxCellSize;
+
+                    int boardWidth = nCells * cellSize;
+                    result.width = boardWidth;
+                }
+                result.maxCellSize = maxCellSize;
+
+                // Now determine if vertical scrolling will be necessary.
+                // There's a minimum tray and scoreboard height.  If we can
+                // fit them and all cells no scrolling's needed.  Otherwise
+                // determine the minimum number that must be hidden to fit.
+                // Finally grow scoreboard and tray to use whatever's left.
+                trayHt = 2 * cellSize;
+                scoreHt = (cellSize * 3) / 2;
+                wantHt = trayHt + scoreHt + (cellSize * nCells);
+                if ( wantHt <= height ) {
+                    nToScroll = 0;
                 } else {
-                    nToScroll = nCells - ((height - trayHt - scoreHt) / cellSize);
+                    // Scrolling's required if we use cell width sufficient to
+                    // fill the screen.  But perhaps we don't need to.
+                    int cellWidth = 2 * (height / ( 4 + 3 + (2*nCells)));
+                    if ( firstPass && cellWidth >= m_defaultFontHt ) {
+                        firstPass = false;
+                        width = nCells * cellWidth;
+                        continue;
+                    } else {
+                        nToScroll = nCells - ((height - trayHt - scoreHt) / cellSize);
+                    }
                 }
-            }
 
-            int heightUsed = trayHt + scoreHt + (nCells - nToScroll) * cellSize;
-            int heightLeft = height - heightUsed;
-            if ( 0 < heightLeft ) {
-                if ( heightLeft > (cellSize * 3 / 2) ) {
-                    heightLeft = cellSize * 3 / 2;
+                int heightUsed = trayHt + scoreHt + (nCells - nToScroll) * cellSize;
+                int heightLeft = height - heightUsed;
+                if ( 0 < heightLeft ) {
+                    if ( heightLeft > (cellSize * 3 / 2) ) {
+                        heightLeft = cellSize * 3 / 2;
+                    }
+                    heightLeft /= 3;
+                    scoreHt += heightLeft;
+
+                    trayHt += heightLeft * 2;
+                    if ( squareTiles && trayHt > (width / 7) ) {
+                        trayHt = width / 7;
+                    }
+                    heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
                 }
-                heightLeft /= 3;
-                scoreHt += heightLeft;
 
-                trayHt += heightLeft * 2;
-                if ( XWPrefs.getSquareTiles( m_context ) 
-                     && trayHt > (width / 7) ) {
-                    trayHt = width / 7;
+                result.trayHt = trayHt;
+                result.scoreHt = scoreHt;
+
+                result.boardHt = cellSize * nCells;
+                result.trayTop = scoreHt + (cellSize * (nCells-nToScroll));
+                result.height = heightUsed;
+                result.cellSize = cellSize;
+
+                if ( m_gi.timerEnabled ) {
+                    result.timerWidth = timerWidth;
                 }
-                heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
+                break;
             }
-
-            result.trayHt = trayHt;
-            result.scoreHt = scoreHt;
-
-            result.boardHt = cellSize * nCells;
-            result.trayTop = scoreHt + (cellSize * (nCells-nToScroll));
-            result.height = heightUsed;
-            result.cellSize = cellSize;
-
-            if ( m_gi.timerEnabled ) {
-                Paint paint = new Paint();
-                paint.setTextSize( m_mediumFontHt );
-                paint.getTextBounds( "-00:00", 0, 6, m_boundsScratch );
-                result.timerWidth = m_boundsScratch.width();
-            }
-            break;
         }
 
         return result;
@@ -362,7 +377,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             XwJNI.board_setDraw( m_jniGamePtr, m_canvas );
 
             // need to synchronize??
-            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, dims );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, dims, 
+                                m_useCommon );
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
             layoutDone = true;
         }

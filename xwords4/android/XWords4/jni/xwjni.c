@@ -158,6 +158,36 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     }
 } /* setJGI */
 
+#ifdef COMMON_LAYOUT
+static const SetInfo bd_ints[] = {
+    ARR_MEMBER( BoardDims, left )
+    ,ARR_MEMBER( BoardDims, top )
+    ,ARR_MEMBER( BoardDims, width )
+    ,ARR_MEMBER( BoardDims, height )
+    ,ARR_MEMBER( BoardDims, scoreHt )
+    ,ARR_MEMBER( BoardDims, boardHt )
+    ,ARR_MEMBER( BoardDims, trayTop )
+    ,ARR_MEMBER( BoardDims, trayHt )
+    ,ARR_MEMBER( BoardDims, cellSize )
+    ,ARR_MEMBER( BoardDims, maxCellSize )
+    ,ARR_MEMBER( BoardDims, timerWidth )
+};
+
+static void
+dimsJToC( JNIEnv* env, BoardDims* out, jobject jdims )
+{
+    getInts( env, (void*)out, jdims, bd_ints, VSIZE(bd_ints) );
+}
+
+static void
+dimsCtoJ( JNIEnv* env, jobject jdims, const BoardDims* in )
+{
+    LOG_FUNC();
+    setInts( env, jdims, (void*)in, bd_ints, VSIZE(bd_ints) );
+    LOG_RETURN_VOID();
+}
+#endif
+
 static void
 destroyGI( MPFORMAL CurGameInfo** gip )
 {
@@ -600,6 +630,47 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
     XWJNI_END();
     return result;
 }
+
+#ifdef COMMON_LAYOUT
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
+( JNIEnv* env, jclass C, jint gamePtr, jobject jgi, jint fontHt, jint fontWidth,
+  jboolean squareTiles, jobject jbounds, jobject jdims )
+{
+    LOG_FUNC();
+    XWJNI_START();
+    CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
+
+    XP_Rect bounds;
+    bounds.left = getInt( env, jbounds, "left" );
+    bounds.top = getInt( env, jbounds, "top" );
+    bounds.width = getInt( env, jbounds, "right" ) - bounds.left;
+    bounds.height = getInt( env, jbounds, "bottom" ) - bounds.top;
+
+    BoardDims dims;
+    board_figureLayout( state->game.board, gi, fontHt, fontWidth, 
+                        squareTiles, &bounds, ((!!jdims) ? &dims : NULL) );
+
+    destroyGI( MPPARM(mpool) &gi );
+
+    if ( !!jdims ) {
+        dimsCtoJ( env, jdims, &dims );
+    }
+    XWJNI_END();
+    LOG_RETURN_VOID();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1applyLayout
+( JNIEnv* env, jclass C, jint gamePtr, jobject jdims )
+{
+    XWJNI_START();
+    BoardDims dims;
+    dimsJToC( env, &dims, jdims );
+    board_applyLayout( state->game.board, &dims );
+    XWJNI_END();
+}
+#endif
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos

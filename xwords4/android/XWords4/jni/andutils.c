@@ -107,7 +107,7 @@ getInts( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis 
             *ptr = val;
             break;
         }
-        /* XP_LOGF( "%s: wrote int %s of size %dwith val %d at offset %d", */
+        /* XP_LOGF( "%s: wrote int %s of size %d with val %d at offset %d", */
         /*          __func__, si->name, si->siz, val, si->offset ); */
     }
 }

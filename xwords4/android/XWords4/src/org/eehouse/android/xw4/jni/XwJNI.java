@@ -20,6 +20,9 @@
 
 package org.eehouse.android.xw4.jni;
 
+import android.graphics.Rect;
+import org.eehouse.android.xw4.BoardDims;
+
 // Collection of native methods
 public class XwJNI {
 
@@ -145,6 +148,15 @@ public class XwJNI {
     public static native void board_setDraw( int gamePtr, DrawCtx draw );
     public static native void board_invalAll( int gamePtr );
     public static native boolean board_draw( int gamePtr );
+
+    // Only if COMMON_LAYOUT defined
+    public static native void board_figureLayout( int gamePtr, CurGameInfo gi, 
+                                                  int fontHt, int fontWidth, 
+                                                  boolean squareTiles, 
+                                                  Rect bounds, BoardDims dims );
+    // Only if COMMON_LAYOUT defined
+    public static native void board_applyLayout( int gamePtr, BoardDims dims );
+
     public static native void board_setPos( int gamePtr, int left, int top,
                                             int width, int height, 
                                             int maxCellHt, boolean lefty );
