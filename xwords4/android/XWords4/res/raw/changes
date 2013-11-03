@@ -5,43 +5,19 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 71 release</b>
+<b>Crosswords 4.4 beta 72 release</b>
 
-<p>For this release I've redone how you work with games and groups of
-  games in the main Games List screen. Now you select one or more
-  games, and then the screen's main menu (including the right of the
-  action bar for newer devices) changes based on the
-  selection. Long-tap to select.  "Context menus" are gone.</p>
+<p>This release is for the new x86-processor-based Android devices
+  just coming out. Otherwise identical to beta 71, it replaces a
+  library for ARM processors with one for x86. Google Play Store
+  claims it will only let you download this release if you have a
+  compatible device, so here's hoping they got it right!</p>
 
-<p>Please let me know what you think of this. Suggest tweaks. Should I
-  redo the rest of the screens in this style; or, to the contrary, put
-  things back the way they were? As always, you
-  can <a href="mailto:xwords@eehouse.org">email me here</a>.</p>
+<p>Thanks to Brendan Le Foll for the patches!</p>
 
 <h3>New with this release</h3>
 <ul>
-  <li>More closely follow Android UI guidelines for main Games List
-  screen<ul>
-      <li>Show count of selected games or groups in title bar</li>
-      <li>Long-tap on games and groups selects or deselects rather
-        than bringing up a menu</li>
-      <li>Tap on icon at left of game row selects or deselects</li>
-      <li>Tap on selected game deselects</li>
-      <li>Selecting any group deselects all games, and vice versa</li>
-      <li>Back button clears any selection, or exits if there is
-      none</li>
-      <li>Most common actions now have icons for the action bar</li>
-      <li>A new game created when a group is selected is placed in
-      that group</li>
-      <li>Clear selected games inside collapsing group</li>
-  </ul></li>
-
-  <li>Add a couple of menu items to action bar for Board screen, as
-  text for now pending getting icons</li>
-
-  <li>Remove introductory verbiage from main Games List screen</li>
-
-  <li>Fix bug on tiny-screen phones (Thanks O!)</li>
+  <li>Replace arm processor support with support for x86 processors.
 </ul>
 
 <h3>Next up</h3>
