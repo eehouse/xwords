@@ -22,6 +22,7 @@
 
 #include "comtypes.h"
 #include "model.h"
+#include "gameinfo.h"
 #include "server.h"
 #include "draw.h"
 #include "xwstream.h"
@@ -57,7 +58,6 @@ typedef enum {
 
 /* typedef struct BoardCtxt BoardCtxt; */
 
-
 BoardCtxt* board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, 
                        DrawCtx* draw, XW_UtilCtxt* util );
 BoardCtxt* board_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
@@ -70,10 +70,44 @@ void board_destroy( BoardCtxt* board );
 
 void board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream );
 
+void board_reset( BoardCtxt* board );
+
+    /* Layout.  Either done internally or by client */
+#ifdef COMMON_LAYOUT
+
+typedef struct _BoardDims {
+    XP_U16 left, top;
+    XP_U16 width, height;
+    XP_U16 scoreHt;
+    XP_U16 boardHt;
+    XP_U16 trayTop, trayHt;
+    XP_U16 cellSize, maxCellSize;
+    XP_U16 timerWidth;
+} BoardDims;
+
+void board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
+                         XP_U16 fontHt, XP_U16 fontWidth, 
+                         XP_Bool squareTiles, const XP_Rect* bounds, 
+                         /* out */ BoardDims* dims );
+void board_applyLayout( BoardCtxt* board, const BoardDims* dims );
+
+#endif
+
+/* These four aren't needed if COMMON_LAYOUT defined */
 void board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top, 
                    XP_U16 width, XP_U16 height, XP_U16 maxCellSize, 
                    XP_Bool leftHanded );
-void board_reset( BoardCtxt* board );
+void board_setScoreboardLoc( BoardCtxt* board, 
+                             XP_U16 scoreLeft, XP_U16 scoreTop,
+                             XP_U16 scoreWidth, XP_U16 scoreHeight,
+                             XP_Bool divideHorizontally );
+void board_setTimerLoc( BoardCtxt* board, 
+                        XP_U16 timerLeft, XP_U16 timerTop,
+                        XP_U16 timerWidth, XP_U16 timerHeight );
+void board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
+                       XP_U16 trayWidth, XP_U16 trayHeight,
+                       XP_U16 minDividerWidth );
+
 
 /* Vertical scroll support; offset is in rows, not pixels */
 XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset );
@@ -88,13 +122,6 @@ XP_Bool board_canHint( const BoardCtxt* board );
 /* zoomBy: >0: zoom in; < 0: zoom out; 0: query only */
 XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut );
 
-void board_setScoreboardLoc( BoardCtxt* board, 
-                             XP_U16 scoreLeft, XP_U16 scoreTop,
-                             XP_U16 scoreWidth, XP_U16 scoreHeight,
-                             XP_Bool divideHorizontally );
-void board_setTimerLoc( BoardCtxt* board, 
-                        XP_U16 timerLeft, XP_U16 timerTop,
-                        XP_U16 timerWidth, XP_U16 timerHeight );
 void board_invalAll( BoardCtxt* board );
 void board_invalRect( BoardCtxt* board, XP_Rect* rect );
 #ifdef XWFEATURE_ACTIVERECT
@@ -122,7 +149,6 @@ XP_Bool board_prefsChanged( BoardCtxt* board, CommonPrefs* cp );
 BoardObjectType board_getFocusOwner( BoardCtxt* board );
 
 void board_hiliteCellAt( BoardCtxt* board, XP_U16 col, XP_U16 row );
-
 
 void board_resetEngine( BoardCtxt* board );
 
@@ -155,9 +181,6 @@ XP_Bool board_focusChanged( BoardCtxt* board, BoardObjectType typ,
 /******************** Tray methods ********************/
 #define NO_TILES ((TileBit)0)
 
-void board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
-                       XP_U16 trayWidth, XP_U16 trayHeight,
-                       XP_U16 minDividerWidth );
 XP_Bool board_hideTray( BoardCtxt* board );
 XP_Bool board_showTray( BoardCtxt* board );
 XW_TrayVisState board_getTrayVisState( const BoardCtxt* board );
