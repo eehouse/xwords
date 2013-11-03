@@ -1635,8 +1635,12 @@ passKeyToBoard( CursesAppGlobals* globals, char ch )
 static void
 positionSizeStuff( CursesAppGlobals* globals, int width, int height )
 {
-    XP_U16 cellWidth, cellHt, scoreLeft, scoreWidth;
     BoardCtxt* board = globals->cGlobals.game.board;
+#ifdef COMMON_LAYOUT
+    XP_USE( width );
+    XP_USE( height );
+#else
+    XP_U16 cellWidth, cellHt, scoreLeft, scoreWidth;
     int remWidth = width;
     int nRows = globals->cGlobals.gi->boardSize;
 
@@ -1680,7 +1684,7 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
 
     /* no divider -- yet */
     /*     board_setTrayVisible( globals.board, XP_TRUE, XP_FALSE ); */
-
+#endif
     board_invalAll( board );
 } /* positionSizeStuff */
 
