@@ -634,7 +634,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 #ifdef COMMON_LAYOUT
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
-( JNIEnv* env, jclass C, jint gamePtr, jobject jgi, jint fontHt, jint fontWidth,
+( JNIEnv* env, jclass C, jint gamePtr, jobject jgi, 
+  jint scorePct, jint trayPct, jint fontHt, jint fontWidth,
   jboolean squareTiles, jobject jbounds, jobject jdims )
 {
     LOG_FUNC();
@@ -648,8 +649,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
     bounds.height = getInt( env, jbounds, "bottom" ) - bounds.top;
 
     BoardDims dims;
-    board_figureLayout( state->game.board, gi, 150, 200, fontHt, fontWidth, 
-                        squareTiles, &bounds, ((!!jdims) ? &dims : NULL) );
+    board_figureLayout( state->game.board, gi, scorePct, trayPct, 
+                        fontHt, fontWidth, squareTiles, &bounds,
+                        ((!!jdims) ? &dims : NULL) );
 
     destroyGI( MPPARM(mpool) &gi );
 
