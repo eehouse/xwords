@@ -261,8 +261,9 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         if ( m_useCommon ) {
             Rect bounds = new Rect( 0, 0, width, height );
             int fontWidth = timerWidth / 6;
-            XwJNI.board_figureLayout( m_jniGamePtr, m_gi, m_defaultFontHt, 
-                                      fontWidth, squareTiles, bounds, result );
+            XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 150, 200, 
+                                      m_defaultFontHt, fontWidth, squareTiles, 
+                                      bounds, result );
     
         } else {
             int nCells = m_gi.boardSize;
