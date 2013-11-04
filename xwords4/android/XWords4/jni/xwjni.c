@@ -648,7 +648,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
     bounds.height = getInt( env, jbounds, "bottom" ) - bounds.top;
 
     BoardDims dims;
-    board_figureLayout( state->game.board, gi, fontHt, fontWidth, 
+    board_figureLayout( state->game.board, gi, 150, 200, fontHt, fontWidth, 
                         squareTiles, &bounds, ((!!jdims) ? &dims : NULL) );
 
     destroyGI( MPPARM(mpool) &gi );

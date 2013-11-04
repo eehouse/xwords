@@ -617,7 +617,14 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
 		     .width = bdWidth, .height = bdHeight 
     };
     BoardDims dims;
-    board_figureLayout( board, cGlobals->gi, 16, 16, XP_FALSE, &rect, &dims );
+    board_figureLayout( board, cGlobals->gi, 
+#if 1
+                        150, 200, 
+#else
+                        0, 0,
+#endif
+                        16, 16, 
+                        XP_FALSE, &rect, &dims );
     board_applyLayout( board, &dims );
 
 #else

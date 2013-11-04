@@ -392,6 +392,7 @@ board_reset( BoardCtxt* board )
 #ifdef COMMON_LAYOUT
 void
 board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
+                    XP_U16 scorePct, XP_U16 trayPct,
                     XP_U16 fontHt, XP_U16 fontWidth, XP_Bool squareTiles, 
                     const XP_Rect* bounds, BoardDims* dimsp )
 {
@@ -426,8 +427,8 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
 		// fit them and all cells no scrolling's needed.  Otherwise
 		// determine the minimum number that must be hidden to fit.
 		// Finally grow scoreboard and tray to use whatever's left.
-		trayHt = 2 * cellSize;
-		scoreHt = (cellSize * 3) / 2;
+		scoreHt = (scorePct * cellSize) / 100;
+		trayHt = (trayPct * cellSize) / 100;
 		wantHt = trayHt + scoreHt + (cellSize * nCells);
 		if ( wantHt <= bounds->height ) {
 			nToScroll = 0;
@@ -452,9 +453,13 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
 				heightLeft = cellSize * 3 / 2;
 			}
 			heightLeft /= 3;
-			scoreHt += heightLeft;
-
-			trayHt += heightLeft * 2;
+            if ( 0 < scorePct ) {
+                scoreHt += heightLeft;
+            }
+            
+            if ( 0 < trayPct ) {
+                trayHt += heightLeft * 2;
+            }
 			if ( squareTiles && trayHt > (bounds->width / 7) ) {
 				trayHt = bounds->width / 7;
 			}

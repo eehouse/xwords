@@ -86,6 +86,7 @@ typedef struct _BoardDims {
 } BoardDims;
 
 void board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
+                         XP_U16 scorePct, XP_U16 trayPct,
                          XP_U16 fontHt, XP_U16 fontWidth, 
                          XP_Bool squareTiles, const XP_Rect* bounds, 
                          /* out */ BoardDims* dims );
