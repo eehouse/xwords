@@ -8,20 +8,20 @@
 <b>Crosswords 4.4 beta 72 release</b>
 
 <p>This release is for the new x86-processor-based Android devices
-  just coming out. Otherwise identical to beta 71, it replaces a
-  library for ARM processors with one for x86. Google Play Store
-  claims it will only let you download this release if you have a
-  compatible device, so here's hoping they got it right!</p>
+  just coming out. Otherwise identical to beta 71, it adds support for
+  x86 processors to existing support for ARM (which has been
+  99.9&#37; of the market until now.)</p>
 
 <p>Thanks to Brendan Le Foll for the patches!</p>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Replace arm processor support with support for x86 processors.
+  <li>Add support for x86 processors.
 </ul>
 
 <h3>Next up</h3>
 <ul>
+  <li>Add thumbnail of board to main screen</li>
   <li>Use Actionbar and select/act pattern on more screens</li>
   <li>Offer "Rematch" when game's over</li>
 </ul>
