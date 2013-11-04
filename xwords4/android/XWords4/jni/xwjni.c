@@ -604,9 +604,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setDraw
 {
     LOG_FUNC();
     XWJNI_START_GLOBALS();
-    XP_ASSERT( !globals->dctx );
-    globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
-    board_setDraw( state->game.board, globals->dctx );
+
+    DrawCtx* newDraw = makeDraw( MPPARM(mpool) &state->env, jdraw );
+    board_setDraw( state->game.board, newDraw );
+
+    destroyDraw( &globals->dctx );
+    globals->dctx = newDraw;
+
     XWJNI_END();
     LOG_RETURN_VOID();
 }
