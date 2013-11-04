@@ -280,51 +280,55 @@ drawScoreBoard( BoardCtxt* board )
                     totalDim += isVertical ? dp->height : dp->width;
                 }
 
-                gotPct = (*adjustDim * 100) / totalDim;
-                for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
-                    if ( isVertical ) {
-                        dp->height = (dp->height * gotPct) / 100;
-                    } else {
-                        dp->width = (dp->width * gotPct) / 100;
+                if ( 0 < totalDim ) {
+                    gotPct = (*adjustDim * 100) / totalDim;
+                    for ( dp = datum, ii = 0; ii < nPlayers; ++ii, ++dp ) {
+                        if ( isVertical ) {
+                            dp->height = (dp->height * gotPct) / 100;
+                        } else {
+                            dp->width = (dp->width * gotPct) / 100;
+                        }
                     }
-                }
 
-                scoreRect = board->scoreBdBounds; /* reset */
+                    scoreRect = board->scoreBdBounds; /* reset */
 
-                /* at this point, the scoreRect should be anchored at the
-                   scoreboard rect's upper left.  */
+                    /* at this point, the scoreRect should be anchored at the
+                       scoreboard rect's upper left.  */
 
-                if ( remDim > 0 ) {
-                    XP_Rect innerRect;
-                    *adjustDim = remDim;
-                    centerIn( &innerRect, &scoreRect, remWidth, remHeight );
-                    draw_drawRemText( board->draw, &innerRect, &scoreRect, 
-                                      nTilesInPool, focusAll || remFocussed );
-                    *adjustPt += remDim;
+                    if ( remDim > 0 ) {
+                        XP_Rect innerRect;
+                        *adjustDim = remDim;
+                        centerIn( &innerRect, &scoreRect, remWidth, remHeight );
+                        draw_drawRemText( board->draw, &innerRect, &scoreRect, 
+                                          nTilesInPool, 
+                                          focusAll || remFocussed );
+                        *adjustPt += remDim;
 #ifdef KEYBOARD_NAV
-                    board->remRect = scoreRect;
-                    /* Hack: don't let the cursor disappear if Rem: goes
-                       away */
-                } else if ( board->scoreCursorLoc == CURSOR_LOC_REM ) {
-                    board->scoreCursorLoc = selPlayer + 1;
+                        board->remRect = scoreRect;
+                        /* Hack: don't let the cursor disappear if Rem: goes
+                           away */
+                    } else if ( board->scoreCursorLoc == CURSOR_LOC_REM ) {
+                        board->scoreCursorLoc = selPlayer + 1;
 #endif
-                }
+                    }
 
-                board->remDim = remDim;
+                    board->remDim = remDim;
 
-                for ( dp = datum, ii = 0; ii < nPlayers; ++dp, ++ii ) {
-                    XP_Rect innerRect;
-                    XP_U16 dim = isVertical? dp->height:dp->width;
-                    *adjustDim = board->pti[ii].scoreDims = dim;
+                    for ( dp = datum, ii = 0; ii < nPlayers; ++dp, ++ii ) {
+                        XP_Rect innerRect;
+                        XP_U16 dim = isVertical? dp->height:dp->width;
+                        *adjustDim = board->pti[ii].scoreDims = dim;
 
-                    centerIn( &innerRect, &scoreRect, dp->width, dp->height );
-                    draw_score_drawPlayer( board->draw, &innerRect, &scoreRect,
-                                           gotPct, &dp->dsi );
+                        centerIn( &innerRect, &scoreRect, dp->width, 
+                                  dp->height );
+                        draw_score_drawPlayer( board->draw, &innerRect, 
+                                               &scoreRect, gotPct, &dp->dsi );
 #ifdef KEYBOARD_NAV
-                    XP_MEMCPY( &board->pti[ii].scoreRects, &scoreRect, 
-                               sizeof(scoreRect) );
+                        XP_MEMCPY( &board->pti[ii].scoreRects, &scoreRect, 
+                                   sizeof(scoreRect) );
 #endif
-                    *adjustPt += *adjustDim;
+                        *adjustPt += *adjustDim;
+                    }
                 }
 
                 draw_objFinished( board->draw, OBJ_SCORE, 

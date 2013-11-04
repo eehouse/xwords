@@ -89,6 +89,30 @@ getInt( JNIEnv* env, jobject obj, const char* name )
 }
 
 void
+getInts( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis )
+{
+    int ii;
+    for ( ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        uint8_t* ptr = ((uint8_t*)cobj) + si->offset;
+        int val = getInt( env, jobj, si->name );
+        switch( si->siz ) {
+        case 4:
+            *(uint32_t*)ptr = val;
+            break;
+        case 2:
+            *(uint16_t*)ptr = val;
+            break;
+        case 1:
+            *ptr = val;
+            break;
+        }
+        /* XP_LOGF( "%s: wrote int %s of size %d with val %d at offset %d", */
+        /*          __func__, si->name, si->siz, val, si->offset ); */
+    }
+}
+
+void
 setInt( JNIEnv* env, jobject obj, const char* name, int value )
 {
     jclass cls = (*env)->GetObjectClass( env, obj );
@@ -97,6 +121,34 @@ setInt( JNIEnv* env, jobject obj, const char* name, int value )
     XP_ASSERT( !!fid );
     (*env)->SetIntField( env, obj, fid, value );
     deleteLocalRef( env, cls );
+}
+
+void
+setInts( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis )
+{
+    int ii;
+    for ( ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        uint8_t* ptr = ((uint8_t*)cobj) + si->offset;
+        int val;
+        switch( si->siz ) {
+        case 4:
+            val = *(uint32_t*)ptr;
+            break;
+        case 2:
+            val = *(uint16_t*)ptr;
+            break;
+        case 1:
+            val = *ptr;
+            break;
+        default:
+            val = 0;
+            XP_ASSERT(0);
+        }
+        setInt( env, jobj, si->name, val );
+        /* XP_LOGF( "%s: read int %s of size %d with val %d from offset %d",  */
+        /*          __func__, si->name, si->siz, val, si->offset ); */
+    }
 }
 
 bool
@@ -112,6 +164,19 @@ setBool( JNIEnv* env, jobject obj, const char* name, bool value )
     deleteLocalRef( env, cls );
 
     return success;
+}
+
+void
+setBools( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis )
+{
+    int ii;
+    for ( ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        XP_Bool val = *(XP_Bool*)(((uint8_t*)cobj)+si->offset);
+        setBool( env, jobj, si->name, val );
+        /* XP_LOGF( "%s: read bool %s with val %d from offset %d", __func__, */
+        /*          si->name, val, si->offset ); */
+    }
 }
 
 bool
@@ -208,6 +273,19 @@ getBool( JNIEnv* env, jobject obj, const char* name )
     result = (*env)->GetBooleanField( env, obj, fid );
     deleteLocalRef( env, cls );
     return result;
+}
+
+void
+getBools( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis )
+{
+    int ii;
+    for ( ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        XP_Bool val = getBool( env, jobj, si->name );
+        *(XP_Bool*)(((uint8_t*)cobj)+si->offset) = val;
+        /* XP_LOGF( "%s: wrote bool %s with val %d at offset %d", __func__,  */
+        /*          si->name, val, si->offset ); */
+    }
 }
 
 jintArray

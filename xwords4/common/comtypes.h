@@ -240,7 +240,7 @@ typedef struct _PlayerDicts {
 # define DEBUG_ASSIGN(a,b)
 #endif
 
-#define OFFSET_OF(typ,var)  ((XP_U16)&(((typ*) 0)->var))
+#define OFFSET_OF(typ,var)  ((XP_U32)&(((typ*) 0)->var))
 
 #ifndef RELAY_NAME_DEFAULT
 # define RELAY_NAME_DEFAULT "eehouse.org"

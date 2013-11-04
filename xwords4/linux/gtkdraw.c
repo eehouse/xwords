@@ -56,6 +56,7 @@ gtkInsetRect( XP_Rect* r, short i )
     r->left += i;
     i *= 2;
 
+    XP_ASSERT( r->height >= i && r->width >= i );
     r->width -= i;
     r->height -= i;
 } /* gtkInsetRect */

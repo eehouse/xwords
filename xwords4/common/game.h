@@ -21,6 +21,7 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
+#include "gameinfo.h"
 #include "model.h"
 #include "board.h"
 #include "comms.h"
@@ -30,40 +31,6 @@
 #ifdef CPLUS
 extern "C" {
 #endif
-
-typedef struct LocalPlayer {
-    XP_UCHAR* name;
-    XP_UCHAR* password;
-    XP_UCHAR* dictName;
-    XP_U16 secondsUsed;
-    XP_Bool isLocal;
-    XP_U8 robotIQ;              /* 0 means not a robot; 1-100 means how
-                                   dumb is it with 1 meaning very smart */
-} LocalPlayer;
-
-#define LP_IS_ROBOT(lp) ((lp)->robotIQ != 0)
-#define LP_IS_LOCAL(lp) ((lp)->isLocal)
-
-#define DUMB_ROBOT 0
-#define SMART_ROBOT 1
-
-typedef struct CurGameInfo {
-    XP_UCHAR* dictName;
-    LocalPlayer players[MAX_NUM_PLAYERS];
-    XP_U32 gameID;      /* uniquely identifies game */
-    XP_U16 gameSeconds; /* for timer */
-    XP_LangCode dictLang;
-    XP_U8 nPlayers;
-    XP_U8 boardSize;
-    DeviceRole serverRole;
-
-    XP_Bool hintsNotAllowed;
-    XP_Bool timerEnabled;
-    XP_Bool allowPickTiles;
-    XP_Bool allowHintRect;
-    XWPhoniesChoice phoniesAction;
-    XP_Bool confirmBTConnect;   /* only used for BT */
-} CurGameInfo;
 
 typedef struct _GameStateInfo {
     XP_U16 visTileCount;

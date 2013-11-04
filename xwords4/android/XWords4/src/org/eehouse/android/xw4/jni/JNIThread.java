@@ -233,32 +233,36 @@ public class JNIThread extends Thread {
         Message.obtain( m_handler, DIALOG, titleArg, 0, text ).sendToTarget();
     }
 
-    private void doLayout( BoardDims dims )
+    private void doLayout( BoardDims dims, boolean useCommon )
     {
-        int scoreWidth = dims.width - dims.cellSize;
-        ConnStatusHandler.setRect( scoreWidth, 0, scoreWidth + dims.cellSize, 
-                                   dims.scoreHt );
+        if ( useCommon ) {
+            XwJNI.board_applyLayout( m_jniGamePtr, dims );
+        } else {
+            int scoreWidth = dims.width - dims.cellSize;
+            ConnStatusHandler.setRect( scoreWidth, 0, scoreWidth + dims.cellSize, 
+                                       dims.scoreHt );
 
-        if ( m_gi.timerEnabled ) {
-            scoreWidth -= dims.timerWidth;
-            XwJNI.board_setTimerLoc( m_jniGamePtr, scoreWidth, 0, 
-                                     dims.timerWidth, dims.scoreHt );
-        } 
-        XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, scoreWidth, 
-                                      dims.scoreHt, true );
+            if ( m_gi.timerEnabled ) {
+                scoreWidth -= dims.timerWidth;
+                XwJNI.board_setTimerLoc( m_jniGamePtr, scoreWidth, 0, 
+                                         dims.timerWidth, dims.scoreHt );
+            } 
+            XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, scoreWidth, 
+                                          dims.scoreHt, true );
 
-        // Have no idea why I was doing -1 below, but it breaks layout
-        // for small (QVGA) boards.  If it needs to be done, do it
-        // early in figureBoardDims so the calculations that follow
-        // are consistent.
-        XwJNI.board_setPos( m_jniGamePtr, 0, dims.scoreHt, 
-                            dims.width/*-1*/, dims.boardHt, dims.maxCellSize, 
-                            false );
+            // Have no idea why I was doing -1 below, but it breaks layout
+            // for small (QVGA) boards.  If it needs to be done, do it
+            // early in figureBoardDims so the calculations that follow
+            // are consistent.
+            XwJNI.board_setPos( m_jniGamePtr, 0, dims.scoreHt, 
+                                dims.width/*-1*/, dims.boardHt, dims.maxCellSize, 
+                                false );
 
-        XwJNI.board_setTrayLoc( m_jniGamePtr, 0, dims.trayTop,
-                                dims.width/*-1*/, dims.trayHt, kMinDivWidth );
+            XwJNI.board_setTrayLoc( m_jniGamePtr, 0, dims.trayTop,
+                                    dims.width/*-1*/, dims.trayHt, kMinDivWidth );
 
-        XwJNI.board_invalAll( m_jniGamePtr );
+            XwJNI.board_invalAll( m_jniGamePtr );
+        }
     }
 
     private boolean nextSame( JNICmd cmd ) 
@@ -358,7 +362,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_LAYOUT:
-                doLayout( (BoardDims)args[0] );
+                doLayout( (BoardDims)args[0], (Boolean)args[1] );
                 draw = true;
                 // check and disable zoom button at limit
                 handle( JNICmd.CMD_ZOOM, 0 );

@@ -989,7 +989,10 @@ send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
         cGlobals->socket = -1;
 
         /* delete all pending packets since the socket's bad */
-        g_slist_free_full( cGlobals->packetQueue, free_elem_proc );
+        for ( GSList* iter = cGlobals->packetQueue; !!iter; iter = iter->next ) {
+            free_elem_proc( iter->data );
+        }
+        g_slist_free( cGlobals->packetQueue );
         cGlobals->packetQueue = NULL;
     }
     LOG_RETURNF( "%d", success );

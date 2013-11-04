@@ -389,6 +389,123 @@ board_reset( BoardCtxt* board )
     setTimerIf( board );
 } /* board_reset */
 
+#ifdef COMMON_LAYOUT
+void
+board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
+                    XP_U16 scorePct, XP_U16 trayPct,
+                    XP_U16 fontHt, XP_U16 fontWidth, XP_Bool squareTiles, 
+                    const XP_Rect* bounds, BoardDims* dimsp )
+{
+	BoardDims ldims;
+    XP_MEMSET( &ldims, 0, sizeof(ldims) );
+
+	XP_U16 nCells = gi->boardSize;
+	XP_U16 maxCellSize = 4 * fontHt;
+	XP_U16 trayHt;
+	XP_U16 scoreHt;
+	XP_U16 wantHt;
+	XP_U16 nToScroll;
+    XP_Bool firstPass;
+
+    ldims.left = bounds->left;
+    ldims.top = bounds->top;
+
+	for ( firstPass = XP_TRUE; ; ) {
+		ldims.width = bounds->width;
+
+		XP_U16 cellSize = bounds->width / nCells;
+		if ( cellSize > maxCellSize ) {
+			cellSize = maxCellSize;
+
+			XP_U16 boardWidth = nCells * cellSize;
+			ldims.width = boardWidth;
+		}
+		ldims.maxCellSize = maxCellSize;
+
+		// Now determine if vertical scrolling will be necessary.
+		// There's a minimum tray and scoreboard height.  If we can
+		// fit them and all cells no scrolling's needed.  Otherwise
+		// determine the minimum number that must be hidden to fit.
+		// Finally grow scoreboard and tray to use whatever's left.
+		scoreHt = (scorePct * cellSize) / 100;
+		trayHt = (trayPct * cellSize) / 100;
+		wantHt = trayHt + scoreHt + (cellSize * nCells);
+		if ( wantHt <= bounds->height ) {
+			nToScroll = 0;
+		} else {
+			// Scrolling's required if we use cell width sufficient to
+			// fill the screen.  But perhaps we don't need to.
+			int cellWidth = 2 * (bounds->height / ( 4 + 3 + (2*nCells)));
+			if ( firstPass && cellWidth >= fontHt ) {
+				firstPass = XP_FALSE;
+				ldims.width = nCells * cellWidth;
+				continue;
+			} else {
+				nToScroll = nCells - 
+                    ((bounds->height - trayHt - scoreHt) / cellSize);
+			}
+		}
+
+		XP_U16 heightUsed = trayHt + scoreHt + (nCells - nToScroll) * cellSize;
+		XP_U16 heightLeft = bounds->height - heightUsed;
+		if ( 0 < heightLeft ) {
+			if ( heightLeft > (cellSize * 3 / 2) ) {
+				heightLeft = cellSize * 3 / 2;
+			}
+			heightLeft /= 3;
+            if ( 0 < scorePct ) {
+                scoreHt += heightLeft;
+            }
+            
+            if ( 0 < trayPct ) {
+                trayHt += heightLeft * 2;
+            }
+			if ( squareTiles && trayHt > (bounds->width / 7) ) {
+				trayHt = bounds->width / 7;
+			}
+			heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
+		}
+
+		ldims.trayHt = trayHt;
+		ldims.scoreHt = scoreHt;
+
+		ldims.boardHt = cellSize * nCells;
+		ldims.trayTop = scoreHt + (cellSize * (nCells-nToScroll));
+		ldims.height = heightUsed;
+		ldims.cellSize = cellSize;
+
+		if ( gi->timerEnabled ) {
+			ldims.timerWidth = fontWidth * XP_STRLEN("-00:00");
+		}
+		break;
+	}
+
+    if ( !!dimsp ) {
+        XP_MEMCPY( dimsp, &ldims, sizeof(ldims) );
+    } else {
+        board_applyLayout( board, &ldims );
+    }
+}
+
+void
+board_applyLayout( BoardCtxt* board, const BoardDims* dims )
+{
+    board_setPos( board, dims->left, dims->top + dims->scoreHt, 
+                  dims->width, dims->top + dims->scoreHt + dims->boardHt,
+                  dims->maxCellSize, XP_FALSE );
+
+    board_setScoreboardLoc( board, dims->left, dims->top,
+                            dims->width - dims->timerWidth, 
+                            dims->scoreHt, XP_TRUE );
+
+    board_setTimerLoc( board, dims->left + dims->width - dims->timerWidth,
+                       dims->top, dims->timerWidth, dims->scoreHt );
+
+    board_setTrayLoc( board, dims->left, dims->trayTop, 
+                      dims->width, dims->trayHt, dims->width / 20 );
+}
+#endif
+
 void
 board_setPos( BoardCtxt* board, XP_U16 left, XP_U16 top, 
               XP_U16 width, XP_U16 height, XP_U16 maxCellSz,

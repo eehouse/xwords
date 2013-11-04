@@ -328,9 +328,11 @@ drawPendingScore( BoardCtxt* board, XP_S16 turnScore, XP_Bool hasCursor )
         XP_Rect lastTileR;
 
         figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
-        draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
-                                 selPlayer, curTurn,
-                                 hasCursor?CELL_ISCURSOR:CELL_NONE );
+        if ( 0 < lastTileR.width && 0 < lastTileR.height ) {
+            draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
+                                     selPlayer, curTurn,
+                                     hasCursor?CELL_ISCURSOR:CELL_NONE );
+        }
     }
 } /* drawPendingScore */
 
@@ -509,7 +511,9 @@ dividerMoved( BoardCtxt* board, XP_U8 newLoc )
 void
 board_invalTrayTiles( BoardCtxt* board, TileBit what )
 {
-    board->trayInvalBits |= what;
+    if ( 0 < board->trayBounds.width && 0 < board->trayBounds.height ) {
+        board->trayInvalBits |= what;
+    }
 } /* invalTrayTiles */
 
 void
