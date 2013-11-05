@@ -635,7 +635,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jgi, 
-  jint scorePct, jint trayPct, jint fontHt, jint fontWidth,
+  jint scorePct, jint trayPct, jint fontWidth, jint fontHt, 
   jboolean squareTiles, jobject jbounds, jobject jdims )
 {
     LOG_FUNC();
@@ -650,7 +650,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
 
     BoardDims dims;
     board_figureLayout( state->game.board, gi, scorePct, trayPct, 
-                        fontHt, fontWidth, squareTiles, &bounds,
+                        fontWidth, fontHt, squareTiles, &bounds,
                         ((!!jdims) ? &dims : NULL) );
 
     destroyGI( MPPARM(mpool) &gi );

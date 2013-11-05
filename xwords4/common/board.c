@@ -393,7 +393,7 @@ board_reset( BoardCtxt* board )
 void
 board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
                     XP_U16 scorePct, XP_U16 trayPct,
-                    XP_U16 fontHt, XP_U16 fontWidth, XP_Bool squareTiles, 
+                    XP_U16 fontWidth, XP_U16 fontHt, XP_Bool squareTiles, 
                     const XP_Rect* bounds, BoardDims* dimsp )
 {
 	BoardDims ldims;

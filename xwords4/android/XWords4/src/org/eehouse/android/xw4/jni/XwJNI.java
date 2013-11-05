@@ -152,7 +152,7 @@ public class XwJNI {
     // Only if COMMON_LAYOUT defined
     public static native void board_figureLayout( int gamePtr, CurGameInfo gi, 
                                                   int scorePct, int trayPct,
-                                                  int fontHt, int fontWidth, 
+                                                  int fontWidth, int fontHt, 
                                                   boolean squareTiles, 
                                                   Rect bounds, BoardDims dims );
     // Only if COMMON_LAYOUT defined
