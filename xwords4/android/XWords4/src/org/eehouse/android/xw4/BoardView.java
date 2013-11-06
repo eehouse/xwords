@@ -35,7 +35,6 @@ import android.graphics.drawable.Drawable;
 import android.content.res.Resources;
 import android.graphics.Paint.FontMetricsInt;
 import android.os.Build;
-import android.os.Handler;
 import java.nio.IntBuffer;
 import android.util.FloatMath;
 
@@ -58,22 +57,13 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private int m_layoutWidth;
     private int m_layoutHeight;
     private BoardCanvas m_canvas;    // owns the bitmap
-    private int m_trayOwner = -1;
-    private boolean m_blackArrow;
     private boolean m_inTrade = false;
-    // m_backgroundUsed: alpha not set ensures inequality
-    private int m_backgroundUsed = 0x00000000;
     private JNIThread m_jniThread;
     private XWActivity m_parent;
-    private String[][] m_scores;
-    private String[] m_dictChars;
     private Rect m_boundsScratch;
-    private String m_remText;
-    private int m_dictPtr = 0;
-    private int m_lastSecsLeft;
-    private int m_lastTimerPlayer;
     private int m_pendingScore;
-    private boolean m_useCommon;
+    private boolean m_measuredFromDims = false;
+    private BoardDims m_dims;
     private CommsAddrRec.CommsConnType m_connType = 
         CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
 
@@ -183,29 +173,17 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         // int d = w == 0 ? h : h == 0 ? w : w < h ? w : h;
         // setMeasuredDimension(d, d);
 
-        int width = View.MeasureSpec.getSize( widthMeasureSpec );
-        int height = View.MeasureSpec.getSize( heightMeasureSpec );
-
-        int heightMode = View.MeasureSpec.getMode( heightMeasureSpec );
-        // printMode( "heightMode", heightMode );
-
-        m_useCommon = 
-            XWPrefs.getPrefsBoolean( m_context, 
-                                     R.string.key_enable_commlayt, false );
-        BoardDims dims = figureBoardDims( width, height );
-        // If I let the spec tell me whether I can reduce the width
-        // then I don't change it on the second pass, but if I ignore
-        // that it works (even though the docs say my change is what
-        // will be ignored.)  I'm probably specifying something
-        // incorrectly in the layout xml file.
-        if ( false ) {
-            height = resolveSize( dims.height, heightMeasureSpec );
-            width = resolveSize( dims.width, widthMeasureSpec );
+        int width, height;
+        m_measuredFromDims = null != m_dims;
+        if ( m_measuredFromDims ) {
+            height = m_dims.height;
+            width = m_dims.width;
         } else {
-            height = dims.height;
-            width = dims.width;
+            width = View.MeasureSpec.getSize( widthMeasureSpec );
+            height = View.MeasureSpec.getSize( heightMeasureSpec );
         }
 
+        int heightMode = View.MeasureSpec.getMode( heightMeasureSpec );
         int minHeight = getSuggestedMinimumHeight();
         if ( height < minHeight ) {
             height = minHeight;
@@ -217,133 +195,25 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         setMeasuredDimension( width, height );
     }
 
-    // @Override
-    // protected void onLayout( boolean changed, int left, int top, 
-    //                          int right, int bottom )
-    // {
-    //     DbgUtils.logf( "BoardView.onLayout(%b, %d, %d, %d, %d)",
-    //                    changed, left, top, right, bottom );
-    //     super.onLayout( changed, left, top, right, bottom );
-    // }
-
-    // @Override
-    // protected void onSizeChanged( int width, int height, 
-    //                               int oldWidth, int oldHeight )
-    // {
-    //     DbgUtils.logf( "BoardView.onSizeChanged(%d,%d,%d,%d)", width, height, 
-    //                    oldWidth, oldHeight );
-    //     super.onSizeChanged( width, height, oldWidth, oldHeight );
-    // }
-
     // This will be called from the UI thread
     @Override
     protected void onDraw( Canvas canvas ) 
     {
         synchronized( this ) {
-            if ( layoutBoardOnce() ) {
+            if ( layoutBoardOnce() && m_measuredFromDims ) {
+                DbgUtils.logf( "BoardCanvas.onDraw() copying bitmap" );
                 canvas.drawBitmap( s_bitmap, 0, 0, m_drawPaint );
                 ConnStatusHandler.draw( m_context, canvas, getResources(), 
                                         0, 0, m_connType );
+            } else {
+                DbgUtils.logf( "board not laid out yet" );
             }
         }
     }
 
-    private BoardDims figureBoardDims( int width, int height )
-    {
-        BoardDims result = new BoardDims();
-        boolean squareTiles = XWPrefs.getSquareTiles( m_context );
-
-        Paint paint = new Paint();
-        paint.setTextSize( m_mediumFontHt );
-        paint.getTextBounds( "-00:00", 0, 6, m_boundsScratch );
-        int timerWidth = m_boundsScratch.width();
-
-        if ( m_useCommon ) {
-            Rect bounds = new Rect( 0, 0, width, height );
-            int fontWidth = timerWidth / 6;
-            XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 150, 200, 
-                                      m_defaultFontHt, fontWidth, squareTiles, 
-                                      bounds, result );
-    
-        } else {
-            int nCells = m_gi.boardSize;
-            int maxCellSize = 4 * m_defaultFontHt;
-            int trayHt;
-            int scoreHt;
-            int wantHt;
-            int nToScroll;
-
-            for ( boolean firstPass = true; ; ) {
-                result.width = width;
-
-                int cellSize = width / nCells;
-                if ( cellSize > maxCellSize ) {
-                    cellSize = maxCellSize;
-
-                    int boardWidth = nCells * cellSize;
-                    result.width = boardWidth;
-                }
-                result.maxCellSize = maxCellSize;
-
-                // Now determine if vertical scrolling will be necessary.
-                // There's a minimum tray and scoreboard height.  If we can
-                // fit them and all cells no scrolling's needed.  Otherwise
-                // determine the minimum number that must be hidden to fit.
-                // Finally grow scoreboard and tray to use whatever's left.
-                trayHt = 2 * cellSize;
-                scoreHt = (cellSize * 3) / 2;
-                wantHt = trayHt + scoreHt + (cellSize * nCells);
-                if ( wantHt <= height ) {
-                    nToScroll = 0;
-                } else {
-                    // Scrolling's required if we use cell width sufficient to
-                    // fill the screen.  But perhaps we don't need to.
-                    int cellWidth = 2 * (height / ( 4 + 3 + (2*nCells)));
-                    if ( firstPass && cellWidth >= m_defaultFontHt ) {
-                        firstPass = false;
-                        width = nCells * cellWidth;
-                        continue;
-                    } else {
-                        nToScroll = nCells - ((height - trayHt - scoreHt) / cellSize);
-                    }
-                }
-
-                int heightUsed = trayHt + scoreHt + (nCells - nToScroll) * cellSize;
-                int heightLeft = height - heightUsed;
-                if ( 0 < heightLeft ) {
-                    if ( heightLeft > (cellSize * 3 / 2) ) {
-                        heightLeft = cellSize * 3 / 2;
-                    }
-                    heightLeft /= 3;
-                    scoreHt += heightLeft;
-
-                    trayHt += heightLeft * 2;
-                    if ( squareTiles && trayHt > (width / 7) ) {
-                        trayHt = width / 7;
-                    }
-                    heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
-                }
-
-                result.trayHt = trayHt;
-                result.scoreHt = scoreHt;
-
-                result.boardHt = cellSize * nCells;
-                result.trayTop = scoreHt + (cellSize * (nCells-nToScroll));
-                result.height = heightUsed;
-                result.cellSize = cellSize;
-
-                if ( m_gi.timerEnabled ) {
-                    result.timerWidth = timerWidth;
-                }
-                break;
-            }
-        }
-
-        return result;
-    } // figureBoardDims
-
     private boolean layoutBoardOnce() 
     {
+        DbgUtils.logf( "layoutBoardOnce()" );
         final int width = getWidth();
         final int height = getHeight();
         boolean layoutDone = width == m_layoutWidth && height == m_layoutHeight;
@@ -351,38 +221,48 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             // nothing to do
         } else if ( null == m_gi ) {
             // nothing to do either
+        } else if ( null == m_dims ) {
+            // m_canvas = null;
+            // need to synchronize??
+            Paint paint = new Paint();
+            paint.setTextSize( m_mediumFontHt );
+            paint.getTextBounds( "-00:00", 0, 6, m_boundsScratch );
+            int timerWidth = m_boundsScratch.width();
+            int fontWidth = timerWidth / 6;
+            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, width, height, 
+                                fontWidth, m_defaultFontHt );
+            // We'll be back....
         } else {
-            m_layoutWidth = width;
-            m_layoutHeight = height;
-            // m_fontDims = null; // force recalc of font
-            // m_letterRect = null;
-            // m_valRect = null;
-
-            BoardDims dims = figureBoardDims( width, height );
-
             // If board size has changed we need a new bitmap
-            int bmHeight = 1 + dims.height;
-            int bmWidth = 1 + dims.width;
+            int bmHeight = 1 + m_dims.height;
+            int bmWidth = 1 + m_dims.width;
             if ( null != s_bitmap ) {
                 if ( s_bitmap.getHeight() != bmHeight
                      || s_bitmap.getWidth() != bmWidth ) {
                     s_bitmap = null;
+                    m_canvas = null;
                 }
             }
 
             if ( null == s_bitmap ) {
+                DbgUtils.logf( "making %dx%d static bitmap", bmWidth, bmHeight );
                 s_bitmap = Bitmap.createBitmap( bmWidth, bmHeight,
                                                 Bitmap.Config.ARGB_8888 );
             }
-            m_canvas = new BoardCanvas( m_context, s_bitmap, m_jniThread );
-            XwJNI.board_setDraw( m_jniGamePtr, m_canvas );
-
-            // need to synchronize??
-            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, dims, 
-                                m_useCommon );
+            if ( null == m_canvas ) {
+                DbgUtils.logf( "layoutBoardOnce: allocating canvas for %d, %d",
+                               bmWidth, bmHeight );
+                m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread );
+            }
+            m_jniThread.handle( JNIThread.JNICmd.CMD_SETDRAW, m_canvas );
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+
+            // set so we know we're done
+            m_layoutWidth = width;
+            m_layoutHeight = height;
             layoutDone = true;
         }
+        DbgUtils.logf( "layoutBoardOnce()=>%b", layoutDone );
         return layoutDone;
     } // layoutBoardOnce
 
@@ -391,6 +271,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                                int gamePtr, CurGameInfo gi, 
                                CommsAddrRec.CommsConnType connType ) 
     {
+        DbgUtils.logf( "startHandling()" );
         m_parent = parent;
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
@@ -407,13 +288,34 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     // SyncedDraw interface implementation
     public void doJNIDraw()
     {
+        DbgUtils.logf( "doJNIDraw() called" );
         boolean drew;
         synchronized( this ) {
             drew = XwJNI.board_draw( m_jniGamePtr );
         }
-        if ( !drew ) {
+        if ( drew ) {
+            // Force update now that we have bits to copy
+            // m_parent.runOnUiThread( new Runnable() {
+            //         public void run() {
+            //             invalidate();
+            //         }
+            //     });
+        } else {
             DbgUtils.logf( "doJNIDraw: draw not complete" );
         }
+    }
+
+    public void dimsChanged( BoardDims dims )
+    {
+        m_dims = dims;
+        DbgUtils.logf( "BoardView.dimsChanged() called; new dims %dx%d",
+                       dims.width, dims.height );
+        m_parent.runOnUiThread( new Runnable() {
+                public void run()
+                {
+                    invalidate();
+                }
+            });
     }
 
     public void setInTrade( boolean inTrade ) 
@@ -424,7 +326,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     public int getCurPlayer()
     {
-        return m_trayOwner;
+        return null == m_canvas? -1 : m_canvas.getCurPlayer();
     }
 
     public int curPending() 

@@ -31,21 +31,25 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.DbgUtils;
-import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.BoardDims;
+import org.eehouse.android.xw4.ConnStatusHandler;
+import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
-import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Toolbar;
+import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.DrawCtx;
 import junit.framework.Assert;
 
 public class JNIThread extends Thread {
 
     public enum JNICmd { CMD_NONE,
+            // CMD_RUN,
             CMD_DRAW,
+            CMD_SETDRAW,
             CMD_INVALALL,
             CMD_LAYOUT,
             CMD_START,
@@ -230,36 +234,24 @@ public class JNIThread extends Thread {
         Message.obtain( m_handler, DIALOG, titleArg, 0, text ).sendToTarget();
     }
 
-    private void doLayout( BoardDims dims, boolean useCommon )
+    private void doLayout( int width, int height, int fontWidth,
+                           int fontHeight )
     {
-        if ( useCommon ) {
-            XwJNI.board_applyLayout( m_jniGamePtr, dims );
-        } else {
-            int scoreWidth = dims.width - dims.cellSize;
-            ConnStatusHandler.setRect( scoreWidth, 0, scoreWidth + dims.cellSize, 
-                                       dims.scoreHt );
+        BoardDims dims = new BoardDims();
 
-            if ( m_gi.timerEnabled ) {
-                scoreWidth -= dims.timerWidth;
-                XwJNI.board_setTimerLoc( m_jniGamePtr, scoreWidth, 0, 
-                                         dims.timerWidth, dims.scoreHt );
-            } 
-            XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, scoreWidth, 
-                                          dims.scoreHt, true );
+        boolean squareTiles = XWPrefs.getSquareTiles( m_context );
+        Rect bounds = new Rect( 0, 0, width, height );
+        XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 150, 200, 
+                                  fontWidth, fontHeight, squareTiles, 
+                                  bounds, dims );
 
-            // Have no idea why I was doing -1 below, but it breaks layout
-            // for small (QVGA) boards.  If it needs to be done, do it
-            // early in figureBoardDims so the calculations that follow
-            // are consistent.
-            XwJNI.board_setPos( m_jniGamePtr, 0, dims.scoreHt, 
-                                dims.width/*-1*/, dims.boardHt, dims.maxCellSize, 
-                                false );
+        int scoreWidth = dims.width - dims.cellSize;
+        ConnStatusHandler.setRect( scoreWidth, 0, scoreWidth + dims.cellSize, 
+                                   dims.scoreHt );
 
-            XwJNI.board_setTrayLoc( m_jniGamePtr, 0, dims.trayTop,
-                                    dims.width/*-1*/, dims.trayHt, kMinDivWidth );
+        XwJNI.board_applyLayout( m_jniGamePtr, dims );
 
-            XwJNI.board_invalAll( m_jniGamePtr );
-        }
+        m_drawer.dimsChanged( dims );
     }
 
     private boolean nextSame( JNICmd cmd ) 
@@ -333,6 +325,11 @@ public class JNIThread extends Thread {
             args = elem.m_args;
             switch( elem.m_cmd ) {
 
+            // case CMD_RUN:
+            //     Runnable proc = (Runnable)args[0];
+            //     proc.run();
+            //     break;
+
             case CMD_SAVE:
                 if ( nextSame( JNICmd.CMD_SAVE ) ) {
                     continue;
@@ -352,13 +349,19 @@ public class JNIThread extends Thread {
                 draw = true;
                 break;
 
+            case CMD_SETDRAW:
+                XwJNI.board_setDraw( m_jniGamePtr, (DrawCtx)args[0] );
+                XwJNI.board_invalAll( m_jniGamePtr );
+                break;
+
             case CMD_INVALALL:
                 XwJNI.board_invalAll( m_jniGamePtr );
                 draw = true;
                 break;
 
             case CMD_LAYOUT:
-                doLayout( (BoardDims)args[0], (Boolean)args[1] );
+                doLayout( (Integer)args[0], (Integer)args[1], (Integer)args[2],
+                          (Integer)args[3] );
                 draw = true;
                 // check and disable zoom button at limit
                 handle( JNICmd.CMD_ZOOM, 0 );
@@ -646,4 +649,10 @@ public class JNIThread extends Thread {
         m_queue.add( elem );
     }
 
+    // public void run( boolean isUI, Runnable runnable )
+    // {
+    //     Object[] args = { runnable };
+    //     QueueElem elem = new QueueElem( JNICmd.CMD_RUN, isUI, args );
+    //     m_queue.add( elem );
+    // }
 }
