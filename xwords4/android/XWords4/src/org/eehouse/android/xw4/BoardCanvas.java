@@ -154,7 +154,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                       R.string.bonus_w2x_summary ,
                       R.string.bonus_l3x_summary,
                       R.string.bonus_w3x_summary };
-        res = activity.getResources();
         for ( int ii = 0; ii < ids.length; ++ii ) {
             m_bonusSummaries[ ii+1 ] = res.getString( ids[ii] );
         }
