@@ -137,7 +137,6 @@ public class JNIThread extends Thread {
     private static final int kMinDivWidth = 10;
     private int m_connsIconID = 0;
     private String m_newDict = null;
-    private Bitmap m_thumbnail;
 
     LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -166,12 +165,11 @@ public class JNIThread extends Thread {
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
 
-    public void waitToStop( boolean save, Bitmap thumb )
+    public void waitToStop( boolean save )
     {
         synchronized ( this ) {
             m_stopped = true;
             m_saveOnStop = save;
-            m_thumbnail = thumb;
         }
         handle( JNICmd.CMD_NONE );     // tickle it
         try {
@@ -297,7 +295,6 @@ public class JNIThread extends Thread {
             // DbgUtils.logf( "no change in game; can skip saving" );
         } else {
             GameSummary summary = new GameSummary( m_context, m_gi );
-            summary.setThumbnail( m_thumbnail );
             XwJNI.game_summarize( m_jniGamePtr, summary );
             DBUtils.saveGame( m_context, m_lock, state, false );
             DBUtils.saveSummary( m_context, m_lock, summary );

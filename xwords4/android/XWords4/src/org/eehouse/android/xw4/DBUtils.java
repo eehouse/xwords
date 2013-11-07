@@ -326,18 +326,6 @@ public class DBUtils {
                     }
                 }
 
-                if ( GitVersion.THUMBNAIL_SUPPORTED ) {
-                    Bitmap thumb = summary.getThumbnail();
-                    if ( null == thumb ) {
-                        values.putNull( DBHelper.THUMBNAIL );
-                    } else {
-                        ByteArrayOutputStream bas = new ByteArrayOutputStream();
-                        thumb.compress( CompressFormat.PNG, 0 , bas );
-                        byte[] data = bas.toByteArray();
-                        values.put( DBHelper.THUMBNAIL, data );
-                    }
-                }
-
                 values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
 
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
@@ -445,6 +433,29 @@ public class DBUtils {
     public static boolean gameOver( Context context, long rowid ) 
     {
         return 0 != getInt( context, rowid, DBHelper.GAME_OVER, 0 );
+    }
+
+    public static void saveThumbnail( Context context, GameLock lock, 
+                                      Bitmap thumb )
+    {
+        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+                ContentValues values = new ContentValues();
+                String selection = String.format( ROW_ID_FMT, lock.getRowid() );
+
+                ByteArrayOutputStream bas = new ByteArrayOutputStream();
+                thumb.compress( CompressFormat.PNG, 0, bas );
+                values.put( DBHelper.THUMBNAIL, bas.toByteArray() );
+
+                long result = db.update( DBHelper.TABLE_NAME_SUM,
+                                         values, selection, null );
+                Assert.assertTrue( result >= 0 );
+
+                db.close();
+            }
+        }
     }
 
     public static String getRelayID( Context context, long rowid )

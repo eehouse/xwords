@@ -32,12 +32,13 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-
 import android.text.TextUtils;
+
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -57,8 +58,8 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.JNIThread.*;
 
 
 public class BoardActivity extends XWActivity 
@@ -2035,12 +2036,15 @@ public class BoardActivity extends XWActivity
             interruptBlockingThread();
 
             if ( null != m_jniThread ) {
-                Bitmap thumb = m_view.getScaledBoard();
-                m_jniThread.waitToStop( save, thumb );
+                m_jniThread.waitToStop( save );
                 m_jniThread = null;
             }
 
             clearThis();
+
+            // Before we dispose, and after JNIThread has relinquished
+            // interest, redraw on smaller scale.
+            takeSnapshot();
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
@@ -2048,6 +2052,26 @@ public class BoardActivity extends XWActivity
 
             m_gameLock.unlock();
             m_gameLock = null;
+        }
+    }
+
+    private void takeSnapshot()
+    {
+        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+            final int size = 150;
+            Bitmap thumb = 
+                Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
+
+            Rect bounds = new Rect( 0, 0, size, size );
+            XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, 5, 5, false,
+                                      bounds, null );
+
+            ThumbCanvas canvas = new ThumbCanvas( this, thumb );
+            XwJNI.board_setDraw( m_jniGamePtr, canvas );
+            XwJNI.board_invalAll( m_jniGamePtr );        
+            XwJNI.board_draw( m_jniGamePtr );        
+
+            DBUtils.saveThumbnail( this, m_gameLock, thumb );
         }
     }
 
