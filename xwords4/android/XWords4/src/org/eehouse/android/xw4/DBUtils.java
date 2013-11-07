@@ -445,9 +445,14 @@ public class DBUtils {
                 ContentValues values = new ContentValues();
                 String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
-                ByteArrayOutputStream bas = new ByteArrayOutputStream();
-                thumb.compress( CompressFormat.PNG, 0, bas );
-                values.put( DBHelper.THUMBNAIL, bas.toByteArray() );
+                if ( null == thumb ) {
+                    DbgUtils.logf( "clearing thumbnail" );
+                    values.putNull( DBHelper.THUMBNAIL );
+                } else {
+                    ByteArrayOutputStream bas = new ByteArrayOutputStream();
+                    thumb.compress( CompressFormat.PNG, 0, bas );
+                    values.put( DBHelper.THUMBNAIL, bas.toByteArray() );
+                }
 
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, selection, null );

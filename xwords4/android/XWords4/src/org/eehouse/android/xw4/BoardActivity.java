@@ -2058,19 +2058,21 @@ public class BoardActivity extends XWActivity
     private void takeSnapshot()
     {
         if ( GitVersion.THUMBNAIL_SUPPORTED ) {
-            final int size = 150;
-            Bitmap thumb = 
-                Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
+            Bitmap thumb = null;
+            int scale = XWPrefs.getThumbScale( this );
+            if ( 0 < scale ) {
+                final int size = 15 * (9 + scale);
+                thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
 
-            Rect bounds = new Rect( 0, 0, size, size );
-            XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, 5, 5, false,
-                                      bounds, null );
+                Rect bounds = new Rect( 0, 0, size, size );
+                XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, 5, 5, false,
+                                          bounds, null );
 
-            ThumbCanvas canvas = new ThumbCanvas( this, thumb );
-            XwJNI.board_setDraw( m_jniGamePtr, canvas );
-            XwJNI.board_invalAll( m_jniGamePtr );        
-            XwJNI.board_draw( m_jniGamePtr );        
-
+                ThumbCanvas canvas = new ThumbCanvas( this, thumb );
+                XwJNI.board_setDraw( m_jniGamePtr, canvas );
+                XwJNI.board_invalAll( m_jniGamePtr );        
+                XwJNI.board_draw( m_jniGamePtr );        
+            }
             DBUtils.saveThumbnail( this, m_gameLock, thumb );
         }
     }
