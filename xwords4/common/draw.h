@@ -183,21 +183,24 @@ typedef struct DrawCtxVTable {
 
     void DRAW_VTABLE_NAME(invertCell) ( DrawCtx* dctx, const XP_Rect* rect );
 
-    void DRAW_VTABLE_NAME(drawTile) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                      /* at least 1 of these two will be null*/
-                                      const XP_UCHAR* text, 
-                                      const XP_Bitmaps* bitmaps,
-                                      XP_U16 val, CellFlags flags );
+    XP_Bool DRAW_VTABLE_NAME(drawTile) ( DrawCtx* dctx, const XP_Rect* rect, 
+                                         /* at least 1 of these 2 will be
+                                            null*/
+                                         const XP_UCHAR* text, 
+                                         const XP_Bitmaps* bitmaps,
+                                         XP_U16 val, CellFlags flags );
 #ifdef POINTER_SUPPORT
-    void DRAW_VTABLE_NAME(drawTileMidDrag) ( DrawCtx* dctx, const XP_Rect* rect, 
-                                      /* at least 1 of these two will be null*/
-                                             const XP_UCHAR* text, 
-                                             const XP_Bitmaps* bitmaps,
-                                             XP_U16 val, XP_U16 owner, 
-                                             CellFlags flags );
+    XP_Bool DRAW_VTABLE_NAME(drawTileMidDrag) ( DrawCtx* dctx, 
+                                                const XP_Rect* rect, 
+                                                /* at least 1 of these 2 will
+                                                   be null*/
+                                                const XP_UCHAR* text, 
+                                                const XP_Bitmaps* bitmaps,
+                                                XP_U16 val, XP_U16 owner, 
+                                                CellFlags flags );
 #endif
-    void DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, const XP_Rect* rect,
-                                          CellFlags flags );
+    XP_Bool DRAW_VTABLE_NAME(drawTileBack) ( DrawCtx* dctx, const XP_Rect* rect,
+                                             CellFlags flags );
     void DRAW_VTABLE_NAME(drawTrayDivider) ( DrawCtx* dctx, const XP_Rect* rect, 
                                              CellFlags flags );
 

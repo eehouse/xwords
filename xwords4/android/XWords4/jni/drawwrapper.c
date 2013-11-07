@@ -423,31 +423,34 @@ and_draw_trayBegin( DrawCtx* dctx, const XP_Rect* rect, XP_U16 owner,
     return result;
 }
 
-static void
+static XP_Bool
 and_draw_drawTile( DrawCtx* dctx, const XP_Rect* rect, const XP_UCHAR* text, 
                    const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags )
 {
+    XP_Bool result;
     DRAW_CBK_HEADER( "drawTile",
-                     "(Landroid/graphics/Rect;Ljava/lang/String;II)V" );
+                     "(Landroid/graphics/Rect;Ljava/lang/String;II)Z" );
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
     jstring jtext = NULL;
     if ( !!text ) {
         jtext = (*env)->NewStringUTF( env, text );
     }
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jrect, jtext, val, flags );
+    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
+                                        jrect, jtext, val, flags );
 
     deleteLocalRef( env, jtext );
+    return result;
 }
 
-static void
+static XP_Bool
 and_draw_drawTileMidDrag( DrawCtx* dctx, const XP_Rect* rect, 
                           const XP_UCHAR* text, const XP_Bitmaps* bitmaps,
                           XP_U16 val, XP_U16 owner, CellFlags flags )
 {
+    XP_Bool result;
     DRAW_CBK_HEADER( "drawTileMidDrag", 
-                     "(Landroid/graphics/Rect;Ljava/lang/String;III)V" );
+                     "(Landroid/graphics/Rect;Ljava/lang/String;III)Z" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
     jstring jtext = NULL;
@@ -455,21 +458,21 @@ and_draw_drawTileMidDrag( DrawCtx* dctx, const XP_Rect* rect,
         jtext = (*env)->NewStringUTF( env, text );
     }
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jrect, jtext, val, owner, flags );
+    result = (*env)->CallBooleanMethod( env, draw->jdraw, mid, 
+                                        jrect, jtext, val, owner, flags );
 
     deleteLocalRef( env, jtext );
+    return result;
 }
 
-static void 
+static XP_Bool
 and_draw_drawTileBack( DrawCtx* dctx, const XP_Rect* rect, CellFlags flags )
 {
-    DRAW_CBK_HEADER( "drawTileBack", "(Landroid/graphics/Rect;I)V" );
+    DRAW_CBK_HEADER( "drawTileBack", "(Landroid/graphics/Rect;I)Z" );
 
     jobject jrect = makeJRect( draw, JCACHE_RECT0, rect );
 
-    (*env)->CallVoidMethod( env, draw->jdraw, mid, 
-                            jrect, flags );
+    return (*env)->CallBooleanMethod( env, draw->jdraw, mid, jrect, flags );
 }
 
 static void

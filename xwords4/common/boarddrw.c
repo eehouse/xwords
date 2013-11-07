@@ -632,7 +632,7 @@ board_draw( BoardCtxt* board )
 
         drawBoard( board );
     }
-    return !board->needsDrawing;
+    return !board->needsDrawing && 0 == board->trayInvalBits;
 } /* board_draw */
 
 #ifdef CPLUS

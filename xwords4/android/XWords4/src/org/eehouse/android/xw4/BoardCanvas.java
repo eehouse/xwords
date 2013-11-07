@@ -523,20 +523,20 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return true;
     }
 
-    public void drawTile( Rect rect, String text, int val, int flags ) 
+    public boolean drawTile( Rect rect, String text, int val, int flags ) 
     {
-        drawTileImpl( rect, text, val, flags, true );
+        return drawTileImpl( rect, text, val, flags, true );
     }
 
-    public void drawTileMidDrag( Rect rect, String text, int val, int owner, 
+    public boolean drawTileMidDrag( Rect rect, String text, int val, int owner, 
                                  int flags ) 
     {
-        drawTileImpl( rect, text, val, flags, false );
+        return drawTileImpl( rect, text, val, flags, false );
     }
 
-    public void drawTileBack( Rect rect, int flags ) 
+    public boolean drawTileBack( Rect rect, int flags ) 
     {
-        drawTileImpl( rect, "?", -1, flags, true );
+        return drawTileImpl( rect, "?", -1, flags, true );
     }
 
     public void drawTrayDivider( Rect rect, int flags ) 
@@ -613,9 +613,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    private void drawTileImpl( Rect rect, String text, int val, 
-                               int flags, boolean clearBack )
+    private boolean drawTileImpl( Rect rect, String text, int val, 
+                                  int flags, boolean clearBack )
     {
+        boolean drew = true;
         // boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
         boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
         boolean isCursor = (flags & CELL_ISCURSOR) != 0;
@@ -639,7 +640,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             m_fillPaint.setColor( m_playerColors[m_trayOwner] );
 
             if ( notEmpty ) {
-                positionDrawTile( rect, text, val );
+                drew = positionDrawTile( rect, text, val );
 
                 drawRect( rect, m_tileStrokePaint); // frame
                 if ( 0 != (flags & CELL_HIGHLIGHT) ) {
@@ -649,6 +650,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             }
         }
         restoreToCount(1); // in case new canvas....
+        return drew;
     } // drawTileImpl
 
     private void drawCrosshairs( final Rect rect, final int flags )
@@ -725,9 +727,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         drawBitmap( bitmap, null, rect, m_drawPaint );
     }
 
-    private void positionDrawTile( final Rect rect, String text, int val )
+    private boolean positionDrawTile( final Rect rect, String text, int val )
     {
-        if ( figureFontDims() ) {
+        boolean canDraw = figureFontDims();
+        if ( canDraw ) {
             final int offset = 2;
             if ( null != text ) {
                 if ( null == m_letterRect ) {
@@ -760,6 +763,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 }
             }
         }
+        return canDraw;
     }
 
     private void fillRectOther( Rect rect, int index )
