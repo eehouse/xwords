@@ -6,4 +6,4 @@ obj_linux_rel
 log_*_*.txt
 discon_ok2.sh_logs
 test_backsend.sh_*
-games.db
+*.db
