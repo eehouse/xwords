@@ -152,27 +152,28 @@ public class XwJNI {
     // Only if COMMON_LAYOUT defined
     public static native void board_figureLayout( int gamePtr, CurGameInfo gi, 
                                                   int scorePct, int trayPct,
-                                                  int fontHt, int fontWidth, 
+                                                  int fontWidth, int fontHt, 
                                                   boolean squareTiles, 
                                                   Rect bounds, BoardDims dims );
     // Only if COMMON_LAYOUT defined
     public static native void board_applyLayout( int gamePtr, BoardDims dims );
 
-    public static native void board_setPos( int gamePtr, int left, int top,
-                                            int width, int height, 
-                                            int maxCellHt, boolean lefty );
+    // public static native void board_setPos( int gamePtr, int left, int top,
+                                            // int width, int height, 
+                                            // int maxCellHt, boolean lefty );
+    // public static native void board_setScoreboardLoc( int gamePtr, int left, 
+    //                                                   int top, int width, 
+    //                                                   int height,
+    //                                                   boolean divideHorizontally );
+    // public static native void board_setTrayLoc( int gamePtr, int left, 
+    //                                             int top, int width, 
+    //                                             int height, int minDividerWidth );
+    // public static native void board_setTimerLoc( int gamePtr,
+    //                                              int timerLeft, int timerTop,
+    //                                              int timerWidth, 
+    //                                              int timerHeight );
     public static native boolean board_zoom( int gamePtr, int zoomBy, 
                                              boolean[] canZoom );
-    public static native void board_setScoreboardLoc( int gamePtr, int left, 
-                                                      int top, int width, 
-                                                      int height,
-                                                      boolean divideHorizontally );
-    public static native void board_setTrayLoc( int gamePtr, int left, 
-                                                int top, int width, 
-                                                int height, int minDividerWidth );
-    public static native void board_setTimerLoc( int gamePtr,
-                                                 int timerLeft, int timerTop,
-                                                 int timerWidth, int timerHeight );
     public static native boolean board_getActiveRect( int gamePtr, Rect rect,
                                                       int[] dims );
 

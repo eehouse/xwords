@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import android.content.res.Resources;
+import android.app.Activity;
 import android.graphics.Canvas;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -76,7 +77,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private boolean m_blackArrow;
     private Drawable m_rightArrow;
     private Drawable m_downArrow;
-    private Context m_context;
+    private Activity m_activity;
     private int m_trayOwner = -1;
     private int m_pendingScore;
     private int m_dictPtr = 0;
@@ -118,14 +119,14 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
     private FontDims m_fontDims;
 
-    public BoardCanvas( Context context, Bitmap bitmap, JNIThread jniThread )
+    public BoardCanvas( Activity activity, Bitmap bitmap, JNIThread jniThread )
     {
         super( bitmap );
-        m_context = context;
+        m_activity = activity;
         m_bitmap = bitmap;
         m_jniThread = jniThread;
 
-        m_hasSmallScreen = Utils.hasSmallScreen( context );
+        m_hasSmallScreen = Utils.hasSmallScreen( activity );
 
         m_drawPaint = new Paint();
         m_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
@@ -140,25 +141,31 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
         m_tileStrokePaint.setStrokeWidth( curWidth );
 
-        Resources res = context.getResources();
+        Resources res = activity.getResources();
         m_origin = res.getDrawable( R.drawable.origin );
 
-        m_prefs = CommonPrefs.get( context );
+        m_prefs = CommonPrefs.get( activity );
         m_playerColors = m_prefs.playerColors;
         m_bonusColors = m_prefs.bonusColors;
         m_otherColors = m_prefs.otherColors;
-
-        fillRect( new Rect( 0, 0, bitmap.getWidth(), bitmap.getHeight() ),
-                  WHITE );
 
         m_bonusSummaries = new String[5];
         int[] ids = { R.string.bonus_l2x_summary,
                       R.string.bonus_w2x_summary ,
                       R.string.bonus_l3x_summary,
                       R.string.bonus_w3x_summary };
+        res = activity.getResources();
         for ( int ii = 0; ii < ids.length; ++ii ) {
             m_bonusSummaries[ ii+1 ] = res.getString( ids[ii] );
         }
+
+        m_boundsScratch.set( 0, 0, bitmap.getWidth(), bitmap.getHeight() );
+        fillRect( m_boundsScratch, WHITE );
+    }
+
+    public int getCurPlayer()
+    {
+        return m_trayOwner;
     }
 
     // DrawCtxt interface implementation
@@ -569,7 +576,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         drawCentered( text, rect, null );
 
         rect.offset( 0, rect.height() );
-        drawCentered( m_context.getResources().getString( R.string.pts ), 
+        drawCentered( m_activity.getResources().getString( R.string.pts ), 
                       rect, null );
     }
 
@@ -587,7 +594,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    public void dictChanged( int dictPtr )
+    public void dictChanged( final int dictPtr )
     {
         if ( m_dictPtr != dictPtr ) {
             if ( 0 == dictPtr ) {
@@ -596,7 +603,12 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             } else if ( m_dictPtr == 0 || 
                         !XwJNI.dict_tilesAreSame( m_dictPtr, dictPtr ) ) {
                 m_fontDims = null;
-                m_dictChars = XwJNI.dict_getChars( dictPtr );
+                m_dictChars = null;
+                m_activity.runOnUiThread( new Runnable() {
+                        public void run() {
+                            m_dictChars = XwJNI.dict_getChars( dictPtr );
+                        }
+                    });
             }
             m_dictPtr = dictPtr;
         }
@@ -870,7 +882,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     private Drawable loadAndRecolor( int resID, boolean useDark )
     {
-         Resources res = m_context.getResources();
+         Resources res = m_activity.getResources();
          Drawable arrow = res.getDrawable( resID );
 
          if ( !useDark ) {

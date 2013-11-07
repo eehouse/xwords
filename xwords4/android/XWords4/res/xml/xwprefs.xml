@@ -307,11 +307,6 @@
                         android:summary="Menuitems etc."
                         android:defaultValue="false"
                         />
-    <CheckBoxPreference android:key="@string/key_enable_commlayt"
-                        android:title="Use common layout"
-                        android:summary="(rather than android-specific)"
-                        android:defaultValue="false"
-                        />
 
     <!-- For broken devices like my Blaze 4G that report a download
          directory that doesn't exist, allow users to set it.  Mine:

@@ -51,6 +51,9 @@
 
     <property name="INITIAL_CLIENT_VERS" value="3"/>
     <target name="-pre-clean">
+        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
+            <arg value="${build.target}"/>
+        </exec>
         <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
             <arg value="clean"/>
         </exec>
@@ -62,6 +65,10 @@
       </target>
 
     <target name="-pre-build">
+        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
+            <arg value="${build.target}"/>
+        </exec>
+
         <property name="CHAT_ENABLED" value="true" />
         <property name="THUMBNAIL_ENABLED" value="true" />
         <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true">

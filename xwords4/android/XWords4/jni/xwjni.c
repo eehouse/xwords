@@ -639,7 +639,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jgi, 
-  jint scorePct, jint trayPct, jint fontHt, jint fontWidth,
+  jint scorePct, jint trayPct, jint fontWidth, jint fontHt, 
   jboolean squareTiles, jobject jbounds, jobject jdims )
 {
     LOG_FUNC();
@@ -654,7 +654,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
 
     BoardDims dims;
     board_figureLayout( state->game.board, gi, scorePct, trayPct, 
-                        fontHt, fontWidth, squareTiles, &bounds,
+                        fontWidth, fontHt, squareTiles, &bounds,
                         ((!!jdims) ? &dims : NULL) );
 
     destroyGI( MPPARM(mpool) &gi );
@@ -676,7 +676,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1applyLayout
     board_applyLayout( state->game.board, &dims );
     XWJNI_END();
 }
-#endif
+
+#else
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
@@ -687,20 +688,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
     board_setPos( state->game.board, left, top, width, height, maxCellSize, 
                   lefty );
     XWJNI_END();
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1zoom
-( JNIEnv* env, jclass C, jint gamePtr, jint zoomBy, jbooleanArray jCanZoom )
-{
-    jboolean result;
-    XWJNI_START();
-    XP_Bool canInOut[2];
-    result = board_zoom( state->game.board, zoomBy, canInOut );
-    jboolean canZoom[2] = { canInOut[0], canInOut[1] };
-    setBoolArray( env, jCanZoom, VSIZE(canZoom), canZoom );
-    XWJNI_END();
-    return result;
 }
 
 JNIEXPORT void JNICALL
@@ -736,6 +723,21 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setTrayLoc
     board_setTrayLoc( state->game.board, left, top, width, height, 
                       minDividerWidth );
     XWJNI_END();
+}
+#endif
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1zoom
+( JNIEnv* env, jclass C, jint gamePtr, jint zoomBy, jbooleanArray jCanZoom )
+{
+    jboolean result;
+    XWJNI_START();
+    XP_Bool canInOut[2];
+    result = board_zoom( state->game.board, zoomBy, canInOut );
+    jboolean canZoom[2] = { canInOut[0], canInOut[1] };
+    setBoolArray( env, jCanZoom, VSIZE(canZoom), canZoom );
+    XWJNI_END();
+    return result;
 }
 
 #ifdef XWFEATURE_ACTIVERECT
