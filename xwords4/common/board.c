@@ -1621,8 +1621,10 @@ board_getActiveRect( const BoardCtxt* board, XP_Rect* rect,
     }
 
     if ( !found ) {
-        minCol = maxCol = nCols / 2;
-        minRow = maxRow = nCols / 2;
+        XP_U16 middle = nCols / 2;
+        XP_ASSERT( 0 < middle );
+        minCol = minRow = middle - 1;
+        maxCol = maxRow = middle + 1;
         found = XP_TRUE;
     }
 
