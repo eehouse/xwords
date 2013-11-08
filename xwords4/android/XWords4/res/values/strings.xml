@@ -2161,8 +2161,8 @@
 
     <string name="thumb_enabled">Show thumbnails</string>
     <string name="summary_thumb_enabled">Display snapshots of games</string>
-    <string name="thumb_useactive">thumb_useactive</string>
-    <string name="summary_thumb_useactive">summary_thumb_useactive</string>
+    <string name="thumb_useactive">Active region only</string>
+    <string name="summary_thumb_useactive">Show only area with played tiles</string>
 
     <string name="prefs_thumb">Thumbnails</string>
     <string name="prefs_thumb_summary">Setting for game snapshots</string>
