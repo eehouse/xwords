@@ -2088,7 +2088,7 @@ public class BoardActivity extends XWActivity
                 thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
 
                 Rect bounds = new Rect( 0, 0, size, size );
-                XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, 5, 5, false,
+                XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, 20, 20, false,
                                           bounds, null );
 
                 ThumbCanvas canvas = new ThumbCanvas( this, thumb );
