@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.view.Display;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -2062,7 +2063,12 @@ public class BoardActivity extends XWActivity
             if ( XWPrefs.getThumbEnabled( this ) ) {
                 int scale = XWPrefs.getThumbScale( this );
                 Assert.assertTrue( 0 < scale );
-                final int size = 15 * (9 + scale);
+
+                Display display = getWindowManager().getDefaultDisplay(); 
+                int width = display.getWidth();
+                int height = display.getHeight();
+                int dim = Math.min( width, height ) / scale;
+                int size = dim - (dim % 15);
                 thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
 
                 Rect bounds = new Rect( 0, 0, size, size );

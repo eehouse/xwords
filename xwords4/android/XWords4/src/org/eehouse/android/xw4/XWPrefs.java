@@ -337,14 +337,19 @@ public class XWPrefs {
     {
         String scale = getPrefsString( context, R.string.key_thumbsize );
         int result = -1;
-        if ( context.getString(R.string.game_thumb_third).equals(scale) ) {
-            result = 3;
-        } else if ( context.getString(R.string.game_thumb_quarter).equals(scale) ) {
-            result = 4;
-        } else if ( context.getString(R.string.game_thumb_fifth).equals(scale) ) {
-            result = 5;
-        } else if ( context.getString(R.string.game_thumb_sixth).equals(scale) ) {
-            result = 6;
+        final int[][] data = {
+            { R.string.game_thumb_half, 2 }
+            ,{ R.string.game_thumb_third, 3 }
+            ,{ R.string.game_thumb_quarter, 4 }
+            ,{ R.string.game_thumb_fifth, 5 }
+            ,{ R.string.game_thumb_sixth, 6 }
+        };
+
+        for ( int[] datum : data ) {
+            if ( context.getString(datum[0]).equals(scale) ) {
+                result = datum[1];
+                break;
+            }
         }
         return result;
     }
