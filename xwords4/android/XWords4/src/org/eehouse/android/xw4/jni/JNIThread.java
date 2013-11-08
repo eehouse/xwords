@@ -96,12 +96,11 @@ public class JNIThread extends Thread {
             };
 
     public static final int RUNNING = 1;
-    public static final int DRAW = 2;
-    public static final int DIALOG = 3;
-    public static final int QUERY_ENDGAME = 4;
-    public static final int TOOLBAR_STATES = 5;
-    public static final int GOT_WORDS = 6;
-    public static final int GAME_OVER = 7;
+    public static final int DIALOG = 2;
+    public static final int QUERY_ENDGAME = 3;
+    public static final int TOOLBAR_STATES = 4;
+    public static final int GOT_WORDS = 5;
+    public static final int GAME_OVER = 6;
 
     public class GameStateInfo implements Cloneable {
         public int visTileCount;
@@ -622,10 +621,6 @@ public class JNIThread extends Thread {
                 // where it can be synchronized with that class's use
                 // of the same bitmap for blitting.
                 m_drawer.doJNIDraw();
-
-                // main UI thread has to invalidate view as it created
-                // it.
-                Message.obtain( m_handler, DRAW ).sendToTarget();
 
                 checkButtons();
             }

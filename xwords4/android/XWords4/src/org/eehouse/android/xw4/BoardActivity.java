@@ -1789,9 +1789,6 @@ public class BoardActivity extends XWActivity
                     Handler handler = new Handler() {
                             public void handleMessage( Message msg ) {
                                 switch( msg.what ) {
-                                case JNIThread.DRAW:
-                                    m_view.invalidate();
-                                    break;
                                 case JNIThread.DIALOG:
                                     m_dlgBytes = (String)msg.obj;
                                     m_dlgTitle = msg.arg1;
