@@ -330,7 +330,7 @@ public class XWPrefs {
 
     public static boolean getThumbEnabled( Context context )
     {
-        return !getPrefsBoolean( context, R.string.key_thumb_disabled, false );
+        return getPrefsBoolean( context, R.string.key_thumb_enabled, false );
     }
 
     public static boolean getUseActiveRect( Context context )

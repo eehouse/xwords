@@ -2159,12 +2159,12 @@
     <string name="summary_thumbsize">Thumbnail size</string>
     <string name="sel_dictsf">Wordlists: %d</string>
 
-    <string name="thumb_disabled">Thumb disabled</string>
-    <string name="summary_thumb_disabled">Summary thumb disbled</string>
+    <string name="thumb_enabled">Show thumbnails</string>
+    <string name="summary_thumb_enabled">Display snapshots of games</string>
     <string name="thumb_useactive">thumb_useactive</string>
     <string name="summary_thumb_useactive">summary_thumb_useactive</string>
 
-    <string name="prefs_thumb">Thumbnail prefs</string>
-    <string name="prefs_thumb_summary">prefs_thumb_summary</string>
+    <string name="prefs_thumb">Thumbnails</string>
+    <string name="prefs_thumb_summary">Setting for game snapshots</string>
     
 </resources>

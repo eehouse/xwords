@@ -58,7 +58,7 @@
   <string name="key_enable_sms">key_enable_sms</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_thumbsize">key_thumbsize2</string>
-  <string name="key_thumb_disabled">key_thumb_disabled</string>
+  <string name="key_thumb_enabled">key_thumb_disabled</string>
   <string name="key_thumb_useactive">key_thumb_useactive</string>
 
   <string name="key_summary_field">key_summary_field</string>
