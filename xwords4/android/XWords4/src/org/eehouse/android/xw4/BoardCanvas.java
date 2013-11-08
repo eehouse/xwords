@@ -606,6 +606,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 m_activity.runOnUiThread( new Runnable() {
                         public void run() {
                             m_dictChars = XwJNI.dict_getChars( dictPtr );
+                            // draw again
+                            if ( null != m_jniThread ) {
+                                m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+                            }
                         }
                     });
             }
