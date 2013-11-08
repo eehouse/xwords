@@ -134,7 +134,7 @@
              />
     </PreferenceScreen>
 
-    <org.eehouse.android.xw4.XWListPreference 
+    <org.eehouse.android.xw4.XWSumListPreference 
        android:key="@string/key_summary_field"
        android:title="@string/summary_field"
 	   android:entries="@array/game_summary_values"
