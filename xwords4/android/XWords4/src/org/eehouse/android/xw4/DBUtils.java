@@ -443,7 +443,8 @@ public class DBUtils {
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getWritableDatabase();
                 ContentValues values = new ContentValues();
-                String selection = String.format( ROW_ID_FMT, lock.getRowid() );
+                long rowid = lock.getRowid();
+                String selection = String.format( ROW_ID_FMT, rowid );
 
                 if ( null == thumb ) {
                     DbgUtils.logf( "clearing thumbnail" );
@@ -459,6 +460,8 @@ public class DBUtils {
                 Assert.assertTrue( result >= 0 );
 
                 db.close();
+
+                notifyListeners( rowid, false );
             }
         }
     }

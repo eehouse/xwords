@@ -58,6 +58,9 @@
   <string name="key_enable_sms">key_enable_sms</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_thumbsize">key_thumbsize2</string>
+  <string name="key_thumb_disabled">key_thumb_disabled</string>
+  <string name="key_thumb_useactive">key_thumb_useactive</string>
+
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>
 
@@ -136,7 +139,6 @@
   <string name="gamel_menu_storedb">Write DB to SD card</string>
   <string name="gamel_menu_loaddb">Load DB from SD card</string>
 
-  <string name="game_thumb_off">Off</string>
   <string name="game_thumb_third">1/3</string>
   <string name="game_thumb_quarter">1/4</string>
   <string name="game_thumb_fifth">1/5</string>
@@ -289,7 +291,6 @@
   </string-array>
 
   <string-array name="game_thumb_values">
-    <item>@string/game_thumb_off</item>
     <item>@string/game_thumb_third</item>
     <item>@string/game_thumb_quarter</item>
     <item>@string/game_thumb_fifth</item>

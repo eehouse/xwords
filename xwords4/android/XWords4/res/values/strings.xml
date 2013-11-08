@@ -1853,7 +1853,7 @@
       <!--  -->
     <string name="email_body_revf">(If relevant, please include the
       version: \"%s\"; and make/model of your phone or
-      tablet.)"</string>
+      tablet.)</string>
 
     <string name="newgame_enable_bt">Turn Bluetooth on</string>
 
@@ -2154,8 +2154,17 @@
     now clears any selection instead of exiting. Hit it again to exit
     the app.</string>
 
-    <string name="sel_gamesf">Games: %d"</string>
-    <string name="sel_groupsf">Groups: %d"</string>
+    <string name="sel_gamesf">Games: %d</string>
+    <string name="sel_groupsf">Groups: %d</string>
     <string name="summary_thumbsize">Thumbnail size</string>
-    <string name="sel_dictsf">Wordlists: %d"</string>
+    <string name="sel_dictsf">Wordlists: %d</string>
+
+    <string name="thumb_disabled">Thumb disabled</string>
+    <string name="summary_thumb_disabled">Summayr thumb disbled</string>
+    <string name="thumb_useactive">thumb_useactive</string>
+    <string name="summary_thumb_useactive">summary_thumb_useactive</string>
+
+    <string name="prefs_thumb">Thumbnail prefs</string>
+    <string name="prefs_thumb_summary">prefs_thumb_summary</string>
+    
 </resources>

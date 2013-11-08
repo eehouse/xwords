@@ -328,13 +328,16 @@ public class XWPrefs {
         return posns;
     }
 
+    public static boolean getThumbEnabled( Context context )
+    {
+        return !getPrefsBoolean( context, R.string.key_thumb_disabled, false );
+    }
+
     public static int getThumbScale( Context context )
     {
         String scale = getPrefsString( context, R.string.key_thumbsize );
         int result = -1;
-        if ( context.getString(R.string.game_thumb_off).equals(scale) ) {
-            result = 0;
-        } else if ( context.getString(R.string.game_thumb_third).equals(scale) ) {
+        if ( context.getString(R.string.game_thumb_third).equals(scale) ) {
             result = 3;
         } else if ( context.getString(R.string.game_thumb_quarter).equals(scale) ) {
             result = 4;

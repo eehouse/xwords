@@ -2059,8 +2059,9 @@ public class BoardActivity extends XWActivity
     {
         if ( GitVersion.THUMBNAIL_SUPPORTED ) {
             Bitmap thumb = null;
-            int scale = XWPrefs.getThumbScale( this );
-            if ( 0 < scale ) {
+            if ( XWPrefs.getThumbEnabled( this ) ) {
+                int scale = XWPrefs.getThumbScale( this );
+                Assert.assertTrue( 0 < scale );
                 final int size = 15 * (9 + scale);
                 thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
 

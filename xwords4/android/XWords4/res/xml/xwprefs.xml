@@ -138,13 +138,29 @@
                         android:defaultValue="false"
                         />
 
-    <org.eehouse.android.xw4.XWListPreference 
-        android:key="@string/key_thumbsize"
-        android:title="@string/summary_thumbsize"
-        android:entries="@array/game_thumb_values"
-        android:entryValues="@array/game_thumb_values"
-        android:defaultValue="@string/game_thumb_quarter"
-       />
+    <PreferenceScreen android:title="@string/prefs_thumb"
+                      android:summary="@string/prefs_thumb_summary"
+                      >
+        <CheckBoxPreference android:key="@string/key_thumb_disabled"
+                            android:title="@string/thumb_disabled"
+                            android:summary="@string/summary_thumb_disabled"
+                            android:defaultValue="false"
+                            />
+
+        <CheckBoxPreference android:key="@string/key_thumb_useactive"
+                            android:title="@string/thumb_useactive"
+                            android:summary="@string/summary_thumb_useactive"
+                            android:defaultValue="true"
+                            />
+
+        <org.eehouse.android.xw4.XWListPreference 
+             android:key="@string/key_thumbsize"
+             android:title="@string/summary_thumbsize"
+             android:entries="@array/game_thumb_values"
+             android:entryValues="@array/game_thumb_values"
+             android:defaultValue="@string/game_thumb_quarter"
+             />
+    </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/prefs_colors"
                       android:summary="@string/prefs_colors_summary"
