@@ -755,8 +755,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1getActiveRect
         setInt( env, jrect, "top", rect.top );
         setInt( env, jrect, "right", rect.left + rect.width );
         setInt( env, jrect, "bottom", rect.top + rect.height );
-        setIntInArray( env, dims, 0, nCols );
-        setIntInArray( env, dims, 1, nRows );
+        if ( !!dims ) {
+            setIntInArray( env, dims, 0, nCols );
+            setIntInArray( env, dims, 1, nRows );
+        }
     }
     XWJNI_END();
     return result;
