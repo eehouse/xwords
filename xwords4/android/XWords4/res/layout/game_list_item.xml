@@ -42,9 +42,8 @@
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
                    android:layout_gravity="center_vertical|center_horizontal"
-                   android:paddingRight="2dip"
-                   android:paddingTop="2dip"
-                   android:paddingBottom="2dip"
+                   android:padding="2dip"
+                   android:background="#FF7F7F7F"
                    />
 
         <!-- this layout is vertical, holds everything but the status
