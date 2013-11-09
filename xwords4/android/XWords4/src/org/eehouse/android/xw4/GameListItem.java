@@ -349,7 +349,8 @@ public class GameListItem extends LinearLayout
             if ( 0 == --m_loadingCount ) {
                 m_summary = summary;
 
-                if ( null != m_activity && null == summary.getThumbnail()
+                if ( null != m_activity && null != summary
+                     && null == summary.getThumbnail()
                      && XWPrefs.getThumbEnabled( m_context ) ) {
                     summary.setThumbnail( GameUtils.loadMakeBitmap( m_activity,
                                                                     m_rowid ) );
