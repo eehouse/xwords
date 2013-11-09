@@ -28,7 +28,7 @@ public class ThumbCanvas extends BoardCanvas {
 
     public ThumbCanvas( Activity activity, Bitmap bitmap )
     {
-        super( activity, bitmap, null );
+        super( activity, bitmap, null, null );
         DbgUtils.logf( "creating new ThumbCanvas" );
     }
 

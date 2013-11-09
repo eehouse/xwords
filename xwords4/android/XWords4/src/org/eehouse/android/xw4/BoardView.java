@@ -252,7 +252,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( null == m_canvas ) {
                 DbgUtils.logf( "layoutBoardOnce: allocating canvas for %d, %d",
                                bmWidth, bmHeight );
-                m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread );
+                m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread, m_dims );
             }
             m_jniThread.handle( JNIThread.JNICmd.CMD_SETDRAW, m_canvas );
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );

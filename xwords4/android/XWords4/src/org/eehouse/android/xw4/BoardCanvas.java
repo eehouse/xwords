@@ -61,6 +61,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private String m_remText;
     private int m_mediumFontHt;
     private int m_defaultFontHt;
+    private int m_minRemWidth;
     private Rect m_boundsScratch = new Rect();
     private Rect m_letterRect;
     private Rect m_valRect;
@@ -119,7 +120,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
     private FontDims m_fontDims;
 
-    public BoardCanvas( Activity activity, Bitmap bitmap, JNIThread jniThread )
+    public BoardCanvas( Activity activity, Bitmap bitmap, JNIThread jniThread,
+                        BoardDims dims )
     {
         super( bitmap );
         m_activity = activity;
@@ -131,6 +133,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         float scale = activity.getResources().getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
         m_mediumFontHt = m_defaultFontHt * 3 / 2;
+        if ( null != dims ) {
+            m_minRemWidth = dims.cellSize;
+        }
 
         m_drawPaint = new Paint();
         m_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
@@ -192,8 +197,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                                        m_boundsScratch );
 
             int minWidth = m_boundsScratch.width();
-            if ( minWidth < 20 ) {
-                minWidth = 20; // it's a button; make it bigger
+            if ( minWidth < m_minRemWidth ) {
+                minWidth = m_minRemWidth; // it's a button; make it bigger
             }
             width[0] = minWidth;
             height[0] = m_boundsScratch.height();
