@@ -328,6 +328,8 @@ public class DBUtils {
 
                 values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
 
+                addThumb( summary.getThumbnail(), values );
+
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, selection, null );
                 Assert.assertTrue( result >= 0 );
@@ -446,14 +448,7 @@ public class DBUtils {
                 long rowid = lock.getRowid();
                 String selection = String.format( ROW_ID_FMT, rowid );
 
-                if ( null == thumb ) {
-                    DbgUtils.logf( "clearing thumbnail" );
-                    values.putNull( DBHelper.THUMBNAIL );
-                } else {
-                    ByteArrayOutputStream bas = new ByteArrayOutputStream();
-                    thumb.compress( CompressFormat.PNG, 0, bas );
-                    values.put( DBHelper.THUMBNAIL, bas.toByteArray() );
-                }
+                addThumb( thumb, values );
 
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, selection, null );
@@ -962,6 +957,17 @@ public class DBUtils {
     private static void invalGroupsCache() 
     {
         s_groupsCache = null;
+    }
+
+    private static void addThumb( Bitmap thumb, ContentValues values )
+    {
+        if ( null == thumb ) {
+            values.putNull( DBHelper.THUMBNAIL );
+        } else {
+            ByteArrayOutputStream bas = new ByteArrayOutputStream();
+            thumb.compress( CompressFormat.PNG, 0, bas );
+            values.put( DBHelper.THUMBNAIL, bas.toByteArray() );
+        }
     }
 
     // Return map of string (group name) to info about all games in
