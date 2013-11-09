@@ -240,14 +240,15 @@ public class JNIThread extends Thread {
         BoardDims dims = new BoardDims();
 
         boolean squareTiles = XWPrefs.getSquareTiles( m_context );
-        Rect bounds = new Rect( 0, 0, width, height );
-        XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 150, 200, 
-                                  fontWidth, fontHeight, squareTiles, 
-                                  bounds, dims );
+        int statusWidth = width / 15;
+        int scoreWidth = width - statusWidth;
+        XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, width, height,
+                                  150, 200, scoreWidth, fontWidth, 
+                                  fontHeight, squareTiles, dims );
 
-        int scoreWidth = dims.width - dims.cellSize;
-        ConnStatusHandler.setRect( scoreWidth, 0, scoreWidth + dims.cellSize, 
-                                   dims.scoreHt );
+        ConnStatusHandler.setRect( dims.left + scoreWidth, dims.top, 
+                                   dims.left + scoreWidth + statusWidth, 
+                                   dims.top + dims.scoreHt );
 
         XwJNI.board_applyLayout( m_jniGamePtr, dims );
 

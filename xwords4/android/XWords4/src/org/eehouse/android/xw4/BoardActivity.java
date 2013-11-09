@@ -2084,9 +2084,8 @@ public class BoardActivity extends XWActivity
                 }
                 thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
 
-                Rect bounds = new Rect( 0, 0, size, size );
-                XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, 20, 20, false,
-                                          bounds, null );
+                XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, size, size,
+                                          0, 0, 0, 20, 20, false, null );
 
                 ThumbCanvas canvas = new ThumbCanvas( this, thumb );
                 XwJNI.board_setDraw( m_jniGamePtr, canvas );
@@ -2103,7 +2102,7 @@ public class BoardActivity extends XWActivity
             }
             DBUtils.saveThumbnail( this, m_gameLock, thumb );
         }
-    }
+    } // takeSnapshot
 
     private void warnIfNoTransport()
     {

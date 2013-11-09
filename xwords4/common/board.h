@@ -78,18 +78,18 @@ void board_reset( BoardCtxt* board );
 typedef struct _BoardDims {
     XP_U16 left, top;
     XP_U16 width, height;
-    XP_U16 scoreHt;
+    XP_U16 scoreWidth, scoreHt;
     XP_U16 boardHt;
     XP_U16 trayTop, trayHt;
     XP_U16 cellSize, maxCellSize;
     XP_U16 timerWidth;
 } BoardDims;
 
-void board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
-                         XP_U16 scorePct, XP_U16 trayPct,
-                         XP_U16 fontWidth, XP_U16 fontHt, 
-                         XP_Bool squareTiles, const XP_Rect* bounds, 
-                         /* out */ BoardDims* dims );
+void board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, XP_U16 bLeft,
+                         XP_U16 bTop, XP_U16 bWidth, XP_U16 bHeight,
+                         XP_U16 scorePct, XP_U16 trayPct, XP_U16 scoreWidth,
+                         XP_U16 fontWidth, XP_U16 fontHt, XP_Bool squareTiles, 
+                         /* out */ BoardDims* dimsp );
 void board_applyLayout( BoardCtxt* board, const BoardDims* dims );
 
 #endif

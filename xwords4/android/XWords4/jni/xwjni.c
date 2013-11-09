@@ -165,6 +165,7 @@ static const SetInfo bd_ints[] = {
     ,ARR_MEMBER( BoardDims, width )
     ,ARR_MEMBER( BoardDims, height )
     ,ARR_MEMBER( BoardDims, scoreHt )
+    ,ARR_MEMBER( BoardDims, scoreWidth )
     ,ARR_MEMBER( BoardDims, boardHt )
     ,ARR_MEMBER( BoardDims, trayTop )
     ,ARR_MEMBER( BoardDims, trayHt )
@@ -182,9 +183,7 @@ dimsJToC( JNIEnv* env, BoardDims* out, jobject jdims )
 static void
 dimsCtoJ( JNIEnv* env, jobject jdims, const BoardDims* in )
 {
-    LOG_FUNC();
     setInts( env, jdims, (void*)in, bd_ints, VSIZE(bd_ints) );
-    LOG_RETURN_VOID();
 }
 #endif
 
@@ -638,23 +637,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
 #ifdef COMMON_LAYOUT
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
-( JNIEnv* env, jclass C, jint gamePtr, jobject jgi, 
-  jint scorePct, jint trayPct, jint fontWidth, jint fontHt, 
-  jboolean squareTiles, jobject jbounds, jobject jdims )
+( JNIEnv* env, jclass C, jint gamePtr, jobject jgi, jint left, jint top, 
+  jint width, jint height, jint scorePct, jint trayPct, jint scoreWidth,
+  jint fontWidth, jint fontHt, jboolean squareTiles, jobject jdims )
 {
     LOG_FUNC();
     XWJNI_START();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
 
-    XP_Rect bounds;
-    bounds.left = getInt( env, jbounds, "left" );
-    bounds.top = getInt( env, jbounds, "top" );
-    bounds.width = getInt( env, jbounds, "right" ) - bounds.left;
-    bounds.height = getInt( env, jbounds, "bottom" ) - bounds.top;
-
     BoardDims dims;
-    board_figureLayout( state->game.board, gi, scorePct, trayPct, 
-                        fontWidth, fontHt, squareTiles, &bounds,
+    board_figureLayout( state->game.board, gi, left, top, width, height, 
+                        scorePct, trayPct, scoreWidth,
+                        fontWidth, fontHt, squareTiles,
                         ((!!jdims) ? &dims : NULL) );
 
     destroyGI( MPPARM(mpool) &gi );

@@ -613,18 +613,16 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
 #ifdef COMMON_LAYOUT
     XP_ASSERT( !cGlobals->params->verticalScore ); /* not supported */
 
-    XP_Rect rect = { .left = GTK_BOARD_LEFT, .top = GTK_HOR_SCORE_TOP,
-		     .width = bdWidth, .height = bdHeight 
-    };
     BoardDims dims;
     board_figureLayout( board, cGlobals->gi, 
+                        GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP, bdWidth, bdHeight,
 #if 1
                         150, 200, 
 #else
                         0, 0,
 #endif
-                        16, 16, 
-                        XP_FALSE, &rect, &dims );
+                        bdWidth-100, 16, 16, 
+                        XP_FALSE, &dims );
     board_applyLayout( board, &dims );
 
 #else
