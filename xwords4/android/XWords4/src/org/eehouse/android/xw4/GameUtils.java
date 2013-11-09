@@ -298,7 +298,6 @@ public class GameUtils {
 
     public static Bitmap loadMakeBitmap( Activity activity, long rowid )
     {
-        DbgUtils.logf( "loadMakeBitmap(): taking snapshot..." );
         Bitmap thumb = null;
         GameLock lock = new GameLock( rowid, false );
         if ( lock.tryLock() ) {
@@ -307,11 +306,11 @@ public class GameUtils {
             if ( 0 != gamePtr ) {
                 thumb = takeSnapshot( activity, gamePtr, gi );
                 XwJNI.game_dispose( gamePtr );
+                DBUtils.saveThumbnail( activity, lock, thumb );
             }
 
             lock.unlock();
         }
-        DbgUtils.logf( "loadMakeBitmap(): done with snapshot" );
         return thumb;
     }
 
