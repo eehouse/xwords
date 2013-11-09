@@ -466,6 +466,23 @@ public class DBUtils {
         }
     }
 
+    public static void clearThumbnails( Context context )
+    {
+        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+                ContentValues values = new ContentValues();
+                values.putNull( DBHelper.THUMBNAIL );
+                long result = db.update( DBHelper.TABLE_NAME_SUM,
+                                         values, null, null );
+                db.close();
+
+                notifyListeners( -1, true );
+            }
+        }
+    }
+
     public static String getRelayID( Context context, long rowid )
     {
         String result = null;
