@@ -42,6 +42,10 @@ public class PrefsActivity extends PreferenceActivity
     private String m_smsToasting;
     private String m_smsEnable;
     private String m_downloadPath;
+    private String m_thumbEnabled;
+    private String m_thumbUseActive;
+    private String m_thumbSize;
+
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -123,6 +127,9 @@ public class PrefsActivity extends PreferenceActivity
         m_smsToasting = getString( R.string.key_show_sms );
         m_smsEnable = getString( R.string.key_enable_sms );
         m_downloadPath = getString( R.string.key_download_path );
+        m_thumbEnabled = getString( R.string.key_thumb_enabled );
+        m_thumbUseActive = getString( R.string.key_thumb_useactive );
+        m_thumbSize = getString( R.string.key_thumbsize );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -185,6 +192,10 @@ public class PrefsActivity extends PreferenceActivity
                 }
             }
             DictUtils.invalDictList();
+        } else if ( key.equals( m_thumbEnabled )
+                    || key.equals( m_thumbUseActive )
+                    || key.equals( m_thumbSize ) ) {
+            DBUtils.clearThumbnails( this );
         }
     }
 
