@@ -39,7 +39,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -2042,7 +2041,8 @@ public class BoardActivity extends XWActivity
 
             // Before we dispose, and after JNIThread has relinquished
             // interest, redraw on smaller scale.
-            takeSnapshot();
+            Bitmap thumb = GameUtils.takeSnapshot( this, m_jniGamePtr, m_gi );
+            DBUtils.saveThumbnail( this, m_gameLock, thumb );
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
@@ -2052,57 +2052,6 @@ public class BoardActivity extends XWActivity
             m_gameLock = null;
         }
     }
-
-    private void takeSnapshot()
-    {
-        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
-            Bitmap thumb = null;
-            if ( XWPrefs.getThumbEnabled( this ) ) {
-                int nCols = m_gi.boardSize;
-                int scale = XWPrefs.getThumbScale( this );
-                Assert.assertTrue( 0 < scale );
-
-                Display display = getWindowManager().getDefaultDisplay(); 
-                int width = display.getWidth();
-                int height = display.getHeight();
-                int dim = Math.min( width, height ) / scale;
-                int size = dim - (dim % nCols);
-
-                // If user wants active rect, we try to make it as
-                // large as possible while still not exceeding the
-                // scale.  Since we're only using a fraction of the
-                // board, the board we draw before clipping may be
-                // huge.
-                int[] dims = new int[2];
-                Rect activeRect = 
-                    XWPrefs.getUseActiveRect( this ) ? new Rect() : null;
-                if ( null != activeRect ) {
-                    dims = new int[2];
-                    XwJNI.board_getActiveRect( m_jniGamePtr, activeRect, dims );
-                    int numCells = Math.max( dims[0], dims[1] );
-                    size = size * nCols / numCells;
-                }
-                thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
-
-                XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, size, size,
-                                          0, 0, 0, 20, 20, false, null );
-
-                ThumbCanvas canvas = new ThumbCanvas( this, thumb );
-                XwJNI.board_setDraw( m_jniGamePtr, canvas );
-                XwJNI.board_invalAll( m_jniGamePtr );
-                XwJNI.board_draw( m_jniGamePtr );
-
-                if ( null != activeRect ) {
-                    XwJNI.board_getActiveRect( m_jniGamePtr, activeRect, null );
-                    thumb = Bitmap.createBitmap( thumb, activeRect.left, 
-                                                 activeRect.top, 
-                                                 activeRect.width(), 
-                                                 activeRect.height() );
-                }
-            }
-            DBUtils.saveThumbnail( this, m_gameLock, thumb );
-        }
-    } // takeSnapshot
 
     private void warnIfNoTransport()
     {

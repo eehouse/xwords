@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -48,6 +49,7 @@ public class GameListItem extends LinearLayout
 
     private static HashSet<Long> s_invalRows = new HashSet<Long>();
 
+    private Activity m_activity;
     private Context m_context;
     private boolean m_loaded;
     private long m_rowid;
@@ -70,6 +72,9 @@ public class GameListItem extends LinearLayout
     {
         super( cx, as );
         m_context = cx;
+        if ( cx instanceof Activity ) {
+            m_activity = (Activity)cx;
+        }
         m_loaded = false;
         m_rowid = DBUtils.ROWID_NOTFOUND;
         m_lastMoveTime = 0;
@@ -343,6 +348,13 @@ public class GameListItem extends LinearLayout
         {
             if ( 0 == --m_loadingCount ) {
                 m_summary = summary;
+
+                if ( null != m_activity && null == summary.getThumbnail()
+                     && XWPrefs.getThumbEnabled( m_context ) ) {
+                    summary.setThumbnail( GameUtils.loadMakeBitmap( m_activity,
+                                                                    m_rowid ) );
+                }
+
                 setData( summary );
                 setLoaded( null != m_summary );
                 synchronized( s_invalRows ) {

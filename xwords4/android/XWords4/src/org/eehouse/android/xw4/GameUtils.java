@@ -23,9 +23,12 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
+import android.view.Display;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
@@ -47,6 +50,7 @@ public class GameUtils {
     public static final String INTENT_FORRESULT_ROWID = "forresult";
 
     private static final long GROUPID_UNSPEC = -1;
+    private static Integer s_minScreen;
 
     public static class NoSuchGameException extends RuntimeException {
         public NoSuchGameException() {
@@ -290,6 +294,81 @@ public class GameUtils {
             }
         }
         return gamePtr;
+    }
+
+    public static Bitmap loadMakeBitmap( Activity activity, long rowid )
+    {
+        DbgUtils.logf( "loadMakeBitmap(): taking snapshot..." );
+        Bitmap thumb = null;
+        GameLock lock = new GameLock( rowid, false );
+        if ( lock.tryLock() ) {
+            CurGameInfo gi = new CurGameInfo( activity );
+            int gamePtr = loadMakeGame( activity, gi, lock );
+            if ( 0 != gamePtr ) {
+                thumb = takeSnapshot( activity, gamePtr, gi );
+                XwJNI.game_dispose( gamePtr );
+            }
+
+            lock.unlock();
+        }
+        DbgUtils.logf( "loadMakeBitmap(): done with snapshot" );
+        return thumb;
+    }
+
+    public static Bitmap takeSnapshot( Activity activity, int gamePtr, 
+                                       CurGameInfo gi )
+    {
+        Bitmap thumb = null;
+        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+            if ( XWPrefs.getThumbEnabled( activity ) ) {
+                int nCols = gi.boardSize;
+                int scale = XWPrefs.getThumbScale( activity );
+                Assert.assertTrue( 0 < scale );
+
+                if ( null == s_minScreen ) {
+                    Display display = 
+                        activity.getWindowManager().getDefaultDisplay(); 
+                    int width = display.getWidth();
+                    int height = display.getHeight();
+                    s_minScreen = new Integer( Math.min( width, height ) );
+                }
+                int dim = s_minScreen / scale;
+                int size = dim - (dim % nCols);
+
+                // If user wants active rect, we try to make it as
+                // large as possible while still not exceeding the
+                // scale.  Since we're only using a fraction of the
+                // board, the board we draw before clipping may be
+                // huge.
+                int[] dims = new int[2];
+                Rect activeRect = 
+                    XWPrefs.getUseActiveRect( activity ) ? new Rect() : null;
+                if ( null != activeRect ) {
+                    dims = new int[2];
+                    XwJNI.board_getActiveRect( gamePtr, activeRect, dims );
+                    int numCells = Math.max( dims[0], dims[1] );
+                    size = size * nCols / numCells;
+                }
+                thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
+
+                XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
+                                          0, 0, 0, 20, 20, false, null );
+
+                ThumbCanvas canvas = new ThumbCanvas( activity, thumb );
+                XwJNI.board_setDraw( gamePtr, canvas );
+                XwJNI.board_invalAll( gamePtr );
+                XwJNI.board_draw( gamePtr );
+
+                if ( null != activeRect ) {
+                    XwJNI.board_getActiveRect( gamePtr, activeRect, null );
+                    thumb = Bitmap.createBitmap( thumb, activeRect.left, 
+                                                 activeRect.top, 
+                                                 activeRect.width(), 
+                                                 activeRect.height() );
+                }
+            }
+        }
+        return thumb;
     }
 
     public static long saveGame( Context context, int gamePtr, 
