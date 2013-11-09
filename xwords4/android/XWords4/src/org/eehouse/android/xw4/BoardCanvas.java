@@ -28,7 +28,6 @@ import android.graphics.Rect;
 import android.os.Handler;
 import android.graphics.RectF;
 import android.graphics.Paint;
-import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.BitmapDrawable;
 
@@ -49,7 +48,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private static final int NOT_TURN_ALPHA = 0x3FFFFFFF;
     private static final int IN_TRADE_ALPHA = 0x3FFFFFFF;
     private static final boolean FRAME_TRAY_RECTS = false; // for debugging
+    private static final float MIN_FONT_DIPS = 14.0f;
 
+    private Activity m_activity;
     private Bitmap m_bitmap;
     private JNIThread m_jniThread;
     private Paint m_fillPaint;
@@ -59,6 +60,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private String[][] m_scores;
     private String m_remText;
     private int m_mediumFontHt;
+    private int m_defaultFontHt;
     private Rect m_boundsScratch = new Rect();
     private Rect m_letterRect;
     private Rect m_valRect;
@@ -67,7 +69,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private int[] m_playerColors;
     private int[] m_otherColors;
     private String[] m_bonusSummaries;
-    private int m_defaultFontHt;
     private CommonPrefs m_prefs;
     private int m_lastSecsLeft;
     private int m_lastTimerPlayer;
@@ -77,7 +78,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private boolean m_blackArrow;
     private Drawable m_rightArrow;
     private Drawable m_downArrow;
-    private Activity m_activity;
     private int m_trayOwner = -1;
     private int m_pendingScore;
     private int m_dictPtr = 0;
@@ -128,6 +128,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
         m_hasSmallScreen = Utils.hasSmallScreen( activity );
 
+        float scale = activity.getResources().getDisplayMetrics().density;
+        m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
+        m_mediumFontHt = m_defaultFontHt * 3 / 2;
+
         m_drawPaint = new Paint();
         m_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
         m_strokePaint = new Paint();
@@ -149,11 +153,11 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         m_bonusColors = m_prefs.bonusColors;
         m_otherColors = m_prefs.otherColors;
 
-        m_bonusSummaries = new String[5];
         int[] ids = { R.string.bonus_l2x_summary,
                       R.string.bonus_w2x_summary ,
                       R.string.bonus_l3x_summary,
                       R.string.bonus_w3x_summary };
+        m_bonusSummaries = new String[1 + ids.length];
         for ( int ii = 0; ii < ids.length; ++ii ) {
             m_bonusSummaries[ ii+1 ] = res.getString( ids[ii] );
         }
@@ -284,95 +288,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             drawRect( rInner, m_strokePaint );
         }
     }
-
-    // public boolean drawRemText( int nTilesLeft, boolean focussed, Rect rect )
-    // {
-    //     boolean willDraw = 0 <= nTilesLeft;
-    //     if ( willDraw ) {
-    //         String remText = null;
-    //         // should cache a formatter
-    //         remText = String.format( "%d", nTilesLeft );
-    //         m_fillPaint.setTextSize( m_mediumFontHt );
-    //         m_fillPaint.getTextBounds( remText, 0, remText.length(), 
-    //                                    m_boundsScratch );
-
-    //         int width = m_boundsScratch.width();
-    //         if ( width < 20 ) {
-    //             width = 20; // it's a button; make it bigger
-    //         }
-    //         rect.right = rect.left + width;
-
-    //         Rect drawRect = new Rect( rect );
-    //         int height = m_boundsScratch.height();
-    //         if ( height < drawRect.height() ) {
-    //             drawRect.inset( 0, (drawRect.height() - height) / 2 );
-    //         }
-
-    //         int indx = focussed ? CommonPrefs.COLOR_FOCUS
-    //             : CommonPrefs.COLOR_TILE_BACK;
-    //         fillRectOther( rect, indx );
-
-    //         m_fillPaint.setColor( adjustColor(BLACK) );
-    //         drawCentered( remText, drawRect, null );
-    //     }
-    //     return willDraw;
-    // }
-
-    // public void score_drawPlayers( Rect scoreRect, DrawScoreInfo[] playerData, 
-    //                                Rect[] playerRects )
-    // {
-    //     Rect tmp = new Rect();
-    //     int nPlayers = playerRects.length;
-    //     int width = scoreRect.width() / (nPlayers + 1);
-    //     int left = scoreRect.left;
-    //     int right;
-    //     StringBuffer sb = new StringBuffer();
-    //     String[] scoreStrings = new String[2];
-    //     for ( int ii = 0; ii < nPlayers; ++ii ) {
-    //         DrawScoreInfo dsi = playerData[ii];
-    //         boolean isTurn = dsi.isTurn;
-    //         int indx = 0;
-    //         sb.delete( 0, sb.length() );
-
-    //         if ( isTurn ) {
-    //             sb.append( dsi.name );
-    //             sb.append( ":" );
-    //         } else {
-    //             scoreStrings[indx++] = dsi.name;
-    //         }
-    //         sb.append( dsi.totalScore );
-    //         if ( dsi.nTilesLeft >= 0 ) {
-    //             sb.append( ":" );
-    //             sb.append( dsi.nTilesLeft );
-    //         }
-    //         scoreStrings[indx] = sb.toString();
-
-    //         int color = m_playerColors[dsi.playerNum];
-    //         if ( !m_prefs.allowPeek ) {
-    //             color = adjustColor( color );
-    //         }
-    //         m_fillPaint.setColor( color );
-
-    //         right = left + (width * (isTurn? 2 : 1) );
-    //         playerRects[ii].set( left, scoreRect.top, right, scoreRect.bottom );
-    //         left = right;
-
-    //         tmp.set( playerRects[ii] );
-    //         tmp.inset( 2, 2 );
-    //         int height = tmp.height() / (isTurn? 1 : 2);
-    //         tmp.bottom = tmp.top + height;
-    //         for ( String str : scoreStrings ) {
-    //             drawCentered( str, tmp, null );
-    //             if ( isTurn ) {
-    //                 break;
-    //             }
-    //             tmp.offset( 0, height );
-    //         }
-    //         if ( DEBUG_DRAWFRAMES ) {
-    //             m_canvas.drawRect( playerRects[ii], m_strokePaint );
-    //         }
-    //     }
-    // }
 
     public void drawTimer( Rect rect, int player, int secondsLeft )
     {
