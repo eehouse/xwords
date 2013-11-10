@@ -321,7 +321,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         if ( null != m_canvas ) {
             m_canvas.setInTrade( inTrade );
         }
-        m_jniThread.handle( JNIThread.JNICmd.CMD_INVALALL );
     }
 
     public int getCurPlayer()

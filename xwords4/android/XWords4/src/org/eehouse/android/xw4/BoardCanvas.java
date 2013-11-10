@@ -178,7 +178,10 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     public void setInTrade( boolean inTrade ) 
     {
-        m_inTrade = inTrade;
+        if ( m_inTrade != inTrade ) {
+            m_inTrade = inTrade;
+            m_jniThread.handle( JNIThread.JNICmd.CMD_INVALALL );
+        }
     }
 
     // DrawCtxt interface implementation

@@ -767,7 +767,7 @@ public class BoardActivity extends XWActivity
             item.setTitle( R.string.board_menu_game_final );
         }
 
-        if ( DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
+        if ( null != m_gi && DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
             Utils.setItemVisible( menu, R.id.board_menu_game_resend, false );
             Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, false );
         }
@@ -1803,8 +1803,8 @@ public class BoardActivity extends XWActivity
                                         updateToolbar();
                                         if ( m_inTrade != m_gsi.inTrade ) {
                                             m_inTrade = m_gsi.inTrade;
-                                            m_view.setInTrade( m_inTrade );
                                         }
+                                        m_view.setInTrade( m_inTrade );
                                         adjustTradeVisibility();
                                         Activity self = BoardActivity.this;
                                         Utils.invalidateOptionsMenuIf( self );
