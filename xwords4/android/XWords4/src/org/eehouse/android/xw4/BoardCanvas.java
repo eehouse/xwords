@@ -141,14 +141,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         m_fillPaint = new Paint( Paint.ANTI_ALIAS_FLAG );
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
-        m_tileStrokePaint = new Paint();
-        m_tileStrokePaint.setStyle( Paint.Style.STROKE );
-        float curWidth = m_tileStrokePaint.getStrokeWidth();
-        curWidth *= 2;
-        if ( curWidth < 2 ) {
-            curWidth = 2;
-        }
-        m_tileStrokePaint.setStrokeWidth( curWidth );
 
         Resources res = activity.getResources();
         m_origin = res.getDrawable( R.drawable.origin );
@@ -574,10 +566,12 @@ public class BoardCanvas extends Canvas implements DrawCtx {
             if ( notEmpty ) {
                 drew = positionDrawTile( rect, text, val );
 
-                drawRect( rect, m_tileStrokePaint); // frame
+                Paint paint = getTileStrokePaint( rect );
+                drawRect( rect, paint ); // frame
                 if ( 0 != (flags & CELL_HIGHLIGHT) ) {
-                    rect.inset( 2, 2 );
-                    drawRect( rect, m_tileStrokePaint ); // frame
+                    int width = (int)paint.getStrokeWidth();
+                    rect.inset( width, width );
+                    drawRect( rect, paint ); // frame
                 }
             }
         }
@@ -845,6 +839,17 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
         boolean result = sum > (127*3);
         return result;
+    }
+
+    private Paint getTileStrokePaint( final Rect rect )
+    {
+        if ( null == m_tileStrokePaint ) {
+            Paint paint = new Paint();
+            paint.setStyle( Paint.Style.STROKE );
+            paint.setStrokeWidth( Math.max( 2, rect.width() / 20 ) );
+            m_tileStrokePaint = paint;
+        }
+        return m_tileStrokePaint;
     }
 
 }
