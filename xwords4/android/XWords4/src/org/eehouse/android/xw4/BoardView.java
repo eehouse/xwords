@@ -311,7 +311,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         m_parent.runOnUiThread( new Runnable() {
                 public void run()
                 {
-                    invalidate();
+                    requestLayout();
                 }
             });
     }
