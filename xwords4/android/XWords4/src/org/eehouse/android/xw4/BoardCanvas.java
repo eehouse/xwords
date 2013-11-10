@@ -176,6 +176,11 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return m_trayOwner;
     }
 
+    public void setInTrade( boolean inTrade ) 
+    {
+        m_inTrade = inTrade;
+    }
+
     // DrawCtxt interface implementation
     public boolean scoreBegin( Rect rect, int numPlayers, int[] scores, 
                                int remCount )

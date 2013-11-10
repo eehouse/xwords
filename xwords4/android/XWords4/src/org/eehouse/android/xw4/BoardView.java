@@ -57,7 +57,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private int m_layoutWidth;
     private int m_layoutHeight;
     private BoardCanvas m_canvas;    // owns the bitmap
-    private boolean m_inTrade = false;
     private JNIThread m_jniThread;
     private XWActivity m_parent;
     private Rect m_boundsScratch;
@@ -319,7 +318,9 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     public void setInTrade( boolean inTrade ) 
     {
-        m_inTrade = inTrade;
+        if ( null != m_canvas ) {
+            m_canvas.setInTrade( inTrade );
+        }
         m_jniThread.handle( JNIThread.JNICmd.CMD_INVALALL );
     }
 
