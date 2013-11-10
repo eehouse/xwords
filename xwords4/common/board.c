@@ -1116,7 +1116,10 @@ timerFiredForPen( BoardCtxt* board )
 #endif
 
     if ( board->penDownObject == OBJ_BOARD ) {
-        if ( !dragDropInProgress( board ) || !dragDropHasMoved( board ) ) {
+        if ( board_inTrade( board, NULL ) ) {
+            /* do nothing */
+        } else if ( !dragDropInProgress( board ) 
+                    || !dragDropHasMoved( board ) ) {
             XP_U16 col, row;
             coordToCell( board, board->penDownX, board->penDownY, &col, &row );
 
