@@ -291,18 +291,17 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         DbgUtils.logf( "doJNIDraw() called" );
         boolean drew;
         synchronized( this ) {
-            drew = XwJNI.board_draw( m_jniGamePtr );
+            if ( !XwJNI.board_draw( m_jniGamePtr ) ) {
+                DbgUtils.logf( "doJNIDraw: draw not complete" );
+            }
         }
-        if ( drew ) {
-            // Force update now that we have bits to copy
-            // m_parent.runOnUiThread( new Runnable() {
-            //         public void run() {
-            //             invalidate();
-            //         }
-            //     });
-        } else {
-            DbgUtils.logf( "doJNIDraw: draw not complete" );
-        }
+
+        // Force update now that we have bits to copy
+        m_parent.runOnUiThread( new Runnable() {
+                public void run() {
+                    invalidate();
+                }
+            });
     }
 
     public void dimsChanged( BoardDims dims )
