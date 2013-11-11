@@ -601,7 +601,6 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setDraw
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jdraw )
 {
-    LOG_FUNC();
     XWJNI_START_GLOBALS();
 
     DrawCtx* newDraw = makeDraw( MPPARM(mpool) &state->env, jdraw );
@@ -611,7 +610,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setDraw
     globals->dctx = newDraw;
 
     XWJNI_END();
-    LOG_RETURN_VOID();
 }
 
 JNIEXPORT void JNICALL
