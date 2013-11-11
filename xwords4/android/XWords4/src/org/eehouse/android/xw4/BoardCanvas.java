@@ -163,6 +163,14 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         fillRect( m_boundsScratch, WHITE );
     }
 
+    public void setJNIThread( JNIThread jniThread )
+    {
+        if ( ! jniThread.equals( m_jniThread ) ) {
+            DbgUtils.logf( "BoardCanvas changing threads" );
+            m_jniThread = jniThread;
+        }
+    }
+
     public int getCurPlayer()
     {
         return m_trayOwner;
@@ -528,7 +536,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                             m_dictChars = XwJNI.dict_getChars( dictPtr );
                             // draw again
                             if ( null != m_jniThread ) {
-                                m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+                                m_jniThread.handle( JNIThread.JNICmd
+                                                    .CMD_INVALALL );
                             }
                         }
                     });

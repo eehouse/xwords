@@ -251,7 +251,10 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( null == m_canvas ) {
                 DbgUtils.logf( "layoutBoardOnce: allocating canvas for %d, %d",
                                bmWidth, bmHeight );
-                m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread, m_dims );
+                m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread, 
+                                            m_dims );
+            } else {
+                m_canvas.setJNIThread( m_jniThread );
             }
             m_jniThread.handle( JNIThread.JNICmd.CMD_SETDRAW, m_canvas );
             m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
@@ -270,7 +273,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                                int gamePtr, CurGameInfo gi, 
                                CommsAddrRec.CommsConnType connType ) 
     {
-        DbgUtils.logf( "startHandling()" );
         m_parent = parent;
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
@@ -278,6 +280,11 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         m_connType = connType;
         m_layoutWidth = 0;
         m_layoutHeight = 0;
+
+        // Set the jni layout if we already have one
+        if ( null != m_dims ) {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, m_dims );
+        }
 
         // Make sure we draw.  Sometimes when we're reloading after
         // an obsuring Activity goes away we otherwise won't.

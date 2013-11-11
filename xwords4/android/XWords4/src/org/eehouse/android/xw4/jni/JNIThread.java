@@ -361,8 +361,15 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_LAYOUT:
-                doLayout( (Integer)args[0], (Integer)args[1], (Integer)args[2],
-                          (Integer)args[3] );
+                Object args0 = args[0];
+                BoardDims dims = null;
+                if ( args0 instanceof BoardDims ) {
+                    dims = (BoardDims)args0;
+                    XwJNI.board_applyLayout( m_jniGamePtr, dims );
+                } else {
+                    doLayout( (Integer)args0, (Integer)args[1], 
+                              (Integer)args[2], (Integer)args[3] );
+                }
                 draw = true;
                 // check and disable zoom button at limit
                 handle( JNICmd.CMD_ZOOM, 0 );
@@ -644,6 +651,11 @@ public class JNIThread extends Thread {
     {
         QueueElem elem = new QueueElem( cmd, true, args );
         m_queue.add( elem );
+        if ( m_stopped ) {
+            DbgUtils.logf( "WARNING: adding %s to stopped thread!!!", 
+                           cmd.toString() );
+            DbgUtils.printStack();
+        }
     }
 
     // public void run( boolean isUI, Runnable runnable )
