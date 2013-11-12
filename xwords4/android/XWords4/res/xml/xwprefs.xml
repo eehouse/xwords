@@ -325,6 +325,12 @@
                         android:defaultValue="false"
                         />
 
+    <CheckBoxPreference android:key="@string/key_enable_dup_invite"
+                        android:title="@string/enable_dupes_title"
+                        android:summary="@string/enable_dupes_summary"
+                        android:defaultValue="false"
+                        />
+
     <!-- For broken devices like my Blaze 4G that report a download
          directory that doesn't exist, allow users to set it.  Mine:
          /sdcard/external_sd/download     

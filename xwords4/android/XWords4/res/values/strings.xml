@@ -2166,5 +2166,5 @@
 
     <string name="prefs_thumb">Thumbnails</string>
     <string name="prefs_thumb_summary">Setting for game snapshots</string>
-    
+    <string name="dropped_dupe">Invitation ignored: already used</string>
 </resources>

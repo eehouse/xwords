@@ -107,6 +107,7 @@
   <string name="key_na_browseall">key_na_browseall</string>
   <string name="key_na_values">key_na_values</string>
   <string name="key_enable_debug">key_enable_debug</string>
+  <string name="key_enable_dup_invite">key_enable_dup_invite</string>
   <string name="key_download_path">key_download_path</string>
 
   <!-- Nor is my email address -->
@@ -138,6 +139,9 @@
   <string name="name_dict_fmt">%1$s/%2$s</string>
   <string name="gamel_menu_storedb">Write DB to SD card</string>
   <string name="gamel_menu_loaddb">Load DB from SD card</string>
+  <string name="enable_dupes_title">Accept duplicate invites</string>
+  <string name="enable_dupes_summary">Accept invitations more than once</string>
+
 
   <string name="game_thumb_half">1/2</string>
   <string name="game_thumb_third">1/3</string>

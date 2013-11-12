@@ -39,6 +39,11 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_debug, false );
     }
 
+    public static boolean getSecondInviteAllowed( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_dup_invite, false );
+    }
+
     public static String getDefaultRelayHost( Context context )
     {
         return getPrefsString( context, R.string.key_relay_host );

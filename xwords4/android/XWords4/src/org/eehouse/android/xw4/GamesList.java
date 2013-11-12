@@ -1063,11 +1063,13 @@ public class GamesList extends XWExpandableListActivity
             if ( checkWarnNoDict( nli ) ) {
                 makeNewNetGame( nli );
             }
-        } else {
+        } else if ( XWPrefs.getSecondInviteAllowed( this ) ) {
             String msg = getString( R.string.dup_game_queryf, 
                                     create.toString() );
             m_netLaunchInfo = nli;
             showConfirmThen( msg, GamesActions.NEW_NET_GAME.ordinal() );
+        } else {
+            Utils.showToast( this, R.string.dropped_dupe );
         }
     } // startNewNetGame
 
