@@ -549,43 +549,45 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private boolean drawTileImpl( Rect rect, String text, int val, 
                                   int flags, boolean clearBack )
     {
-        boolean drew = true;
-        // boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
-        boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
-        boolean isCursor = (flags & CELL_ISCURSOR) != 0;
+        boolean canDraw = figureFontDims();
+        if ( canDraw ) {
+            // boolean valHidden = (flags & CELL_VALHIDDEN) != 0;
+            boolean notEmpty = (flags & CELL_ISEMPTY) == 0;
+            boolean isCursor = (flags & CELL_ISCURSOR) != 0;
 
-        save( Canvas.CLIP_SAVE_FLAG );
-        rect.top += 1;
-        clipRect( rect );
+            save( Canvas.CLIP_SAVE_FLAG );
+            rect.top += 1;
+            clipRect( rect );
 
-        if ( clearBack ) {
-            fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
-        }
-
-        if ( isCursor || notEmpty ) {
-            int color = m_otherColors[isCursor? CommonPrefs.COLOR_FOCUS 
-                                      : CommonPrefs.COLOR_TILE_BACK];
-            if ( !clearBack ) {
-                color &= 0x7FFFFFFF; // translucent if being dragged.
+            if ( clearBack ) {
+                fillRectOther( rect, CommonPrefs.COLOR_BACKGRND );
             }
-            fillRect( rect, color );
 
-            m_fillPaint.setColor( m_playerColors[m_trayOwner] );
+            if ( isCursor || notEmpty ) {
+                int color = m_otherColors[isCursor? CommonPrefs.COLOR_FOCUS 
+                                          : CommonPrefs.COLOR_TILE_BACK];
+                if ( !clearBack ) {
+                    color &= 0x7FFFFFFF; // translucent if being dragged.
+                }
+                fillRect( rect, color );
 
-            if ( notEmpty ) {
-                drew = positionDrawTile( rect, text, val );
+                m_fillPaint.setColor( m_playerColors[m_trayOwner] );
 
-                Paint paint = getTileStrokePaint( rect );
-                drawRect( rect, paint ); // frame
-                if ( 0 != (flags & CELL_HIGHLIGHT) ) {
-                    int width = (int)paint.getStrokeWidth();
-                    rect.inset( width, width );
+                if ( notEmpty ) {
+                    positionDrawTile( rect, text, val );
+
+                    Paint paint = getTileStrokePaint( rect );
                     drawRect( rect, paint ); // frame
+                    if ( 0 != (flags & CELL_HIGHLIGHT) ) {
+                        int width = (int)paint.getStrokeWidth();
+                        rect.inset( width, width );
+                        drawRect( rect, paint ); // frame
+                    }
                 }
             }
+            restoreToCount(1); // in case new canvas....
         }
-        restoreToCount(1); // in case new canvas....
-        return drew;
+        return canDraw;
     } // drawTileImpl
 
     private void drawCrosshairs( final Rect rect, final int flags )
@@ -662,43 +664,39 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         drawBitmap( bitmap, null, rect, m_drawPaint );
     }
 
-    private boolean positionDrawTile( final Rect rect, String text, int val )
+    private void positionDrawTile( final Rect rect, String text, int val )
     {
-        boolean canDraw = figureFontDims();
-        if ( canDraw ) {
-            final int offset = 2;
-            if ( null != text ) {
-                if ( null == m_letterRect ) {
-                    m_letterRect = new Rect( 0, 0, rect.width() - offset,
-                                             rect.height() * 3 / 4 );
-                }
-                m_letterRect.offsetTo( rect.left + offset, rect.top + offset );
-                drawIn( text, m_letterRect, m_fontDims, Paint.Align.LEFT );
-                if ( FRAME_TRAY_RECTS ) {
-                    drawRect( m_letterRect, m_strokePaint );
-                }
+        final int offset = 2;
+        if ( null != text ) {
+            if ( null == m_letterRect ) {
+                m_letterRect = new Rect( 0, 0, rect.width() - offset,
+                                         rect.height() * 3 / 4 );
             }
-
-            if ( val >= 0 ) {
-                int divisor = m_hasSmallScreen ? 3 : 4;
-                if ( null == m_valRect ) {
-                    m_valRect = new Rect( 0, 0, rect.width() / divisor, 
-                                          rect.height() / divisor );
-                    m_valRect.inset( offset, offset );
-                }
-                m_valRect.offsetTo( rect.right - (rect.width() / divisor),
-                                    rect.bottom - (rect.height() / divisor) );
-                text = String.format( "%d", val );
-                m_fillPaint.setTextSize( m_valRect.height() );
-                m_fillPaint.setTextAlign( Paint.Align.RIGHT );
-                drawText( text, m_valRect.right, m_valRect.bottom, 
-                                   m_fillPaint );
-                if ( FRAME_TRAY_RECTS ) {
-                    drawRect( m_valRect, m_strokePaint );
-                }
+            m_letterRect.offsetTo( rect.left + offset, rect.top + offset );
+            drawIn( text, m_letterRect, m_fontDims, Paint.Align.LEFT );
+            if ( FRAME_TRAY_RECTS ) {
+                drawRect( m_letterRect, m_strokePaint );
             }
         }
-        return canDraw;
+
+        if ( val >= 0 ) {
+            int divisor = m_hasSmallScreen ? 3 : 4;
+            if ( null == m_valRect ) {
+                m_valRect = new Rect( 0, 0, rect.width() / divisor, 
+                                      rect.height() / divisor );
+                m_valRect.inset( offset, offset );
+            }
+            m_valRect.offsetTo( rect.right - (rect.width() / divisor),
+                                rect.bottom - (rect.height() / divisor) );
+            text = String.format( "%d", val );
+            m_fillPaint.setTextSize( m_valRect.height() );
+            m_fillPaint.setTextAlign( Paint.Align.RIGHT );
+            drawText( text, m_valRect.right, m_valRect.bottom, 
+                      m_fillPaint );
+            if ( FRAME_TRAY_RECTS ) {
+                drawRect( m_valRect, m_strokePaint );
+            }
+        }
     }
 
     private void fillRectOther( Rect rect, int index )
