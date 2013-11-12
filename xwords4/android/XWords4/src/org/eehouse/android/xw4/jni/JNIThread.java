@@ -651,7 +651,7 @@ public class JNIThread extends Thread {
     {
         QueueElem elem = new QueueElem( cmd, true, args );
         m_queue.add( elem );
-        if ( m_stopped ) {
+        if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
             DbgUtils.logf( "WARNING: adding %s to stopped thread!!!", 
                            cmd.toString() );
             DbgUtils.printStack();
