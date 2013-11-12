@@ -256,7 +256,7 @@ public class DBUtils {
             db.close();
         }
 
-        if ( null == summary ) {
+        if ( null == summary && lock.canWrite() ) {
             summary = GameUtils.summarize( context, lock );
             saveSummary( context, lock, summary );
         }

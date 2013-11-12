@@ -187,10 +187,13 @@ public class GameUtils {
 
     public static GameSummary summarize( Context context, GameLock lock )
     {
+        GameSummary result = null;
         CurGameInfo gi = new CurGameInfo( context );
         int gamePtr = loadMakeGame( context, gi, lock );
-
-        return summarizeAndClose( context, lock, gamePtr, gi );
+        if ( 0 < gamePtr ) {
+            result = summarizeAndClose( context, lock, gamePtr, gi );
+        }
+        return result;
     }
 
     public static long dupeGame( Context context, long rowidIn )
