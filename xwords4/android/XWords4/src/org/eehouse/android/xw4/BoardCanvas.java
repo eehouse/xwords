@@ -176,6 +176,11 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         return m_trayOwner;
     }
 
+    public int curPending() 
+    {
+        return m_pendingScore;
+    }
+
     public void setInTrade( boolean inTrade ) 
     {
         if ( m_inTrade != inTrade ) {
