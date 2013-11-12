@@ -1991,7 +1991,7 @@
     <string name="board_menu_dict">Browse wordlist</string>
 
     <!--  -->
-    <string name="game_list_tmp">Loading game summary…</string>
+    <string name="game_list_tmp">Building game summary…</string>
 
     <!--  -->
     <string name="connstat_nonet">This is a standalone game. There is
