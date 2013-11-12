@@ -28,9 +28,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.nfc.NdefMessage;
+import android.nfc.NfcAdapter;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -1123,6 +1127,19 @@ public class GamesList extends XWExpandableListActivity
         }
     }
 
+    private void tryNFCIntent( Intent intent )
+    {
+        if ( NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction()) ) {
+            Parcelable[] rawMsgs = 
+                intent.getParcelableArrayExtra( NfcAdapter.EXTRA_NDEF_MESSAGES );
+            // only one message sent during the beam
+            NdefMessage msg = (NdefMessage) rawMsgs[0];
+            // record 0 contains the MIME type, record 1 is the AAR, if present
+            String txt = new String( msg.getRecords()[0].getPayload() );
+            DbgUtils.logf( "got message: %s", txt );
+        }
+    }
+
     private void askDefaultNameIf()
     {
         if ( null == CommonPrefs.getDefaultPlayerName( this, 0, false ) ) {
@@ -1253,6 +1270,7 @@ public class GamesList extends XWExpandableListActivity
         startHasGameID( intent );
         startHasRowID( intent );
         tryAlert( intent );
+        tryNFCIntent( intent );
     }
 
     private void doOpenGame( Object[] params )

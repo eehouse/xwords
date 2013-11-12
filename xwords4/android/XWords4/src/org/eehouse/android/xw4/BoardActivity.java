@@ -905,8 +905,7 @@ public class BoardActivity extends XWActivity
     {
         if ( LAUNCH_INVITE_ACTION == id ) {
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
-                GameUtils.launchInviteActivity( BoardActivity.this,
-                                                DlgDelegate.EMAIL_BTN == which,
+                GameUtils.launchInviteActivity( this, which,
                                                 m_room, null, m_gi.dictLang, 
                                                 m_gi.dictName, m_gi.nPlayers );
             }

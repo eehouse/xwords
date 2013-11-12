@@ -49,6 +49,7 @@ public class DlgDelegate {
 
     public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
     public static final int EMAIL_BTN = AlertDialog.BUTTON_NEGATIVE;
+    public static final int NFC_BTN = AlertDialog.BUTTON_NEUTRAL;
     public static final int DISMISS_BUTTON = 0;
     public static final int SKIP_CALLBACK = -1;
 
@@ -404,12 +405,16 @@ public class DlgDelegate {
     private Dialog createHtmlThenDialog( DlgState state, int id )
     {
         OnClickListener lstnr = mkCallbackClickListener( state );
-        Dialog dialog = new AlertDialog.Builder( m_activity )
+        AlertDialog.Builder builder = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( R.string.sms_or_email )
             .setPositiveButton( R.string.button_text, lstnr )
-            .setNegativeButton( R.string.button_html, lstnr )
-            .create();
+            .setNegativeButton( R.string.button_html, lstnr );
+
+        if ( XWApp.NFC_ENABLED ) {
+            builder.setNeutralButton( R.string.button_nfc, lstnr );
+        }
+        Dialog dialog = builder.create();
 
         return setCallbackDismissListener( dialog, state, id );
     }

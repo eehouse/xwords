@@ -26,11 +26,17 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
+
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
+
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -534,8 +540,7 @@ public class GameUtils {
                                  nPlayersT, nPlayersH, null, gameID, isHost );
     }
 
-    public static void launchInviteActivity( Context context, 
-                                             boolean choseEmail,
+    public static void launchInviteActivity( Activity activity, int chosen,
                                              String room, String inviteID,
                                              int lang, String dict, 
                                              int nPlayers )
@@ -543,51 +548,67 @@ public class GameUtils {
         if ( null == inviteID ) {
             inviteID = makeRandomID();
         }
-        Uri gameUri = NetLaunchInfo.makeLaunchUri( context, room, inviteID,
+        Uri gameUri = NetLaunchInfo.makeLaunchUri( activity, room, inviteID,
                                                    lang, dict, nPlayers );
-
         if ( null != gameUri ) {
-            int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;
-            int choiceID;
-            String message = context.getString( fmtId, gameUri.toString() );
-
-            Intent intent = new Intent();
-            if ( choseEmail ) {
-                intent.setAction( Intent.ACTION_SEND );
-                String subject =
-                    Utils.format( context, R.string.invite_subjectf, room );
-                intent.putExtra( Intent.EXTRA_SUBJECT, subject );
-                intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
-
-                File attach = null;
-                File tmpdir = XWApp.ATTACH_SUPPORTED ? 
-                    DictUtils.getDownloadDir( context ) : null;
-                if ( null != tmpdir ) { // no attachment
-                    attach = makeJsonFor( tmpdir, room, inviteID, lang, 
-                                          dict, nPlayers );
-                }
-
-                if ( null == attach ) { // no attachment
-                    intent.setType( "message/rfc822");
-                } else {
-                    String mime = context.getString( R.string.invite_mime );
-                    intent.setType( mime );
-                    Uri uri = Uri.fromFile( attach );
-                    intent.putExtra( Intent.EXTRA_STREAM, uri );
-                }
-
-                choiceID = R.string.invite_chooser_email;
+            if ( DlgDelegate.NFC_BTN == chosen ) {
+                DbgUtils.logf( "wants to launch NFC" );
+                NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter( activity );
+                NdefMessage msg = new NdefMessage( new NdefRecord[] {
+                        new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
+                                       "application/org.eehouse.android.xw4"
+                                       .getBytes(Charset.forName("US-ASCII")),
+                                       new byte[0], "Beam me up, Android!"
+                                       .getBytes(Charset.forName("US-ASCII")))
+                        ,NdefRecord.createApplicationRecord("org.eehouse.android.xw4")
+                    });
+                nfcAdapter.setNdefPushMessage( msg, activity );
+                Utils.showToast( activity, "Tap the receiving device now" );
             } else {
-                intent.setAction( Intent.ACTION_VIEW );
-                intent.setType( "vnd.android-dir/mms-sms" );
-                intent.putExtra( "sms_body", message );
-                choiceID = R.string.invite_chooser_sms;
-            }
+                boolean choseEmail = DlgDelegate.EMAIL_BTN == chosen;
 
-            String choiceType = context.getString( choiceID );
-            String chooserMsg = 
-                Utils.format( context, R.string.invite_chooserf, choiceType );
-            context.startActivity( Intent.createChooser( intent, chooserMsg ) );
+                int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;
+                int choiceID;
+                String message = activity.getString( fmtId, gameUri.toString() );
+
+                Intent intent = new Intent();
+                if ( choseEmail ) {
+                    intent.setAction( Intent.ACTION_SEND );
+                    String subject =
+                        Utils.format( activity, R.string.invite_subjectf, room );
+                    intent.putExtra( Intent.EXTRA_SUBJECT, subject );
+                    intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+
+                    File attach = null;
+                    File tmpdir = XWApp.ATTACH_SUPPORTED ? 
+                        DictUtils.getDownloadDir( activity ) : null;
+                    if ( null != tmpdir ) { // no attachment
+                        attach = makeJsonFor( tmpdir, room, inviteID, lang, 
+                                              dict, nPlayers );
+                    }
+
+                    if ( null == attach ) { // no attachment
+                        intent.setType( "message/rfc822");
+                    } else {
+                        String mime = activity.getString( R.string.invite_mime );
+                        intent.setType( mime );
+                        Uri uri = Uri.fromFile( attach );
+                        intent.putExtra( Intent.EXTRA_STREAM, uri );
+                    }
+
+                    choiceID = R.string.invite_chooser_email;
+                } else {
+                    intent.setAction( Intent.ACTION_VIEW );
+                    intent.setType( "vnd.android-dir/mms-sms" );
+                    intent.putExtra( "sms_body", message );
+                    choiceID = R.string.invite_chooser_sms;
+                }
+
+                String choiceType = activity.getString( choiceID );
+                String chooserMsg = 
+                    Utils.format( activity, R.string.invite_chooserf, choiceType );
+                activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
+            }
         }
     }
 

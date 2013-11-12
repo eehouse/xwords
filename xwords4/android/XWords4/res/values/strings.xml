@@ -1187,6 +1187,7 @@
     two buttons in the dialog. -->
     <string name="button_text">SMS/Text</string>  
     <string name="button_html">Email</string>  
+    <string name="button_nfc">NFC</string>
 
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->

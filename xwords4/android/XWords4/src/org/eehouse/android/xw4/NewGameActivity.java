@@ -158,7 +158,7 @@ public class NewGameActivity extends XWActivity {
         switch( id ) {
         case NEW_GAME_ACTION:
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
-                makeNewGame( true, true, DlgDelegate.EMAIL_BTN == which );
+                makeNewGame( true, true, which );
             }
             break;
         default:
@@ -311,12 +311,12 @@ public class NewGameActivity extends XWActivity {
             // Let 'em cancel before we make the game
             showEmailOrSMSThen( NEW_GAME_ACTION );
         } else {
-            makeNewGame( networked, launch, false );
+            makeNewGame( networked, launch, DlgDelegate.SMS_BTN );
         }
     }
 
     private void makeNewGame( boolean networked, boolean launch,
-                              boolean choseEmail )
+                              int chosen )
     {
         String room = null;
         String inviteID = null;
@@ -337,7 +337,7 @@ public class NewGameActivity extends XWActivity {
         if ( launch ) {
             GameUtils.launchGame( this, rowid, networked );
             if ( networked ) {
-                GameUtils.launchInviteActivity( this, choseEmail, room, 
+                GameUtils.launchInviteActivity( this, chosen, room, 
                                                 inviteID, lang[0], dict[0], 
                                                 nPlayers );
             }
