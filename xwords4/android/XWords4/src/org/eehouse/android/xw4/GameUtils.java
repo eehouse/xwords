@@ -548,19 +548,27 @@ public class GameUtils {
         if ( null == inviteID ) {
             inviteID = makeRandomID();
         }
-        Uri gameUri = NetLaunchInfo.makeLaunchUri( activity, room, inviteID,
-                                                   lang, dict, nPlayers );
-        if ( null != gameUri ) {
+        String msgString;
+        if ( DlgDelegate.NFC_BTN == chosen ) {
+            msgString = NetLaunchInfo.makeLaunchJSON( activity, room, inviteID,
+                                                      lang, dict, nPlayers );
+        } else {
+            Uri gameUri = NetLaunchInfo.makeLaunchUri( activity, room, inviteID,
+                                                       lang, dict, nPlayers );
+            msgString = null == gameUri ? null : gameUri.toString();
+        }
+
+        if ( null != msgString ) {
             if ( DlgDelegate.NFC_BTN == chosen ) {
-                DbgUtils.logf( "wants to launch NFC" );
                 NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter( activity );
                 NdefMessage msg = new NdefMessage( new NdefRecord[] {
                         new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
                                        "application/org.eehouse.android.xw4"
                                        .getBytes(Charset.forName("US-ASCII")),
-                                       new byte[0], "Beam me up, Android!"
-                                       .getBytes(Charset.forName("US-ASCII")))
-                        ,NdefRecord.createApplicationRecord("org.eehouse.android.xw4")
+                                       new byte[0], msgString.
+                                       getBytes(Charset.forName("US-ASCII")))
+                        ,NdefRecord.
+                        createApplicationRecord("org.eehouse.android.xw4")
                     });
                 nfcAdapter.setNdefPushMessage( msg, activity );
                 Utils.showToast( activity, "Tap the receiving device now" );
@@ -569,7 +577,7 @@ public class GameUtils {
 
                 int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;
                 int choiceID;
-                String message = activity.getString( fmtId, gameUri.toString() );
+                String message = activity.getString( fmtId, msgString );
 
                 Intent intent = new Intent();
                 if ( choseEmail ) {

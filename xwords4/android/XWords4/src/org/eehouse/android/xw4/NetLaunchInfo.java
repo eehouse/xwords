@@ -57,6 +57,21 @@ public class NetLaunchInfo {
         bundle.putBoolean( VALID, m_valid );
     }
 
+    public NetLaunchInfo( String data )
+    {
+        try { 
+            JSONObject json = new JSONObject( data );
+            room = json.getString( MultiService.ROOM );
+            inviteID = json.getString( MultiService.INVITEID );
+            lang = json.getInt( MultiService.LANG );
+            dict = json.getString( MultiService.DICT );
+            nPlayersT = json.getInt( MultiService.NPLAYERST );
+            m_valid = true;
+        } catch ( org.json.JSONException jse ) {
+            m_valid = false;
+        }
+    }
+
     public NetLaunchInfo( Bundle bundle )
     {
         lang = bundle.getInt( LANG );
@@ -134,6 +149,25 @@ public class NetLaunchInfo {
         return ub.build();
     }
 
+    public static String makeLaunchJSON( Context context, String room,
+                                         String inviteID, int lang, 
+                                         String dict, int nPlayersT )
+    {
+        String result = null;
+        try {
+            result = new JSONObject()
+                .put( MultiService.ROOM, room )
+                .put( MultiService.INVITEID, inviteID )
+                .put( MultiService.LANG, lang )
+                .put( MultiService.DICT, dict )
+                .put( MultiService.NPLAYERST, nPlayersT )
+                .toString();
+        } catch ( org.json.JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
+        return result;
+    }
+    
     public boolean isValid()
     {
         return m_valid;

@@ -1135,8 +1135,12 @@ public class GamesList extends XWExpandableListActivity
             // only one message sent during the beam
             NdefMessage msg = (NdefMessage) rawMsgs[0];
             // record 0 contains the MIME type, record 1 is the AAR, if present
-            String txt = new String( msg.getRecords()[0].getPayload() );
-            DbgUtils.logf( "got message: %s", txt );
+            String data = new String( msg.getRecords()[0].getPayload() );
+
+            NetLaunchInfo nli = new NetLaunchInfo( data );
+            if ( nli.isValid() ) {
+                startNewNetGame( nli );
+            }
         }
     }
 
