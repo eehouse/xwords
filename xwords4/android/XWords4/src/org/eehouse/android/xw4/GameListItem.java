@@ -84,9 +84,7 @@ public class GameListItem extends LinearLayout
                 @Override
                 public void onClick( View v ) {
                     // if selected, just un-select
-                    if ( m_selected ) {
-                        toggleSelected();
-                    } else if ( null != m_summary ) {
+                    if ( null != m_summary ) {
                         m_cb.itemClicked( GameListItem.this, m_summary );
                     }
                 }
