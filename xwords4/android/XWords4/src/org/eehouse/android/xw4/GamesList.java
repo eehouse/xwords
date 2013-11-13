@@ -532,7 +532,7 @@ public class GamesList extends XWExpandableListActivity
                 m_selGroupIDs.remove( id );
             }
         }
-        Utils.invalidateOptionsMenuIf( this );
+        ABUtils.invalidateOptionsMenuIf( this );
         setTitleBar();
     }
 
@@ -1201,7 +1201,7 @@ public class GamesList extends XWExpandableListActivity
             inval = true;
         }
         if ( inval ) {
-            Utils.invalidateOptionsMenuIf( this );
+            ABUtils.invalidateOptionsMenuIf( this );
             setTitleBar();
         }
     }

@@ -1299,7 +1299,7 @@ public class BoardActivity extends XWActivity
                 m_room = room;
                 m_missing = nMissing;
                 showDialog( DLG_INVITE );
-                Utils.invalidateOptionsMenuIf( this );
+                ABUtils.invalidateOptionsMenuIf( this );
             } else {
                 toastStr = getString( R.string.msg_relay_waiting, devOrder,
                                       room, nMissing );
@@ -1817,7 +1817,7 @@ public class BoardActivity extends XWActivity
                                         m_view.setInTrade( m_inTrade );
                                         adjustTradeVisibility();
                                         Activity self = BoardActivity.this;
-                                        Utils.invalidateOptionsMenuIf( self );
+                                        ABUtils.invalidateOptionsMenuIf( self );
                                     }
                                     break;
                                 case JNIThread.GOT_WORDS:

@@ -404,7 +404,11 @@ public class DictsActivity extends XWExpandableListActivity
         m_expView.setOnItemLongClickListener( this );
         
         Button download = (Button)findViewById( R.id.download );
-        download.setOnClickListener( this );
+        if ( ABUtils.haveActionBar() ) {
+            download.setVisibility( View.GONE );
+        } else {
+            download.setOnClickListener( this );
+        }
 
         mkListAdapter();
         m_selDicts = new HashSet<XWListItem>();
@@ -477,7 +481,8 @@ public class DictsActivity extends XWExpandableListActivity
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
         int nSel = m_selDicts.size();
-        Utils.setItemVisible( menu, R.id.dicts_download, 0 == nSel );
+        Utils.setItemVisible( menu, R.id.dicts_download, 
+                              0 == nSel && ABUtils.haveActionBar() );
         Utils.setItemVisible( menu, R.id.dicts_select, 1 == nSel );
 
         boolean allVolatile = selItemsVolatile();
@@ -835,7 +840,7 @@ public class DictsActivity extends XWExpandableListActivity
         } else {
             m_selDicts.remove( dictView );
         }
-        Utils.invalidateOptionsMenuIf( this );
+        ABUtils.invalidateOptionsMenuIf( this );
         setTitleBar();
     }
 
