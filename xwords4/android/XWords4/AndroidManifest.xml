@@ -80,7 +80,7 @@
       <intent-filter>
         <action android:name="android.nfc.action.NDEF_DISCOVERED" />
         <category android:name="android.intent.category.DEFAULT" />
-        <data android:mimeType="application/org.eehouse.android.xw4" />
+        <data android:mimeType="@string/xwords_nfc_mime" />
       </intent-filter>
 
     </activity>

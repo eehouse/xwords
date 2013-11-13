@@ -115,7 +115,7 @@
 
   <!-- other -->
   <string name="default_host">eehouse.org</string>
-
+  <string name="xwords_nfc_mime">application/org.eehouse.android.xw4</string>
   <string name="invite_host">eehouse.org</string>
   <string name="invite_prefix">/and/</string>
   <string name="invite_mime">application/x-xwordsinvite</string>

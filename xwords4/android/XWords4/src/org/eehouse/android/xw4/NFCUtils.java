@@ -49,14 +49,14 @@ public class NFCUtils {
     public static void buildAndPush( Activity activity, String data )
     {
         NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter( activity );
+        String mimeType = activity.getString( R.string.xwords_nfc_mime );
         NdefMessage msg = new NdefMessage( new NdefRecord[] {
-                new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
-                               "application/org.eehouse.android.xw4"
+                new NdefRecord(NdefRecord.TNF_MIME_MEDIA, mimeType
                                .getBytes(Charset.forName("US-ASCII")),
                                new byte[0], 
                                data.getBytes(Charset.forName("US-ASCII")))
                 ,NdefRecord.
-                createApplicationRecord("org.eehouse.android.xw4")
+                createApplicationRecord( activity.getPackageName() )
             });
         nfcAdapter.setNdefPushMessage( msg, activity );
     }
