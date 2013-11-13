@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
+import android.nfc.NfcEvent;
 import android.nfc.NfcManager;
 import android.os.Parcelable;
 import java.nio.charset.Charset;
@@ -33,6 +34,7 @@ import java.nio.charset.Charset;
 public class NFCUtils {
     private static boolean s_inSDK = 
         14 <= Integer.valueOf( android.os.Build.VERSION.SDK );
+    private static String s_data = null;
 
     public static boolean nfcAvail( Context context )
     {
@@ -46,19 +48,31 @@ public class NFCUtils {
         return result;
     }
 
+    public static void register( final Activity activity )
+    {
+        NfcAdapter.CreateNdefMessageCallback cb = 
+            new NfcAdapter.CreateNdefMessageCallback() {
+                public NdefMessage createNdefMessage( NfcEvent event ) {
+                    NdefMessage msg = null;
+                    if ( null != s_data ) {
+                        msg = makeMessage( activity, s_data );
+                    }
+                    return msg;
+                }
+            };
+
+        NfcManager manager = 
+            (NfcManager)activity.getSystemService( Context.NFC_SERVICE );
+        NfcAdapter adapter = manager.getDefaultAdapter();
+        adapter.setNdefPushMessageCallback( cb, activity );
+    }
+
     public static void buildAndPush( Activity activity, String data )
     {
-        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter( activity );
-        String mimeType = activity.getString( R.string.xwords_nfc_mime );
-        NdefMessage msg = new NdefMessage( new NdefRecord[] {
-                new NdefRecord(NdefRecord.TNF_MIME_MEDIA, mimeType
-                               .getBytes(Charset.forName("US-ASCII")),
-                               new byte[0], 
-                               data.getBytes(Charset.forName("US-ASCII")))
-                ,NdefRecord.
-                createApplicationRecord( activity.getPackageName() )
-            });
-        nfcAdapter.setNdefPushMessage( msg, activity );
+        s_data = data;
+        // NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter( activity );
+        // NdefMessage msg = makeMessage( activity, data );
+        // nfcAdapter.setNdefPushMessage( msg, activity );
     }
 
     public static String getFromIntent( Intent intent )
@@ -75,5 +89,19 @@ public class NFCUtils {
         }
 
         return result;
+    }
+
+    private static NdefMessage makeMessage( Activity activity, String data )
+    {
+        String mimeType = activity.getString( R.string.xwords_nfc_mime );
+        NdefMessage msg = new NdefMessage( new NdefRecord[] {
+                new NdefRecord(NdefRecord.TNF_MIME_MEDIA, mimeType
+                               .getBytes(Charset.forName("US-ASCII")),
+                               new byte[0], 
+                               data.getBytes(Charset.forName("US-ASCII")))
+                ,NdefRecord.
+                createApplicationRecord( activity.getPackageName() )
+            });
+        return msg;
     }
 }

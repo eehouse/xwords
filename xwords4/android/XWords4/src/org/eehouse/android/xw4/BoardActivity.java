@@ -574,6 +574,8 @@ public class BoardActivity extends XWActivity
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
         m_overNotShown = true;
 
+        NFCUtils.register( this ); // Don't seem to need to unregister...
+
         setBackgroundColor();
         setKeepScreenOn();
     } // onCreate
