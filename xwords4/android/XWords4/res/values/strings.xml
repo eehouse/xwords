@@ -1181,6 +1181,10 @@
          explanation/guidance. -->
     <string name="sms_or_email">Send invitation using SMS (texting) or
        via email?</string>
+    <string name="nfc_or_email">Send invitation using NFC (Android
+    beaming – NEW) or via email?</string>
+    <string name="nfc_or_sms_or_email">Send invitation using SMS
+    (texting) or NFC (Android beaming – NEW) or via email?</string>
 
     <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the

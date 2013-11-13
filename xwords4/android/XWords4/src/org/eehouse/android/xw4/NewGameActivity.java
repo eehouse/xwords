@@ -309,7 +309,7 @@ public class NewGameActivity extends XWActivity {
     {
         if ( launch && networked ) {
             // Let 'em cancel before we make the game
-            showEmailOrSMSThen( NEW_GAME_ACTION );
+            showInviteChoicesThen( NEW_GAME_ACTION );
         } else {
             makeNewGame( networked, launch, DlgDelegate.SMS_BTN );
         }

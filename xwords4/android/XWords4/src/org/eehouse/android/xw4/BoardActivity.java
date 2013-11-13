@@ -499,7 +499,7 @@ public class BoardActivity extends XWActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int item ) {
-                                showEmailOrSMSThen( LAUNCH_INVITE_ACTION );
+                                showInviteChoicesThen( LAUNCH_INVITE_ACTION );
                             }
                         };
                     dialog = new AlertDialog.Builder( this )

@@ -43,7 +43,7 @@ public class DlgDelegate {
     public static final int DIALOG_OKONLY = 2;
     public static final int DIALOG_NOTAGAIN = 3;
     public static final int CONFIRM_THEN = 4;
-    public static final int TEXT_OR_HTML_THEN = 5;
+    public static final int INVITE_CHOICES_THEN = 5;
     public static final int DLG_DICTGONE = 6;
     public static final int DIALOG_LAST = DLG_DICTGONE;
 
@@ -119,8 +119,8 @@ public class DlgDelegate {
         case CONFIRM_THEN:
             dialog = createConfirmThenDialog( state, id );
             break;
-        case TEXT_OR_HTML_THEN:
-            dialog = createHtmlThenDialog( state, id );
+        case INVITE_CHOICES_THEN:
+            dialog = createInviteChoicesDialog( state, id );
             break;
         case DLG_DICTGONE:
             dialog = createDictGoneDialog();
@@ -219,12 +219,13 @@ public class DlgDelegate {
         m_activity.showDialog( CONFIRM_THEN );
     }
 
-    public void showEmailOrSMSThen( final int callbackID )
+    public void showInviteChoicesThen( final int callbackID )
     {
-        if ( Utils.deviceSupportsSMS( m_activity ) ) {
-            DlgState state = new DlgState( TEXT_OR_HTML_THEN, callbackID );
+        if ( Utils.deviceSupportsSMS( m_activity )
+             || NFCUtils.nfcAvail( m_activity ) ) {
+            DlgState state = new DlgState( INVITE_CHOICES_THEN, callbackID );
             addState( state );
-            m_activity.showDialog( TEXT_OR_HTML_THEN );
+            m_activity.showDialog( INVITE_CHOICES_THEN );
         } else {
             post( new Runnable() {
                     public void run() {
@@ -402,21 +403,34 @@ public class DlgDelegate {
         return setCallbackDismissListener( dialog, state, id );
     }
 
-    private Dialog createHtmlThenDialog( DlgState state, int id )
+    private Dialog createInviteChoicesDialog( DlgState state, int id )
     {
         OnClickListener lstnr = mkCallbackClickListener( state );
+
+        boolean haveSMS = Utils.deviceSupportsSMS( m_activity );
+        boolean haveNFC = NFCUtils.nfcAvail( m_activity );
+        int msgID;
+        if ( haveSMS && haveNFC ) {
+            msgID = R.string.nfc_or_sms_or_email;
+        } else if ( haveSMS ) {
+            msgID = R.string.sms_or_email; 
+        } else {
+            msgID = R.string.nfc_or_email;
+        }
+        
         AlertDialog.Builder builder = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.query_title )
-            .setMessage( R.string.sms_or_email )
-            .setPositiveButton( R.string.button_text, lstnr )
+            .setMessage( msgID )
             .setNegativeButton( R.string.button_html, lstnr );
 
-        if ( NFCUtils.nfcAvail( m_activity ) ) {
+        if ( haveSMS ) {
+            builder.setPositiveButton( R.string.button_text, lstnr );
+        }
+        if ( haveNFC ) {
             builder.setNeutralButton( R.string.button_nfc, lstnr );
         }
-        Dialog dialog = builder.create();
 
-        return setCallbackDismissListener( dialog, state, id );
+        return setCallbackDismissListener( builder.create(), state, id );
     }
 
     private Dialog createDictGoneDialog()
