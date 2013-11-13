@@ -27,16 +27,11 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
 
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.NfcAdapter;
-
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.Display;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -563,17 +558,7 @@ public class GameUtils {
 
         if ( null != msgString ) {
             if ( DlgDelegate.NFC_BTN == chosen ) {
-                NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter( activity );
-                NdefMessage msg = new NdefMessage( new NdefRecord[] {
-                        new NdefRecord(NdefRecord.TNF_MIME_MEDIA,
-                                       "application/org.eehouse.android.xw4"
-                                       .getBytes(Charset.forName("US-ASCII")),
-                                       new byte[0], msgString.
-                                       getBytes(Charset.forName("US-ASCII")))
-                        ,NdefRecord.
-                        createApplicationRecord("org.eehouse.android.xw4")
-                    });
-                nfcAdapter.setNdefPushMessage( msg, activity );
+                NFCUtils.buildAndPush( activity, msgString );
                 Utils.showToast( activity, "Tap the receiving device now" );
             } else {
                 boolean choseEmail = DlgDelegate.EMAIL_BTN == chosen;
