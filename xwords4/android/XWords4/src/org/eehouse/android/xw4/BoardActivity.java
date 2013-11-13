@@ -744,6 +744,7 @@ public class BoardActivity extends XWActivity
             item.setTitle( strId );
         }
 
+        Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_missing );
         Utils.setItemVisible( menu, R.id.board_menu_undo_last, !inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_tray, !inTrade );
 
@@ -843,7 +844,9 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_undo_last:
             showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
             break;
-
+        case R.id.board_menu_invite:
+            showDialog( DLG_INVITE );
+            break;
             // small devices only
         case R.id.board_menu_dict:
             String dictName = m_gi.dictName( m_view.getCurPlayer() );
@@ -1294,6 +1297,7 @@ public class BoardActivity extends XWActivity
                 m_room = room;
                 m_missing = nMissing;
                 showDialog( DLG_INVITE );
+                Utils.invalidateOptionsMenuIf( this );
             } else {
                 toastStr = getString( R.string.msg_relay_waiting, devOrder,
                                       room, nMissing );

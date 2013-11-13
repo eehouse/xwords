@@ -873,7 +873,9 @@ public class DictsActivity extends XWExpandableListActivity
                 .setOnMenuItemClickListener( listener );
 
             // Add at top but save until have dal info
-            MenuItem curItem = menu.add( curDict );
+            MenuItem curItem = 
+                menu.add( context.getString( R.string.cur_menu_markerf, 
+                                             curDict ) );
 
             DictAndLoc[] dals = DictUtils.dictList( context );
             for ( DictAndLoc dal : dals ) {

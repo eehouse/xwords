@@ -60,7 +60,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private JNIThread m_jniThread;
     private XWActivity m_parent;
     private Rect m_boundsScratch;
-    private int m_pendingScore;
     private boolean m_measuredFromDims = false;
     private BoardDims m_dims;
     private CommsAddrRec.CommsConnType m_connType = 
@@ -200,7 +199,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     {
         synchronized( this ) {
             if ( layoutBoardOnce() && m_measuredFromDims ) {
-                DbgUtils.logf( "BoardCanvas.onDraw() copying bitmap" );
                 canvas.drawBitmap( s_bitmap, 0, 0, m_drawPaint );
                 ConnStatusHandler.draw( m_context, canvas, getResources(), 
                                         0, 0, m_connType );
@@ -212,7 +210,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     private boolean layoutBoardOnce() 
     {
-        DbgUtils.logf( "layoutBoardOnce()" );
         final int width = getWidth();
         final int height = getHeight();
         boolean layoutDone = width == m_layoutWidth && height == m_layoutHeight;
@@ -244,13 +241,10 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             }
 
             if ( null == s_bitmap ) {
-                DbgUtils.logf( "making %dx%d static bitmap", bmWidth, bmHeight );
                 s_bitmap = Bitmap.createBitmap( bmWidth, bmHeight,
                                                 Bitmap.Config.ARGB_8888 );
             }
             if ( null == m_canvas ) {
-                DbgUtils.logf( "layoutBoardOnce: allocating canvas for %d, %d",
-                               bmWidth, bmHeight );
                 m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread, 
                                             m_dims );
             } else {
@@ -264,7 +258,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             m_layoutHeight = height;
             layoutDone = true;
         }
-        DbgUtils.logf( "layoutBoardOnce()=>%b", layoutDone );
         return layoutDone;
     } // layoutBoardOnce
 
@@ -337,7 +330,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     public int curPending() 
     {
-        return m_pendingScore;
+        return null == m_canvas? 0 : m_canvas.curPending();
     }
 
     private int getSpacing( MotionEvent event ) 
