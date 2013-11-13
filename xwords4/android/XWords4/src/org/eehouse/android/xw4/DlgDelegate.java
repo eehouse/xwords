@@ -411,7 +411,7 @@ public class DlgDelegate {
             .setPositiveButton( R.string.button_text, lstnr )
             .setNegativeButton( R.string.button_html, lstnr );
 
-        if ( NFCUtils.nfcAvail() ) {
+        if ( NFCUtils.nfcAvail( m_activity ) ) {
             builder.setNeutralButton( R.string.button_nfc, lstnr );
         }
         Dialog dialog = builder.create();

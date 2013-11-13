@@ -21,10 +21,12 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
+import android.nfc.NfcManager;
 import android.os.Parcelable;
 import java.nio.charset.Charset;
 
@@ -32,9 +34,16 @@ public class NFCUtils {
     private static boolean s_inSDK = 
         14 <= Integer.valueOf( android.os.Build.VERSION.SDK );
 
-    public static boolean nfcAvail()
+    public static boolean nfcAvail( Context context )
     {
-        return s_inSDK /*&& turnedOn*/;
+        boolean result = s_inSDK;
+        if ( result ) {
+            NfcManager manager = 
+                (NfcManager)context.getSystemService( Context.NFC_SERVICE );
+            NfcAdapter adapter = manager.getDefaultAdapter();
+            result = null != adapter && adapter.isEnabled();
+        }
+        return result;
     }
 
     public static void buildAndPush( Activity activity, String data )
