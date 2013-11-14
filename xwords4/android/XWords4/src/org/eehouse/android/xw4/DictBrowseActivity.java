@@ -128,6 +128,9 @@ public class DictBrowseActivity extends XWListActivity
         // SectionIndexer
         public int getPositionForSection( int section )
         {
+            if ( section >= m_indices.length ) {
+                section = m_indices.length - 1;
+            }
             return m_indices[section];
         }
         
