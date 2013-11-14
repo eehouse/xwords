@@ -558,14 +558,8 @@ public class BoardActivity extends XWActivity
                                          // XWTimerReason
         m_view = (BoardView)findViewById( R.id.board_view );
         m_tradeButtons = findViewById( R.id.exchange_buttons );
-        m_exchCommmitButton = (Button)findViewById( R.id.exchange_commit );
-        if ( null != m_exchCommmitButton ) {
-            m_exchCommmitButton.setOnClickListener( this );
-        }
-        m_exchCancelButton = (Button)findViewById( R.id.exchange_cancel );
-        if ( null != m_exchCancelButton ) {
-            m_exchCancelButton.setOnClickListener( this );
-        }
+        m_exchCommmitButton = setListenerOrHide( R.id.exchange_commit );
+        m_exchCancelButton = setListenerOrHide( R.id.exchange_cancel );
         m_volKeysZoom = XWPrefs.getVolKeysZoom( this );
 
         Intent intent = getIntent();
@@ -755,6 +749,8 @@ public class BoardActivity extends XWActivity
                               inTrade && m_gsi.tradeTilesSelected );
         Utils.setItemVisible( menu, R.id.board_menu_trade, 
                               !m_gameOver && !inTrade );
+        Utils.setItemVisible( menu, R.id.board_menu_game_resign, !inTrade );
+
         if ( !inTrade ) {
             boolean enabled = null == m_gsi || m_gsi.curTurnSelected;
             item = menu.findItem( R.id.board_menu_done );
@@ -767,12 +763,11 @@ public class BoardActivity extends XWActivity
                 }
                 item.setTitle( strId );
             }
-        }
-
-        if ( m_gameOver || DBUtils.gameOver( this, m_rowid ) ) {
-            m_gameOver = true;
-            item = menu.findItem( R.id.board_menu_game_resign );
-            item.setTitle( R.string.board_menu_game_final );
+            if ( m_gameOver || DBUtils.gameOver( this, m_rowid ) ) {
+                m_gameOver = true;
+                item = menu.findItem( R.id.board_menu_game_resign );
+                item.setTitle( R.string.board_menu_game_final );
+            }
         }
 
         if ( null != m_gi && DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
@@ -2249,6 +2244,19 @@ public class BoardActivity extends XWActivity
         Intent intent = GamesList.makeRematchIntent( this, m_gi, m_rowid );
         startActivity( intent );
         finish();
+    }
+    
+    private Button setListenerOrHide( int id )
+    {
+        Button button = (Button)findViewById( id );
+        if ( null != button ) {
+            if ( ABUtils.haveActionBar() ) {
+                button.setVisibility( View.GONE );
+            } else {
+                button.setOnClickListener( this );
+            }
+        }
+        return button;
     }
 
 } // class BoardActivity
