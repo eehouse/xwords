@@ -119,12 +119,6 @@
                             android:defaultValue="true"
                             />
 
-        <CheckBoxPreference android:key="@string/key_thumb_useactive"
-                            android:title="@string/thumb_useactive"
-                            android:summary="@string/summary_thumb_useactive"
-                            android:defaultValue="false"
-                            />
-
         <org.eehouse.android.xw4.XWListPreference 
              android:key="@string/key_thumbsize"
              android:title="@string/summary_thumbsize"

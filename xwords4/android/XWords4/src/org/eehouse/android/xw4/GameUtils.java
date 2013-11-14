@@ -338,20 +338,6 @@ public class GameUtils {
                 int dim = s_minScreen / scale;
                 int size = dim - (dim % nCols);
 
-                // If user wants active rect, we try to make it as
-                // large as possible while still not exceeding the
-                // scale.  Since we're only using a fraction of the
-                // board, the board we draw before clipping may be
-                // huge.
-                int[] dims = new int[2];
-                Rect activeRect = 
-                    XWPrefs.getUseActiveRect( activity ) ? new Rect() : null;
-                if ( null != activeRect ) {
-                    dims = new int[2];
-                    XwJNI.board_getActiveRect( gamePtr, activeRect, dims );
-                    int numCells = Math.max( dims[0], dims[1] );
-                    size = size * nCols / numCells;
-                }
                 thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
 
                 XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
@@ -361,14 +347,6 @@ public class GameUtils {
                 XwJNI.board_setDraw( gamePtr, canvas );
                 XwJNI.board_invalAll( gamePtr );
                 XwJNI.board_draw( gamePtr );
-
-                if ( null != activeRect ) {
-                    XwJNI.board_getActiveRect( gamePtr, activeRect, null );
-                    thumb = Bitmap.createBitmap( thumb, activeRect.left, 
-                                                 activeRect.top, 
-                                                 activeRect.width(), 
-                                                 activeRect.height() );
-                }
             }
         }
         return thumb;

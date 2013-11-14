@@ -59,7 +59,6 @@
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_thumbsize">key_thumbsize2</string>
   <string name="key_thumb_enabled">key_thumb_disabled</string>
-  <string name="key_thumb_useactive">key_thumb_useactive</string>
 
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>

@@ -338,11 +338,6 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_thumb_enabled, false );
     }
 
-    public static boolean getUseActiveRect( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_thumb_useactive, false );
-    }
-
     public static int getThumbScale( Context context )
     {
         String scale = getPrefsString( context, R.string.key_thumbsize );
