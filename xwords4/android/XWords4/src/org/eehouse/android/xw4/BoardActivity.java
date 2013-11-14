@@ -543,7 +543,8 @@ public class BoardActivity extends XWActivity
         super.onCreate( savedInstanceState );
         getBundledData( savedInstanceState );
 
-        if ( CommonPrefs.getHideTitleBar( this ) ) {
+        if ( CommonPrefs.getHideTitleBar( this )
+             && ABUtils.haveMenuKey( this ) ) {
             requestWindowFeature( Window.FEATURE_NO_TITLE );
         }
 
@@ -2047,10 +2048,13 @@ public class BoardActivity extends XWActivity
 
             clearThis();
 
-            // Before we dispose, and after JNIThread has relinquished
-            // interest, redraw on smaller scale.
-            Bitmap thumb = GameUtils.takeSnapshot( this, m_jniGamePtr, m_gi );
-            DBUtils.saveThumbnail( this, m_gameLock, thumb );
+            if ( XWPrefs.getThumbEnabled( this ) ) {
+                // Before we dispose, and after JNIThread has
+                // relinquished interest, redraw on smaller scale.
+                Bitmap thumb = 
+                    GameUtils.takeSnapshot( this, m_jniGamePtr, m_gi );
+                DBUtils.saveThumbnail( this, m_gameLock, thumb );
+            }
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;

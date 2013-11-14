@@ -21,13 +21,16 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-
+import android.content.Context;
+import android.view.ViewConfiguration;
 
 public class ABUtils {
+    private static int s_sdkVersion = 
+        Integer.valueOf( android.os.Build.VERSION.SDK );
+
     private static interface SafeInvalOptionsMenu {
         public void doInval( Activity activity );
     }
-
     private static class SafeInvalOptionsMenuImpl 
         implements SafeInvalOptionsMenu {
         public void doInval( Activity activity ) {
@@ -35,10 +38,25 @@ public class ABUtils {
         }
     }
     private static SafeInvalOptionsMenu s_safeInval = null;
+
+    private static interface SafeHasMenuKey {
+        public boolean hasMenuKey( Context context );
+    }
+    private static class SafeHasMenuKeyImpl 
+        implements SafeHasMenuKey {
+        public boolean hasMenuKey( Context context )
+        {
+            return ViewConfiguration.get(context).hasPermanentMenuKey();
+        }
+    }
+    private static SafeHasMenuKey s_safeHas = null;
+
     static {
-        int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
-        if ( 11 <= sdkVersion ) {
+        if ( 11 <= s_sdkVersion ) {
             s_safeInval = new SafeInvalOptionsMenuImpl();
+        }
+        if ( 14 <= s_sdkVersion ) {
+            s_safeHas = new SafeHasMenuKeyImpl();
         }
     }
 
@@ -52,6 +70,22 @@ public class ABUtils {
     public static boolean haveActionBar()
     {
         return null != s_safeInval;
+    }
+
+    // http://stackoverflow.com/questions/10929579/how-to-check-if-android-phone-has-hardware-menu-button-in-android-2-1:
+    // If SDK <= 10, assume yes; >= 14, use the API; in the middle,
+    // assume no
+    public static boolean haveMenuKey( Context context )
+    {
+        boolean result;
+        if ( s_sdkVersion <= 10 ) {
+            result = true;
+        } else if ( s_sdkVersion < 14 ) {
+            result = false;
+        } else {
+            result = s_safeHas.hasMenuKey( context );
+        }
+        return result;
     }
 
 }
