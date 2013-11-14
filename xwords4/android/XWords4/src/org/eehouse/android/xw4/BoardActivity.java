@@ -1317,6 +1317,9 @@ public class BoardActivity extends XWActivity
                 showNotAgainDlgThen( naMsg, naKey, SHOW_EXPL_ACTION );
             }
         }
+
+        m_missing = nMissing;
+        ABUtils.invalidateOptionsMenuIf( this );
     } // handleConndMessage
 
     private class BoardUtilCtxt extends UtilCtxtImpl {
