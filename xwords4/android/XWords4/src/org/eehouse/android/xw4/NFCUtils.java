@@ -29,7 +29,6 @@ import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.nfc.NfcManager;
 import android.os.Parcelable;
-import java.nio.charset.Charset;
 
 public class NFCUtils {
     private static boolean s_inSDK = 
@@ -95,10 +94,9 @@ public class NFCUtils {
     {
         String mimeType = activity.getString( R.string.xwords_nfc_mime );
         NdefMessage msg = new NdefMessage( new NdefRecord[] {
-                new NdefRecord(NdefRecord.TNF_MIME_MEDIA, mimeType
-                               .getBytes(Charset.forName("US-ASCII")),
-                               new byte[0], 
-                               data.getBytes(Charset.forName("US-ASCII")))
+                new NdefRecord(NdefRecord.TNF_MIME_MEDIA, 
+                               mimeType.getBytes(), new byte[0], 
+                               data.getBytes())
                 ,NdefRecord.
                 createApplicationRecord( activity.getPackageName() )
             });
