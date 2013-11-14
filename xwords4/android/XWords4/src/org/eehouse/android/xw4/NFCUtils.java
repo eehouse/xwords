@@ -31,9 +31,40 @@ import android.nfc.NfcManager;
 import android.os.Parcelable;
 
 public class NFCUtils {
-    private static boolean s_inSDK = 
-        14 <= Integer.valueOf( android.os.Build.VERSION.SDK );
+    private static boolean s_inSDK;
+    private static SafeNFC s_safeNFC;
+    static {
+        s_inSDK = 14 <= Integer.valueOf( android.os.Build.VERSION.SDK );
+        if ( s_inSDK ) {
+            s_safeNFC = new SafeNFCImpl();
+        }
+    }
     private static String s_data = null;
+
+    private static interface SafeNFC {
+        public void register( Activity activity );
+    }
+
+    private static class SafeNFCImpl implements SafeNFC {
+        public void register( final Activity activity )
+        {
+            NfcAdapter.CreateNdefMessageCallback cb = 
+                new NfcAdapter.CreateNdefMessageCallback() {
+                    public NdefMessage createNdefMessage( NfcEvent event ) {
+                        NdefMessage msg = null;
+                        if ( null != s_data ) {
+                            msg = makeMessage( activity, s_data );
+                        }
+                        return msg;
+                    }
+                };
+
+            NfcManager manager = 
+                (NfcManager)activity.getSystemService( Context.NFC_SERVICE );
+            NfcAdapter adapter = manager.getDefaultAdapter();
+            adapter.setNdefPushMessageCallback( cb, activity );
+        }
+    }
 
     public static boolean nfcAvail( Context context )
     {
@@ -45,25 +76,6 @@ public class NFCUtils {
             result = null != adapter && adapter.isEnabled();
         }
         return result;
-    }
-
-    public static void register( final Activity activity )
-    {
-        NfcAdapter.CreateNdefMessageCallback cb = 
-            new NfcAdapter.CreateNdefMessageCallback() {
-                public NdefMessage createNdefMessage( NfcEvent event ) {
-                    NdefMessage msg = null;
-                    if ( null != s_data ) {
-                        msg = makeMessage( activity, s_data );
-                    }
-                    return msg;
-                }
-            };
-
-        NfcManager manager = 
-            (NfcManager)activity.getSystemService( Context.NFC_SERVICE );
-        NfcAdapter adapter = manager.getDefaultAdapter();
-        adapter.setNdefPushMessageCallback( cb, activity );
     }
 
     public static void buildAndPush( Activity activity, String data )
@@ -88,6 +100,13 @@ public class NFCUtils {
         }
 
         return result;
+    }
+
+    public static void register( Activity activity )
+    {
+        if ( null != s_safeNFC ) {
+            s_safeNFC.register( activity );
+        }
     }
 
     private static NdefMessage makeMessage( Activity activity, String data )
