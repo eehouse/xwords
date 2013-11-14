@@ -417,9 +417,7 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
 		XP_U16 cellSize = bWidth / nCells;
 		if ( cellSize > maxCellSize ) {
 			cellSize = maxCellSize;
-
-			XP_U16 boardWidth = nCells * cellSize;
-			ldims.width = boardWidth;
+			ldims.width = nCells * cellSize;
 		}
 		ldims.maxCellSize = maxCellSize;
 
@@ -439,7 +437,7 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
 			int cellWidth = 2 * (bHeight / ( 4 + 3 + (2*nCells)));
 			if ( firstPass && cellWidth >= fontHt ) {
 				firstPass = XP_FALSE;
-				ldims.width = nCells * cellWidth;
+				bWidth = nCells * cellWidth;
 				continue;
 			} else {
 				nToScroll = nCells - 
