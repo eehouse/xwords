@@ -821,8 +821,7 @@ public class GamesList extends XWExpandableListActivity
                             byte[] stream = GameUtils.savedGame( GamesList.this,
                                                                  selRowIDs[0] );
                             GameLock lock = 
-                                GameUtils.saveNewGame( GamesList.this, stream,
-                                                       getSaveGroup() );
+                                GameUtils.saveNewGame( GamesList.this, stream );
                             DBUtils.saveSummary( GamesList.this, lock, smry );
                             m_selGames.add( lock.getRowid() );
                             lock.unlock();
@@ -1055,9 +1054,6 @@ public class GamesList extends XWExpandableListActivity
 
     private void startNewGameActivity( long groupID )
     {
-        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
-            groupID = getSaveGroup();
-        }
         NewGameActivity.startActivity( this, groupID );
     }
 
@@ -1335,15 +1331,6 @@ public class GamesList extends XWExpandableListActivity
         for ( int item : items ) {
             Utils.setItemVisible( menu, item, select );
         }
-    }
-
-    private long getSaveGroup()
-    {
-        long groupID = XWPrefs.getDefaultNewGameGroup( this );
-        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
-            groupID = m_adapter.getGroupIDFor( 0 );
-        }
-        return groupID;
     }
 
     public static void onGameDictDownload( Context context, Intent intent )

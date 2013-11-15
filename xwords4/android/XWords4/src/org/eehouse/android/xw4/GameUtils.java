@@ -375,6 +375,11 @@ public class GameUtils {
         return DBUtils.saveGame( context, lock, bytes, setCreate );
     }
 
+    public static GameLock saveNewGame( Context context, byte[] bytes )
+    {
+        return saveNewGame( context, bytes, DBUtils.GROUPID_UNSPEC );
+    }
+
     public static GameLock saveNewGame( Context context, byte[] bytes,
                                         long groupID )
     {
@@ -383,7 +388,9 @@ public class GameUtils {
 
     public static long saveNew( Context context, CurGameInfo gi, long groupID )
     {
-        Assert.assertTrue( DBUtils.GROUPID_UNSPEC != groupID );
+        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+            groupID = XWPrefs.getDefaultNewGameGroup( context );
+        }
 
         long rowid = DBUtils.ROWID_NOTFOUND;
         byte[] bytes = XwJNI.gi_to_stream( gi );

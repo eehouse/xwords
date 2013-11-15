@@ -79,7 +79,6 @@ public class NewGameActivity extends XWActivity {
         getBundledData( savedInstanceState );
 
         m_groupID = getIntent().getLongExtra( GROUPID_EXTRA, -1 );
-        Assert.assertTrue( -1 != m_groupID );
 
         setContentView( R.layout.new_game );
 
