@@ -1112,12 +1112,21 @@ public class DBUtils {
         return result;
     }
 
+    // pass ROWID_NOTFOUND to get *any* group.  Because there may be
+    // some hidden games stored with group = -1 thanks to
+    // recently-fixed bugs, be sure to skip them.
     public static long getGroupForGame( Context context, long rowid )
     {
         long result = GROUPID_UNSPEC;
         initDB( context );
         String[] columns = { DBHelper.GROUPID };
-        String selection = String.format( ROW_ID_FMT, rowid );
+
+        String selection = String.format( "%s != %d", DBHelper.GROUPID,
+                                          DBUtils.GROUPID_UNSPEC );
+        if ( ROWID_NOTFOUND != rowid ) {
+            selection += " AND " + String.format( ROW_ID_FMT, rowid );
+        }
+
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 

@@ -303,8 +303,14 @@ public class XWPrefs {
 
     public static long getDefaultNewGameGroup( Context context )
     {
-        return getPrefsLong( context, R.string.key_default_group, 
-                             DBUtils.GROUPID_UNSPEC );
+        long groupID = getPrefsLong( context, R.string.key_default_group, 
+                                     DBUtils.GROUPID_UNSPEC );
+        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+            groupID = 
+                DBUtils.getGroupForGame( context, DBUtils.ROWID_NOTFOUND );
+            setPrefsLong( context, R.string.key_default_group, groupID );
+        }
+        return groupID;
     }
 
     public static void setDefaultNewGameGroup( Context context, long val )
