@@ -323,7 +323,7 @@ public class DlgDelegate {
         TextView vers = (TextView)view.findViewById( R.id.version_string );
         vers.setText( String.format( m_activity.getString(R.string.about_versf), 
                                      m_activity.getString(R.string.app_version),
-                                     GitVersion.VERS ) );
+                                     BuildConstants.GIT_REV ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
         String str = m_activity.getString( R.string.xlator );

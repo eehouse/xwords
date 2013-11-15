@@ -321,7 +321,7 @@ public class GameUtils {
                                        CurGameInfo gi )
     {
         Bitmap thumb = null;
-        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
             if ( XWPrefs.getThumbEnabled( activity ) ) {
                 int nCols = gi.boardSize;
                 int scale = XWPrefs.getThumbScale( activity );

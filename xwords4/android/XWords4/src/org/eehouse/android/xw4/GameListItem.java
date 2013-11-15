@@ -190,7 +190,7 @@ public class GameListItem extends LinearLayout
                                          R.drawable.expander_ic_maximized :
                                          R.drawable.expander_ic_minimized);
         m_hideable.setVisibility( m_expanded? View.VISIBLE : View.GONE );
-        if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
             int vis = m_expanded && XWPrefs.getThumbEnabled( m_context )
                 ? View.VISIBLE : View.GONE;
             m_thumb.setVisibility( vis );
@@ -302,7 +302,7 @@ public class GameListItem extends LinearLayout
                     }
                 } );
 
-            if ( GitVersion.THUMBNAIL_SUPPORTED ) {
+            if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
                 m_thumb = (ImageView)findViewById( R.id.thumbnail );
                 m_thumb.setImageBitmap( summary.getThumbnail() );
             }
