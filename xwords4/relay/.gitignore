@@ -6,3 +6,4 @@ xwrelay.log*
 xwrelay.pid
 xwrelay
 xwrelay.conf
+vgcore.*
