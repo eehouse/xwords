@@ -306,10 +306,10 @@ public class XWPrefs {
         long groupID = getPrefsLong( context, R.string.key_default_group, 
                                      DBUtils.GROUPID_UNSPEC );
         if ( DBUtils.GROUPID_UNSPEC == groupID ) {
-            groupID = 
-                DBUtils.getGroupForGame( context, DBUtils.ROWID_NOTFOUND );
+            groupID = DBUtils.getAnyGroup( context );
             setPrefsLong( context, R.string.key_default_group, groupID );
         }
+        Assert.assertTrue( DBUtils.GROUPID_UNSPEC != groupID );
         return groupID;
     }
 

@@ -970,12 +970,19 @@ public class DBUtils {
     // that group.
     public static HashMap<Long,GameGroupInfo> getGroups( Context context )
     {
+        return getGroups( context, 0 );
+    }
+
+    private static HashMap<Long,GameGroupInfo> getGroups( Context context, 
+                                                          int nRows )
+    {
         if ( null == s_groupsCache ) {
             HashMap<Long,GameGroupInfo> result = 
                 new HashMap<Long,GameGroupInfo>();
             initDB( context );
             String[] columns = { ROW_ID, DBHelper.GROUPNAME, 
                                  DBHelper.EXPANDED };
+            String limit = 0 == nRows ? null : String.format( "%d", nRows );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getReadableDatabase();
                 Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
@@ -983,7 +990,8 @@ public class DBUtils {
                                           null, // args
                                           null, // groupBy
                                           null, // having
-                                          null //orderby 
+                                          null, //orderby 
+                                          limit
                                           );
                 int idIndex = cursor.getColumnIndex( ROW_ID );
                 int nameIndex = cursor.getColumnIndex( DBHelper.GROUPNAME );
@@ -1143,6 +1151,18 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
+        return result;
+    }
+
+    public static long getAnyGroup( Context context )
+    {
+        long result = GROUPID_UNSPEC;
+        HashMap<Long,GameGroupInfo> groups = getGroups( context, 1 );
+        Iterator<Long> iter = groups.keySet().iterator();
+        if ( iter.hasNext() ) {
+            result = iter.next();
+        }
+        Assert.assertTrue( GROUPID_UNSPEC != result );
         return result;
     }
 
