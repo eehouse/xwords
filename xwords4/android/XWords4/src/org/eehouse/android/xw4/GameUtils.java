@@ -50,7 +50,6 @@ public class GameUtils {
     public static final String INTENT_KEY_ROWID = "rowid";
     public static final String INTENT_FORRESULT_ROWID = "forresult";
 
-    private static final long GROUPID_UNSPEC = -1;
     private static Integer s_minScreen;
 
     public static class NoSuchGameException extends RuntimeException {
@@ -376,21 +375,15 @@ public class GameUtils {
         return DBUtils.saveGame( context, lock, bytes, setCreate );
     }
 
-    public static GameLock saveNewGame( Context context, byte[] bytes )
+    public static GameLock saveNewGame( Context context, byte[] bytes,
+                                        long groupID )
     {
-        return DBUtils.saveNewGame( context, bytes );
-    }
-
-    public static long saveNew( Context context, CurGameInfo gi )
-    {
-        return saveNew( context, gi, GROUPID_UNSPEC );
+        return DBUtils.saveNewGame( context, bytes, groupID );
     }
 
     public static long saveNew( Context context, CurGameInfo gi, long groupID )
     {
-        if ( GROUPID_UNSPEC == groupID ) {
-            groupID = XWPrefs.getDefaultNewGameGroup( context );
-        }
+        Assert.assertTrue( DBUtils.GROUPID_UNSPEC != groupID );
 
         long rowid = DBUtils.ROWID_NOTFOUND;
         byte[] bytes = XwJNI.gi_to_stream( gi );
@@ -464,7 +457,7 @@ public class GameUtils {
 
     public static long makeNewNetGame( Context context, NetLaunchInfo info )
     {
-        return makeNewNetGame( context, GROUPID_UNSPEC, info.room, 
+        return makeNewNetGame( context, DBUtils.GROUPID_UNSPEC, info.room, 
                                info.inviteID, info.lang, info.dict, 
                                info.nPlayersT );
     }
@@ -473,8 +466,8 @@ public class GameUtils {
                                       CommsAddrRec addr, int lang, 
                                       int nPlayersT, int nPlayersH )
     {
-        return makeNewBTGame( context, GROUPID_UNSPEC, gameID, addr, lang, 
-                              nPlayersT, nPlayersH );
+        return makeNewBTGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
+                              lang, nPlayersT, nPlayersH );
     }
     
     public static long makeNewBTGame( Context context, long groupID, 
@@ -496,7 +489,7 @@ public class GameUtils {
                                        int lang, String dict, int nPlayersT, 
                                        int nPlayersH )
     {
-        return makeNewSMSGame( context, GROUPID_UNSPEC, gameID, addr, 
+        return makeNewSMSGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
                                lang, dict, nPlayersT, nPlayersH );
     }
 

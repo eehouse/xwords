@@ -27,6 +27,8 @@ import android.text.TextUtils;
 import com.google.android.gcm.GCMRegistrar;
 import java.util.ArrayList;
 
+import junit.framework.Assert;
+
 public class XWPrefs {
 
     public static boolean getSMSEnabled( Context context )
@@ -301,12 +303,13 @@ public class XWPrefs {
 
     public static long getDefaultNewGameGroup( Context context )
     {
-        return getPrefsLong( context, R.string.key_default_group,
-                             DBUtils.ROWID_NOTFOUND );
+        return getPrefsLong( context, R.string.key_default_group, 
+                             DBUtils.GROUPID_UNSPEC );
     }
 
     public static void setDefaultNewGameGroup( Context context, long val )
     {
+        Assert.assertTrue( DBUtils.GROUPID_UNSPEC != val );
         setPrefsLong( context, R.string.key_default_group, val );
     }
 

@@ -94,7 +94,7 @@ public class GamesList extends XWExpandableListActivity
             };
 
     private static final int[] DEBUG_ITEMS = { 
-        R.id.games_menu_loaddb,
+        // R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
         R.id.games_menu_checkupdates,
     };
@@ -483,11 +483,12 @@ public class GamesList extends XWExpandableListActivity
     // DBUtils.DBChangeListener interface
     public void gameSaved( final long rowid, final boolean countChanged )
     {
-        post( new Runnable() {
+        runOnUiThread( new Runnable() {
                 public void run() {
                     if ( countChanged ) {
                         onContentChanged();
                     } else {
+                        Assert.assertTrue( 0 <= rowid );
                         m_adapter.inval( rowid );
                     }
                 }
@@ -727,7 +728,7 @@ public class GamesList extends XWExpandableListActivity
         boolean changeContent = false;
         boolean dropSels = false;
         int groupPos = getSelGroupPos();
-        long groupID = -1;
+        long groupID = DBUtils.GROUPID_UNSPEC;
         if ( 0 <= groupPos ) {
             groupID = m_adapter.getGroupIDFor( groupPos );
         }
@@ -820,7 +821,8 @@ public class GamesList extends XWExpandableListActivity
                             byte[] stream = GameUtils.savedGame( GamesList.this,
                                                                  selRowIDs[0] );
                             GameLock lock = 
-                                GameUtils.saveNewGame( GamesList.this, stream );
+                                GameUtils.saveNewGame( GamesList.this, stream,
+                                                       getSaveGroup() );
                             DBUtils.saveSummary( GamesList.this, lock, smry );
                             m_selGames.add( lock.getRowid() );
                             lock.unlock();
@@ -1053,6 +1055,9 @@ public class GamesList extends XWExpandableListActivity
 
     private void startNewGameActivity( long groupID )
     {
+        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+            groupID = getSaveGroup();
+        }
         NewGameActivity.startActivity( this, groupID );
     }
 
@@ -1330,6 +1335,15 @@ public class GamesList extends XWExpandableListActivity
         for ( int item : items ) {
             Utils.setItemVisible( menu, item, select );
         }
+    }
+
+    private long getSaveGroup()
+    {
+        long groupID = XWPrefs.getDefaultNewGameGroup( this );
+        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+            groupID = m_adapter.getGroupIDFor( 0 );
+        }
+        return groupID;
     }
 
     public static void onGameDictDownload( Context context, Intent intent )

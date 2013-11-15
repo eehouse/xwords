@@ -55,6 +55,7 @@ import org.eehouse.android.xw4.DictUtils.DictLoc;
 
 public class DBUtils {
     public static final int ROWID_NOTFOUND = -1;
+    public static final int GROUPID_UNSPEC = -1;
 
     private static final String DICTS_SEP = ",";
 
@@ -754,15 +755,10 @@ public class DBUtils {
         }
     }
 
-    public static GameLock saveNewGame( Context context, byte[] bytes )
-    {
-        long groupID = XWPrefs.getDefaultNewGameGroup( context );
-        return saveNewGame( context, bytes, groupID );
-    }
-
     public static GameLock saveNewGame( Context context, byte[] bytes,
                                         long groupID )
     {
+        Assert.assertTrue( GROUPID_UNSPEC != groupID );
         GameLock lock = null;
 
         initDB( context );
@@ -807,7 +803,7 @@ public class DBUtils {
         updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
 
         setCached( rowid, null ); // force reread
-        if ( -1 != rowid ) {      // Means new game?
+        if ( ROWID_NOTFOUND != rowid ) {      // Means new game?
             notifyListeners( rowid, false );
         }
         invalGroupsCache();
@@ -817,7 +813,7 @@ public class DBUtils {
     public static byte[] loadGame( Context context, GameLock lock )
     {
         long rowid = lock.getRowid();
-        Assert.assertTrue( -1 != rowid );
+        Assert.assertTrue( ROWID_NOTFOUND != rowid );
         byte[] result = getCached( rowid );
         if ( null == result ) {
             initDB( context );
@@ -869,7 +865,7 @@ public class DBUtils {
 
     public static int getVisID( Context context, long rowid )
     {
-        int result = -1;
+        int result = ROWID_NOTFOUND;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
@@ -1004,9 +1000,9 @@ public class DBUtils {
 
                 Iterator<Long> iter = result.keySet().iterator();
                 while ( iter.hasNext() ) {
-                    Long id = iter.next();
-                    GameGroupInfo ggi = result.get( id );
-                    readTurnInfo( db, id, ggi );
+                    Long groupID = iter.next();
+                    GameGroupInfo ggi = result.get( groupID );
+                    readTurnInfo( db, groupID, ggi );
                 }
 
                 db.close();
@@ -1016,13 +1012,31 @@ public class DBUtils {
         return s_groupsCache;
     } // getGroups
 
-    private static void readTurnInfo( SQLiteDatabase db, long id, 
+    // public static void unhideTo( Context context, long groupID )
+    // {
+    //     Assert.assertTrue( GROUPID_UNSPEC != groupID );
+    //     initDB( context );
+    //     synchronized( s_dbHelper ) {
+    //         SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+    //         ContentValues values = new ContentValues();
+    //         values.put( DBHelper.GROUPID, groupID );
+    //         String selection = String.format( "%s = %d", DBHelper.GROUPID,
+    //                                           GROUPID_UNSPEC );
+    //         long result = db.update( DBHelper.TABLE_NAME_SUM,
+    //                                  values, selection, null );
+    //         db.close();
+
+    //         notifyListeners( ROWID_NOTFOUND, true );
+    //     }
+    // }
+
+    private static void readTurnInfo( SQLiteDatabase db, long groupID, 
                                       GameGroupInfo ggi )
     {
         String[] columns = { DBHelper.LASTMOVE, DBHelper.GIFLAGS, 
                              DBHelper.TURN };
         String orderBy = DBHelper.LASTMOVE;
-        String selection = String.format( "%s=%d", DBHelper.GROUPID, id );
+        String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
         Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                   selection,
                                   null, // args
@@ -1100,7 +1114,7 @@ public class DBUtils {
 
     public static long getGroupForGame( Context context, long rowid )
     {
-        long result = ROWID_NOTFOUND;
+        long result = GROUPID_UNSPEC;
         initDB( context );
         String[] columns = { DBHelper.GROUPID };
         String selection = String.format( ROW_ID_FMT, rowid );
@@ -1125,7 +1139,7 @@ public class DBUtils {
 
     public static long addGroup( Context context, String name )
     {
-        long rowid = ROWID_NOTFOUND;
+        long rowid = GROUPID_UNSPEC;
         if ( null != name && 0 < name.length() ) {
             HashMap<Long,GameGroupInfo> gameInfo = getGroups( context );
             if ( null == gameInfo.get( name ) ) {
@@ -1185,10 +1199,11 @@ public class DBUtils {
     }
 
     // Change group id of a game
-    public static void moveGame( Context context, long gameid, long groupid )
+    public static void moveGame( Context context, long gameid, long groupID )
     {
+        Assert.assertTrue( GROUPID_UNSPEC != groupID );
         ContentValues values = new ContentValues();
-        values.put( DBHelper.GROUPID, groupid );
+        values.put( DBHelper.GROUPID, groupID );
         updateRow( context, DBHelper.TABLE_NAME_SUM, gameid, values );
     }
 
