@@ -35,7 +35,8 @@ public class XWSumListPreference extends XWListPreference {
     {
         super.onAttachedToActivity();
 
-        if ( XWPrefs.getDebugEnabled( m_context ) ) {
+        if ( BuildConstants.IS_DEBUG_BUILD ||
+             XWPrefs.getDebugEnabled( m_context ) ) {
             CharSequence[] entries = getEntries();
             String lastRow
                 = m_context.getString( R.string.game_summary_field_rowid );
