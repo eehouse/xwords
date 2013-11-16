@@ -704,8 +704,6 @@ public class GamesList extends XWExpandableListActivity
             // Multiples can be deleted
             Utils.setItemVisible( menu, R.id.games_game_delete, 
                                   0 < nGamesSelected );
-            Utils.setItemVisible( menu, R.id.games_group_delete, 
-                                  0 < nGroupsSelected );
 
             // multiple games can be regrouped/reset.
             Utils.setItemVisible( menu, R.id.games_game_move, 
