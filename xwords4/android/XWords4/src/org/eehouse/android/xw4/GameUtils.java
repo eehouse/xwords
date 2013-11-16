@@ -536,7 +536,6 @@ public class GameUtils {
 
         if ( null != msgString ) {
             if ( DlgDelegate.NFC_BTN == chosen ) {
-                NFCUtils.buildAndPush( activity, msgString );
                 Utils.showToast( activity, "Tap the receiving device now" );
             } else {
                 boolean choseEmail = DlgDelegate.EMAIL_BTN == chosen;

@@ -65,7 +65,8 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 public class BoardActivity extends XWActivity 
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
                DictImportActivity.DownloadFinishedListener, 
-               ConnStatusHandler.ConnStatusCBacks {
+               ConnStatusHandler.ConnStatusCBacks,
+               NFCUtils.NFCActor {
 
     public static final String INTENT_KEY_CHAT = "chat";
 
@@ -1156,6 +1157,22 @@ public class BoardActivity extends XWActivity
                     }
                 } ); 
         }
+    }
+
+    //////////////////////////////////////////////////
+    // NFCUtils.NFCActor
+    //////////////////////////////////////////////////
+
+    public String makeNFCMessage()
+    {
+        String data = null;
+        if ( 0 < m_missing ) {  // Isn't there a better test??
+            String inviteID = GameUtils.makeRandomID();
+            data = NetLaunchInfo.makeLaunchJSON( this, m_room, inviteID,
+                                                 m_gi.dictLang, 
+                                                 m_gi.dictName, m_gi.nPlayers );
+        }
+        return data;
     }
 
     //////////////////////////////////////////////////

@@ -30,7 +30,14 @@ import android.nfc.NfcEvent;
 import android.nfc.NfcManager;
 import android.os.Parcelable;
 
+import junit.framework.Assert;
+
 public class NFCUtils {
+
+    public interface NFCActor {
+        String makeNFCMessage();
+    }
+
     private static boolean s_inSDK;
     private static SafeNFC s_safeNFC;
     static {
@@ -39,7 +46,6 @@ public class NFCUtils {
             s_safeNFC = new SafeNFCImpl();
         }
     }
-    private static String s_data = null;
 
     private static interface SafeNFC {
         public void register( Activity activity );
@@ -48,12 +54,15 @@ public class NFCUtils {
     private static class SafeNFCImpl implements SafeNFC {
         public void register( final Activity activity )
         {
+            Assert.assertTrue( activity instanceof NFCActor );
+            final NFCActor actor = (NFCActor)activity;
             NfcAdapter.CreateNdefMessageCallback cb = 
                 new NfcAdapter.CreateNdefMessageCallback() {
                     public NdefMessage createNdefMessage( NfcEvent event ) {
                         NdefMessage msg = null;
-                        if ( null != s_data ) {
-                            msg = makeMessage( activity, s_data );
+                        String data = actor.makeNFCMessage();
+                        if ( null != data ) {
+                            msg = makeMessage( activity, data );
                         }
                         return msg;
                     }
@@ -76,14 +85,6 @@ public class NFCUtils {
             result = null != adapter && adapter.isEnabled();
         }
         return result;
-    }
-
-    public static void buildAndPush( Activity activity, String data )
-    {
-        s_data = data;
-        // NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter( activity );
-        // NdefMessage msg = makeMessage( activity, data );
-        // nfcAdapter.setNdefPushMessage( msg, activity );
     }
 
     public static String getFromIntent( Intent intent )
