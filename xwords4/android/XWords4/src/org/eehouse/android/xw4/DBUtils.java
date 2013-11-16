@@ -124,24 +124,23 @@ public class DBUtils {
     {
         initDB( context );
         GameSummary summary = null;
+        String[] columns = { ROW_ID,
+                             DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
+                             DBHelper.MISSINGPLYRS,
+                             DBHelper.GAME_OVER, DBHelper.PLAYERS,
+                             DBHelper.TURN, DBHelper.GIFLAGS,
+                             DBHelper.CONTYPE, DBHelper.SERVERROLE,
+                             DBHelper.ROOMNAME, DBHelper.RELAYID, 
+                             /*DBHelper.SMSPHONE,*/ DBHelper.SEED, 
+                             DBHelper.DICTLANG, DBHelper.GAMEID,
+                             DBHelper.SCORES, DBHelper.HASMSGS,
+                             DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
+                             DBHelper.LASTMOVE, DBHelper.THUMBNAIL
+        };
+        String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { ROW_ID,
-                                 DBHelper.NUM_MOVES, DBHelper.NUM_PLAYERS,
-                                 DBHelper.MISSINGPLYRS,
-                                 DBHelper.GAME_OVER, DBHelper.PLAYERS,
-                                 DBHelper.TURN, DBHelper.GIFLAGS,
-                                 DBHelper.CONTYPE, DBHelper.SERVERROLE,
-                                 DBHelper.ROOMNAME, DBHelper.RELAYID, 
-                                 /*DBHelper.SMSPHONE,*/ DBHelper.SEED, 
-                                 DBHelper.DICTLANG, DBHelper.GAMEID,
-                                 DBHelper.SCORES, DBHelper.HASMSGS,
-                                 DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
-                                 DBHelper.LASTMOVE, DBHelper.THUMBNAIL
-            };
-            String selection = String.format( ROW_ID_FMT, lock.getRowid() );
-
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -277,6 +276,56 @@ public class DBUtils {
         long rowid = lock.getRowid();
         String selection = String.format( ROW_ID_FMT, rowid );
 
+        ContentValues values = null;
+        if ( null != summary ) {
+            values = new ContentValues();
+            values.put( DBHelper.NUM_MOVES, summary.nMoves );
+            values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
+            values.put( DBHelper.MISSINGPLYRS, summary.missingPlayers );
+            values.put( DBHelper.TURN, summary.turn );
+            values.put( DBHelper.GIFLAGS, summary.giflags() );
+            values.put( DBHelper.PLAYERS, 
+                        summary.summarizePlayers() );
+            values.put( DBHelper.DICTLANG, summary.dictLang );
+            values.put( DBHelper.GAMEID, summary.gameID );
+            values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
+            values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
+                
+            values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
+            values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
+            if ( null != inviteID ) {
+                values.put( DBHelper.INVITEID, inviteID );
+            }
+
+            if ( null != summary.scores ) {
+                StringBuffer sb = new StringBuffer();
+                for ( int score : summary.scores ) {
+                    sb.append( String.format( "%d ", score ) );
+                }
+                values.put( DBHelper.SCORES, sb.toString() );
+            }
+
+            if ( null != summary.conType ) {
+                values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
+                values.put( DBHelper.SEED, summary.seed );
+                switch( summary.conType ) {
+                case COMMS_CONN_RELAY:
+                    values.put( DBHelper.ROOMNAME, summary.roomName );
+                    values.put( DBHelper.RELAYID, summary.relayID );
+                    break;
+                case COMMS_CONN_BT:
+                case COMMS_CONN_SMS:
+                    values.put( DBHelper.REMOTEDEVS, 
+                                summary.summarizeDevs() );
+                    break;
+                }
+            }
+
+            values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
+
+            addThumb( summary.getThumbnail(), values );
+        }
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
@@ -284,53 +333,6 @@ public class DBUtils {
             if ( null == summary ) {
                 db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             } else {
-                ContentValues values = new ContentValues();
-                values.put( DBHelper.NUM_MOVES, summary.nMoves );
-                values.put( DBHelper.NUM_PLAYERS, summary.nPlayers );
-                values.put( DBHelper.MISSINGPLYRS, summary.missingPlayers );
-                values.put( DBHelper.TURN, summary.turn );
-                values.put( DBHelper.GIFLAGS, summary.giflags() );
-                values.put( DBHelper.PLAYERS, 
-                            summary.summarizePlayers() );
-                values.put( DBHelper.DICTLANG, summary.dictLang );
-                values.put( DBHelper.GAMEID, summary.gameID );
-                values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
-                values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
-                
-                values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
-                values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
-                if ( null != inviteID ) {
-                    values.put( DBHelper.INVITEID, inviteID );
-                }
-
-                if ( null != summary.scores ) {
-                    StringBuffer sb = new StringBuffer();
-                    for ( int score : summary.scores ) {
-                        sb.append( String.format( "%d ", score ) );
-                    }
-                    values.put( DBHelper.SCORES, sb.toString() );
-                }
-
-                if ( null != summary.conType ) {
-                    values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
-                    values.put( DBHelper.SEED, summary.seed );
-                    switch( summary.conType ) {
-                    case COMMS_CONN_RELAY:
-                        values.put( DBHelper.ROOMNAME, summary.roomName );
-                        values.put( DBHelper.RELAYID, summary.relayID );
-                        break;
-                    case COMMS_CONN_BT:
-                    case COMMS_CONN_SMS:
-                        values.put( DBHelper.REMOTEDEVS, 
-                                    summary.summarizeDevs() );
-                        break;
-                    }
-                }
-
-                values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
-
-                addThumb( summary.getThumbnail(), values );
-
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, selection, null );
                 Assert.assertTrue( result >= 0 );
@@ -344,13 +346,13 @@ public class DBUtils {
     public static int countGamesUsingLang( Context context, int lang )
     {
         int result = 0;
+        String selection = String.format( "%s = %d", DBHelper.DICTLANG,
+                                          lang );
+        // null for columns will return whole rows: bad
+        String[] columns = { DBHelper.DICTLANG };
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String selection = String.format( "%s = %d", DBHelper.DICTLANG,
-                                              lang );
-            // null for columns will return whole rows: bad
-            String[] columns = { DBHelper.DICTLANG };
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
 
@@ -364,16 +366,16 @@ public class DBUtils {
     public static int countGamesUsingDict( Context context, String dict )
     {
         int result = 0;
+        String pattern = String.format( "%%%s%s%s%%", 
+                                        DICTS_SEP, dict, DICTS_SEP );
+        String selection = String.format( "%s LIKE '%s'", 
+                                          DBHelper.DICTLIST, pattern );
+        // null for columns will return whole rows: bad.  But
+        // might as well make it an int for speed
+        String[] columns = { DBHelper.DICTLANG }; 
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String pattern = String.format( "%%%s%s%s%%", 
-                                            DICTS_SEP, dict, DICTS_SEP );
-            String selection = String.format( "%s LIKE '%s'", 
-                                              DBHelper.DICTLIST, pattern );
-            // null for columns will return whole rows: bad.  But
-            // might as well make it an int for speed
-            String[] columns = { DBHelper.DICTLANG }; 
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             result = cursor.getCount();
@@ -405,11 +407,11 @@ public class DBUtils {
                                int dflt )
     {
         int result = dflt;
+        String selection = String.format( ROW_ID_FMT, rowid );
+        String[] columns = { column };
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String selection = String.format( ROW_ID_FMT, rowid );
-            String[] columns = { column };
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -442,14 +444,13 @@ public class DBUtils {
                                       Bitmap thumb )
     {
         if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
+            long rowid = lock.getRowid();
+            String selection = String.format( ROW_ID_FMT, rowid );
+            ContentValues values = new ContentValues();
+            addThumb( thumb, values );
             initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-                ContentValues values = new ContentValues();
-                long rowid = lock.getRowid();
-                String selection = String.format( ROW_ID_FMT, rowid );
-
-                addThumb( thumb, values );
 
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, selection, null );
@@ -465,11 +466,11 @@ public class DBUtils {
     public static void clearThumbnails( Context context )
     {
         if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
+            ContentValues values = new ContentValues();
+            values.putNull( DBHelper.THUMBNAIL );
             initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-                ContentValues values = new ContentValues();
-                values.putNull( DBHelper.THUMBNAIL );
                 long result = db.update( DBHelper.TABLE_NAME_SUM,
                                          values, null, null );
                 db.close();
@@ -482,11 +483,11 @@ public class DBUtils {
     public static String getRelayID( Context context, long rowid )
     {
         String result = null;
+        String[] columns = { DBHelper.RELAYID };
+        String selection = String.format( ROW_ID_FMT, rowid );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { DBHelper.RELAYID };
-            String selection = String.format( ROW_ID_FMT, rowid );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -502,11 +503,11 @@ public class DBUtils {
     public static long[] getRowIDsFor( Context context, String relayID )
     {
         long[] result = null;
+        String[] columns = { ROW_ID };
+        String selection = DBHelper.RELAYID + "='" + relayID + "'";
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { ROW_ID };
-            String selection = DBHelper.RELAYID + "='" + relayID + "'";
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             result = new long[cursor.getCount()];
@@ -522,11 +523,11 @@ public class DBUtils {
     public static long[] getRowIDsFor( Context context, int gameID )
     {
         long[] result = null;
+        String[] columns = { ROW_ID };
+        String selection = String.format( DBHelper.GAMEID + "=%d", gameID );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { ROW_ID };
-            String selection = String.format( DBHelper.GAMEID + "=%d", gameID );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             result = new long[cursor.getCount()];
@@ -546,11 +547,11 @@ public class DBUtils {
     public static boolean haveGame( Context context, long rowid ) 
     {
         boolean result = false;
+        String[] columns = { ROW_ID };
+        String selection = String.format( ROW_ID + "=%d", rowid );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { ROW_ID };
-            String selection = String.format( ROW_ID + "=%d", rowid );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             Assert.assertTrue( 1 >= cursor.getCount() );
@@ -616,16 +617,16 @@ public class DBUtils {
                                             NetLaunchInfo nli )
     {
         Date result = null;
+        String[] columns = { DBHelper.CREATE_TIME };
+        String selection = 
+            String.format( "%s='%s' AND %s='%s' AND %s=%d AND %s=%d",
+                           DBHelper.ROOMNAME, nli.room, 
+                           DBHelper.INVITEID, nli.inviteID, 
+                           DBHelper.DICTLANG, nli.lang, 
+                           DBHelper.NUM_PLAYERS, nli.nPlayersT );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { DBHelper.CREATE_TIME };
-            String selection = 
-                String.format( "%s='%s' AND %s='%s' AND %s=%d AND %s=%d",
-                               DBHelper.ROOMNAME, nli.room, 
-                               DBHelper.INVITEID, nli.inviteID, 
-                               DBHelper.DICTLANG, nli.lang, 
-                               DBHelper.NUM_PLAYERS, nli.nPlayersT );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, 
                                       DBHelper.CREATE_TIME + " DESC" ); // order by
@@ -652,13 +653,13 @@ public class DBUtils {
     public static String[] getRelayIDs( Context context, long[][] rowIDs ) 
     {
         String[] result = null;
-        initDB( context );
+        String[] columns = { ROW_ID, DBHelper.RELAYID };
+        String selection = DBHelper.RELAYID + " NOT null";
         ArrayList<String> ids = new ArrayList<String>();
 
+        initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { ROW_ID, DBHelper.RELAYID };
-            String selection = DBHelper.RELAYID + " NOT null";
 
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
@@ -688,13 +689,13 @@ public class DBUtils {
     public static void addDeceased( Context context, String relayID, 
                                     int seed )
     {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.RELAYID, relayID );
+        values.put( DBHelper.SEED, seed );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            ContentValues values = new ContentValues();
-            values.put( DBHelper.RELAYID, relayID );
-            values.put( DBHelper.SEED, seed );
 
             try {
                 long result = db.replaceOrThrow( DBHelper.TABLE_NAME_OBITS,
@@ -710,11 +711,11 @@ public class DBUtils {
     {
         Obit[] result = null;
         ArrayList<Obit> al = new ArrayList<Obit>();
+        String[] columns = { DBHelper.RELAYID, DBHelper.SEED };
 
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { DBHelper.RELAYID, DBHelper.SEED };
             Cursor cursor = db.query( DBHelper.TABLE_NAME_OBITS, columns, 
                                       null, null, null, null, null );
             if ( 0 < cursor.getCount() ) {
@@ -761,20 +762,21 @@ public class DBUtils {
         Assert.assertTrue( GROUPID_UNSPEC != groupID );
         GameLock lock = null;
 
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.SNAPSHOT, bytes );
+
+        long timestamp = new Date().getTime();
+        values.put( DBHelper.CREATE_TIME, timestamp );
+        values.put( DBHelper.LASTPLAY_TIME, timestamp );
+        values.put( DBHelper.GROUPID, groupID );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            ContentValues values = new ContentValues();
-            values.put( DBHelper.SNAPSHOT, bytes );
-
-            long timestamp = new Date().getTime();
-            values.put( DBHelper.CREATE_TIME, timestamp );
-            values.put( DBHelper.LASTPLAY_TIME, timestamp );
-            values.put( DBHelper.GROUPID, groupID );
             values.put( DBHelper.VISID, maxVISID( db ) );
 
             long rowid = db.insert( DBHelper.TABLE_NAME_SUM, null, values );
+            db.close();
 
             setCached( rowid, null ); // force reread
 
@@ -816,12 +818,12 @@ public class DBUtils {
         Assert.assertTrue( ROWID_NOTFOUND != rowid );
         byte[] result = getCached( rowid );
         if ( null == result ) {
+            String[] columns = { DBHelper.SNAPSHOT };
+            String selection = String.format( ROW_ID_FMT, rowid );
             initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-                String[] columns = { DBHelper.SNAPSHOT };
-                String selection = String.format( ROW_ID_FMT, rowid );
                 Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                           selection, null, null, null, null );
                 if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -853,10 +855,10 @@ public class DBUtils {
     public static void deleteGame( Context context, GameLock lock )
     {
         Assert.assertTrue( lock.canWrite() );
+        String selection = String.format( ROW_ID_FMT, lock.getRowid() );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            String selection = String.format( ROW_ID_FMT, lock.getRowid() );
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             db.close();
         }
@@ -866,12 +868,12 @@ public class DBUtils {
     public static int getVisID( Context context, long rowid )
     {
         int result = ROWID_NOTFOUND;
+        String[] columns = { DBHelper.VISID };
+        String selection = String.format( ROW_ID_FMT, rowid );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-            String[] columns = { DBHelper.VISID };
-            String selection = String.format( ROW_ID_FMT, rowid );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -889,12 +891,12 @@ public class DBUtils {
     public static String getName( Context context, long rowid )
     {
         String result = null;
+        String[] columns = { DBHelper.GAME_NAME };
+        String selection = String.format( ROW_ID_FMT, rowid );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-            String[] columns = { DBHelper.GAME_NAME };
-            String selection = String.format( ROW_ID_FMT, rowid );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -1097,9 +1099,9 @@ public class DBUtils {
         initDB( context );
         String[] columns = { ROW_ID };
         String selection = String.format( "%s=%d", DBHelper.GROUPID, groupID );
+        String orderBy = DBHelper.CREATE_TIME + " DESC";
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String orderBy = DBHelper.CREATE_TIME + " DESC";
             Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                       selection, // selection
                                       null, // args
@@ -1191,17 +1193,17 @@ public class DBUtils {
     
     public static void deleteGroup( Context context, long groupid )
     {
+        // Nuke games having this group id
+        String selection = 
+            String.format( "%s=%d", DBHelper.GROUPID, groupid );
+
+        // And nuke the group record itself
+        selection = String.format( ROW_ID_FMT, groupid );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            // Nuke games having this group id
-            String selection = 
-                String.format( "%s=%d", DBHelper.GROUPID, groupid );
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
-
-            // And nuke the group record itself
-            selection = String.format( ROW_ID_FMT, groupid );
             db.delete( DBHelper.TABLE_NAME_GROUPS, selection, null );
 
             db.close();
@@ -1240,12 +1242,12 @@ public class DBUtils {
     {
         String result = null;
         if ( BuildConstants.CHAT_SUPPORTED ) {
+            String[] columns = { DBHelper.CHAT_HISTORY };
+            String selection = String.format( ROW_ID_FMT, rowid );
             initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getReadableDatabase();
 
-                String[] columns = { DBHelper.CHAT_HISTORY };
-                String selection = String.format( ROW_ID_FMT, rowid );
                 Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
                                           selection, null, null, null, null );
                 if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -1341,15 +1343,15 @@ public class DBUtils {
     {
         Assert.assertTrue( DictLoc.UNKNOWN != loc );
         DictBrowseState result = null;
+        String[] columns = { DBHelper.ITERPOS, DBHelper.ITERTOP,
+                             DBHelper.ITERMIN, DBHelper.ITERMAX,
+                             DBHelper.WORDCOUNTS, DBHelper.ITERPREFIX };
+        String selection = 
+            String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                           name, DBHelper.LOC, loc.ordinal() );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { DBHelper.ITERPOS, DBHelper.ITERTOP,
-                                 DBHelper.ITERMIN, DBHelper.ITERMAX,
-                                 DBHelper.WORDCOUNTS, DBHelper.ITERPREFIX };
-            String selection = 
-                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
-                               name, DBHelper.LOC, loc.ordinal() );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTBROWSE, columns, 
                                       selection, null, null, null, null );
             if ( 1 >= cursor.getCount() && cursor.moveToFirst() ) {
@@ -1388,25 +1390,26 @@ public class DBUtils {
                                        DictLoc loc, DictBrowseState state )
     {
         Assert.assertTrue( DictLoc.UNKNOWN != loc );
+        String selection = 
+            String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                           name, DBHelper.LOC, loc.ordinal() );
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.ITERPOS, state.m_pos );
+        values.put( DBHelper.ITERTOP, state.m_top );
+        values.put( DBHelper.ITERMIN, state.m_minShown );
+        values.put( DBHelper.ITERMAX, state.m_maxShown );
+        values.put( DBHelper.ITERPREFIX, state.m_prefix );
+        if ( null != state.m_counts ) {
+            String[] nums = new String[state.m_counts.length];
+            for ( int ii = 0; ii < nums.length; ++ii ) {
+                nums[ii] = String.format( "%d", state.m_counts[ii] );
+            }
+            values.put( DBHelper.WORDCOUNTS, TextUtils.join( ":", nums ) );
+        }
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            String selection = 
-                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
-                               name, DBHelper.LOC, loc.ordinal() );
-            ContentValues values = new ContentValues();
-            values.put( DBHelper.ITERPOS, state.m_pos );
-            values.put( DBHelper.ITERTOP, state.m_top );
-            values.put( DBHelper.ITERMIN, state.m_minShown );
-            values.put( DBHelper.ITERMAX, state.m_maxShown );
-            values.put( DBHelper.ITERPREFIX, state.m_prefix );
-            if ( null != state.m_counts ) {
-                String[] nums = new String[state.m_counts.length];
-                for ( int ii = 0; ii < nums.length; ++ii ) {
-                    nums[ii] = String.format( "%d", state.m_counts[ii] );
-                }
-                values.put( DBHelper.WORDCOUNTS, TextUtils.join( ":", nums ) );
-            }
             int result = db.update( DBHelper.TABLE_NAME_DICTBROWSE,
                                     values, selection, null );
             if ( 0 == result ) {
@@ -1429,12 +1432,12 @@ public class DBUtils {
     // Called from jni
     public static void dictsSetMD5Sum( Context context, String name, String sum )
     {
+        String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.MD5SUM, sum );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
-            ContentValues values = new ContentValues();
-            values.put( DBHelper.MD5SUM, sum );
             int result = db.update( DBHelper.TABLE_NAME_DICTINFO,
                                     values, selection, null );
             if ( 0 == result ) {
@@ -1448,14 +1451,14 @@ public class DBUtils {
     public static DictInfo dictsGetInfo( Context context, String name )
     {
         DictInfo result = null;
+        String[] columns = { DBHelper.LANGCODE,
+                             DBHelper.WORDCOUNT,
+                             DBHelper.MD5SUM,
+                             DBHelper.LOC };
+        String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            String[] columns = { DBHelper.LANGCODE,
-                                 DBHelper.WORDCOUNT,
-                                 DBHelper.MD5SUM,
-                                 DBHelper.LOC };
-            String selection = String.format( NAME_FMT, DBHelper.DICTNAME, name );
             Cursor cursor = db.query( DBHelper.TABLE_NAME_DICTINFO, columns, 
                                       selection, null, null, null, null );
             if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
@@ -1477,18 +1480,18 @@ public class DBUtils {
     public static void dictsSetInfo( Context context, DictUtils.DictAndLoc dal,
                                      DictInfo info )
     {
+        String selection = 
+            String.format( NAME_FMT, DBHelper.DICTNAME, dal.name );
+        ContentValues values = new ContentValues();
+
+        values.put( DBHelper.LANGCODE, info.langCode );
+        values.put( DBHelper.WORDCOUNT, info.wordCount );
+        values.put( DBHelper.MD5SUM, info.md5Sum );
+        values.put( DBHelper.LOC, dal.loc.ordinal() );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            String selection = 
-                String.format( NAME_FMT, DBHelper.DICTNAME, dal.name );
-            ContentValues values = new ContentValues();
-
-            values.put( DBHelper.LANGCODE, info.langCode );
-            values.put( DBHelper.WORDCOUNT, info.wordCount );
-            values.put( DBHelper.MD5SUM, info.md5Sum );
-            values.put( DBHelper.LOC, dal.loc.ordinal() );
-
             int result = db.update( DBHelper.TABLE_NAME_DICTINFO,
                                     values, selection, null );
             if ( 0 == result ) {
@@ -1502,16 +1505,17 @@ public class DBUtils {
     public static void dictsMoveInfo( Context context, String name,
                                       DictLoc fromLoc, DictLoc toLoc )
     {
+        String selection = 
+            String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                           name, DBHelper.LOC, fromLoc.ordinal() );
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.LOC, toLoc.ordinal() );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            String selection = 
-                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
-                               name, DBHelper.LOC, fromLoc.ordinal() );
-            ContentValues values = new ContentValues();
-            values.put( DBHelper.LOC, toLoc.ordinal() );
             db.update( DBHelper.TABLE_NAME_DICTINFO, values, selection, null );
-            db.update( DBHelper.TABLE_NAME_DICTBROWSE, values, selection, null);
+            db.update( DBHelper.TABLE_NAME_DICTBROWSE, values, selection, null );
             db.close();
         }
     }
@@ -1519,12 +1523,13 @@ public class DBUtils {
     public static void dictsRemoveInfo( Context context, 
                                         DictUtils.DictAndLoc dal )
     {
+        String selection = 
+            String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
+                           dal.name, DBHelper.LOC, dal.loc.ordinal() );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            String selection = 
-                String.format( NAMELOC_FMT, DBHelper.DICTNAME, 
-                               dal.name, DBHelper.LOC, dal.loc.ordinal() );
             db.delete( DBHelper.TABLE_NAME_DICTINFO, selection, null );
             db.delete( DBHelper.TABLE_NAME_DICTBROWSE, selection, null );
             db.close();
@@ -1595,11 +1600,11 @@ public class DBUtils {
     private static void updateRow( Context context, String table,
                                    long rowid, ContentValues values )
     {
+        String selection = String.format( ROW_ID_FMT, rowid );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            String selection = String.format( ROW_ID_FMT, rowid );
 
             int result = db.update( table, values, selection, null );
             db.close();
