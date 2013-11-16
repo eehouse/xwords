@@ -106,6 +106,12 @@ public class XWActivity extends Activity
         m_delegate.showAboutDialog();
     }
 
+    protected void showNotAgainDlgThen( String msg, int prefsKey,
+                                        int action )
+    {
+        m_delegate.showNotAgainDlgThen( msg, prefsKey, action, null );
+    }
+
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         int action )
     {

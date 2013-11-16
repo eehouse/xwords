@@ -828,8 +828,11 @@ public class BoardActivity extends XWActivity
             break;
 
         case R.id.board_menu_trade:
-            showNotAgainDlgThen( R.string.not_again_trading, 
-                                 R.string.key_notagain_trading,
+            String msg = getString( R.string.not_again_trading );
+            int strID = ABUtils.haveActionBar() ? R.string.not_again_trading_menu
+                : R.string. not_again_trading_buttons;
+            msg += getString( strID );
+            showNotAgainDlgThen( msg, R.string.key_notagain_trading,
                                  START_TRADE_ACTION );
             break;
 
@@ -2258,7 +2261,7 @@ public class BoardActivity extends XWActivity
         Button button = (Button)findViewById( id );
         if ( null != button ) {
             if ( ABUtils.haveActionBar() ) {
-                button.setVisibility( View.GONE );
+                button.setVisibility( View.INVISIBLE );
             } else {
                 button.setOnClickListener( this );
             }

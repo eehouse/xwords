@@ -161,6 +161,14 @@ public class DlgDelegate {
                                      final int callbackID, 
                                      final Object[] params )
     {
+        showNotAgainDlgThen( m_activity.getString( msgID ), prefsKey, 
+                             callbackID, params );
+    }
+
+    public void showNotAgainDlgThen( String msg, int prefsKey,
+                                     final int callbackID, 
+                                     final Object[] params )
+    {
         if ( XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
             // If it's set, do the action without bothering with the
             // dialog
@@ -175,7 +183,6 @@ public class DlgDelegate {
                     });
             }
         } else {
-            String msg = m_activity.getString( msgID );
             DlgState state = 
                 new DlgState( DIALOG_NOTAGAIN, msg, callbackID, prefsKey, 
                               params );

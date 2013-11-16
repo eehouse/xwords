@@ -1601,9 +1601,13 @@
 
     <!-- Shown when the user chooses the "board_menu_trade" menu -->
     <string name="not_again_trading">You are entering tile-exchange
-      mode.  Tap tiles to add/remove them from the set to be
-      exchanged.  Use the buttons to commit your turn or exit exchange
-      mode.</string>
+      mode.\n\nTap tiles to add/remove them from the set to be
+      exchanged.\n\n</string>
+
+      <string name="not_again_trading_buttons">Use the buttons to
+      commit your turn or exit exchange mode.</string>
+      <string name="not_again_trading_menu">Use the menu or action bar
+      to commit your turn or exit exchange mode.</string>
 
     <!-- Currently not used -->
     <!-- <string name="not_again_newgame">The new game you have created has -->
@@ -1713,7 +1717,7 @@
          another players turn. The idea is to give a hint about how to
          find out about recent moves. -->
     <string name="not_again_turnchanged">The player whose turn it is
-      is drawn large in the scoreboard.  Hold your finger on a name in
+      is drawn large in the scoreboard.\n\nHold your finger on a name in
       the scoreboard to get details about that player\'s most recent
       move.</string>
 
