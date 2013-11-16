@@ -76,11 +76,16 @@ void board_reset( BoardCtxt* board );
 #ifdef COMMON_LAYOUT
 
 typedef struct _BoardDims {
+    /* The whole board */
     XP_U16 left, top;
     XP_U16 width, height;
+    /* scoreboard (full width) */
     XP_U16 scoreWidth, scoreHt;
-    XP_U16 boardHt;
+    /* board */
+    XP_U16 boardWidth, boardHt;
+    /* tray (full width) */
     XP_U16 trayTop, trayHt;
+    /* other */
     XP_U16 cellSize, maxCellSize;
     XP_U16 timerWidth;
 } BoardDims;

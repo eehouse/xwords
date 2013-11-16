@@ -410,14 +410,14 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
 
     ldims.left = bLeft;
     ldims.top = bTop;
+    ldims.width = bWidth;
 
+    ldims.boardWidth = bWidth;
 	for ( firstPass = XP_TRUE; ; ) {
-		ldims.width = bWidth;
-
-		XP_U16 cellSize = bWidth / nCells;
+		XP_U16 cellSize = ldims.boardWidth / nCells;
 		if ( cellSize > maxCellSize ) {
 			cellSize = maxCellSize;
-			ldims.width = nCells * cellSize;
+			ldims.boardWidth = nCells * cellSize;
 		}
 		ldims.maxCellSize = maxCellSize;
 
@@ -437,7 +437,7 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
 			int cellWidth = 2 * (bHeight / ( 4 + 3 + (2*nCells)));
 			if ( firstPass && cellWidth >= fontHt ) {
 				firstPass = XP_FALSE;
-				bWidth = nCells * cellWidth;
+                ldims.boardWidth = nCells * cellWidth;
 				continue;
 			} else {
 				nToScroll = nCells - 
@@ -491,8 +491,9 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
 void
 board_applyLayout( BoardCtxt* board, const BoardDims* dims )
 {
-    board_setPos( board, dims->left, dims->top + dims->scoreHt, 
-                  dims->width, dims->top + dims->scoreHt + dims->boardHt,
+    XP_U16 margin = (dims->width - dims->boardWidth) / 2;
+    board_setPos( board, dims->left + margin, dims->top + dims->scoreHt, 
+                  dims->boardWidth, dims->top + dims->scoreHt + dims->boardHt,
                   dims->maxCellSize, XP_FALSE );
 
     board_setScoreboardLoc( board, dims->left, dims->top,
