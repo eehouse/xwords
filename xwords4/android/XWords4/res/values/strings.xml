@@ -301,7 +301,7 @@
 
     <!-- text for separator above the list of players that's used for
          non-networked games -->
-    <string name="players_label_standalone">Players</string>
+    <string name="players_label_standalone">Players (tap to edit)</string>
 
     <!-- text for separator above the list of players that's used for
          networked games.  The numbers of local and non-local players
