@@ -470,7 +470,7 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
         ldims.scoreWidth = scoreWidth;
 
 		ldims.boardHt = cellSize * nCells;
-		ldims.trayTop = scoreHt + (cellSize * (nCells-nToScroll));
+		ldims.trayTop = ldims.top + scoreHt + (cellSize * (nCells-nToScroll));
 		ldims.height = heightUsed;
 		ldims.cellSize = cellSize;
 
@@ -493,7 +493,7 @@ board_applyLayout( BoardCtxt* board, const BoardDims* dims )
 {
     XP_U16 margin = (dims->width - dims->boardWidth) / 2;
     board_setPos( board, dims->left + margin, dims->top + dims->scoreHt, 
-                  dims->boardWidth, dims->top + dims->scoreHt + dims->boardHt,
+                  dims->boardWidth, dims->boardHt,
                   dims->maxCellSize, XP_FALSE );
 
     board_setScoreboardLoc( board, dims->left, dims->top,
