@@ -621,7 +621,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
 #else
                         0, 0,
 #endif
-                        bdWidth-100, 16, 16, 
+                        bdWidth-25, 16, 16, 
                         XP_FALSE, &dims );
     board_applyLayout( board, &dims );
 
