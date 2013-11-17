@@ -112,6 +112,7 @@ public class JNIThread extends Thread {
         public boolean canChat;
         public boolean canShuffle;
         public boolean curTurnSelected;
+        public boolean canHideRack;
         public GameStateInfo clone() {
             GameStateInfo obj = null;
             try {

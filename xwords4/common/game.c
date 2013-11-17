@@ -324,6 +324,7 @@ game_getState( const XWGame* game, GameStateInfo* gsi )
     gsi->inTrade = board_inTrade( game->board, &gsi->tradeTilesSelected );
     gsi->canChat = !!game->comms && comms_canChat( game->comms );
     gsi->canShuffle = board_canShuffle( game->board );
+    gsi->canHideRack = board_canHideRack( game->board );
 }
 
 void

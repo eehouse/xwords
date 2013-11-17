@@ -42,6 +42,7 @@ typedef struct _GameStateInfo {
     XP_Bool canChat;
     XP_Bool canShuffle;
     XP_Bool curTurnSelected;
+    XP_Bool canHideRack;
 } GameStateInfo;
 
 typedef struct XWGame {

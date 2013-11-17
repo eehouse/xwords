@@ -698,6 +698,14 @@ board_canShuffle( const BoardCtxt* board )
 }
 
 XP_Bool
+board_canHideRack( const BoardCtxt* board )
+{
+    XP_Bool result = board->boardObscuresTray || !board->gameOver;
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
+XP_Bool
 board_canTogglePending( const BoardCtxt* board )
 {
     return TRAY_REVEALED == board->trayVisState

@@ -1399,6 +1399,21 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getGi
     XWJNI_END();
 }
 
+static const SetInfo gsi_ints[] = {
+    ARR_MEMBER( GameStateInfo, visTileCount ),
+    ARR_MEMBER( GameStateInfo, trayVisState ),
+};
+static const SetInfo gsi_bools[] = {
+    ARR_MEMBER( GameStateInfo,canHint ),
+    ARR_MEMBER( GameStateInfo, canRedo ),
+    ARR_MEMBER( GameStateInfo, inTrade ),
+    ARR_MEMBER( GameStateInfo, tradeTilesSelected ),
+    ARR_MEMBER( GameStateInfo, canChat ),
+    ARR_MEMBER( GameStateInfo, canShuffle ),
+    ARR_MEMBER( GameStateInfo, curTurnSelected ),
+    ARR_MEMBER( GameStateInfo, canHideRack ),
+};
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1getState
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jgsi )
@@ -1407,15 +1422,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getState
     GameStateInfo info;
     game_getState( &state->game, &info );
 
-    setInt( env, jgsi, "visTileCount", info.visTileCount );
-    setInt( env, jgsi, "trayVisState", info.trayVisState );
-    setBool( env, jgsi, "canHint", info.canHint );
-    setBool( env, jgsi, "canRedo", info.canRedo);
-    setBool( env, jgsi, "inTrade", info.inTrade );
-    setBool( env, jgsi, "tradeTilesSelected", info.tradeTilesSelected );
-    setBool( env, jgsi, "canChat", info.canChat );
-    setBool( env, jgsi, "canShuffle", info.canShuffle );
-    setBool( env, jgsi, "curTurnSelected", info.curTurnSelected );
+    setInts( env, jgsi, (void*)&info, gsi_ints, VSIZE(gsi_ints) );
+    setBools( env, jgsi, (void*)&info, gsi_bools, VSIZE(gsi_bools) );
 
     XWJNI_END();
 }

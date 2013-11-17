@@ -726,8 +726,6 @@ public class BoardActivity extends XWActivity
         MenuItem item;
         int strId;
 
-        updateMenus( menu );
-
         if ( null != m_gsi ) {
             inTrade = m_gsi.inTrade;
             menu.setGroupVisible( R.id.group_done, !inTrade );
@@ -740,11 +738,21 @@ public class BoardActivity extends XWActivity
             }
             item = menu.findItem( R.id.board_menu_tray );
             item.setTitle( strId );
+
+            hideShowItem( menu, R.id.board_menu_flip, m_gsi.visTileCount >= 1 );
+            hideShowItem( menu, R.id.board_menu_toggle, m_gsi.visTileCount >= 1 );
+            hideShowItem( menu, R.id.board_menu_juggle, m_gsi.canShuffle );
+            hideShowItem( menu, R.id.board_menu_undo_current, m_gsi.canRedo );
+            hideShowItem( menu, R.id.board_menu_hint_prev, m_gsi.canHint );
+            hideShowItem( menu, R.id.board_menu_hint_next, m_gsi.canHint );
+            hideShowItem( menu, R.id.board_menu_chat, 
+                          BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
+            hideShowItem( menu, R.id.board_menu_tray, 
+                          !inTrade && m_gsi.canHideRack );
         }
 
         Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_missing );
         Utils.setItemVisible( menu, R.id.board_menu_undo_last, !inTrade );
-        Utils.setItemVisible( menu, R.id.board_menu_tray, !inTrade );
 
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
@@ -2158,20 +2166,6 @@ public class BoardActivity extends XWActivity
         MenuItem item = menu.findItem( id );
         if ( null != item ) {
             item.setVisible( visible );
-        }
-    }
-
-    private void updateMenus( Menu menu )
-    {
-        if ( null != m_gsi ) {
-            hideShowItem( menu, R.id.board_menu_flip, m_gsi.visTileCount >= 1 );
-            hideShowItem( menu, R.id.board_menu_toggle, m_gsi.visTileCount >= 1 );
-            hideShowItem( menu, R.id.board_menu_juggle, m_gsi.canShuffle );
-            hideShowItem( menu, R.id.board_menu_undo_current, m_gsi.canRedo );
-            hideShowItem( menu, R.id.board_menu_hint_prev, m_gsi.canHint );
-            hideShowItem( menu, R.id.board_menu_hint_next, m_gsi.canHint );
-            hideShowItem( menu, R.id.board_menu_chat, 
-                          BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
         }
     }
 
