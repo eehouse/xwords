@@ -367,7 +367,7 @@ public class RelayService extends XWService
     
     private boolean startFetchThreadIf()
     {
-        DbgUtils.logf( "startFetchThreadIf()" );
+        // DbgUtils.logf( "startFetchThreadIf()" );
         boolean handled = !XWApp.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
             m_fetchThread = new Thread( null, new Runnable() {
@@ -416,7 +416,7 @@ public class RelayService extends XWService
                                     resetExitTimer();
                                     gotPacket( packet );
                                 } catch ( java.io.InterruptedIOException iioe ) {
-                                    DbgUtils.logf( "FYI: udp receive timeout" );
+                                    // DbgUtils.logf( "FYI: udp receive timeout" );
                                 } catch( java.io.IOException ioe ) {
                                     break;
                                 }
@@ -1191,7 +1191,7 @@ public class RelayService extends XWService
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;
             result = interval < MAX_KEEPALIVE_SECS;
         }
-        DbgUtils.logf( "RelayService.shouldMaintainConnection=>%b", result );
+        // DbgUtils.logf( "RelayService.shouldMaintainConnection=>%b", result );
         return result;
     }
 
