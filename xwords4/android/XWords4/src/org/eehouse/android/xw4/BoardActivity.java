@@ -775,7 +775,7 @@ public class BoardActivity extends XWActivity
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
                               inTrade && m_gsi.tradeTilesSelected );
         Utils.setItemVisible( menu, R.id.board_menu_trade, 
-                              !m_gameOver && !inTrade );
+                              0 == m_missing && !m_gameOver && !inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_game_resign, !inTrade );
 
         if ( !inTrade ) {
