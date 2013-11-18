@@ -86,6 +86,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_GETDICT = DLG_OKONLY + 13;
     private static final int GAME_OVER = DLG_OKONLY + 14;
     private static final int DLG_CONNSTAT = DLG_OKONLY + 15;
+    private static final int ENABLE_NFC = DLG_OKONLY + 16;
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
@@ -512,6 +513,22 @@ public class BoardActivity extends XWActivity
                 }
                 break;
 
+            case ENABLE_NFC:
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            startActivity( new Intent("android.settings"
+                                                      + ".NFC_SETTINGS" ) );
+                        }
+                    };
+                dialog = new AlertDialog.Builder( this )
+                    .setTitle( R.string.info_title )
+                    .setMessage( R.string.enable_nfc )
+                    .setPositiveButton( R.string.button_cancel, null )
+                    .setNegativeButton( R.string.button_go_settings, lstnr )
+                    .create();
+                break;
+
             default:
                 // just drop it; super.onCreateDialog likely failed
                 break;
@@ -918,9 +935,14 @@ public class BoardActivity extends XWActivity
     {
         if ( LAUNCH_INVITE_ACTION == id ) {
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
-                GameUtils.launchInviteActivity( this, which,
-                                                m_room, null, m_gi.dictLang, 
-                                                m_gi.dictName, m_gi.nPlayers );
+                if ( DlgDelegate.NFC_BTN == which
+                     && !NFCUtils.nfcAvail( this )[1] ) {
+                    showDialog( ENABLE_NFC );
+                } else {
+                    GameUtils.launchInviteActivity( this, which,
+                                                    m_room, null, m_gi.dictLang, 
+                                                    m_gi.dictName, m_gi.nPlayers );
+                }
             }
         } else if ( AlertDialog.BUTTON_POSITIVE == which ) {
             JNICmd cmd = JNICmd.CMD_NONE;

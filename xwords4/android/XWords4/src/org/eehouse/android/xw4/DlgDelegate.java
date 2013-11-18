@@ -229,7 +229,7 @@ public class DlgDelegate {
     public void showInviteChoicesThen( final int callbackID )
     {
         if ( Utils.deviceSupportsSMS( m_activity )
-             || NFCUtils.nfcAvail( m_activity )[1] ) {
+             || NFCUtils.nfcAvail( m_activity )[0] ) {
             DlgState state = new DlgState( INVITE_CHOICES_THEN, callbackID );
             addState( state );
             m_activity.showDialog( INVITE_CHOICES_THEN );
@@ -415,7 +415,7 @@ public class DlgDelegate {
         OnClickListener lstnr = mkCallbackClickListener( state );
 
         boolean haveSMS = Utils.deviceSupportsSMS( m_activity );
-        boolean haveNFC = NFCUtils.nfcAvail( m_activity )[1];
+        boolean haveNFC = NFCUtils.nfcAvail( m_activity )[0];
         int msgID;
         if ( haveSMS && haveNFC ) {
             msgID = R.string.nfc_or_sms_or_email;

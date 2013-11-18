@@ -2176,4 +2176,8 @@
     <string name="dropped_dupe">Invitation ignored: already used</string>
     <string name="cur_menu_markerf">%1$s (yours)</string>
     <string name="board_menu_invite">Invite</string>
+
+    <string name="enable_nfc">NFC is turned off on this device. Use
+    the Android Settings app to turn it on .</string>
+    <string name="button_go_settings">Launch Settings</string>
 </resources>
