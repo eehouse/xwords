@@ -39,6 +39,7 @@ public class NFCUtils {
     }
 
     private static boolean s_inSDK;
+    private static boolean[] s_nfcAvail;
     private static SafeNFC s_safeNFC;
     static {
         s_inSDK = 14 <= Integer.valueOf( android.os.Build.VERSION.SDK );
@@ -75,16 +76,21 @@ public class NFCUtils {
         }
     }
 
-    public static boolean nfcAvail( Context context )
+    // Return array of two booleans, the first indicating whether the
+    // device supports NFC and the second whether it's on.  Only the
+    // second can change.
+    public static boolean[] nfcAvail( Context context )
     {
-        boolean result = s_inSDK;
-        if ( result ) {
-            NfcManager manager = 
-                (NfcManager)context.getSystemService( Context.NFC_SERVICE );
-            NfcAdapter adapter = manager.getDefaultAdapter();
-            result = null != adapter && adapter.isEnabled();
+        if ( null == s_nfcAvail ) {
+            s_nfcAvail = new boolean[] { 
+                s_inSDK && null != getNFCAdapter( context ),
+                false
+            };
         }
-        return result;
+        if ( s_nfcAvail[0] ) {
+            s_nfcAvail[1] = getNFCAdapter( context ).isEnabled();
+        }
+        return s_nfcAvail;
     }
 
     public static String getFromIntent( Intent intent )
@@ -122,4 +128,12 @@ public class NFCUtils {
             });
         return msg;
     }
+
+    private static NfcAdapter getNFCAdapter( Context context )
+    {
+        NfcManager manager = 
+            (NfcManager)context.getSystemService( Context.NFC_SERVICE );
+        return manager.getDefaultAdapter();
+    }
+    
 }
