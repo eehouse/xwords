@@ -25,12 +25,17 @@ import android.util.AttributeSet;
 
 public class XWSumListPreference extends XWListPreference {
 
+    private static final int[] s_ADDROWS = {
+        R.string.game_summary_field_rowid,
+        R.string.game_summary_field_gameid,
+    };
+
     public XWSumListPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
     }
 
-    // Why I exist: insert the rowid line if debug is on
+    // Why I exist: insert the rowid and gameid lines if debug is on
     protected void onAttachedToActivity()
     {
         super.onAttachedToActivity();
@@ -38,14 +43,23 @@ public class XWSumListPreference extends XWListPreference {
         if ( BuildConstants.IS_DEBUG_BUILD ||
              XWPrefs.getDebugEnabled( m_context ) ) {
             CharSequence[] entries = getEntries();
-            String lastRow
-                = m_context.getString( R.string.game_summary_field_rowid );
-            if ( !entries[entries.length - 1].equals( lastRow ) ) {
+            CharSequence lastRow = entries[entries.length - 1];
+            boolean done = false;
+
+            String[] addRows = new String[s_ADDROWS.length];
+            for ( int ii = 0; !done && ii < s_ADDROWS.length; ++ii ) {
+                String addRow = m_context.getString( s_ADDROWS[ii] );
+                done = lastRow.equals( addRow );
+                addRows[ii] = addRow;
+            }
+
+            if ( !done ) {
                 CharSequence[] newEntries = 
-                    new CharSequence[1 + entries.length];
+                    new CharSequence[entries.length + addRows.length];
                 System.arraycopy( entries, 0, newEntries, 0, 
                                   entries.length );
-                newEntries[entries.length] = lastRow;
+                System.arraycopy( addRows, 0, newEntries, entries.length, 
+                                  addRows.length );
                 setEntries( newEntries );
 
                 setEntryValues( newEntries );

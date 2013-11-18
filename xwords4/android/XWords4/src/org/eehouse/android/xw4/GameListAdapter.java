@@ -443,11 +443,12 @@ public class GameListAdapter implements ExpandableListAdapter {
     private int fieldToID( String fieldName )
     {
         int[] ids = {
-            R.string.game_summary_field_empty
-            ,R.string.game_summary_field_language
-            ,R.string.game_summary_field_opponents
-            ,R.string.game_summary_field_state
-            ,R.string.game_summary_field_rowid
+            R.string.game_summary_field_empty,
+            R.string.game_summary_field_language,
+            R.string.game_summary_field_opponents,
+            R.string.game_summary_field_state,
+            R.string.game_summary_field_rowid,
+            R.string.game_summary_field_gameid,
         };
         int result = -1;
         for ( int id : ids ) {
