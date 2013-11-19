@@ -2181,4 +2181,7 @@
     <string name="enable_nfc">NFC is turned off on this device. Use
     the Android Settings app to turn it on .</string>
     <string name="button_go_settings">Launch Settings</string>
+
+  <string name="no_hide_titlebar">This setting is ignored on devices
+  like yours that depend on the \"Action bar\".</string>
 </resources>
