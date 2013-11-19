@@ -128,6 +128,7 @@ public class BoardActivity extends XWActivity
     private int m_jniGamePtr;
     private GameLock m_gameLock;
     private CurGameInfo m_gi;
+    private GameSummary m_summary;
     private CommsTransport m_xport;
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
@@ -1197,8 +1198,10 @@ public class BoardActivity extends XWActivity
     {
         String data = null;
         if ( 0 < m_missing ) {  // Isn't there a better test??
-            String inviteID = GameUtils.makeRandomID();
-            data = NetLaunchInfo.makeLaunchJSON( this, m_room, inviteID,
+            String inviteID = String.format( "%X", m_gi.gameID );
+            String room = m_summary.roomName;
+            Assert.assertNotNull( room );
+            data = NetLaunchInfo.makeLaunchJSON( this, room, inviteID,
                                                  m_gi.dictLang, 
                                                  m_gi.dictName, m_gi.nPlayers );
         }
@@ -1843,6 +1846,9 @@ public class BoardActivity extends XWActivity
                                                 dictNames, pairs.m_bytes, 
                                                 pairs.m_paths, langName );
                     }
+
+                    m_summary = new GameSummary( this, m_gi );
+                    XwJNI.game_summarize( m_jniGamePtr, m_summary );
 
                     Handler handler = new Handler() {
                             public void handleMessage( Message msg ) {

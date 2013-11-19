@@ -411,7 +411,8 @@ public class GameUtils {
     {
         long rowid = -1;
 
-        CurGameInfo gi = new CurGameInfo( context, true );
+        Assert.assertNotNull( inviteID );
+        CurGameInfo gi = new CurGameInfo( context, inviteID );
         gi.setLang( lang[0], dict[0] );
         lang[0] = gi.dictLang;
         dict[0] = gi.dictName;

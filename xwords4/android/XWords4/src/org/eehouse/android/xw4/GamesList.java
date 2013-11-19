@@ -1068,9 +1068,9 @@ public class GamesList extends XWExpandableListActivity
             String msg = getString( R.string.dup_game_queryf, 
                                     create.toString() );
             m_netLaunchInfo = nli;
-            showConfirmThen( msg, GamesActions.NEW_NET_GAME.ordinal() );
+            showConfirmThen( msg, GamesActions.NEW_NET_GAME.ordinal(), nli );
         } else {
-            Utils.showToast( this, R.string.dropped_dupe );
+            showOKOnlyDialog( R.string.dropped_dupe );
         }
     } // startNewNetGame
 
@@ -1252,9 +1252,9 @@ public class GamesList extends XWExpandableListActivity
         launchGame( rowid, false );
     }
 
-    private void makeNewNetGame( NetLaunchInfo info )
+    private void makeNewNetGame( NetLaunchInfo nli )
     {
-        long rowid = GameUtils.makeNewNetGame( this, info );
+        long rowid = GameUtils.makeNewNetGame( this, nli );
         launchGame( rowid, true );
     }
 
