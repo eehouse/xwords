@@ -522,9 +522,8 @@ public class GameUtils {
                                              int lang, String dict, 
                                              int nPlayers )
     {
-        if ( null == inviteID ) {
-            inviteID = makeRandomID();
-        }
+        Assert.assertNotNull( inviteID );
+
         String msgString;
         if ( DlgDelegate.NFC_BTN == chosen ) {
             msgString = NetLaunchInfo.makeLaunchJSON( activity, room, inviteID,
@@ -870,10 +869,17 @@ public class GameUtils {
         activity.startActivity( intent );
     }
 
+    public static String formatGameID( int gameID )
+    {
+        Assert.assertTrue( 0 != gameID );
+        // substring: Keep it short so fits in SMS better
+        return String.format( "%X", gameID ).substring( 0, 4 );
+    }
+
     public static String makeRandomID()
     {
         int rint = newGameID();
-        return String.format( "%X", rint ).substring( 0, 4 );
+        return formatGameID( rint );
     }
 
     public static int newGameID()

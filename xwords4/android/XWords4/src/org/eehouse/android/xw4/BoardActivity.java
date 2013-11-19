@@ -940,9 +940,11 @@ public class BoardActivity extends XWActivity
                      && !NFCUtils.nfcAvail( this )[1] ) {
                     showDialog( ENABLE_NFC );
                 } else {
-                    GameUtils.launchInviteActivity( this, which,
-                                                    m_room, null, m_gi.dictLang, 
-                                                    m_gi.dictName, m_gi.nPlayers );
+                    String inviteID = GameUtils.formatGameID( m_gi.gameID );
+                    GameUtils.launchInviteActivity( this, which, m_room, 
+                                                    inviteID, m_gi.dictLang, 
+                                                    m_gi.dictName, 
+                                                    m_gi.nPlayers );
                 }
             }
         } else if ( AlertDialog.BUTTON_POSITIVE == which ) {
