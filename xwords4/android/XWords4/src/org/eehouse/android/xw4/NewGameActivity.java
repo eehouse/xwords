@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2013 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -59,7 +59,8 @@ public class NewGameActivity extends XWActivity {
 
     // Dialogs
     private static final int NAME_GAME = DlgDelegate.DIALOG_LAST + 1;
-
+    private static final int ENABLE_NFC = DlgDelegate.DIALOG_LAST + 2;
+    
     private boolean m_showsOn;
     private boolean m_nameForBT;
     private boolean m_firingPrefs = false;
@@ -103,7 +104,7 @@ public class NewGameActivity extends XWActivity {
                 }
             } );
 
-        button = (Button)findViewById( R.id.newgame_invite );
+        button = (Button)findViewById( R.id.newgame_invite_net );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
@@ -255,6 +256,9 @@ public class NewGameActivity extends XWActivity {
                 Utils.setRemoveOnDismiss( this, dialog, id );
 
                 break;
+            case ENABLE_NFC:
+                dialog = NFCUtils.makeEnableNFCDialog( this );
+                break;
             }
         }
         return dialog;
@@ -318,34 +322,40 @@ public class NewGameActivity extends XWActivity {
     private void makeNewGame( boolean networked, boolean launch,
                               int chosen )
     {
-        String room = null;
-        String inviteID = null;
-        long rowid;
-        int[] lang = {0};
-        String[] dict = {null};
-        final int nPlayers = 2; // hard-coded for no-configure case
-
-        if ( networked ) {
-            room = GameUtils.makeRandomID();
-            inviteID = GameUtils.makeRandomID();
-            rowid = GameUtils.makeNewNetGame( this, m_groupID, room, inviteID, 
-                                              lang, dict, nPlayers, 1 );
+        if ( DlgDelegate.NFC_BTN == chosen
+             && !NFCUtils.nfcAvail( this )[1] ) {
+            showDialog( ENABLE_NFC );
         } else {
-            rowid = GameUtils.saveNew( this, new CurGameInfo( this ), m_groupID );
-        }
+            String room = null;
+            String inviteID = null;
+            long rowid;
+            int[] lang = {0};
+            String[] dict = {null};
+            final int nPlayers = 2; // hard-coded for no-configure case
 
-        if ( launch ) {
-            GameUtils.launchGame( this, rowid, networked );
             if ( networked ) {
-                GameUtils.launchInviteActivity( this, chosen, room, 
-                                                inviteID, lang[0], dict[0], 
-                                                nPlayers );
+                room = GameUtils.makeRandomID();
+                inviteID = GameUtils.makeRandomID();
+                rowid = GameUtils.makeNewNetGame( this, m_groupID, room, inviteID, 
+                                                  lang, dict, nPlayers, 1 );
+            } else {
+                rowid = GameUtils.saveNew( this, new CurGameInfo( this ), 
+                                           m_groupID );
             }
-        } else {
-            GameUtils.doConfig( this, rowid, GameConfig.class );
-        }
 
-        finish();
+            if ( launch ) {
+                GameUtils.launchGame( this, rowid, networked );
+                if ( networked ) {
+                    GameUtils.launchInviteActivity( this, chosen, room, 
+                                                    inviteID, lang[0], dict[0],
+                                                    nPlayers );
+                }
+            } else {
+                GameUtils.doConfig( this, rowid, GameConfig.class );
+            }
+
+            finish();
+        }
     }
 
     private void makeNewBTGame( boolean useDefaults )

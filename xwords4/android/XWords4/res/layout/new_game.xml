@@ -88,7 +88,7 @@
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
                   >
-      <Button android:id="@+id/newgame_invite"
+      <Button android:id="@+id/newgame_invite_net"
               android:text="@string/newgame_invite" 
               style="@style/spaced_buttons"
               />

@@ -515,19 +515,7 @@ public class BoardActivity extends XWActivity
                 break;
 
             case ENABLE_NFC:
-                lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dialog, 
-                                             int item ) {
-                            startActivity( new Intent("android.settings"
-                                                      + ".NFC_SETTINGS" ) );
-                        }
-                    };
-                dialog = new AlertDialog.Builder( this )
-                    .setTitle( R.string.info_title )
-                    .setMessage( R.string.enable_nfc )
-                    .setPositiveButton( R.string.button_cancel, null )
-                    .setNegativeButton( R.string.button_go_settings, lstnr )
-                    .create();
+                dialog = NFCUtils.makeEnableNFCDialog( this );
                 break;
 
             default:

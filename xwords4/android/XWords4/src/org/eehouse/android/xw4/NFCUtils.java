@@ -21,7 +21,11 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -114,6 +118,25 @@ public class NFCUtils {
         if ( null != s_safeNFC ) {
             s_safeNFC.register( activity );
         }
+    }
+
+    public static Dialog makeEnableNFCDialog( final Activity activity )
+    {
+        DialogInterface.OnClickListener lstnr
+            = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dialog, 
+                                         int item ) {
+                        activity.
+                            startActivity( new Intent("android.settings"
+                                                      + ".NFC_SETTINGS" ) );
+                    }
+                };
+        return new AlertDialog.Builder( activity )
+            .setTitle( R.string.info_title )
+            .setMessage( R.string.enable_nfc )
+            .setPositiveButton( R.string.button_cancel, null )
+            .setNegativeButton( R.string.button_go_settings, lstnr )
+            .create();
     }
 
     private static NdefMessage makeMessage( Activity activity, String data )
