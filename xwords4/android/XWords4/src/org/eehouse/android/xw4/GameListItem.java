@@ -169,6 +169,9 @@ public class GameListItem extends LinearLayout
     public void onClick( View view ) {
         m_expanded = !m_expanded;
         DBUtils.setExpanded( m_rowid, m_expanded );
+
+        makeThumbnailIf( m_expanded );
+
         showHide();
     }
 
@@ -243,7 +246,7 @@ public class GameListItem extends LinearLayout
         return state;
     }
 
-    private void setData( GameSummary summary )
+    private void setData( GameSummary summary, boolean expanded )
     {
         if ( null != summary ) {
             TextView tview;
@@ -318,8 +321,6 @@ public class GameListItem extends LinearLayout
                 tview.setVisibility( View.GONE );
             }
 
-            boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
-
             update( expanded, summary.lastMoveTime, haveATurn, 
                     haveALocalTurn );
         }
@@ -337,6 +338,16 @@ public class GameListItem extends LinearLayout
         m_cb.itemToggled( this, m_selected );
     }
 
+    private void makeThumbnailIf( boolean expanded )
+    {
+        if ( expanded && null != m_activity && null != m_summary
+             && null == m_summary.getThumbnail()
+             && XWPrefs.getThumbEnabled( m_context ) ) {
+            m_summary.setThumbnail( GameUtils.loadMakeBitmap( m_activity,
+                                                              m_rowid ) );
+        }
+    }
+
     private class LoadItemTask extends AsyncTask<Void, Void, GameSummary> {
         @Override
         protected GameSummary doInBackground( Void... unused ) 
@@ -349,15 +360,11 @@ public class GameListItem extends LinearLayout
         {
             if ( 0 == --m_loadingCount ) {
                 m_summary = summary;
+                boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
 
-                if ( null != m_activity && null != summary
-                     && null == summary.getThumbnail()
-                     && XWPrefs.getThumbEnabled( m_context ) ) {
-                    summary.setThumbnail( GameUtils.loadMakeBitmap( m_activity,
-                                                                    m_rowid ) );
-                }
+                makeThumbnailIf( expanded );
 
-                setData( summary );
+                setData( summary, expanded );
                 setLoaded( null != m_summary );
                 synchronized( s_invalRows ) {
                     s_invalRows.remove( m_rowid );
