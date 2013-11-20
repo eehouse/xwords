@@ -2178,12 +2178,13 @@
     <string name="cur_menu_markerf">%1$s (yours)</string>
     <string name="board_menu_invite">Invite</string>
 
-    <string name="enable_nfc">NFC is turned off on this device. Use
-    the Android Settings app to turn it on .</string>
+    <string name="enable_nfc">NFC is turned off on this device. You
+    can use the Android Settings app to turn it on .</string>
+
     <string name="button_go_settings">Launch Settings</string>
 
-  <string name="no_hide_titlebar">This setting is ignored on devices
-  like yours that depend on the \"Action bar\".</string>
+    <string name="no_hide_titlebar">This setting is ignored on devices
+    like yours that depend on the \"Action bar.\"</string>
 
-  <string name="sms_ready_text">Tap the receiving device now</string>
+    <string name="sms_ready_text">Tap the receiving device now</string>
 </resources>
