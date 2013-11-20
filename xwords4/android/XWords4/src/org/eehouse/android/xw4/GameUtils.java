@@ -411,7 +411,7 @@ public class GameUtils {
     {
         long rowid = -1;
 
-        Assert.assertNotNull( inviteID );
+        Assert.assertNotNull( inviteID ); // firing
         CurGameInfo gi = new CurGameInfo( context, inviteID );
         gi.setLang( lang[0], dict[0] );
         lang[0] = gi.dictLang;
@@ -513,8 +513,10 @@ public class GameUtils {
         if ( isHost ) { 
             addr = new CommsAddrRec(CommsAddrRec.CommsConnType.COMMS_CONN_SMS);
         }
+        String inviteID = GameUtils.formatGameID( gameID );
         return makeNewMultiGame( context, groupID, addr, langa, dicta, 
-                                 nPlayersT, nPlayersH, null, gameID, isHost );
+                                 nPlayersT, nPlayersH, inviteID, gameID, 
+                                 isHost );
     }
 
     public static void launchInviteActivity( Activity activity, int chosen,
@@ -524,20 +526,14 @@ public class GameUtils {
     {
         Assert.assertNotNull( inviteID );
 
-        String msgString;
         if ( DlgDelegate.NFC_BTN == chosen ) {
-            msgString = NetLaunchInfo.makeLaunchJSON( activity, room, inviteID,
-                                                      lang, dict, nPlayers );
+            Utils.showToast( activity, R.string.sms_ready_text );
         } else {
             Uri gameUri = NetLaunchInfo.makeLaunchUri( activity, room, inviteID,
                                                        lang, dict, nPlayers );
-            msgString = null == gameUri ? null : gameUri.toString();
-        }
+            String msgString = null == gameUri ? null : gameUri.toString();
 
-        if ( null != msgString ) {
-            if ( DlgDelegate.NFC_BTN == chosen ) {
-                Utils.showToast( activity, "Tap the receiving device now" );
-            } else {
+            if ( null != msgString ) {
                 boolean choseEmail = DlgDelegate.EMAIL_BTN == chosen;
 
                 int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;

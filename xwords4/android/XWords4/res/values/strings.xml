@@ -2184,4 +2184,6 @@
 
   <string name="no_hide_titlebar">This setting is ignored on devices
   like yours that depend on the \"Action bar\".</string>
+
+  <string name="sms_ready_text">Tap the receiving device now</string>
 </resources>
