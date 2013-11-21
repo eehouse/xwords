@@ -415,7 +415,7 @@ public class GameListAdapter implements ExpandableListAdapter {
         }
     }
 
-    private GameListItem getGameItemFor( long rowid )
+    protected GameListItem getGameItemFor( long rowid )
     {
         long[] rowids = { rowid };
         GameListItem[] items = new GameListItem[1];

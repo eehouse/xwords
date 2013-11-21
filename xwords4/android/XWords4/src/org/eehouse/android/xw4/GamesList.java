@@ -131,7 +131,7 @@ public class GamesList extends XWExpandableListActivity
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
-    private boolean m_gameLaunched = false;
+    private long m_launchedGame = 0;
     private boolean m_menuPrepared;
     private HashSet<Long> m_selGames;
     private HashSet<Long> m_selGroupIDs;
@@ -409,7 +409,7 @@ public class GamesList extends XWExpandableListActivity
     protected void onNewIntent( Intent intent )
     {
         super.onNewIntent( intent );
-        m_gameLaunched = false;
+        m_launchedGame = 0;
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         invalRowID( intent.getLongExtra( ROWID_EXTRA, -1 ) );
@@ -465,7 +465,11 @@ public class GamesList extends XWExpandableListActivity
         super.onWindowFocusChanged( hasFocus );
         if ( hasFocus ) {
             updateField();
-            m_gameLaunched = false;
+
+            if ( 0 != m_launchedGame ) {
+                selectJustLaunched();
+                m_launchedGame = 0;
+            }
         }
     }
 
@@ -502,7 +506,7 @@ public class GamesList extends XWExpandableListActivity
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
         if ( clicked instanceof GameListItem ) {
-            if ( !m_gameLaunched ) {
+            if ( 0 == m_launchedGame ) {
                 long rowid = ((GameListItem)clicked).getRowID();
                 showNotAgainDlgThen( R.string.not_again_newselect, 
                                      R.string.key_notagain_newselect,
@@ -1240,8 +1244,8 @@ public class GamesList extends XWExpandableListActivity
 
     private void launchGame( long rowid, boolean invited )
     {
-        if ( !m_gameLaunched ) {
-            m_gameLaunched = true;
+        if ( 0 == m_launchedGame ) {
+            m_launchedGame = rowid;
             GameUtils.launchGame( this, rowid, invited );
         }
     }
@@ -1329,6 +1333,12 @@ public class GamesList extends XWExpandableListActivity
         for ( int item : items ) {
             Utils.setItemVisible( menu, item, select );
         }
+    }
+
+    private void selectJustLaunched()
+    {
+        clearSelections();
+        m_adapter.getGameItemFor( m_launchedGame ).setSelected( true );
     }
 
     public static void onGameDictDownload( Context context, Intent intent )
