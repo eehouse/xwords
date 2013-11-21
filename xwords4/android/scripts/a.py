@@ -17,10 +17,10 @@ def a(req):
   <p>You probably reached this page because a friend sent you a text
   message with this URL and a bunch of gibberish.</p>
 
-  <p>Well, that gibberish was meant for an Android app called 
-    <a href="http://xwords.sf.net/android.php">Crosswords</a>, and your
-    friend hoped you had it installed and would want to play.  If you
-    like,
+  <p>Well, that gibberish was meant for an Android app called <a
+    href="http://xwords.sf.net/android.php">Crosswords</a>, and your
+    friend hoped you had it installed, <a href="#kitkat">were not
+    running Android KitKat</a>, and would want to play.  If you like,
 
     <span style="color:red">
       AND YOU HAVE AN UNLIMITED TEXT MESSAGING PLAN, 
@@ -53,6 +53,15 @@ def a(req):
     Crosswords</a> and play with your friend over the internet. Just
     don't enable the SMS feature. (And don't worry: that's impossible
     to do accidentally.)</p>
+
+  <h4><a name="kitkat">What's the deal with KitKat and play via
+      SMS?</a></h4>
+
+  <p>With KitKat, Google made a bunch of changes to how SMS is sent
+    and received. Among them they removed the ability of an app like
+    Crosswords to prevent custom-formatted (i.e. gibberish) messages
+    from showing up in your inbox. Until I work around these changes
+    the feature is disabled on KitKat.</p>
 
 </body> </html>
 """
