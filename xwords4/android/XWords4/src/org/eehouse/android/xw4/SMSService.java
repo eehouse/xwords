@@ -224,8 +224,14 @@ public class SMSService extends XWService {
     @Override
     public void onDestroy()
     {
-        unregisterReceiver( m_sentReceiver );
-        unregisterReceiver( m_receiveReceiver );
+        if ( null != m_sentReceiver ) {
+            unregisterReceiver( m_sentReceiver );
+            m_sentReceiver = null;
+        }
+        if ( null != m_receiveReceiver ) {
+            unregisterReceiver( m_receiveReceiver );
+            m_receiveReceiver = null;
+        }
         super.onDestroy();
     }
 
