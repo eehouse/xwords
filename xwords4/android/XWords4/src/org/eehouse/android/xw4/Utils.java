@@ -100,11 +100,14 @@ public class Utils {
     {
         if ( null == s_deviceSupportSMS ) {
             boolean doesSMS = false;
-            TelephonyManager tm = (TelephonyManager)
-                context.getSystemService(Context.TELEPHONY_SERVICE);
-            if ( null != tm ) {
-                int type = tm.getPhoneType();
-                doesSMS = TelephonyManager.PHONE_TYPE_NONE != type;
+            // TEMPORARY: disable SMS on KITKAT
+            if ( 19 > Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
+                TelephonyManager tm = (TelephonyManager)
+                    context.getSystemService(Context.TELEPHONY_SERVICE);
+                if ( null != tm ) {
+                    int type = tm.getPhoneType();
+                    doesSMS = TelephonyManager.PHONE_TYPE_NONE != type;
+                }
             }
             s_deviceSupportSMS = new Boolean( doesSMS );
         }
