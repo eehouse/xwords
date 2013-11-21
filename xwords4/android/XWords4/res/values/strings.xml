@@ -2187,4 +2187,9 @@
     like yours that depend on the \"Action bar.\"</string>
 
     <string name="sms_ready_text">Tap the receiving device now</string>
+
+    <string name="not_again_sms_ready">You have NFC enabled. That
+    means that any time a board that\'s missing a player is open, you
+    can tap a nearby person\'s device to invite him/her to
+    play – if he/she is also using NFC.</string>
 </resources>

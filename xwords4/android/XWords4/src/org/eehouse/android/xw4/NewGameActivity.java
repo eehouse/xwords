@@ -322,8 +322,8 @@ public class NewGameActivity extends XWActivity {
     private void makeNewGame( boolean networked, boolean launch,
                               int chosen )
     {
-        if ( DlgDelegate.NFC_BTN == chosen
-             && !NFCUtils.nfcAvail( this )[1] ) {
+        boolean viaNFC = DlgDelegate.NFC_BTN == chosen;
+        if ( viaNFC && !NFCUtils.nfcAvail( this )[1] ) {
             showDialog( ENABLE_NFC );
         } else {
             String room = null;

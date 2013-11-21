@@ -669,7 +669,7 @@ public class GameUtils {
         activity.startActivity( intent );
     }
 
-    public static void launchGame( Activity activity, long rowid)
+    public static void launchGame( Activity activity, long rowid )
     {
         launchGame( activity, rowid, false );
     }

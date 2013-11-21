@@ -924,9 +924,13 @@ public class BoardActivity extends XWActivity
     {
         if ( LAUNCH_INVITE_ACTION == id ) {
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
-                if ( DlgDelegate.NFC_BTN == which
-                     && !NFCUtils.nfcAvail( this )[1] ) {
-                    showDialog( ENABLE_NFC );
+                if ( DlgDelegate.NFC_BTN == which ) {
+                    if ( NFCUtils.nfcAvail( this )[1] ) {
+                        showNotAgainDlgThen( R.string.not_again_sms_ready,
+                                             R.string.key_notagain_sms_ready );
+                    } else {
+                        showDialog( ENABLE_NFC );
+                    }
                 } else {
                     String inviteID = GameUtils.formatGameID( m_gi.gameID );
                     GameUtils.launchInviteActivity( this, which, m_room, 
