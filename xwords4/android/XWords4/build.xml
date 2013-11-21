@@ -51,19 +51,37 @@
 
     <property name="INITIAL_CLIENT_VERS" value="3"/>
     <target name="-pre-clean">
+        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
+            <arg value="${build.target}"/>
+        </exec>
         <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
             <arg value="clean"/>
+        </exec>
+
+        <exec dir="." executable="../scripts/mkimages.sh" 
+              failonerror="true" output="/dev/null" >
+            <arg value="--clean"/>
         </exec>
       </target>
 
     <target name="-pre-build">
+        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
+            <arg value="${build.target}"/>
+        </exec>
+
         <property name="CHAT_ENABLED" value="true" />
+        <property name="THUMBNAIL_ENABLED" value="true" />
         <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true">
             <arg value="BUILD_TARGET=${build.target}" />
             <arg value="-j3"/>
             <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
             <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
+            <arg value="THUMBNAIL_ENABLED=${THUMBNAIL_ENABLED}" />
         </exec>
+
+        <exec dir="." executable="../scripts/mkimages.sh" 
+              failonerror="true" output="/dev/null" 
+              />
 
         <exec dir="." executable="../scripts/gen_gcmid.sh"
               output="src/org/eehouse/android/xw4/GCMConsts.java"
@@ -74,6 +92,8 @@
           <arg value="xw4"/>
           <arg value="${INITIAL_CLIENT_VERS}" />
           <arg value="${CHAT_ENABLED}" />
+          <arg value="${THUMBNAIL_ENABLED}" />
+          <arg value="${build.target}" />
         </exec>
     </target>
 <!--

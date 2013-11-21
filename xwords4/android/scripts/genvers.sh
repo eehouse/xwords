@@ -6,6 +6,8 @@ DIR=$1
 VARIANT=$2
 CLIENT_VERS_RELAY=$3
 CHAT_SUPPORTED=$4
+THUMBNAIL_SUPPORTED=$5
+BUILD_TARGET=$6
 
 cd $(dirname $0)
 cd ../../
@@ -28,13 +30,15 @@ EOF
 # the way to mark a release
 SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo unknown)"
 
-cat <<EOF > android/${DIR}/src/org/eehouse/android/${VARIANT}/GitVersion.java
+cat <<EOF > android/${DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
 // auto-generated; do not edit
 package org.eehouse.android.${VARIANT};
-class GitVersion {
-    public static final String VERS = "$SHORTVERS";
+class BuildConstants {
+    public static final String GIT_REV = "$SHORTVERS";
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
+    public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
+    public static final boolean IS_DEBUG_BUILD = "$BUILD_TARGET".equals("debug");
 }
 EOF
 

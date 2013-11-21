@@ -22,6 +22,7 @@
 package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Handler;
@@ -31,21 +32,25 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.DbgUtils;
-import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.BoardDims;
+import org.eehouse.android.xw4.ConnStatusHandler;
+import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
-import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Toolbar;
+import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.DrawCtx;
 import junit.framework.Assert;
 
 public class JNIThread extends Thread {
 
     public enum JNICmd { CMD_NONE,
+            // CMD_RUN,
             CMD_DRAW,
+            CMD_SETDRAW,
             CMD_INVALALL,
             CMD_LAYOUT,
             CMD_START,
@@ -91,12 +96,11 @@ public class JNIThread extends Thread {
             };
 
     public static final int RUNNING = 1;
-    public static final int DRAW = 2;
-    public static final int DIALOG = 3;
-    public static final int QUERY_ENDGAME = 4;
-    public static final int TOOLBAR_STATES = 5;
-    public static final int GOT_WORDS = 6;
-    public static final int GAME_OVER = 7;
+    public static final int DIALOG = 2;
+    public static final int QUERY_ENDGAME = 3;
+    public static final int TOOLBAR_STATES = 4;
+    public static final int GOT_WORDS = 5;
+    public static final int GAME_OVER = 6;
 
     public class GameStateInfo implements Cloneable {
         public int visTileCount;
@@ -108,6 +112,7 @@ public class JNIThread extends Thread {
         public boolean canChat;
         public boolean canShuffle;
         public boolean curTurnSelected;
+        public boolean canHideRack;
         public GameStateInfo clone() {
             GameStateInfo obj = null;
             try {
@@ -230,32 +235,25 @@ public class JNIThread extends Thread {
         Message.obtain( m_handler, DIALOG, titleArg, 0, text ).sendToTarget();
     }
 
-    private void doLayout( BoardDims dims )
+    private void doLayout( int width, int height, int fontWidth,
+                           int fontHeight )
     {
-        int scoreWidth = dims.width - dims.cellSize;
-        ConnStatusHandler.setRect( scoreWidth, 0, scoreWidth + dims.cellSize, 
-                                   dims.scoreHt );
+        BoardDims dims = new BoardDims();
 
-        if ( m_gi.timerEnabled ) {
-            scoreWidth -= dims.timerWidth;
-            XwJNI.board_setTimerLoc( m_jniGamePtr, scoreWidth, 0, 
-                                     dims.timerWidth, dims.scoreHt );
-        } 
-        XwJNI.board_setScoreboardLoc( m_jniGamePtr, 0, 0, scoreWidth, 
-                                      dims.scoreHt, true );
+        boolean squareTiles = XWPrefs.getSquareTiles( m_context );
+        int statusWidth = width / 15;
+        int scoreWidth = width - statusWidth;
+        XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, width, height,
+                                  150, 200, scoreWidth, fontWidth, 
+                                  fontHeight, squareTiles, dims );
 
-        // Have no idea why I was doing -1 below, but it breaks layout
-        // for small (QVGA) boards.  If it needs to be done, do it
-        // early in figureBoardDims so the calculations that follow
-        // are consistent.
-        XwJNI.board_setPos( m_jniGamePtr, 0, dims.scoreHt, 
-                            dims.width/*-1*/, dims.boardHt, dims.maxCellSize, 
-                            false );
+        ConnStatusHandler.setRect( dims.left + scoreWidth, dims.top, 
+                                   dims.left + scoreWidth + statusWidth, 
+                                   dims.top + dims.scoreHt );
 
-        XwJNI.board_setTrayLoc( m_jniGamePtr, 0, dims.trayTop,
-                                dims.width/*-1*/, dims.trayHt, kMinDivWidth );
+        XwJNI.board_applyLayout( m_jniGamePtr, dims );
 
-        XwJNI.board_invalAll( m_jniGamePtr );
+        m_drawer.dimsChanged( dims );
     }
 
     private boolean nextSame( JNICmd cmd ) 
@@ -329,6 +327,11 @@ public class JNIThread extends Thread {
             args = elem.m_args;
             switch( elem.m_cmd ) {
 
+            // case CMD_RUN:
+            //     Runnable proc = (Runnable)args[0];
+            //     proc.run();
+            //     break;
+
             case CMD_SAVE:
                 if ( nextSame( JNICmd.CMD_SAVE ) ) {
                     continue;
@@ -348,13 +351,26 @@ public class JNIThread extends Thread {
                 draw = true;
                 break;
 
+            case CMD_SETDRAW:
+                XwJNI.board_setDraw( m_jniGamePtr, (DrawCtx)args[0] );
+                XwJNI.board_invalAll( m_jniGamePtr );
+                break;
+
             case CMD_INVALALL:
                 XwJNI.board_invalAll( m_jniGamePtr );
                 draw = true;
                 break;
 
             case CMD_LAYOUT:
-                doLayout( (BoardDims)args[0] );
+                Object args0 = args[0];
+                BoardDims dims = null;
+                if ( args0 instanceof BoardDims ) {
+                    dims = (BoardDims)args0;
+                    XwJNI.board_applyLayout( m_jniGamePtr, dims );
+                } else {
+                    doLayout( (Integer)args0, (Integer)args[1], 
+                              (Integer)args[2], (Integer)args[3] );
+                }
                 draw = true;
                 // check and disable zoom button at limit
                 handle( JNICmd.CMD_ZOOM, 0 );
@@ -615,10 +631,6 @@ public class JNIThread extends Thread {
                 // of the same bitmap for blitting.
                 m_drawer.doJNIDraw();
 
-                // main UI thread has to invalidate view as it created
-                // it.
-                Message.obtain( m_handler, DRAW ).sendToTarget();
-
                 checkButtons();
             }
         } // for
@@ -640,6 +652,17 @@ public class JNIThread extends Thread {
     {
         QueueElem elem = new QueueElem( cmd, true, args );
         m_queue.add( elem );
+        if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
+            DbgUtils.logf( "WARNING: adding %s to stopped thread!!!", 
+                           cmd.toString() );
+            DbgUtils.printStack();
+        }
     }
 
+    // public void run( boolean isUI, Runnable runnable )
+    // {
+    //     Object[] args = { runnable };
+    //     QueueElem elem = new QueueElem( JNICmd.CMD_RUN, isUI, args );
+    //     m_queue.add( elem );
+    // }
 }

@@ -56,6 +56,7 @@ gtkInsetRect( XP_Rect* r, short i )
     r->left += i;
     i *= 2;
 
+    XP_ASSERT( r->height >= i && r->width >= i );
     r->width -= i;
     r->height -= i;
 } /* gtkInsetRect */
@@ -647,13 +648,13 @@ gtk_draw_trayBegin( DrawCtx* p_dctx, const XP_Rect* XP_UNUSED(rect),
     return XP_TRUE;
 } /* gtk_draw_trayBegin */
 
-static void
+static XP_Bool
 gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                  const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags, 
                  XP_Bool clearBack )
 {
-    XP_UCHAR numbuf[3];
     GtkDrawCtx* dctx = (GtkDrawCtx*)p_dctx;
+    XP_UCHAR numbuf[3];
     XP_Rect insetR = *rect;
     XP_Bool isCursor = (flags & CELL_ISCURSOR) != 0;
     XP_Bool valHidden = (flags & CELL_VALHIDDEN) != 0;
@@ -718,28 +719,29 @@ gtkDrawTileImpl( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                             insetR.width, insetR.height);
         }
     }
+    return XP_TRUE;
 } /* gtkDrawTileImpl */
 
-static void
+static XP_Bool
 gtk_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, const XP_UCHAR* textP,
                    const XP_Bitmaps* bitmaps, XP_U16 val, CellFlags flags )
 {
-    gtkDrawTileImpl( p_dctx, rect, textP, bitmaps, val, flags, XP_TRUE );
+    return gtkDrawTileImpl( p_dctx, rect, textP, bitmaps, val, flags, XP_TRUE );
 }
 
 #ifdef POINTER_SUPPORT
-static void
+static XP_Bool
 gtk_draw_drawTileMidDrag( DrawCtx* p_dctx, const XP_Rect* rect, 
                           const XP_UCHAR* textP, const XP_Bitmaps* bitmaps, 
                           XP_U16 val, XP_U16 owner, CellFlags flags )
 {
     gtk_draw_trayBegin( p_dctx, rect, owner, 0, DFS_NONE );
-    gtkDrawTileImpl( p_dctx, rect, textP, bitmaps, val, 
-                     flags | CELL_HIGHLIGHT, XP_FALSE );
+    return gtkDrawTileImpl( p_dctx, rect, textP, bitmaps, val, 
+                            flags | CELL_HIGHLIGHT, XP_FALSE );
 }
 #endif
 
-static void
+static XP_Bool
 gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, 
                        CellFlags flags )
 {
@@ -757,7 +759,7 @@ gtk_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect,
     draw_string_at( dctx, NULL, "?", r.height,
                     &r, XP_GTK_JUST_CENTER,
                     &dctx->playerColors[dctx->trayOwner], NULL );
-
+    return XP_TRUE;
 } /* gtk_draw_drawTileBack */
 
 static void
@@ -1299,9 +1301,9 @@ allocAndSet( GdkColormap* map, GdkColor* color, unsigned short red,
     gboolean success = 
 #endif
         gdk_colormap_alloc_color( map,
-                                        color,
-                                        TRUE, /* writeable */
-                                        TRUE ); /* best-match */
+                                  color,
+                                  TRUE, /* writeable */
+                                  TRUE ); /* best-match */
     XP_ASSERT( success );
 } /* allocAndSet */
 
@@ -1438,6 +1440,12 @@ draw_gtk_status( GtkDrawCtx* dctx, char ch )
     draw_string_at( dctx, NULL, str, GTKMIN_W_HT,
                     &rect, XP_GTK_JUST_CENTER,
                     &dctx->black, NULL );
+}
+
+void
+frame_active_rect( GtkDrawCtx* dctx, const XP_Rect* rect )
+{
+    gtkFillRect( dctx, rect, &dctx->grey );
 }
 
 #endif /* PLATFORM_GTK */

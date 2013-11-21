@@ -27,6 +27,8 @@ import android.text.TextUtils;
 import com.google.android.gcm.GCMRegistrar;
 import java.util.ArrayList;
 
+import junit.framework.Assert;
+
 public class XWPrefs {
 
     public static boolean getSMSEnabled( Context context )
@@ -37,6 +39,11 @@ public class XWPrefs {
     public static boolean getDebugEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_debug, false );
+    }
+
+    public static boolean getSecondInviteAllowed( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_dup_invite, false );
     }
 
     public static String getDefaultRelayHost( Context context )
@@ -296,12 +303,19 @@ public class XWPrefs {
 
     public static long getDefaultNewGameGroup( Context context )
     {
-        return getPrefsLong( context, R.string.key_default_group,
-                             DBUtils.ROWID_NOTFOUND );
+        long groupID = getPrefsLong( context, R.string.key_default_group, 
+                                     DBUtils.GROUPID_UNSPEC );
+        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+            groupID = DBUtils.getAnyGroup( context );
+            setPrefsLong( context, R.string.key_default_group, groupID );
+        }
+        Assert.assertTrue( DBUtils.GROUPID_UNSPEC != groupID );
+        return groupID;
     }
 
     public static void setDefaultNewGameGroup( Context context, long val )
     {
+        Assert.assertTrue( DBUtils.GROUPID_UNSPEC != val );
         setPrefsLong( context, R.string.key_default_group, val );
     }
 
@@ -326,6 +340,32 @@ public class XWPrefs {
             }
         }
         return posns;
+    }
+
+    public static boolean getThumbEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_thumb_enabled, false );
+    }
+
+    public static int getThumbScale( Context context )
+    {
+        String scale = getPrefsString( context, R.string.key_thumbsize );
+        int result = -1;
+        final int[][] data = {
+            { R.string.game_thumb_half, 2 }
+            ,{ R.string.game_thumb_third, 3 }
+            ,{ R.string.game_thumb_quarter, 4 }
+            ,{ R.string.game_thumb_fifth, 5 }
+            ,{ R.string.game_thumb_sixth, 6 }
+        };
+
+        for ( int[] datum : data ) {
+            if ( context.getString(datum[0]).equals(scale) ) {
+                result = datum[1];
+                break;
+            }
+        }
+        return result;
     }
 
     protected static String getPrefsString( Context context, int keyID )

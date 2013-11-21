@@ -13,27 +13,10 @@
        # This is the first screen you see when you launch Crosswords
        ############################################################ 
       -->
-    <!-- These two messages appear at the top of the list of games
-         (unless the hide_intro preferences checkbox is checked.)-->
-    <string name="empty_games_list">Use the button below to create a
-      game. Tap an existing game to play it or long-tap it for other
-      options.</string>
-      <!--  -->
-    <string name="empty_games_list2">You can hide this and the buttons
-      below in the Appearance section of Settings (accessed via your
-      device\'s menu key.)</string>
 
-    <!-- Text of button at bottom of main games-list screen and of
-         menuitem in main games-list screen's menu.  (The botton can
-         be hidden in the same way as the above text.) -->
+    <!-- Text of menuitem in main games-list screen's menu -->
     <string name="button_new_game">Add game</string>
     <string name="button_new_group">Add group</string>
-
-    <!-- When the game list is empty and the above messages and button
-         are hidden via preferences, this text is shown -->
-    <string name="empty_list_msg">Use the menu key to add a
-      game.</string>
-
 
     <!-- Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
@@ -51,7 +34,7 @@
          they aren't available yet because the connection is not
          complete.  Displayed in the lists of players found in each
          game listing. -->
-    <string name="missing_player">(not here yet...)</string>
+    <string name="missing_player">(not here yet…)</string>
 
     <!-- The display of each networked game includes one of three
          states it can be in in the process of connecting to the
@@ -102,10 +85,10 @@
       -->
 
     <!-- Brings up the Wordlists (formerly Dictionaries) screen -->
-    <string name="gamel_menu_dicts">Wordlists</string>
+    <string name="gamel_menu_dicts">Wordlists…</string>
 
     <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">Settings</string>
+    <string name="menu_prefs">App Settings…</string>
 
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
@@ -115,18 +98,15 @@
 
     <!-- Text of progress indicator shown while check is being conducted -->
     <string name="msgs_progress">Checking relay for moves
-      etc...</string>
+      etc…</string>
 
     <!-- If you choose the above option and have no networked games
          you get this error message -->
     <string name="no_games_to_refresh">No games found that connect via
       the relay.</string>
 
-    <!-- Deletes all games on the device (after confirmation) -->
-    <string name="gamel_menu_delete_all">Delete all</string>
-
     <!-- Brings up "About Crosswords" dialog -->
-    <string name="board_menu_file_about">About Crosswords</string>
+    <string name="board_menu_file_about">About Crosswords…</string>
 
     <!-- 
        ############################################################
@@ -140,11 +120,11 @@
 
     <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
-    <string name="list_item_config">Game settings...</string>
+    <string name="list_item_config">Game settings…</string>
     <!-- pulls up dialog to rename (change name of) the selected game -->
-    <string name="list_item_rename">Rename...</string>
+    <string name="list_item_rename">Rename…</string>
     <!-- pulls up dialog to change the group of the selected game -->
-    <string name="list_item_move">Move to group...</string>
+    <string name="list_item_move">Move to group…</string>
 
     <!-- pulls up dialog to delete the selected game -->
     <string name="list_item_delete">Delete</string>
@@ -174,19 +154,14 @@
          list_item_rename) -->
     <string name="rename_label">Change the name of this game to:</string>
 
-    <!-- Text of confirmation dialog posted when list_item_delete menu is
-         selected -->
-    <string name="confirm_delete">Are you sure you want to delete this
-      game?</string>
-
-    <string name="confirm_seldeletes">Are you sure you want to delete
-      all selected games? This action cannot be undone.</string>
+    <string name="confirm_seldeletesf">Are you sure you want to delete
+    the %d selected game[s]? This action cannot be undone.</string>
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-    <string name="confirm_reset">Are you sure you want to reset this
-      game? Resetting erases all moves and any connection
-      information.</string>
+    <string name="confirm_reset">Are you sure you want to reset the
+    selected game[s]? (Resetting erases all moves and any connection
+    information.)</string>
 
     <!--
        ############################################################
@@ -202,7 +177,7 @@
     <!-- text of button at the bottom of the screen.  It launches the
          browser pointed at the site where additional wordlists can be
          found. -->
-    <string name="download_dicts">Download more...</string>
+    <string name="download_dicts">Download more…</string>
 
     <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
@@ -250,13 +225,13 @@
          wordlist is substituted for %s.  Sometimes one of the two
          strings below is appended. -->
     <string name="confirm_delete_dictf">Are you sure you want to
-    delete %s?</string>
+    delete the wordlist[s] %s?</string>
 
     <!-- Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is the last in its language.  The name
          of the language is substituted for %s. -->
-    <string name="confirm_deleteonly_dictf">\u0020It is the only %s
+    <string name="confirm_deleteonly_dictf">%1$s is the only %2$s
       wordlist installed. One or more games will be unopenable
       without it.</string>
     <!-- Additional text appended to text confirm_delete_dictf in the
@@ -277,9 +252,9 @@
     <!-- Used as the text fo the confirming/querying dialog that goes
          up when the dicts_item_select menuitem is chosen.  The
          possible answers are the three button text strings below. -->
-    <string name="set_default_messagef">For what players should this
-      wordlist be the default for new games? (The language %s will be
-      the default for both.)</string>
+    <string name="set_default_messagef">For what players should the
+    wordlist %1$s be the default for new games? (The language %2$s will be
+    the default for both.)</string>
 
     <!-- These three strings are the text for three buttons giving
          choices in respose to the dialog launched in response to the
@@ -309,7 +284,7 @@
        ############################################################ 
       -->
     <!-- window title (game name substituted for %s) -->
-    <string name="title_game_configf">%s settings</string>  
+    <string name="title_game_configf">Settings for %s</string>  
 
     <!-- alternate window title used when game is networked -->
     <string name="title_gamenet_configf">%s settings (networked)</string>  
@@ -326,7 +301,7 @@
 
     <!-- text for separator above the list of players that's used for
          non-networked games -->
-    <string name="players_label_standalone">Players</string>
+    <string name="players_label_standalone">Players (tap to edit)</string>
 
     <!-- text for separator above the list of players that's used for
          networked games.  The numbers of local and non-local players
@@ -527,10 +502,10 @@
 
     <!-- Buttons shown at bottom when board is in exchange mode,
          i.e. after user has picked board_menu_trade menu item -->
-    <string name="button_trade_commit">Commit exchange</string>
-    <string name="button_trade_cancel">Cancel exchange</string>
+    <string name="button_trade_commit">Commit trade</string>
+    <string name="button_trade_cancel">Cancel trade</string>
 
-    <string name="entering_trade">Tap tiles to select...</string>
+    <string name="entering_trade">Tap tiles to select…</string>
 
 
     <!-- Bonus value hint that's displayed in gray text in the colored
@@ -653,7 +628,7 @@
 
     <!-- This menu begins an exchange of tiles: puts the board into
          trade mode. -->
-    <string name="board_menu_trade">Exchange tiles</string>
+    <string name="board_menu_trade">Trade</string>
 
     <!-- hide and shows the tray.  On devices where there is enough
          room for the full board and tray to be shown then hiding the
@@ -669,23 +644,23 @@
     <string name="board_menu_undo_last">Undo last</string>
 
     <!-- Title of submenu -->
-    <string name="board_submenu_game">Game</string>
+    <string name="board_submenu_game">Game -></string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles in
          the language of the game along with how many of each there
          are and how many points each is worth.  This display is the
          same throughout the game. -->
-    <string name="board_menu_game_counts">Counts and values</string>
+    <string name="board_menu_game_counts">Counts and values…</string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles not
          yet played and not in the rack of the player whose rack is
          visible (whose turn it is, generally).  This display will
          change as tiles are used and depending on what player is
          asking. -->
-    <string name="board_menu_game_left">Tiles remaining</string>
+    <string name="board_menu_game_left">Tiles remaining…</string>
 
     <!-- Brings up listing of all moves played so far this game.  -->
-    <string name="board_menu_game_history">Game history</string>
+    <string name="board_menu_game_history">Game history…</string>
 
     <!-- Brings up explanation of the game's final score.  If the game
          is not yet over, gives you a choice whether to end it now,
@@ -797,7 +772,7 @@
        ############################################################
       -->
     <!-- window title -->
-    <string name="title_prefs">Crosswords settings</string>  
+    <string name="title_prefs">Crosswords Settings</string>
 
     <!--
        ############################################################
@@ -851,7 +826,7 @@
 
     <!-- Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. -->
-    <string name="tell_unused">Not used yet...</string>
+    <string name="tell_unused">Not used yet…</string>
 
     <!-- sub-preference for dictionaries (soon to be called "word lists") -->
     <string name="prefs_dicts">Wordlists</string>
@@ -921,14 +896,6 @@
     <!-- List the state of the game, "Game over" or "10 moves made"
          etc. -->
     <string name="game_summary_field_state">Game state</string>
-
-    <!-- The main screen, by default, has a "add game" button and some
-         text at the top that take up space and are unnecessary for
-         experienced users.  This checkbox hides them. -->
-    <string name="hide_intro">Hide main-page hint</string>
-    <!-- clarification of above -->
-    <string name="hide_intro_summary">It\'s useful only when you\'re
-        starting out...</string>
 
     <!-- Checkbox that when set prevents showing a title bar in the
          game board window to save space -->
@@ -1214,12 +1181,17 @@
          explanation/guidance. -->
     <string name="sms_or_email">Send invitation using SMS (texting) or
        via email?</string>
+    <string name="nfc_or_email">Send invitation using NFC (Android
+    beaming – NEW) or via email?</string>
+    <string name="nfc_or_sms_or_email">Send invitation using SMS
+    (texting) or NFC (\"Android beaming\" – NEW) or via email?</string>
 
     <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
     <string name="button_text">SMS/Text</string>  
     <string name="button_html">Email</string>  
+    <string name="button_nfc">NFC</string>
 
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
@@ -1431,7 +1403,7 @@
       Guest wordlists; Host wins.</string>
 
 
-    <string name="downloading_dictf">Downloading %s...</string>
+    <string name="downloading_dictf">Downloading %s…</string>
 
     <!-- 
        ############################################################
@@ -1558,7 +1530,7 @@
     sure you want to create another?</string>
 
     <!-- Title of generic dialog used to display information -->
-    <string name="info_title">FYI...</string>
+    <string name="info_title">FYI…</string>
 
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
@@ -1596,7 +1568,7 @@
 
     <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
-    <string name="query_title">A question...</string>
+    <string name="query_title">A question…</string>
 
     <!--
        ###########################################################
@@ -1629,9 +1601,13 @@
 
     <!-- Shown when the user chooses the "board_menu_trade" menu -->
     <string name="not_again_trading">You are entering tile-exchange
-      mode.  Tap tiles to add/remove them from the set to be
-      exchanged.  Use the buttons to commit your turn or exit exchange
-      mode.</string>
+      mode.\n\nTap tiles to add/remove them from the set to be
+      exchanged.\n\n</string>
+
+      <string name="not_again_trading_buttons">Use the buttons to
+      commit your turn or exit exchange mode.</string>
+      <string name="not_again_trading_menu">Use the menu or action bar
+      to commit your turn or exit exchange mode.</string>
 
     <!-- Currently not used -->
     <!-- <string name="not_again_newgame">The new game you have created has -->
@@ -1741,7 +1717,7 @@
          another players turn. The idea is to give a hint about how to
          find out about recent moves. -->
     <string name="not_again_turnchanged">The player whose turn it is
-      is drawn large in the scoreboard.  Hold your finger on a name in
+      is drawn large in the scoreboard.\n\nHold your finger on a name in
       the scoreboard to get details about that player\'s most recent
       move.</string>
 
@@ -1886,7 +1862,7 @@
       <!--  -->
     <string name="email_body_revf">(If relevant, please include the
       version: \"%s\"; and make/model of your phone or
-      tablet.)"</string>
+      tablet.)</string>
 
     <string name="newgame_enable_bt">Turn Bluetooth on</string>
 
@@ -1898,7 +1874,7 @@
       <!--  -->
     <string name="scan_progress">Scanning for Crosswords on paired devices</string>
       <!--  -->
-    <string name="invite_progress">Sending new game info...</string>
+    <string name="invite_progress">Sending new game info…</string>
 
       <!--  -->
     <string name="summary_wait_host">Waiting for connection[s]</string>
@@ -2024,7 +2000,7 @@
     <string name="board_menu_dict">Browse wordlist</string>
 
     <!--  -->
-    <string name="game_list_tmp">Loading game summary...</string>
+    <string name="game_list_tmp">Building game summary…</string>
 
     <!--  -->
     <string name="connstat_nonet">This is a standalone game. There is
@@ -2124,7 +2100,6 @@
     wordlist?</string>
     <string name="button_decline">Decline</string>
 
-    <string name="downloadingf">Downloading %s...</string>
     <string name="download_done">Download finished</string>
     <string name="download_failed">Download unsuccessful</string>
 
@@ -2145,14 +2120,18 @@
     <string name="group_new_games">New games</string>
 
     <string name="group_confirm_del">Are you sure you want to delete
-    this group?</string>
+    the selected group?</string>
+    <string name="groups_confirm_del">Are you sure you want to delete
+    the selected groups?</string>
     <string name="group_confirm_delf">\u0020(It contains %d game[s],
+    which will also be deleted.)</string>
+    <string name="groups_confirm_delf">\u0020(They contains %d game[s],
     which will also be deleted.)</string>
 
     <string name="rename_group_label">Change the name of this group to:</string>
     <string name="game_name_group_title">Name group</string>
 
-    <string name="cannot_delete_default_group">The group for new games
+    <string name="cannot_delete_default_groupf">The group for new games, %s, 
     cannot be deleted.</string>
 
     <string name="no_move_onegroup">Moving is impossible until there
@@ -2169,9 +2148,43 @@
     <string name="square_tiles">Square rack tiles</string>
     <string name="square_tiles_summary">Even if they can be taller</string>
 
-    <string name="change_groupf">Move game %s</string>
+    <string name="change_group">Move games</string>
 
     <string name="show_wordlist_browser">Wordlist browser</string>
 
     <string name="relay_alert_title">Message from relay</string>
+
+    <string name="not_again_newselect">Tapping a game opens it.\n\nYou
+    can instead tap the icons at the left to select or deselect games,
+    then act on selected games, e.g. to delete them, using the menu or
+    \"Actionbar.\"</string>
+
+    <string name="not_again_backclears">The back button clears any
+    selection instead of exiting. Hit it again to exit the
+    app.</string>
+
+    <string name="sel_gamesf">Games: %d</string>
+    <string name="sel_groupsf">Groups: %d</string>
+    <string name="summary_thumbsize">Thumbnail size</string>
+    <string name="sel_dictsf">Wordlists: %d</string>
+
+    <string name="thumb_enabled">Show thumbnails</string>
+    <string name="summary_thumb_enabled">Display snapshots of games</string>
+
+    <string name="prefs_thumb">Thumbnails</string>
+    <string name="prefs_thumb_summary">Setting for game snapshots</string>
+    <string name="dropped_dupe">Invitation received but ignored: it
+    has already been used to create a game.</string>
+    <string name="cur_menu_markerf">%1$s (yours)</string>
+    <string name="board_menu_invite">Invite</string>
+
+    <string name="enable_nfc">NFC is turned off on this device. You
+    can use the Android Settings app to turn it on .</string>
+
+    <string name="button_go_settings">Launch Settings</string>
+
+    <string name="no_hide_titlebar">This setting is ignored on devices
+    like yours that depend on the \"Action bar.\"</string>
+
+    <string name="sms_ready_text">Tap the receiving device now</string>
 </resources>

@@ -40,7 +40,7 @@ import java.util.Set;
 
 public class DbgUtils {
     private static final String TAG = "XW4";
-    private static boolean s_doLog = true;
+    private static boolean s_doLog = BuildConstants.IS_DEBUG_BUILD;
 
     private static Time s_time = new Time();
 
@@ -52,13 +52,10 @@ public class DbgUtils {
     public static void logEnable( Context context )
     {
         boolean on;
-        if ( XWApp.DEBUG ) {
+        if ( XWApp.DEBUG || BuildConstants.IS_DEBUG_BUILD ) {
             on = true;
         } else {
-            SharedPreferences sp
-                = PreferenceManager.getDefaultSharedPreferences( context );
-            String key = context.getString( R.string.key_logging_on );
-            on = sp.getBoolean( key, false );
+            on = XWPrefs.getPrefsBoolean( context, R.string.key_logging_on, false );
         }
         logEnable( on );
     }

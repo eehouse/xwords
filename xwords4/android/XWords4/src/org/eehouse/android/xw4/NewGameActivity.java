@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2013 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -51,6 +51,7 @@ public class NewGameActivity extends XWActivity {
     private static final String SAVE_REMOTEGAME = "REMOTEGAME";
     private static final String SAVE_GAMEID = "GAMEID";
     private static final String SAVE_NAMEFOR = "SAVE_NAMEFOR";
+    private static final String GROUPID_EXTRA = "groupid";
     private static final int CONFIG_FOR_BT = 1;
     private static final int CONFIG_FOR_SMS = 2;
     private static final int INVITE_FOR_BT = 3;
@@ -58,7 +59,8 @@ public class NewGameActivity extends XWActivity {
 
     // Dialogs
     private static final int NAME_GAME = DlgDelegate.DIALOG_LAST + 1;
-
+    private static final int ENABLE_NFC = DlgDelegate.DIALOG_LAST + 2;
+    
     private boolean m_showsOn;
     private boolean m_nameForBT;
     private boolean m_firingPrefs = false;
@@ -68,6 +70,7 @@ public class NewGameActivity extends XWActivity {
     private long m_newRowID = -1;
     private String m_gameName;
     private int m_gameID;
+    private long m_groupID;
     private String m_remoteDev;
 
     @Override
@@ -75,6 +78,8 @@ public class NewGameActivity extends XWActivity {
     {
         super.onCreate( savedInstanceState );
         getBundledData( savedInstanceState );
+
+        m_groupID = getIntent().getLongExtra( GROUPID_EXTRA, -1 );
 
         setContentView( R.layout.new_game );
 
@@ -99,7 +104,7 @@ public class NewGameActivity extends XWActivity {
                 }
             } );
 
-        button = (Button)findViewById( R.id.newgame_invite );
+        button = (Button)findViewById( R.id.newgame_invite_net );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
@@ -149,12 +154,12 @@ public class NewGameActivity extends XWActivity {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         switch( id ) {
         case NEW_GAME_ACTION:
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
-                makeNewGame( true, true, DlgDelegate.EMAIL_BTN == which );
+                makeNewGame( true, true, which );
             }
             break;
         default:
@@ -232,8 +237,8 @@ public class NewGameActivity extends XWActivity {
                                                          m_gameID, m_gameName, 
                                                          m_lang, m_dict, 2, 1 );
                                 long rowid = GameUtils.
-                                    makeNewSMSGame( thiz, m_gameID, null, 
-                                                    m_lang, m_dict, 2, 1 );
+                                    makeNewSMSGame( thiz, m_groupID, m_gameID, 
+                                                    null, m_lang, m_dict, 2, 1 );
                                 DBUtils.setName( thiz, rowid, m_gameName );
                                 GameUtils.launchGame( thiz, rowid, true );
                                 finish();
@@ -250,6 +255,9 @@ public class NewGameActivity extends XWActivity {
                     .create();
                 Utils.setRemoveOnDismiss( this, dialog, id );
 
+                break;
+            case ENABLE_NFC:
+                dialog = NFCUtils.makeEnableNFCDialog( this );
                 break;
             }
         }
@@ -285,8 +293,8 @@ public class NewGameActivity extends XWActivity {
                     public void run() {
                         long rowid = 
                             GameUtils.makeNewBTGame( NewGameActivity.this, 
-                                                     gameID, null, m_lang, 
-                                                     2, 1 );
+                                                     m_groupID, gameID, null, 
+                                                     m_lang, 2, 1 );
                         DBUtils.setName( NewGameActivity.this, 
                                          rowid, m_gameName );
                         GameUtils.launchGame( NewGameActivity.this, 
@@ -305,59 +313,67 @@ public class NewGameActivity extends XWActivity {
     {
         if ( launch && networked ) {
             // Let 'em cancel before we make the game
-            showEmailOrSMSThen( NEW_GAME_ACTION );
+            showInviteChoicesThen( NEW_GAME_ACTION );
         } else {
-            makeNewGame( networked, launch, false );
+            makeNewGame( networked, launch, DlgDelegate.SMS_BTN );
         }
     }
 
     private void makeNewGame( boolean networked, boolean launch,
-                              boolean choseEmail )
+                              int chosen )
     {
-        String room = null;
-        String inviteID = null;
-        long rowid;
-        int[] lang = {0};
-        String[] dict = {null};
-        final int nPlayers = 2; // hard-coded for no-configure case
-
-        if ( networked ) {
-            room = GameUtils.makeRandomID();
-            inviteID = GameUtils.makeRandomID();
-            rowid = GameUtils.makeNewNetGame( this, room, inviteID, lang, 
-                                              dict, nPlayers, 1 );
+        if ( DlgDelegate.NFC_BTN == chosen
+             && !NFCUtils.nfcAvail( this )[1] ) {
+            showDialog( ENABLE_NFC );
         } else {
-            rowid = GameUtils.saveNew( this, new CurGameInfo( this ) );
-        }
+            String room = null;
+            String inviteID = null;
+            long rowid;
+            int[] lang = {0};
+            String[] dict = {null};
+            final int nPlayers = 2; // hard-coded for no-configure case
 
-        if ( launch ) {
-            GameUtils.launchGame( this, rowid, networked );
             if ( networked ) {
-                GameUtils.launchInviteActivity( this, choseEmail, room, 
-                                                inviteID, lang[0], dict[0], 
-                                                nPlayers );
+                room = GameUtils.makeRandomID();
+                inviteID = GameUtils.makeRandomID();
+                rowid = GameUtils.makeNewNetGame( this, m_groupID, room, inviteID, 
+                                                  lang, dict, nPlayers, 1 );
+            } else {
+                rowid = GameUtils.saveNew( this, new CurGameInfo( this ), 
+                                           m_groupID );
             }
-        } else {
-            GameUtils.doConfig( this, rowid, GameConfig.class );
-        }
 
-        finish();
+            if ( launch ) {
+                GameUtils.launchGame( this, rowid, networked );
+                if ( networked ) {
+                    GameUtils.launchInviteActivity( this, chosen, room, 
+                                                    inviteID, lang[0], dict[0],
+                                                    nPlayers );
+                }
+            } else {
+                GameUtils.doConfig( this, rowid, GameConfig.class );
+            }
+
+            finish();
+        }
     }
 
     private void makeNewBTGame( boolean useDefaults )
     {
-        int gameID = GameUtils.newGameID();
-        if ( !useDefaults ) {
-            m_newRowID = GameUtils.makeNewBTGame( NewGameActivity.this, 
-                                                 gameID, null, m_lang, 
-                                                 2, 1 ); // initial defaults
-            Intent intent = new Intent( this, GameConfig.class );
-            intent.setAction( Intent.ACTION_EDIT );
-            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
-            intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
-            startActivityForResult( intent, CONFIG_FOR_BT );
-        } else {
-            BTInviteActivity.launchForResult( this, 1, INVITE_FOR_BT );
+        if ( XWApp.BTSUPPORTED ) {
+            int gameID = GameUtils.newGameID();
+            if ( !useDefaults ) {
+                m_newRowID = GameUtils.makeNewBTGame( NewGameActivity.this, 
+                                                      m_groupID, gameID, null, 
+                                                      m_lang, 2, 1 );
+                Intent intent = new Intent( this, GameConfig.class );
+                intent.setAction( Intent.ACTION_EDIT );
+                intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
+                intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
+                startActivityForResult( intent, CONFIG_FOR_BT );
+            } else {
+                BTInviteActivity.launchForResult( this, 1, INVITE_FOR_BT );
+            }
         }
     }
 
@@ -366,8 +382,8 @@ public class NewGameActivity extends XWActivity {
         int gameID = GameUtils.newGameID();
         if ( !useDefaults ) {
             m_newRowID = GameUtils.makeNewSMSGame( NewGameActivity.this, 
-                                                   gameID, null, m_lang, 
-                                                   m_dict, 2, 1 );
+                                                   m_groupID, gameID, null, 
+                                                   m_lang, m_dict, 2, 1 );
             String name = Utils.format( this, R.string.dft_sms_namef, 
                                         gameID & 0xFFFF );
             DBUtils.setName( this, m_newRowID, name );
@@ -467,5 +483,12 @@ public class NewGameActivity extends XWActivity {
                     } );
             }
         }
+    }
+
+    public static void startActivity( Activity parent, long groupID )
+    {
+        Intent intent = new Intent( parent, NewGameActivity.class );
+        intent.putExtra( GROUPID_EXTRA, groupID );
+        parent.startActivity( intent );
     }
 }

@@ -128,6 +128,9 @@ public class DictBrowseActivity extends XWListActivity
         // SectionIndexer
         public int getPositionForSection( int section )
         {
+            if ( section >= m_indices.length ) {
+                section = m_indices.length - 1;
+            }
             return m_indices[section];
         }
         
@@ -301,7 +304,7 @@ public class DictBrowseActivity extends XWListActivity
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         Assert.assertTrue( FINISH_ACTION == id ); 
         finish();

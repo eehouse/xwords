@@ -6,6 +6,7 @@ TAGNAME=""
 FILES=""
 VARIANT="XWords4"
 XW_WWW_PATH=${XW_WWW_PATH:-""}
+XW_RELEASE_SCP_DEST=${XW_RELEASE_SCP_DEST:-""}
 
 usage() {
     echo "Error: $*"
@@ -70,8 +71,16 @@ for PACK_UNSIGNED in $FILES; do
     rm -f $PACK_SIGNED
     zipalign -v 4 $PACK_UNSIGNED $PACK_SIGNED
     [ -n "$XW_WWW_PATH" ] && cp $PACK_SIGNED $XW_WWW_PATH
-    cp $PACK_SIGNED ${PACK_SIGNED%.apk}_$(git describe).apk
-    echo "created ${PACK_SIGNED%.apk}_$(git describe).apk"
+    TARGET="${PACK_SIGNED%.apk}_$(git describe).apk"
+    cp $PACK_SIGNED "${TARGET}"
+    echo "created ${TARGET}"
+
+    if [ -n "$XW_RELEASE_SCP_DEST" ]; then
+        echo "running scp ${TARGET} $XW_RELEASE_SCP_DEST"
+        scp "${TARGET}" "$XW_RELEASE_SCP_DEST"
+    else
+        echo "XW_RELEASE_SCP_DEST not set; you're on your own"
+    fi
 done
 
 if [ -n "$TAGNAME" ]; then

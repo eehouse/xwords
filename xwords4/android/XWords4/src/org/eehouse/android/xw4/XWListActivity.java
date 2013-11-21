@@ -163,7 +163,7 @@ public class XWListActivity extends ListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         Assert.fail();
     }

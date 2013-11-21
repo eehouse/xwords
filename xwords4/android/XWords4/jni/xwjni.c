@@ -39,47 +39,54 @@
 #include "jniutlswrapper.h"
 #include "paths.h"
 
+static const SetInfo gi_ints[] = {
+    ARR_MEMBER( CurGameInfo, nPlayers )
+    ,ARR_MEMBER( CurGameInfo, gameSeconds )
+    ,ARR_MEMBER( CurGameInfo, boardSize )
+    ,ARR_MEMBER( CurGameInfo, gameID )
+    ,ARR_MEMBER( CurGameInfo, dictLang )
+};
+
+static const SetInfo gi_bools[] = {
+    ARR_MEMBER( CurGameInfo, hintsNotAllowed )
+    ,ARR_MEMBER( CurGameInfo, timerEnabled )
+    ,ARR_MEMBER( CurGameInfo, allowPickTiles )
+    ,ARR_MEMBER( CurGameInfo, allowHintRect )
+};
+
 static CurGameInfo*
-makeGI( MPFORMAL JNIEnv* env, jobject j_gi )
+makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 {
     CurGameInfo* gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*gi) );
     XP_UCHAR buf[256];          /* in case needs whole path */
 
-    gi->nPlayers = getInt( env, j_gi, "nPlayers");
-    gi->gameSeconds = getInt( env, j_gi, "gameSeconds");
-    gi->boardSize = getInt( env, j_gi, "boardSize" );
+    getInts( env, (void*)gi, jgi, gi_ints, VSIZE(gi_ints) );
+    getBools( env, (void*)gi, jgi, gi_bools, VSIZE(gi_bools) );
 
     /* Unlike on other platforms, gi is created without a call to
        game_makeNewGame, which sets gameID.  So check here if it's still unset
        and if necessary set it -- including back in the java world. */
-    gi->gameID = getInt( env, j_gi, "gameID" );
     if ( 0 == gi->gameID ) {
         while ( 0 == gi->gameID ) {
             gi->gameID = getCurSeconds( env );
         }
-        setInt( env, j_gi, "gameID", gi->gameID );
+        setInt( env, jgi, "gameID", gi->gameID );
     }
 
-    gi->dictLang = getInt( env, j_gi, "dictLang" );
-    gi->hintsNotAllowed = getBool( env, j_gi, "hintsNotAllowed" );
-    gi->timerEnabled =  getBool( env, j_gi, "timerEnabled" );
-    gi->allowPickTiles = getBool( env, j_gi, "allowPickTiles" );
-    gi->allowHintRect = getBool( env, j_gi, "allowHintRect" );
-
     gi->phoniesAction = 
-        jenumFieldToInt( env, j_gi, "phoniesAction",
+        jenumFieldToInt( env, jgi, "phoniesAction",
                          PKG_PATH("jni/CurGameInfo$XWPhoniesChoice") );
     gi->serverRole = 
-        jenumFieldToInt( env, j_gi, "serverRole", 
+        jenumFieldToInt( env, jgi, "serverRole", 
                          PKG_PATH("jni/CurGameInfo$DeviceRole"));
 
-    getString( env, j_gi, "dictName", buf, VSIZE(buf) );
+    getString( env, jgi, "dictName", buf, VSIZE(buf) );
     gi->dictName = copyString( mpool, buf );
 
     XP_ASSERT( gi->nPlayers <= MAX_NUM_PLAYERS );
 
     jobject jplayers;
-    if ( getObject( env, j_gi, "players", "[L" PKG_PATH("jni/LocalPlayer") ";",
+    if ( getObject( env, jgi, "players", "[L" PKG_PATH("jni/LocalPlayer") ";",
                     &jplayers ) ) {
         int ii;
         for ( ii = 0; ii < gi->nPlayers; ++ii ) {
@@ -114,14 +121,10 @@ static void
 setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
 {
     // set fields
-    setInt( env, jgi, "nPlayers", gi->nPlayers );
-    setInt( env, jgi, "gameSeconds", gi->gameSeconds );
-    setInt( env, jgi, "boardSize", gi->boardSize );
-    setInt( env, jgi, "gameID", gi->gameID );
-    setInt( env, jgi, "dictLang", gi->dictLang );
-    setBool( env, jgi, "hintsNotAllowed", gi->hintsNotAllowed );
-    setBool( env, jgi, "timerEnabled", gi->timerEnabled );
-    setBool( env, jgi, "allowPickTiles", gi->allowPickTiles );
+
+    setInts( env, jgi, (void*)gi, gi_ints, VSIZE(gi_ints) );
+    setBools( env, jgi, (void*)gi, gi_bools, VSIZE(gi_bools) );
+
     setString( env, jgi, "dictName", gi->dictName );
 
     intToJenumField( env, jgi, gi->phoniesAction, "phoniesAction",
@@ -154,6 +157,36 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
         XP_ASSERT(0);
     }
 } /* setJGI */
+
+#ifdef COMMON_LAYOUT
+static const SetInfo bd_ints[] = {
+    ARR_MEMBER( BoardDims, left )
+    ,ARR_MEMBER( BoardDims, top )
+    ,ARR_MEMBER( BoardDims, width )
+    ,ARR_MEMBER( BoardDims, height )
+    ,ARR_MEMBER( BoardDims, scoreHt )
+    ,ARR_MEMBER( BoardDims, scoreWidth )
+    ,ARR_MEMBER( BoardDims, boardWidth )
+    ,ARR_MEMBER( BoardDims, boardHt )
+    ,ARR_MEMBER( BoardDims, trayTop )
+    ,ARR_MEMBER( BoardDims, trayHt )
+    ,ARR_MEMBER( BoardDims, cellSize )
+    ,ARR_MEMBER( BoardDims, maxCellSize )
+    ,ARR_MEMBER( BoardDims, timerWidth )
+};
+
+static void
+dimsJToC( JNIEnv* env, BoardDims* out, jobject jdims )
+{
+    getInts( env, (void*)out, jdims, bd_ints, VSIZE(bd_ints) );
+}
+
+static void
+dimsCtoJ( JNIEnv* env, jobject jdims, const BoardDims* in )
+{
+    setInts( env, jdims, (void*)in, bd_ints, VSIZE(bd_ints) );
+}
+#endif
 
 static void
 destroyGI( MPFORMAL CurGameInfo** gip )
@@ -417,7 +450,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     globals->util = makeUtil( MPPARM(mpool) &state->env, j_util, gi, 
                               globals );
     globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
-    DrawCtx* dctx = makeDraw( MPPARM(mpool) &state->env, j_draw );
+    DrawCtx* dctx = NULL;
+    if ( !!j_draw ) {
+        dctx = makeDraw( MPPARM(mpool) &state->env, j_draw );
+    }
     globals->dctx = dctx;
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, j_procs );
     CommonPrefs cp;
@@ -486,7 +522,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
     makeDicts( MPPARM(mpool) env, globals->jniutil, &dict, &dicts, jdictNames,
                jdicts, jpaths,  jlang );
-    globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
+    if ( !!jdraw ) {
+        globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
+    }
     globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
 
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, 
@@ -561,6 +599,21 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1saveSucceeded
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1setDraw
+( JNIEnv* env, jclass C, jint gamePtr, jobject jdraw )
+{
+    XWJNI_START_GLOBALS();
+
+    DrawCtx* newDraw = makeDraw( MPPARM(mpool) &state->env, jdraw );
+    board_setDraw( state->game.board, newDraw );
+
+    destroyDraw( &globals->dctx );
+    globals->dctx = newDraw;
+
+    XWJNI_END();
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1invalAll
 ( JNIEnv *env, jclass C, jint gamePtr )
 {
@@ -580,6 +633,45 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1draw
     return result;
 }
 
+#ifdef COMMON_LAYOUT
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
+( JNIEnv* env, jclass C, jint gamePtr, jobject jgi, jint left, jint top, 
+  jint width, jint height, jint scorePct, jint trayPct, jint scoreWidth,
+  jint fontWidth, jint fontHt, jboolean squareTiles, jobject jdims )
+{
+    LOG_FUNC();
+    XWJNI_START();
+    CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
+
+    BoardDims dims;
+    board_figureLayout( state->game.board, gi, left, top, width, height, 
+                        scorePct, trayPct, scoreWidth,
+                        fontWidth, fontHt, squareTiles,
+                        ((!!jdims) ? &dims : NULL) );
+
+    destroyGI( MPPARM(mpool) &gi );
+
+    if ( !!jdims ) {
+        dimsCtoJ( env, jdims, &dims );
+    }
+    XWJNI_END();
+    LOG_RETURN_VOID();
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1applyLayout
+( JNIEnv* env, jclass C, jint gamePtr, jobject jdims )
+{
+    XWJNI_START();
+    BoardDims dims;
+    dimsJToC( env, &dims, jdims );
+    board_applyLayout( state->game.board, &dims );
+    XWJNI_END();
+}
+
+#else
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
 (JNIEnv *env, jclass C, jint gamePtr, jint left, jint top, jint width, 
@@ -589,20 +681,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setPos
     board_setPos( state->game.board, left, top, width, height, maxCellSize, 
                   lefty );
     XWJNI_END();
-}
-
-JNIEXPORT jboolean JNICALL
-Java_org_eehouse_android_xw4_jni_XwJNI_board_1zoom
-( JNIEnv* env, jclass C, jint gamePtr, jint zoomBy, jbooleanArray jCanZoom )
-{
-    jboolean result;
-    XWJNI_START();
-    XP_Bool canInOut[2];
-    result = board_zoom( state->game.board, zoomBy, canInOut );
-    jboolean canZoom[2] = { canInOut[0], canInOut[1] };
-    setBoolArray( env, jCanZoom, VSIZE(canZoom), canZoom );
-    XWJNI_END();
-    return result;
 }
 
 JNIEXPORT void JNICALL
@@ -639,6 +717,46 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setTrayLoc
                       minDividerWidth );
     XWJNI_END();
 }
+#endif
+
+JNIEXPORT jboolean JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1zoom
+( JNIEnv* env, jclass C, jint gamePtr, jint zoomBy, jbooleanArray jCanZoom )
+{
+    jboolean result;
+    XWJNI_START();
+    XP_Bool canInOut[2];
+    result = board_zoom( state->game.board, zoomBy, canInOut );
+    jboolean canZoom[2] = { canInOut[0], canInOut[1] };
+    setBoolArray( env, jCanZoom, VSIZE(canZoom), canZoom );
+    XWJNI_END();
+    return result;
+}
+
+#ifdef XWFEATURE_ACTIVERECT
+JNIEXPORT jboolean JNICALL 
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1getActiveRect
+( JNIEnv* env, jclass C, jint gamePtr, jobject jrect, jintArray dims )
+{
+    jboolean result;
+    XWJNI_START();
+    XP_Rect rect;
+    XP_U16 nCols, nRows;
+    result = board_getActiveRect( state->game.board, &rect, &nCols, &nRows );
+    if ( result ) {
+        setInt( env, jrect, "left", rect.left );
+        setInt( env, jrect, "top", rect.top );
+        setInt( env, jrect, "right", rect.left + rect.width );
+        setInt( env, jrect, "bottom", rect.top + rect.height );
+        if ( !!dims ) {
+            setIntInArray( env, dims, 0, nCols );
+            setIntInArray( env, dims, 1, nRows );
+        }
+    }
+    XWJNI_END();
+    return result;
+}
+#endif
 
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1handlePenDown
@@ -1281,6 +1399,21 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getGi
     XWJNI_END();
 }
 
+static const SetInfo gsi_ints[] = {
+    ARR_MEMBER( GameStateInfo, visTileCount ),
+    ARR_MEMBER( GameStateInfo, trayVisState ),
+};
+static const SetInfo gsi_bools[] = {
+    ARR_MEMBER( GameStateInfo,canHint ),
+    ARR_MEMBER( GameStateInfo, canRedo ),
+    ARR_MEMBER( GameStateInfo, inTrade ),
+    ARR_MEMBER( GameStateInfo, tradeTilesSelected ),
+    ARR_MEMBER( GameStateInfo, canChat ),
+    ARR_MEMBER( GameStateInfo, canShuffle ),
+    ARR_MEMBER( GameStateInfo, curTurnSelected ),
+    ARR_MEMBER( GameStateInfo, canHideRack ),
+};
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1getState
 ( JNIEnv* env, jclass C, jint gamePtr, jobject jgsi )
@@ -1289,15 +1422,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getState
     GameStateInfo info;
     game_getState( &state->game, &info );
 
-    setInt( env, jgsi, "visTileCount", info.visTileCount );
-    setInt( env, jgsi, "trayVisState", info.trayVisState );
-    setBool( env, jgsi, "canHint", info.canHint );
-    setBool( env, jgsi, "canRedo", info.canRedo);
-    setBool( env, jgsi, "inTrade", info.inTrade );
-    setBool( env, jgsi, "tradeTilesSelected", info.tradeTilesSelected );
-    setBool( env, jgsi, "canChat", info.canChat );
-    setBool( env, jgsi, "canShuffle", info.canShuffle );
-    setBool( env, jgsi, "curTurnSelected", info.curTurnSelected );
+    setInts( env, jgsi, (void*)&info, gsi_ints, VSIZE(gsi_ints) );
+    setBools( env, jgsi, (void*)&info, gsi_bools, VSIZE(gsi_bools) );
 
     XWJNI_END();
 }

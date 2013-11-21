@@ -398,7 +398,7 @@ curses_stringInTile( CursesDrawCtx* dctx, const XP_Rect* rect,
     }
 } /* curses_stringInTile */
 
-static void
+static XP_Bool
 curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect, 
                       const XP_UCHAR* textP, const XP_Bitmaps* XP_UNUSED(bitmaps),
                       XP_U16 val, CellFlags flags )
@@ -440,9 +440,10 @@ curses_draw_drawTile( DrawCtx* p_dctx, const XP_Rect* rect,
     if ( highlight ) {
         wstandend( dctx->boardWin );
     }
+    return XP_TRUE;
 } /* curses_draw_drawTile */
 
-static  void
+static XP_Bool
 curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect, 
                           CellFlags flags )
 {
@@ -451,6 +452,7 @@ curses_draw_drawTileBack( DrawCtx* p_dctx, const XP_Rect* rect,
     if ( (flags&CELL_ISCURSOR) != 0 ) {
         cursesHiliteRect( dctx->boardWin, rect );
     }
+    return XP_TRUE;
 } /* curses_draw_drawTileBack */
 
 static void

@@ -23,9 +23,13 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
+
 import android.text.Html;
 import android.text.TextUtils;
+import android.view.Display;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
@@ -45,6 +49,8 @@ public class GameUtils {
     public static final String INVITED = "invited";
     public static final String INTENT_KEY_ROWID = "rowid";
     public static final String INTENT_FORRESULT_ROWID = "forresult";
+
+    private static Integer s_minScreen;
 
     public static class NoSuchGameException extends RuntimeException {
         public NoSuchGameException() {
@@ -114,7 +120,8 @@ public class GameUtils {
         }
 
         if ( null == lockDest ) {
-            long rowid = saveNewGame( context, gamePtr, gi );
+            long groupID = DBUtils.getGroupForGame( context, lockSrc.getRowid() );
+            long rowid = saveNewGame( context, gamePtr, gi, groupID );
             lockDest = new GameLock( rowid, true ).lock();
         } else {
             saveGame( context, gamePtr, gi, lockDest, true );
@@ -180,10 +187,13 @@ public class GameUtils {
 
     public static GameSummary summarize( Context context, GameLock lock )
     {
+        GameSummary result = null;
         CurGameInfo gi = new CurGameInfo( context );
         int gamePtr = loadMakeGame( context, gi, lock );
-
-        return summarizeAndClose( context, lock, gamePtr, gi );
+        if ( 0 < gamePtr ) {
+            result = summarizeAndClose( context, lock, gamePtr, gi );
+        }
+        return result;
     }
 
     public static long dupeGame( Context context, long rowidIn )
@@ -289,6 +299,58 @@ public class GameUtils {
         return gamePtr;
     }
 
+    public static Bitmap loadMakeBitmap( Activity activity, long rowid )
+    {
+        Bitmap thumb = null;
+        GameLock lock = new GameLock( rowid, false );
+        if ( lock.tryLock() ) {
+            CurGameInfo gi = new CurGameInfo( activity );
+            int gamePtr = loadMakeGame( activity, gi, lock );
+            if ( 0 != gamePtr ) {
+                thumb = takeSnapshot( activity, gamePtr, gi );
+                XwJNI.game_dispose( gamePtr );
+                DBUtils.saveThumbnail( activity, lock, thumb );
+            }
+
+            lock.unlock();
+        }
+        return thumb;
+    }
+
+    public static Bitmap takeSnapshot( Activity activity, int gamePtr, 
+                                       CurGameInfo gi )
+    {
+        Bitmap thumb = null;
+        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
+            if ( XWPrefs.getThumbEnabled( activity ) ) {
+                int nCols = gi.boardSize;
+                int scale = XWPrefs.getThumbScale( activity );
+                Assert.assertTrue( 0 < scale );
+
+                if ( null == s_minScreen ) {
+                    Display display = 
+                        activity.getWindowManager().getDefaultDisplay(); 
+                    int width = display.getWidth();
+                    int height = display.getHeight();
+                    s_minScreen = new Integer( Math.min( width, height ) );
+                }
+                int dim = s_minScreen / scale;
+                int size = dim - (dim % nCols);
+
+                thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
+
+                XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
+                                          0, 0, 0, 20, 20, false, null );
+
+                ThumbCanvas canvas = new ThumbCanvas( activity, thumb );
+                XwJNI.board_setDraw( gamePtr, canvas );
+                XwJNI.board_invalAll( gamePtr );
+                XwJNI.board_draw( gamePtr );
+            }
+        }
+        return thumb;
+    }
+
     public static long saveGame( Context context, int gamePtr, 
                                  CurGameInfo gi, GameLock lock,
                                  boolean setCreate )
@@ -298,10 +360,10 @@ public class GameUtils {
     }
 
     public static long saveNewGame( Context context, int gamePtr,
-                                    CurGameInfo gi )
+                                    CurGameInfo gi, long groupID )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
-        GameLock lock = DBUtils.saveNewGame( context, stream );
+        GameLock lock = DBUtils.saveNewGame( context, stream, groupID );
         long rowid = lock.getRowid();
         lock.unlock();
         return rowid;
@@ -315,22 +377,33 @@ public class GameUtils {
 
     public static GameLock saveNewGame( Context context, byte[] bytes )
     {
-        return DBUtils.saveNewGame( context, bytes );
+        return saveNewGame( context, bytes, DBUtils.GROUPID_UNSPEC );
     }
 
-    public static long saveNew( Context context, CurGameInfo gi )
+    public static GameLock saveNewGame( Context context, byte[] bytes,
+                                        long groupID )
     {
+        return DBUtils.saveNewGame( context, bytes, groupID );
+    }
+
+    public static long saveNew( Context context, CurGameInfo gi, long groupID )
+    {
+        if ( DBUtils.GROUPID_UNSPEC == groupID ) {
+            groupID = XWPrefs.getDefaultNewGameGroup( context );
+        }
+
         long rowid = DBUtils.ROWID_NOTFOUND;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            GameLock lock = DBUtils.saveNewGame( context, bytes );
+            GameLock lock = DBUtils.saveNewGame( context, bytes, groupID );
             rowid = lock.getRowid();
             lock.unlock();
         }
         return rowid;
     }
 
-    private static long makeNewMultiGame( Context context, CommsAddrRec addr,
+    private static long makeNewMultiGame( Context context, long groupID, 
+                                          CommsAddrRec addr,
                                           int[] lang, String[] dict,
                                           int nPlayersT, int nPlayersH, 
                                           String inviteID, int gameID,
@@ -338,7 +411,8 @@ public class GameUtils {
     {
         long rowid = -1;
 
-        CurGameInfo gi = new CurGameInfo( context, true );
+        Assert.assertNotNull( inviteID ); // firing
+        CurGameInfo gi = new CurGameInfo( context, inviteID );
         gi.setLang( lang[0], dict[0] );
         lang[0] = gi.dictLang;
         dict[0] = gi.dictName;
@@ -353,7 +427,7 @@ public class GameUtils {
         // Will need to add a setNPlayers() method to gi to make this
         // work
         Assert.assertTrue( gi.nPlayers == nPlayersT );
-        rowid = saveNew( context, gi );
+        rowid = saveNew( context, gi, groupID );
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             GameLock lock = new GameLock( rowid, true ).lock();
@@ -364,8 +438,8 @@ public class GameUtils {
         return rowid;
     }
 
-    public static long makeNewNetGame( Context context, String room,
-                                       String inviteID, int[] lang,
+    public static long makeNewNetGame( Context context, long groupID,
+                                       String room, String inviteID, int[] lang,
                                        String[] dict, int nPlayersT, 
                                        int nPlayersH )
     {
@@ -375,28 +449,37 @@ public class GameUtils {
         CommsAddrRec addr = new CommsAddrRec( relayName, relayPort );
         addr.ip_relay_invite = room;
 
-        return makeNewMultiGame( context, addr, lang, dict, nPlayersT, 
-                                 nPlayersH, inviteID, 0, false );
+        return makeNewMultiGame( context, groupID, addr, lang, dict, 
+                                 nPlayersT, nPlayersH, inviteID, 0, false );
     }
 
-    public static long makeNewNetGame( Context context, String room, 
-                                       String inviteID, int lang, String dict,
-                                       int nPlayers )
+    public static long makeNewNetGame( Context context, long groupID, 
+                                       String room, String inviteID, int lang, 
+                                       String dict, int nPlayers )
     {
         int[] langarr = { lang };
         String[] dictArr = { dict };
-        return makeNewNetGame( context, room, inviteID, langarr, dictArr,
-                               nPlayers, 1 );
+        return makeNewNetGame( context, groupID, room, inviteID, langarr, 
+                               dictArr, nPlayers, 1 );
     }
 
     public static long makeNewNetGame( Context context, NetLaunchInfo info )
     {
-        return makeNewNetGame( context, info.room, info.inviteID, info.lang, 
-                               info.dict, info.nPlayersT );
+        return makeNewNetGame( context, DBUtils.GROUPID_UNSPEC, info.room, 
+                               info.inviteID, info.lang, info.dict, 
+                               info.nPlayersT );
     }
 
     public static long makeNewBTGame( Context context, int gameID, 
                                       CommsAddrRec addr, int lang, 
+                                      int nPlayersT, int nPlayersH )
+    {
+        return makeNewBTGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
+                              lang, nPlayersT, nPlayersH );
+    }
+    
+    public static long makeNewBTGame( Context context, long groupID, 
+                                      int gameID, CommsAddrRec addr, int lang, 
                                       int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
@@ -405,13 +488,22 @@ public class GameUtils {
         if ( isHost ) { 
             addr = new CommsAddrRec( null, null );
         }
-        return makeNewMultiGame( context, addr, langa, null, nPlayersT, 
-                                 nPlayersH, null, gameID, isHost );
+        return makeNewMultiGame( context, groupID, addr, langa, null, 
+                                 nPlayersT, nPlayersH, null, gameID, isHost );
     }
 
     public static long makeNewSMSGame( Context context, int gameID, 
-                                       CommsAddrRec addr, int lang, 
-                                       String dict, int nPlayersT, 
+                                       CommsAddrRec addr, 
+                                       int lang, String dict, int nPlayersT, 
+                                       int nPlayersH )
+    {
+        return makeNewSMSGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
+                               lang, dict, nPlayersT, nPlayersH );
+    }
+
+    public static long makeNewSMSGame( Context context, long groupID,
+                                       int gameID, CommsAddrRec addr, 
+                                       int lang, String dict, int nPlayersT, 
                                        int nPlayersH )
     {
         long rowid = -1;
@@ -421,64 +513,71 @@ public class GameUtils {
         if ( isHost ) { 
             addr = new CommsAddrRec(CommsAddrRec.CommsConnType.COMMS_CONN_SMS);
         }
-        return makeNewMultiGame( context, addr, langa, dicta, nPlayersT, 
-                                 nPlayersH, null, gameID, isHost );
+        String inviteID = GameUtils.formatGameID( gameID );
+        return makeNewMultiGame( context, groupID, addr, langa, dicta, 
+                                 nPlayersT, nPlayersH, inviteID, gameID, 
+                                 isHost );
     }
 
-    public static void launchInviteActivity( Context context, 
-                                             boolean choseEmail,
+    public static void launchInviteActivity( Activity activity, int chosen,
                                              String room, String inviteID,
                                              int lang, String dict, 
                                              int nPlayers )
     {
-        if ( null == inviteID ) {
-            inviteID = makeRandomID();
-        }
-        Uri gameUri = NetLaunchInfo.makeLaunchUri( context, room, inviteID,
-                                                   lang, dict, nPlayers );
+        Assert.assertNotNull( inviteID );
 
-        if ( null != gameUri ) {
-            int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;
-            int choiceID;
-            String message = context.getString( fmtId, gameUri.toString() );
+        if ( DlgDelegate.NFC_BTN == chosen ) {
+            Utils.showToast( activity, R.string.sms_ready_text );
+        } else {
+            Uri gameUri = NetLaunchInfo.makeLaunchUri( activity, room, inviteID,
+                                                       lang, dict, nPlayers );
+            String msgString = null == gameUri ? null : gameUri.toString();
 
-            Intent intent = new Intent();
-            if ( choseEmail ) {
-                intent.setAction( Intent.ACTION_SEND );
-                String subject =
-                    Utils.format( context, R.string.invite_subjectf, room );
-                intent.putExtra( Intent.EXTRA_SUBJECT, subject );
-                intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+            if ( null != msgString ) {
+                boolean choseEmail = DlgDelegate.EMAIL_BTN == chosen;
 
-                File attach = null;
-                File tmpdir = XWApp.ATTACH_SUPPORTED ? 
-                    DictUtils.getDownloadDir( context ) : null;
-                if ( null != tmpdir ) { // no attachment
-                    attach = makeJsonFor( tmpdir, room, inviteID, lang, 
-                                          dict, nPlayers );
-                }
+                int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;
+                int choiceID;
+                String message = activity.getString( fmtId, msgString );
 
-                if ( null == attach ) { // no attachment
-                    intent.setType( "message/rfc822");
+                Intent intent = new Intent();
+                if ( choseEmail ) {
+                    intent.setAction( Intent.ACTION_SEND );
+                    String subject =
+                        Utils.format( activity, R.string.invite_subjectf, room );
+                    intent.putExtra( Intent.EXTRA_SUBJECT, subject );
+                    intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+
+                    File attach = null;
+                    File tmpdir = XWApp.ATTACH_SUPPORTED ? 
+                        DictUtils.getDownloadDir( activity ) : null;
+                    if ( null != tmpdir ) { // no attachment
+                        attach = makeJsonFor( tmpdir, room, inviteID, lang, 
+                                              dict, nPlayers );
+                    }
+
+                    if ( null == attach ) { // no attachment
+                        intent.setType( "message/rfc822");
+                    } else {
+                        String mime = activity.getString( R.string.invite_mime );
+                        intent.setType( mime );
+                        Uri uri = Uri.fromFile( attach );
+                        intent.putExtra( Intent.EXTRA_STREAM, uri );
+                    }
+
+                    choiceID = R.string.invite_chooser_email;
                 } else {
-                    String mime = context.getString( R.string.invite_mime );
-                    intent.setType( mime );
-                    Uri uri = Uri.fromFile( attach );
-                    intent.putExtra( Intent.EXTRA_STREAM, uri );
+                    intent.setAction( Intent.ACTION_VIEW );
+                    intent.setType( "vnd.android-dir/mms-sms" );
+                    intent.putExtra( "sms_body", message );
+                    choiceID = R.string.invite_chooser_sms;
                 }
 
-                choiceID = R.string.invite_chooser_email;
-            } else {
-                intent.setAction( Intent.ACTION_VIEW );
-                intent.setType( "vnd.android-dir/mms-sms" );
-                intent.putExtra( "sms_body", message );
-                choiceID = R.string.invite_chooser_sms;
+                String choiceType = activity.getString( choiceID );
+                String chooserMsg = 
+                    Utils.format( activity, R.string.invite_chooserf, choiceType );
+                activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
             }
-
-            String choiceType = context.getString( choiceID );
-            String chooserMsg = 
-                Utils.format( context, R.string.invite_chooserf, choiceType );
-            context.startActivity( Intent.createChooser( intent, chooserMsg ) );
         }
     }
 
@@ -766,10 +865,17 @@ public class GameUtils {
         activity.startActivity( intent );
     }
 
+    public static String formatGameID( int gameID )
+    {
+        Assert.assertTrue( 0 != gameID );
+        // substring: Keep it short so fits in SMS better
+        return String.format( "%X", gameID ).substring( 0, 4 );
+    }
+
     public static String makeRandomID()
     {
         int rint = newGameID();
-        return String.format( "%X", rint ).substring( 0, 4 );
+        return formatGameID( rint );
     }
 
     public static int newGameID()

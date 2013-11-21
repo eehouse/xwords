@@ -63,10 +63,10 @@ public interface DrawCtx {
     void drawBoardArrow ( Rect rect, int bonus, boolean vert, int hintAtts,
                           int flags );
     boolean trayBegin ( Rect rect, int owner, int score );
-    void drawTile( Rect rect, String text, int val, int flags );
-    void drawTileMidDrag ( Rect rect, String text, int val, int owner, 
-                           int flags );
-    void drawTileBack( Rect rect, int flags );
+    boolean drawTile( Rect rect, String text, int val, int flags );
+    boolean drawTileMidDrag ( Rect rect, String text, int val, int owner, 
+                              int flags );
+    boolean drawTileBack( Rect rect, int flags );
     void drawTrayDivider( Rect rect, int flags );
     void score_pendingScore( Rect rect, int score, int playerNum, int curTurn, 
                              int flags );

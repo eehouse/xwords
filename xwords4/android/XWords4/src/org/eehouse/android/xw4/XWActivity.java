@@ -106,6 +106,12 @@ public class XWActivity extends Activity
         m_delegate.showAboutDialog();
     }
 
+    protected void showNotAgainDlgThen( String msg, int prefsKey,
+                                        int action )
+    {
+        m_delegate.showNotAgainDlgThen( msg, prefsKey, action, null );
+    }
+
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         int action )
     {
@@ -147,9 +153,9 @@ public class XWActivity extends Activity
         m_delegate.showConfirmThen( getString(msg), posButton, action );
     }
 
-    public void showEmailOrSMSThen( int action )
+    public void showInviteChoicesThen( int action )
     {
-        m_delegate.showEmailOrSMSThen( action );
+        m_delegate.showInviteChoicesThen( action );
     }
 
     protected void doSyncMenuitem()
@@ -178,7 +184,7 @@ public class XWActivity extends Activity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         Assert.fail();
     }

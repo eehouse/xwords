@@ -19,13 +19,15 @@
  */
 
 package org.eehouse.android.xw4;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.preference.PreferenceActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
+import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
@@ -37,11 +39,16 @@ public class PrefsActivity extends PreferenceActivity
     private static final int REVERT_COLORS = 1;
     private static final int REVERT_ALL = 2;
     public static final int CONFIRM_SMS = 3;
+    public static final int EXPLAIN_TITLE = 4;
 
     private String m_keyLogging;
     private String m_smsToasting;
     private String m_smsEnable;
     private String m_downloadPath;
+    private String m_thumbEnabled;
+    private String m_thumbSize;
+    private String m_hideTitle;
+
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -97,6 +104,13 @@ public class PrefsActivity extends PreferenceActivity
         case CONFIRM_SMS:
             dialog = SMSCheckBoxPreference.onCreateDialog( this, id );
             break;
+        case EXPLAIN_TITLE:
+            dialog = new AlertDialog.Builder( this )
+                .setMessage( R.string.no_hide_titlebar )
+                .setTitle( R.string.info_title )
+                .setPositiveButton( R.string.button_ok, null )
+                .create();
+            break;
         }
 
         if ( null == dialog && null != lstnr ) {
@@ -123,6 +137,9 @@ public class PrefsActivity extends PreferenceActivity
         m_smsToasting = getString( R.string.key_show_sms );
         m_smsEnable = getString( R.string.key_enable_sms );
         m_downloadPath = getString( R.string.key_download_path );
+        m_thumbEnabled = getString( R.string.key_thumb_enabled );
+        m_thumbSize = getString( R.string.key_thumbsize );
+        m_hideTitle = getString( R.string.key_hide_title );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -185,7 +202,18 @@ public class PrefsActivity extends PreferenceActivity
                 }
             }
             DictUtils.invalDictList();
-        }
+        } else if ( key.equals( m_thumbEnabled )
+                    || key.equals( m_thumbSize ) ) {
+            DBUtils.clearThumbnails( this );
+        } else if ( key.equals( m_hideTitle ) ) {
+            if ( sp.getBoolean( key, false ) && ABUtils.haveActionBar() ) {
+                CheckBoxPreference pref
+                    = (CheckBoxPreference)findPreference(key);
+                pref.setChecked( false );
+                pref.setEnabled( false );
+                showDialog( EXPLAIN_TITLE );
+            }
+        } 
     }
 
     private void relaunch()

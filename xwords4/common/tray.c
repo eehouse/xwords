@@ -137,6 +137,7 @@ drawTray( BoardCtxt* board )
         if ( draw_trayBegin( board->draw, &board->trayBounds, turn,
                              turnScore, dfsFor( board, OBJ_TRAY ) ) ) {
             DictionaryCtxt* dictionary = model_getDictionary( board->model );
+            XP_U16 trayInvalBits = board->trayInvalBits;
             XP_S16 cursorBits = 0;
             XP_Bool cursorOnDivider = XP_FALSE;
 #ifdef KEYBOARD_NAV
@@ -176,7 +177,7 @@ drawTray( BoardCtxt* board )
                         CellFlags flags = baseFlags;
                         XP_U16 mask = 1 << ii;
 
-                        if ( (board->trayInvalBits & mask) == 0 ) {
+                        if ( (trayInvalBits & mask) == 0 ) {
                             continue;
                         }
 #ifdef KEYBOARD_NAV
@@ -186,9 +187,11 @@ drawTray( BoardCtxt* board )
 #endif
                         figureTrayTileRect( board, ii, &tileRect );
 
+                        XP_Bool drew;
                         if ( ii >= numInTray ) {
-                            draw_drawTile( board->draw, &tileRect, NULL,
-                                           NULL, -1, flags | CELL_ISEMPTY );
+                            drew = draw_drawTile( board->draw, &tileRect, NULL,
+                                                  NULL, -1, 
+                                                  flags | CELL_ISEMPTY );
                         } else if ( showFaces ) {
                             XP_Bitmaps bitmaps;
                             const XP_UCHAR* textP = (XP_UCHAR*)NULL;
@@ -226,11 +229,17 @@ drawTray( BoardCtxt* board )
                                 flags |= CELL_ISBLANK;
                             }
 
-                            draw_drawTile( board->draw, &tileRect, textP, 
-                                           bitmaps.nBitmaps > 0? &bitmaps:NULL,
-                                           value, flags );
+                            drew = draw_drawTile( board->draw, &tileRect, textP,
+                                                  ( bitmaps.nBitmaps > 0
+                                                    ? &bitmaps : NULL ),
+                                                  value, flags );
                         } else {
-                            draw_drawTileBack( board->draw, &tileRect, flags );
+                            drew = draw_drawTileBack( board->draw, &tileRect, 
+                                                      flags );
+                        }
+                        
+                        if ( drew ) {
+                            trayInvalBits &= ~mask;
                         }
                     }
                 }
@@ -253,7 +262,7 @@ drawTray( BoardCtxt* board )
             draw_objFinished( board->draw, OBJ_TRAY, &board->trayBounds,
                               dfsFor( board, OBJ_TRAY ) );
 
-            board->trayInvalBits = 0;
+            board->trayInvalBits = trayInvalBits;
         }
     }
 
@@ -328,9 +337,11 @@ drawPendingScore( BoardCtxt* board, XP_S16 turnScore, XP_Bool hasCursor )
         XP_Rect lastTileR;
 
         figureTrayTileRect( board, MAX_TRAY_TILES-1, &lastTileR );
-        draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
-                                 selPlayer, curTurn,
-                                 hasCursor?CELL_ISCURSOR:CELL_NONE );
+        if ( 0 < lastTileR.width && 0 < lastTileR.height ) {
+            draw_score_pendingScore( board->draw, &lastTileR, turnScore, 
+                                     selPlayer, curTurn,
+                                     hasCursor?CELL_ISCURSOR:CELL_NONE );
+        }
     }
 } /* drawPendingScore */
 
@@ -509,7 +520,9 @@ dividerMoved( BoardCtxt* board, XP_U8 newLoc )
 void
 board_invalTrayTiles( BoardCtxt* board, TileBit what )
 {
-    board->trayInvalBits |= what;
+    if ( 0 < board->trayBounds.width && 0 < board->trayBounds.height ) {
+        board->trayInvalBits |= what;
+    }
 } /* invalTrayTiles */
 
 void

@@ -27,10 +27,12 @@ import android.util.AttributeSet;
 import junit.framework.Assert;
 
 public class XWListPreference extends ListPreference {
+    protected Context m_context;
 
     public XWListPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
+        m_context = context;
     }
 
     protected void onAttachedToActivity()

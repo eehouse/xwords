@@ -21,7 +21,9 @@
 package org.eehouse.android.xw4.jni;
 
 import android.graphics.Rect;
+import org.eehouse.android.xw4.BoardDims;
 
 public interface SyncedDraw {
     void doJNIDraw();
+    void dimsChanged( BoardDims dims );
 }

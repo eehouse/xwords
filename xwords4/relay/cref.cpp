@@ -1204,7 +1204,7 @@ CookieRef::storeNoAck( bool acked, uint32_t packetID, void* data )
                                     sdata->buf, sdata->buflen );
     }
     free( sdata->buf );
-    free( sdata );
+    delete sdata;
 }
 
 void

@@ -624,7 +624,7 @@ drawTradeWindowIf( BoardCtxt* board )
 XP_Bool
 board_draw( BoardCtxt* board )
 {
-    if ( board->boardBounds.width > 0 ) {
+    if ( !!board->draw && board->boardBounds.width > 0 ) {
 
         drawScoreBoard( board );
 
@@ -632,7 +632,7 @@ board_draw( BoardCtxt* board )
 
         drawBoard( board );
     }
-    return !board->needsDrawing;
+    return !board->needsDrawing && 0 == board->trayInvalBits;
 } /* board_draw */
 
 #ifdef CPLUS

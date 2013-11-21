@@ -598,7 +598,34 @@ static gboolean
 configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
                  GtkGameGlobals* globals )
 {
-    short bdWidth, bdHeight;
+    if ( globals->draw == NULL ) {
+        createOrLoadObjects( globals );
+    }
+
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    BoardCtxt* board = cGlobals->game.board;
+
+    short bdWidth = widget->allocation.width - (GTK_RIGHT_MARGIN
+						+ GTK_BOARD_LEFT_MARGIN);
+    short bdHeight = widget->allocation.height - (GTK_TOP_MARGIN + GTK_BOTTOM_MARGIN)
+      - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
+
+#ifdef COMMON_LAYOUT
+    XP_ASSERT( !cGlobals->params->verticalScore ); /* not supported */
+
+    BoardDims dims;
+    board_figureLayout( board, cGlobals->gi, 
+                        GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP, bdWidth, bdHeight,
+#if 1
+                        150, 200, 
+#else
+                        0, 0,
+#endif
+                        bdWidth-25, 16, 16, 
+                        XP_FALSE, &dims );
+    board_applyLayout( board, &dims );
+
+#else
     short timerLeft, timerTop;
     gint hscale, vscale;
     gint trayTop;
@@ -607,48 +634,39 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     gint nCols;
     gint nRows;
 
-    if ( globals->draw == NULL ) {
-        createOrLoadObjects( globals );
-    }
-
-    nCols = globals->cGlobals.gi->boardSize;
+    nCols = cGlobals->gi->boardSize;
     nRows = nCols;
-    bdWidth = widget->allocation.width - (GTK_RIGHT_MARGIN
-                                          + GTK_BOARD_LEFT_MARGIN);
-    if ( globals->cGlobals.params->verticalScore ) {
+    if ( cGlobals->params->verticalScore ) {
         bdWidth -= GTK_VERT_SCORE_WIDTH;
     }
-    bdHeight = widget->allocation.height - (GTK_TOP_MARGIN + GTK_BOTTOM_MARGIN)
-        - GTK_MIN_TRAY_SCALEV - GTK_BOTTOM_MARGIN;
 
     hscale = bdWidth / nCols;
-    if ( 0 != globals->cGlobals.params->nHidden ) {
+    if ( 0 != cGlobals->params->nHidden ) {
         vscale = hscale;
     } else {
         vscale = (bdHeight / (nCols + GTK_TRAY_HT_ROWS)); /* makd tray height
                                                              3x cell height */
     }
 
-    if ( !globals->cGlobals.params->verticalScore ) {
+    if ( !cGlobals->params->verticalScore ) {
         boardTop += GTK_HOR_SCORE_HEIGHT;
     }
 
     trayTop = boardTop + (vscale * nRows);
     /* move tray up if part of board's meant to be hidden */
-    trayTop -= vscale * globals->cGlobals.params->nHidden;
-    board_setPos( globals->cGlobals.game.board, GTK_BOARD_LEFT, boardTop,
+    trayTop -= vscale * cGlobals->params->nHidden;
+    board_setPos( board, GTK_BOARD_LEFT, boardTop,
                   hscale * nCols, vscale * nRows, hscale * 4, XP_FALSE );
-    /* board_setScale( globals->cGlobals.game.board, hscale, vscale ); */
-    globals->gridOn = XP_TRUE;
+    /* board_setScale( board, hscale, vscale ); */
 
-    if ( !!globals->cGlobals.game.comms ) {
+    if ( !!cGlobals->game.comms ) {
         netStatWidth = GTK_NETSTAT_WIDTH;
     }
 
     timerTop = GTK_TIMER_TOP;
-    if ( globals->cGlobals.params->verticalScore ) {
+    if ( cGlobals->params->verticalScore ) {
         timerLeft = GTK_BOARD_LEFT + (hscale*nCols) + 1;
-        board_setScoreboardLoc( globals->cGlobals.game.board, 
+        board_setScoreboardLoc( board, 
                                 timerLeft,
                                 GTK_VERT_SCORE_TOP,
                                 GTK_VERT_SCORE_WIDTH, 
@@ -658,7 +676,7 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     } else {
         timerLeft = GTK_BOARD_LEFT + (hscale*nCols)
             - GTK_TIMER_WIDTH - netStatWidth;
-        board_setScoreboardLoc( globals->cGlobals.game.board, 
+        board_setScoreboardLoc( board, 
                                 GTK_BOARD_LEFT, GTK_HOR_SCORE_TOP,
                                 timerLeft-GTK_BOARD_LEFT,
                                 GTK_HOR_SCORE_HEIGHT, 
@@ -667,24 +685,26 @@ configure_event( GtkWidget* widget, GdkEventConfigure* XP_UNUSED(event),
     }
 
     /* Still pending: do this for the vertical score case */
-    if ( globals->cGlobals.game.comms ) {
+    if ( cGlobals->game.comms ) {
         globals->netStatLeft = timerLeft + GTK_TIMER_WIDTH;
         globals->netStatTop = 0;
     }
 
-    board_setTimerLoc( globals->cGlobals.game.board, timerLeft, timerTop,
+    board_setTimerLoc( board, timerLeft, timerTop,
                        GTK_TIMER_WIDTH, GTK_HOR_SCORE_HEIGHT );
 
-    board_setTrayLoc( globals->cGlobals.game.board, GTK_TRAY_LEFT, trayTop, 
+    board_setTrayLoc( board, GTK_TRAY_LEFT, trayTop, 
                       hscale * nCols, vscale * GTK_TRAY_HT_ROWS + 10, 
                       GTK_DIVIDER_WIDTH );
 
+#endif
+    globals->gridOn = XP_TRUE;
+
     setCtrlsForTray( globals );
-    
-    board_invalAll( globals->cGlobals.game.board );
+    board_invalAll( board );
 
     XP_Bool inOut[2];
-    board_zoom( globals->cGlobals.game.board, 0, inOut );
+    board_zoom( board, 0, inOut );
     setZoomButtons( globals, inOut );
 
     return TRUE;
@@ -1071,6 +1091,28 @@ handle_memstats( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 } /* handle_memstats */
 #endif
 
+#ifdef XWFEATURE_ACTIVERECT
+static gint
+inval_board_ontimer( gpointer data )
+{
+    GtkGameGlobals* globals = (GtkGameGlobals*)data;
+    BoardCtxt* board = globals->cGlobals.game.board;
+    board_draw( board );
+    return XP_FALSE;
+} /* pen_timer_func */
+
+static void
+frame_active( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    XP_Rect rect;
+    BoardCtxt* board = globals->cGlobals.game.board;
+    board_getActiveRect( board, &rect );
+    frame_active_rect( globals->draw, &rect );
+    board_invalRect( board, &rect );
+    (void)g_timeout_add( 1000, inval_board_ontimer, globals );
+}
+#endif
+
 static GtkWidget*
 createAddItem( GtkWidget* parent, gchar* label, 
                GtkSignalFunc handlerFunc, GtkGameGlobals* globals ) 
@@ -1157,6 +1199,11 @@ makeMenus( GtkGameGlobals* globals )
                          GTK_SIGNAL_FUNC(handle_memstats), globals );
 #endif
 
+#ifdef XWFEATURE_ACTIVERECT
+    fileMenu = makeAddSubmenu( menubar, "Test" );
+    (void)createAddItem( fileMenu, "Frame active area", 
+                         GTK_SIGNAL_FUNC(frame_active), globals );
+#endif
     /*     (void)createAddItem( fileMenu, "Print board",  */
     /* 			 GTK_SIGNAL_FUNC(handle_print_board), globals ); */
 

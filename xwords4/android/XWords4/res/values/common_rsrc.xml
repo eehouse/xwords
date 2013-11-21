@@ -56,8 +56,10 @@
   <string name="key_notify_sound">key_notify_sound</string>
   <string name="key_notify_vibrate">key_notify_vibrate</string>
   <string name="key_enable_sms">key_enable_sms</string>
-  <string name="key_hide_intro">key_hide_intro</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
+  <string name="key_thumbsize">key_thumbsize2</string>
+  <string name="key_thumb_enabled">key_thumb_disabled</string>
+
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>
 
@@ -80,6 +82,8 @@
   <string name="key_udp_interval">key_udp_interval</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
+  <string name="key_notagain_newselect">key_notagain_newselect</string>
+  <string name="key_notagain_backclears">key_notagain_backclears</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
   <string name="key_notagain_relay">key_notagain_relay</string>
   <string name="key_notagain_hintprev">key_notagain_hintprev</string>
@@ -102,6 +106,7 @@
   <string name="key_na_browseall">key_na_browseall</string>
   <string name="key_na_values">key_na_values</string>
   <string name="key_enable_debug">key_enable_debug</string>
+  <string name="key_enable_dup_invite">key_enable_dup_invite</string>
   <string name="key_download_path">key_download_path</string>
 
   <!-- Nor is my email address -->
@@ -109,10 +114,12 @@
 
   <!-- other -->
   <string name="default_host">eehouse.org</string>
-
+  <string name="xwords_nfc_mime">application/org.eehouse.android.xw4</string>
   <string name="invite_host">eehouse.org</string>
   <string name="invite_prefix">/and/</string>
   <string name="invite_mime">application/x-xwordsinvite</string>
+  <string name="game_summary_field_rowid">rowid</string>
+  <string name="game_summary_field_gameid">gameid</string>
   <!--string name="invite_mime">text/plain</string-->
 
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
@@ -126,12 +133,26 @@
   <string name="redir_host">Invite redirect host</string>
   <string name="dict_host">Wordlist download URL</string>
   <string name="logging_on">Enable logging</string>
+  <string name="logging_on_summary">(release builds only)</string>
+  <string name="debug_features">Enable debug features</string>
+  <string name="debug_features_summary">Menuitems etc. (release builds
+  only)</string>
+
   <string name="git_rev_title">Source version id</string>
   <string name="relay_port">Relay game port</string>
   <string name="proxy_port">Relay device port</string>
   <string name="name_dict_fmt">%1$s/%2$s</string>
   <string name="gamel_menu_storedb">Write DB to SD card</string>
   <string name="gamel_menu_loaddb">Load DB from SD card</string>
+  <string name="enable_dupes_title">Accept duplicate invites</string>
+  <string name="enable_dupes_summary">Accept invitations more than once</string>
+
+
+  <string name="game_thumb_half">1/2</string>
+  <string name="game_thumb_third">1/3</string>
+  <string name="game_thumb_quarter">1/4</string>
+  <string name="game_thumb_fifth">1/5</string>
+  <string name="game_thumb_sixth">1/6</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
@@ -238,7 +259,7 @@
     <item>http://dictionary.com/browse/%2$s</item> -->
     <!--  -->
     <item>TheFreeDictionary.com</item>
-    <item>:en:es:</item>
+    <item>:en:es:de:</item>
     <item>http://%1$s.thefreedictionary.com/_/dict.aspx?word=%2$s</item>
     <!--  -->
     <item>Larousse.com</item>
@@ -277,6 +298,14 @@
     <item>@string/confirm_sms_leave</item>
     <item>@string/confirm_sms_unlimited</item>
     <item>@string/confirm_sms_willpay</item>
+  </string-array>
+
+  <string-array name="game_thumb_values">
+    <item>@string/game_thumb_half</item>
+    <item>@string/game_thumb_third</item>
+    <item>@string/game_thumb_quarter</item>
+    <item>@string/game_thumb_fifth</item>
+    <item>@string/game_thumb_sixth</item>
   </string-array>
 
 </resources>

@@ -28,7 +28,6 @@ import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences;
@@ -71,24 +70,6 @@ public class Utils {
         new HashMap<String,String>();
     private static Boolean s_hasSmallScreen = null;
     private static Random s_random = new Random();
-
-    private static interface SafeInvalOptionsMenu {
-        public void doInval( Activity activity );
-    }
-
-    private static class SafeInvalOptionsMenuImpl 
-        implements SafeInvalOptionsMenu {
-        public void doInval( Activity activity ) {
-            activity.invalidateOptionsMenu();
-        }
-    }
-    private static SafeInvalOptionsMenu s_safeInval = null;
-    static {
-        int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
-        if ( 11 <= sdkVersion ) {
-            s_safeInval = new SafeInvalOptionsMenuImpl();
-        }
-    }
 
     private Utils() {}
 
@@ -172,7 +153,7 @@ public class Utils {
         String[] addrs = { context.getString( R.string.email_author_email ) };
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
         String body = format( context, R.string.email_body_revf,
-                              GitVersion.VERS );
+                              BuildConstants.GIT_REV );
         intent.putExtra( Intent.EXTRA_TEXT, body );
         String chooserMsg = context.getString( R.string.email_author_chooser );
         context.startActivity( Intent.createChooser( intent, chooserMsg ) );
@@ -374,13 +355,6 @@ public class Utils {
     {
         MenuItem item = menu.findItem( id );
         item.setEnabled( enabled );
-    }
-
-    public static void invalidateOptionsMenuIf( Activity activity )
-    {
-        if ( null != s_safeInval ) {
-            s_safeInval.doInval( activity );
-        }
     }
 
     public static boolean hasSmallScreen( Context context )

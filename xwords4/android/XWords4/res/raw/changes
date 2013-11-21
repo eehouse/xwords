@@ -5,26 +5,24 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 69 release</b>
+<b>Crosswords 4.4 beta 72 release</b>
 
-<p>This release features a major upgrade to how the app communicates
-  with the relay, in essence switching from each game communicating
-  individually (and only when open) to the app communicating on behalf
-  of all games.  You should notice only that moves are transmitted
-  more reliably.  But this being new code you may also notice bugs.
-  If you don't <a href="mailto:xwords@eehouse.org">tell me about
-  them</a> they will not get fixed.
-</p>
+<p>This release is for the new x86-processor-based Android devices
+  just coming out. Otherwise identical to beta 71, it adds support for
+  x86 processors to existing support for ARM (which has been
+  99.9&#37; of the market until now.)</p>
+
+<p>Thanks to Brendan Le Foll for the patches!</p>
 
 <h3>New with this release</h3>
 <ul>
-    <li>Fix relay registration problem (Thanks DS!)</li>
-    <li>Show Turn done/Pass in actionbar where possible</li>
+  <li>Add support for x86 processors.
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>Take advantage of newer Android UI features, e.g. Action Bar</li>
+  <li>Add thumbnail of board to main screen</li>
+  <li>Use Actionbar and select/act pattern on more screens</li>
   <li>Offer "Rematch" when game's over</li>
 </ul>
 

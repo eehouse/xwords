@@ -60,11 +60,12 @@ public class CurGameInfo {
 
     public CurGameInfo( Context context )
     {
-        this( context, false );
+        this( context, (String)null );
     }
 
-    public CurGameInfo( Context context, boolean isNetworked )
+    public CurGameInfo( Context context, String inviteID )
     {
+        boolean isNetworked = null != inviteID;
         m_context = context;
         nPlayers = 2;
         gameSeconds = 60 * nPlayers *
@@ -80,6 +81,11 @@ public class CurGameInfo {
         allowPickTiles = false;
         allowHintRect = false;
         m_smartness = 0;        // needs to be set from players
+
+        try {
+            gameID = (null == inviteID) ? 0 : Integer.parseInt( inviteID, 16 );
+        } catch ( Exception ex ) {
+        }
 
         // Always create MAX_NUM_PLAYERS so jni code doesn't ever have
         // to cons up a LocalPlayer instance.

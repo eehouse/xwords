@@ -28,6 +28,7 @@ import android.widget.TextView;
 class ExpiringTextView extends TextView {
     private ExpiringDelegate m_delegate = null;
     private Context m_context;
+    protected boolean m_selected = false;
 
     public ExpiringTextView( Context context, AttributeSet attrs )
     {
@@ -38,9 +39,9 @@ class ExpiringTextView extends TextView {
     public void setPct( Handler handler, boolean haveTurn, 
                         boolean haveTurnLocal, long startSecs )
     {
-        if ( null == m_delegate ) {
-            m_delegate = new ExpiringDelegate( m_context, this, handler );
-        }
+        ExpiringDelegate delegate = getDelegate();
+        delegate.setHandler( handler );
+
         setPct( haveTurn, haveTurnLocal, startSecs );
     }
 
@@ -52,6 +53,12 @@ class ExpiringTextView extends TextView {
         }
     }
 
+    protected void toggleSelected()
+    {
+        m_selected = !m_selected;
+        getDelegate().setSelected( m_selected );
+    }
+
     @Override
     protected void onDraw( Canvas canvas ) 
     {
@@ -59,5 +66,13 @@ class ExpiringTextView extends TextView {
         if ( null != m_delegate ) {
             m_delegate.onDraw( canvas );
         }
+    }
+
+    private ExpiringDelegate getDelegate()
+    {
+        if ( null == m_delegate ) {
+            m_delegate = new ExpiringDelegate( m_context, this );
+        }
+        return m_delegate;
     }
 }

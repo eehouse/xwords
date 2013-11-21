@@ -21,45 +21,52 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+
+import android.content.DialogInterface.OnDismissListener;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuInflater;
-import android.view.KeyEvent;
-import android.view.Window;
 import android.os.Handler;
 import android.os.Message;
-import android.content.Intent;
-import java.util.concurrent.Semaphore;
-import java.util.ArrayList;
-import java.util.Iterator;
-import android.app.Dialog;
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
+import android.text.TextUtils;
+
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.concurrent.Semaphore;
 import junit.framework.Assert;
-import android.content.res.Configuration;
-import android.content.pm.ActivityInfo;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.JNIThread.*;
 
 
 public class BoardActivity extends XWActivity 
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
                DictImportActivity.DownloadFinishedListener, 
-               ConnStatusHandler.ConnStatusCBacks {
+               ConnStatusHandler.ConnStatusCBacks,
+               NFCUtils.NFCActor {
 
     public static final String INTENT_KEY_CHAT = "chat";
 
@@ -79,6 +86,7 @@ public class BoardActivity extends XWActivity
     private static final int DLG_GETDICT = DLG_OKONLY + 13;
     private static final int GAME_OVER = DLG_OKONLY + 14;
     private static final int DLG_CONNSTAT = DLG_OKONLY + 15;
+    private static final int ENABLE_NFC = DLG_OKONLY + 16;
 
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
@@ -120,6 +128,7 @@ public class BoardActivity extends XWActivity
     private int m_jniGamePtr;
     private GameLock m_gameLock;
     private CurGameInfo m_gi;
+    private GameSummary m_summary;
     private CommsTransport m_xport;
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
@@ -493,7 +502,7 @@ public class BoardActivity extends XWActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int item ) {
-                                showEmailOrSMSThen( LAUNCH_INVITE_ACTION );
+                                showInviteChoicesThen( LAUNCH_INVITE_ACTION );
                             }
                         };
                     dialog = new AlertDialog.Builder( this )
@@ -503,6 +512,10 @@ public class BoardActivity extends XWActivity
                         .setNegativeButton( R.string.button_no, null )
                         .create();
                 }
+                break;
+
+            case ENABLE_NFC:
+                dialog = NFCUtils.makeEnableNFCDialog( this );
                 break;
 
             default:
@@ -537,11 +550,12 @@ public class BoardActivity extends XWActivity
         super.onCreate( savedInstanceState );
         getBundledData( savedInstanceState );
 
-        if ( CommonPrefs.getHideTitleBar( this ) ) {
+        if ( CommonPrefs.getHideTitleBar( this )
+             && ABUtils.haveMenuKey( this ) ) {
             requestWindowFeature( Window.FEATURE_NO_TITLE );
         }
 
-        if ( GitVersion.CHAT_SUPPORTED ) {
+        if ( BuildConstants.CHAT_SUPPORTED ) {
             m_pendingChats = new ArrayList<String>();
         }
 
@@ -552,14 +566,8 @@ public class BoardActivity extends XWActivity
                                          // XWTimerReason
         m_view = (BoardView)findViewById( R.id.board_view );
         m_tradeButtons = findViewById( R.id.exchange_buttons );
-        m_exchCommmitButton = (Button)findViewById( R.id.exchange_commit );
-        if ( null != m_exchCommmitButton ) {
-            m_exchCommmitButton.setOnClickListener( this );
-        }
-        m_exchCancelButton = (Button)findViewById( R.id.exchange_cancel );
-        if ( null != m_exchCancelButton ) {
-            m_exchCancelButton.setOnClickListener( this );
-        }
+        m_exchCommmitButton = setListenerOrHide( R.id.exchange_commit );
+        m_exchCancelButton = setListenerOrHide( R.id.exchange_cancel );
         m_volKeysZoom = XWPrefs.getVolKeysZoom( this );
 
         Intent intent = getIntent();
@@ -567,6 +575,8 @@ public class BoardActivity extends XWActivity
         DbgUtils.logf( "BoardActivity: opening rowid %d", m_rowid );
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
         m_overNotShown = true;
+
+        NFCUtils.register( this ); // Don't seem to need to unregister...
 
         setBackgroundColor();
         setKeepScreenOn();
@@ -629,7 +639,7 @@ public class BoardActivity extends XWActivity
         if ( Activity.RESULT_CANCELED != resultCode ) {
             switch ( requestCode ) {
             case CHAT_REQUEST:
-                if ( GitVersion.CHAT_SUPPORTED ) {
+                if ( BuildConstants.CHAT_SUPPORTED ) {
                     String msg = data.getStringExtra( INTENT_KEY_CHAT );
                     if ( null != msg && msg.length() > 0 ) {
                         m_pendingChats.add( msg );
@@ -722,8 +732,6 @@ public class BoardActivity extends XWActivity
         MenuItem item;
         int strId;
 
-        updateMenus( menu );
-
         if ( null != m_gsi ) {
             inTrade = m_gsi.inTrade;
             menu.setGroupVisible( R.id.group_done, !inTrade );
@@ -736,11 +744,28 @@ public class BoardActivity extends XWActivity
             }
             item = menu.findItem( R.id.board_menu_tray );
             item.setTitle( strId );
+
+            hideShowItem( menu, R.id.board_menu_flip, m_gsi.visTileCount >= 1 );
+            hideShowItem( menu, R.id.board_menu_toggle, m_gsi.visTileCount >= 1 );
+            hideShowItem( menu, R.id.board_menu_juggle, m_gsi.canShuffle );
+            hideShowItem( menu, R.id.board_menu_undo_current, m_gsi.canRedo );
+            hideShowItem( menu, R.id.board_menu_hint_prev, m_gsi.canHint );
+            hideShowItem( menu, R.id.board_menu_hint_next, m_gsi.canHint );
+            hideShowItem( menu, R.id.board_menu_chat, 
+                          BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
+            hideShowItem( menu, R.id.board_menu_tray, 
+                          !inTrade && m_gsi.canHideRack );
         }
 
+        Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_missing );
         Utils.setItemVisible( menu, R.id.board_menu_undo_last, !inTrade );
-        Utils.setItemVisible( menu, R.id.board_menu_tray, !inTrade );
-        Utils.setItemVisible( menu, R.id.board_submenu_game, !inTrade );
+
+        Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
+        Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
+                              inTrade && m_gsi.tradeTilesSelected );
+        Utils.setItemVisible( menu, R.id.board_menu_trade, 
+                              0 == m_missing && !m_gameOver && !inTrade );
+        Utils.setItemVisible( menu, R.id.board_menu_game_resign, !inTrade );
 
         if ( !inTrade ) {
             boolean enabled = null == m_gsi || m_gsi.curTurnSelected;
@@ -754,15 +779,14 @@ public class BoardActivity extends XWActivity
                 }
                 item.setTitle( strId );
             }
+            if ( m_gameOver || DBUtils.gameOver( this, m_rowid ) ) {
+                m_gameOver = true;
+                item = menu.findItem( R.id.board_menu_game_resign );
+                item.setTitle( R.string.board_menu_game_final );
+            }
         }
 
-        if ( m_gameOver || DBUtils.gameOver( this, m_rowid ) ) {
-            m_gameOver = true;
-            item = menu.findItem( R.id.board_menu_game_resign );
-            item.setTitle( R.string.board_menu_game_final );
-        }
-
-        if ( DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
+        if ( null != m_gi && DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
             Utils.setItemVisible( menu, R.id.board_menu_game_resend, false );
             Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, false );
         }
@@ -785,7 +809,7 @@ public class BoardActivity extends XWActivity
                 showNotAgainDlgThen( R.string.not_again_done, 
                                      R.string.key_notagain_done, COMMIT_ACTION );
             } else {
-                dlgButtonClicked( COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE );
+                dlgButtonClicked( COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
             }
             break;
 
@@ -819,8 +843,11 @@ public class BoardActivity extends XWActivity
             break;
 
         case R.id.board_menu_trade:
-            showNotAgainDlgThen( R.string.not_again_trading, 
-                                 R.string.key_notagain_trading,
+            String msg = getString( R.string.not_again_trading );
+            int strID = ABUtils.haveActionBar() ? R.string.not_again_trading_menu
+                : R.string. not_again_trading_buttons;
+            msg += getString( strID );
+            showNotAgainDlgThen( msg, R.string.key_notagain_trading,
                                  START_TRADE_ACTION );
             break;
 
@@ -833,7 +860,9 @@ public class BoardActivity extends XWActivity
         case R.id.board_menu_undo_last:
             showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
             break;
-
+        case R.id.board_menu_invite:
+            showDialog( DLG_INVITE );
+            break;
             // small devices only
         case R.id.board_menu_dict:
             String dictName = m_gi.dictName( m_view.getCurPlayer() );
@@ -891,14 +920,20 @@ public class BoardActivity extends XWActivity
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         if ( LAUNCH_INVITE_ACTION == id ) {
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
-                GameUtils.launchInviteActivity( BoardActivity.this,
-                                                DlgDelegate.EMAIL_BTN == which,
-                                                m_room, null, m_gi.dictLang, 
-                                                m_gi.dictName, m_gi.nPlayers );
+                if ( DlgDelegate.NFC_BTN == which
+                     && !NFCUtils.nfcAvail( this )[1] ) {
+                    showDialog( ENABLE_NFC );
+                } else {
+                    String inviteID = GameUtils.formatGameID( m_gi.gameID );
+                    GameUtils.launchInviteActivity( this, which, m_room, 
+                                                    inviteID, m_gi.dictLang, 
+                                                    m_gi.dictName, 
+                                                    m_gi.nPlayers );
+                }
             }
         } else if ( AlertDialog.BUTTON_POSITIVE == which ) {
             JNICmd cmd = JNICmd.CMD_NONE;
@@ -1146,6 +1181,24 @@ public class BoardActivity extends XWActivity
     }
 
     //////////////////////////////////////////////////
+    // NFCUtils.NFCActor
+    //////////////////////////////////////////////////
+
+    public String makeNFCMessage()
+    {
+        String data = null;
+        if ( 0 < m_missing ) {  // Isn't there a better test??
+            String inviteID = String.format( "%X", m_gi.gameID );
+            String room = m_summary.roomName;
+            Assert.assertNotNull( room );
+            data = NetLaunchInfo.makeLaunchJSON( this, room, inviteID,
+                                                 m_gi.dictLang, 
+                                                 m_gi.dictName, m_gi.nPlayers );
+        }
+        return data;
+    }
+
+    //////////////////////////////////////////////////
     // ConnStatusHandler.ConnStatusCBacks
     //////////////////////////////////////////////////
     public void invalidateParent()
@@ -1285,6 +1338,7 @@ public class BoardActivity extends XWActivity
                 m_room = room;
                 m_missing = nMissing;
                 showDialog( DLG_INVITE );
+                ABUtils.invalidateOptionsMenuIf( this );
             } else {
                 toastStr = getString( R.string.msg_relay_waiting, devOrder,
                                       room, nMissing );
@@ -1302,11 +1356,14 @@ public class BoardActivity extends XWActivity
             m_toastStr = toastStr;
             if ( naMsg == 0 ) {
                 dlgButtonClicked( SHOW_EXPL_ACTION, 
-                                  AlertDialog.BUTTON_POSITIVE );
+                                  AlertDialog.BUTTON_POSITIVE, null );
             } else {
                 showNotAgainDlgThen( naMsg, naKey, SHOW_EXPL_ACTION );
             }
         }
+
+        m_missing = nMissing;
+        ABUtils.invalidateOptionsMenuIf( this );
     } // handleConndMessage
 
     private class BoardUtilCtxt extends UtilCtxtImpl {
@@ -1727,7 +1784,7 @@ public class BoardActivity extends XWActivity
         @Override
         public void showChat( final String msg )
         {
-            if ( GitVersion.CHAT_SUPPORTED ) {
+            if ( BuildConstants.CHAT_SUPPORTED ) {
                 post( new Runnable() {
                         public void run() {
                             DBUtils.appendChatHistory( BoardActivity.this, 
@@ -1769,21 +1826,23 @@ public class BoardActivity extends XWActivity
                     CommonPrefs cp = CommonPrefs.get( this );
                     if ( null == stream ||
                          ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                                      m_gi, dictNames, pairs.m_bytes, 
-                                                      pairs.m_paths, langName, m_utils,
-                                                      m_jniu, m_view, cp, m_xport ) ) {
-                        XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, m_jniu, 
-                                                m_view, cp, m_xport, dictNames, 
-                                                pairs.m_bytes, pairs.m_paths,
-                                                langName );
+                                                      m_gi, dictNames, 
+                                                      pairs.m_bytes, 
+                                                      pairs.m_paths, langName, 
+                                                      m_utils, m_jniu, 
+                                                      null, cp, m_xport ) ) {
+                        XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
+                                                m_jniu, null, cp, m_xport, 
+                                                dictNames, pairs.m_bytes, 
+                                                pairs.m_paths, langName );
                     }
+
+                    m_summary = new GameSummary( this, m_gi );
+                    XwJNI.game_summarize( m_jniGamePtr, m_summary );
 
                     Handler handler = new Handler() {
                             public void handleMessage( Message msg ) {
                                 switch( msg.what ) {
-                                case JNIThread.DRAW:
-                                    m_view.invalidate();
-                                    break;
                                 case JNIThread.DIALOG:
                                     m_dlgBytes = (String)msg.obj;
                                     m_dlgTitle = msg.arg1;
@@ -1799,11 +1858,11 @@ public class BoardActivity extends XWActivity
                                         updateToolbar();
                                         if ( m_inTrade != m_gsi.inTrade ) {
                                             m_inTrade = m_gsi.inTrade;
-                                            m_view.setInTrade( m_inTrade );
                                         }
+                                        m_view.setInTrade( m_inTrade );
                                         adjustTradeVisibility();
                                         Activity self = BoardActivity.this;
-                                        Utils.invalidateOptionsMenuIf( self );
+                                        ABUtils.invalidateOptionsMenuIf( self );
                                     }
                                     break;
                                 case JNIThread.GOT_WORDS:
@@ -1922,7 +1981,7 @@ public class BoardActivity extends XWActivity
                                R.string.not_again_undo,
                                R.string.key_notagain_undo,
                                UNDO_ACTION );
-        if ( GitVersion.CHAT_SUPPORTED ) {
+        if ( BuildConstants.CHAT_SUPPORTED ) {
             m_toolbar.setListener( Toolbar.BUTTON_CHAT,
                                    R.string.not_again_chat, 
                                    R.string.key_notagain_chat,
@@ -2011,7 +2070,7 @@ public class BoardActivity extends XWActivity
 
     private void startChatActivity()
     {
-        if ( GitVersion.CHAT_SUPPORTED ) {
+        if ( BuildConstants.CHAT_SUPPORTED ) {
             Intent intent = new Intent( this, ChatActivity.class );
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
             startActivityForResult( intent, CHAT_REQUEST );
@@ -2034,6 +2093,14 @@ public class BoardActivity extends XWActivity
             }
 
             clearThis();
+
+            if ( XWPrefs.getThumbEnabled( this ) ) {
+                // Before we dispose, and after JNIThread has
+                // relinquished interest, redraw on smaller scale.
+                Bitmap thumb = 
+                    GameUtils.takeSnapshot( this, m_jniGamePtr, m_gi );
+                DBUtils.saveThumbnail( this, m_gameLock, thumb );
+            }
 
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
@@ -2059,7 +2126,7 @@ public class BoardActivity extends XWActivity
     
     private void trySendChats()
     {
-        if ( GitVersion.CHAT_SUPPORTED && null != m_jniThread ) {
+        if ( BuildConstants.CHAT_SUPPORTED && null != m_jniThread ) {
             Iterator<String> iter = m_pendingChats.iterator();
             while ( iter.hasNext() ) {
                 m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
@@ -2107,7 +2174,7 @@ public class BoardActivity extends XWActivity
         m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
         m_toolbar.update( Toolbar.BUTTON_CHAT, 
-                          GitVersion.CHAT_SUPPORTED && m_gsi.canChat );
+                          BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
         m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
                           null != m_gi.dictName( m_view.getCurPlayer() ) );
     }
@@ -2117,20 +2184,6 @@ public class BoardActivity extends XWActivity
         MenuItem item = menu.findItem( id );
         if ( null != item ) {
             item.setVisible( visible );
-        }
-    }
-
-    private void updateMenus( Menu menu )
-    {
-        if ( null != m_gsi ) {
-            hideShowItem( menu, R.id.board_menu_flip, m_gsi.visTileCount >= 1 );
-            hideShowItem( menu, R.id.board_menu_toggle, m_gsi.visTileCount >= 1 );
-            hideShowItem( menu, R.id.board_menu_juggle, m_gsi.canShuffle );
-            hideShowItem( menu, R.id.board_menu_undo_current, m_gsi.canRedo );
-            hideShowItem( menu, R.id.board_menu_hint_prev, m_gsi.canHint );
-            hideShowItem( menu, R.id.board_menu_hint_next, m_gsi.canHint );
-            hideShowItem( menu, R.id.board_menu_chat, 
-                          GitVersion.CHAT_SUPPORTED && m_gsi.canChat );
         }
     }
 
@@ -2230,6 +2283,19 @@ public class BoardActivity extends XWActivity
         Intent intent = GamesList.makeRematchIntent( this, m_gi, m_rowid );
         startActivity( intent );
         finish();
+    }
+    
+    private Button setListenerOrHide( int id )
+    {
+        Button button = (Button)findViewById( id );
+        if ( null != button ) {
+            if ( ABUtils.haveActionBar() ) {
+                button.setVisibility( View.INVISIBLE );
+            } else {
+                button.setOnClickListener( this );
+            }
+        }
+        return button;
     }
 
 } // class BoardActivity

@@ -20,6 +20,7 @@
  */
 
 #include <stdio.h>
+#include <signal.h>
 #include <unistd.h>
 #include <netdb.h>		/* gethostbyname */
 #include <errno.h>
@@ -437,9 +438,14 @@ cmd_crash( int socket, const char* cmd, int argc, gchar** argv )
 static bool
 cmd_shutdown( int socket, const char* cmd, int argc, gchar** argv )
 {
-    print_to_sock( socket, true,
-                   "* %s  -- shuts down relay (exiting main) (unimplemented)",
-                   cmd );
+    if ( 1 == argc ) {
+        int result = kill( 0, SIGINT );
+        logf( XW_LOGERROR, "%s: kill => %d", __func__, result );
+    } else {
+        print_to_sock( socket, true,
+                       "* %s  -- shuts down relay (exiting main)",
+                       cmd );
+    }
     return false;
 }
 

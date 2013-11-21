@@ -85,6 +85,12 @@ public class XWExpandableListActivity extends ExpandableListActivity
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
+                                        int action, Object... params )
+    {
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action, params );
+    }
+
+    protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         int action )
     {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
@@ -111,23 +117,25 @@ public class XWExpandableListActivity extends ExpandableListActivity
         m_delegate.showOKOnlyDialog( msg );
     }
 
-    protected void showConfirmThen( String msg, int action )
+    protected void showConfirmThen( String msg, int action, Object... params )
     {
-        m_delegate.showConfirmThen( msg, action );
+        m_delegate.showConfirmThen( msg, action, params );
     }
 
-    protected void showConfirmThen( String msg, int posButton, int action )
+    protected void showConfirmThen( String msg, int posButton, int action,
+                                    Object... params )
     {
-        m_delegate.showConfirmThen( msg, posButton, action );
+        m_delegate.showConfirmThen( msg, posButton, action, params );
     }
 
-    protected void showConfirmThen( int msg, int posButton, int action )
+    protected void showConfirmThen( int msg, int posButton, int action, 
+                                    Object... params )
     {
-        m_delegate.showConfirmThen( getString(msg), posButton, action );
+        m_delegate.showConfirmThen( getString(msg), posButton, action, params );
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, int which )
+    public void dlgButtonClicked( int id, int which, Object[] params )
     {
         Assert.fail();
     }

@@ -58,9 +58,6 @@
 	<string name="board_menu_game_resend">Přeposlat zprávy</string>
 	<string name="board_menu_file_about">O Crosswords</string>
 
-	<string name="gamel_menu_delete_all">Vymazat vše</string>
-	<!-- <string name="gamel_menu_view_hidden">Hidden games</string> -->
-
     <!-- returned by util_getUserString -->
     <string name="strd_robot_traded">Robot v tomto tahu vyměnil %d kamenů.</string>
     <string name="str_robot_moved">Robot provedl tento tah:</string>

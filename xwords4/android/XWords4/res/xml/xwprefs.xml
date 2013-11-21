@@ -110,18 +110,32 @@
   <PreferenceScreen android:title="@string/prefs_appearance"
                     android:summary="@string/prefs_appearance_summary"
                     >
-    <org.eehouse.android.xw4.XWListPreference 
+    <PreferenceScreen android:title="@string/prefs_thumb"
+                      android:summary="@string/prefs_thumb_summary"
+                      >
+        <CheckBoxPreference android:key="@string/key_thumb_enabled"
+                            android:title="@string/thumb_enabled"
+                            android:summary="@string/summary_thumb_enabled"
+                            android:defaultValue="true"
+                            />
+
+        <org.eehouse.android.xw4.XWListPreference 
+             android:key="@string/key_thumbsize"
+             android:title="@string/summary_thumbsize"
+             android:entries="@array/game_thumb_values"
+             android:entryValues="@array/game_thumb_values"
+             android:defaultValue="@string/game_thumb_third"
+             />
+    </PreferenceScreen>
+
+    <org.eehouse.android.xw4.XWSumListPreference 
        android:key="@string/key_summary_field"
        android:title="@string/summary_field"
 	   android:entries="@array/game_summary_values"
 	   android:entryValues="@array/game_summary_values"
        android:defaultValue="@string/game_summary_field_opponents"
        />
-    <CheckBoxPreference android:key="@string/key_hide_intro"
-                        android:title="@string/hide_intro"
-                        android:summary="@string/hide_intro_summary"
-                        android:defaultValue="false"
-                        />
+
     <CheckBoxPreference android:key="@string/key_hide_title"
                         android:title="@string/hide_title"
                         android:summary="@string/hide_title_summary"
@@ -297,11 +311,18 @@
 			            />
     <CheckBoxPreference android:key="@string/key_logging_on"
 			            android:title="@string/logging_on"
+			            android:summary="@string/logging_on_summary"
 			            android:defaultValue="false"
 			            />
     <CheckBoxPreference android:key="@string/key_enable_debug"
-                        android:title="Enable debug features"
-                        android:summary="Menuitems etc."
+                        android:title="@string/debug_features"
+                        android:summary="@string/debug_features_summary"
+                        android:defaultValue="false"
+                        />
+
+    <CheckBoxPreference android:key="@string/key_enable_dup_invite"
+                        android:title="@string/enable_dupes_title"
+                        android:summary="@string/enable_dupes_summary"
                         android:defaultValue="false"
                         />
 
