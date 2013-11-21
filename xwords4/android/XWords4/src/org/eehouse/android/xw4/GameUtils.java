@@ -324,8 +324,8 @@ public class GameUtils {
         if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
             if ( XWPrefs.getThumbEnabled( activity ) ) {
                 int nCols = gi.boardSize;
-                int scale = XWPrefs.getThumbScale( activity );
-                Assert.assertTrue( 0 < scale );
+                int pct = XWPrefs.getThumbPct( activity );
+                Assert.assertTrue( 0 < pct );
 
                 if ( null == s_minScreen ) {
                     Display display = 
@@ -334,7 +334,7 @@ public class GameUtils {
                     int height = display.getHeight();
                     s_minScreen = new Integer( Math.min( width, height ) );
                 }
-                int dim = s_minScreen / scale;
+                int dim = s_minScreen * pct / 100;
                 int size = dim - (dim % nCols);
 
                 thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );

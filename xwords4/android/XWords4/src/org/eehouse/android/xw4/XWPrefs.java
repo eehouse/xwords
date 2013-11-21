@@ -347,24 +347,15 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_thumb_enabled, false );
     }
 
-    public static int getThumbScale( Context context )
+    public static int getThumbPct( Context context )
     {
-        String scale = getPrefsString( context, R.string.key_thumbsize );
-        int result = -1;
-        final int[][] data = {
-            { R.string.game_thumb_half, 2 }
-            ,{ R.string.game_thumb_third, 3 }
-            ,{ R.string.game_thumb_quarter, 4 }
-            ,{ R.string.game_thumb_fifth, 5 }
-            ,{ R.string.game_thumb_sixth, 6 }
-        };
-
-        for ( int[] datum : data ) {
-            if ( context.getString(datum[0]).equals(scale) ) {
-                result = datum[1];
-                break;
-            }
+        String pct = getPrefsString( context, R.string.key_thumbsize );
+        int result = 30;
+        if ( null != pct && 2 <= pct.length() ) {
+            // result = Integer.parseInt( pct.substring( 0, pct.length() - 1 ) );
+            result = Integer.parseInt( pct );
         }
+        DbgUtils.logf( "pct: %s => %d", pct, result );
         return result;
     }
 

@@ -119,12 +119,10 @@
                             android:defaultValue="true"
                             />
 
-        <org.eehouse.android.xw4.XWListPreference 
+        <org.eehouse.android.xw4.XWThumbListPreference 
              android:key="@string/key_thumbsize"
              android:title="@string/summary_thumbsize"
-             android:entries="@array/game_thumb_values"
-             android:entryValues="@array/game_thumb_values"
-             android:defaultValue="@string/game_thumb_third"
+             android:defaultValue="30"
              />
     </PreferenceScreen>
 
