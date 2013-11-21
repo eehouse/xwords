@@ -267,7 +267,7 @@ public class DBHelper extends SQLiteOpenHelper {
         long curGroup = db.insert( TABLE_NAME_GROUPS, null, values );
         values = new ContentValues();
         values.put( GROUPNAME, m_context.getString(R.string.group_new_games) );
-        values.put( EXPANDED, 0 );
+        values.put( EXPANDED, 1 );
         long newGroup = db.insert( TABLE_NAME_GROUPS, null, values );
 
         // place all existing games in the initial unnamed group

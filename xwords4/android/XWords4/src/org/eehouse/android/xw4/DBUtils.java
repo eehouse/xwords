@@ -1178,7 +1178,7 @@ public class DBUtils {
                 values.put( DBHelper.GROUPNAME, name );
                 values.put( DBHelper.EXPANDED, 1 );
 
-                initDB( context );
+                // initDB( context ); <- getGroups will have called this
                 synchronized( s_dbHelper ) {
                     SQLiteDatabase db = s_dbHelper.getWritableDatabase();
                     rowid = db.insert( DBHelper.TABLE_NAME_GROUPS, null, 
