@@ -74,8 +74,6 @@ public class GamesList extends XWExpandableListActivity
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
     private static final String SAVE_ROWIDS = "SAVE_ROWIDS";
-    private static final String SAVE_SELGAMES = "SAVE_SELGAMES";
-    private static final String SAVE_SELGROUPS = "SAVE_SELGROUPS";
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
 
@@ -443,8 +441,6 @@ public class GamesList extends XWExpandableListActivity
         super.onSaveInstanceState( outState );
         outState.putLong( SAVE_ROWID, m_rowid );
         outState.putLongArray( SAVE_ROWIDS, m_rowids );
-        outState.putLongArray( SAVE_SELGAMES, getSelRowIDs() );
-        outState.putLongArray( SAVE_SELGROUPS, getSelGroupIDs() );
         outState.putLong( SAVE_GROUPID, m_groupid );
         outState.putString( SAVE_DICTNAMES, m_missingDictName );
         if ( null != m_netLaunchInfo ) {
@@ -457,15 +453,6 @@ public class GamesList extends XWExpandableListActivity
         if ( null != bundle ) {
             m_rowid = bundle.getLong( SAVE_ROWID );
             m_rowids = bundle.getLongArray( SAVE_ROWIDS );
-            long[] tmp;
-            tmp = bundle.getLongArray( SAVE_SELGAMES );
-            for ( long ll : tmp ) {
-                m_selGames.add( ll );
-            }
-            tmp = bundle.getLongArray( SAVE_SELGROUPS );
-            for ( long ll : tmp ) {
-                m_selGroupIDs.add( ll );
-            }
             m_groupid = bundle.getLong( SAVE_GROUPID );
             m_netLaunchInfo = new NetLaunchInfo( bundle );
             m_missingDictName = bundle.getString( SAVE_DICTNAMES );

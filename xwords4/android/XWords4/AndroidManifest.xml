@@ -70,7 +70,7 @@
     <activity android:name="GamesList" 
               android:label="@string/app_name"
               android:launchMode="standard"
-              android:configChanges="keyboardHidden|orientation"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               >
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -87,22 +87,22 @@
 
     <activity android:name="DictsActivity"
               android:label="@string/title_dicts_list"
-              android:configChanges="keyboardHidden|orientation"
+              android:configChanges="keyboardHidden|orientation|screenSize"
           />
     
     <activity android:name="NewGameActivity"
               android:theme="@android:style/Theme.NoTitleBar"
-              android:configChanges="keyboardHidden|orientation"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               />
     <activity android:name="SMSInviteActivity"
               android:theme="@android:style/Theme.Dialog"
-              android:configChanges="keyboardHidden|orientation"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               android:screenOrientation="portrait"
               />
 
     <activity android:name="GameConfig"
               android:screenOrientation="sensor"
-              android:configChanges="keyboardHidden|orientation"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               >
       <intent-filter>
         <action android:name="android.intent.action.EDIT" />
@@ -112,7 +112,7 @@
     <activity android:name="PrefsActivity"
               android:label="@string/title_prefs"
               android:screenOrientation="sensor"
-              android:configChanges="keyboardHidden|orientation"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
     <activity android:name="BoardActivity"
@@ -121,7 +121,7 @@
               />
 
     <activity android:name="LookupActivity"
-              android:configChanges="keyboardHidden|orientation"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               android:theme="@android:style/Theme.Dialog"
               />
 
@@ -183,10 +183,10 @@
 
     <activity android:name="RelayGameActivity"/>
     <activity android:name="DictBrowseActivity"
-              android:configChanges="keyboardHidden|orientation"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               />
     <activity android:name="ChatActivity"
-              android:configChanges="keyboardHidden|orientation"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
     <service android:name="RelayService"/>
