@@ -350,10 +350,13 @@ public class XWPrefs {
     public static int getThumbPct( Context context )
     {
         String pct = getPrefsString( context, R.string.key_thumbsize );
-        int result = 30;
-        if ( null != pct && 2 <= pct.length() ) {
-            // result = Integer.parseInt( pct.substring( 0, pct.length() - 1 ) );
-            result = Integer.parseInt( pct );
+        int result;
+        try {
+            String suffix = context.getString( R.string.pct_suffix );
+            result = Integer.parseInt( pct.substring( 0, pct.length()
+                                                      - suffix.length() ) );
+        } catch (Exception ex ) {
+            result = 30;
         }
         DbgUtils.logf( "pct: %s => %d", pct, result );
         return result;

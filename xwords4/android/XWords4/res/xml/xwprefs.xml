@@ -119,10 +119,11 @@
                             android:defaultValue="true"
                             />
 
+        <!-- " pct." below must match R.string.pct_suffix -->
         <org.eehouse.android.xw4.XWThumbListPreference 
              android:key="@string/key_thumbsize"
              android:title="@string/summary_thumbsize"
-             android:defaultValue="30"
+             android:defaultValue="30 pct."
              />
     </PreferenceScreen>
 

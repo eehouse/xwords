@@ -2192,4 +2192,6 @@
     means that any time a board that\'s missing a player is open, you
     can tap a nearby person\'s device to invite him/her to
     play – if he/she is also using NFC.</string>
+
+    <string name="pct_suffix">\u0020pct.</string>
 </resources>

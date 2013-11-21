@@ -24,10 +24,12 @@ import android.content.Context;
 import android.util.AttributeSet;
 
 public class XWThumbListPreference extends XWListPreference {
+    private Context m_context;
 
     public XWThumbListPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
+        m_context = context;
     }
 
     // Why I exist: insert the rowid and gameid lines if debug is on
@@ -37,8 +39,9 @@ public class XWThumbListPreference extends XWListPreference {
 
         CharSequence[] newEntries = new CharSequence[6];
         int indx = 0;
+        String suffix = m_context.getString( R.string.pct_suffix );
         for ( int pct = 20; pct <= 45; pct += 5 ) {
-            newEntries[indx++] = String.format( "%d", pct );
+            newEntries[indx++] = String.format( "%d%s", pct, suffix );
         }
         setEntries( newEntries );
         setEntryValues( newEntries );
