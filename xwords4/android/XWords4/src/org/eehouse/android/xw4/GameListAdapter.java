@@ -202,6 +202,7 @@ public class GameListAdapter implements ExpandableListAdapter {
                 GameListItem child = (GameListItem)convertView;
                 long rowid = getRowIDFor( groupPosition, childPosition );
                 if ( child.getRowID() == rowid ) {
+                    child.setSelected( m_cb.getSelected( child ) );
                     result = child;
                 }
             }
@@ -387,7 +388,9 @@ public class GameListAdapter implements ExpandableListAdapter {
             int pos = getGroupPosition( iter.next() );
             if ( 0 <= pos ) {   // still exists?
                 GameListGroup group = getGroupItemFor( pos );
-                group.setSelected( false );
+                if ( null != group ) {
+                    group.setSelected( false );
+                }
             }
         }
     }
