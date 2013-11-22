@@ -1338,7 +1338,12 @@ public class GamesList extends XWExpandableListActivity
     private void selectJustLaunched()
     {
         clearSelections();
-        m_adapter.getGameItemFor( m_launchedGame ).setSelected( true );
+        if ( null != m_adapter ) {
+            GameListItem item = m_adapter.getGameItemFor( m_launchedGame );
+            if ( null != item ) {
+                item.setSelected( true );
+            }
+        }
     }
 
     public static void onGameDictDownload( Context context, Intent intent )
