@@ -420,10 +420,14 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     protected GameListItem getGameItemFor( long rowid )
     {
-        long[] rowids = { rowid };
-        GameListItem[] items = new GameListItem[1];
-        getGameItemsFor( rowids, items );
-        return items[0];
+        GameListItem result = null;
+        if ( DBUtils.ROWID_NOTFOUND != rowid ) {
+            long[] rowids = { rowid };
+            GameListItem[] items = new GameListItem[1];
+            getGameItemsFor( rowids, items );
+            result = items[0];
+        }
+        return result;
     }
 
     private GameListGroup getGroupItemFor( int groupPosition )
