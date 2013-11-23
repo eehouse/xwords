@@ -5,23 +5,42 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 72 release</b>
+<b>Crosswords 4.4 beta 73 release</b>
 
-<p>This release is for the new x86-processor-based Android devices
-  just coming out. Otherwise identical to beta 71, it adds support for
-  x86 processors to existing support for ARM (which has been
-  99.9&#37; of the market until now.)</p>
+<p>This release adds two new features, snapshots of in-progress games
+  displayed as part of the main Games List screen, and the ability to
+  send invitations by tapping your device against the one you want to
+  invite (using &quot;Near Field Communication&quot;, or NFC, which Google
+  brands &quot;Android beaming&quot;.)</p>
 
-<p>Thanks to Brendan Le Foll for the patches!</p>
+<p>Both features are optional. NFC is off by default, so you have to
+  enable it via Google's system Preferences app. And snapshots, while
+  on by default, can be disabled (or resized to better fit your
+  screen) in Crosswords' App Preferences section under
+  Appearances.</p>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Add support for x86 processors.
+  <li>Add thumbnails of board to main screen</li>
+  <li>Add ability to invite via NFC</li>
+  <li>Use Actionbar and select/act pattern on Wordlist Browser
+    screen</li>
+  <li>Highlight most recently opened game in Games List screen by
+    default </li>
+  <li>Disable SMS on KitKat (Android 4.4) devices: Google&apos;s
+    broken some behavior it depended on</li>
+  <li>Disable hiding title bar on devices with Action Bar or without a
+    menu key</li>
+  <li>Make tile borders thicker when selected in trade mode</li>
+  <li>Refuse to create more than one game from an invitation</li>
+  <li>Add the.freedictionary.com lookup for German words</li>
+  <li>Fix disappearing games bug</li>
+  <li>Fix wordlist crasher (Thanks BM!)</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>Add thumbnail of board to main screen</li>
+  <li>Fix SMS play for KitKat</li>
   <li>Use Actionbar and select/act pattern on more screens</li>
   <li>Offer "Rematch" when game's over</li>
 </ul>
