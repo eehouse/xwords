@@ -24,6 +24,8 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 
+import org.eehouse.android.xw4.jni.XwJNI;
+
 public class ThumbCanvas extends BoardCanvas {
 
     public ThumbCanvas( Activity activity, Bitmap bitmap )
@@ -47,4 +49,17 @@ public class ThumbCanvas extends BoardCanvas {
         return false;
     }
 
+    // Unlike superclass, where the game was loaded on the main thread
+    // but dictChanged() is called on the JNI thread, this instance
+    // will have been created on the same background thread that's
+    // calling us.  So don't switch threads for the dict_getChars()
+    // call
+    @Override
+    public void dictChanged( final int dictPtr )
+    {
+        if ( 0 != dictPtr ) {
+            m_fontDims = null;
+            m_dictChars = XwJNI.dict_getChars( dictPtr );
+        }
+    }
 }

@@ -82,7 +82,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private int m_trayOwner = -1;
     private int m_pendingScore;
     private int m_dictPtr = 0;
-    private String[] m_dictChars;
+    protected String[] m_dictChars;
     private boolean m_hasSmallScreen;
     private int m_backgroundUsed = 0x00000000;
 
@@ -118,7 +118,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         int descentFor( int ht ) { return (int)(ht * m_descentProportion); }
         int widthFor( int width ) { return (int)(width / m_widthProportion); }
     }
-    private FontDims m_fontDims;
+    protected FontDims m_fontDims;
 
     public BoardCanvas( Activity activity, Bitmap bitmap, JNIThread jniThread,
                         BoardDims dims )

@@ -30,6 +30,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
+import java.util.concurrent.LinkedBlockingQueue;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -310,7 +311,6 @@ public class GameListItem extends LinearLayout
 
             if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
                 m_thumb = (ImageView)findViewById( R.id.thumbnail );
-                m_thumb.setImageBitmap( summary.getThumbnail() );
             }
 
             tview = (TextView)findViewById( R.id.role );
@@ -340,11 +340,9 @@ public class GameListItem extends LinearLayout
 
     private void makeThumbnailIf( boolean expanded )
     {
-        if ( expanded && null != m_activity && null != m_summary
-             && null == m_summary.getThumbnail()
+        if ( expanded && null != m_activity
              && XWPrefs.getThumbEnabled( m_context ) ) {
-            m_summary.setThumbnail( GameUtils.loadMakeBitmap( m_activity,
-                                                              m_rowid ) );
+            enqueueGetThumbnail( this, m_rowid );
         }
     }
 
@@ -410,6 +408,69 @@ public class GameListItem extends LinearLayout
     public void longClicked()
     {
         toggleSelected();
+    }
+
+    private static class ThumbQueueElem {
+        public ThumbQueueElem( GameListItem item, long rowid ) {
+            m_item = item;
+            m_rowid = rowid;
+        }
+        long m_rowid;
+        GameListItem m_item;
+    }
+    private static LinkedBlockingQueue<ThumbQueueElem> s_queue
+        = new LinkedBlockingQueue<ThumbQueueElem>();
+    private static Thread s_thumbThread;
+
+    private static void enqueueGetThumbnail( GameListItem item, long rowid )
+    {
+        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
+            s_queue.add( new ThumbQueueElem( item, rowid ) );
+
+            synchronized( GameListItem.class ) {
+                if ( null == s_thumbThread ) {
+                    s_thumbThread = makeThumbThread();
+                    s_thumbThread.start();
+                }
+            }
+        }
+    }
+
+    private static Thread makeThumbThread()
+    {
+        return new Thread( new Runnable() {
+                public void run()
+                {
+                    for ( ; ; ) {
+                        ThumbQueueElem elem;
+                        try {
+                            elem = s_queue.take();
+                        } catch ( InterruptedException ie ) {
+                            DbgUtils.logf( "interrupted; killing "
+                                           + "s_thumbThread" );
+                            break;
+                        }
+                        Activity activity = elem.m_item.m_activity;
+                        long rowid = elem.m_rowid;
+                        Bitmap thumb = DBUtils.getThumb( activity, rowid );
+                        if ( null == thumb ) {
+                            // loadMakeBitmap puts in DB
+                            thumb = GameUtils.loadMakeBitmap( activity, rowid );
+                        }
+
+                        final GameListItem item = elem.m_item;
+                        final Bitmap ft = thumb;
+                        activity.runOnUiThread( new Runnable() {
+                                public void run() {
+                                    ImageView iview = item.m_thumb;
+                                    if ( null != iview ) {
+                                        iview.setImageBitmap( ft );
+                                    }
+                                }
+                            });
+                    }
+                }
+            });
     }
 
 }

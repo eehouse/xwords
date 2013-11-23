@@ -135,7 +135,7 @@ public class DBUtils {
                              DBHelper.DICTLANG, DBHelper.GAMEID,
                              DBHelper.SCORES, DBHelper.HASMSGS,
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
-                             DBHelper.LASTMOVE, DBHelper.THUMBNAIL
+                             DBHelper.LASTMOVE
         };
         String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -183,18 +183,6 @@ public class DBUtils {
                 summary.gameOver = tmp != 0;
                 summary.lastMoveTime = 
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
-
-                if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-                    byte[] data =
-                        cursor.getBlob( cursor.
-                                        getColumnIndex(DBHelper.THUMBNAIL));
-                    if ( null != data ) {
-                        Bitmap thumb = 
-                            BitmapFactory.decodeByteArray( data, 0, 
-                                                           data.length );
-                        summary.setThumbnail( thumb );
-                    }
-                }
 
                 String scoresStr = 
                     cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
@@ -322,8 +310,6 @@ public class DBUtils {
             }
 
             values.put( DBHelper.SERVERROLE, summary.serverRole.ordinal() );
-
-            addThumb( summary.getThumbnail(), values );
         }
 
         initDB( context );
@@ -447,7 +433,15 @@ public class DBUtils {
             long rowid = lock.getRowid();
             String selection = String.format( ROW_ID_FMT, rowid );
             ContentValues values = new ContentValues();
-            addThumb( thumb, values );
+
+            if ( null == thumb ) {
+                values.putNull( DBHelper.THUMBNAIL );
+            } else {
+                ByteArrayOutputStream bas = new ByteArrayOutputStream();
+                thumb.compress( CompressFormat.PNG, 0, bas );
+                values.put( DBHelper.THUMBNAIL, bas.toByteArray() );
+            }
+
             initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getWritableDatabase();
@@ -957,15 +951,32 @@ public class DBUtils {
         s_groupsCache = null;
     }
 
-    private static void addThumb( Bitmap thumb, ContentValues values )
+    public static Bitmap getThumb( Context context, long rowid )
     {
-        if ( null == thumb ) {
-            values.putNull( DBHelper.THUMBNAIL );
-        } else {
-            ByteArrayOutputStream bas = new ByteArrayOutputStream();
-            thumb.compress( CompressFormat.PNG, 0, bas );
-            values.put( DBHelper.THUMBNAIL, bas.toByteArray() );
+        Bitmap thumb = null;
+        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
+            byte[] data = null;
+            String[] columns = { DBHelper.THUMBNAIL };
+            String selection = String.format( ROW_ID_FMT, rowid );
+
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+                Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                          selection, null, null, null, null );
+                if ( 1 == cursor.getCount() && cursor.moveToFirst() ) {
+                    data = cursor.getBlob( cursor.
+                                           getColumnIndex(DBHelper.THUMBNAIL));
+                }
+                cursor.close();
+                db.close();
+            }
+
+            if ( null != data ) {
+                thumb = BitmapFactory.decodeByteArray( data, 0, data.length );
+            }
         }
+        return thumb;
     }
 
     // Return map of string (group name) to info about all games in
