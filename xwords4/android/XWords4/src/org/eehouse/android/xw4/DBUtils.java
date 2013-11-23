@@ -64,7 +64,7 @@ public class DBUtils {
     private static final String NAME_FMT = "%s='%s'";
     private static final String NAMELOC_FMT = "%s='%s' AND %s=%d";
 
-    private static long s_cachedRowID = -1;
+    private static long s_cachedRowID = ROWID_NOTFOUND;
     private static byte[] s_cachedBytes = null;
 
     public static interface DBChangeListener {
@@ -469,7 +469,7 @@ public class DBUtils {
                                          values, null, null );
                 db.close();
 
-                notifyListeners( -1, true );
+                notifyListeners( ROWID_NOTFOUND, false );
             }
         }
     }
@@ -779,7 +779,7 @@ public class DBUtils {
         }
 
         return lock;
-    }
+    } // saveNewGame
 
     public static long saveGame( Context context, GameLock lock, 
                                  byte[] bytes, boolean setCreate )
