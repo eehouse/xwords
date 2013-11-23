@@ -131,7 +131,7 @@ public class GamesList extends XWExpandableListActivity
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
-    private long m_launchedGame = 0;
+    private long m_launchedGame = DBUtils.ROWID_NOTFOUND;
     private boolean m_menuPrepared;
     private HashSet<Long> m_selGames;
     private HashSet<Long> m_selGroupIDs;
@@ -409,7 +409,7 @@ public class GamesList extends XWExpandableListActivity
     protected void onNewIntent( Intent intent )
     {
         super.onNewIntent( intent );
-        m_launchedGame = 0;
+        m_launchedGame = DBUtils.ROWID_NOTFOUND;
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         invalRowID( intent.getLongExtra( ROWID_EXTRA, -1 ) );
@@ -466,9 +466,9 @@ public class GamesList extends XWExpandableListActivity
         if ( hasFocus ) {
             updateField();
 
-            if ( 0 != m_launchedGame ) {
+            if ( DBUtils.ROWID_NOTFOUND != m_launchedGame ) {
                 selectJustLaunched();
-                m_launchedGame = 0;
+                m_launchedGame = DBUtils.ROWID_NOTFOUND;
             }
         }
     }
@@ -490,8 +490,11 @@ public class GamesList extends XWExpandableListActivity
                 public void run() {
                     if ( countChanged ) {
                         onContentChanged();
+                        if ( DBUtils.ROWID_NOTFOUND != rowid ) {
+                            m_launchedGame = rowid;
+                        }
                     } else {
-                        Assert.assertTrue( 0 <= rowid );
+                        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
                         m_adapter.inval( rowid );
                     }
                 }
@@ -506,7 +509,7 @@ public class GamesList extends XWExpandableListActivity
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
         if ( clicked instanceof GameListItem ) {
-            if ( 0 == m_launchedGame ) {
+            if ( DBUtils.ROWID_NOTFOUND == m_launchedGame ) {
                 long rowid = ((GameListItem)clicked).getRowID();
                 showNotAgainDlgThen( R.string.not_again_newselect, 
                                      R.string.key_notagain_newselect,
@@ -1244,7 +1247,7 @@ public class GamesList extends XWExpandableListActivity
 
     private void launchGame( long rowid, boolean invited )
     {
-        if ( 0 == m_launchedGame ) {
+        if ( DBUtils.ROWID_NOTFOUND == m_launchedGame ) {
             m_launchedGame = rowid;
             GameUtils.launchGame( this, rowid, invited );
         }
