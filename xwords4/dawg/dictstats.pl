@@ -47,14 +47,19 @@ print "Number of letters: $letterCount\n\n";
 
 print "**** word sizes ****\n";
 print "SIZE  COUNT   PERCENT\n";
+my $pctTotal = 0.0;
+my $wordTotal = 0;
 for ( my $i = 1 ; $i <= 99; ++$i ) {
     my $count = $wordSizeCounts[$i];
+    $wordTotal += $count;
     if ( $count > 0 ) {
         my $pct = (100.00 * $count)/$wordCount;
-        printf "%2d    %5d    %.2f\n", $i, $count, $pct;
+        $pctTotal += $pct;
+        printf "%2d   %6d    %.2f\n", $i, $count, $pct;
     }
 } 
-
+printf "-------------------------------\n";
+printf "     %6d  %.2f\n", $wordTotal, $pctTotal;
 
 
 print "\n\n**** Letter counts ****\n";
