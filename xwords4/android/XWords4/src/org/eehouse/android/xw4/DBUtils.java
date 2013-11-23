@@ -951,7 +951,7 @@ public class DBUtils {
         s_groupsCache = null;
     }
 
-    public static Bitmap getThumb( Context context, long rowid )
+    public static Bitmap getThumbnail( Context context, long rowid )
     {
         Bitmap thumb = null;
         if ( BuildConstants.THUMBNAIL_SUPPORTED ) {

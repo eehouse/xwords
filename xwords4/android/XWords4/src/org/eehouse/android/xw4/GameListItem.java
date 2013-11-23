@@ -452,7 +452,7 @@ public class GameListItem extends LinearLayout
                         }
                         Activity activity = elem.m_item.m_activity;
                         long rowid = elem.m_rowid;
-                        Bitmap thumb = DBUtils.getThumb( activity, rowid );
+                        Bitmap thumb = DBUtils.getThumbnail( activity, rowid );
                         if ( null == thumb ) {
                             // loadMakeBitmap puts in DB
                             thumb = GameUtils.loadMakeBitmap( activity, rowid );
