@@ -55,12 +55,14 @@ public class SMSService extends XWService {
 
     private static final String INSTALL_URL = "http://eehouse.org/_/a.py/a ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
+    private static final boolean s_asData = true;
 
     private static final String MSG_SENT = "MSG_SENT";
     private static final String MSG_DELIVERED = "MSG_DELIVERED";
 
     private static final int SMS_PROTO_VERSION = 0;
     private static final int MAX_LEN_TEXT = 100;
+    private static final int MAX_LEN_BINARY = 100;
     private static final int HANDLE = 1;
     private static final int INVITE = 2;
     private static final int SEND = 3;
@@ -69,6 +71,7 @@ public class SMSService extends XWService {
     private static final int CHECK_MSGDB = 6;
     private static final int ADDED_MISSING = 7;
     private static final int STOP_SELF = 8;
+    private static final int HANDLEDATA = 9;
 
     private static final String CMD_STR = "CMD";
     private static final String BUFFER = "BUFFER";
@@ -113,6 +116,15 @@ public class SMSService extends XWService {
                                    String phone )
     {
         Intent intent = getIntentTo( context, HANDLE );
+        intent.putExtra( BUFFER, buffer );
+        intent.putExtra( PHONE, phone );
+        context.startService( intent );
+    }
+
+    public static void handleFrom( Context context, byte[] buffer, 
+                                   String phone )
+    {
+        Intent intent = getIntentTo( context, HANDLEDATA );
         intent.putExtra( BUFFER, buffer );
         intent.putExtra( PHONE, phone );
         context.startService( intent );
@@ -256,6 +268,7 @@ public class SMSService extends XWService {
                 }
                 break;
             case HANDLE:
+            case HANDLEDATA:
                 ++m_nReceived;
                 ConnStatusHandler.
                     updateStatusIn( this, null,
@@ -263,9 +276,14 @@ public class SMSService extends XWService {
                 if ( s_showToasts ) {
                     DbgUtils.showf( this, "got %dth msg", m_nReceived );
                 }
-                String buffer = intent.getStringExtra( BUFFER );
                 String phone = intent.getStringExtra( PHONE );
-                receiveBuffer( buffer, phone );
+                if ( HANDLE == cmd ) {
+                    String buffer = intent.getStringExtra( BUFFER );
+                    receiveBuffer( buffer, phone );
+                } else {
+                    byte[] buffer = intent.getByteArrayExtra( BUFFER );
+                    receiveBuffer( buffer, phone );
+                }
                 break;
             case INVITE:
             case ADDED_MISSING:
@@ -387,9 +405,16 @@ public class SMSService extends XWService {
         das.write( bytes, 0, bytes.length );
         das.flush();
 
-        String as64 = XwJNI.base64Encode( bas.toByteArray() );
-        String[] msgs = breakAndEncode( as64 );
-        return sendBuffers( msgs, phone );
+        byte[] data = bas.toByteArray();
+        boolean result;
+        if ( s_asData ) {
+            byte[][] msgs = breakAndEncode( data );
+            result = sendBuffers( msgs, phone );
+        } else {
+            String[] msgs = breakAndEncode( XwJNI.base64Encode( data ) );
+            result = sendBuffers( msgs, phone );
+        }
+        return result;
     }
 
     private String[] breakAndEncode( String msg ) 
@@ -412,6 +437,33 @@ public class SMSService extends XWService {
             end += len;
             result[ii] = String.format( "0:%X:%X:%X:%s", msgID, ii, count, 
                                         msg.substring( start, end ) );
+            start = end;
+        }
+        return result;
+    }
+
+    private byte[][] breakAndEncode( byte msg[] ) throws java.io.IOException 
+    {
+        int count = (msg.length + (MAX_LEN_BINARY-1)) / MAX_LEN_BINARY;
+        byte[][] result = new byte[count][];
+        int msgID = ++s_nSent % 0x000000FF;
+
+        int start = 0;
+        int end = 0;
+        for ( int ii = 0; ii < count; ++ii ) {
+            int len = msg.length - end;
+            if ( len > MAX_LEN_BINARY ) {
+                len = MAX_LEN_BINARY;
+            }
+            end += len;
+            byte[] part = new byte[4 + len]; 
+            part[0] = (byte)0;  // proto
+            part[1] = (byte)msgID;
+            part[2] = (byte)ii;
+            part[3] = (byte)count;
+            System.arraycopy( msg, start, part, 4, len );
+
+            result[ii] = part;
             start = end;
         }
         return result;
@@ -472,6 +524,19 @@ public class SMSService extends XWService {
         }
     }
 
+    private void receiveBuffer( byte[] buffer, String senderPhone )
+    {
+        byte proto = buffer[0];
+        int id = buffer[1];
+        int index = buffer[2];
+        int count = buffer[3];
+        byte[] rest = new byte[buffer.length - 4];
+        System.arraycopy( buffer, 4, rest, 0, rest.length );
+        tryAssemble( senderPhone, id, index, count, rest );
+            
+        sendResult( MultiEvent.SMS_RECEIVE_OK );
+    }
+
     private void receiveBuffer( String as64, String senderPhone )
     {
         String[] parts = as64.split( ":" );
@@ -484,6 +549,34 @@ public class SMSService extends XWService {
             tryAssemble( senderPhone, id, index, count, parts[4] );
             
             sendResult( MultiEvent.SMS_RECEIVE_OK );
+        }
+    }
+
+    private void tryAssemble( String senderPhone, int id, int index, 
+                              int count, byte[] msg )
+    {
+        if ( index == 0 && count == 1 ) {
+            disAssemble( senderPhone, msg );
+        } else {
+            // required?  Should always be in main thread.
+            synchronized( s_partialMsgs ) { 
+                HashMap<Integer, MsgStore> perPhone = 
+                    s_partialMsgs.get( senderPhone );
+                if ( null == perPhone ) {
+                    perPhone = new HashMap <Integer, MsgStore>();
+                    s_partialMsgs.put( senderPhone, perPhone );
+                }
+                MsgStore store = perPhone.get( id );
+                if ( null == store ) {
+                    store = new MsgStore( id, count, false );
+                    perPhone.put( id, store );
+                }
+
+                if ( store.add( index, msg ).isComplete() ) {
+                    disAssemble( senderPhone, store.messageData() );
+                    perPhone.remove( id );
+                }
+            }
         }
     }
 
@@ -503,15 +596,38 @@ public class SMSService extends XWService {
                 }
                 MsgStore store = perPhone.get( id );
                 if ( null == store ) {
-                    store = new MsgStore( id, count );
+                    store = new MsgStore( id, count, true );
                     perPhone.put( id, store );
                 }
 
                 if ( store.add( index, msg ).isComplete() ) {
-                    disAssemble( senderPhone, store.message() );
+                    disAssemble( senderPhone, store.messageText() );
                     perPhone.remove( id );
                 }
             }
+        }
+    }
+
+    private void disAssemble( String senderPhone, byte[] fullMsg )
+    {
+        DataInputStream dis = 
+            new DataInputStream( new ByteArrayInputStream(fullMsg) );
+        try {
+            byte proto = dis.readByte();
+            if ( SMS_PROTO_VERSION != proto ) {
+                DbgUtils.logf( "SMSService.disAssemble: bad proto %d; dropping", 
+                               proto );
+            } else {
+                SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
+                byte[] rest = new byte[dis.available()];
+                dis.read( rest );
+                receive( cmd, rest, senderPhone );
+            }
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.loge( ioe );
+        } catch ( ArrayIndexOutOfBoundsException oob ) {
+            // enum this older code doesn't know about; drop it
+            DbgUtils.logf( "disAssemble: dropping message with too-new enum" );
         }
     }
 
@@ -575,6 +691,33 @@ public class SMSService extends XWService {
             for ( String fragment : fragments ) {
                 String asPublic = toPublicFmt( fragment );
                 mgr.sendTextMessage( phone, null, asPublic, sent, delivery );
+            }
+            if ( s_showToasts ) {
+                DbgUtils.showf( this, "sent %dth msg", s_nSent );
+            }
+            success = true;
+        } catch ( IllegalArgumentException iae ) {
+            DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
+        } catch ( Exception ee ) {
+            DbgUtils.loge( ee );
+        }
+
+        ConnStatusHandler.updateStatusOut( this, null, 
+                                           CommsConnType.COMMS_CONN_SMS, 
+                                           success );
+        return success;
+    }
+
+    private boolean sendBuffers( byte[][] fragments, String phone )
+    {
+        boolean success = false;
+        try {
+            SmsManager mgr = SmsManager.getDefault();
+            PendingIntent sent = makeStatusIntent( MSG_SENT );
+            PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
+            for ( byte[] fragment : fragments ) {
+                mgr.sendDataMessage( phone, null, (short)3344, fragment, 
+                                     sent, delivery );
             }
             if ( s_showToasts ) {
                 DbgUtils.showf( this, "sent %dth msg", s_nSent );
@@ -728,41 +871,68 @@ public class SMSService extends XWService {
     }
 
     private class MsgStore {
-        String[] m_msgs;
+        String[] m_msgsText;
+        byte[][] m_msgsData;
         int m_msgID;
         int m_haveCount;
         int m_fullLength;
 
-        public MsgStore( int id, int count )
+        public MsgStore( int id, int count, boolean usingStrings )
         {
             m_msgID = id;
-            m_msgs = new String[count];
+            if ( usingStrings ) {
+                m_msgsText = new String[count];
+            } else {
+                m_msgsData = new byte[count][];
+            }
             m_fullLength = 0;
         }
 
         public MsgStore add( int index, String msg )
         {
-            if ( null == m_msgs[index] ) {
+            if ( null == m_msgsText[index] ) {
                 ++m_haveCount;
                 m_fullLength += msg.length();
             }
-            m_msgs[index] = msg;
+            m_msgsText[index] = msg;
+            return this;
+        }
+
+        public MsgStore add( int index, byte[] msg )
+        {
+            if ( null == m_msgsData[index] ) {
+                ++m_haveCount;
+                m_fullLength += msg.length;
+            }
+            m_msgsData[index] = msg;
             return this;
         }
         
         public boolean isComplete()
         {
-            boolean complete = m_msgs.length == m_haveCount;
+            int count = null != m_msgsText ? m_msgsText.length : m_msgsData.length;
+            boolean complete = count == m_haveCount;
             return complete;
         }
 
-        public String message() 
+        public String messageText() 
         {
             StringBuffer sb = new StringBuffer(m_fullLength);
-            for ( String msg : m_msgs ) {
+            for ( String msg : m_msgsText ) {
                 sb.append( msg );
             }
             return sb.toString();
+        }
+
+        public byte[] messageData() 
+        {
+            byte[] result = new byte[m_fullLength];
+            int indx = 0;
+            for ( byte[] msg : m_msgsData ) {
+                System.arraycopy( msg, 0, result, indx, msg.length );
+                indx += msg.length;
+            }
+            return result;
         }
     }
 }
