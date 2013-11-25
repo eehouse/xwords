@@ -51,7 +51,7 @@
   <uses-feature android:name="android.hardware.telephony"
                 android:required = "false"
                 /> 
-  <uses-feature android:name="android.hardware.nfc" android:required="true" />
+  <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
   <!-- GCM stuff -->
   <permission android:name="org.eehouse.android.xw4.permission.C2D_MESSAGE" 
