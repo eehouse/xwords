@@ -742,6 +742,10 @@ public class GameUtils {
                     saveGame( context, gamePtr, gi, lock, false );
                     summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
 
+                    if ( draw && XWPrefs.getThumbEnabled( context ) ) {
+                        DBUtils.saveThumbnail( context, lock, null );
+                    }
+
                     int flags = setFromFeedImpl( feedImpl );
                     if ( GameSummary.MSG_FLAGS_NONE != flags ) {
                         draw = true;
