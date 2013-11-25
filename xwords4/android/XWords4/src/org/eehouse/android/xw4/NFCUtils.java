@@ -60,24 +60,26 @@ public class NFCUtils {
         public void register( final Activity activity )
         {
             Assert.assertTrue( activity instanceof NFCActor );
-            final NFCActor actor = (NFCActor)activity;
-            NfcAdapter.CreateNdefMessageCallback cb = 
-                new NfcAdapter.CreateNdefMessageCallback() {
-                    public NdefMessage createNdefMessage( NfcEvent event ) {
-                        NdefMessage msg = null;
-                        String data = actor.makeNFCMessage();
-                        if ( null != data ) {
-                            msg = makeMessage( activity, data );
-                        }
-                        return msg;
-                    }
-                };
-
             NfcManager manager = 
                 (NfcManager)activity.getSystemService( Context.NFC_SERVICE );
-            NfcAdapter adapter = manager.getDefaultAdapter();
-            if ( null != adapter ) {
-                adapter.setNdefPushMessageCallback( cb, activity );
+            if ( null != manager ) {
+                NfcAdapter adapter = manager.getDefaultAdapter();
+                if ( null != adapter ) {
+                    final NFCActor actor = (NFCActor)activity;
+                    NfcAdapter.CreateNdefMessageCallback cb = 
+                        new NfcAdapter.CreateNdefMessageCallback() {
+                            public NdefMessage createNdefMessage( NfcEvent evt )
+                            {
+                                NdefMessage msg = null;
+                                String data = actor.makeNFCMessage();
+                                if ( null != data ) {
+                                    msg = makeMessage( activity, data );
+                                }
+                                return msg;
+                            }
+                        };
+                    adapter.setNdefPushMessageCallback( cb, activity );
+                }
             }
         }
     }
