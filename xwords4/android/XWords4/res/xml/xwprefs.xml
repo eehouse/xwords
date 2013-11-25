@@ -110,22 +110,13 @@
   <PreferenceScreen android:title="@string/prefs_appearance"
                     android:summary="@string/prefs_appearance_summary"
                     >
-    <PreferenceScreen android:title="@string/prefs_thumb"
-                      android:summary="@string/prefs_thumb_summary"
-                      >
-        <CheckBoxPreference android:key="@string/key_thumb_enabled"
-                            android:title="@string/thumb_enabled"
-                            android:summary="@string/summary_thumb_enabled"
-                            android:defaultValue="true"
-                            />
 
-        <!-- " pct." below must match R.string.pct_suffix -->
-        <org.eehouse.android.xw4.XWThumbListPreference 
-             android:key="@string/key_thumbsize"
-             android:title="@string/summary_thumbsize"
-             android:defaultValue="30 pct."
-             />
-    </PreferenceScreen>
+    <!-- " pct." below must match R.string.pct_suffix -->
+    <org.eehouse.android.xw4.XWThumbListPreference 
+        android:key="@string/key_thumbsize"
+        android:title="@string/summary_thumbsize"
+        android:defaultValue="30 pct."
+        />
 
     <org.eehouse.android.xw4.XWSumListPreference 
        android:key="@string/key_summary_field"

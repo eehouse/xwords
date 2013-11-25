@@ -37,8 +37,9 @@ public class XWThumbListPreference extends XWListPreference {
     {
         super.onAttachedToActivity();
 
-        CharSequence[] newEntries = new CharSequence[6];
+        CharSequence[] newEntries = new CharSequence[7];
         int indx = 0;
+        newEntries[indx++] = m_context.getString( R.string.thumb_off );
         String suffix = m_context.getString( R.string.pct_suffix );
         for ( int pct = 20; pct <= 45; pct += 5 ) {
             newEntries[indx++] = String.format( "%d%s", pct, suffix );
