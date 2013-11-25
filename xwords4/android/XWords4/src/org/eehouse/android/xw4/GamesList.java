@@ -488,7 +488,7 @@ public class GamesList extends XWExpandableListActivity
     {
         runOnUiThread( new Runnable() {
                 public void run() {
-                    if ( countChanged ) {
+                    if ( countChanged || DBUtils.ROWID_NOTFOUND == rowid ) {
                         onContentChanged();
                         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
                             m_launchedGame = rowid;
