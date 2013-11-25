@@ -76,7 +76,9 @@ public class NFCUtils {
             NfcManager manager = 
                 (NfcManager)activity.getSystemService( Context.NFC_SERVICE );
             NfcAdapter adapter = manager.getDefaultAdapter();
-            adapter.setNdefPushMessageCallback( cb, activity );
+            if ( null != adapter ) {
+                adapter.setNdefPushMessageCallback( cb, activity );
+            }
         }
     }
 
