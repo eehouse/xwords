@@ -127,6 +127,7 @@ public class GameUtils {
             saveGame( context, gamePtr, gi, lockDest, true );
         }
         summarizeAndClose( context, lockDest, gamePtr, gi );
+        DBUtils.saveThumbnail( context, lockDest, null );
 
         return lockDest;
     } // resetGame
