@@ -55,7 +55,7 @@ public class SMSService extends XWService {
 
     private static final String INSTALL_URL = "http://eehouse.org/_/a.py/a ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
-    private static final boolean s_asData = true;
+    // private static final boolean s_asData = true;
 
     private static final String MSG_SENT = "MSG_SENT";
     private static final String MSG_DELIVERED = "MSG_DELIVERED";
@@ -407,7 +407,9 @@ public class SMSService extends XWService {
 
         byte[] data = bas.toByteArray();
         boolean result;
-        if ( s_asData ) {
+        boolean asData = 
+            XWPrefs.getPrefsBoolean( this, R.string.key_send_data_sms, false );
+        if ( asData ) {
             byte[][] msgs = breakAndEncode( data );
             result = sendBuffers( msgs, phone );
         } else {
