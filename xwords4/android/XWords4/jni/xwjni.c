@@ -640,7 +640,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
   jint width, jint height, jint scorePct, jint trayPct, jint scoreWidth,
   jint fontWidth, jint fontHt, jboolean squareTiles, jobject jdims )
 {
-    LOG_FUNC();
     XWJNI_START();
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
 
@@ -656,7 +655,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1figureLayout
         dimsCtoJ( env, jdims, &dims );
     }
     XWJNI_END();
-    LOG_RETURN_VOID();
 }
 
 JNIEXPORT void JNICALL

@@ -344,21 +344,24 @@ public class XWPrefs {
 
     public static boolean getThumbEnabled( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_thumb_enabled, false );
+        return 0 < getThumbPct( context );
     }
 
     public static int getThumbPct( Context context )
     {
         String pct = getPrefsString( context, R.string.key_thumbsize );
         int result;
-        try {
-            String suffix = context.getString( R.string.pct_suffix );
-            result = Integer.parseInt( pct.substring( 0, pct.length()
-                                                      - suffix.length() ) );
-        } catch (Exception ex ) {
-            result = 30;
+        if ( context.getString( R.string.thumb_off ).equals( pct ) ) {
+            result = 0;
+        } else {
+            try {
+                String suffix = context.getString( R.string.pct_suffix );
+                result = Integer.parseInt( pct.substring( 0, pct.length()
+                                                          - suffix.length() ) );
+            } catch (Exception ex ) {
+                result = 30;
+            }
         }
-        DbgUtils.logf( "pct: %s => %d", pct, result );
         return result;
     }
 

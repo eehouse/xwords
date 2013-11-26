@@ -22,7 +22,7 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4"
-          android:versionCode="64"
+          android:versionCode="65"
           android:versionName="@string/app_version"
           >
 
@@ -51,7 +51,7 @@
   <uses-feature android:name="android.hardware.telephony"
                 android:required = "false"
                 /> 
-  <uses-feature android:name="android.hardware.nfc" android:required="true" />
+  <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
   <!-- GCM stuff -->
   <permission android:name="org.eehouse.android.xw4.permission.C2D_MESSAGE" 

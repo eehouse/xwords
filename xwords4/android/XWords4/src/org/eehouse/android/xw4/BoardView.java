@@ -49,7 +49,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private static final int PINCH_THRESHOLD = 40;
 
     private Context m_context;
-    private Paint m_drawPaint;
     private int m_defaultFontHt;
     private int m_mediumFontHt;
     private int m_jniGamePtr;
@@ -59,7 +58,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private BoardCanvas m_canvas;    // owns the bitmap
     private JNIThread m_jniThread;
     private XWActivity m_parent;
-    private Rect m_boundsScratch;
     private boolean m_measuredFromDims = false;
     private BoardDims m_dims;
     private CommsAddrRec.CommsConnType m_connType = 
@@ -78,19 +76,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         final float scale = getResources().getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
         m_mediumFontHt = m_defaultFontHt * 3 / 2;
-
-        m_drawPaint = new Paint();
-
-        m_boundsScratch = new Rect();
-
-        // m_bonusSummaries = new String[5];
-        // int[] ids = { R.string.bonus_l2x_summary,
-        //               R.string.bonus_w2x_summary ,
-        //               R.string.bonus_l3x_summary,
-        //               R.string.bonus_w3x_summary };
-        // for ( int ii = 0; ii < ids.length; ++ii ) {
-        //     m_bonusSummaries[ ii+1 ] = getResources().getString( ids[ii] );
-        // }
     }
 
     @Override
@@ -181,7 +166,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             height = View.MeasureSpec.getSize( heightMeasureSpec );
         }
 
-        int heightMode = View.MeasureSpec.getMode( heightMeasureSpec );
         int minHeight = getSuggestedMinimumHeight();
         if ( height < minHeight ) {
             height = minHeight;
@@ -199,7 +183,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     {
         synchronized( this ) {
             if ( layoutBoardOnce() && m_measuredFromDims ) {
-                canvas.drawBitmap( s_bitmap, 0, 0, m_drawPaint );
+                canvas.drawBitmap( s_bitmap, 0, 0, new Paint() );
                 ConnStatusHandler.draw( m_context, canvas, getResources(), 
                                         0, 0, m_connType );
             } else {
@@ -222,8 +206,9 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             // need to synchronize??
             Paint paint = new Paint();
             paint.setTextSize( m_mediumFontHt );
-            paint.getTextBounds( "-00:00", 0, 6, m_boundsScratch );
-            int timerWidth = m_boundsScratch.width();
+            Rect scratch = new Rect();
+            paint.getTextBounds( "-00:00", 0, 6, scratch );
+            int timerWidth = scratch.width();
             int fontWidth = timerWidth / 6;
             m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, width, height, 
                                 fontWidth, m_defaultFontHt );
@@ -287,7 +272,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     // SyncedDraw interface implementation
     public void doJNIDraw()
     {
-        DbgUtils.logf( "doJNIDraw() called" );
         boolean drew;
         synchronized( this ) {
             if ( !XwJNI.board_draw( m_jniGamePtr ) ) {
@@ -306,8 +290,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     public void dimsChanged( BoardDims dims )
     {
         m_dims = dims;
-        DbgUtils.logf( "BoardView.dimsChanged() called; new dims %dx%d",
-                       dims.width, dims.height );
         m_parent.runOnUiThread( new Runnable() {
                 public void run()
                 {

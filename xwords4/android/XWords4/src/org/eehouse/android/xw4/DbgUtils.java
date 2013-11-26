@@ -51,12 +51,8 @@ public class DbgUtils {
 
     public static void logEnable( Context context )
     {
-        boolean on;
-        if ( XWApp.DEBUG || BuildConstants.IS_DEBUG_BUILD ) {
-            on = true;
-        } else {
-            on = XWPrefs.getPrefsBoolean( context, R.string.key_logging_on, false );
-        }
+        boolean on = BuildConstants.IS_DEBUG_BUILD ||
+            XWPrefs.getPrefsBoolean( context, R.string.key_logging_on, false );
         logEnable( on );
     }
 

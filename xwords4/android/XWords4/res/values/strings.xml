@@ -2166,13 +2166,11 @@
     <string name="sel_gamesf">Games: %d</string>
     <string name="sel_groupsf">Groups: %d</string>
     <string name="summary_thumbsize">Thumbnail size</string>
+    <string name="thumb_off">Disabled</string>
     <string name="sel_dictsf">Wordlists: %d</string>
 
-    <string name="thumb_enabled">Show thumbnails</string>
-    <string name="summary_thumb_enabled">Display snapshots of games</string>
+    <!-- <string name="summary_thumb_enabled">Display snapshots of games</string> -->
 
-    <string name="prefs_thumb">Thumbnails</string>
-    <string name="prefs_thumb_summary">Setting for game snapshots</string>
     <string name="dropped_dupe">Invitation received but ignored: it
     has already been used to create a game.</string>
     <string name="cur_menu_markerf">%1$s (yours)</string>

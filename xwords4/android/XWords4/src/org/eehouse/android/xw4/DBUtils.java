@@ -246,7 +246,6 @@ public class DBUtils {
 
         if ( null == summary && lock.canWrite() ) {
             summary = GameUtils.summarize( context, lock );
-            saveSummary( context, lock, summary );
         }
         return summary;
     } // getSummary
@@ -1205,17 +1204,17 @@ public class DBUtils {
     public static void deleteGroup( Context context, long groupid )
     {
         // Nuke games having this group id
-        String selection = 
+        String selectionGames = 
             String.format( "%s=%d", DBHelper.GROUPID, groupid );
 
         // And nuke the group record itself
-        selection = String.format( ROW_ID_FMT, groupid );
+        String selectionGroups = String.format( ROW_ID_FMT, groupid );
 
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
-            db.delete( DBHelper.TABLE_NAME_GROUPS, selection, null );
+            db.delete( DBHelper.TABLE_NAME_SUM, selectionGames, null );
+            db.delete( DBHelper.TABLE_NAME_GROUPS, selectionGroups, null );
 
             db.close();
         }

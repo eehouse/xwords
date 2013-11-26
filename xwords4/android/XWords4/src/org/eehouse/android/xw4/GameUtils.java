@@ -411,7 +411,7 @@ public class GameUtils {
     {
         long rowid = -1;
 
-        Assert.assertNotNull( inviteID ); // firing
+        Assert.assertNotNull( inviteID );
         CurGameInfo gi = new CurGameInfo( context, inviteID );
         gi.setLang( lang[0], dict[0] );
         lang[0] = gi.dictLang;
@@ -741,6 +741,10 @@ public class GameUtils {
                     XwJNI.game_getGi( gamePtr, gi );
                     saveGame( context, gamePtr, gi, lock, false );
                     summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
+
+                    if ( draw && XWPrefs.getThumbEnabled( context ) ) {
+                        DBUtils.saveThumbnail( context, lock, null );
+                    }
 
                     int flags = setFromFeedImpl( feedImpl );
                     if ( GameSummary.MSG_FLAGS_NONE != flags ) {
