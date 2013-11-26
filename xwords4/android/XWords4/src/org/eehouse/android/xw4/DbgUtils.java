@@ -27,6 +27,7 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.os.Bundle;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.text.format.Time;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Set;
+import junit.framework.Assert;
 
 public class DbgUtils {
     private static final String TAG = "XW4";
@@ -90,6 +92,11 @@ public class DbgUtils {
     {
         logf( "Exception: %s", exception.toString() );
         printStack( exception.getStackTrace() );
+    }
+
+    public static void assertOnUIThread()
+    {
+        Assert.assertTrue( Looper.getMainLooper().equals(Looper.myLooper()) );
     }
 
     public static void printStack( StackTraceElement[] trace )
