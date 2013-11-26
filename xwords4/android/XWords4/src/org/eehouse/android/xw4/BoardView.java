@@ -269,6 +269,15 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         invalidate();
     }
 
+    public void stopHandling()
+    {
+        m_jniThread = null;
+        m_jniGamePtr = 0;
+        if ( null != m_canvas ) {
+            m_canvas.setJNIThread( null );
+        }
+    }
+
     // SyncedDraw interface implementation
     public void doJNIDraw()
     {

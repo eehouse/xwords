@@ -2095,6 +2095,7 @@ public class BoardActivity extends XWActivity
                 m_jniThread.waitToStop( save );
                 m_jniThread = null;
             }
+            m_view.stopHandling();
 
             clearThis();
 

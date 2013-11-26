@@ -165,10 +165,12 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     public void setJNIThread( JNIThread jniThread )
     {
-        if ( ! jniThread.equals( m_jniThread ) ) {
+        DbgUtils.assertOnUIThread();
+        if ( null == jniThread ) {
+        } else if ( ! jniThread.equals( m_jniThread ) ) {
             DbgUtils.logf( "BoardCanvas changing threads" );
-            m_jniThread = jniThread;
         }
+        m_jniThread = jniThread;
     }
 
     public int getCurPlayer()
@@ -538,9 +540,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 m_dictChars = null;
                 m_activity.runOnUiThread( new Runnable() {
                         public void run() {
-                            m_dictChars = XwJNI.dict_getChars( dictPtr );
-                            // draw again
                             if ( null != m_jniThread ) {
+                                m_dictChars = XwJNI.dict_getChars( dictPtr );
+                                // draw again
                                 m_jniThread.handle( JNIThread.JNICmd
                                                     .CMD_INVALALL );
                             }
