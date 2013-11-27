@@ -746,13 +746,14 @@ public class GameUtils {
 
                     // update gi to reflect changes due to messages
                     XwJNI.game_getGi( gamePtr, gi );
-                    saveGame( context, gamePtr, gi, lock, false );
-                    summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
 
                     if ( draw && XWPrefs.getThumbEnabled( context ) ) {
                         Bitmap bitmap = takeSnapshot( context, gamePtr, gi );
                         DBUtils.saveThumbnail( context, lock, bitmap );
                     }
+
+                    saveGame( context, gamePtr, gi, lock, false );
+                    summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
 
                     int flags = setFromFeedImpl( feedImpl );
                     if ( GameSummary.MSG_FLAGS_NONE != flags ) {
