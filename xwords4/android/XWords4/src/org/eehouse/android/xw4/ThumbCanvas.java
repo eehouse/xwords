@@ -20,7 +20,7 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 
@@ -28,10 +28,9 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 public class ThumbCanvas extends BoardCanvas {
 
-    public ThumbCanvas( Activity activity, Bitmap bitmap )
+    public ThumbCanvas( Context context, Bitmap bitmap )
     {
-        super( activity, bitmap, null, null );
-        DbgUtils.logf( "creating new ThumbCanvas" );
+        super( context, bitmap );
     }
 
     // These should not be needed if common code gets fixed!  So the
