@@ -536,7 +536,7 @@ static void
 and_util_addrChange( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                      const CommsAddrRec* newAddr )
 {
-    LOG_FUNC();
+    // LOG_FUNC();
 }
 
 static void
