@@ -20,16 +20,17 @@
 
 package org.eehouse.android.xw4;
 
-import android.content.res.Resources;
 import android.app.Activity;
-import android.graphics.Canvas;
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
-import android.os.Handler;
-import android.graphics.RectF;
+import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.drawable.Drawable;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Handler;
 
 import org.eehouse.android.xw4.jni.DrawCtx;
 import org.eehouse.android.xw4.jni.DrawScoreInfo;
@@ -51,6 +52,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private static final float MIN_FONT_DIPS = 14.0f;
 
     private Activity m_activity;
+    private Context m_context;
     private Bitmap m_bitmap;
     private JNIThread m_jniThread;
     private Paint m_fillPaint;
@@ -120,17 +122,30 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     }
     protected FontDims m_fontDims;
 
+    public BoardCanvas( Context context, Bitmap bitmap )
+    {
+        this( context, null, bitmap, null, null );
+    }
+
     public BoardCanvas( Activity activity, Bitmap bitmap, JNIThread jniThread,
                         BoardDims dims )
     {
+        this( activity, activity, bitmap, jniThread, dims );
+    }
+
+    private BoardCanvas( Context context, Activity activity, Bitmap bitmap, 
+                         JNIThread jniThread, BoardDims dims )
+    {
         super( bitmap );
+        m_context = context;
         m_activity = activity;
         m_bitmap = bitmap;
         m_jniThread = jniThread;
 
-        m_hasSmallScreen = Utils.hasSmallScreen( activity );
+        m_hasSmallScreen = Utils.hasSmallScreen( m_context );
 
-        float scale = activity.getResources().getDisplayMetrics().density;
+        Resources res = m_context.getResources();
+        float scale = res.getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
         m_mediumFontHt = m_defaultFontHt * 3 / 2;
         if ( null != dims ) {
@@ -142,10 +157,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         m_strokePaint = new Paint();
         m_strokePaint.setStyle( Paint.Style.STROKE );
 
-        Resources res = activity.getResources();
         m_origin = res.getDrawable( R.drawable.origin );
 
-        m_prefs = CommonPrefs.get( activity );
+        m_prefs = CommonPrefs.get( m_context );
         m_playerColors = m_prefs.playerColors;
         m_bonusColors = m_prefs.bonusColors;
         m_otherColors = m_prefs.otherColors;
@@ -165,10 +179,12 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     public void setJNIThread( JNIThread jniThread )
     {
-        if ( ! jniThread.equals( m_jniThread ) ) {
+        DbgUtils.assertOnUIThread();
+        if ( null == jniThread ) {
+        } else if ( ! jniThread.equals( m_jniThread ) ) {
             DbgUtils.logf( "BoardCanvas changing threads" );
-            m_jniThread = jniThread;
         }
+        m_jniThread = jniThread;
     }
 
     public int getCurPlayer()
@@ -508,7 +524,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         drawCentered( text, rect, null );
 
         rect.offset( 0, rect.height() );
-        drawCentered( m_activity.getResources().getString( R.string.pts ), 
+        drawCentered( m_context.getResources().getString( R.string.pts ), 
                       rect, null );
     }
 
@@ -538,9 +554,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                 m_dictChars = null;
                 m_activity.runOnUiThread( new Runnable() {
                         public void run() {
-                            m_dictChars = XwJNI.dict_getChars( dictPtr );
-                            // draw again
                             if ( null != m_jniThread ) {
+                                m_dictChars = XwJNI.dict_getChars( dictPtr );
+                                // draw again
                                 m_jniThread.handle( JNIThread.JNICmd
                                                     .CMD_INVALALL );
                             }
@@ -823,7 +839,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
     private Drawable loadAndRecolor( int resID, boolean useDark )
     {
-         Resources res = m_activity.getResources();
+         Resources res = m_context.getResources();
          Drawable arrow = res.getDrawable( resID );
 
          if ( !useDark ) {

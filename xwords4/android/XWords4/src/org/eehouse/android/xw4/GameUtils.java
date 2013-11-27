@@ -127,6 +127,7 @@ public class GameUtils {
             saveGame( context, gamePtr, gi, lockDest, true );
         }
         summarizeAndClose( context, lockDest, gamePtr, gi );
+        DBUtils.saveThumbnail( context, lockDest, null );
 
         return lockDest;
     } // resetGame
@@ -317,35 +318,41 @@ public class GameUtils {
         return thumb;
     }
 
-    public static Bitmap takeSnapshot( Activity activity, int gamePtr, 
+    public static Bitmap takeSnapshot( Context context, int gamePtr, 
                                        CurGameInfo gi )
     {
         Bitmap thumb = null;
         if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-            if ( XWPrefs.getThumbEnabled( activity ) ) {
+            if ( XWPrefs.getThumbEnabled( context ) ) {
                 int nCols = gi.boardSize;
-                int pct = XWPrefs.getThumbPct( activity );
+                int pct = XWPrefs.getThumbPct( context );
                 Assert.assertTrue( 0 < pct );
 
                 if ( null == s_minScreen ) {
-                    Display display = 
-                        activity.getWindowManager().getDefaultDisplay(); 
-                    int width = display.getWidth();
-                    int height = display.getHeight();
-                    s_minScreen = new Integer( Math.min( width, height ) );
+                    if ( context instanceof Activity ) {
+                        Activity activity = (Activity)context;
+                        Display display = 
+                            activity.getWindowManager().getDefaultDisplay(); 
+                        int width = display.getWidth();
+                        int height = display.getHeight();
+                        s_minScreen = new Integer( Math.min( width, height ) );
+                    }
                 }
-                int dim = s_minScreen * pct / 100;
-                int size = dim - (dim % nCols);
+                if ( null != s_minScreen ) {
+                    int dim = s_minScreen * pct / 100;
+                    int size = dim - (dim % nCols);
 
-                thumb = Bitmap.createBitmap( size, size, Bitmap.Config.ARGB_8888 );
+                    thumb = Bitmap.createBitmap( size, size, 
+                                                 Bitmap.Config.ARGB_8888 );
 
-                XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
-                                          0, 0, 0, 20, 20, false, null );
+                    XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
+                                              0, 0, 0, 20, 20, false, null );
 
-                ThumbCanvas canvas = new ThumbCanvas( activity, thumb );
-                XwJNI.board_setDraw( gamePtr, canvas );
-                XwJNI.board_invalAll( gamePtr );
-                XwJNI.board_draw( gamePtr );
+                    ThumbCanvas canvas = new ThumbCanvas( context, thumb );
+                    XwJNI.board_setDraw( gamePtr, canvas );
+                    XwJNI.board_invalAll( gamePtr );
+                    XwJNI.board_draw( gamePtr );
+                }
             }
         }
         return thumb;
@@ -743,7 +750,8 @@ public class GameUtils {
                     summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
 
                     if ( draw && XWPrefs.getThumbEnabled( context ) ) {
-                        DBUtils.saveThumbnail( context, lock, null );
+                        Bitmap bitmap = takeSnapshot( context, gamePtr, gi );
+                        DBUtils.saveThumbnail( context, lock, bitmap );
                     }
 
                     int flags = setFromFeedImpl( feedImpl );
