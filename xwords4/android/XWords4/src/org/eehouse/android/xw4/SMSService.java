@@ -55,7 +55,6 @@ public class SMSService extends XWService {
 
     private static final String INSTALL_URL = "http://eehouse.org/_/a.py/a ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
-    // private static final boolean s_asData = true;
 
     private static final String MSG_SENT = "MSG_SENT";
     private static final String MSG_DELIVERED = "MSG_DELIVERED";
@@ -79,7 +78,8 @@ public class SMSService extends XWService {
     private static final String PHONE = "PHONE";
 
     private static Boolean s_showToasts = null;
-
+    private static Boolean s_asData = null;
+    
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
     private enum SMS_CMD { NONE, INVITE, DATA, DEATH, ACK, };
@@ -407,20 +407,22 @@ public class SMSService extends XWService {
 
         byte[] data = bas.toByteArray();
         boolean result;
-        boolean asData = 
-            XWPrefs.getPrefsBoolean( this, R.string.key_send_data_sms, false );
-        if ( asData ) {
+        if ( null == s_asData ) {
+            boolean asData = 
+                XWPrefs.getPrefsBoolean( this, R.string.key_send_data_sms,
+                                         true );
+            s_asData = new Boolean( asData );
+        }
+        if ( s_asData ) {
             byte[][] msgs = breakAndEncode( data );
-            result = sendBuffers( msgs, phone );
+            result = sendBuffers( msgs, phone, data );
         } else {
-            String[] msgs = breakAndEncode( XwJNI.base64Encode( data ) );
-            result = sendBuffers( msgs, phone );
+            result = sendAsText( data, phone );
         }
         return result;
     }
 
-    private String[] breakAndEncode( String msg ) 
-        throws java.io.IOException 
+    private String[] breakAndEncode( String msg ) throws java.io.IOException 
     {
         // TODO: as optimization, truncate header when only one packet
         // required
@@ -710,7 +712,7 @@ public class SMSService extends XWService {
         return success;
     }
 
-    private boolean sendBuffers( byte[][] fragments, String phone )
+    private boolean sendBuffers( byte[][] fragments, String phone, byte[] data )
     {
         boolean success = false;
         try {
@@ -727,6 +729,12 @@ public class SMSService extends XWService {
             success = true;
         } catch ( IllegalArgumentException iae ) {
             DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
+        } catch ( NullPointerException npe ) {
+            DbgUtils.showf( this, "Switching to regular SMS" );
+            s_asData = new Boolean( false );
+            XWPrefs.setPrefsBoolean( this, R.string.key_send_data_sms,
+                                     false );
+            success = sendAsText( data, phone );
         } catch ( Exception ee ) {
             DbgUtils.loge( ee );
         }
@@ -843,6 +851,18 @@ public class SMSService extends XWService {
                 }
             };
         registerReceiver( m_receiveReceiver, new IntentFilter(MSG_DELIVERED) );
+    }
+
+    private boolean sendAsText( byte[] data, String phone ) 
+    {
+        boolean success = false;
+        try {
+            String[] msgs = breakAndEncode( XwJNI.base64Encode( data ) );
+            success = sendBuffers( msgs, phone );
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.loge( ioe );
+        }
+        return success;
     }
 
     private class SMSMsgSink extends MultiMsgSink {

@@ -331,7 +331,7 @@
     <CheckBoxPreference android:key="@string/key_send_data_sms"
 			            android:title="@string/title_send_data_sms"
                         android:summary="@string/summary_send_data_sms"
-			            android:defaultValue="false"
+			            android:defaultValue="true"
 			            />
     <org.eehouse.android.xw4.XWEditTextPreference 
 	   android:key="@string/key_relay_host"
