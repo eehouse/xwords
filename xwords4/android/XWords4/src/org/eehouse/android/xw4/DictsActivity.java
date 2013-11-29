@@ -79,6 +79,7 @@ public class DictsActivity extends XWExpandableListActivity
 
     // For new callback alternative
     private static final int DELETE_DICT_ACTION = 1;
+    private static final int DOWNLOAD_DICT_ACTION = 2;
 
     private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 1;
     private static final int SET_DEFAULT = DlgDelegate.DIALOG_LAST + 2;
@@ -643,6 +644,9 @@ public class DictsActivity extends XWExpandableListActivity
                 clearSelections();
             }
             break;
+        case DOWNLOAD_DICT_ACTION:
+            startDownload( (Intent)params[0] );
+            break;
         default:
             Assert.fail();
         }
@@ -665,7 +669,9 @@ public class DictsActivity extends XWExpandableListActivity
     private void startDownload( int lang, String name )
     {
         Intent intent = mkDownloadIntent( this, lang, name );
-        startDownload( intent );
+        showNotAgainDlgThen( R.string.not_again_firefox, 
+                             R.string.key_na_firefox, 
+                             DOWNLOAD_DICT_ACTION, intent );
     }
 
     private void startDownload( Intent downloadIntent )
