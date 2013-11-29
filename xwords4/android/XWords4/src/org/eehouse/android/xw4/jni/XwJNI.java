@@ -21,16 +21,12 @@
 package org.eehouse.android.xw4.jni;
 
 import android.graphics.Rect;
-import org.eehouse.android.xw4.jni.BoardDims;
 
 // Collection of native methods
 public class XwJNI {
 
-
     // This needs to be called before the first attempt to use the
-    // jni.  I figure this class has to be loaded before that cna
-    // happen.  Doing this in GamesList isn't enough because sometimes
-    // BoardActivity is the first Activity loaded.
+    // jni.
     static {
         System.loadLibrary("xwjni");
     }
