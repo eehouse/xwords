@@ -81,51 +81,53 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     @Override
     public boolean onTouchEvent( MotionEvent event ) 
     {
-        int action = event.getAction();
-        int xx = (int)event.getX();
-        int yy = (int)event.getY();
+        boolean wantMore = null != m_jniThread;
+        if ( wantMore ) {
+            int action = event.getAction();
+            int xx = (int)event.getX();
+            int yy = (int)event.getY();
         
-        switch ( action ) {
-        case MotionEvent.ACTION_DOWN:
-            m_lastSpacing = MULTI_INACTIVE;
-            if ( !ConnStatusHandler.handleDown( xx, yy ) ) {
-                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
-            }
-            break;
-        case MotionEvent.ACTION_MOVE:
-            if ( ConnStatusHandler.handleMove( xx, yy ) ) {
-            } else if ( MULTI_INACTIVE == m_lastSpacing ) {
-                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
-            } else {
-                int zoomBy = figureZoom( event );
-                if ( 0 != zoomBy ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
-                                        zoomBy < 0 ? -2 : 2 );
+            switch ( action ) {
+            case MotionEvent.ACTION_DOWN:
+                m_lastSpacing = MULTI_INACTIVE;
+                if ( !ConnStatusHandler.handleDown( xx, yy ) ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
                 }
-            }
-            break;
-        case MotionEvent.ACTION_UP:
-            if ( ConnStatusHandler.handleUp( xx, yy ) ) {
-                // do nothing
-            } else {
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if ( ConnStatusHandler.handleMove( xx, yy ) ) {
+                } else if ( MULTI_INACTIVE == m_lastSpacing ) {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
+                } else {
+                    int zoomBy = figureZoom( event );
+                    if ( 0 != zoomBy ) {
+                        m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
+                                            zoomBy < 0 ? -2 : 2 );
+                    }
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if ( ConnStatusHandler.handleUp( xx, yy ) ) {
+                    // do nothing
+                } else {
+                    m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+                }
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+            case MotionEvent.ACTION_POINTER_2_DOWN:
                 m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+                m_lastSpacing = getSpacing( event );
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+            case MotionEvent.ACTION_POINTER_2_UP:
+                m_lastSpacing = MULTI_INACTIVE;
+                break;
+            default:
+                DbgUtils.logf( "onTouchEvent: unknown action: %d", action );
+                break;
             }
-            break;
-        case MotionEvent.ACTION_POINTER_DOWN:
-        case MotionEvent.ACTION_POINTER_2_DOWN:
-            m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
-            m_lastSpacing = getSpacing( event );
-            break;
-        case MotionEvent.ACTION_POINTER_UP:
-        case MotionEvent.ACTION_POINTER_2_UP:
-            m_lastSpacing = MULTI_INACTIVE;
-            break;
-        default:
-            DbgUtils.logf( "onTouchEvent: unknown action: %d", action );
-            break;
         }
-
-        return true;             // required to get subsequent events
+        return wantMore;            // true required to get subsequent events
     }
 
     // private void printMode( String comment, int mode )
