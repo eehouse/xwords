@@ -21,7 +21,7 @@
 package org.eehouse.android.xw4.jni;
 
 import android.graphics.Rect;
-import org.eehouse.android.xw4.BoardDims;
+import org.eehouse.android.xw4.jni.BoardDims;
 
 // Collection of native methods
 public class XwJNI {

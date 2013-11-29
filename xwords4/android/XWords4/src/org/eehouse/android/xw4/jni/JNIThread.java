@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.eehouse.android.xw4.BoardDims;
 import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DbgUtils;
@@ -352,7 +351,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_SETDRAW:
-                XwJNI.board_setDraw( m_jniGamePtr, (DrawCtx)args[0] );
+                XwJNI.board_setDraw( m_jniGamePtr, (DrawCtx)args[0] ); // here
                 XwJNI.board_invalAll( m_jniGamePtr );
                 break;
 

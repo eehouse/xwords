@@ -32,9 +32,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 
+import org.eehouse.android.xw4.jni.BoardDims;
+import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.DrawCtx;
 import org.eehouse.android.xw4.jni.DrawScoreInfo;
-import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.XwJNI;
 
