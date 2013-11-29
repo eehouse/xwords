@@ -1743,7 +1743,7 @@
     <string name="default_name_title">Welcome</string>
     <!-- Welcome dialog text -->
     <string name="default_name_message">Thanks for installing
-      Crosswords! Feel free to enter your name here. It will be used
+      Crosswords!\n\nFeel free to enter your name here. It will be used
       when creating new games.  (You can change it later in the \"New
       game default\" section of Settings.)</string>
 
