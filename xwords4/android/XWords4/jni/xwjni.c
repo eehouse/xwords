@@ -350,7 +350,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1tilesAreSame
 {
     jboolean result;
     const DictionaryCtxt* dict1 = (DictionaryCtxt*)dictPtr1;
+    XP_ASSERT( !!dict1 );
     const DictionaryCtxt* dict2 = (DictionaryCtxt*)dictPtr2;
+    XP_ASSERT( !!dict2 );
     result = dict_tilesAreSame( dict1, dict2 );
     return result;
 }
