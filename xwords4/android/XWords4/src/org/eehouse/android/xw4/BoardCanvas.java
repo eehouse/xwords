@@ -495,10 +495,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         boolean selected = 0 != (flags & CELL_HIGHLIGHT);
 
         int index = isCursor? CommonPrefs.COLOR_FOCUS : CommonPrefs.COLOR_BACKGRND;
-        rect.inset( 0, 1 );
         fillRectOther( rect, index );
 
-        rect.inset( rect.width()/4, 0 );
+        rect.inset( rect.width()/4, 1 );
         if ( selected ) {
             drawRect( rect, m_strokePaint );
         } else {
