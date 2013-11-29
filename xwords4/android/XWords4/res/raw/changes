@@ -5,13 +5,16 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 73 release</b>
+<b>Crosswords 4.4 beta 74 release</b>
 
-<p>This release adds two new features, snapshots of in-progress games
+<p>(Beta 74 fixes a crashing bug but adds nothing new, so the
+    previous notes remain in place.)</p>
+
+<p>Beta 73 adds two new features, snapshots of in-progress games
   displayed as part of the main Games List screen, and the ability to
   send invitations by tapping your device against the one you want to
-  invite (using &quot;Near Field Communication&quot;, or NFC, which Google
-  brands &quot;Android beaming&quot;.)</p>
+  invite (using &quot;Near Field Communication&quot;, or NFC, which
+  Google brands &quot;Android beaming&quot;.)</p>
 
 <p>Both features are optional. NFC is off by default, so you have to
   enable it via Google's system Preferences app. And snapshots, while
