@@ -351,7 +351,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_SETDRAW:
-                XwJNI.board_setDraw( m_jniGamePtr, (DrawCtx)args[0] ); // here
+                XwJNI.board_setDraw( m_jniGamePtr, (DrawCtx)args[0] );
                 XwJNI.board_invalAll( m_jniGamePtr );
                 break;
 
