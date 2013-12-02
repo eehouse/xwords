@@ -54,6 +54,11 @@ static const SetInfo gi_bools[] = {
     ,ARR_MEMBER( CurGameInfo, allowHintRect )
 };
 
+static const SetInfo pl_ints[] = {
+    ARR_MEMBER( LocalPlayer, robotIQ )
+    ,ARR_MEMBER( LocalPlayer, secondsUsed )
+};
+
 static CurGameInfo*
 makeGI( MPFORMAL JNIEnv* env, jobject jgi )
 {
@@ -95,7 +100,8 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
             XP_ASSERT( !!jlp );
 
-            lp->robotIQ = getInt( env, jlp, "robotIQ" );
+            getInts( env, (void*)lp, jlp, pl_ints, VSIZE(pl_ints) );
+
             lp->isLocal = getBool( env, jlp, "isLocal" );
 
             getString( env, jlp, "name", buf, VSIZE(buf) );
@@ -104,8 +110,6 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
             lp->password = copyString( mpool, buf );
             getString( env, jlp, "dictName", buf, VSIZE(buf) );
             lp->dictName = copyString( mpool, buf );
-
-            lp->secondsUsed = 0;
 
             deleteLocalRef( env, jlp );
         }
@@ -143,12 +147,12 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
             XP_ASSERT( !!jlp );
 
-            setInt( env, jlp, "robotIQ", lp->robotIQ );
+            setInts( env, jlp, (void*)lp, pl_ints, VSIZE(pl_ints) );
+            
             setBool( env, jlp, "isLocal", lp->isLocal );
             setString( env, jlp, "name", lp->name );
             setString( env, jlp, "password", lp->password );
             setString( env, jlp, "dictName", lp->dictName );
-            setInt( env, jlp, "secondsUsed", lp->secondsUsed );
 
             deleteLocalRef( env, jlp );
         }
