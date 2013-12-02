@@ -357,7 +357,8 @@ figureSecondsLeft( BoardCtxt* board )
 void
 drawTimer( BoardCtxt* board )
 {
-    if ( board->gi->timerEnabled ) {
+    if ( board->gi->timerEnabled && 0 < board->timerBounds.width
+          && 0 < board->timerBounds.height ) {
         XP_S16 secondsLeft = figureSecondsLeft( board );
 
         draw_drawTimer( board->draw, &board->timerBounds,
