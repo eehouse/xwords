@@ -1,7 +1,7 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009-2013 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package org.eehouse.android.xw4;
+package org.eehouse.android.xw4.jni;
 
 
 // Why does this have to be its own class...

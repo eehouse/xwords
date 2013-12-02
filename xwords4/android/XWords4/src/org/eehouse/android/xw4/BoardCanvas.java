@@ -32,9 +32,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 
+import org.eehouse.android.xw4.jni.BoardDims;
+import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.DrawCtx;
 import org.eehouse.android.xw4.jni.DrawScoreInfo;
-import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.XwJNI;
 
@@ -494,10 +495,9 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         boolean selected = 0 != (flags & CELL_HIGHLIGHT);
 
         int index = isCursor? CommonPrefs.COLOR_FOCUS : CommonPrefs.COLOR_BACKGRND;
-        rect.inset( 0, 1 );
         fillRectOther( rect, index );
 
-        rect.inset( rect.width()/4, 0 );
+        rect.inset( rect.width()/4, 1 );
         if ( selected ) {
             drawRect( rect, m_strokePaint );
         } else {
@@ -844,7 +844,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
          if ( !useDark ) {
              Bitmap src = ((BitmapDrawable)arrow).getBitmap();
-             Bitmap bitmap = src.copy( Bitmap.Config.ARGB_8888, true );
+             Bitmap bitmap = src.copy( Bitmap.Config.RGB_565, true );
              for ( int xx = 0; xx < bitmap.getWidth(); ++xx ) {
                  for( int yy = 0; yy < bitmap.getHeight(); ++yy ) {
                      if ( BLACK == bitmap.getPixel( xx, yy ) ) {

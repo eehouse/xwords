@@ -99,6 +99,8 @@ static void invalTradeWindow( BoardCtxt* board, XP_S16 turn, XP_Bool redraw );
 static XP_Bool invalCellsWithTiles( BoardCtxt* board );
 
 static void setTimerIf( BoardCtxt* board );
+static void clearTimerIf( const BoardCtxt* board );
+
 static XP_Bool p_board_timerFired( void* closure, XWTimerReason why );
 
 static XP_Bool replaceLastTile( BoardCtxt* board );
@@ -193,6 +195,7 @@ board_make( MPFORMAL ModelCtxt* model, ServerCtxt* server, DrawCtx* draw,
 void
 board_destroy( BoardCtxt* board )
 {
+    clearTimerIf( board );
     XP_FREE( board->mpool, board );
 } /* board_destroy */
 
@@ -1233,6 +1236,12 @@ setTimerIf( BoardCtxt* board )
         board->timerPending = XP_TRUE;
     }
 } /* setTimerIf */
+
+static void
+clearTimerIf( const BoardCtxt* board )
+{
+    util_clearTimer( board->util, TIMER_TIMERTICK );
+}
 
 static void
 timerFiredForTimer( BoardCtxt* board )

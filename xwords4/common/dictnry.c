@@ -74,6 +74,7 @@ dict_getBlankTile( const DictionaryCtxt* dict )
 XP_U16
 dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
 {
+    XP_ASSERT( !!dict );
     if ( (tile & TILE_VALUE_MASK) != tile ) {
         XP_ASSERT( tile == 32 && 
                    tile == dict_getBlankTile( dict ) );

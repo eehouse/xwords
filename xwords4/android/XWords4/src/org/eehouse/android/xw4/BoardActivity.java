@@ -745,16 +745,23 @@ public class BoardActivity extends XWActivity
             item = menu.findItem( R.id.board_menu_tray );
             item.setTitle( strId );
 
-            hideShowItem( menu, R.id.board_menu_flip, m_gsi.visTileCount >= 1 );
-            hideShowItem( menu, R.id.board_menu_toggle, m_gsi.visTileCount >= 1 );
-            hideShowItem( menu, R.id.board_menu_juggle, m_gsi.canShuffle );
-            hideShowItem( menu, R.id.board_menu_undo_current, m_gsi.canRedo );
-            hideShowItem( menu, R.id.board_menu_hint_prev, m_gsi.canHint );
-            hideShowItem( menu, R.id.board_menu_hint_next, m_gsi.canHint );
-            hideShowItem( menu, R.id.board_menu_chat, 
-                          BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
-            hideShowItem( menu, R.id.board_menu_tray, 
-                          !inTrade && m_gsi.canHideRack );
+            Utils.setItemVisible( menu, R.id.board_menu_flip, 
+                                  m_gsi.visTileCount >= 1 );
+            Utils.setItemVisible( menu, R.id.board_menu_toggle, 
+                                  m_gsi.visTileCount >= 1 );
+            Utils.setItemVisible( menu, R.id.board_menu_juggle, 
+                                  m_gsi.canShuffle );
+            Utils.setItemVisible( menu, R.id.board_menu_undo_current, 
+                                  m_gsi.canRedo );
+            Utils.setItemVisible( menu, R.id.board_menu_hint_prev, 
+                                  m_gsi.canHint );
+            Utils.setItemVisible( menu, R.id.board_menu_hint_next, 
+                                  m_gsi.canHint );
+            Utils.setItemVisible( menu, R.id.board_menu_chat, 
+                                  BuildConstants.CHAT_SUPPORTED
+                                  && m_gsi.canChat );
+            Utils.setItemVisible( menu, R.id.board_menu_tray, 
+                                  !inTrade && m_gsi.canHideRack );
         }
 
         Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_missing );
@@ -2182,14 +2189,6 @@ public class BoardActivity extends XWActivity
                           BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
         m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
                           null != m_gi.dictName( m_view.getCurPlayer() ) );
-    }
-
-    private void hideShowItem( Menu menu, int id, boolean visible )
-    {
-        MenuItem item = menu.findItem( id );
-        if ( null != item ) {
-            item.setVisible( visible );
-        }
     }
 
     private void adjustTradeVisibility()

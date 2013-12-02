@@ -16,6 +16,7 @@
               android:layout_width="fill_parent"
               android:text="@string/confirm_sms_expl"
               android:textAppearance="?android:attr/textAppearanceMedium"
+              android:layout_marginBottom="10dip"
               />
 
     <Spinner android:id="@+id/confirm_sms_reasons"

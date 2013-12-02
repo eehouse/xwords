@@ -348,7 +348,9 @@ public class Utils {
     public static void setItemVisible( Menu menu, int id, boolean enabled )
     {
         MenuItem item = menu.findItem( id );
-        item.setVisible( enabled );
+        if ( null != item ) {
+            item.setVisible( enabled );
+        }
     }
 
     public static void setItemEnabled( Menu menu, int id, boolean enabled )

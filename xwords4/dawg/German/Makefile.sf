@@ -31,6 +31,7 @@ $(XWLANG)Main.dict.gz: $(SOURCEDICT) $(MAKEFILE)
 	file -z $(SOURCEDICT) | grep -q 'UTF-8 Unicode' || exit 1
 	zcat $< \
 		| sed 's/;.*$$//' \
+		| tr -d '\r' \
 		| sed '/^$$/d' \
 		| sed 's,.,\U\0,g' \
 		| sed -e 's/ß/SS/g' \
