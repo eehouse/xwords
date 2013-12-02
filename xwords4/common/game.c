@@ -316,15 +316,16 @@ game_getState( const XWGame* game, GameStateInfo* gsi )
 {
     XP_Bool gameOver = server_getGameIsOver( game->server );
 
-    gsi->curTurnSelected = board_curTurnSelected( game->board );
-    gsi->trayVisState = board_getTrayVisState( game->board );
-    gsi->visTileCount = board_visTileCount( game->board );
-    gsi->canHint = !gameOver && board_canHint( game->board );
-    gsi->canRedo = board_canTogglePending( game->board );
-    gsi->inTrade = board_inTrade( game->board, &gsi->tradeTilesSelected );
+    BoardCtxt* board = game->board;
+    gsi->curTurnSelected = board_curTurnSelected( board );
+    gsi->trayVisState = board_getTrayVisState( board );
+    gsi->visTileCount = board_visTileCount( board );
+    gsi->canHint = !gameOver && board_canHint( board );
+    gsi->canRedo = board_canTogglePending( board );
+    gsi->inTrade = board_inTrade( board, &gsi->tradeTilesSelected );
     gsi->canChat = !!game->comms && comms_canChat( game->comms );
-    gsi->canShuffle = board_canShuffle( game->board );
-    gsi->canHideRack = board_canHideRack( game->board );
+    gsi->canShuffle = board_canShuffle( board );
+    gsi->canHideRack = board_canHideRack( board );
 }
 
 void
