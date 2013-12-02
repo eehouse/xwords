@@ -1416,6 +1416,7 @@ static const SetInfo gsi_bools[] = {
     ARR_MEMBER( GameStateInfo, canShuffle ),
     ARR_MEMBER( GameStateInfo, curTurnSelected ),
     ARR_MEMBER( GameStateInfo, canHideRack ),
+    ARR_MEMBER( GameStateInfo, canTrade ),
 };
 
 JNIEXPORT void JNICALL

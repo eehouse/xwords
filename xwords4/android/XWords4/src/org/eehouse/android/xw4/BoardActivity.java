@@ -762,6 +762,8 @@ public class BoardActivity extends XWActivity
                                   && m_gsi.canChat );
             Utils.setItemVisible( menu, R.id.board_menu_tray, 
                                   !inTrade && m_gsi.canHideRack );
+            Utils.setItemVisible( menu, R.id.board_menu_trade, 
+                                  m_gsi.canTrade );
         }
 
         Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_missing );
@@ -769,9 +771,8 @@ public class BoardActivity extends XWActivity
 
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
-                              inTrade && m_gsi.tradeTilesSelected );
-        Utils.setItemVisible( menu, R.id.board_menu_trade, 
-                              0 == m_missing && !m_gameOver && !inTrade );
+                              inTrade && m_gsi.tradeTilesSelected
+                              && m_gsi.curTurnSelected );
         Utils.setItemVisible( menu, R.id.board_menu_game_resign, !inTrade );
 
         if ( !inTrade ) {

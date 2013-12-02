@@ -114,6 +114,7 @@ static XP_Bool setArrowVisibleFor( BoardCtxt* board, XP_U16 player,
 static XP_Bool board_moveArrow( BoardCtxt* board, XP_Key cursorKey );
 
 static XP_Bool board_setXOffset( BoardCtxt* board, XP_U16 offset );
+static XP_Bool preflight( BoardCtxt* board, XP_Bool reveal );
 
 
 #ifdef KEY_SUPPORT
@@ -705,6 +706,14 @@ board_canHideRack( const BoardCtxt* board )
 {
     XP_Bool result = board->boardObscuresTray || !board->gameOver;
     LOG_RETURNF( "%d", result );
+    return result;
+}
+
+XP_Bool
+board_canTrade( BoardCtxt* board )
+{
+    XP_Bool result = preflight( board, XP_FALSE )
+        && MIN_TRADE_TILES <= server_countTilesInPool( board->server );
     return result;
 }
 
@@ -1923,11 +1932,11 @@ board_redoReplacedTiles( BoardCtxt* board )
 /* There are a few conditions that must be true for any of several actions
    to be allowed.  Check them here.  */
 static XP_Bool
-preflight( BoardCtxt* board )
+preflight( BoardCtxt* board, XP_Bool reveal )
 {
     return !board->gameOver
         && server_getCurrentTurn(board->server) >= 0
-        && checkRevealTray( board ) 
+        && ( !reveal || checkRevealTray( board ) )
         && !TRADE_IN_PROGRESS(board);
 } /* preflight */
 
@@ -1960,7 +1969,7 @@ board_requestHint( BoardCtxt* board,
         const TrayTileSet* tileSet;
         ModelCtxt* model = board->model;
 
-        if ( !!engine && preflight( board ) ) {
+        if ( !!engine && preflight( board, XP_TRUE ) ) {
 
             /* undo any current move.  otherwise we won't pass the full tray
                to the engine.  Would it be better, though, to pass the whole
@@ -2361,7 +2370,7 @@ board_beginTrade( BoardCtxt* board )
 {
     XP_Bool result;
 
-    result = preflight( board );
+    result = preflight( board, XP_TRUE );
     if ( result ) {
         if ( server_countTilesInPool(board->server) < MIN_TRADE_TILES){
             util_userError( board->util, ERR_TOO_FEW_TILES_LEFT_TO_TRADE );
