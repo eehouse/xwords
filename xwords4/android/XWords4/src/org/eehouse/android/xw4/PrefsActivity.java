@@ -42,12 +42,10 @@ public class PrefsActivity extends PreferenceActivity
     public static final int EXPLAIN_TITLE = 4;
 
     private String m_keyLogging;
-    private String m_smsToasting;
     private String m_smsEnable;
     private String m_downloadPath;
     private String m_thumbSize;
     private String m_hideTitle;
-
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -133,7 +131,6 @@ public class PrefsActivity extends PreferenceActivity
         setContentView( R.layout.prefs_w_buttons );
 
         m_keyLogging = getString( R.string.key_logging_on );
-        m_smsToasting = getString( R.string.key_show_sms );
         m_smsEnable = getString( R.string.key_enable_sms );
         m_downloadPath = getString( R.string.key_download_path );
         m_thumbSize = getString( R.string.key_thumbsize );
@@ -174,8 +171,6 @@ public class PrefsActivity extends PreferenceActivity
     {
         if ( key.equals( m_keyLogging ) ) {
             DbgUtils.logEnable( sp.getBoolean( key, false ) );
-        } else if ( key.equals( m_smsToasting ) ) {
-            SMSService.smsToastEnable( sp.getBoolean( key, false ) );
         } else if ( key.equals( m_smsEnable ) ) {
             if ( sp.getBoolean( key, true ) ) {
                 SMSService.checkForInvites( this );

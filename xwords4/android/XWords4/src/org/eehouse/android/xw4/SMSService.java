@@ -95,11 +95,6 @@ public class SMSService extends XWService {
         = new HashMap<String, HashMap <Integer, MsgStore>>();
     private static HashSet<Integer> s_sentDied = new HashSet<Integer>();
 
-    public static void smsToastEnable( boolean newVal ) 
-    {
-        s_showToasts = newVal;
-    }
-
     public static void checkForInvites( Context context )
     {
         if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS( context ) ) {
