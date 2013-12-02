@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -86,6 +87,7 @@ public class SMSService extends XWService {
 
     private BroadcastReceiver m_sentReceiver;
     private BroadcastReceiver m_receiveReceiver;
+    private OnSharedPreferenceChangeListener m_prefsListener;
 
     private int m_nReceived = 0;
     private static int s_nSent = 0;
@@ -212,10 +214,8 @@ public class SMSService extends XWService {
     private static Intent getIntentTo( Context context, int cmd )
     {
         if ( null == s_showToasts ) {
-            SharedPreferences sp
-                = PreferenceManager.getDefaultSharedPreferences( context );
-            String key = context.getString( R.string.key_show_sms );
-            s_showToasts = sp.getBoolean( key, false );
+            s_showToasts = 
+                XWPrefs.getPrefsBoolean( context, R.string.key_show_sms, false );
         }
 
         Intent intent = new Intent( context, SMSService.class );
@@ -244,6 +244,13 @@ public class SMSService extends XWService {
             unregisterReceiver( m_receiveReceiver );
             m_receiveReceiver = null;
         }
+        if ( null != m_prefsListener ) {
+            SharedPreferences sp
+                = PreferenceManager.getDefaultSharedPreferences( this );
+            sp.unregisterOnSharedPreferenceChangeListener( m_prefsListener );
+            m_prefsListener = null;
+        }
+
         super.onDestroy();
     }
 
@@ -843,14 +850,27 @@ public class SMSService extends XWService {
                 @Override
                 public void onReceive(Context arg0, Intent arg1) 
                 {
-                    if ( Activity.RESULT_OK == getResultCode() ) {
-                        DbgUtils.logf( "SUCCESS!!!" );
-                    } else {
-                        DbgUtils.logf( "FAILURE!!!" );
-                    }
+                    DbgUtils.logf( "SMS delivery result: %s",
+                                   Activity.RESULT_OK == getResultCode()
+                                   ? "SUCCESS" : "FAILURE" );
                 }
             };
         registerReceiver( m_receiveReceiver, new IntentFilter(MSG_DELIVERED) );
+
+        m_prefsListener = new OnSharedPreferenceChangeListener() {
+                public void onSharedPreferenceChanged( SharedPreferences sp,
+                                                       String key ) {
+                    if ( key.equals( getString( R.string.key_show_sms ) ) ) {
+                        s_showToasts = null;
+                    } else if ( key.equals( getString( R.string
+                                                       .key_send_data_sms ))) {
+                        s_asData = null;
+                    }
+                }
+            };
+        SharedPreferences sp
+            = PreferenceManager.getDefaultSharedPreferences( this );
+        sp.registerOnSharedPreferenceChangeListener( m_prefsListener );
     }
 
     private boolean sendAsText( byte[] data, String phone ) 
