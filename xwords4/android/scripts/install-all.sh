@@ -47,6 +47,8 @@ COUNT=0
 for DEVICE in $DEVICES; do
     echo $DEVICE
     adb -s $DEVICE install -r $APK
+    adb -s $DEVICE shell am start \
+        -n org.eehouse.android.xw4/org.eehouse.android.xw4.GamesList
     COUNT=$((COUNT+1))
 done
 
