@@ -671,7 +671,7 @@ public class GamesList extends XWExpandableListActivity
         if ( m_menuPrepared ) {
             boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
         
-            boolean showDbg = BuildConstants.IS_DEBUG_BUILD
+            boolean showDbg = BuildConfig.DEBUG
                 || XWPrefs.getDebugEnabled( this );
             showItemsIf( DEBUG_ITEMS, menu, nothingSelected && showDbg );
             Utils.setItemVisible( menu, R.id.games_menu_loaddb, 

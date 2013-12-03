@@ -93,7 +93,6 @@
           <arg value="${INITIAL_CLIENT_VERS}" />
           <arg value="${CHAT_ENABLED}" />
           <arg value="${THUMBNAIL_ENABLED}" />
-          <arg value="${build.target}" />
         </exec>
     </target>
 <!--
