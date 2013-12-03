@@ -844,7 +844,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
 
          if ( !useDark ) {
              Bitmap src = ((BitmapDrawable)arrow).getBitmap();
-             Bitmap bitmap = src.copy( Bitmap.Config.RGB_565, true );
+             Bitmap bitmap = src.copy( Bitmap.Config.ARGB_8888, true );
              for ( int xx = 0; xx < bitmap.getWidth(); ++xx ) {
                  for( int yy = 0; yy < bitmap.getHeight(); ++yy ) {
                      if ( BLACK == bitmap.getPixel( xx, yy ) ) {

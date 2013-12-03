@@ -343,7 +343,7 @@ public class GameUtils {
                     int size = dim - (dim % nCols);
 
                     thumb = Bitmap.createBitmap( size, size, 
-                                                 Bitmap.Config.RGB_565 );
+                                                 Bitmap.Config.ARGB_8888 );
 
                     XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
                                               0, 0, 0, 20, 20, false, null );

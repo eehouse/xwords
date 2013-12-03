@@ -229,7 +229,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
             if ( null == s_bitmap ) {
                 s_bitmap = Bitmap.createBitmap( bmWidth, bmHeight,
-                                                Bitmap.Config.RGB_565 );
+                                                Bitmap.Config.ARGB_8888 );
             }
             if ( null == m_canvas ) {
                 m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread, 
