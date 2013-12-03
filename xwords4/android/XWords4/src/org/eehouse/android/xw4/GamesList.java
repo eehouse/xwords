@@ -385,14 +385,8 @@ public class GamesList extends XWExpandableListActivity
         }
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, isUpgrade );
 
-        String field = CommonPrefs.getSummaryField( this );
-        long[] positions = XWPrefs.getGroupPositions( this );
-        m_adapter = new GameListAdapter( this, listview, new Handler(), 
-                                         this, positions, field );
-        setListAdapter( m_adapter );
+        m_adapter = makeNewAdapter();
         listview.setOnItemLongClickListener( this );
-
-        m_adapter.expandGroups( listview );
 
         NetUtils.informOfDeaths( this );
 
@@ -786,6 +780,8 @@ public class GamesList extends XWExpandableListActivity
 
         case R.id.games_menu_loaddb:
             DBUtils.loadDB( this );
+            XWPrefs.clearGroupPositions( this );
+            m_adapter = makeNewAdapter();
             changeContent = true;
             break;
         case R.id.games_menu_storedb:
@@ -1347,6 +1343,19 @@ public class GamesList extends XWExpandableListActivity
                 item.setSelected( true );
             }
         }
+    }
+
+    private GameListAdapter makeNewAdapter()
+    {
+        ExpandableListView listview = getExpandableListView();
+        String field = CommonPrefs.getSummaryField( this );
+        long[] positions = XWPrefs.getGroupPositions( this );
+        GameListAdapter adapter = 
+            new GameListAdapter( this, listview, new Handler(), 
+                                 this, positions, field );
+        setListAdapter( adapter );
+        adapter.expandGroups( listview );
+        return adapter;
     }
 
     public static void onGameDictDownload( Context context, Intent intent )

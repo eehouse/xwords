@@ -329,7 +329,8 @@ public class GameListAdapter implements ExpandableListAdapter {
         long[] positions = getGroupPositions();
         String[] names = new String[ positions.length ];
         for ( int ii = 0; ii < names.length; ++ii ) {
-            names[ii] = info.get(positions[ii]).m_name;
+            GameGroupInfo ggi = info.get( positions[ii] );
+            names[ii] = ggi.m_name;
         }
         return names;
     }
@@ -486,10 +487,14 @@ public class GameListAdapter implements ExpandableListAdapter {
         long[] result = positions;
         if ( null != positions ) {
             Set<Long> posns = gameInfo().keySet();
-            for ( long id : positions ) {
-                if ( ! posns.contains( id ) ) {
-                    result = null;
-                    break;
+            if ( positions.length != posns.size() ) {
+                result = null;
+            } else {
+                for ( long id : positions ) {
+                    if ( ! posns.contains( id ) ) {
+                        result = null;
+                        break;
+                    }
                 }
             }
         }
