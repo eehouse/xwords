@@ -822,6 +822,18 @@ model_rejectPreviousMove( ModelCtxt* model, PoolContext* pool, XP_U16* turn )
     *turn = entry.playerNum;
 } /* model_rejectPreviousMove */
 
+XP_Bool
+model_canUndo( const ModelCtxt* model )
+{
+    const StackCtxt* stack = model->vol.stack;
+    XP_U16 nStackEntries = stack_getNEntries( stack );
+
+    /* More than just tile assignment? */
+    XP_Bool result = nStackEntries > model->nPlayers;
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
 /* Undo a move, but only if it's the move we're expecting to undo (as
  * indicated by *moveNumP, if >= 0).
  */

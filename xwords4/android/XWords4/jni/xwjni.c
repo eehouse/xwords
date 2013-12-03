@@ -1409,6 +1409,7 @@ static const SetInfo gsi_ints[] = {
 };
 static const SetInfo gsi_bools[] = {
     ARR_MEMBER( GameStateInfo,canHint ),
+    ARR_MEMBER( GameStateInfo, canUndo ),
     ARR_MEMBER( GameStateInfo, canRedo ),
     ARR_MEMBER( GameStateInfo, inTrade ),
     ARR_MEMBER( GameStateInfo, tradeTilesSelected ),

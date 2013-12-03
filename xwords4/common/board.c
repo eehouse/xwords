@@ -704,7 +704,8 @@ board_canShuffle( const BoardCtxt* board )
 XP_Bool
 board_canHideRack( const BoardCtxt* board )
 {
-    XP_Bool result = board->boardObscuresTray || !board->gameOver;
+    XP_Bool result = 0 <= server_getCurrentTurn( board->server )
+        && (board->boardObscuresTray || !board->gameOver);
     LOG_RETURNF( "%d", result );
     return result;
 }

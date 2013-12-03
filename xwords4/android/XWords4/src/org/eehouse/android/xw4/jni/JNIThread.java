@@ -105,6 +105,7 @@ public class JNIThread extends Thread {
         public int visTileCount;
         public int trayVisState;
         public boolean canHint;
+        public boolean canUndo;
         public boolean canRedo;
         public boolean inTrade;
         public boolean tradeTilesSelected;

@@ -764,10 +764,11 @@ public class BoardActivity extends XWActivity
                                   !inTrade && m_gsi.canHideRack );
             Utils.setItemVisible( menu, R.id.board_menu_trade, 
                                   m_gsi.canTrade );
+            Utils.setItemVisible( menu, R.id.board_menu_undo_last, 
+                                  m_gsi.canUndo );
         }
 
         Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_missing );
-        Utils.setItemVisible( menu, R.id.board_menu_undo_last, !inTrade );
 
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
