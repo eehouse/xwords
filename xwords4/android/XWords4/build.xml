@@ -85,8 +85,10 @@
 
         <exec dir="." executable="../scripts/gen_gcmid.sh"
               output="src/org/eehouse/android/xw4/GCMConsts.java"
-              logError="true"
-              />
+              logError="true" failonerror="true"
+              >
+          <arg value="xw4"/>
+          </exec>
         <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt">
           <arg value="XWords4"/>
           <arg value="xw4"/>
