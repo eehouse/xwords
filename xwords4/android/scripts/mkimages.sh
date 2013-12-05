@@ -37,7 +37,6 @@ for SVG in img_src/*.svg; do
         SVG=$(basename $SVG)
         OUT=res/$DIR/${SVG/.svg/__gen.png}
         if [ -z "$CLEAN" ]; then
-            echo "not doing clean one"
             make -f $(dirname $0)/images.mk $OUT
         else
             rm -f $OUT
