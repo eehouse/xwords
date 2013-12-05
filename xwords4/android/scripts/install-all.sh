@@ -2,13 +2,29 @@
 
 set -u -e
 
-APK=./bin/XWords4-debug.apk
-
 usage() {
     [ $# -ge 1 ] && echo "Error: $1"
     echo "usage: $(basename $0) [-e|-d] [-p /path/to/.apk]"
     exit 1
 }
+
+if [ ! -e build.xml ]; then
+    usage "No build.xml; please run me from the top android directory"
+fi
+
+APK=./bin/XWords4-debug.apk
+DIRNAME=$(basename $(pwd))
+case $DIRNAME in
+    XWords4-bt)
+        PKG=xw4bt
+        ;;
+    XWords4)
+        PKG=xw4
+        ;;
+    *)
+        usage "running in unexpected directory $DIRNAME"
+        ;;
+esac
 
 DEVICES=''
 
@@ -48,7 +64,7 @@ for DEVICE in $DEVICES; do
     echo $DEVICE
     adb -s $DEVICE install -r $APK
     adb -s $DEVICE shell am start \
-        -n org.eehouse.android.xw4/org.eehouse.android.xw4.GamesList
+        -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesList
     COUNT=$((COUNT+1))
 done
 
