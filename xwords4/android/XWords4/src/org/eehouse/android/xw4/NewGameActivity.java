@@ -230,7 +230,7 @@ public class NewGameActivity extends XWActivity {
                             if ( m_nameForBT ) {
                                 BTService.inviteRemote( thiz, m_remoteDev,
                                                         m_gameID, m_gameName, 
-                                                        m_lang, 2, 1 );
+                                                        m_lang, m_dict, 2, 1 );
                                 startProgress( R.string.invite_progress );
                             } else {
                                 SMSService.inviteRemote( thiz, m_remoteDev,
@@ -294,7 +294,7 @@ public class NewGameActivity extends XWActivity {
                         long rowid = 
                             GameUtils.makeNewBTGame( NewGameActivity.this, 
                                                      m_groupID, gameID, null, 
-                                                     m_lang, 2, 1 );
+                                                     m_lang, m_dict, 2, 1 );
                         DBUtils.setName( NewGameActivity.this, 
                                          rowid, m_gameName );
                         GameUtils.launchGame( NewGameActivity.this, 
@@ -365,7 +365,7 @@ public class NewGameActivity extends XWActivity {
             if ( !useDefaults ) {
                 m_newRowID = GameUtils.makeNewBTGame( NewGameActivity.this, 
                                                       m_groupID, gameID, null, 
-                                                      m_lang, 2, 1 );
+                                                      m_lang, m_dict, 2, 1 );
                 Intent intent = new Intent( this, GameConfig.class );
                 intent.setAction( Intent.ACTION_EDIT );
                 intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );

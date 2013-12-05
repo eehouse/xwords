@@ -73,6 +73,7 @@ public class BTService extends XWService {
     private static final String GAMEID_STR = "GMI";
 
     private static final String LANG_STR = "LNG";
+    private static final String DICT_STR = "DCT";
     private static final String NTO_STR = "TOT";
     private static final String NHE_STR = "HER";
 
@@ -102,16 +103,17 @@ public class BTService extends XWService {
         String m_gameName;
         int m_gameID;
         int m_lang;
+        String m_dict;
         int m_nPlayersT;
         int m_nPlayersH;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; m_failCount = 0; }
         public BTQueueElem( BTCmd cmd, String targetName, String targetAddr,
                             int gameID, String gameName, int lang, 
-                            int nPlayersT, int nPlayersH ) {
+                            String dict, int nPlayersT, int nPlayersH ) {
             this( cmd, null, targetName, targetAddr, gameID );
-            m_lang = lang; m_nPlayersT = nPlayersT; m_nPlayersH = nPlayersH;
-            m_gameName = gameName;
+            m_lang = lang; m_dict = dict; m_nPlayersT = nPlayersT; 
+            m_nPlayersH = nPlayersH; m_gameName = gameName;
         }
         public BTQueueElem( BTCmd cmd, byte[] buf, String targetName, 
                             String targetAddr, int gameID ) {
@@ -166,7 +168,7 @@ public class BTService extends XWService {
 
     public static void inviteRemote( Context context, String hostName, 
                                      int gameID, String initialName, 
-                                     int lang, int nPlayersT, 
+                                     int lang, String dict, int nPlayersT, 
                                      int nPlayersH )
     {
         Intent intent = getIntentTo( context, INVITE );
@@ -175,6 +177,7 @@ public class BTService extends XWService {
         Assert.assertNotNull( initialName );
         intent.putExtra( GAMENAME_STR, initialName );
         intent.putExtra( LANG_STR, lang );
+        intent.putExtra( DICT_STR, dict );
         intent.putExtra( NTO_STR, nPlayersT );
         intent.putExtra( NHE_STR, nPlayersH );
 
@@ -258,11 +261,12 @@ public class BTService extends XWService {
                     String gameName = intent.getStringExtra( GAMENAME_STR );
                     String addr = addrFor( target );
                     int lang = intent.getIntExtra( LANG_STR, -1 );
+                    String dict = intent.getStringExtra( DICT_STR );
                     int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
                     int nPlayersH = intent.getIntExtra( NHE_STR, -1 );
                     m_sender.add( new BTQueueElem( BTCmd.INVITE, target, addr, 
                                                    gameID, gameName, lang, 
-                                                   nPlayersT, nPlayersH ) );
+                                                   dict, nPlayersT, nPlayersH ) );
                     break;
                 case SEND:
                     byte[] buf = intent.getByteArrayExtra( MSG_STR );
@@ -404,6 +408,7 @@ public class BTService extends XWService {
             int gameID = is.readInt();
             String gameName = is.readUTF();
             int lang = is.readInt();
+            String dict = is.readUTF();
             int nPlayersT = is.readInt();
             int nPlayersH = is.readInt();
 
@@ -415,7 +420,8 @@ public class BTService extends XWService {
                 String sender = host.getName();
                 CommsAddrRec addr = new CommsAddrRec( sender, host.getAddress() );
                 long rowid = GameUtils.makeNewBTGame( context, gameID, addr,
-                                                      lang, nPlayersT, nPlayersH );
+                                                      lang, dict, nPlayersT, 
+                                                      nPlayersH );
                 if ( DBUtils.ROWID_NOTFOUND == rowid ) {
                     result = BTCmd.INVITE_FAILED;
                 } else {
@@ -680,6 +686,7 @@ public class BTService extends XWService {
                         outStream.writeInt( elem.m_gameID );
                         outStream.writeUTF( elem.m_gameName );
                         outStream.writeInt( elem.m_lang );
+                        outStream.writeUTF( elem.m_dict );
                         outStream.writeInt( elem.m_nPlayersT );
                         outStream.writeInt( elem.m_nPlayersH );
                         outStream.flush();

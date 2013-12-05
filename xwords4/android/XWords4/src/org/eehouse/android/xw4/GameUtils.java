@@ -479,24 +479,28 @@ public class GameUtils {
 
     public static long makeNewBTGame( Context context, int gameID, 
                                       CommsAddrRec addr, int lang, 
-                                      int nPlayersT, int nPlayersH )
+                                      String dict, int nPlayersT, 
+                                      int nPlayersH )
     {
         return makeNewBTGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                              lang, nPlayersT, nPlayersH );
+                              lang, dict, nPlayersT, nPlayersH );
     }
     
     public static long makeNewBTGame( Context context, long groupID, 
                                       int gameID, CommsAddrRec addr, int lang, 
-                                      int nPlayersT, int nPlayersH )
+                                      String dict, int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
         int[] langa = { lang };
+        String[] dicta = { dict };
         boolean isHost = null == addr;
         if ( isHost ) { 
             addr = new CommsAddrRec( null, null );
         }
-        return makeNewMultiGame( context, groupID, addr, langa, null, 
-                                 nPlayersT, nPlayersH, null, gameID, isHost );
+        String inviteID = GameUtils.formatGameID( gameID );
+        return makeNewMultiGame( context, groupID, addr, langa, dicta, 
+                                 nPlayersT, nPlayersH, inviteID, gameID, 
+                                 isHost );
     }
 
     public static long makeNewSMSGame( Context context, int gameID, 

@@ -2161,7 +2161,8 @@ public class BoardActivity extends XWActivity
                     case COMMS_CONN_BT:
                         BTService.inviteRemote( this, dev, m_gi.gameID, 
                                                 gameName, m_gi.dictLang, 
-                                                m_gi.nPlayers, 1 );
+                                                m_gi.dictName, m_gi.nPlayers,
+                                                1 );
                         break;
                     case COMMS_CONN_SMS:
                         SMSService.inviteRemote( this, dev, m_gi.gameID, 
