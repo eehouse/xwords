@@ -9,11 +9,22 @@ fi
 
 CLEAN=""
 
-if [ $# -gt 1 ]; then
-    if [ $1 = '--clean' ]; then
-        CLEAN=1
-    fi
-fi
+usage() {
+    echo "usage: $0 [--clean]"
+    exit 1
+}
+
+while [ $# -ge 1 ]; do
+    case $1 in
+        --clean)
+            CLEAN=1
+            ;;
+        *)
+            usage
+            ;;
+    esac
+    shift
+done
 
 # There needs to be target in the makefile for each of these (giving
 # the output .png size)
@@ -26,6 +37,7 @@ for SVG in img_src/*.svg; do
         SVG=$(basename $SVG)
         OUT=res/$DIR/${SVG/.svg/__gen.png}
         if [ -z "$CLEAN" ]; then
+            echo "not doing clean one"
             make -f $(dirname $0)/images.mk $OUT
         else
             rm -f $OUT
