@@ -7,7 +7,6 @@ VARIANT=$2
 CLIENT_VERS_RELAY=$3
 CHAT_SUPPORTED=$4
 THUMBNAIL_SUPPORTED=$5
-BUILD_TARGET=$6
 
 cd $(dirname $0)
 cd ../../
@@ -38,7 +37,6 @@ class BuildConstants {
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
     public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
-    public static final boolean IS_DEBUG_BUILD = "$BUILD_TARGET".equals("debug");
 }
 EOF
 

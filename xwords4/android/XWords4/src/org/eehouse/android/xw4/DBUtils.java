@@ -991,10 +991,11 @@ public class DBUtils {
         if ( null == s_groupsCache ) {
             HashMap<Long,GameGroupInfo> result = 
                 new HashMap<Long,GameGroupInfo>();
-            initDB( context );
             String[] columns = { ROW_ID, DBHelper.GROUPNAME, 
                                  DBHelper.EXPANDED };
             String limit = 0 == nRows ? null : String.format( "%d", nRows );
+
+            initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getReadableDatabase();
                 Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
@@ -1576,6 +1577,7 @@ public class DBUtils {
                 FileOutputStream dest = 
                     new FileOutputStream( toSDCard? sdcardDB : gamesDB );
                 copyFileStream( dest, src );
+                invalGroupsCache();
             }
         } catch( java.io.FileNotFoundException fnfe ) {
             DbgUtils.loge( fnfe );

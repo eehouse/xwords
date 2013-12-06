@@ -179,7 +179,7 @@ public class ExpiringDelegate {
     private Drawable mkBackground( int pct )
     {
         Assert.assertTrue( 0 <= pct && pct <= 100 );
-        Bitmap bm = Bitmap.createBitmap( 100, 1, Bitmap.Config.RGB_565 );
+        Bitmap bm = Bitmap.createBitmap( 100, 1, Bitmap.Config.ARGB_8888 );
         Canvas canvas = new Canvas(bm);
 
         Paint paint = new Paint(); 

@@ -762,16 +762,18 @@ public class BoardActivity extends XWActivity
                                   && m_gsi.canChat );
             Utils.setItemVisible( menu, R.id.board_menu_tray, 
                                   !inTrade && m_gsi.canHideRack );
+            Utils.setItemVisible( menu, R.id.board_menu_trade, 
+                                  m_gsi.canTrade );
+            Utils.setItemVisible( menu, R.id.board_menu_undo_last, 
+                                  m_gsi.canUndo );
         }
 
         Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_missing );
-        Utils.setItemVisible( menu, R.id.board_menu_undo_last, !inTrade );
 
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
-                              inTrade && m_gsi.tradeTilesSelected );
-        Utils.setItemVisible( menu, R.id.board_menu_trade, 
-                              0 == m_missing && !m_gameOver && !inTrade );
+                              inTrade && m_gsi.tradeTilesSelected
+                              && m_gsi.curTurnSelected );
         Utils.setItemVisible( menu, R.id.board_menu_game_resign, !inTrade );
 
         if ( !inTrade ) {
@@ -2159,7 +2161,8 @@ public class BoardActivity extends XWActivity
                     case COMMS_CONN_BT:
                         BTService.inviteRemote( this, dev, m_gi.gameID, 
                                                 gameName, m_gi.dictLang, 
-                                                m_gi.nPlayers, 1 );
+                                                m_gi.dictName, m_gi.nPlayers,
+                                                1 );
                         break;
                     case COMMS_CONN_SMS:
                         SMSService.inviteRemote( this, dev, m_gi.gameID, 

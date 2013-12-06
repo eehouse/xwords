@@ -40,8 +40,7 @@ public class XWSumListPreference extends XWListPreference {
     {
         super.onAttachedToActivity();
 
-        if ( BuildConstants.IS_DEBUG_BUILD ||
-             XWPrefs.getDebugEnabled( m_context ) ) {
+        if ( BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_context ) ) {
             CharSequence[] entries = getEntries();
             CharSequence lastRow = entries[entries.length - 1];
             boolean done = false;

@@ -105,6 +105,7 @@ public class JNIThread extends Thread {
         public int visTileCount;
         public int trayVisState;
         public boolean canHint;
+        public boolean canUndo;
         public boolean canRedo;
         public boolean inTrade;
         public boolean tradeTilesSelected;
@@ -112,6 +113,7 @@ public class JNIThread extends Thread {
         public boolean canShuffle;
         public boolean curTurnSelected;
         public boolean canHideRack;
+        public boolean canTrade;
         public GameStateInfo clone() {
             GameStateInfo obj = null;
             try {

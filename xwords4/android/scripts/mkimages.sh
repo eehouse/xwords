@@ -9,11 +9,22 @@ fi
 
 CLEAN=""
 
-if [ $# -gt 1 ]; then
-    if [ $1 = '--clean' ]; then
-        CLEAN=1
-    fi
-fi
+usage() {
+    echo "usage: $0 [--clean]"
+    exit 1
+}
+
+while [ $# -ge 1 ]; do
+    case $1 in
+        --clean)
+            CLEAN=1
+            ;;
+        *)
+            usage
+            ;;
+    esac
+    shift
+done
 
 # There needs to be target in the makefile for each of these (giving
 # the output .png size)

@@ -192,7 +192,7 @@ void model_commitRejectedPhony( ModelCtxt* model, XP_S16 player );
 void model_makeTileTrade( ModelCtxt* model, XP_S16 player,
                           const TrayTileSet* oldTiles, 
                           const TrayTileSet* newTiles );
-
+XP_Bool model_canUndo( const ModelCtxt* model );
 XP_Bool model_undoLatestMoves( ModelCtxt* model, PoolContext* pool, 
                                XP_U16 nMovesSought, XP_U16* turn, 
                                XP_S16* moveNum );

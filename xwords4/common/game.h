@@ -36,6 +36,7 @@ typedef struct _GameStateInfo {
     XP_U16 visTileCount;
     XW_TrayVisState trayVisState;
     XP_Bool canHint;
+    XP_Bool canUndo;
     XP_Bool canRedo;
     XP_Bool inTrade;
     XP_Bool tradeTilesSelected;
@@ -43,6 +44,7 @@ typedef struct _GameStateInfo {
     XP_Bool canShuffle;
     XP_Bool curTurnSelected;
     XP_Bool canHideRack;
+    XP_Bool canTrade;
 } GameStateInfo;
 
 typedef struct XWGame {

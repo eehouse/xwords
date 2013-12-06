@@ -319,6 +319,11 @@ public class XWPrefs {
         setPrefsLong( context, R.string.key_default_group, val );
     }
 
+    public static void clearGroupPositions( Context context )
+    {
+        setPrefsString( context, R.string.key_group_posns, null );
+    }
+
     public static void setGroupPositions( Context context, long[] posns )
     {
         String[] asStrs = new String[posns.length];

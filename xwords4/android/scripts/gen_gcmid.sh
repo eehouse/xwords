@@ -8,10 +8,12 @@ if [ -z "$GCM_SENDER_ID" ]; then
     echo "GCM_SENDER_ID empty; GCM use will be disabled" >&2
 fi
 
+PKG=$1
+
 cat <<EOF
 // Auto-generated: DO NOT CHECK THIS IN until questions about
 // obscuring the id are cleared up
-package org.eehouse.android.xw4;
+package org.eehouse.android.$PKG;
 
 public class GCMConsts {
     public static final String SENDER_ID = "${GCM_SENDER_ID}";

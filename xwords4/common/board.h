@@ -123,6 +123,7 @@ XP_Bool board_curTurnSelected( const BoardCtxt* board );
 XP_U16 board_visTileCount( const BoardCtxt* board );
 XP_Bool board_canShuffle( const BoardCtxt* board );
 XP_Bool board_canHideRack( const BoardCtxt* board );
+XP_Bool board_canTrade( BoardCtxt* board );
 XP_Bool board_canTogglePending( const BoardCtxt* board );
 XP_Bool board_canHint( const BoardCtxt* board );
 

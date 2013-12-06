@@ -42,7 +42,7 @@ import junit.framework.Assert;
 
 public class DbgUtils {
     private static final String TAG = "XW4";
-    private static boolean s_doLog = BuildConstants.IS_DEBUG_BUILD;
+    private static boolean s_doLog = BuildConfig.DEBUG;
 
     private static Time s_time = new Time();
 
@@ -53,7 +53,7 @@ public class DbgUtils {
 
     public static void logEnable( Context context )
     {
-        boolean on = BuildConstants.IS_DEBUG_BUILD ||
+        boolean on = BuildConfig.DEBUG ||
             XWPrefs.getPrefsBoolean( context, R.string.key_logging_on, false );
         logEnable( on );
     }
