@@ -10,6 +10,23 @@ usage() {
     exit 0
 }
 
+if [ ! -e build.xml ]; then
+    usage "No build.xml; please run me from the top android directory"
+fi
+
+DIRNAME=$(basename $(pwd))
+case $DIRNAME in
+    XWords4-bt)
+        PKG=xw4bt
+        ;;
+    XWords4)
+        PKG=xw4
+        ;;
+    *)
+        usage "running in unexpected directory $DIRNAME"
+        ;;
+esac
+
 while [ $# -ge 1 ]; do
     case $1 in
         -n)
@@ -24,4 +41,4 @@ done
 
 SERIAL="$(adb devices | grep 'device$' | sed -n  "$((1+INDEX)) p" | awk '{print $1}')"
 
-adb -s $SERIAL uninstall org.eehouse.android.xw4
+adb -s $SERIAL uninstall org.eehouse.android.${PKG}
