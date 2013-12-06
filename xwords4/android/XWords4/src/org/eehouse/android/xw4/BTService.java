@@ -43,10 +43,11 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
-
 import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
+
+import junit.framework.Assert;
 
 public class BTService extends XWService {
 
@@ -357,6 +358,9 @@ public class BTService extends XWService {
                             DbgUtils.logf( "unexpected msg %d", msg );
                             break;
                         }
+                        ConnStatusHandler.
+                            updateStatusIn( BTService.this, null,
+                                            CommsConnType.COMMS_CONN_BT, true );
                     }
                 } catch ( java.io.IOException ioe ) {
                     DbgUtils.loge( ioe );
@@ -618,9 +622,15 @@ public class BTService extends XWService {
                         sendInvite( elem );
                         break;
                     case MESG_SEND:
-                        if ( !doAnyResends( elem.m_addr ) || ! sendMsg( elem ) ) {
+                        boolean success = doAnyResends( elem.m_addr )
+                            && sendMsg( elem );
+                        if ( !success ) {
                             addToResends( elem );
                         }
+                        ConnStatusHandler
+                            .updateStatusOut( BTService.this, null,
+                                              CommsConnType.COMMS_CONN_BT, 
+                                              success );
                         break;
                     default:
                         Assert.fail();
