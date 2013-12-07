@@ -1446,45 +1446,6 @@ defaultRandomSeed()
     return rs;
 } /* defaultRandomSeed */
 
-/* This belongs in linuxbt.c */
-#ifdef XWFEATURE_BLUETOOTH
-static XP_Bool
-nameToBtAddr( const char* name, bdaddr_t* ba )
-{
-    XP_Bool success = XP_FALSE;
-    int id, socket;
-    LOG_FUNC();
-# define RESPMAX 5
-
-    id = hci_get_route( NULL );
-    socket = hci_open_dev( id );
-    if ( id >= 0 && socket >= 0 ) {
-        long flags = 0L;
-        inquiry_info inqInfo[RESPMAX];
-        inquiry_info* inqInfoP = inqInfo;
-        int count = hci_inquiry( id, 10, RESPMAX, NULL, &inqInfoP, flags );
-        int i;
-
-        for ( i = 0; i < count; ++i ) {
-            char buf[64];
-            if ( 0 >= hci_read_remote_name( socket, &inqInfo[i].bdaddr, 
-                                            sizeof(buf), buf, 0)) {
-                if ( 0 == strcmp( buf, name ) ) {
-                    XP_MEMCPY( ba, &inqInfo[i].bdaddr, sizeof(*ba) );
-                    success = XP_TRUE;
-                    XP_LOGF( "%s: matched %s", __func__, name );
-                    char addrStr[32];
-                    ba2str(ba, addrStr);
-                    XP_LOGF( "bt_addr is %s", addrStr );
-                    break;
-                }
-            }
-        }
-    }
-    return success;
-} /* nameToBtAddr */
-#endif
-
 #ifdef XWFEATURE_SLOW_ROBOT
 static bool
 parsePair( const char* optarg, XP_U16* min, XP_U16* max )

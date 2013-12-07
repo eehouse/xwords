@@ -35,5 +35,9 @@ XP_S16 linux_bt_receive( int sock, XP_U8* buf, XP_U16 buflen );
 
 void linux_bt_socketclosed( CommonGlobals* globals, int sock );
 
+GSList* linux_bt_scan();
+
+XP_Bool nameToBtAddr( const char* name, bdaddr_t* ba );
+
 #endif /* XWFEATURE_BLUETOOTH */
 #endif /* #ifndef _LINUXBT_H_ */
