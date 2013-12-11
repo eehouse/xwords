@@ -32,5 +32,20 @@ XP_S16 linux_sms_send( CommonGlobals* globals, const XP_U8* buf,
 XP_S16 linux_sms_receive( CommonGlobals* globals, int sock, 
                           XP_U8* buf, XP_U16 buflen, CommsAddrRec* addr );
 
+typedef struct _SMSProcs {
+    void (*msgReceived)( void* closure, const XP_U8* buf, XP_U16 len );
+    void (*msgNoticeReceived)( void* closure );
+    void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
+                           XP_U16 maxInterval );
+    void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
+    void (*socketChanged)( void* closure, int newSock, int oldSock, 
+                           SockReceiver proc, void* procClosure );
+
+} SMSProcs;
+
+
+void linux_sms2_init( LaunchParams* params, const SMSProcs* procs,
+                      void* procClosure );
+
 #endif /* XWFEATURE_SMS */
 #endif /* #ifndef _LINUXSMS_H_ */

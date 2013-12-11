@@ -1816,7 +1816,7 @@ initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
 #ifdef XWFEATURE_SMS
     } else if ( params->conType == COMMS_CONN_SMS ) {
         addr->conType = COMMS_CONN_SMS;
-        XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.serverPhone,
+        XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.phone,
                     sizeof(addr->u.sms.phone) - 1 );
         addr->u.sms.port = params->connInfo.sms.port;
 #endif
@@ -1920,7 +1920,7 @@ main( int argc, char** argv )
     
     CommsConnType conType = COMMS_CONN_NONE;
 #ifdef XWFEATURE_SMS
-    char* serverPhone = NULL;
+    char* phone = NULL;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     const char* btaddr = NULL;
@@ -2119,7 +2119,7 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
             XP_ASSERT( COMMS_CONN_NONE == conType );
-            serverPhone = optarg;
+            phone = optarg;
             conType = COMMS_CONN_SMS;
             break;
 #endif
@@ -2420,7 +2420,7 @@ main( int argc, char** argv )
 #endif
 #ifdef XWFEATURE_SMS
         } else if ( conType == COMMS_CONN_SMS ) {
-            mainParams.connInfo.sms.serverPhone = serverPhone;
+            mainParams.connInfo.sms.phone = phone;
             if ( !portNum ) {
                 portNum = "1";
             }

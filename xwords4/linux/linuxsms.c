@@ -264,4 +264,165 @@ linux_sms_receive( CommonGlobals* globals, int sock,
     return nRead;
 } /* linux_sms_receive */
 
+typedef struct _LinSMS2Data {
+    int fd, wd;
+    XP_UCHAR myQueue[256];
+    XP_U16 port;
+    FILE* lock;
+
+    const SMSProcs* procs;
+    void* procClosure;
+} LinSMS2Data;
+
+static LinSMS2Data* getStorage( LaunchParams* params );
+
+static void
+lock_queue2( LinSMS2Data* data )
+{
+    char lock[256];
+    snprintf( lock, sizeof(lock), "%s/%s", data->myQueue, LOCK_FILE );
+    FILE* fp = fopen( lock, "w" );
+    XP_ASSERT( NULL == data->lock );
+    data->lock = fp;
+}
+
+static void
+unlock_queue2( LinSMS2Data* data )
+{
+    XP_ASSERT( NULL != data->lock );
+    fclose( data->lock );
+    data->lock = NULL;
+}
+
+static XP_S16
+decodeAndDelete2( LinSMS2Data* data, const gchar* name, 
+                  XP_U8* buf, XP_U16 buflen )
+{
+    XP_S16 nRead = -1;
+    char path[256];
+    snprintf( path, sizeof(path), "%s/%s", data->myQueue, name );
+
+    gchar* contents;
+    gsize length;
+#ifdef DEBUG
+    gboolean success = 
+#endif
+        g_file_get_contents( path, &contents, &length, NULL );
+    XP_ASSERT( success );
+    unlink( path );
+
+    if ( 0 == strncmp( "from: ", contents, 6 ) ) {
+        char phone[32];
+        gchar* eol = strstr( contents, "\n" );
+        *eol = '\0';
+        XP_STRNCPY( phone, &contents[6], sizeof(phone) );
+        XP_ASSERT( !*eol );
+        ++eol;         /* skip NULL */
+        *strstr(eol, "\n" ) = '\0';
+
+        XP_U16 inlen = strlen(eol);      /* skip \n */
+        XP_U8 out[inlen];
+        XP_U16 outlen = sizeof(out);
+        XP_Bool valid = smsToBin( out, &outlen, eol, inlen );
+
+        if ( valid && outlen <= buflen ) {
+            XP_MEMCPY( buf, out, outlen );
+            nRead = outlen;
+            /* addr->conType = COMMS_CONN_SMS; */
+            /* addr->u.sms.port = data->port; */
+        }
+    }
+
+    g_free( contents );
+
+    return nRead;
+} /* decodeAndDelete */
+
+static void
+parseAndDispatch( LinSMS2Data* data, uint8_t* buf, int len )
+{
+    XP_USE( data );
+    XP_USE( buf );
+    XP_USE( len );
+}
+
+static void 
+sms2_receive( void* closure, int socket )
+{
+    LaunchParams* params = (LaunchParams*)closure;
+    XP_ASSERT( !!params->sms2Storage );
+    LinSMS2Data* data = getStorage( params );
+
+    XP_S16 nRead = -1;
+
+    XP_ASSERT( socket == data->fd );
+
+    lock_queue2( data );
+
+    /* read required or we'll just get the event again.  But we don't care
+       about the result or the buffer contents. */
+    XP_U8 buffer[sizeof(struct inotify_event) + 16];
+    if ( 0 > read( socket, buffer, sizeof(buffer) ) ) {
+    }
+    char shortest[256] = { '\0' };
+    GDir* dir = g_dir_open( data->myQueue, 0, NULL );
+    for ( ; ; ) {
+        const gchar* name = g_dir_read_name( dir );
+        if ( NULL == name ) {
+            break;
+        } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
+            continue;
+        }
+        if ( !shortest[0] || 0 < strcmp( shortest, name ) ) {
+            snprintf( shortest, sizeof(shortest), "%s", name );
+        }
+    }
+    g_dir_close( dir );
+
+    uint8_t buf[256];
+    if ( !!shortest[0] ) {
+        nRead = decodeAndDelete2( data, shortest, buf, sizeof(buf) );
+    }
+
+    unlock_queue2( data );
+
+    if ( 0 < nRead ) {
+        parseAndDispatch( data, buf, nRead );
+    }
+}
+
+void
+linux_sms2_init( LaunchParams* params, const SMSProcs* procs,
+                 void* procClosure )
+{
+    XP_ASSERT( !!params->connInfo.sms.phone );
+    LinSMS2Data* data = getStorage( params );
+    XP_ASSERT( !!data );
+    data->procs = procs;
+    data->procClosure = procClosure;
+
+    makeQueuePath( params->connInfo.sms.phone, params->connInfo.sms.port,
+                   data->myQueue, sizeof(data->myQueue) );
+    data->port = params->connInfo.sms.port;
+
+    (void)g_mkdir_with_parents( data->myQueue, 0777 );
+
+    int fd = inotify_init();
+    data->fd = fd;
+    data->wd = inotify_add_watch( fd, data->myQueue, IN_MODIFY );
+    
+    (*procs->socketChanged)( procClosure, fd, -1, sms2_receive, params );
+} /* linux_sms2_init */
+
+static LinSMS2Data* 
+getStorage( LaunchParams* params )
+{
+    LinSMS2Data* storage = (LinSMS2Data*)params->sms2Storage;
+    if ( NULL == storage ) {
+        storage = XP_CALLOC( params->mpool, sizeof(*storage) );
+        params->sms2Storage = storage;
+    }
+    return storage;
+}
+
 #endif /* XWFEATURE_SMS */

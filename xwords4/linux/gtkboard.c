@@ -532,7 +532,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #endif
 #ifdef XWFEATURE_SMS
         } else if ( addr.conType == COMMS_CONN_SMS ) {
-            XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.serverPhone,
+            XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone,
                         sizeof(addr.u.sms.phone) - 1 );
             addr.u.sms.port = params->connInfo.sms.port;
 #endif

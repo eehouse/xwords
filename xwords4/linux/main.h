@@ -63,6 +63,9 @@ typedef struct LaunchParams {
     XP_U32 dbFileID;
 #endif
     void* relayConStorage;      /* opaque outside of relaycon.c */
+#ifdef XWFEATURE_SMS
+    void* sms2Storage;
+#endif
     char* pipe;
     char* nbs;
     char* bonusFile;
@@ -139,7 +142,7 @@ typedef struct LaunchParams {
 #endif
 #ifdef XWFEATURE_SMS
         struct {
-            const char* serverPhone;
+            const char* phone;
             int port;
         } sms;
 #endif

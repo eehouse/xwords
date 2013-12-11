@@ -26,6 +26,7 @@
 #include "gtkboard.h"
 #include "linuxmain.h"
 #include "relaycon.h"
+#include "linuxsms.h"
 #include "gtkask.h"
 
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
@@ -606,6 +607,14 @@ gtkmain( LaunchParams* params )
 
         linux_doInitialReg( params, idIsNew );
     }
+
+#ifdef XWFEATURE_SMS
+    SMSProcs smsProcs = {
+        .socketChanged = gtkSocketChanged,
+    };
+    linux_sms2_init( params, &smsProcs, &apg );
+
+#endif
 
     apg.window = makeGamesWindow( &apg );
     gtk_main();
