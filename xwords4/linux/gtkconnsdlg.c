@@ -102,7 +102,11 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
             break;
 #endif
         case COMMS_CONN_SMS:
-            XP_ASSERT(0);
+            txt = gtk_entry_get_text( GTK_ENTRY(state->smsphone) );
+            XP_STRNCPY( state->addr->u.sms.phone, txt, 
+                        sizeof(state->addr->u.sms.phone) );
+            txt = gtk_entry_get_text( GTK_ENTRY(state->smsport) );
+            state->addr->u.sms.port = atoi( txt );
             break;
         default:
             XP_ASSERT( 0 );     /* keep compiler happy */
@@ -234,7 +238,7 @@ makeSMSPage( GtkConnsState* state )
     if ( COMMS_CONN_SMS == state->addr->conType ) {
         gchar port[32];
         snprintf( port, sizeof(port), "%d", state->addr->u.sms.port );
-        gtk_entry_set_text( GTK_ENTRY(state->smsphone), port );
+        gtk_entry_set_text( GTK_ENTRY(state->smsport), port );
     }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->smsport, !state->readOnly );
