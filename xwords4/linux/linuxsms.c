@@ -349,6 +349,7 @@ parseAndDispatch( LinSMS2Data* data, uint8_t* buf, int len )
 static void 
 sms2_receive( void* closure, int socket )
 {
+    LOG_FUNC();
     LaunchParams* params = (LaunchParams*)closure;
     XP_ASSERT( !!params->sms2Storage );
     LinSMS2Data* data = getStorage( params );
