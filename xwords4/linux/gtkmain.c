@@ -609,10 +609,14 @@ gtkmain( LaunchParams* params )
     }
 
 #ifdef XWFEATURE_SMS
-    SMSProcs smsProcs = {
-        .socketChanged = gtkSocketChanged,
-    };
-    linux_sms2_init( params, &smsProcs, &apg );
+    if ( !!params->connInfo.sms.phone ) {
+        SMSProcs smsProcs = {
+            .socketChanged = gtkSocketChanged,
+        };
+        linux_sms2_init( params, &smsProcs, &apg );
+    } else {
+        XP_LOGF( "not activating SMS: I don't have a phone" );
+    }
 
 #endif
 
