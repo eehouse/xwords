@@ -544,7 +544,6 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* This may trigger network activity */
         if ( !!cGlobals->game.comms ) {
-            XP_ASSERT( COMMS_CONN_RELAY == addr.conType );
             comms_setAddr( cGlobals->game.comms, &addr );
         }
 #endif
@@ -1370,7 +1369,7 @@ handle_zoomin_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         board_draw( globals->cGlobals.game.board );
         setZoomButtons( globals, inOut );
     }
-} /* handle_done_button */
+} /* handle_zoomin_button */
 
 static void
 handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
@@ -1380,7 +1379,7 @@ handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         board_draw( globals->cGlobals.game.board );
         setZoomButtons( globals, inOut );
     }
-} /* handle_done_button */
+} /* handle_zoomout_button */
 
 #ifdef XWFEATURE_CHAT
 static void
@@ -1450,6 +1449,12 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     if ( board_commitTurn( globals->cGlobals.game.board ) ) {
         board_draw( globals->cGlobals.game.board );
     }
+} /* handle_commit_button */
+
+static void
+handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    XP_USE( globals );
 } /* handle_commit_button */
 
 static void
@@ -2149,6 +2154,7 @@ makeButtons( GtkGameGlobals* globals )
         { "Grid", G_CALLBACK(handle_grid_button) },
         { "Hide", G_CALLBACK(handle_hide_button) },
         { "Commit", G_CALLBACK(handle_commit_button) },
+        { "Invite", G_CALLBACK(handle_invite_button) },
     };
     
     hbox = gtk_hbox_new( FALSE, 0 );
