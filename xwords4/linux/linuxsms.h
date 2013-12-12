@@ -46,6 +46,9 @@ typedef struct _SMSProcs {
 
 void linux_sms2_init( LaunchParams* params, const SMSProcs* procs,
                       void* procClosure );
+void linux_sms2_invite( LaunchParams* params, const CurGameInfo* info, const gchar* phone,
+                        int port );
+void linux_sms2_cleanup( LaunchParams* params );
 
 #endif /* XWFEATURE_SMS */
 #endif /* #ifndef _LINUXSMS_H_ */

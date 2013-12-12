@@ -415,6 +415,23 @@ linux_sms2_init( LaunchParams* params, const SMSProcs* procs,
     (*procs->socketChanged)( procClosure, fd, -1, sms2_receive, params );
 } /* linux_sms2_init */
 
+void
+linux_sms2_invite( LaunchParams* params, const CurGameInfo* info, const gchar* phone,
+                   int port )
+{
+    LOG_FUNC();
+    XP_USE( params );
+    XP_USE( info );
+    XP_USE( phone );
+    XP_USE( port );
+}
+
+void
+linux_sms2_cleanup( LaunchParams* params )
+{
+    XP_FREEP( params->mpool, &params->sms2Storage );
+}
+
 static LinSMS2Data* 
 getStorage( LaunchParams* params )
 {

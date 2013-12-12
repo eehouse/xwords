@@ -54,6 +54,7 @@
 #include "draw.h"
 #include "game.h"
 #include "gtkask.h"
+#include "gtkaskm.h"
 #include "gtkchat.h"
 #include "gtknewgame.h"
 #include "gtkletterask.h"
@@ -1454,7 +1455,35 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    XP_USE( globals );
+    CommsAddrRec addr;
+    CommsCtxt* comms = globals->cGlobals.game.comms;
+    XP_ASSERT( comms );
+    comms_getAddr( comms, &addr );
+    switch ( comms_getConType( comms ) ) {
+#ifdef XWFEATURE_SMS
+    case COMMS_CONN_SMS: {
+            gchar* phone = NULL;
+            gchar* portstr = NULL;
+            AskMInfo infos[] = {
+                { "Remote phone#", &phone },
+                { "Remote port", &portstr },
+            };
+            if ( gtkaskm( "Invite whom?", infos, VSIZE(infos) ) ) { 
+                int port = atoi( portstr );
+                XP_LOGF( "need to invite using number %s and port %d", phone, port );
+                XP_ASSERT( 0 != port );
+                linux_sms2_invite( globals->cGlobals.params, 
+                                   globals->cGlobals.gi, phone, port );
+            }
+            g_free( phone );
+            g_free( portstr );
+    }
+        break;
+#endif
+    default:
+        XP_ASSERT( 0 );
+        break;
+    }
 } /* handle_commit_button */
 
 static void

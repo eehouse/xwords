@@ -609,7 +609,14 @@ gtkmain( LaunchParams* params )
     }
 
 #ifdef XWFEATURE_SMS
-    if ( !!params->connInfo.sms.phone ) {
+    gchar buf[32];
+    const gchar* phone = params->connInfo.sms.phone;
+    if ( !!phone ) {
+        db_store( params->pDb, KEY_SMSPHONE, phone );
+    } else if ( !phone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+        phone = buf;
+    }
+    if ( !!phone ) {
         SMSProcs smsProcs = {
             .socketChanged = gtkSocketChanged,
         };
@@ -625,7 +632,9 @@ gtkmain( LaunchParams* params )
 
     closeGamesDB( params->pDb );
     relaycon_cleanup( params );
-
+#ifdef XWFEATURE_SMS
+    linux_sms2_cleanup( params );
+#endif
     return 0;
 } /* gtkmain */
 
