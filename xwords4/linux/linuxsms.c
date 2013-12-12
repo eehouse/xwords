@@ -269,10 +269,16 @@ typedef struct _LinSMS2Data {
     XP_UCHAR myQueue[256];
     XP_U16 port;
     FILE* lock;
+    XP_U16 count;
 
+    const gchar* myPhone;
     const SMSProcs* procs;
     void* procClosure;
 } LinSMS2Data;
+
+typedef enum { NONE, INVITE, DATA, DEATH, ACK, } SMS_CMD;
+#define SMS_PROTO_VERSION 0
+
 
 static LinSMS2Data* getStorage( LaunchParams* params );
 
@@ -294,10 +300,62 @@ unlock_queue2( LinSMS2Data* data )
     data->lock = NULL;
 }
 
+
+XP_S16
+linux_sms_send2( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
+                 const XP_UCHAR* phone, XP_U16 port )
+{
+    XP_S16 nSent = -1;
+    LinSMS2Data* data = getStorage( params );
+    XP_ASSERT( !!data );
+    char path[256];
+
+    lock_queue2( data );
+
+#ifdef DEBUG
+    gchar* str64 = g_base64_encode( buf, buflen );
+#endif
+
+    makeQueuePath( phone, port, path, sizeof(path) );
+    g_mkdir_with_parents( path, 0777 ); /* just in case */
+    int len = strlen( path );
+    snprintf( &path[len], sizeof(path)-len, "/%d", ++data->count );
+
+    XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
+    XP_U16 smslen = sizeof(sms);
+    binToSms( sms, &smslen, buf, buflen );
+    XP_ASSERT( smslen == strlen(sms) );
+
+#ifdef DEBUG
+    XP_ASSERT( !strcmp( str64, sms ) );
+    g_free( str64 );
+
+    XP_U8 testout[buflen];
+    XP_U16 lenout = sizeof( testout );
+    XP_ASSERT( smsToBin( testout, &lenout, sms, smslen ) );
+    XP_ASSERT( lenout == buflen );
+    XP_ASSERT( XP_MEMCMP( testout, buf, smslen ) );
+#endif
+
+    FILE* fp = fopen( path, "w" );
+    XP_ASSERT( !!fp );
+    (void)fprintf( fp, "from: %s\n", data->myPhone );
+    (void)fprintf( fp, "%s\n", sms );
+    fclose( fp );
+    sync();
+
+    unlock_queue2( data );
+
+    nSent = buflen;
+
+    return nSent;
+} /* linux_sms_send */
+
 static XP_S16
 decodeAndDelete2( LinSMS2Data* data, const gchar* name, 
                   XP_U8* buf, XP_U16 buflen )
 {
+    LOG_FUNC();
     XP_S16 nRead = -1;
     char path[256];
     snprintf( path, sizeof(path), "%s/%s", data->myQueue, name );
@@ -335,15 +393,52 @@ decodeAndDelete2( LinSMS2Data* data, const gchar* name,
 
     g_free( contents );
 
+    LOG_RETURNF( "%d", nRead );
     return nRead;
-} /* decodeAndDelete */
+} /* decodeAndDelete2 */
 
 static void
-parseAndDispatch( LinSMS2Data* data, uint8_t* buf, int len )
+dispatch_invite( LinSMS2Data* data, XP_U16 XP_UNUSED(proto), XWStreamCtxt* stream )
 {
-    XP_USE( data );
-    XP_USE( buf );
-    XP_USE( len );
+    XP_UCHAR gameName[256];
+    XP_UCHAR dictName[256];
+
+    XP_U32 gameID = stream_getU32( stream );
+    stringFromStreamHere( stream, gameName, VSIZE(gameName) );
+    XP_U32 dictLang = stream_getU32( stream );
+    stringFromStreamHere( stream, dictName, VSIZE(dictName) );
+    XP_U8 nMissing = stream_getU8( stream );
+    XP_U8 nPlayers = stream_getU8( stream );
+
+    (*data->procs->inviteReceived)( data->procClosure, gameName, gameID,
+                                    dictLang, dictName, nPlayers, nMissing );
+}
+
+static void
+parseAndDispatch( LaunchParams* params, uint8_t* buf, int len )
+{
+    LinSMS2Data* data = getStorage( params );
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool)
+                                            params->vtMgr, 
+                                            NULL, CHANNEL_NONE, NULL );
+    stream_putBytes( stream, buf, len );
+
+    XP_U8 proto = stream_getU8( stream );
+    XP_ASSERT( SMS_PROTO_VERSION == proto );
+    XP_U8 cmd = stream_getU8( stream );
+    switch( cmd ) {
+    case INVITE:
+        dispatch_invite( data, proto, stream );
+        break;
+    case DATA:
+    case DEATH:
+    case ACK:
+        break;
+    default:
+        XP_ASSERT( 0 );
+    }
+
+    stream_destroy( stream );
 }
 
 static void 
@@ -388,21 +483,22 @@ sms2_receive( void* closure, int socket )
     unlock_queue2( data );
 
     if ( 0 < nRead ) {
-        parseAndDispatch( data, buf, nRead );
+        parseAndDispatch( params, buf, nRead );
     }
 }
 
 void
-linux_sms2_init( LaunchParams* params, const SMSProcs* procs,
-                 void* procClosure )
+linux_sms2_init( LaunchParams* params, const gchar* phone,
+                 const SMSProcs* procs, void* procClosure )
 {
-    XP_ASSERT( !!params->connInfo.sms.phone );
+    XP_ASSERT( !!phone );
     LinSMS2Data* data = getStorage( params );
     XP_ASSERT( !!data );
+    data->myPhone = phone;
     data->procs = procs;
     data->procClosure = procClosure;
 
-    makeQueuePath( params->connInfo.sms.phone, params->connInfo.sms.port,
+    makeQueuePath( phone, params->connInfo.sms.port,
                    data->myQueue, sizeof(data->myQueue) );
     data->port = params->connInfo.sms.port;
 
@@ -416,14 +512,27 @@ linux_sms2_init( LaunchParams* params, const SMSProcs* procs,
 } /* linux_sms2_init */
 
 void
-linux_sms2_invite( LaunchParams* params, const CurGameInfo* info, const gchar* phone,
+linux_sms2_invite( LaunchParams* params, const CurGameInfo* gi, 
+                   const gchar* gameName, XP_U16 nMissing, const gchar* phone, 
                    int port )
 {
     LOG_FUNC();
-    XP_USE( params );
-    XP_USE( info );
-    XP_USE( phone );
-    XP_USE( port );
+    XWStreamCtxt* stream;
+    stream = mem_stream_make( MPPARM(params->mpool) params->vtMgr,
+                              NULL, CHANNEL_NONE, NULL );
+    stream_putU8( stream, SMS_PROTO_VERSION );
+    stream_putU8( stream, INVITE );
+    stream_putU32( stream, gi->gameID );
+    stringToStream( stream, gameName );
+    stream_putU32( stream, gi->dictLang );
+    stringToStream( stream, gi->dictName );
+    stream_putU8( stream, nMissing );
+    stream_putU8( stream, gi->nPlayers );
+
+    linux_sms_send2( params, stream_getPtr( stream ), 
+                     stream_getSize( stream ), phone, port );
+
+    stream_destroy( stream );
 }
 
 void

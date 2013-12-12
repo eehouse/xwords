@@ -1472,8 +1472,11 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
                 int port = atoi( portstr );
                 XP_LOGF( "need to invite using number %s and port %d", phone, port );
                 XP_ASSERT( 0 != port );
-                linux_sms2_invite( globals->cGlobals.params, 
-                                   globals->cGlobals.gi, phone, port );
+                const CurGameInfo* gi = globals->cGlobals.gi;
+                gchar gameName[64];
+                snprintf( gameName, VSIZE(gameName), "Game %ld", gi->gameID );
+                linux_sms2_invite( globals->cGlobals.params, gi, gameName, 1,
+                                   phone, port );
             }
             g_free( phone );
             g_free( portstr );
@@ -2496,12 +2499,16 @@ drop_msg_toggle( GtkWidget* toggle, GtkGameGlobals* globals )
 /* } */
 
 static void
-initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params )
+initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
+                   CurGameInfo* gi )
 {
     memset( globals, 0, sizeof(*globals) );
 
     globals->cGlobals.gi = &globals->gi;
-    gi_copy( MPPARM(params->mpool) globals->cGlobals.gi, &params->pgi );
+    if ( !gi ) {
+        gi = &params->pgi;
+    }
+    gi_copy( MPPARM(params->mpool) globals->cGlobals.gi, gi );
 
     globals->cGlobals.params = params;
     globals->cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
@@ -2538,7 +2545,7 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params )
 }
 
 void
-initGlobals( GtkGameGlobals* globals, LaunchParams* params )
+initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 {
     short width, height;
     GtkWidget* window;
@@ -2551,7 +2558,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params )
     GtkWidget* dropCheck;
 #endif
 
-    initGlobalsNoDraw( globals, params );
+    initGlobalsNoDraw( globals, params, gi );
 
     globals->window = window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     if ( !!params->fileName ) {
@@ -2666,7 +2673,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 {
     LOG_FUNC();
     sqlite3* pDb = params->pDb;
-    initGlobalsNoDraw( globals, params );
+    initGlobalsNoDraw( globals, params, NULL );
 
     TransportProcs procs;
     setTransportProcs( &procs, globals );

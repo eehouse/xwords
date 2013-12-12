@@ -33,6 +33,10 @@ XP_S16 linux_sms_receive( CommonGlobals* globals, int sock,
                           XP_U8* buf, XP_U16 buflen, CommsAddrRec* addr );
 
 typedef struct _SMSProcs {
+    void (*inviteReceived)( void* closure, const XP_UCHAR* gameName, 
+                            XP_U32 gameID, XP_U16 dictLang, 
+                            const XP_UCHAR* dictName, XP_U16 nPlayers, 
+                            XP_U16 nHere );
     void (*msgReceived)( void* closure, const XP_U8* buf, XP_U16 len );
     void (*msgNoticeReceived)( void* closure );
     void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
@@ -44,10 +48,11 @@ typedef struct _SMSProcs {
 } SMSProcs;
 
 
-void linux_sms2_init( LaunchParams* params, const SMSProcs* procs,
-                      void* procClosure );
-void linux_sms2_invite( LaunchParams* params, const CurGameInfo* info, const gchar* phone,
-                        int port );
+void linux_sms2_init( LaunchParams* params, const gchar* phone, 
+                      const SMSProcs* procs, void* procClosure );
+void linux_sms2_invite( LaunchParams* params, const CurGameInfo* info, 
+                        const gchar* gameName, XP_U16 nMissing, 
+                        const gchar* phone, int port );
 void linux_sms2_cleanup( LaunchParams* params );
 
 #endif /* XWFEATURE_SMS */

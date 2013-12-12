@@ -20,6 +20,7 @@
 
 #ifdef PLATFORM_GTK
 
+#include "strutils.h"
 #include "main.h"
 #include "gtkmain.h"
 #include "gamesdb.h"
@@ -211,7 +212,7 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
     XP_LOGF( "%s called", __func__ );
     GtkGameGlobals* globals = malloc( sizeof(*globals) );
     apg->params->needsNewGame = XP_FALSE;
-    initGlobals( globals, apg->params );
+    initGlobals( globals, apg->params, NULL );
     if ( !makeNewGame( globals ) ) {
         freeGlobals( globals );
     } else {
@@ -231,7 +232,7 @@ handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
     if ( -1 != selRow && !gameIsOpen( apg, selRow ) ) {
         apg->params->needsNewGame = XP_FALSE;
         GtkGameGlobals* globals = malloc( sizeof(*globals) );
-        initGlobals( globals, apg->params );
+        initGlobals( globals, apg->params, NULL );
         globals->cGlobals.pDb = apg->params->pDb;
         globals->cGlobals.selRow = selRow;
         recordOpened( apg, globals );
@@ -506,6 +507,38 @@ gtkNoticeRcvd( void* closure )
     (void)g_idle_add( requestMsgs, apg );
 }
 
+static void
+gtkInviteReceived( void* closure, const XP_UCHAR* gameName, XP_U32 gameID, 
+                   XP_U16 dictLang, const XP_UCHAR* dictName, XP_U16 nPlayers, 
+                   XP_U16 nHere )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params = apg->params;
+    XP_LOGF( "%s(gameName=%s, dictName=%s, nPlayers=%d, nHere=%d)", __func__,
+             gameName, dictName, nPlayers, nHere );
+
+    CurGameInfo gi = {0};
+    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
+
+    gi.gameID = gameID;
+    gi.nPlayers = nPlayers;
+    gi.dictLang = dictLang;
+    replaceStringIfDifferent( params->mpool, &gi.dictName, dictName );
+
+    GtkGameGlobals* globals = malloc( sizeof(*globals) );
+    params->needsNewGame = XP_FALSE;
+    initGlobals( globals, params, &gi );
+
+    /* if ( !makeNewGame( globals ) ) { */
+    /* } */
+
+    GtkWidget* gameWindow = globals->window;
+    globals->cGlobals.pDb = apg->params->pDb;
+    globals->cGlobals.selRow = -1;
+    recordOpened( apg, globals );
+    gtk_widget_show( gameWindow );
+}
+
 static gboolean
 keepalive_timer( gpointer data )
 {
@@ -619,8 +652,9 @@ gtkmain( LaunchParams* params )
     if ( !!phone ) {
         SMSProcs smsProcs = {
             .socketChanged = gtkSocketChanged,
+            .inviteReceived = gtkInviteReceived,
         };
-        linux_sms2_init( params, &smsProcs, &apg );
+        linux_sms2_init( params, phone, &smsProcs, &apg );
     } else {
         XP_LOGF( "not activating SMS: I don't have a phone" );
     }
