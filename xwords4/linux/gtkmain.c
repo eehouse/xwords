@@ -75,7 +75,7 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
     return result;
 }
 
-enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, SEED_ITEM, OVER_ITEM, TURN_ITEM, 
+enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, SEED_ITEM, CONN_ITEM, OVER_ITEM, TURN_ITEM, 
        NMOVES_ITEM, MISSING_ITEM, N_ITEMS };
 
 static void
@@ -137,6 +137,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "Name", NAME_ITEM );
     addTextColumn( list, "Room", ROOM_ITEM );
     addTextColumn( list, "Seed", SEED_ITEM );
+    addTextColumn( list, "Conn. via", CONN_ITEM );
     addTextColumn( list, "Ended", OVER_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
     addTextColumn( list, "NMoves", NMOVES_ITEM );
@@ -147,6 +148,7 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_STRING,  /* NAME_ITEM */
                                               G_TYPE_STRING,  /* ROOM_ITEM */
                                               G_TYPE_INT,     /* SEED_ITEM */
+                                              G_TYPE_STRING,  /* CONN_ITEM */
                                               G_TYPE_BOOLEAN, /* OVER_ITEM */
                                               G_TYPE_INT,     /* TURN_ITEM */
                                               G_TYPE_INT,     /* NMOVES_ITEM */
@@ -189,6 +191,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         NAME_ITEM, gib->name,
                         ROOM_ITEM, gib->room,
                         SEED_ITEM, gib->seed,
+                        CONN_ITEM, gib->conn,
                         OVER_ITEM, gib->gameOver,
                         TURN_ITEM, gib->turn,
                         NMOVES_ITEM, gib->nMoves,
@@ -309,14 +312,24 @@ static GtkWidget*
 makeGamesWindow( GtkAppGlobals* apg )
 {
     GtkWidget* window;
+    LaunchParams* params = apg->params;
 
     window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     g_signal_connect( G_OBJECT(window), "destroy",
                       G_CALLBACK(handle_destroy), apg );
 
-    if ( !!apg->params->dbName ) {
-        gtk_window_set_title( GTK_WINDOW(window), apg->params->dbName );
+    gchar title[128] = {0};
+    if ( !!params->dbName ) {
+        strcat( title, params->dbName );
     }
+#ifdef XWFEATURE_SMS
+    gchar buf[32];
+    if ( db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+        int len = strlen( title );
+        snprintf( &title[len], VSIZE(title) - len, " (phone: %s)", buf );
+    }
+#endif
+    gtk_window_set_title( GTK_WINDOW(window), title );
     
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
     gtk_container_add( GTK_CONTAINER(window), vbox );
@@ -327,7 +340,7 @@ makeGamesWindow( GtkAppGlobals* apg )
     
     gtk_widget_show( list );
 
-    GSList* games = listGames( apg->params->pDb );
+    GSList* games = listGames( params->pDb );
     for ( GSList* iter = games; !!iter; iter = iter->next ) {
         sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
         onNewData( apg, *rowid, XP_TRUE );

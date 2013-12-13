@@ -781,7 +781,7 @@ cleanup( GtkGameGlobals* globals )
     linux_bt_close( &globals->cGlobals );
 #endif
 #ifdef XWFEATURE_SMS
-    linux_sms_close( &globals->cGlobals );
+    // linux_sms_close( &globals->cGlobals );
 #endif
 #ifdef XWFEATURE_IP_DIRECT
     linux_udp_close( &globals->cGlobals );
@@ -2271,7 +2271,7 @@ newConnectionInput( GIOChannel *source,
         ssize_t nRead;
         unsigned char buf[1024];
         CommsAddrRec* addrp = NULL;
-#if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_SMS
+#if defined XWFEATURE_IP_DIRECT
         CommsAddrRec addr;
 #endif
 
@@ -2289,9 +2289,10 @@ newConnectionInput( GIOChannel *source,
 #endif
 #ifdef XWFEATURE_SMS
         case COMMS_CONN_SMS:
-            addrp = &addr;
-            nRead = linux_sms_receive( &globals->cGlobals, sock, 
-                                       buf, sizeof(buf), addrp );
+            XP_ASSERT(0);
+            /* addrp = &addr; */
+            /* nRead = linux_sms_receive( &globals->cGlobals, sock,  */
+            /*                            buf, sizeof(buf), addrp ); */
             break;
 #endif
 #ifdef XWFEATURE_IP_DIRECT

@@ -1059,7 +1059,7 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
         int fd = g_io_channel_unix_get_fd( source );
         unsigned char buf[1024];
         int nBytes;
-        CommsAddrRec addrRec;
+        // CommsAddrRec addrRec;
         CommsAddrRec* addrp = NULL;
 
         /* It's a normal data socket */
@@ -1072,9 +1072,10 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
 #endif
 #ifdef XWFEATURE_SMS
         case COMMS_CONN_SMS:
-            addrp = &addrRec;
-            nBytes = linux_sms_receive( &globals->cGlobals, fd,
-                                        buf, sizeof(buf), addrp );
+            XP_ASSERT(0);
+            /* addrp = &addrRec; */
+            /* nBytes = linux_sms_receive( &globals->cGlobals, fd, */
+            /*                             buf, sizeof(buf), addrp ); */
             break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
@@ -2220,7 +2221,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     linux_bt_close( &g_globals.cGlobals );
 #endif
 #ifdef XWFEATURE_SMS
-    linux_sms_close( &g_globals.cGlobals );
+    // linux_sms_close( &g_globals.cGlobals );
 #endif
 #ifdef XWFEATURE_IP_DIRECT
     linux_udp_close( &g_globals.cGlobals );

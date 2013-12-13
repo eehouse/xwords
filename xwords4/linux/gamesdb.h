@@ -30,6 +30,7 @@
 typedef struct _GameInfo {
     XP_UCHAR name[128];
     XP_UCHAR room[128];
+    XP_UCHAR conn[8];
     XP_S16 nMoves;
     XP_Bool gameOver;
     XP_S16 turn;

@@ -24,13 +24,13 @@
 
 #include "main.h"
 
-void linux_sms_init( CommonGlobals* globals, const CommsAddrRec* addr );
-void linux_sms_close( CommonGlobals* globals );
+/* void linux_sms_init( CommonGlobals* globals, const CommsAddrRec* addr ); */
+/* void linux_sms_close( CommonGlobals* globals ); */
 
-XP_S16 linux_sms_send( CommonGlobals* globals, const XP_U8* buf,
-                       XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port );
-XP_S16 linux_sms_receive( CommonGlobals* globals, int sock, 
-                          XP_U8* buf, XP_U16 buflen, CommsAddrRec* addr );
+/* XP_S16 linux_sms_send( CommonGlobals* globals, const XP_U8* buf, */
+/*                        XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port ); */
+/* XP_S16 linux_sms_receive( CommonGlobals* globals, int sock,  */
+/*                           XP_U8* buf, XP_U16 buflen, CommsAddrRec* addr ); */
 
 typedef struct _SMSProcs {
     void (*inviteReceived)( void* closure, const XP_UCHAR* gameName, 
@@ -50,6 +50,8 @@ typedef struct _SMSProcs {
 
 void linux_sms2_init( LaunchParams* params, const gchar* phone, 
                       const SMSProcs* procs, void* procClosure );
+XP_S16 linux_sms2_send( LaunchParams* params, const XP_U8* buf,
+                        XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port );
 void linux_sms2_invite( LaunchParams* params, const CurGameInfo* info, 
                         const gchar* gameName, XP_U16 nMissing, 
                         const gchar* phone, int port );

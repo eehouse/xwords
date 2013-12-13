@@ -52,6 +52,15 @@
  * checked.
  */
 
+static void
+makeQueuePath( const XP_UCHAR* phone, XP_U16 port,
+               XP_UCHAR* path, XP_U16 pathlen )
+{
+    snprintf( path, pathlen, "%s/%s_%d", SMS_DIR, phone, port );
+}
+
+
+#if 0
 struct LinSMSData {
     XP_UCHAR myPhone[MAX_PHONE_LEN+1];
     XP_UCHAR myQueue[256];
@@ -62,13 +71,6 @@ struct LinSMSData {
     XP_U16 port;
     XP_Bool amServer;
 };
-
-static void
-makeQueuePath( const XP_UCHAR* phone, XP_U16 port,
-               XP_UCHAR* path, XP_U16 pathlen )
-{
-    snprintf( path, pathlen, "%s/%s_%d", SMS_DIR, phone, port );
-}
 
 static void
 lock_queue( LinSMSData* data )
@@ -263,6 +265,7 @@ linux_sms_receive( CommonGlobals* globals, int sock,
 
     return nRead;
 } /* linux_sms_receive */
+#endif
 
 typedef struct _LinSMS2Data {
     int fd, wd;
@@ -533,6 +536,18 @@ linux_sms2_invite( LaunchParams* params, const CurGameInfo* gi,
                      stream_getSize( stream ), phone, port );
 
     stream_destroy( stream );
+}
+
+XP_S16
+linux_sms2_send( LaunchParams* params, const XP_U8* buf,
+                 XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port )
+{
+    XP_ASSERT(0);
+    XP_USE( params );
+    XP_USE( buf );
+    XP_USE( phone );
+    XP_USE( port );
+    return buflen;
 }
 
 void

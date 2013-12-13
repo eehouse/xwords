@@ -1179,8 +1179,8 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
             comms_getAddr( cGlobals->game.comms, &addr );
             addrRec = &addr;
         }
-        nSent = linux_sms_send( cGlobals, buf, buflen, 
-                                addrRec->u.sms.phone, addrRec->u.sms.port );
+        nSent = linux_sms2_send( cGlobals->params, buf, buflen, 
+                                 addrRec->u.sms.phone, addrRec->u.sms.port );
 #endif
     } else {
         XP_ASSERT(0);
@@ -1391,20 +1391,27 @@ linux_util_addrChange( XW_UtilCtxt* uc,
                        const CommsAddrRec* newAddr )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    if ( 0 ) {
+    switch ( newAddr->conType ) {
 #ifdef XWFEATURE_BLUETOOTH
-    } else if ( newAddr->conType == COMMS_CONN_BT ) {
+    case COMMS_CONN_BT: {
         XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
         linux_bt_open( cGlobals, isServer );
+    }
+        break;
 #endif
-#if defined XWFEATURE_IP_DIRECT
-    } else if ( newAddr->conType == COMMS_CONN_IP_DIRECT ) {
+#ifdef XWFEATURE_IP_DIRECT
+    case COMMS_CONN_IP_DIRECT:
         linux_udp_open( cGlobals, newAddr );
+        break;
 #endif
-#if defined XWFEATURE_SMS
-    } else if ( COMMS_CONN_SMS == newAddr->conType ) {
-        linux_sms_init( cGlobals, newAddr );
+#ifdef XWFEATURE_SMS
+    case COMMS_CONN_SMS:
+        XP_ASSERT(0);
+        // linux_sms_init( cGlobals, newAddr );
+        break;
 #endif
+    default:
+        XP_ASSERT(0);
     }
 }
 
