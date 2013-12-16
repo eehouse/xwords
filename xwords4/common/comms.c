@@ -1218,14 +1218,6 @@ gameID( const CommsCtxt* comms )
         gameID = comms->util->gameInfo->gameID;
     }
 
-    // XP_ASSERT( 0 != gameID );
-    if ( 0 == gameID ) {
-        XP_LOGF( "%s: gameID STILL 0", __func__ );
-    } else if ( 0 == comms->util->gameInfo->gameID ) {
-        XP_LOGF( "%s: setting gi's gameID to 0X%lX", __func__, gameID );
-        comms->util->gameInfo->gameID = gameID;
-    }
-
     /* Most of the time these will be the same, but early in a game they won't
        be.  Would be nice not to have to use gameID. */
     if ( 0 == gameID ) {
