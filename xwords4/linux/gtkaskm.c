@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+n *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -53,7 +53,7 @@ gtkaskm( const gchar* message, AskMInfo* infos, int nInfos )
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
     for ( ii = 0; ii < nInfos; ++ii ) {
         AskMInfo* info = &infos[ii];
-        GtkWidget* row = makeLabeledField( info->label, &fields[ii] );
+        GtkWidget* row = makeLabeledField( info->label, &fields[ii], *info->result );
         gtk_box_pack_start( GTK_BOX(vbox), row, FALSE, TRUE, 0 );
         gtk_widget_show( row );
     }

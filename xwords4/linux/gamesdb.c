@@ -42,6 +42,7 @@ openGamesDB( const char* dbName )
         ",turn INT(2)"
         ",nmoves INT"
         ",seed INT"
+        ",gameid INT"
         ",nmissing INT(2)"
         ")";
     result = sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
@@ -121,6 +122,8 @@ summarize( CommonGlobals* cGlobals )
     XP_S16 turn = server_getCurrentTurn( cGlobals->game.server );
     XP_U16 seed = 0;
     XP_S16 nMissing = 0;
+    XP_U32 gameID = cGlobals->gi->gameID;
+    XP_ASSERT( 0 != gameID );
     CommsAddrRec addr = {0};
     gchar* room = "";
 
@@ -148,11 +151,11 @@ summarize( CommonGlobals* cGlobals )
     }
 
     const char* fmt = "UPDATE games "
-        " SET room='%s', ended=%d, turn=%d, nmissing=%d, nmoves=%d, seed=%d, connvia='%s'"
+        " SET room='%s', ended=%d, turn=%d, nmissing=%d, nmoves=%d, seed=%d, gameid=%d, connvia='%s'"
         " WHERE rowid=%lld";
     XP_UCHAR buf[256];
     snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, nMissing, nMoves,
-              seed, connvia, cGlobals->selRow );
+              seed, gameID, connvia, cGlobals->selRow );
     XP_LOGF( "query: %s", buf );
     sqlite3_stmt* stmt = NULL;
     int result = sqlite3_prepare_v2( cGlobals->pDb, buf, -1, &stmt, NULL );        
@@ -200,7 +203,7 @@ XP_Bool
 getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
-    const char* fmt = "SELECT room, ended, turn, nmoves, nmissing, seed, connvia "
+    const char* fmt = "SELECT room, ended, turn, nmoves, nmissing, seed, connvia, gameid "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -218,10 +221,36 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->nMissing = sqlite3_column_int( ppStmt, 4 );
         gib->seed = sqlite3_column_int( ppStmt, 5 );
         getColumnText( ppStmt, 6, gib->conn, sizeof(gib->conn) );
+        gib->gameID = sqlite3_column_int( ppStmt, 7 );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
     }
     sqlite3_finalize( ppStmt );
     return success;
+}
+
+void
+getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids, 
+                  int* nRowIDs )
+{
+    int maxRowIDs = *nRowIDs;
+    *nRowIDs = 0;
+
+    char buf[256];
+    snprintf( buf, sizeof(buf), "SELECT rowid from games WHERE gameid = %ld LIMIT %d", 
+              gameID, maxRowIDs );
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
+    XP_ASSERT( SQLITE_OK == result );
+    int ii;
+    for ( ii = 0; ii < maxRowIDs; ++ii ) {
+        result = sqlite3_step( ppStmt );
+        if ( SQLITE_ROW != result ) {
+            break;
+        }
+        rowids[ii] = sqlite3_column_int64( ppStmt, 0 );
+        ++*nRowIDs;
+    }
+    sqlite3_finalize( ppStmt );
 }
 
 XP_Bool

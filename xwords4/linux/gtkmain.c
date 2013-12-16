@@ -75,7 +75,7 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
     return result;
 }
 
-enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, SEED_ITEM, CONN_ITEM, OVER_ITEM, TURN_ITEM, 
+enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM, CONN_ITEM, OVER_ITEM, TURN_ITEM, 
        NMOVES_ITEM, MISSING_ITEM, N_ITEMS };
 
 static void
@@ -136,6 +136,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "Row", ROW_ITEM );
     addTextColumn( list, "Name", NAME_ITEM );
     addTextColumn( list, "Room", ROOM_ITEM );
+    addTextColumn( list, "GameID", GAMEID_ITEM );
     addTextColumn( list, "Seed", SEED_ITEM );
     addTextColumn( list, "Conn. via", CONN_ITEM );
     addTextColumn( list, "Ended", OVER_ITEM );
@@ -147,6 +148,7 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_INT64,   /* ROW_ITEM */
                                               G_TYPE_STRING,  /* NAME_ITEM */
                                               G_TYPE_STRING,  /* ROOM_ITEM */
+                                              G_TYPE_INT,     /* GAMEID_ITEM */
                                               G_TYPE_INT,     /* SEED_ITEM */
                                               G_TYPE_STRING,  /* CONN_ITEM */
                                               G_TYPE_BOOLEAN, /* OVER_ITEM */
@@ -190,6 +192,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         ROW_ITEM, rowid,
                         NAME_ITEM, gib->name,
                         ROOM_ITEM, gib->room,
+                        GAMEID_ITEM, gib->gameID,
                         SEED_ITEM, gib->seed,
                         CONN_ITEM, gib->conn,
                         OVER_ITEM, gib->gameOver,
@@ -323,11 +326,8 @@ makeGamesWindow( GtkAppGlobals* apg )
         strcat( title, params->dbName );
     }
 #ifdef XWFEATURE_SMS
-    gchar buf[32];
-    if ( db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
-        int len = strlen( title );
-        snprintf( &title[len], VSIZE(title) - len, " (phone: %s)", buf );
-    }
+    int len = strlen( title );
+    snprintf( &title[len], VSIZE(title) - len, " (phone: %s)", params->connInfo.sms.phone );
 #endif
     gtk_window_set_title( GTK_WINDOW(window), title );
     
@@ -388,6 +388,28 @@ onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, XP_Bool isNew )
     if ( getGameInfo( apg->params->pDb, rowid, &gib ) ) {
         add_to_list( apg->listWidget, rowid, isNew, &gib );
     }
+}
+
+static XP_U16
+feedBuffer( GtkAppGlobals* apg, sqlite3_int64 rowid, 
+            const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
+{
+    XP_U16 seed = 0;
+    GtkGameGlobals* globals = findOpenGame( apg, rowid );
+
+    if ( !!globals ) {
+        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, from );
+        seed = comms_getChannelSeed( globals->cGlobals.game.comms );
+    } else {
+        GtkGameGlobals tmpGlobals;
+        if ( loadGameNoDraw( &tmpGlobals, apg->params, rowid ) ) {
+            gameGotBuf( &tmpGlobals.cGlobals, XP_FALSE, buf, len, from );
+            seed = comms_getChannelSeed( tmpGlobals.cGlobals.game.comms );
+            saveGame( &tmpGlobals.cGlobals );
+        }
+        freeGlobals( &tmpGlobals );
+    }
+    return seed;
 }
 
 static gboolean
@@ -480,20 +502,7 @@ gtkGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
     XP_U16 gotSeed;
     rowidFromToken( ntohl( clientToken ), &rowid, &gotSeed );
 
-    XP_U16 seed = 0;
-    GtkGameGlobals* globals = findOpenGame( apg, rowid );
-    if ( !!globals ) {
-        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
-        seed = comms_getChannelSeed( globals->cGlobals.game.comms );
-    } else {
-        GtkGameGlobals tmpGlobals;
-        if ( loadGameNoDraw( &tmpGlobals, apg->params, rowid ) ) {
-            gameGotBuf( &tmpGlobals.cGlobals, XP_FALSE, buf, len );
-            seed = comms_getChannelSeed( tmpGlobals.cGlobals.game.comms );
-            saveGame( &tmpGlobals.cGlobals );
-        }
-        freeGlobals( &tmpGlobals );
-    }
+    XP_U16 seed = feedBuffer( apg, rowid, buf, len, NULL );
     XP_ASSERT( seed == 0 || gotSeed == seed );
     XP_USE( seed );
 }
@@ -521,14 +530,14 @@ gtkNoticeRcvd( void* closure )
 }
 
 static void
-gtkInviteReceived( void* closure, const XP_UCHAR* gameName, XP_U32 gameID, 
+smsInviteReceived( void* closure, const XP_UCHAR* gameName, XP_U32 gameID, 
                    XP_U16 dictLang, const XP_UCHAR* dictName, XP_U16 nPlayers, 
-                   XP_U16 nHere )
+                   XP_U16 nHere, const CommsAddrRec* returnAddr )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;
-    XP_LOGF( "%s(gameName=%s, dictName=%s, nPlayers=%d, nHere=%d)", __func__,
-             gameName, dictName, nPlayers, nHere );
+    XP_LOGF( "%s(gameName=%s, gameID=%ld, dictName=%s, nPlayers=%d, nHere=%d)",
+             __func__, gameName, gameID, dictName, nPlayers, nHere );
 
     CurGameInfo gi = {0};
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
@@ -541,15 +550,30 @@ gtkInviteReceived( void* closure, const XP_UCHAR* gameName, XP_U32 gameID,
     GtkGameGlobals* globals = malloc( sizeof(*globals) );
     params->needsNewGame = XP_FALSE;
     initGlobals( globals, params, &gi );
-
-    /* if ( !makeNewGame( globals ) ) { */
-    /* } */
+    globals->cGlobals.addr = *returnAddr;
 
     GtkWidget* gameWindow = globals->window;
     globals->cGlobals.pDb = apg->params->pDb;
     globals->cGlobals.selRow = -1;
     recordOpened( apg, globals );
     gtk_widget_show( gameWindow );
+}
+
+static void
+smsMsgReceived( void* closure, XP_U32 gameID, const XP_U8* buf, XP_U16 len,
+                const CommsAddrRec* from )
+{
+    LOG_FUNC();
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params =  apg->params;
+
+    sqlite3_int64 rowids[4];
+    int nRowIDs = VSIZE(rowids);
+    getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
+    int ii;
+    for ( ii = 0; ii < nRowIDs; ++ii ) {
+        feedBuffer( apg, rowids[ii], buf, len, from );
+    }
 }
 
 static gboolean
@@ -660,12 +684,13 @@ gtkmain( LaunchParams* params )
     if ( !!phone ) {
         db_store( params->pDb, KEY_SMSPHONE, phone );
     } else if ( !phone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
-        phone = buf;
+        params->connInfo.sms.phone = phone = buf;
     }
     if ( !!phone ) {
         SMSProcs smsProcs = {
             .socketChanged = gtkSocketChanged,
-            .inviteReceived = gtkInviteReceived,
+            .inviteReceived = smsInviteReceived,
+            .msgReceived = smsMsgReceived,
         };
         linux_sms2_init( params, phone, &smsProcs, &apg );
     } else {

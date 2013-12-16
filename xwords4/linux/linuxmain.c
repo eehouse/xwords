@@ -174,14 +174,14 @@ makeDictForStream( CommonGlobals* cGlobals, XWStreamCtxt* stream )
 
 void
 gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf, 
-            XP_U16 len )
+            XP_U16 len, const CommsAddrRec* from )
 {
     XP_LOGF( "%s(hasDraw=%d)", __func__, hasDraw );
     XP_Bool redraw = XP_FALSE;
     XWGame* game = &cGlobals->game;
     XWStreamCtxt* stream = stream_from_msgbuf( cGlobals, buf, len );
     if ( !!stream ) {
-        if ( comms_checkIncomingStream( game->comms, stream, NULL ) ) {
+        if ( comms_checkIncomingStream( game->comms, stream, from ) ) {
             redraw = server_receiveMessage( game->server, stream );
             if ( redraw ) {
                 saveGame( cGlobals );
@@ -1134,7 +1134,7 @@ linux_reset( void* closure )
 
 XP_S16
 linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
-            XP_U32 XP_UNUSED(gameID), void* closure )
+            XP_U32 gameID, void* closure )
 {
     XP_S16 nSent = -1;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;   
@@ -1180,7 +1180,8 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
             addrRec = &addr;
         }
         nSent = linux_sms2_send( cGlobals->params, buf, buflen, 
-                                 addrRec->u.sms.phone, addrRec->u.sms.port );
+                                 addrRec->u.sms.phone, addrRec->u.sms.port,
+                                 gameID );
 #endif
     } else {
         XP_ASSERT(0);
@@ -1406,12 +1407,14 @@ linux_util_addrChange( XW_UtilCtxt* uc,
 #endif
 #ifdef XWFEATURE_SMS
     case COMMS_CONN_SMS:
-        XP_ASSERT(0);
+        /* nothing to do??? */
+        // XP_ASSERT(0);
         // linux_sms_init( cGlobals, newAddr );
         break;
 #endif
     default:
-        XP_ASSERT(0);
+        // XP_ASSERT(0);
+        break;
     }
 }
 

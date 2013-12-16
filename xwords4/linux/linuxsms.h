@@ -36,8 +36,9 @@ typedef struct _SMSProcs {
     void (*inviteReceived)( void* closure, const XP_UCHAR* gameName, 
                             XP_U32 gameID, XP_U16 dictLang, 
                             const XP_UCHAR* dictName, XP_U16 nPlayers, 
-                            XP_U16 nHere );
-    void (*msgReceived)( void* closure, const XP_U8* buf, XP_U16 len );
+                            XP_U16 nHere, const CommsAddrRec* returnAddr );
+    void (*msgReceived)( void* closure, XP_U32 gameID, const XP_U8* buf, 
+                         XP_U16 len, const CommsAddrRec* from );
     void (*msgNoticeReceived)( void* closure );
     void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
                            XP_U16 maxInterval );
@@ -51,7 +52,8 @@ typedef struct _SMSProcs {
 void linux_sms2_init( LaunchParams* params, const gchar* phone, 
                       const SMSProcs* procs, void* procClosure );
 XP_S16 linux_sms2_send( LaunchParams* params, const XP_U8* buf,
-                        XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port );
+                        XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port, 
+                        XP_U32 gameID );
 void linux_sms2_invite( LaunchParams* params, const CurGameInfo* info, 
                         const gchar* gameName, XP_U16 nMissing, 
                         const gchar* phone, int port );

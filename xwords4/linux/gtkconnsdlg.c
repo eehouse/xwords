@@ -171,7 +171,7 @@ makeRelayPage( GtkConnsState* state )
 
     gtk_box_pack_start( GTK_BOX(vbox), gtk_label_new( hint ), FALSE, TRUE, 0 );
 
-    GtkWidget* hbox = makeLabeledField( "Room", &state->invite );
+    GtkWidget* hbox = makeLabeledField( "Room", &state->invite, NULL );
     if ( COMMS_CONN_RELAY == state->addr->conType ) {
         gtk_entry_set_text( GTK_ENTRY(state->invite), 
                             state->addr->u.ip_relay.invite );
@@ -179,7 +179,7 @@ makeRelayPage( GtkConnsState* state )
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->invite, !state->readOnly );
 
-    hbox = makeLabeledField( "Relay address", &state->hostName );
+    hbox = makeLabeledField( "Relay address", &state->hostName, NULL );
     if ( COMMS_CONN_RELAY == state->addr->conType ) {
         gtk_entry_set_text( GTK_ENTRY(state->hostName), 
                             state->addr->u.ip_relay.hostName );
@@ -187,7 +187,7 @@ makeRelayPage( GtkConnsState* state )
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->hostName, !state->readOnly );
 
-    hbox = makeLabeledField( "Relay port", &state->port );
+    hbox = makeLabeledField( "Relay port", &state->port, NULL );
     if ( COMMS_CONN_RELAY == state->addr->conType ) {
         char buf[16];
         snprintf( buf, sizeof(buf), "%d", state->addr->u.ip_relay.port );
@@ -206,7 +206,7 @@ makeBTPage( GtkConnsState* state )
 {
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
-    GtkWidget* hbox = makeLabeledField( "Host device", &state->bthost );
+    GtkWidget* hbox = makeLabeledField( "Host device", &state->bthost, NULL );
     if ( COMMS_CONN_BT == state->addr->conType ) {
         gtk_entry_set_text( GTK_ENTRY(state->bthost), state->addr->u.bt.hostName );
     }
@@ -227,19 +227,18 @@ makeSMSPage( GtkConnsState* state )
 {
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
-    GtkWidget* hbox = makeLabeledField( "Host phone", &state->smsphone );
-    if ( COMMS_CONN_SMS == state->addr->conType ) {
-        gtk_entry_set_text( GTK_ENTRY(state->smsphone), state->addr->u.sms.phone );
-    }
+    const gchar* phone = COMMS_CONN_SMS == state->addr->conType ?
+        state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.phone;
+    GtkWidget* hbox = makeLabeledField( "Host phone", &state->smsphone, phone );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->smsphone, !state->readOnly );
 
-    hbox = makeLabeledField( "Host port", &state->smsport );
-    if ( COMMS_CONN_SMS == state->addr->conType ) {
-        gchar port[32];
-        snprintf( port, sizeof(port), "%d", state->addr->u.sms.port );
-        gtk_entry_set_text( GTK_ENTRY(state->smsport), port );
-    }
+    int portVal = COMMS_CONN_SMS == state->addr->conType
+        ? state->addr->u.sms.port
+        : state->globals->cGlobals.params->connInfo.sms.port;
+    gchar port[32];
+    snprintf( port, sizeof(port), "%d", portVal );
+    hbox = makeLabeledField( "Host port", &state->smsport, port );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->smsport, !state->readOnly );
 

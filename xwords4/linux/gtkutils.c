@@ -35,13 +35,17 @@ makeButton( char* text, GCallback func, gpointer data )
 
 
 GtkWidget*
-makeLabeledField( const char* labelText, GtkWidget** field )
+makeLabeledField( const char* labelText, GtkWidget** field, 
+                  const gchar* initialVal )
 {
     char buf[64];
     snprintf( buf, sizeof(buf), "%s:", labelText );
     GtkWidget* label = gtk_label_new( buf );
 
     *field = gtk_entry_new();
+    if ( !!initialVal ) {
+        gtk_entry_set_text( GTK_ENTRY(*field), initialVal );
+    }
 
     GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), label, FALSE, TRUE, 0 );

@@ -506,9 +506,9 @@ createOrLoadObjects( GtkGameGlobals* globals )
                           &cGlobals->cp, &procs, params->gameSeed );
 
         // addr.conType = params->conType;
-        if ( 0 ) {
+        switch( addr.conType ) {
 #ifdef XWFEATURE_RELAY
-        } else if ( addr.conType == COMMS_CONN_RELAY ) {
+        case COMMS_CONN_RELAY:
             /* addr.u.ip_relay.ipAddr = 0; */
             /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
             /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
@@ -517,26 +517,32 @@ createOrLoadObjects( GtkGameGlobals* globals )
             /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
             /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
             /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
+            break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-        } else if ( addr.conType == COMMS_CONN_BT ) {
+        case COMMS_CONN_BT:
             XP_ASSERT( sizeof(addr.u.bt.btAddr) 
                        >= sizeof(params->connInfo.bt.hostAddr));
             XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
                        sizeof(params->connInfo.bt.hostAddr) );
+            break;
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-        } else if ( addr.conType == COMMS_CONN_IP_DIRECT ) {
+        case COMMS_CONN_IP_DIRECT:
             XP_STRNCPY( addr.u.ip.hostName_ip, params->connInfo.ip.hostName,
                         sizeof(addr.u.ip.hostName_ip) - 1 );
             addr.u.ip.port_ip = params->connInfo.ip.port;
+            break;
 #endif
 #ifdef XWFEATURE_SMS
-        } else if ( addr.conType == COMMS_CONN_SMS ) {
+        case COMMS_CONN_SMS:
             XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone,
                         sizeof(addr.u.sms.phone) - 1 );
             addr.u.sms.port = params->connInfo.sms.port;
+            break;
 #endif
+        default:
+            break;
         }
 
         /* Need to save in order to have a valid selRow for the first send */
@@ -555,7 +561,6 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #ifdef XWFEATURE_SEARCHLIMIT
         cGlobals->gi->allowHintRect = params->allowHintRect;
 #endif
-
 
         if ( params->needsNewGame ) {
             new_game_impl( globals, XP_FALSE );
@@ -587,6 +592,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
     }
 #endif
     server_do( globals->cGlobals.game.server );
+    saveGame( cGlobals );   /* again, to include address etc. */
 
     disenable_buttons( globals );
 } /* createOrLoadObjects */
@@ -1462,24 +1468,24 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     switch ( comms_getConType( comms ) ) {
 #ifdef XWFEATURE_SMS
     case COMMS_CONN_SMS: {
-            gchar* phone = NULL;
-            gchar* portstr = NULL;
-            AskMInfo infos[] = {
-                { "Remote phone#", &phone },
-                { "Remote port", &portstr },
-            };
-            if ( gtkaskm( "Invite whom?", infos, VSIZE(infos) ) ) { 
-                int port = atoi( portstr );
-                XP_LOGF( "need to invite using number %s and port %d", phone, port );
-                XP_ASSERT( 0 != port );
-                const CurGameInfo* gi = globals->cGlobals.gi;
-                gchar gameName[64];
-                snprintf( gameName, VSIZE(gameName), "Game %ld", gi->gameID );
-                linux_sms2_invite( globals->cGlobals.params, gi, gameName, 1,
-                                   phone, port );
-            }
-            g_free( phone );
-            g_free( portstr );
+        gchar* phone = NULL;
+        gchar* portstr = NULL;
+        AskMInfo infos[] = {
+            { "Remote phone#", &phone },
+            { "Remote port", &portstr },
+        };
+        if ( gtkaskm( "Invite whom?", infos, VSIZE(infos) ) ) { 
+            int port = atoi( portstr );
+            XP_LOGF( "need to invite using number %s and port %d", phone, port );
+            XP_ASSERT( 0 != port );
+            const CurGameInfo* gi = globals->cGlobals.gi;
+            gchar gameName[64];
+            snprintf( gameName, VSIZE(gameName), "Game %ld", gi->gameID );
+            linux_sms2_invite( globals->cGlobals.params, gi, gameName, 1,
+                               phone, port );
+        }
+        g_free( phone );
+        g_free( portstr );
     }
         break;
 #endif

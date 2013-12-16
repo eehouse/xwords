@@ -1776,7 +1776,7 @@ cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
     rowidFromToken( XP_NTOHL( clientToken ), &ignore, &seed );
     XP_ASSERT( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) );
     if ( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) ) {
-        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
+        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, NULL );
     } else {
         XP_LOGF( "%s: dropping packet; meant for a different device",
                  __func__ );
