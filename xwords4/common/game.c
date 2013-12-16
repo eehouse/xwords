@@ -100,7 +100,9 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 #endif
     assertUtilOK( util );
 
-    gi->gameID = makeGameID( util );
+    if ( 0 == gi->gameID ) {
+        gi->gameID = makeGameID( util );
+    }
 
     game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, NULL, util, 
                               gi->boardSize );
