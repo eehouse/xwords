@@ -375,6 +375,7 @@ linux_sms2_send( LaunchParams* params, const XP_U8* buf,
     if ( 0 >= send_sms( storage, stream, phone, port ) ) {
         buflen = -1;
     }
+    stream_destroy( stream );
 
     return buflen;
 }

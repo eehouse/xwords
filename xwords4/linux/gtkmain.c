@@ -557,6 +557,8 @@ smsInviteReceived( void* closure, const XP_UCHAR* gameName, XP_U32 gameID,
     globals->cGlobals.selRow = -1;
     recordOpened( apg, globals );
     gtk_widget_show( gameWindow );
+
+    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
 }
 
 static void
