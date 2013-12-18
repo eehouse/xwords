@@ -536,9 +536,11 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #endif
 #ifdef XWFEATURE_SMS
         case COMMS_CONN_SMS:
-            XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone,
-                        sizeof(addr.u.sms.phone) - 1 );
-            addr.u.sms.port = params->connInfo.sms.port;
+            /* No! Don't overwrite what may be a return address with local
+               stuff */
+            /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
+            /*             sizeof(addr.u.sms.phone) - 1 ); */
+            /* addr.u.sms.port = params->connInfo.sms.port; */
             break;
 #endif
         default:

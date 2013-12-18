@@ -225,8 +225,9 @@ dispatch_data( LinSMS2Data* storage, XP_U16 XP_UNUSED(proto),
 {
     XP_USE( addr );
     XP_U32 gameID = stream_getU32( stream );
-    const XP_U8* data = stream_getPtr( stream );
     XP_U16 len = stream_getSize( stream );
+    XP_U8 data[len];
+    stream_getBytes( stream, data, len );
     
     (*storage->procs->msgReceived)( storage->procClosure, gameID, 
                                     data, len, addr );

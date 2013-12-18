@@ -542,8 +542,8 @@ smsInviteReceived( void* closure, const XP_UCHAR* gameName, XP_U32 gameID,
     CurGameInfo gi = {0};
     gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
 
+    gi_setNPlayers( &gi, nPlayers, nHere );
     gi.gameID = gameID;
-    gi.nPlayers = nPlayers;
     gi.dictLang = dictLang;
     replaceStringIfDifferent( params->mpool, &gi.dictName, dictName );
 
