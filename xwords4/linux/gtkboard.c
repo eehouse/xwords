@@ -2556,6 +2556,7 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 void
 initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 {
+    CommonGlobals* cGlobals = &globals->cGlobals;
     short width, height;
     GtkWidget* window;
     GtkWidget* drawing_area;
@@ -2568,6 +2569,12 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 #endif
 
     initGlobalsNoDraw( globals, params, gi );
+    if ( !!gi ) {
+        XP_ASSERT( !cGlobals->dict );
+        cGlobals->dict = linux_dictionary_make( MEMPOOL params,
+                                                gi->dictName, XP_TRUE );
+        gi->dictLang = dict_getLangCode( cGlobals->dict );
+    }
 
     globals->window = window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     if ( !!params->fileName ) {
@@ -2600,11 +2607,11 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     gtk_widget_show( drawing_area );
 
     width = GTK_HOR_SCORE_WIDTH + GTK_TIMER_WIDTH + GTK_TIMER_PAD;
-    if ( globals->cGlobals.params->verticalScore ) {
+    if ( params->verticalScore ) {
         width += GTK_VERT_SCORE_WIDTH;
     }
     height = 196;
-    if ( globals->cGlobals.params->nHidden == 0 ) {
+    if ( params->nHidden == 0 ) {
         height += GTK_MIN_SCALE * GTK_TRAY_HT_ROWS;
     }
 
@@ -2616,10 +2623,10 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     /* install scrollbar even if not needed -- since zooming can make it
        needed later */
     GtkWidget* vscrollbar;
-    gint nRows = globals->cGlobals.gi->boardSize;
+    gint nRows = cGlobals->gi->boardSize;
     globals->adjustment = (GtkAdjustment*)
         gtk_adjustment_new( 0, 0, nRows, 1, 2, 
-                            nRows - globals->cGlobals.params->nHidden );
+                            nRows - params->nHidden );
     vscrollbar = gtk_vscrollbar_new( globals->adjustment );
     g_signal_connect( GTK_OBJECT(globals->adjustment), "value_changed",
                       G_CALLBACK(scroll_value_changed), globals );
@@ -2644,7 +2651,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     g_signal_connect( GTK_OBJECT(drawing_area), "button_release_event",
                       G_CALLBACK(button_release_event), globals );
 
-    setOneSecondTimer( &globals->cGlobals );
+    setOneSecondTimer( cGlobals );
 
 #ifdef KEY_SUPPORT
 # ifdef KEYBOARD_NAV
