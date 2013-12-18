@@ -444,6 +444,21 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     }
 } /* gi_copy */
 
+void
+gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
+{
+    assert( nTotal < MAX_NUM_PLAYERS );
+    assert( nHere < nTotal );
+
+    gi->nPlayers = nTotal;
+
+    XP_U16 ii;
+    for ( ii = 0; ii < nTotal; ++ii ) {
+        gi->players[ii].isLocal = ii < nHere;
+        XP_ASSERT( !LP_IS_ROBOT(&gi->players[ii]) );
+    }
+}
+
 XP_U16
 gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly )
 {

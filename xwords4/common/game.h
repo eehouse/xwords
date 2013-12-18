@@ -83,6 +83,7 @@ void game_getState( const XWGame* game, GameStateInfo* gsi );
 
 void gi_initPlayerInfo( MPFORMAL CurGameInfo* gi, 
                         const XP_UCHAR* nameTemplate );
+void gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere );
 void gi_disposePlayerInfo( MPFORMAL CurGameInfo* gi );
 void gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi );
 void gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi );
