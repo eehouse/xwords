@@ -2284,7 +2284,7 @@ newConnectionInput( GIOChannel *source,
         switch ( comms_getConType( globals->cGlobals.game.comms ) ) {
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
-            XP_ASSERT( globals->cGlobals.socket == sock );
+            XP_ASSERT( globals->cGlobals.relaySocket == sock );
             nRead = linux_relay_receive( &globals->cGlobals, buf, sizeof(buf) );
             break;
 #endif
@@ -2351,7 +2351,7 @@ newConnectionInput( GIOChannel *source,
         XP_LOGF( "dropping socket %d", sock );
         close( sock );
 #ifdef XWFEATURE_RELAY
-        globals->cGlobals.socket = -1;
+        globals->cGlobals.relaySocket = -1;
 #endif
         if ( 0 ) {
 #ifdef XWFEATURE_BLUETOOTH
@@ -2406,7 +2406,7 @@ gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
         XP_LOGF( "g_io_add_watch(%d) => %d", newSock, result );
     }
 #ifdef XWFEATURE_RELAY
-    globals->cGlobals.socket = newSock;
+    globals->cGlobals.relaySocket = newSock;
 #endif
     /* A hack for the bluetooth case. */
     CommsCtxt* comms = globals->cGlobals.game.comms;
@@ -2521,7 +2521,7 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     globals->cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
 #ifndef XWFEATURE_STANDALONE_ONLY
 # ifdef XWFEATURE_RELAY
-    globals->cGlobals.socket = -1;
+    globals->cGlobals.relaySocket = -1;
 # endif
 
     globals->cGlobals.socketChanged = gtk_socket_changed;

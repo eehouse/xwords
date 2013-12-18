@@ -920,7 +920,7 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
 {
     struct sockaddr_in to_sock;
     struct hostent* host;
-    int sock = cGlobals->socket;
+    int sock = cGlobals->relaySocket;
     if ( sock == -1 ) {
 
         /* make a local copy of the address to send to */
@@ -945,7 +945,7 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
         errno = 0;
         if ( 0 == connect( sock, (const struct sockaddr*)&to_sock, 
                            sizeof(to_sock) ) ) {
-            cGlobals->socket = sock;
+            cGlobals->relaySocket = sock;
             XP_LOGF( "%s: connected new socket %d to relay", __func__, sock );
 
             struct timeval tv = {0};
@@ -979,14 +979,14 @@ free_elem_proc( gpointer data )
 static bool
 send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
 {
-    size_t nSent = send( cGlobals->socket, buf, len, 0 );
+    size_t nSent = send( cGlobals->relaySocket, buf, len, 0 );
     bool success = len == nSent;
     if ( !success ) {
-        close( cGlobals->socket );
+        close( cGlobals->relaySocket );
         (*cGlobals->socketChanged)( cGlobals->socketChangedClosure,
-                                    cGlobals->socket, -1, 
+                                    cGlobals->relaySocket, -1, 
                                     &cGlobals->storage );
-        cGlobals->socket = -1;
+        cGlobals->relaySocket = -1;
 
         /* delete all pending packets since the socket's bad */
         for ( GSList* iter = cGlobals->packetQueue; !!iter; iter = iter->next ) {
@@ -1067,13 +1067,13 @@ linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
         result = relaycon_send( cGlobals->params, buf, buflen, 
                                 clientToken, addrRec );
     } else {
-        int sock = cGlobals->socket;
+        int sock = cGlobals->relaySocket;
     
         if ( sock == -1 ) {
             XP_LOGF( "%s: socket uninitialized", __func__ );
             sock = linux_init_relay_socket( cGlobals, addrRec );
             if ( sock != -1 ) {
-                assert( cGlobals->socket == sock );
+                assert( cGlobals->relaySocket == sock );
                 (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
                                             -1, sock, &cGlobals->storage );
             }
@@ -1194,12 +1194,12 @@ void
 linux_close_socket( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
-    int socket = cGlobals->socket;
+    int socket = cGlobals->relaySocket;
 
     (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
                                 socket, -1, &cGlobals->storage );
 
-    XP_ASSERT( -1 == cGlobals->socket );
+    XP_ASSERT( -1 == cGlobals->relaySocket );
 
     close( socket );
 }
@@ -1241,7 +1241,7 @@ int
 linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 {
     LOG_FUNC();
-    int sock = cGlobals->socket;
+    int sock = cGlobals->relaySocket;
     ssize_t nRead = -1;
     if ( 0 <= sock ) {
         unsigned short tmp;

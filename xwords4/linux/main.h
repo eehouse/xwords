@@ -214,7 +214,7 @@ struct CommonGlobals {
     GHashTable* noConnMsgs;
 
 #ifdef XWFEATURE_RELAY
-    int socket;                 /* relay */
+    int relaySocket;                 /* tcp connection to relay */
     void* storage;
     char* defaultServerName;
 #endif

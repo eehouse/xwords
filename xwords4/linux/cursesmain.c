@@ -1131,7 +1131,7 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
     }
 
 #ifdef XWFEATURE_RELAY
-    globals->cGlobals.socket = newSock;
+    globals->cGlobals.relaySocket = newSock;
 #endif
 } /* curses_socket_changed */
 
@@ -1938,7 +1938,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.amServer = isServer;
     g_globals.cGlobals.params = params;
 #ifdef XWFEATURE_RELAY
-    g_globals.cGlobals.socket = -1;
+    g_globals.cGlobals.relaySocket = -1;
 #endif
 
     g_globals.cGlobals.socketChanged = curses_socket_changed;
