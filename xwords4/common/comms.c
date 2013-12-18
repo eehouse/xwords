@@ -974,7 +974,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
     MsgID lastMsgSaved = (!!rec)? rec->lastMsgSaved : 0;
     MsgQueueElem* newMsgElem;
-    XWStreamCtxt* msgStream;
+    XWStreamCtxt* hdrStream;
 
     newMsgElem = (MsgQueueElem*)XP_MALLOC( comms->mpool, 
                                            sizeof( *newMsgElem ) );
@@ -984,28 +984,28 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     newMsgElem->sendCount = 0;
 #endif
 
-    msgStream = mem_stream_make( MPPARM(comms->mpool) 
+    hdrStream = mem_stream_make( MPPARM(comms->mpool) 
                                  util_getVTManager(comms->util),
                                  NULL, 0, 
                                  (MemStreamCloseCallback)NULL );
-    stream_open( msgStream );
+    stream_open( hdrStream );
     XP_LOGF( "%s: putting connID %lx", __func__, comms->connID );
-    stream_putU32( msgStream, comms->connID );
+    stream_putU32( hdrStream, comms->connID );
 
-    stream_putU16( msgStream, channelNo );
-    stream_putU32( msgStream, msgID );
+    stream_putU16( hdrStream, channelNo );
+    stream_putU32( hdrStream, msgID );
     XP_LOGF( "put lastMsgSaved: %ld", lastMsgSaved );
-    stream_putU32( msgStream, lastMsgSaved );
+    stream_putU32( hdrStream, lastMsgSaved );
     if ( !!rec ) {
         rec->lastMsgAckd = lastMsgSaved;
     }
 
-    headerLen = stream_getSize( msgStream );
+    headerLen = stream_getSize( hdrStream );
     newMsgElem->len = streamSize + headerLen;
     newMsgElem->msg = (XP_U8*)XP_MALLOC( comms->mpool, newMsgElem->len );
 
-    stream_getBytes( msgStream, newMsgElem->msg, headerLen );
-    stream_destroy( msgStream );
+    stream_getBytes( hdrStream, newMsgElem->msg, headerLen );
+    stream_destroy( hdrStream );
     
     if ( 0 < streamSize ) {
         stream_getBytes( stream, newMsgElem->msg + headerLen, streamSize );
