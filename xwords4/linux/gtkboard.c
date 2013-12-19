@@ -323,6 +323,8 @@ relay_connd_gtk( void* closure, XP_UCHAR* const room,
                  XP_Bool XP_UNUSED(reconnect), XP_U16 devOrder, 
                  XP_Bool allHere, XP_U16 nMissing )
 {
+    GtkGameGlobals* globals = (GtkGameGlobals*)closure;
+    globals->cGlobals.nMissing = nMissing;
     XP_Bool skip = XP_FALSE;
     char buf[256];
 
@@ -341,9 +343,10 @@ relay_connd_gtk( void* closure, XP_UCHAR* const room,
     }
 
     if ( !skip ) {
-        GtkGameGlobals* globals = (GtkGameGlobals*)closure;
         (void)gtkask_timeout( globals->window, buf, GTK_BUTTONS_OK, 500 );
     }
+
+    disenable_buttons( globals );
 }
 
 static gint
@@ -1225,20 +1228,24 @@ makeMenus( GtkGameGlobals* globals )
 static void
 disenable_buttons( GtkGameGlobals* globals )
 {
+    GameStateInfo gsi;
+    game_getState( &globals->cGlobals.game, &gsi );
+
     XP_Bool canFlip = 1 < board_visTileCount( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->flip_button, canFlip );
 
     XP_Bool canToggle = board_canTogglePending( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->toggle_undo_button, canToggle );
 
-    XP_Bool canHint = board_canHint( globals->cGlobals.game.board );
-    gtk_widget_set_sensitive( globals->prevhint_button, canHint );
-    gtk_widget_set_sensitive( globals->nexthint_button, canHint );
+    gtk_widget_set_sensitive( globals->prevhint_button, gsi.canHint );
+    gtk_widget_set_sensitive( globals->nexthint_button, gsi.canHint );
+
+    gtk_widget_set_sensitive( globals->invite_button, 
+                              0 < globals->cGlobals.nMissing );
+    gtk_widget_set_sensitive( globals->commit_button, gsi.curTurnSelected );
 
 #ifdef XWFEATURE_CHAT
-    XP_Bool canChat = !!globals->cGlobals.game.comms
-        && comms_canChat( globals->cGlobals.game.comms );
-    gtk_widget_set_sensitive( globals->chat_button, canChat );
+    gtk_widget_set_sensitive( globals->chat_button, gsi.canChat );
 #endif
 }
 
@@ -2182,30 +2189,34 @@ makeVerticalBar( GtkGameGlobals* globals, GtkWidget* XP_UNUSED(window) )
 static GtkWidget* 
 makeButtons( GtkGameGlobals* globals )
 {
-    short i;
+    int ii;
     GtkWidget* hbox;
     GtkWidget* button;
 
     struct {
         char* name;
         GCallback func;
+        GtkWidget** widget;
     } buttons[] = {
         /* 	{ "Flip", handle_flip_button }, */
-        { "Grid", G_CALLBACK(handle_grid_button) },
-        { "Hide", G_CALLBACK(handle_hide_button) },
-        { "Commit", G_CALLBACK(handle_commit_button) },
-        { "Invite", G_CALLBACK(handle_invite_button) },
+        { "Grid", G_CALLBACK(handle_grid_button), NULL },
+        { "Hide", G_CALLBACK(handle_hide_button), NULL },
+        { "Commit", G_CALLBACK(handle_commit_button), &globals->commit_button },
+        { "Invite", G_CALLBACK(handle_invite_button), &globals->invite_button },
     };
     
     hbox = gtk_hbox_new( FALSE, 0 );
 
-    for ( i = 0; i < sizeof(buttons)/sizeof(*buttons); ++i ) {
-        button = gtk_button_new_with_label( buttons[i].name );
+    for ( ii = 0; ii < sizeof(buttons)/sizeof(*buttons); ++ii ) {
+        button = gtk_button_new_with_label( buttons[ii].name );
         gtk_widget_show( button );
         g_signal_connect( GTK_OBJECT(button), "clicked",
-                          G_CALLBACK(buttons[i].func), globals );
+                          G_CALLBACK(buttons[ii].func), globals );
 
-        gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0);    
+        gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0);
+        if ( !!buttons[ii].widget ) {
+            *buttons[ii].widget = button;
+        }
     }
 
     gtk_widget_show( hbox );

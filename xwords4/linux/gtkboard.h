@@ -100,6 +100,10 @@ typedef struct GtkGameGlobals {
     GtkWidget* prevhint_button;
     GtkWidget* nexthint_button;
 
+    GtkWidget* commit_button;
+    GtkWidget* invite_button;
+
+
 #ifdef XWFEATURE_CHAT
     GtkWidget* chat_button;
 #endif
