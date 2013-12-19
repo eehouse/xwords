@@ -1240,8 +1240,8 @@ disenable_buttons( GtkGameGlobals* globals )
     gtk_widget_set_sensitive( globals->prevhint_button, gsi.canHint );
     gtk_widget_set_sensitive( globals->nexthint_button, gsi.canHint );
 
-    gtk_widget_set_sensitive( globals->invite_button, 
-                              0 < globals->cGlobals.nMissing );
+    XP_U16 nMissing = server_getMissingPlayers( globals->cGlobals.game.server );
+    gtk_widget_set_sensitive( globals->invite_button, 0 < nMissing );
     gtk_widget_set_sensitive( globals->commit_button, gsi.curTurnSelected );
 
 #ifdef XWFEATURE_CHAT
