@@ -2412,7 +2412,8 @@ server_getMissingPlayers( const ServerCtxt* server )
 
     XP_U16 result = 0;
     XP_U16 ii;
-    if ( SERVER_ISCLIENT == server->vol.gi->serverRole ) {
+    switch( server->vol.gi->serverRole ) {
+    case SERVER_ISCLIENT:
         if ( 0 == server->nv.addresses[0].channelNo ) {
             CurGameInfo* gi = server->vol.gi;
             const LocalPlayer* lp = gi->players;
@@ -2423,8 +2424,8 @@ server_getMissingPlayers( const ServerCtxt* server )
                 ++lp;
             }
         }
-    } else {
-        XP_ASSERT( SERVER_ISSERVER == server->vol.gi->serverRole );
+        break;
+    case SERVER_ISSERVER:
         if ( 0 < server->nv.pendingRegistrations ) {
             XP_U16 nPlayers = server->vol.gi->nPlayers;
             const ServerPlayer* players = server->players;
@@ -2435,6 +2436,7 @@ server_getMissingPlayers( const ServerCtxt* server )
                 ++players;
             }
         }
+        break;
     }
 
     LOG_RETURNF( "%x", result );
