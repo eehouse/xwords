@@ -50,7 +50,7 @@ typedef struct _SMSProcs {
 
 
 void linux_sms2_init( LaunchParams* params, const gchar* phone, 
-                      const SMSProcs* procs, void* procClosure );
+                      XP_U16 port, const SMSProcs* procs, void* procClosure );
 XP_S16 linux_sms2_send( LaunchParams* params, const XP_U8* buf,
                         XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port, 
                         XP_U32 gameID );

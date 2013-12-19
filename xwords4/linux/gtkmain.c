@@ -688,13 +688,21 @@ gtkmain( LaunchParams* params )
     } else if ( !phone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
         params->connInfo.sms.phone = phone = buf;
     }
-    if ( !!phone ) {
+    XP_U16 port = params->connInfo.sms.port;
+    gchar portbuf[8];
+    if ( 0 < port ) {
+        sprintf( portbuf, "%d", port );
+        db_store( params->pDb, KEY_SMSPORT, portbuf );
+    } else if ( db_fetch( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
+        params->connInfo.sms.port = port = atoi( portbuf );
+    }
+    if ( !!phone && 0 < port ) {
         SMSProcs smsProcs = {
             .socketChanged = gtkSocketChanged,
             .inviteReceived = smsInviteReceived,
             .msgReceived = smsMsgReceived,
         };
-        linux_sms2_init( params, phone, &smsProcs, &apg );
+        linux_sms2_init( params, phone, port, &smsProcs, &apg );
     } else {
         XP_LOGF( "not activating SMS: I don't have a phone" );
     }

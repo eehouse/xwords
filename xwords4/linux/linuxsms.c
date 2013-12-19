@@ -56,6 +56,7 @@ static void
 makeQueuePath( const XP_UCHAR* phone, XP_U16 port,
                XP_UCHAR* path, XP_U16 pathlen )
 {
+    XP_ASSERT( 0 != port );
     snprintf( path, pathlen, "%s/%s_%d", SMS_DIR, phone, port );
 }
 
@@ -271,8 +272,6 @@ sms2_receive( void* closure, int socket )
     XP_ASSERT( !!params->sms2Storage );
     LinSMS2Data* storage = getStorage( params );
 
-    XP_S16 nRead = -1;
-
     XP_ASSERT( socket == storage->fd );
 
     lock_queue2( storage );
@@ -282,37 +281,44 @@ sms2_receive( void* closure, int socket )
     XP_U8 buffer[sizeof(struct inotify_event) + 16];
     if ( 0 > read( socket, buffer, sizeof(buffer) ) ) {
     }
-    char shortest[256] = { '\0' };
-    GDir* dir = g_dir_open( storage->myQueue, 0, NULL );
-    XP_LOGF( "%s: opening %s", __func__, storage->myQueue );
     for ( ; ; ) {
-        const gchar* name = g_dir_read_name( dir );
-        if ( NULL == name ) {
+        XP_S16 nRead = -1;
+        char shortest[256] = { '\0' };
+        GDir* dir = g_dir_open( storage->myQueue, 0, NULL );
+        XP_LOGF( "%s: opening %s", __func__, storage->myQueue );
+        for ( ; ; ) {
+            const gchar* name = g_dir_read_name( dir );
+            if ( NULL == name ) {
+                break;
+            } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
+                continue;
+            }
+            if ( !shortest[0] || 0 < strcmp( shortest, name ) ) {
+                snprintf( shortest, sizeof(shortest), "%s", name );
+            }
+        }
+        g_dir_close( dir );
+
+        uint8_t buf[256];
+        CommsAddrRec fromAddr = {0};
+        if ( !!shortest[0] ) {
+            nRead = decodeAndDelete2( storage, shortest, buf, 
+                                      sizeof(buf), &fromAddr );
+        }
+
+        unlock_queue2( storage );
+
+        if ( 0 < nRead ) {
+            parseAndDispatch( params, buf, nRead, &fromAddr );
+            lock_queue2( storage );
+        } else {
             break;
-        } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
-            continue;
         }
-        if ( !shortest[0] || 0 < strcmp( shortest, name ) ) {
-            snprintf( shortest, sizeof(shortest), "%s", name );
-        }
-    }
-    g_dir_close( dir );
-
-    uint8_t buf[256];
-    CommsAddrRec fromAddr = {0};
-    if ( !!shortest[0] ) {
-        nRead = decodeAndDelete2( storage, shortest, buf, sizeof(buf), &fromAddr );
-    }
-
-    unlock_queue2( storage );
-
-    if ( 0 < nRead ) {
-        parseAndDispatch( params, buf, nRead, &fromAddr );
     }
 } /* sms2_receive */
 
 void
-linux_sms2_init( LaunchParams* params, const gchar* phone,
+linux_sms2_init( LaunchParams* params, const gchar* phone, XP_U16 port,
                  const SMSProcs* procs, void* procClosure )
 {
     XP_ASSERT( !!phone );
@@ -322,8 +328,7 @@ linux_sms2_init( LaunchParams* params, const gchar* phone,
     storage->procs = procs;
     storage->procClosure = procClosure;
 
-    makeQueuePath( phone, params->connInfo.sms.port,
-                   storage->myQueue, sizeof(storage->myQueue) );
+    makeQueuePath( phone, port, storage->myQueue, sizeof(storage->myQueue) );
     XP_LOGF( "%s: my queue: %s", __func__, storage->myQueue );
     storage->port = params->connInfo.sms.port;
 

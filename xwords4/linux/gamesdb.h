@@ -57,6 +57,7 @@ void deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 #define KEY_RDEVID "RDEVID"
 #define KEY_LDEVID "LDEVID"
 #define KEY_SMSPHONE "SMSPHONE"
+#define KEY_SMSPORT "SMSPORT"
 
 void db_store( sqlite3* dbp, const gchar* key, const gchar* value );
 XP_Bool db_fetch( sqlite3* dbp, const gchar* key, gchar* buf, gint buflen );
