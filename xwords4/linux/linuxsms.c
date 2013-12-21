@@ -116,11 +116,12 @@ send_sms( LinSMS2Data* storage, XWStreamCtxt* stream,
     gchar* str64 = g_base64_encode( buf, buflen );
 #endif
 
+    XP_U16 count = ++storage->count;
     makeQueuePath( phone, port, path, sizeof(path) );
-    XP_LOGF( "%s: writing to %s", __func__, path );
+    XP_LOGF( "%s: writing msg %d to %s", __func__, count, path );
     g_mkdir_with_parents( path, 0777 ); /* just in case */
     int len = strlen( path );
-    snprintf( &path[len], sizeof(path)-len, "/%d", ++storage->count );
+    snprintf( &path[len], sizeof(path)-len, "/%d", count );
 
     XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
     XP_U16 smslen = sizeof(sms);
@@ -285,7 +286,7 @@ sms2_receive( void* closure, int socket )
         XP_S16 nRead = -1;
         char shortest[256] = { '\0' };
         GDir* dir = g_dir_open( storage->myQueue, 0, NULL );
-        XP_LOGF( "%s: opening %s", __func__, storage->myQueue );
+        XP_LOGF( "%s: opening queue %s", __func__, storage->myQueue );
         for ( ; ; ) {
             const gchar* name = g_dir_read_name( dir );
             if ( NULL == name ) {
@@ -302,6 +303,7 @@ sms2_receive( void* closure, int socket )
         uint8_t buf[256];
         CommsAddrRec fromAddr = {0};
         if ( !!shortest[0] ) {
+            XP_LOGF( "%s: decoding message %s", __func__, shortest );
             nRead = decodeAndDelete2( storage, shortest, buf, 
                                       sizeof(buf), &fromAddr );
         }
