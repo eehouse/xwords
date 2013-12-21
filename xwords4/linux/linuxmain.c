@@ -1179,9 +1179,9 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
             comms_getAddr( cGlobals->game.comms, &addr );
             addrRec = &addr;
         }
-        nSent = linux_sms2_send( cGlobals->params, buf, buflen, 
-                                 addrRec->u.sms.phone, addrRec->u.sms.port,
-                                 gameID );
+        nSent = linux_sms_send( cGlobals->params, buf, buflen, 
+                                addrRec->u.sms.phone, addrRec->u.sms.port,
+                                gameID );
 #endif
     } else {
         XP_ASSERT(0);

@@ -64,7 +64,7 @@ typedef struct LaunchParams {
 #endif
     void* relayConStorage;      /* opaque outside of relaycon.c */
 #ifdef XWFEATURE_SMS
-    void* sms2Storage;
+    void* smsStorage;
 #endif
     char* pipe;
     char* nbs;
@@ -163,10 +163,6 @@ typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
                                 CommonGlobals* globals, void** storage );
 
-#ifdef XWFEATURE_SMS
-typedef struct LinSMSData LinSMSData;
-#endif
-
 typedef struct _TimerInfo {
     XWTimerProc proc;
     void* closure;
@@ -225,9 +221,6 @@ struct CommonGlobals {
 #endif
 #if defined XWFEATURE_IP_DIRECT
     struct LinUDPStuff* udpStuff;
-#endif
-#ifdef XWFEATURE_SMS
-    LinSMSData* smsData;
 #endif
 
     TimerInfo timerInfo[NUM_TIMERS_PLUS_ONE];

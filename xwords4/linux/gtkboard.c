@@ -1490,8 +1490,8 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
             const CurGameInfo* gi = globals->cGlobals.gi;
             gchar gameName[64];
             snprintf( gameName, VSIZE(gameName), "Game %ld", gi->gameID );
-            linux_sms2_invite( globals->cGlobals.params, gi, gameName, 1,
-                               phone, port );
+            linux_sms_invite( globals->cGlobals.params, gi, gameName, 1,
+                              phone, port );
         }
         g_free( phone );
         g_free( portstr );

@@ -702,7 +702,7 @@ gtkmain( LaunchParams* params )
             .inviteReceived = smsInviteReceived,
             .msgReceived = smsMsgReceived,
         };
-        linux_sms2_init( params, phone, port, &smsProcs, &apg );
+        linux_sms_init( params, phone, port, &smsProcs, &apg );
     } else {
         XP_LOGF( "not activating SMS: I don't have a phone" );
     }
@@ -715,7 +715,7 @@ gtkmain( LaunchParams* params )
     closeGamesDB( params->pDb );
     relaycon_cleanup( params );
 #ifdef XWFEATURE_SMS
-    linux_sms2_cleanup( params );
+    linux_sms_cleanup( params );
 #endif
     return 0;
 } /* gtkmain */
