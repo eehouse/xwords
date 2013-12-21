@@ -2757,19 +2757,22 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 
     printCode( "Receiving", code );
 
-    if ( code == XWPROTO_DEVICE_REGISTRATION && amServer(server) ) {
+    if ( code == XWPROTO_DEVICE_REGISTRATION ) {
+        accepted = amServer( server );
+        if ( accepted ) {
         /* This message is special: doesn't have the header that's possible
            once the game's in progress and communication's been
            established. */
-        XP_LOGF( "%s: somebody's registering!!!", __func__ );
-        accepted = handleRegistrationMsg( server, incoming );
-
-    } else if ( code == XWPROTO_CLIENT_SETUP && !amServer( server ) ) {
-
-        XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
-        XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
-        accepted = client_readInitialMessage( server, incoming );
-
+            XP_LOGF( "%s: somebody's registering!!!", __func__ );
+            accepted = handleRegistrationMsg( server, incoming );
+        }
+    } else if ( code == XWPROTO_CLIENT_SETUP ) {
+        accepted = !amServer( server );
+        if ( accepted ) {
+            XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
+            XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
+            accepted = client_readInitialMessage( server, incoming );
+        }
 #ifdef XWFEATURE_CHAT
     } else if ( code == XWPROTO_CHAT ) {
         XP_UCHAR* msg = stringFromStream( server->mpool, incoming );
