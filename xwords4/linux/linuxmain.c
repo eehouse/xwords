@@ -669,6 +669,7 @@ typedef enum {
     ,CMD_ASKNEWGAME
     ,CMD_NHIDDENROWS
 #endif
+    ,CMD_ASKTIME
     ,N_CMDS
 } XwLinuxCmd;
 
@@ -780,6 +781,8 @@ static CmdInfoRec CmdInfoRecs[] = {
 #if defined PLATFORM_GTK
     ,{ CMD_ASKNEWGAME, false, "ask-new", "put up ui for new game params" }
     ,{ CMD_NHIDDENROWS, true, "hide-rows", "number of rows obscured by tray" }
+    ,{ CMD_ASKTIME, true, "ask-timeout", 
+       "Wait this many ms before cancelling dialog (default 500 ms; 0 means forever)" }
 #endif
 };
 
@@ -1974,6 +1977,7 @@ main( int argc, char** argv )
     mainParams.noHeartbeat = XP_FALSE;
     mainParams.nHidden = 0;
     mainParams.needsNewGame = XP_FALSE;
+    mainParams.askTimeout = 500;
 #ifdef XWFEATURE_SEARCHLIMIT
     mainParams.allowHintRect = XP_FALSE;
 #endif
@@ -2311,6 +2315,9 @@ main( int argc, char** argv )
             break;
         case CMD_NHIDDENROWS:
             mainParams.nHidden = atoi(optarg);
+            break;
+        case CMD_ASKTIME:
+            mainParams.askTimeout = atoi(optarg);
             break;
 #endif
         default:

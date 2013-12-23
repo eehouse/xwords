@@ -1622,7 +1622,7 @@ gtkShowFinalScores( const GtkGameGlobals* globals )
     text = strFromStream( stream );
     stream_destroy( stream );
 
-    XP_U16 timeout = cGlobals->manualFinal? 0 : 500;
+    XP_U16 timeout = cGlobals->manualFinal? 0 : cGlobals->params->askTimeout;
     (void)gtkask_timeout( globals->window, text, GTK_BUTTONS_OK, timeout );
 
     free( text );
