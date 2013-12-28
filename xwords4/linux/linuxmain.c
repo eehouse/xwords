@@ -393,7 +393,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
         ssize_t nRead = blocking_read( fdin, (unsigned char*)&len, 
                                        sizeof(len) );
         if ( nRead != sizeof(len) ) {
-            XP_LOGF( "%s: 1: unexpected nRead: %d", __func__, nRead );
+            XP_LOGF( "%s: 1: unexpected nRead: %zd", __func__, nRead );
             break;
         }
         len = ntohs( len );
@@ -403,7 +403,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
         unsigned char buf[len];
         nRead = blocking_read( fdin, buf, len );
         if ( nRead != len ) {
-            XP_LOGF( "%s: 2: unexpected nRead: %d", __func__, nRead );
+            XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
             break;
         }
         stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
@@ -457,7 +457,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
             ssize_t nRead = blocking_read( fd, (unsigned char*)&len, 
                                            sizeof(len) );
             if ( nRead != sizeof(len) ) {
-                XP_LOGF( "%s: 1: unexpected nRead: %d", __func__, nRead );
+                XP_LOGF( "%s: 1: unexpected nRead: %zd", __func__, nRead );
                 break;
             }
             len = ntohs( len );
@@ -467,7 +467,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
             unsigned char buf[len];
             nRead = blocking_read( fd, buf, len );
             if ( nRead != len ) {
-                XP_LOGF( "%s: 2: unexpected nRead: %d", __func__, nRead );
+                XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
                 break;
             }
             stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
@@ -1009,7 +1009,7 @@ sendTimerFired( gpointer data )
         SendQueueElem* elem = (SendQueueElem*)cGlobals->packetQueue->data;
         cGlobals->packetQueue = cGlobals->packetQueue->next;
 
-        XP_LOGF( "%s: sending packet %ld of len %d (%d left)", __func__, 
+        XP_LOGF( "%s: sending packet %ld of len %zd (%d left)", __func__, 
                  elem->id, elem->len, listLen - 1 );
         bool sent = send_or_close( cGlobals, elem->buf, elem->len );
         free( elem->buf );
@@ -1045,7 +1045,7 @@ send_per_params( const XP_U8* buf, const XP_U16 buflen,
             cGlobals->packetQueue = 
                 g_slist_append( cGlobals->packetQueue, elem );
             nSent += toSend;
-            XP_LOGF( "%s: added packet %ld of len %d", __func__,
+            XP_LOGF( "%s: added packet %ld of len %zd", __func__,
                      elem->id, elem->len );
         }
         int when = XP_RANDOM() % (1 + cGlobals->params->splitPackets);
@@ -1214,7 +1214,7 @@ blocking_read( int fd, unsigned char* buf, const int len )
         for ( tries = 5; nRead < len && tries > 0; --tries ) {
             // XP_LOGF( "%s: blocking for %d bytes", __func__, len );
             ssize_t nGot = read( fd, buf + nRead, len - nRead );
-            XP_LOGF( "%s: read(fd=%d, len=%d) => %d", __func__, fd, 
+            XP_LOGF( "%s: read(fd=%d, len=%d) => %zd", __func__, fd, 
                      len - nRead, nGot );
             if ( nGot == 0 ) {
                 XP_LOGF( "%s: read 0; let's try again (%d more times)", __func__, 
@@ -1305,7 +1305,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
             }
         }
     }
-    XP_LOGF( "%s=>%d", __func__, nRead );
+    XP_LOGF( "%s=>%zd", __func__, nRead );
     return nRead;
 } /* linux_relay_receive */
 #endif  /* XWFEATURE_RELAY */

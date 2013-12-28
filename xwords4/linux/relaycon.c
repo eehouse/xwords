@@ -125,7 +125,7 @@ relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     if ( nSent > buflen ) {
         nSent = buflen;
     }
-    LOG_RETURNF( "%d", nSent );
+    LOG_RETURNF( "%zd", nSent );
     return nSent;
 }
 
@@ -155,7 +155,7 @@ relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     if ( nSent > buflen ) {
         nSent = buflen;
     }
-    LOG_RETURNF( "%d", nSent );
+    LOG_RETURNF( "%zd", nSent );
     return nSent;
 }
 
@@ -218,7 +218,7 @@ relaycon_receive( void* closure, int socket )
 
     gchar* b64 = g_base64_encode( (const guchar*)buf,
                                   ((0 <= nRead)? nRead : 0) );
-    XP_LOGF( "%s: read %d bytes ('%s')", __func__, nRead, b64 );
+    XP_LOGF( "%s: read %zd bytes ('%s')", __func__, nRead, b64 );
     g_free( b64 );
     if ( 0 <= nRead ) {
         const XP_U8* ptr = buf;
@@ -336,7 +336,7 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     ssize_t nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
                             (struct sockaddr*)&storage->saddr, 
                             sizeof(storage->saddr) );
-    XP_LOGF( "%s()=>%d", __func__, nSent );
+    XP_LOGF( "%s()=>%zd", __func__, nSent );
     return nSent;
 }
 
