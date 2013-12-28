@@ -610,19 +610,20 @@ public class DBUtils {
                                             NetLaunchInfo nli )
     {
         Date result = null;
-        String[] columns = { DBHelper.CREATE_TIME };
-        String selection = 
-            String.format( "%s='%s' AND %s='%s' AND %s=%d AND %s=%d",
-                           DBHelper.ROOMNAME, nli.room, 
-                           DBHelper.INVITEID, nli.inviteID, 
-                           DBHelper.DICTLANG, nli.lang, 
-                           DBHelper.NUM_PLAYERS, nli.nPlayersT );
+        String[] selectionArgs = new String[] {
+            DBHelper.ROOMNAME, nli.room, 
+            DBHelper.INVITEID, nli.inviteID, 
+            DBHelper.DICTLANG, String.format( "%d", nli.lang ), 
+            DBHelper.NUM_PLAYERS, String.format( "%d", nli.nPlayersT )
+        };
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-                                      selection, null, null, null, 
-                                      DBHelper.CREATE_TIME + " DESC" ); // order by
+            Cursor cursor = db.rawQuery( "SELECT " + DBHelper.CREATE_TIME +
+                                         " FROM " + DBHelper.TABLE_NAME_SUM +
+                                         " WHERE ?=? AND ?=? AND ?=? AND ?=?",
+                                         selectionArgs );
             if ( cursor.moveToNext() ) {
                 int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
                 result = new Date( cursor.getLong( indx ) );
