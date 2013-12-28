@@ -447,8 +447,8 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
 void
 gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
 {
-    assert( nTotal < MAX_NUM_PLAYERS );
-    assert( nHere < nTotal );
+    XP_ASSERT( nTotal < MAX_NUM_PLAYERS );
+    XP_ASSERT( nHere < nTotal );
 
     gi->nPlayers = nTotal;
 
