@@ -609,7 +609,7 @@ static void
 gtkErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    (void)gtkask( apg->window, msg, GTK_BUTTONS_OK );
+    (void)gtkask( apg->window, msg, GTK_BUTTONS_OK, NULL );
 }
 
 void

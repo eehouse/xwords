@@ -31,15 +31,18 @@ timer_func( gpointer data )
     return 0;
 }
 
-XP_Bool
-gtkask( GtkWidget* parent, const gchar *message, GtkButtonsType buttons )
+gint
+gtkask( GtkWidget* parent, const gchar *message, GtkButtonsType buttons,
+        const AskPair* buttxts )
+
 {
-    return gtkask_timeout( parent, message, buttons, 0 );
+    return gtkask_timeout( parent, message, buttons, buttxts, 0 );
 }
 
-XP_Bool
+gint
 gtkask_timeout( GtkWidget* parent, const gchar *message, 
-                GtkButtonsType buttons, XP_U16 timeout )
+                GtkButtonsType buttons, const AskPair* buttxts,
+                XP_U16 timeout )
 {
     guint src = 0;
     GtkWidget* dlg = gtk_message_dialog_new( (GtkWindow*)parent, 
@@ -52,6 +55,11 @@ gtkask_timeout( GtkWidget* parent, const gchar *message,
         src = g_timeout_add( timeout, timer_func, dlg );
     }
 
+    while ( !!buttxts && !!buttxts->txt ) {
+        (void)gtk_dialog_add_button( GTK_DIALOG(dlg), buttxts->txt, buttxts->result );
+        ++buttxts;
+    }
+
     gint response = gtk_dialog_run( GTK_DIALOG(dlg) );
     gtk_widget_destroy( dlg );
 
@@ -59,7 +67,8 @@ gtkask_timeout( GtkWidget* parent, const gchar *message,
         g_source_remove( src );
     }
 
-    return response == GTK_RESPONSE_OK || response == GTK_RESPONSE_YES;
+    LOG_RETURNF( "%d", response );
+    return response;
 } /* gtkask */
 
 #endif

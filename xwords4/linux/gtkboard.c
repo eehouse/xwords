@@ -343,7 +343,7 @@ relay_connd_gtk( void* closure, XP_UCHAR* const room,
     }
 
     if ( !skip ) {
-        (void)gtkask_timeout( globals->window, buf, GTK_BUTTONS_OK, 500 );
+        (void)gtkask_timeout( globals->window, buf, GTK_BUTTONS_OK, NULL, 500 );
     }
 
     disenable_buttons( globals );
@@ -382,9 +382,9 @@ relay_error_gtk( void* closure, XWREASON relayErr )
         proc = invoke_new_game;
         break;
     case XWRELAY_ERROR_DELETED:
-        gtkask_timeout( globals->window,
-                        "relay says another device deleted game.", 
-                        GTK_BUTTONS_OK, 1000 );
+        (void)gtkask_timeout( globals->window,
+                              "relay says another device deleted game.", 
+                              GTK_BUTTONS_OK, NULL, 1000 );
         break;
     case XWRELAY_ERROR_DEADGAME:
         break;
@@ -871,14 +871,12 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     if ( gameOver ) {
         catFinalScores( &globals->cGlobals, -1 );
-    } else {
-        if ( gtkask( globals->window,
-                     "Are you sure you want to resign?", 
-                     GTK_BUTTONS_YES_NO ) ) {
-            globals->cGlobals.manualFinal = XP_TRUE;
-            server_endGame( globals->cGlobals.game.server );
-            gameOver = TRUE;
-        }
+    } else if ( GTK_RESPONSE_YES == gtkask( globals->window,
+                                            "Are you sure you want to resign?", 
+                                            GTK_BUTTONS_YES_NO, NULL ) ) {
+        globals->cGlobals.manualFinal = XP_TRUE;
+        server_endGame( globals->cGlobals.game.server );
+        gameOver = TRUE;
     }
 
     /* the end game listener will take care of printing the final scores */
@@ -1514,7 +1512,7 @@ gtkUserError( GtkGameGlobals* globals, const char* format, ... )
 
     vsprintf( buf, format, ap );
 
-    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
 
     va_end(ap);
 } /* gtkUserError */
@@ -1623,9 +1621,19 @@ gtkShowFinalScores( const GtkGameGlobals* globals )
     stream_destroy( stream );
 
     XP_U16 timeout = cGlobals->manualFinal? 0 : cGlobals->params->askTimeout;
-    (void)gtkask_timeout( globals->window, text, GTK_BUTTONS_OK, timeout );
+    const AskPair buttons[] = {
+      { "OK", 1 },
+      { "Rematch", 2 },
+      { NULL, 0 }
+    };
 
+    gint chosen = gtkask_timeout( globals->window, text, GTK_BUTTONS_NONE, 
+                                  buttons, timeout );
     free( text );
+    if ( 2 == chosen ) {
+        XP_LOGF( "%s: rematch chosen!", __func__ );
+	XP_ASSERT( 0 );
+    }
 } /* gtkShowFinalScores */
 
 static void
@@ -1634,7 +1642,7 @@ gtk_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl,
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     char* question = strFromStream( !!words? words : expl );
-    (void)gtkask( globals->window, question, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, question, GTK_BUTTONS_OK, NULL );
     free( question );
 }
 
@@ -1643,7 +1651,7 @@ gtk_util_informUndo( XW_UtilCtxt* uc )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     (void)gtkask_timeout( globals->window, "Remote player undid a move",
-                          GTK_BUTTONS_OK, 500 );
+                          GTK_BUTTONS_OK, NULL, 500 );
 }
 
 static void
@@ -1686,7 +1694,7 @@ gtk_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
                       "\nPHONIES_DISALLOW is set so this may "
                       "lead to some surprises." );
         }
-        (void)gtkask( globals->window, buf, GTK_BUTTONS_OK );
+        (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
     }
 }
 
@@ -1929,7 +1937,8 @@ gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
         XP_ASSERT( bwi->nWords == 1 );
         sprintf( buf, "Word \"%s\" not in the current dictionary (%s). "
                  "Use it anyway?", bwi->words[0], bwi->dictName );
-        result = gtkask( globals->window, buf, GTK_BUTTONS_YES_NO );
+        result = GTK_RESPONSE_YES == gtkask( globals->window, buf, 
+                                             GTK_BUTTONS_YES_NO, NULL );
     }
 
     return result;
@@ -1949,7 +1958,7 @@ gtk_util_remSelected( XW_UtilCtxt* uc )
     text = strFromStream( stream );
     stream_destroy( stream );
 
-    (void)gtkask( globals->window, text, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, text, GTK_BUTTONS_OK, NULL );
     free( text );
 }
 
@@ -1971,7 +1980,7 @@ static void
 gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    (void)gtkask( globals->window, msg, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, msg, GTK_BUTTONS_OK, NULL );
 }
 #endif
 #endif
@@ -2064,8 +2073,8 @@ gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
         XP_ASSERT( 0 );
         return XP_FALSE;
     }
-
-    result = gtkask( globals->window, question, buttons );
+    gint chosen = gtkask( globals->window, question, buttons, NULL );
+    result = GTK_RESPONSE_OK == chosen || chosen == GTK_RESPONSE_YES;
 
     if ( freeMe ) {
         free( question );
@@ -2081,7 +2090,8 @@ gtk_util_confirmTrade( XW_UtilCtxt* uc,
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     char question[256];
     formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
-    return gtkask( globals->window, question, GTK_BUTTONS_YES_NO );
+    return GTK_RESPONSE_YES == gtkask( globals->window, question, 
+                                       GTK_BUTTONS_YES_NO, NULL );
 }
 
 static GtkWidget*
