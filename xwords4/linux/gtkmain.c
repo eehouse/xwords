@@ -33,6 +33,7 @@
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
 static void updateButtons( GtkAppGlobals* apg );
+static void open_row( GtkAppGlobals* apg, sqlite3_int64 row );
 
 static void
 recordOpened( GtkAppGlobals* apg, GtkGameGlobals* globals )
@@ -100,6 +101,21 @@ tree_selection_changed_cb( GtkTreeSelection* selection, gpointer data )
 }
 
 static void
+row_activated_cb( GtkTreeView* tree_view, GtkTreePath* path,
+                  GtkTreeViewColumn* XP_UNUSED(column), gpointer data )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)data;
+    XP_ASSERT( tree_view == GTK_TREE_VIEW(apg->listWidget) );
+    GtkTreeModel* model = gtk_tree_view_get_model( tree_view );
+    GtkTreeIter iter;
+    if ( gtk_tree_model_get_iter( model, &iter, path ) ) {
+        sqlite3_int64 rowid;
+        gtk_tree_model_get( model, &iter, ROW_ITEM, &rowid, -1 );
+        open_row( apg, rowid );
+    }
+}
+
+static void
 removeRow( GtkAppGlobals* apg, sqlite3_int64 rowid )
 {
     GtkTreeModel* model = 
@@ -159,6 +175,9 @@ init_games_list( GtkAppGlobals* apg )
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
     g_object_unref( store );
 
+    g_signal_connect( G_OBJECT(list), "row-activated",
+                      G_CALLBACK(row_activated_cb), apg );
+ 
     GtkTreeSelection* select =
         gtk_tree_view_get_selection( GTK_TREE_VIEW (list) );
     gtk_tree_selection_set_mode( select, GTK_SELECTION_MULTIPLE );
@@ -231,19 +250,25 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
 }
 
 static void
-handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
+open_row( GtkAppGlobals* apg, sqlite3_int64 row )
 {
-    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    sqlite3_int64 selRow = getSelRow( apg );
-    if ( -1 != selRow && !gameIsOpen( apg, selRow ) ) {
+    if ( -1 != row && !gameIsOpen( apg, row ) ) {
         apg->params->needsNewGame = XP_FALSE;
         GtkGameGlobals* globals = malloc( sizeof(*globals) );
         initGlobals( globals, apg->params, NULL );
         globals->cGlobals.pDb = apg->params->pDb;
-        globals->cGlobals.selRow = selRow;
+        globals->cGlobals.selRow = row;
         recordOpened( apg, globals );
         gtk_widget_show( globals->window );
     }
+}
+
+static void
+handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    sqlite3_int64 selRow = getSelRow( apg );
+    open_row( apg, selRow );
 }
 
 static void
