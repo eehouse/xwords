@@ -28,8 +28,11 @@ static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
 sqlite3* 
 openGamesDB( const char* dbName )
 {
+    int result = sqlite3_initialize();
+    XP_ASSERT( SQLITE_OK == result );
+
     sqlite3* pDb = NULL;
-    int result = sqlite3_open( dbName, &pDb );
+    result = sqlite3_open( dbName, &pDb );
     XP_ASSERT( SQLITE_OK == result );
 
     const char* createGamesStr = 
