@@ -562,12 +562,12 @@ DrawCtx*
 cursesDrawCtxtMake( WINDOW* boardWin )
 {
     CursesDrawCtx* dctx = malloc( sizeof(CursesDrawCtx) );
-    short i;
+    int ii;
 
     dctx->vtable = malloc( sizeof(*(((CursesDrawCtx*)dctx)->vtable)) );
 
-    for ( i = 0; i < sizeof(*dctx->vtable)/4; ++i ) {
-        ((void**)(dctx->vtable))[i] = draw_doNothing;
+    for ( ii = 0; ii < VSIZE(dctx->vtable); ++ii ) {
+        ((void**)(dctx->vtable))[ii] = draw_doNothing;
     }
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_destroyCtxt, curses );
