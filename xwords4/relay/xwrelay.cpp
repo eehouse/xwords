@@ -1550,7 +1550,7 @@ onMsgAcked( bool acked, uint32_t packetID, void* data )
     logf( XW_LOGINFO, "%s(packetID=%d, acked=%s)", __func__, packetID, 
           acked?"true":"false" );
     if ( acked ) {
-        int msgID = (int)data;
+        int msgID = (int)(uintptr_t)data;
         DBMgr::Get()->RemoveStoredMessage( msgID );
     }
 }
@@ -1587,7 +1587,8 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
                   __func__, devID.asRelayID() );
             break;
         }
-        UDPAckTrack::setOnAck( onMsgAcked, packetID, (void*)msg.msgID() );
+        UDPAckTrack::setOnAck( onMsgAcked, packetID, 
+			       (void*)(uintptr_t)msg.msgID() );
     }
 }
 

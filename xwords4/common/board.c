@@ -439,6 +439,9 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
             // Scrolling's required if we use cell width sufficient to
             // fill the screen.  But perhaps we don't need to.
             int cellWidth = 2 * (bHeight / ( 4 + 3 + (2*nCells)));
+            if ( cellWidth < fontWidth ) {
+                cellWidth = fontWidth;
+            }
             if ( firstPass && cellWidth >= fontHt ) {
                 firstPass = XP_FALSE;
                 ldims.boardWidth = nCells * cellWidth;

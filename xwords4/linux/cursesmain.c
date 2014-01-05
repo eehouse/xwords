@@ -228,7 +228,8 @@ cursesUserError( CursesAppGlobals* globals, const char* format, ... )
 
     vsprintf( buf, format, ap );
 
-    (void)cursesask( globals, buf, 1, "OK" );
+    const char* buttons[] = {"OK"};
+    (void)cursesask( globals, buf, VSIZE(buttons), buttons );
 
     va_end(ap);
 } /* cursesUserError */
@@ -287,7 +288,7 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
     CursesAppGlobals* globals;
     char* question;
-    char* answers[3] = {NULL};
+    const char* answers[3] = {NULL};
     short numAnswers = 0;
     XP_Bool freeMe = XP_FALSE;
     XP_Bool result;
@@ -312,8 +313,7 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         return 0;
     }
     globals = (CursesAppGlobals*)uc->closure;
-    result = cursesask( globals, question, numAnswers, 
-                        answers[0], answers[1], answers[2] ) == okIndex;
+    result = okIndex == cursesask( globals, question, numAnswers, answers );
 
     if ( freeMe ) {
         free( question );
@@ -329,7 +329,8 @@ curses_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char question[256];
     formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
-    return 1 == cursesask( globals, question, 2, "Cancel", "Ok" );
+    const char* buttons[] = { "Cancel", "Ok" };
+    return 1 == cursesask( globals, question, VSIZE(buttons), buttons );
 }
 
 static void
@@ -353,7 +354,8 @@ cursesShowFinalScores( CursesAppGlobals* globals )
 
     text = strFromStream( stream );
 
-    (void)cursesask( globals, text, 1, "Ok" );
+    const char* buttons[] = { "Ok" };
+    (void)cursesask( globals, text, VSIZE(buttons), buttons );
 
     free( text );
     stream_destroy( stream );
@@ -365,7 +367,8 @@ curses_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl,
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char* question = strFromStream( expl );
-    (void)cursesask( globals, question, 1, "Ok" );
+    const char* buttons[] = { "Ok" };
+    (void)cursesask( globals, question, VSIZE(buttons), buttons );
     free( question );
 }
 
@@ -1524,7 +1527,8 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 
     text = strFromStream( stream );
 
-    (void)cursesask( globals, text, 1, "Ok" );
+    const char* buttons[] = { "Ok" };
+    (void)cursesask( globals, text, VSIZE(buttons), buttons );
 
     free( text );
 }
@@ -1636,10 +1640,18 @@ passKeyToBoard( CursesAppGlobals* globals, char ch )
 static void
 positionSizeStuff( CursesAppGlobals* globals, int width, int height )
 {
-    BoardCtxt* board = globals->cGlobals.game.board;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    BoardCtxt* board = cGlobals->game.board;
 #ifdef COMMON_LAYOUT
-    XP_USE( width );
-    XP_USE( height );
+
+    BoardDims dims;
+    board_figureLayout( board, cGlobals->gi, 
+                        0, 0, width, height,
+                        150, 200, /* percents */
+                        width*100/75, 2, 1, 
+                        XP_FALSE, &dims );
+    board_applyLayout( board, &dims );
+
 #else
     XP_U16 cellWidth, cellHt, scoreLeft, scoreWidth;
     int remWidth = width;
@@ -1852,7 +1864,8 @@ cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
     } else {
         g_free( globals->lastErr );
         globals->lastErr = g_strdup( msg );
-        (void)cursesask( globals, msg, 1, "Ok" );
+        const char* buttons[] = { "Ok" };
+        (void)cursesask( globals, msg, VSIZE(buttons), buttons );
     }
 }
 

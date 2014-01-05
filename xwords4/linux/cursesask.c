@@ -31,9 +31,9 @@
 
 /* Figure out how many lines there are and how wide the widest is.
  */
-short
+int
 cursesask( CursesAppGlobals* globals, const char* question, short numButtons, 
-           const char* button1, ... )
+           const char** buttons )
 {
     WINDOW* confWin;
     int x, y, rows, row, nLines;
@@ -79,7 +79,7 @@ cursesask( CursesAppGlobals* globals, const char* question, short numButtons,
 
         if ( newSelButton != curSelButton ) {
             drawButtons( confWin, rows+1, spacePerButton, numButtons, 
-                         curSelButton=newSelButton, &button1 );
+                         curSelButton=newSelButton, buttons );
         }
 
         ch = wgetch( confWin );
