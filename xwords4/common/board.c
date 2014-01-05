@@ -1,6 +1,6 @@
-/* -*- fill-column: 78; compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -401,15 +401,15 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
                     XP_U16 fontWidth, XP_U16 fontHt, XP_Bool squareTiles, 
                     BoardDims* dimsp )
 {
-	BoardDims ldims;
+    BoardDims ldims;
     XP_MEMSET( &ldims, 0, sizeof(ldims) );
 
-	XP_U16 nCells = gi->boardSize;
-	XP_U16 maxCellSize = 4 * fontHt;
-	XP_U16 trayHt;
-	XP_U16 scoreHt;
-	XP_U16 wantHt;
-	XP_U16 nToScroll;
+    XP_U16 nCells = gi->boardSize;
+    XP_U16 maxCellSize = 4 * fontHt;
+    XP_U16 trayHt;
+    XP_U16 scoreHt;
+    XP_U16 wantHt;
+    XP_U16 nToScroll;
     XP_Bool firstPass;
 
     ldims.left = bLeft;
@@ -417,73 +417,73 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
     ldims.width = bWidth;
 
     ldims.boardWidth = bWidth;
-	for ( firstPass = XP_TRUE; ; ) {
-		XP_U16 cellSize = ldims.boardWidth / nCells;
-		if ( cellSize > maxCellSize ) {
-			cellSize = maxCellSize;
-			ldims.boardWidth = nCells * cellSize;
-		}
-		ldims.maxCellSize = maxCellSize;
+    for ( firstPass = XP_TRUE; ; ) {
+        XP_U16 cellSize = ldims.boardWidth / nCells;
+        if ( cellSize > maxCellSize ) {
+            cellSize = maxCellSize;
+            ldims.boardWidth = nCells * cellSize;
+        }
+        ldims.maxCellSize = maxCellSize;
 
-		// Now determine if vertical scrolling will be necessary.
-		// There's a minimum tray and scoreboard height.  If we can
-		// fit them and all cells no scrolling's needed.  Otherwise
-		// determine the minimum number that must be hidden to fit.
-		// Finally grow scoreboard and tray to use whatever's left.
-		scoreHt = (scorePct * cellSize) / 100;
-		trayHt = (trayPct * cellSize) / 100;
-		wantHt = trayHt + scoreHt + (cellSize * nCells);
-		if ( wantHt <= bHeight ) {
-			nToScroll = 0;
-		} else {
-			// Scrolling's required if we use cell width sufficient to
-			// fill the screen.  But perhaps we don't need to.
-			int cellWidth = 2 * (bHeight / ( 4 + 3 + (2*nCells)));
-			if ( firstPass && cellWidth >= fontHt ) {
-				firstPass = XP_FALSE;
+        // Now determine if vertical scrolling will be necessary.
+        // There's a minimum tray and scoreboard height.  If we can
+        // fit them and all cells no scrolling's needed.  Otherwise
+        // determine the minimum number that must be hidden to fit.
+        // Finally grow scoreboard and tray to use whatever's left.
+        scoreHt = (scorePct * cellSize) / 100;
+        trayHt = (trayPct * cellSize) / 100;
+        wantHt = trayHt + scoreHt + (cellSize * nCells);
+        if ( wantHt <= bHeight ) {
+            nToScroll = 0;
+        } else {
+            // Scrolling's required if we use cell width sufficient to
+            // fill the screen.  But perhaps we don't need to.
+            int cellWidth = 2 * (bHeight / ( 4 + 3 + (2*nCells)));
+            if ( firstPass && cellWidth >= fontHt ) {
+                firstPass = XP_FALSE;
                 ldims.boardWidth = nCells * cellWidth;
-				continue;
-			} else {
-				nToScroll = nCells - 
+                continue;
+            } else {
+                nToScroll = nCells - 
                     ((bHeight - trayHt - scoreHt) / cellSize);
-			}
-		}
+            }
+        }
 
-		XP_U16 heightUsed = trayHt + scoreHt + (nCells - nToScroll) * cellSize;
-		XP_U16 heightLeft = bHeight - heightUsed;
-		if ( 0 < heightLeft ) {
-			if ( heightLeft > (cellSize * 3 / 2) ) {
-				heightLeft = cellSize * 3 / 2;
-			}
-			heightLeft /= 3;
+        XP_U16 heightUsed = trayHt + scoreHt + (nCells - nToScroll) * cellSize;
+        XP_U16 heightLeft = bHeight - heightUsed;
+        if ( 0 < heightLeft ) {
+            if ( heightLeft > (cellSize * 3 / 2) ) {
+                heightLeft = cellSize * 3 / 2;
+            }
+            heightLeft /= 3;
             if ( 0 < scorePct ) {
                 scoreHt += heightLeft;
             }
-            
+    
             if ( 0 < trayPct ) {
                 trayHt += heightLeft * 2;
             }
-			if ( squareTiles && trayHt > (bWidth / 7) ) {
-				trayHt = bWidth / 7;
-			}
-			heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
-		}
+            if ( squareTiles && trayHt > (bWidth / 7) ) {
+                trayHt = bWidth / 7;
+            }
+            heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
+        }
 
-		ldims.trayHt = trayHt;
-		ldims.scoreHt = scoreHt;
+        ldims.trayHt = trayHt;
+        ldims.scoreHt = scoreHt;
         ldims.scoreWidth = scoreWidth;
 
-		ldims.boardHt = cellSize * nCells;
-		ldims.trayTop = ldims.top + scoreHt + (cellSize * (nCells-nToScroll));
-		ldims.height = heightUsed;
-		ldims.cellSize = cellSize;
+        ldims.boardHt = cellSize * nCells;
+        ldims.trayTop = ldims.top + scoreHt + (cellSize * (nCells-nToScroll));
+        ldims.height = heightUsed;
+        ldims.cellSize = cellSize;
 
-		if ( gi->timerEnabled ) {
-			ldims.timerWidth = fontWidth * XP_STRLEN("-00:00");
+        if ( gi->timerEnabled ) {
+            ldims.timerWidth = fontWidth * XP_STRLEN("-00:00");
             ldims.scoreWidth -= ldims.timerWidth;
-		}
-		break;
-	}
+        }
+        break;
+    }
 
     if ( !!dimsp ) {
         XP_MEMCPY( dimsp, &ldims, sizeof(ldims) );
