@@ -278,7 +278,9 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
     formatScoreText( buf, dsi, rInner, lines );
     int ii;
     for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
-        mvwprintw( dctx->boardWin, ii + y, rOuter->left, lines[ii] );
+        char* line = lines[ii];
+        int left = rOuter->left + ((rOuter->width - strlen(line)) / 2);
+        mvwprintw( dctx->boardWin, ii + y, left, line );
     }
 
     if ( (dsi->flags&CELL_ISCURSOR) != 0 ) {
