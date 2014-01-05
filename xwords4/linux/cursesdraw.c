@@ -122,40 +122,56 @@ curses_draw_drawRemText( DrawCtx* p_dctx, XP_S16 nTilesLeft,
 }
 #else
 static void
-formatRemText( char* buf, int bufLen, XP_S16 nTilesLeft, int XP_UNUSED(width) )
+formatRemText( XP_S16 nTilesLeft, const XP_Rect* rect, char* buf, char** lines )
 {
-    /* int len = snprintf( buf, bufLen, "Tiles left in pool: %.3d", nTilesLeft ); */
-    /* if ( len > bufLen || strlen(buf)+1 >= width ) { */
-        snprintf( buf, bufLen, "Rem: %.3d", nTilesLeft );
-    /* } */
+    if ( 1 == rect->height ) {
+        *lines = buf;
+        sprintf( buf, "Rem: %.3d", nTilesLeft );
+    } else {
+        sprintf( buf, "Rem:" );
+        *lines++ = buf;
+        buf += 1 + strlen(buf);
+        sprintf( buf, "%.3d", nTilesLeft );
+        *lines++ = buf;
+    }
 } /* formatRemText */
 
 static XP_Bool
 curses_draw_measureRemText( DrawCtx* XP_UNUSED(dctx), 
-                            const XP_Rect* r, 
+                            const XP_Rect* rect, 
                             XP_S16 nTilesLeft, 
                             XP_U16* width, XP_U16* height )
 {
     char buf[64];
-    formatRemText( buf, sizeof(buf), nTilesLeft, r->width );
+    char* lines[2] = {0};
+    formatRemText( nTilesLeft, rect, buf, lines );
     
-    *width = strlen(buf);
-    *height = r->height;
+    *width = 0;
+    int ii;
+    for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
+        *width = XP_MAX( *width, strlen(lines[ii]) );
+    }
+    *height = ii;
+
     return XP_TRUE;
 } /* curses_draw_measureRemText */
 
 static void
 curses_draw_drawRemText( DrawCtx* p_dctx, const XP_Rect* rInner, 
-                         const XP_Rect* XP_UNUSED(rOuter), XP_S16 nTilesLeft,
+                         const XP_Rect* rOuter, XP_S16 nTilesLeft,
                          XP_Bool focussed )
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[32];
 
-    formatRemText( buf, sizeof(buf), nTilesLeft, rInner->width );
-    mvwprintw( dctx->boardWin, rInner->top, rInner->left, buf );
+    char* lines[2] = {0};
+    formatRemText( nTilesLeft, rInner, buf, lines );
+    int ii;
+    for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
+        mvwprintw( dctx->boardWin, rInner->top + ii, rInner->left, lines[ii] );
+    }    
     if ( focussed ) {
-        cursesHiliteRect( dctx->boardWin, rInner );
+        cursesHiliteRect( dctx->boardWin, rOuter );
     }
 } /* curses_draw_drawRemText */
 #endif
