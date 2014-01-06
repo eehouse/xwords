@@ -80,14 +80,6 @@
 # define CURSES_CELL_WIDTH 2
 #endif
 
-#ifndef CURSES_MAX_HEIGHT
-# define CURSES_MAX_HEIGHT 40
-#endif
-#ifndef CURSES_MAX_WIDTH
-//# define CURSES_MAX_WIDTH 50
-# define CURSES_MAX_WIDTH 70
-#endif
-
 #define INFINITE_TIMEOUT -1
 #define BOARD_SCORE_PADDING 3
 
@@ -518,7 +510,7 @@ curses_util_requestTime( XW_UtilCtxt* uc )
 } /* curses_util_requestTime */
 
 static void
-initCurses( CursesAppGlobals* globals )
+initCurses( CursesAppGlobals* globals, int* widthP, int* heightP )
 {
     WINDOW* mainWin;
     WINDOW* menuWin;
@@ -534,14 +526,8 @@ initCurses( CursesAppGlobals* globals )
     intrflush(stdscr, FALSE);
     keypad(stdscr, TRUE);       /* effects wgetch only? */
 
-    getmaxyx(mainWin, height, width );
-    XP_LOGF( "getmaxyx->w:%d; h:%d", width, height );
-    if ( height > CURSES_MAX_HEIGHT ) {
-        height = CURSES_MAX_HEIGHT;
-    }
-    if ( width > CURSES_MAX_WIDTH ) {
-        width = CURSES_MAX_WIDTH;
-    }
+    getmaxyx( mainWin, height, width );
+    XP_LOGF( "%s: getmaxyx()->w:%d; h:%d", __func__, width, height );
 
     globals->statusLine = height - MENU_WINDOW_HEIGHT - 1;
     menuWin = newwin( MENU_WINDOW_HEIGHT, width, 
@@ -552,6 +538,9 @@ initCurses( CursesAppGlobals* globals )
     globals->menuWin = menuWin;
     globals->boardWin = boardWin;
     globals->mainWin = mainWin;
+
+    *widthP = width;
+    *heightP = height;
 } /* initCurses */
 
 #if 0
@@ -959,7 +948,7 @@ drawMenuFromList( WINDOW* win, const MenuList** menuLists,
 static void 
 SIGWINCH_handler( int signal )
 {
-    int x, y;
+    int height, width;
 
     assert( signal == SIGWINCH );
 
@@ -967,8 +956,9 @@ SIGWINCH_handler( int signal )
 
 /*     (*globals.drawMenu)( &globals );  */
 
-    getmaxyx( stdscr, y, x );
-    wresize( g_globals.mainWin, y-MENU_WINDOW_HEIGHT, x );
+    getmaxyx( stdscr, height, width );
+    XP_LOGF( "%s:, getmaxyx()->w:%d; h:%d", __func__, width, height );
+    wresize( g_globals.mainWin, height-MENU_WINDOW_HEIGHT, width );
 
     board_draw( g_globals.cGlobals.game.board );
 } /* SIGWINCH_handler */
@@ -2043,8 +2033,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 
         XP_Bool opened = XP_FALSE;
-        initCurses( &g_globals );
-        getmaxyx( g_globals.boardWin, height, width );
+        initCurses( &g_globals, &width, &height );
 
         g_globals.draw = (struct CursesDrawCtx*)
             cursesDrawCtxtMake( g_globals.boardWin );
