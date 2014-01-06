@@ -348,8 +348,7 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     XP_Bool highlight = (flags & (CELL_HIGHLIGHT|CELL_ISCURSOR)) != 0;
-    XP_UCHAR loc[4] = { ' ', ' ', ' ', '\0' };
-    XP_ASSERT( rect->width < sizeof(loc) );
+    XP_UCHAR loc[rect->width+1];
     if ( !!letter ) {
         XP_MEMCPY( loc, letter, strlen(letter) );
     }
