@@ -285,7 +285,6 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
 {
     CursesDrawCtx* dctx = (CursesDrawCtx*)p_dctx;
     char buf[100];
-    int y = rInner->top;
 
     curses_draw_clearRect( p_dctx, rOuter );
 
@@ -296,7 +295,7 @@ curses_draw_score_drawPlayer( DrawCtx* p_dctx, const XP_Rect* rInner,
     for ( ii = 0; ii < VSIZE(lines) && !!lines[ii]; ++ii ) {
         char* line = lines[ii];
         int left = rOuter->left + ((rOuter->width - strlen(line)) / 2);
-        mvwprintw( dctx->boardWin, ii + y, left, line );
+        mvwprintw( dctx->boardWin, rInner->top + ii, left, line );
     }
 
     if ( (dsi->flags&CELL_ISCURSOR) != 0 ) {
@@ -350,7 +349,7 @@ curses_draw_drawCell( DrawCtx* p_dctx, const XP_Rect* rect,
     XP_Bool highlight = (flags & (CELL_HIGHLIGHT|CELL_ISCURSOR)) != 0;
     XP_UCHAR loc[rect->width+1];
     if ( !!letter ) {
-        XP_MEMCPY( loc, letter, strlen(letter) );
+        XP_MEMCPY( loc, letter, 1 + strlen(letter) );
     }
 
     if ( highlight ) {
