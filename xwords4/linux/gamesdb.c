@@ -239,7 +239,7 @@ getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
     *nRowIDs = 0;
 
     char buf[256];
-    snprintf( buf, sizeof(buf), "SELECT rowid from games WHERE gameid = %ld LIMIT %d", 
+    snprintf( buf, sizeof(buf), "SELECT rowid from games WHERE gameid = %d LIMIT %d", 
               gameID, maxRowIDs );
     sqlite3_stmt *ppStmt;
     int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );

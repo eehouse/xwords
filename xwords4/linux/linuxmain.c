@@ -1012,7 +1012,7 @@ sendTimerFired( gpointer data )
         SendQueueElem* elem = (SendQueueElem*)cGlobals->packetQueue->data;
         cGlobals->packetQueue = cGlobals->packetQueue->next;
 
-        XP_LOGF( "%s: sending packet %ld of len %zd (%d left)", __func__, 
+        XP_LOGF( "%s: sending packet %d of len %zd (%d left)", __func__, 
                  elem->id, elem->len, listLen - 1 );
         bool sent = send_or_close( cGlobals, elem->buf, elem->len );
         free( elem->buf );
@@ -1048,7 +1048,7 @@ send_per_params( const XP_U8* buf, const XP_U16 buflen,
             cGlobals->packetQueue = 
                 g_slist_append( cGlobals->packetQueue, elem );
             nSent += toSend;
-            XP_LOGF( "%s: added packet %ld of len %zd", __func__,
+            XP_LOGF( "%s: added packet %d of len %zd", __func__,
                      elem->id, elem->len );
         }
         int when = XP_RANDOM() % (1 + cGlobals->params->splitPackets);
@@ -1550,7 +1550,7 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
     XP_U32 sum = 0;
     for ( jj = 0; jj < VSIZE(lens.lens); ++jj ) {
         sum += lens.lens[jj];
-        XP_LOGF( "%ld words of length %ld", lens.lens[jj], jj );
+        XP_LOGF( "%d words of length %ld", lens.lens[jj], jj );
     }
     XP_ASSERT( sum == count );
 

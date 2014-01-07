@@ -107,7 +107,7 @@ mpool_destroy( MemPoolCtx* mpool )
         MemPoolEntry* entry;
         for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
 #ifndef FOR_GREMLINS /* I don't want to hear about this right now */
-            XP_LOGF( "%s: " XP_P " index=%d, in %s, ln %ld of %s\n", __func__, 
+            XP_LOGF( "%s: " XP_P " index=%d, in %s, ln %d of %s\n", __func__, 
                      entry->ptr, entry->index, 
                      entry->func, entry->lineNo, entry->fileName );
 #ifdef DEBUG
@@ -203,7 +203,7 @@ mpool_realloc( MemPoolCtx* mpool, void* ptr, XP_U32 newsize, const char* file,
     MemPoolEntry* entry = findEntryFor( mpool, ptr, (MemPoolEntry**)NULL );
 
     if ( !entry ) {
-        XP_LOGF( "findEntryFor failed; called from %s, line %ld",
+        XP_LOGF( "findEntryFor failed; called from %s, line %d",
                  file, lineNo );
     } else {
         entry->ptr = XP_PLATREALLOC( entry->ptr, newsize );
@@ -226,7 +226,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
     entry = findEntryFor( mpool, ptr, &prev );
 
     if ( !entry ) {
-        XP_LOGF( "findEntryFor failed; called from %s, line %ld in %s",
+        XP_LOGF( "findEntryFor failed; called from %s, line %d in %s",
                  func, lineNo, file );
         XP_ASSERT( 0 );
     } else {
@@ -287,14 +287,14 @@ mpool_stats( MemPoolCtx* mpool, XWStreamCtxt* stream )
 
     for ( entry = mpool->usedList; !!entry; entry = entry->next ) {
         XP_SNPRINTF( buf, sizeof(buf), 
-                     (XP_UCHAR*)"%ld byte block allocated at %p, at line %ld "
+                     (XP_UCHAR*)"%d byte block allocated at %p, at line %d "
                      "in %s, %s\n", entry->size, entry->ptr, entry->lineNo, 
                      entry->func, entry->fileName );
         STREAM_OR_LOG( stream, buf );
         total += entry->size;
     }
 
-    XP_SNPRINTF( buf, sizeof(buf), "total bytes allocated: %ld\n", total );
+    XP_SNPRINTF( buf, sizeof(buf), "total bytes allocated: %d\n", total );
     STREAM_OR_LOG( stream, buf );
 
 } /* mpool_stats */

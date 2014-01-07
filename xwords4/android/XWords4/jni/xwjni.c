@@ -437,7 +437,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
 
     XP_U32 secs = getCurSeconds( env );
-    XP_LOGF( "initing srand with %ld", secs );
+    XP_LOGF( "initing srand with %d", secs );
     srandom( secs );
 
     return (jint) state;

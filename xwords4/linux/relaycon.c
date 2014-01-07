@@ -253,7 +253,7 @@ relaycon_receive( void* closure, int socket )
             }
             case XWPDEV_UNAVAIL: {
                 XP_U32 unavail = getNetLong( &ptr );
-                XP_LOGF( "%s: unavail = %lu", __func__, unavail );
+                XP_LOGF( "%s: unavail = %u", __func__, unavail );
                 uint32_t len;
                 if ( !vli2un( &ptr, &len ) ) {
                     assert(0);
@@ -326,7 +326,7 @@ hostNameToIP( const XP_UCHAR* name )
         XP_MEMCPY( &ip, host->h_addr_list[0], sizeof(ip) );
         ip = ntohl(ip);
     }
-    XP_LOGF( "%s found %lx for %s", __func__, ip, name );
+    XP_LOGF( "%s found %x for %s", __func__, ip, name );
     return ip;
 }
 

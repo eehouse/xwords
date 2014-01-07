@@ -489,7 +489,7 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID )
     XP_ASSERT( CONN_ID_NONE != connID );
     XP_ASSERT( 0 == comms->connID || connID == comms->connID );
     comms->connID = connID;
-    XP_LOGF( "%s: set connID (gameID) to %lx", __func__, connID );
+    XP_LOGF( "%s: set connID (gameID) to %x", __func__, connID );
 } /* comms_setConnID */
 
 static void
@@ -822,8 +822,8 @@ comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken )
     if ( saveToken == comms->lastSaveToken ) {
         AddressRecord* rec;
         for ( rec = comms->recs; !!rec; rec = rec->next ) {
-            XP_LOGF( "%s: lastSave matches; updating lastMsgSaved (%ld) to "
-                     "lastMsgRcd (%ld)", __func__, rec->lastMsgSaved, 
+            XP_LOGF( "%s: lastSave matches; updating lastMsgSaved (%d) to "
+                     "lastMsgRcd (%d)", __func__, rec->lastMsgSaved, 
                      rec->lastMsgRcd );
             rec->lastMsgSaved = rec->lastMsgRcd;
         }
@@ -989,12 +989,12 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
                                  NULL, 0, 
                                  (MemStreamCloseCallback)NULL );
     stream_open( hdrStream );
-    XP_LOGF( "%s: putting connID %lx", __func__, comms->connID );
+    XP_LOGF( "%s: putting connID %x", __func__, comms->connID );
     stream_putU32( hdrStream, comms->connID );
 
     stream_putU16( hdrStream, channelNo );
     stream_putU32( hdrStream, msgID );
-    XP_LOGF( "put lastMsgSaved: %ld", lastMsgSaved );
+    XP_LOGF( "put lastMsgSaved: %d", lastMsgSaved );
     stream_putU32( hdrStream, lastMsgSaved );
     if ( !!rec ) {
         rec->lastMsgAckd = lastMsgSaved;
@@ -1223,7 +1223,7 @@ gameID( const CommsCtxt* comms )
     if ( 0 == gameID ) {
         XP_LOGF( "%s: gameID STILL 0", __func__ );
     } else if ( 0 == comms->util->gameInfo->gameID ) {
-        XP_LOGF( "%s: setting gi's gameID to 0X%lX", __func__, gameID );
+        XP_LOGF( "%s: setting gi's gameID to 0X%X", __func__, gameID );
         comms->util->gameInfo->gameID = gameID;
     }
 
@@ -1307,7 +1307,7 @@ comms_resendAll( CommsCtxt* comms, XP_Bool force )
 
     XP_U32 now = util_getCurSeconds( comms->util );
     if ( !force && (now < comms->nextResend) ) {
-        XP_LOGF( "%s: aborting: %ld seconds left in backoff", __func__, 
+        XP_LOGF( "%s: aborting: %d seconds left in backoff", __func__, 
                  comms->nextResend - now );
         success = XP_FALSE;
 
@@ -1347,7 +1347,7 @@ comms_ackAny( CommsCtxt* comms )
 #ifdef DEBUG
                 ++nSent;
 #endif 
-                XP_LOGF( "%s: channel %x; %ld < %ld: rec needs ack", __func__,
+                XP_LOGF( "%s: channel %x; %d < %d: rec needs ack", __func__,
                          rec->channelNo, rec->lastMsgAckd, rec->lastMsgRcd );
                 sendEmptyMsg( comms, rec );
             }
@@ -1844,7 +1844,7 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
         if ( msgID == rec->lastMsgRcd + 1 ) {
             updateChannelAddress( rec, addr );
         } else {
-            XP_LOGF( "%s: expected %ld, got %ld", __func__, 
+            XP_LOGF( "%s: expected %d, got %d", __func__, 
                      rec->lastMsgRcd + 1, msgID );
             rec = NULL;
         }
@@ -1894,11 +1894,11 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             AddressRecord* rec = NULL;
 
             connID = stream_getU32( stream );
-            XP_LOGF( "%s: read connID (gameID) of %lx", __func__, connID );
+            XP_LOGF( "%s: read connID (gameID) of %x", __func__, connID );
             channelNo = stream_getU16( stream );
             msgID = stream_getU32( stream );
             lastMsgRcd = stream_getU32( stream );
-            XP_LOGF( "%s: rcd on channelNo %d(%x): msgID=%ld,lastMsgRcd=%ld ", 
+            XP_LOGF( "%s: rcd on channelNo %d(%x): msgID=%d,lastMsgRcd=%d ", 
                      __func__, channelNo & CHANNEL_MASK, channelNo, 
                      msgID, lastMsgRcd );
 
@@ -1918,7 +1918,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             messageValid = (NULL != rec)
                 && (0 == rec->lastMsgRcd || rec->lastMsgRcd <= msgID);
             if ( messageValid ) {
-                XP_LOGF( "%s: got channelNo=%d;msgID=%ld;len=%d", __func__, 
+                XP_LOGF( "%s: got channelNo=%d;msgID=%d;len=%d", __func__, 
                          channelNo & CHANNEL_MASK, msgID, payloadSize );
                 rec->lastMsgRcd = msgID;
                 comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
@@ -2150,7 +2150,7 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"Last message received: %ld\n", 
+                     (XP_UCHAR*)"Last message received: %d\n", 
                      rec->lastMsgRcd );
         stream_catString( stream, buf );
     }

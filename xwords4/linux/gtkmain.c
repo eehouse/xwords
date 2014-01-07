@@ -561,7 +561,7 @@ smsInviteReceived( void* closure, const XP_UCHAR* gameName, XP_U32 gameID,
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;
-    XP_LOGF( "%s(gameName=%s, gameID=%ld, dictName=%s, nPlayers=%d, nHere=%d)",
+    XP_LOGF( "%s(gameName=%s, gameID=%d, dictName=%s, nPlayers=%d, nHere=%d)",
              __func__, gameName, gameID, dictName, nPlayers, nHere );
 
     CurGameInfo gi = {0};

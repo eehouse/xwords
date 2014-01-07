@@ -754,7 +754,7 @@ checkSanity( DictionaryCtxt* dict, const XP_U32 numEdges )
         for ( ii = 0; ii < numEdges && passed; ++ii ) {
             Tile tile = EDGETILE( dict, edge );
             if ( tile < prevTile || tile >= nFaces ) {
-                XP_LOGF( "%s: node %ld (out of %ld) has too-large or "
+                XP_LOGF( "%s: node %d (out of %d) has too-large or "
                          "out-of-order tile", __func__, ii, numEdges );
                 passed = XP_FALSE;
                 break;
@@ -763,7 +763,7 @@ checkSanity( DictionaryCtxt* dict, const XP_U32 numEdges )
 
             unsigned long index = dict_index_from( dict, edge );
             if ( index >= numEdges ) {
-                XP_LOGF( "%s: node %ld (out of %ld) has too-high index %ld",
+                XP_LOGF( "%s: node %d (out of %d) has too-high index %ld",
                          __func__, ii, numEdges, index );
                 passed = XP_FALSE;
                 break;

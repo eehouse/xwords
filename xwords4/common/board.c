@@ -1333,7 +1333,7 @@ board_popTimerSave( BoardCtxt* board )
 
                 XP_ASSERT( board->timerStoppedTime != 0 );
                 elapsed = curTime - board->timerStoppedTime;
-                XP_LOGF( "board_popTimerSave: elapsed=%ld", elapsed );
+                XP_LOGF( "board_popTimerSave: elapsed=%d", elapsed );
                 XP_ASSERT( elapsed <= 0xFFFF );
                 board->gi->players[turn].secondsUsed += (XP_U16)elapsed;
             }

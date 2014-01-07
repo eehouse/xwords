@@ -209,7 +209,7 @@ dispatch_invite( LinSMSData* storage, XP_U16 XP_UNUSED(proto),
     XP_UCHAR dictName[256];
 
     XP_U32 gameID = stream_getU32( stream );
-    XP_LOGF( "%s: got gameID %ld", __func__, gameID );
+    XP_LOGF( "%s: got gameID %d", __func__, gameID );
     stringFromStreamHere( stream, gameName, VSIZE(gameName) );
     XP_U32 dictLang = stream_getU32( stream );
     stringFromStreamHere( stream, dictName, VSIZE(dictName) );
