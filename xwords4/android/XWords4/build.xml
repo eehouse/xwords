@@ -51,10 +51,11 @@
 
     <property name="INITIAL_CLIENT_VERS" value="3"/>
     <target name="-pre-clean">
-        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
+        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null" 
+	      failonerror="true" >
             <arg value="${build.target}"/>
         </exec>
-        <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
+        <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true" >
             <arg value="clean"/>
         </exec>
 
