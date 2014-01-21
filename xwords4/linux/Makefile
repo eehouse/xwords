@@ -35,6 +35,10 @@ endif
 BUILD_PLAT_DIR = $(BUILD_DIR)/$(PLATFORM)
 
 # CC = llvm-gcc
+ifneq ($(shell which ccache),)
+    CC := ccache $(CC)
+    CXX := ccache $(CXX)
+endif
 
 DO_CURSES = -DPLATFORM_NCURSES
 DO_CURSES += -DUSE_GLIBLOOP
