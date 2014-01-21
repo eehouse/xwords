@@ -89,5 +89,10 @@ LOCAL_LDLIBS 	:= -L${SYSROOT}/usr/lib -llog -lz
 
 include $(BUILD_SHARED_LIBRARY)
 
+ifneq ($(shell which ccache),)
+	TARGET_CC = ccache $(TOOLCHAIN_PREFIX)gcc
+	TARGET_CXX = ccache $(TOOLCHAIN_PREFIX)g++
+endif
+
 COMMON_SRC_FILES :=
 COMMON_PATH :=
