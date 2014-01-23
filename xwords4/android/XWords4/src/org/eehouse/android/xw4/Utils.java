@@ -464,6 +464,16 @@ public class Utils {
         return result;
     }
 
+    public static boolean isGooglePlayApp( Context context )
+    {
+        PackageManager pm = context.getPackageManager();
+        String packageName = context.getPackageName();
+        String installer = pm.getInstallerPackageName( packageName );
+        boolean result = "com.google.android.feedback".equals( installer ) 
+            || "com.android.vending".equals( installer );
+        return result;
+    }
+
     private static void setFirstBootStatics( Context context )
     {
         int thisVersion = getAppVersion( context );

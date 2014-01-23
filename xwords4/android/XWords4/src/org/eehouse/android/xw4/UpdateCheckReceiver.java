@@ -108,12 +108,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         JSONObject params = new JSONObject();
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
-        String installer = pm.getInstallerPackageName( packageName );
 
-        if ( "com.google.android.feedback".equals( installer ) 
-             || "com.android.vending".equals( installer ) ) { 
-            // Do nothing; it's a Market app
+        if ( Utils.isGooglePlayApp( context ) ) {
+            // Do nothing
         } else {
+            String installer = pm.getInstallerPackageName( packageName );
+
             try { 
                 int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
 
