@@ -2288,8 +2288,10 @@ public class BoardActivity extends XWActivity
     private void doRematch()
     {
         Intent intent = GamesList.makeRematchIntent( this, m_gi, m_rowid );
-        startActivity( intent );
-        finish();
+        if ( null != intent ) {
+            startActivity( intent );
+            finish();
+        }
     }
     
     private Button setListenerOrHide( int id )
