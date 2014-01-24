@@ -16,6 +16,11 @@
           android:icon="@drawable/prefs__gen"
           android:showAsAction="ifRoom"
           />
+
+    <item android:id="@+id/games_menu_rateme"
+          android:title="@string/menu_rateme"
+          />
+
     <item android:id="@+id/games_menu_dicts"
           android:title="@string/gamel_menu_dicts"
           android:icon="@drawable/dict__gen"

@@ -710,7 +710,12 @@ public class GamesList extends XWExpandableListActivity
             Utils.setItemVisible( menu, R.id.games_game_move, 
                                   (1 < m_adapter.getGroupCount()
                                     && 0 < nGamesSelected) );
-            Utils.setItemVisible( menu, R.id.games_game_reset, 0 < nGamesSelected );
+            Utils.setItemVisible( menu, R.id.games_game_reset, 
+                                  0 < nGamesSelected );
+
+            // Hide rate-me if not a google play app
+            enable = nothingSelected && Utils.isGooglePlayApp( this );
+            Utils.setItemVisible( menu, R.id.games_menu_rateme, enable );
 
             m_menuPrepared = super.onPrepareOptionsMenu( menu );
         } else {
@@ -768,6 +773,16 @@ public class GamesList extends XWExpandableListActivity
 
         case R.id.games_menu_prefs:
             Utils.launchSettings( this );
+            break;
+
+        case R.id.games_menu_rateme:
+            String str = String.format( "market://details?id=%s",
+                                        getPackageName() );
+            try {
+                startActivity( new Intent( Intent.ACTION_VIEW, Uri.parse( str ) ) );
+            } catch ( android.content.ActivityNotFoundException anf ) {
+                showOKOnlyDialog( R.string.no_market );
+            }
             break;
 
         case R.id.games_menu_about:
@@ -1389,10 +1404,11 @@ public class GamesList extends XWExpandableListActivity
     public static Intent makeRematchIntent( Context context, CurGameInfo gi,
                                             long rowid )
     {
-        Intent intent = makeSelfIntent( context );
+        Intent intent = null;
         
         if ( CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
-            intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
+            intent = makeSelfIntent( context )
+                .putExtra( REMATCH_ROWID_EXTRA, rowid );
         } else {
             Utils.notImpl( context );
         }
