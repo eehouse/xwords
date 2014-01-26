@@ -609,7 +609,7 @@ public class BoardActivity extends XWActivity
     protected void onSaveInstanceState( Bundle outState ) 
     {
         super.onSaveInstanceState( outState );
-        outState.putInt( DLG_TITLESTR, m_dlgTitle );
+        outState.putInt( DLG_TITLE, m_dlgTitle );
         outState.putString( DLG_TITLESTR, m_dlgTitleStr );
         outState.putString( DLG_BYTES, m_dlgBytes );
         outState.putString( ROOM, m_room );
