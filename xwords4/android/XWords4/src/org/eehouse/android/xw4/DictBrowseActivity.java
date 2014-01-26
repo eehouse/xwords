@@ -288,11 +288,14 @@ public class DictBrowseActivity extends XWListActivity
                                 int position, long id )
     {
         TextView text = (TextView)view;
-        int newval = Integer.parseInt( text.getText().toString() );
-        if ( parent == m_minSpinner ) {
-            setMinMax( newval, m_browseState.m_maxShown );
-        } else if ( parent == m_maxSpinner ) {
-            setMinMax( m_browseState.m_minShown, newval );
+        // null text seems to have generated at least one google play report
+        if ( null != text ) {
+            int newval = Integer.parseInt( text.getText().toString() );
+            if ( parent == m_minSpinner ) {
+                setMinMax( newval, m_browseState.m_maxShown );
+            } else if ( parent == m_maxSpinner ) {
+                setMinMax( m_browseState.m_minShown, newval );
+            }
         }
     }
 
