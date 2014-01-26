@@ -203,6 +203,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             // nothing to do
         } else if ( null == m_gi ) {
             // nothing to do either
+        } else if ( null == m_jniThread ) {
+            // nothing to do either
         } else if ( null == m_dims ) {
             // m_canvas = null;
             // need to synchronize??
