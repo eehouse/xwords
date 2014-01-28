@@ -2208,5 +2208,6 @@
     <string name="title_studyon">Enable study lists</string>
     <string name="summary_studyon">Offer to add to and display lists
     of words to remember</string>
-    
+    <string name="gamel_menu_study">Study list…</string>
+    <string name="pick_language_prompt">Choose list language</string>
 </resources>

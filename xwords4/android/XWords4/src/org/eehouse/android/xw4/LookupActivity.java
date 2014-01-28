@@ -132,7 +132,7 @@ public class LookupActivity extends XWListActivity
         if ( view == m_doneButton ) {
             switchState( -1 );
         } else if ( view == m_studyButton ) {
-            DBUtils.addToStudyList( this, word, s_lang );
+            DBUtils.addToStudyList( this, m_words[m_wordIndex], s_lang );
         }
     }
 
