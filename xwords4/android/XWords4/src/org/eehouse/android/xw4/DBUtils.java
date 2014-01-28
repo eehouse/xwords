@@ -1607,6 +1607,33 @@ public class DBUtils {
         return result;
     }
 
+    public static String[] studyListWords( Context context, int lang )
+    {
+        String[] result = null;
+        String selection = String.format( "%s = %d", DBHelper.LANGUAGE, lang );
+        String[] columns = { DBHelper.WORD };
+        String orderBy = DBHelper.WORD;
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_STUDYLIST, columns, 
+                                      selection, null, null, null, orderBy );
+            int count = cursor.getCount();
+            result = new String[count];
+            if ( 0 < count ) {
+                int index = 0;
+                int colIndex = cursor.getColumnIndex( DBHelper.WORD );
+                while ( cursor.moveToNext() ) {
+                    result[index++] = cursor.getString(colIndex);
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
