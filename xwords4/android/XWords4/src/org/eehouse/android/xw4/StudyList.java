@@ -19,10 +19,12 @@
 
 package org.eehouse.android.xw4;
 
+import android.view.View;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Spinner;
+import android.widget.ArrayAdapter;
 
 public class StudyList extends XWListActivity {
     private Spinner mSpinner;
@@ -35,7 +37,26 @@ public class StudyList extends XWListActivity {
         setContentView( R.layout.studylist );
 
         mSpinner = (Spinner)findViewById( R.id.pick_language );
+        int[] langs = DBUtils.studyListLangs( this );
+        if ( 0 == langs.length ) {
+            finish();
+        } else if ( 1 == langs.length ) {
+            mSpinner.setVisibility( View.GONE );
+        } else {
+            String[] names = DictLangCache.getLangNames( this );
+            String[] myNames = new String[langs.length];
+            for ( int ii = 0; ii < langs.length; ++ii ) {
+                myNames[ii] = names[langs[ii]];
+            }
 
+            ArrayAdapter<String> adapter = new
+                ArrayAdapter<String>( this, 
+                                      android.R.layout.simple_spinner_item,
+                                      myNames );
+            adapter.setDropDownViewResource( android.R.layout.
+                                             simple_spinner_dropdown_item );
+            mSpinner.setAdapter( adapter );
+        }
     }
 
     public static void launch( Context context )

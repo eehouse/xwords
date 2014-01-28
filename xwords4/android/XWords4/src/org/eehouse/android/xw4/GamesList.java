@@ -717,7 +717,8 @@ public class GamesList extends XWExpandableListActivity
             enable = nothingSelected && Utils.isGooglePlayApp( this );
             Utils.setItemVisible( menu, R.id.games_menu_rateme, enable );
 
-            enable = nothingSelected && 0 < DBUtils.studyListLangCount( this );
+            enable = nothingSelected && 
+                0 < DBUtils.studyListLangs( this ).length;
             Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
             m_menuPrepared = super.onPrepareOptionsMenu( menu );

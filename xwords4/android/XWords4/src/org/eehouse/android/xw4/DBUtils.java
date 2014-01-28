@@ -1580,9 +1580,9 @@ public class DBUtils {
         }
     }
 
-    public static int studyListLangCount( Context context )
+    public static int[] studyListLangs( Context context )
     {
-        int result = 0;
+        int[] result = null;
         String groupBy = DBHelper.LANGUAGE;
         String selection = null;//DBHelper.LANGUAGE;
         String[] columns = { DBHelper.LANGUAGE };
@@ -1591,12 +1591,19 @@ public class DBUtils {
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             Cursor cursor = db.query( DBHelper.TABLE_NAME_STUDYLIST, columns, 
-                                      selection, null, groupBy, null, null );
-            result = cursor.getCount();
+                                      null, null, groupBy, null, null );
+            int count = cursor.getCount();
+            result = new int[count];
+            if ( 0 < count ) {
+                int index = 0;
+                int colIndex = cursor.getColumnIndex( DBHelper.LANGUAGE );
+                while ( cursor.moveToNext() ) {
+                    result[index++] = cursor.getInt(colIndex);
+                }
+            }
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "studyListLangCount() => %d", result );
         return result;
     }
 
