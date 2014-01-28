@@ -132,7 +132,7 @@ public class LookupActivity extends XWListActivity
         if ( view == m_doneButton ) {
             switchState( -1 );
         } else if ( view == m_studyButton ) {
-            addToList( m_words[m_wordIndex] );
+            DBUtils.addToStudyList( this, word, s_lang );
         }
     }
 
@@ -262,12 +262,5 @@ public class LookupActivity extends XWListActivity
     {
         String title = Utils.format( this, R.string.pick_url_titlef, word );
         m_summary.setText( title );
-    }
-
-    private void addToList( String word )
-    {
-        String msg = String.format("Wants to study %s", word );
-        Utils.showToast( this, msg );
-        DBUtils.addToStudyList( this, word, s_lang );
     }
 }
