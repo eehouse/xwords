@@ -1788,10 +1788,13 @@
     <!-- New strings that need to be documented and found a home
          above. -->
     <string name="button_lookup">Look up words</string>
+    <string name="button_lookup_study">Look up/study words</string>
       <!--  -->
     <string name="button_lookupf">Look up %s</string>
+    <string name="button_lookup_studyf">Look up/study %s</string>
       <!--  -->
     <string name="title_lookup">Tap to look up</string>
+    <string name="title_lookup_study">Tap to look up or study</string>
       <!--  -->
     <string name="button_done">Done</string>
       <!--  -->
@@ -2200,4 +2203,10 @@
 
     <string name="menu_rateme">Rate Crosswords</string>
     <string name="no_market">Google Play app not found</string>
+
+    <string name="add_to_studyf">Add %s to study list</string>
+    <string name="title_studyon">Enable study lists</string>
+    <string name="summary_studyon">Offer to add to and display lists
+    of words to remember</string>
+    
 </resources>

@@ -1565,6 +1565,21 @@ public class DBUtils {
         return colNames;
     }
 
+    public static void addToStudyList( Context context, String word,
+                                       int lang )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.WORD, word );
+        values.put( DBHelper.LANGUAGE, lang );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.insert( DBHelper.TABLE_NAME_STUDYLIST, null, values );
+            db.close();
+        }
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();

@@ -370,6 +370,11 @@ public class XWPrefs {
         return result;
     }
 
+    public static boolean getStudyEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_studyon, false );
+    }
+
     protected static String getPrefsString( Context context, int keyID )
     {
         String key = context.getString( keyID );
