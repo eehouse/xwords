@@ -1580,6 +1580,26 @@ public class DBUtils {
         }
     }
 
+    public static int studyListLangCount( Context context )
+    {
+        int result = 0;
+        String groupBy = DBHelper.LANGUAGE;
+        String selection = null;//DBHelper.LANGUAGE;
+        String[] columns = { DBHelper.LANGUAGE };
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_STUDYLIST, columns, 
+                                      selection, null, groupBy, null, null );
+            result = cursor.getCount();
+            cursor.close();
+            db.close();
+        }
+        DbgUtils.logf( "studyListLangCount() => %d", result );
+        return result;
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
