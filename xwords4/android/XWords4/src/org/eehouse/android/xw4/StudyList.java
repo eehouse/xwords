@@ -19,20 +19,26 @@
 
 package org.eehouse.android.xw4;
 
-import android.view.View;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.widget.AdapterView;
+import android.text.ClipboardManager;
+import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 
 public class StudyList extends XWListActivity 
     implements OnItemSelectedListener {
 
     private Spinner m_spinner;
     private int[] m_langCodes;
+    private String[] m_words;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
@@ -66,6 +72,36 @@ public class StudyList extends XWListActivity
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu )
+    {
+        getMenuInflater().inflate( R.menu.studylist, menu );
+        return true;
+    }
+
+    // @Override
+    // public boolean onPrepareOptionsMenu( Menu menu ) 
+    // {
+    //     return true;
+    // }
+
+    public boolean onOptionsItemSelected( MenuItem item )
+    {
+        boolean handled = true;
+        switch ( item.getItemId() ) {
+        case R.id.copy_all:
+            ClipboardManager clipboard = (ClipboardManager)
+                getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText( TextUtils.join( "\n", m_words ) );
+            break;
+        case R.id.clear_all:
+            break;
+        default:
+            handled = false;
+        }
+        return handled;
+    }
+
     //////////////////////////////////////////////////
     // AdapterView.OnItemSelectedListener interface
     //////////////////////////////////////////////////
@@ -82,10 +118,10 @@ public class StudyList extends XWListActivity
 
     private void loadList( int lang )
     {
-        String[] words = DBUtils.studyListWords( this, lang );
+        m_words = DBUtils.studyListWords( this, lang );
         ArrayAdapter<String> adapter = new ArrayAdapter<String>
             ( this, android.R.layout.simple_list_item_1 );
-        for ( String word : words ) {
+        for ( String word : m_words ) {
             adapter.add( word );
         }
         // adapter.sort();

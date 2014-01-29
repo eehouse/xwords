@@ -2210,4 +2210,8 @@
     of words to remember</string>
     <string name="gamel_menu_study">Study list…</string>
     <string name="pick_language_prompt">Choose list language</string>
+
+    <string name="slmenu_copy_all">Copy to clipboard</string>
+    <string name="slmenu_clear_all">Clear all</string>
+
 </resources>
