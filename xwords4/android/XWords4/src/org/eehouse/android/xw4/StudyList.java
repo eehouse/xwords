@@ -78,6 +78,9 @@ public class StudyList extends XWListActivity
             ClipboardManager clipboard = (ClipboardManager)
                 getSystemService(Context.CLIPBOARD_SERVICE);
             clipboard.setText( TextUtils.join( "\n", m_words ) );
+
+            String msg  = getString( R.string.paste_donef, m_words.length );
+            Utils.showToast( this, msg );
             break;
         case R.id.clear_all:
             showConfirmThen( R.string.confirm_studylist_clear, CLEAR_ACTION );

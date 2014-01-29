@@ -2216,5 +2216,6 @@
     <string name="confirm_studylist_clear">Are you sure you want to
     remove all the words in this list?\n\n(This action cannot be
     undone.)</string>
+    <string name="paste_donef">%d word[s] copied</string>
 
 </resources>
