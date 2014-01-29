@@ -39,6 +39,7 @@ public class StudyList extends XWListActivity
     private Spinner m_spinner;
     private int[] m_langCodes;
     private String[] m_words;
+    private int m_position;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
@@ -48,28 +49,7 @@ public class StudyList extends XWListActivity
         setContentView( R.layout.studylist );
 
         m_spinner = (Spinner)findViewById( R.id.pick_language );
-        m_langCodes = DBUtils.studyListLangs( this );
-        if ( 0 == m_langCodes.length ) {
-            finish();
-        } else if ( 1 == m_langCodes.length ) {
-            m_spinner.setVisibility( View.GONE );
-            loadList( m_langCodes[0] );
-        } else {
-            String[] names = DictLangCache.getLangNames( this );
-            String[] myNames = new String[m_langCodes.length];
-            for ( int ii = 0; ii < m_langCodes.length; ++ii ) {
-                myNames[ii] = names[m_langCodes[ii]];
-            }
-
-            ArrayAdapter<String> adapter = new
-                ArrayAdapter<String>( this, 
-                                      android.R.layout.simple_spinner_item,
-                                      myNames );
-            adapter.setDropDownViewResource( android.R.layout.
-                                             simple_spinner_dropdown_item );
-            m_spinner.setAdapter( adapter );
-            m_spinner.setOnItemSelectedListener( this );
-        }
+        initOrFinish();
     }
 
     @Override
@@ -95,6 +75,8 @@ public class StudyList extends XWListActivity
             clipboard.setText( TextUtils.join( "\n", m_words ) );
             break;
         case R.id.clear_all:
+            DBUtils.studyListClear( this, m_langCodes[m_position] );
+            initOrFinish();
             break;
         default:
             handled = false;
@@ -108,16 +90,17 @@ public class StudyList extends XWListActivity
     public void onItemSelected( AdapterView<?> parent, View view, 
                                 int position, long id )
     {
-        int lang = m_langCodes[position];
-        loadList( lang );
+        m_position = position;
+        loadList();
     }
 
     public void onNothingSelected( AdapterView<?> parent )
     {
     }
 
-    private void loadList( int lang )
+    private void loadList()
     {
+        int lang = m_langCodes[m_position];
         m_words = DBUtils.studyListWords( this, lang );
         ArrayAdapter<String> adapter = new ArrayAdapter<String>
             ( this, android.R.layout.simple_list_item_1 );
@@ -127,6 +110,33 @@ public class StudyList extends XWListActivity
         // adapter.sort();
 
         setListAdapter( adapter );
+    }
+
+    private void initOrFinish()
+    {
+        m_langCodes = DBUtils.studyListLangs( this );
+        if ( 0 == m_langCodes.length ) {
+            finish();
+        } else if ( 1 == m_langCodes.length ) {
+            m_spinner.setVisibility( View.GONE );
+            m_position = 0;
+            loadList();
+        } else {
+            String[] names = DictLangCache.getLangNames( this );
+            String[] myNames = new String[m_langCodes.length];
+            for ( int ii = 0; ii < m_langCodes.length; ++ii ) {
+                myNames[ii] = names[m_langCodes[ii]];
+            }
+
+            ArrayAdapter<String> adapter = new
+                ArrayAdapter<String>( this, 
+                                      android.R.layout.simple_spinner_item,
+                                      myNames );
+            adapter.setDropDownViewResource( android.R.layout.
+                                             simple_spinner_dropdown_item );
+            m_spinner.setAdapter( adapter );
+            m_spinner.setOnItemSelectedListener( this );
+        }
     }
 
     public static void launch( Context context )

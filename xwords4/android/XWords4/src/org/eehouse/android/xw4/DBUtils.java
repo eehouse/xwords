@@ -1634,6 +1634,18 @@ public class DBUtils {
         return result;
     }
 
+    public static void studyListClear( Context context, int lang )
+    {
+        String selection = String.format( "%s = %d", DBHelper.LANGUAGE, lang );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.delete( DBHelper.TABLE_NAME_STUDYLIST, selection, null );
+            db.close();
+        }
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
