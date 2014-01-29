@@ -2213,5 +2213,8 @@
 
     <string name="slmenu_copy_all">Copy to clipboard</string>
     <string name="slmenu_clear_all">Clear all</string>
+    <string name="confirm_studylist_clear">Are you sure you want to
+    remove all the words in this list?\n\n(This action cannot be
+    undone.)</string>
 
 </resources>

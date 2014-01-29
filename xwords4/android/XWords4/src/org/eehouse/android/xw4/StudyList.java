@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -33,9 +34,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
+import junit.framework.Assert;
+
 public class StudyList extends XWListActivity 
     implements OnItemSelectedListener {
 
+    private static final int CLEAR_ACTION = 1;
+    
     private Spinner m_spinner;
     private int[] m_langCodes;
     private String[] m_words;
@@ -75,13 +80,31 @@ public class StudyList extends XWListActivity
             clipboard.setText( TextUtils.join( "\n", m_words ) );
             break;
         case R.id.clear_all:
-            DBUtils.studyListClear( this, m_langCodes[m_position] );
-            initOrFinish();
+            showConfirmThen( R.string.confirm_studylist_clear, CLEAR_ACTION );
             break;
         default:
             handled = false;
         }
         return handled;
+    }
+
+    //////////////////////////////////////////////////
+    // DlgDelegate.DlgClickNotify interface
+    //////////////////////////////////////////////////
+    @Override
+    public void dlgButtonClicked( int id, int which, Object[] params )
+    {
+        if ( AlertDialog.BUTTON_POSITIVE == which ) {
+            switch ( id ) {
+            case CLEAR_ACTION:
+                DBUtils.studyListClear( this, m_langCodes[m_position] );
+                initOrFinish();
+                break;
+            default:
+                Assert.fail();
+                break;
+            }
+        }
     }
 
     //////////////////////////////////////////////////
