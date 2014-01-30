@@ -226,8 +226,6 @@ public class DBHelper extends SQLiteOpenHelper {
             makeAutoincrement( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
         case 17:
             addSumColumn( db, THUMBNAIL );
-            // nothing yet
-            break;
         case 18:
             createStudyTable( db );
             break;
