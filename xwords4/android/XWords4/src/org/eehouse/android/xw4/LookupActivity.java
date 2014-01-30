@@ -138,6 +138,7 @@ public class LookupActivity extends XWListActivity
             switchState( -1 );
         } else if ( view == m_studyButton ) {
             DBUtils.addToStudyList( this, m_words[m_wordIndex], s_lang );
+            m_studyButton.setEnabled( false );
         }
     }
 
@@ -202,8 +203,9 @@ public class LookupActivity extends XWListActivity
                                 m_words[m_wordIndex] );
             if ( m_studyOn ) {
                 m_studyButton.setVisibility( View.VISIBLE );
+                m_studyButton.setEnabled( true );
+                m_studyButton.setText( txt );
             }
-            m_studyButton.setText( txt );
             break;
         case STATE_LOOKUP:
             lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
