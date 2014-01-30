@@ -2217,4 +2217,6 @@
     <string name="paste_donef">%d word[s] copied</string>
     <string name="studylist_titlef">Studylist for %s</string>
 
+    <string name="study_langpick">Your words for:</string>
+
 </resources>
