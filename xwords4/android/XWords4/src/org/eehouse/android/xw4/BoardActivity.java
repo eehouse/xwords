@@ -804,6 +804,9 @@ public class BoardActivity extends XWActivity
             Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, false );
         }
 
+        boolean enable = 0 < DBUtils.studyListLangs( this ).length;
+        Utils.setItemVisible( menu, R.id.games_menu_study, enable );
+
         return true;
     } // onPrepareOptionsMenu
 
@@ -866,6 +869,9 @@ public class BoardActivity extends XWActivity
 
         case R.id.board_menu_tray:
             cmd = JNICmd.CMD_TOGGLE_TRAY;
+            break;
+        case R.id.games_menu_study:
+            StudyList.launch( this, m_gi.dictLang );
             break;
         case R.id.board_menu_undo_current:
             cmd = JNICmd.CMD_UNDO_CUR;

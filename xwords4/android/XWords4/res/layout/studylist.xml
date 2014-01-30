@@ -9,7 +9,6 @@
               >
 
     <Spinner android:id="@+id/pick_language"
-             android:prompt="@string/pick_language_prompt"
              android:layout_width="fill_parent"
              android:layout_height="wrap_content"
              android:drawSelectorOnTop="true"

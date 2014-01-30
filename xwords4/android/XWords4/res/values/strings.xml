@@ -2204,18 +2204,17 @@
     <string name="menu_rateme">Rate Crosswords</string>
     <string name="no_market">Google Play app not found</string>
 
-    <string name="add_to_studyf">Add %s to study list</string>
-    <string name="title_studyon">Enable study lists</string>
+    <string name="add_to_studyf">Add %s to studylist</string>
+    <string name="title_studyon">Enable studylists</string>
     <string name="summary_studyon">Offer to add to and display lists
     of words to remember</string>
-    <string name="gamel_menu_study">Study list…</string>
-    <string name="pick_language_prompt">Choose list language</string>
+    <string name="gamel_menu_study">Studylist…</string>
 
     <string name="slmenu_copy_all">Copy to clipboard</string>
     <string name="slmenu_clear_all">Clear all</string>
     <string name="confirm_studylist_clear">Are you sure you want to
-    remove all the words in this list?\n\n(This action cannot be
-    undone.)</string>
+    delete this list?\n\n(This action cannot be undone.)</string>
     <string name="paste_donef">%d word[s] copied</string>
+    <string name="studylist_titlef">Studylist for %s</string>
 
 </resources>

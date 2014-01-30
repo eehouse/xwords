@@ -3,9 +3,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/copy_all"
           android:title="@string/slmenu_copy_all"
+          android:showAsAction="ifRoom"
           />
 
     <item android:id="@+id/clear_all"
           android:title="@string/slmenu_clear_all"
+          android:icon="@drawable/content_discard__gen"
+          android:showAsAction="ifRoom"
           />
 </menu>

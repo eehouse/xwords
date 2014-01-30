@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -41,6 +42,7 @@ public class LookupActivity extends XWListActivity
 
     public static final String WORDS = "WORDS";
     public static final String LANG = "LANG";
+    public static final String NOSTUDY = "NOSTUDY";
     private static final String FORCELIST = "FORCELIST";
     private static final String STATE = "STATE";
     private static final String WORDINDEX = "WORDINDEX";
@@ -83,6 +85,9 @@ public class LookupActivity extends XWListActivity
         setLang( intent.getIntExtra( LANG, -1 ) );
         m_forceList = intent.getBooleanExtra( FORCELIST, false );
         m_studyOn = XWPrefs.getStudyEnabled( this );
+        if ( m_studyOn ) {
+            m_studyOn = !intent.getBooleanExtra( NOSTUDY, false );
+        }
 
         m_state = STATE_DONE;
         adjustState( 1 );
@@ -195,7 +200,9 @@ public class LookupActivity extends XWListActivity
             m_doneButton.setText( txt );
             txt = Utils.format( this, R.string.add_to_studyf,
                                 m_words[m_wordIndex] );
-            m_studyButton.setVisibility( View.VISIBLE );
+            if ( m_studyOn ) {
+                m_studyButton.setVisibility( View.VISIBLE );
+            }
             m_studyButton.setText( txt );
             break;
         case STATE_LOOKUP:
@@ -262,5 +269,16 @@ public class LookupActivity extends XWListActivity
     {
         String title = Utils.format( this, R.string.pick_url_titlef, word );
         m_summary.setText( title );
+    }
+
+    public static void launch( Activity activity, String[] words, int lang, 
+                               boolean noStudyOption )
+    {
+        Intent intent = new Intent( activity, LookupActivity.class );
+        intent.putExtra( WORDS, words );
+        intent.putExtra( LANG, lang );
+        intent.putExtra( NOSTUDY, noStudyOption );
+
+        activity.startActivity( intent );
     }
 }

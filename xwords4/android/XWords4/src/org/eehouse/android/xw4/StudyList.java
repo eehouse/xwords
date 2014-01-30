@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.widget.ListView;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -39,7 +40,10 @@ import junit.framework.Assert;
 public class StudyList extends XWListActivity 
     implements OnItemSelectedListener {
 
+    public static final int NO_LANG = -1;
+
     private static final int CLEAR_ACTION = 1;
+    private static final String START_LANG = "START_LANG";
     
     private Spinner m_spinner;
     private int[] m_langCodes;
@@ -54,7 +58,7 @@ public class StudyList extends XWListActivity
         setContentView( R.layout.studylist );
 
         m_spinner = (Spinner)findViewById( R.id.pick_language );
-        initOrFinish();
+        initOrFinish( getIntent() );
     }
 
     @Override
@@ -101,13 +105,20 @@ public class StudyList extends XWListActivity
             switch ( id ) {
             case CLEAR_ACTION:
                 DBUtils.studyListClear( this, m_langCodes[m_position] );
-                initOrFinish();
+                initOrFinish( null );
                 break;
             default:
                 Assert.fail();
                 break;
             }
         }
+    }
+
+    @Override
+    public void onListItemClick( ListView lv, View view, int position, long id )
+    {
+        String[] words = { m_words[position] };
+        launchLookup( words, m_langCodes[m_position], true );
     }
 
     //////////////////////////////////////////////////
@@ -136,9 +147,13 @@ public class StudyList extends XWListActivity
         // adapter.sort();
 
         setListAdapter( adapter );
+
+        String langName = DictLangCache.getLangNames( this )[lang];
+        String title = getString( R.string.studylist_titlef, langName );
+        setTitle( title );
     }
 
-    private void initOrFinish()
+    private void initOrFinish( Intent startIntent )
     {
         m_langCodes = DBUtils.studyListLangs( this );
         if ( 0 == m_langCodes.length ) {
@@ -148,10 +163,20 @@ public class StudyList extends XWListActivity
             m_position = 0;
             loadList();
         } else {
+            int startLang = NO_LANG;
+            int startIndex = -1;
+            if ( null != startIntent ) {
+                startLang = startIntent.getIntExtra( START_LANG, NO_LANG );
+            }
+
             String[] names = DictLangCache.getLangNames( this );
             String[] myNames = new String[m_langCodes.length];
             for ( int ii = 0; ii < m_langCodes.length; ++ii ) {
-                myNames[ii] = names[m_langCodes[ii]];
+                int lang = m_langCodes[ii];
+                myNames[ii] = names[lang];
+                if ( lang == startLang ) {
+                    startIndex = ii;
+                }
             }
 
             ArrayAdapter<String> adapter = new
@@ -162,12 +187,18 @@ public class StudyList extends XWListActivity
                                              simple_spinner_dropdown_item );
             m_spinner.setAdapter( adapter );
             m_spinner.setOnItemSelectedListener( this );
+            if ( -1 != startIndex ) {
+                m_spinner.setSelection( startIndex );
+            }
         }
     }
 
-    public static void launch( Context context )
+    public static void launch( Context context, int lang )
     {
         Intent intent = new Intent( context, StudyList.class );
+        if ( NO_LANG != lang ) {
+            intent.putExtra( START_LANG, lang );
+        }
         context.startActivity( intent );
     }
 

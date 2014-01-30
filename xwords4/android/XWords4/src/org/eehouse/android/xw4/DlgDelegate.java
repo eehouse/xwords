@@ -253,13 +253,9 @@ public class DlgDelegate {
         }
     }
 
-    public void launchLookup( String[] words, int lang, boolean forceList )
+    public void launchLookup( String[] words, int lang, boolean noStudyOption )
     {
-        Intent intent = new Intent( m_activity, LookupActivity.class );
-        intent.putExtra( LookupActivity.WORDS, words );
-        intent.putExtra( LookupActivity.LANG, lang );
-
-        m_activity.startActivity( intent );
+        LookupActivity.launch( m_activity, words, lang, noStudyOption );
     }
 
     public void startProgress( int id )

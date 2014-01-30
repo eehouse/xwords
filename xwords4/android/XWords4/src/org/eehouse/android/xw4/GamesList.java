@@ -790,7 +790,7 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.games_menu_study:
-            StudyList.launch( this );
+            StudyList.launch( this, StudyList.NO_LANG );
             break;
 
         case R.id.games_menu_about:
