@@ -8,7 +8,8 @@
               android:paddingRight="8dp"
               >
 
-    <LinearLayout android:orientation="horizontal"
+    <LinearLayout android:id="@+id/pick_lang"
+                  android:orientation="horizontal"
                   android:layout_width="match_parent" 
                   android:layout_height="wrap_content"
                   >
@@ -17,7 +18,7 @@
                   android:text="@string/study_langpick"
                   />
 
-        <Spinner android:id="@+id/pick_language"
+        <Spinner android:id="@+id/pick_lang_spinner"
                  android:layout_width="fill_parent"
                  android:layout_height="wrap_content"
                  android:drawSelectorOnTop="true"

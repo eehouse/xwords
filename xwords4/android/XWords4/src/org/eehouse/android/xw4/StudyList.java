@@ -46,6 +46,7 @@ public class StudyList extends XWListActivity
     private static final String START_LANG = "START_LANG";
     
     private Spinner m_spinner;
+    private View m_pickView;    // LinearLayout, actually
     private int[] m_langCodes;
     private String[] m_words;
     private int m_position;
@@ -57,7 +58,8 @@ public class StudyList extends XWListActivity
 
         setContentView( R.layout.studylist );
 
-        m_spinner = (Spinner)findViewById( R.id.pick_language );
+        m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
+        m_pickView = findViewById( R.id.pick_lang );
         initOrFinish( getIntent() );
     }
 
@@ -159,7 +161,7 @@ public class StudyList extends XWListActivity
         if ( 0 == m_langCodes.length ) {
             finish();
         } else if ( 1 == m_langCodes.length ) {
-            m_spinner.setVisibility( View.GONE );
+            m_pickView.setVisibility( View.GONE );
             m_position = 0;
             loadList();
         } else {
