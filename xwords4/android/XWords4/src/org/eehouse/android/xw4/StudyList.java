@@ -195,13 +195,27 @@ public class StudyList extends XWListActivity
         }
     }
 
-    public static void launch( Context context, int lang )
+    public static void launchOrAlert( Context context, int lang, 
+                                      DlgDelegate.HasDlgDelegate dlg )
     {
-        Intent intent = new Intent( context, StudyList.class );
-        if ( NO_LANG != lang ) {
-            intent.putExtra( START_LANG, lang );
+        String msg = null;
+        if ( 0 == DBUtils.studyListLangs( context ).length ) {
+            msg = context.getString( R.string.study_no_lists );
+        } else if ( NO_LANG != lang && 
+                    0 == DBUtils.studyListWords( context, lang ).length ) {
+            String langname = DictLangCache.getLangName( context, lang );
+            msg = context.getString( R.string.study_no_langf, langname );
+        } else {
+            Intent intent = new Intent( context, StudyList.class );
+            if ( NO_LANG != lang ) {
+                intent.putExtra( START_LANG, lang );
+            }
+            context.startActivity( intent );
         }
-        context.startActivity( intent );
+
+        if ( null != msg ) {
+            dlg.showOKOnlyDialog( msg );
+        }
     }
 
 }

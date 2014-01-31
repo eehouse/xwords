@@ -2211,12 +2211,17 @@
     <string name="gamel_menu_study">Studylist…</string>
 
     <string name="slmenu_copy_all">Copy to clipboard</string>
-    <string name="slmenu_clear_all">Clear all</string>
+    <string name="slmenu_clear_all">Delete</string>
     <string name="confirm_studylist_clear">Are you sure you want to
     delete this list?\n\n(This action cannot be undone.)</string>
     <string name="paste_donef">%d word[s] copied</string>
     <string name="studylist_titlef">Studylist for %s</string>
 
     <string name="study_langpick">Your words for:</string>
+
+    <string name="study_no_langf">You have not yet saved any words
+    into a studylist for %s.</string>
+    <string name="study_no_lists">You have not yet saved any words
+    into a studylist.</string>
 
 </resources>
