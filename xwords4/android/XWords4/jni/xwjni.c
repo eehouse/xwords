@@ -424,9 +424,10 @@ JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
 ( JNIEnv* env, jclass C )
 {
-    struct timeval tv;
-    gettimeofday( &tv, NULL );
-    srandom( tv.tv_sec );
+    /* Why am I doing this twice? */
+    /* struct timeval tv; */
+    /* gettimeofday( &tv, NULL ); */
+    /* srandom( tv.tv_sec ); */
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make();
 #endif
