@@ -2215,6 +2215,7 @@
     <string name="confirm_studylist_clear">Are you sure you want to
     delete this list?\n\n(This action cannot be undone.)</string>
     <string name="paste_donef">%d word[s] copied</string>
+    <string name="add_donef">%s added to list</string>
     <string name="studylist_titlef">Studylist for %s</string>
 
     <string name="study_langpick">Your words for:</string>
