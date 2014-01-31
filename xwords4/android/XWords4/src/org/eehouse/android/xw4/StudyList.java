@@ -43,6 +43,7 @@ public class StudyList extends XWListActivity
     public static final int NO_LANG = -1;
 
     private static final int CLEAR_ACTION = 1;
+    private static final int COPY_ACTION = 2;
     private static final String START_LANG = "START_LANG";
     
     private Spinner m_spinner;
@@ -81,12 +82,9 @@ public class StudyList extends XWListActivity
         boolean handled = true;
         switch ( item.getItemId() ) {
         case R.id.copy_all:
-            ClipboardManager clipboard = (ClipboardManager)
-                getSystemService(Context.CLIPBOARD_SERVICE);
-            clipboard.setText( TextUtils.join( "\n", m_words ) );
-
-            String msg  = getString( R.string.paste_donef, m_words.length );
-            Utils.showToast( this, msg );
+            showNotAgainDlgThen( R.string.not_again_studycopy,
+                                 R.string.key_na_studycopy, 
+                                 COPY_ACTION );
             break;
         case R.id.clear_all:
             showConfirmThen( R.string.confirm_studylist_clear, CLEAR_ACTION );
@@ -108,6 +106,14 @@ public class StudyList extends XWListActivity
             case CLEAR_ACTION:
                 DBUtils.studyListClear( this, m_langCodes[m_position] );
                 initOrFinish( null );
+                break;
+            case COPY_ACTION:
+                ClipboardManager clipboard = (ClipboardManager)
+                    getSystemService( Context.CLIPBOARD_SERVICE );
+                clipboard.setText( TextUtils.join( "\n", m_words ) );
+
+                String msg  = getString( R.string.paste_donef, m_words.length );
+                Utils.showToast( this, msg );
                 break;
             default:
                 Assert.fail();

@@ -2224,4 +2224,8 @@
     <string name="study_no_lists">You have not yet saved any words
     into a studylist.</string>
 
+    <string name="not_again_studycopy">The words in this list will be
+    copied to the system clipboard. You can then paste them into any
+    app that supports pasting text, e.g. an email app.</string>
+
 </resources>
