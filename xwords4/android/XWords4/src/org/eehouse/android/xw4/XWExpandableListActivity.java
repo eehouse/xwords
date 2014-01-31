@@ -29,7 +29,8 @@ import junit.framework.Assert;
 
 
 public class XWExpandableListActivity extends ExpandableListActivity 
-    implements DlgDelegate.DlgClickNotify, MultiService.MultiEventListener {
+    implements DlgDelegate.DlgClickNotify, DlgDelegate.HasDlgDelegate,
+               MultiService.MultiEventListener {
 
     private DlgDelegate m_delegate;
 
@@ -107,12 +108,12 @@ public class XWExpandableListActivity extends ExpandableListActivity
         m_delegate.showAboutDialog();
     }
 
-    protected void showOKOnlyDialog( int msgID )
+    public void showOKOnlyDialog( int msgID )
     {
         m_delegate.showOKOnlyDialog( msgID );
     }
 
-    protected void showOKOnlyDialog( String msg )
+    public void showOKOnlyDialog( String msg )
     {
         m_delegate.showOKOnlyDialog( msg );
     }

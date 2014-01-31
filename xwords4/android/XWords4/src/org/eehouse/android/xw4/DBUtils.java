@@ -1565,6 +1565,87 @@ public class DBUtils {
         return colNames;
     }
 
+    public static void addToStudyList( Context context, String word,
+                                       int lang )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.WORD, word );
+        values.put( DBHelper.LANGUAGE, lang );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.insert( DBHelper.TABLE_NAME_STUDYLIST, null, values );
+            db.close();
+        }
+    }
+
+    public static int[] studyListLangs( Context context )
+    {
+        int[] result = null;
+        String groupBy = DBHelper.LANGUAGE;
+        String selection = null;//DBHelper.LANGUAGE;
+        String[] columns = { DBHelper.LANGUAGE };
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_STUDYLIST, columns, 
+                                      null, null, groupBy, null, null );
+            int count = cursor.getCount();
+            result = new int[count];
+            if ( 0 < count ) {
+                int index = 0;
+                int colIndex = cursor.getColumnIndex( DBHelper.LANGUAGE );
+                while ( cursor.moveToNext() ) {
+                    result[index++] = cursor.getInt(colIndex);
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static String[] studyListWords( Context context, int lang )
+    {
+        String[] result = null;
+        String selection = String.format( "%s = %d", DBHelper.LANGUAGE, lang );
+        String[] columns = { DBHelper.WORD };
+        String orderBy = DBHelper.WORD;
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_STUDYLIST, columns, 
+                                      selection, null, null, null, orderBy );
+            int count = cursor.getCount();
+            result = new String[count];
+            if ( 0 < count ) {
+                int index = 0;
+                int colIndex = cursor.getColumnIndex( DBHelper.WORD );
+                while ( cursor.moveToNext() ) {
+                    result[index++] = cursor.getString(colIndex);
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static void studyListClear( Context context, int lang )
+    {
+        String selection = String.format( "%s = %d", DBHelper.LANGUAGE, lang );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.delete( DBHelper.TABLE_NAME_STUDYLIST, selection, null );
+            db.close();
+        }
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();

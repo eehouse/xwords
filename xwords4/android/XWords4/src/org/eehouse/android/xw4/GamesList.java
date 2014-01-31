@@ -717,6 +717,9 @@ public class GamesList extends XWExpandableListActivity
             enable = nothingSelected && Utils.isGooglePlayApp( this );
             Utils.setItemVisible( menu, R.id.games_menu_rateme, enable );
 
+            enable = nothingSelected && XWPrefs.getStudyEnabled( this );
+            Utils.setItemVisible( menu, R.id.games_menu_study, enable );
+
             m_menuPrepared = super.onPrepareOptionsMenu( menu );
         } else {
             DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
@@ -783,6 +786,10 @@ public class GamesList extends XWExpandableListActivity
             } catch ( android.content.ActivityNotFoundException anf ) {
                 showOKOnlyDialog( R.string.no_market );
             }
+            break;
+
+        case R.id.games_menu_study:
+            StudyList.launchOrAlert( this, StudyList.NO_LANG, this );
             break;
 
         case R.id.games_menu_about:

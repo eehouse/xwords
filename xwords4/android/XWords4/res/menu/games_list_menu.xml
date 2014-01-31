@@ -26,6 +26,9 @@
           android:icon="@drawable/dict__gen"
           android:showAsAction="ifRoom"
           />
+    <item android:id="@+id/games_menu_study"
+          android:title="@string/gamel_menu_study"
+          />
     <item android:id="@+id/games_menu_email"
           android:title="@string/board_menu_file_email"
           android:icon="@drawable/email__gen"

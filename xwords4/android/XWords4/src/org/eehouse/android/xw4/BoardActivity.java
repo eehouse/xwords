@@ -393,12 +393,16 @@ public class BoardActivity extends XWActivity
                 } else if ( DLG_SCORES_BLK == id ) {
                     if ( null != m_words && m_words.length > 0 ) {
                         String buttonTxt;
+                        boolean studyOn = XWPrefs.getStudyEnabled( this );
                         if ( m_words.length == 1 ) {
-                            buttonTxt = Utils.format( this, 
-                                                      R.string.button_lookupf,
-                                                      m_words[0] );
+                            int resID = studyOn 
+                                ? R.string.button_lookup_studyf
+                                : R.string.button_lookupf;
+                            buttonTxt = Utils.format( this, resID, m_words[0] );
                         } else {
-                            buttonTxt = getString( R.string.button_lookup );
+                            int resID = studyOn ? R.string.button_lookup_study
+                                : R.string.button_lookup;
+                            buttonTxt = getString( resID );
                         }
                         lstnr = new DialogInterface.OnClickListener() {
                                 public void onClick( DialogInterface dialog, 
@@ -800,6 +804,9 @@ public class BoardActivity extends XWActivity
             Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, false );
         }
 
+        boolean enable = XWPrefs.getStudyEnabled( this );
+        Utils.setItemVisible( menu, R.id.games_menu_study, enable );
+
         return true;
     } // onPrepareOptionsMenu
 
@@ -862,6 +869,9 @@ public class BoardActivity extends XWActivity
 
         case R.id.board_menu_tray:
             cmd = JNICmd.CMD_TOGGLE_TRAY;
+            break;
+        case R.id.games_menu_study:
+            StudyList.launchOrAlert( this, m_gi.dictLang, this );
             break;
         case R.id.board_menu_undo_current:
             cmd = JNICmd.CMD_UNDO_CUR;

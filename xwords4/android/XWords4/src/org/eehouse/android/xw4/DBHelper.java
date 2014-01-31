@@ -36,8 +36,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_DICTBROWSE = "dictbrowse";
     public static final String TABLE_NAME_DICTINFO = "dictinfo";
     public static final String TABLE_NAME_GROUPS = "groups";
+    public static final String TABLE_NAME_STUDYLIST = "study";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 18;
+    private static final int DB_VERSION = 19;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -86,6 +87,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String GROUPNAME = "GROUPNAME";
     public static final String EXPANDED = "EXPANDED";
+
+    public static final String WORD = "WORD";
+    public static final String LANGUAGE = "LANGUAGE";
 
     private Context m_context;
 
@@ -153,6 +157,12 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ EXPANDED,  "INTEGER(1)" }
     };
 
+    private static final String[][] s_studySchema = {
+        { WORD,  "TEXT" }
+        ,{ LANGUAGE,  "INTEGER(1)" }
+        ,{ "UNIQUE", "(" + WORD + ", " + LANGUAGE + ")" }
+    };
+
     public DBHelper( Context context )
     {
         super( context, DB_NAME, null, DB_VERSION );
@@ -173,6 +183,7 @@ public class DBHelper extends SQLiteOpenHelper {
         createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
         forceRowidHigh( db, TABLE_NAME_SUM );
         createGroupsTable( db );
+        createStudyTable( db );
     }
 
     @Override
@@ -215,7 +226,8 @@ public class DBHelper extends SQLiteOpenHelper {
             makeAutoincrement( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
         case 17:
             addSumColumn( db, THUMBNAIL );
-            // nothing yet
+        case 18:
+            createStudyTable( db );
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
@@ -276,6 +288,11 @@ public class DBHelper extends SQLiteOpenHelper {
         db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
 
         XWPrefs.setDefaultNewGameGroup( m_context, newGroup );
+    }
+
+    private void createStudyTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_STUDYLIST, s_studySchema );
     }
 
     // Move all existing games to the row previously named "cur games'

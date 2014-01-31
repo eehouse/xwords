@@ -57,6 +57,10 @@
               android:title="@string/board_menu_game_resend" />
       </menu>
     </item>
+    
+    <item android:id="@+id/games_menu_study"
+          android:title="@string/gamel_menu_study"
+          />
 
     <item android:id="@+id/gamel_menu_checkmoves"
           android:title="@string/gamel_menu_checkmoves"

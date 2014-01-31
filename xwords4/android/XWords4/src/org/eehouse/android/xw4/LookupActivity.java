@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -41,7 +42,8 @@ public class LookupActivity extends XWListActivity
 
     public static final String WORDS = "WORDS";
     public static final String LANG = "LANG";
-    public static final String FORCELIST = "FORCELIST";
+    public static final String NOSTUDY = "NOSTUDY";
+    private static final String FORCELIST = "FORCELIST";
     private static final String STATE = "STATE";
     private static final String WORDINDEX = "WORDINDEX";
     private static final String URLINDEX = "URLINDEX";
@@ -62,11 +64,13 @@ public class LookupActivity extends XWListActivity
 
     private String[] m_words;
     private boolean m_forceList;
+    private boolean m_studyOn;
     private int m_wordIndex = 0;
     private int m_urlIndex = 0;
     private int m_state;
     private ArrayAdapter<String> m_wordsAdapter;
     private Button m_doneButton;
+    private Button m_studyButton;
     private TextView m_summary;
 
     @Override
@@ -80,6 +84,10 @@ public class LookupActivity extends XWListActivity
         m_words = intent.getStringArrayExtra( WORDS );
         setLang( intent.getIntExtra( LANG, -1 ) );
         m_forceList = intent.getBooleanExtra( FORCELIST, false );
+        m_studyOn = XWPrefs.getStudyEnabled( this );
+        if ( m_studyOn ) {
+            m_studyOn = !intent.getBooleanExtra( NOSTUDY, false );
+        }
 
         m_state = STATE_DONE;
         adjustState( 1 );
@@ -90,6 +98,12 @@ public class LookupActivity extends XWListActivity
 
         m_doneButton = (Button)findViewById( R.id.button_done );
         m_doneButton.setOnClickListener( this );
+        m_studyButton = (Button)findViewById( R.id.button_study );
+        if ( m_studyOn ) {
+            m_studyButton.setOnClickListener( this );
+        } else {
+            m_studyButton.setVisibility( View.GONE );
+        }
 
         m_summary = (TextView)findViewById( R.id.summary );
 
@@ -120,7 +134,12 @@ public class LookupActivity extends XWListActivity
     /* View.OnClickListener -- just the Done button */
     public void onClick( View view ) 
     {
-        switchState( -1 );
+        if ( view == m_doneButton ) {
+            switchState( -1 );
+        } else if ( view == m_studyButton ) {
+            DBUtils.addToStudyList( this, m_words[m_wordIndex], s_lang );
+            m_studyButton.setEnabled( false );
+        }
     }
 
     /* AdapterView.OnItemClickListener */
@@ -146,7 +165,7 @@ public class LookupActivity extends XWListActivity
                 m_state += incr;
             }
             if ( STATE_URLS == m_state &&
-                ( 1 >= s_lookupUrls.length && !m_forceList ) ) {
+                ( 1 >= s_lookupUrls.length && !m_forceList && !m_studyOn ) ) {
                 m_state += incr;
             }
             if ( m_state == curState ) {
@@ -169,8 +188,10 @@ public class LookupActivity extends XWListActivity
             break;
         case STATE_WORDS:
             getListView().setAdapter( m_wordsAdapter );
-            setSummary( R.string.title_lookup );
+            setSummary( m_studyOn ? 
+                        R.string.title_lookup_study : R.string.title_lookup );
             m_doneButton.setText( R.string.button_done );
+            m_studyButton.setVisibility( View.GONE );
             break;
         case STATE_URLS:
             getListView().setAdapter( s_urlsAdapter );
@@ -178,6 +199,13 @@ public class LookupActivity extends XWListActivity
             String txt = Utils.format( this, R.string.button_donef,
                                        m_words[m_wordIndex] );
             m_doneButton.setText( txt );
+            txt = Utils.format( this, R.string.add_to_studyf,
+                                m_words[m_wordIndex] );
+            if ( m_studyOn ) {
+                m_studyButton.setVisibility( View.VISIBLE );
+                m_studyButton.setEnabled( true );
+                m_studyButton.setText( txt );
+            }
             break;
         case STATE_LOOKUP:
             lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
@@ -243,5 +271,16 @@ public class LookupActivity extends XWListActivity
     {
         String title = Utils.format( this, R.string.pick_url_titlef, word );
         m_summary.setText( title );
+    }
+
+    public static void launch( Activity activity, String[] words, int lang, 
+                               boolean noStudyOption )
+    {
+        Intent intent = new Intent( activity, LookupActivity.class );
+        intent.putExtra( WORDS, words );
+        intent.putExtra( LANG, lang );
+        intent.putExtra( NOSTUDY, noStudyOption );
+
+        activity.startActivity( intent );
     }
 }

@@ -1788,10 +1788,13 @@
     <!-- New strings that need to be documented and found a home
          above. -->
     <string name="button_lookup">Look up words</string>
+    <string name="button_lookup_study">Look up/study words</string>
       <!--  -->
     <string name="button_lookupf">Look up %s</string>
+    <string name="button_lookup_studyf">Look up/study %s</string>
       <!--  -->
     <string name="title_lookup">Tap to look up</string>
+    <string name="title_lookup_study">Tap to look up or study</string>
       <!--  -->
     <string name="button_done">Done</string>
       <!--  -->
@@ -2200,4 +2203,29 @@
 
     <string name="menu_rateme">Rate Crosswords</string>
     <string name="no_market">Google Play app not found</string>
+
+    <string name="add_to_studyf">Add %s to studylist</string>
+    <string name="title_studyon">Enable studylists</string>
+    <string name="summary_studyon">Offer to add to and display lists
+    of words to remember</string>
+    <string name="gamel_menu_study">Studylist…</string>
+
+    <string name="slmenu_copy_all">Copy to clipboard</string>
+    <string name="slmenu_clear_all">Delete</string>
+    <string name="confirm_studylist_clear">Are you sure you want to
+    delete this list?\n\n(This action cannot be undone.)</string>
+    <string name="paste_donef">%d word[s] copied</string>
+    <string name="studylist_titlef">Studylist for %s</string>
+
+    <string name="study_langpick">Your words for:</string>
+
+    <string name="study_no_langf">You have not yet saved any words
+    into a studylist for %s.</string>
+    <string name="study_no_lists">You have not yet saved any words
+    into a studylist.</string>
+
+    <string name="not_again_studycopy">The words in this list will be
+    copied to the system clipboard. You can then paste them into any
+    app that supports pasting text, e.g. an email app.</string>
+
 </resources>

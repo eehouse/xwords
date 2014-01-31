@@ -125,6 +125,10 @@
               android:theme="@android:style/Theme.Dialog"
               />
 
+    <activity android:name="StudyList"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
+
     <receiver android:name="RelayReceiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
