@@ -59,6 +59,10 @@ public class DlgDelegate {
     public interface DlgClickNotify {
         void dlgButtonClicked( int id, int button, Object[] params );
     }
+    public interface HasDlgDelegate {
+        void showOKOnlyDialog( int msgID );
+        void showOKOnlyDialog( String msg );
+    }
 
     private Activity m_activity;
     private DlgClickNotify m_clickCallback;
