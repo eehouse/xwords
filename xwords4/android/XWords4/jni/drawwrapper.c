@@ -517,6 +517,7 @@ static void
 and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum, 
                       const DictionaryCtxt* dict )
 {
+    XP_LOGF( "%s(dict=%p); code=%x", __func__, dict, andDictID(dict) );
     AndDraw* draw = (AndDraw*)dctx;
     if ( NULL != draw->jdraw ) {
         XP_LangCode code = 0;   /* A null dict means no-lang */

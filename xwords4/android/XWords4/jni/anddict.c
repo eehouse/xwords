@@ -42,6 +42,9 @@ typedef struct _AndDictionaryCtxt {
     off_t bytesSize;
     jbyte* bytes;
     jbyteArray byteArray;
+#ifdef DEBUG
+    uint32_t dbgid;
+#endif
 } AndDictionaryCtxt;
 
 #define CHECK_PTR(p,c,e)                                                \
@@ -487,6 +490,7 @@ static void
 and_dictionary_destroy( DictionaryCtxt* dict )
 {
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
+    XP_LOGF( "%s(dict=%p); code=%x", __func__, ctxt, ctxt->dbgid );
     XP_U16 nSpecials = andCountSpecials( ctxt );
     XP_U16 ii;
     JNIEnv* env = ctxt->env;
@@ -553,6 +557,9 @@ and_dictionary_make_empty( MPFORMAL JNIEnv* env, JNIUtilCtxt* jniutil )
         = (AndDictionaryCtxt*)XP_CALLOC( mpool, sizeof( *anddict ) );
     anddict->env = env;
     anddict->jniutil = jniutil;
+#ifdef DEBUG
+    anddict->dbgid = rand();
+#endif
     dict_super_init( (DictionaryCtxt*)anddict );
     MPASSIGN( anddict->super.mpool, mpool );
     return (DictionaryCtxt*)anddict;
@@ -635,6 +642,8 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname,
 
         /* copy the name */
         anddict->super.name = getStringCopy( MPPARM(mpool) env, jname );
+        XP_LOGF( "%s(dict=%p); code=%x; name=%s", __func__, anddict, 
+                 anddict->dbgid, anddict->super.name );
         anddict->super.langName = getStringCopy( MPPARM(mpool) env, jlangname );
 
         XP_U32 numEdges;
@@ -664,3 +673,12 @@ destroyDicts( PlayerDicts* dicts )
         }
     }
 }
+
+#ifdef DEBUG
+uint32_t
+andDictID( DictionaryCtxt* dict )
+{
+    AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
+    return ctxt->dbgid;
+}
+#endif
