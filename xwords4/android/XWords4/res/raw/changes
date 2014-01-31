@@ -5,13 +5,14 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 77 release</b>
+<b>Crosswords 4.4 beta 78 release</b>
 
 <h3>New with this release</h3>
 <ul>
-    <li>Fix several crashes reported by users -- thanks!</li>
-    <li>Add menu to make rating Crosswords easier</li>
-    <li>Change copyright date: Happy New Year!</li>
+    <li>Add new "Studylist" feature. It's off by default to avoid
+    confusion, but once enabled (via App Settings/Behavior) it lets
+    you add words from the board to a list you'll later study or
+    export. </li>
 </ul>
 
 <h3>Next up</h3>
