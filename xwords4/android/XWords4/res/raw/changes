@@ -11,15 +11,14 @@
 <ul>
     <li>Add new "Studylist" feature. It's off by default to avoid
     confusion, but once enabled (via App Settings/Behavior) it lets
-    you add words from the board to a list you'll later study or
-    export. </li>
+    you add words from the board to a list you'll later study or copy
+    to another app. (Thanks to BRS for the idea!)</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>Look, again, at play via Bluetooth now that HTC's less of the market</li>
+  <li>Look, again, at play via Bluetooth now that HTC phones aren't quite so common</li>
   <li>Fix SMS play for KitKat</li>
-  <li>Use Actionbar and select/act pattern on more screens</li>
   <li>Offer "Rematch" when game's over</li>
 </ul>
 
