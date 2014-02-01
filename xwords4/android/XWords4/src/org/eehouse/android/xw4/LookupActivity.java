@@ -139,7 +139,6 @@ public class LookupActivity extends XWListActivity
         } else if ( view == m_studyButton ) {
             String word = m_words[m_wordIndex];
             DBUtils.addToStudyList( this, word, s_lang );
-            m_studyButton.setEnabled( false );
 
             String msg = getString( R.string.add_donef, word );
             Utils.showToast( this, msg );
@@ -207,7 +206,6 @@ public class LookupActivity extends XWListActivity
                                 m_words[m_wordIndex] );
             if ( m_studyOn ) {
                 m_studyButton.setVisibility( View.VISIBLE );
-                m_studyButton.setEnabled( true );
                 m_studyButton.setText( txt );
             }
             break;
