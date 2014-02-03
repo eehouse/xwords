@@ -843,8 +843,11 @@ public class GamesList extends XWExpandableListActivity
                         public void run() {
                             byte[] stream = GameUtils.savedGame( GamesList.this,
                                                                  selRowIDs[0] );
+                            long groupID = 
+                                XWPrefs.getDefaultNewGameGroup(GamesList.this);
                             GameLock lock = 
-                                GameUtils.saveNewGame( GamesList.this, stream );
+                                GameUtils.saveNewGame( GamesList.this, stream,
+                                                       groupID );
                             DBUtils.saveSummary( GamesList.this, lock, smry );
                             m_selGames.add( lock.getRowid() );
                             lock.unlock();
