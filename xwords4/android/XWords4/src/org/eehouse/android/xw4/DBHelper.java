@@ -182,7 +182,7 @@ public class DBHelper extends SQLiteOpenHelper {
         createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
         createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
         forceRowidHigh( db, TABLE_NAME_SUM );
-        createGroupsTable( db );
+        createGroupsTable( db, false );
         createStudyTable( db );
     }
 
@@ -217,7 +217,7 @@ public class DBHelper extends SQLiteOpenHelper {
             addSumColumn( db, LASTMOVE );
         case 14:
             addSumColumn( db, GROUPID );
-            createGroupsTable( db );
+            createGroupsTable( db, true );
         case 15:
             moveToCurGames( db );
         case 16:
@@ -271,25 +271,32 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL( query.toString() );
     }
 
-    private void createGroupsTable( SQLiteDatabase db )
+    private void createGroupsTable( SQLiteDatabase db, boolean isUpgrade )
     {
+        // Do we have any existing games we'll be grouping?
+        if ( isUpgrade ) {
+            isUpgrade = 0 < countGames( db );
+        }
+
         createTable( db, TABLE_NAME_GROUPS, s_groupsSchema );
 
         // Create an empty group name
         ContentValues values = new ContentValues();
-        values.put( GROUPNAME, m_context.getString(R.string.group_cur_games) );
-        values.put( EXPANDED, 1 );
-        long curGroup = db.insert( TABLE_NAME_GROUPS, null, values );
+        if ( isUpgrade ) {
+            values.put( GROUPNAME, m_context.getString(R.string.group_cur_games) );
+            values.put( EXPANDED, 1 );
+            long curGroup = db.insert( TABLE_NAME_GROUPS, null, values );
+
+            // place all existing games in the initial unnamed group
+            values = new ContentValues();
+            values.put( GROUPID, curGroup );
+            db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
+        }
+
         values = new ContentValues();
         values.put( GROUPNAME, m_context.getString(R.string.group_new_games) );
         values.put( EXPANDED, 1 );
         long newGroup = db.insert( TABLE_NAME_GROUPS, null, values );
-
-        // place all existing games in the initial unnamed group
-        values = new ContentValues();
-        values.put( GROUPID, curGroup );
-        db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
-
         XWPrefs.setDefaultNewGameGroup( m_context, newGroup );
     }
 
@@ -382,4 +389,17 @@ public class DBHelper extends SQLiteOpenHelper {
         query = String.format( "DELETE FROM %s", name );
         db.execSQL( query );
     }
+
+    private int countGames( SQLiteDatabase db )
+    {
+        final String query = "SELECT COUNT(*) FROM " + TABLE_NAME_SUM;
+
+        Cursor cursor = db.rawQuery( query, null );
+        cursor.moveToFirst();
+        int result = cursor.getInt(0);
+        cursor.close();
+        DbgUtils.logf( "countGames()=>%d", result );
+        return result;
+    }
+
 }
