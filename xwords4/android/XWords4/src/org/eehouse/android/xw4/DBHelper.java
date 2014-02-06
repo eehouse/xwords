@@ -225,7 +225,10 @@ public class DBHelper extends SQLiteOpenHelper {
             setColumnsEqual( db, TABLE_NAME_SUM, VISID, "rowid" );
             makeAutoincrement( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
         case 17:
-            addSumColumn( db, THUMBNAIL );
+            if ( 17 == oldVersion ) {
+                // THUMBNAIL also added by makeAutoincrement above
+                addSumColumn( db, THUMBNAIL );
+            }
         case 18:
             createStudyTable( db );
             break;
