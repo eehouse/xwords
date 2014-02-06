@@ -182,7 +182,7 @@
     <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o intentenu més tard.</string>
     <string name="msg_lost_other">El repetidor ha perdut el contacte amb algun altre dispositiu durant aquesta partida.</string>
 
-    <string name="ids_badwords">Les paraules %s no es troben al diccionari.</string>
+    <string name="ids_badwordsf">Les paraules %s no es troben al diccionari.</string>
     <string name="badwords_accept">  Voleu acceptar aquesta jugada?</string>
     <string name="badwords_lost">  Torn perdut.</string>
     <string name="badwords_title">Les paraules no són vàlides</string>

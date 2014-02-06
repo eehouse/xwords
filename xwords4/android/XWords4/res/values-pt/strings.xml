@@ -605,7 +605,7 @@
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
          -->
-    <string name="ids_badwords">Palavra(s) %1$s não encontrada(s) na
+    <string name="ids_badwordsf">Palavra(s) %1$s não encontrada(s) na
     lista de palavras %2$s.</string>
 
     <!-- Appended to the above in the phonies_warn case.  User may

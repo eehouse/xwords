@@ -71,7 +71,7 @@ public class BoardActivity extends XWActivity
     public static final String INTENT_KEY_CHAT = "chat";
 
     private static final int DLG_OKONLY = DlgDelegate.DIALOG_LAST + 1;
-    private static final int DLG_BADWORDS = DLG_OKONLY + 1;
+    private static final int DLG_BADWORDS_BLK = DLG_OKONLY + 1;
     private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
     private static final int QUERY_INFORM_BLK = DLG_OKONLY + 3;
     private static final int PICK_TILE_REQUESTBLANK_BLK = DLG_OKONLY + 4;
@@ -283,7 +283,6 @@ public class BoardActivity extends XWActivity
 
             switch ( id ) {
             case DLG_OKONLY:
-            case DLG_BADWORDS:
             case DLG_RETRY:
             case GAME_OVER:
             case DLG_CONNSTAT:
@@ -368,6 +367,7 @@ public class BoardActivity extends XWActivity
             case QUERY_REQUEST_BLK:
             case QUERY_INFORM_BLK:
             case DLG_SCORES_BLK:
+            case DLG_BADWORDS_BLK: 
                 ab = new AlertDialog.Builder( this )
                     .setMessage( m_dlgBytes );
                 if ( 0 != m_dlgTitle ) {
@@ -1776,21 +1776,14 @@ public class BoardActivity extends XWActivity
         {
             boolean accept = turnLost;
 
-            StringBuffer sb = new StringBuffer();
-            for ( int ii = 0; ; ) {
-                sb.append( words[ii] );
-                if ( ++ii == words.length ) {
-                    break;
-                }
-                sb.append( "; " );
-            }
-        
+            String wordsString = TextUtils.join( ", ", words );
             String message = 
-                getString( R.string.ids_badwords, sb.toString(), dict );
+                getString( R.string.ids_badwordsf, wordsString, dict );
 
             if ( turnLost ) {
-                nonBlockingDialog( DLG_BADWORDS, 
-                                   message + getString(R.string.badwords_lost) );
+                m_dlgBytes = message + getString( R.string.badwords_lost );
+                m_dlgTitle = R.string.badwords_title;
+                waitBlockingDialog( DLG_BADWORDS_BLK, 0 );
             } else {
                 m_dlgBytes = message + getString( R.string.badwords_accept );
                 m_dlgTitle = R.string.query_title;
@@ -2061,9 +2054,6 @@ public class BoardActivity extends XWActivity
         switch ( dlgID ) {
         case DLG_OKONLY:
             m_dlgTitle = R.string.info_title;
-            break;
-        case DLG_BADWORDS:
-            m_dlgTitle = R.string.badwords_title;
             break;
         case DLG_USEDICT:
         case DLG_GETDICT:

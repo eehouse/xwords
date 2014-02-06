@@ -161,7 +161,7 @@
     <string name="msg_dup_room">Jiný server si již zaregistroval místnost s tímto jménem. Přejmenujte ji nebo to zkuste později.</string>
     <string name="msg_lost_other">Relay ztratil kontakt s nějakým zařízením ve hře.</string>
 
-    <string name="ids_badwords">Slovo[a] %s nebylo nalezeno ve slovníku.</string>
+    <string name="ids_badwordsf">Slovo[a] %s nebylo nalezeno ve slovníku.</string>
     <string name="badwords_accept">  Chcete přesto přijmout tento tah?</string>
     <string name="badwords_lost">  Tah ztracen.</string>
     <string name="badwords_title">Neplatné slovo[a]</string>
