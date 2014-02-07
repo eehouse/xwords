@@ -70,6 +70,7 @@ public class BoardActivity extends XWActivity
 
     public static final String INTENT_KEY_CHAT = "chat";
 
+    private static final int BLOCKING_DLG_NONE = -1;
     private static final int DLG_OKONLY = DlgDelegate.DIALOG_LAST + 1;
     private static final int DLG_BADWORDS_BLK = DLG_OKONLY + 1;
     private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
@@ -167,7 +168,7 @@ public class BoardActivity extends XWActivity
     private Thread m_blockingThread;
     private JNIThread m_jniThread;
     private JNIThread.GameStateInfo m_gsi;
-    private boolean m_blockingDlgPosted = false;
+    private int m_blockingDlgID = BLOCKING_DLG_NONE;
 
     private String m_room;
     private String m_toastStr;
@@ -533,6 +534,7 @@ public class BoardActivity extends XWActivity
     @Override
     public void onPrepareDialog( int id, Dialog dialog )
     {
+        DbgUtils.logf( "BoardActivity:onPrepareDialog(id=%d)", id );
         switch( id ) {
         case DLG_INVITE:
             AlertDialog ad = (AlertDialog)dialog;
@@ -600,7 +602,7 @@ public class BoardActivity extends XWActivity
     {
         super.onResume();
         m_handler = new Handler();
-        m_blockingDlgPosted = false;
+        m_blockingDlgID = BLOCKING_DLG_NONE;
 
         setKeepScreenOn();
 
@@ -2018,27 +2020,29 @@ public class BoardActivity extends XWActivity
     private int waitBlockingDialog( final int dlgID, int cancelResult )
     {
         int result = cancelResult;
-        if ( m_blockingDlgPosted ) { // this has been true; dunno why
-            DbgUtils.logf( "waitBlockingDialog: dropping dlgID %d", dlgID );
+        // this has been true; dunno why
+        if ( BLOCKING_DLG_NONE != m_blockingDlgID ) {
+            DbgUtils.logf( "waitBlockingDialog: dropping dlgID %d b/c %d set",
+                           dlgID, m_blockingDlgID );
         } else {
             setBlockingThread();
             m_resultCode = cancelResult;
 
             if ( post( new Runnable() {
                     public void run() {
+                        m_blockingDlgID = dlgID;
                         showDialog( dlgID );
-                        m_blockingDlgPosted = true;
                     }
                 } ) ) {
 
                 try {
                     m_forResultWait.acquire();
-                    m_blockingDlgPosted = false;
+                    m_blockingDlgID = BLOCKING_DLG_NONE;
                 } catch ( java.lang.InterruptedException ie ) {
                     DbgUtils.loge( ie );
-                    if ( m_blockingDlgPosted ) {
-                        dismissDialog( dlgID );
-                        m_blockingDlgPosted = false;
+                    if ( BLOCKING_DLG_NONE != m_blockingDlgID ) {
+                        dismissDialog( m_blockingDlgID );
+                        m_blockingDlgID = BLOCKING_DLG_NONE;
                     }
                 }
             }
