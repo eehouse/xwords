@@ -81,6 +81,7 @@ dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
     }
     XP_ASSERT( tile < dict->nFaces );
     tile *= 2;
+    XP_ASSERT( !!dict->countsAndValues );
     return dict->countsAndValues[tile+1];    
 } /* dict_getTileValue */
 
