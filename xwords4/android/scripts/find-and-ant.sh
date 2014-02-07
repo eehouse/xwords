@@ -30,4 +30,21 @@ while [ ! -e $MANIFEST ]; do
     cd ..
 done
 
+DIRNAME=$(basename $(pwd))
+case $DIRNAME in
+    XWords4-bt)
+        PKG=xw4bt
+        ;;
+    XWords4)
+        PKG=xw4
+        ;;
+    *)
+        usage "running in unexpected directory $DIRNAME"
+        ;;
+esac
+
 ant $CMDS
+
+if [ "$CMDS" != "${CMDS%%install}" ]; then
+	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesList
+fi
