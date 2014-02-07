@@ -344,7 +344,7 @@ public class DlgDelegate {
             .setIcon( R.drawable.icon48x48 )
             .setTitle( R.string.app_name )
             .setView( view )
-            .setPositiveButton( R.string.changes_button,
+            .setNegativeButton( R.string.changes_button,
                                 new OnClickListener() {
                                     @Override
                                     public void onClick( DialogInterface dlg, 
@@ -353,6 +353,7 @@ public class DlgDelegate {
                                         FirstRunDialog.show( m_activity );
                                     }
                                 } )
+            .setPositiveButton( R.string.button_ok, null )
             .create();
     }
 
