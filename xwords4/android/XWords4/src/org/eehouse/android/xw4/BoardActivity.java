@@ -589,18 +589,18 @@ public class BoardActivity extends XWActivity
     } // onCreate
 
     @Override
-    protected void onPause()
+    protected void onStop()
     {
         m_handler = null;
         ConnStatusHandler.setHandler( null );
         waitCloseGame( true );
-        super.onPause();
+        super.onStop();
     }
 
     @Override
-    protected void onResume()
+    protected void onStart()
     {
-        super.onResume();
+        super.onStart();
         m_handler = new Handler();
         m_blockingDlgID = BLOCKING_DLG_NONE;
 
