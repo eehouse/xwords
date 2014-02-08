@@ -53,6 +53,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 import junit.framework.Assert;
 
@@ -180,21 +181,20 @@ public class BoardActivity extends XWActivity
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
 
-    private static BoardActivity s_this = null;
-    private static Class s_thisLocker = BoardActivity.class;
+    private static HashSet<BoardActivity> s_this = new HashSet<BoardActivity>();
 
     public static boolean feedMessage( int gameID, byte[] msg, 
                                        CommsAddrRec retAddr )
     {
         boolean delivered = false;
-        synchronized( s_thisLocker ) {
-            if ( null != s_this ) {
-                Assert.assertNotNull( s_this.m_gi );
-                Assert.assertNotNull( s_this.m_gameLock );
-                Assert.assertNotNull( s_this.m_jniThread );
-                if ( gameID == s_this.m_gi.gameID ) {
-                    s_this.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg,
-                                               retAddr );
+        synchronized( s_this ) {
+            if ( 1 == s_this.size() ) {
+                BoardActivity self = s_this.iterator().next();
+                Assert.assertNotNull( self.m_gi );
+                Assert.assertNotNull( self.m_gameLock );
+                Assert.assertNotNull( self.m_jniThread );
+                if ( gameID == self.m_gi.gameID ) {
+                    self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, retAddr );
                     delivered = true;
                 }
             }
@@ -205,13 +205,14 @@ public class BoardActivity extends XWActivity
     public static boolean feedMessage( long rowid, byte[] msg )
     {
         boolean delivered = false;
-        synchronized( s_thisLocker ) {
-            if ( null != s_this ) {
-                Assert.assertNotNull( s_this.m_gi );
-                Assert.assertNotNull( s_this.m_gameLock );
-                Assert.assertNotNull( s_this.m_jniThread );
-                if ( rowid == s_this.m_rowid ) {
-                    s_this.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, null );
+        synchronized( s_this ) {
+            if ( 1 == s_this.size() ) {
+                BoardActivity self = s_this.iterator().next();
+                Assert.assertNotNull( self.m_gi );
+                Assert.assertNotNull( self.m_gameLock );
+                Assert.assertNotNull( self.m_jniThread );
+                if ( rowid == self.m_rowid ) {
+                    self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, null );
                     delivered = true;
                 }
             }
@@ -223,15 +224,16 @@ public class BoardActivity extends XWActivity
     {
         boolean delivered = false;
         Assert.assertNotNull( msgs );
-        synchronized( s_thisLocker ) {
-            if ( null != s_this ) {
-                Assert.assertNotNull( s_this.m_gi );
-                Assert.assertNotNull( s_this.m_gameLock );
-                Assert.assertNotNull( s_this.m_jniThread );
-                if ( rowid == s_this.m_rowid ) {
+        synchronized( s_this ) {
+            if ( 1 == s_this.size() ) {
+                BoardActivity self = s_this.iterator().next();
+                Assert.assertNotNull( self.m_gi );
+                Assert.assertNotNull( self.m_gameLock );
+                Assert.assertNotNull( self.m_jniThread );
+                if ( rowid == self.m_rowid ) {
                     delivered = true; // even if no messages!
                     for ( byte[] msg : msgs ) {
-                        s_this.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg,
+                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg,
                                                    null );
                     }
                 }
@@ -242,17 +244,19 @@ public class BoardActivity extends XWActivity
 
     private static void setThis( BoardActivity self )
     {
-        synchronized( s_thisLocker ) {
-            Assert.assertNull( s_this );
-            s_this = self;
+        synchronized( s_this ) {
+            DbgUtils.logf( "setThis(self=%H)", self );
+            Assert.assertTrue( !s_this.contains(self) ); // here
+            s_this.add( self );
         }
     }
 
-    private static void clearThis()
+    private static void clearThis( BoardActivity self )
     {
-        synchronized( s_thisLocker ) {
-            Assert.assertNotNull( s_this );
-            s_this = null;
+        synchronized( s_this ) {
+            DbgUtils.logf( "clearThis(s_this=%H)", s_this );
+            Assert.assertTrue( s_this.contains( self ) );
+            s_this.remove( self );
         }
     }
 
@@ -2110,7 +2114,7 @@ public class BoardActivity extends XWActivity
             }
             m_view.stopHandling();
 
-            clearThis();
+            clearThis( this );
 
             if ( XWPrefs.getThumbEnabled( this ) ) {
                 // Before we dispose, and after JNIThread has
