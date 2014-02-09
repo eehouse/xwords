@@ -593,26 +593,30 @@ public class BoardActivity extends XWActivity
     } // onCreate
 
     @Override
-    protected void onStop()
+    protected void onPause()
     {
-        m_handler = null;
-        ConnStatusHandler.setHandler( null );
-        waitCloseGame( true );
-        super.onStop();
+        if ( isFinishing() ) {
+            m_handler = null;
+            ConnStatusHandler.setHandler( null );
+            waitCloseGame( true );
+        }
+        super.onPause();
     }
 
     @Override
-    protected void onStart()
+    protected void onResume()
     {
-        super.onStart();
-        m_handler = new Handler();
-        m_blockingDlgID = BLOCKING_DLG_NONE;
+        super.onResume();
+        if ( null == m_handler ) {
+            m_handler = new Handler();
+            m_blockingDlgID = BLOCKING_DLG_NONE;
 
-        setKeepScreenOn();
+            setKeepScreenOn();
 
-        loadGame();
+            loadGame();
 
-        ConnStatusHandler.setHandler( this );
+            ConnStatusHandler.setHandler( this );
+        }
     }
 
     @Override
