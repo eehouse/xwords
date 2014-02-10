@@ -398,7 +398,6 @@ public class DBHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
         int result = cursor.getInt(0);
         cursor.close();
-        DbgUtils.logf( "countGames()=>%d", result );
         return result;
     }
 
