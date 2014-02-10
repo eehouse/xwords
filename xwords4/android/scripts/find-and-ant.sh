@@ -35,6 +35,9 @@ case $DIRNAME in
     XWords4-bt)
         PKG=xw4bt
         ;;
+    XWords4-dbg)
+        PKG=xw4dbg
+        ;;
     XWords4)
         PKG=xw4
         ;;
