@@ -22,7 +22,7 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4bt"
-          android:versionCode="68"
+          android:versionCode="72"
           android:versionName="@string/app_version"
           >
 
@@ -45,6 +45,7 @@
   <uses-permission android:name="android.permission.VIBRATE" />
   <uses-permission android:name="android.permission.RECEIVE_SMS" /> 
   <uses-permission android:name="android.permission.SEND_SMS" />
+  <uses-permission android:name="android.permission.READ_SMS" />
   <uses-permission android:name="android.permission.BLUETOOTH" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
   <uses-permission android:name="android.permission.READ_CONTACTS" />
@@ -129,6 +130,10 @@
               android:theme="@android:style/Theme.Dialog"
               />
 
+    <activity android:name="StudyList"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
+
     <receiver android:name="RelayReceiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
@@ -144,7 +149,6 @@
     <activity android:name="DispatchNotify">
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
-        <action android:name="android.intent.action.EDIT" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="newxwgame"/>
