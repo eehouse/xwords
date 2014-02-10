@@ -370,6 +370,8 @@ public class GamesList extends XWExpandableListActivity
         // scary, but worth playing with:
         // Assert.assertTrue( isTaskRoot() );
 
+        CrashTrack.init();
+
         m_selGames = new HashSet<Long>();
         m_selGroupIDs = new HashSet<Long>();
         getBundledData( savedInstanceState );
