@@ -20,6 +20,8 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.Context;
+
 public class CrashTrack {
-    public static void init() {} // does nothing here
+    public static void init( Context context ) {} // does nothing here
 }
