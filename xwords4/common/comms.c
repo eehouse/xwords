@@ -1569,10 +1569,13 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         XP_LOGF( "%s: host id %x disconnected", __func__, srcID );
         /* if we don't have connName then RECONNECTED is the wrong state to
            change to. */
-        XP_ASSERT( 0 != comms->rr.connName[0] );
-        set_relay_state( comms, COMMS_RELAYSTATE_RECONNECTED );
-        /* we will eventually want to tell the user which player's gone */
-        util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        if ( COMMS_RELAYSTATE_RECONNECTED < comms->rr.relayState ) {
+            XP_ASSERT( 0 != comms->rr.connName[0] );
+            XP_ASSERT( COOKIE_ID_NONE != comms->rr.cookieID );
+            set_relay_state( comms, COMMS_RELAYSTATE_RECONNECTED );
+            /* we will eventually want to tell the user which player's gone */
+            util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        }
         break;
 
     case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
