@@ -45,7 +45,7 @@ DictionaryCtxt* and_dictionary_make_empty( MPFORMAL JNIEnv *env,
 jobject and_dictionary_getChars( JNIEnv* env, DictionaryCtxt* dict );
 
 # ifdef DEBUG
-uint32_t andDictID(DictionaryCtxt* dict);
+uint32_t andDictID(const DictionaryCtxt* dict);
 # endif
 
 #endif

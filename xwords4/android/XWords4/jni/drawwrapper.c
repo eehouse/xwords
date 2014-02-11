@@ -20,6 +20,7 @@
 
 #include "drawwrapper.h"
 #include "andutils.h"
+#include "anddict.h"
 #include "paths.h"
 
 enum { 

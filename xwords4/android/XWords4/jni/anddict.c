@@ -676,9 +676,9 @@ destroyDicts( PlayerDicts* dicts )
 
 #ifdef DEBUG
 uint32_t
-andDictID( DictionaryCtxt* dict )
+andDictID( const DictionaryCtxt* dict )
 {
-    AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
+    const AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
     return ctxt->dbgid;
 }
 #endif
