@@ -80,6 +80,8 @@
             <arg value="--dest-dir"/>
             <arg value="./assets"/>
             <arg value="--dest-dir"/>
+            <arg value="./libs"/>
+            <arg value="--dest-dir"/>
             <arg value="./img_src"/>
         </exec>
         <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
