@@ -15,6 +15,9 @@ fi
 APK=./bin/XWords4-debug.apk
 DIRNAME=$(basename $(pwd))
 case $DIRNAME in
+    XWords4-dbg)
+        PKG=xw4dbg
+        ;;
     XWords4-bt)
         PKG=xw4bt
         ;;
