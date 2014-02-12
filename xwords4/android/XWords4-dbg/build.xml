@@ -108,8 +108,8 @@
               >
           <arg value="xw4dbg"/>
         </exec>
-        <exec dir=".." executable="./scripts/genvers.sh" output="/dev/null">
-            <arg value="XWords4-DBG"/>
+        <exec dir=".." executable="./scripts/genvers.sh">
+            <arg value="XWords4-dbg"/>
             <arg value="xw4dbg"/>
             <arg value="${INITIAL_CLIENT_VERS}" />
             <arg value="${CHAT_ENABLED}" />
