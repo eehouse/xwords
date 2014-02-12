@@ -198,13 +198,6 @@ public class JNIThread extends Thread {
         return result;
     }
 
-    public void setInBackground( boolean inBack )
-    {
-        if ( inBack ) {
-            handle( JNICmd.CMD_SAVE );
-        }
-    }
-
     public GameStateInfo getGameStateInfo()
     {
         synchronized( m_gsi ) {
