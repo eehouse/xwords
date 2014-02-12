@@ -596,6 +596,23 @@ public class GameUtils {
                                       int[] missingLang ) 
     {
         byte[] stream = savedGame( context, rowid );
+        return dictNames( context, stream, missingLang );
+    }
+
+    public static String[] dictNames( Context context, long rowid ) 
+    {
+        return dictNames( context, rowid, null );
+    }
+
+    public static String[] dictNames( Context context, GameLock lock ) 
+    {
+        byte[] stream = savedGame( context, lock );
+        return dictNames( context, stream, null );
+    }
+    
+    private static String[] dictNames( Context context, byte[] stream,
+                                       int[] missingLang ) 
+    {
         CurGameInfo gi = new CurGameInfo( context );
         XwJNI.gi_from_stream( gi, stream );
         if ( null != missingLang ) {
@@ -604,11 +621,6 @@ public class GameUtils {
         return gi.dictNames();
     }
 
-    public static String[] dictNames( Context context, long rowid ) 
-    {
-        return dictNames( context, rowid, null );
-    }
-    
     public static boolean gameDictsHere( Context context, long rowid )
     {
         return gameDictsHere( context, rowid, null, null );
