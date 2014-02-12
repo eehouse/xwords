@@ -28,6 +28,7 @@ import junit.framework.Assert;
 // obtainable when other read locks are granted but not when a
 // write lock is.  Write-locks are exclusive.
 public class GameLock {
+    private static final int SLEEP_TIME = 25;
     private long m_rowid;
     private boolean m_isForWrite;
     private int m_lockCount;
@@ -68,6 +69,9 @@ public class GameLock {
                     System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
                 }
             } else if ( this == owner && ! m_isForWrite ) {
+                if ( XWApp.DEBUG_LOCKS ) {
+                    DbgUtils.logf( "tryLock(): incrementing lock count" );
+                }
                 Assert.assertTrue( 0 == m_lockCount );
                 ++m_lockCount;
                 gotIt = true;
@@ -102,11 +106,13 @@ public class GameLock {
             }
             if ( XWApp.DEBUG_LOCKS ) {
                 DbgUtils.logf( "GameLock.lock() %H failed; sleeping", this );
-                DbgUtils.printStack();
+                if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= assertTime ) {
+                    DbgUtils.printStack();
+                }
             }
             try {
-                Thread.sleep( 25 ); // milliseconds
-                sleptTime += 25;
+                Thread.sleep( SLEEP_TIME ); // milliseconds
+                sleptTime += SLEEP_TIME;
             } catch( InterruptedException ie ) {
                 DbgUtils.loge( ie );
                 break;
