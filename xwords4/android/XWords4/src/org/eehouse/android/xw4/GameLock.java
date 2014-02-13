@@ -107,6 +107,9 @@ public class GameLock {
             if ( XWApp.DEBUG_LOCKS ) {
                 DbgUtils.logf( "GameLock.lock() %H failed; sleeping", this );
                 if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= assertTime ) {
+                    DbgUtils.logf( "lock holding stack:", this );
+                    DbgUtils.printStack( m_lockTrace );
+                    DbgUtils.logf( "lock %H seeking stack:", this );
                     DbgUtils.printStack();
                 }
             }
@@ -127,11 +130,7 @@ public class GameLock {
                 break;
             } else if ( sleptTime >= assertTime ) {
                 if ( XWApp.DEBUG_LOCKS ) {
-                    DbgUtils.logf( "lock %H overlocked. lock holding stack:", 
-                                   this );
-                    DbgUtils.printStack( m_lockTrace );
-                    DbgUtils.logf( "lock %H seeking stack:", this );
-                    DbgUtils.printStack();
+                    DbgUtils.logf( "lock %H overlocked", this );
                 }
                 Assert.fail();
             }
@@ -167,6 +166,10 @@ public class GameLock {
     // used only for asserts
     public boolean canWrite()
     {
-        return m_isForWrite && 1 == m_lockCount;
+        boolean result = m_isForWrite && 1 == m_lockCount;
+        if ( !result ) {
+            DbgUtils.logf( "GameLock.canWrite(): %H, returning false", this
+        }
+        return result;
     }
 }
