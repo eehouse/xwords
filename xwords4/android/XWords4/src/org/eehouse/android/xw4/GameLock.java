@@ -77,6 +77,10 @@ public class GameLock {
                 gotIt = true;
             }
         }
+        if ( XWApp.DEBUG_LOCKS ) {
+            DbgUtils.logf( "GameLock.tryLock %H (rowid=%d) => %b", 
+                           this, m_rowid, gotIt );
+        }
         return gotIt;
     }
         
