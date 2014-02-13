@@ -204,20 +204,7 @@ public class BoardActivity extends XWActivity
 
     public static boolean feedMessage( long rowid, byte[] msg )
     {
-        boolean delivered = false;
-        synchronized( s_this ) {
-            if ( 1 == s_this.size() ) {
-                BoardActivity self = s_this.iterator().next();
-                Assert.assertNotNull( self.m_gi );
-                Assert.assertNotNull( self.m_gameLock );
-                Assert.assertNotNull( self.m_jniThread );
-                if ( rowid == self.m_rowid ) {
-                    self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, null );
-                    delivered = true;
-                }
-            }
-        }
-        return delivered;
+        return feedMessages( rowid, new byte[][]{msg} );
     }
 
     public static boolean feedMessages( long rowid, byte[][] msgs )
@@ -233,8 +220,8 @@ public class BoardActivity extends XWActivity
                 if ( rowid == self.m_rowid ) {
                     delivered = true; // even if no messages!
                     for ( byte[] msg : msgs ) {
-                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg,
-                                                   null );
+                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, 
+                                                 null );
                     }
                 }
             }
