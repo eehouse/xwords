@@ -168,7 +168,7 @@ public class GameLock {
     {
         boolean result = m_isForWrite && 1 == m_lockCount;
         if ( !result ) {
-            DbgUtils.logf( "GameLock.canWrite(): %H, returning false", this
+            DbgUtils.logf( "GameLock.canWrite(): %H, returning false", this );
         }
         return result;
     }
