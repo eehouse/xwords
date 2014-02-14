@@ -191,7 +191,6 @@ public class BoardActivity extends XWActivity
             if ( 1 == s_this.size() ) {
                 BoardActivity self = s_this.iterator().next();
                 Assert.assertNotNull( self.m_gi );
-                Assert.assertNotNull( self.m_gameLock );
                 Assert.assertNotNull( self.m_jniThread );
                 if ( gameID == self.m_gi.gameID ) {
                     self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, retAddr );
@@ -215,7 +214,6 @@ public class BoardActivity extends XWActivity
             if ( 1 == s_this.size() ) {
                 BoardActivity self = s_this.iterator().next();
                 Assert.assertNotNull( self.m_gi );
-                Assert.assertNotNull( self.m_gameLock );
                 Assert.assertNotNull( self.m_jniThread );
                 if ( rowid == self.m_rowid ) {
                     delivered = true; // even if no messages!
@@ -586,7 +584,11 @@ public class BoardActivity extends XWActivity
             m_handler = null;
             ConnStatusHandler.setHandler( null );
             waitCloseGame( true );
+        } else if ( null != m_jniThread ) {
+            m_jniThread.pause();
         }
+        unlockGameIf();
+
         super.onPause();
     }
 
@@ -594,6 +596,8 @@ public class BoardActivity extends XWActivity
     protected void onResume()
     {
         super.onResume();
+
+        lockGame();
         if ( null == m_handler ) {
             m_handler = new Handler();
             m_blockingDlgID = BLOCKING_DLG_NONE;
@@ -603,6 +607,8 @@ public class BoardActivity extends XWActivity
             loadGame();
 
             ConnStatusHandler.setHandler( this );
+        } else {
+            m_jniThread.resume( m_gameLock );
         }
     }
 
@@ -1247,6 +1253,20 @@ public class BoardActivity extends XWActivity
         return m_handler;
     }
 
+    private void unlockGameIf()
+    {
+        if ( null != m_gameLock ) {
+            m_gameLock.unlock();
+            m_gameLock = null;
+        }
+    }
+
+    private void lockGame()
+    {
+        Assert.assertNull( m_gameLock );
+        m_gameLock = new GameLock( m_rowid, true ).lock();
+    }
+
     private void setGotGameDict( String getDict )
     {
         m_jniThread.setSaveDict( getDict );
@@ -1813,15 +1833,13 @@ public class BoardActivity extends XWActivity
     {
         if ( 0 == m_jniGamePtr ) {
             try {
-                String[] dictNames = GameUtils.dictNames( this, m_rowid );
+                String[] dictNames = GameUtils.dictNames( this, m_gameLock );
                 DictUtils.DictPairs pairs = DictUtils.openDicts( this, dictNames );
 
                 if ( pairs.anyMissing( dictNames ) ) {
+                    // TEST THIS CASE!!!
                     showDictGoneFinish();
                 } else {
-                    Assert.assertNull( m_gameLock );
-                    m_gameLock = new GameLock( m_rowid, true ).lock();
-
                     byte[] stream = GameUtils.savedGame( this, m_gameLock );
                     m_gi = new CurGameInfo( this );
                     XwJNI.gi_from_stream( m_gi, stream );
@@ -2118,10 +2136,8 @@ public class BoardActivity extends XWActivity
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
             m_gi = null;
-
-            m_gameLock.unlock();
-            m_gameLock = null;
         }
+        unlockGameIf();
     }
 
     private void warnIfNoTransport()
