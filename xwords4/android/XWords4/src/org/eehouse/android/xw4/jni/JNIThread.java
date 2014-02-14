@@ -166,6 +166,42 @@ public class JNIThread extends Thread {
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
 
+    public synchronized void pause()
+    {
+        // DbgUtils.logf( "JNIThread.pause()" );
+        Assert.assertNotNull( m_lock );
+        m_lock = null;
+    }
+
+    public void resume( GameLock newLock )
+    {
+        Assert.assertTrue( newLock.canWrite() );
+        Assert.assertNull( m_lock );
+        m_lock = newLock;
+        // DbgUtils.logf( "resume: calling notify()" );
+        synchronized( this ) {
+            this.notify();
+        }
+    }
+
+    private void checkPaused()
+    {
+        // DbgUtils.logf( "checkPaused()" );
+        for ( ; ; ) {
+            synchronized( this ) {
+                if ( null != m_lock ) {
+                    break;
+                }
+                try {
+                    wait();
+                } catch ( java.lang.InterruptedException ie ) {
+                    DbgUtils.loge( ie );
+                }
+            }
+        }
+        // DbgUtils.logf( "checkPaused() DONE" );
+    }
+
     public void waitToStop( boolean save )
     {
         synchronized ( this ) {
@@ -308,6 +344,8 @@ public class JNIThread extends Thread {
                     break;
                 }
             }
+
+            checkPaused();
 
             QueueElem elem;
             Object[] args;
