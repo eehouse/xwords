@@ -90,7 +90,7 @@ static char* gCountFile = NULL;
 static const char* gLang = NULL;
 static char* gBytesPerNodeFile = NULL;        // where to write whether node
                                        // size 3 or 4
-int gWordCount = 0;
+uint32_t gWordCount = 0;
 std::map<wchar_t,Letter> gTableHash;
 int gBlankIndex;
 std::vector<wchar_t> gRevMap;
@@ -133,13 +133,12 @@ static void TrieNodeSetFirstChildOffset( Node* nodeR, int fco );
 static int TrieNodeGetFirstChildOffset( Node node );
 static int findSubArray( NodeList& newedgesR );
 static void registerSubArray( NodeList& edgesR, int nodeLoc );
+static void write32( const char* fileName, uint32_t value );
 static Node MakeTrieNode( Letter letter, bool isTerminal,
                           int firstChildOffset, bool isLastSibling );
 static void printNodes( NodeList& nodesR );
 static void printNode( int index, Node node );
 static void moveTopToFront( int* firstRef );
-static void writeOutStartNode( const char* startNodeOut, 
-                               int firstRootChildOffset );
 static void emitNodes( unsigned int nBytesPerOutfile, const char* outFileBase );
 static void outputNode( Node node, int nBytes, FILE* outfile );
 static void printOneLevel( int index, char* str, int curlen );
@@ -203,7 +202,7 @@ main( int argc, char** argv )
     moveTopToFront( &firstRootChildOffset );
 
     if ( gStartNodeOut ) {
-        writeOutStartNode( gStartNodeOut, firstRootChildOffset );
+        write32( gStartNodeOut, firstRootChildOffset );
     }
 
 #ifdef DEBUG
@@ -214,11 +213,7 @@ main( int argc, char** argv )
 #endif
     // write out the number of nodes if requested
     if ( gCountFile ) {
-        FILE* OFILE;
-        OFILE = fopen( gCountFile, "w" );
-        unsigned long be = htonl( gWordCount );
-        fwrite( &be, sizeof(be), 1, OFILE );
-        fclose( OFILE );
+        write32( gCountFile, gWordCount );
         fprintf( stderr, "Wrote %d (word count) to %s\n", gWordCount, 
                  gCountFile );
     }
@@ -897,18 +892,6 @@ MakeTrieNode( Letter letter, bool isTerminal, int firstChildOffset,
     return result;
 } // MakeTrieNode
 
-// Caller may need to know the offset of the first top-level node.
-// Write it here.
-static void
-writeOutStartNode( const char* startNodeOut, int firstRootChildOffset )
-{
-    FILE* nodeout;
-    nodeout = fopen( startNodeOut, "w" );
-    unsigned long be = htonl( firstRootChildOffset );
-    (void)fwrite( &be, sizeof(be), 1, nodeout );
-    fclose( nodeout );
-} // writeOutStartNode
-
 // build the hash for translating.  I'm using a hash assuming it'll be fast.
 // Key is the letter; value is the 0..31 value to be output.  Note that input
 // may be in the format "A a" rather than just "A"
@@ -992,7 +975,7 @@ emitNodes( unsigned int nBytesPerOutfile, const char* outFileBase )
     // now do the emit.
 
     // is 17 bits enough?
-    fprintf( stderr, "There are %d (0x%x) nodes in this DAWG.\n",
+    fprintf( stderr, "There are %zd (0x%zx) nodes in this DAWG.\n",
              gNodes.size(), gNodes.size() );
     int nTiles = gTableHash.size(); // blank is not included in this count!
     if ( gNodes.size() > 0x1FFFF || gForceFour || nTiles > 32 ) {
@@ -1176,6 +1159,15 @@ outputNode( Node node, int nBytes, FILE* outfile )
 } // outputNode
 
 static void
+write32( const char* fileName, uint32_t value )
+{
+    FILE* OFILE = fopen( fileName, "w" );
+    value = htonl( value );
+    fwrite( &value, sizeof(value), 1, OFILE );
+    fclose( OFILE );
+}
+
+static void
 usage( const char* name )
 {
     fprintf( stderr, "usage: %s \n"
@@ -1199,7 +1191,7 @@ usage( const char* name )
 #endif
              "\t[-force4]           # always use 4 bytes per node\n"
              "\t[-lang  lang]       # e.g. en_US\n"
-             "\t[-fsize nBytes]     # max buffer [default %d]\n"
+             "\t[-fsize nBytes]     # max buffer [default %zd]\n"
              "\t[-r]                # drop words with letters not in mapfile\n"
              "\t[-k]                # (default) exit on any letter not in mapfile \n",
              name, MAX_POOL_SIZE
@@ -1233,7 +1225,7 @@ parseARGV( int argc, char** argv, const char** inFileName )
                      VERSION_STR );
             exit( 0 );
         } else if ( 0 == strcmp( arg, "-poolsize" ) ) {
-            printf( "%d", MAX_POOL_SIZE );
+            printf( "%zd", MAX_POOL_SIZE );
             exit( 0 );
         } else if ( 0 == strcmp( arg, "-b" ) ) {
             gNBytesPerOutfile = atol( argv[index++] );
