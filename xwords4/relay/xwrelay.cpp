@@ -614,7 +614,8 @@ send_via_udp( const AddrInfo* addr, uint32_t* packetIDP, XWRelayReg cmd, ... )
         result = send_via_udp_impl( socket, dest_addr, packetIDP, cmd, ap );
         va_end( ap );
     } else {
-        logf( XW_LOGINFO, "%s: not sending to out-of-date packet", __func__ );
+        logf( XW_LOGINFO, "%s: not sending to out-of-date address (token=%x)", __func__, 
+              addr->clientToken() );
     }
     return result;
 }
