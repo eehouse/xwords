@@ -3,11 +3,12 @@
 set -e -u
 
 FILTER=""
+ROOMS=""
 
 LIMIT=10000
 
 usage() {
-    echo "usage: $0 [--limit <n>] [--filter]"
+    echo "usage: $0 [--limit <n>] [--filter] [--room <room>]*"
     exit 1
 }
 
@@ -20,13 +21,21 @@ while [ $# -gt 0 ]; do
         --filter)
             FILTER=1
             ;;
+	--room)
+	    [ -n "$ROOMS" ] && ROOMS="${ROOMS},"
+	    ROOMS="$ROOMS '$2'"
+	    shift
+	    ;;
         *) usage
             ;;
     esac
     shift
 done
 
-QUERY="WHERE NOT -NTOTAL = sum_array(nperdevice)"
+QUERY="WHERE NOT -NTOTAL = sum_array(nperdevice) AND NOT DEAD"
+if [ -n "$ROOMS" ]; then
+    QUERY="$QUERY AND room IN ($ROOMS) "
+fi
 
 echo -n "Device (pid) count: $(pidof xwords | wc | awk '{print $2}')"
 echo ";   relay pid[s]: $(pidof xwrelay)"
@@ -38,11 +47,9 @@ echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,
     | psql xwgames
 
 # Messages
-echo "SELECT connname, hid, devid, count(*), sum(msglen) "\
-     "FROM msgs WHERE stime = 'epoch' "\
-     "AND (connname IN (SELECT connname from games where not games.dead group by connname) "\
-     "OR devid IN (SELECT unnest(devids) from games where not games.dead)) "\
-     "GROUP BY connname, hid, devid ORDER BY connname LIMIT $LIMIT;" \
+echo "SELECT * "\
+     "FROM msgs WHERE connname IN (SELECT connname from games $QUERY) "\
+     "ORDER BY ctime DESC, connname LIMIT $LIMIT;" \
     | psql xwgames
 
 # Devices
