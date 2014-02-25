@@ -434,7 +434,6 @@ public class RelayService extends XWService
         }
     } // startUDPThreadsIfNot
 
-    // Some of this must not be done on main (UI) thread
     private void connectSocket()
     {
         if ( null == m_UDPSocket ) {
@@ -443,7 +442,7 @@ public class RelayService extends XWService
             try { 
                 m_UDPSocket = new DatagramSocket();
                 m_UDPSocket.setSoTimeout(30 * 1000); // timeout so we can log
-                // put on background thread!!
+
                 InetAddress addr = InetAddress.getByName( host );
                 m_UDPSocket.connect( addr, port ); // remember this address
             } catch( java.net.SocketException se ) {
