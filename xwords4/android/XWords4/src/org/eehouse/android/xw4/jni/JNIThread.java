@@ -325,12 +325,15 @@ public class JNIThread extends Thread {
         if ( Arrays.equals( m_gameAtStart, state ) ) {
             // DbgUtils.logf( "no change in game; can skip saving" );
         } else {
-            GameSummary summary = new GameSummary( m_context, m_gi );
-            XwJNI.game_summarize( m_jniGamePtr, summary );
-            DBUtils.saveGame( m_context, m_lock, state, false );
-            DBUtils.saveSummary( m_context, m_lock, summary );
-            // There'd better be no way for saveGame above to fail!
-            XwJNI.game_saveSucceeded( m_jniGamePtr );
+            synchronized( this ) {
+                Assert.assertNotNull( m_lock );
+                GameSummary summary = new GameSummary( m_context, m_gi );
+                XwJNI.game_summarize( m_jniGamePtr, summary );
+                DBUtils.saveGame( m_context, m_lock, state, false );
+                DBUtils.saveSummary( m_context, m_lock, summary );
+                // There'd better be no way for saveGame above to fail!
+                XwJNI.game_saveSucceeded( m_jniGamePtr );
+            }
         }
     }
 
