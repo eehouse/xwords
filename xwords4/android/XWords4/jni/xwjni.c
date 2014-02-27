@@ -1511,6 +1511,25 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1isConnected
     return result;
 }
 
+JNIEXPORT jstring JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getStats
+( JNIEnv* env, jclass C, jint gamePtr )
+{
+    jstring result = NULL;
+#ifdef DEBUG
+    XWJNI_START_GLOBALS();
+    if ( NULL != state->game.comms ) {
+        XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) globals->vtMgr,
+                                                NULL, 0, NULL );
+        comms_getStats( state->game.comms, stream );
+        result = streamToJString( env, stream );
+        stream_destroy( stream );
+    }
+    XWJNI_END();
+#endif
+    return result;
+}
+
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1endGame
 ( JNIEnv* env, jclass C, jint gamePtr )

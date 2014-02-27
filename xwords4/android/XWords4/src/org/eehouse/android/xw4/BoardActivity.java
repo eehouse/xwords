@@ -802,12 +802,15 @@ public class BoardActivity extends XWActivity
             }
         }
 
-        if ( null != m_gi && DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
-            Utils.setItemVisible( menu, R.id.board_menu_game_resend, false );
-            Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, false );
-        }
+        boolean enable = null != m_gi
+            && DeviceRole.SERVER_STANDALONE != m_gi.serverRole;
+        Utils.setItemVisible( menu, R.id.board_menu_game_resend, enable );
+        Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, enable );
 
-        boolean enable = XWPrefs.getStudyEnabled( this );
+        enable = enable && BuildConfig.DEBUG;
+        Utils.setItemVisible( menu, R.id.board_menu_game_netstats, enable );
+                              
+        enable = XWPrefs.getStudyEnabled( this );
         Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
         return true;
@@ -875,6 +878,9 @@ public class BoardActivity extends XWActivity
             break;
         case R.id.games_menu_study:
             StudyList.launchOrAlert( this, m_gi.dictLang, this );
+            break;
+        case R.id.board_menu_game_netstats:
+            m_jniThread.handle( JNICmd.CMD_NETSTATS, R.string.netstats_title );
             break;
         case R.id.board_menu_undo_current:
             cmd = JNICmd.CMD_UNDO_CUR;

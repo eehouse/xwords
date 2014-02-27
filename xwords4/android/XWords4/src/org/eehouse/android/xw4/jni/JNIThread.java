@@ -89,6 +89,7 @@ public class JNIThread extends Thread {
             CMD_ENDGAME,
             CMD_POST_OVER,
             CMD_SENDCHAT,
+            CMD_NETSTATS,
             // CMD_DRAW_CONNS_STATUS,
             // CMD_DRAW_BT_STATUS,
             // CMD_DRAW_SMS_STATUS,
@@ -606,6 +607,12 @@ public class JNIThread extends Thread {
 
             case CMD_SENDCHAT:
                 XwJNI.server_sendChat( m_jniGamePtr, (String)args[0] );
+                break;
+
+            case CMD_NETSTATS:
+                sendForDialog( ((Integer)args[0]).intValue(),
+                               XwJNI.comms_getStats( m_jniGamePtr )
+                               );
                 break;
 
             // case CMD_DRAW_CONNS_STATUS:

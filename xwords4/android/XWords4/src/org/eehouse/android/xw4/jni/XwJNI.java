@@ -260,6 +260,7 @@ public class XwJNI {
     public static native void comms_ackAny( int gamePtr );
     public static native void comms_transportFailed( int gamePtr );
     public static native boolean comms_isConnected( int gamePtr );
+    public static native String comms_getStats( int gamePtr );
 
     // Dicts
     public static native boolean dict_tilesAreSame( int dictPtr1, int dictPtr2 );

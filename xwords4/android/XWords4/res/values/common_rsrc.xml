@@ -140,6 +140,8 @@
   <string name="debug_features">Enable debug features</string>
   <string name="debug_features_summary">Menuitems etc. (release builds
   only)</string>
+  <string name="board_menu_game_netstats">Network stats</string>
+  <string name="netstats_title">Game network stats</string>
 
   <string name="git_rev_title">Source version id</string>
   <string name="relay_port">Relay game port</string>
