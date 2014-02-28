@@ -830,7 +830,6 @@ model_canUndo( const ModelCtxt* model )
 
     /* More than just tile assignment? */
     XP_Bool result = nStackEntries > model->nPlayers;
-    LOG_RETURNF( "%d", result );
     return result;
 }
 
