@@ -53,6 +53,7 @@ struct StackCtxt {
     XP_U16 bitsPerTile;
     XP_U16 highWaterMark;
 
+    DIRTY_SLOT
     MPSLOT
 };
 
@@ -179,6 +180,7 @@ stack_destroy( StackCtxt* stack )
     if ( !!stack->data ) {
         stream_destroy( stack->data );
     }
+    ASSERT_NOT_DIRTY( stack );
     XP_FREE( stack->mpool, stack );
 } /* stack_destroy */
 
@@ -200,6 +202,7 @@ stack_loadFromStream( StackCtxt* stack, XWStreamCtxt* stream )
         XP_ASSERT( stack->nEntries == 0 );
         XP_ASSERT( stack->top == 0 );
     }
+    CLEAR_DIRTY( stack );
 } /* stack_makeFromStream */
 
 void
@@ -227,6 +230,7 @@ stack_writeToStream( const StackCtxt* stack, XWStreamCtxt* stream )
         /* in case it'll be used further */
         (void)stream_setPos( data, POS_READ, oldPos );
     }
+    CLEAR_DIRTY( stack );
 } /* stack_writeToStream */
 
 StackCtxt*
@@ -304,10 +308,11 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     stack->highWaterMark = stack->nEntries;
     stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
     // XP_LOGSTREAM( stack->data );
+    SET_DIRTY( stack );
 } /* pushEntry */
 
 static void
-readEntry( StackCtxt* stack, StackEntry* entry )
+readEntry( const StackCtxt* stack, StackEntry* entry )
 {
     XP_U16 nTiles, ii, bitsPerTile;
     XWStreamCtxt* stream = stack->data;

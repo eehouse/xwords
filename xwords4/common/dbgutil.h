@@ -28,12 +28,26 @@ const char* DrawFocusState_2str( DrawFocusState dfs );
 const char* BoardObjectType_2str( BoardObjectType dfs );
 const char* StackMoveType_2str( StackMoveType typ );
 
+
 # ifdef DEBUG
 void dbg_logstream( const XWStreamCtxt* stream, const char* func, int line );
-# define XP_LOGSTREAM( s )                      \
+#  define XP_LOGSTREAM( s )                      \
     dbg_logstream( s, __func__, __LINE__ )
 # else
-# define XP_LOGSTREAM( s )
+#  define XP_LOGSTREAM( s )
+# endif
+
+
+# ifdef DEBUG
+#  define DIRTY_SLOT XP_Bool _isDirty;
+#  define ASSERT_NOT_DIRTY( ptr ) XP_ASSERT( !((ptr)->_isDirty) )
+#  define CLEAR_DIRTY( ptr ) *(XP_Bool*)&((ptr)->_isDirty) = XP_FALSE
+#  define SET_DIRTY( ptr ) (ptr)->_isDirty = XP_TRUE
+# else
+#  define DIRTY_SLOT
+#  define ASSERT_NOT_DIRTY( ptr )
+#  define CLEAR_DIRTY( ptr )
+#  define SET_DIRTY( ptr )
 # endif
 
 #endif
