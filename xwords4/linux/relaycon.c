@@ -252,8 +252,10 @@ relaycon_receive( void* closure, int socket )
                 break;
             }
             case XWPDEV_UNAVAIL: {
+#ifdef DEBUG
                 XP_U32 unavail = getNetLong( &ptr );
                 XP_LOGF( "%s: unavail = %u", __func__, unavail );
+#endif
                 uint32_t len;
                 if ( !vli2un( &ptr, &len ) ) {
                     assert(0);
