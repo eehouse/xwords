@@ -580,15 +580,9 @@ public class BoardActivity extends XWActivity
     @Override
     protected void onPause()
     {
-        if ( isFinishing() ) {
-            m_handler = null;
-            ConnStatusHandler.setHandler( null );
-            waitCloseGame( true );
-        } else if ( null != m_jniThread ) {
-            m_jniThread.pause();
-        }
-        unlockGameIf();
-
+        m_handler = null;
+        ConnStatusHandler.setHandler( null );
+        waitCloseGame( true );
         super.onPause();
     }
 
@@ -596,20 +590,14 @@ public class BoardActivity extends XWActivity
     protected void onResume()
     {
         super.onResume();
+        m_handler = new Handler();
+        m_blockingDlgID = BLOCKING_DLG_NONE;
 
-        lockGame();
-        if ( null == m_handler ) {
-            m_handler = new Handler();
-            m_blockingDlgID = BLOCKING_DLG_NONE;
+        setKeepScreenOn();
 
-            setKeepScreenOn();
+        loadGame();
 
-            loadGame();
-
-            ConnStatusHandler.setHandler( this );
-        } else {
-            m_jniThread.resume( m_gameLock );
-        }
+        ConnStatusHandler.setHandler( this );
     }
 
     @Override
@@ -1259,20 +1247,6 @@ public class BoardActivity extends XWActivity
         return m_handler;
     }
 
-    private void unlockGameIf()
-    {
-        if ( null != m_gameLock ) {
-            m_gameLock.unlock();
-            m_gameLock = null;
-        }
-    }
-
-    private void lockGame()
-    {
-        Assert.assertNull( m_gameLock );
-        m_gameLock = new GameLock( m_rowid, true ).lock();
-    }
-
     private void setGotGameDict( String getDict )
     {
         m_jniThread.setSaveDict( getDict );
@@ -1839,13 +1813,15 @@ public class BoardActivity extends XWActivity
     {
         if ( 0 == m_jniGamePtr ) {
             try {
-                String[] dictNames = GameUtils.dictNames( this, m_gameLock );
+                String[] dictNames = GameUtils.dictNames( this, m_rowid );
                 DictUtils.DictPairs pairs = DictUtils.openDicts( this, dictNames );
 
                 if ( pairs.anyMissing( dictNames ) ) {
-                    // TEST THIS CASE!!!
                     showDictGoneFinish();
                 } else {
+                    Assert.assertNull( m_gameLock );
+                    m_gameLock = new GameLock( m_rowid, true ).lock();
+
                     byte[] stream = GameUtils.savedGame( this, m_gameLock );
                     m_gi = new CurGameInfo( this );
                     XwJNI.gi_from_stream( m_gi, stream );
@@ -2142,8 +2118,10 @@ public class BoardActivity extends XWActivity
             XwJNI.game_dispose( m_jniGamePtr );
             m_jniGamePtr = 0;
             m_gi = null;
+
+            m_gameLock.unlock();
+            m_gameLock = null;
         }
-        unlockGameIf();
     }
 
     private void warnIfNoTransport()
