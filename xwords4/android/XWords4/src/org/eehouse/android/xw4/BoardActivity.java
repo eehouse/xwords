@@ -193,6 +193,7 @@ public class BoardActivity extends XWActivity
             if ( 1 == size ) {
                 BoardActivity self = s_this.iterator().next();
                 Assert.assertNotNull( self.m_gi );
+                Assert.assertNotNull( self.m_gameLock );
                 Assert.assertNotNull( self.m_jniThread );
                 if ( gameID == self.m_gi.gameID ) {
                     self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, retAddr );
@@ -222,6 +223,7 @@ public class BoardActivity extends XWActivity
             if ( 1 == size ) {
                 BoardActivity self = s_this.iterator().next();
                 Assert.assertNotNull( self.m_gi );
+                Assert.assertNotNull( self.m_gameLock );
                 Assert.assertNotNull( self.m_jniThread );
                 if ( rowid == self.m_rowid ) {
                     delivered = true; // even if no messages!
@@ -2317,11 +2319,10 @@ public class BoardActivity extends XWActivity
         return button;
     }
 
-    private void noteSkip()
+    private static void noteSkip()
     {
         String msg = "BoardActivity.feedMessage[s](): skipped because "
             + "too many open Boards";
         DbgUtils.logf(msg );
-        Utils.showToast( this, msg ); // probably don't want to ship this
     }
 } // class BoardActivity
