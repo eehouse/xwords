@@ -431,7 +431,7 @@ log_hex( const XP_U8* memp, XP_U16 len, const char* tag )
         if ( (NULL == tag) || (XP_STRLEN(tag) + sizeof(vals) >= sizeof(buf)) ) {
             tag = "<tag>";
         }
-        XP_SNPRINTF( buf, sizeof(buf), "%s[%d]: %s %s", tag, oldOffset, 
+        XP_SNPRINTF( buf, sizeof(buf), "%s[%.3d]: %s %s", tag, oldOffset, 
                      vals, chars );
         XP_LOGF( "%s", buf );
     }
