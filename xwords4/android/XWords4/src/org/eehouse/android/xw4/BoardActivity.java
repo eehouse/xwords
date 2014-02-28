@@ -187,8 +187,10 @@ public class BoardActivity extends XWActivity
                                        CommsAddrRec retAddr )
     {
         boolean delivered = false;
+        int size;
         synchronized( s_this ) {
-            if ( 1 == s_this.size() ) {
+            size = s_this.size();
+            if ( 1 == size ) {
                 BoardActivity self = s_this.iterator().next();
                 Assert.assertNotNull( self.m_gi );
                 Assert.assertNotNull( self.m_jniThread );
@@ -197,6 +199,10 @@ public class BoardActivity extends XWActivity
                     delivered = true;
                 }
             }
+        }
+
+        if ( 1 < s_this.size() ) {
+            noteSkip();
         }
         return delivered;
     }
@@ -210,8 +216,10 @@ public class BoardActivity extends XWActivity
     {
         boolean delivered = false;
         Assert.assertNotNull( msgs );
+        int size;
         synchronized( s_this ) {
-            if ( 1 == s_this.size() ) {
+            size = s_this.size();
+            if ( 1 == size ) {
                 BoardActivity self = s_this.iterator().next();
                 Assert.assertNotNull( self.m_gi );
                 Assert.assertNotNull( self.m_jniThread );
@@ -223,6 +231,9 @@ public class BoardActivity extends XWActivity
                     }
                 }
             }
+        }
+        if ( 1 < size ) {
+            noteSkip();
         }
         return delivered;
     }
@@ -2306,4 +2317,11 @@ public class BoardActivity extends XWActivity
         return button;
     }
 
+    private void noteSkip()
+    {
+        String msg = "BoardActivity.feedMessage[s](): skipped because "
+            + "too many open Boards";
+        DbgUtils.logf(msg );
+        Utils.showToast( this, msg ); // probably don't want to ship this
+    }
 } // class BoardActivity
