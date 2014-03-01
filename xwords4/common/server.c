@@ -2439,7 +2439,6 @@ server_getMissingPlayers( const ServerCtxt* server )
         break;
     }
 
-    LOG_RETURNF( "%x", result );
     return result;
 }
 
