@@ -25,7 +25,7 @@ if [ $# -gt 0 ]; then
     shift
 fi
 
-while [ ! -e $MANIFEST ]; do
+while [ ! -e $MANIFEST -o $(basename $(pwd)) = 'bin' ]; do
     [ '/' = $(pwd) ] && usage "reached root without finding $MANIFEST"
     cd ..
 done
