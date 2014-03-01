@@ -62,6 +62,7 @@ public class GameSummary {
 
     public int dictLang;
     public DeviceRole serverRole;
+    public int nPacketsPending;
 
     private int m_giFlags;
     private String m_playersSummary;

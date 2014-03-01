@@ -38,7 +38,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_GROUPS = "groups";
     public static final String TABLE_NAME_STUDYLIST = "study";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 19;
+    private static final int DB_VERSION = 20;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -70,6 +70,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String SMSPHONE = "SMSPHONE"; // unused -- so far
     public static final String LASTMOVE = "LASTMOVE";
     public static final String GROUPID = "GROUPID";
+    public static final String NPACKETSPENDING = "NPACKETSPENDING";
 
     public static final String DICTNAME = "DICTNAME";
     public static final String MD5SUM = "MD5SUM";
@@ -124,6 +125,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ CONTRACTED,   "INTEGER DEFAULT 0" }
         ,{ CREATE_TIME,  "INTEGER" }
         ,{ LASTPLAY_TIME,"INTEGER" }
+        ,{ NPACKETSPENDING,"INTEGER" }
         ,{ SNAPSHOT,     "BLOB" }
         ,{ THUMBNAIL,    "BLOB" }
     };
@@ -192,6 +194,7 @@ public class DBHelper extends SQLiteOpenHelper {
     {
         DbgUtils.logf( "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
 
+        boolean madeSumTable = false;
         switch( oldVersion ) {
         case 5:
             createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
@@ -224,13 +227,19 @@ public class DBHelper extends SQLiteOpenHelper {
             addSumColumn( db, VISID );
             setColumnsEqual( db, TABLE_NAME_SUM, VISID, "rowid" );
             makeAutoincrement( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
+            madeSumTable = true;
         case 17:
-            if ( 17 == oldVersion ) {
+            if ( !madeSumTable ) {
                 // THUMBNAIL also added by makeAutoincrement above
                 addSumColumn( db, THUMBNAIL );
             }
         case 18:
             createStudyTable( db );
+        case 19:
+            if ( !madeSumTable ) {
+                // NPACKETSPENDING also added by makeAutoincrement above
+                addSumColumn( db, NPACKETSPENDING );
+            }
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );

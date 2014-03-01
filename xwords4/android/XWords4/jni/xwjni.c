@@ -1279,6 +1279,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         setInt( env, jsummary, "seed", comms_getChannelSeed( comms ) );
         setInt( env, jsummary, "missingPlayers", 
                 server_getMissingPlayers( state->game.server ) );
+        setInt( env, jsummary, "nPacketsPending", 
+                comms_countPendingPackets( state->game.comms ) );
         if ( COMMS_CONN_RELAY == addr.conType ) {
             XP_UCHAR buf[128];
             XP_U16 len = VSIZE(buf);

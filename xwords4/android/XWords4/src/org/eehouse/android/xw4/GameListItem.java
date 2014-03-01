@@ -221,6 +221,9 @@ public class GameListItem extends LinearLayout
             case R.string.game_summary_field_rowid:
                 value = String.format( "%d", m_rowid );
                 break;
+            case R.string.game_summary_field_npackets:
+                value = String.format( "%d", m_summary.nPacketsPending );
+                break;
             case R.string.game_summary_field_language:
                 value = 
                     DictLangCache.getLangName( m_context, 

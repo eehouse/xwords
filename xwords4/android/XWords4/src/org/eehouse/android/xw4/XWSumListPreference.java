@@ -26,6 +26,7 @@ import android.util.AttributeSet;
 public class XWSumListPreference extends XWListPreference {
 
     private static final int[] s_ADDROWS = {
+        R.string.game_summary_field_npackets,
         R.string.game_summary_field_rowid,
         R.string.game_summary_field_gameid,
     };

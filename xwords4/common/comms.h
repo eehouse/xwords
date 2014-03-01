@@ -186,6 +186,8 @@ void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
 void comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], 
                      XP_U16* nRecs );
+XP_U16 comms_countPendingPackets( const CommsCtxt* comms );
+
 
 #ifdef XWFEATURE_RELAY
 XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );

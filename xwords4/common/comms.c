@@ -867,6 +867,13 @@ comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], XP_U16* nRecs )
     *nRecs = count;
 }
 
+XP_U16
+comms_countPendingPackets( const CommsCtxt* comms )
+{
+    // LOG_RETURNF( "%d", comms->queueLen );
+    return comms->queueLen;
+}
+
 #ifdef XWFEATURE_RELAY
 static XP_Bool
 haveRelayID( const CommsCtxt* comms )

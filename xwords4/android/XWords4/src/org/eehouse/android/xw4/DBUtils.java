@@ -135,7 +135,7 @@ public class DBUtils {
                              DBHelper.DICTLANG, DBHelper.GAMEID,
                              DBHelper.SCORES, DBHelper.HASMSGS,
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
-                             DBHelper.LASTMOVE
+                             DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING
         };
         String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -202,13 +202,18 @@ public class DBUtils {
                 summary.scores = scores;
 
                 int col = cursor.getColumnIndex( DBHelper.CONTYPE );
-                if ( col >= 0 ) {
+                if ( 0 <= col ) {
                     tmp = cursor.getInt( col );
                     summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
                     col = cursor.getColumnIndex( DBHelper.SEED );
-                    if ( col >= 0 ) {
+                    if ( 0 < col ) {
                         summary.seed = cursor.getInt( col );
                     }
+                    col = cursor.getColumnIndex( DBHelper.NPACKETSPENDING );
+                    if ( 0 <= col ) {
+                        summary.nPacketsPending = cursor.getInt( col );
+                    }
+
                     switch ( summary.conType ) {
                     case COMMS_CONN_RELAY:
                         col = cursor.getColumnIndex( DBHelper.ROOMNAME );
@@ -295,6 +300,7 @@ public class DBUtils {
             if ( null != summary.conType ) {
                 values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
                 values.put( DBHelper.SEED, summary.seed );
+                values.put( DBHelper.NPACKETSPENDING, summary.nPacketsPending );
                 switch( summary.conType ) {
                 case COMMS_CONN_RELAY:
                     values.put( DBHelper.ROOMNAME, summary.roomName );
@@ -492,6 +498,28 @@ public class DBUtils {
         }
         return result;
     }
+
+    // Not read to use this yet
+    // public static long[] getGamesWithSendsPending( Context context )
+    // {
+    //     long[] result = null;
+    //     String[] columns = { ROW_ID };
+    //     String selection = String.format( "%s > 0", DBHelper.NPACKETSPENDING );
+    //     initDB( context );
+    //     synchronized( s_dbHelper ) {
+    //         SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+    //         Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+    //                                   selection, null, null, null, null );
+    //         result = new long[cursor.getCount()];
+    //         int indx = cursor.getColumnIndex( ROW_ID );
+    //         for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+    //             result[ii] = cursor.getLong( indx );
+    //         }
+    //         cursor.close();
+    //         db.close();
+    //     }
+    //     return result;
+    // }
 
     public static long[] getRowIDsFor( Context context, String relayID )
     {

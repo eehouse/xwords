@@ -457,6 +457,7 @@ public class GameListAdapter implements ExpandableListAdapter {
             R.string.game_summary_field_state,
             R.string.game_summary_field_rowid,
             R.string.game_summary_field_gameid,
+            R.string.game_summary_field_npackets,
         };
         int result = -1;
         for ( int id : ids ) {
