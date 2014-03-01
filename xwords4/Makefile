@@ -4,4 +4,15 @@ tags:
 		-o -name '*.h' -print \
 		-o -name '*.cpp' -print \
 	)
-	find android/XWords4/src/ -name '*.java' | xargs etags -a
+	FILES=""; \
+	for f in $$(find android/ -name '*.java' -o -name '*.xml'); do \
+		DIR=$$(dirname $$f); \
+		if [ -e $$DIR/.gitignore ]; then \
+			if grep -q $$(basename $$f) $$DIR/.gitignore; then \
+				echo "skipping $$f"; \
+				f=""; \
+			fi; \
+		fi; \
+		[ "$$f" != "" ] && FILES="$$FILES $$f"; \
+	done; \
+	etags -a $$FILES
