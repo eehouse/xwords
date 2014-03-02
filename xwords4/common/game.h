@@ -34,6 +34,7 @@ extern "C" {
 
 typedef struct _GameStateInfo {
     XP_U16 visTileCount;
+    XP_U16 nPendingMessages;
     XW_TrayVisState trayVisState;
     XP_Bool canHint;
     XP_Bool canUndo;

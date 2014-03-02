@@ -805,8 +805,10 @@ public class BoardActivity extends XWActivity
 
         boolean enable = null != m_gi
             && DeviceRole.SERVER_STANDALONE != m_gi.serverRole;
-        Utils.setItemVisible( menu, R.id.board_menu_game_resend, enable );
         Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, enable );
+        Utils.setItemVisible( menu, R.id.board_menu_game_resend, 
+                              enable && null != m_gsi && 
+                              0 < m_gsi.nPendingMessages );
 
         enable = enable && BuildConfig.DEBUG;
         Utils.setItemVisible( menu, R.id.board_menu_game_netstats, enable );

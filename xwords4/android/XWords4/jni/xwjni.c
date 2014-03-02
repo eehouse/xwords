@@ -1408,6 +1408,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1getGi
 
 static const SetInfo gsi_ints[] = {
     ARR_MEMBER( GameStateInfo, visTileCount ),
+    ARR_MEMBER( GameStateInfo, nPendingMessages ),
     ARR_MEMBER( GameStateInfo, trayVisState ),
 };
 static const SetInfo gsi_bools[] = {

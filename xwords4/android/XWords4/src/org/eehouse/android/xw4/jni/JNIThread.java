@@ -104,6 +104,7 @@ public class JNIThread extends Thread {
     public class GameStateInfo implements Cloneable {
         public int visTileCount;
         public int trayVisState;
+        public int nPendingMessages;
         public boolean canHint;
         public boolean canUndo;
         public boolean canRedo;
