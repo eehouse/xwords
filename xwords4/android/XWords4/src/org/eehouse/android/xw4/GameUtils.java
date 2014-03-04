@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.AsyncTask;
 
 import android.text.Html;
 import android.text.TextUtils;
@@ -34,6 +35,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.HashSet;
 import java.util.concurrent.locks.Lock;
 import org.json.JSONArray;
@@ -42,6 +44,7 @@ import org.json.JSONObject;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameUtils {
@@ -98,7 +101,7 @@ public class GameUtils {
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             addr = new CommsAddrRec();
             XwJNI.comms_getAddr( gamePtr, addr );
-            if ( CommsAddrRec.CommsConnType.COMMS_CONN_NONE == addr.conType ) {
+            if ( CommsConnType.COMMS_CONN_NONE == addr.conType ) {
                 String relayName = XWPrefs.getDefaultRelayHost( context );
                 int relayPort = XWPrefs.getDefaultRelayPort( context );
                 XwJNI.comms_getInitialAddr( addr, relayName, relayPort );
@@ -257,6 +260,12 @@ public class GameUtils {
     }
 
     public static int loadMakeGame( Context context, CurGameInfo gi, 
+                                    TransportProcs tp, GameLock lock )
+    {
+        return loadMakeGame( context, gi, null, tp, lock );
+    }
+
+    public static int loadMakeGame( Context context, CurGameInfo gi, 
                                     GameLock lock )
     {
         return loadMakeGame( context, gi, null, null, lock );
@@ -356,6 +365,12 @@ public class GameUtils {
             }
         }
         return thumb;
+    }
+
+    public static void resendAll( Context context )
+    {
+        HashMap<Long,CommsConnType> games = DBUtils.getGamesWithSendsPending( context );
+        new ResendTask( context, games ).execute();
     }
 
     public static long saveGame( Context context, int gamePtr, 
@@ -522,7 +537,7 @@ public class GameUtils {
         String[] dicta = { dict };
         boolean isHost = null == addr;
         if ( isHost ) { 
-            addr = new CommsAddrRec(CommsAddrRec.CommsConnType.COMMS_CONN_SMS);
+            addr = new CommsAddrRec( CommsConnType.COMMS_CONN_SMS );
         }
         String inviteID = GameUtils.formatGameID( gameID );
         return makeNewMultiGame( context, groupID, addr, langa, dicta, 
@@ -962,6 +977,66 @@ public class GameUtils {
             }
         }
         return result;
+    }
+
+    private static class ResendTask extends AsyncTask<Void, Void, Void> {
+        private Context m_context;
+        private HashMap<Long,CommsConnType> m_games;
+        private int m_nSent = 0;
+
+        public ResendTask( Context context, HashMap<Long,CommsConnType> games )
+        {
+            m_context = context;
+            m_games = games;
+        }
+
+        @Override
+        protected Void doInBackground( Void... unused )
+        {
+            Iterator<Long> iter = m_games.keySet().iterator();
+            while ( iter.hasNext() ) {
+                long rowid = iter.next();
+                GameLock lock = new GameLock( rowid, false );
+                if ( lock.tryLock() ) {
+                    CurGameInfo gi = new CurGameInfo( m_context );
+                    MsgSink sink = new MsgSink( m_context, rowid );
+                    int gamePtr = loadMakeGame( m_context, gi, sink, lock );
+                    if ( 0 != gamePtr ) {
+                        XwJNI.comms_resendAll( gamePtr, true, false );
+                    }
+                    lock.unlock();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute( Void unused )
+        {
+            DbgUtils.showf( m_context, R.string.resend_finishedf, m_nSent );
+        }
+
+        private class MsgSink extends MultiMsgSink {
+            private Context m_context;
+            private long m_rowid;
+
+            public MsgSink( Context context, long rowid )
+            {
+                m_context = context;
+                m_rowid = rowid;
+            }
+
+            @Override
+            public boolean relayNoConnProc( byte[] buf, String relayID )
+            {
+                int len = buf.length;
+                if ( len == RelayService.sendNoConnPacket( m_context, m_rowid, 
+                                                           relayID, buf ) ) {
+                    ++m_nSent;
+                }
+                return true;
+            }
+        }
     }
 
 }

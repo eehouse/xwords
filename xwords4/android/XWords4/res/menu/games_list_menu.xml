@@ -38,6 +38,9 @@
           android:title="@string/board_menu_file_about"
           android:icon="@android:drawable/ic_menu_info_details"
           />
+    <item android:id="@+id/games_menu_resend"
+          android:title="@string/board_menu_game_resend"
+          />
     <item android:id="@+id/games_menu_checkmoves"
           android:title="@string/gamel_menu_checkmoves"
           android:icon="@drawable/stat_notify_sync"

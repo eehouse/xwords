@@ -1018,12 +1018,6 @@ public class BTService extends XWService {
             }
             return sent;
         }
-
-        public boolean relayNoConnProc( byte[] buf, String relayID )
-        {
-            Assert.fail();
-            return false;
-        }
     }
 
 }

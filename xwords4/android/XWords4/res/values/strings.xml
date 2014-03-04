@@ -674,6 +674,7 @@
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
     <string name="board_menu_game_resend">Resend messages</string>
+    <string name="resend_finishedf">Resend finished; sent %d message[s].</string>
 
     <!--       
        ############################################################

@@ -50,6 +50,7 @@ import java.util.StringTokenizer;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 
 
@@ -204,7 +205,7 @@ public class DBUtils {
                 int col = cursor.getColumnIndex( DBHelper.CONTYPE );
                 if ( 0 <= col ) {
                     tmp = cursor.getInt( col );
-                    summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
+                    summary.conType = CommsConnType.values()[tmp];
                     col = cursor.getColumnIndex( DBHelper.SEED );
                     if ( 0 < col ) {
                         summary.seed = cursor.getInt( col );
@@ -499,27 +500,29 @@ public class DBUtils {
         return result;
     }
 
-    // Not read to use this yet
-    // public static long[] getGamesWithSendsPending( Context context )
-    // {
-    //     long[] result = null;
-    //     String[] columns = { ROW_ID };
-    //     String selection = String.format( "%s > 0", DBHelper.NPACKETSPENDING );
-    //     initDB( context );
-    //     synchronized( s_dbHelper ) {
-    //         SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-    //         Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
-    //                                   selection, null, null, null, null );
-    //         result = new long[cursor.getCount()];
-    //         int indx = cursor.getColumnIndex( ROW_ID );
-    //         for ( int ii = 0; cursor.moveToNext(); ++ii ) {
-    //             result[ii] = cursor.getLong( indx );
-    //         }
-    //         cursor.close();
-    //         db.close();
-    //     }
-    //     return result;
-    // }
+    public static HashMap<Long,CommsConnType> 
+        getGamesWithSendsPending( Context context )
+    {
+        HashMap<Long, CommsConnType> result = new HashMap<Long,CommsConnType>();
+        String[] columns = { ROW_ID, DBHelper.CONTYPE };
+        String selection = String.format( "%s > 0", DBHelper.NPACKETSPENDING );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            int indx1 = cursor.getColumnIndex( ROW_ID );
+            int indx2 = cursor.getColumnIndex( DBHelper.CONTYPE );
+            for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                long rowid = cursor.getLong( indx1 );
+                CommsConnType typ = CommsConnType.values()[cursor.getInt(indx2)];
+                result.put( rowid, typ );
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
 
     public static long[] getRowIDsFor( Context context, String relayID )
     {

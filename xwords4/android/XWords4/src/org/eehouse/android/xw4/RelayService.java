@@ -68,6 +68,7 @@ public class RelayService extends XWService
             , PROCESS_DEV_MSGS
             , UDP_CHANGED
             , SEND
+            , SENDNOCONN
             , RECEIVE
             , TIMER_FIRED
             , RESET
@@ -169,6 +170,21 @@ public class RelayService extends XWService
             result = msg.length;
         } else {
             DbgUtils.logf( "RelayService.sendPacket: network down" );
+        }
+        return result;
+    }
+
+    public static int sendNoConnPacket( Context context, long rowid, String relayID, 
+                                        byte[] msg )
+    {
+        int result = -1;
+        if ( NetStateCache.netAvail( context ) ) {
+            Intent intent = getIntentTo( context, MsgCmds.SENDNOCONN )
+                .putExtra( ROWID, rowid )
+                .putExtra( RELAY_ID, relayID )
+                .putExtra( BINBUFFER, msg );
+            context.startService( intent );
+            result = msg.length;
         }
         return result;
     }
@@ -290,11 +306,15 @@ public class RelayService extends XWService
                     break;
                 case SEND:
                 case RECEIVE:
+                case SENDNOCONN:
                     startUDPThreadsIfNot();
                     long rowid = intent.getLongExtra( ROWID, -1 );
                     byte[] msg = intent.getByteArrayExtra( BINBUFFER );
                     if ( MsgCmds.SEND.equals( cmd ) ) {
                         sendMessage( rowid, msg );
+                    } else if ( MsgCmds.SENDNOCONN.equals( cmd ) ) {
+                        String relayID = intent.getStringExtra( RELAY_ID );
+                        sendNoConnMessage( rowid, relayID, msg );
                     } else {
                         feedMessage( rowid, msg );
                     }
@@ -462,7 +482,7 @@ public class RelayService extends XWService
         if ( null == m_UDPWriteThread ) {
             m_UDPWriteThread = new Thread( null, new Runnable() {
                     public void run() {
-                        DbgUtils.logf( "RelayService: write thread running" );
+                        DbgUtils.logf( "RelayService: write thread starting" );
                         for ( ; ; ) {
                             PacketData outData;
                             try {
@@ -740,7 +760,7 @@ public class RelayService extends XWService
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
             DataOutputStream out = new DataOutputStream( bas );
-            Assert.assertTrue( rowid < Integer.MAX_VALUE );
+            Assert.assertTrue( rowid < Integer.MAX_VALUE ); // ???
             out.writeInt( (int)rowid );
             out.writeBytes( relayID );
             out.write( '\n' );
@@ -797,7 +817,8 @@ public class RelayService extends XWService
     private void postPacket( ByteArrayOutputStream bas, XWRelayReg cmd )
     {
         m_queue.add( new PacketData( bas, cmd ) );
-        DbgUtils.logf( "postPacket() done; %d in queue", m_queue.size() );
+        // 0 ok; thread will often have sent already!
+        // DbgUtils.logf( "postPacket() done; %d in queue", m_queue.size() );
     }
 
     private String getDevID( DevIDType[] typp )

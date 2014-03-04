@@ -98,6 +98,7 @@ public class GamesList extends XWExpandableListActivity
         // R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
         R.id.games_menu_checkupdates,
+        R.id.games_menu_resend,
     };
     private static final int[] NOSEL_ITEMS = { 
         R.id.games_menu_newgroup,
@@ -679,7 +680,7 @@ public class GamesList extends XWExpandableListActivity
         if ( m_menuPrepared ) {
             boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
         
-            boolean showDbg = BuildConfig.DEBUG
+            final boolean showDbg = BuildConfig.DEBUG
                 || XWPrefs.getDebugEnabled( this );
             showItemsIf( DEBUG_ITEMS, menu, nothingSelected && showDbg );
             Utils.setItemVisible( menu, R.id.games_menu_loaddb, 
@@ -762,6 +763,9 @@ public class GamesList extends XWExpandableListActivity
         switch ( item.getItemId() ) {
 
             // There's no selection for these items, so nothing to clear
+        case R.id.games_menu_resend:
+            GameUtils.resendAll( this );
+            break;
         case R.id.games_menu_newgame:
             startNewGameActivity( groupID );
             break;
