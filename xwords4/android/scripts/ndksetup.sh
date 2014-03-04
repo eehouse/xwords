@@ -18,6 +18,7 @@ elif [ -n "$XWORDS_DEBUG_X86ONLY" ]; then
 else
     echo "APP_ABI := armeabi x86" >> $TMP_MK
 fi
+# echo "APP_OPTIM := debug" >> $TMP_MK
 
 # Now replace the existing file, but only if it's different.  Touching
 # it causes the library to be completely rebuilt, so avoid that if
