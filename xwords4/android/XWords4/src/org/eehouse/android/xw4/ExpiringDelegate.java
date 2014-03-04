@@ -37,6 +37,9 @@ public class ExpiringDelegate {
     private static final long INTERVAL_SECS = 3 * 24 * 60 * 60;
     // private static final long INTERVAL_SECS = 60 * 10;   // for testing
 
+    private static boolean s_kitkat = 
+        19 <= Integer.valueOf( android.os.Build.VERSION.SDK );
+
     private Context m_context;
     private View m_view;
     private boolean m_active = false;
@@ -116,6 +119,11 @@ public class ExpiringDelegate {
             int width = s_rect.width();
             int redWidth = width * m_pct / 100;
             Assert.assertTrue( redWidth <= width );
+
+            if ( s_kitkat ) {
+                ++s_rect.top;
+                ++s_rect.left;
+            }
 
             // left edge
             addPoints( 0, s_rect.left, s_rect.top,
