@@ -555,9 +555,9 @@ gtkNoticeRcvd( void* closure )
 }
 
 static void
-smsInviteReceived( void* closure, const XP_UCHAR* gameName, XP_U32 gameID, 
-                   XP_U16 dictLang, const XP_UCHAR* dictName, XP_U16 nPlayers, 
-                   XP_U16 nHere, const CommsAddrRec* returnAddr )
+smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName), 
+                   XP_U32 gameID, XP_U16 dictLang, const XP_UCHAR* dictName,
+                   XP_U16 nPlayers, XP_U16 nHere, const CommsAddrRec* returnAddr )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;

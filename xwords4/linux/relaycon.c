@@ -45,7 +45,9 @@ static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len
 static size_t addVLIStr( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
 static XP_U16 getNetShort( const XP_U8** ptr );
+#ifdef DEBUG
 static XP_U32 getNetLong( const XP_U8** ptr );
+#endif
 static int writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd );
 static bool readHeader( const XP_U8** buf, MsgHeader* header );
 static size_t writeDevID( XP_U8* buf, size_t len, const XP_UCHAR* str );
@@ -389,6 +391,7 @@ getNetShort( const XP_U8** ptr )
     return ntohs( result );
 }
 
+#ifdef DEBUG
 static XP_U32
 getNetLong( const XP_U8** ptr )
 {
@@ -397,6 +400,7 @@ getNetLong( const XP_U8** ptr )
     *ptr += sizeof(result);
     return ntohl( result );
 }
+#endif
 
 static void
 getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf )

@@ -133,8 +133,10 @@ handle_scan( GtkWidget* XP_UNUSED(widget), gpointer closure )
     } else {
         GSList* iter;
         for ( iter = devNames; !!iter; iter = iter->next ) {
+#ifdef DEBUG
             gchar* name = iter->data;
             XP_LOGF( "%s: got %s", __func__, name );
+#endif
         }
     }
 }
