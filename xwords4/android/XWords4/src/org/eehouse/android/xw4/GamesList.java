@@ -672,7 +672,8 @@ public class GamesList extends XWExpandableListActivity
                 || XWPrefs.getDebugEnabled( this );
             showItemsIf( DEBUG_ITEMS, menu, nothingSelected && showDbg );
             Utils.setItemVisible( menu, R.id.games_menu_loaddb, 
-                                  showDbg && DBUtils.gameDBExists( this ) );
+                                  showDbg && nothingSelected && 
+                                  DBUtils.gameDBExists( this ) );
 
             showItemsIf( NOSEL_ITEMS, menu, nothingSelected );
             showItemsIf( ONEGAME_ITEMS, menu, 1 == nGamesSelected );
