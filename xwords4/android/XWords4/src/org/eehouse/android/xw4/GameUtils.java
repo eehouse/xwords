@@ -390,7 +390,9 @@ public class GameUtils {
 
         if ( force ) {
             HashMap<Long,CommsConnType> games = DBUtils.getGamesWithSendsPending( context );
-            new ResendTask( context, games, showUI ).execute();
+            if ( 0 < games.size() ) {
+                new ResendTask( context, games, showUI ).execute();
+            }
         }
     }
 
