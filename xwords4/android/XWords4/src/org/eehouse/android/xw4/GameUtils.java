@@ -54,6 +54,11 @@ public class GameUtils {
     public static final String INTENT_FORRESULT_ROWID = "forresult";
 
     private static Integer s_minScreen;
+    // Used to determine whether to resend all messages on networking coming
+    // back up.  The length of the array determines the number of times in the
+    // interval we'll do a send.
+    private static long[] s_sendTimes = {0,0,0,0};
+    private static final long RESEND_INTERVAL_SECS = 60 * 60; // 1 hour
 
     public static class NoSuchGameException extends RuntimeException {
         public NoSuchGameException() {
@@ -367,10 +372,26 @@ public class GameUtils {
         return thumb;
     }
 
-    public static void resendAll( Context context )
+    public static void resendAllIf( Context context, boolean force )
     {
-        HashMap<Long,CommsConnType> games = DBUtils.getGamesWithSendsPending( context );
-        new ResendTask( context, games ).execute();
+        final boolean showUI = force;
+
+        if ( !force ) {
+            long now = Utils.getCurSeconds();
+            long oldest = s_sendTimes[s_sendTimes.length - 1];
+            if ( RESEND_INTERVAL_SECS < (now - oldest) ) {
+                System.arraycopy( s_sendTimes, 0, /* src */ 
+                                  s_sendTimes, 1, /* dest */
+                                  s_sendTimes.length - 1 );
+                s_sendTimes[0] = now;
+                force = true;
+            }
+        }
+
+        if ( force ) {
+            HashMap<Long,CommsConnType> games = DBUtils.getGamesWithSendsPending( context );
+            new ResendTask( context, games, showUI ).execute();
+        }
     }
 
     public static long saveGame( Context context, int gamePtr, 
@@ -982,12 +1003,15 @@ public class GameUtils {
     private static class ResendTask extends AsyncTask<Void, Void, Void> {
         private Context m_context;
         private HashMap<Long,CommsConnType> m_games;
+        private boolean m_showUI;
         private int m_nSent = 0;
 
-        public ResendTask( Context context, HashMap<Long,CommsConnType> games )
+        public ResendTask( Context context, HashMap<Long,CommsConnType> games,
+                           boolean showUI )
         {
             m_context = context;
             m_games = games;
+            m_showUI = showUI;
         }
 
         @Override
@@ -1013,7 +1037,9 @@ public class GameUtils {
         @Override
         protected void onPostExecute( Void unused )
         {
-            DbgUtils.showf( m_context, R.string.resend_finishedf, m_nSent );
+            if ( m_showUI ) {
+                DbgUtils.showf( m_context, R.string.resend_finishedf, m_nSent );
+            }
         }
 
         private class MsgSink extends MultiMsgSink {

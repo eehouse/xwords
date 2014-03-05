@@ -98,7 +98,6 @@ public class GamesList extends XWExpandableListActivity
         // R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
         R.id.games_menu_checkupdates,
-        R.id.games_menu_resend,
     };
     private static final int[] NOSEL_ITEMS = { 
         R.id.games_menu_newgroup,
@@ -107,6 +106,7 @@ public class GamesList extends XWExpandableListActivity
         R.id.games_menu_about,
         R.id.games_menu_email,
         R.id.games_menu_checkmoves,
+        R.id.games_menu_resend,
     };
     private static final int[] ONEGAME_ITEMS = {
         R.id.games_game_config,
@@ -764,7 +764,7 @@ public class GamesList extends XWExpandableListActivity
 
             // There's no selection for these items, so nothing to clear
         case R.id.games_menu_resend:
-            GameUtils.resendAll( this );
+            GameUtils.resendAllIf( this, true );
             break;
         case R.id.games_menu_newgame:
             startNewGameActivity( groupID );
@@ -969,6 +969,7 @@ public class GamesList extends XWExpandableListActivity
                 Utils.showToast( this, id );
                 DbgUtils.logf( "GamesList.netAvail(%s)", getString( id ) );
             }
+            GameUtils.resendAllIf( this, false );
         }
     }
 
