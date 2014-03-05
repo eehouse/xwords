@@ -60,8 +60,7 @@ import org.eehouse.android.xw4.jni.*;
 public class GamesList extends XWExpandableListActivity 
     implements OnItemLongClickListener,
                DBUtils.DBChangeListener, SelectableItem, 
-               DictImportActivity.DownloadFinishedListener,
-               NetStateCache.StateChangedIf {
+               DictImportActivity.DownloadFinishedListener {
 
     private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
     private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
@@ -135,7 +134,6 @@ public class GamesList extends XWExpandableListActivity
     private GameNamer m_namer;
     private long m_launchedGame = DBUtils.ROWID_NOTFOUND;
     private boolean m_menuPrepared;
-    private boolean m_netAvail;
     private HashSet<Long> m_selGames;
     private HashSet<Long> m_selGroupIDs;
     private CharSequence m_origTitle;
@@ -375,8 +373,6 @@ public class GamesList extends XWExpandableListActivity
 
         CrashTrack.init( this );
 
-        m_netAvail = NetStateCache.netAvail( this );
-
         m_selGames = new HashSet<Long>();
         m_selGroupIDs = new HashSet<Long>();
         getBundledData( savedInstanceState );
@@ -418,16 +414,8 @@ public class GamesList extends XWExpandableListActivity
     }
 
     @Override
-    protected void onStart()
-    {
-        super.onStart();
-        NetStateCache.register( this, this );
-    }
-
-    @Override
     protected void onStop()
     {
-        NetStateCache.unregister( this, this );
         // TelephonyManager mgr = 
         //     (TelephonyManager)getSystemService( Context.TELEPHONY_SERVICE );
         // mgr.listen( m_phoneStateListener, PhoneStateListener.LISTEN_NONE );
@@ -954,23 +942,6 @@ public class GamesList extends XWExpandableListActivity
                     }
                 }
             } );
-    }
-
-    //////////////////////////////////////////////////////////////////////
-    // NetStateCache.StateChangedIf 
-    //////////////////////////////////////////////////////////////////////
-    public void netAvail( boolean nowAvailable )
-    {
-        if ( m_netAvail != nowAvailable ) {
-            m_netAvail = nowAvailable;
-            if ( BuildConfig.DEBUG ) {
-                int id = nowAvailable ?
-                    R.string.net_change_gained : R.string.net_change_lost;
-                Utils.showToast( this, id );
-                DbgUtils.logf( "GamesList.netAvail(%s)", getString( id ) );
-            }
-            GameUtils.resendAllIf( this, false );
-        }
     }
 
     private void setTitleBar()

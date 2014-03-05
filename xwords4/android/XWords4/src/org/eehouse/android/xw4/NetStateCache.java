@@ -107,7 +107,7 @@ public class NetStateCache {
         }
 
         @Override
-        public void onReceive( Context context, Intent intent ) 
+        public void onReceive( final Context context, Intent intent ) 
         {
             DbgUtils.assertOnUIThread();
 
@@ -117,8 +117,6 @@ public class NetStateCache {
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo.State state = ni.getState();
-                DbgUtils.logf( "PvtBroadcastReceiver.onReceive: "
-                               + "new network state: %s", state.toString() );
 
                 boolean netAvail;
                 switch ( state ) {
@@ -151,14 +149,18 @@ public class NetStateCache {
                         mNotifyLater = new Runnable() {
                                 @Override
                                 public void run() {
-                                    DbgUtils.logf( "PvtBroadcastReceiver: run() fired." );
                                     Assert.assertTrue( mLastStateSent != s_netAvail );
                                     mLastStateSent = s_netAvail;
+
                                     synchronized( s_ifs ) {
                                         Iterator<StateChangedIf> iter = s_ifs.iterator();
                                         while ( iter.hasNext() ) {
                                             iter.next().netAvail( s_netAvail );
                                         }
+                                    }
+
+                                    if ( s_netAvail ) {
+                                        GameUtils.resendAllIf( context, false );
                                     }
                                 }
                             };
