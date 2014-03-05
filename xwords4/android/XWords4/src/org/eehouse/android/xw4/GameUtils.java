@@ -1067,10 +1067,7 @@ public class GameUtils {
 
             public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
             {
-                DbgUtils.logf( "ResendTask.MsgSink.transportSend: dropping message "
-                               + "of len %d on addr type %s", buf.length, 
-                               addr.conType.toString() );
-                return -1;
+                return CommsTransport.sendForAddr( m_context, addr, m_rowid, gameID, buf );
             }
         }
     }
