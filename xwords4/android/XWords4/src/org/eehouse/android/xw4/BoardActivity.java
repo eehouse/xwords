@@ -243,7 +243,6 @@ public class BoardActivity extends XWActivity
     private static void setThis( BoardActivity self )
     {
         synchronized( s_this ) {
-            DbgUtils.logf( "setThis(self=%H)", self );
             Assert.assertTrue( !s_this.contains(self) ); // here
             s_this.add( self );
         }
@@ -252,7 +251,6 @@ public class BoardActivity extends XWActivity
     private static void clearThis( BoardActivity self )
     {
         synchronized( s_this ) {
-            DbgUtils.logf( "clearThis(s_this=%H)", s_this );
             Assert.assertTrue( s_this.contains( self ) );
             s_this.remove( self );
         }
