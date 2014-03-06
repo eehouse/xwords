@@ -105,7 +105,6 @@ public class GamesList extends XWExpandableListActivity
         R.id.games_menu_about,
         R.id.games_menu_email,
         R.id.games_menu_checkmoves,
-        R.id.games_menu_resend,
     };
     private static final int[] ONEGAME_ITEMS = {
         R.id.games_game_config,
@@ -724,6 +723,9 @@ public class GamesList extends XWExpandableListActivity
             enable = nothingSelected && XWPrefs.getStudyEnabled( this );
             Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
+            enable = 0 < DBUtils.getGamesWithSendsPending( this ).size();
+            Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
+            
             m_menuPrepared = super.onPrepareOptionsMenu( menu );
         } else {
             DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
