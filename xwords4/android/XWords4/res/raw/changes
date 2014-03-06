@@ -5,15 +5,15 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 79 release</b>
+<b>Crosswords 4.4 beta 80 release</b>
 
-<h3>New with this release (and with days-ago beta 78)</h3>
+<h3>New with this release</h3>
 <ul>
-    <li>Fix crash copying games. I hadn't tested that in a while....</li>
-    <li>Add new "Studylist" feature. It's off by default to avoid
-    confusion, but once enabled (via App Settings/Behavior) it lets
-    you add words from the board to a list you'll later study or copy
-    to another app. (Thanks to BRS for the idea!)</li>
+    <li>Tweak network play; in particular, fix so resends happen
+    automatically when you get a network connection back. This should
+    reduce game stalling</li>
+    <li>Add menuitem to main screen that manually resends moves</li>
+    <li>Fix KitKat-only problem drawing green/red move timer outlines</li>
 </ul>
 
 <h3>Next up</h3>
