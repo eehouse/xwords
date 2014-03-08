@@ -2045,14 +2045,17 @@ public class BoardActivity extends XWActivity
 
                 try {
                     m_forResultWait.acquire();
-                    m_blockingDlgID = BLOCKING_DLG_NONE;
                 } catch ( java.lang.InterruptedException ie ) {
                     DbgUtils.loge( ie );
                     if ( BLOCKING_DLG_NONE != m_blockingDlgID ) {
-                        dismissDialog( m_blockingDlgID );
-                        m_blockingDlgID = BLOCKING_DLG_NONE;
+                        try {
+                            dismissDialog( m_blockingDlgID );
+                        } catch ( java.lang.IllegalArgumentException iae ) {
+                            DbgUtils.loge( iae );
+                        }
                     }
                 }
+                m_blockingDlgID = BLOCKING_DLG_NONE;
             }
 
             clearBlockingThread();
