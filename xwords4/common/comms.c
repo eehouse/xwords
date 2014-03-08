@@ -1495,7 +1495,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
                      comms->rr.myHostID, srcID );
         }
 
-        if ( 0 == comms->rr.cookieID ) {
+        if ( COOKIE_ID_NONE == comms->rr.cookieID ) {
             XP_LOGF( "%s: cookieID still 0; background send?", 
                      __func__ );
         }
@@ -2266,7 +2266,10 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 
         switch ( cmd ) {
         case XWRELAY_MSG_TORELAY:
-            XP_ASSERT( COOKIE_ID_NONE != comms->rr.cookieID );
+            if ( COOKIE_ID_NONE == comms->rr.cookieID ) {
+                XP_LOGF( "%s: cookieID still 0; background send?", 
+                         __func__ );
+            }
             stream_putU16( stream, comms->rr.cookieID );
         case XWRELAY_MSG_TORELAY_NOCONN:
             stream_putU8( stream, comms->rr.myHostID );
