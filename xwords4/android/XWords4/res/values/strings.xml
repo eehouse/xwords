@@ -2177,7 +2177,7 @@
 
     <string name="dropped_dupe">Invitation received but ignored: it
     has already been used to create a game.</string>
-    <string name="cur_menu_markerf">%1$s (yours)</string>
+    <string name="cur_menu_markerf">%1$s (in use)</string>
     <string name="board_menu_invite">Invite</string>
 
     <string name="enable_nfc">NFC is turned off on this device. You
