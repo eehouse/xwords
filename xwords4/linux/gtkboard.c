@@ -785,26 +785,27 @@ destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 cleanup( GtkGameGlobals* globals )
 {
-    saveGame( &globals->cGlobals );
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    saveGame( cGlobals );
     g_source_remove( globals->idleID );
 
 #ifdef XWFEATURE_BLUETOOTH
-    linux_bt_close( &globals->cGlobals );
+    linux_bt_close( cGlobals );
 #endif
 #ifdef XWFEATURE_SMS
-    // linux_sms_close( &globals->cGlobals );
+    // linux_sms_close( cGlobals );
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-    linux_udp_close( &globals->cGlobals );
+    linux_udp_close( cGlobals );
 #endif
 #ifdef XWFEATURE_RELAY
-    linux_close_socket( &globals->cGlobals );
+    linux_close_socket( cGlobals );
 #endif
-    game_dispose( &globals->cGlobals.game ); /* takes care of the dict */
-    gi_disposePlayerInfo( MEMPOOL globals->cGlobals.gi );
+    game_dispose( &cGlobals->game ); /* takes care of the dict */
+    gi_disposePlayerInfo( MEMPOOL cGlobals->gi );
 
-    linux_util_vt_destroy( globals->cGlobals.util );
-    free( globals->cGlobals.util );
+    linux_util_vt_destroy( cGlobals->util );
+    free( cGlobals->util );
 } /* cleanup */
 
 GtkWidget*
@@ -827,14 +828,15 @@ makeAddSubmenu( GtkWidget* menubar, gchar* label )
 static void
 tile_values( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( !!globals->cGlobals.game.server ) {
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    if ( !!cGlobals->game.server ) {
         XWStreamCtxt* stream = 
             mem_stream_make( MEMPOOL 
-                             globals->cGlobals.params->vtMgr,
+                             cGlobals->params->vtMgr,
                              globals, 
                              CHANNEL_NONE, 
                              catOnClose );
-        server_formatDictCounts( globals->cGlobals.game.server, stream, 5 );
+        server_formatDictCounts( cGlobals->game.server, stream, 5 );
         stream_putU8( stream, '\n' );
         stream_destroy( stream );
     }
