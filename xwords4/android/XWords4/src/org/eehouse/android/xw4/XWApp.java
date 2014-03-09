@@ -70,6 +70,15 @@ public class XWApp extends Application {
         GCMIntentService.init( this );
     }
 
+    // This is called on emulator only, but good for ensuring no memory leaks
+    // by forcing JNI cleanup
+    public void onTerminate()
+    {
+        DbgUtils.logf( "XwApp.onTerminate() called" );
+        XwJNI.cleanGlobals();
+        super.onTerminate();
+    }
+
     public static UUID getAppUUID()
     {
         if ( null == s_UUID ) {

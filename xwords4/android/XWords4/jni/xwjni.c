@@ -39,6 +39,42 @@
 #include "jniutlswrapper.h"
 #include "paths.h"
 
+/* Globals for the whole game */
+typedef struct _JNIGlobalState {
+    JNIEnv* env;
+    MPSLOT
+} JNIGlobalState;
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
+( JNIEnv* env, jclass C )
+{
+#ifdef MEM_DEBUG
+    MemPoolCtx* mpool = mpool_make();
+#endif
+    JNIGlobalState* state = (JNIGlobalState*)XP_CALLOC( mpool, sizeof(*state) );
+    state->env = env;
+    MPASSIGN( state->mpool, mpool );
+    LOG_RETURNF( "%p", state );
+    return (jint)state;
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
+( JNIEnv* env, jclass C, jint ptr )
+{
+    LOG_FUNC();
+    if ( 0 != ptr ) {
+        JNIGlobalState* state = (JNIGlobalState*)ptr;
+        XP_ASSERT( state->env == env );
+#ifdef MEM_DEBUG
+        MemPoolCtx* mpool = state->mpool;
+#endif
+        XP_FREE( mpool, state );
+        mpool_destroy( mpool );
+    }
+}
+
 static const SetInfo gi_ints[] = {
     ARR_MEMBER( CurGameInfo, nPlayers )
     ,ARR_MEMBER( CurGameInfo, gameSeconds )
@@ -316,6 +352,26 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
     return jstr;
 }
 
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1ref
+( JNIEnv* env, jclass C, jint dictPtr )
+{
+    if ( 0 != dictPtr ) {
+        DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
+        dict_ref( dict );
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_dict_1unref
+( JNIEnv* env, jclass C, jint dictPtr )
+{
+    if ( 0 != dictPtr ) {
+        DictionaryCtxt* dict = (DictionaryCtxt*)dictPtr;
+        dict_unref( dict );
+    }
+}
+
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 ( JNIEnv* env, jclass C, jbyteArray jDictBytes, jstring jname, jstring jpath, 
@@ -380,6 +436,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTileValue
 typedef struct _JNIState {
     XWGame game;
     JNIEnv* env;
+    JNIGlobalState* globalJNI;
     AndGlobals globals;
     XP_U16 curSaveCount;
     XP_U16 lastSavedSize;
@@ -422,7 +479,7 @@ typedef struct _JNIState {
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
-( JNIEnv* env, jclass C )
+( JNIEnv* env, jclass C, int jniGlobalPtr )
 {
     /* Why am I doing this twice? */
     /* struct timeval tv; */
@@ -432,6 +489,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
     MemPoolCtx* mpool = mpool_make();
 #endif
     JNIState* state = (JNIState*)XP_CALLOC( mpool, sizeof(*state) );
+    state->globalJNI = (JNIGlobalState*)jniGlobalPtr;
     AndGlobals* globals = &state->globals;
     globals->state = (struct JNIState*)state;
     MPASSIGN( state->mpool, mpool );
@@ -472,7 +530,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 
     DictionaryCtxt* dict;
     PlayerDicts dicts;
-    makeDicts( MPPARM(mpool) env, globals->jniutil, &dict, &dicts, j_names, 
+
+    makeDicts( MPPARM(state->globalJNI->mpool) env, globals->jniutil, &dict, &dicts, j_names, 
                j_dicts, j_paths, j_lang );
 #ifdef STUBBED_DICT
     if ( !dict ) {
@@ -529,8 +588,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     globals->util = makeUtil( MPPARM(mpool) &state->env, 
                               jutil, globals->gi, globals );
     globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
-    makeDicts( MPPARM(mpool) env, globals->jniutil, &dict, &dicts, jdictNames,
-               jdicts, jpaths,  jlang );
+    makeDicts( MPPARM(state->globalJNI->mpool) env, globals->jniutil, &dict, 
+               &dicts, jdictNames, jdicts, jpaths,  jlang );
     if ( !!jdraw ) {
         globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
     }
@@ -1456,9 +1515,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1changeDict
   jbyteArray jDictBytes, jstring jpath )
 {
     XWJNI_START_GLOBALS();
-    DictionaryCtxt* dict = makeDict( MPPARM(mpool) env, globals->jniutil, 
+    DictionaryCtxt* dict = makeDict( MPPARM(state->globalJNI->mpool) env, globals->jniutil, 
                                      jname, jDictBytes, jpath, NULL, false );
     game_changeDict( MPPARM(mpool) &state->game, globals->gi, dict );
+    dict_unref( dict );
     setJGI( env, jgi, globals->gi );
     XWJNI_END();
     return XP_FALSE;            /* no need to redraw */
