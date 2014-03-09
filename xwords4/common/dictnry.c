@@ -38,6 +38,40 @@ extern "C" {
 /*****************************************************************************
  *
  ****************************************************************************/
+
+DictionaryCtxt*
+dict_ref( DictionaryCtxt* dict )
+{
+    if ( !!dict ) {
+        ++dict->refCount;
+        XP_LOGF( "%s(dict=%p): refCount now %d", __func__, dict, dict->refCount );
+    }
+    return dict;
+}
+
+void
+dict_unref( DictionaryCtxt* dict )
+{
+    if ( !!dict ) {
+        --dict->refCount;
+        XP_ASSERT( 0 <= dict->refCount );
+        XP_LOGF( "%s(dict=%p): refCount now %d", __func__, dict, 
+                 dict->refCount );
+        if ( 0 == dict->refCount ) {
+            (*dict->destructor)( dict );
+        }
+    }
+}
+
+void
+dict_unref_all( PlayerDicts* pd )
+{
+    XP_U16 ii;
+    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
+        dict_unref( pd->dicts[ii] );
+    }
+}
+
 void
 setBlankTile( DictionaryCtxt* dict ) 
 {

@@ -203,7 +203,6 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
 void
 game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, DictionaryCtxt* dict )
 {
-    model_destroyDicts( game->model );
     model_setDictionary( game->model, dict );
     gi_setDict( MPPARM(mpool) gi, dict );
     server_resetEngines( game->server );
@@ -351,7 +350,6 @@ game_dispose( XWGame* game )
     }
 #endif
     if ( !!game->model ) { 
-        model_destroyDicts( game->model );
         model_destroy( game->model );
         game->model = NULL;
     }

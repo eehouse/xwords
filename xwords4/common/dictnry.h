@@ -87,6 +87,7 @@ struct DictionaryCtxt {
 
     XP_LangCode langCode;
 
+    XP_U16 refCount;
     XP_U8 nFaces;
     XP_U8 nodeSize;
     XP_Bool is_4_byte;
@@ -125,7 +126,6 @@ struct DictionaryCtxt {
 
 /* #define dict_numTileFaces(dc) (dc)->vtable->m_numTileFaces(dc) */
 
-#define dict_destroy(d) (*((d)->destructor))(d)
 #define dict_edge_for_index(d, i) (*((d)->func_edge_for_index))((d), (i))
 #define dict_getTopEdge(d)        (*((d)->func_dict_getTopEdge))(d)
 #define dict_index_from(d,e)        (*((d)->func_dict_index_from))(d,e)
@@ -140,6 +140,10 @@ struct DictionaryCtxt {
 #define EDGETILE(d,edge) \
     ((Tile)(((array_edge_old*)(edge))->bits & \
             ((d)->is_4_byte?LETTERMASK_NEW_4:LETTERMASK_NEW_3)))
+
+DictionaryCtxt* dict_ref( DictionaryCtxt* dict );
+void dict_unref( DictionaryCtxt* dict );
+void dict_unref_all( PlayerDicts* dicts );
 
 XP_Bool dict_tilesAreSame( const DictionaryCtxt* dict1, 
                            const DictionaryCtxt* dict2 );

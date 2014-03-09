@@ -562,7 +562,10 @@ and_dictionary_make_empty( MPFORMAL JNIEnv* env, JNIUtilCtxt* jniutil )
 #endif
     dict_super_init( (DictionaryCtxt*)anddict );
     MPASSIGN( anddict->super.mpool, mpool );
-    return (DictionaryCtxt*)anddict;
+
+    DictionaryCtxt* result = dict_ref( (DictionaryCtxt*)anddict );
+    LOG_RETURNF( "%p", result );
+    return result;
 }
 
 void
@@ -658,21 +661,6 @@ makeDict( MPFORMAL JNIEnv *env, JNIUtilCtxt* jniutil, jstring jname,
     
     return (DictionaryCtxt*)anddict;
 } /* makeDict */
-
-void
-destroyDicts( PlayerDicts* dicts )
-{
-    int ii;
-    DictionaryCtxt** ctxts;
-
-    for ( ctxts = dicts->dicts, ii = 0; 
-          ii < VSIZE(dicts->dicts); 
-          ++ii, ++ctxts ) {
-        if ( NULL != *ctxts ) {
-            dict_destroy( *ctxts );
-        }
-    }
-}
 
 #ifdef DEBUG
 uint32_t

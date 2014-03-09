@@ -336,7 +336,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
             setInt( env, jinfo, "wordCount", dict_getWordCount( dict ) );
             setString( env, jinfo, "md5Sum", dict_getMd5Sum( dict ) );
         }
-        dict_destroy( dict );
+        dict_unref( dict );
         result = true;
     }
     destroyJNIUtil( &jniutil );
@@ -481,7 +481,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
     }
 #endif
     model_setDictionary( state->game.model, dict );
+    dict_unref( dict );         /* game owns it now */
     model_setPlayerDicts( state->game.model, &dicts );
+    dict_unref_all( &dicts );
     XWJNI_END();
 } /* makeNewGame */
 
@@ -544,6 +546,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
                                   globals->util, globals->dctx, &cp,
                                   globals->xportProcs );
     stream_destroy( stream );
+    dict_unref( dict );         /* game owns it now */
+    dict_unref_all( &dicts );
 
     if ( result ) {
         XP_ASSERT( 0 != globals->gi->gameID );
@@ -553,10 +557,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     } else {
         destroyDraw( &globals->dctx );
         destroyXportProcs( &globals->xportProcs );
-        destroyDicts( &dicts );
-        if ( NULL != dict ) {
-            dict_destroy( dict );
-        }
         destroyUtil( &globals->util );
         destroyJNIUtil( &globals->jniutil );
         destroyGI( MPPARM(mpool) &globals->gi );
@@ -1674,7 +1674,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = data->mpool;
 #endif
-        dict_destroy( data->dict );
+        dict_unref( data->dict );
         destroyJNIUtil( &data->jniutil );
         freeIndices( data );
         vtmgr_destroy( MPPARM(mpool) data->vtMgr );

@@ -1309,7 +1309,6 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
             model_setDictionary( model, newDict );
         } else if ( dict_tilesAreSame( newDict, curDict ) ) {
             /* keep the dict the local user installed */
-            dict_destroy( newDict );
 #ifdef STREAM_VERS_BIGBOARD
             if ( '\0' != rmtDictName[0] ) {
                 const XP_UCHAR* ourName = dict_getShortName( curDict );
@@ -1320,11 +1319,11 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
             }
 #endif
         } else {
-            dict_destroy( curDict );
             model_setDictionary( model, newDict );
             util_userError( server->vol.util, ERR_SERVER_DICT_WINS );
             clearLocalRobots( server );
         }
+        dict_unref( newDict );  /* new owner will have ref'd */
 
         XP_ASSERT( !server->pool );
         pool = server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );

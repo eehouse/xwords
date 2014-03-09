@@ -1688,7 +1688,7 @@ walk_dict_test_all( MPFORMAL const LaunchParams* params, GSList* testDicts,
         if ( NULL != dict ) {
             XP_LOGF( "walk_dict_test(%s)", name );
             walk_dict_test( MPPARM(mpool) dict, testPrefixes, testMinMax );
-            dict_destroy( dict );
+            dict_unref( dict );
         }
     }
 }
@@ -1895,7 +1895,7 @@ dawg2dict( const LaunchParams* params, GSList* testDicts )
                                    params->useMmap );
         if ( NULL != dict ) {
             dumpDict( dict );
-            dict_destroy( dict );
+            dict_unref( dict );
         }
     }
     return 0;

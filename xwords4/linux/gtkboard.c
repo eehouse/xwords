@@ -801,8 +801,9 @@ cleanup( GtkGameGlobals* globals )
 #ifdef XWFEATURE_RELAY
     linux_close_socket( cGlobals );
 #endif
-    game_dispose( &cGlobals->game ); /* takes care of the dict */
+    game_dispose( &cGlobals->game );
     gi_disposePlayerInfo( MEMPOOL cGlobals->gi );
+    dict_unref( cGlobals->dict );
 
     linux_util_vt_destroy( cGlobals->util );
     free( cGlobals->util );

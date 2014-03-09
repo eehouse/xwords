@@ -83,7 +83,7 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
         }
     }
 
-    return (DictionaryCtxt*)result;
+    return dict_ref( (DictionaryCtxt*)result );
 } /* gtk_dictionary_make */
 
 static XP_UCHAR*
