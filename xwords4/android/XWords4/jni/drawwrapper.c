@@ -530,6 +530,14 @@ and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum,
             draw->curLang = code;
 
             DRAW_CBK_HEADER( "dictChanged", "(I)V" );
+
+            /* /\* create a DictWrapper object -- if the API changes to require it *\/ */
+            /* jclass rclass = (*env)->FindClass( env, PKG_PATH("jni/XwJNI$DictWrapper") ); */
+            /* // http://stackoverflow.com/questions/7260376/how-to-create-an-object-with-jni */
+            /* const char* sig = "(L" PKG_PATH("jni/XwJNI") ";I)V"; */
+            /* jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", sig ); */
+            /* jobject jdict = (*env)->NewObject( env, rclass, initId, (int)dict ); */
+
             (*env)->CallVoidMethod( env, draw->jdraw, mid, (jint)dict );
         }
     }
