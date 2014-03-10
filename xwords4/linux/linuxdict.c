@@ -33,6 +33,7 @@
 #include "linuxmain.h"
 #include "strutils.h"
 #include "linuxutl.h"
+#include "dictmgr.h"
 
 typedef struct DictStart {
     XP_U32 numNodes;
@@ -63,27 +64,31 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
                        const char* dictFileName, XP_Bool useMMap )
 {
     LinuxDictionaryCtxt* result = 
-        (LinuxDictionaryCtxt*)XP_MALLOC(mpool, sizeof(*result));
-    XP_MEMSET( result, 0, sizeof(*result) );
+        (LinuxDictionaryCtxt*)dmgr_get( params->dictMgr, dictFileName );
+    if ( !result ) {
+        result = (LinuxDictionaryCtxt*)XP_CALLOC(mpool, sizeof(*result));
 
-    dict_super_init( (DictionaryCtxt*)result );
-    MPASSIGN(result->super.mpool, mpool);
+        dict_super_init( &result->super );
+        MPASSIGN( result->super.mpool, mpool );
 
-    result->useMMap = useMMap;
+        result->useMMap = useMMap;
 
-    if ( !!dictFileName ) {
-        XP_Bool success = initFromDictFile( result, params, dictFileName );
-        if ( success ) {
-            result->super.destructor = linux_dictionary_destroy;
-            result->super.func_dict_getShortName = linux_dict_getShortName;
-            setBlankTile( &result->super );
-        } else {
-            XP_FREE( mpool, result );
-            result = NULL;
+        if ( !!dictFileName ) {
+            XP_Bool success = initFromDictFile( result, params, dictFileName );
+            if ( success ) {
+                result->super.destructor = linux_dictionary_destroy;
+                result->super.func_dict_getShortName = linux_dict_getShortName;
+                setBlankTile( &result->super );
+            } else {
+                XP_ASSERT( 0 ); /* gonna crash anyway */
+                XP_FREE( mpool, result );
+                result = NULL;
+            }
         }
+        dmgr_put( params->dictMgr, dictFileName, &result->super );
     }
 
-    return dict_ref( (DictionaryCtxt*)result );
+    return dict_ref( &result->super );
 } /* gtk_dictionary_make */
 
 static XP_UCHAR*

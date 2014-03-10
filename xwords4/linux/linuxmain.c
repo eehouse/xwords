@@ -1867,6 +1867,8 @@ initParams( LaunchParams* params )
 #endif
 
     params->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(params->mpool));
+    params->dictMgr = dmgr_make( MPPARM_NOCOMMA(params->mpool) );
+
     // linux_util_vt_init( MPPARM(params->mpool) params->util );
 #ifndef XWFEATURE_STANDALONE_ONLY
     /* params->util->vtable->m_util_informMissing = linux_util_informMissing; */
@@ -1879,6 +1881,7 @@ static void
 freeParams( LaunchParams* params )
 {
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
+    dmgr_destroy( params->dictMgr );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );
     mpool_destroy( params->mpool );

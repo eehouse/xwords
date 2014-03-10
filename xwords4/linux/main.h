@@ -31,6 +31,7 @@
 #include "util.h"
 #include "game.h"
 #include "vtabmgr.h"
+#include "dictmgr.h"
 
 typedef struct ServerInfo {
     XP_U16 nRemotePlayers;
@@ -75,6 +76,7 @@ typedef struct LaunchParams {
     XP_UCHAR devIDStore[16];
 #endif
     VTableMgr* vtMgr;
+    DictMgrCtxt* dictMgr;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;
     XP_U16 gameSeed;

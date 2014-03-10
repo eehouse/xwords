@@ -45,6 +45,7 @@ COMMONSRC = \
 	$(COMMONDIR)/strutils.c \
 	$(COMMONDIR)/bufqueue.c \
 	$(COMMONDIR)/vtabmgr.c \
+	$(COMMONDIR)/dictmgr.c \
 	$(COMMONDIR)/dbgutil.c \
 
 # PENDING: define this in terms of above!!!
@@ -80,6 +81,7 @@ COMMON5 = \
 	$(COMMONOBJDIR)/strutils.o \
 	$(COMMONOBJDIR)/bufqueue.o \
 	$(COMMONOBJDIR)/vtabmgr.o \
+	$(COMMONOBJDIR)/dictmgr.o \
 	$(COMMONOBJDIR)/dbgutil.o \
 
 COMMONOBJ = $(COMMON1) $(COMMON2) $(COMMON3) $(COMMON4) $(COMMON5)
