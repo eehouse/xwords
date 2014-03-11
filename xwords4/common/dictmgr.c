@@ -27,12 +27,37 @@
 extern "C" {
 #endif
 
-struct DictMgrCtxt {
+#ifndef DMGR_MAX_DICTS
+# define DMGR_MAX_DICTS 4
+#endif
+
+    /* Maintains a LRU list of DMGR_MAX_DICTS dicts and their key.  There's no
+       crossplatform linked list implementation for Android and a short list
+       will probably do, so we'll keep this really simple: Any mention of a
+       key, whether lookup or addition, moves the item to the front of the
+       list.  If somebody has to die he comes off the end. */
+
+typedef struct _DictPair {
     XP_UCHAR* key;
     DictionaryCtxt* dict;
+} DictPair;
+
+struct DictMgrCtxt {
+    DictPair pairs[DMGR_MAX_DICTS];
     pthread_mutex_t mutex;
     MPSLOT
 };
+
+static void moveToFront( DictMgrCtxt* dmgr, XP_U16 indx );
+static XP_S16 findFor( DictMgrCtxt* dmgr, const XP_UCHAR* key );
+#ifdef DEBUG
+    static void printInOrder( const DictMgrCtxt* dmgr );
+#else
+    printInOrder( dmgr )
+#endif
+
+#define NOT_FOUND -1
+
 
 DictMgrCtxt* 
 dmgr_make( MPFORMAL_NOCOMMA )
@@ -46,9 +71,11 @@ dmgr_make( MPFORMAL_NOCOMMA )
 void
 dmgr_destroy( DictMgrCtxt* dmgr )
 {
-    if ( !!dmgr->dict ) {
-        dict_unref( dmgr->dict );
-        XP_FREE( dmgr->mpool, dmgr->key );
+    XP_U16 ii;
+    for ( ii = 0; ii < DMGR_MAX_DICTS; ++ii ) {
+        DictPair* pair = &dmgr->pairs[ii];
+        dict_unref( pair->dict );
+        XP_FREEP( dmgr->mpool, &pair->key );
     }
     pthread_mutex_destroy( &dmgr->mutex );
     XP_FREE( dmgr->mpool, dmgr );
@@ -60,33 +87,77 @@ dmgr_get( DictMgrCtxt* dmgr, const XP_UCHAR* key )
     DictionaryCtxt* result = NULL;
 
     pthread_mutex_lock( &dmgr->mutex );
-    if ( !!dmgr->key && 0 == XP_STRCMP( key, dmgr->key ) ) {
-        result = dmgr->dict;
+
+    XP_S16 index = findFor( dmgr, key );
+    if ( 0 <= index ) {
+        result = dict_ref( dmgr->pairs[index].dict ); /* so doesn't get nuked in a race */
+        moveToFront( dmgr, index );
     }
-    pthread_mutex_unlock( &dmgr->mutex );
 
     XP_LOGF( "%s(key=%s)=>%p", __func__, key, result );
+    printInOrder( dmgr );
+    pthread_mutex_unlock( &dmgr->mutex );
     return result;
 }
 
 void
 dmgr_put( DictMgrCtxt* dmgr, const XP_UCHAR* key, DictionaryCtxt* dict )
 {
-    XP_LOGF( "%s(key=%s, dict=%p)", __func__, key, dict );
     pthread_mutex_lock( &dmgr->mutex );
-    if ( !dmgr->key ) {        /* just install it */
-        dmgr->dict = dict_ref( dict );
-        dmgr->key = copyString( dmgr->mpool, key );
-    } else if ( 0 == XP_STRCMP( key, dmgr->key ) ) {
-        /* do nothing */
-        XP_ASSERT( dict == dmgr->dict );
+
+    XP_S16 loc = findFor( dmgr, key );
+    if ( NOT_FOUND == loc ) { /* reuse the last one */
+        moveToFront( dmgr, VSIZE(dmgr->pairs) - 1 );
+        DictPair* pair = dmgr->pairs; /* the head */
+        dict_unref( pair->dict );
+        pair->dict = dict_ref( dict );
+        replaceStringIfDifferent( dmgr->mpool, &pair->key, key );
     } else {
-        dict_unref( dmgr->dict );
-        dmgr->dict = dict_ref( dict );
-        replaceStringIfDifferent( dmgr->mpool, &dmgr->key, key );
+        moveToFront( dmgr, loc );
     }
+    XP_LOGF( "%s(key=%s, dict=%p)", __func__, key, dict );
+    printInOrder( dmgr );
+
     pthread_mutex_unlock( &dmgr->mutex );
 }
+
+static XP_S16
+findFor( DictMgrCtxt* dmgr, const XP_UCHAR* key )
+{
+    XP_S16 result = NOT_FOUND;
+    XP_U16 ii;
+    for ( ii = 0; ii < VSIZE(dmgr->pairs); ++ii ) {
+        DictPair* pair = &dmgr->pairs[ii];
+        if ( !!pair->key && 0 == XP_STRCMP( key, pair->key ) ) {
+            result = ii;
+            break;
+        }
+    }
+    return result;
+}
+
+static void 
+moveToFront( DictMgrCtxt* dmgr, XP_U16 indx )
+{
+    if ( 0 < indx ) {
+        DictPair tmp = dmgr->pairs[indx];
+        XP_MEMMOVE( &dmgr->pairs[1], &dmgr->pairs[0], indx * sizeof(tmp));
+        dmgr->pairs[0] = tmp;
+    }
+}
+
+#ifdef DEBUG
+static void
+printInOrder( const DictMgrCtxt* dmgr )
+{
+    XP_U16 ii;
+    for ( ii = 0; ii < VSIZE(dmgr->pairs); ++ii ) {
+        const XP_UCHAR* name = dmgr->pairs[ii].key;
+        XP_LOGF( "%s: dict[%d]: %s", __func__, ii, 
+                 (NULL == name)? "<empty>" : name );
+    }
+}
+#endif
 
 #ifdef CPLUS
 }

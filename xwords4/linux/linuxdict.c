@@ -65,6 +65,7 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
 {
     LinuxDictionaryCtxt* result = NULL;
     if ( !!dictFileName ) {
+        /* dmgr_get increments ref count before returning! */
         result = (LinuxDictionaryCtxt*)dmgr_get( params->dictMgr, dictFileName );
     }
     if ( !result ) {
@@ -89,9 +90,10 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
 
             dmgr_put( params->dictMgr, dictFileName, &result->super );
         }
+        (void)dict_ref( &result->super );
     }
 
-    return dict_ref( &result->super );
+    return &result->super;
 } /* gtk_dictionary_make */
 
 static XP_UCHAR*
