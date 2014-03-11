@@ -99,6 +99,7 @@ void linux_freep( void** ptrp );
 
 #define XP_MEMSET(src, val, nbytes)     memset( (src), (val), (nbytes) )
 #define XP_MEMCPY(d,s,l) memcpy((d),(s),(l))
+#define XP_MEMMOVE(d,s,l) memmove((d),(s),(l))
 #define XP_MEMCMP( a1, a2, l )  memcmp((a1),(a2),(l))
 #define XP_STRLEN(s) strlen(s)
 #define XP_STRCAT(d,s) strcat((d),(s))
