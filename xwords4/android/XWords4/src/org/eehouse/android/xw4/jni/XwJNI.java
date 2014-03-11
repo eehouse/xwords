@@ -52,14 +52,10 @@ public class XwJNI {
     }
 
     // @Override
-    public void finalize()
+    public void finalize() throws java.lang.Throwable
     {
         cleanGlobals( m_ptr );
-        try {
-            super.finalize();
-        } catch ( java.lang.Throwable err ){
-            DbgUtils.logf( "%s", err.toString() );
-        }
+        super.finalize();
     }
 
     // This needs to be called before the first attempt to use the
@@ -329,19 +325,35 @@ public class XwJNI {
         {
             return m_dictPtr;
         }
+
+        // @Override
+        public void finalize() throws java.lang.Throwable 
+        {
+            release();
+            super.finalize();
+        }
+
     }
 
     public static native boolean dict_tilesAreSame( int dict1, int dict2 );
     public static native String[] dict_getChars( int dict );
-    public static native boolean dict_getInfo( byte[] dict, String name,
-                                               String path, JNIUtils jniu, 
-                                               boolean check, DictInfo info );
+    public static boolean dict_getInfo( byte[] dict, String name,
+                                        String path, JNIUtils jniu, 
+                                        boolean check, DictInfo info )
+    {
+        return dict_getInfo( getJNI().m_ptr, dict, name, path, jniu, 
+                             check, info );
+    }
+
     public static native int dict_getTileValue( int dictPtr, int tile );
 
     // Dict iterator
     public final static int MAX_COLS_DICT = 15; // from dictiter.h
-    public static native int dict_iter_init( byte[] dict, String name,
-                                             String path, JNIUtils jniu );
+    public static int dict_iter_init( byte[] dict, String name,
+                                      String path, JNIUtils jniu )
+    {
+        return dict_iter_init( getJNI().m_ptr, dict, name, path, jniu );
+    }
     public static native void dict_iter_setMinMax( int closure,
                                                    int min, int max );
     public static native void dict_iter_destroy( int closure );
@@ -358,10 +370,18 @@ public class XwJNI {
     public static native String base64Encode( byte[] in );
     public static native byte[] base64Decode( String in );
 
+
     // Private methods -- called only here
     private static native int initGlobals();
     private static native void cleanGlobals( int ptr );
     private static native int initJNI( int jniState );
     private static native void dict_ref( int dictPtr );
     private static native void dict_unref( int dictPtr );
+    private static native boolean dict_getInfo( int jniState, byte[] dict, 
+                                                String name, String path, 
+                                                JNIUtils jniu, boolean check, 
+                                                DictInfo info );
+    private static native int dict_iter_init( int jniState, byte[] dict, 
+                                              String name, String path, 
+                                              JNIUtils jniu );
 }
