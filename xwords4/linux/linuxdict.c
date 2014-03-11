@@ -63,8 +63,10 @@ DictionaryCtxt*
 linux_dictionary_make( MPFORMAL const LaunchParams* params,
                        const char* dictFileName, XP_Bool useMMap )
 {
-    LinuxDictionaryCtxt* result = 
-        (LinuxDictionaryCtxt*)dmgr_get( params->dictMgr, dictFileName );
+    LinuxDictionaryCtxt* result = NULL;
+    if ( !!dictFileName ) {
+        result = (LinuxDictionaryCtxt*)dmgr_get( params->dictMgr, dictFileName );
+    }
     if ( !result ) {
         result = (LinuxDictionaryCtxt*)XP_CALLOC(mpool, sizeof(*result));
 
@@ -84,8 +86,9 @@ linux_dictionary_make( MPFORMAL const LaunchParams* params,
                 XP_FREE( mpool, result );
                 result = NULL;
             }
+
+            dmgr_put( params->dictMgr, dictFileName, &result->super );
         }
-        dmgr_put( params->dictMgr, dictFileName, &result->super );
     }
 
     return dict_ref( &result->super );
