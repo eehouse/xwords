@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make -j5 MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#include <pthread.h>     /* we'll see how long this can stay cross-platform */
+
 #include "dictmgr.h"
 #include "dictnry.h"
 #include "strutils.h"
@@ -28,16 +30,16 @@ extern "C" {
 struct DictMgrCtxt {
     XP_UCHAR* key;
     DictionaryCtxt* dict;
+    pthread_mutex_t mutex;
     MPSLOT
 };
 
 DictMgrCtxt* 
 dmgr_make( MPFORMAL_NOCOMMA )
 {
-    LOG_FUNC();
     DictMgrCtxt* dmgr = XP_CALLOC( mpool, sizeof(*dmgr) );
+    pthread_mutex_init( &dmgr->mutex, NULL );
     MPASSIGN( dmgr->mpool, mpool );
-    LOG_RETURNF( "%p", dmgr );
     return dmgr;
 }
 
@@ -48,6 +50,7 @@ dmgr_destroy( DictMgrCtxt* dmgr )
         dict_unref( dmgr->dict );
         XP_FREE( dmgr->mpool, dmgr->key );
     }
+    pthread_mutex_destroy( &dmgr->mutex );
     XP_FREE( dmgr->mpool, dmgr );
 }
 
@@ -55,17 +58,22 @@ DictionaryCtxt*
 dmgr_get( DictMgrCtxt* dmgr, const XP_UCHAR* key )
 {
     DictionaryCtxt* result = NULL;
-    XP_LOGF( "%s(key=%s)", __func__, key );
+
+    pthread_mutex_lock( &dmgr->mutex );
     if ( !!dmgr->key && 0 == XP_STRCMP( key, dmgr->key ) ) {
         result = dmgr->dict;
     }
-    LOG_RETURNF( "%p", result );
+    pthread_mutex_unlock( &dmgr->mutex );
+
+    XP_LOGF( "%s(key=%s)=>%p", __func__, key, result );
     return result;
 }
 
 void
 dmgr_put( DictMgrCtxt* dmgr, const XP_UCHAR* key, DictionaryCtxt* dict )
 {
+    XP_LOGF( "%s(key=%s, dict=%p)", __func__, key, dict );
+    pthread_mutex_lock( &dmgr->mutex );
     if ( !dmgr->key ) {        /* just install it */
         dmgr->dict = dict_ref( dict );
         dmgr->key = copyString( dmgr->mpool, key );
@@ -77,6 +85,7 @@ dmgr_put( DictMgrCtxt* dmgr, const XP_UCHAR* key, DictionaryCtxt* dict )
         dmgr->dict = dict_ref( dict );
         replaceStringIfDifferent( dmgr->mpool, &dmgr->key, key );
     }
+    pthread_mutex_unlock( &dmgr->mutex );
 }
 
 #ifdef CPLUS
