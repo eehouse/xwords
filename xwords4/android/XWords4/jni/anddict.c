@@ -613,6 +613,7 @@ makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, jstr
     off_t bytesSize = 0;
 
     const char* name = (*env)->GetStringUTFChars( env, jname, NULL );
+    /* remember: dmgr_get calls dict_ref() */
     AndDictionaryCtxt* anddict = (AndDictionaryCtxt*)dmgr_get( dictMgr, name );
 
     if ( NULL == anddict ) {
@@ -665,12 +666,12 @@ makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, jstr
             }
         }
         dmgr_put( dictMgr, name, &anddict->super );
+        dict_ref( &anddict->super );
     }
     
     (*env)->ReleaseStringUTFChars( env, jname, name );
 
-    DictionaryCtxt* result = dict_ref( (DictionaryCtxt*)anddict ); /* NULL ok */
-    return result;
+    return &anddict->super;
 } /* makeDict */
 
 #ifdef DEBUG
