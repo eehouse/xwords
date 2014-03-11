@@ -40,23 +40,32 @@ extern "C" {
  ****************************************************************************/
 
 DictionaryCtxt*
-dict_ref( DictionaryCtxt* dict )
+p_dict_ref( DictionaryCtxt* dict
+#ifdef DEBUG_REF
+            ,const char* func, const char* file, int line
+#endif
+            )
 {
     if ( !!dict ) {
         ++dict->refCount;
-        XP_LOGF( "%s(dict=%p): refCount now %d", __func__, dict, dict->refCount );
+        XP_LOGF( "%s(dict=%p): refCount now %d (from line %d of %s() in %s)",
+                 __func__, dict, dict->refCount, line, func, file );
     }
     return dict;
 }
 
 void
-dict_unref( DictionaryCtxt* dict )
+p_dict_unref( DictionaryCtxt* dict
+#ifdef DEBUG_REF
+            ,const char* func, const char* file, int line
+#endif
+              )
 {
     if ( !!dict ) {
         --dict->refCount;
         XP_ASSERT( 0 <= dict->refCount );
-        XP_LOGF( "%s(dict=%p): refCount now %d", __func__, dict, 
-                 dict->refCount );
+        XP_LOGF( "%s(dict=%p): refCount now %d  (from line %d of %s() in %s)",
+                 __func__, dict, dict->refCount, line, func, file );
         if ( 0 == dict->refCount ) {
             (*dict->destructor)( dict );
         }

@@ -21,6 +21,8 @@
 #ifndef __DICTNRY_H__
 #define __DICTNRY_H__
 
+#define DEBUG_REF 1
+
 #include "comtypes.h"
 
 #include "dawg.h"
@@ -141,9 +143,25 @@ struct DictionaryCtxt {
     ((Tile)(((array_edge_old*)(edge))->bits & \
             ((d)->is_4_byte?LETTERMASK_NEW_4:LETTERMASK_NEW_3)))
 
-DictionaryCtxt* dict_ref( DictionaryCtxt* dict );
-void dict_unref( DictionaryCtxt* dict );
+DictionaryCtxt* p_dict_ref( DictionaryCtxt* dict
+#ifdef DEBUG_REF
+                          ,const char* func, const char* file, int line
+#endif
+ );
+void p_dict_unref( DictionaryCtxt* dict
+#ifdef DEBUG_REF
+                          ,const char* func, const char* file, int line
+#endif
+ );
 void dict_unref_all( PlayerDicts* dicts );
+
+#ifdef DEBUG_REF
+# define dict_ref(dict) p_dict_ref( dict, __func__, __FILE__, __LINE__ )
+# define dict_unref(dict) p_dict_unref( dict, __func__, __FILE__, __LINE__ )
+#else
+# define dict_ref(dict) p_dict_ref( dict )
+# define dict_unref(dict) p_dict_unref( dict )
+#endif
 
 XP_Bool dict_tilesAreSame( const DictionaryCtxt* dict1, 
                            const DictionaryCtxt* dict2 );
