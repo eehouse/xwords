@@ -19,9 +19,9 @@
 
 #include <pthread.h>     /* we'll see how long this can stay cross-platform */
 
-#include "dictmgr.h"
 #include "dictnry.h"
 #include "strutils.h"
+#include "dictmgr.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -53,7 +53,7 @@ static XP_S16 findFor( DictMgrCtxt* dmgr, const XP_UCHAR* key );
 #ifdef DEBUG
     static void printInOrder( const DictMgrCtxt* dmgr );
 #else
-    printInOrder( dmgr )
+# define printInOrder( dmgr )
 #endif
 
 #define NOT_FOUND -1

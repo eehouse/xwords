@@ -21,7 +21,9 @@
 #ifndef __DICTNRY_H__
 #define __DICTNRY_H__
 
-#define DEBUG_REF 1
+#ifdef DEBUG
+# define DEBUG_REF 1
+#endif
 
 #include "comtypes.h"
 
