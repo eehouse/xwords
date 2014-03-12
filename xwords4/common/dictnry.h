@@ -72,6 +72,8 @@ struct DictionaryCtxt {
                                              array_edge* from, Tile tile );
     const XP_UCHAR* (*func_dict_getShortName)( const DictionaryCtxt* dict );
 
+    pthread_mutex_t mutex;
+
     array_edge* topEdge;
     array_edge* base; /* the physical beginning of the dictionary; not
                          necessarily the entry point for search!! */
