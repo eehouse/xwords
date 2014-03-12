@@ -25,6 +25,8 @@
 # define DEBUG_REF 1
 #endif
 
+#include <pthread.h>
+
 #include "comtypes.h"
 
 #include "dawg.h"
