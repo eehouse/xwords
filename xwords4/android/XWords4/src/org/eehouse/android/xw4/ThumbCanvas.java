@@ -25,7 +25,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 
 import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
 
 public class ThumbCanvas extends BoardCanvas {
 
