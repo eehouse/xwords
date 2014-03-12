@@ -5,15 +5,13 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 80 release</b>
+<b>Crosswords 4.4 beta 81 release</b>
 
 <h3>New with this release</h3>
 <ul>
-    <li>Tweak network play; in particular, fix so resends happen
-    automatically when you get a network connection back. This should
-    reduce game stalling</li>
-    <li>Add menuitem to main screen that manually resends moves</li>
-    <li>Fix KitKat-only problem drawing green/red move timer outlines</li>
+    <li>Internal changes to address frequently reported crash most
+    often seen after dismissing the word lookup/studylist dialog</li>
+    <li>Fix another Board dialog crash</li>
 </ul>
 
 <h3>Next up</h3>
