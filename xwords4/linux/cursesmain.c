@@ -2216,8 +2216,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     }
     saveGame( &g_globals.cGlobals );
 
-    game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */
+    game_dispose( &g_globals.cGlobals.game );
     gi_disposePlayerInfo( MEMPOOL cGlobals->gi );
+    dict_unref( cGlobals->dict );
     
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &g_globals.cGlobals );
