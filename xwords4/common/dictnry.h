@@ -66,7 +66,7 @@ struct DictionaryCtxt {
     array_edge* (*func_edge_for_index)( const DictionaryCtxt* dict, 
                                         XP_U32 index );
     array_edge* (*func_dict_getTopEdge)( const DictionaryCtxt* dict );
-    unsigned long (*func_dict_index_from)( const DictionaryCtxt* dict, 
+    XP_U32 (*func_dict_index_from)( const DictionaryCtxt* dict, 
                                            array_edge* p_edge );
     array_edge* (*func_dict_follow)( const DictionaryCtxt* dict, 
                                      array_edge* in );

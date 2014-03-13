@@ -723,7 +723,7 @@ dict_super_getTopEdge( const DictionaryCtxt* dict )
     return dict->topEdge;
 } /* dict_super_getTopEdge */
 
-static unsigned long
+static XP_U32
 dict_super_index_from( const DictionaryCtxt* dict, array_edge* p_edge ) 
 {
     unsigned long result;
@@ -812,9 +812,9 @@ checkSanity( DictionaryCtxt* dict, const XP_U32 numEdges )
             }
             prevTile = tile;
 
-            unsigned long index = dict_index_from( dict, edge );
+            XP_U32 index = dict_index_from( dict, edge );
             if ( index >= numEdges ) {
-                XP_LOGF( "%s: node %d (out of %d) has too-high index %ld",
+                XP_LOGF( "%s: node %d (out of %d) has too-high index %d",
                          __func__, ii, numEdges, index );
                 passed = XP_FALSE;
                 break;
