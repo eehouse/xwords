@@ -372,7 +372,7 @@ public class XWPrefs {
 
     public static boolean getStudyEnabled( Context context )
     {
-        return getPrefsBoolean( context, R.string.key_studyon, false );
+        return getPrefsBoolean( context, R.string.key_studyon, true );
     }
 
     protected static String getPrefsString( Context context, int keyID )
