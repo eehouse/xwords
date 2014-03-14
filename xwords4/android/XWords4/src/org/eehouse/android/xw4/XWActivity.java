@@ -100,6 +100,11 @@ public class XWActivity extends Activity
         return dialog;
     }
 
+    public void showDialog( DlgID dlgID )
+    {
+        super.showDialog( dlgID.ordinal() );
+    }
+
     // these are duplicated in XWListActivity -- sometimes multiple
     // inheritance would be nice to have...
     protected void showAboutDialog()

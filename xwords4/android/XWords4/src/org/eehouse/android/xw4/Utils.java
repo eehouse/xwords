@@ -132,8 +132,9 @@ public class Utils {
     }
 
     public static void setRemoveOnDismiss( final Activity activity, 
-                                           Dialog dialog, final int id )
+                                           Dialog dialog, DlgID dlgID )
     {
+        final int id = dlgID.ordinal();
         dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
                 public void onDismiss( DialogInterface di ) {
                     activity.removeDialog( id );

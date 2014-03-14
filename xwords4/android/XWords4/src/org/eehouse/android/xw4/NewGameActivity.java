@@ -57,10 +57,6 @@ public class NewGameActivity extends XWActivity {
     private static final int INVITE_FOR_BT = 3;
     private static final int INVITE_FOR_SMS = 4;
 
-    // Dialogs
-    private static final int NAME_GAME = DlgDelegate.DIALOG_LAST + 1;
-    private static final int ENABLE_NFC = DlgDelegate.DIALOG_LAST + 2;
-    
     private boolean m_showsOn;
     private boolean m_nameForBT;
     private boolean m_firingPrefs = false;
@@ -202,7 +198,7 @@ public class NewGameActivity extends XWActivity {
                     m_gameID = GameUtils.newGameID();
                     m_gameName = Utils.format( this, R.string.dft_namef, 
                                                m_gameID & 0xFFFF );
-                    showDialog( NAME_GAME );
+                    showDialog( DlgID.NAME_GAME.ordinal() );
                 }
                 break;
             }
@@ -214,7 +210,8 @@ public class NewGameActivity extends XWActivity {
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
-            switch( id ) {
+            DlgID dlgID = DlgID.values()[id];
+            switch( dlgID ) {
             case NAME_GAME:
                 final GameNamer namerView =
                     (GameNamer)Utils.inflate( this, R.layout.rename_game );
@@ -253,7 +250,7 @@ public class NewGameActivity extends XWActivity {
                     .setPositiveButton( R.string.button_ok, lstnr )
                     .setView( namerView )
                     .create();
-                Utils.setRemoveOnDismiss( this, dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, dlgID );
 
                 break;
             case ENABLE_NFC:
@@ -324,7 +321,7 @@ public class NewGameActivity extends XWActivity {
     {
         boolean viaNFC = DlgDelegate.NFC_BTN == chosen;
         if ( viaNFC && !NFCUtils.nfcAvail( this )[1] ) {
-            showDialog( ENABLE_NFC );
+            showDialog( DlgID.ENABLE_NFC.ordinal() );
         } else {
             String room = null;
             String inviteID = null;

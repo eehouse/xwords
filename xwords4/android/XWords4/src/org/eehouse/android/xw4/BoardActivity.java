@@ -71,25 +71,6 @@ public class BoardActivity extends XWActivity
 
     public static final String INTENT_KEY_CHAT = "chat";
 
-    private static final int BLOCKING_DLG_NONE = -1;
-    private static final int DLG_OKONLY = DlgDelegate.DIALOG_LAST + 1;
-    private static final int DLG_BADWORDS_BLK = DLG_OKONLY + 1;
-    private static final int QUERY_REQUEST_BLK = DLG_OKONLY + 2;
-    private static final int QUERY_INFORM_BLK = DLG_OKONLY + 3;
-    private static final int PICK_TILE_REQUESTBLANK_BLK = DLG_OKONLY + 4;
-    private static final int ASK_PASSWORD_BLK = DLG_OKONLY + 5;
-    private static final int DLG_RETRY = DLG_OKONLY + 6;
-    private static final int QUERY_ENDGAME = DLG_OKONLY + 7;
-    private static final int DLG_DELETED = DLG_OKONLY + 8;
-    private static final int DLG_INVITE = DLG_OKONLY + 9;
-    private static final int DLG_SCORES_BLK = DLG_OKONLY + 10;
-    private static final int PICK_TILE_REQUESTTRAY_BLK = DLG_OKONLY + 11;
-    private static final int DLG_USEDICT = DLG_OKONLY + 12;
-    private static final int DLG_GETDICT = DLG_OKONLY + 13;
-    private static final int GAME_OVER = DLG_OKONLY + 14;
-    private static final int DLG_CONNSTAT = DLG_OKONLY + 15;
-    private static final int ENABLE_NFC = DLG_OKONLY + 16;
-
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
     private static final int SMS_INVITE_RESULT = 3;
@@ -169,7 +150,7 @@ public class BoardActivity extends XWActivity
     private Thread m_blockingThread;
     private JNIThread m_jniThread;
     private JNIThread.GameStateInfo m_gsi;
-    private int m_blockingDlgID = BLOCKING_DLG_NONE;
+    private DlgID m_blockingDlgID = DlgID.NONE;
 
     private String m_room;
     private String m_toastStr;
@@ -275,14 +256,15 @@ public class BoardActivity extends XWActivity
     } 
 
     @Override
-    protected Dialog onCreateDialog( final int id )
+    protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
             AlertDialog.Builder ab;
 
-            switch ( id ) {
+            final DlgID dlgID = DlgID.values()[id];
+            switch ( dlgID ) {
             case DLG_OKONLY:
             case DLG_RETRY:
             case GAME_OVER:
@@ -291,7 +273,7 @@ public class BoardActivity extends XWActivity
                     .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
                     .setPositiveButton( R.string.button_ok, null );
-                if ( DLG_RETRY == id ) {
+                if ( DlgID.DLG_RETRY == dlgID ) {
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
@@ -299,7 +281,7 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
-                } else if ( XWApp.REMATCH_SUPPORTED && GAME_OVER == id ) {
+                } else if ( XWApp.REMATCH_SUPPORTED && DlgID.GAME_OVER == dlgID ) {
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
@@ -307,7 +289,7 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
-                } else if ( DLG_CONNSTAT == id &&
+                } else if ( DlgID.DLG_CONNSTAT == dlgID &&
                             CommsConnType.COMMS_CONN_RELAY == m_connType ) {
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, 
@@ -318,7 +300,7 @@ public class BoardActivity extends XWActivity
                     ab.setNegativeButton( R.string.button_reconnect, lstnr );
                 }
                 dialog = ab.create();
-                Utils.setRemoveOnDismiss( this, dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, dlgID );
                 break;
 
             case DLG_USEDICT:
@@ -326,7 +308,7 @@ public class BoardActivity extends XWActivity
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
-                            if ( DLG_USEDICT == id ) {
+                            if ( DlgID.DLG_USEDICT == dlgID ) {
                                 setGotGameDict( m_getDict );
                             } else {
                                 DictImportActivity
@@ -343,7 +325,7 @@ public class BoardActivity extends XWActivity
                     .setPositiveButton( R.string.button_yes, lstnr )
                     .setNegativeButton( R.string.button_no, null )
                     .create();
-                Utils.setRemoveOnDismiss( this, dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, dlgID );
                 break;
 
             case DLG_DELETED:
@@ -380,10 +362,10 @@ public class BoardActivity extends XWActivity
                             m_resultCode = 1;
                         }
                     };
-                ab.setPositiveButton( QUERY_REQUEST_BLK == id ?
+                ab.setPositiveButton( DlgID.QUERY_REQUEST_BLK == dlgID ?
                                       R.string.button_yes : R.string.button_ok,
                                       lstnr );
-                if ( QUERY_REQUEST_BLK == id ) {
+                if ( DlgID.QUERY_REQUEST_BLK == dlgID ) {
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int whichButton ) {
@@ -391,7 +373,7 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
-                } else if ( DLG_SCORES_BLK == id ) {
+                } else if ( DlgID.DLG_SCORES_BLK == dlgID ) {
                     if ( null != m_words && m_words.length > 0 ) {
                         String buttonTxt;
                         boolean studyOn = XWPrefs.getStudyEnabled( this );
@@ -434,7 +416,7 @@ public class BoardActivity extends XWActivity
                     };
                 ab.setItems( m_texts, lstnr );
 
-                if ( PICK_TILE_REQUESTBLANK_BLK == id ) {
+                if ( DlgID.PICK_TILE_REQUESTBLANK_BLK == dlgID ) {
                     ab.setTitle( R.string.title_tile_picker );
                 } else {
                     ab.setTitle( Utils.format( this, R.string.cur_tilesf,
@@ -445,7 +427,7 @@ public class BoardActivity extends XWActivity
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
                                     m_resultCode = UtilCtxt.PICKER_BACKUP;
-                                    removeDialog( id );
+                                    removeDialog( dlgID.ordinal() );
                                 }
                             };
                         ab.setPositiveButton( R.string.tilepick_undo, 
@@ -456,7 +438,7 @@ public class BoardActivity extends XWActivity
                             public void onClick( DialogInterface dialog, 
                                                  int whichButton ) {
                                 m_resultCode = UtilCtxt.PICKER_PICKALL;
-                                removeDialog( id );
+                                removeDialog( dlgID.ordinal() );
                             }
                         };
                     ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
@@ -535,7 +517,8 @@ public class BoardActivity extends XWActivity
     public void onPrepareDialog( int id, Dialog dialog )
     {
         DbgUtils.logf( "BoardActivity:onPrepareDialog(id=%d)", id );
-        switch( id ) {
+        DlgID dlgID = DlgID.values()[id];
+        switch( dlgID ) {
         case DLG_INVITE:
             AlertDialog ad = (AlertDialog)dialog;
             String message = getString( R.string.invite_msgf, m_missing );
@@ -602,7 +585,7 @@ public class BoardActivity extends XWActivity
     {
         super.onResume();
         m_handler = new Handler();
-        m_blockingDlgID = BLOCKING_DLG_NONE;
+        m_blockingDlgID = DlgID.NONE;
 
         setKeepScreenOn();
 
@@ -890,7 +873,7 @@ public class BoardActivity extends XWActivity
             showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
             break;
         case R.id.board_menu_invite:
-            showDialog( DLG_INVITE );
+            showDialog( DlgID.DLG_INVITE.ordinal() );
             break;
             // small devices only
         case R.id.board_menu_dict:
@@ -958,7 +941,7 @@ public class BoardActivity extends XWActivity
                         showNotAgainDlgThen( R.string.not_again_sms_ready,
                                              R.string.key_notagain_sms_ready );
                     } else {
-                        showDialog( ENABLE_NFC );
+                        showDialog( DlgID.ENABLE_NFC.ordinal() );
                     }
                 } else {
                     String inviteID = GameUtils.formatGameID( m_gi.gameID );
@@ -1079,7 +1062,7 @@ public class BoardActivity extends XWActivity
             if ( gameID == m_gi.gameID ) {
                 post( new Runnable() {
                         public void run() {
-                            showDialog( DLG_DELETED );
+                            showDialog( DlgID.DLG_DELETED.ordinal() );
                         }
                     } );
             }
@@ -1146,21 +1129,21 @@ public class BoardActivity extends XWActivity
     public void tpmRelayErrorProc( TransportProcs.XWRELAY_ERROR relayErr )
     {
         int strID = -1;
-        int dlgID = -1;
+        DlgID dlgID = DlgID.NONE;
         boolean doToast = false;
 
         switch ( relayErr ) {
         case TOO_MANY:
             strID = R.string.msg_too_many;
-            dlgID = DLG_OKONLY;
+            dlgID = DlgID.DLG_OKONLY;
             break;
         case NO_ROOM:
             strID = R.string.msg_no_room;
-            dlgID = DLG_RETRY;
+            dlgID = DlgID.DLG_RETRY;
             break;
         case DUP_ROOM:
             strID = R.string.msg_dup_room;
-            dlgID = DLG_OKONLY;
+            dlgID = DlgID.DLG_OKONLY;
             break;
         case LOST_OTHER:
         case OTHER_DISCON:
@@ -1171,7 +1154,7 @@ public class BoardActivity extends XWActivity
         case DEADGAME:
         case DELETED:
             strID = R.string.msg_dev_deleted;
-            dlgID = DLG_DELETED;
+            dlgID = DlgID.DLG_DELETED;
             break;
 
         case OLDFLAGS:
@@ -1186,9 +1169,9 @@ public class BoardActivity extends XWActivity
 
         if ( doToast ) {
             Utils.showToast( this, strID );
-        } else if ( dlgID >= 0 ) {
+        } else if ( dlgID != DlgID.NONE ) {
             final int strIDf = strID;
-            final int dlgIDf = dlgID;
+            final int dlgIDf = dlgID.ordinal();
             post( new Runnable() {
                     public void run() {
                         m_dlgBytes = getString( strIDf );
@@ -1250,7 +1233,7 @@ public class BoardActivity extends XWActivity
                 public void run() {
                     m_dlgBytes = msg;
                     m_dlgTitle = R.string.info_title;
-                    showDialog( DLG_CONNSTAT );
+                    showDialog( DlgID.DLG_CONNSTAT.ordinal() );
                 }
             } );
     }
@@ -1370,7 +1353,7 @@ public class BoardActivity extends XWActivity
                 m_haveInvited = true;
                 m_room = room;
                 m_missing = nMissing;
-                showDialog( DLG_INVITE );
+                showDialog( DlgID.DLG_INVITE.ordinal() );
                 ABUtils.invalidateOptionsMenuIf( this );
             } else {
                 toastStr = getString( R.string.msg_relay_waiting, devOrder,
@@ -1533,7 +1516,7 @@ public class BoardActivity extends XWActivity
         public int userPickTileBlank( int playerNum, String[] texts)
         {
             m_texts = texts;
-            waitBlockingDialog( PICK_TILE_REQUESTBLANK_BLK, 0 );
+            waitBlockingDialog( DlgID.PICK_TILE_REQUESTBLANK_BLK, 0 );
             return m_resultCode;
         }
 
@@ -1544,7 +1527,7 @@ public class BoardActivity extends XWActivity
             m_texts = texts;
             m_curTiles = TextUtils.join( ", ", curTiles );
             m_canUndoTiles = 0 < nPicked;
-            waitBlockingDialog( PICK_TILE_REQUESTTRAY_BLK, 
+            waitBlockingDialog( DlgID.PICK_TILE_REQUESTTRAY_BLK, 
                                 UtilCtxt.PICKER_PICKALL );
             return m_resultCode;
         }
@@ -1557,7 +1540,7 @@ public class BoardActivity extends XWActivity
             m_pwdName = name;
             setupPasswdVars();  
 
-            waitBlockingDialog( ASK_PASSWORD_BLK, 0 );
+            waitBlockingDialog( DlgID.ASK_PASSWORD_BLK, 0 );
 
             String result = null;      // means cancelled
             if ( 0 != m_resultCode ) {
@@ -1599,7 +1582,7 @@ public class BoardActivity extends XWActivity
             case UtilCtxt.QUERY_ROBOT_TRADE:
                 m_dlgBytes = query;
                 m_dlgTitle = R.string.info_title;
-                waitBlockingDialog( QUERY_INFORM_BLK, 0 );
+                waitBlockingDialog( DlgID.QUERY_INFORM_BLK, 0 );
                 result = true;
                 break;
 
@@ -1607,7 +1590,7 @@ public class BoardActivity extends XWActivity
             case UtilCtxt.QUERY_COMMIT_TURN:
                 m_dlgBytes = query;
                 m_dlgTitle = R.string.query_title;
-                result = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
+                result = 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
                 break;
             default:
                 Assert.fail();
@@ -1624,7 +1607,7 @@ public class BoardActivity extends XWActivity
             m_dlgBytes = 
                 Utils.format( BoardActivity.this, R.string.query_tradef, 
                               TextUtils.join( ", ", tiles ) );
-            return 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
+            return 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
         }
 
         @Override
@@ -1679,7 +1662,7 @@ public class BoardActivity extends XWActivity
             }
 
             if ( resid != 0 ) {
-                nonBlockingDialog( DLG_OKONLY, getString( resid ) );
+                nonBlockingDialog( DlgID.DLG_OKONLY, getString( resid ) );
             }
         } // userError
 
@@ -1723,13 +1706,13 @@ public class BoardActivity extends XWActivity
             m_dlgBytes = expl;
             m_dlgTitle = R.string.info_title;
             m_words = null == words? null : wordsToArray( words );
-            waitBlockingDialog( DLG_SCORES_BLK, 0 );
+            waitBlockingDialog( DlgID.DLG_SCORES_BLK, 0 );
         }
 
         @Override
         public void informUndo()
         {
-            nonBlockingDialog( DLG_OKONLY, getString( R.string.remote_undone ) );
+            nonBlockingDialog( DlgID.DLG_OKONLY, getString( R.string.remote_undone ) );
         }
 
         @Override
@@ -1753,14 +1736,14 @@ public class BoardActivity extends XWActivity
             } else {
                 // Different dict!  If we have the other one, switch
                 // to it.  Otherwise offer to download
-                int dlgID;
+                DlgID dlgID;
                 msg = getString( R.string.inform_dict_diffdictf,
                                  oldName, newName, newName );
                 if ( DictLangCache.haveDict( BoardActivity.this, code, 
                                              newName ) ) {
-                    dlgID = DLG_USEDICT;
+                    dlgID = DlgID.DLG_USEDICT;
                 } else {
-                    dlgID = DLG_GETDICT;
+                    dlgID = DlgID.DLG_GETDICT;
                     msg += getString( R.string.inform_dict_download );
                 }
                 m_getDict = newName;
@@ -1793,11 +1776,11 @@ public class BoardActivity extends XWActivity
             if ( turnLost ) {
                 m_dlgBytes = message + getString( R.string.badwords_lost );
                 m_dlgTitle = R.string.badwords_title;
-                waitBlockingDialog( DLG_BADWORDS_BLK, 0 );
+                waitBlockingDialog( DlgID.DLG_BADWORDS_BLK, 0 );
             } else {
                 m_dlgBytes = message + getString( R.string.badwords_accept );
                 m_dlgTitle = R.string.query_title;
-                accept = 0 != waitBlockingDialog( QUERY_REQUEST_BLK, 0 );
+                accept = 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
             }
 
             return accept;
@@ -1872,10 +1855,10 @@ public class BoardActivity extends XWActivity
                                 case JNIThread.DIALOG:
                                     m_dlgBytes = (String)msg.obj;
                                     m_dlgTitle = msg.arg1;
-                                    showDialog( DLG_OKONLY );
+                                    showDialog( DlgID.DLG_OKONLY.ordinal() );
                                     break;
                                 case JNIThread.QUERY_ENDGAME:
-                                    showDialog( QUERY_ENDGAME );
+                                    showDialog( DlgID.QUERY_ENDGAME.ordinal() );
                                     break;
                                 case JNIThread.TOOLBAR_STATES:
                                     if ( null != m_jniThread ) {
@@ -1898,7 +1881,7 @@ public class BoardActivity extends XWActivity
                                 case JNIThread.GAME_OVER:
                                     m_dlgBytes = (String)msg.obj;
                                     m_dlgTitle = msg.arg1;
-                                    showDialog( GAME_OVER );
+                                    showDialog( DlgID.GAME_OVER.ordinal() );
                                     break;
                                 }
                             }
@@ -2025,11 +2008,11 @@ public class BoardActivity extends XWActivity
         };
     }
 
-    private int waitBlockingDialog( final int dlgID, int cancelResult )
+    private int waitBlockingDialog( final DlgID dlgID, int cancelResult )
     {
         int result = cancelResult;
         // this has been true; dunno why
-        if ( BLOCKING_DLG_NONE != m_blockingDlgID ) {
+        if ( DlgID.NONE != m_blockingDlgID ) {
             DbgUtils.logf( "waitBlockingDialog: dropping dlgID %d b/c %d set",
                            dlgID, m_blockingDlgID );
         } else {
@@ -2047,15 +2030,15 @@ public class BoardActivity extends XWActivity
                     m_forResultWait.acquire();
                 } catch ( java.lang.InterruptedException ie ) {
                     DbgUtils.loge( ie );
-                    if ( BLOCKING_DLG_NONE != m_blockingDlgID ) {
+                    if ( DlgID.NONE != m_blockingDlgID ) {
                         try {
-                            dismissDialog( m_blockingDlgID );
+                            dismissDialog( m_blockingDlgID.ordinal() );
                         } catch ( java.lang.IllegalArgumentException iae ) {
                             DbgUtils.loge( iae );
                         }
                     }
                 }
-                m_blockingDlgID = BLOCKING_DLG_NONE;
+                m_blockingDlgID = DlgID.NONE;
             }
 
             clearBlockingThread();
@@ -2064,7 +2047,7 @@ public class BoardActivity extends XWActivity
         return result;
     }
 
-    private void nonBlockingDialog( final int dlgID, String txt ) 
+    private void nonBlockingDialog( final DlgID dlgID, String txt ) 
     {
         switch ( dlgID ) {
         case DLG_OKONLY:

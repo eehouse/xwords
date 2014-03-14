@@ -81,10 +81,6 @@ public class DictsActivity extends XWExpandableListActivity
     private static final int DELETE_DICT_ACTION = 1;
     private static final int DOWNLOAD_DICT_ACTION = 2;
 
-    private static final int MOVE_DICT = DlgDelegate.DIALOG_LAST + 1;
-    private static final int SET_DEFAULT = DlgDelegate.DIALOG_LAST + 2;
-    private static final int DICT_OR_DECLINE = DlgDelegate.DIALOG_LAST + 3;
-
     // I can't provide a subclass of MenuItem to hold DictAndLoc, so
     // settle for a hash on the side.
     private static HashMap<MenuItem, DictAndLoc> s_itemData;
@@ -255,7 +251,8 @@ public class DictsActivity extends XWExpandableListActivity
         String message;
         boolean doRemove = true;
 
-        switch( id ) {
+        DlgID dlgID = DlgID.values()[id];
+        switch( dlgID ) {
         case MOVE_DICT:
             final XWListItem[] selItems = getSelItems();
             final int[] moveTo = { -1 };
@@ -360,7 +357,7 @@ public class DictsActivity extends XWExpandableListActivity
         }
 
         if ( doRemove && null != dialog ) {
-            Utils.setRemoveOnDismiss( this, dialog, id );
+            Utils.setRemoveOnDismiss( this, dialog, dlgID );
         }
 
         return dialog;
@@ -371,7 +368,7 @@ public class DictsActivity extends XWExpandableListActivity
     {
         super.onPrepareDialog( id, dialog );
 
-        if ( MOVE_DICT == id ) {
+        if ( DlgID.MOVE_DICT.ordinal() == id ) {
             // The move button should always start out disabled
             // because the selected location should be where it
             // currently is.
@@ -417,7 +414,7 @@ public class DictsActivity extends XWExpandableListActivity
         Intent intent = getIntent();
         if ( null != intent ) {
             if ( MultiService.isMissingDictIntent( intent ) ) {
-                showDialog( DICT_OR_DECLINE );
+                showDialog( DlgID.DICT_OR_DECLINE.ordinal() );
             } else {
                 boolean downloadNow = intent.getBooleanExtra( DICT_DOLAUNCH, false );
                 if ( downloadNow ) {
@@ -509,7 +506,7 @@ public class DictsActivity extends XWExpandableListActivity
             askMoveSelDicts();
             break;
         case R.id.dicts_select:
-            showDialog( SET_DEFAULT );
+            showDialog( DlgID.SET_DEFAULT.ordinal() );
             break;
         default:
             handled = false;
@@ -545,7 +542,7 @@ public class DictsActivity extends XWExpandableListActivity
     // options for YY?
     private void askMoveSelDicts()
     {
-        showDialog( MOVE_DICT );
+        showDialog( DlgID.MOVE_DICT.ordinal() );
     }
 
     // OnItemLongClickListener interface

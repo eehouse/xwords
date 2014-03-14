@@ -58,7 +58,7 @@ public class SMSCheckBoxPreference extends CheckBoxPreference {
     {
         if ( checked && m_attached && m_context instanceof PrefsActivity ) {
             PrefsActivity activity = (PrefsActivity)m_context;
-            activity.showDialog( PrefsActivity.CONFIRM_SMS );
+            activity.showDialog( DlgID.CONFIRM_SMS.ordinal() );
         } else {
             super_setChecked( checked );
         }

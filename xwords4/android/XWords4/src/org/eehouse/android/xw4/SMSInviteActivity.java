@@ -43,7 +43,6 @@ import java.util.Iterator;
 public class SMSInviteActivity extends InviteActivity {
 
     private static final int GET_CONTACT = 1;
-    private static final int GET_NUMBER = DlgDelegate.DIALOG_LAST + 1;
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
@@ -79,7 +78,7 @@ public class SMSInviteActivity extends InviteActivity {
         m_addButton.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View view )
                 {
-                    showDialog( GET_NUMBER );
+                    showDialog( DlgID.GET_NUMBER.ordinal() );
                 }
             } );
 
@@ -123,7 +122,8 @@ public class SMSInviteActivity extends InviteActivity {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
-            switch( id ) {
+            DlgID dlgID = DlgID.values()[id];
+            switch( dlgID ) {
             case GET_NUMBER:
                 final GameNamer namerView =
                     (GameNamer)Utils.inflate( this, R.layout.rename_game );
@@ -147,7 +147,7 @@ public class SMSInviteActivity extends InviteActivity {
                     .create();
                 break;
             }
-            Utils.setRemoveOnDismiss( this, dialog, id );
+            Utils.setRemoveOnDismiss( this, dialog, dlgID );
         }
         return dialog;
     }

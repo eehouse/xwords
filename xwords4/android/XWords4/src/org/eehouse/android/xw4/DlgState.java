@@ -24,40 +24,40 @@ import android.os.Parcelable;
 import android.os.Parcel;
 
 public class DlgState implements Parcelable {
-    public int m_id;
+    public DlgID m_id;
     public String m_msg;
     public int m_posButton;
     public int m_cbckID = 0;
     public int m_prefsKey;
     public Object[] m_params;
 
-    public DlgState( int id, String msg, int cbckID )
+    public DlgState( DlgID dlgID, String msg, int cbckID )
     {
-        this( id, msg, R.string.button_ok, cbckID, 0 );
+        this( dlgID, msg, R.string.button_ok, cbckID, 0 );
     }
 
-    public DlgState( int id, String msg, int cbckID, int prefsKey )
+    public DlgState( DlgID dlgID, String msg, int cbckID, int prefsKey )
     {
-        this( id, msg, R.string.button_ok, cbckID, prefsKey );
+        this( dlgID, msg, R.string.button_ok, cbckID, prefsKey );
     }
 
-    public DlgState( int id, String msg, int cbckID, int prefsKey, 
+    public DlgState( DlgID dlgID, String msg, int cbckID, int prefsKey, 
                      Object[] params )
     {
-        this( id, msg, R.string.button_ok, cbckID, prefsKey );
+        this( dlgID, msg, R.string.button_ok, cbckID, prefsKey );
         m_params = params;
     }
 
-    public DlgState( int id, String msg, int posButton, 
+    public DlgState( DlgID dlgID, String msg, int posButton, 
                      int cbckID, int prefsKey )
     {
-        this( id, msg, posButton, cbckID, prefsKey, null );
+        this( dlgID, msg, posButton, cbckID, prefsKey, null );
     }
 
-    public DlgState( int id, String msg, int posButton, 
+    public DlgState( DlgID dlgID, String msg, int posButton, 
                      int cbckID, int prefsKey, Object[] params )
     {
-        m_id = id;
+        m_id = dlgID;
         m_msg = msg;
         m_posButton = posButton;
         m_cbckID = cbckID;
@@ -65,9 +65,9 @@ public class DlgState implements Parcelable {
         m_params = params;
     }
 
-    public DlgState( int id, int cbckID )
+    public DlgState( DlgID dlgID, int cbckID )
     {
-        this( id, null, 0, cbckID, 0 );
+        this( dlgID, null, 0, cbckID, 0 );
     }
 
     public int describeContents() {
@@ -75,7 +75,7 @@ public class DlgState implements Parcelable {
     }
 
     public void writeToParcel( Parcel out, int flags ) {
-        out.writeInt( m_id );
+        out.writeInt( m_id.ordinal() );
         out.writeInt( m_posButton );
         out.writeInt( m_cbckID );
         out.writeInt( m_prefsKey );
@@ -85,7 +85,7 @@ public class DlgState implements Parcelable {
     public static final Parcelable.Creator<DlgState> CREATOR
         = new Parcelable.Creator<DlgState>() {
         public DlgState createFromParcel(Parcel in) {
-            int id = in.readInt();
+            DlgID id = DlgID.values()[in.readInt()];
             int posButton = in.readInt();
             int cbckID = in.readInt();
             int prefsKey = in.readInt();

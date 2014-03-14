@@ -62,16 +62,6 @@ public class GamesList extends XWExpandableListActivity
                DBUtils.DBChangeListener, SelectableItem, 
                DictImportActivity.DownloadFinishedListener {
 
-    private static final int WARN_NODICT       = DlgDelegate.DIALOG_LAST + 1;
-    private static final int WARN_NODICT_SUBST = WARN_NODICT + 1;
-    private static final int SHOW_SUBST        = WARN_NODICT + 2;
-    private static final int GET_NAME          = WARN_NODICT + 3;
-    private static final int RENAME_GAME       = WARN_NODICT + 4;
-    private static final int NEW_GROUP         = WARN_NODICT + 5;
-    private static final int RENAME_GROUP      = WARN_NODICT + 6;
-    private static final int CHANGE_GROUP      = WARN_NODICT + 7;
-    private static final int WARN_NODICT_NEW   = WARN_NODICT + 8;
-
     private static final String SAVE_ROWID = "SAVE_ROWID";
     private static final String SAVE_ROWIDS = "SAVE_ROWIDS";
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
@@ -147,7 +137,8 @@ public class GamesList extends XWExpandableListActivity
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             AlertDialog.Builder ab;
-            switch ( id ) {
+            DlgID dlgID = DlgID.values()[id];
+            switch ( dlgID ) {
             case WARN_NODICT:
             case WARN_NODICT_NEW:
             case WARN_NODICT_SUBST:
@@ -170,10 +161,10 @@ public class GamesList extends XWExpandableListActivity
                 String langName = 
                     DictLangCache.getLangName( this, m_missingDictLang );
                 String gameName = GameUtils.getName( this, m_missingDictRowId );
-                if ( WARN_NODICT == id ) {
+                if ( DlgID.WARN_NODICT == dlgID ) {
                     message = getString( R.string.no_dictf,
                                          gameName, langName );
-                } else if ( WARN_NODICT_NEW == id ) {
+                } else if ( DlgID.WARN_NODICT_NEW == dlgID ) {
                     message = 
                         getString( R.string.invite_dict_missing_body_nonamef,
                                    null, m_missingDictName, langName );
@@ -189,16 +180,16 @@ public class GamesList extends XWExpandableListActivity
                     .setPositiveButton( R.string.button_cancel, null )
                     .setNegativeButton( R.string.button_download, lstnr )
                     ;
-                if ( WARN_NODICT_SUBST == id ) {
+                if ( DlgID.WARN_NODICT_SUBST == dlgID ) {
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, int item ) {
-                                showDialog( SHOW_SUBST );
+                                showDialog( DlgID.SHOW_SUBST.ordinal() );
                             }
                         };
                     ab.setNeutralButton( R.string.button_substdict, lstnr );
                 }
                 dialog = ab.create();
-                Utils.setRemoveOnDismiss( this, dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, dlgID );
                 break;
             case SHOW_SUBST:
                 m_sameLangDicts = 
@@ -228,7 +219,7 @@ public class GamesList extends XWExpandableListActivity
                 // called next time and we can insert a different
                 // list.  There seems to be no way to change the list
                 // inside onPrepareDialog().
-                Utils.setRemoveOnDismiss( this, dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, dlgID );
                 break;
 
             case RENAME_GAME:
@@ -242,7 +233,7 @@ public class GamesList extends XWExpandableListActivity
                 dialog = buildNamerDlg( GameUtils.getName( this, m_rowid ),
                                         R.string.rename_label,
                                         R.string.game_rename_title,
-                                        lstnr, RENAME_GAME );
+                                        lstnr, DlgID.RENAME_GAME );
                 break;
 
             case RENAME_GROUP:
@@ -258,7 +249,7 @@ public class GamesList extends XWExpandableListActivity
                 dialog = buildNamerDlg( m_adapter.groupName( m_groupid ),
                                         R.string.rename_group_label,
                                         R.string.game_name_group_title,
-                                        lstnr, RENAME_GROUP );
+                                        lstnr, DlgID.RENAME_GROUP );
                 break;
 
             case NEW_GROUP:
@@ -272,8 +263,8 @@ public class GamesList extends XWExpandableListActivity
                     };
                 dialog = buildNamerDlg( "", R.string.newgroup_label,
                                         R.string.game_name_group_title,
-                                        lstnr, RENAME_GROUP );
-                Utils.setRemoveOnDismiss( this, dialog, id );
+                                        lstnr, DlgID.RENAME_GROUP );
+                Utils.setRemoveOnDismiss( this, dialog, dlgID );
                 break;
 
             case CHANGE_GROUP:
@@ -314,7 +305,7 @@ public class GamesList extends XWExpandableListActivity
                     .setPositiveButton( R.string.button_move, lstnr2 )
                     .setNegativeButton( R.string.button_cancel, null )
                     .create();
-                Utils.setRemoveOnDismiss( this, dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, dlgID );
                 break;
 
             case GET_NAME:
@@ -357,7 +348,7 @@ public class GamesList extends XWExpandableListActivity
     {
         super.onPrepareDialog( id, dialog );
 
-        if ( CHANGE_GROUP == id ) {
+        if ( DlgID.CHANGE_GROUP.ordinal() == id ) {
             ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
                 .setEnabled( false );
         }
@@ -762,7 +753,7 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.games_menu_newgroup:
-            showDialog( NEW_GROUP );
+            showDialog( DlgID.NEW_GROUP.ordinal() );
             break;
 
         case R.id.games_game_config:
@@ -832,7 +823,7 @@ public class GamesList extends XWExpandableListActivity
                 showOKOnlyDialog( R.string.no_move_onegroup );
             } else {
                 m_rowids = selRowIDs;
-                showDialog( CHANGE_GROUP );
+                showDialog( DlgID.CHANGE_GROUP.ordinal() );
             }
             break;
         case R.id.games_game_new_from:
@@ -873,7 +864,7 @@ public class GamesList extends XWExpandableListActivity
 
         case R.id.games_game_rename:
             m_rowid = selRowIDs[0];
-            showDialog( RENAME_GAME );
+            showDialog( DlgID.RENAME_GAME.ordinal() );
             break;
 
             // Group menus
@@ -906,7 +897,7 @@ public class GamesList extends XWExpandableListActivity
             break;
         case R.id.games_group_rename:
             m_groupid = groupID;
-            showDialog( RENAME_GROUP );
+            showDialog( DlgID.RENAME_GROUP.ordinal() );
             break;
         case R.id.games_group_moveup:
             changeContent = m_adapter.moveGroup( groupID, -1 );
@@ -988,7 +979,7 @@ public class GamesList extends XWExpandableListActivity
             m_netLaunchInfo = nli;
             m_missingDictLang = nli.lang;
             m_missingDictName = nli.dict;
-            showDialog( WARN_NODICT_NEW );
+            showDialog( DlgID.WARN_NODICT_NEW.ordinal() );
         }
         return haveDict;
     }
@@ -1008,9 +999,9 @@ public class GamesList extends XWExpandableListActivity
             }
             m_missingDictRowId = rowid;
             if ( 0 == DictLangCache.getLangCount( this, m_missingDictLang ) ) {
-                showDialog( WARN_NODICT );
+                showDialog( DlgID.WARN_NODICT.ordinal() );
             } else if ( null != m_missingDictName ) {
-                showDialog( WARN_NODICT_SUBST );
+                showDialog( DlgID.WARN_NODICT_SUBST.ordinal() );
             } else {
                 String dict = 
                     DictLangCache.getHaveLang( this, m_missingDictLang)[0];
@@ -1176,7 +1167,7 @@ public class GamesList extends XWExpandableListActivity
         if ( null == CommonPrefs.getDefaultPlayerName( this, 0, false ) ) {
             String name = CommonPrefs.getDefaultPlayerName( this, 0, true );
             CommonPrefs.setDefaultPlayerName( GamesList.this, name );
-            showDialog( GET_NAME );
+            showDialog( DlgID.GET_NAME.ordinal() );
         }
     }
 
@@ -1192,7 +1183,7 @@ public class GamesList extends XWExpandableListActivity
 
     private Dialog buildNamerDlg( String curname, int labelID, int titleID,
                                   DialogInterface.OnClickListener lstnr, 
-                                  int dlgID )
+                                  DlgID dlgID )
     {
         m_namer = (GameNamer)Utils.inflate( this, R.layout.rename_game );
         m_namer.setName( curname );

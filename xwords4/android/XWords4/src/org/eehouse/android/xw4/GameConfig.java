@@ -63,12 +63,6 @@ public class GameConfig extends XWActivity
                ,XWListItem.DeleteCallback
                ,RefreshNamesTask.NoNameFound {
 
-    private static final int PLAYER_EDIT = DlgDelegate.DIALOG_LAST + 1;
-    private static final int FORCE_REMOTE = PLAYER_EDIT + 1;
-    private static final int CONFIRM_CHANGE = PLAYER_EDIT + 2;
-    private static final int CONFIRM_CHANGE_PLAY = PLAYER_EDIT + 3;
-    private static final int NO_NAME_FOUND = PLAYER_EDIT + 4;
-
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
     private static final int LOCKED_CHANGE_ACTION = 1;
 
@@ -155,7 +149,7 @@ public class GameConfig extends XWActivity
     }
 
     @Override
-    protected Dialog onCreateDialog( final int id )
+    protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
@@ -163,7 +157,8 @@ public class GameConfig extends XWActivity
             DialogInterface.OnClickListener dlpos;
             AlertDialog.Builder ab;
 
-            switch (id) {
+            final DlgID dlgID = DlgID.values()[id];
+            switch (dlgID) {
             case PLAYER_EDIT:
                 View playerEditView
                     = Utils.inflate( this, R.layout.player_edit );
@@ -210,7 +205,7 @@ public class GameConfig extends XWActivity
                     };
                 dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.force_title )
-                    .setView( Utils.inflate( this, layoutForDlg(id) ) )
+                    .setView( Utils.inflate( this, layoutForDlg(dlgID) ) )
                     .setPositiveButton( R.string.button_ok, dlpos )
                     .create();
                 DialogInterface.OnDismissListener dismiss = 
@@ -233,7 +228,7 @@ public class GameConfig extends XWActivity
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
                             applyChanges( true );
-                            if ( CONFIRM_CHANGE_PLAY == id ) {
+                            if ( DlgID.CONFIRM_CHANGE_PLAY == dlgID ) {
                                 launchGame();
                             }
                         }
@@ -242,7 +237,7 @@ public class GameConfig extends XWActivity
                     .setTitle( R.string.confirm_save_title )
                     .setMessage( R.string.confirm_save )
                     .setPositiveButton( R.string.button_save, dlpos );
-                if ( CONFIRM_CHANGE_PLAY == id ) {
+                if ( DlgID.CONFIRM_CHANGE_PLAY == dlgID ) {
                     dlpos = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
@@ -280,7 +275,8 @@ public class GameConfig extends XWActivity
     @Override
     protected void onPrepareDialog( int id, Dialog dialog )
     { 
-        switch ( id ) {
+        DlgID dlgID = DlgID.values()[id];
+        switch ( dlgID ) {
         case PLAYER_EDIT:
             setPlayerSettings( dialog );
             break;
@@ -596,7 +592,7 @@ public class GameConfig extends XWActivity
     // NoNameFound interface
     public void NoNameFound()
     {
-        showDialog( NO_NAME_FOUND );
+        showDialog( DlgID.NO_NAME_FOUND.ordinal() );
     }
 
     @Override
@@ -649,7 +645,7 @@ public class GameConfig extends XWActivity
                 launchGame();
             } else if ( m_giOrig.changesMatter(m_gi) 
                         || m_carOrig.changesMatter(m_car) ) {
-                showDialog( CONFIRM_CHANGE_PLAY );
+                showDialog( DlgID.CONFIRM_CHANGE_PLAY.ordinal() );
             } else {
                 applyChanges( false );
                 launchGame();
@@ -672,7 +668,7 @@ public class GameConfig extends XWActivity
                 applyChanges( true );
             } else if ( m_giOrig.changesMatter(m_gi) 
                         || m_carOrig.changesMatter(m_car) ) {
-                showDialog( CONFIRM_CHANGE );
+                showDialog( DlgID.CONFIRM_CHANGE.ordinal() );
                 consumed = true; // don't dismiss activity yet!
             } else {
                 applyChanges( false );
@@ -695,7 +691,7 @@ public class GameConfig extends XWActivity
                 @Override
                 public void onClick( View view ) {
                     m_whichPlayer = ((XWListItem)view).getPosition();
-                    showDialog( PLAYER_EDIT );
+                    showDialog( DlgID.PLAYER_EDIT.ordinal() );
                 }
             };
  
@@ -738,7 +734,7 @@ public class GameConfig extends XWActivity
         if ( ! localOnlyGame()
              && ((0 == m_gi.remoteCount() )
                  || (m_gi.nPlayers == m_gi.remoteCount()) ) ) {
-            showDialog( FORCE_REMOTE );
+            showDialog( DlgID.FORCE_REMOTE.ordinal() );
         }
         adjustPlayersLabel();
     } // loadPlayersList
@@ -998,9 +994,9 @@ public class GameConfig extends XWActivity
         }
     }
     
-    private int layoutForDlg( int id ) 
+    private int layoutForDlg( DlgID dlgID ) 
     {
-        switch( id ) {
+        switch( dlgID ) {
         // case ROLE_EDIT_RELAY:
         //     return R.layout.role_edit_relay;
         // case ROLE_EDIT_SMS:
