@@ -237,9 +237,9 @@ public class ConnStatusHandler {
         updateStatusImpl( context, cbacks, connType, success, false );
     }
 
-    public static void updateStatusImpl( Context context, ConnStatusCBacks cbacks,
-                                         CommsConnType connType, boolean success,
-                                         boolean isIn )
+    private static void updateStatusImpl( Context context, ConnStatusCBacks cbacks,
+                                          CommsConnType connType, boolean success,
+                                          boolean isIn )
     {
         if ( null == cbacks ) {
             cbacks = s_cbacks;
