@@ -2230,4 +2230,5 @@
     copied to the system clipboard. You can then paste them into any
     app that supports pasting text, e.g. an email app.</string>
 
+    <string name="lookup_title">Word lookup</string>
 </resources>

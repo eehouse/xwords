@@ -357,6 +357,7 @@ public class LookupActivity extends LinearLayout
         view.init( parent, bundle );
 
         Dialog result = new AlertDialog.Builder( parent )
+            .setTitle( R.string.lookup_title )
             .setView( view )
             .create();
         result.setOnKeyListener( view );
