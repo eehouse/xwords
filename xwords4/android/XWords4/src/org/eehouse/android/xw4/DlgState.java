@@ -70,6 +70,11 @@ public class DlgState implements Parcelable {
         this( dlgID, null, 0, cbckID, 0 );
     }
 
+    public DlgState( DlgID dlgID, Object[] params )
+    {
+        this( dlgID, null, 0, 0, 0, params );
+    }
+
     public int describeContents() {
         return 0;
     }

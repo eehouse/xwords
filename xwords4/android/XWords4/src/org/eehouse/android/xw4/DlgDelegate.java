@@ -89,9 +89,10 @@ public class DlgDelegate {
             Iterator<DlgState> iter = m_dlgStates.values().iterator();
             while ( iter.hasNext() ) {
                 DlgState state = iter.next();
-                String key = String.format( STATE_KEYF, state.m_id );
+                int id = state.m_id.ordinal();
+                String key = String.format( STATE_KEYF, id );
                 outState.putParcelable( key, state );
-                ids[indx++] = state.m_id.ordinal();
+                ids[indx++] = id;
             }
         }
         outState.putIntArray( IDS, ids );
@@ -104,6 +105,9 @@ public class DlgDelegate {
         DlgID dlgID = DlgID.values()[id];
         DlgState state = findForID( dlgID );
         switch( dlgID ) {
+        case LOOKUP:
+            dialog = createLookupDialog();
+            break;
         case DIALOG_ABOUT:
             dialog = createAboutDialog();
             break;
@@ -252,7 +256,9 @@ public class DlgDelegate {
 
     public void launchLookup( String[] words, int lang, boolean noStudyOption )
     {
-        LookupActivity.launch( m_activity, words, lang, noStudyOption );
+        Bundle params = LookupActivity.makeParams( words, lang, noStudyOption );
+        addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
+        m_activity.showDialog( DlgID.LOOKUP.ordinal() );
     }
 
     public void startProgress( int id )
@@ -349,6 +355,13 @@ public class DlgDelegate {
                                 } )
             .setPositiveButton( R.string.button_ok, null )
             .create();
+    }
+
+    private Dialog createLookupDialog()
+    {
+        DlgState state = findForID( DlgID.LOOKUP );
+        Bundle bundle = (Bundle)state.m_params[0];
+        return LookupActivity.createDialog( m_activity, bundle );
     }
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )
