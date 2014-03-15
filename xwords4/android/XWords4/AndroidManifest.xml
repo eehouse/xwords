@@ -120,11 +120,6 @@
               android:configChanges="keyboardHidden"
               />
 
-    <activity android:name="LookupActivity"
-              android:configChanges="keyboardHidden|orientation|screenSize"
-              android:theme="@android:style/Theme.Dialog"
-              />
-
     <activity android:name="StudyList"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
