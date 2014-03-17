@@ -381,7 +381,7 @@ public class BoardActivity extends XWActivity
                             int resID = studyOn 
                                 ? R.string.button_lookup_studyf
                                 : R.string.button_lookupf;
-                            buttonTxt = Utils.format( this, resID, m_words[0] );
+                            buttonTxt = getString( resID, m_words[0] );
                         } else {
                             int resID = studyOn ? R.string.button_lookup_study
                                 : R.string.button_lookup;
@@ -419,8 +419,7 @@ public class BoardActivity extends XWActivity
                 if ( DlgID.PICK_TILE_REQUESTBLANK_BLK == dlgID ) {
                     ab.setTitle( R.string.title_tile_picker );
                 } else {
-                    ab.setTitle( Utils.format( this, R.string.cur_tilesf,
-                                               m_curTiles ) );
+                    ab.setTitle( getString( R.string.cur_tilesf, m_curTiles ) );
                     if ( m_canUndoTiles ) {
                         DialogInterface.OnClickListener undoClicked =
                             new DialogInterface.OnClickListener() {
@@ -1604,9 +1603,8 @@ public class BoardActivity extends XWActivity
         public boolean confirmTrade( String[] tiles )
         {
             m_dlgTitle = R.string.info_title;
-            m_dlgBytes = 
-                Utils.format( BoardActivity.this, R.string.query_tradef, 
-                              TextUtils.join( ", ", tiles ) );
+            m_dlgBytes = getString( R.string.query_tradef, 
+                                    TextUtils.join( ", ", tiles ) );
             return 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
         }
 
