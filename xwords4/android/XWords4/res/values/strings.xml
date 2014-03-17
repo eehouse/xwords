@@ -159,7 +159,7 @@
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-    <string name="confirm_reset">Are you sure you want to reset the
+    <string name="confirm_resetf">Are you sure you want to reset the %d
     selected game[s]? (Resetting erases all moves and any connection
     information.)</string>
 

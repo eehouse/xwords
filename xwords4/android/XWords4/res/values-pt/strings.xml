@@ -157,12 +157,6 @@
          list_item_rename) -->
     <string name="rename_label">Mudar o nome desse jogo para:</string>
 
-    <!-- Text of confirmation dialog posted when list_item_reset menu
-         is selected -->
-    <string name="confirm_reset">Você tem certeza que quer reiniciar
-    esse jogo? Reiniciar apaga todas as jogadas e informações de
-    conexão.</string>
-
     <!--
        ############################################################
        # :Screens:

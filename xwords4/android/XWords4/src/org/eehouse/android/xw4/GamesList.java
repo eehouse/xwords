@@ -858,7 +858,8 @@ public class GamesList extends XWExpandableListActivity
             break;
 
         case R.id.games_game_reset:
-            showConfirmThen( R.string.confirm_reset, R.string.button_reset, 
+            msg = getString( R.string.confirm_resetf, selRowIDs.length );
+            showConfirmThen( msg, R.string.button_reset, 
                              GamesActions.RESET_GAMES.ordinal(), selRowIDs );
             break;
 
