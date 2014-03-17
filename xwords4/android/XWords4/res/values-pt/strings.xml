@@ -2138,11 +2138,6 @@
     <string name="group_cur_games">Meus jogos</string>
     <string name="group_new_games">Novos jogos</string>
 
-    <string name="group_confirm_del">Você tem certeza que quer apagar
-    esse grupo?</string>
-    <string name="group_confirm_delf">\u0020(Ele contém %d jogo(s),
-    que também serão apagados.)</string>
-
     <string name="rename_group_label">Mudar o nome desse grupo para:</string>
     <string name="game_name_group_title">Nomear grupo</string>
 

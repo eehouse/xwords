@@ -878,16 +878,14 @@ public class GamesList extends XWExpandableListActivity
             } else {
                 long[] groupIDs = getSelGroupIDs();
                 Assert.assertTrue( 0 < groupIDs.length );
-                msg = getString( 1 == groupIDs.length ? R.string.group_confirm_del
-                                 : R.string.groups_confirm_del );
+                msg = getString( R.string.groups_confirm_delf, groupIDs.length );
+
                 int nGames = 0;
                 for ( long tmp : groupIDs ) {
                     nGames += m_adapter.getChildrenCount( tmp );
                 }
                 if ( 0 < nGames ) {
-                    int fmtID = 1 == groupIDs.length ? R.string.group_confirm_delf 
-                        : R.string.groups_confirm_delf;
-                    msg += getString( fmtID, nGames );
+                    msg += getString( R.string.groups_confirm_del_gamesf, nGames );
                 }
                 showConfirmThen( msg, GamesActions.DELETE_GROUPS.ordinal(),
                                  groupIDs );

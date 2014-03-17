@@ -160,7 +160,7 @@
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
     <string name="confirm_resetf">Are you sure you want to reset the %d
-    selected game[s]? (Resetting erases all moves and any connection
+    selected game[s]?\n\n(Resetting erases all moves and any connection
     information.)</string>
 
     <!--
@@ -2123,14 +2123,10 @@
     <string name="group_cur_games">My games</string>
     <string name="group_new_games">New games</string>
 
-    <string name="group_confirm_del">Are you sure you want to delete
-    the selected group?</string>
-    <string name="groups_confirm_del">Are you sure you want to delete
-    the selected groups?</string>
-    <string name="group_confirm_delf">\u0020(It contains %d game[s],
-    which will also be deleted.)</string>
-    <string name="groups_confirm_delf">\u0020(They contains %d game[s],
-    which will also be deleted.)</string>
+    <string name="groups_confirm_delf">Are you sure you want to delete
+    the %d selected group[s]?</string>
+    <string name="groups_confirm_del_gamesf">\n\n(%d game[s] will
+    also be deleted.)</string>
 
     <string name="rename_group_label">Change the name of this group to:</string>
     <string name="game_name_group_title">Name group</string>
