@@ -54,6 +54,7 @@ import java.util.Iterator;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
@@ -76,10 +77,6 @@ public class DictsActivity extends XWExpandableListActivity
     private static final String DICT_NAME_EXTRA = "use_dict";
 
     private HashSet<String> m_closedLangs;
-
-    // For new callback alternative
-    private static final int DELETE_DICT_ACTION = 1;
-    private static final int DOWNLOAD_DICT_ACTION = 2;
 
     // I can't provide a subclass of MenuItem to hold DictAndLoc, so
     // settle for a hash on the side.
@@ -608,7 +605,7 @@ public class DictsActivity extends XWExpandableListActivity
             }
         }
 
-        showConfirmThen( msg, R.string.button_delete, DELETE_DICT_ACTION,
+        showConfirmThen( msg, R.string.button_delete, Action.DELETE_DICT_ACTION,
                          (Object)items );
     } // deleteSelected
 
@@ -627,9 +624,9 @@ public class DictsActivity extends XWExpandableListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which, Object[] params )
     {
-        switch( id ) {
+        switch( action ) {
         case DELETE_DICT_ACTION:
             if ( DialogInterface.BUTTON_POSITIVE == which ) {
                 XWListItem[] items = (XWListItem[])params[0];
@@ -668,7 +665,7 @@ public class DictsActivity extends XWExpandableListActivity
         Intent intent = mkDownloadIntent( this, lang, name );
         showNotAgainDlgThen( R.string.not_again_firefox, 
                              R.string.key_na_firefox, 
-                             DOWNLOAD_DICT_ACTION, intent );
+                             Action.DOWNLOAD_DICT_ACTION, intent );
     }
 
     private void startDownload( Intent downloadIntent )

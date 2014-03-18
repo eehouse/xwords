@@ -37,13 +37,13 @@ import android.widget.Spinner;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
 public class StudyList extends XWListActivity 
     implements OnItemSelectedListener {
 
     public static final int NO_LANG = -1;
 
-    private static final int CLEAR_ACTION = 1;
-    private static final int COPY_ACTION = 2;
     private static final String START_LANG = "START_LANG";
     
     private Spinner m_spinner;
@@ -84,10 +84,11 @@ public class StudyList extends XWListActivity
         case R.id.copy_all:
             showNotAgainDlgThen( R.string.not_again_studycopy,
                                  R.string.key_na_studycopy, 
-                                 COPY_ACTION );
+                                 Action.SL_COPY_ACTION );
             break;
         case R.id.clear_all:
-            showConfirmThen( R.string.confirm_studylist_clear, CLEAR_ACTION );
+            showConfirmThen( R.string.confirm_studylist_clear, 
+                             Action.SL_CLEAR_ACTION );
             break;
         default:
             handled = false;
@@ -99,15 +100,15 @@ public class StudyList extends XWListActivity
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which, Object[] params )
     {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
-            switch ( id ) {
-            case CLEAR_ACTION:
+            switch ( action ) {
+            case SL_CLEAR_ACTION:
                 DBUtils.studyListClear( this, m_langCodes[m_position] );
                 initOrFinish( null );
                 break;
-            case COPY_ACTION:
+            case SL_COPY_ACTION:
                 ClipboardManager clipboard = (ClipboardManager)
                     getSystemService( Context.CLIPBOARD_SERVICE );
                 clipboard.setText( TextUtils.join( "\n", m_words ) );

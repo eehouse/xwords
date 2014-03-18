@@ -28,6 +28,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ImageButton;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 
 public class Toolbar {
@@ -117,22 +118,22 @@ public class Toolbar {
     }
 
     public void setListener( int index, final int msgID, final int prefsKey, 
-                             final int callback )
+                             final Action action )
     {
         View.OnClickListener listener = new View.OnClickListener() {
                 public void onClick( View view ) {
-                    m_activity.showNotAgainDlgThen( msgID, prefsKey, callback );
+                    m_activity.showNotAgainDlgThen( msgID, prefsKey, action );
                 }
             };
         setListener( index, listener );
     }
 
     public void setLongClickListener( int index, final int msgID, 
-                                      final int prefsKey, final int callback )
+                                      final int prefsKey, final Action action )
     {
         View.OnLongClickListener listener = new View.OnLongClickListener() {
                 public boolean onLongClick( View view ) {
-                    m_activity.showNotAgainDlgThen( msgID, prefsKey, callback );
+                    m_activity.showNotAgainDlgThen( msgID, prefsKey, action );
                     return true;
                 }
             };

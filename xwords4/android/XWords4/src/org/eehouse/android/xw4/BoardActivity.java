@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
@@ -76,27 +77,6 @@ public class BoardActivity extends XWActivity
     private static final int SMS_INVITE_RESULT = 3;
 
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
-
-    private static final int UNDO_LAST_ACTION = 1;
-    private static final int LAUNCH_INVITE_ACTION = 2;
-    private static final int SYNC_ACTION = 3;
-    private static final int COMMIT_ACTION = 4;
-    private static final int SHOW_EXPL_ACTION = 5;
-    private static final int PREV_HINT_ACTION = 6;
-    private static final int NEXT_HINT_ACTION = 7;
-    private static final int JUGGLE_ACTION = 8;
-    private static final int FLIP_ACTION = 9;
-    private static final int ZOOM_ACTION = 10;
-    private static final int UNDO_ACTION = 11;
-    private static final int CHAT_ACTION = 12;
-    private static final int START_TRADE_ACTION = 13;
-    private static final int LOOKUP_ACTION = 14;
-    private static final int BUTTON_BROWSE_ACTION = 15;
-    private static final int VALUES_ACTION = 16;
-    private static final int BT_PICK_ACTION = 17;
-    private static final int SMS_PICK_ACTION = 18;
-    private static final int SMS_CONFIG_ACTION = 19;
-    private static final int BUTTON_BROWSEALL_ACTION = 20;
 
     private static final String DLG_TITLE = "DLG_TITLE";
     private static final String DLG_TITLESTR = "DLG_TITLESTR";
@@ -394,7 +374,7 @@ public class BoardActivity extends XWActivity
                                                          not_again_lookup, 
                                                          R.string.
                                                          key_na_lookup, 
-                                                         LOOKUP_ACTION );
+                                                         Action.LOOKUP_ACTION );
                                 }
                             };
                         ab.setNegativeButton( buttonTxt, lstnr );
@@ -488,7 +468,7 @@ public class BoardActivity extends XWActivity
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int item ) {
-                                showInviteChoicesThen( LAUNCH_INVITE_ACTION );
+                                showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
                             }
                         };
                     dialog = new AlertDialog.Builder( this )
@@ -812,9 +792,10 @@ public class BoardActivity extends XWActivity
                                                   m_view.getCurPlayer() );
             if ( XWApp.MAX_TRAY_TILES > nTiles ) {
                 showNotAgainDlgThen( R.string.not_again_done, 
-                                     R.string.key_notagain_done, COMMIT_ACTION );
+                                     R.string.key_notagain_done, 
+                                     Action.COMMIT_ACTION );
             } else {
-                dlgButtonClicked( COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
+                dlgButtonClicked( Action.COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
             }
             break;
 
@@ -853,7 +834,7 @@ public class BoardActivity extends XWActivity
                 : R.string. not_again_trading_buttons;
             msg += getString( strID );
             showNotAgainDlgThen( msg, R.string.key_notagain_trading,
-                                 START_TRADE_ACTION );
+                                 Action.START_TRADE_ACTION );
             break;
 
         case R.id.board_menu_tray:
@@ -869,7 +850,7 @@ public class BoardActivity extends XWActivity
             cmd = JNICmd.CMD_UNDO_CUR;
             break;
         case R.id.board_menu_undo_last:
-            showConfirmThen( R.string.confirm_undo_last, UNDO_LAST_ACTION );
+            showConfirmThen( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION );
             break;
         case R.id.board_menu_invite:
             showDialog( DlgID.DLG_INVITE.ordinal() );
@@ -904,7 +885,7 @@ public class BoardActivity extends XWActivity
         case R.id.gamel_menu_checkmoves:
             showNotAgainDlgThen( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
-                                 SYNC_ACTION );
+                                 Action.SYNC_ACTION );
             break;
 
         case R.id.board_menu_file_prefs:
@@ -931,9 +912,9 @@ public class BoardActivity extends XWActivity
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which, Object[] params )
     {
-        if ( LAUNCH_INVITE_ACTION == id ) {
+        if ( Action.LAUNCH_INVITE_ACTION == action ) {
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
                 if ( DlgDelegate.NFC_BTN == which ) {
                     if ( NFCUtils.nfcAvail( this )[1] ) {
@@ -952,7 +933,7 @@ public class BoardActivity extends XWActivity
             }
         } else if ( AlertDialog.BUTTON_POSITIVE == which ) {
             JNICmd cmd = JNICmd.CMD_NONE;
-            switch ( id ) {
+            switch ( action ) {
             case UNDO_LAST_ACTION:
                 cmd = JNICmd.CMD_UNDO_LAST;
                 break;
@@ -982,7 +963,7 @@ public class BoardActivity extends XWActivity
             case BUTTON_BROWSE_ACTION:
                 String curDict = m_gi.dictName( m_view.getCurPlayer() );
                 View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
-                if ( BUTTON_BROWSEALL_ACTION == id &&
+                if ( Action.BUTTON_BROWSEALL_ACTION == action &&
                      DictsActivity.handleDictsPopup( this, button, curDict ) ) {
                     break;
                 }
@@ -1370,10 +1351,10 @@ public class BoardActivity extends XWActivity
         if ( null != toastStr ) {
             m_toastStr = toastStr;
             if ( naMsg == 0 ) {
-                dlgButtonClicked( SHOW_EXPL_ACTION, 
+                dlgButtonClicked( Action.SHOW_EXPL_ACTION, 
                                   AlertDialog.BUTTON_POSITIVE, null );
             } else {
-                showNotAgainDlgThen( naMsg, naKey, SHOW_EXPL_ACTION );
+                showNotAgainDlgThen( naMsg, naKey, Action.SHOW_EXPL_ACTION );
             }
         }
 
@@ -1670,20 +1651,20 @@ public class BoardActivity extends XWActivity
         {
             m_connType = connType;
 
-            int action = 0;
+            Action action = null;
             if ( 0 < nMissingPlayers && isServer && !m_haveInvited ) {
                 switch( connType ) {
                 case COMMS_CONN_BT:
-                    action = BT_PICK_ACTION;
+                    action = Action.BT_PICK_ACTION;
                     break;
                 case COMMS_CONN_SMS:
-                    action = SMS_PICK_ACTION;
+                    action = Action.SMS_PICK_ACTION;
                     break;
                 }
             }
-            if ( 0 != action ) {
+            if ( null != action ) {
                 m_haveInvited = true;
-                final int faction = action;
+                final Action faction = action;
                 final String fmsg = getString( R.string.invite_msgf,
                                                nMissingPlayers );
                 post( new Runnable() {
@@ -1955,44 +1936,44 @@ public class BoardActivity extends XWActivity
         m_toolbar.setListener( Toolbar.BUTTON_BROWSE_DICT,
                                R.string.not_again_browseall,
                                R.string.key_na_browseall,
-                               BUTTON_BROWSEALL_ACTION );
+                               Action.BUTTON_BROWSEALL_ACTION );
         m_toolbar.setLongClickListener( Toolbar.BUTTON_BROWSE_DICT,
                                         R.string.not_again_browse,
                                         R.string.key_na_browse,
-                                        BUTTON_BROWSE_ACTION );
+                                        Action.BUTTON_BROWSE_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
                                R.string.not_again_hintprev,
                                R.string.key_notagain_hintprev,
-                               PREV_HINT_ACTION );
+                               Action.PREV_HINT_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
                                R.string.not_again_hintnext,
                                R.string.key_notagain_hintnext,
-                               NEXT_HINT_ACTION );
+                               Action.NEXT_HINT_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
                                R.string.not_again_juggle,
                                R.string.key_notagain_juggle,
-                               JUGGLE_ACTION );
+                               Action.JUGGLE_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_FLIP,
                                R.string.not_again_flip,
                                R.string.key_notagain_flip,
-                               FLIP_ACTION );
+                               Action.FLIP_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
                                R.string.not_again_zoom,
                                R.string.key_notagain_zoom,
-                               ZOOM_ACTION );
+                               Action.ZOOM_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_VALUES,
                                R.string.not_again_values,
                                R.string.key_na_values,
-                               VALUES_ACTION );
+                               Action.VALUES_ACTION );
         m_toolbar.setListener( Toolbar.BUTTON_UNDO,
                                R.string.not_again_undo,
                                R.string.key_notagain_undo,
-                               UNDO_ACTION );
+                               Action.UNDO_ACTION );
         if ( BuildConstants.CHAT_SUPPORTED ) {
             m_toolbar.setListener( Toolbar.BUTTON_CHAT,
                                    R.string.not_again_chat, 
                                    R.string.key_notagain_chat,
-                                   CHAT_ACTION );
+                                   Action.CHAT_ACTION );
         }
     } // populateToolbar
 
@@ -2128,7 +2109,7 @@ public class BoardActivity extends XWActivity
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( this ) ) {
                 showConfirmThen( R.string.warn_sms_disabled, 
                                  R.string.newgame_enable_sms, 
-                                 SMS_CONFIG_ACTION );
+                                 Action.SMS_CONFIG_ACTION );
             }
             break;
         }

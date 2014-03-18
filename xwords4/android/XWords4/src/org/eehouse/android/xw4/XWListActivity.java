@@ -25,6 +25,8 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
 import junit.framework.Assert;
 
 public class XWListActivity extends ListActivity 
@@ -97,7 +99,7 @@ public class XWListActivity extends ListActivity
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
-                                        int action )
+                                        Action action )
     {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
     }
@@ -107,7 +109,7 @@ public class XWListActivity extends ListActivity
         m_delegate.showNotAgainDlgThen( msgID, prefsKey );
     }
 
-    protected void showOKOnlyDialogThen( String msg, int action )
+    protected void showOKOnlyDialogThen( String msg, Action action )
     {
         m_delegate.showOKOnlyDialog( msg, action );
     }
@@ -122,22 +124,22 @@ public class XWListActivity extends ListActivity
         m_delegate.showOKOnlyDialog( msgID );
     }
 
-    protected void showConfirmThen( String msg, int action )
+    protected void showConfirmThen( String msg, Action action )
     {
         m_delegate.showConfirmThen( msg, action );
     }
 
-    protected void showConfirmThen( int msg, int action )
+    protected void showConfirmThen( int msg, Action action )
     {
         showConfirmThen( getString(msg), action );
     }
 
-    protected void showConfirmThen( String msg, int posButton, int action )
+    protected void showConfirmThen( String msg, int posButton, Action action )
     {
         m_delegate.showConfirmThen( msg, posButton, action );
     }
 
-    protected void showConfirmThen( int msg, int posButton, int action )
+    protected void showConfirmThen( int msg, int posButton, Action action )
     {
         m_delegate.showConfirmThen( getString(msg), posButton, action );
     }
@@ -163,7 +165,7 @@ public class XWListActivity extends ListActivity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which, Object[] params )
     {
         Assert.fail();
     }

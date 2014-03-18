@@ -42,6 +42,7 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 
@@ -52,7 +53,6 @@ public class DictBrowseActivity extends XWListActivity
     private static final String DICT_LOC = "DICT_LOC";
 
     private static final int MIN_LEN = 2;
-    private static final int FINISH_ACTION = 1;
 
     private int m_dictClosure = 0;
     private int m_lang;
@@ -194,7 +194,7 @@ public class DictBrowseActivity extends XWListActivity
                 // search/minmax stuff.
                 String msg = Utils.format( this, R.string.alert_empty_dictf,
                                            name );
-                showOKOnlyDialogThen( msg, FINISH_ACTION );
+                showOKOnlyDialogThen( msg, Action.FINISH_ACTION );
             } else {
                 figureMinMax( m_browseState.m_counts );
                 if ( newState ) {
@@ -307,9 +307,9 @@ public class DictBrowseActivity extends XWListActivity
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which, Object[] params )
     {
-        Assert.assertTrue( FINISH_ACTION == id ); 
+        Assert.assertTrue( Action.FINISH_ACTION == action ); 
         finish();
     }
 

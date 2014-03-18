@@ -46,7 +46,6 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 public class NewGameActivity extends XWActivity {
 
-    private static final int NEW_GAME_ACTION = 1;
     // private static final String SAVE_DEVNAMES = "DEVNAMES";
     private static final String SAVE_REMOTEGAME = "REMOTEGAME";
     private static final String SAVE_GAMEID = "GAMEID";
@@ -150,9 +149,9 @@ public class NewGameActivity extends XWActivity {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( DlgDelegate.Action action, int which, Object[] params )
     {
-        switch( id ) {
+        switch( action ) {
         case NEW_GAME_ACTION:
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
                 makeNewGame( true, true, which );
@@ -310,7 +309,7 @@ public class NewGameActivity extends XWActivity {
     {
         if ( launch && networked ) {
             // Let 'em cancel before we make the game
-            showInviteChoicesThen( NEW_GAME_ACTION );
+            showInviteChoicesThen( DlgDelegate.Action.NEW_GAME_ACTION );
         } else {
             makeNewGame( networked, launch, DlgDelegate.SMS_BTN );
         }

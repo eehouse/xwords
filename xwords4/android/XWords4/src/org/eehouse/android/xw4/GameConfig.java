@@ -54,6 +54,7 @@ import android.widget.Toast;
 import android.database.DataSetObserver;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -64,7 +65,6 @@ public class GameConfig extends XWActivity
                ,RefreshNamesTask.NoNameFound {
 
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
-    private static final int LOCKED_CHANGE_ACTION = 1;
 
     private CheckBox m_joinPublicCheck;
     private CheckBox m_gameLockedCheck;
@@ -596,9 +596,9 @@ public class GameConfig extends XWActivity
     }
 
     @Override
-    public void dlgButtonClicked( int id, int button, Object[] params )
+    public void dlgButtonClicked( Action action, int button, Object[] params )
     {
-        switch( id ) {
+        switch( action ) {
         case LOCKED_CHANGE_ACTION:
             if ( AlertDialog.BUTTON_POSITIVE == button ) {
                 handleLockedChange();
@@ -627,7 +627,7 @@ public class GameConfig extends XWActivity
         } else if ( m_gameLockedCheck == view ) {
             showNotAgainDlgThen( R.string.not_again_unlock, 
                                  R.string.key_notagain_unlock,
-                                 LOCKED_CHANGE_ACTION );
+                                 Action.LOCKED_CHANGE_ACTION );
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
         } else if ( m_playButton == view ) {

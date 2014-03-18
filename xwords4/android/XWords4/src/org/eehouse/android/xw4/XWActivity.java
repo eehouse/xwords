@@ -30,6 +30,8 @@ import android.view.View;
 import android.widget.TextView;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
 public class XWActivity extends Activity
     implements DlgDelegate.DlgClickNotify, DlgDelegate.HasDlgDelegate,
                MultiService.MultiEventListener {
@@ -113,13 +115,13 @@ public class XWActivity extends Activity
     }
 
     protected void showNotAgainDlgThen( String msg, int prefsKey,
-                                        int action )
+                                        Action action )
     {
         m_delegate.showNotAgainDlgThen( msg, prefsKey, action, null );
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
-                                        int action )
+                                        Action action )
     {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
     }
@@ -144,22 +146,22 @@ public class XWActivity extends Activity
         m_delegate.showDictGoneFinish();
     }
 
-    protected void showConfirmThen( int msgID, int action )
+    protected void showConfirmThen( int msgID, Action action )
     {
         m_delegate.showConfirmThen( getString(msgID), action );
     }
 
-    protected void showConfirmThen( String msg, int action )
+    protected void showConfirmThen( String msg, Action action )
     {
         m_delegate.showConfirmThen( msg, action );
     }
 
-    protected void showConfirmThen( int msg, int posButton, int action )
+    protected void showConfirmThen( int msg, int posButton, Action action )
     {
         m_delegate.showConfirmThen( getString(msg), posButton, action );
     }
 
-    public void showInviteChoicesThen( int action )
+    public void showInviteChoicesThen( Action action )
     {
         m_delegate.showInviteChoicesThen( action );
     }
@@ -190,7 +192,7 @@ public class XWActivity extends Activity
     }
 
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which, Object[] params )
     {
         Assert.fail();
     }

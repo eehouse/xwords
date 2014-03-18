@@ -55,6 +55,7 @@ import java.util.Set;
 // import android.telephony.TelephonyManager;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 
 public class GamesList extends XWExpandableListActivity 
@@ -72,16 +73,6 @@ public class GamesList extends XWExpandableListActivity
     private static final String GAMEID_EXTRA = "gameid";
     private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
     private static final String ALERT_MSG = "alert_msg";
-
-    private static enum GamesActions { NEW_NET_GAME
-            ,RESET_GAMES
-            ,SYNC_MENU
-            ,NEW_FROM
-            ,DELETE_GAMES
-            ,DELETE_GROUPS
-            ,OPEN_GAME
-            ,CLEAR_SELS
-            };
 
     private static final int[] DEBUG_ITEMS = { 
         // R.id.games_menu_loaddb,
@@ -500,8 +491,7 @@ public class GamesList extends XWExpandableListActivity
                 long rowid = ((GameListItem)clicked).getRowID();
                 showNotAgainDlgThen( R.string.not_again_newselect, 
                                      R.string.key_notagain_newselect,
-                                     GamesActions.OPEN_GAME.ordinal(), 
-                                     rowid, summary );
+                                     Action.OPEN_GAME, rowid, summary );
             }
         }
     }
@@ -568,10 +558,9 @@ public class GamesList extends XWExpandableListActivity
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which, Object[] params )
     {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
-            GamesActions action = GamesActions.values()[id];
             switch( action ) {
             case NEW_NET_GAME:
                 if ( checkWarnNoDict( m_netLaunchInfo ) ) {
@@ -636,7 +625,7 @@ public class GamesList extends XWExpandableListActivity
         } else {
             showNotAgainDlgThen( R.string.not_again_backclears, 
                                  R.string.key_notagain_backclears,
-                                 GamesActions.CLEAR_SELS.ordinal() );
+                                 Action.CLEAR_SELS );
         }
     }
 
@@ -767,7 +756,7 @@ public class GamesList extends XWExpandableListActivity
         case R.id.games_menu_checkmoves:
             showNotAgainDlgThen( R.string.not_again_sync,
                                  R.string.key_notagain_sync,
-                                 GamesActions.SYNC_MENU.ordinal() );
+                                 Action.SYNC_MENU );
             break;
 
         case R.id.games_menu_checkupdates:
@@ -815,7 +804,7 @@ public class GamesList extends XWExpandableListActivity
             String msg = Utils.format( this, R.string.confirm_seldeletesf, 
                                        selRowIDs.length );
             showConfirmThen( msg, R.string.button_delete, 
-                             GamesActions.DELETE_GAMES.ordinal(), selRowIDs );
+                             Action.DELETE_GAMES, selRowIDs );
             break;
 
         case R.id.games_game_move:
@@ -830,8 +819,7 @@ public class GamesList extends XWExpandableListActivity
             dropSels = true;    // will select the new game instead
             showNotAgainDlgThen( R.string.not_again_newfrom,
                                  R.string.key_notagain_newfrom, 
-                                 GamesActions.NEW_FROM.ordinal(), 
-                                 selRowIDs[0] );
+                                 Action.NEW_FROM, selRowIDs[0] );
             break;
         case R.id.games_game_copy:
             final GameSummary smry = DBUtils.getSummary( this, selRowIDs[0] );
@@ -860,7 +848,7 @@ public class GamesList extends XWExpandableListActivity
         case R.id.games_game_reset:
             msg = getString( R.string.confirm_resetf, selRowIDs.length );
             showConfirmThen( msg, R.string.button_reset, 
-                             GamesActions.RESET_GAMES.ordinal(), selRowIDs );
+                             Action.RESET_GAMES, selRowIDs );
             break;
 
         case R.id.games_game_rename:
@@ -887,8 +875,7 @@ public class GamesList extends XWExpandableListActivity
                 if ( 0 < nGames ) {
                     msg += getString( R.string.groups_confirm_del_gamesf, nGames );
                 }
-                showConfirmThen( msg, GamesActions.DELETE_GROUPS.ordinal(),
-                                 groupIDs );
+                showConfirmThen( msg, Action.DELETE_GROUPS, groupIDs );
             }
             break;
         case R.id.games_group_default:
@@ -1094,7 +1081,7 @@ public class GamesList extends XWExpandableListActivity
             String msg = getString( R.string.dup_game_queryf, 
                                     create.toString() );
             m_netLaunchInfo = nli;
-            showConfirmThen( msg, GamesActions.NEW_NET_GAME.ordinal(), nli );
+            showConfirmThen( msg, Action.NEW_NET_GAME, nli );
         } else {
             showOKOnlyDialog( R.string.dropped_dupe );
         }
