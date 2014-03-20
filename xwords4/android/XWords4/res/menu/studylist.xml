@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/select_all"
+    <item android:id="@+id/slmenu_select_all"
           android:title="@string/slmenu_select_all"
+          android:icon="@drawable/select_all__gen"
+          android:showAsAction="ifRoom"
           />
 
-    <item android:id="@+id/deselect_all"
+    <item android:id="@+id/slmenu_deselect_all"
           android:title="@string/slmenu_deselect_all"
+          android:icon="@drawable/clear_all__gen"
+          android:showAsAction="ifRoom"
           />
 
-    <item android:id="@+id/copy_all"
-          android:title="@string/slmenu_copy_all"
+    <item android:id="@+id/slmenu_copy_sel"
+          android:title="@string/slmenu_copy_sel"
           android:icon="@drawable/content_copy__gen"
           android:showAsAction="ifRoom"
           />
 
-    <item android:id="@+id/clear_all"
-          android:title="@string/slmenu_clear_all"
+    <item android:id="@+id/slmenu_clear_sel"
+          android:title="@string/slmenu_clear_sel"
           android:icon="@drawable/content_discard__gen"
           android:showAsAction="ifRoom"
           />

@@ -37,6 +37,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 
 import junit.framework.Assert;
 
@@ -75,43 +76,55 @@ public class StudyList extends XWListActivity
     }
 
     @Override
+    public void onBackPressed() {
+        if ( 0 == m_checkeds.size() ) {
+            super.onBackPressed();
+        } else {
+            clearSels();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu( Menu menu )
     {
         getMenuInflater().inflate( R.menu.studylist, menu );
         return true;
     }
 
-    // @Override
-    // public boolean onPrepareOptionsMenu( Menu menu ) 
-    // {
-    //     return true;
-    // }
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
+    {
+        int nSel = m_checkeds.size();
+        Utils.setItemVisible( menu, R.id.slmenu_copy_sel, 0 < nSel );
+        Utils.setItemVisible( menu, R.id.slmenu_clear_sel, 0 < nSel );
+        Utils.setItemVisible( menu, R.id.slmenu_select_all, m_words.length > nSel );
+        Utils.setItemVisible( menu, R.id.slmenu_deselect_all, 0 < nSel );
+        return super.onPrepareOptionsMenu( menu );
+    }
 
     public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
         switch ( item.getItemId() ) {
-        case R.id.copy_all:
+        case R.id.slmenu_copy_sel:
             showNotAgainDlgThen( R.string.not_again_studycopy,
                                  R.string.key_na_studycopy, 
                                  Action.SL_COPY_ACTION );
             break;
-        case R.id.clear_all:
+        case R.id.slmenu_clear_sel:
             showConfirmThen( R.string.confirm_studylist_clear, 
                              Action.SL_CLEAR_ACTION );
             break;
 
-        case R.id.select_all:
+        case R.id.slmenu_select_all:
             for ( int ii = 0; ii < m_words.length; ++ii ) {
                 m_checkeds.add( ii );
             }
             makeAdapter();
             setTitleBar();
             break;
-        case R.id.deselect_all:
-            m_checkeds.clear();
-            makeAdapter();
-            setTitleBar();
+        case R.id.slmenu_deselect_all:
+            clearSels();
             break;
 
         default:
@@ -129,15 +142,20 @@ public class StudyList extends XWListActivity
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
             switch ( action ) {
             case SL_CLEAR_ACTION:
-                DBUtils.studyListClear( this, m_langCodes[m_langPosition] );
+                String[] selWords = getSelWords();
+                if ( selWords.length == m_words.length ) {
+                    selWords = null; // all: easier on DB :-)
+                }
+                DBUtils.studyListClear( this, m_langCodes[m_langPosition], selWords );
                 initOrFinish( null );
                 break;
             case SL_COPY_ACTION:
+                selWords = getSelWords();
                 ClipboardManager clipboard = (ClipboardManager)
                     getSystemService( Context.CLIPBOARD_SERVICE );
-                clipboard.setText( TextUtils.join( "\n", m_words ) );
+                clipboard.setText( TextUtils.join( "\n", selWords ) );
 
-                String msg  = getString( R.string.paste_donef, m_words.length );
+                String msg  = getString( R.string.paste_donef, selWords.length );
                 Utils.showToast( this, msg );
                 break;
             default:
@@ -267,6 +285,29 @@ public class StudyList extends XWListActivity
             newTitle = getString( R.string.sel_wordsf, nSels );
         }
         setTitle( newTitle );
+    }
+
+    private String[] getSelWords()
+    {
+        String[] result;
+        int nSels = m_checkeds.size();
+        if ( nSels == m_words.length ) {
+            result = m_words;
+        } else {
+            result = new String[nSels];
+            Iterator<Integer> iter = m_checkeds.iterator();
+            for ( int ii = 0; iter.hasNext(); ++ii ) {
+                result[ii] = m_words[iter.next()];
+            }
+        }
+        return result;
+    }
+
+    private void clearSels()
+    {
+        m_checkeds.clear();
+        makeAdapter();
+        setTitleBar();
     }
 
     public static void launchOrAlert( Context context, int lang, 

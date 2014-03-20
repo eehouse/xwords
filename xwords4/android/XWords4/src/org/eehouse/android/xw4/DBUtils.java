@@ -1665,9 +1665,18 @@ public class DBUtils {
         return result;
     }
 
-    public static void studyListClear( Context context, int lang )
+    public static void studyListClear( Context context, int lang, String[] words )
     {
         String selection = String.format( "%s = %d", DBHelper.LANGUAGE, lang );
+        if ( null != words ) {
+            String[] inQuotes = new String[words.length];
+            for ( int ii = 0; ii < inQuotes.length; ++ii ) {
+                inQuotes[ii] = String.format( "'%s'", words[ii] );
+            }
+            String wordsTest = String.format( " AND %s in (%s)", DBHelper.WORD,
+                                              TextUtils.join(",", inQuotes) );
+            selection += wordsTest;
+        }
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -1675,6 +1684,11 @@ public class DBUtils {
             db.delete( DBHelper.TABLE_NAME_STUDYLIST, selection, null );
             db.close();
         }
+    }
+
+    public static void studyListClear( Context context, int lang )
+    {
+        studyListClear( context, lang, null );
     }
 
     private static void copyGameDB( Context context, boolean toSDCard )
