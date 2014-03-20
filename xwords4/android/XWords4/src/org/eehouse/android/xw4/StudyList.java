@@ -113,8 +113,9 @@ public class StudyList extends XWListActivity
                                  Action.SL_COPY_ACTION );
             break;
         case R.id.slmenu_clear_sel:
-            showConfirmThen( R.string.confirm_studylist_clear, 
-                             Action.SL_CLEAR_ACTION );
+            String msg = getString( R.string.confirm_studylist_clearf, 
+                                    m_checkeds.size() );
+            showConfirmThen( msg, Action.SL_CLEAR_ACTION );
             break;
 
         case R.id.slmenu_select_all:

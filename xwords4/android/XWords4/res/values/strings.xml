@@ -2209,8 +2209,8 @@
 
     <string name="slmenu_copy_sel">Copy to clipboard</string>
     <string name="slmenu_clear_sel">Delete</string>
-    <string name="confirm_studylist_clear">Are you sure you want to
-    delete the selected words?\n\n(This action cannot be undone.)</string>
+    <string name="confirm_studylist_clearf">Are you sure you want to
+    delete the %d selected word[s]?\n\n(This action cannot be undone.)</string>
     <string name="paste_donef">%d word[s] copied</string>
     <string name="add_donef">%s added to list</string>
     <string name="studylist_titlef">Studylist for %s</string>
