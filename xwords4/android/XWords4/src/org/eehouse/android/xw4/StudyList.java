@@ -58,7 +58,7 @@ public class StudyList extends XWListActivity
     private String[] m_words;
     private HashSet<Integer> m_checkeds;
     private int m_langPosition;
-    private SLWordsAdapter<String> m_adapter;
+    private SLWordsAdapter m_adapter;
     private ListView m_list;
     private CharSequence m_origTitle;
 
@@ -247,7 +247,7 @@ public class StudyList extends XWListActivity
 
     private void makeAdapter()
     {
-        m_adapter = new SLWordsAdapter<String>( this, 0, m_words );
+        m_adapter = new SLWordsAdapter();
         setListAdapter( m_adapter );
     }
 
@@ -351,14 +351,11 @@ public class StudyList extends XWListActivity
         }
     }
 
-    private class SLWordsAdapter<String> extends ArrayAdapter<String> {
+    private class SLWordsAdapter extends XWListAdapter {
 
-        public SLWordsAdapter( Context context, int ignored, String[] strings) {
-            super( context, ignored, strings );
-        }
-
-        public SLWordsAdapter( Context context, int resource ) {
-            super( context, resource );
+        public SLWordsAdapter()
+        {
+            super( m_words.length );
         }
 
         public View getView( int position, View convertView, ViewGroup parent ){
