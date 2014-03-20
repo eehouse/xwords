@@ -84,7 +84,7 @@ public class DlgState implements Parcelable {
     public void writeToParcel( Parcel out, int flags ) {
         out.writeInt( m_id.ordinal() );
         out.writeInt( m_posButton );
-        out.writeInt( m_action.ordinal() );
+        out.writeInt( null == m_action ? -1 : m_action.ordinal() );
         out.writeInt( m_prefsKey );
         out.writeString( m_msg );
     }
@@ -94,7 +94,8 @@ public class DlgState implements Parcelable {
         public DlgState createFromParcel(Parcel in) {
             DlgID id = DlgID.values()[in.readInt()];
             int posButton = in.readInt();
-            Action action = Action.values()[in.readInt()];
+            int tmp = in.readInt();
+            Action action = 0 > tmp ? null : Action.values()[tmp];
             int prefsKey = in.readInt();
             String msg = in.readString();
             return new DlgState( id, msg, posButton, action, prefsKey );
