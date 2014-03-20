@@ -28,10 +28,12 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.CheckBox;
 
+import junit.framework.Assert;
 
 public class XWListItem extends LinearLayout 
-    implements SelectableItem.LongClickHandler {
+    implements SelectableItem.LongClickHandler, View.OnClickListener {
     private int m_position;
     private Context m_context;
     private Object m_cached;
@@ -39,6 +41,7 @@ public class XWListItem extends LinearLayout
     private Drawable m_origDrawable;
     private boolean m_selected = false;
     private SelectableItem m_selCb;
+    private CheckBox m_checkbox;
 
     public interface DeleteCallback {
         void deleteCalled( XWListItem item );
@@ -47,6 +50,15 @@ public class XWListItem extends LinearLayout
     public XWListItem( Context cx, AttributeSet as ) {
         super( cx, as );
         m_context = cx;
+    }
+
+    @Override
+    protected void onFinishInflate()
+    {
+        super.onFinishInflate();
+        m_checkbox = (CheckBox)findViewById( R.id.checkbox );
+        Assert.assertNotNull( m_checkbox );
+        m_checkbox.setOnClickListener( this );
     }
 
     public int getPosition() { return m_position; }
@@ -86,9 +98,10 @@ public class XWListItem extends LinearLayout
         button.setVisibility( View.VISIBLE );
     }
 
-    public void setSelCB( SelectableItem selCB )
+    private void setSelCB( SelectableItem selCB )
     {
         m_selCb = selCB;
+        m_checkbox.setVisibility( null == selCB ? View.GONE : View.VISIBLE );
     }
 
     public void setSelected( boolean selected )
@@ -129,6 +142,14 @@ public class XWListItem extends LinearLayout
         toggleSelected();
     }
 
+    // View.OnClickListener interface
+    public void onClick( View view ) 
+    {
+        if ( m_checkbox == view ) {
+            setSelected( m_checkbox.isChecked() );
+        }
+    }
+
     private void toggleSelected()
     {
         m_selected = !m_selected;
@@ -138,6 +159,15 @@ public class XWListItem extends LinearLayout
         } else {
             setBackgroundDrawable( m_origDrawable );
         }
+        m_checkbox.setChecked( m_selected );
+
         m_selCb.itemToggled( this, m_selected );
+    }
+
+    public static XWListItem inflate( Context context, SelectableItem selCB )
+    {
+        XWListItem item = (XWListItem)Utils.inflate( context,  R.layout.list_item );
+        item.setSelCB( selCB );
+        return item;
     }
 }

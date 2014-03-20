@@ -697,8 +697,7 @@ public class GameConfig extends XWActivity
  
         boolean localGame = localOnlyGame();
         for ( int ii = 0; ii < names.length; ++ii ) {
-            final XWListItem view
-                = (XWListItem)factory.inflate( R.layout.list_item, null );
+            final XWListItem view = XWListItem.inflate( this, null );
             view.setPosition( ii );
             view.setText( names[ii] );
             if ( localGame && m_gi.players[ii].isLocal ) {
@@ -837,8 +836,7 @@ public class GameConfig extends XWActivity
             LinearLayout phoneList = 
                 (LinearLayout)findViewById(R.id.sms_phones);
             for ( CommsAddrRec addr : m_remoteAddrs ) {
-                XWListItem item = 
-                    (XWListItem)Utils.inflate( this, R.layout.list_item );
+                XWListItem item = XWListItem.inflate( this, null );
                 item.setText( addr.sms_phone );
                 String name = Utils.phoneToContact( this, addr.sms_phone, 
                                                     false );

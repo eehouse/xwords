@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -34,13 +35,16 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.jni.GameSummary;
 
 public class StudyList extends XWListActivity 
-    implements OnItemSelectedListener {
+    implements OnItemSelectedListener, SelectableItem {
 
     public static final int NO_LANG = -1;
 
@@ -50,7 +54,11 @@ public class StudyList extends XWListActivity
     private View m_pickView;    // LinearLayout, actually
     private int[] m_langCodes;
     private String[] m_words;
-    private int m_position;
+    private HashSet<Integer> m_checkeds;
+    private int m_langPosition;
+    private SLWordsAdapter<String> m_adapter;
+    private ListView m_list;
+    private CharSequence m_origTitle;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
@@ -58,9 +66,11 @@ public class StudyList extends XWListActivity
         super.onCreate( savedInstanceState );
 
         setContentView( R.layout.studylist );
+        m_list = (ListView)findViewById( android.R.id.list );
 
         m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
         m_pickView = findViewById( R.id.pick_lang );
+
         initOrFinish( getIntent() );
     }
 
@@ -90,6 +100,20 @@ public class StudyList extends XWListActivity
             showConfirmThen( R.string.confirm_studylist_clear, 
                              Action.SL_CLEAR_ACTION );
             break;
+
+        case R.id.select_all:
+            for ( int ii = 0; ii < m_words.length; ++ii ) {
+                m_checkeds.add( ii );
+            }
+            makeAdapter();
+            setTitleBar();
+            break;
+        case R.id.deselect_all:
+            m_checkeds.clear();
+            makeAdapter();
+            setTitleBar();
+            break;
+
         default:
             handled = false;
         }
@@ -105,7 +129,7 @@ public class StudyList extends XWListActivity
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
             switch ( action ) {
             case SL_CLEAR_ACTION:
-                DBUtils.studyListClear( this, m_langCodes[m_position] );
+                DBUtils.studyListClear( this, m_langCodes[m_langPosition] );
                 initOrFinish( null );
                 break;
             case SL_COPY_ACTION:
@@ -127,7 +151,7 @@ public class StudyList extends XWListActivity
     public void onListItemClick( ListView lv, View view, int position, long id )
     {
         String[] words = { m_words[position] };
-        launchLookup( words, m_langCodes[m_position], true );
+        launchLookup( words, m_langCodes[m_langPosition], true );
     }
 
     //////////////////////////////////////////////////
@@ -136,30 +160,60 @@ public class StudyList extends XWListActivity
     public void onItemSelected( AdapterView<?> parent, View view, 
                                 int position, long id )
     {
-        m_position = position;
-        loadList();
+        m_langPosition = position;
+        loadList();             // because language has changed
     }
 
     public void onNothingSelected( AdapterView<?> parent )
     {
     }
 
+    //////////////////////////////////////////////////
+    // SelectableItem interface
+    //////////////////////////////////////////////////
+    public void itemClicked( SelectableItem.LongClickHandler clicked,
+                             GameSummary summary )
+    {
+        Assert.assertTrue( clicked instanceof XWListItem );
+        m_checkeds.add( ((XWListItem)clicked).getPosition() );
+    }
+
+    public void itemToggled( SelectableItem.LongClickHandler toggled, 
+                             boolean selected )
+    {
+        Assert.assertTrue( toggled instanceof XWListItem );
+        int position = ((XWListItem)toggled).getPosition();
+        if ( selected ) {
+            m_checkeds.add( position );
+        } else {
+            m_checkeds.remove( position );
+        }
+        setTitleBar();
+    }
+
+    public boolean getSelected( SelectableItem.LongClickHandler obj )
+    {
+        Assert.assertTrue( obj instanceof XWListItem );
+        return m_checkeds.contains( ((XWListItem)obj).getPosition() );
+    }
+
     private void loadList()
     {
-        int lang = m_langCodes[m_position];
+        int lang = m_langCodes[m_langPosition];
         m_words = DBUtils.studyListWords( this, lang );
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>
-            ( this, android.R.layout.simple_list_item_1 );
-        for ( String word : m_words ) {
-            adapter.add( word );
-        }
-        // adapter.sort();
+        m_checkeds = new HashSet<Integer>();
 
-        setListAdapter( adapter );
+        makeAdapter();
 
         String langName = DictLangCache.getLangNames( this )[lang];
-        String title = getString( R.string.studylist_titlef, langName );
-        setTitle( title );
+        m_origTitle = getString( R.string.studylist_titlef, langName );
+        setTitleBar();
+    }
+
+    private void makeAdapter()
+    {
+        m_adapter = new SLWordsAdapter<String>( this, 0, m_words );
+        setListAdapter( m_adapter );
     }
 
     private void initOrFinish( Intent startIntent )
@@ -169,7 +223,7 @@ public class StudyList extends XWListActivity
             finish();
         } else if ( 1 == m_langCodes.length ) {
             m_pickView.setVisibility( View.GONE );
-            m_position = 0;
+            m_langPosition = 0;
             loadList();
         } else {
             int startLang = NO_LANG;
@@ -202,6 +256,19 @@ public class StudyList extends XWListActivity
         }
     }
 
+    private void setTitleBar()
+    {
+        CharSequence newTitle;
+        int nSels = m_checkeds.size();
+        DbgUtils.logf( "setTitleBar: nSels=%d", nSels );
+        if ( 0 == nSels ) {
+            newTitle = m_origTitle;
+        } else {
+            newTitle = getString( R.string.sel_wordsf, nSels );
+        }
+        setTitle( newTitle );
+    }
+
     public static void launchOrAlert( Context context, int lang, 
                                       DlgDelegate.HasDlgDelegate dlg )
     {
@@ -222,6 +289,31 @@ public class StudyList extends XWListActivity
 
         if ( null != msg ) {
             dlg.showOKOnlyDialog( msg );
+        }
+    }
+
+    private class SLWordsAdapter<String> extends ArrayAdapter<String> {
+        // public SLWordsAdapter()
+        // {
+        //     super( m_words.length );
+        // }
+
+        public SLWordsAdapter( Context context, int ignored, String[] strings) {
+            super( context, ignored, strings );
+        }
+
+        public SLWordsAdapter( Context context, int resource ) {
+            super( context, resource );
+        }
+
+        public View getView( int position, View convertView, 
+                             ViewGroup parent ) {
+            XWListItem item = XWListItem.inflate( StudyList.this, StudyList.this );
+            item.setPosition( position );
+            item.setText( m_words[position] );
+            item.setSelected( m_checkeds.contains(position) );
+            DbgUtils.logf( "getView(position=%d) => %H", position, item );
+            return item;
         }
     }
 

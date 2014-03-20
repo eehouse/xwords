@@ -83,7 +83,7 @@ public class DictsActivity extends XWExpandableListActivity
     private static HashMap<MenuItem, DictAndLoc> s_itemData;
 
     private String[] m_langs;
-    private String m_download;
+    private String m_downloadStr;
     private ExpandableListView m_expView;
     private String[] m_locNames;
     private DictListAdapter m_adapter;
@@ -129,9 +129,8 @@ public class DictsActivity extends XWExpandableListActivity
             }
 
             if ( null == view ) {
-                view = (XWListItem)
-                    m_factory.inflate( R.layout.list_item, null );
-                view.setSelCB( DictsActivity.this );
+                view = XWListItem.inflate( DictsActivity.this, 
+                                           DictsActivity.this );
 
                 int lang = (int)getGroupId( groupPosition );
                 DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, 
@@ -146,7 +145,7 @@ public class DictsActivity extends XWExpandableListActivity
                     view.setComment( m_locNames[loc.ordinal()] );
                     view.cache( loc );
                 } else {
-                    view.setText( m_download );
+                    view.setText( m_downloadStr );
                 }
 
                 addToCache( groupPosition, childPosition, view );
@@ -392,7 +391,7 @@ public class DictsActivity extends XWExpandableListActivity
 
         m_factory = LayoutInflater.from( this );
 
-        m_download = getString( R.string.download_dicts );
+        m_downloadStr = getString( R.string.download_dicts );
             
         setContentView( R.layout.dict_browse );
         m_expView = getExpandableListView();
