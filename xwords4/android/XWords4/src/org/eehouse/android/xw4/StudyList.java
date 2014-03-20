@@ -45,7 +45,8 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.GameSummary;
 
 public class StudyList extends XWListActivity 
-    implements OnItemSelectedListener, SelectableItem {
+    implements OnItemSelectedListener, SelectableItem,
+               View.OnLongClickListener {
 
     public static final int NO_LANG = -1;
 
@@ -184,6 +185,18 @@ public class StudyList extends XWListActivity
 
     public void onNothingSelected( AdapterView<?> parent )
     {
+    }
+
+    //////////////////////////////////////////////////
+    // View.OnLongClickListener interface
+    //////////////////////////////////////////////////
+    public boolean onLongClick( View view ) 
+    {
+        boolean success = view instanceof SelectableItem.LongClickHandler;
+        if ( success ) {
+            ((SelectableItem.LongClickHandler)view).longClicked();
+        }
+        return success;
     }
 
     //////////////////////////////////////////////////
@@ -353,6 +366,7 @@ public class StudyList extends XWListActivity
             item.setPosition( position );
             item.setText( m_words[position] );
             item.setSelected( m_checkeds.contains(position) );
+            item.setOnLongClickListener( StudyList.this );
             DbgUtils.logf( "getView(position=%d) => %H", position, item );
             return item;
         }
