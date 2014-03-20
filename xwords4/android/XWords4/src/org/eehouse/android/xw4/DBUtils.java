@@ -1669,13 +1669,8 @@ public class DBUtils {
     {
         String selection = String.format( "%s = %d", DBHelper.LANGUAGE, lang );
         if ( null != words ) {
-            String[] inQuotes = new String[words.length];
-            for ( int ii = 0; ii < inQuotes.length; ++ii ) {
-                inQuotes[ii] = String.format( "'%s'", words[ii] );
-            }
-            String wordsTest = String.format( " AND %s in (%s)", DBHelper.WORD,
-                                              TextUtils.join(",", inQuotes) );
-            selection += wordsTest;
+            selection += String.format( " AND %s in ('%s')", DBHelper.WORD,
+                                        TextUtils.join("','", words) );
         }
 
         initDB( context );
