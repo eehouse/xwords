@@ -46,7 +46,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 
 public class StudyList extends XWListActivity 
     implements OnItemSelectedListener, SelectableItem,
-               View.OnLongClickListener {
+               View.OnLongClickListener, View.OnClickListener {
 
     public static final int NO_LANG = -1;
 
@@ -166,13 +166,6 @@ public class StudyList extends XWListActivity
         }
     }
 
-    @Override
-    public void onListItemClick( ListView lv, View view, int position, long id )
-    {
-        String[] words = { m_words[position] };
-        launchLookup( words, m_langCodes[m_langPosition], true );
-    }
-
     //////////////////////////////////////////////////
     // AdapterView.OnItemSelectedListener interface
     //////////////////////////////////////////////////
@@ -197,6 +190,16 @@ public class StudyList extends XWListActivity
             ((SelectableItem.LongClickHandler)view).longClicked();
         }
         return success;
+    }
+
+    //////////////////////////////////////////////////
+    // View.OnClickListener interface
+    //////////////////////////////////////////////////
+    public void onClick( View view ) 
+    {
+        XWListItem item = (XWListItem)view;
+        String[] words = { m_words[item.getPosition()] };
+        launchLookup( words, m_langCodes[m_langPosition], true );
     }
 
     //////////////////////////////////////////////////
@@ -291,7 +294,6 @@ public class StudyList extends XWListActivity
     {
         CharSequence newTitle;
         int nSels = m_checkeds.size();
-        DbgUtils.logf( "setTitleBar: nSels=%d", nSels );
         if ( 0 == nSels ) {
             newTitle = m_origTitle;
         } else {
@@ -347,10 +349,6 @@ public class StudyList extends XWListActivity
     }
 
     private class SLWordsAdapter<String> extends ArrayAdapter<String> {
-        // public SLWordsAdapter()
-        // {
-        //     super( m_words.length );
-        // }
 
         public SLWordsAdapter( Context context, int ignored, String[] strings) {
             super( context, ignored, strings );
@@ -360,16 +358,15 @@ public class StudyList extends XWListActivity
             super( context, resource );
         }
 
-        public View getView( int position, View convertView, 
-                             ViewGroup parent ) {
-            XWListItem item = XWListItem.inflate( StudyList.this, StudyList.this );
+        public View getView( int position, View convertView, ViewGroup parent ){
+            XWListItem item = 
+                XWListItem.inflate( StudyList.this, StudyList.this );
             item.setPosition( position );
             item.setText( m_words[position] );
             item.setSelected( m_checkeds.contains(position) );
             item.setOnLongClickListener( StudyList.this );
-            DbgUtils.logf( "getView(position=%d) => %H", position, item );
+            item.setOnClickListener( StudyList.this );
             return item;
         }
     }
-
 }
