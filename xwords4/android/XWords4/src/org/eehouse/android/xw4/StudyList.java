@@ -300,6 +300,8 @@ public class StudyList extends XWListActivity
             newTitle = getString( R.string.sel_wordsf, nSels );
         }
         setTitle( newTitle );
+
+        ABUtils.invalidateOptionsMenuIf( this );
     }
 
     private String[] getSelWords()
