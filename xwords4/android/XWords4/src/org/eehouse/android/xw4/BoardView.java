@@ -51,6 +51,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private Context m_context;
     private int m_defaultFontHt;
     private int m_mediumFontHt;
+    private Runnable m_invalidator;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
     private int m_layoutWidth;
@@ -76,6 +77,11 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         final float scale = getResources().getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
         m_mediumFontHt = m_defaultFontHt * 3 / 2;
+        m_invalidator = new Runnable() {
+                public void run() {
+                    invalidate();
+                }
+            };
     }
 
     @Override
@@ -293,11 +299,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         }
 
         // Force update now that we have bits to copy
-        m_parent.runOnUiThread( new Runnable() {
-                public void run() {
-                    invalidate();
-                }
-            });
+        m_parent.runOnUiThread( m_invalidator );
     }
 
     public void dimsChanged( BoardDims dims )
