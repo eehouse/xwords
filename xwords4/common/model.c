@@ -2114,7 +2114,8 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
 } /* printMovePost */
 
 static void
-copyStack( ModelCtxt* model, StackCtxt* destStack, const StackCtxt* srcStack )
+copyStack( const ModelCtxt* model, StackCtxt* destStack, 
+           const StackCtxt* srcStack )
 {
     XWStreamCtxt* stream = mem_stream_make( MPPARM(model->vol.mpool)
                                             util_getVTManager(model->vol.util),
@@ -2127,7 +2128,7 @@ copyStack( ModelCtxt* model, StackCtxt* destStack, const StackCtxt* srcStack )
 } /* copyStack */
 
 static ModelCtxt*
-makeTmpModel( ModelCtxt* model, XWStreamCtxt* stream,
+makeTmpModel( const ModelCtxt* model, XWStreamCtxt* stream,
               MovePrintFuncPre mpf_pre, MovePrintFuncPost mpf_post, 
               void* closure )
 {
@@ -2331,14 +2332,17 @@ void
 model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row, 
                         XWStreamCtxt* stream )
 {
+    ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
+    copyStack( model, tmpModel->vol.stack, model->vol.stack );
+
     XP_ASSERT( !!stream );
-    StackCtxt* stack = model->vol.stack;
+    StackCtxt* stack = tmpModel->vol.stack;
     XP_U16 nEntriesBefore = stack_getNEntries( stack );
     XP_U16 nEntriesAfter;
 
     /* Loop until we undo the move that placed the tile. */
-    while ( model_undoLatestMoves( model, NULL, 1, NULL, NULL ) ) {
-        if ( 0 != (TILE_EMPTY_BIT & getModelTileRaw( model, col, row ) ) ) {
+    while ( model_undoLatestMoves( tmpModel, NULL, 1, NULL, NULL ) ) {
+        if ( 0 != (TILE_EMPTY_BIT & getModelTileRaw( tmpModel, col, row ) ) ) {
             break;
         }
     }
@@ -2359,10 +2363,12 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
                 XP_ASSERT( 0 );
                 break;
             }
-            modelAddEntry( model, nEntriesAfter++, &entry, XP_FALSE, NULL, &ni,
+            modelAddEntry( tmpModel, nEntriesAfter++, &entry, XP_FALSE, NULL, &ni,
                            NULL, NULL, NULL );
         }
     }
+
+    model_destroy( tmpModel );
 } /* model_listWordsThrough */
 #endif
 
