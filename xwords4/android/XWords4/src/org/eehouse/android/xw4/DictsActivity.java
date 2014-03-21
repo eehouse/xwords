@@ -405,7 +405,6 @@ public class DictsActivity extends XWExpandableListActivity
         }
 
         mkListAdapter();
-        m_selDicts = new HashSet<XWListItem>();
 
         Intent intent = getIntent();
         if ( null != intent ) {
@@ -434,6 +433,7 @@ public class DictsActivity extends XWExpandableListActivity
 
         mkListAdapter();
         expandGroups();
+        setTitleBar();
     }
 
     @Override
@@ -682,6 +682,8 @@ public class DictsActivity extends XWExpandableListActivity
         Arrays.sort( m_langs );
         m_adapter = new DictListAdapter( this );
         setListAdapter( m_adapter );
+
+        m_selDicts = new HashSet<XWListItem>();
     }
 
     private void expandGroups()
