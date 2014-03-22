@@ -301,7 +301,7 @@ public class StudyList extends XWListActivity
         if ( 0 == nSels ) {
             newTitle = m_origTitle;
         } else {
-            newTitle = getString( R.string.sel_wordsf, nSels );
+            newTitle = getString( R.string.sel_itemsf, nSels );
         }
         setTitle( newTitle );
 

@@ -741,7 +741,7 @@ public class DictsActivity extends XWExpandableListActivity
     {
         int nSels = m_selDicts.size();
         if ( 0 < nSels ) {
-            setTitle( getString( R.string.sel_dictsf, nSels ) );
+            setTitle( getString( R.string.sel_itemsf, nSels ) );
         } else {
             setTitle( m_origTitle );
         }
