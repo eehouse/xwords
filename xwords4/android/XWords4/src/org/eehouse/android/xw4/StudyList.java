@@ -100,6 +100,7 @@ public class StudyList extends XWListActivity
         Utils.setItemVisible( menu, R.id.slmenu_clear_sel, 0 < nSel );
         Utils.setItemVisible( menu, R.id.slmenu_select_all, m_words.length > nSel );
         Utils.setItemVisible( menu, R.id.slmenu_deselect_all, 0 < nSel );
+        Utils.setItemVisible( menu, R.id.slmenu_lookup_sel, 0 < nSel );
         return super.onPrepareOptionsMenu( menu );
     }
 
@@ -128,7 +129,9 @@ public class StudyList extends XWListActivity
         case R.id.slmenu_deselect_all:
             clearSels();
             break;
-
+        case R.id.slmenu_lookup_sel:
+            launchLookup( getSelWords(), m_langCodes[m_langPosition], true );
+            break;
         default:
             handled = false;
         }

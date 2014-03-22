@@ -2229,7 +2229,8 @@
     <string name="lookup_title">Word lookup</string>
 
     <string name="slmenu_select_all">Select all</string>
-    <string name="slmenu_deselect_all">Deselect all</string>
+    <string name="slmenu_deselect_all">Unselect all</string>
     <string name="sel_wordsf">Words: %d</string>
+    <string name="slmenu_lookup_sel">Look up</string>
 
 </resources>

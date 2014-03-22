@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/slmenu_lookup_sel"
+          android:title="@string/slmenu_lookup_sel"
+          android:icon="@drawable/search__gen"
+          android:showAsAction="ifRoom"
+          />
+
     <item android:id="@+id/slmenu_select_all"
           android:title="@string/slmenu_select_all"
           android:icon="@drawable/select_all__gen"
