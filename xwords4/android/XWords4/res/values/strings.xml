@@ -2230,6 +2230,5 @@
     <string name="slmenu_select_all">Select all</string>
     <string name="slmenu_deselect_all">Unselect all</string>
     <string name="sel_itemsf">Selected: %d</string>
-    <string name="slmenu_lookup_sel">Look up</string>
 
 </resources>

@@ -98,9 +98,16 @@ public class StudyList extends XWListActivity
         int nSel = m_checkeds.size();
         Utils.setItemVisible( menu, R.id.slmenu_copy_sel, 0 < nSel );
         Utils.setItemVisible( menu, R.id.slmenu_clear_sel, 0 < nSel );
-        Utils.setItemVisible( menu, R.id.slmenu_select_all, m_words.length > nSel );
+        Utils.setItemVisible( menu, R.id.slmenu_select_all, 
+                              m_words.length > nSel );
         Utils.setItemVisible( menu, R.id.slmenu_deselect_all, 0 < nSel );
-        Utils.setItemVisible( menu, R.id.slmenu_lookup_sel, 0 < nSel );
+        boolean enable = 1 == nSel;
+        if ( enable ) {
+            String title = 
+                getString( R.string.button_lookupf, getSelWords()[0] );
+            menu.findItem( R.id.slmenu_lookup_sel ).setTitle( title );
+        }
+        Utils.setItemVisible( menu, R.id.slmenu_lookup_sel, enable );
         return super.onPrepareOptionsMenu( menu );
     }
 
@@ -130,7 +137,8 @@ public class StudyList extends XWListActivity
             clearSels();
             break;
         case R.id.slmenu_lookup_sel:
-            launchLookup( getSelWords(), m_langCodes[m_langPosition], true );
+            String[] oneWord = new String[]{ getSelWords()[0] };
+            launchLookup( oneWord, m_langCodes[m_langPosition], true );
             break;
         default:
             handled = false;
