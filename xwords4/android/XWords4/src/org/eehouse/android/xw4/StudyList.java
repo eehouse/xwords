@@ -212,14 +212,12 @@ public class StudyList extends XWListActivity
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
-        Assert.assertTrue( clicked instanceof XWListItem );
         m_checkeds.add( ((XWListItem)clicked).getPosition() );
     }
 
     public void itemToggled( SelectableItem.LongClickHandler toggled, 
                              boolean selected )
     {
-        Assert.assertTrue( toggled instanceof XWListItem );
         int position = ((XWListItem)toggled).getPosition();
         if ( selected ) {
             m_checkeds.add( position );
@@ -231,7 +229,6 @@ public class StudyList extends XWListActivity
 
     public boolean getSelected( SelectableItem.LongClickHandler obj )
     {
-        Assert.assertTrue( obj instanceof XWListItem );
         return m_checkeds.contains( ((XWListItem)obj).getPosition() );
     }
 

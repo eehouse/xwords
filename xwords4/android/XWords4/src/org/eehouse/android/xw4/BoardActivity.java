@@ -2001,7 +2001,7 @@ public class BoardActivity extends XWActivity
             if ( post( new Runnable() {
                     public void run() {
                         m_blockingDlgID = dlgID;
-                        showDialog( dlgID );
+                        showDialog( dlgID.ordinal() );
                     }
                 } ) ) {
 
@@ -2044,7 +2044,7 @@ public class BoardActivity extends XWActivity
         m_dlgBytes = txt;
         post( new Runnable() {
                 public void run() {
-                    showDialog( dlgID );
+                    showDialog( dlgID.ordinal() );
                 }
             } );
     }

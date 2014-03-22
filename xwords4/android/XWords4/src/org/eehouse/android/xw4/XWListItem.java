@@ -57,7 +57,6 @@ public class XWListItem extends LinearLayout
     {
         super.onFinishInflate();
         m_checkbox = (CheckBox)findViewById( R.id.checkbox );
-        Assert.assertNotNull( m_checkbox );
         m_checkbox.setOnClickListener( this );
     }
 

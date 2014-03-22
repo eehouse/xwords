@@ -108,10 +108,6 @@ public class DlgDelegate {
     public interface DlgClickNotify {
         void dlgButtonClicked( Action action, int button, Object[] params );
     }
-    public interface DlgClickRegisterer {
-        void registerClickNotify( DlgClickNotify cb );
-        void unregisterClickNotify( DlgClickNotify cb );
-    }
     public interface HasDlgDelegate {
         void showOKOnlyDialog( int msgID );
         void showOKOnlyDialog( String msg );
