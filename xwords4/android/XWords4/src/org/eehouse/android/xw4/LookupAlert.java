@@ -48,7 +48,7 @@ import java.util.ArrayList;
 
 import junit.framework.Assert;
 
-public class LookupActivity extends LinearLayout
+public class LookupAlert extends LinearLayout
     implements View.OnClickListener, Dialog.OnKeyListener,
                AdapterView.OnItemClickListener {
 
@@ -88,7 +88,7 @@ public class LookupActivity extends LinearLayout
     private Button m_studyButton;
     private TextView m_summary;
 
-    public LookupActivity( Context context, AttributeSet as ) {
+    public LookupAlert( Context context, AttributeSet as ) {
         super( context, as );
         m_context = context;
     }
@@ -353,7 +353,7 @@ public class LookupActivity extends LinearLayout
 
     public static Dialog createDialog( Activity parent, Bundle bundle )
     {
-        LookupActivity view = (LookupActivity)Utils.inflate( parent, R.layout.lookup );
+        LookupAlert view = (LookupAlert)Utils.inflate( parent, R.layout.lookup );
         view.init( parent, bundle );
 
         Dialog result = new AlertDialog.Builder( parent )

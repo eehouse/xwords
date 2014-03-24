@@ -313,7 +313,7 @@ public class DlgDelegate {
 
     public void launchLookup( String[] words, int lang, boolean noStudyOption )
     {
-        Bundle params = LookupActivity.makeParams( words, lang, noStudyOption );
+        Bundle params = LookupAlert.makeParams( words, lang, noStudyOption );
         addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
         m_activity.showDialog( DlgID.LOOKUP.ordinal() );
     }
@@ -418,7 +418,7 @@ public class DlgDelegate {
     {
         DlgState state = findForID( DlgID.LOOKUP );
         Bundle bundle = (Bundle)state.m_params[0];
-        return LookupActivity.createDialog( m_activity, bundle );
+        return LookupAlert.createDialog( m_activity, bundle );
     }
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )

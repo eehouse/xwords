@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<org.eehouse.android.xw4.LookupActivity 
+<org.eehouse.android.xw4.LookupAlert
      xmlns:android="http://schemas.android.com/apk/res/android"
      android:orientation="vertical"
      android:layout_width="fill_parent" 
@@ -29,4 +29,4 @@
           android:layout_height="wrap_content"
           />
 
-</org.eehouse.android.xw4.LookupActivity>
+</org.eehouse.android.xw4.LookupAlert>
