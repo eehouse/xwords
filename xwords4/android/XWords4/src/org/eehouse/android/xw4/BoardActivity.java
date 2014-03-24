@@ -329,7 +329,7 @@ public class BoardActivity extends XWActivity
 
             case QUERY_REQUEST_BLK:
             case QUERY_INFORM_BLK:
-            case DLG_SCORES_BLK:
+            case DLG_SCORES:
             case DLG_BADWORDS_BLK: 
                 ab = new AlertDialog.Builder( this )
                     .setMessage( m_dlgBytes );
@@ -353,7 +353,7 @@ public class BoardActivity extends XWActivity
                             }
                         };
                     ab.setNegativeButton( R.string.button_no, lstnr );
-                } else if ( DlgID.DLG_SCORES_BLK == dlgID ) {
+                } else if ( DlgID.DLG_SCORES == dlgID ) {
                     if ( null != m_words && m_words.length > 0 ) {
                         String buttonTxt;
                         boolean studyOn = XWPrefs.getStudyEnabled( this );
@@ -1682,10 +1682,8 @@ public class BoardActivity extends XWActivity
         @Override
         public void informMove( String expl, String words )
         {
-            m_dlgBytes = expl;
-            m_dlgTitle = R.string.info_title;
             m_words = null == words? null : wordsToArray( words );
-            waitBlockingDialog( DlgID.DLG_SCORES_BLK, 0 );
+            nonBlockingDialog( DlgID.DLG_SCORES, expl );
         }
 
         @Override
@@ -2030,6 +2028,7 @@ public class BoardActivity extends XWActivity
     {
         switch ( dlgID ) {
         case DLG_OKONLY:
+        case DLG_SCORES:
             m_dlgTitle = R.string.info_title;
             break;
         case DLG_USEDICT:
