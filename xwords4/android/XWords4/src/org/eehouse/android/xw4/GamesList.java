@@ -77,7 +77,6 @@ public class GamesList extends XWExpandableListActivity
     private static final int[] DEBUG_ITEMS = { 
         // R.id.games_menu_loaddb,
         R.id.games_menu_storedb,
-        R.id.games_menu_checkupdates,
     };
     private static final int[] NOSEL_ITEMS = { 
         R.id.games_menu_newgroup,
@@ -658,6 +657,10 @@ public class GamesList extends XWExpandableListActivity
             showItemsIf( ONEGAME_ITEMS, menu, 1 == nGamesSelected );
             showItemsIf( ONEGROUP_ITEMS, menu, 1 == nGroupsSelected );
 
+            boolean enable = showDbg && nothingSelected
+                && UpdateCheckReceiver.haveToCheck( this );
+            Utils.setItemVisible( menu, R.id.games_menu_checkupdates, enable );
+
             int selGroupPos = -1;
             if ( 1 == nGroupsSelected ) {
                 long id = m_selGroupIDs.iterator().next();
@@ -677,7 +680,7 @@ public class GamesList extends XWExpandableListActivity
             // selected
             Utils.setItemVisible( menu, R.id.games_group_moveup, 
                                   0 < selGroupPos );
-            boolean enable = 0 <= selGroupPos
+            enable = 0 <= selGroupPos
                 && (selGroupPos + 1) < m_adapter.getGroupCount();
             Utils.setItemVisible( menu, R.id.games_group_movedown, enable );
 

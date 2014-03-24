@@ -103,6 +103,16 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 interval_millis, pi );
     }
 
+    // Is app upgradeable OR have we installed any dicts?
+    public static boolean haveToCheck( Context context )
+    {
+        boolean result = !Utils.isGooglePlayApp( context );
+        if ( !result ) { // give another chance
+            result = null != getDownloadedDicts( context );
+        }
+        return result;
+    }
+
     public static void checkVersions( Context context, boolean fromUI ) 
     {
         JSONObject params = new JSONObject();
@@ -134,18 +144,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 DbgUtils.loge( jse );
             }
         }
-        JSONArray dictParams = new JSONArray();
-        DictUtils.DictAndLoc[] dals = DictUtils.dictList( context );
-        for ( int ii = 0; ii < dals.length; ++ii ) {
-            DictUtils.DictAndLoc dal = dals[ii];
-            switch ( dal.loc ) {
-                // case DOWNLOAD:
-            case EXTERNAL:
-            case INTERNAL:
-                dictParams.put( makeDictParams( context, dal, ii ) );
+        DictUtils.DictAndLoc[] dals = getDownloadedDicts( context );
+        if ( null != dals ) {
+            JSONArray dictParams = new JSONArray();
+            for ( int ii = 0; ii < dals.length; ++ii ) {
+                dictParams.put( makeDictParams( context, dals[ii], ii ) );
             }
-        }
-        if ( 0 < dictParams.length() ) {
             try {
                 params.put( k_DICTS, dictParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
@@ -158,6 +162,30 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             new UpdateQueryTask( context, params, fromUI, pm, 
                                  packageName, dals ).execute();
         }
+    }
+
+    private static DictUtils.DictAndLoc[] getDownloadedDicts( Context context )
+    {
+        DictUtils.DictAndLoc[] result = null;
+        DictUtils.DictAndLoc[] dals = DictUtils.dictList( context );
+        DictUtils.DictAndLoc[] tmp = new DictUtils.DictAndLoc[dals.length];
+        int indx = 0;
+        for ( int ii = 0; ii < dals.length; ++ii ) {
+            DictUtils.DictAndLoc dal = dals[ii];
+            switch ( dal.loc ) {
+                // case DOWNLOAD:
+            case EXTERNAL:
+            case INTERNAL:
+                tmp[indx++] = dal;
+                break;
+            }
+        }
+
+        if ( 0 < indx ) {
+            result = new DictUtils.DictAndLoc[indx];
+            System.arraycopy( tmp, 0, result, 0, indx );
+        }
+        return result;
     }
 
     private static HttpPost makePost( Context context, String proc )
