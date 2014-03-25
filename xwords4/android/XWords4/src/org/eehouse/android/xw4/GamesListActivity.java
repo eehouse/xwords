@@ -111,7 +111,7 @@ public class GamesListActivity extends ExpandableListActivity {
     {
         super.onContentChanged();
         if ( null != m_dlgt ) {
-            m_dlgt.onContentChanged();
+            m_dlgt.contentChanged();
         }
     }
 

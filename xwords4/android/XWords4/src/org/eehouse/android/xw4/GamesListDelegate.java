@@ -243,7 +243,7 @@ public class GamesListDelegate extends DelegateBase
                         DBUtils.setGroupName( m_activity,
                                               m_groupid, name );
                         m_adapter.inval( m_rowid );
-                        onContentChanged();
+                        m_activity.onContentChanged();
                     }
                 };
             dialog = buildNamerDlg( m_adapter.groupName( m_groupid ),
@@ -258,7 +258,7 @@ public class GamesListDelegate extends DelegateBase
                         String name = m_namer.getName();
                         DBUtils.addGroup( m_activity, name );
                         // m_adapter.inval();
-                        onContentChanged();
+                        m_activity.onContentChanged();
                     }
                 };
             dialog = buildNamerDlg( "", R.string.newgroup_label,
@@ -293,7 +293,7 @@ public class GamesListDelegate extends DelegateBase
                             DBUtils.moveGame( m_activity, rowid, gid );
                         }
                         DBUtils.setGroupExpanded( m_activity, gid, true );
-                        onContentChanged();
+                        m_activity.onContentChanged();
                     }
                 };
             String[] groups = m_adapter.groupNames();
@@ -334,7 +334,7 @@ public class GamesListDelegate extends DelegateBase
             break;
 
         default:
-            // just drop it; super.onCreateDialog likely failed
+            dialog = super.onCreateDialog( id );
             break;
         }
         return dialog;
@@ -460,7 +460,7 @@ public class GamesListDelegate extends DelegateBase
         m_activity.runOnUiThread( new Runnable() {
                 public void run() {
                     if ( countChanged || DBUtils.ROWID_NOTFOUND == rowid ) {
-                        onContentChanged();
+                        m_activity.onContentChanged();
                         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
                             m_launchedGame = rowid;
                         }
@@ -564,7 +564,7 @@ public class GamesListDelegate extends DelegateBase
                 for ( long rowid : rowids ) {
                     GameUtils.resetGame( m_activity, rowid );
                 }
-                onContentChanged(); // required because position may change
+                m_activity.onContentChanged(); // required because position may change
                 break;
             case SYNC_MENU:
                 doSyncMenuitem();
@@ -584,7 +584,7 @@ public class GamesListDelegate extends DelegateBase
                     GameUtils.deleteGroup( m_activity, groupID );
                 }
                 clearSelections();
-                onContentChanged();
+                m_activity.onContentChanged();
                 break;
             case DELETE_GAMES:
                 deleteGames( (long[])params[0] );
@@ -601,9 +601,8 @@ public class GamesListDelegate extends DelegateBase
         }
     }
 
-    protected void onContentChanged()
+    protected void contentChanged()
     {
-        // super.onContentChanged();
         if ( null != m_adapter ) {
             m_adapter.expandGroups( m_activity.getExpandableListView() );
         }
@@ -831,7 +830,7 @@ public class GamesListDelegate extends DelegateBase
                             DBUtils.saveSummary( self, lock, smry );
                             m_selGames.add( lock.getRowid() );
                             lock.unlock();
-                            onContentChanged();
+                            m_activity.onContentChanged();
                         }
                     });
             }
@@ -894,7 +893,7 @@ public class GamesListDelegate extends DelegateBase
             clearSelections();
         }
         if ( changeContent ) {
-            onContentChanged();
+            m_activity.onContentChanged();
         }
 
         return handled;// || super.onOptionsItemSelected( item );
@@ -1157,7 +1156,7 @@ public class GamesListDelegate extends DelegateBase
         if ( m_adapter.setField( newField ) ) {
             // The adapter should be able to decide whether full
             // content change is required.  PENDING
-            onContentChanged();
+            m_activity.onContentChanged();
         }
     }
 

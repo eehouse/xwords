@@ -20,6 +20,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.os.Bundle;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -33,6 +34,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify {
     public DelegateBase( Activity activity, Bundle bundle )
     {
         m_delegate = new DlgDelegate( activity, this, bundle );
+    }
+
+    protected Dialog onCreateDialog( int id )
+    {
+        return m_delegate.onCreateDialog( id );
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
