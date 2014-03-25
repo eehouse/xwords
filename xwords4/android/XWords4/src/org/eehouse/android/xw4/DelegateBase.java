@@ -106,6 +106,16 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify {
         m_delegate.doSyncMenuitem();
     }
 
+    protected void launchLookup( String[] words, int lang, boolean noStudy )
+    {
+        m_delegate.launchLookup( words, lang, noStudy );
+    }
+
+    protected void launchLookup( String[] words, int lang )
+    {
+        m_delegate.launchLookup( words, lang, false );
+    }
+
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////
