@@ -20,10 +20,10 @@
 
 package org.eehouse.android.xw4;
 
-import android.text.TextUtils;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ExpandableListActivity;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
@@ -34,16 +34,17 @@ import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.AdapterView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
@@ -71,7 +72,7 @@ public class DictsDelegate extends DelegateBase
     protected static final String DICT_LANG_EXTRA = "use_lang";
     protected static final String DICT_NAME_EXTRA = "use_dict";
 
-    private XWExpandableListActivity m_activity;
+    private ExpandableListActivity m_activity;
     private HashSet<String> m_closedLangs;
 
 
@@ -230,7 +231,7 @@ public class DictsDelegate extends DelegateBase
         }
     }
 
-    protected DictsDelegate( XWExpandableListActivity activity, Bundle savedInstanceState )
+    protected DictsDelegate( ExpandableListActivity activity, Bundle savedInstanceState )
     {
         super( activity, savedInstanceState );
         m_activity = activity;
@@ -602,7 +603,7 @@ public class DictsDelegate extends DelegateBase
         DbgUtils.logf( "DictsActivity.cardMounted(%b)", nowMounted );
         // post so other SDCardNotifiee implementations get a chance
         // to process first: avoid race conditions
-        m_activity.post( new Runnable() {
+        post( new Runnable() {
                 public void run() {
                     mkListAdapter();
                     expandGroups();
@@ -797,7 +798,7 @@ public class DictsDelegate extends DelegateBase
     public void downloadFinished( String name, final boolean success )
     {
         if ( m_launchedForMissing ) {
-            m_activity.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         if ( success ) {
                             Intent intent = m_activity.getIntent();

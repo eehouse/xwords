@@ -536,7 +536,7 @@ public class GamesListDelegate extends DelegateBase
     {
         switch( event ) {
         case HOST_PONGED:
-            m_activity.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         DbgUtils.showf( m_activity,
                                         "Pong from %s", args[0].toString() );
@@ -567,7 +567,7 @@ public class GamesListDelegate extends DelegateBase
                 onContentChanged(); // required because position may change
                 break;
             case SYNC_MENU:
-                m_activity.doSyncMenuitem();
+                doSyncMenuitem();
                 break;
             case NEW_FROM:
                 long curID = (Long)params[0];
@@ -819,7 +819,7 @@ public class GamesListDelegate extends DelegateBase
                 showOKOnlyDialog( R.string.no_copy_network );
             } else {
                 dropSels = true;    // will select the new game instead
-                m_activity.post( new Runnable() {
+                post( new Runnable() {
                         public void run() {
                             GamesListActivity self = m_activity;
                             byte[] stream =
@@ -903,7 +903,7 @@ public class GamesListDelegate extends DelegateBase
     // DictImportActivity.DownloadFinishedListener interface
     public void downloadFinished( String name, final boolean success )
     {
-        m_activity.post( new Runnable() {
+        post( new Runnable() {
                 public void run() {
                     boolean madeGame = false;
                     if ( success ) {

@@ -35,7 +35,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class GamesListActivity extends XWExpandableListActivity {
+public class GamesListActivity extends ExpandableListActivity {
 
     // private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";

@@ -85,6 +85,16 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify {
         m_delegate.showConfirmThen( msg, posButton, action, params );
     }
 
+    protected boolean post( Runnable runnable )
+    {
+        return m_delegate.post( runnable );
+    }
+
+    protected void doSyncMenuitem()
+    {
+        m_delegate.doSyncMenuitem();
+    }
+
     //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////////////////////////

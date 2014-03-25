@@ -20,10 +20,10 @@
 
 package org.eehouse.android.xw4;
 
-import android.text.TextUtils;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ExpandableListActivity;
 import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
@@ -34,16 +34,17 @@ import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.AdapterView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
@@ -61,7 +62,7 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 
-public class DictsActivity extends XWExpandableListActivity {
+public class DictsActivity extends ExpandableListActivity {
 
     private static interface SafePopup {
         public void doPopup( Context context, View button, String curDict );
