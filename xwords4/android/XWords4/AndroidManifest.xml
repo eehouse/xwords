@@ -120,7 +120,7 @@
               android:configChanges="keyboardHidden"
               />
 
-    <activity android:name="StudyList"
+    <activity android:name="StudyListActivity"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
 

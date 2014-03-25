@@ -841,7 +841,7 @@ public class BoardActivity extends XWActivity
             cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
         case R.id.games_menu_study:
-            StudyList.launchOrAlert( this, m_gi.dictLang, this );
+            StudyListActivity.launchOrAlert( this, m_gi.dictLang, this );
             break;
         case R.id.board_menu_game_netstats:
             m_jniThread.handle( JNICmd.CMD_NETSTATS, R.string.netstats_title );

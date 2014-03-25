@@ -769,7 +769,7 @@ public class GamesListDelegate extends DelegateBase
             break;
 
         case R.id.games_menu_study:
-            StudyList.launchOrAlert( m_activity, StudyList.NO_LANG, this );
+            StudyListActivity.launchOrAlert( m_activity, StudyListActivity.NO_LANG, this );
             break;
 
         case R.id.games_menu_about:

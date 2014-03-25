@@ -44,7 +44,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.GameSummary;
 
-public class StudyList extends XWListActivity 
+public class StudyListActivity extends XWListActivity 
     implements OnItemSelectedListener, SelectableItem,
                View.OnLongClickListener, View.OnClickListener {
 
@@ -347,7 +347,7 @@ public class StudyList extends XWListActivity
             String langname = DictLangCache.getLangName( context, lang );
             msg = context.getString( R.string.study_no_langf, langname );
         } else {
-            Intent intent = new Intent( context, StudyList.class );
+            Intent intent = new Intent( context, StudyListActivity.class );
             if ( NO_LANG != lang ) {
                 intent.putExtra( START_LANG, lang );
             }
@@ -368,12 +368,13 @@ public class StudyList extends XWListActivity
 
         public View getView( int position, View convertView, ViewGroup parent ){
             XWListItem item = 
-                XWListItem.inflate( StudyList.this, StudyList.this );
+                XWListItem.inflate( StudyListActivity.this, 
+                                    StudyListActivity.this );
             item.setPosition( position );
             item.setText( m_words[position] );
             item.setSelected( m_checkeds.contains(position) );
-            item.setOnLongClickListener( StudyList.this );
-            item.setOnClickListener( StudyList.this );
+            item.setOnLongClickListener( StudyListActivity.this );
+            item.setOnClickListener( StudyListActivity.this );
             return item;
         }
     }
