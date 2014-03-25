@@ -334,7 +334,7 @@ public class GamesListDelegate extends DelegateBase
             break;
 
         default:
-            dialog = super.onCreateDialog( id );
+            dialog = super.createDialog( id );
             break;
         }
         return dialog;

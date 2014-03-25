@@ -241,8 +241,7 @@ public class DictsDelegate extends DelegateBase
     protected Dialog createDialog( int id )
     {
         OnClickListener lstnr, lstnr2;
-        Dialog dialog = null;
-        String format;
+        Dialog dialog;
         String message;
         boolean doRemove = true;
 
@@ -251,8 +250,8 @@ public class DictsDelegate extends DelegateBase
         case MOVE_DICT:
             final XWListItem[] selItems = getSelItems();
             final int[] moveTo = { -1 };
-            message = Utils.format( m_activity, R.string.move_dictf,
-                                    getJoinedNames( selItems ) );
+            message = m_activity.getString( R.string.move_dictf,
+                                            getJoinedNames( selItems ) );
 
             OnClickListener newSelLstnr =
                 new OnClickListener() {
@@ -347,6 +346,7 @@ public class DictsDelegate extends DelegateBase
             break;
 
         default:
+            dialog = super.createDialog( id );
             doRemove = false;
             break;
         }

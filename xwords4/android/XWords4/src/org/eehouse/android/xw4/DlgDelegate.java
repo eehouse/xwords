@@ -155,9 +155,9 @@ public class DlgDelegate {
         outState.putIntArray( IDS, ids );
     }
     
-    public Dialog onCreateDialog( int id )
+    public Dialog createDialog( int id )
     {
-        // DbgUtils.logf("onCreateDialog(id=%d)", id );
+        // DbgUtils.logf("createDialog(id=%d)", id );
         Dialog dialog = null;
         DlgID dlgID = DlgID.values()[id];
         DlgState state = findForID( dlgID );

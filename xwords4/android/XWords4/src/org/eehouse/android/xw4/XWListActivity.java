@@ -91,7 +91,7 @@ public class XWListActivity extends ListActivity
     protected Dialog onCreateDialog( final int id )
     {
         DbgUtils.logf( "%s.onCreateDialog() called", getClass().getName() );
-        Dialog dialog = m_delegate.onCreateDialog( id );
+        Dialog dialog = m_delegate.createDialog( id );
         if ( null == dialog ) {
             dialog = super.onCreateDialog( id );
         }

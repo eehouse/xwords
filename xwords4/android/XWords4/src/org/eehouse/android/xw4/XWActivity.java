@@ -97,7 +97,7 @@ public class XWActivity extends Activity
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             DbgUtils.logf( "%s.onCreateDialog() called", getClass().getName() );
-            dialog = m_delegate.onCreateDialog( id );
+            dialog = m_delegate.createDialog( id );
         }
         return dialog;
     }
