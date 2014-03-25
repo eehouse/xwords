@@ -275,6 +275,13 @@ public class DlgDelegate {
         showConfirmThen( msg, posButton, action, null );
     }
 
+    public void showConfirmThen( int msg, int posButton, Action action,
+                                 Object[] params )
+    {
+        showConfirmThen( m_activity.getString( msg ), posButton, action, 
+                         params );
+    }
+
     public void showConfirmThen( String msg, int posButton, Action action,
                                  Object[] params )
     {
