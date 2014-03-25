@@ -1,7 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2010 - 2012 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,70 +19,20 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Dialog;
-import android.app.ExpandableListActivity;
-import android.content.DialogInterface;
+import android.app.Activity;
 import android.os.Bundle;
-
-import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-public class XWExpandableListActivity extends ExpandableListActivity 
-    implements DlgDelegate.DlgClickNotify, DlgDelegate.HasDlgDelegate,
-               MultiService.MultiEventListener {
+import junit.framework.Assert;
+
+public class DelegateBase implements DlgDelegate.DlgClickNotify {
 
     private DlgDelegate m_delegate;
 
-    @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    public DelegateBase( Activity activity, Bundle bundle )
     {
-        DbgUtils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
-        super.onCreate( savedInstanceState );
-        m_delegate = new DlgDelegate( this, this, savedInstanceState );
-    }
-
-    @Override
-    protected void onResume()
-    {
-        DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
-        XWService.setListener( this );
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
-        XWService.setListener( null );
-        super.onPause();
-    }
-
-    @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-        m_delegate.onSaveInstanceState( outState );
-    }
-
-    @Override
-    protected Dialog onCreateDialog( final int id )
-    {
-        Dialog dialog = m_delegate.onCreateDialog( id );
-        if ( null == dialog ) {
-            dialog = super.onCreateDialog( id );
-        }
-        return dialog;
-    }
-
-    protected boolean post( Runnable runnable )
-    {
-        return m_delegate.post( runnable );
-    }
-
-    protected void doSyncMenuitem()
-    {
-        m_delegate.doSyncMenuitem();
+        m_delegate = new DlgDelegate( activity, this, bundle );
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
@@ -136,18 +85,12 @@ public class XWExpandableListActivity extends ExpandableListActivity
         m_delegate.showConfirmThen( msg, posButton, action, params );
     }
 
+    //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( DlgDelegate.Action action, int which, 
-                                  Object[] params )
+    //////////////////////////////////////////////////////////////////////
+    public void dlgButtonClicked( Action action, int button, Object[] params )
     {
         Assert.fail();
-    }
-
-    // BTService.BTEventListener interface
-    public void eventOccurred( MultiService.MultiEvent event, 
-                               final Object ... args )
-    {
-        m_delegate.eventOccurred( event, args );
     }
 
 }

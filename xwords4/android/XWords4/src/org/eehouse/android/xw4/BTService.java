@@ -968,7 +968,7 @@ public class BTService extends XWService {
     private void postNotification( int gameID, int title, String body, 
                                    long rowid )
     {
-        Intent intent = GamesList.makeGameIDIntent( this, gameID );
+        Intent intent = GamesListActivity.makeGameIDIntent( this, gameID );
         Utils.postNotification( this, intent, R.string.new_btmove_title, 
                                 body, (int)rowid );
     }

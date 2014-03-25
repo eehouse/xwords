@@ -170,7 +170,7 @@ public class MultiService {
                     SMSService.onGameDictDownload( context, intent );
                     break;
                 case OWNER_RELAY:
-                    GamesList.onGameDictDownload( context, intent );
+                    GamesListActivity.onGameDictDownload( context, intent );
                     break;
                 default:
                     DbgUtils.logf( "unexpected OWNER" );

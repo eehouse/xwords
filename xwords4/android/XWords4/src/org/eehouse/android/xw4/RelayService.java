@@ -378,7 +378,7 @@ public class RelayService extends XWService
 
     private void setupNotification( long rowid )
     {
-        Intent intent = GamesList.makeRowidIntent( this, rowid );
+        Intent intent = GamesListActivity.makeRowidIntent( this, rowid );
         String msg = Utils.format( this, R.string.notify_bodyf, 
                                    GameUtils.getName( this, rowid ) );
         Utils.postNotification( this, intent, R.string.notify_title,
@@ -579,7 +579,7 @@ public class RelayService extends XWService
                     break;
                 case XWPDEV_ALERT:
                     str = getVLIString( dis );
-                    Intent intent = GamesList.makeAlertIntent( this, str );
+                    Intent intent = GamesListActivity.makeAlertIntent( this, str );
                     Utils.postNotification( this, intent, 
                                             R.string.relay_alert_title,
                                             str, str.hashCode() );

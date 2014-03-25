@@ -67,7 +67,7 @@
                android:name=".XWApp"
                >
 
-    <activity android:name="GamesList" 
+    <activity android:name="GamesListActivity" 
               android:label="@string/app_name"
               android:launchMode="standard"
               android:configChanges="keyboardHidden|orientation|screenSize"

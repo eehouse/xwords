@@ -628,7 +628,7 @@ public class SMSService extends XWService {
     private void postNotification( int gameID, int title, String body, 
                                    long rowid )
     {
-        Intent intent = GamesList.makeGameIDIntent( this, gameID );
+        Intent intent = GamesListActivity.makeGameIDIntent( this, gameID );
         Utils.postNotification( this, intent, title, body, (int)rowid );
     }
 

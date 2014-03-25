@@ -2263,7 +2263,7 @@ public class BoardActivity extends XWActivity
 
     private void doRematch()
     {
-        Intent intent = GamesList.makeRematchIntent( this, m_gi, m_rowid );
+        Intent intent = GamesListActivity.makeRematchIntent( this, m_gi, m_rowid );
         if ( null != intent ) {
             startActivity( intent );
             finish();
