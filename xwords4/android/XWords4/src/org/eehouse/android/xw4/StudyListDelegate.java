@@ -19,9 +19,8 @@
 
 package org.eehouse.android.xw4;
 
-import android.view.ViewGroup;
-import android.widget.ListView;
 import android.app.AlertDialog;
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -31,9 +30,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Spinner;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,7 +53,7 @@ public class StudyListDelegate extends DelegateBase
 
     protected static final String START_LANG = "START_LANG";
     
-    private XWListActivity m_activity;
+    private ListActivity m_activity;
     private Spinner m_spinner;
     private View m_pickView;    // LinearLayout, actually
     private int[] m_langCodes;
@@ -63,7 +64,7 @@ public class StudyListDelegate extends DelegateBase
     private ListView m_list;
     private CharSequence m_origTitle;
 
-    protected StudyListDelegate( XWListActivity activity, Bundle savedInstanceState )
+    protected StudyListDelegate( ListActivity activity, Bundle savedInstanceState )
     {
         super( activity, savedInstanceState );
         m_activity = activity;
