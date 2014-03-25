@@ -68,6 +68,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/tray.c       \
 	$(COMMON_PATH)/dictnry.c    \
 	$(COMMON_PATH)/dictiter.c   \
+	$(COMMON_PATH)/dictmgr.c    \
 	$(COMMON_PATH)/mscore.c     \
 	$(COMMON_PATH)/vtabmgr.c    \
 	$(COMMON_PATH)/strutils.c   \
