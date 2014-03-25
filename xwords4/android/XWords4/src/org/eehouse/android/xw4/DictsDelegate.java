@@ -402,7 +402,7 @@ public class DictsDelegate extends DelegateBase
         Intent intent = m_activity.getIntent();
         if ( null != intent ) {
             if ( MultiService.isMissingDictIntent( intent ) ) {
-                m_activity.showDialog( DlgID.DICT_OR_DECLINE.ordinal() );
+                showDialog( DlgID.DICT_OR_DECLINE );
             } else {
                 boolean downloadNow = intent.getBooleanExtra( DICT_DOLAUNCH, false );
                 if ( downloadNow ) {
@@ -487,10 +487,10 @@ public class DictsDelegate extends DelegateBase
             deleteSelected();
             break;
         case R.id.dicts_move:
-            askMoveSelDicts();
+            showDialog( DlgID.MOVE_DICT );
             break;
         case R.id.dicts_select:
-            m_activity.showDialog( DlgID.SET_DEFAULT.ordinal() );
+            showDialog( DlgID.SET_DEFAULT );
             break;
         default:
             handled = false;
@@ -521,15 +521,9 @@ public class DictsDelegate extends DelegateBase
         editor.commit();
     }
 
-    // Move dict.  Put up dialog asking user to confirm move from XX
-    // to YY.  So we need both XX and YY.  There may be several
-    // options for YY?
-    private void askMoveSelDicts()
-    {
-        m_activity.showDialog( DlgID.MOVE_DICT.ordinal() );
-    }
-
+    //////////////////////////////////////////////////////////////////////
     // OnItemLongClickListener interface
+    //////////////////////////////////////////////////////////////////////
     public boolean onItemLongClick( AdapterView<?> parent, View view, 
                                     int position, long id ) {
         boolean success = view instanceof SelectableItem.LongClickHandler;
@@ -597,7 +591,9 @@ public class DictsDelegate extends DelegateBase
                          (Object)items );
     } // deleteSelected
 
+    //////////////////////////////////////////////////////////////////////
     // MountEventReceiver.SDCardNotifiee interface
+    //////////////////////////////////////////////////////////////////////
     public void cardMounted( boolean nowMounted )
     {
         DbgUtils.logf( "DictsActivity.cardMounted(%b)", nowMounted );
@@ -611,7 +607,9 @@ public class DictsDelegate extends DelegateBase
             } );
     }
 
+    //////////////////////////////////////////////////////////////////////
     // DlgDelegate.DlgClickNotify interface
+    //////////////////////////////////////////////////////////////////////
     public void dlgButtonClicked( Action action, int which, Object[] params )
     {
         switch( action ) {

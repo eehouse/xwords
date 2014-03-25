@@ -154,6 +154,11 @@ public class DlgDelegate {
         }
         outState.putIntArray( IDS, ids );
     }
+
+    protected void showDialog( DlgID dlgID )
+    {
+        m_activity.showDialog( dlgID.ordinal() );
+    }
     
     public Dialog createDialog( int id )
     {

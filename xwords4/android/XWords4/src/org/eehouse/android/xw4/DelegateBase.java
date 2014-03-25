@@ -36,6 +36,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify {
         m_delegate = new DlgDelegate( activity, this, bundle );
     }
 
+    protected void showDialog( DlgID dlgID )
+    {
+        m_delegate.showDialog( dlgID );
+    }
+
     protected Dialog createDialog( int id )
     {
         return m_delegate.createDialog( id );

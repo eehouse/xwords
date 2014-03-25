@@ -182,7 +182,7 @@ public class GamesListDelegate extends DelegateBase
             if ( DlgID.WARN_NODICT_SUBST == dlgID ) {
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
-                            m_activity.showDialog( DlgID.SHOW_SUBST.ordinal() );
+                            showDialog( DlgID.SHOW_SUBST );
                         }
                     };
                 ab.setNeutralButton( R.string.button_substdict, lstnr );
@@ -733,7 +733,7 @@ public class GamesListDelegate extends DelegateBase
             break;
 
         case R.id.games_menu_newgroup:
-            m_activity.showDialog( DlgID.NEW_GROUP.ordinal() );
+            showDialog( DlgID.NEW_GROUP );
             break;
 
         case R.id.games_game_config:
@@ -803,7 +803,7 @@ public class GamesListDelegate extends DelegateBase
                 showOKOnlyDialog( R.string.no_move_onegroup );
             } else {
                 m_rowids = selRowIDs;
-                m_activity.showDialog( DlgID.CHANGE_GROUP.ordinal() );
+                showDialog( DlgID.CHANGE_GROUP );
             }
             break;
         case R.id.games_game_new_from:
@@ -844,7 +844,7 @@ public class GamesListDelegate extends DelegateBase
 
         case R.id.games_game_rename:
             m_rowid = selRowIDs[0];
-            m_activity.showDialog( DlgID.RENAME_GAME.ordinal() );
+            showDialog( DlgID.RENAME_GAME );
             break;
 
             // Group menus
@@ -876,7 +876,7 @@ public class GamesListDelegate extends DelegateBase
             break;
         case R.id.games_group_rename:
             m_groupid = groupID;
-            m_activity.showDialog( DlgID.RENAME_GROUP.ordinal() );
+            showDialog( DlgID.RENAME_GROUP );
             break;
         case R.id.games_group_moveup:
             changeContent = m_adapter.moveGroup( groupID, -1 );
@@ -958,7 +958,7 @@ public class GamesListDelegate extends DelegateBase
             m_netLaunchInfo = nli;
             m_missingDictLang = nli.lang;
             m_missingDictName = nli.dict;
-            m_activity.showDialog( DlgID.WARN_NODICT_NEW.ordinal() );
+            showDialog( DlgID.WARN_NODICT_NEW );
         }
         return haveDict;
     }
@@ -978,9 +978,9 @@ public class GamesListDelegate extends DelegateBase
             }
             m_missingDictRowId = rowid;
             if ( 0 == DictLangCache.getLangCount( m_activity, m_missingDictLang ) ) {
-                m_activity.showDialog( DlgID.WARN_NODICT.ordinal() );
+                showDialog( DlgID.WARN_NODICT );
             } else if ( null != m_missingDictName ) {
-                m_activity.showDialog( DlgID.WARN_NODICT_SUBST.ordinal() );
+                showDialog( DlgID.WARN_NODICT_SUBST );
             } else {
                 String dict = 
                     DictLangCache.getHaveLang( m_activity, m_missingDictLang)[0];
@@ -1146,7 +1146,7 @@ public class GamesListDelegate extends DelegateBase
         if ( null == CommonPrefs.getDefaultPlayerName( m_activity, 0, false ) ) {
             String name = CommonPrefs.getDefaultPlayerName( m_activity, 0, true );
             CommonPrefs.setDefaultPlayerName( m_activity, name );
-            m_activity.showDialog( DlgID.GET_NAME.ordinal() );
+            showDialog( DlgID.GET_NAME );
         }
     }
 
