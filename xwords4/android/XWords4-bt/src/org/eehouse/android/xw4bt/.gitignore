@@ -80,3 +80,8 @@ XWSumListPreference.java
 XWThumbListPreference.java
 StudyList.java
 CrashTrack.java
+DelegateBase.java
+DlgID.java
+GamesListActivity.java
+GamesListDelegate.java
+LookupAlert.java

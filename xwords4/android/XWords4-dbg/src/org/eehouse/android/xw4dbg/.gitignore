@@ -85,3 +85,8 @@ XWPrefs.java
 XWService.java
 XWSumListPreference.java
 XWThumbListPreference.java
+DelegateBase.java
+DlgID.java
+GamesListActivity.java
+GamesListDelegate.java
+LookupAlert.java
