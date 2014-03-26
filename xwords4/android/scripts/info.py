@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # Script meant to be installed on eehouse.org.
 
-import logging, shelve, hashlib, sys, json, subprocess
+import logging, shelve, hashlib, sys, json, subprocess, glob, os
+from stat import ST_CTIME
 try:
     from mod_python import apache
     apacheAvailable = True
@@ -35,12 +36,13 @@ k_DBG_REV = 'android_beta_59-24-gc31a1d9'
 
 k_suffix = '.xwd'
 k_filebase = "/var/www/"
+k_apkDir = "xw4/android/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
 k_urlbase = "http://eehouse.org/"
 k_versions = { 'org.eehouse.android.xw4': {
         'version' : 52,
         k_AVERS : 52,
-        k_URL : 'xw4/android/XWords4-release_' + k_REL_REV + '.apk',
+        k_URL : k_apkDir + 'XWords4-release_' + k_REL_REV + '.apk',
         },
                }
 
@@ -48,7 +50,7 @@ k_versions_dbg = { 'org.eehouse.android.xw4': {
         'version' : 52,
         k_AVERS : 52,
         k_GVERS : k_DBG_REV,
-        k_URL : 'xw4/android/XWords4-release_' + k_DBG_REV + '.apk',
+        k_URL : k_apkDir + 'XWords4-release_' + k_DBG_REV + '.apk',
         },
                }
 s_shelf = None
@@ -112,6 +114,16 @@ def getDictSums():
     s_shelf[k_COUNT] += 1
     logging.debug( "Count now %d" % s_shelf[k_COUNT] )
     return s_shelf[k_SUMS]
+
+def getOrderedApks( path ):
+    apks = []
+
+    files = ((os.stat(apk), apk) for apk in \
+             glob.glob(path + "XWords4-release_android_beta_*.apk"))
+    for stat, file in sorted(files, reverse=True):
+        apks.append( file )
+
+    return apks
 
 # public, but deprecated
 def curVersion( req, name, avers = 41, gvers = None, installer = None ):
@@ -231,6 +243,7 @@ def usage():
     print "usage:", sys.argv[0], '--get-sums [lang/dict]*'
     print '                    | --test-get-app app <org.eehouse.app.name> avers gvers'
     print '                    | --test-get-dicts name lang curSum'
+    print '                    | --list-apks [path/to/apks]'
     print '                    | --clear-shelf'
     sys.exit(-1)
 
@@ -260,6 +273,15 @@ def main():
                    k_INDEX : 0,
                    }
         print getDicts( [params] )
+    elif arg == '--list-apks':
+        argc = len(sys.argv)
+        if argc >= 4: usage()
+        path = ""
+        if argc >= 3: path = sys.argv[2]
+        apks = getOrderedApks( path )
+        if 0 == len(apks): print "No apks in", path
+        for apk in apks:
+            print apk
     else:
         usage()
 
