@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.ImageButton;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
 import org.eehouse.android.xw4.jni.*;
 
 public class Toolbar {
@@ -71,7 +72,8 @@ public class Toolbar {
         new TBButtonInfo( R.id.values_button_horizontal ),
     };
 
-    private XWActivity m_activity;
+    private Activity m_activity;
+    private DlgDelegate.HasDlgDelegate m_dlgDlgt;
     private View m_me;
 
     private enum ORIENTATION { ORIENT_UNKNOWN,
@@ -80,9 +82,10 @@ public class Toolbar {
             };
     private ORIENTATION m_curOrient = ORIENTATION.ORIENT_UNKNOWN;
 
-    public Toolbar( XWActivity activity, int id )
+    public Toolbar( Activity activity, HasDlgDelegate dlgDlgt, int id )
     {
         m_activity = activity;
+        m_dlgDlgt = dlgDlgt;
         m_me = activity.findViewById( id );
     }
 
@@ -122,7 +125,7 @@ public class Toolbar {
     {
         View.OnClickListener listener = new View.OnClickListener() {
                 public void onClick( View view ) {
-                    m_activity.showNotAgainDlgThen( msgID, prefsKey, action );
+                    m_dlgDlgt.showNotAgainDlgThen( msgID, prefsKey, action );
                 }
             };
         setListener( index, listener );
@@ -133,7 +136,7 @@ public class Toolbar {
     {
         View.OnLongClickListener listener = new View.OnLongClickListener() {
                 public boolean onLongClick( View view ) {
-                    m_activity.showNotAgainDlgThen( msgID, prefsKey, action );
+                    m_dlgDlgt.showNotAgainDlgThen( msgID, prefsKey, action );
                     return true;
                 }
             };

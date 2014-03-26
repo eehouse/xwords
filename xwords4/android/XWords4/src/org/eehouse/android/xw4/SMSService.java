@@ -610,7 +610,7 @@ public class SMSService extends XWService {
             sendDiedPacket( addr.sms_phone, gameID );
         } else {
             for ( long rowid : rowids ) {
-                if ( BoardActivity.feedMessage( gameID, msg, addr ) ) {
+                if ( BoardDelegate.feedMessage( gameID, msg, addr ) ) {
                     // do nothing
                 } else {
                     SMSMsgSink sink = new SMSMsgSink( this );

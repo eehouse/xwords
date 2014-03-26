@@ -111,6 +111,7 @@ public class DlgDelegate {
     public interface HasDlgDelegate {
         void showOKOnlyDialog( int msgID );
         void showOKOnlyDialog( String msg );
+        void showNotAgainDlgThen( int msgID, int prefsKey, Action action );
     }
 
     private Activity m_activity;
@@ -268,6 +269,12 @@ public class DlgDelegate {
     public void showConfirmThen( String msg, Action action )
     {
         showConfirmThen( msg, R.string.button_ok, action, null );
+    }
+
+    public void showConfirmThen( int msgID, Action action )
+    {
+        showConfirmThen( m_activity.getString( msgID ),
+                         R.string.button_ok, action, null );
     }
 
     public void showConfirmThen( String msg, Action action, Object[] params )

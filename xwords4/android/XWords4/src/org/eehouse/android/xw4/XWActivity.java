@@ -115,8 +115,7 @@ public class XWActivity extends Activity
         m_delegate.showNotAgainDlgThen( msg, prefsKey, action, null );
     }
 
-    protected void showNotAgainDlgThen( int msgID, int prefsKey,
-                                        Action action )
+    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
     {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
     }

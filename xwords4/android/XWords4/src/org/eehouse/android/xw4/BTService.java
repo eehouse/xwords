@@ -481,7 +481,7 @@ public class BTService extends XWService {
                                                           host.getAddress() );
 
                     for ( long rowid : rowids ) {
-                        if ( BoardActivity.feedMessage( gameID, buffer, addr ) ) {
+                        if ( BoardDelegate.feedMessage( gameID, buffer, addr ) ) {
                             // do nothing
                         } else if ( haveGame && 
                                     GameUtils.feedMessage( BTService.this, rowid, 

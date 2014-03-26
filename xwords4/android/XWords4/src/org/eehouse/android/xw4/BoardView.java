@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.view.View;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -58,7 +59,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private int m_layoutHeight;
     private BoardCanvas m_canvas;    // owns the bitmap
     private JNIThread m_jniThread;
-    private XWActivity m_parent;
+    private Activity m_parent;
     private boolean m_measuredFromDims = false;
     private BoardDims m_dims;
     private CommsAddrRec.CommsConnType m_connType = 
@@ -257,7 +258,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     } // layoutBoardOnce
 
     // BoardHandler interface implementation
-    public void startHandling( XWActivity parent, JNIThread thread, 
+    public void startHandling( Activity parent, JNIThread thread, 
                                int gamePtr, CurGameInfo gi, 
                                CommsAddrRec.CommsConnType connType ) 
     {

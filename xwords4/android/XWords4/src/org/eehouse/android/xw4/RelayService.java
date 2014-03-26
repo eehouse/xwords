@@ -853,7 +853,7 @@ public class RelayService extends XWService
     {
         DbgUtils.logf( "RelayService::feedMessage: %d bytes for rowid %d", 
                        msg.length, rowid );
-        if ( BoardActivity.feedMessage( rowid, msg ) ) {
+        if ( BoardDelegate.feedMessage( rowid, msg ) ) {
             DbgUtils.logf( "feedMessage: board ate it" );
             // do nothing
         } else {
@@ -893,7 +893,7 @@ public class RelayService extends XWService
                 // if game has messages, open it and feed 'em to it.
                 if ( null != forOne ) {
                     sink.setRowID( rowIDs[ii] );
-                    if ( BoardActivity.feedMessages( rowIDs[ii], forOne )
+                    if ( BoardDelegate.feedMessages( rowIDs[ii], forOne )
                          || GameUtils.feedMessages( this, rowIDs[ii],
                                                     forOne, null,
                                                     sink ) ) {

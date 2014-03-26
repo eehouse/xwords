@@ -27,7 +27,9 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 
 import junit.framework.Assert;
 
-public class DelegateBase implements DlgDelegate.DlgClickNotify {
+public class DelegateBase implements DlgDelegate.DlgClickNotify,
+                                     DlgDelegate.HasDlgDelegate,
+                                     MultiService.MultiEventListener {
 
     private DlgDelegate m_delegate;
 
@@ -52,13 +54,23 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, action, params );
     }
 
-    protected void showNotAgainDlgThen( int msgID, int prefsKey,
-                                        Action action )
+    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
     {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
     }
 
+    protected void showNotAgainDlgThen( String msg, int prefsKey,
+                                        Action action )
+    {
+        m_delegate.showNotAgainDlgThen( msg, prefsKey, action, null );
+    }
+
     protected void showNotAgainDlg( int msgID, int prefsKey )
+    {
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey );
+    }
+
+    protected void showNotAgainDlgThen( int msgID, int prefsKey )
     {
         m_delegate.showNotAgainDlgThen( msgID, prefsKey );
     }
@@ -96,6 +108,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify {
         m_delegate.showConfirmThen( msg, posButton, action, params );
     }
 
+    protected void showConfirmThen( int msgID, Action action )
+    {
+        m_delegate.showConfirmThen( msgID, action );
+    }
+
     protected boolean post( Runnable runnable )
     {
         return m_delegate.post( runnable );
@@ -114,6 +131,34 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify {
     protected void launchLookup( String[] words, int lang )
     {
         m_delegate.launchLookup( words, lang, false );
+    }
+
+    protected void showInviteChoicesThen( Action action )
+    {
+        m_delegate.showInviteChoicesThen( action );
+    }
+
+    protected void startProgress( int id )
+    {
+        m_delegate.startProgress( id );
+    }
+
+    protected void stopProgress()
+    {
+        m_delegate.stopProgress();
+    }
+
+    protected void showDictGoneFinish()
+    {
+        m_delegate.showDictGoneFinish();
+    }
+
+    //////////////////////////////////////////////////
+    // MultiService.MultiEventListener interface
+    //////////////////////////////////////////////////
+    public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
+    {
+        Assert.fail();
     }
 
     //////////////////////////////////////////////////////////////////////
