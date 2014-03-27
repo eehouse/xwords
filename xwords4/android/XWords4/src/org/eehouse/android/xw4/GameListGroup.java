@@ -63,7 +63,9 @@ public class GameListGroup extends LinearLayout
         result.m_groupPosition = groupPosition;
         result.m_groupID = groupID;
         result.m_expanded = expanded;
-        result.setButton();
+
+        result.setButton();     // in case onFinishInflate already called
+
         return result;
     }
 
@@ -78,9 +80,14 @@ public class GameListGroup extends LinearLayout
         super.onFinishInflate();
         m_etv = (ExpiringTextView)findViewById( R.id.game_name );
         m_expandButton = (ImageButton)findViewById( R.id.expander );
+
+        // click on me OR the button expands/contracts...
+        setOnClickListener( this );
         m_expandButton.setOnClickListener( this );
+
         m_dsdel = new DrawSelDelegate( this );
         setOnLongClickListener( this );
+
         setButton();
     }
 
