@@ -28,11 +28,11 @@ k_SUMS = 'sums'
 k_COUNT = 'count'
 
 # Version for those sticking with RELEASES
-k_REL_REV = 'android_beta_60'
+k_REL_REV = 'android_beta_81'
 
 # Version for those getting intermediate builds
-k_DBG_REV = 'android_beta_58-33-ga18fb62'
-k_DBG_REV = 'android_beta_59-24-gc31a1d9'
+k_DBG_REV = 'android_beta_81-29-gb776b7c'
+k_DBG_REV = 'android_beta_81-34-g73a1083'
 
 k_suffix = '.xwd'
 k_filebase = "/var/www/"
@@ -40,19 +40,19 @@ k_apkDir = "xw4/android/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
 k_urlbase = "http://eehouse.org/"
 k_versions = { 'org.eehouse.android.xw4': {
-        'version' : 52,
-        k_AVERS : 52,
+        'version' : 74,
+        k_AVERS : 74,
         k_URL : k_apkDir + 'XWords4-release_' + k_REL_REV + '.apk',
         },
                }
 
-k_versions_dbg = { 'org.eehouse.android.xw4': {
-        'version' : 52,
-        k_AVERS : 52,
-        k_GVERS : k_DBG_REV,
-        k_URL : k_apkDir + 'XWords4-release_' + k_DBG_REV + '.apk',
-        },
-               }
+# k_versions_dbg = { 'org.eehouse.android.xw4': {
+#         'version' : 74,
+#         k_AVERS : 74,
+#         k_GVERS : k_DBG_REV,
+#         k_URL : k_apkDir + 'XWords4-release_' + k_DBG_REV + '.apk',
+#         },
+#                }
 s_shelf = None
 
 
@@ -118,8 +118,9 @@ def getDictSums():
 def getOrderedApks( path ):
     apks = []
 
-    files = ((os.stat(apk), apk) for apk in \
-             glob.glob(path + "XWords4-release_android_beta_*.apk"))
+    pattern = path + "/XWords4-release_android_beta_*.apk"
+
+    files = ((os.stat(apk), apk) for apk in glob.glob(pattern))
     for stat, file in sorted(files, reverse=True):
         apks.append( file )
 
@@ -166,11 +167,21 @@ def dictVersion( req, name, lang, md5sum ):
     return json.dumps( result )
 
 def getApp( params ):
-    global k_versions, k_versions_dbg
     result = None
     if k_NAME in params:
         name = params[k_NAME]
-        if k_AVERS in params and k_GVERS in params:
+
+        # If we're a dev device, always push the latest
+        if k_DEVOK in params and params[k_DEVOK]:
+            apks = getOrderedApks( k_filebase + k_apkDir )
+            if 0 < len(apks):
+                apk = apks[0]
+                # Does path NOT contain name of installed file
+                if not params[k_GVERS] in apk:
+                    url = k_urlbase + apk[len(k_filebase):]
+                    result = {k_URL: url}
+                    
+        elif k_AVERS in params and k_GVERS in params:
             avers = params[k_AVERS]
             gvers = params[k_GVERS]
             if k_INSTALLER in params: installer = params[k_INSTALLER]
@@ -178,10 +189,8 @@ def getApp( params ):
 
             logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
                            % (name, avers, installer, gvers) )
-            if k_DEVOK in params and params[k_DEVOK]: versions = k_versions_dbg
-            else: versions = k_versions
-            if name in versions:
-                versForName = versions[name]
+            if name in k_versions:
+                versForName = k_versions[name]
                 if versForName[k_AVERS] > int(avers):
                     result = {k_URL: k_urlbase + versForName[k_URL]}
                 elif k_GVERS in versForName and not gvers == versForName[k_GVERS]:
