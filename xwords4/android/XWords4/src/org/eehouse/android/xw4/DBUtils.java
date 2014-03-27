@@ -1149,6 +1149,27 @@ public class DBUtils {
         }
     }
 
+    public static int countVisibleGames( Context context )
+    {
+        int result = 0;
+        String[] columns = { ROW_ID };
+
+        String query = "SELECT %s FROM %s WHERE %s IN (SELECT %s FROM %s WHERE NOT %s = 0)";
+        query = String.format( query, ROW_ID, DBHelper.TABLE_NAME_SUM, DBHelper.GROUPID, 
+                               ROW_ID, DBHelper.TABLE_NAME_GROUPS, DBHelper.EXPANDED );
+        // DbgUtils.logf( "countVisibleGames: query=%s", query );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.rawQuery( query, null );
+            result = cursor.getCount();
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
     public static int countGames( Context context )
     {
         int result = 0;

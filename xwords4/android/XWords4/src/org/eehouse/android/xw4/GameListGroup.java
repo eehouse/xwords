@@ -34,10 +34,16 @@ public class GameListGroup extends LinearLayout
                View.OnClickListener,
                View.OnLongClickListener
 {
+    // Find me a home....
+    interface GroupStateListener {
+        void onGroupExpandedChanged( int groupPosition, boolean expanded );
+    }
+
     private int m_groupPosition;
     private long m_groupID;
     private boolean m_expanded;
     private SelectableItem m_cb;
+    private GroupStateListener m_gcb;
     private ExpiringTextView m_etv;
     private boolean m_selected;
     private DrawSelDelegate m_dsdel;
@@ -46,13 +52,18 @@ public class GameListGroup extends LinearLayout
     public static GameListGroup makeForPosition( Context context,
                                                  int groupPosition, 
                                                  long groupID,
-                                                 SelectableItem cb )
+                                                 boolean expanded,
+                                                 SelectableItem cb,
+                                                 GroupStateListener gcb )
     {
         GameListGroup result = 
             (GameListGroup)Utils.inflate( context, R.layout.game_list_group );
         result.m_cb = cb;
+        result.m_gcb = gcb;
         result.m_groupPosition = groupPosition;
         result.m_groupID = groupID;
+        result.m_expanded = expanded;
+        result.setButton();
         return result;
     }
 
@@ -135,15 +146,17 @@ public class GameListGroup extends LinearLayout
     public void onClick( View view ) 
     {
         m_expanded = !m_expanded;
-        DBUtils.setGroupExpanded( getContext(), m_groupID, m_expanded );
+        m_gcb.onGroupExpandedChanged( m_groupPosition, m_expanded );
         setButton();
     }
 
     private void setButton()
     {
-        m_expandButton.setImageResource( m_expanded ?
-                                         R.drawable.expander_ic_maximized :
-                                         R.drawable.expander_ic_minimized);
+        if ( null != m_expandButton ) {
+            m_expandButton.setImageResource( m_expanded ?
+                                             R.drawable.expander_ic_maximized :
+                                             R.drawable.expander_ic_minimized);
+        }
     }
 
 }
