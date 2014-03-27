@@ -24,7 +24,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.app.ExpandableListActivity;
+import android.app.ListActivity;
 
 import android.os.Bundle;
 import android.view.Menu;
@@ -35,7 +35,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class GamesListActivity extends ExpandableListActivity {
+public class GamesListActivity extends ListActivity {
 
     // private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";

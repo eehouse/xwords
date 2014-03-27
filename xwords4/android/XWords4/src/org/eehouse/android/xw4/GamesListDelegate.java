@@ -357,7 +357,7 @@ public class GamesListDelegate extends DelegateBase
         getBundledData( savedInstanceState );
 
         m_activity.setContentView( R.layout.game_list );
-        ExpandableListView listview = m_activity.getExpandableListView();
+        ListView listview = m_activity.getListView();
         DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
@@ -604,7 +604,7 @@ public class GamesListDelegate extends DelegateBase
     protected void contentChanged()
     {
         if ( null != m_adapter ) {
-            m_adapter.expandGroups( m_activity.getExpandableListView() );
+            m_adapter.expandGroups( m_activity.getListView() );
         }
     }
 
@@ -1351,7 +1351,7 @@ public class GamesListDelegate extends DelegateBase
 
     private GameListAdapter makeNewAdapter()
     {
-        ExpandableListView listview = m_activity.getExpandableListView();
+        ListView listview = m_activity.getListView();
         String field = CommonPrefs.getSummaryField( m_activity );
         long[] positions = XWPrefs.getGroupPositions( m_activity );
         GameListAdapter adapter = 

@@ -24,8 +24,8 @@ import android.database.DataSetObserver;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import java.util.Collections;
 import java.util.HashMap;       // class is not synchronized
@@ -40,18 +40,20 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 
-public class GameListAdapter implements ExpandableListAdapter {
+public class GameListAdapter extends XWListAdapter {
     private Context m_context;
-    private ExpandableListView m_list;
+    private ListView m_list;
     private int m_fieldID;
     private Handler m_handler;
     private SelectableItem m_cb;
     private long[] m_positions;
 
-    public GameListAdapter( Context context, ExpandableListView list, 
+    public GameListAdapter( Context context, ListView list, 
                             Handler handler, SelectableItem cb, 
                             long[] positions, String fieldName ) 
     {
+        super( DBUtils.getGroups( context ).size() 
+               + DBUtils.countGames( context ) );
         m_context = context;
         m_list = list;
         m_handler = handler;
@@ -103,15 +105,16 @@ public class GameListAdapter implements ExpandableListAdapter {
         return success;
     }
 
-    public void expandGroups( ExpandableListView view )
+    public void expandGroups( ListView view )
     {
-        HashMap<Long,GameGroupInfo> info = gameInfo();
-        for ( int ii = 0; ii < info.size(); ++ii ) {
-            GameGroupInfo ggi = getInfoForGroup( ii );
-            if ( ggi.m_expanded ) {
-                view.expandGroup( ii );
-            }
-        }
+        DbgUtils.logf( "expandGroups not implemented" );
+        // HashMap<Long,GameGroupInfo> info = gameInfo();
+        // for ( int ii = 0; ii < info.size(); ++ii ) {
+        //     GameGroupInfo ggi = getInfoForGroup( ii );
+        //     if ( ggi.m_expanded ) {
+        //         view.expandGroup( ii );
+        //     }
+        // }
     }
 
     public long getRowIDFor( int group, int child )
@@ -126,11 +129,13 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public long getRowIDFor( long packedPosition )
     {
-        int childPosition = ExpandableListView.
-            getPackedPositionChild( packedPosition );
-        int groupPosition = ExpandableListView.
-            getPackedPositionGroup( packedPosition );
-        return getRowIDFor( groupPosition, childPosition );
+        // int childPosition = ListView.
+        //     getPackedPositionChild( packedPosition );
+        // int groupPosition = ListView.
+        //     getPackedPositionGroup( packedPosition );
+        // return getRowIDFor( groupPosition, childPosition );
+        Assert.fail();
+        return 0;
     }
 
     public long getGroupIDFor( int groupPos )
@@ -157,120 +162,169 @@ public class GameListAdapter implements ExpandableListAdapter {
     }
 
     //////////////////////////////////////////////////////////////////////////
-    // ExpandableListAdapter interface
+    // ListAdapter interface
     //////////////////////////////////////////////////////////////////////////
-    public long getCombinedGroupId( long groupId )
-    {
-        return groupId;
-    }
-
-    public long getCombinedChildId( long groupId, long childId )
-    {
-        return groupId << 16 | childId;
-    }
-
-    public boolean isEmpty() { return false; }
-
-    public void onGroupCollapsed( int groupPosition )
-    {
-        long groupid = getGroupIDFor( groupPosition );
-        DBUtils.setGroupExpanded( m_context, groupid, false );
-
-        long[] rowids = DBUtils.getGroupGames( m_context, groupid );
-        deselectGames( rowids );
-    }
-
-    public void onGroupExpanded( int groupPosition )
-    {
-        long groupid = getGroupIDFor( groupPosition );
-        DBUtils.setGroupExpanded( m_context, groupid, true );
-    }
-
-    public boolean areAllItemsEnabled() { return true; }
-
-    public boolean isChildSelectable( int groupPosition, int childPosition ) 
-    { return true; }
-
-    public View getChildView( int groupPosition, int childPosition, 
-                              boolean isLastChild, View convertView, 
-                              ViewGroup parent)
+    public View getView( final int position, View convertView, ViewGroup parent )
     {
         View result = null;
-        if ( null != convertView ) {
-            // DbgUtils.logf( "getChildView gave non-null convertView" );
-            if ( convertView instanceof GameListItem ) {
-                GameListItem child = (GameListItem)convertView;
-                long rowid = getRowIDFor( groupPosition, childPosition );
-                if ( child.getRowID() == rowid ) {
-                    child.setSelected( m_cb.getSelected( child ) );
-                    result = child;
+        HashMap<Long,GameGroupInfo> info = gameInfo();
+        Set<Long> posns = info.keySet();
+        int groupPosition = 0;
+        int indx = position;
+        for ( Iterator<Long>iter = posns.iterator(); iter.hasNext(); ) {
+            long groupID = iter.next();
+            if ( indx == 0 ) {
+                GameListGroup group =
+                    GameListGroup.makeForPosition( m_context, groupPosition, 
+                                                   groupID, m_cb );
+
+                int nKids = getChildrenCount( groupPosition );
+                String name = m_context.getString( R.string.group_namef, 
+                                                   groupNames()[groupPosition], nKids );
+                group.setText( name );
+                group.setSelected( m_cb.getSelected( group ) );
+                result = group;
+                break;
+            } else {
+                GameGroupInfo group = info.get( groupID );
+                DbgUtils.logf( "group[%d] count: %d", groupPosition, group.m_count );
+                if ( indx <= group.m_count ) {
+                    long[] rows = DBUtils.getGroupGames( m_context, groupID );
+                    long rowid = rows[indx - 1];
+                    result = GameListItem.makeForRow( m_context, rowid, m_handler, 
+                                                      groupPosition, m_fieldID, m_cb );
+                    break;
                 }
+                indx -= 1 + group.m_count;
+                ++groupPosition;
             }
         }
-        if ( null == result ) {
-            result = getChildView( groupPosition, childPosition );
-        }
+        DbgUtils.logf( "GameListAdapter.getView(pos=%d, group=%d)=>%s", 
+                       position, groupPosition, result.getClass().getName() );
         return result;
     }
 
-    private View getChildView( int groupPosition, int childPosition )
+    @Override
+    public Object getItem( int position ) 
     {
-        long rowid = getRowIDFor( groupPosition, childPosition );
-        GameListItem result = 
-            GameListItem.makeForRow( m_context, rowid, m_handler, 
-                                     groupPosition, m_fieldID, m_cb );
-        result.setSelected( m_cb.getSelected( result ) );
-        return result;
+        return getView( position, null, null ); 
     }
 
-    public View getGroupView( int groupPosition, boolean isExpanded, 
-                              View convertView, ViewGroup parent )
-    {
-        // if ( null != convertView ) {
-        //     DbgUtils.logf( "getGroupView gave non-null convertView" );
-        // }
-        long groupID = getGroupIDFor( groupPosition );
-        GameListGroup view = 
-            GameListGroup.makeForPosition( m_context, groupPosition, groupID, 
-                                           m_cb );
+    //////////////////////////////////////////////////////////////////////////
+    // ExpandableListAdapter interface
+    //////////////////////////////////////////////////////////////////////////
+    // public long getCombinedGroupId( long groupId )
+    // {
+    //     return groupId;
+    // }
 
-        if ( !isExpanded ) {
-            GameGroupInfo ggi = getInfoForGroup( groupPosition );
-            view.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
-                         ggi.m_lastMoveTime );
-        }
+    // public long getCombinedChildId( long groupId, long childId )
+    // {
+    //     return groupId << 16 | childId;
+    // }
 
-        int nKids = getChildrenCount( groupPosition );
-        String name = m_context.getString( R.string.group_namef, 
-                                           groupNames()[groupPosition], nKids );
-        view.setText( name );
+    // public boolean isEmpty() { return false; }
 
-        view.setSelected( m_cb.getSelected( view ) );
+    // public void onGroupCollapsed( int groupPosition )
+    // {
+    //     long groupid = getGroupIDFor( groupPosition );
+    //     DBUtils.setGroupExpanded( m_context, groupid, false );
 
-        return view;
-    }
+    //     long[] rowids = DBUtils.getGroupGames( m_context, groupid );
+    //     deselectGames( rowids );
+    // }
 
-    public boolean hasStableIds() { return false; }
+    // public void onGroupExpanded( int groupPosition )
+    // {
+    //     long groupid = getGroupIDFor( groupPosition );
+    //     DBUtils.setGroupExpanded( m_context, groupid, true );
+    // }
+
+    // public boolean areAllItemsEnabled() { return true; }
+
+    // public boolean isChildSelectable( int groupPosition, int childPosition ) 
+    // { return true; }
+
+    // public View getChildView( int groupPosition, int childPosition, 
+    //                           boolean isLastChild, View convertView, 
+    //                           ViewGroup parent)
+    // {
+    //     View result = null;
+    //     if ( null != convertView ) {
+    //         // DbgUtils.logf( "getChildView gave non-null convertView" );
+    //         if ( convertView instanceof GameListItem ) {
+    //             GameListItem child = (GameListItem)convertView;
+    //             long rowid = getRowIDFor( groupPosition, childPosition );
+    //             if ( child.getRowID() == rowid ) {
+    //                 child.setSelected( m_cb.getSelected( child ) );
+    //                 result = child;
+    //             }
+    //         }
+    //     }
+    //     if ( null == result ) {
+    //         result = getChildView( groupPosition, childPosition );
+    //     }
+    //     return result;
+    // }
+
+    // private View getChildView( int groupPosition, int childPosition )
+    // {
+    //     long rowid = getRowIDFor( groupPosition, childPosition );
+    //     GameListItem result = 
+    //         GameListItem.makeForRow( m_context, rowid, m_handler, 
+    //                                  groupPosition, m_fieldID, m_cb );
+    //     result.setSelected( m_cb.getSelected( result ) );
+    //     return result;
+    // }
+
+    // public View getGroupView( int groupPosition, boolean isExpanded, 
+    //                           View convertView, ViewGroup parent )
+    // {
+    //     // if ( null != convertView ) {
+    //     //     DbgUtils.logf( "getGroupView gave non-null convertView" );
+    //     // }
+    //     long groupID = getGroupIDFor( groupPosition );
+    //     GameListGroup view = 
+    //         GameListGroup.makeForPosition( m_context, groupPosition, groupID, 
+    //                                        m_cb );
+
+    //     if ( !isExpanded ) {
+    //         GameGroupInfo ggi = getInfoForGroup( groupPosition );
+    //         view.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
+    //                      ggi.m_lastMoveTime );
+    //     }
+
+    //     int nKids = getChildrenCount( groupPosition );
+    //     String name = m_context.getString( R.string.group_namef, 
+    //                                        groupNames()[groupPosition], nKids );
+    //     view.setText( name );
+
+    //     view.setSelected( m_cb.getSelected( view ) );
+
+    //     return view;
+    // }
+
+    // public boolean hasStableIds() { return false; }
     
-    public long getChildId( int groupPosition, int childPosition )
-    {
-        return childPosition;
-    }
+    // public long getChildId( int groupPosition, int childPosition )
+    // {
+    //     return childPosition;
+    // }
 
-    public long getGroupId( int groupPosition )
-    {
-        return groupPosition;
-    }
+    // public long getGroupId( int groupPosition )
+    // {
+    //     return groupPosition;
+    // }
 
-    public Object getChild( int groupPosition, int childPosition )
-    {
-        return null;
-    }
+    // public Object getChild( int groupPosition, int childPosition )
+    // {
+    //     return null;
+    // }
     
-    public Object getGroup( int groupPosition )
-    {
-        return null;
-    }
+    // public Object getGroup( int groupPosition )
+    // {
+    //     return null;
+    // }
 
     public int getChildrenCount( int groupPosition )
     {
@@ -283,13 +337,13 @@ public class GameListAdapter implements ExpandableListAdapter {
         return rows.length;
     }
 
-    public int getGroupCount()
+    protected int getGroupCount()
     {
         return gameInfo().size();
     }
 
-    public void registerDataSetObserver( DataSetObserver obs ){}
-    public void unregisterDataSetObserver( DataSetObserver obs ){}
+    // public void registerDataSetObserver( DataSetObserver obs ){}
+    // public void unregisterDataSetObserver( DataSetObserver obs ){}
 
     public void inval( long rowid )
     {
