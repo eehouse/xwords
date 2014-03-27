@@ -24,16 +24,21 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 
-public class GameListGroup extends ExpiringTextView 
-    implements SelectableItem.LongClickHandler 
+public class GameListGroup extends LinearLayout 
+    implements SelectableItem.LongClickHandler,
+               View.OnLongClickListener
 {
     private int m_groupPosition;
     private long m_groupID;
     private boolean m_expanded;
     private SelectableItem m_cb;
+    private ExpiringTextView m_etv;
+    private boolean m_selected;
+    private DrawSelDelegate m_dsdel;
 
     public static GameListGroup makeForPosition( Context context,
                                                  int groupPosition, 
@@ -51,6 +56,15 @@ public class GameListGroup extends ExpiringTextView
     public GameListGroup( Context cx, AttributeSet as ) 
     {
         super( cx, as );
+    }
+
+    @Override
+    protected void onFinishInflate()
+    {
+        super.onFinishInflate();
+        m_etv = (ExpiringTextView)findViewById( R.id.game_name );
+        m_dsdel = new DrawSelDelegate( this );
+        setOnLongClickListener( this );
     }
 
     public void setGroupPosition( int groupPosition )
@@ -76,6 +90,17 @@ public class GameListGroup extends ExpiringTextView
         }
     }
 
+    protected void setText( String text )
+    {
+        m_etv.setText( text );
+    }
+
+    protected void setPct( boolean haveTurn, boolean haveTurnLocal, 
+                           long startSecs )
+    {
+        m_etv.setPct( haveTurn, haveTurnLocal, startSecs );
+    }
+
     // GameListAdapter.ClickHandler interface
     public void longClicked()
     {
@@ -84,8 +109,17 @@ public class GameListGroup extends ExpiringTextView
 
     protected void toggleSelected()
     {
-        super.toggleSelected();
+        m_selected = !m_selected;
+        m_dsdel.showSelected( m_selected );
         m_cb.itemToggled( this, m_selected );
     }
 
+    //////////////////////////////////////////////////
+    // View.OnLongClickListener interface
+    //////////////////////////////////////////////////
+    public boolean onLongClick( View view ) 
+    {
+        longClicked();
+        return true;
+    }
 }

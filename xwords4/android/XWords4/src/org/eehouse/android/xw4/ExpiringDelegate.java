@@ -52,12 +52,12 @@ public class ExpiringDelegate {
     private long m_startSecs;
     private Runnable m_runnable = null;
     private boolean m_selected;
-    private Drawable m_origDrawable;
     // these can be static as drawing's all in same thread.
     private static Rect s_rect;
     private static Paint s_paint;
     private static float[] s_points;
     private static Drawable s_selDrawable;
+    private DrawSelDelegate m_dsdel;
 
     static {
         s_rect = new Rect();
@@ -72,7 +72,7 @@ public class ExpiringDelegate {
     {
         m_context = context;
         m_view = view;
-        m_origDrawable = view.getBackground();
+        m_dsdel = new DrawSelDelegate( view );
     }
 
     public void setHandler( Handler handler )
@@ -101,12 +101,7 @@ public class ExpiringDelegate {
     public void setSelected( boolean selected )
     {
         m_selected = selected;
-        if ( selected ) {
-            m_origDrawable = m_view.getBackground();
-            m_view.setBackgroundDrawable( s_selDrawable );
-        } else {
-            m_view.setBackgroundDrawable( m_origDrawable );
-        }
+        m_dsdel.showSelected( m_selected, s_selDrawable );
     }
 
     public void onDraw( Canvas canvas ) 
