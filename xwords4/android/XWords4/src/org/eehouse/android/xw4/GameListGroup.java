@@ -25,11 +25,13 @@ import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.ImageButton;
 
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 
 public class GameListGroup extends LinearLayout 
     implements SelectableItem.LongClickHandler,
+               View.OnClickListener,
                View.OnLongClickListener
 {
     private int m_groupPosition;
@@ -39,6 +41,7 @@ public class GameListGroup extends LinearLayout
     private ExpiringTextView m_etv;
     private boolean m_selected;
     private DrawSelDelegate m_dsdel;
+    private ImageButton m_expandButton;
 
     public static GameListGroup makeForPosition( Context context,
                                                  int groupPosition, 
@@ -63,8 +66,11 @@ public class GameListGroup extends LinearLayout
     {
         super.onFinishInflate();
         m_etv = (ExpiringTextView)findViewById( R.id.game_name );
+        m_expandButton = (ImageButton)findViewById( R.id.expander );
+        m_expandButton.setOnClickListener( this );
         m_dsdel = new DrawSelDelegate( this );
         setOnLongClickListener( this );
+        setButton();
     }
 
     public void setGroupPosition( int groupPosition )
@@ -122,4 +128,22 @@ public class GameListGroup extends LinearLayout
         longClicked();
         return true;
     }
+
+    //////////////////////////////////////////////////
+    // View.OnClickListener interface
+    //////////////////////////////////////////////////
+    public void onClick( View view ) 
+    {
+        m_expanded = !m_expanded;
+        DBUtils.setGroupExpanded( getContext(), m_groupID, m_expanded );
+        setButton();
+    }
+
+    private void setButton()
+    {
+        m_expandButton.setImageResource( m_expanded ?
+                                         R.drawable.expander_ic_maximized :
+                                         R.drawable.expander_ic_minimized);
+    }
+
 }
