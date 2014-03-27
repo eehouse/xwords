@@ -205,7 +205,7 @@ public class DBUtils {
                 int col = cursor.getColumnIndex( DBHelper.CONTYPE );
                 if ( 0 <= col ) {
                     tmp = cursor.getInt( col );
-                    summary.conType = CommsConnType.values()[tmp];
+                    summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
                     col = cursor.getColumnIndex( DBHelper.SEED );
                     if ( 0 < col ) {
                         summary.seed = cursor.getInt( col );
@@ -964,14 +964,16 @@ public class DBUtils {
     // Groups stuff
     public static class GameGroupInfo {
         public String m_name;
+        public int m_count;
         public boolean m_expanded;
         public long m_lastMoveTime;
         public boolean m_hasTurn;
         public boolean m_turnLocal;
 
-        public GameGroupInfo( String name, boolean expanded ) {
+        public GameGroupInfo( String name, int count, boolean expanded ) {
             m_name = name; m_expanded = expanded;
             m_lastMoveTime = 0;
+            m_count = count;
         }
     }
 
@@ -1023,31 +1025,42 @@ public class DBUtils {
         if ( null == s_groupsCache ) {
             HashMap<Long,GameGroupInfo> result = 
                 new HashMap<Long,GameGroupInfo>();
-            String[] columns = { ROW_ID, DBHelper.GROUPNAME, 
-                                 DBHelper.EXPANDED };
-            String limit = 0 == nRows ? null : String.format( "%d", nRows );
+            String col0 = DBHelper.TABLE_NAME_GROUPS + "." +  ROW_ID
+                + " as group_rowid";
+            String col1 = DBHelper.TABLE_NAME_GROUPS + "." + DBHelper.GROUPNAME
+                + " as group_name" ;
+            String col2 = DBHelper.TABLE_NAME_GROUPS + "." + DBHelper.EXPANDED
+                + " as group_expanded";
+            String col3 = "COUNT(" + DBHelper.TABLE_NAME_SUM + "." + ROW_ID + ")" 
+                + " as cnt";
+
+            String query = "SELECT " 
+                + col0 + "," + col1 + "," + col2 + "," + col3
+                + " FROM " + DBHelper.TABLE_NAME_GROUPS + "," + DBHelper.TABLE_NAME_SUM
+                + " WHERE " + DBHelper.TABLE_NAME_SUM + "." + DBHelper.GROUPID 
+                + "= group_rowid"
+                + " GROUP BY group_rowid";
+            if ( 0 < nRows ) {
+                query += String.format( " LIMIT %d", nRows );
+            }
+            DbgUtils.logf( "query: %s", query );
 
             initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-                Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
-                                          null, // selection
-                                          null, // args
-                                          null, // groupBy
-                                          null, // having
-                                          null, //orderby 
-                                          limit
-                                          );
-                int idIndex = cursor.getColumnIndex( ROW_ID );
-                int nameIndex = cursor.getColumnIndex( DBHelper.GROUPNAME );
-                int expandedIndex = cursor.getColumnIndex( DBHelper.EXPANDED );
+                Cursor cursor = db.rawQuery( query, null );
+                int idIndex = cursor.getColumnIndex( "group_rowid" );
+                int nameIndex = cursor.getColumnIndex( "group_name" );
+                int expandedIndex = cursor.getColumnIndex( "group_expanded" );
+                int countIndex = cursor.getColumnIndex( "cnt" );
 
                 while ( cursor.moveToNext() ) {
                     String name = cursor.getString( nameIndex );
                     long id = cursor.getLong( idIndex );
                     Assert.assertNotNull( name );
                     boolean expanded = 0 != cursor.getInt( expandedIndex );
-                    result.put( id, new GameGroupInfo( name, expanded ) );
+                    int count = cursor.getInt( countIndex );
+                    result.put( id, new GameGroupInfo( name, count, expanded ) );
                 }
                 cursor.close();
 
@@ -1134,6 +1147,28 @@ public class DBUtils {
             // DbgUtils.logf( "using last play time %s for", 
             //                df.format( new Date( 1000 * ggi.m_lastMoveTime ) ) );
         }
+    }
+
+    public static int countGames( Context context )
+    {
+        int result = 0;
+        String[] columns = { ROW_ID };
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      null, // selection
+                                      null, // args
+                                      null, // groupBy
+                                      null, // having
+                                      null
+                                      );
+            result = cursor.getCount();
+            cursor.close();
+            db.close();
+        }
+        DbgUtils.logf( "DBUtils.countGames()=>%d", result );
+        return result;
     }
 
     public static long[] getGroupGames( Context context, long groupID )
