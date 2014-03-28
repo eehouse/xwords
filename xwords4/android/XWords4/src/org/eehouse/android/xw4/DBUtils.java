@@ -1014,52 +1014,54 @@ public class DBUtils {
 
     // Return map of string (group name) to info about all games in
     // that group.
-    public static HashMap<Long,GameGroupInfo> getGroups( Context context )
+    // public static HashMap<Long,GameGroupInfo> getGroups( Context context )
+    // {
+    //     return getGroups( context, 0 );
+    // }
+
+    // called while have db opened
+    private static int getGamesCount( SQLiteDatabase db, String name, long id )
     {
-        return getGroups( context, 0 );
+        int result = -1;
+        String query = "SELECT count(rowid) from summaries where groupid = " + id;
+        Cursor cursor = db.rawQuery( query, null );
+        if ( cursor.moveToNext() ) {
+            result = cursor.getInt( 0 );
+        }
+        cursor.close();
+        DbgUtils.logf( "getGamesCount(%s)=>%d", name, result );
+        return result;
     }
 
-    private static HashMap<Long,GameGroupInfo> getGroups( Context context, 
-                                                          int nRows )
+    protected static HashMap<Long,GameGroupInfo> getGroups( Context context )
     {
         if ( null == s_groupsCache ) {
             HashMap<Long,GameGroupInfo> result = 
                 new HashMap<Long,GameGroupInfo>();
-            String col0 = DBHelper.TABLE_NAME_GROUPS + "." +  ROW_ID
-                + " as group_rowid";
-            String col1 = DBHelper.TABLE_NAME_GROUPS + "." + DBHelper.GROUPNAME
-                + " as group_name" ;
-            String col2 = DBHelper.TABLE_NAME_GROUPS + "." + DBHelper.EXPANDED
-                + " as group_expanded";
-            String col3 = "COUNT(" + DBHelper.TABLE_NAME_SUM + "." + ROW_ID + ")" 
-                + " as cnt";
 
-            String query = "SELECT " 
-                + col0 + "," + col1 + "," + col2 + "," + col3
-                + " FROM " + DBHelper.TABLE_NAME_GROUPS + "," + DBHelper.TABLE_NAME_SUM
-                + " WHERE " + DBHelper.TABLE_NAME_SUM + "." + DBHelper.GROUPID 
-                + "= group_rowid"
-                + " GROUP BY group_rowid";
-            if ( 0 < nRows ) {
-                query += String.format( " LIMIT %d", nRows );
-            }
+            // Select all groups.  For each group get the number of games in
+            // that group.  There should be a way to do that with one query
+            // but I can't figure it out.
+
+            String query = "SELECT rowid, groupname as groups_groupname, "
+                + " groups.expanded as groups_expanded FROM groups";
             DbgUtils.logf( "query: %s", query );
 
             initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getReadableDatabase();
                 Cursor cursor = db.rawQuery( query, null );
-                int idIndex = cursor.getColumnIndex( "group_rowid" );
-                int nameIndex = cursor.getColumnIndex( "group_name" );
-                int expandedIndex = cursor.getColumnIndex( "group_expanded" );
-                int countIndex = cursor.getColumnIndex( "cnt" );
+                int idIndex = cursor.getColumnIndex( "rowid" );
+                int nameIndex = cursor.getColumnIndex( "groups_groupname" );
+                int expandedIndex = cursor.getColumnIndex( "groups_expanded" );
+                DbgUtils.logf( "indices: %d, %d, %d", idIndex, nameIndex, expandedIndex );
 
                 while ( cursor.moveToNext() ) {
-                    String name = cursor.getString( nameIndex );
                     long id = cursor.getLong( idIndex );
+                    String name = cursor.getString( nameIndex );
                     Assert.assertNotNull( name );
                     boolean expanded = 0 != cursor.getInt( expandedIndex );
-                    int count = cursor.getInt( countIndex );
+                    int count = getGamesCount( db, name, id );
                     result.put( id, new GameGroupInfo( name, count, expanded ) );
                 }
                 cursor.close();
@@ -1258,7 +1260,7 @@ public class DBUtils {
     public static long getAnyGroup( Context context )
     {
         long result = GROUPID_UNSPEC;
-        HashMap<Long,GameGroupInfo> groups = getGroups( context, 1 );
+        HashMap<Long,GameGroupInfo> groups = getGroups( context );
         Iterator<Long> iter = groups.keySet().iterator();
         if ( iter.hasNext() ) {
             result = iter.next();
