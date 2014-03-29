@@ -192,19 +192,20 @@ public class GameListAdapter extends XWListAdapter
         DbgUtils.logf( "getView(convertView=%H)", convertView );
         View result = null;
         HashMap<Long,GameGroupInfo> info = gameInfo();
-        Set<Long> posns = info.keySet();
         int groupPosition = 0;
         int indx = position;
-        for ( Iterator<Long>iter = posns.iterator(); iter.hasNext(); ) {
-            long groupID = iter.next();
+
+        long[] groupPosns = getGroupPositions();
+        for ( long groupID : groupPosns ) {
             GameGroupInfo groupInfo = info.get( groupID );
             if ( indx == 0 ) {
+                int nKids = getChildrenCount( groupPosition );
                 GameListGroup group =
                     GameListGroup.makeForPosition( m_context, groupPosition, 
-                                                   groupID, groupInfo.m_expanded, 
+                                                   groupID, nKids, 
+                                                   groupInfo.m_expanded, 
                                                    m_cb, this );
 
-                int nKids = getChildrenCount( groupPosition );
                 String name = m_context.getString( R.string.group_namef, 
                                                    groupNames()[groupPosition], nKids );
                 group.setText( name );
@@ -214,7 +215,7 @@ public class GameListAdapter extends XWListAdapter
             } else {
                 int count = groupInfo.m_expanded ? groupInfo.m_count : 0;
                 // int count = groupInfo.m_count;
-                DbgUtils.logf( "group[%d] visible count: %d", groupPosition, count );
+                // DbgUtils.logf( "group[%d] visible count: %d", groupPosition, count );
                 if ( indx <= count ) {
                     long[] rows = DBUtils.getGroupGames( m_context, groupID );
                     long rowid = rows[indx - 1];

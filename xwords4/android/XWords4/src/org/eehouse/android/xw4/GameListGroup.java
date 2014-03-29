@@ -46,12 +46,14 @@ public class GameListGroup extends LinearLayout
     private GroupStateListener m_gcb;
     private ExpiringTextView m_etv;
     private boolean m_selected;
+    private int m_nGames;
     private DrawSelDelegate m_dsdel;
     private ImageButton m_expandButton;
 
     public static GameListGroup makeForPosition( Context context,
                                                  int groupPosition, 
                                                  long groupID,
+                                                 int nGames,
                                                  boolean expanded,
                                                  SelectableItem cb,
                                                  GroupStateListener gcb )
@@ -62,6 +64,7 @@ public class GameListGroup extends LinearLayout
         result.m_gcb = gcb;
         result.m_groupPosition = groupPosition;
         result.m_groupID = groupID;
+        result.m_nGames = nGames;
         result.m_expanded = expanded;
 
         result.setButton();     // in case onFinishInflate already called
@@ -160,6 +163,8 @@ public class GameListGroup extends LinearLayout
     private void setButton()
     {
         if ( null != m_expandButton ) {
+            m_expandButton.setVisibility( 0 == m_nGames ? 
+                                          View.GONE : View.VISIBLE );
             m_expandButton.setImageResource( m_expanded ?
                                              R.drawable.expander_ic_maximized :
                                              R.drawable.expander_ic_minimized);
