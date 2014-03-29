@@ -155,9 +155,11 @@ public class GameListGroup extends LinearLayout
     //////////////////////////////////////////////////
     public void onClick( View view ) 
     {
-        m_expanded = !m_expanded;
-        m_gcb.onGroupExpandedChanged( m_groupPosition, m_expanded );
-        setButton();
+        if ( 0 < m_nGames ) {
+            m_expanded = !m_expanded;
+            m_gcb.onGroupExpandedChanged( m_groupPosition, m_expanded );
+            setButton();
+        }
     }
 
     private void setButton()
