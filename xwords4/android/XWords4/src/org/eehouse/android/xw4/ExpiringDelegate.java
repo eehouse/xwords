@@ -56,7 +56,6 @@ public class ExpiringDelegate {
     private static Rect s_rect;
     private static Paint s_paint;
     private static float[] s_points;
-    private static Drawable s_selDrawable;
     private DrawSelDelegate m_dsdel;
 
     static {
@@ -65,7 +64,6 @@ public class ExpiringDelegate {
         s_paint.setStyle(Paint.Style.STROKE);  
         s_paint.setStrokeWidth( 1 );
         s_points = new float[4*6];
-        s_selDrawable = new ColorDrawable( XWApp.SEL_COLOR );
     }
 
     public ExpiringDelegate( Context context, View view )
@@ -101,7 +99,7 @@ public class ExpiringDelegate {
     public void setSelected( boolean selected )
     {
         m_selected = selected;
-        m_dsdel.showSelected( m_selected, s_selDrawable );
+        m_dsdel.showSelected( m_selected );
     }
 
     public void onDraw( Canvas canvas ) 

@@ -33,23 +33,13 @@ public class DrawSelDelegate {
         m_origDrawable = view.getBackground();
     }
 
-    protected void showSelected( boolean selected, Drawable selDrawable )
+    protected void showSelected( boolean selected )
     {
         if ( selected ) {
             m_origDrawable = m_view.getBackground();
-            if ( null == selDrawable ) {
-                m_view.setBackgroundColor( XWApp.SEL_COLOR );
-            } else {
-                m_view.setBackgroundDrawable( selDrawable );
-            }
+            m_view.setBackgroundColor( XWApp.SEL_COLOR );
         } else {
             m_view.setBackgroundDrawable( m_origDrawable );
         }
     }
-
-    protected void showSelected( boolean selected )
-    {
-        showSelected( selected, null );
-    }
-
 }
