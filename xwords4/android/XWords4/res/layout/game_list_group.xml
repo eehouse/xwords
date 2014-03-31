@@ -8,18 +8,17 @@
      android:background="#FF7F7F7F"
      >
 
-    <org.eehouse.android.xw4.ExpiringTextView
-         android:id="@+id/game_name"
-         android:layout_width="fill_parent" 
-         android:layout_height="wrap_content"
-         android:gravity="left"
-         android:singleLine="true"
-         android:textAppearance="?android:attr/textAppearanceMedium"
-         android:paddingTop="3dp"
-         android:paddingBottom="3dp"
-         android:textStyle="italic"
-         android:layout_weight="1"
-         />
+    <TextView android:id="@+id/game_name"
+              android:layout_width="fill_parent" 
+              android:layout_height="wrap_content"
+              android:gravity="left"
+              android:singleLine="true"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              android:paddingTop="3dp"
+              android:paddingBottom="3dp"
+              android:textStyle="italic"
+              android:layout_weight="1"
+              />
 
     <ImageButton android:id="@+id/expander"
                  android:layout_width="32dp" 

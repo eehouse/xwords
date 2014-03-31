@@ -564,7 +564,7 @@ public class GameListAdapter extends XWListAdapter
         GameListGroup group = getGroupItemFor( groupPosition );
         if ( null != group ) {
             GameGroupInfo ggi = getInfoForGroup( groupPosition );
-            group.setPct( ggi.m_hasTurn, ggi.m_turnLocal, ggi.m_lastMoveTime );
+            group.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, ggi.m_lastMoveTime );
         }
     }
 

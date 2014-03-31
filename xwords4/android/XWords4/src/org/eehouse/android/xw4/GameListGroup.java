@@ -24,12 +24,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 
-public class GameListGroup extends LinearLayout 
+public class GameListGroup extends ExpiringLinearLayout 
     implements SelectableItem.LongClickHandler,
                View.OnClickListener,
                View.OnLongClickListener
@@ -44,7 +45,7 @@ public class GameListGroup extends LinearLayout
     private boolean m_expanded;
     private SelectableItem m_cb;
     private GroupStateListener m_gcb;
-    private ExpiringTextView m_etv;
+    private TextView m_etv;
     private boolean m_selected;
     private int m_nGames;
     private DrawSelDelegate m_dsdel;
@@ -81,7 +82,7 @@ public class GameListGroup extends LinearLayout
     protected void onFinishInflate()
     {
         super.onFinishInflate();
-        m_etv = (ExpiringTextView)findViewById( R.id.game_name );
+        m_etv = (TextView)findViewById( R.id.game_name );
         m_expandButton = (ImageButton)findViewById( R.id.expander );
 
         // click on me OR the button expands/contracts...
@@ -120,12 +121,6 @@ public class GameListGroup extends LinearLayout
     protected void setText( String text )
     {
         m_etv.setText( text );
-    }
-
-    protected void setPct( boolean haveTurn, boolean haveTurnLocal, 
-                           long startSecs )
-    {
-        m_etv.setPct( haveTurn, haveTurnLocal, startSecs );
     }
 
     // GameListAdapter.ClickHandler interface
