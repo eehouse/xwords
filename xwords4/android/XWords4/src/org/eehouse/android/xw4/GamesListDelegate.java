@@ -694,7 +694,8 @@ public class GamesListDelegate extends DelegateBase
             enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity );
             Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
-            enable = 0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
+            enable = nothingSelected && 
+                0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
             Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
             
             m_menuPrepared = true;
