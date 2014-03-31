@@ -206,8 +206,15 @@ public class GameListAdapter extends XWListAdapter
                                                    groupInfo.m_expanded, 
                                                    m_cb, this );
 
+                if ( !groupInfo.m_expanded ) {
+                    GameGroupInfo ggi = getInfoForGroup( groupPosition );
+                    group.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
+                                  ggi.m_lastMoveTime );
+                }
+
                 String name = m_context.getString( R.string.group_namef, 
-                                                   groupNames()[groupPosition], nKids );
+                                                   groupNames()[groupPosition], 
+                                                   nKids );
                 group.setText( name );
                 group.setSelected( m_cb.getSelected( group ) );
                 result = group;
