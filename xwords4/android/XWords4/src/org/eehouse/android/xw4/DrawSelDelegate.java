@@ -20,24 +20,26 @@
 
 package org.eehouse.android.xw4;
 
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 
 public class DrawSelDelegate {
     private View m_view;
     private Drawable m_origDrawable;
+    private static ColorDrawable s_selDrawable = 
+        new ColorDrawable( XWApp.SEL_COLOR );
 
     protected DrawSelDelegate( View view )
     {
         m_view = view;
-        m_origDrawable = view.getBackground();
     }
 
     protected void showSelected( boolean selected )
     {
         if ( selected ) {
             m_origDrawable = m_view.getBackground();
-            m_view.setBackgroundColor( XWApp.SEL_COLOR );
+            m_view.setBackgroundDrawable( s_selDrawable );
         } else {
             m_view.setBackgroundDrawable( m_origDrawable );
         }
