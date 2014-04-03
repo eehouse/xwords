@@ -58,6 +58,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GamesListDelegate extends DelegateBase
     implements OnItemLongClickListener,
@@ -622,6 +623,7 @@ public class GamesListDelegate extends DelegateBase
     {
         MenuInflater inflater = m_activity.getMenuInflater();
         inflater.inflate( R.menu.games_list_menu, menu );
+        LocUtils.xlateMenu( menu );
 
         return true;
     }

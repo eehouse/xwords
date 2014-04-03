@@ -21,6 +21,8 @@ package org.eehouse.android.xw4.loc;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import junit.framework.Assert;
 
@@ -47,6 +49,19 @@ public class LocUtils {
                 break;
             }
         }
-        
+    }
+
+    public static void xlateMenu( Menu menu )
+    {
+        int count = menu.size();
+        DbgUtils.logf( "xlateMenu: menu has %d items", count );
+        for ( int ii = 0; ii < count; ++ii ) {
+            MenuItem item = menu.getItem( ii );
+            String title = item.getTitle().toString();
+            DbgUtils.logf( "xlateMenu: %d; %s", ii, title );
+            if ( title.startsWith( "loc:" ) ) {
+                item.setTitle( title.substring( 4 ) );
+            }
+        }
     }
 }

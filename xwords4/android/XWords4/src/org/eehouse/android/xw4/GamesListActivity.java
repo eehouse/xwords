@@ -125,10 +125,7 @@ public class GamesListActivity extends ListActivity {
     @Override
     public boolean onCreateOptionsMenu( Menu menu )
     {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate( R.menu.games_list_menu, menu );
-
-        return true;
+        return m_dlgt.onCreateOptionsMenu( menu );
     }
 
     @Override
