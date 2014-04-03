@@ -21,9 +21,9 @@
             android:orientation="vertical"
             >
   <LinearLayout android:orientation="vertical"
-                                               android:layout_width="fill_parent" 
-                                               android:layout_height="fill_parent"
-                                               >
+                android:layout_width="fill_parent" 
+                android:layout_height="fill_parent"
+                >
 
     <!-- local game -->
     <org.eehouse.android.xw4.loc.LocTextView
