@@ -60,17 +60,20 @@ public class LocUtils {
         DbgUtils.logf( "xlateMenu: menu has %d items", count );
         for ( int ii = 0; ii < count; ++ii ) {
             MenuItem item = menu.getItem( ii );
-            String title = item.getTitle().toString();
-            DbgUtils.logf( "xlateMenu: %d; %s", ii, title );
-            if ( title.startsWith( LOC_PREFIX ) ) {
-                String asKey = title.substring( LOC_PREFIX.length() );
-                int id = LocIDs.getID( asKey );
-                if ( LocIDs.NOT_FOUND != id ) {
-                    asKey = context.getString( id ).toUpperCase();
-                } else {
-                    DbgUtils.logf( "nothing for %s", asKey );
+            CharSequence ts = item.getTitle();
+            if ( null != ts ) {
+                String title = ts.toString();
+                DbgUtils.logf( "xlateMenu: %d; %s", ii, title );
+                if ( title.startsWith( LOC_PREFIX ) ) {
+                    String asKey = title.substring( LOC_PREFIX.length() );
+                    int id = LocIDs.getID( asKey );
+                    if ( LocIDs.NOT_FOUND != id ) {
+                        asKey = context.getString( id ).toUpperCase();
+                    } else {
+                        DbgUtils.logf( "nothing for %s", asKey );
+                    }
+                    item.setTitle( asKey );
                 }
-                item.setTitle( asKey );
             }
         }
     }
