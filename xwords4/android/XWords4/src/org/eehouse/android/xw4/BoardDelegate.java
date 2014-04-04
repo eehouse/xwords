@@ -62,7 +62,7 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.JNIThread.*;
-
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -673,6 +673,15 @@ public class BoardDelegate extends DelegateBase
             }
         }
         return handled;
+    }
+
+    protected boolean onCreateOptionsMenu( Menu menu )
+    {
+        MenuInflater inflater = m_activity.getMenuInflater();
+        inflater.inflate( R.menu.board_menu, menu );
+        LocUtils.xlateMenu( m_activity, menu );
+
+        return true;
     }
 
     protected boolean onPrepareOptionsMenu( Menu menu ) 

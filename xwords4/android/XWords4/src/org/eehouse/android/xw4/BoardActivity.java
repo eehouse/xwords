@@ -159,10 +159,7 @@ public class BoardActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu( Menu menu ) 
     {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate( R.menu.board_menu, menu );
-
-        return true;
+        return m_dlgt.onCreateOptionsMenu( menu );
     }
 
     @Override

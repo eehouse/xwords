@@ -5,7 +5,7 @@
   <group android:id="@+id/group_done">
     <!-- title set in BoardActivity -->
     <item android:id="@+id/board_menu_invite"
-          android:title="@string/board_menu_invite"
+          android:title="loc:board_menu_invite"
           android:showAsAction="ifRoom"
           android:icon="@drawable/send__gen"
           />
@@ -17,65 +17,65 @@
           />
 
     <item android:id="@+id/board_menu_trade"
-          android:title="@string/board_menu_trade"
+          android:title="loc:board_menu_trade"
           android:alphabeticShortcut="T"
           android:showAsAction="ifRoom"
           />
   </group>
 
     <item android:id="@+id/board_menu_trade_cancel"
-          android:title="@string/button_trade_cancel"
+          android:title="loc:button_trade_cancel"
           android:showAsAction="ifRoom"
           android:icon="@drawable/back__gen"
           />
 
     <item android:id="@+id/board_menu_trade_commit"
-          android:title="@string/button_trade_commit"
+          android:title="loc:button_trade_commit"
           android:showAsAction="ifRoom"
           android:icon="@drawable/save__gen"
           />
 
     <item android:id="@+id/board_menu_undo_last"
-          android:title="@string/board_menu_undo_last"
+          android:title="loc:board_menu_undo_last"
           android:alphabeticShortcut="U"
           />
 
     <item android:id="@+id/board_menu_tray"
           />
 
-    <item android:title="@string/board_submenu_game">
+    <item android:title="loc:board_submenu_game">
       <menu>
         <item android:id="@+id/board_menu_game_counts"
-              android:title="@string/board_menu_game_counts" />
+              android:title="loc:board_menu_game_counts" />
         <item android:id="@+id/board_menu_game_left"
-              android:title="@string/board_menu_game_left" />
+              android:title="loc:board_menu_game_left" />
         <item android:id="@+id/board_menu_game_history"
-              android:title="@string/board_menu_game_history" />
+              android:title="loc:board_menu_game_history" />
         <item android:id="@+id/board_menu_game_resign"
-              android:title="@string/board_menu_game_resign" />
+              android:title="loc:board_menu_game_resign" />
         <item android:id="@+id/board_menu_game_resend"
-              android:title="@string/board_menu_game_resend" />
+              android:title="loc:board_menu_game_resend" />
       </menu>
     </item>
     
     <item android:id="@+id/games_menu_study"
-          android:title="@string/gamel_menu_study"
+          android:title="loc:gamel_menu_study"
           />
 
     <item android:id="@+id/gamel_menu_checkmoves"
-          android:title="@string/gamel_menu_checkmoves"
+          android:title="loc:gamel_menu_checkmoves"
           />
 
     <item android:id="@+id/board_menu_file_prefs"
-          android:title="@string/menu_prefs"
+          android:title="loc:menu_prefs"
           android:alphabeticShortcut="P"
           />
     <item android:id="@+id/board_menu_file_about"
-          android:title="@string/board_menu_file_about"
+          android:title="loc:board_menu_file_about"
           android:alphabeticShortcut="A"
           />
 
     <item android:id="@+id/board_menu_game_netstats"
-          android:title="@string/board_menu_game_netstats" />
+          android:title="loc:board_menu_game_netstats" />
 
 </menu>
