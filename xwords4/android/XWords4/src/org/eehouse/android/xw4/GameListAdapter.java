@@ -39,6 +39,7 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameListAdapter extends XWListAdapter
     implements GameListGroup.GroupStateListener {
@@ -212,9 +213,9 @@ public class GameListAdapter extends XWListAdapter
                                   ggi.m_lastMoveTime );
                 }
 
-                String name = m_context.getString( R.string.group_namef, 
-                                                   groupNames()[groupPosition], 
-                                                   nKids );
+                String name = LocUtils.getString( m_context, R.string.group_namef, 
+                                                  groupNames()[groupPosition], 
+                                                  nKids );
                 group.setText( name );
                 group.setSelected( m_cb.getSelected( group ) );
                 result = group;
@@ -558,7 +559,7 @@ public class GameListAdapter extends XWListAdapter
         };
         int result = -1;
         for ( int id : ids ) {
-            if ( m_context.getString( id ).equals( fieldName ) ) {
+            if ( LocUtils.getString( m_context, id ).equals( fieldName ) ) {
                 result = id;
                 break;
             }

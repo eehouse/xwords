@@ -44,6 +44,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameListItem extends LinearLayout 
     implements View.OnClickListener, SelectableItem.LongClickHandler {
@@ -240,8 +241,8 @@ public class GameListItem extends LinearLayout
 
             String name = GameUtils.getName( m_context, m_rowid );
             if ( null != value ) {
-                value = m_context.getString( R.string.str_game_namef, 
-                                             name, value );
+                value = LocUtils.getString( m_context, R.string.str_game_namef, 
+                                            name, value );
             } else {
                 value = name;
             }

@@ -30,6 +30,7 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 /** Info we want to access when the game's closed that's not available
  * in CurGameInfo
@@ -139,7 +140,7 @@ public class GameSummary {
             if ( playersStr.contains("\n") ) {
                 sep = "\n";
             } else {
-                sep = m_context.getString( R.string.vs_join );
+                sep = LocUtils.getString( m_context, R.string.vs_join );
             }
 
             int ii, nxt;
@@ -167,10 +168,9 @@ public class GameSummary {
     {
         String result = null;
         if ( gameOver ) {
-            result = m_context.getString( R.string.gameOver );
+            result = LocUtils.getString( m_context, R.string.gameOver );
         } else {
-            result = String.format( m_context.getString(R.string.movesf),
-                                    nMoves );
+            result = LocUtils.getString( m_context, R.string.movesf, nMoves );
         }
         return result;
     }
@@ -191,7 +191,7 @@ public class GameSummary {
                 } else {
                     fmtID = R.string.summary_relay_connf;
                 }
-                result = String.format( m_context.getString(fmtID), roomName );
+                result = LocUtils.getString( m_context, fmtID, roomName );
                 break;
             case COMMS_CONN_BT:
             case COMMS_CONN_SMS:
@@ -212,7 +212,7 @@ public class GameSummary {
                     fmtID = R.string.summary_conn;
                 }
                 if ( null == result ) {
-                    result = m_context.getString( fmtID );
+                    result = LocUtils.getString( m_context, fmtID );
                 }
                 break;
             }
@@ -280,7 +280,7 @@ public class GameSummary {
         if ( !isLocal(indx) ) {
             boolean isMissing = 0 != ((1 << indx) & missingPlayers);
             if ( isMissing ) {
-                player = m_context.getString( R.string.missing_player );
+                player = LocUtils.getString( m_context, R.string.missing_player );
             } else {
                 formatID = R.string.str_nonlocal_namef;
             }
@@ -289,8 +289,7 @@ public class GameSummary {
         }
 
         if ( 0 != formatID ) {
-            String format = m_context.getString( formatID );
-            player = String.format( format, player );
+            player = LocUtils.getString( m_context, formatID, player );
         }
         return player;
     }
@@ -306,7 +305,7 @@ public class GameSummary {
 
         String result = null;
         if ( null != names && 0 < names.length ) {
-            String joiner = m_context.getString( R.string.vs_join );
+            String joiner = LocUtils.getString( m_context, R.string.vs_join );
             result = TextUtils.join( joiner, names );
         }
 

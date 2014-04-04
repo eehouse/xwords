@@ -4,6 +4,7 @@
 <!-- top-level layout is hozontal, with an image and another layout -->
 <org.eehouse.android.xw4.GameListItem
      xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:custom="http://schemas.android.com/apk/res/org.eehouse.android.xw4"
      android:orientation="vertical"
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
@@ -13,15 +14,16 @@
      android:background="@android:drawable/list_selector_background"
      >
 
-    <TextView android:id="@+id/view_unloaded"
-              android:layout_width="fill_parent" 
-	          android:layout_height="wrap_content"
-              android:textAppearance="?android:attr/textAppearanceLarge"
-              android:gravity="center"
-              android:paddingTop="10dp"
-              android:paddingBottom="10dp"
-              android:text="@string/game_list_tmp"
-              />
+    <org.eehouse.android.xw4.loc.LocTextView
+         android:id="@+id/view_unloaded"
+         android:layout_width="fill_parent" 
+	     android:layout_height="wrap_content"
+         android:textAppearance="?android:attr/textAppearanceLarge"
+         android:gravity="center"
+         android:paddingTop="10dp"
+         android:paddingBottom="10dp"
+         custom:strid="@string/game_list_tmp"
+         />
 
     <LinearLayout android:id="@+id/view_loaded"
                   android:orientation="horizontal"
