@@ -287,10 +287,10 @@
   </string-array>
 
   <string-array name="game_summary_values">
-    <item>@string/game_summary_field_empty</item>
-    <item>@string/game_summary_field_language</item>
-    <item>@string/game_summary_field_opponents</item>
-    <item>@string/game_summary_field_state</item>
+    <item>loc:game_summary_field_empty</item>
+    <item>loc:game_summary_field_language</item>
+    <item>loc:game_summary_field_opponents</item>
+    <item>loc:game_summary_field_state</item>
   </string-array>
 
   <string-array name="confirm_sms_reasons">

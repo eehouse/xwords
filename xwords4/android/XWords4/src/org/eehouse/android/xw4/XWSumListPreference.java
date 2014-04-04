@@ -23,6 +23,11 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.util.AttributeSet;
 
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.loc.LocUtils;
+
+
 public class XWSumListPreference extends XWListPreference {
 
     private static final int[] s_ADDROWS = {
@@ -37,25 +42,32 @@ public class XWSumListPreference extends XWListPreference {
     }
 
     // Why I exist: insert the rowid and gameid lines if debug is on
+    @Override
     protected void onAttachedToActivity()
     {
         super.onAttachedToActivity();
 
+        CharSequence[] entries = getEntries();
+        CharSequence[] newEntries = LocUtils.xlateStrings( m_context, entries );
+        if ( ! newEntries.equals( entries ) ) {
+            setEntries( newEntries );
+            setEntryValues( newEntries );
+        }
+
         if ( BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_context ) ) {
-            CharSequence[] entries = getEntries();
+            entries = getEntries();
             CharSequence lastRow = entries[entries.length - 1];
             boolean done = false;
 
             String[] addRows = new String[s_ADDROWS.length];
             for ( int ii = 0; !done && ii < s_ADDROWS.length; ++ii ) {
-                String addRow = m_context.getString( s_ADDROWS[ii] );
+                String addRow = LocUtils.getString( m_context, s_ADDROWS[ii] );
                 done = lastRow.equals( addRow );
                 addRows[ii] = addRow;
             }
 
             if ( !done ) {
-                CharSequence[] newEntries = 
-                    new CharSequence[entries.length + addRows.length];
+                newEntries = new CharSequence[entries.length + addRows.length];
                 System.arraycopy( entries, 0, newEntries, 0, 
                                   entries.length );
                 System.arraycopy( addRows, 0, newEntries, entries.length, 

@@ -82,6 +82,29 @@ public class LocUtils {
         }
     }
 
+    public static String xlateString( Context context, String str )
+    {
+        if ( str.startsWith( LOC_PREFIX ) ) {
+            str = str.substring( LOC_PREFIX.length() );
+            int id = LocIDs.getID( str );
+            if ( LocIDs.NOT_FOUND != id ) {
+                str = getString( context, id );
+            } else {
+                DbgUtils.logf( "nothing for %s", str );
+            }
+        }
+        return str;
+    }
+
+    public static CharSequence[] xlateStrings( Context context, CharSequence[] strs )
+    {
+        CharSequence[] result = new CharSequence[strs.length];
+        for ( int ii = 0; ii < strs.length; ++ii ) {
+            result[ii] = xlateString( context, strs[ii].toString() );
+        }
+        return result;
+    }
+
     public static String getString( Context context, int id )
     {
         String str = context.getString( id );
