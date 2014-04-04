@@ -75,6 +75,10 @@ public class LocUtils {
                     item.setTitle( asKey );
                 }
             }
+
+            if ( item.hasSubMenu() ) {
+                xlateMenu( context, item.getSubMenu() );
+            }
         }
     }
 }
