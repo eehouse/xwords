@@ -48,7 +48,7 @@ public class LocUtils {
                 String value = as.getAttributeValue(ii);
                 Assert.assertTrue( '@' == value.charAt(0) );
                 int id = Integer.parseInt( value.substring(1) );
-                view.setText( context.getString( id ).toUpperCase() );
+                view.setText( getString( context, id ) );
                 break;
             }
         }
@@ -68,7 +68,7 @@ public class LocUtils {
                     String asKey = title.substring( LOC_PREFIX.length() );
                     int id = LocIDs.getID( asKey );
                     if ( LocIDs.NOT_FOUND != id ) {
-                        asKey = context.getString( id ).toUpperCase();
+                        asKey = getString( context, id );
                     } else {
                         DbgUtils.logf( "nothing for %s", asKey );
                     }
@@ -80,5 +80,19 @@ public class LocUtils {
                 xlateMenu( context, item.getSubMenu() );
             }
         }
+    }
+
+    public static String getString( Context context, int id )
+    {
+        String str = context.getString( id );
+        str = str.toUpperCase();
+        return str;
+    }
+
+    public static String getString( Context context, int id, Object... params )
+    {
+        String str = context.getString( id );
+        str = String.format( str, params );
+        return str.toUpperCase();
     }
 }
