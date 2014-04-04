@@ -7,6 +7,7 @@
 # AttributeSet provided with menu inflation.
 
 import glob, sys, re, os
+from lxml import etree
 
 pairs = {}
 
@@ -19,6 +20,15 @@ for path in glob.iglob( "res/menu/*.xml" ):
         mtch = TITLE.match(line)
         if mtch:
             pairs[mtch.group(1)] = True
+
+LOC_START = re.compile('loc:(.*)')
+for path in glob.iglob( "res/values/common_rsrc.xml" ):
+    for action, elem in etree.iterparse(path):
+        if "end" == action and elem.text:
+            mtch = LOC_START.match(elem.text)
+            if mtch: 
+                pairs[mtch.group(1)] = True
+
 
 # Get all string IDs, but only keep those we've seen in menus
 # LINE = re.compile('.*public static final int (.*)=(0x.*);.*')
