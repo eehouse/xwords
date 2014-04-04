@@ -30,6 +30,9 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DbgUtils;
 
 public class LocUtils {
+    // Keep this in sync with gen_loc_ids.py and what's used in the menu.xml
+    // files to mark me-localized strings.
+    private static final String LOC_PREFIX = "loc:";
 
     public interface LocIface {
         void setText( CharSequence text );
@@ -51,7 +54,7 @@ public class LocUtils {
         }
     }
 
-    public static void xlateMenu( Menu menu )
+    public static void xlateMenu( Context context, Menu menu )
     {
         int count = menu.size();
         DbgUtils.logf( "xlateMenu: menu has %d items", count );
@@ -59,8 +62,15 @@ public class LocUtils {
             MenuItem item = menu.getItem( ii );
             String title = item.getTitle().toString();
             DbgUtils.logf( "xlateMenu: %d; %s", ii, title );
-            if ( title.startsWith( "loc:" ) ) {
-                item.setTitle( title.substring( 4 ) );
+            if ( title.startsWith( LOC_PREFIX ) ) {
+                String asKey = title.substring( LOC_PREFIX.length() );
+                int id = LocIDs.getID( asKey );
+                if ( LocIDs.NOT_FOUND != id ) {
+                    asKey = context.getString( id ).toUpperCase();
+                } else {
+                    DbgUtils.logf( "nothing for %s", asKey );
+                }
+                item.setTitle( asKey );
             }
         }
     }

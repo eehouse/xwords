@@ -98,10 +98,16 @@
           <arg value="${THUMBNAIL_ENABLED}" />
         </exec>
     </target>
-<!--
+
     <target name="-pre-compile">
+        <exec dir="." executable="../scripts/gen_loc_ids.py"
+              output="src/org/eehouse/android/xw4/loc/LocIDs.java"
+              failonerror="true"
+              >
+        </exec>
     </target>
 
+<!--
     /* This is typically used for code obfuscation.
        Compiled code location: ${out.classes.absolute.dir}
        If this is not done in place, override ${out.dex.input.absolute.dir} */

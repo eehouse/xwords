@@ -623,7 +623,7 @@ public class GamesListDelegate extends DelegateBase
     {
         MenuInflater inflater = m_activity.getMenuInflater();
         inflater.inflate( R.menu.games_list_menu, menu );
-        LocUtils.xlateMenu( menu );
+        LocUtils.xlateMenu( m_activity, menu );
 
         return true;
     }
