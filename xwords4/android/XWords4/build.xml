@@ -101,7 +101,7 @@
 
     <target name="-pre-compile">
         <exec dir="." executable="../scripts/gen_loc_ids.py"
-              output="src/org/eehouse/android/xw4/loc/LocIDs.java"
+              output="src/org/eehouse/android/xw4/loc/LocIDsData.java"
               failonerror="true"
               >
         </exec>

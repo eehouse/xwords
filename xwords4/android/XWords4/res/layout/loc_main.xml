@@ -10,11 +10,11 @@
 
   <!-- Search field -->
   <LinearLayout android:orientation="horizontal"
-                android:layout_width="fill_parent" 
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 >
 
-    <EditText android:id="@+id/loc_search_field" 
+    <EditText android:id="@+id/loc_search_field"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:singleLine="true"
@@ -22,7 +22,7 @@
               />
 
     <ImageButton android:id="@+id/loc_search_button"
-                 android:layout_width="wrap_content" 
+                 android:layout_width="wrap_content"
                  android:layout_height="wrap_content"
                  android:src="@drawable/search__gen"
                  android:gravity="right"
@@ -33,18 +33,18 @@
 
   <!-- table header -->
   <LinearLayout android:orientation="horizontal"
-                android:layout_width="match_parent" 
-                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 >
-    <TextView android:layout_width="wrap_content" 
-	          android:layout_height="wrap_content"
+    <TextView android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
               android:textAppearance="?android:attr/textAppearanceLarge"
               android:text="@string/loc_main_english"
               />
 
     <org.eehouse.android.xw4.loc.LocTextView
-         android:layout_width="wrap_content" 
-	     android:layout_height="wrap_content"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
          android:textAppearance="?android:attr/textAppearanceLarge"
          custom:strid="@string/loc_main_yourlang"
          />
@@ -53,8 +53,10 @@
 
   <!-- main list (of pairs loaded dynamically) -->
   <ListView android:id="@id/android:list"
-            android:layout_width="match_parent" 
-	        android:layout_height="wrap_content"
+            android:layout_width="fill_parent" 
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:drawSelectorOnTop="false"
             />
 
 </LinearLayout>

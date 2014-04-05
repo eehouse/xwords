@@ -33,7 +33,7 @@ public abstract class XWListAdapter extends BaseAdapter
     implements ListAdapter {
     private int m_count;
 
-    public XWListAdapter( ) {
+    public XWListAdapter() {
         this( 0 );
     }
     public XWListAdapter( int count ) {

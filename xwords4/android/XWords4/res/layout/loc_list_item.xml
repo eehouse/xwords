@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<org.eehouse.android.xw4.loc.LocListItem
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/org.eehouse.android.xw4"
+    android:orientation="horizontal"
+    android:layout_width="match_parent" 
+    android:layout_height="match_parent"
+    >
+
+    <TextView android:id="@+id/english_view"
+              style="@style/spaced_buttons"
+              />
+    <EditText android:id="@+id/xlated_view"
+              style="@style/spaced_buttons"
+              />
+
+</org.eehouse.android.xw4.loc.LocListItem>

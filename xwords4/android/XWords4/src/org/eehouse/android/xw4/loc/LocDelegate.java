@@ -21,6 +21,7 @@ package org.eehouse.android.xw4.loc;
 
 import android.app.ListActivity;
 import android.os.Bundle;
+import android.widget.ListView;
 
 import org.eehouse.android.xw4.DelegateBase;
 import org.eehouse.android.xw4.R;
@@ -29,6 +30,7 @@ import org.eehouse.android.xw4.R;
 public class LocDelegate extends DelegateBase {
 
     private ListActivity m_activity;
+    private LocListAdapter m_adapter;
 
     protected LocDelegate( ListActivity activity, Bundle savedInstanceState )
     {
@@ -40,6 +42,10 @@ public class LocDelegate extends DelegateBase {
     private void init( Bundle savedInstanceState ) 
     {
         m_activity.setContentView( R.layout.loc_main );
+
+        ListView listview = m_activity.getListView();
+        m_adapter = new LocListAdapter( m_activity, listview );
+        m_activity.setListAdapter( m_adapter );
     }
 
 }

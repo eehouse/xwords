@@ -70,7 +70,7 @@ import java.util.HashMap;
 
 import org.eehouse.android.xw4.R;
 
-public class LocIDs {
+public class LocIDsData {
     public static final int NOT_FOUND = -1;
     protected static HashMap<String,Integer> s_map;
     static {
@@ -82,15 +82,6 @@ for key in pairs.keys():
 
 # Now the end of the class
 print """
-    }
-
-    protected static int getID( String key )
-    {
-        int result = NOT_FOUND;
-        if ( s_map.containsKey( key ) ) {
-            result = s_map.get( key );
-        }
-        return result;
     }
 }
 /* end generated file */
