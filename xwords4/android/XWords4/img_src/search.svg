@@ -1,9 +1,15 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg x='0px' y='0px' xml:space='preserve' id='Layer_1' height='32px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg' xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' version='1.1' style='enable-background:new 0 0 32 32;' xmlns:cc='http://creativecommons.org/ns#' xmlns:dc='http://purl.org/dc/elements/1.1/' width='32px' xmlns:xlink='http://www.w3.org/1999/xlink'>
-<metadata><rdf:RDF><cc:Work><dc:subject><rdf:Bag><rdf:li>core</rdf:li></rdf:Bag></dc:subject></cc:Work></rdf:RDF></metadata><path d='M26.498,23.393l-4.055-4.056c-0.357-0.356-1.003-0.322-1.65,0.015l-1.77-1.768c2.305-3.011,2.088-7.334-0.667-10.089
-	c-3-2.999-7.862-2.999-10.862,0c-2.998,3-2.998,7.863,0,10.862c2.756,2.755,7.079,2.973,10.09,0.667l1.769,1.768
-	c-0.337,0.649-0.372,1.295-0.016,1.651l4.056,4.056c0.512,0.512,1.624,0.23,2.48-0.627C26.729,25.016,27.011,23.904,26.498,23.393z
-	 M8.637,17.215c-2.368-2.369-2.368-6.21,0-8.578c2.37-2.37,6.207-2.368,8.578,0c2.367,2.368,2.367,6.208,0,8.578
-	C14.844,19.583,11.004,19.583,8.637,17.215z'/>
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="120"
+	 height="120" xml:space="preserve">
+<g
+     id="g12"
+     transform="matrix(1.25,0,0,-1.25,0,120)">
+<g id='g1532'>
+  <g id='g1534'>
+    <g transform='translate(25.91,44.35)' id='g1540'>
+      <path style='fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none' d='M 0,0 C -7.104,7.11 -7.104,18.63 0,25.74 7.109,32.85 18.62,32.84 25.73,25.74 32.84,18.63 32.84,7.114 25.73,0 18.62,-7.104 7.104,-7.104 0,0 M 53.58,-18.53 41.42,-6.365 C 40.35,-5.297 38.41,-5.398 36.47,-6.41 L 31.16,-1.105 C 38.08,7.928 37.42,20.9 29.16,29.16 20.16,38.16 5.573,38.16 -3.427,29.16 -12.42,20.16 -12.42,5.575 -3.427,-3.425 4.841,-11.69 17.81,-12.34 26.84,-5.426 L 32.15,-10.73 C 31.14,-12.68 31.03,-14.61 32.1,-15.68 L 44.27,-27.85 C 45.81,-29.38 49.14,-28.54 51.71,-25.97 54.28,-23.4 55.12,-20.07 53.58,-18.53' id='path1542'/>
+    </g>
+  </g>
+</g></g>
 </svg>

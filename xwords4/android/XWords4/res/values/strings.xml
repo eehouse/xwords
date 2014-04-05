@@ -2231,4 +2231,6 @@
     <string name="slmenu_deselect_all">Unselect all</string>
     <string name="sel_items_fmt">Selected: %1$d</string>
 
+    <string name="loc_main_yourlang">Your language</string>
+    <string name="loc_menu_xlate">Translate</string>
 </resources>

@@ -187,6 +187,9 @@
     <activity android:name="ChatActivity"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
+    <activity android:name=".loc.LocActivity"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
 
     <service android:name="RelayService"/>
 

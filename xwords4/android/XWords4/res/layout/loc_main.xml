@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/org.eehouse.android.xw4"
+    android:orientation="vertical"
+    android:layout_width="match_parent" 
+    android:layout_height="match_parent"
+    >
+
+  <!-- Search field -->
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="fill_parent" 
+                android:layout_height="wrap_content"
+                >
+
+    <EditText android:id="@+id/loc_search_field" 
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:singleLine="true"
+              android:layout_weight="1"
+              />
+
+    <ImageButton android:id="@+id/loc_search_button"
+                 android:layout_width="wrap_content" 
+                 android:layout_height="wrap_content"
+                 android:src="@drawable/search__gen"
+                 android:gravity="right"
+                 android:layout_weight="0"
+                 />
+
+  </LinearLayout>
+
+  <!-- table header -->
+  <LinearLayout android:orientation="horizontal"
+                android:layout_width="match_parent" 
+                android:layout_height="match_parent"
+                >
+    <TextView android:layout_width="wrap_content" 
+	          android:layout_height="wrap_content"
+              android:textAppearance="?android:attr/textAppearanceLarge"
+              android:text="@string/loc_main_english"
+              />
+
+    <org.eehouse.android.xw4.loc.LocTextView
+         android:layout_width="wrap_content" 
+	     android:layout_height="wrap_content"
+         android:textAppearance="?android:attr/textAppearanceLarge"
+         custom:strid="@string/loc_main_yourlang"
+         />
+
+  </LinearLayout>
+
+  <!-- main list (of pairs loaded dynamically) -->
+  <ListView android:id="@id/android:list"
+            android:layout_width="match_parent" 
+	        android:layout_height="wrap_content"
+            />
+
+</LinearLayout>

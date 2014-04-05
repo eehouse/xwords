@@ -19,9 +19,12 @@
 
 package org.eehouse.android.xw4.loc;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.util.AttributeSet;
 import android.view.Menu;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MenuItem;
 
 import junit.framework.Assert;
@@ -54,32 +57,9 @@ public class LocUtils {
         }
     }
 
-    public static void xlateMenu( Context context, Menu menu )
+    public static void xlateMenu( Activity activity, Menu menu )
     {
-        int count = menu.size();
-        DbgUtils.logf( "xlateMenu: menu has %d items", count );
-        for ( int ii = 0; ii < count; ++ii ) {
-            MenuItem item = menu.getItem( ii );
-            CharSequence ts = item.getTitle();
-            if ( null != ts ) {
-                String title = ts.toString();
-                DbgUtils.logf( "xlateMenu: %d; %s", ii, title );
-                if ( title.startsWith( LOC_PREFIX ) ) {
-                    String asKey = title.substring( LOC_PREFIX.length() );
-                    int id = LocIDs.getID( asKey );
-                    if ( LocIDs.NOT_FOUND != id ) {
-                        asKey = getString( context, id );
-                    } else {
-                        DbgUtils.logf( "nothing for %s", asKey );
-                    }
-                    item.setTitle( asKey );
-                }
-            }
-
-            if ( item.hasSubMenu() ) {
-                xlateMenu( context, item.getSubMenu() );
-            }
-        }
+        xlateMenu( activity, menu, 0 );
     }
 
     public static String xlateString( Context context, String str )
@@ -118,4 +98,48 @@ public class LocUtils {
         str = String.format( str, params );
         return str.toUpperCase();
     }
+
+    private static void xlateMenu( final Activity activity, Menu menu, 
+                                   int depth )
+    {
+        int count = menu.size();
+        DbgUtils.logf( "xlateMenu: menu has %d items", count );
+        for ( int ii = 0; ii < count; ++ii ) {
+            MenuItem item = menu.getItem( ii );
+            CharSequence ts = item.getTitle();
+            if ( null != ts ) {
+                String title = ts.toString();
+                DbgUtils.logf( "xlateMenu: %d; %s", ii, title );
+                if ( title.startsWith( LOC_PREFIX ) ) {
+                    String asKey = title.substring( LOC_PREFIX.length() );
+                    int id = LocIDs.getID( asKey );
+                    if ( LocIDs.NOT_FOUND != id ) {
+                        asKey = getString( activity, id );
+                    } else {
+                        DbgUtils.logf( "nothing for %s", asKey );
+                    }
+                    item.setTitle( asKey );
+                }
+            }
+
+            if ( item.hasSubMenu() ) {
+                xlateMenu( activity, item.getSubMenu(), 1 + depth );
+            }
+        }
+
+        // The caller is loc-aware, so add our menu -- at the top level!
+        if ( 0 == depth ) {
+            String title = getString( activity, R.string.loc_menu_xlate );
+            menu.add( title )
+                .setOnMenuItemClickListener( new OnMenuItemClickListener() {
+                        public boolean onMenuItemClick( MenuItem item ) {
+                            Intent intent = 
+                                new Intent( activity, LocActivity.class );
+                            activity.startActivity( intent );
+                            return true;
+                        } 
+                    });
+        }
+    }
+
 }
