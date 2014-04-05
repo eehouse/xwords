@@ -37,8 +37,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_DICTINFO = "dictinfo";
     public static final String TABLE_NAME_GROUPS = "groups";
     public static final String TABLE_NAME_STUDYLIST = "study";
+    public static final String TABLE_NAME_LOC = "loc";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 20;
+    private static final int DB_VERSION = 21;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -91,6 +92,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String WORD = "WORD";
     public static final String LANGUAGE = "LANGUAGE";
+
+    public static final String KEY = "KEY";
+    public static final String LOCALE = "LOCALE";
+    public static final String XLATION = "XLATION";
+
 
     private Context m_context;
 
@@ -163,6 +169,12 @@ public class DBHelper extends SQLiteOpenHelper {
         { WORD,  "TEXT" }
         ,{ LANGUAGE,  "INTEGER(1)" }
         ,{ "UNIQUE", "(" + WORD + ", " + LANGUAGE + ")" }
+    };
+
+    private static final String[][] s_locSchema = {
+        { KEY,  "TEXT" }
+        ,{ LOCALE,  "TEXT(5)" }
+        ,{ XLATION,  "TEXT" }
     };
 
     public DBHelper( Context context )
@@ -240,6 +252,8 @@ public class DBHelper extends SQLiteOpenHelper {
                 // NPACKETSPENDING also added by makeAutoincrement above
                 addSumColumn( db, NPACKETSPENDING );
             }
+        case 20:
+            createLocTable( db );
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
@@ -312,6 +326,11 @@ public class DBHelper extends SQLiteOpenHelper {
     private void createStudyTable( SQLiteDatabase db )
     {
         createTable( db, TABLE_NAME_STUDYLIST, s_studySchema );
+    }
+
+    private void createLocTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_LOC, s_locSchema );
     }
 
     // Move all existing games to the row previously named "cur games'
