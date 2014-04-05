@@ -162,14 +162,14 @@ public class GamesListDelegate extends DelegateBase
                 DictLangCache.getLangName( m_activity, m_missingDictLang );
             String gameName = GameUtils.getName( m_activity, m_missingDictRowId );
             if ( DlgID.WARN_NODICT == dlgID ) {
-                message = m_activity.getString( R.string.no_dictf,
+                message = m_activity.getString( R.string.no_dict_fmt,
                                                 gameName, langName );
             } else if ( DlgID.WARN_NODICT_NEW == dlgID ) {
                 message = 
-                    m_activity.getString( R.string.invite_dict_missing_body_nonamef,
+                    m_activity.getString( R.string.invite_dict_missing_body_noname_fmt,
                                           null, m_missingDictName, langName );
             } else {
-                message = m_activity.getString( R.string.no_dict_substf,
+                message = m_activity.getString( R.string.no_dict_subst_fmt,
                                                 gameName, m_missingDictName, 
                                                 langName );
             }
@@ -795,7 +795,8 @@ public class GamesListDelegate extends DelegateBase
 
             // Game menus: one or more games selected
         case R.id.games_game_delete:
-            String msg = Utils.format( m_activity, R.string.confirm_seldeletesf, 
+            String msg = Utils.format( m_activity, 
+                                       R.string.confirm_seldeletes_fmt, 
                                        selRowIDs.length );
             showConfirmThen( msg, R.string.button_delete, 
                              Action.DELETE_GAMES, selRowIDs );
@@ -840,7 +841,7 @@ public class GamesListDelegate extends DelegateBase
             break;
 
         case R.id.games_game_reset:
-            msg = m_activity.getString( R.string.confirm_resetf, selRowIDs.length );
+            msg = m_activity.getString( R.string.confirm_reset_fmt, selRowIDs.length );
             showConfirmThen( msg, R.string.button_reset, 
                              Action.RESET_GAMES, selRowIDs );
             break;
@@ -854,13 +855,13 @@ public class GamesListDelegate extends DelegateBase
         case R.id.games_group_delete:
             long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
             if ( m_selGroupIDs.contains( dftGroup ) ) {
-                msg = m_activity.getString( R.string.cannot_delete_default_groupf,
+                msg = m_activity.getString( R.string.cannot_delete_default_group_fmt,
                                             m_adapter.groupName( dftGroup ) );
                 showOKOnlyDialog( msg );
             } else {
                 long[] groupIDs = getSelGroupIDs();
                 Assert.assertTrue( 0 < groupIDs.length );
-                msg = m_activity.getString( R.string.groups_confirm_delf, 
+                msg = m_activity.getString( R.string.groups_confirm_del_fmt, 
                                             groupIDs.length );
 
                 int nGames = 0;
@@ -868,7 +869,7 @@ public class GamesListDelegate extends DelegateBase
                     nGames += m_adapter.getChildrenCount( tmp );
                 }
                 if ( 0 < nGames ) {
-                    msg += m_activity.getString( R.string.groups_confirm_del_gamesf,
+                    msg += m_activity.getString( R.string.groups_confirm_del_games_fmt,
                                                  nGames );
                 }
                 showConfirmThen( msg, Action.DELETE_GROUPS, groupIDs );
@@ -925,11 +926,11 @@ public class GamesListDelegate extends DelegateBase
         int fmt = 0;
         int nSels = m_selGames.size();
         if ( 0 < nSels ) {
-            fmt = R.string.sel_gamesf;
+            fmt = R.string.sel_games_fmt;
         } else {
             nSels = m_selGroupIDs.size();
             if ( 0 < nSels ) {
-                fmt = R.string.sel_groupsf;
+                fmt = R.string.sel_groups_fmt;
             }
         }
 
@@ -1074,7 +1075,7 @@ public class GamesListDelegate extends DelegateBase
                 makeNewNetGame( nli );
             }
         } else if ( XWPrefs.getSecondInviteAllowed( m_activity ) ) {
-            String msg = m_activity.getString( R.string.dup_game_queryf, 
+            String msg = m_activity.getString( R.string.dup_game_query_fmt, 
                                                create.toString() );
             m_netLaunchInfo = nli;
             showConfirmThen( msg, Action.NEW_NET_GAME, nli );

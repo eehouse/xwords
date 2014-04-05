@@ -552,7 +552,7 @@ public class SMSService extends XWService {
             DBUtils.setName( this, rowid, gameName );
         }
         String owner = Utils.phoneToContact( this, phone, true );
-        String body = Utils.format( this, R.string.new_name_bodyf, 
+        String body = Utils.format( this, R.string.new_name_body_fmt, 
                                     owner );
         postNotification( gameID, R.string.new_sms_title, body, rowid );
 

@@ -358,8 +358,8 @@ public class BoardDelegate extends DelegateBase
                         boolean studyOn = XWPrefs.getStudyEnabled( m_activity );
                         if ( m_words.length == 1 ) {
                             int resID = studyOn 
-                                ? R.string.button_lookup_studyf
-                                : R.string.button_lookupf;
+                                ? R.string.button_lookup_study_fmt
+                                : R.string.button_lookup_fmt;
                             buttonTxt = LocUtils.getString( m_activity, resID, 
                                                             m_words[0] );
                         } else {
@@ -399,7 +399,7 @@ public class BoardDelegate extends DelegateBase
                 if ( DlgID.PICK_TILE_REQUESTBLANK_BLK == dlgID ) {
                     ab.setTitle( R.string.title_tile_picker );
                 } else {
-                    ab.setTitle( LocUtils.getString( m_activity, R.string.cur_tilesf, 
+                    ab.setTitle( LocUtils.getString( m_activity, R.string.cur_tiles_fmt, 
                                                      m_curTiles ) );
                     if ( m_canUndoTiles ) {
                         DialogInterface.OnClickListener undoClicked =
@@ -501,7 +501,7 @@ public class BoardDelegate extends DelegateBase
         case DLG_INVITE:
             AlertDialog ad = (AlertDialog)dialog;
             String message = 
-                LocUtils.getString( m_activity, R.string.invite_msgf, 
+                LocUtils.getString( m_activity, R.string.invite_msg_fmt, 
                                     m_missing );
             if ( m_missing > 1 ) {
                 message += LocUtils.getString( m_activity, 
@@ -1221,7 +1221,7 @@ public class BoardDelegate extends DelegateBase
     {
         m_jniThread.setSaveDict( getDict );
 
-        String msg = LocUtils.getString( m_activity, R.string.reload_new_dict, 
+        String msg = LocUtils.getString( m_activity, R.string.reload_new_dict_fmt, 
                                          getDict );
         Utils.showToast( m_activity, msg );
         m_activity.finish();
@@ -1318,7 +1318,7 @@ public class BoardDelegate extends DelegateBase
             // Skip this until there's a way to show it only once per game
             if ( false ) {
                 toastStr = LocUtils.getString( m_activity, 
-                                               R.string.msg_relay_all_heref, 
+                                               R.string.msg_relay_all_here_fmt, 
                                                room );
                 if ( devOrder > 1 ) {
                     naMsg = R.string.not_again_conndall;
@@ -1333,7 +1333,7 @@ public class BoardDelegate extends DelegateBase
                 showDialog( DlgID.DLG_INVITE );
                 ABUtils.invalidateOptionsMenuIf( m_activity );
             } else {
-                toastStr = LocUtils.getString( m_activity,R.string.msg_relay_waiting, 
+                toastStr = LocUtils.getString( m_activity,R.string.msg_relay_waiting_fmt, 
                                                devOrder, room, nMissing );
                 if ( devOrder == 1 ) {
                     naMsg = R.string.not_again_conndfirst;
@@ -1581,7 +1581,7 @@ public class BoardDelegate extends DelegateBase
         public boolean confirmTrade( String[] tiles )
         {
             m_dlgTitle = R.string.info_title;
-            m_dlgBytes = LocUtils.getString( m_activity, R.string.query_tradef, 
+            m_dlgBytes = LocUtils.getString( m_activity, R.string.query_trade_fmt, 
                                              TextUtils.join( ", ", tiles ) );
             return 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
         }
@@ -1664,13 +1664,13 @@ public class BoardDelegate extends DelegateBase
                 m_haveInvited = true;
                 final Action faction = action;
                 final String fmsg = LocUtils.getString( m_activity,
-                                                        R.string.invite_msgf,
+                                                        R.string.invite_msg_fmt,
                                                         nMissingPlayers );
                 post( new Runnable() {
                         public void run() {
                             DbgUtils.showf( m_activity,
                                             LocUtils.getString( m_activity, 
-                                                                R.string.players_missf,
+                                                                R.string.players_miss_fmt,
                                                                 nMissingPlayers ) );
                             m_nMissingPlayers = nMissingPlayers;
                             showConfirmThen( fmsg, faction );
@@ -1710,14 +1710,14 @@ public class BoardDelegate extends DelegateBase
                 if ( !oldSum.equals( newSum ) ) {
                     // Same dict, different versions
                     msg = LocUtils.getString( m_activity,
-                                              R.string.inform_dict_diffversionf,
+                                              R.string.inform_dict_diffversion_fmt,
                                               oldName );
                 }
             } else {
                 // Different dict!  If we have the other one, switch
                 // to it.  Otherwise offer to download
                 DlgID dlgID;
-                msg = LocUtils.getString( m_activity, R.string.inform_dict_diffdictf,
+                msg = LocUtils.getString( m_activity, R.string.inform_dict_diffdict_fmt,
                                           oldName, newName, newName );
                 if ( DictLangCache.haveDict( m_activity, code, 
                                              newName ) ) {
@@ -1752,7 +1752,7 @@ public class BoardDelegate extends DelegateBase
 
             String wordsString = TextUtils.join( ", ", words );
             String message = 
-                LocUtils.getString( m_activity, R.string.ids_badwordsf, 
+                LocUtils.getString( m_activity, R.string.ids_badwords_fmt, 
                                     wordsString, dict );
 
             if ( turnLost ) {
@@ -2262,7 +2262,7 @@ public class BoardDelegate extends DelegateBase
     private void setupPasswdVars()
     {
         m_dlgTitleStr = 
-            LocUtils.getString( m_activity, R.string.msg_ask_password, 
+            LocUtils.getString( m_activity, R.string.msg_ask_password_fmt, 
                                 m_pwdName );
         m_passwdLyt = (LinearLayout)Utils.inflate( m_activity,
                                                    R.layout.passwd_view );

@@ -434,7 +434,7 @@ public class BTService extends XWService {
                     }
                     result = BTCmd.INVITE_ACCPT;
                     String body = Utils.format( BTService.this, 
-                                                R.string.new_bt_bodyf, sender );
+                                                R.string.new_bt_body_fmt, sender );
                     postNotification( gameID, R.string.new_bt_title, body, rowid );
                 }
             } else {

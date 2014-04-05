@@ -258,7 +258,7 @@ public class GameConfig extends XWActivity
                     });
                 break;
             case NO_NAME_FOUND:
-                String msg = getString( R.string.no_name_found_f,
+                String msg = getString( R.string.no_name_found_fmt,
                                         m_gi.nPlayers, DictLangCache.
                                         getLangName( this, m_gi.dictLang ) );
                 dialog = new AlertDialog.Builder( this )
@@ -314,7 +314,7 @@ public class GameConfig extends XWActivity
         TextView dictLabel = (TextView)dialog.findViewById( R.id.dict_label );
         if ( localOnlyGame() ) {
             String langName = DictLangCache.getLangName( this, m_gi.dictLang );
-            String label = getString( R.string.dict_lang_labelf, langName );
+            String label = getString( R.string.dict_lang_label_fmt, langName );
             dictLabel.setText( label );
         } else {
             dictLabel.setVisibility( View.GONE );
@@ -742,7 +742,7 @@ public class GameConfig extends XWActivity
                                     String curDict )
     {
         String langName = DictLangCache.getLangName( this, lang );
-        dictsSpinner.setPrompt( getString( R.string.dicts_list_promptf, 
+        dictsSpinner.setPrompt( getString( R.string.dicts_list_prompt_fmt, 
                                            langName ) );
 
         OnItemSelectedListener onSel = 
@@ -945,7 +945,7 @@ public class GameConfig extends XWActivity
             label = getString( R.string.players_label_standalone );
         } else {
             int remoteCount = m_gi.remoteCount();
-            label = getString( R.string.players_label_host,
+            label = getString( R.string.players_label_host_fmt,
                                m_gi.nPlayers - remoteCount, 
                                remoteCount );
         }
@@ -1124,13 +1124,13 @@ public class GameConfig extends XWActivity
         int strID;
         switch( m_conType ) {
         case COMMS_CONN_RELAY:
-            strID = R.string.title_gamenet_configf;
+            strID = R.string.title_gamenet_config_fmt;
             break;
         case COMMS_CONN_BT:
-            strID = R.string.title_gamebt_configf;
+            strID = R.string.title_gamebt_config_fmt;
             break;
         default:
-            strID = R.string.title_game_configf;
+            strID = R.string.title_game_config_fmt;
             break;
         }
         setTitle( Utils.format( this, strID, 

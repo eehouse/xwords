@@ -207,7 +207,7 @@ public class DictsActivity extends ExpandableListActivity {
 
             // Add at top but save until have dal info
             MenuItem curItem = 
-                menu.add( context.getString( R.string.cur_menu_markerf, 
+                menu.add( context.getString( R.string.cur_menu_marker_fmt, 
                                              curDict ) );
 
             DictAndLoc[] dals = DictUtils.dictList( context );

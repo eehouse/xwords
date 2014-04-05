@@ -82,7 +82,7 @@ public class NewGameActivity extends XWActivity {
         m_dict = CommonPrefs.getDefaultHumanDict( this );
         String lang = DictLangCache.getLangName( this, m_dict );
         m_lang = DictLangCache.getLangLangCode( this, lang );
-        desc.setText( getString( R.string.newgame_local_descf, lang ) );
+        desc.setText( getString( R.string.newgame_local_desc_fmt, lang ) );
         
         Button button = (Button)findViewById( R.id.newgame_local );
         button.setOnClickListener( new View.OnClickListener() {
@@ -195,7 +195,7 @@ public class NewGameActivity extends XWActivity {
                     m_remoteDev = remoteDevs[0];
 
                     m_gameID = GameUtils.newGameID();
-                    m_gameName = Utils.format( this, R.string.dft_namef, 
+                    m_gameName = Utils.format( this, R.string.dft_name_fmt, 
                                                m_gameID & 0xFFFF );
                     showDialog( DlgID.NAME_GAME.ordinal() );
                 }
@@ -380,7 +380,7 @@ public class NewGameActivity extends XWActivity {
             m_newRowID = GameUtils.makeNewSMSGame( NewGameActivity.this, 
                                                    m_groupID, gameID, null, 
                                                    m_lang, m_dict, 2, 1 );
-            String name = Utils.format( this, R.string.dft_sms_namef, 
+            String name = Utils.format( this, R.string.dft_sms_name_fmt, 
                                         gameID & 0xFFFF );
             DBUtils.setName( this, m_newRowID, name );
 

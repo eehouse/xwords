@@ -176,7 +176,7 @@ public class ConnStatusHandler {
             StringBuffer sb = new StringBuffer();
             synchronized( s_lockObj ) {
                 String tmp = context.getString( connType2StrID( connType ) );
-                sb.append( Utils.format( context, R.string.connstat_net, 
+                sb.append( Utils.format( context, R.string.connstat_net_fmt, 
                                          tmp ) );
                 sb.append("\n\n");
 
@@ -184,18 +184,18 @@ public class ConnStatusHandler {
                 tmp = context.getString( record.successNewer? 
                                          R.string.connstat_succ :
                                          R.string.connstat_unsucc );
-                sb.append( Utils.format( context, R.string.connstat_lastsend,
+                sb.append( Utils.format( context, R.string.connstat_lastsend_fmt,
                                          tmp, record.newerStr( context ) ) );
                 sb.append("\n");
 
                 int fmtId = 0;
                 if ( record.successNewer ) {
                     if ( record.haveFailure() ) {
-                        fmtId = R.string.connstat_lastother_succ;
+                        fmtId = R.string.connstat_lastother_succ_fmt;
                     }
                 } else {
                     if ( record.haveSuccess() ) {
-                        fmtId = R.string.connstat_lastother_unsucc;
+                        fmtId = R.string.connstat_lastother_unsucc_fmt;
                     }
                 }
                 if ( 0 != fmtId ) {
@@ -207,7 +207,7 @@ public class ConnStatusHandler {
                 record = recordFor( connType, true );
                 if ( record.haveSuccess() ) {
                     sb.append( Utils.format( context, 
-                                             R.string.connstat_lastreceipt,
+                                             R.string.connstat_lastreceipt_fmt,
                                              record.newerStr( context ) ) );
                 } else {
                     sb.append( context.getString(R.string.connstat_noreceipt) );

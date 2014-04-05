@@ -135,8 +135,8 @@ public class MultiService {
         String langStr = DictLangCache.getLangName( context, lang );
         String dict = intent.getStringExtra( DICT );
         String inviter = intent.getStringExtra( INVITER );
-        int msgID = (null == inviter) ? R.string.invite_dict_missing_body_nonamef
-            : R.string.invite_dict_missing_bodyf;
+        int msgID = (null == inviter) ? R.string.invite_dict_missing_body_noname_fmt
+            : R.string.invite_dict_missing_body_fmt;
         String msg = context.getString( msgID, inviter, dict, langStr );
 
         return new AlertDialog.Builder( context )

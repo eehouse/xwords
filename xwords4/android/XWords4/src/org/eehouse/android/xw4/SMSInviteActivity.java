@@ -69,7 +69,7 @@ public class SMSInviteActivity extends InviteActivity {
         super.onCreate( savedInstanceState, R.layout.smsinviter,
                         R.id.button_invite, R.id.button_add, 
                         R.id.button_clear, R.id.invite_desc,
-                        R.string.invite_sms_descf );
+                        R.string.invite_sms_desc_fmt );
         getBundledData( savedInstanceState );
 
         m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
@@ -261,7 +261,7 @@ public class SMSInviteActivity extends InviteActivity {
                 } else {
                     m_immobileConfirmed = false;
                     String msg = 
-                        Utils.format( this, R.string.warn_nomobilef,
+                        Utils.format( this, R.string.warn_nomobile_fmt,
                                       number, name );
                     showConfirmThen( msg, R.string.button_yes, 
                                      Action.USE_IMMOBILE_ACTION );

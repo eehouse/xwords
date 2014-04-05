@@ -259,7 +259,7 @@ public class GameUtils {
         String result = DBUtils.getName( context, rowid );
         if ( null == result || 0 == result.length() ) {
             int visID = DBUtils.getVisID( context, rowid );
-            result = context.getString( R.string.gamef, visID );
+            result = context.getString( R.string.game_fmt, visID );
         }
         return result;
     }
@@ -585,7 +585,7 @@ public class GameUtils {
             if ( null != msgString ) {
                 boolean choseEmail = DlgDelegate.EMAIL_BTN == chosen;
 
-                int fmtId = choseEmail? R.string.invite_htmf : R.string.invite_txtf;
+                int fmtId = choseEmail? R.string.invite_htm_fmt : R.string.invite_txt_fmt;
                 int choiceID;
                 String message = activity.getString( fmtId, msgString );
 
@@ -593,7 +593,7 @@ public class GameUtils {
                 if ( choseEmail ) {
                     intent.setAction( Intent.ACTION_SEND );
                     String subject =
-                        Utils.format( activity, R.string.invite_subjectf, room );
+                        Utils.format( activity, R.string.invite_subject_fmt, room );
                     intent.putExtra( Intent.EXTRA_SUBJECT, subject );
                     intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
@@ -624,7 +624,7 @@ public class GameUtils {
 
                 String choiceType = activity.getString( choiceID );
                 String chooserMsg = 
-                    Utils.format( activity, R.string.invite_chooserf, choiceType );
+                    Utils.format( activity, R.string.invite_chooser_fmt, choiceType );
                 activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
             }
         }
@@ -1040,7 +1040,7 @@ public class GameUtils {
         protected void onPostExecute( Void unused )
         {
             if ( m_showUI ) {
-                DbgUtils.showf( m_context, R.string.resend_finishedf, m_nSent );
+                DbgUtils.showf( m_context, R.string.resend_finished_fmt, m_nSent );
             }
         }
 

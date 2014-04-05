@@ -185,7 +185,7 @@ public class CommonPrefs extends XWPrefs {
             result = null;      // be consistent
         }
         if ( force && null == result ) {
-            String fmt = context.getString( R.string.playerf );
+            String fmt = context.getString( R.string.player_fmt );
             result = String.format( fmt, num + 1 );
         }
         return result;

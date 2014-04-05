@@ -73,7 +73,7 @@ public class ChatDelegate extends DelegateBase
                 .setOnClickListener( this );
 
             String title = 
-                m_activity.getString( R.string.chat_titlef, 
+                m_activity.getString( R.string.chat_title_fmt, 
                                       GameUtils.getName( m_activity, m_rowid ) );
             m_activity.setTitle( title );
         } else {

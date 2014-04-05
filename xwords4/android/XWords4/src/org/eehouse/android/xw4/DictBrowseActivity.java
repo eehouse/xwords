@@ -87,7 +87,7 @@ public class DictBrowseActivity extends XWListActivity
             m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
 
             int format = m_browseState.m_minShown == m_browseState.m_maxShown ?
-                R.string.dict_browse_title1f : R.string.dict_browse_titlef;
+                R.string.dict_browse_title1_fmt : R.string.dict_browse_title_fmt;
             setTitle( Utils.format( DictBrowseActivity.this, format,
                                     m_name, m_nWords, m_browseState.m_minShown, 
                                     m_browseState.m_maxShown ));
@@ -192,7 +192,7 @@ public class DictBrowseActivity extends XWListActivity
                 // this is extended to include tile info -- it should
                 // be -- then use an empty list elem and disable
                 // search/minmax stuff.
-                String msg = Utils.format( this, R.string.alert_empty_dictf,
+                String msg = Utils.format( this, R.string.alert_empty_dict_fmt,
                                            name );
                 showOKOnlyDialogThen( msg, Action.FINISH_ACTION );
             } else {
@@ -342,7 +342,7 @@ public class DictBrowseActivity extends XWListActivity
             if ( 0 <= pos ) {
                 getListView().setSelection( pos );
             } else {
-                DbgUtils.showf( this, R.string.dict_browse_nowordsf, 
+                DbgUtils.showf( this, R.string.dict_browse_nowords_fmt, 
                                 m_name, text );
             }
         }

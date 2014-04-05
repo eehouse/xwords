@@ -213,7 +213,7 @@ public class GameListAdapter extends XWListAdapter
                                   ggi.m_lastMoveTime );
                 }
 
-                String name = LocUtils.getString( m_context, R.string.group_namef, 
+                String name = LocUtils.getString( m_context, R.string.group_name_fmt, 
                                                   groupNames()[groupPosition], 
                                                   nKids );
                 group.setText( name );

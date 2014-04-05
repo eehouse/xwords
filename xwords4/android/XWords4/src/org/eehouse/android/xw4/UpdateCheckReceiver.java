@@ -330,7 +330,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                             }
 
                             String title = 
-                                Utils.format( m_context, R.string.new_app_availf,
+                                Utils.format( m_context, R.string.new_app_avail_fmt,
                                               label );
                             String body = 
                                 m_context.getString( R.string.new_app_avail );
@@ -353,7 +353,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
                                 String body = 
                                     Utils.format( m_context, 
-                                                  R.string.new_dict_availf,
+                                                  R.string.new_dict_avail_fmt,
                                                   dal.name );
                                 Utils.postNotification( m_context, intent, 
                                                         R.string.new_dict_avail, 

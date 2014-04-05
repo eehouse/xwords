@@ -89,7 +89,7 @@ public class StudyListActivity extends ListActivity {
         } else if ( StudyListDelegate.NO_LANG != lang && 
                     0 == DBUtils.studyListWords( context, lang ).length ) {
             String langname = DictLangCache.getLangName( context, lang );
-            msg = context.getString( R.string.study_no_langf, langname );
+            msg = context.getString( R.string.study_no_lang_fmt, langname );
         } else {
             Intent intent = new Intent( context, StudyListActivity.class );
             if ( StudyListDelegate.NO_LANG != lang ) {

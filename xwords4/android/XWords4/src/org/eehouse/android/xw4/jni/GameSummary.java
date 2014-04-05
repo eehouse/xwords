@@ -170,7 +170,7 @@ public class GameSummary {
         if ( gameOver ) {
             result = LocUtils.getString( m_context, R.string.gameOver );
         } else {
-            result = LocUtils.getString( m_context, R.string.movesf, nMoves );
+            result = LocUtils.getString( m_context, R.string.moves_fmt, nMoves );
         }
         return result;
     }
@@ -183,13 +183,13 @@ public class GameSummary {
             switch ( conType ) {
             case COMMS_CONN_RELAY:
                 if ( null == relayID || 0 == relayID.length() ) {
-                    fmtID = R.string.summary_relay_conff;
+                    fmtID = R.string.summary_relay_conf_fmt;
                 } else if ( anyMissing() ) {
-                    fmtID = R.string.summary_relay_waitf;
+                    fmtID = R.string.summary_relay_wait_fmt;
                 } else if ( gameOver ) {
-                    fmtID = R.string.summary_relay_gameoverf;
+                    fmtID = R.string.summary_relay_gameover_fmt;
                 } else {
-                    fmtID = R.string.summary_relay_connf;
+                    fmtID = R.string.summary_relay_conn_fmt;
                 }
                 result = LocUtils.getString( m_context, fmtID, roomName );
                 break;
@@ -206,7 +206,7 @@ public class GameSummary {
                 } else if ( null != remoteDevs 
                             && CommsConnType.COMMS_CONN_SMS == conType ) {
                     result = 
-                        Utils.format( m_context, R.string.summary_conn_sms,
+                        Utils.format( m_context, R.string.summary_conn_sms_fmt,
                                       TextUtils.join(", ", m_remotePhones) );
                 } else {
                     fmtID = R.string.summary_conn;
@@ -282,10 +282,10 @@ public class GameSummary {
             if ( isMissing ) {
                 player = LocUtils.getString( m_context, R.string.missing_player );
             } else {
-                formatID = R.string.str_nonlocal_namef;
+                formatID = R.string.str_nonlocal_name_fmt;
             }
         } else if ( isRobot(indx) ) {
-            formatID = R.string.robot_namef;
+            formatID = R.string.robot_name_fmt;
         }
 
         if ( 0 != formatID ) {

@@ -379,7 +379,7 @@ public class RelayService extends XWService
     private void setupNotification( long rowid )
     {
         Intent intent = GamesListActivity.makeRowidIntent( this, rowid );
-        String msg = Utils.format( this, R.string.notify_bodyf, 
+        String msg = Utils.format( this, R.string.notify_body_fmt, 
                                    GameUtils.getName( this, rowid ) );
         Utils.postNotification( this, intent, R.string.notify_title,
                                 msg, (int)rowid );

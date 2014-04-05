@@ -201,7 +201,7 @@ public class DictImportActivity extends XWActivity {
             finish();
         } else {
             String showName = basename( uri.getPath() );
-            String msg = getString( R.string.downloading_dictf, showName );
+            String msg = getString( R.string.downloading_dict_fmt, showName );
             TextView view = (TextView)findViewById( R.id.dwnld_message );
             view.setText( msg );
         

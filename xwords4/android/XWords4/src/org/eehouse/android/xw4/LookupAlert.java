@@ -193,7 +193,7 @@ public class LookupAlert extends LinearLayout
             String word = m_words[m_wordIndex];
             DBUtils.addToStudyList( m_context, word, s_lang );
 
-            String msg = m_context.getString( R.string.add_donef, word );
+            String msg = m_context.getString( R.string.add_done_fmt, word );
             Utils.showToast( m_context, msg );
         }
     }
@@ -252,10 +252,10 @@ public class LookupAlert extends LinearLayout
         case STATE_URLS:
             m_listView.setAdapter( s_urlsAdapter );
             setSummary( m_words[m_wordIndex] );
-            String txt = Utils.format( m_context, R.string.button_donef,
+            String txt = Utils.format( m_context, R.string.button_done_fmt,
                                        m_words[m_wordIndex] );
             m_doneButton.setText( txt );
-            txt = m_context.getString( R.string.add_to_studyf,
+            txt = m_context.getString( R.string.add_to_study_fmt,
                                        m_words[m_wordIndex] );
             if ( m_studyOn ) {
                 m_studyButton.setVisibility( View.VISIBLE );
@@ -324,7 +324,7 @@ public class LookupAlert extends LinearLayout
 
     private void setSummary( String word )
     {
-        String title = m_context.getString( R.string.pick_url_titlef, word );
+        String title = m_context.getString( R.string.pick_url_title_fmt, word );
         m_summary.setText( title );
     }
 

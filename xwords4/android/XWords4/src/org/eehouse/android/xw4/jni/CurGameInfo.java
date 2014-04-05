@@ -257,7 +257,7 @@ public class CurGameInfo {
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
                 String name;
                 if ( lp.isRobot() ) {
-                    String format = m_context.getString( R.string.robot_namef );
+                    String format = m_context.getString( R.string.robot_name_fmt );
                     name = String.format( format, lp.name );
                 } else {
                     name = lp.name;

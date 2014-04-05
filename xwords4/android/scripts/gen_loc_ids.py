@@ -13,14 +13,20 @@ pairs = {}
 
 # Enforce some conventions: No %d/%s in strings, and anything that
 # does have formatting has a name ending in _fmt.
-HAS_FMT = re.compile('.*%\d\$[ds].*', re.DOTALL)
-OLD_PCT = re.compile('.*%[ds].*', re.DOTALL)
+HAS_FMT = re.compile('.*%\d\$[dsXx].*', re.DOTALL)
+OLD_PCT = re.compile('.*%[dsXx].*', re.DOTALL)
 ENDS_WITH_FMT = re.compile('.*_fmt$')
 for path in glob.iglob( "res/values*/strings.xml" ):
     for action, elem in etree.iterparse(path):
         if "end" == action and elem.text:
             if OLD_PCT.match( elem.text ):
                 print "%d and %s no longer allowed: in", path, "text:", elem.text
+                sys.exit(1)
+            name = elem.get('name')
+            if not name: continue
+            # Must match both or neither
+            if bool(ENDS_WITH_FMT.match(name)) != bool(HAS_FMT.match(elem.text)):
+                print "bad format string name:", name, "in", path, "with text", elem.text
                 sys.exit(1)
 
 # Get all string IDs that are used in menus -- the ones we care about

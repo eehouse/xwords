@@ -59,7 +59,7 @@ public class BTInviteActivity extends InviteActivity
         super.onCreate( savedInstanceState, R.layout.btinviter,
                         R.id.button_invite, R.id.button_rescan, 
                         R.id.button_clear, R.id.invite_desc,
-                        R.string.invite_bt_descf );
+                        R.string.invite_bt_desc_fmt );
         tryEnable();
         m_firstScan = true;
         BTService.clearDevices( this, null ); // will return names

@@ -363,15 +363,15 @@ public class DlgDelegate {
         boolean asToast = true;
         switch( event ) {
         case BAD_PROTO:
-            msg = Utils.format( m_activity, R.string.bt_bad_protof,
+            msg = Utils.format( m_activity, R.string.bt_bad_proto_fmt,
                                        (String)args[0] );
             break;
         case MESSAGE_RESEND:
-            msg = Utils.format( m_activity, R.string.bt_resendf,
+            msg = Utils.format( m_activity, R.string.bt_resend_fmt,
                                 (String)args[0], (Long)args[1], (Integer)args[2] );
             break;
         case MESSAGE_FAILOUT:
-            msg = Utils.format( m_activity, R.string.bt_failf, 
+            msg = Utils.format( m_activity, R.string.bt_fail_fmt, 
                                 (String)args[0] );
             asToast = false;
             break;
@@ -403,7 +403,7 @@ public class DlgDelegate {
     {
         final View view = Utils.inflate( m_activity, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
-        vers.setText( String.format( m_activity.getString(R.string.about_versf), 
+        vers.setText( String.format( m_activity.getString(R.string.about_vers_fmt), 
                                      m_activity.getString(R.string.app_version),
                                      BuildConstants.GIT_REV, 
                                      BuildConstants.BUILD_STAMP ) );

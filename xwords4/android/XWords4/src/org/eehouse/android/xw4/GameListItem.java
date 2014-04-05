@@ -241,7 +241,7 @@ public class GameListItem extends LinearLayout
 
             String name = GameUtils.getName( m_context, m_rowid );
             if ( null != value ) {
-                value = LocUtils.getString( m_context, R.string.str_game_namef, 
+                value = LocUtils.getString( m_context, R.string.str_game_name_fmt, 
                                             name, value );
             } else {
                 value = name;

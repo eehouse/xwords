@@ -250,7 +250,7 @@ public class DictsDelegate extends DelegateBase
         case MOVE_DICT:
             final XWListItem[] selItems = getSelItems();
             final int[] moveTo = { -1 };
-            message = m_activity.getString( R.string.move_dictf,
+            message = m_activity.getString( R.string.move_dict_fmt,
                                             getJoinedNames( selItems ) );
 
             OnClickListener newSelLstnr =
@@ -312,7 +312,8 @@ public class DictsDelegate extends DelegateBase
                 };
             String name = row.getText();
             String lang = DictLangCache.getLangName( m_activity, name);
-            message = m_activity.getString( R.string.set_default_messagef, name, lang );
+            message = m_activity.getString( R.string.set_default_message_fmt,
+                                            name, lang );
             dialog = new AlertDialog.Builder( m_activity )
                 .setTitle( R.string.query_title )
                 .setMessage( message )
@@ -549,7 +550,7 @@ public class DictsDelegate extends DelegateBase
     private void deleteSelected()
     {
         XWListItem[] items = getSelItems();
-        String msg = m_activity.getString( R.string.confirm_delete_dictf, 
+        String msg = m_activity.getString( R.string.confirm_delete_dict_fmt, 
                                            getJoinedNames( items ) );
 
         // When and what to warn about.  First off, if there's another
@@ -574,11 +575,11 @@ public class DictsDelegate extends DelegateBase
                 if ( 1 == langDals.length ) { // last in this language?
                     if ( 0 < nUsingLang ) {
                         newMsg = 
-                            m_activity.getString( R.string.confirm_deleteonly_dictf,
+                            m_activity.getString( R.string.confirm_deleteonly_dict_fmt,
                                                   dict, langName );
                     }
                 } else if ( 0 < DBUtils.countGamesUsingDict( m_activity, dict ) ) {
-                    newMsg = m_activity.getString( R.string.confirm_deletemore_dictf,
+                    newMsg = m_activity.getString( R.string.confirm_deletemore_dict_fmt,
                                                    langName );
                 }
                 if ( null != newMsg ) {
@@ -728,7 +729,7 @@ public class DictsDelegate extends DelegateBase
     {
         int nSels = m_selDicts.size();
         if ( 0 < nSels ) {
-            m_activity.setTitle( m_activity.getString( R.string.sel_itemsf, 
+            m_activity.setTitle( m_activity.getString( R.string.sel_items_fmt, 
                                                        nSels ) );
         } else {
             m_activity.setTitle( m_origTitle );
