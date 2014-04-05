@@ -28,7 +28,7 @@
 
     <!-- Used to format robot player names in the lists of players
          found in each game listing -->
-    <string name="robot_namef">%s (robot)</string>
+    <string name="robot_namef">%1$s (robot)</string>
 
     <!-- Used as a substitute for the names of remote players when
          they aren't available yet because the connection is not
@@ -43,26 +43,26 @@
     <!-- First state: is configured to use a room but has not yet
          contacted the relay and been assigned that room. -->
     <string name="summary_relay_conff">Configured for room
-      \"%s\"</string>
+      \"%1$s\"</string>
     <!-- Second state: has been assigned to a room on the relay
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
          cannot happen. -->
     <string name="summary_relay_waitf">Waiting for players in room
-      \"%s\"</string>
+      \"%1$s\"</string>
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
-    <string name="summary_relay_connf">Game in play in room \"%s\"</string>
+    <string name="summary_relay_connf">Game in play in room \"%1$s\"</string>
     <!-- Final state: game is over. -->
-    <string name="summary_relay_gameoverf">Game over in room \"%s\"</string>
+    <string name="summary_relay_gameoverf">Game over in room \"%1$s\"</string>
 
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Game over</string>
     <!-- Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... -->
-    <string name="movesf">%d moves played</string>
+    <string name="movesf">%1$d moves played</string>
 
     <!-- When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
@@ -116,7 +116,7 @@
       -->
     <!-- title of contextual menu.  Name of the selected game is
          substituted in. -->
-    <string name="game_item_menu_titlef">\"%s\" actions:</string>
+    <string name="game_item_menu_titlef">\"%1$s\" actions:</string>
 
     <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
@@ -155,11 +155,11 @@
     <string name="rename_label">Change the name of this game to:</string>
 
     <string name="confirm_seldeletesf">Are you sure you want to delete
-    the %d selected game[s]? This action cannot be undone.</string>
+    the %1$d selected game[s]? This action cannot be undone.</string>
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-    <string name="confirm_resetf">Are you sure you want to reset the %d
+    <string name="confirm_resetf">Are you sure you want to reset the %1$d
     selected game[s]?\n\n(Resetting erases all moves and any connection
     information.)</string>
 
@@ -222,24 +222,24 @@
 
     <!-- text of confirmation dialog posted when the delete 'X' button
          beside the listing of a wordlist is tapped.  The name of the
-         wordlist is substituted for %s.  Sometimes one of the two
+         wordlist is substituted for %1$s.  Sometimes one of the two
          strings below is appended. -->
     <string name="confirm_delete_dictf">Are you sure you want to
-    delete the wordlist[s] %s?</string>
+    delete the wordlist[s] %1$s?</string>
 
     <!-- Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is the last in its language.  The name
-         of the language is substituted for %s. -->
+         of the language is substituted for %1$s. -->
     <string name="confirm_deleteonly_dictf">%1$s is the only %2$s
       wordlist installed. One or more games will be unopenable
       without it.</string>
     <!-- Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is NOT the last in its language. The
-         name of the language is substituted for %s. -->
+         name of the language is substituted for %1$s. -->
     <string name="confirm_deletemore_dictf">\u0020One game (at least)
-      is using it, but there is another %s wordlist installed that can
+      is using it, but there is another %1$s wordlist installed that can
       replace it.</string>
 
     <!--
@@ -283,13 +283,13 @@
        # Game configure screen 
        ############################################################ 
       -->
-    <!-- window title (game name substituted for %s) -->
-    <string name="title_game_configf">Settings for %s</string>  
+    <!-- window title (game name substituted for %1$s) -->
+    <string name="title_game_configf">Settings for %1$s</string>  
 
     <!-- alternate window title used when game is networked -->
-    <string name="title_gamenet_configf">%s settings (networked)</string>  
+    <string name="title_gamenet_configf">%1$s settings (networked)</string>  
     <!--  -->
-    <string name="title_gamebt_configf">%s settings (via Bluetooth)</string>
+    <string name="title_gamebt_configf">%1$s settings (via Bluetooth)</string>
 
     <!-- title for popup list of langugages from which user picks -->
     <string name="title_langs_list">Languages (based on installed
@@ -468,13 +468,13 @@
     <!-- label for dropdown by which wordlist is chosen that this
          player will use.  The language the game will use (which
          constrains the choice of wordlists) is substituted in for
-         "%s". -->
-    <string name="dict_lang_labelf">Wordlist (in %s)</string>
+         "%1$s". -->
+    <string name="dict_lang_labelf">Wordlist (in %1$s)</string>
 
     <!-- If the dropdown is selected, this is the title displayed
          above the list of selectable items.  The language the game
-         will use is substituted in for "%s". -->
-    <string name="dicts_list_promptf">Installed wordlists (in %s)</string>
+         will use is substituted in for "%1$s". -->
+    <string name="dicts_list_promptf">Installed wordlists (in %1$s)</string>
 
     <!-- checkbox determining if player is robot/automated or human -->
     <string name="robot_label">Robot player</string>
@@ -539,7 +539,7 @@
 
       <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
-      <string name="players_missf">%d player[s] missing</string>
+      <string name="players_missf">%1$d player[s] missing</string>
 
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -568,7 +568,7 @@
          that all expected players have registered.  At this point
          play can begin. -->
     <string name="msg_relay_all_heref">All players are here in room
-      \"%s\".</string>
+      \"%1$s\".</string>
 
     <!-- Title of dialog used to alert players to relay-related
          problems with the current game. -->
@@ -674,7 +674,7 @@
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
     <string name="board_menu_game_resend">Resend messages</string>
-    <string name="resend_finishedf">Resend finished; sent %d message[s].</string>
+    <string name="resend_finishedf">Resend finished; sent %1$d message[s].</string>
 
     <!--       
        ############################################################
@@ -688,32 +688,32 @@
     <!-- Notifies user of a normal robot move -->
     <string name="str_robot_moved">The robot made this move:\u0020</string>
     <!-- Notifies user of a robot trade move -->
-    <string name="strd_robot_traded">exchanged %d tiles.</string>
+    <string name="strd_robot_traded">exchanged %1$d tiles.</string>
     <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
-    <string name="strs_values_header">%s counts/values:\n</string>
+    <string name="strs_values_header">%1$s counts/values:\n</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strd_remaining_tiles_add">+ %d [all remaining tiles]</string>
+    <string name="strd_remaining_tiles_add">+ %1$d [all remaining tiles]</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strd_unused_tiles_sub">- %d [unused tiles]</string>
+    <string name="strd_unused_tiles_sub">- %1$d [unused tiles]</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strs_new_tiles">New tiles: %s</string>
+    <string name="strs_new_tiles">New tiles: %1$s</string>
     <!-- Used in formatting game history (not move summaries since
          information about the current rack is hidden then) -->
-    <string name="strd_cumulative_score">Cumulative score: %d\n</string>
+    <string name="strd_cumulative_score">Cumulative score: %1$d\n</string>
     <!-- Used in formatting remote player move summaries -->
     <string name="str_remote_movedf">Remote player %1$s made this
     move:\u0020</string>
     <!-- I don't know how this is used. :-) -->
     <string name="strd_time_penalty_sub"></string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="str_pass"> - %d [time]</string>
+    <string name="str_pass"> - %1$d [time]</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strs_move_across">move (from %s across)\n</string>
+    <string name="strs_move_across">move (from %1$s across)\n</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strs_move_down">move (from %s down)\n</string>
+    <string name="strs_move_down">move (from %1$s down)\n</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strs_tray_at_start">Rack at start: %s\n</string>
+    <string name="strs_tray_at_start">Rack at start: %1$s\n</string>
     <!-- Used in formatting exchange move summaries -->
     <string name="strss_traded_for">Exchanged %1$s for %2$s.</string>
     <!-- Used to alert user to loss of turn when a move is made and
@@ -728,8 +728,8 @@
          translation unless the colon ':' needs to be replaced -->
     <string name="strsd_summaryscored">%1$s:%2$d</string>
     <!-- Used in formatting reports of trades (exchanges of tiles).
-         Number of tiles traded is substituted for %d-->
-    <string name="strd_traded">Exchanged %d tiles</string>
+         Number of tiles traded is substituted for %1$d-->
+    <string name="strd_traded">Exchanged %1$d tiles</string>
     <!-- Used in formatting history and move reports; means user
          skipped a turn because of an attempted illegal move/play of a
          phony -->
@@ -737,9 +737,9 @@
     <!-- Beginning of the message presented to a user when asking him
          to confirm committing the current turn-->
     <string name="str_commit_confirm">Commit the current move?\n</string>
-    <!-- Used, with remote player's name substituted for %s, to
+    <!-- Used, with remote player's name substituted for %1$s, to
     indicate that the player is remote. -->
-    <string name="str_nonlocal_namef">%s (remote)</string>
+    <string name="str_nonlocal_namef">%1$s (remote)</string>
     <!-- Used to separate names of players when listing them on one
     line in a game summary.  The \u0020 is a space in xml. -->
     <string name="vs_join">\u0020vs.\u0020</string>
@@ -747,14 +747,14 @@
     <!-- Used in formatting moves and history -->
     <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
     <!-- Used in formatting moves and history.  The total score for
-         one turn is substituted for %d.-->
-    <string name="strd_turn_score">Score for turn: %d\n</string>
+         one turn is substituted for %1$d.-->
+    <string name="strd_turn_score">Score for turn: %1$d\n</string>
 
     <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
-    <string name="strd_remains_header">%d tiles left in pool.</string>
+    <string name="strd_remains_header">%1$d tiles left in pool.</string>
     <!-- Intro to the paragraph lisiting all of the tiles remaining -->
-    <string name="strd_remains_expl">%d tiles left in pool and all
+    <string name="strd_remains_expl">%1$d tiles left in pool and all
     tray[s]:\n</string>
 
     <!-- text of dialog shown when the menu item board_menu_undo_last
@@ -1196,7 +1196,7 @@
 
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
-    <string name="invite_subjectf">Let\'s play Crosswords (Room %s)</string>
+    <string name="invite_subjectf">Let\'s play Crosswords (Room %1$s)</string>
 
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
@@ -1225,14 +1225,14 @@
          of the installed apps that can process the request he'd like
          to have launched.  This string is passed to Android and used
          as the title of the dialog that presents that choice. -->
-    <string name="invite_chooserf">Send invitation via %s</string>
+    <string name="invite_chooserf">Send invitation via %1$s</string>
     <string name="invite_chooser_email">email</string>
     <string name="invite_chooser_sms">sms</string>
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
     <string name="query_tradef">Are you sure you want to exchange the
-         selected tiles (%s)?</string>
+         selected tiles (%1$s)?</string>
 
     <!-- ############################################################
          # :Screens:
@@ -1246,8 +1246,8 @@
          ############################################################
       -->
     <!-- title of the chat screen.  The name of the current game is
-         substituted for %s. -->
-    <string name="chat_titlef">%s message history</string>
+         substituted for %1$s. -->
+    <string name="chat_titlef">%1$s message history</string>
     <!-- Prefix for local messages -->
     <string name="chat_local_id">Me:\u0020</string>
     <!-- Prefix for remote messages -->
@@ -1288,9 +1288,9 @@
          -->
 
     <!-- This is the heading above the list of steps.  The default
-         language is substituted for %s. -->
+         language is substituted for %1$s. -->
     <string name="relay_game_explainf">To start a basic networked two-player
-        game in %s:</string>
+        game in %1$s:</string>
 
     <!-- These four strings are displayed as step-by-step
          instructions-->
@@ -1404,7 +1404,7 @@
       Guest wordlists; Host wins.</string>
 
 
-    <string name="downloading_dictf">Downloading %s…</string>
+    <string name="downloading_dictf">Downloading %1$s…</string>
 
     <!-- 
        ############################################################
@@ -1474,22 +1474,22 @@
        -->
 
     <!-- Text of dialog.  Player name is substituted -->
-    <string name="msg_ask_password">Password for \"%s\":</string>
+    <string name="msg_ask_password">Password for \"%1$s\":</string>
 
     <!-- used to create default names of games (when user has not
          named them.) -->
-    <string name="gamef">Game %d</string>
+    <string name="gamef">Game %1$d</string>
 
     <!-- used to create default player names.  Number between 1 and 4
          is substituted -->
-    <string name="playerf">Player %d</string>
+    <string name="playerf">Player %1$d</string>
 
     <!-- When a move is fetched from the relay a Notification is
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
     down. -->
     <string name="notify_title">Moves made</string>
-    <string name="notify_bodyf">Activity in game "%s"</string>
+    <string name="notify_bodyf">Activity in game "%1$s"</string>
 
     <!--
         ############################################################
@@ -1791,18 +1791,18 @@
     <string name="button_lookup">Look up words</string>
     <string name="button_lookup_study">Look up/study words</string>
       <!--  -->
-    <string name="button_lookupf">Look up %s</string>
-    <string name="button_lookup_studyf">Look up/study %s</string>
+    <string name="button_lookupf">Look up %1$s</string>
+    <string name="button_lookup_studyf">Look up/study %1$s</string>
       <!--  -->
     <string name="title_lookup">Tap to look up</string>
     <string name="title_lookup_study">Tap to look up or study</string>
       <!--  -->
     <string name="button_done">Done</string>
       <!--  -->
-    <string name="button_donef">Done with %s</string>
+    <string name="button_donef">Done with %1$s</string>
 
       <!--  -->
-    <string name="pick_url_titlef">Look up %s at</string>
+    <string name="pick_url_titlef">Look up %1$s at</string>
 
       <!--  -->
     <string name="board_menu_pass">Pass</string>
@@ -1824,7 +1824,7 @@
       <!--  -->
     <string name="tilepick_all">Pick for me</string>
       <!--  -->
-    <string name="cur_tilesf">Tile picker\n(so far: %s)</string>
+    <string name="cur_tilesf">Tile picker\n(so far: %1$s)</string>
       <!--  -->
     <string name="pick_faceup">Pick tiles face-up</string>
 
@@ -1844,7 +1844,7 @@
     <string name="not_again_browseall">This button opens the wordlist
       browser on the wordlist of your choice.</string>
       <!--  -->
-    <string name="alert_empty_dictf">The wordlist %s contains only
+    <string name="alert_empty_dictf">The wordlist %1$s contains only
       tile information.  There are no words to browse.</string>
 
       <!--  -->
@@ -1865,7 +1865,7 @@
 
       <!--  -->
     <string name="email_body_revf">(If relevant, please include the
-      version: \"%s\"; and make/model of your phone or
+      version: \"%1$s\"; and make/model of your phone or
       tablet.)</string>
 
     <string name="newgame_enable_bt">Turn Bluetooth on</string>
@@ -1891,17 +1891,17 @@
       <!--  -->
     <string name="new_bt_title">New game via Bluetooth</string>
       <!--  -->
-    <string name="new_bt_bodyf">Paired device %s has invited you to
+    <string name="new_bt_bodyf">Paired device %1$s has invited you to
       play</string>
       <!--  -->
-    <string name="bt_bad_protof">Crosswords on %s wrong version for
+    <string name="bt_bad_protof">Crosswords on %1$s wrong version for
       Bluetooth play.</string>
       <!--  -->
     <string name="new_btmove_title">New move via Bluetooth</string>
     <!--  -->
     <string name="new_move_body">One or more moves has arrived</string>
     <!--  -->
-    <string name="invite_bt_descf">Please select the %d device[s] you
+    <string name="invite_bt_descf">Please select the %1$d device[s] you
         want to include in this game.  Use the Rescan button if you
         don\'t see a device you expect.</string>
         <!--  -->
@@ -1941,13 +1941,13 @@
     <!--  -->
     <string name="new_sms_title">New game via SMS</string>
     <!--  -->
-    <string name="new_name_bodyf">%s has invited you to play</string>
+    <string name="new_name_bodyf">%1$s has invited you to play</string>
     <!--  -->
     <string name="new_smsmove_title">New move via SMS</string>
     <!--  -->
     <string name="button_sms_add">Import contact</string>
     <!--  -->
-    <string name="invite_sms_descf">Please check the %d phone
+    <string name="invite_sms_descf">Please check the %1$d phone
     number[s] you want to invite to your new game, then tap \"Invite
     checked\".</string>
     <!--  -->
@@ -1971,7 +1971,7 @@
     <!--  -->
     <string name="phone_label">Connected number[s]:</string>
     <!--  -->
-    <string name="summary_conn_sms">Game in play with %s</string>
+    <string name="summary_conn_sms">Game in play with %1$s</string>
     <!--  -->
     <string name="warn_unlimited">Are you certain this number is on an
     account with unlimited texting?  Click cancel if you are not.</string>
@@ -2068,9 +2068,9 @@
     <!--  -->
     <string name="new_dict_avail">New wordlist available</string>
     <!--  -->
-    <string name="new_dict_availf">Tap to update %s</string>
+    <string name="new_dict_availf">Tap to update %1$s</string>
     <!--  -->
-    <string name="new_app_availf">New version of %s</string>
+    <string name="new_app_availf">New version of %1$s</string>
     <!--  -->
     <string name="new_app_avail">Tap to download and install</string>
     <!-- Used in formatting final scores display -->
@@ -2124,14 +2124,14 @@
     <string name="group_new_games">New games</string>
 
     <string name="groups_confirm_delf">Are you sure you want to delete
-    the %d selected group[s]?</string>
-    <string name="groups_confirm_del_gamesf">\n\n(%d game[s] will
+    the %1$d selected group[s]?</string>
+    <string name="groups_confirm_del_gamesf">\n\n(%1$d game[s] will
     also be deleted.)</string>
 
     <string name="rename_group_label">Change the name of this group to:</string>
     <string name="game_name_group_title">Name group</string>
 
-    <string name="cannot_delete_default_groupf">The group for new games, %s, 
+    <string name="cannot_delete_default_groupf">The group for new games, %1$s, 
     cannot be deleted.</string>
 
     <string name="no_move_onegroup">Moving is impossible until there
@@ -2163,8 +2163,8 @@
     selection instead of exiting. Hit it again to exit the
     app.</string>
 
-    <string name="sel_gamesf">Games: %d</string>
-    <string name="sel_groupsf">Groups: %d</string>
+    <string name="sel_gamesf">Games: %1$d</string>
+    <string name="sel_groupsf">Groups: %1$d</string>
     <string name="summary_thumbsize">Thumbnail size</string>
     <string name="thumb_off">Disabled</string>
 
@@ -2200,7 +2200,7 @@
     <string name="menu_rateme">Rate Crosswords</string>
     <string name="no_market">Google Play app not found</string>
 
-    <string name="add_to_studyf">Add %s to studylist</string>
+    <string name="add_to_studyf">Add %1$s to studylist</string>
     <string name="title_studyon">Enable studylists</string>
     <string name="summary_studyon">Offer to add to and display lists
     of words to remember</string>
@@ -2209,15 +2209,15 @@
     <string name="slmenu_copy_sel">Copy to clipboard</string>
     <string name="slmenu_clear_sel">Delete</string>
     <string name="confirm_studylist_clearf">Are you sure you want to
-    delete the %d selected word[s]?\n\n(This action cannot be undone.)</string>
-    <string name="paste_donef">%d word[s] copied</string>
-    <string name="add_donef">%s added to list</string>
-    <string name="studylist_titlef">Studylist for %s</string>
+    delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>
+    <string name="paste_donef">%1$d word[s] copied</string>
+    <string name="add_donef">%1$s added to list</string>
+    <string name="studylist_titlef">Studylist for %1$s</string>
 
     <string name="study_langpick">Your words for:</string>
 
     <string name="study_no_langf">You have not yet saved any words
-    into a studylist for %s.</string>
+    into a studylist for %1$s.</string>
     <string name="study_no_lists">You have not yet saved any words
     into a studylist.</string>
 
@@ -2229,6 +2229,6 @@
 
     <string name="slmenu_select_all">Select all</string>
     <string name="slmenu_deselect_all">Unselect all</string>
-    <string name="sel_itemsf">Selected: %d</string>
+    <string name="sel_itemsf">Selected: %1$d</string>
 
 </resources>

@@ -11,6 +11,17 @@ from lxml import etree
 
 pairs = {}
 
+# Enforce some conventions: No %d/%s in strings, and anything that
+# does have formatting has a name ending in _fmt.
+HAS_FMT = re.compile('.*%\d\$[ds].*', re.DOTALL)
+OLD_PCT = re.compile('.*%[ds].*', re.DOTALL)
+ENDS_WITH_FMT = re.compile('.*_fmt$')
+for path in glob.iglob( "res/values*/strings.xml" ):
+    for action, elem in etree.iterparse(path):
+        if "end" == action and elem.text:
+            if OLD_PCT.match( elem.text ):
+                print "%d and %s no longer allowed: in", path, "text:", elem.text
+                sys.exit(1)
 
 # Get all string IDs that are used in menus -- the ones we care about
 TITLE = re.compile('.*android:title="loc:(.*)".*')
