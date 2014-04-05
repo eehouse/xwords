@@ -9,10 +9,10 @@
     >
 
     <TextView android:id="@+id/english_view"
-              style="@style/spaced_buttons"
+              style="@style/evenly_spaced_horizontal"
               />
     <EditText android:id="@+id/xlated_view"
-              style="@style/spaced_buttons"
+              style="@style/evenly_spaced_horizontal"
               />
 
 </org.eehouse.android.xw4.loc.LocListItem>

@@ -36,18 +36,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 >
-    <TextView android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:textAppearance="?android:attr/textAppearanceLarge"
+    <TextView style="@style/evenly_spaced_horizontal"
               android:text="@string/loc_main_english"
               />
 
     <org.eehouse.android.xw4.loc.LocTextView
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"
-         android:textAppearance="?android:attr/textAppearanceLarge"
-         custom:strid="@string/loc_main_yourlang"
-         />
+        style="@style/evenly_spaced_horizontal"
+        custom:strid="@string/loc_main_yourlang"
+        />
 
   </LinearLayout>
 

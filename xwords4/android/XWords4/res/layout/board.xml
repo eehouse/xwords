@@ -28,11 +28,11 @@
                 >
     <Button android:id="@+id/exchange_commit"
             android:text="@string/button_trade_commit" 
-            style="@style/spaced_buttons"
+            style="@style/evenly_spaced_horizontal"
             />
     <Button android:id="@+id/exchange_cancel"
             android:text="@string/button_trade_cancel" 
-            style="@style/spaced_buttons"
+            style="@style/evenly_spaced_horizontal"
             />
   </LinearLayout>
 

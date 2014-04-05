@@ -54,11 +54,11 @@
                   >
       <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_local"
               custom:strid="@string/newgame_local" 
-              style="@style/spaced_buttons"
+              style="@style/evenly_spaced_horizontal"
               />
       <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_local_config"
               custom:strid="@string/newgame_local_config" 
-              style="@style/spaced_buttons"
+              style="@style/evenly_spaced_horizontal"
               />
     </LinearLayout>
 
@@ -92,12 +92,12 @@
                   >
       <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_invite_net"
               custom:strid="@string/newgame_invite" 
-              style="@style/spaced_buttons"
+              style="@style/evenly_spaced_horizontal"
               />
 
       <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_net_config"
               custom:strid="@string/newgame_net_config" 
-              style="@style/spaced_buttons"
+              style="@style/evenly_spaced_horizontal"
               />
     </LinearLayout>
 
@@ -155,12 +155,12 @@
                     >
         <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_invite_sms"
                 custom:strid="@string/newgame_invite" 
-                style="@style/spaced_buttons"
+                style="@style/evenly_spaced_horizontal"
                 />
 
         <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_sms_config"
                 custom:strid="@string/newgame_net_config" 
-                style="@style/spaced_buttons"
+                style="@style/evenly_spaced_horizontal"
                 />
       </LinearLayout>
     </LinearLayout>
@@ -220,13 +220,13 @@
         <org.eehouse.android.xw4.loc.LocButton 
              android:id="@+id/newgame_invite_bt"
              custom:strid="@string/newgame_invite" 
-             style="@style/spaced_buttons"
+             style="@style/evenly_spaced_horizontal"
              />
 
         <org.eehouse.android.xw4.loc.LocButton 
              android:id="@+id/newgame_bt_config"
              custom:strid="@string/newgame_net_config" 
-             style="@style/spaced_buttons"
+             style="@style/evenly_spaced_horizontal"
              />
       </LinearLayout>
     </LinearLayout>

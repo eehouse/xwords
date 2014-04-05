@@ -21,11 +21,11 @@
                 >
     <Button android:id="@+id/revert_colors"
             android:text="@string/button_revert_colors"
-            style="@style/spaced_buttons"
+            style="@style/evenly_spaced_horizontal"
             />
     <Button android:id="@+id/revert_all"
             android:text="@string/button_revert_all"
-            style="@style/spaced_buttons"
+            style="@style/evenly_spaced_horizontal"
             />
   </LinearLayout>
 </LinearLayout>
