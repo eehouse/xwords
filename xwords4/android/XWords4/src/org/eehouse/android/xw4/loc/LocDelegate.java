@@ -39,6 +39,12 @@ public class LocDelegate extends DelegateBase {
         init( savedInstanceState );
     }
 
+    protected boolean onBackPressed()
+    {
+        LocUtils.saveData( m_activity );
+        return false;
+    }
+
     private void init( Bundle savedInstanceState ) 
     {
         m_activity.setContentView( R.layout.loc_main );

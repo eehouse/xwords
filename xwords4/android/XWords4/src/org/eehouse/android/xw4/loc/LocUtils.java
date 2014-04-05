@@ -33,6 +33,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.DBUtils;
 
 public class LocUtils {
     // Keep this in sync with gen_loc_ids.py and what's used in the menu.xml
@@ -115,6 +116,11 @@ public class LocUtils {
         return result;
     }
 
+    public static void saveData( Context context )
+    {
+        DBUtils.saveXlations( context, "te_ST", s_xlations );
+    }
+
     private static void xlateMenu( final Activity activity, Menu menu, 
                                    int depth )
     {
@@ -161,7 +167,7 @@ public class LocUtils {
     private static void loadXlations( Context context )
     {
         if ( null == s_xlations ) {
-            s_xlations = new HashMap<String, String>();
+            s_xlations = DBUtils.getXlations( context, "te_ST" );
         }
     }
 

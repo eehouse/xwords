@@ -33,4 +33,10 @@ public class LocActivity extends ListActivity {
         m_dlgt = new LocDelegate( this, savedInstanceState );
     } // onCreate
 
+    @Override
+    public void onBackPressed() {
+        if ( !m_dlgt.onBackPressed() ) {
+            super.onBackPressed();
+        }
+    }
 }

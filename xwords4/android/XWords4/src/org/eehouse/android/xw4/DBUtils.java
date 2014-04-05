@@ -1745,6 +1745,66 @@ public class DBUtils {
         studyListClear( context, lang, null );
     }
 
+    public static void saveXlations( Context context, String locale,
+                                      HashMap<String, String> data )
+    {
+        if ( null != data && 0 < data.size() ) {
+            Iterator<String> iter = data.keySet().iterator();
+
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+
+                while ( iter.hasNext() ) {
+                    String key = iter.next();
+                    String value = data.get( key );
+
+                    String selection = String.format( "%s = '%s'",
+                                                      DBHelper.KEY,
+                                                      key );
+                    ContentValues values = new ContentValues();
+                    values.put( DBHelper.XLATION, value);
+                    values.put( DBHelper.LOCALE, locale);
+                    long result = db.update( DBHelper.TABLE_NAME_LOC,
+                                             values, selection, null );
+                    if ( 0 == result ) {
+                        values.put( DBHelper.KEY, key );
+                        db.insert( DBHelper.TABLE_NAME_LOC, null, values );
+                    }
+                }
+                db.close();
+            }
+        }
+    }
+
+    public static HashMap<String, String> getXlations( Context context, 
+                                                       String locale )
+    {
+        HashMap<String, String> result = new HashMap<String, String>();
+
+        String selection = String.format( "%s = '%s'", DBHelper.LOCALE, 
+                                          locale );
+        String[] columns = { DBHelper.KEY, DBHelper.XLATION };
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_LOC, columns, 
+                                      selection, null, null, null, null );
+            int keyIndex = cursor.getColumnIndex( DBHelper.KEY );
+            int valueIndex = cursor.getColumnIndex( DBHelper.XLATION );
+            while ( cursor.moveToNext() ) {
+                String key = cursor.getString( keyIndex );
+                String value = cursor.getString( valueIndex );
+                result.put( key, value );
+            }
+            cursor.close();
+            db.close();
+        }
+
+        return result;
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
