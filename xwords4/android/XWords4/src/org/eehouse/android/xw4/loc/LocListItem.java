@@ -24,21 +24,36 @@ import android.widget.LinearLayout;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.TextView;
+import android.widget.EditText;
+import android.view.View;
+import android.view.View.OnFocusChangeListener;
+
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.DbgUtils;
 
-public class LocListItem extends LinearLayout {
+public class LocListItem extends LinearLayout implements OnFocusChangeListener {
 
     private Context m_context;
     private String m_key;
     private int m_position;
+    private EditText m_edit;
+    private String m_xlation;
 
     public LocListItem( Context cx, AttributeSet as ) 
     {
         super( cx, as );
         m_context = cx;
+    }
+
+    @Override
+    protected void onFinishInflate()
+    {
+        super.onFinishInflate();
+        m_edit = (EditText)findViewById( R.id.xlated_view ); 
+        m_edit.setOnFocusChangeListener( this );
     }
 
     private void setEnglish()
@@ -50,6 +65,26 @@ public class LocListItem extends LinearLayout {
         DbgUtils.logf( "setEnglish: set to %s", str );
     }
 
+    private void setXlated()
+    {
+        m_xlation = LocUtils.getXlation( m_context, m_key );
+        if ( null != m_xlation ) {
+            m_edit.setText( m_xlation );
+        }
+    }
+
+    public void onFocusChange( View view, boolean hasFocus )
+    {
+        Assert.assertTrue( view == m_edit );
+        if ( !hasFocus ) {
+            CharSequence txt = m_edit.getText();
+            DbgUtils.logf( "view with text %s lost focus", txt );
+            if ( ! txt.equals( m_xlation ) ) {
+                LocUtils.setXlation( m_context, m_key, txt.toString() );
+            }
+        }
+    }
+
     protected static LocListItem create( Context context, String key, 
                                          int position )
     {
@@ -57,7 +92,9 @@ public class LocListItem extends LinearLayout {
             (LocListItem)Utils.inflate( context, R.layout.loc_list_item );
         result.m_key = key;
         result.m_position = position;
+
         result.setEnglish();
+        result.setXlated();
         return result;
     }
 }

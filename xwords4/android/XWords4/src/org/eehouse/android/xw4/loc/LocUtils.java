@@ -27,6 +27,8 @@ import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MenuItem;
 
+import java.util.HashMap;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.R;
@@ -36,6 +38,7 @@ public class LocUtils {
     // Keep this in sync with gen_loc_ids.py and what's used in the menu.xml
     // files to mark me-localized strings.
     private static final String LOC_PREFIX = "loc:";
+    private static HashMap<String, String>s_xlations = null;
 
     public interface LocIface {
         void setText( CharSequence text );
@@ -99,6 +102,19 @@ public class LocUtils {
         return str.toUpperCase();
     }
 
+    public static void setXlation( Context context, String key, String txt )
+    {
+        loadXlations( context );
+        s_xlations.put( key, txt );
+    }
+
+    public static String getXlation( Context context, String key )
+    {
+        loadXlations( context );
+        String result = s_xlations.get( key );
+        return result;
+    }
+
     private static void xlateMenu( final Activity activity, Menu menu, 
                                    int depth )
     {
@@ -139,6 +155,13 @@ public class LocUtils {
                             return true;
                         } 
                     });
+        }
+    }
+
+    private static void loadXlations( Context context )
+    {
+        if ( null == s_xlations ) {
+            s_xlations = new HashMap<String, String>();
         }
     }
 
