@@ -465,6 +465,11 @@ public class Utils {
         return result;
     }
 
+    public static View getContentView( Activity activity )
+    {
+        return activity.findViewById( android.R.id.content );
+    }
+
     public static boolean isGooglePlayApp( Context context )
     {
         PackageManager pm = context.getPackageManager();
