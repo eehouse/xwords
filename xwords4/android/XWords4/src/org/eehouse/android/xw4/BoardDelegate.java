@@ -514,7 +514,7 @@ public class BoardDelegate extends DelegateBase
 
     public BoardDelegate( Activity activity, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
+        super( activity, savedInstanceState, R.menu.board_menu );
         m_activity = activity;
         init( savedInstanceState );
     }
@@ -677,15 +677,6 @@ public class BoardDelegate extends DelegateBase
             }
         }
         return handled;
-    }
-
-    protected boolean onCreateOptionsMenu( Menu menu )
-    {
-        MenuInflater inflater = m_activity.getMenuInflater();
-        inflater.inflate( R.menu.board_menu, menu );
-        LocUtils.xlateMenu( m_activity, menu );
-
-        return true;
     }
 
     protected boolean onPrepareOptionsMenu( Menu menu ) 

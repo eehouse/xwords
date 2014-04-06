@@ -233,7 +233,7 @@ public class DictsDelegate extends DelegateBase
 
     protected DictsDelegate( ExpandableListActivity activity, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
+        super( activity, savedInstanceState, R.menu.dicts_menu );
         m_activity = activity;
         init( savedInstanceState );
     }
@@ -451,14 +451,6 @@ public class DictsDelegate extends DelegateBase
             clearSelections();
         }
         return handled;
-    }
-
-    protected boolean onCreateOptionsMenu( Menu menu )
-    {
-        MenuInflater inflater = m_activity.getMenuInflater();
-        inflater.inflate( R.menu.dicts_menu, menu );
-
-        return true;
     }
 
     protected boolean onPrepareOptionsMenu( Menu menu ) 

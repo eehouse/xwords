@@ -123,7 +123,7 @@ public class GamesListDelegate extends DelegateBase
 
     public GamesListDelegate( GamesListActivity activity, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
+        super( activity, savedInstanceState, R.menu.games_list_menu );
         m_activity = activity;
         init( savedInstanceState );
     }
@@ -617,15 +617,6 @@ public class GamesListDelegate extends DelegateBase
                                  Action.CLEAR_SELS );
         }
         return handled;
-    }
-
-    protected boolean onCreateOptionsMenu( Menu menu )
-    {
-        MenuInflater inflater = m_activity.getMenuInflater();
-        inflater.inflate( R.menu.games_list_menu, menu );
-        LocUtils.xlateMenu( m_activity, menu );
-
-        return true;
     }
 
     protected boolean onPrepareOptionsMenu( Menu menu ) 

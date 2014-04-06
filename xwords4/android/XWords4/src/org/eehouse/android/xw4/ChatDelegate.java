@@ -41,7 +41,7 @@ public class ChatDelegate extends DelegateBase
 
     public ChatDelegate( Activity activity, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
+        super( activity, savedInstanceState, R.menu.chat_menu );
         m_activity = activity;
         init( savedInstanceState );
     }

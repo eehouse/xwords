@@ -66,7 +66,7 @@ public class StudyListDelegate extends DelegateBase
 
     protected StudyListDelegate( ListActivity activity, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
+        super( activity, savedInstanceState, R.menu.studylist );
         m_activity = activity;
         init( savedInstanceState );
     }

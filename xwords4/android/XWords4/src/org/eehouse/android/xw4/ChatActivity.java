@@ -52,9 +52,7 @@ public class ChatActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu( Menu menu )
     {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate( R.menu.chat_menu, menu );
-        return true;
+        return m_dlgt.onCreateOptionsMenu( menu );
     }
 
     @Override

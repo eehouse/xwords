@@ -52,8 +52,7 @@ public class StudyListActivity extends ListActivity {
     @Override
     public boolean onCreateOptionsMenu( Menu menu )
     {
-        getMenuInflater().inflate( R.menu.studylist, menu );
-        return true;
+        return m_dlgt.onCreateOptionsMenu( menu );
     }
 
     @Override

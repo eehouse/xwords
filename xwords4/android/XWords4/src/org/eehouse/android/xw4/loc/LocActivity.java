@@ -21,6 +21,7 @@ package org.eehouse.android.xw4.loc;
 
 import android.app.ListActivity;
 import android.os.Bundle;
+import android.view.Menu;
 
 public class LocActivity extends ListActivity {
 
@@ -32,6 +33,12 @@ public class LocActivity extends ListActivity {
         super.onCreate( savedInstanceState );
         m_dlgt = new LocDelegate( this, savedInstanceState );
     } // onCreate
+
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu ) 
+    {
+        return m_dlgt.onCreateOptionsMenu( menu );
+    }
 
     @Override
     public void onBackPressed() {

@@ -22,8 +22,10 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.view.Menu;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
 
@@ -32,10 +34,25 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
                                      MultiService.MultiEventListener {
 
     private DlgDelegate m_delegate;
+    private Activity m_activity;
+    private int m_optionsMenuID = 0;
 
-    public DelegateBase( Activity activity, Bundle bundle )
+    public DelegateBase( Activity activity, Bundle bundle, int optionsMenu )
     {
+        m_activity = activity;
         m_delegate = new DlgDelegate( activity, this, bundle );
+        m_optionsMenuID = optionsMenu;
+    }
+
+    public boolean onCreateOptionsMenu( Menu menu )
+    {
+        boolean handled = 0 < m_optionsMenuID;
+        if ( handled ) {
+            m_activity.getMenuInflater().inflate( m_optionsMenuID, menu );
+            LocUtils.xlateMenu( m_activity, menu );
+        }
+
+        return handled;
     }
 
     protected void showDialog( DlgID dlgID )
