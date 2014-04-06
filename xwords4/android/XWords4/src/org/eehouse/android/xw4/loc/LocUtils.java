@@ -28,6 +28,7 @@ import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MenuItem;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 import junit.framework.Assert;
 
@@ -121,17 +122,34 @@ public class LocUtils {
         DBUtils.saveXlations( context, "te_ST", s_xlations );
     }
 
+
+    protected static LocSearcher.Pair[] makePairs( Context context )
+    {
+        loadXlations( context );
+
+        HashMap<String,Integer> map = LocIDsData.s_map;
+        int siz = map.size();
+        LocSearcher.Pair[] result = new LocSearcher.Pair[siz];
+        Iterator<String> iter = map.keySet().iterator();
+
+        for ( int ii = 0; iter.hasNext(); ++ii ) {
+            String key = iter.next();
+            String english = context.getString( map.get( key ) );
+            String xlation = s_xlations.get( key );
+            result[ii] = new LocSearcher.Pair( key, english, xlation );
+        }
+        return result;
+    }
+
     private static void xlateMenu( final Activity activity, Menu menu, 
                                    int depth )
     {
         int count = menu.size();
-        DbgUtils.logf( "xlateMenu: menu has %d items", count );
         for ( int ii = 0; ii < count; ++ii ) {
             MenuItem item = menu.getItem( ii );
             CharSequence ts = item.getTitle();
             if ( null != ts ) {
                 String title = ts.toString();
-                DbgUtils.logf( "xlateMenu: %d; %s", ii, title );
                 if ( title.startsWith( LOC_PREFIX ) ) {
                     String asKey = title.substring( LOC_PREFIX.length() );
                     int id = LocIDs.getID( asKey );

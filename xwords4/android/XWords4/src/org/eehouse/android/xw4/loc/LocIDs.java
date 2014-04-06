@@ -42,17 +42,15 @@ public class LocIDs extends LocIDsData {
 
     protected static int getID( String key )
     {
-        return LocIDsData.s_map.get( key );
+        int result = LocIDsData.NOT_FOUND;
+        if ( null != key ) {
+            result = LocIDsData.s_map.get( key );
+        }
+        return result;
     }
 
     protected static int size()
     {
         return LocIDsData.s_map.size();
     }
-
-    protected static int get( String key )
-    {
-        return LocIDsData.s_map.get( key );
-    }
-
 }

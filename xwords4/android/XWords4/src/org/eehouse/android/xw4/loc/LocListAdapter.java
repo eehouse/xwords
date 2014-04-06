@@ -32,17 +32,20 @@ public class LocListAdapter extends XWListAdapter {
 
     private Context m_context;
     private ListView m_listView;
+    private LocSearcher m_searcher;
 
-    protected LocListAdapter( Context context, ListView listView )
+    protected LocListAdapter( Context context, ListView listView,
+                              LocSearcher searcher )
     {
         m_context = context;
         m_listView = listView;
+        m_searcher = searcher;
     }
 
     @Override
     public int getCount() 
     {
-        int count = LocIDs.size();
+        int count = m_searcher.matchSize();
         DbgUtils.logf(" LocListAdapter.getCount() => %d", count );
         return count;
     }
@@ -50,7 +53,7 @@ public class LocListAdapter extends XWListAdapter {
     public View getView( int position, View convertView, ViewGroup parent )
     {
         DbgUtils.logf( "LocListAdapter.getView(position=%d)", position );
-        String key = LocIDs.getNthKey( position );
-        return LocListItem.create( m_context, key, position );
+        LocSearcher.Pair pair = m_searcher.getNthMatch( position );
+        return LocListItem.create( m_context, pair, position );
     }
 }

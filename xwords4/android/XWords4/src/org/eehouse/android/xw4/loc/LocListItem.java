@@ -37,7 +37,7 @@ import org.eehouse.android.xw4.DbgUtils;
 public class LocListItem extends LinearLayout implements OnFocusChangeListener {
 
     private Context m_context;
-    private String m_key;
+    private LocSearcher.Pair m_pair;
     private int m_position;
     private EditText m_edit;
     private String m_xlation;
@@ -58,7 +58,7 @@ public class LocListItem extends LinearLayout implements OnFocusChangeListener {
 
     private void setEnglish()
     {
-        int id = LocIDs.get( m_key );
+        int id = LocIDs.getID( m_pair.getKey() );
         String str = m_context.getString( id );
         TextView tv = (TextView)findViewById( R.id.english_view );
         tv.setText( str );
@@ -67,8 +67,9 @@ public class LocListItem extends LinearLayout implements OnFocusChangeListener {
 
     private void setXlated()
     {
-        m_xlation = LocUtils.getXlation( m_context, m_key );
+        m_xlation = LocUtils.getXlation( m_context, m_pair.getKey() );
         if ( null != m_xlation ) {
+            m_pair.setXlation( m_xlation );
             m_edit.setText( m_xlation );
         }
     }
@@ -80,17 +81,19 @@ public class LocListItem extends LinearLayout implements OnFocusChangeListener {
             CharSequence txt = m_edit.getText();
             DbgUtils.logf( "view with text %s lost focus", txt );
             if ( ! txt.equals( m_xlation ) ) {
-                LocUtils.setXlation( m_context, m_key, txt.toString() );
+                LocUtils.setXlation( m_context, m_pair.getKey(),
+                                     txt.toString() );
             }
         }
     }
 
-    protected static LocListItem create( Context context, String key, 
+    protected static LocListItem create( Context context, 
+                                         LocSearcher.Pair pair, 
                                          int position )
     {
         LocListItem result = 
             (LocListItem)Utils.inflate( context, R.layout.loc_list_item );
-        result.m_key = key;
+        result.m_pair = pair;
         result.m_position = position;
 
         result.setEnglish();

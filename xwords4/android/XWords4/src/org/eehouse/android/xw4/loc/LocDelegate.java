@@ -22,15 +22,24 @@ package org.eehouse.android.xw4.loc;
 import android.app.ListActivity;
 import android.os.Bundle;
 import android.widget.ListView;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DelegateBase;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils;
 
-
-public class LocDelegate extends DelegateBase {
+public class LocDelegate extends DelegateBase implements View.OnClickListener {
 
     private ListActivity m_activity;
     private LocListAdapter m_adapter;
+    private EditText m_searchField;
+    private ImageButton m_searchButton;
+    private LocSearcher m_searcher;
+    private String m_curSearch;
 
     protected LocDelegate( ListActivity activity, Bundle savedInstanceState )
     {
@@ -45,13 +54,38 @@ public class LocDelegate extends DelegateBase {
         return false;
     }
 
+    @Override
+    public void onClick( View view ) 
+    {
+        String newText = m_searchField.getText().toString();
+        if ( null == m_curSearch || ! m_curSearch.equals( newText ) ) {
+            m_curSearch = newText;
+            m_searcher.start( newText ); // synchronous for now
+            makeNewAdapter();
+        }
+    }
+
+    private void makeNewAdapter()
+    {
+        ListView listview = m_activity.getListView();
+        m_adapter = new LocListAdapter( m_activity, listview, m_searcher );
+        m_activity.setListAdapter( m_adapter );
+    }
+
     private void init( Bundle savedInstanceState ) 
     {
         m_activity.setContentView( R.layout.loc_main );
 
-        ListView listview = m_activity.getListView();
-        m_adapter = new LocListAdapter( m_activity, listview );
-        m_activity.setListAdapter( m_adapter );
+        View root = Utils.getContentView( m_activity );
+        m_searchButton = (ImageButton)root.findViewById( R.id.loc_search_button );
+        m_searchButton.setOnClickListener( this );
+
+        m_searchField = (EditText)root.findViewById( R.id.loc_search_field );
+
+        LocSearcher.Pair[] pairs = LocUtils.makePairs( m_activity );
+        m_searcher = new LocSearcher( pairs );
+
+        makeNewAdapter();
     }
 
 }
