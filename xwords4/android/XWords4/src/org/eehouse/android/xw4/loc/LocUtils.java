@@ -41,6 +41,7 @@ public class LocUtils {
     // files to mark me-localized strings.
     private static final String LOC_PREFIX = "loc:";
     private static HashMap<String, String>s_xlations = null;
+    private static HashMap<Integer, String> s_idsToKeys = null;
 
     public interface LocIface {
         void setText( CharSequence text );
@@ -92,16 +93,25 @@ public class LocUtils {
 
     public static String getString( Context context, int id )
     {
-        String str = context.getString( id );
-        str = str.toUpperCase();
-        return str;
+        return getString( context, id, (Object)null );
     }
 
     public static String getString( Context context, int id, Object... params )
     {
-        String str = context.getString( id );
-        str = String.format( str, params );
-        return str.toUpperCase();
+        String result = null;
+        String key = keyForID( id );
+        if ( null != key ) {
+            result = getXlation( context, key );
+        }
+        
+        if ( null == result ) {
+            result = context.getString( id );
+        }
+
+        if ( null != result && null != params ) {
+            result = String.format( result, params );
+        }
+        return result;
     }
 
     public static void setXlation( Context context, String key, String txt )
@@ -189,4 +199,21 @@ public class LocUtils {
         }
     }
 
+    private static String keyForID( int id )
+    {
+        if ( null == s_idsToKeys ) {
+            HashMap<String,Integer> map = LocIDsData.s_map;
+            HashMap<Integer, String> idsToKeys =
+                new HashMap<Integer, String>( map.size() );
+
+            Iterator<String> iter = map.keySet().iterator();
+            while ( iter.hasNext() ) {
+                String key = iter.next();
+                idsToKeys.put( map.get( key ), key );
+            }
+            s_idsToKeys = idsToKeys;
+        }
+
+        return s_idsToKeys.get( id );
+    }
 }
