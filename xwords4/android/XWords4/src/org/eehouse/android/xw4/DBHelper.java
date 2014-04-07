@@ -95,6 +95,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String KEY = "KEY";
     public static final String LOCALE = "LOCALE";
+    public static final String BLESSED = "BLESSED";
     public static final String XLATION = "XLATION";
 
 
@@ -174,6 +175,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String[][] s_locSchema = {
         { KEY,  "TEXT" }
         ,{ LOCALE,  "TEXT(5)" }
+        ,{ BLESSED,  "INTEGER(1)" }
         ,{ XLATION,  "TEXT" }
     };
 
