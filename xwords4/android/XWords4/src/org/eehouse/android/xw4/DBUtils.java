@@ -1746,7 +1746,7 @@ public class DBUtils {
     }
 
     public static void saveXlations( Context context, String locale,
-                                      HashMap<String, String> data )
+                                     HashMap<String, String> data )
     {
         if ( null != data && 0 < data.size() ) {
             Iterator<String> iter = data.keySet().iterator();
@@ -1759,12 +1759,12 @@ public class DBUtils {
                     String key = iter.next();
                     String value = data.get( key );
 
-                    String selection = String.format( "%s = '%s'",
-                                                      DBHelper.KEY,
-                                                      key );
+                    String selection = 
+                        String.format( "%s = '%s'", DBHelper.KEY, key );
                     ContentValues values = new ContentValues();
-                    values.put( DBHelper.XLATION, value);
-                    values.put( DBHelper.LOCALE, locale);
+                    values.put( DBHelper.BLESSED, 0 );
+                    values.put( DBHelper.XLATION, value );
+                    values.put( DBHelper.LOCALE, locale );
                     long result = db.update( DBHelper.TABLE_NAME_LOC,
                                              values, selection, null );
                     if ( 0 == result ) {
