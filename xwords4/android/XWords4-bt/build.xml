@@ -102,6 +102,11 @@
               failonerror="true" output="/dev/null" 
               />
 
+        <exec dir="." executable="../scripts/mk_xml.py" 
+              failonerror="true" output="/dev/null" 
+              >
+        </exec>
+
         <exec dir="." executable="../scripts/gen_gcmid.sh"
               output="src/org/eehouse/android/xw4bt/GCMConsts.java"
               failonerror="true" logError="true"
