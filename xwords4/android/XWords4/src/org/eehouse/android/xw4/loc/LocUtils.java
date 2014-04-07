@@ -27,8 +27,9 @@ import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MenuItem;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -137,7 +138,7 @@ public class LocUtils {
     {
         loadXlations( context );
 
-        HashMap<String,Integer> map = LocIDsData.s_map;
+        Map<String,Integer> map = LocIDsData.S_MAP;
         int siz = map.size();
         LocSearcher.Pair[] result = new LocSearcher.Pair[siz];
         Iterator<String> iter = map.keySet().iterator();
@@ -202,7 +203,7 @@ public class LocUtils {
     private static String keyForID( int id )
     {
         if ( null == s_idsToKeys ) {
-            HashMap<String,Integer> map = LocIDsData.s_map;
+            Map<String,Integer> map = LocIDsData.S_MAP;
             HashMap<Integer, String> idsToKeys =
                 new HashMap<Integer, String>( map.size() );
 

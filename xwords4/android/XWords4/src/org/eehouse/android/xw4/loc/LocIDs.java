@@ -20,8 +20,12 @@
 
 package org.eehouse.android.xw4.loc;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.DbgUtils;
 
 public class LocIDs extends LocIDsData {
     private static String[] s_keys;
@@ -29,7 +33,7 @@ public class LocIDs extends LocIDsData {
     protected static String getNthKey( int indx )
     {
         if ( null == s_keys ) {
-            HashMap<String, Integer> map = LocIDsData.s_map;
+            Map<String, Integer> map = LocIDsData.S_MAP;
             s_keys = new String[map.size()];
             Iterator<String> iter = map.keySet().iterator();
             for ( int ii = 0; iter.hasNext(); ++ii ) {
@@ -43,14 +47,16 @@ public class LocIDs extends LocIDsData {
     protected static int getID( String key )
     {
         int result = LocIDsData.NOT_FOUND;
-        if ( null != key ) {
-            result = LocIDsData.s_map.get( key );
+        if ( null != key && LocIDsData.S_MAP.containsKey( key ) ) {
+            Assert.assertNotNull( LocIDsData.S_MAP );
+            DbgUtils.logf( "calling get with key %s", key );
+            result = LocIDsData.S_MAP.get( key ); // NPE
         }
         return result;
     }
 
     protected static int size()
     {
-        return LocIDsData.s_map.size();
+        return LocIDsData.S_MAP.size();
     }
 }

@@ -26,25 +26,32 @@ for path in glob.iglob( "res/values*/strings.xml" ):
             if not name: continue
             # Must match both or neither
             if bool(ENDS_WITH_FMT.match(name)) != bool(HAS_FMT.match(elem.text)):
-                print "bad format string name:", name, "in", path, "with text", elem.text
+                print "bad format string name:", name, "in", \
+                    path, "with text", elem.text
                 sys.exit(1)
 
-# Get all string IDs that are used in menus -- the ones we care about
-TITLE = re.compile('.*android:title="loc:(.*)".*')
-for path in glob.iglob( "res/menu/*.xml" ):
-    for line in open( path, "r" ):
-        line.strip()
-        mtch = TITLE.match(line)
-        if mtch:
-            pairs[mtch.group(1)] = True
-
-LOC_START = re.compile('loc:(.*)')
-for path in glob.iglob( "res/values/common_rsrc.xml" ):
+# Get all string IDs -- period
+for path in glob.iglob( "res/values/strings.xml" ):
     for action, elem in etree.iterparse(path):
-        if "end" == action and elem.text:
-            mtch = LOC_START.match(elem.text)
-            if mtch: 
-                pairs[mtch.group(1)] = True
+        if "end" == action and 'string' == elem.tag:
+            pairs[elem.get('name')] = True
+
+# # Get all string IDs that are used in menus -- the ones we care about
+# TITLE = re.compile('.*android:title="loc:(.*)".*')
+# for path in glob.iglob( "res/menu/*.xml" ):
+#     for line in open( path, "r" ):
+#         line.strip()
+#         mtch = TITLE.match(line)
+#         if mtch:
+#             pairs[mtch.group(1)] = True
+
+# LOC_START = re.compile('loc:(.*)')
+# for path in glob.iglob( "res/values/common_rsrc.xml" ):
+#     for action, elem in etree.iterparse(path):
+#         if "end" == action and elem.text:
+#             mtch = LOC_START.match(elem.text)
+#             if mtch: 
+#                 pairs[mtch.group(1)] = True
 
 
 # Get all string IDs, but only keep those we've seen in menus
@@ -66,23 +73,25 @@ print """
 
 package org.eehouse.android.xw4.loc;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eehouse.android.xw4.R;
 
 public class LocIDsData {
     public static final int NOT_FOUND = -1;
-    protected static HashMap<String,Integer> s_map;
-    static {
-        s_map = new HashMap<String,Integer>();
+
+    protected static final Map<String, Integer> S_MAP = 
+        Collections.unmodifiableMap(new HashMap<String, Integer>() {{ 
 """
 
 for key in pairs.keys():
-    print "        s_map.put(\"%s\", R.string.%s);" % (key, key)
+    print "            put(\"%s\", R.string.%s);" % (key, key)
 
 # Now the end of the class
 print """
-    }
+    }});
 }
 /* end generated file */
 """
