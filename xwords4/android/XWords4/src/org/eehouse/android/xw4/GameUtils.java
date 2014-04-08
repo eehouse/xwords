@@ -44,6 +44,7 @@ import org.json.JSONObject;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
@@ -259,7 +260,7 @@ public class GameUtils {
         String result = DBUtils.getName( context, rowid );
         if ( null == result || 0 == result.length() ) {
             int visID = DBUtils.getVisID( context, rowid );
-            result = context.getString( R.string.game_fmt, visID );
+            result = LocUtils.getString( context, R.string.game_fmt, visID );
         }
         return result;
     }
