@@ -14,16 +14,15 @@
      android:background="@android:drawable/list_selector_background"
      >
 
-    <org.eehouse.android.xw4.loc.LocTextView
-         android:id="@+id/view_unloaded"
-         android:layout_width="fill_parent" 
-	     android:layout_height="wrap_content"
-         android:textAppearance="?android:attr/textAppearanceLarge"
-         android:gravity="center"
-         android:paddingTop="10dp"
-         android:paddingBottom="10dp"
-         custom:strid="@string/game_list_tmp"
-         />
+    <TextView android:id="@+id/view_unloaded"
+              android:layout_width="fill_parent" 
+              android:layout_height="wrap_content"
+              android:textAppearance="?android:attr/textAppearanceLarge"
+              android:gravity="center"
+              android:paddingTop="10dp"
+              android:paddingBottom="10dp"
+              custom:strid="@string/game_list_tmp"
+              />
 
     <LinearLayout android:id="@+id/view_loaded"
                   android:orientation="horizontal"

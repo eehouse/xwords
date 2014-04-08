@@ -40,10 +40,9 @@
               android:text="@string/loc_main_english"
               />
 
-    <org.eehouse.android.xw4.loc.LocTextView
-        style="@style/evenly_spaced_horizontal"
-        custom:strid="@string/loc_main_yourlang"
-        />
+    <TextView style="@style/evenly_spaced_horizontal"
+              custom:strid="@string/loc_main_yourlang"
+              />
 
   </LinearLayout>
 

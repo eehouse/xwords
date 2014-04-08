@@ -26,7 +26,7 @@
                 >
 
     <!-- local game -->
-    <org.eehouse.android.xw4.loc.LocTextView
+    <TextView
          style="@style/config_separator"
          android:textAppearance="?android:attr/textAppearanceMedium"
          custom:strid="@string/newgame_local_header"
@@ -52,18 +52,18 @@
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
                   >
-      <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_local"
+      <Button android:id="@+id/newgame_local"
               custom:strid="@string/newgame_local" 
               style="@style/evenly_spaced_horizontal"
               />
-      <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_local_config"
+      <Button android:id="@+id/newgame_local_config"
               custom:strid="@string/newgame_local_config" 
               style="@style/evenly_spaced_horizontal"
               />
     </LinearLayout>
 
     <!-- networked game -->
-    <org.eehouse.android.xw4.loc.LocTextView style="@style/config_separator"
+    <TextView style="@style/config_separator"
               android:layout_marginTop="10dip"
               android:textAppearance="?android:attr/textAppearanceMedium"
               custom:strid="@string/newgame_networked_header"
@@ -81,7 +81,7 @@
                  android:layout_weight="0"
                  android:layout_gravity="center_vertical|center_horizontal"
                  />
-      <org.eehouse.android.xw4.loc.LocTextView custom:strid="@string/newgame_networked_desc"
+      <TextView custom:strid="@string/newgame_networked_desc"
                 style="@style/relay_explain"
                 />
     </LinearLayout>
@@ -90,19 +90,19 @@
                   android:layout_width="fill_parent" 
                   android:layout_height="wrap_content"
                   >
-      <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_invite_net"
+      <Button android:id="@+id/newgame_invite_net"
               custom:strid="@string/newgame_invite" 
               style="@style/evenly_spaced_horizontal"
               />
 
-      <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_net_config"
+      <Button android:id="@+id/newgame_net_config"
               custom:strid="@string/newgame_net_config" 
               style="@style/evenly_spaced_horizontal"
               />
     </LinearLayout>
 
     <!-- SMS game -->
-    <org.eehouse.android.xw4.loc.LocTextView android:id="@+id/sms_separator"
+    <TextView android:id="@+id/sms_separator"
               style="@style/config_separator"
               android:layout_marginTop="10dip"
               android:textAppearance="?android:attr/textAppearanceMedium"
@@ -116,10 +116,10 @@
                   android:layout_height="wrap_content"
                   android:visibility="gone"
                   >
-      <org.eehouse.android.xw4.loc.LocTextView custom:strid="@string/sms_disabled"
+      <TextView custom:strid="@string/sms_disabled"
                 style="@style/relay_explain"
                 />
-      <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_enable_sms"
+      <Button android:id="@+id/newgame_enable_sms"
               android:layout_width="fill_parent" 
               android:layout_height="wrap_content"
               custom:strid="@string/newgame_enable_sms" 
@@ -144,7 +144,7 @@
                    android:layout_weight="0"
                    android:layout_gravity="center_vertical|center_horizontal"
                    />
-        <org.eehouse.android.xw4.loc.LocTextView custom:strid="@string/sms_networked_desc"
+        <TextView custom:strid="@string/sms_networked_desc"
                   style="@style/relay_explain"
                   />
       </LinearLayout>
@@ -153,12 +153,12 @@
                     android:layout_width="fill_parent" 
                     android:layout_height="wrap_content"
                     >
-        <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_invite_sms"
+        <Button android:id="@+id/newgame_invite_sms"
                 custom:strid="@string/newgame_invite" 
                 style="@style/evenly_spaced_horizontal"
                 />
 
-        <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_sms_config"
+        <Button android:id="@+id/newgame_sms_config"
                 custom:strid="@string/newgame_net_config" 
                 style="@style/evenly_spaced_horizontal"
                 />
@@ -166,7 +166,7 @@
     </LinearLayout>
 
     <!-- Bluetooth -->
-    <org.eehouse.android.xw4.loc.LocTextView android:id="@+id/bt_separator"
+    <TextView android:id="@+id/bt_separator"
               style="@style/config_separator"
               android:layout_marginTop="10dip"
               android:textAppearance="?android:attr/textAppearanceMedium"
@@ -180,10 +180,10 @@
                   android:layout_height="wrap_content"
                   android:visibility="gone"
                   >
-      <org.eehouse.android.xw4.loc.LocTextView custom:strid="@string/bt_disabled"
+      <TextView custom:strid="@string/bt_disabled"
                 style="@style/relay_explain"
                 />
-      <org.eehouse.android.xw4.loc.LocButton android:id="@+id/newgame_enable_bt"
+      <Button android:id="@+id/newgame_enable_bt"
               android:layout_width="fill_parent" 
               android:layout_height="wrap_content"
               custom:strid="@string/newgame_enable_bt" 
@@ -208,7 +208,7 @@
                    android:layout_weight="0"
                    android:layout_gravity="center_vertical|center_horizontal"
                    />
-        <org.eehouse.android.xw4.loc.LocTextView custom:strid="@string/bt_networked_desc"
+        <TextView custom:strid="@string/bt_networked_desc"
                   style="@style/relay_explain"
                   />
       </LinearLayout>
@@ -217,17 +217,15 @@
                     android:layout_width="fill_parent" 
                     android:layout_height="wrap_content"
                     >
-        <org.eehouse.android.xw4.loc.LocButton 
-             android:id="@+id/newgame_invite_bt"
-             custom:strid="@string/newgame_invite" 
-             style="@style/evenly_spaced_horizontal"
-             />
+          <Button android:id="@+id/newgame_invite_bt"
+                  custom:strid="@string/newgame_invite" 
+                  style="@style/evenly_spaced_horizontal"
+                  />
 
-        <org.eehouse.android.xw4.loc.LocButton 
-             android:id="@+id/newgame_bt_config"
-             custom:strid="@string/newgame_net_config" 
-             style="@style/evenly_spaced_horizontal"
-             />
+          <Button android:id="@+id/newgame_bt_config"
+                  custom:strid="@string/newgame_net_config" 
+                  style="@style/evenly_spaced_horizontal"
+                  />
       </LinearLayout>
     </LinearLayout>
   </LinearLayout>
