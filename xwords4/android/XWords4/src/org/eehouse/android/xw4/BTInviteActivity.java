@@ -39,6 +39,8 @@ import android.os.Handler;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class BTInviteActivity extends InviteActivity
     implements CompoundButton.OnCheckedChangeListener {
 
@@ -158,7 +160,7 @@ public class BTInviteActivity extends InviteActivity
         public View getView( final int position, View convertView, 
                              ViewGroup parent ) {
             CheckBox box = (CheckBox)
-                Utils.inflate( BTInviteActivity.this, R.layout.btinviter_item );
+                LocUtils.inflate( BTInviteActivity.this, R.layout.btinviter_item );
             box.setText( m_devs[position] );
             box.setOnCheckedChangeListener( BTInviteActivity.this );
             return box;

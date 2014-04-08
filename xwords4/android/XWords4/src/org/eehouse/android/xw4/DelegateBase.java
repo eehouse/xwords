@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.View;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -53,6 +54,13 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         }
 
         return handled;
+    }
+
+    protected void setContentView( int resID )
+    {
+        m_activity.setContentView( resID );
+        View view = Utils.getContentView( m_activity );
+        LocUtils.xlateView( m_activity, view );
     }
 
     protected void showDialog( DlgID dlgID )

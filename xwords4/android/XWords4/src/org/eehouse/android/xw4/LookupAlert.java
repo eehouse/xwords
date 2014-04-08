@@ -48,6 +48,8 @@ import java.util.ArrayList;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class LookupAlert extends LinearLayout
     implements View.OnClickListener, Dialog.OnKeyListener,
                AdapterView.OnItemClickListener {
@@ -353,7 +355,8 @@ public class LookupAlert extends LinearLayout
 
     public static Dialog createDialog( Activity parent, Bundle bundle )
     {
-        LookupAlert view = (LookupAlert)Utils.inflate( parent, R.layout.lookup );
+        LookupAlert view = (LookupAlert)
+            LocUtils.inflate( parent, R.layout.lookup );
         view.init( parent, bundle );
 
         Dialog result = new AlertDialog.Builder( parent )

@@ -42,7 +42,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
-
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NewGameActivity extends XWActivity {
 
@@ -77,6 +77,7 @@ public class NewGameActivity extends XWActivity {
         m_groupID = getIntent().getLongExtra( GROUPID_EXTRA, -1 );
 
         setContentView( R.layout.new_game );
+        LocUtils.xlateView( this, Utils.getContentView( this ) );
 
         TextView desc = (TextView)findViewById( R.id.newgame_local_desc );
         m_dict = CommonPrefs.getDefaultHumanDict( this );
@@ -213,7 +214,7 @@ public class NewGameActivity extends XWActivity {
             switch( dlgID ) {
             case NAME_GAME:
                 final GameNamer namerView =
-                    (GameNamer)Utils.inflate( this, R.layout.rename_game );
+                    (GameNamer)LocUtils.inflate( this, R.layout.rename_game );
                 namerView.setLabel( m_nameForBT ? R.string.btname_label
                                     : R.string.smsname_label );
                 namerView.setName( m_gameName );

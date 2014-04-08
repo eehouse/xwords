@@ -41,6 +41,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class SMSInviteActivity extends InviteActivity {
 
@@ -124,7 +125,7 @@ public class SMSInviteActivity extends InviteActivity {
             switch( dlgID ) {
             case GET_NUMBER:
                 final GameNamer namerView =
-                    (GameNamer)Utils.inflate( this, R.layout.rename_game );
+                    (GameNamer)LocUtils.inflate( this, R.layout.rename_game );
                 namerView.setLabel( R.string.get_sms_number );
                 namerView.setKeyListener(DialerKeyListener.getInstance());
                 lstnr = new DialogInterface.OnClickListener() {
@@ -383,8 +384,8 @@ public class SMSInviteActivity extends InviteActivity {
             // for by-index access.)
 
             SMSListItem item = 
-                (SMSListItem)Utils.inflate( SMSInviteActivity.this,
-                                                R.layout.smsinviter_item );
+                (SMSListItem)LocUtils.inflate( SMSInviteActivity.this,
+                                               R.layout.smsinviter_item );
             item.setChecked( m_phoneRecs.get(position).m_checked );
 
             CompoundButton.OnCheckedChangeListener lstnr =

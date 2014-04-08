@@ -31,6 +31,8 @@ import android.widget.CheckBox;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class XWListItem extends LinearLayout 
     implements SelectableItem.LongClickHandler, View.OnClickListener {
     private int m_position;
@@ -162,7 +164,8 @@ public class XWListItem extends LinearLayout
 
     public static XWListItem inflate( Context context, SelectableItem selCB )
     {
-        XWListItem item = (XWListItem)Utils.inflate( context,  R.layout.list_item );
+        XWListItem item = (XWListItem)
+            LocUtils.inflate( context, R.layout.list_item );
         item.setSelCB( selCB );
         return item;
     }

@@ -38,7 +38,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
 import android.telephony.TelephonyManager;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -251,12 +250,6 @@ public class Utils {
             name = phone;
         }
         return name;
-    }
-
-    public static View inflate( Context context, int layoutId )
-    {
-        LayoutInflater factory = LayoutInflater.from( context );
-        return factory.inflate( layoutId, null );
     }
 
     public static void setChecked( Activity activity, int id, boolean value )

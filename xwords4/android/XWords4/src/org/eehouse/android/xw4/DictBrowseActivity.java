@@ -45,6 +45,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DictBrowseActivity extends XWListActivity
     implements View.OnClickListener, OnItemSelectedListener {
@@ -103,9 +104,9 @@ public class DictBrowseActivity extends XWListActivity
 
         public Object getItem( int position ) 
         {
-            TextView text =
-                (TextView)Utils.inflate( DictBrowseActivity.this,
-                                         android.R.layout.simple_list_item_1 );
+            TextView text = (TextView)
+                LocUtils.inflate( DictBrowseActivity.this,
+                                  android.R.layout.simple_list_item_1 );
             String str = XwJNI.dict_iter_nthWord( m_dictClosure, position );
             if ( null != str ) {
                 text.setText( str );

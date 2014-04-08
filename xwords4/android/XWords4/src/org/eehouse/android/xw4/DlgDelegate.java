@@ -37,6 +37,8 @@ import java.util.Iterator;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class DlgDelegate {
 
     public static enum Action {
@@ -401,7 +403,7 @@ public class DlgDelegate {
 
     private Dialog createAboutDialog()
     {
-        final View view = Utils.inflate( m_activity, R.layout.about_dlg );
+        final View view = LocUtils.inflate( m_activity, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
         vers.setText( String.format( m_activity.getString(R.string.about_vers_fmt), 
                                      m_activity.getString(R.string.app_version),

@@ -429,4 +429,9 @@ public class XWPrefs {
     {
         setPrefsString( context, keyID, TextUtils.join( "\n", value ) );
     }
+
+    public static String getLocale( Context context )
+    {
+        return getPrefsString( context, R.string.key_xlations_locale );
+    }
 }

@@ -111,6 +111,7 @@
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_enable_dup_invite">key_enable_dup_invite</string>
   <string name="key_download_path">key_download_path</string>
+  <string name="key_xlations_locale">key_xlations_locale</string>
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>
@@ -152,6 +153,7 @@
   <string name="gamel_menu_storedb">Write DB to SD card</string>
   <string name="gamel_menu_loaddb">Load DB from SD card</string>
   <string name="enable_dupes_title">Accept duplicate invites</string>
+  <string name="xlations_locale">Fake locale for translation</string>
   <string name="enable_dupes_summary">Accept invitations more than once</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->

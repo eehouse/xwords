@@ -2255,8 +2255,8 @@ public class BoardDelegate extends DelegateBase
         m_dlgTitleStr = 
             LocUtils.getString( m_activity, R.string.msg_ask_password_fmt, 
                                 m_pwdName );
-        m_passwdLyt = (LinearLayout)Utils.inflate( m_activity,
-                                                   R.layout.passwd_view );
+        m_passwdLyt = (LinearLayout)LocUtils.inflate( m_activity,
+                                                      R.layout.passwd_view );
         m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
     }
 

@@ -266,7 +266,7 @@ public class GameListItem extends LinearLayout
             boolean[] isLocal = new boolean[1];
             for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
                 ExpiringLinearLayout tmp = (ExpiringLinearLayout)
-                    Utils.inflate( m_context, R.layout.player_list_elem );
+                    LocUtils.inflate( m_context, R.layout.player_list_elem );
                 tview = (TextView)tmp.findViewById( R.id.item_name );
                 tview.setText( summary.summarizePlayer( ii ) );
                 tview = (TextView)tmp.findViewById( R.id.item_score );
@@ -377,7 +377,7 @@ public class GameListItem extends LinearLayout
                                            SelectableItem cb )
     {
         GameListItem result = 
-            (GameListItem)Utils.inflate( context, R.layout.game_list_item );
+            (GameListItem)LocUtils.inflate( context, R.layout.game_list_item );
         result.init( handler, rowid, groupPosition, fieldID, cb );
         return result;
     }

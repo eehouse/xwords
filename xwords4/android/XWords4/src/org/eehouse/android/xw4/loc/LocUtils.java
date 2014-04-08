@@ -23,9 +23,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.Iterator;
 import java.util.HashMap;
@@ -36,6 +41,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.XWPrefs;
 
 public class LocUtils {
     // Keep this in sync with gen_loc_ids.py and what's used in the menu.xml
@@ -43,6 +49,7 @@ public class LocUtils {
     private static final String LOC_PREFIX = "loc:";
     private static HashMap<String, String>s_xlations = null;
     private static HashMap<Integer, String> s_idsToKeys = null;
+    private static Boolean s_enabled = null;
 
     public interface LocIface {
         void setText( CharSequence text );
@@ -61,6 +68,37 @@ public class LocUtils {
                 view.setText( getString( context, id ) );
                 break;
             }
+        }
+    }
+
+    public static View inflate( Context context, int resID )
+    {
+        LayoutInflater factory = LayoutInflater.from( context );
+        View view = factory.inflate( resID, null );
+        xlateView( context, view );
+        return view;
+    }
+
+    public static void xlateView( Context context, View view )
+    {
+        if ( view instanceof ViewGroup ) { 
+            ViewGroup asGroup = (ViewGroup)view;
+            int count =	asGroup.getChildCount();
+            for ( int ii = 0; ii < count; ++ii ) {
+                View child = asGroup.getChildAt( ii );
+                xlateView( context, child );
+            }
+        } else if ( view instanceof Button ) {
+            Button button = (Button)view;
+            String str = button.getText().toString();
+            str = xlateString( context, str );
+            button.setText( str );
+        } else if ( view instanceof TextView ) {
+            TextView tv = (TextView)view;
+            String str = tv.getText().toString();
+            str = xlateString( context, str );
+            tv.setText( str );
+        } else {
         }
     }
 
@@ -216,5 +254,14 @@ public class LocUtils {
         }
 
         return s_idsToKeys.get( id );
+    }
+
+    private static boolean isEnabled( Context context )
+    {
+        if ( null == s_enabled ) {
+            String locale = XWPrefs.getLocale( context );
+            s_enabled = new Boolean( null != locale && 0 < locale.length() );
+        }
+        return s_enabled;
     }
 }

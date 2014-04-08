@@ -92,7 +92,7 @@ public class LocListItem extends LinearLayout implements OnFocusChangeListener {
                                          int position )
     {
         LocListItem result = 
-            (LocListItem)Utils.inflate( context, R.layout.loc_list_item );
+            (LocListItem)LocUtils.inflate( context, R.layout.loc_list_item );
         result.m_pair = pair;
         result.m_position = position;
 

@@ -26,12 +26,13 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.widget.LinearLayout;
+
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class ChatDelegate extends DelegateBase
     implements View.OnClickListener {
@@ -56,14 +57,12 @@ public class ChatDelegate extends DelegateBase
             if ( null != pairs ) {
                 LinearLayout layout = (LinearLayout)
                     m_activity.findViewById( R.id.chat_history );
-                LayoutInflater factory = LayoutInflater.from( m_activity );
 
                 for ( DBUtils.HistoryPair pair : pairs ) {
-                    TextView view = (TextView)factory
-                        .inflate( pair.sourceLocal
-                                  ? R.layout.chat_history_local
-                                  : R.layout.chat_history_remote, 
-                                  null );
+                    TextView view = (TextView)
+                        LocUtils.inflate( m_activity, pair.sourceLocal
+                                          ? R.layout.chat_history_local
+                                          : R.layout.chat_history_remote );
                     view.setText( pair.msg );
                     layout.addView( view );
                 }

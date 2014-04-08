@@ -321,6 +321,11 @@
                         android:defaultValue="false"
                         />
 
+    <org.eehouse.android.xw4.XWEditTextPreference 
+	   android:key="@string/key_xlations_locale"
+	   android:title="@string/xlations_locale"
+	   />
+
     <!-- For broken devices like my Blaze 4G that report a download
          directory that doesn't exist, allow users to set it.  Mine:
          /sdcard/external_sd/download     

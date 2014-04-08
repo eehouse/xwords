@@ -38,7 +38,6 @@ import android.widget.Button;
 import android.app.Dialog;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.view.LayoutInflater;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
@@ -58,6 +57,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameConfig extends XWActivity 
     implements View.OnClickListener
@@ -153,15 +153,14 @@ public class GameConfig extends XWActivity
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
-            LayoutInflater factory;
             DialogInterface.OnClickListener dlpos;
             AlertDialog.Builder ab;
 
             final DlgID dlgID = DlgID.values()[id];
             switch (dlgID) {
             case PLAYER_EDIT:
-                View playerEditView
-                    = Utils.inflate( this, R.layout.player_edit );
+                View playerEditView = 
+                    LocUtils.inflate( this, R.layout.player_edit );
 
                 dialog = new AlertDialog.Builder( this )
                     .setTitle(R.string.player_edit_title)
@@ -205,7 +204,7 @@ public class GameConfig extends XWActivity
                     };
                 dialog = new AlertDialog.Builder( this )
                     .setTitle( R.string.force_title )
-                    .setView( Utils.inflate( this, layoutForDlg(dlgID) ) )
+                    .setView( LocUtils.inflate( this, layoutForDlg(dlgID) ) )
                     .setPositiveButton( R.string.button_ok, dlpos )
                     .create();
                 DialogInterface.OnDismissListener dismiss = 
@@ -686,7 +685,6 @@ public class GameConfig extends XWActivity
         // only enable delete if one will remain (or two if networked)
         boolean canDelete = names.length > 2
             || (localOnlyGame() && names.length > 1);
-        LayoutInflater factory = LayoutInflater.from(this);
         View.OnClickListener lstnr = new View.OnClickListener() {
                 @Override
                 public void onClick( View view ) {
@@ -710,7 +708,7 @@ public class GameConfig extends XWActivity
             view.setOnClickListener( lstnr );
             m_playerLayout.addView( view );
 
-            View divider = factory.inflate( R.layout.divider_view, null );
+            View divider = LocUtils.inflate( this, R.layout.divider_view );
             m_playerLayout.addView( divider );
         }
 

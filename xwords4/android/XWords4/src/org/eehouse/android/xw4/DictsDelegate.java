@@ -35,7 +35,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -61,6 +60,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DictsDelegate extends DelegateBase 
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
@@ -85,8 +85,6 @@ public class DictsDelegate extends DelegateBase
     private CharSequence m_origTitle;
 
     private boolean m_launchedForMissing = false;
-
-    private LayoutInflater m_factory;
 
     private class DictListAdapter implements ExpandableListAdapter {
         private Context m_context;
@@ -188,9 +186,8 @@ public class DictsDelegate extends DelegateBase
         public View getGroupView( int groupPosition, boolean isExpanded, 
                                   View convertView, ViewGroup parent )
         {
-            View row = 
-                Utils.inflate( m_activity, 
-                               android.R.layout.simple_expandable_list_item_1 );
+            View row = LocUtils.inflate( m_activity, android.R.layout
+                                         .simple_expandable_list_item_1 );
             TextView view = (TextView)row.findViewById( android.R.id.text1 );
             view.setText( m_langs[groupPosition] );
             return view;
@@ -382,8 +379,6 @@ public class DictsDelegate extends DelegateBase
 
         Resources res = m_activity.getResources();
         m_locNames = res.getStringArray( R.array.loc_names );
-
-        m_factory = LayoutInflater.from( m_activity );
 
         m_downloadStr = m_activity.getString( R.string.download_dicts );
             

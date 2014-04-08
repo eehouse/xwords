@@ -29,6 +29,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameListGroup extends ExpiringLinearLayout 
     implements SelectableItem.LongClickHandler,
@@ -59,8 +60,8 @@ public class GameListGroup extends ExpiringLinearLayout
                                                  SelectableItem cb,
                                                  GroupStateListener gcb )
     {
-        GameListGroup result = 
-            (GameListGroup)Utils.inflate( context, R.layout.game_list_group );
+        GameListGroup result = (GameListGroup)
+            LocUtils.inflate( context, R.layout.game_list_group );
         result.m_cb = cb;
         result.m_gcb = gcb;
         result.m_groupPosition = groupPosition;

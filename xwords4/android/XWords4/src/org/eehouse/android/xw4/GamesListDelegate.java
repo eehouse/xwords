@@ -310,7 +310,7 @@ public class GamesListDelegate extends DelegateBase
 
         case GET_NAME:
             layout = 
-                (LinearLayout)Utils.inflate( m_activity, R.layout.dflt_name );
+                (LinearLayout)LocUtils.inflate( m_activity, R.layout.dflt_name );
             final EditText etext =
                 (EditText)layout.findViewById( R.id.name_edit );
             etext.setText( CommonPrefs.getDefaultPlayerName( m_activity,
@@ -357,7 +357,7 @@ public class GamesListDelegate extends DelegateBase
         m_selGroupIDs = new HashSet<Long>();
         getBundledData( savedInstanceState );
 
-        m_activity.setContentView( R.layout.game_list );
+        setContentView( R.layout.game_list );
         ListView listview = m_activity.getListView();
         DBUtils.setDBChangeListener( this );
 
@@ -1159,7 +1159,8 @@ public class GamesListDelegate extends DelegateBase
                                   DialogInterface.OnClickListener lstnr, 
                                   DlgID dlgID )
     {
-        m_namer = (GameNamer)Utils.inflate( m_activity, R.layout.rename_game );
+        m_namer = (GameNamer)
+            LocUtils.inflate( m_activity, R.layout.rename_game );
         m_namer.setName( curname );
         m_namer.setLabel( labelID );
         Dialog dialog = new AlertDialog.Builder( m_activity )
