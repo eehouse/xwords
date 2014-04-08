@@ -4,7 +4,6 @@
 <!-- top-level layout is hozontal, with an image and another layout -->
 <org.eehouse.android.xw4.GameListItem
      xmlns:android="http://schemas.android.com/apk/res/android"
-     xmlns:custom="http://schemas.android.com/apk/res/org.eehouse.android.xw4"
      android:orientation="vertical"
      android:layout_width="fill_parent"
      android:layout_height="wrap_content"
@@ -21,7 +20,7 @@
               android:gravity="center"
               android:paddingTop="10dp"
               android:paddingBottom="10dp"
-              custom:strid="@string/game_list_tmp"
+              android:text="@string/game_list_tmp"
               />
 
     <LinearLayout android:id="@+id/view_loaded"

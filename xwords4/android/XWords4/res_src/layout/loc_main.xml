@@ -2,7 +2,6 @@
 
 <LinearLayout 
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:custom="http://schemas.android.com/apk/res/org.eehouse.android.xw4"
     android:orientation="vertical"
     android:layout_width="match_parent" 
     android:layout_height="match_parent"
@@ -41,7 +40,7 @@
               />
 
     <TextView style="@style/evenly_spaced_horizontal"
-              custom:strid="@string/loc_main_yourlang"
+              android:text="@string/loc_main_yourlang"
               />
 
   </LinearLayout>

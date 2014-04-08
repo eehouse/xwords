@@ -1,7 +1,0 @@
-<resources>
-   <declare-styleable name="LocText">
-       <!-- It doesn't matter the format: string, integer and
-       reference all "work" -->
-       <attr name="strid" format="integer" />
-   </declare-styleable>
-</resources>
