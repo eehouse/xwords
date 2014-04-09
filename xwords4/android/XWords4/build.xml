@@ -86,7 +86,10 @@
 
         <exec dir="." executable="../scripts/mk_xml.py" 
               failonerror="true" output="/dev/null" 
-              />
+              >
+            <arg value="-o"/>
+            <arg value="src/org/eehouse/android/xw4/loc/LocIDsData.java"/>
+        </exec>
 
         <exec dir="." executable="../scripts/gen_gcmid.sh"
               output="src/org/eehouse/android/xw4/GCMConsts.java"
@@ -103,15 +106,10 @@
         </exec>
     </target>
 
-    <target name="-pre-compile">
-        <exec dir="." executable="../scripts/gen_loc_ids.py"
-              output="src/org/eehouse/android/xw4/loc/LocIDsData.java"
-              failonerror="true"
-              >
-        </exec>
-    </target>
 
 <!--
+    <target name="-pre-compile">
+    </target>
     /* This is typically used for code obfuscation.
        Compiled code location: ${out.classes.absolute.dir}
        If this is not done in place, override ${out.dex.input.absolute.dir} */
