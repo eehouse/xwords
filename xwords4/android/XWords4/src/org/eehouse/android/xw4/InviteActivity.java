@@ -37,6 +37,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import junit.framework.Assert;
 
 abstract class InviteActivity extends XWListActivity 
@@ -71,7 +73,7 @@ abstract class InviteActivity extends XWListActivity
         m_clearButton.setOnClickListener( this );
 
         TextView desc = (TextView)findViewById( desc_id );
-        desc.setText( Utils.format( this, desc_strf, m_nMissing ) );
+        desc.setText( LocUtils.getString( this, desc_strf, m_nMissing ) );
 
         tryEnable();
     }

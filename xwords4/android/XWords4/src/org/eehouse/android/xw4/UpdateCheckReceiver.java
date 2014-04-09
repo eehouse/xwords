@@ -47,6 +47,8 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class UpdateCheckReceiver extends BroadcastReceiver {
 
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
@@ -330,8 +332,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                             }
 
                             String title = 
-                                Utils.format( m_context, R.string.new_app_avail_fmt,
-                                              label );
+                                LocUtils.getString( m_context, R.string.new_app_avail_fmt,
+                                                    label );
                             String body = 
                                 m_context.getString( R.string.new_app_avail );
                             Utils.postNotification( m_context, intent, title, 
@@ -352,9 +354,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 intent.putExtra( NEW_DICT_URL, url );
                                 intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
                                 String body = 
-                                    Utils.format( m_context, 
-                                                  R.string.new_dict_avail_fmt,
-                                                  dal.name );
+                                    LocUtils.getString( m_context, 
+                                                        R.string.new_dict_avail_fmt,
+                                                        dal.name );
                                 Utils.postNotification( m_context, intent, 
                                                         R.string.new_dict_avail, 
                                                         body, url.hashCode() );

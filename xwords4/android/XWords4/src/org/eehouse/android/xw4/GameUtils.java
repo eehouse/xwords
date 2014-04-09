@@ -594,7 +594,8 @@ public class GameUtils {
                 if ( choseEmail ) {
                     intent.setAction( Intent.ACTION_SEND );
                     String subject =
-                        Utils.format( activity, R.string.invite_subject_fmt, room );
+                        LocUtils.getString( activity, R.string.invite_subject_fmt, 
+                                            room );
                     intent.putExtra( Intent.EXTRA_SUBJECT, subject );
                     intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
@@ -625,7 +626,8 @@ public class GameUtils {
 
                 String choiceType = activity.getString( choiceID );
                 String chooserMsg = 
-                    Utils.format( activity, R.string.invite_chooser_fmt, choiceType );
+                    LocUtils.getString( activity, R.string.invite_chooser_fmt, 
+                                        choiceType );
                 activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
             }
         }

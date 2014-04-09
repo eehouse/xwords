@@ -1131,8 +1131,8 @@ public class GameConfig extends XWActivity
             strID = R.string.title_game_config_fmt;
             break;
         }
-        setTitle( Utils.format( this, strID, 
-                                GameUtils.getName( this, m_rowid ) ) );
+        setTitle( LocUtils.getString( this, strID, 
+                                      GameUtils.getName( this, m_rowid ) ) );
     }
 
     private boolean localOnlyGame()

@@ -196,8 +196,8 @@ public class NewGameActivity extends XWActivity {
                     m_remoteDev = remoteDevs[0];
 
                     m_gameID = GameUtils.newGameID();
-                    m_gameName = Utils.format( this, R.string.dft_name_fmt, 
-                                               m_gameID & 0xFFFF );
+                    m_gameName = LocUtils.getString( this, R.string.dft_name_fmt, 
+                                                     m_gameID & 0xFFFF );
                     showDialog( DlgID.NAME_GAME.ordinal() );
                 }
                 break;
@@ -381,8 +381,8 @@ public class NewGameActivity extends XWActivity {
             m_newRowID = GameUtils.makeNewSMSGame( NewGameActivity.this, 
                                                    m_groupID, gameID, null, 
                                                    m_lang, m_dict, 2, 1 );
-            String name = Utils.format( this, R.string.dft_sms_name_fmt, 
-                                        gameID & 0xFFFF );
+            String name = LocUtils.getString( this, R.string.dft_sms_name_fmt, 
+                                              gameID & 0xFFFF );
             DBUtils.setName( this, m_newRowID, name );
 
             Intent intent = new Intent( this, GameConfig.class );

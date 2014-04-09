@@ -53,6 +53,7 @@ import java.util.Random;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class Utils {
     public static final int TURN_COLOR = 0x7F00FF00;
@@ -126,7 +127,7 @@ public class Utils {
 
     public static void showToast( Context context, int id )
     {
-        String msg = context.getString( id );
+        String msg = LocUtils.getString( context, id );
         showToast( context, msg );
     }
 
@@ -155,8 +156,8 @@ public class Utils {
                          context.getString( R.string.email_author_subject ) );
         String[] addrs = { context.getString( R.string.email_author_email ) };
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
-        String body = format( context, R.string.email_body_rev_fmt,
-                              BuildConstants.GIT_REV );
+        String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
+                                          BuildConstants.GIT_REV );
         intent.putExtra( Intent.EXTRA_TEXT, body );
         String chooserMsg = context.getString( R.string.email_author_chooser );
         context.startActivity( Intent.createChooser( intent, chooserMsg ) );
@@ -367,11 +368,6 @@ public class Utils {
             s_hasSmallScreen = new Boolean( hasSmallScreen );
         }
         return s_hasSmallScreen;
-    }
-
-    public static String format( Context context, int id, Object... args )
-    {
-        return context.getString( id, args );
     }
 
     public static String digestToString( byte[] digest )

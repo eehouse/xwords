@@ -254,8 +254,8 @@ public class LookupAlert extends LinearLayout
         case STATE_URLS:
             m_listView.setAdapter( s_urlsAdapter );
             setSummary( m_words[m_wordIndex] );
-            String txt = Utils.format( m_context, R.string.button_done_fmt,
-                                       m_words[m_wordIndex] );
+            String txt = LocUtils.getString( m_context, R.string.button_done_fmt,
+                                             m_words[m_wordIndex] );
             m_doneButton.setText( txt );
             txt = m_context.getString( R.string.add_to_study_fmt,
                                        m_words[m_wordIndex] );

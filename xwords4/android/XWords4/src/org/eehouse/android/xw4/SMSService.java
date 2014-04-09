@@ -50,6 +50,7 @@ import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class SMSService extends XWService {
 
@@ -552,8 +553,8 @@ public class SMSService extends XWService {
             DBUtils.setName( this, rowid, gameName );
         }
         String owner = Utils.phoneToContact( this, phone, true );
-        String body = Utils.format( this, R.string.new_name_body_fmt, 
-                                    owner );
+        String body = LocUtils.getString( this, R.string.new_name_body_fmt, 
+                                          owner );
         postNotification( gameID, R.string.new_sms_title, body, rowid );
 
         ackInvite( phone, gameID );

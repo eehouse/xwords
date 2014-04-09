@@ -262,8 +262,8 @@ public class SMSInviteActivity extends InviteActivity {
                 } else {
                     m_immobileConfirmed = false;
                     String msg = 
-                        Utils.format( this, R.string.warn_nomobile_fmt,
-                                      number, name );
+                        LocUtils.getString( this, R.string.warn_nomobile_fmt,
+                                            number, name );
                     showConfirmThen( msg, R.string.button_yes, 
                                      Action.USE_IMMOBILE_ACTION );
                 }

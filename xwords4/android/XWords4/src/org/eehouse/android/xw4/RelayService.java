@@ -51,6 +51,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RelayService extends XWService 
     implements NetStateCache.StateChangedIf {
@@ -379,8 +380,8 @@ public class RelayService extends XWService
     private void setupNotification( long rowid )
     {
         Intent intent = GamesListActivity.makeRowidIntent( this, rowid );
-        String msg = Utils.format( this, R.string.notify_body_fmt, 
-                                   GameUtils.getName( this, rowid ) );
+        String msg = LocUtils.getString( this, R.string.notify_body_fmt, 
+                                         GameUtils.getName( this, rowid ) );
         Utils.postNotification( this, intent, R.string.notify_title,
                                 msg, (int)rowid );
     }

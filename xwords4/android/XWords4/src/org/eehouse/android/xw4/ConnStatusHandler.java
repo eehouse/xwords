@@ -41,6 +41,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class ConnStatusHandler {
 
@@ -176,16 +177,17 @@ public class ConnStatusHandler {
             StringBuffer sb = new StringBuffer();
             synchronized( s_lockObj ) {
                 String tmp = context.getString( connType2StrID( connType ) );
-                sb.append( Utils.format( context, R.string.connstat_net_fmt, 
-                                         tmp ) );
+                sb.append( LocUtils.getString( context, 
+                                               R.string.connstat_net_fmt,
+                                               tmp ) );
                 sb.append("\n\n");
 
                 SuccessRecord record = recordFor( connType, false );
                 tmp = context.getString( record.successNewer? 
                                          R.string.connstat_succ :
                                          R.string.connstat_unsucc );
-                sb.append( Utils.format( context, R.string.connstat_lastsend_fmt,
-                                         tmp, record.newerStr( context ) ) );
+                sb.append( LocUtils.getString( context, R.string.connstat_lastsend_fmt,
+                                               tmp, record.newerStr( context ) ) );
                 sb.append("\n");
 
                 int fmtId = 0;
@@ -199,16 +201,16 @@ public class ConnStatusHandler {
                     }
                 }
                 if ( 0 != fmtId ) {
-                    sb.append( Utils.format( context, fmtId, 
-                                            record.olderStr( context ) ) );
+                    sb.append( LocUtils.getString( context, fmtId, 
+                                                   record.olderStr( context ) ) );
                 }
                 sb.append( "\n\n" );
 
                 record = recordFor( connType, true );
                 if ( record.haveSuccess() ) {
-                    sb.append( Utils.format( context, 
-                                             R.string.connstat_lastreceipt_fmt,
-                                             record.newerStr( context ) ) );
+                    sb.append( LocUtils.getString( context, 
+                                                   R.string.connstat_lastreceipt_fmt,
+                                                   record.newerStr( context ) ) );
                 } else {
                     sb.append( context.getString(R.string.connstat_noreceipt) );
                 }

@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
 
@@ -433,8 +434,9 @@ public class BTService extends XWService {
                         DBUtils.setName( context, rowid, gameName );
                     }
                     result = BTCmd.INVITE_ACCPT;
-                    String body = Utils.format( BTService.this, 
-                                                R.string.new_bt_body_fmt, sender );
+                    String body = LocUtils.getString( BTService.this, 
+                                                      R.string.new_bt_body_fmt, 
+                                                      sender );
                     postNotification( gameID, R.string.new_bt_title, body, rowid );
                 }
             } else {

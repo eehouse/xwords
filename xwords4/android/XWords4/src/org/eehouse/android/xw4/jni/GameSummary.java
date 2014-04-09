@@ -206,8 +206,8 @@ public class GameSummary {
                 } else if ( null != remoteDevs 
                             && CommsConnType.COMMS_CONN_SMS == conType ) {
                     result = 
-                        Utils.format( m_context, R.string.summary_conn_sms_fmt,
-                                      TextUtils.join(", ", m_remotePhones) );
+                        LocUtils.getString( m_context, R.string.summary_conn_sms_fmt,
+                                            TextUtils.join(", ", m_remotePhones) );
                 } else {
                     fmtID = R.string.summary_conn;
                 }

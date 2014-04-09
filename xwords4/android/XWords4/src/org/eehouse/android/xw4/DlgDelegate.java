@@ -365,16 +365,17 @@ public class DlgDelegate {
         boolean asToast = true;
         switch( event ) {
         case BAD_PROTO:
-            msg = Utils.format( m_activity, R.string.bt_bad_proto_fmt,
-                                       (String)args[0] );
+            msg = LocUtils.getString( m_activity, R.string.bt_bad_proto_fmt,
+                                      (String)args[0] );
             break;
         case MESSAGE_RESEND:
-            msg = Utils.format( m_activity, R.string.bt_resend_fmt,
-                                (String)args[0], (Long)args[1], (Integer)args[2] );
+            msg = LocUtils.getString( m_activity, R.string.bt_resend_fmt,
+                                      (String)args[0], (Long)args[1], 
+                                      (Integer)args[2] );
             break;
         case MESSAGE_FAILOUT:
-            msg = Utils.format( m_activity, R.string.bt_fail_fmt, 
-                                (String)args[0] );
+            msg = LocUtils.getString( m_activity, R.string.bt_fail_fmt, 
+                                      (String)args[0] );
             asToast = false;
             break;
         case RELAY_ALERT:
