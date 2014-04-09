@@ -31,9 +31,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.CheckBox;
 
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import junit.framework.Assert;
@@ -87,25 +89,16 @@ public class LocUtils {
 
     public static void xlateView( Context context, View view )
     {
-        if ( view instanceof ViewGroup ) { 
-            ViewGroup asGroup = (ViewGroup)view;
-            int count =	asGroup.getChildCount();
-            for ( int ii = 0; ii < count; ++ii ) {
-                View child = asGroup.getChildAt( ii );
-                xlateView( context, child );
-            }
-        } else if ( view instanceof Button ) {
-            Button button = (Button)view;
-            String str = button.getText().toString();
-            str = xlateString( context, str );
-            button.setText( str );
-        } else if ( view instanceof TextView ) {
-            TextView tv = (TextView)view;
-            String str = tv.getText().toString();
-            str = xlateString( context, str );
-            tv.setText( str );
-        } else {
+        DbgUtils.logf( "xlateView() top level" );
+        HashSet<String> seenClasses = new HashSet<String>();
+        HashSet<String> missedClasses = new HashSet<String>();
+        xlateView( context, view, seenClasses, missedClasses );
+        int ii = 0;
+        for ( Iterator<String> iter = seenClasses.iterator(); 
+              iter.hasNext(); ) {
+            DbgUtils.logf( "xlateView: seen class[%d]: %s", ii++, iter.next() );
         }
+        DbgUtils.logf( "xlateView() top level DONE" );
     }
 
     public static void xlateMenu( Activity activity, Menu menu )
@@ -269,5 +262,39 @@ public class LocUtils {
             s_enabled = new Boolean( null != locale && 0 < locale.length() );
         }
         return s_enabled;
+    }
+
+    private static void xlateView( Context context, View view, 
+                                   HashSet<String> seen,
+                                   HashSet<String> missed )
+    {
+        String name = view.getClass().getName();
+        seen.add( name );
+        if ( view instanceof ViewGroup ) { 
+            DbgUtils.logf( "xlateView recursing on %s", name );
+            ViewGroup asGroup = (ViewGroup)view;
+            int count =	asGroup.getChildCount();
+            for ( int ii = 0; ii < count; ++ii ) {
+                View child = asGroup.getChildAt( ii );
+                xlateView( context, child, seen, missed );
+            }
+        } else if ( view instanceof Button ) {
+            Button button = (Button)view;
+            String str = button.getText().toString();
+            str = xlateString( context, str );
+            button.setText( str );
+        } else if ( view instanceof TextView ) {
+            TextView tv = (TextView)view;
+            String str = tv.getText().toString();
+            str = xlateString( context, str );
+            tv.setText( str );
+        } else if ( view instanceof CheckBox ) {
+            CheckBox box = (CheckBox)view;
+            String str = box.getText().toString();
+            str = xlateString( context, str );
+            box.setText( str );
+        } else {
+            missed.add( view.getClass().getName() );
+        }
     }
 }
