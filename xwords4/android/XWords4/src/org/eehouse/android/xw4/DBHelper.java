@@ -200,6 +200,7 @@ public class DBHelper extends SQLiteOpenHelper {
         forceRowidHigh( db, TABLE_NAME_SUM );
         createGroupsTable( db, false );
         createStudyTable( db );
+        createLocTable( db );
     }
 
     @Override
