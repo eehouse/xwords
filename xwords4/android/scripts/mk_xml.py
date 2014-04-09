@@ -101,7 +101,7 @@ def main():
             dest = src.replace( 'res_src', 'res', 1 )
             xform( src, dest )
 
-    printStrings( g_pairs, outfile )
+    if outfile: printStrings( g_pairs, outfile )
 
 
 main()
