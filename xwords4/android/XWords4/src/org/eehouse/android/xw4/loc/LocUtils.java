@@ -38,9 +38,10 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DBUtils;
+import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
 
 public class LocUtils {
@@ -77,6 +78,11 @@ public class LocUtils {
         View view = factory.inflate( resID, null );
         xlateView( context, view );
         return view;
+    }
+
+    public static void xlateView( Activity activity )
+    {
+        xlateView( activity, Utils.getContentView( activity ) );
     }
 
     public static void xlateView( Context context, View view )

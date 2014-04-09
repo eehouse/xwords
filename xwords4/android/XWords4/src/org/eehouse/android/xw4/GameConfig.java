@@ -408,6 +408,7 @@ public class GameConfig extends XWActivity
                                               false );
 
         setContentView(R.layout.game_config);
+        LocUtils.xlateView( this );
 
         m_connectSetRelay = findViewById(R.id.connect_set_relay);
         m_connectSetSMS = findViewById(R.id.connect_set_sms);
