@@ -124,7 +124,6 @@ public class GamesListDelegate extends DelegateBase
     {
         super( activity, savedInstanceState );
         m_activity = activity;
-        init( savedInstanceState );
     }
 
     protected Dialog createDialog( int id )
@@ -348,7 +347,7 @@ public class GamesListDelegate extends DelegateBase
         }
     }
 
-    private void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState ) 
     {
         CrashTrack.init( m_activity );
 
