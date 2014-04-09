@@ -16,6 +16,9 @@ g_xmlTypes = [
     { 'elemName': 'TextView',
       'attrType' : '{http://schemas.android.com/apk/res/android}text'
   },
+    { 'elemName': 'CheckBox',
+      'attrType' : '{http://schemas.android.com/apk/res/android}text'
+  },
       
 ]
 
