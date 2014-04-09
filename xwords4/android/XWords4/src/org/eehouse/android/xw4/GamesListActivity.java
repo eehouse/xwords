@@ -67,6 +67,7 @@ public class GamesListActivity extends ListActivity {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = new GamesListDelegate( this, savedInstanceState );
+        m_dlgt.init( savedInstanceState );
     } // onCreate
 
     // called when we're brought to the front (probably as a result of
