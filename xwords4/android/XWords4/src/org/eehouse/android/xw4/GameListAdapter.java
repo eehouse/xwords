@@ -68,8 +68,15 @@ public class GameListAdapter extends XWListAdapter
     @Override
     public int getCount() 
     { 
-        return DBUtils.getGroups( m_context ).size()
-            + DBUtils.countVisibleGames( m_context );
+        HashMap<Long,GameGroupInfo> groups = DBUtils.getGroups( m_context );
+        int count = groups.size();
+        for ( GameGroupInfo ggi : groups.values() ) {
+            if ( ggi.m_expanded ) {
+                count += ggi.m_count;
+            }
+        }            
+        // DbgUtils.logf( "GameListAdapter.getCount() => %d", count );
+        return count;
     }
 
     @Override
