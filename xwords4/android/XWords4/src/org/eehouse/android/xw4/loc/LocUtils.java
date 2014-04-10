@@ -263,8 +263,13 @@ public class LocUtils {
         //     box.setText( str );
         } else if ( view instanceof Spinner ) {
             Spinner sp = (Spinner)view;
-            String str = sp.getPrompt().toString();
-            sp.setPrompt( xlateString( context, str ) );
+            CharSequence prompt = sp.getPrompt();
+            if ( null != prompt ) {
+                String xlation = xlateString( context, prompt.toString() );
+                if ( null != xlation ) {
+                    sp.setPrompt( xlation );
+                }
+            }
         }
 
         // A Spinner, for instance, ISA ViewGroup, so this is a separate test.
