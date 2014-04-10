@@ -53,6 +53,8 @@ public class LocUtils {
     private static HashMap<String, String>s_xlations = null;
     private static HashMap<Integer, String> s_idsToKeys = null;
     private static Boolean s_enabled = null;
+    private static Boolean UPPER_CASE = true;
+    private static final int FMT_LEN = 4;
 
     public interface LocIface {
         void setText( CharSequence text );
@@ -118,6 +120,15 @@ public class LocUtils {
         return result;
     }
 
+    public static String[] xlateStrings( Context context, String[] strs )
+    {
+        String[] result = new String[strs.length];
+        for ( int ii = 0; ii < strs.length; ++ii ) {
+            result[ii] = xlateString( context, strs[ii].toString() );
+        }
+        return result;
+    }
+
     public static String getString( Context context, int id )
     {
         return getString( context, id, (Object)null );
@@ -151,6 +162,9 @@ public class LocUtils {
     {
         loadXlations( context );
         String result = s_xlations.get( key );
+        if ( UPPER_CASE && null == result ) {
+            result = toUpperCase( key );
+        }
         return result;
     }
 
@@ -172,7 +186,8 @@ public class LocUtils {
         for ( int ii = 0; iter.hasNext(); ++ii ) {
             String key = iter.next();
             String english = context.getString( map.get( key ) );
-            String xlation = s_xlations.get( key );
+            Assert.assertTrue( english.equals( key ) );
+            String xlation = getXlation( context, key );
             result[ii] = new LocSearcher.Pair( key, english, xlation );
         }
         return result;
@@ -249,6 +264,8 @@ public class LocUtils {
 
     private static void xlateView( Context context, View view, int depth )
     {
+        // DbgUtils.logf( "xlateView(depth=%d, view=%s, canRecurse=%b)", depth, 
+        //                view.getClass().getName(), view instanceof ViewGroup );
         if ( view instanceof Button ) {
             Button button = (Button)view;
             String str = xlateString( context, button.getText().toString() );
@@ -281,5 +298,24 @@ public class LocUtils {
                 xlateView( context, child, depth + 1 );
             }
         }
+    }
+
+    // This is for testing, but the ability to pull the formatters will be
+    // critical for validating local transations of strings containing
+    // formatters.
+    private static String toUpperCase( String str )
+    {
+        String[] parts = str.split( "%[\\d]\\$[ds]" );
+        StringBuilder sb = new StringBuilder();
+        int offset = 0;
+        for ( String part : parts ) {
+            sb.append( part.toUpperCase() );
+            offset += part.length();
+            if ( offset < str.length() ) {
+                sb.append( str.substring( offset, offset + FMT_LEN ) );
+                offset += FMT_LEN;
+            }
+        }
+        return sb.toString();
     }
 }
