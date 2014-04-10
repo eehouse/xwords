@@ -32,6 +32,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.CheckBox;
+import android.widget.Spinner;
 
 import java.util.Iterator;
 import java.util.HashMap;
@@ -49,7 +50,6 @@ import org.eehouse.android.xw4.XWPrefs;
 public class LocUtils {
     // Keep this in sync with gen_loc_ids.py and what's used in the menu.xml
     // files to mark me-localized strings.
-    private static final String LOC_PREFIX = "loc:";
     private static HashMap<String, String>s_xlations = null;
     private static HashMap<Integer, String> s_idsToKeys = null;
     private static Boolean s_enabled = null;
@@ -58,21 +58,21 @@ public class LocUtils {
         void setText( CharSequence text );
     }
 
-    public static void loadStrings( Context context, AttributeSet as, LocIface view )
-    {
-        // There should be a way to look up the index of "strid" but I don't
-        // have it yet.  This got things working.
-        int count = as.getAttributeCount();
-        for ( int ii = 0; ii < count; ++ii ) {
-            if ( "strid".equals( as.getAttributeName(ii) ) ) {
-                String value = as.getAttributeValue(ii);
-                Assert.assertTrue( '@' == value.charAt(0) );
-                int id = Integer.parseInt( value.substring(1) );
-                view.setText( getString( context, id ) );
-                break;
-            }
-        }
-    }
+    // public static void loadStrings( Context context, AttributeSet as, LocIface view )
+    // {
+    //     // There should be a way to look up the index of "strid" but I don't
+    //     // have it yet.  This got things working.
+    //     int count = as.getAttributeCount();
+    //     for ( int ii = 0; ii < count; ++ii ) {
+    //         if ( "strid".equals( as.getAttributeName(ii) ) ) {
+    //             String value = as.getAttributeValue(ii);
+    //             Assert.assertTrue( '@' == value.charAt(0) );
+    //             int id = Integer.parseInt( value.substring(1) );
+    //             view.setText( getString( context, id ) );
+    //             break;
+    //         }
+    //     }
+    // }
 
     public static View inflate( Context context, int resID )
     {
@@ -90,15 +90,7 @@ public class LocUtils {
     public static void xlateView( Context context, View view )
     {
         DbgUtils.logf( "xlateView() top level" );
-        HashSet<String> seenClasses = new HashSet<String>();
-        HashSet<String> missedClasses = new HashSet<String>();
-        xlateView( context, view, seenClasses, missedClasses );
-        int ii = 0;
-        for ( Iterator<String> iter = seenClasses.iterator(); 
-              iter.hasNext(); ) {
-            DbgUtils.logf( "xlateView: seen class[%d]: %s", ii++, iter.next() );
-        }
-        DbgUtils.logf( "xlateView() top level DONE" );
+        xlateView( context, view, 0 );
     }
 
     public static void xlateMenu( Activity activity, Menu menu )
@@ -108,13 +100,10 @@ public class LocUtils {
 
     public static String xlateString( Context context, String str )
     {
-        if ( str.startsWith( LOC_PREFIX ) ) {
-            str = str.substring( LOC_PREFIX.length() );
-            int id = LocIDs.getID( str );
-            if ( LocIDs.NOT_FOUND != id ) {
-                str = getString( context, id );
-            } else {
-                DbgUtils.logf( "nothing for %s", str );
+        if ( LocIDs.getS_MAP( context ).containsKey( str ) ) {
+            String xlation = getXlation( context, str );
+            if ( null != xlation ) {
+                str = xlation;
             }
         }
         return str;
@@ -137,7 +126,7 @@ public class LocUtils {
     public static String getString( Context context, int id, Object... params )
     {
         String result = null;
-        String key = keyForID( id );
+        String key = keyForID( context, id );
         if ( null != key ) {
             result = getXlation( context, key );
         }
@@ -175,7 +164,7 @@ public class LocUtils {
     {
         loadXlations( context );
 
-        Map<String,Integer> map = LocIDsData.S_MAP;
+        Map<String,Integer> map = LocIDs.getS_MAP( context );
         int siz = map.size();
         LocSearcher.Pair[] result = new LocSearcher.Pair[siz];
         Iterator<String> iter = map.keySet().iterator();
@@ -198,15 +187,9 @@ public class LocUtils {
             CharSequence ts = item.getTitle();
             if ( null != ts ) {
                 String title = ts.toString();
-                if ( title.startsWith( LOC_PREFIX ) ) {
-                    String asKey = title.substring( LOC_PREFIX.length() );
-                    int id = LocIDs.getID( asKey );
-                    if ( LocIDs.NOT_FOUND != id ) {
-                        asKey = getString( activity, id );
-                    } else {
-                        DbgUtils.logf( "nothing for %s", asKey );
-                    }
-                    item.setTitle( asKey );
+                if ( LocIDs.getS_MAP( activity ).containsKey(title) ) {
+                    title = xlateString( activity, title );
+                    item.setTitle( title );
                 }
             }
 
@@ -237,10 +220,10 @@ public class LocUtils {
         }
     }
 
-    private static String keyForID( int id )
+    private static String keyForID( Context context, int id )
     {
         if ( null == s_idsToKeys ) {
-            Map<String,Integer> map = LocIDsData.S_MAP;
+            Map<String,Integer> map = LocIDs.getS_MAP( context );
             HashMap<Integer, String> idsToKeys =
                 new HashMap<Integer, String>( map.size() );
 
@@ -264,37 +247,34 @@ public class LocUtils {
         return s_enabled;
     }
 
-    private static void xlateView( Context context, View view, 
-                                   HashSet<String> seen,
-                                   HashSet<String> missed )
+    private static void xlateView( Context context, View view, int depth )
     {
-        String name = view.getClass().getName();
-        seen.add( name );
+        if ( view instanceof Button ) {
+            Button button = (Button)view;
+            String str = xlateString( context, button.getText().toString() );
+            button.setText( str );
+        } else if ( view instanceof TextView ) {
+            TextView tv = (TextView)view;
+            tv.setText( xlateString( context, tv.getText().toString() ) );
+        // } else if ( view instanceof CheckBox ) {
+        //     CheckBox box = (CheckBox)view;
+        //     String str = box.getText().toString();
+        //     str = xlateString( context, str );
+        //     box.setText( str );
+        } else if ( view instanceof Spinner ) {
+            Spinner sp = (Spinner)view;
+            String str = sp.getPrompt().toString();
+            sp.setPrompt( xlateString( context, str ) );
+        }
+
+        // A Spinner, for instance, ISA ViewGroup, so this is a separate test.
         if ( view instanceof ViewGroup ) { 
-            DbgUtils.logf( "xlateView recursing on %s", name );
             ViewGroup asGroup = (ViewGroup)view;
             int count =	asGroup.getChildCount();
             for ( int ii = 0; ii < count; ++ii ) {
                 View child = asGroup.getChildAt( ii );
-                xlateView( context, child, seen, missed );
+                xlateView( context, child, depth + 1 );
             }
-        } else if ( view instanceof Button ) {
-            Button button = (Button)view;
-            String str = button.getText().toString();
-            str = xlateString( context, str );
-            button.setText( str );
-        } else if ( view instanceof TextView ) {
-            TextView tv = (TextView)view;
-            String str = tv.getText().toString();
-            str = xlateString( context, str );
-            tv.setText( str );
-        } else if ( view instanceof CheckBox ) {
-            CheckBox box = (CheckBox)view;
-            String str = box.getText().toString();
-            str = xlateString( context, str );
-            box.setText( str );
-        } else {
-            missed.add( view.getClass().getName() );
         }
     }
 }

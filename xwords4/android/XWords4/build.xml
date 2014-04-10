@@ -85,10 +85,12 @@
               />
 
         <exec dir="." executable="../scripts/mk_xml.py" 
-              failonerror="true" output="/dev/null" 
+              failonerror="true" 
               >
             <arg value="-o"/>
             <arg value="src/org/eehouse/android/xw4/loc/LocIDsData.java"/>
+            <arg value="-t"/>
+            <arg value="${build.target}"/>
         </exec>
 
         <exec dir="." executable="../scripts/gen_gcmid.sh"

@@ -1489,7 +1489,7 @@
     device, and the body that appears when you pull the notifications
     down. -->
     <string name="notify_title">Moves made</string>
-    <string name="notify_body_fmt">Activity in game "%1$s"</string>
+    <string name="notify_body_fmt">Activity in game \"%1$s\"</string>
 
     <!--
         ############################################################

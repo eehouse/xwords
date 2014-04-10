@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import glob, sys, re, os, getopt
+import glob, sys, re, os, getopt, codecs
 
 from lxml import etree
 
@@ -28,6 +28,7 @@ g_xmlTypes = [
 g_pairs = {}
 
 STR_REF = re.compile('@string/(.*)$')
+CLASS_NAME = re.compile('.*/([^/*]+).java')
 
 def xform(src, dest):
     doc = etree.parse(src)
@@ -47,37 +48,87 @@ def xform(src, dest):
     if not os.path.exists(dir): os.makedirs(dir)
     doc.write( dest, pretty_print=True )
 
-def printStrings( pairs, outfile ):
-    fil = open( outfile, "w" )
+# For my records: you CAN harvest a comment!!!
+# def loadAndPrint(file):
+#     prevComment = None
+#     doc = etree.parse(file)
+#     for elem in doc.getroot().iter():
+#         if not isinstance( elem.tag, basestring ):
+#             prevComment = elem.text
+#         else:
+#             print "elem:", elem,
+#             if prevComment:
+#                 print '//', prevComment
+#                 prevComment = None
+#             else:
+#                 print
+#     # doc.write( sys.stdout, pretty_print=True )
+
+def checkText( text ):
+    text = " ".join(re.split('\s+', text)).replace('"', '\"')
+    seen = set()
+    split = re.split( '(%\d\$[sd])', text )
+    for part in split:
+        if 4 <= len(part) and '%' == part[0]:
+            digit = int(part[1:2])
+            if digit in seen:
+                print "ERROR: has duplicate format digit %d (text = %s)" % (digit, text)
+                print "This might not be what you want"
+            seen.add( digit )
+    return text
+
+def printStrings( pairs, outfile, target ):
+    match = CLASS_NAME.match(outfile)
+    if not match:
+        print "did you give me a java file?:", outfile
+        sys.exit(0)
+    name = match.group(1)
+    fil = codecs.open( outfile, "w", "utf-8" )
 
     # beginning of the class file
     lines = """
 /***********************************************************************
 * Generated file; do not edit!!! 
 ***********************************************************************/
-
 package org.eehouse.android.xw4.loc;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import android.content.Context;
 
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.DbgUtils;
 
-public class LocIDsData {
+public class %s {
     public static final int NOT_FOUND = -1;
-
-    protected static final Map<String, Integer> S_MAP = 
-        Collections.unmodifiableMap(new HashMap<String, Integer>() {{ 
+    protected static final int[] S_IDS = {
 """
-    fil.write( lines )
+    fil.write( lines % name )
 
     for key in pairs.keys():
-        fil.write( "        put(\"%s\", R.string.%s);\n" % (key, key) )
+            fil.write( "        R.string.%s,\n" % (key) )
+
+    fil.write( "    };\n\n" )
+
+    if "debug" == target:
+        fil.write( "    static final String[] strs = {\n")
+        for key in pairs.keys():
+            fil.write( "        \"%s\",\n" % pairs[key] )
+        fil.write( "    };\n" );
+
+        lines = """
+    protected static void checkStrings( Context context )
+    {
+        for ( int ii = 0; ii < strs.length; ++ii ) {
+            if ( ! strs[ii].equals( context.getString( S_IDS[ii] ) ) ) {
+                DbgUtils.logf( "unequal strings: \\"%s\\" vs \\"%s\\"",
+                               strs[ii], S_IDS[ii] );
+            }
+        }
+    }
+"""
+        fil.write( lines )
 
     # Now the end of the class
     lines = """
-    }});
 }
 /* end generated file */
 """
@@ -85,23 +136,27 @@ public class LocIDsData {
 
 def main():
     outfile = ''
-    pairs, rest = getopt.getopt(sys.argv[1:], "o:")
+    outfileDbg = ''
+    target=''
+    pairs, rest = getopt.getopt(sys.argv[1:], "o:t:d:")
     for option, value in pairs:
         if option == '-o': outfile = value
+        elif option == '-t': target = value
 
     # Gather all localizable strings
     for path in glob.iglob( "res/values/strings.xml" ):
         for action, elem in etree.iterparse(path):
-            if "end" == action and 'string' == elem.tag:
-                g_pairs[elem.get('name')] = True
+            if "end" == action and 'string' == elem.tag and elem.text:
+                text = checkText( elem.text )
+                g_pairs[elem.get('name')] = text
 
-    for subdir, dirs, files in os.walk('res_src'):
-        for file in files:
-            src = subdir + '/' + file
-            dest = src.replace( 'res_src', 'res', 1 )
-            xform( src, dest )
+    # for subdir, dirs, files in os.walk('res_src'):
+    #     for file in files:
+    #         src = subdir + '/' + file
+    #         dest = src.replace( 'res_src', 'res', 1 )
+    #         xform( src, dest )
 
-    if outfile: printStrings( g_pairs, outfile )
+    if outfile: printStrings( g_pairs, outfile, target )
 
 
 main()

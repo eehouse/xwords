@@ -20,6 +20,8 @@
 
 package org.eehouse.android.xw4.loc;
 
+import android.content.Context;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -29,11 +31,12 @@ import org.eehouse.android.xw4.DbgUtils;
 
 public class LocIDs extends LocIDsData {
     private static String[] s_keys;
+    private static HashMap<String, Integer> S_MAP = null;
 
-    protected static String getNthKey( int indx )
+    protected static String getNthKey( Context context, int indx )
     {
         if ( null == s_keys ) {
-            Map<String, Integer> map = LocIDsData.S_MAP;
+            Map<String, Integer> map = getS_MAP( context );
             s_keys = new String[map.size()];
             Iterator<String> iter = map.keySet().iterator();
             for ( int ii = 0; iter.hasNext(); ++ii ) {
@@ -44,19 +47,33 @@ public class LocIDs extends LocIDsData {
         return s_keys[indx];
     }
 
-    protected static int getID( String key )
+    protected static int getID( Context context, String key )
     {
         int result = LocIDsData.NOT_FOUND;
-        if ( null != key && LocIDsData.S_MAP.containsKey( key ) ) {
-            Assert.assertNotNull( LocIDsData.S_MAP );
+        if ( null != key && getS_MAP(context).containsKey( key ) ) {
+            // Assert.assertNotNull( LocIDsData.S_MAP );
             DbgUtils.logf( "calling get with key %s", key );
-            result = LocIDsData.S_MAP.get( key ); // NPE
+            result = getS_MAP( context ).get( key ); // NPE
         }
         return result;
     }
 
     protected static int size()
     {
-        return LocIDsData.S_MAP.size();
+        return S_IDS.length;
+    }
+
+    protected static HashMap<String, Integer> getS_MAP( Context context ) 
+    {
+        if ( null == S_MAP ) {
+            S_MAP = new HashMap<String, Integer>(S_IDS.length);
+            for ( int id : S_IDS ) {
+                String str = context.getString( id );
+                S_MAP.put( str, id );
+            }
+
+            LocIDsData.checkStrings( context );
+        }
+        return S_MAP;
     }
 }

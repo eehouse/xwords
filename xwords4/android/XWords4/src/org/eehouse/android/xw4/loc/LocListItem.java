@@ -58,11 +58,8 @@ public class LocListItem extends LinearLayout implements OnFocusChangeListener {
 
     private void setEnglish()
     {
-        int id = LocIDs.getID( m_pair.getKey() );
-        String str = m_context.getString( id );
         TextView tv = (TextView)findViewById( R.id.english_view );
-        tv.setText( str );
-        DbgUtils.logf( "setEnglish: set to %s", str );
+        tv.setText( m_pair.getKey() );
     }
 
     private void setXlated()
