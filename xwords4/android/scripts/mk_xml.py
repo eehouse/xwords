@@ -114,18 +114,19 @@ public class %s {
             fil.write( "        \"%s\",\n" % pairs[key] )
         fil.write( "    };\n" );
 
-        lines = """
-    protected static void checkStrings( Context context )
-    {
+    func = "    protected static void checkStrings( Context context ) {\n"
+    if "debug" == target:
+        func += """
         for ( int ii = 0; ii < strs.length; ++ii ) {
             if ( ! strs[ii].equals( context.getString( S_IDS[ii] ) ) ) {
                 DbgUtils.logf( "unequal strings: \\"%s\\" vs \\"%s\\"",
                                strs[ii], S_IDS[ii] );
             }
         }
-    }
 """
-        fil.write( lines )
+    func += "    }"
+
+    fil.write( func )
 
     # Now the end of the class
     lines = """
