@@ -41,8 +41,10 @@ import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
@@ -50,6 +52,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
@@ -467,6 +470,21 @@ public class Utils {
         boolean result = "com.google.android.feedback".equals( installer ) 
             || "com.android.vending".equals( installer );
         return result;
+    }
+
+    public static void addSpinnerArray( Spinner spinner, int arrayID )
+    {
+        Context context = spinner.getContext();
+        String[] array = context.getResources().getStringArray( arrayID );
+        array = LocUtils.xlateStrings( context, array );
+        int displayID = android.R.layout.simple_spinner_item;
+        // displayID = android.R.layout.simple_list_item_1;
+        ArrayAdapter<String> adapter = 
+            new ArrayAdapter<String>( context, displayID/*, array */ );
+        for ( String item : array ) {
+            adapter.add( item );
+        }
+        spinner.setAdapter( adapter );
     }
 
     private static void setFirstBootStatics( Context context )
