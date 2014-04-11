@@ -58,6 +58,7 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
 
 public class GameConfig extends XWActivity 
     implements View.OnClickListener
@@ -162,7 +163,7 @@ public class GameConfig extends XWActivity
                 View playerEditView = 
                     LocUtils.inflate( this, R.layout.player_edit );
 
-                dialog = new AlertDialog.Builder( this )
+                dialog = new AlertBuilder( this )
                     .setTitle(R.string.player_edit_title)
                     .setView(playerEditView)
                     .setPositiveButton( R.string.button_ok,
@@ -202,7 +203,7 @@ public class GameConfig extends XWActivity
                             loadPlayersList();
                         }
                     };
-                dialog = new AlertDialog.Builder( this )
+                dialog = new AlertBuilder( this )
                     .setTitle( R.string.force_title )
                     .setView( LocUtils.inflate( this, layoutForDlg(dlgID) ) )
                     .setPositiveButton( R.string.button_ok, dlpos )
@@ -232,7 +233,7 @@ public class GameConfig extends XWActivity
                             }
                         }
                     };
-                ab = new AlertDialog.Builder( this )
+                ab = new AlertBuilder( this )
                     .setTitle( R.string.confirm_save_title )
                     .setMessage( R.string.confirm_save )
                     .setPositiveButton( R.string.button_save, dlpos );
@@ -260,7 +261,7 @@ public class GameConfig extends XWActivity
                 String msg = getString( R.string.no_name_found_fmt,
                                         m_gi.nPlayers, DictLangCache.
                                         getLangName( this, m_gi.dictLang ) );
-                dialog = new AlertDialog.Builder( this )
+                dialog = new AlertBuilder( this )
                     .setPositiveButton( R.string.button_ok, null )
                     // message added below since varies with language etc.
                     .setMessage( msg )

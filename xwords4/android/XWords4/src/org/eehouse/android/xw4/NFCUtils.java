@@ -36,6 +36,8 @@ import android.os.Parcelable;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
+
 public class NFCUtils {
 
     public interface NFCActor {
@@ -133,7 +135,7 @@ public class NFCUtils {
                                                       + ".NFC_SETTINGS" ) );
                     }
                 };
-        return new AlertDialog.Builder( activity )
+        return new AlertBuilder( activity )
             .setTitle( R.string.info_title )
             .setMessage( R.string.enable_nfc )
             .setPositiveButton( R.string.button_cancel, null )

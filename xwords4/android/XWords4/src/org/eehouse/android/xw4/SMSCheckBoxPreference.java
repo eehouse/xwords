@@ -87,7 +87,7 @@ public class SMSCheckBoxPreference extends CheckBoxPreference {
                 }
             };
 
-        AlertDialog.Builder ab = new AlertDialog.Builder( activity )
+        AlertDialog.Builder ab = new LocUtils.AlertBuilder( activity )
             .setTitle( R.string.confirm_sms_title )
             .setView( layout )
             .setNegativeButton( R.string.button_ok, lstnr );

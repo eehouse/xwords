@@ -59,6 +59,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
 
 public class GamesListDelegate extends DelegateBase
     implements OnItemLongClickListener,
@@ -173,7 +174,7 @@ public class GamesListDelegate extends DelegateBase
                                                 langName );
             }
 
-            ab = new AlertDialog.Builder( m_activity )
+            ab = new AlertBuilder( m_activity )
                 .setTitle( R.string.no_dict_title )
                 .setMessage( message )
                 .setPositiveButton( R.string.button_cancel, null )
@@ -208,7 +209,7 @@ public class GamesListDelegate extends DelegateBase
                         }
                     }
                 };
-            dialog = new AlertDialog.Builder( m_activity )
+            dialog = new AlertBuilder( m_activity )
                 .setTitle( R.string.subst_dict_title )
                 .setPositiveButton( R.string.button_substdict, lstnr )
                 .setNegativeButton( R.string.button_cancel, null )
@@ -298,8 +299,8 @@ public class GamesListDelegate extends DelegateBase
                 };
             String[] groups = m_adapter.groupNames();
             int curGroupPos = m_adapter.getGroupPosition( startGroup );
-            dialog = new AlertDialog.Builder( m_activity )
-                .setTitle( m_activity.getString( R.string.change_group ) )
+            dialog = new AlertBuilder( m_activity )
+                .setTitle( R.string.change_group )
                 .setSingleChoiceItems( groups, curGroupPos, lstnr )
                 .setPositiveButton( R.string.button_move, lstnr2 )
                 .setNegativeButton( R.string.button_cancel, null )
@@ -314,7 +315,7 @@ public class GamesListDelegate extends DelegateBase
                 (EditText)layout.findViewById( R.id.name_edit );
             etext.setText( CommonPrefs.getDefaultPlayerName( m_activity,
                                                              0, true ) );
-            dialog = new AlertDialog.Builder( m_activity )
+            dialog = new AlertBuilder( m_activity )
                 .setTitle( R.string.default_name_title )
                 .setMessage( R.string.default_name_message )
                 .setPositiveButton( R.string.button_ok, null )
@@ -927,7 +928,7 @@ public class GamesListDelegate extends DelegateBase
         if ( 0 == fmt ) {
             m_activity.setTitle( m_origTitle );
         } else {
-            m_activity.setTitle( m_activity.getString( fmt, nSels ) );
+            m_activity.setTitle( LocUtils.getString( m_activity, fmt, nSels ) );
         }
     }
 
@@ -1162,7 +1163,7 @@ public class GamesListDelegate extends DelegateBase
             LocUtils.inflate( m_activity, R.layout.rename_game );
         m_namer.setName( curname );
         m_namer.setLabel( labelID );
-        Dialog dialog = new AlertDialog.Builder( m_activity )
+        Dialog dialog = new AlertBuilder( m_activity )
             .setTitle( titleID )
             .setNegativeButton( R.string.button_cancel, null )
             .setPositiveButton( R.string.button_ok, lstnr )

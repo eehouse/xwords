@@ -38,6 +38,7 @@ import java.util.Iterator;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
 
 public class DlgDelegate {
 
@@ -419,7 +420,7 @@ public class DlgDelegate {
             xlator.setVisibility( View.GONE );
         }
 
-        return new AlertDialog.Builder( m_activity )
+        return new AlertBuilder( m_activity )
             .setIcon( R.drawable.icon48x48 )
             .setTitle( R.string.app_name )
             .setView( view )
@@ -445,7 +446,7 @@ public class DlgDelegate {
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )
     {
-        Dialog dialog = new AlertDialog.Builder( m_activity )
+        Dialog dialog = new AlertBuilder( m_activity )
             .setTitle( R.string.info_title )
             .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, null )
@@ -473,7 +474,7 @@ public class DlgDelegate {
                 }
             };
 
-        Dialog dialog = new AlertDialog.Builder( m_activity )
+        Dialog dialog = new AlertBuilder( m_activity )
             .setTitle( R.string.newbie_title )
             .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, lstnr_p )
@@ -487,7 +488,7 @@ public class DlgDelegate {
     {
         OnClickListener lstnr = mkCallbackClickListener( state );
 
-        Dialog dialog = new AlertDialog.Builder( m_activity )
+        Dialog dialog = new AlertBuilder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( state.m_msg )
             .setPositiveButton( state.m_posButton, lstnr )
@@ -512,7 +513,7 @@ public class DlgDelegate {
             msgID = R.string.nfc_or_email;
         }
         
-        AlertDialog.Builder builder = new AlertDialog.Builder( m_activity )
+        AlertDialog.Builder builder = new AlertBuilder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( msgID )
             .setNegativeButton( R.string.button_html, lstnr );
@@ -529,7 +530,7 @@ public class DlgDelegate {
 
     private Dialog createDictGoneDialog()
     {
-        Dialog dialog = new AlertDialog.Builder( m_activity )
+        Dialog dialog = new AlertBuilder( m_activity )
             .setTitle( R.string.no_dict_title )
             .setMessage( R.string.no_dict_finish )
             .setPositiveButton( R.string.button_close_game, null )

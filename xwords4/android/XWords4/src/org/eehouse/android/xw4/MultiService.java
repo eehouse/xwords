@@ -26,6 +26,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 
+import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
+
 public class MultiService {
 
     public static final String LANG = "LANG";
@@ -139,7 +141,7 @@ public class MultiService {
             : R.string.invite_dict_missing_body_fmt;
         String msg = context.getString( msgID, inviter, dict, langStr );
 
-        return new AlertDialog.Builder( context )
+        return new AlertBuilder( context )
             .setTitle( R.string.invite_dict_missing_title )
             .setMessage( msg)
             .setPositiveButton( R.string.button_download, onDownload )

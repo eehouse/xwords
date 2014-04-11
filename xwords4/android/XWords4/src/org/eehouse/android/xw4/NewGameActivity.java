@@ -243,7 +243,7 @@ public class NewGameActivity extends XWActivity {
                         }
                     };
 
-                dialog = new AlertDialog.Builder( this )
+                dialog = new LocUtils.AlertBuilder( this )
                     .setTitle( m_nameForBT ? R.string.game_btname_title 
                                : R.string.game_smsname_title )
                     .setNegativeButton( R.string.button_cancel, null )

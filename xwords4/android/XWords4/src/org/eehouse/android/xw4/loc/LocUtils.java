@@ -20,6 +20,7 @@
 package org.eehouse.android.xw4.loc;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.util.AttributeSet;
@@ -317,5 +318,22 @@ public class LocUtils {
             }
         }
         return sb.toString();
+    }
+
+    public static class AlertBuilder extends AlertDialog.Builder {
+        Context m_context;
+
+        public AlertBuilder( Context context )
+        {
+            super( context );
+            m_context = context;
+        }
+
+        @Override
+        public AlertDialog.Builder setTitle( int id )
+        {
+            String str = getString( m_context, id );
+            return setTitle( str );
+        }
     }
 }

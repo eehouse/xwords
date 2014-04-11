@@ -29,6 +29,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
+
 /* Put up a dialog greeting user after every upgrade.  Based on
  * similar feature in OpenSudoku, to whose author "Thanks".
  */
@@ -87,7 +89,7 @@ public class FirstRunDialog {
 
         view.loadData( page, "text/html", "utf-8" );
 
-        AlertDialog dialog = new AlertDialog.Builder( context )
+        AlertDialog dialog = new AlertBuilder( context )
             .setIcon(android.R.drawable.ic_menu_info_details)
             .setTitle( R.string.changes_title )
             .setView( view )

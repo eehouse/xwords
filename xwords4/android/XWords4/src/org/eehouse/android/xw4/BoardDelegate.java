@@ -63,6 +63,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -299,7 +300,7 @@ public class BoardDelegate extends DelegateBase
                             }
                         }
                     };
-                dialog = new AlertDialog.Builder( m_activity )
+                dialog = new AlertBuilder( m_activity )
                     .setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
                     .setPositiveButton( R.string.button_yes, lstnr )
@@ -309,7 +310,7 @@ public class BoardDelegate extends DelegateBase
                 break;
 
             case DLG_DELETED:
-                ab = new AlertDialog.Builder( m_activity )
+                ab = new AlertBuilder( m_activity )
                     .setTitle( R.string.query_title )
                     .setMessage( R.string.msg_dev_deleted )
                     .setPositiveButton( R.string.button_ok, null );
@@ -330,7 +331,7 @@ public class BoardDelegate extends DelegateBase
             case QUERY_INFORM_BLK:
             case DLG_SCORES:
             case DLG_BADWORDS_BLK: 
-                ab = new AlertDialog.Builder( m_activity )
+                ab = new AlertBuilder( m_activity )
                     .setMessage( m_dlgBytes );
                 if ( 0 != m_dlgTitle ) {
                     ab.setTitle( m_dlgTitle );
@@ -387,7 +388,7 @@ public class BoardDelegate extends DelegateBase
 
             case PICK_TILE_REQUESTBLANK_BLK:
             case PICK_TILE_REQUESTTRAY_BLK:
-                ab = new AlertDialog.Builder( m_activity );
+                ab = new AlertBuilder( m_activity );
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
@@ -433,7 +434,7 @@ public class BoardDelegate extends DelegateBase
                     setupPasswdVars();
                 }
                 m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
-                ab = new AlertDialog.Builder( m_activity )
+                ab = new AlertBuilder( m_activity )
                     .setTitle( m_dlgTitleStr )
                     .setView( m_passwdLyt )
                     .setPositiveButton( R.string.button_ok,
@@ -449,7 +450,7 @@ public class BoardDelegate extends DelegateBase
                 break;
 
             case QUERY_ENDGAME:
-                dialog = new AlertDialog.Builder( m_activity )
+                dialog = new AlertBuilder( m_activity )
                     .setTitle( R.string.query_title )
                     .setMessage( R.string.ids_endnow )
                     .setPositiveButton( R.string.button_yes,
@@ -472,7 +473,7 @@ public class BoardDelegate extends DelegateBase
                                 showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
                             }
                         };
-                    dialog = new AlertDialog.Builder( m_activity )
+                    dialog = new AlertBuilder( m_activity )
                         .setTitle( R.string.query_title )
                         .setMessage( "" )
                         .setPositiveButton( R.string.button_yes, lstnr )
@@ -696,7 +697,7 @@ public class BoardDelegate extends DelegateBase
                 strId = R.string.board_menu_tray_show;
             }
             item = menu.findItem( R.id.board_menu_tray );
-            item.setTitle( strId );
+            item.setTitle( LocUtils.getString( m_activity, strId ) );
 
             Utils.setItemVisible( menu, R.id.board_menu_flip, 
                                   m_gsi.visTileCount >= 1 );
@@ -739,12 +740,13 @@ public class BoardDelegate extends DelegateBase
                 } else {
                     strId = R.string.board_menu_done;
                 }
-                item.setTitle( strId );
+                item.setTitle( LocUtils.getString( m_activity, strId ) );
             }
             if ( m_gameOver || DBUtils.gameOver( m_activity, m_rowid ) ) {
                 m_gameOver = true;
                 item = menu.findItem( R.id.board_menu_game_resign );
-                item.setTitle( R.string.board_menu_game_final );
+                item.setTitle( LocUtils.getString( m_activity, 
+                                                   R.string.board_menu_game_final ) );
             }
         }
 
