@@ -11,20 +11,28 @@ def longestCommon( name, pairs ):
         for key in pairs.keys():
             if str == key[:ii]:
                 print str, "matches", key, "so far"
-                match = str
+                match = key
                 break
-                
-    sys.exit(0)
+    return match
 
 def checkAgainst( path, pairs ):
     print "looking at", path
     doc = etree.parse( path )
     root = doc.getroot();
-    # for child in root.iter():
-    #     if child.tag == "string":
-    #         name = child.get("name")
-    #         if not name in pairs:
-    #             longestCommon( name, pairs )
+    for child in root.iter():
+        if child.tag == "string":
+            name = child.get("name")
+            if not name in pairs:
+                candidate = longestCommon( name, pairs )
+                print name, "not found in the English strings"
+                print "closest I can find is", candidate
+                print "here are the two strings, English then the other"
+                print pairs[candidate]
+                print child.text
+                response = raw_input( "replace %s with %s? (y or n)" % (name, candidate) )
+                if response == 'y':
+                    child.set('name', candidate)
+                    break
                 # try = tryNames( name, pairs )
                 # response = raw_input( "unknown name: %s; respond:" % (name) )
                 # print "you wrote:", response
@@ -43,6 +51,7 @@ def main():
         for file in [file for file in files if file == "strings.xml"]:
             path = "%s/%s" % (subdir, file)
             checkAgainst( path, pairs )
+            break
 
 
 ##############################################################################

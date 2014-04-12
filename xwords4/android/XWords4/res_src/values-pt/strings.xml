@@ -25,7 +25,7 @@
          (language, player names, etc), is substituted for %2$s. This
          does not require translation unless the parentheses or
          ordering is wrong for your language.-->
-    <string name="str_game_namef">%1$s (%2$s)</string>
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
 
     <!-- Used to format robot player names in the lists of players
          found in each game listing -->
