@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import mk_xml, os, sys, codecs
+import mk_xml, os, sys, getopt
 
 from lxml import etree
 
@@ -19,23 +19,35 @@ def checkAgainst( path, pairs ):
     print "looking at", path
     doc = etree.parse( path )
     root = doc.getroot();
+    done = False
     for child in root.iter():
+        if done: break
         if child.tag == "string":
             name = child.get("name")
             if not name in pairs:
                 candidate = longestCommon( name, pairs )
+                if not candidate: continue
                 print name, "not found in the English strings"
                 print "closest I can find is", candidate
                 print "here are the two strings, English then the other"
-                print pairs[candidate]
-                print child.text
-                response = raw_input( "replace %s with %s? (y, n, s or q)" % (name, candidate) )
-                if response == 'y':
-                    child.set('name', candidate)
-                elif response == 's':
+                print 'English:', pairs[candidate]
+                print 'Other:  ', child.text
+                print 'Replace %s with %s?'  % (name, candidate)
+                while True:
+                    response = raw_input( "Yes, No, Remove, Save or Quit?" ).lower()
+                    if response == 'n': 
+                        pass
+                    elif response == 'y': 
+                        child.set( 'name', candidate )
+                    elif response == 'r':
+                        root.remove( child )
+                    elif response == 's':
+                        done = True
+                    elif response == 'q':
+                        sys.exit(0)
+                    else:
+                        continue
                     break
-                elif response == 'q':
-                    sys.exit(0)
                 # try = tryNames( name, pairs )
                 # response = raw_input( "unknown name: %s; respond:" % (name) )
                 # print "you wrote:", response
@@ -48,13 +60,19 @@ def checkAgainst( path, pairs ):
 
 
 def main():
+    stringsFiles = []
+    pairs, rest = getopt.getopt(sys.argv[1:], "f:")
+    for option, value in pairs:
+        if option == '-f': stringsFiles.append(value)
+
     pairs = mk_xml.getStrings()
 
-    for subdir, dirs, files in os.walk('res_src'):
-        for file in [file for file in files if file == "strings.xml"]:
-            path = "%s/%s" % (subdir, file)
-            checkAgainst( path, pairs )
-            sys.exit(0)
+    if 0 == len(stringsFiles):
+        for subdir, dirs, files in os.walk('res_src'):
+            for file in [file for file in files if file == "strings.xml"]:
+                stringsFiles.append( "%s/%s" % (subdir, file) )
+    for path in stringsFiles:
+        checkAgainst( path, pairs )
 
 
 ##############################################################################

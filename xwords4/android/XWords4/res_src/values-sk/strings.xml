@@ -102,7 +102,6 @@
     <string name="player_edit_title">Hráč</string>
 
     <string name="players_label_standalone">Hráči</string>
-    <string name="players_label_host">Hráči -- lokálni a očakávaní</string>
     <string name="button_add_player">Pridať hráča</string>
     <string name="button_juggle_players">Prehodiť hráča</string>
 
@@ -152,16 +151,13 @@
     <string name="empty">Prázdne pole/pozadie</string>
     <string name="advanced">Rozšírené</string>
 
-    <string name="msg_relay_waiting">Pripojený na relay. Čakám na %1$d
-      hráčov.</string>
-
     <string name="relay_alert">Chyba pripojenia</string>
     <string name="msg_too_many">Chcete prihlásiť viac hráčov ako očakáva server.</string>
     <string name="msg_no_room">Žiadny server si nezaregistroval miestnosť s týmto menom.</string>
     <string name="msg_dup_room">Iný server si už zaregistroval miestnosť s týmto menom. Premenujte ju alebo to skúste neskôr.</string>
     <string name="msg_lost_other">Relay stratil kontakt s niektorým zariadením v hre.</string>
 
-    <string name="ids_badwordsf">Slovo[á] %1$s nebolo nájdené v slovníku.</string>
+    <string name="ids_badwords_fmt">Slovo[á] %1$s nebolo nájdené v slovníku.</string>
     <string name="badwords_accept">  Chcete napriek tomu potvrdiť tento ťah?</string>
     <string name="badwords_lost">  Ťah stratený.</string>
     <string name="badwords_title">Neplatné slovo[á]</string>
@@ -173,11 +169,9 @@
     pripojiť ako Klient.</string>
 
     <string name="gameOver">Hra skončená</string>
-    <string name="movesf">Bolo zahraných %1$d ťahov</string>
+    <string name="moves_fmt">Bolo zahraných %1$d ťahov</string>
 
     <!-- about dialog stuff -->
-    <string name="about_versf">Crosswords pre Android, Verzia %1$s,
-      revize %2$s.</string>
     <string name="about_copyright">Copyright (C) 1998-2012 Eric
     House. Tento software je vydaný pod licenciou GNU Public License.</string>
 
