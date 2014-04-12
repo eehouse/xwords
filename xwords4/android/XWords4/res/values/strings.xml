@@ -2,9 +2,6 @@
 <!-- -*- compile-command: "cd ../../; ant install"; -*- -->
 
 <resources>
-    <!-- The name of the app.  Not localized! -->
-    <string name="app_name">Crosswords</string>  
-
     <!--
        ############################################################
        # :Screens:
