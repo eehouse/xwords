@@ -695,29 +695,29 @@
          board_menu_game_counts -->
     <string name="strs_values_header_fmt">%s contagens/valores:\n</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strd_remaining_tiles_add">+ %d [todas as pedras restantes]</string>
+    <string name="strd_remaining_tiles_add_fmt">+ %d [todas as pedras restantes]</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strd_unused_tiles_sub">- %d [pedras não usadas]</string>
+    <string name="strd_unused_tiles_sub_fmt">- %d [pedras não usadas]</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strs_new_tiles">Novas pedras: %s</string>
+    <string name="strs_new_tiles_fmt">Novas pedras: %s</string>
     <!-- Used in formatting game history (not move summaries since
          information about the current rack is hidden then) -->
-    <string name="strd_cumulative_score">Pontuação cumulativa: %d\n</string>
+    <string name="strd_cumulative_score_fmt">Pontuação cumulativa: %d\n</string>
     <!-- Used in formatting remote player move summaries -->
-    <string name="str_remote_movedf">Jogador remoto %1$s fez esta
+    <string name="str_remote_moved_fmt">Jogador remoto %1$s fez esta
     jogada:\u0020</string>
     <!-- I don't know how this is used. :-) -->
     <string name="strd_time_penalty_sub"/>
     <!-- Used in formatting game history and move summaries -->
     <string name="str_pass"> - %d [tempo]</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strs_move_across">jogada (de %s transversal)\n</string>
+    <string name="strs_move_across_fmt">jogada (de %s transversal)\n</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strs_move_down">jogada (de %s abaixo)\n</string>
+    <string name="strs_move_down_fmt">jogada (de %s abaixo)\n</string>
     <!-- Used in formatting game history and move summaries -->
-    <string name="strs_tray_at_start">Pedras iniciais: %s\n</string>
+    <string name="strs_tray_at_start_fmt">Pedras iniciais: %s\n</string>
     <!-- Used in formatting exchange move summaries -->
-    <string name="strss_traded_for">Trocou %1$s por %2$s.</string>
+    <string name="strss_traded_for_fmt">Trocou %1$s por %2$s.</string>
     <!-- Used to alert user to loss of turn when a move is made and
          phonies is set to lose turn when word used not in wordlist
          -->
@@ -729,10 +729,10 @@
     <string name="str_passed">Passou</string>
     <!-- formats tiles and score together, and probably doesn't need
          translation unless the colon ':' needs to be replaced -->
-    <string name="strsd_summaryscored">%1$s:%2$d</string>
+    <string name="strsd_summaryscored_fmt">%1$s:%2$d</string>
     <!-- Used in formatting reports of trades (exchanges of tiles).
          Number of tiles traded is substituted for %d-->
-    <string name="strd_traded">%d pedras trocadas</string>
+    <string name="strd_traded_fmt">%d pedras trocadas</string>
     <!-- Used in formatting history and move reports; means user
          skipped a turn because of an attempted illegal move/play of a
          phony -->
@@ -742,7 +742,7 @@
     <string name="str_commit_confirm">Executar a jogada atual?\n</string>
     <!-- Used, with remote player's name substituted for %s, to
     indicate that the player is remote. -->
-    <string name="str_nonlocal_namef">%s (remoto)</string>
+    <string name="str_nonlocal_name_fmt">%s (remoto)</string>
     <!-- Used to separate names of players when listing them on one
     line in a game summary.  The \u0020 is a space in xml. -->
     <string name="vs_join">\u0020vs.\u0020</string>
@@ -751,13 +751,13 @@
     <string name="str_bonus_all">Bônus por usar todas as pedras: 50\n</string>
     <!-- Used in formatting moves and history.  The total score for
          one turn is substituted for %d.-->
-    <string name="strd_turn_score">Pontuação pela jogada: %d\n</string>
+    <string name="strd_turn_score_fmt">Pontuação pela jogada: %d\n</string>
 
     <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
-    <string name="strd_remains_header">%d pedras restantes na pilha.</string>
+    <string name="strd_remains_header_fmt">%d pedras restantes na pilha.</string>
     <!-- Intro to the paragraph lisiting all of the tiles remaining -->
-    <string name="strd_remains_expl">%d pedras restantes na pilha e
+    <string name="strd_remains_expl_fmt">%d pedras restantes na pilha e
     com o(s) jogador(es):\n</string>
 
     <!-- text of dialog shown when the menu item board_menu_undo_last
@@ -1139,7 +1139,7 @@
          what standalone games are and describes the two buttons used
          to create them.  The name of the language of the default
          wordlist is substituted in for %1$s. -->
-    <string name="newgame_local_descf">Criar um novo jogo onde todos
+    <string name="newgame_local_desc_fmt">Criar um novo jogo onde todos
     os jogadores usarão esse dispositivo. Para jogar contra um robô
     e com as configurações padrão (em %1$s, etc.) pressione \"Jogar
     agora\". Para adicionar jogadores ou mudar configurações,
@@ -1209,14 +1209,14 @@
 
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
-    <string name="invite_subjectf">Vamos jogar Crosswords (Sala %s)</string>
+    <string name="invite_subject_fmt">Vamos jogar Crosswords (Sala %s)</string>
 
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".  (The funky \u003c and friends are
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
-    <string name="invite_htmf">\u003ca href=\"%1$s\"\u003EPressione aqui
+    <string name="invite_htm_fmt">\u003ca href=\"%1$s\"\u003EPressione aqui
     \u003c/a\u003E (ou selecione o link completo abaixo, ou se você já
     tem Crosswords instalado, abra o anexo) para aceitar meu convite e
     participar desse jogo.
@@ -1229,7 +1229,7 @@
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-    <string name="invite_txtf">Vamos jogar Crosswords! Participe desse
+    <string name="invite_txt_fmt">Vamos jogar Crosswords! Participe desse
     jogo: %1$s .</string>
 
     <!-- When I've created the invitation, in text or html, I ask
@@ -1244,7 +1244,7 @@
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-    <string name="query_tradef">Você tem certeza que quer trocar as
+    <string name="query_trade_fmt">Você tem certeza que quer trocar as
     pedras selecionadas (%s)?</string>
 
     <!-- ############################################################
@@ -1260,7 +1260,7 @@
       -->
     <!-- title of the chat screen.  The name of the current game is
          substituted for %s. -->
-    <string name="chat_titlef">Histórico de mensagens de %s</string>
+    <string name="chat_title_fmt">Histórico de mensagens de %s</string>
     <!-- Prefix for local messages -->
     <string name="chat_local_id">Eu:\u0020</string>
     <!-- Prefix for remote messages -->
@@ -1302,7 +1302,7 @@
 
     <!-- This is the heading above the list of steps.  The default
          language is substituted for %s. -->
-    <string name="relay_game_explainf">Para iniciar um jogo de rede
+    <string name="relay_game_explain_fmt">Para iniciar um jogo de rede
     básico com dois jogadores em %s:</string>
 
     <!-- These four strings are displayed as step-by-step
@@ -1418,7 +1418,7 @@
     palavras do Hospedeiro e Convidado; Hospedeiro prevalece.</string>
 
 
-    <string name="downloading_dictf">Baixando %s...</string>
+    <string name="downloading_dict_fmt">Baixando %s...</string>
 
     <!-- 
        ############################################################
@@ -1459,7 +1459,7 @@
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
-    <string name="no_dict_substf">Não foi possível abrir o jogo \"%1$s\"
+    <string name="no_dict_subst_fmt">Não foi possível abrir o jogo \"%1$s\"
     porquê a lista de palavras %2$s não foi encontrada. (Pode ter sido
     apagada, ou armazenada em um cartão de memória externo que não
     está mais disponível.) Você pode baixar outra lista de palavras ou
@@ -1490,7 +1490,7 @@
        -->
 
     <!-- Text of dialog.  Player name is substituted -->
-    <string name="msg_ask_password">Senha para \"%s\":</string>
+    <string name="msg_ask_password_fmt">Senha para \"%s\":</string>
 
     <!-- used to create default names of games (when user has not
          named them.) -->
@@ -1505,7 +1505,7 @@
     device, and the body that appears when you pull the notifications
     down. -->
     <string name="notify_title">Jogadas feitas</string>
-    <string name="notify_bodyf">Atividade no jogo "%s"</string>
+    <string name="notify_body_fmt">Atividade no jogo "%s"</string>
 
     <!--
         ############################################################
@@ -1542,7 +1542,7 @@
          confused.  But some people who play together all the time use
          the same room name over and over so they'll get this warning
          and it's harmless to ignore it. -->
-    <string name="dup_game_queryf">Você já tem um jogo aparentemente
+    <string name="dup_game_query_fmt">Você já tem um jogo aparentemente
     criado (em %1$s) do mesmo convite.  Tem certeza que você quer
     criar outro?</string>
 
@@ -1774,7 +1774,7 @@
        ########################################################### 
       -->
     <!-- String giving version info, which is substituted in. -->
-    <string name="about_versf">Crosswords para Android, Versão %1$s,
+    <string name="about_vers_fmt">Crosswords para Android, Versão %1$s,
         rev %2$s.</string>
     <!-- copyright info -->
     <string name="about_copyright">Copyright (C) 1998-2013 por Eric
@@ -1818,7 +1818,7 @@
     <string name="button_donef">Pronto com %s</string>
 
       <!--  -->
-    <string name="pick_url_titlef">Procurar %s em</string>
+    <string name="pick_url_title_fmt">Procurar %s em</string>
 
       <!--  -->
     <string name="board_menu_pass">Pular vez</string>
@@ -1840,18 +1840,18 @@
       <!--  -->
     <string name="tilepick_all">Escolher para mim</string>
       <!--  -->
-    <string name="cur_tilesf">Escolhedor de pedras\n(até agora: %s)</string>
+    <string name="cur_tiles_fmt">Escolhedor de pedras\n(até agora: %s)</string>
       <!--  -->
     <string name="pick_faceup">Escolher pedras viradas para cima</string>
 
       <!--  -->
-    <string name="dict_browse_titlef">%1$s (%2$d palavras usando %3$d-%4$d
+    <string name="dict_browse_title_fmt">%1$s (%2$d palavras usando %3$d-%4$d
       pedras)</string>
       <!--  -->
-    <string name="dict_browse_title1f">%1$s (%2$d palavras usando %3$d
+    <string name="dict_browse_title1_fmt">%1$s (%2$d palavras usando %3$d
       pedras)</string>
       <!--  -->
-    <string name="dict_browse_nowordsf">Nenhuma palavra em %1$s começa com
+    <string name="dict_browse_nowords_fmt">Nenhuma palavra em %1$s começa com
       %2$s.</string>
       <!--  -->
     <string name="not_again_browse">Esse botão abre o navegador de
@@ -1860,7 +1860,7 @@
     de palavras na lista de sua escolha.</string> 
 
       <!--  -->
-    <string name="alert_empty_dictf">A lista de palavras %s só contém
+    <string name="alert_empty_dict_fmt">A lista de palavras %s só contém
     informações de pedras.  Não há palavras para mostrar.</string>
 
       <!--  -->
@@ -1880,7 +1880,7 @@
     <string name="email_author_chooser">Enviar comentário por</string>
 
       <!--  -->
-    <string name="email_body_revf">(Se relevante, por favor inclua a
+    <string name="email_body_rev_fmt">(Se relevante, por favor inclua a
     versão: \"%s\"; e marca/modelo do seu telefone ou tablet.)"</string>
 
     <string name="newgame_enable_bt">Ligar Bluetooth</string>
@@ -1906,23 +1906,23 @@
       <!--  -->
     <string name="new_bt_title">Novo jogo por Bluetooth</string>
       <!--  -->
-    <string name="new_bt_bodyf">Dispositivo pareado %s te convidou para jogar</string>
+    <string name="new_bt_body_fmt">Dispositivo pareado %s te convidou para jogar</string>
       <!--  -->
-    <string name="bt_bad_protof">Crosswords em %s na versão errada para
+    <string name="bt_bad_proto_fmt">Crosswords em %s na versão errada para
       jogar por Bluetooth.</string>
       <!--  -->
     <string name="new_btmove_title">Nova jogada por Bluetooth</string>
     <!--  -->
     <string name="new_move_body">Uma ou mais jogadas chegaram</string>
     <!--  -->
-    <string name="invite_bt_descf">Por favor selecione o(s) %d dispositivo(s)
+    <string name="invite_bt_desc_fmt">Por favor selecione o(s) %d dispositivo(s)
     que você quer incluir nesse jogo. Use o botão Varrer novamente se
     você não vê um dispositivo esperado.</string>
         <!--  -->
-    <string name="bt_resendf">Envio por Bluetooth para %1$s falhou; nova
+    <string name="bt_resend_fmt">Envio por Bluetooth para %1$s falhou; nova
     tentativa %3$d em %2$d segundos.</string>
         <!--  -->
-    <string name="bt_failf">Envios Bluetooth para %1$s falharam muitas vezes.
+    <string name="bt_fail_fmt">Envios Bluetooth para %1$s falharam muitas vezes.
         Abra o jogo de novo para tentar novamente.</string>
         <!--  -->
     <string name="button_invite">Convidar marcado(s)</string>
@@ -1935,7 +1935,7 @@
     <!--  -->
     <string name="game_smsname_title">Nome do seu jogo</string>
     <!--  -->
-    <string name="dft_namef">Jogo %X</string>
+    <string name="dft_name_fmt">Jogo %X</string>
     <!--  -->
     <string name="newgame_sms_header">Novo jogo SMS</string>
     <!--  -->
@@ -1951,23 +1951,23 @@
     <!--  -->
     <string name="newgame_enable_sms">Configurações de início</string>
     <!--  -->
-    <string name="dft_sms_namef">Jogo SMS %X</string>    
+    <string name="dft_sms_name_fmt">Jogo SMS %X</string>    
     <!--  -->
     <string name="new_sms_title">Novo jogo por SMS</string>
     <!--  -->
-    <string name="new_name_bodyf">%s te convidou para jogar</string>
+    <string name="new_name_body_fmt">%s te convidou para jogar</string>
     <!--  -->
     <string name="new_smsmove_title">Nova jogada por SMS</string>
     <!--  -->
     <string name="button_sms_add">Importar contato</string>
     <!--  -->
-    <string name="invite_sms_descf">Por favor marque o(s) %d número(s)
+    <string name="invite_sms_desc_fmt">Por favor marque o(s) %d número(s)
     de telefone que você deseja convidar para seu jogo novo, e então
     pressione \"Convidar marcado(s)\".</string>
     <!--  -->
     <string name="manual_owner_name">(Não está nos contatos)</string>
     <!--  -->
-    <string name="warn_nomobilef">O número %1$s para %2$s não é um
+    <string name="warn_nomobile_fmt">O número %1$s para %2$s não é um
     número \"móvel\". Importar mesmo assim?</string>
     <!--  -->
     <string name="empty_sms_inviter">Lista telefônica vazia. Use o
@@ -1986,7 +1986,7 @@
     <!--  -->
     <string name="phone_label">Número(s) conectado(s):</string>
     <!--  -->
-    <string name="summary_conn_sms">Jogo em andamento com %s</string>
+    <string name="summary_conn_sms_fmt">Jogo em andamento com %s</string>
     <!--  -->
     <string name="warn_unlimited">Você tem certeza que este número tem
     um plano de mensagens ilimitadas?  Clique cancelar se você não
@@ -2026,21 +2026,21 @@
     <string name="connstat_nonet">Este é um jogo local. Não
     há informações de rede.</string>
     <!--  -->
-    <string name="connstat_net">Informações de rede para jogo conectado
+    <string name="connstat_net_fmt">Informações de rede para jogo conectado
     por %1$s:</string>
     <!--  -->
     <string name="connstat_succ">com sucesso</string>
     <!--  -->
     <string name="connstat_unsucc">sem sucesso</string>
     <!--  -->
-    <string name="connstat_lastsend">Último envio foi %1$s (%2$s)</string>
+    <string name="connstat_lastsend_fmt">Último envio foi %1$s (%2$s)</string>
     <!--  -->
-    <string name="connstat_lastother_succ">(Última falha foi %1$s)</string>
+    <string name="connstat_lastother_succ_fmt">(Última falha foi %1$s)</string>
     <!--  -->
-    <string name="connstat_lastother_unsucc">(Último envio com sucesso foi
+    <string name="connstat_lastother_unsucc_fmt">(Último envio com sucesso foi
     %1$s)</string>
     <!--  -->
-    <string name="connstat_lastreceipt">Último recebimento foi %1$s</string>
+    <string name="connstat_lastreceipt_fmt">Último recebimento foi %1$s</string>
     <!--  -->
     <string name="connstat_noreceipt">Nenhuma mensagem foi recebida.</string>
     <!--  -->
@@ -2087,9 +2087,9 @@
     <!--  -->
     <string name="new_dict_avail">Nova lista de palavras disponível</string>
     <!--  -->
-    <string name="new_dict_availf">Toque para atualizar %s</string>
+    <string name="new_dict_avail_fmt">Toque para atualizar %s</string>
     <!--  -->
-    <string name="new_app_availf">Nova versão de %s</string>
+    <string name="new_app_avail_fmt">Nova versão de %s</string>
     <!--  -->
     <string name="new_app_avail">Toque para baixar e instalar</string>
     <!-- Used in formatting final scores display -->
@@ -2098,27 +2098,27 @@
     <string name="str_winner">Vencedor</string>
 
     <!--  -->
-    <string name="inform_dict_diffversionf">Você e o hospedeiro
+    <string name="inform_dict_diffversion_fmt">Você e o hospedeiro
     desse jogo estão usando versões diferentes da lista de palavras
     %1$s.</string>
     <string name="inform_dict_title">Diferença entre listas de palavras</string>
     <!--  -->
-    <string name="inform_dict_diffdictf">Você está usando a lista de
+    <string name="inform_dict_diffdict_fmt">Você está usando a lista de
     palavras %1$s mas o hospedeiro do jogo está usando %2$s. Você gostaria de
     usar %3$s também?</string>
     <string name="inform_dict_download">\u0020(Você terá que baixá-la
     primeiro.)</string>
     <!-- Shown in toast when relaunching after switching dicts -->
-    <string name="reload_new_dict">Recarregando jogo com %1$s</string>
+    <string name="reload_new_dict_fmt">Recarregando jogo com %1$s</string>
 
     <string name="missing_dict_title">Convite de jogo pendente</string>
     <string name="missing_dict_detail">Lista de palavras necessária faltando</string>
     <string name="invite_dict_missing_title">Lista de palavras faltando</string>
-    <string name="invite_dict_missing_bodyf">%1$s lhe convidou para 
+    <string name="invite_dict_missing_body_fmt">%1$s lhe convidou para 
     jogar Crosswords usando a lista de palavras %2$s (para jogar em %3$s),
     mas ela não está instalada. Você gostaria de baixar a lista de palavras
     ou recusar o convite?</string>
-    <string name="invite_dict_missing_body_nonamef">Você foi convidado
+    <string name="invite_dict_missing_body_noname_fmt">Você foi convidado
     a jogar Crosswords usando a lista de palavras %2$s (para jogar em
     %3$s), mas ela não está instalada. Você gostaria de baixar a
     lista de palavras?</string>
@@ -2153,7 +2153,7 @@
 
     <string name="no_move_onegroup">Não é possível mover até que exista
     mais de um grupo.</string>
-    <string name="group_namef">%1$s (%2$d jogos)</string>
+    <string name="group_name_fmt">%1$s (%2$d jogos)</string>
 
     <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
