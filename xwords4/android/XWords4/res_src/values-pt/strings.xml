@@ -29,7 +29,7 @@
 
     <!-- Used to format robot player names in the lists of players
          found in each game listing -->
-    <string name="robot_namef">%s (robô)</string>
+    <string name="robot_name_fmt">%s (robô)</string>
 
     <!-- Used as a substitute for the names of remote players when
          they aren't available yet because the connection is not
@@ -43,7 +43,7 @@
          three. -->
     <!-- First state: is configured to use a room but has not yet
          contacted the relay and been assigned that room. -->
-    <string name="summary_relay_conff">Configurado para a sala
+    <string name="summary_relay_conf_fmt">Configurado para a sala
       \"%s\"</string>
     <!-- Second state: has been assigned to a room on the relay
          (meaning the network is working) but there are not yet as

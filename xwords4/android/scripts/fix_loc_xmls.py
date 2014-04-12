@@ -29,10 +29,13 @@ def checkAgainst( path, pairs ):
                 print "here are the two strings, English then the other"
                 print pairs[candidate]
                 print child.text
-                response = raw_input( "replace %s with %s? (y or n)" % (name, candidate) )
+                response = raw_input( "replace %s with %s? (y, n, s or q)" % (name, candidate) )
                 if response == 'y':
                     child.set('name', candidate)
+                elif response == 's':
                     break
+                elif response == 'q':
+                    sys.exit(0)
                 # try = tryNames( name, pairs )
                 # response = raw_input( "unknown name: %s; respond:" % (name) )
                 # print "you wrote:", response
@@ -51,7 +54,7 @@ def main():
         for file in [file for file in files if file == "strings.xml"]:
             path = "%s/%s" % (subdir, file)
             checkAgainst( path, pairs )
-            break
+            sys.exit(0)
 
 
 ##############################################################################
