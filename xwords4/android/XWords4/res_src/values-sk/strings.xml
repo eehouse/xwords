@@ -62,22 +62,22 @@
     <string name="str_robot_moved">Robot uskutočnil tento ťah:</string>
     <string name="strs_values_header_fmt">%1$s počet/hodnota:\n</string>
     <string name="strd_remaining_tiles_add_fmt">+ %1$d [všetky zostávajúce kamene]</string>
-    <string name="strd_unused_tiles_sub">- %1$d [nepoužité kamene]</string>
+    <string name="strd_unused_tiles_sub_fmt">- %1$d [nepoužité kamene]</string>
     <string name="strd_time_penalty_sub"/>
     <string name="str_pass"> - %1$d [čas]</string>
-    <string name="strs_move_across">ťah (od %1$s naprieč)</string>
-    <string name="strs_move_down">ťah (od %1$s dolu)</string>
-    <string name="strs_tray_at_start">Zásobník pri štarte: %1$s</string>
-    <string name="strss_traded_for">Vymenil %1$s za %2$s.</string>
+    <string name="strs_move_across_fmt">ťah (od %1$s naprieč)</string>
+    <string name="strs_move_down_fmt">ťah (od %1$s dolu)</string>
+    <string name="strs_tray_at_start_fmt">Zásobník pri štarte: %1$s</string>
+    <string name="strss_traded_for_fmt">Vymenil %1$s za %2$s.</string>
     <string name="str_phony_rejected">Nepovolené slovo; ťah stratený!</string>
-    <string name="strd_cumulative_score">Celkové skóre: %1$d</string>
-    <string name="strs_new_tiles">Nové kamene: %1$s</string>
+    <string name="strd_cumulative_score_fmt">Celkové skóre: %1$d</string>
+    <string name="strs_new_tiles_fmt">Nové kamene: %1$s</string>
     <string name="str_passed">Prešiel</string>
-    <string name="strsd_summaryscored">%1$s:%2$d</string>
+    <string name="strsd_summaryscored_fmt">%1$s:%2$d</string>
     <string name="str_lostturn">Ťah bol stratený</string>
     <string name="str_commit_confirm">Potvrdiť tento ťah?\n</string>
     <string name="str_bonus_all">Bonus za využitie všetkých kameňov: 50\n</string>
-    <string name="strd_turn_score">Skóre za ťah: %1$d\n</string>
+    <string name="strd_turn_score_fmt">Skóre za ťah: %1$d\n</string>
 
     <!-- error messages -->
 	<string name="str_tiles_not_in_line">Kamene musia ležať v jednom rade.</string>
@@ -96,7 +96,7 @@
 
     <string name="remote_label">Hráč klient</string>
     <string name="robot_label">Hráč robot</string>
-    <string name="robot_namef">%1$s (robot)</string>
+    <string name="robot_name_fmt">%1$s (robot)</string>
     <string name="guest_name">(hráč klient)</string>
     <string name="password_label">Heslo</string>
     <string name="player_edit_title">Hráč</string>
