@@ -49,21 +49,21 @@
          (meaning the network is working) but there are not yet as
          many players as expected: the game is not complete and play
          cannot happen. -->
-    <string name="summary_relay_waitf">Esperando por jogadores na sala
+    <string name="summary_relay_wait_fmt">Esperando por jogadores na sala
       \"%s\"</string>
     <!-- Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
          game exists. -->
-    <string name="summary_relay_connf">Jogo em progresso na sala \"%s\"</string>
+    <string name="summary_relay_conn_fmt">Jogo em progresso na sala \"%s\"</string>
     <!-- Final state: game is over. -->
-    <string name="summary_relay_gameoverf">Jogo encerrado na sala \"%s\"</string>
+    <string name="summary_relay_gameover_fmt">Jogo encerrado na sala \"%s\"</string>
 
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Jogo encerrado</string>
     <!-- Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... -->
-    <string name="movesf">%d turnos jogados</string>
+    <string name="moves_fmt">%d turnos jogados</string>
 
     <!-- When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
@@ -117,7 +117,7 @@
       -->
     <!-- title of contextual menu.  Name of the selected game is
          substituted in. -->
-    <string name="game_item_menu_titlef">Ações para \"%s\":</string>
+    <string name="game_item_menu_title_fmt">Ações para \"%s\":</string>
 
     <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
@@ -223,7 +223,7 @@
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %s.  Sometimes one of the two
          strings below is appended. -->
-    <string name="confirm_delete_dictf">Você tem certeza que quer
+    <string name="confirm_delete_dict_fmt">Você tem certeza que quer
     excluir %s?</string>
 
     <!-- Additional text appended to text confirm_delete_dictf in the
@@ -237,7 +237,7 @@
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is NOT the last in its language. The
          name of the language is substituted for %s. -->
-    <string name="confirm_deletemore_dictf">\u0020Ao menos um jogo
+    <string name="confirm_deletemore_dict_fmt">\u0020Ao menos um jogo
     está usando, mas há outra lista de palavras em %s instalada que
     pode substituí-la.</string>
 
@@ -269,7 +269,7 @@
          is substituted for %1$s.  The strings loc_internal and
          loc_internal are substitued for %2$s and %3$s (or vice-versa,
          depending on the current location of the wordlist.)-->
-    <string name="move_dictf">Local para a lista de palavras %1$s</string>
+    <string name="move_dict_fmt">Local para a lista de palavras %1$s</string>
 
     <!-- see move_dictf above -->
     <string name="loc_internal">Interna</string>
@@ -283,12 +283,12 @@
        ############################################################ 
       -->
     <!-- window title (game name substituted for %s) -->
-    <string name="title_game_configf">Configurações de %s</string>  
+    <string name="title_game_config_fmt">Configurações de %s</string>  
 
     <!-- alternate window title used when game is networked -->
-    <string name="title_gamenet_configf">Configurações de %s (rede)</string>  
+    <string name="title_gamenet_config_fmt">Configurações de %s (rede)</string>  
     <!--  -->
-    <string name="title_gamebt_configf">Configurações de %s (via Bluetooth)</string>
+    <string name="title_gamebt_config_fmt">Configurações de %s (via Bluetooth)</string>
 
     <!-- title for popup list of langugages from which user picks -->
     <string name="title_langs_list">Idiomas (baseado nas listas de palavras
@@ -305,7 +305,7 @@
     <!-- text for separator above the list of players that's used for
          networked games.  The numbers of local and non-local players
          are substituted for %1$d and %2$d. -->
-    <string name="players_label_host">Jogadores (%1$d local, %2$d
+    <string name="players_label_host_fmt">Jogadores (%1$d local, %2$d
       remoto)</string>
 
     <!-- text of button for adding new player to game -->
@@ -341,13 +341,13 @@
     relay.  This is the text of the progress indicator displayed what
     that's going on.  (It's often visible for only a very short
     time.)-->
-    <string name="public_names_progress">Buscando salas públicas para
+    <string name="public_names_progress_fmt">Buscando salas públicas para
     jogos de %1$d- jogadores em %2$s.</string>
 
     <!-- If the query returns no rooms, this message is displayed,
     with the number of players in the game and its language
     substituted. -->
-    <string name="no_name_found_f">Não foram encontradas salas públicas
+    <string name="no_name_found_fmt">Não foram encontradas salas públicas
     para jogos de %1$d jogadores em %2$s. Tente recarregar ou criar sua
     própria sala.</string>
 
@@ -469,12 +469,12 @@
          player will use.  The language the game will use (which
          constrains the choice of wordlists) is substituted in for
          "%s". -->
-    <string name="dict_lang_labelf">Lista de palavras (em %s)</string>
+    <string name="dict_lang_label_fmt">Lista de palavras (em %s)</string>
 
     <!-- If the dropdown is selected, this is the title displayed
          above the list of selectable items.  The language the game
          will use is substituted in for "%s". -->
-    <string name="dicts_list_promptf">Listas de palavras instaladas
+    <string name="dicts_list_prompt_fmt">Listas de palavras instaladas
     (em %s)</string>
 
     <!-- checkbox determining if player is robot/automated or human -->
@@ -535,13 +535,13 @@
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
-    <string name="invite_msgf">Faltam %1$d jogador(es) remoto(s) desse
+    <string name="invite_msg_fmt">Faltam %1$d jogador(es) remoto(s) desse
     jogo. Você gostaria de convidar alguém -- se é que já não
     convidou?</string>
 
       <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
-      <string name="players_missf">Falta(m) %d jogador(es)</string>
+      <string name="players_miss_fmt">Falta(m) %d jogador(es)</string>
 
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -563,13 +563,13 @@
          the room, and how many additional players have not yet
          registered with the relay in this game.  This should be seen
          only once per game. -->
-    <string name="msg_relay_waiting">Dispositivo %1$d conectado ao
+    <string name="msg_relay_waiting_fmt">Dispositivo %1$d conectado ao
     servidor na sala \"%2$s\". Esperando por %3$d jogador(es).</string>
 
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. -->
-    <string name="msg_relay_all_heref">Todos os jogadores aqui estão
+    <string name="msg_relay_all_here_fmt">Todos os jogadores aqui estão
     na sala \"%s\".</string>
 
     <!-- Title of dialog used to alert players to relay-related
@@ -604,7 +604,7 @@
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
          -->
-    <string name="ids_badwordsf">Palavra(s) %1$s não encontrada(s) na
+    <string name="ids_badwords_fmt">Palavra(s) %1$s não encontrada(s) na
     lista de palavras %2$s.</string>
 
     <!-- Appended to the above in the phonies_warn case.  User may
@@ -690,10 +690,10 @@
     <!-- Notifies user of a normal robot move -->
     <string name="str_robot_moved">O robô fez esta jogada:\u0020</string>
     <!-- Notifies user of a robot trade move -->
-    <string name="strd_robot_traded">trocou %d pedras.</string>
+    <string name="strd_robot_traded_fmt">trocou %d pedras.</string>
     <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
-    <string name="strs_values_header">%s contagens/valores:\n</string>
+    <string name="strs_values_header_fmt">%s contagens/valores:\n</string>
     <!-- Used in formatting game history and move summaries -->
     <string name="strd_remaining_tiles_add">+ %d [todas as pedras restantes]</string>
     <!-- Used in formatting game history and move summaries -->
