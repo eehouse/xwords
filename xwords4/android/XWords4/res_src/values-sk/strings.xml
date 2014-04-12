@@ -186,7 +186,7 @@
     <string name="button_download">Nahrať</string>
     <string name="no_dictf">Slovník %1$s sa nenašiel, nemôžem spustiť hru.</string>
 
-	<string name="msg_ask_password">Heslo pre \"%1$s\":</string>
+	<string name="msg_ask_password_fmt">Heslo pre \"%1$s\":</string>
 
 	<string name="red">Červená</string>
 	<string name="green">Zelená</string>
