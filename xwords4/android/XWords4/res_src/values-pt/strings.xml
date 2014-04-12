@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- -*- compile-command: "cd ../../; ant install"; -*- -->
-
 <resources>
     <!-- The name of the app.  Not localized! -->
     <string name="app_name">Crosswords</string>  
@@ -708,7 +707,7 @@
     <string name="str_remote_movedf">Jogador remoto %1$s fez esta
     jogada:\u0020</string>
     <!-- I don't know how this is used. :-) -->
-    <string name="strd_time_penalty_sub"></string>
+    <string name="strd_time_penalty_sub"/>
     <!-- Used in formatting game history and move summaries -->
     <string name="str_pass"> - %d [tempo]</string>
     <!-- Used in formatting game history and move summaries -->
@@ -2079,7 +2078,7 @@
     <!--  -->
     <string name="warn_sms_disabled">Jogar por SMS está desabilitado
     atualmente, então nenhuma jogada será enviada para esse jogo.  (Se
-    você quiser habilitar jogos por SMS, vá para Configurações->Rede.)
+    você quiser habilitar jogos por SMS, vá para Configurações-&gt;Rede.)
     </string>
 
     <!--  -->

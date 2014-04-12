@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-
 <resources>
     <string name="button_new_game">Afegeix una partida</string>
 
@@ -65,7 +64,7 @@
     <string name="strs_values_header">%s quantitat/valors:\n</string>
     <string name="strd_remaining_tiles_add">+ %d [fitxes romanents]</string>
     <string name="strd_unused_tiles_sub">- %d [fitxes al faristol]</string>
-    <string name="strd_time_penalty_sub"></string>
+    <string name="strd_time_penalty_sub"/>
     <string name="str_pass"> - %d [temps]</string>
     <string name="strs_move_across">mou (des de %s horitzontal)</string>
     <string name="strs_move_down">mou (des de %s avall)</string>
@@ -75,7 +74,7 @@
     <string name="strd_cumulative_score">Puntuació acumulada: %d</string>
     <string name="strs_new_tiles">Fitxes noves: %s</string>
     <string name="str_passed">Ha passat</string>
-    <string name="strsd_summaryscored"></string>
+    <string name="strsd_summaryscored"/>
     <string name="str_lostturn">Torn perdut</string>
     <string name="str_commit_confirm">Voleu fer la jugada?\n</string>
     <string name="str_bonus_all">Bonificació per usar totes les fitxes: 50\n</string>

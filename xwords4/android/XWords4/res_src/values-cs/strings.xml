@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <!-- Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,6 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-
 <resources>
     <string name="button_new_game">Přidat hru</string>
 
@@ -64,7 +63,7 @@
     <string name="strs_values_header">%s počet/hodnota:\n</string>
     <string name="strd_remaining_tiles_add">+ %d [všechny zbývající kameny]</string>
     <string name="strd_unused_tiles_sub">- %d [nepoužité kameny]</string>
-    <string name="strd_time_penalty_sub"></string>
+    <string name="strd_time_penalty_sub"/>
     <string name="str_pass"> - %d [čas]</string>
     <string name="strs_move_across">tah (od %s napříč)</string>
     <string name="strs_move_down">tah (od %s dolů)</string>
