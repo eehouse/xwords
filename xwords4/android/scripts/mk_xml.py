@@ -72,8 +72,9 @@ def checkText( text ):
         if 4 <= len(part) and '%' == part[0]:
             digit = int(part[1:2])
             if digit in seen:
-                print "ERROR: has duplicate format digit %d (text = %s)" % (digit, text)
-                print "This might not be what you want"
+                pass
+                # print "ERROR: has duplicate format digit %d (text = %s)" % (digit, text)
+                # print "This might not be what you want"
             seen.add( digit )
     return text
 
@@ -111,7 +112,7 @@ public class %s {
     if "debug" == target:
         fil.write( "    static final String[] strs = {\n")
         for key in pairs.keys():
-            fil.write( "        \"%s\",\n" % pairs[key] )
+            fil.write( "        \"%s\",\n" % pairs[key]['text'] )
         fil.write( "    };\n" );
 
     func = "    protected static void checkStrings( Context context ) {\n"
@@ -137,11 +138,19 @@ public class %s {
 
 def getStrings():
     pairs = {}
-    for path in glob.iglob( "res/values/strings.xml" ):
-        for action, elem in etree.iterparse(path):
-            if "end" == action and 'string' == elem.tag and elem.text:
-                text = checkText( elem.text )
-                pairs[elem.get('name')] = text
+    prevComments = []
+    for elem in etree.parse("res/values/strings.xml").getroot().iter():
+        if not isinstance( elem.tag, basestring ):
+            prevComments.append( elem.text )
+        elif 'string' == elem.tag and elem.text:
+            text = checkText( elem.text )
+            rec = { 'text' : text }
+            if 0 < len(prevComments):
+                rec['comments'] = prevComments
+                prevComments = []
+            # not having a name is an error!!!
+            pairs[elem.get('name')] = rec
+    
     return pairs
 
 def main():
