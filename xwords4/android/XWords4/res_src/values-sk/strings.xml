@@ -24,7 +24,7 @@
 	<string name="list_item_new_from">Nová hra podľa vzoru</string>
     <string name="play">Hrať hru</string>
 	<string name="title_dicts_list">Slovníky Crosswords</string>   
-	<string name="title_game_config_fmt">Konfigurovať %s</string>  
+	<string name="title_game_config_fmt">Konfigurovať %1$s</string>  
 	<string name="title_prefs">Predvoľby Crosswords</string>  
 	
 	<string name="button_ok">OK</string>  
@@ -58,26 +58,26 @@
 	<string name="board_menu_file_about">O Crosswords</string>
 
     <!-- returned by util_getUserString -->
-    <string name="strd_robot_traded">Robot v tomto ťahu vymenil %d kameňov.</string>
+    <string name="strd_robot_traded_fmt">Robot v tomto ťahu vymenil %1$d kameňov.</string>
     <string name="str_robot_moved">Robot uskutočnil tento ťah:</string>
-    <string name="strs_values_header">%s počet/hodnota:\n</string>
-    <string name="strd_remaining_tiles_add">+ %d [všetky zostávajúce kamene]</string>
-    <string name="strd_unused_tiles_sub">- %d [nepoužité kamene]</string>
+    <string name="strs_values_header_fmt">%1$s počet/hodnota:\n</string>
+    <string name="strd_remaining_tiles_add_fmt">+ %1$d [všetky zostávajúce kamene]</string>
+    <string name="strd_unused_tiles_sub">- %1$d [nepoužité kamene]</string>
     <string name="strd_time_penalty_sub"/>
-    <string name="str_pass"> - %d [čas]</string>
-    <string name="strs_move_across">ťah (od %s naprieč)</string>
-    <string name="strs_move_down">ťah (od %s dolu)</string>
-    <string name="strs_tray_at_start">Zásobník pri štarte: %s</string>
+    <string name="str_pass"> - %1$d [čas]</string>
+    <string name="strs_move_across">ťah (od %1$s naprieč)</string>
+    <string name="strs_move_down">ťah (od %1$s dolu)</string>
+    <string name="strs_tray_at_start">Zásobník pri štarte: %1$s</string>
     <string name="strss_traded_for">Vymenil %1$s za %2$s.</string>
     <string name="str_phony_rejected">Nepovolené slovo; ťah stratený!</string>
-    <string name="strd_cumulative_score">Celkové skóre: %d</string>
-    <string name="strs_new_tiles">Nové kamene: %s</string>
+    <string name="strd_cumulative_score">Celkové skóre: %1$d</string>
+    <string name="strs_new_tiles">Nové kamene: %1$s</string>
     <string name="str_passed">Prešiel</string>
     <string name="strsd_summaryscored">%1$s:%2$d</string>
     <string name="str_lostturn">Ťah bol stratený</string>
     <string name="str_commit_confirm">Potvrdiť tento ťah?\n</string>
     <string name="str_bonus_all">Bonus za využitie všetkých kameňov: 50\n</string>
-    <string name="strd_turn_score">Skóre za ťah: %d\n</string>
+    <string name="strd_turn_score">Skóre za ťah: %1$d\n</string>
 
     <!-- error messages -->
 	<string name="str_tiles_not_in_line">Kamene musia ležať v jednom rade.</string>
@@ -96,7 +96,7 @@
 
     <string name="remote_label">Hráč klient</string>
     <string name="robot_label">Hráč robot</string>
-    <string name="robot_namef">%s (robot)</string>
+    <string name="robot_namef">%1$s (robot)</string>
     <string name="guest_name">(hráč klient)</string>
     <string name="password_label">Heslo</string>
     <string name="player_edit_title">Hráč</string>
@@ -152,7 +152,7 @@
     <string name="empty">Prázdne pole/pozadie</string>
     <string name="advanced">Rozšírené</string>
 
-    <string name="msg_relay_waiting">Pripojený na relay. Čakám na %d
+    <string name="msg_relay_waiting">Pripojený na relay. Čakám na %1$d
       hráčov.</string>
 
     <string name="relay_alert">Chyba pripojenia</string>
@@ -161,7 +161,7 @@
     <string name="msg_dup_room">Iný server si už zaregistroval miestnosť s týmto menom. Premenujte ju alebo to skúste neskôr.</string>
     <string name="msg_lost_other">Relay stratil kontakt s niektorým zariadením v hre.</string>
 
-    <string name="ids_badwordsf">Slovo[á] %s nebolo nájdené v slovníku.</string>
+    <string name="ids_badwordsf">Slovo[á] %1$s nebolo nájdené v slovníku.</string>
     <string name="badwords_accept">  Chcete napriek tomu potvrdiť tento ťah?</string>
     <string name="badwords_lost">  Ťah stratený.</string>
     <string name="badwords_title">Neplatné slovo[á]</string>
@@ -173,7 +173,7 @@
     pripojiť ako Klient.</string>
 
     <string name="gameOver">Hra skončená</string>
-    <string name="movesf">Bolo zahraných %d ťahov</string>
+    <string name="movesf">Bolo zahraných %1$d ťahov</string>
 
     <!-- about dialog stuff -->
     <string name="about_versf">Crosswords pre Android, Verzia %1$s,
@@ -187,18 +187,18 @@
     <!-- fill this in other than in English -->
     <string name="xlator">Slovenský preklad Tomáš Morkus</string>
 
-    <string name="downloading_dictf">Nahrávam slovník Crosswords %s...</string>
+    <string name="downloading_dictf">Nahrávam slovník Crosswords %1$s...</string>
     <string name="no_dict_title">Slovník sa nenašiel</string>
     <string name="button_download">Nahrať</string>
-    <string name="no_dictf">Slovník %s sa nenašiel, nemôžem spustiť hru.</string>
+    <string name="no_dictf">Slovník %1$s sa nenašiel, nemôžem spustiť hru.</string>
 
-	<string name="msg_ask_password">Heslo pre \"%s\":</string>
+	<string name="msg_ask_password">Heslo pre \"%1$s\":</string>
 
 	<string name="red">Červená</string>
 	<string name="green">Zelená</string>
 	<string name="blue">Modrá</string>
 
-	<string name="gamef">Hra %d</string>
-	<string name="playerf">Hráč %d</string>
+	<string name="gamef">Hra %1$d</string>
+	<string name="playerf">Hráč %1$d</string>
 	<string name="initial_player_minutes">Trvanie hry v minutách</string>
 </resources>
