@@ -135,6 +135,15 @@ public class %s {
 """
     fil.write( lines )
 
+def getStrings():
+    pairs = {}
+    for path in glob.iglob( "res/values/strings.xml" ):
+        for action, elem in etree.iterparse(path):
+            if "end" == action and 'string' == elem.tag and elem.text:
+                text = checkText( elem.text )
+                pairs[elem.get('name')] = text
+    return pairs
+
 def main():
     outfile = ''
     outfileDbg = ''
@@ -145,11 +154,7 @@ def main():
         elif option == '-t': target = value
 
     # Gather all localizable strings
-    for path in glob.iglob( "res/values/strings.xml" ):
-        for action, elem in etree.iterparse(path):
-            if "end" == action and 'string' == elem.tag and elem.text:
-                text = checkText( elem.text )
-                g_pairs[elem.get('name')] = text
+    pairs = getStrings()
 
     # for subdir, dirs, files in os.walk('res_src'):
     #     for file in files:
@@ -157,7 +162,8 @@ def main():
     #         dest = src.replace( 'res_src', 'res', 1 )
     #         xform( src, dest )
 
-    if outfile: printStrings( g_pairs, outfile, target )
+    if outfile: printStrings( pairs, outfile, target )
 
-
-main()
+##############################################################################
+if __name__ == '__main__':
+    main()
