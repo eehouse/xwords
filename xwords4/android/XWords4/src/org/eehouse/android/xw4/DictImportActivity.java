@@ -40,6 +40,8 @@ import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.util.HashMap;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 import junit.framework.Assert;
 
 public class DictImportActivity extends XWActivity {
@@ -201,7 +203,8 @@ public class DictImportActivity extends XWActivity {
             finish();
         } else {
             String showName = basename( uri.getPath() );
-            String msg = getString( R.string.downloading_dict_fmt, showName );
+            String msg = LocUtils.getString( this, R.string.downloading_dict_fmt, 
+                                             showName );
             TextView view = (TextView)findViewById( R.id.dwnld_message );
             view.setText( msg );
         

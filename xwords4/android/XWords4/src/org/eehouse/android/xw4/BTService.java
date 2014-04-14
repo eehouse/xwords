@@ -964,7 +964,8 @@ public class BTService extends XWService {
 
     private void postNotification( int gameID, int title, int body, long rowid )
     {
-        postNotification( gameID, title, getString( body ), rowid );
+        String bstr = LocUtils.getString( this, body );
+        postNotification( gameID, title, bstr, rowid );
     }
 
     private void postNotification( int gameID, int title, String body, 

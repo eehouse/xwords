@@ -172,20 +172,20 @@ public class ConnStatusHandler {
     {
         String msg;
         if ( CommsConnType.COMMS_CONN_NONE == connType ) {
-            msg = context.getString( R.string.connstat_nonet );
+            msg = LocUtils.getString( context, R.string.connstat_nonet );
         } else {
             StringBuffer sb = new StringBuffer();
             synchronized( s_lockObj ) {
-                String tmp = context.getString( connType2StrID( connType ) );
+                String tmp = LocUtils.getString( context, connType2StrID( connType ) );
                 sb.append( LocUtils.getString( context, 
                                                R.string.connstat_net_fmt,
                                                tmp ) );
                 sb.append("\n\n");
 
                 SuccessRecord record = recordFor( connType, false );
-                tmp = context.getString( record.successNewer? 
-                                         R.string.connstat_succ :
-                                         R.string.connstat_unsucc );
+                tmp = LocUtils.getString( context, record.successNewer? 
+                                          R.string.connstat_succ :
+                                          R.string.connstat_unsucc );
                 sb.append( LocUtils.getString( context, R.string.connstat_lastsend_fmt,
                                                tmp, record.newerStr( context ) ) );
                 sb.append("\n");
@@ -212,7 +212,7 @@ public class ConnStatusHandler {
                                                    R.string.connstat_lastreceipt_fmt,
                                                    record.newerStr( context ) ) );
                 } else {
-                    sb.append( context.getString(R.string.connstat_noreceipt) );
+                    sb.append( LocUtils.getString( context, R.string.connstat_noreceipt) );
                 }
             }
             msg = sb.toString();
