@@ -43,6 +43,7 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         m_activity = activity;
         m_delegate = new DlgDelegate( activity, this, bundle );
         m_optionsMenuID = optionsMenu;
+        LocUtils.xlateTitle( activity );
     }
 
     public boolean onCreateOptionsMenu( Menu menu )

@@ -86,6 +86,15 @@ public class LocUtils {
         return view;
     }
 
+    public static void xlateTitle( Activity activity )
+    {
+        String title = activity.getTitle().toString();
+        String xlated = xlateString( activity, title );
+        if ( ! title.equals(xlated) ) {
+            activity.setTitle( xlated );
+        }
+    }
+
     public static void xlateView( Activity activity )
     {
         xlateView( activity, Utils.getContentView( activity ) );
