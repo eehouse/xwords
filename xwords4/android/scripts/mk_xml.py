@@ -136,10 +136,10 @@ public class %s {
 """
     fil.write( lines )
 
-def getStrings():
+def getStrings(path):
     pairs = {}
     prevComments = []
-    for elem in etree.parse("res/values/strings.xml").getroot().iter():
+    for elem in etree.parse(path).getroot().iter():
         if not isinstance( elem.tag, basestring ):
             prevComments.append( elem.text )
         elif 'string' == elem.tag and elem.text:
@@ -163,7 +163,7 @@ def main():
         elif option == '-t': target = value
 
     # Gather all localizable strings
-    pairs = getStrings()
+    pairs = getStrings("res/values/strings.xml")
 
     # for subdir, dirs, files in os.walk('res_src'):
     #     for file in files:
