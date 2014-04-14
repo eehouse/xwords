@@ -242,7 +242,7 @@ public class BoardDelegate extends DelegateBase
         Dialog dialog = super.createDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
-            AlertDialog.Builder ab;
+            AlertDialog.Builder ab = new AlertBuilder( m_activity );
 
             final DlgID dlgID = DlgID.values()[id];
             switch ( dlgID ) {
@@ -250,8 +250,7 @@ public class BoardDelegate extends DelegateBase
             case DLG_RETRY:
             case GAME_OVER:
             case DLG_CONNSTAT:
-                ab = new AlertDialog.Builder( m_activity )
-                    .setTitle( m_dlgTitle )
+                ab.setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
                     .setPositiveButton( R.string.button_ok, null );
                 if ( DlgID.DLG_RETRY == dlgID ) {
@@ -300,8 +299,7 @@ public class BoardDelegate extends DelegateBase
                             }
                         }
                     };
-                dialog = new AlertBuilder( m_activity )
-                    .setTitle( m_dlgTitle )
+                dialog = ab.setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
                     .setPositiveButton( R.string.button_yes, lstnr )
                     .setNegativeButton( R.string.button_no, null )
@@ -310,8 +308,7 @@ public class BoardDelegate extends DelegateBase
                 break;
 
             case DLG_DELETED:
-                ab = new AlertBuilder( m_activity )
-                    .setTitle( R.string.query_title )
+                ab = ab.setTitle( R.string.query_title )
                     .setMessage( R.string.msg_dev_deleted )
                     .setPositiveButton( R.string.button_ok, null );
                 lstnr = new DialogInterface.OnClickListener() {
@@ -331,8 +328,7 @@ public class BoardDelegate extends DelegateBase
             case QUERY_INFORM_BLK:
             case DLG_SCORES:
             case DLG_BADWORDS_BLK: 
-                ab = new AlertBuilder( m_activity )
-                    .setMessage( m_dlgBytes );
+                ab = ab.setMessage( m_dlgBytes );
                 if ( 0 != m_dlgTitle ) {
                     ab.setTitle( m_dlgTitle );
                 }
@@ -388,7 +384,6 @@ public class BoardDelegate extends DelegateBase
 
             case PICK_TILE_REQUESTBLANK_BLK:
             case PICK_TILE_REQUESTTRAY_BLK:
-                ab = new AlertBuilder( m_activity );
                 lstnr = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
@@ -434,8 +429,7 @@ public class BoardDelegate extends DelegateBase
                     setupPasswdVars();
                 }
                 m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
-                ab = new AlertBuilder( m_activity )
-                    .setTitle( m_dlgTitleStr )
+                ab.setTitle( m_dlgTitleStr )
                     .setView( m_passwdLyt )
                     .setPositiveButton( R.string.button_ok,
                                         new DialogInterface.OnClickListener() {
@@ -450,8 +444,7 @@ public class BoardDelegate extends DelegateBase
                 break;
 
             case QUERY_ENDGAME:
-                dialog = new AlertBuilder( m_activity )
-                    .setTitle( R.string.query_title )
+                dialog = ab.setTitle( R.string.query_title )
                     .setMessage( R.string.ids_endnow )
                     .setPositiveButton( R.string.button_yes,
                                         new DialogInterface.OnClickListener() {
@@ -473,8 +466,7 @@ public class BoardDelegate extends DelegateBase
                                 showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
                             }
                         };
-                    dialog = new AlertBuilder( m_activity )
-                        .setTitle( R.string.query_title )
+                    dialog = ab.setTitle( R.string.query_title )
                         .setMessage( "" )
                         .setPositiveButton( R.string.button_yes, lstnr )
                         .setNegativeButton( R.string.button_no, null )
