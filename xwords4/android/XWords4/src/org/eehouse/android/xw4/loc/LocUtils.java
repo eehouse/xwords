@@ -23,6 +23,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -31,9 +32,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.CheckBox;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.util.Iterator;
 import java.util.HashMap;
@@ -119,6 +120,13 @@ public class LocUtils {
             result[ii] = xlateString( context, strs[ii].toString() );
         }
         return result;
+    }
+
+    public static String[] getStringArray( Context context, int resID )
+    {
+        Resources res = context.getResources();
+        String[] arr = res.getStringArray( resID );
+        return xlateStrings( context, arr );
     }
 
     public static String[] xlateStrings( Context context, String[] strs )
