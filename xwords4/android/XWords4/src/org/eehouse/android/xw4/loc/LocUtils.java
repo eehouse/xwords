@@ -22,6 +22,7 @@ package org.eehouse.android.xw4.loc;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.util.AttributeSet;
@@ -354,5 +355,29 @@ public class LocUtils {
             String str = getString( m_context, id );
             return setTitle( str );
         }
-    }
+
+        @Override
+        public AlertDialog.Builder setPositiveButton( int textId, 
+                                                      OnClickListener listener )
+        {
+            String str = getString( m_context, textId );
+            return setPositiveButton( str, listener );
+        }
+        @Override
+        public AlertDialog.Builder setNeutralButton( int textId, 
+                                                     OnClickListener listener )
+        {
+            String str = getString( m_context, textId );
+            return setNeutralButton( str, listener );
+        }
+
+        @Override
+        public AlertDialog.Builder setNegativeButton( int textId, 
+                                                      OnClickListener listener )
+        {
+            String str = getString( m_context, textId );
+            return setNegativeButton( str, listener );
+        }
+    } 
+
 }
