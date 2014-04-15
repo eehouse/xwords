@@ -211,7 +211,7 @@ public class DlgDelegate {
 
     public void showOKOnlyDialog( int msgID )
     {
-        showOKOnlyDialog( m_activity.getString( msgID ), Action.SKIP_CALLBACK );
+        showOKOnlyDialog( LocUtils.getString( m_activity, msgID ), Action.SKIP_CALLBACK );
     }
 
     public void showDictGoneFinish()
@@ -228,7 +228,7 @@ public class DlgDelegate {
                                      final Action action,
                                      final Object[] params )
     {
-        showNotAgainDlgThen( m_activity.getString( msgID ), prefsKey, 
+        showNotAgainDlgThen( LocUtils.getString( m_activity, msgID ), prefsKey, 
                              action, params );
     }
 
@@ -276,7 +276,7 @@ public class DlgDelegate {
 
     public void showConfirmThen( int msgID, Action action )
     {
-        showConfirmThen( m_activity.getString( msgID ),
+        showConfirmThen( LocUtils.getString( m_activity, msgID ),
                          R.string.button_ok, action, null );
     }
 
@@ -293,7 +293,7 @@ public class DlgDelegate {
     public void showConfirmThen( int msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( m_activity.getString( msg ), posButton, action, 
+        showConfirmThen( LocUtils.getString( m_activity, msg ), posButton, action, 
                          params );
     }
 
@@ -342,7 +342,7 @@ public class DlgDelegate {
 
     public void startProgress( int id )
     {
-        String msg = m_activity.getString( id );
+        String msg = LocUtils.getString( m_activity, id );
         m_progress = ProgressDialog.show( m_activity, msg, null, true, true );
     }
 
@@ -407,20 +407,22 @@ public class DlgDelegate {
     {
         final View view = LocUtils.inflate( m_activity, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
-        vers.setText( String.format( m_activity.getString(R.string.about_vers_fmt), 
-                                     m_activity.getString(R.string.app_version),
+        vers.setText( String.format( LocUtils.getString( m_activity,
+                                                         R.string.about_vers_fmt ),
+                                     LocUtils.getString( m_activity,
+                                                         R.string.app_version ),
                                      BuildConstants.GIT_REV, 
                                      BuildConstants.BUILD_STAMP ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
-        String str = m_activity.getString( R.string.xlator );
+        String str = LocUtils.getString( m_activity, R.string.xlator );
         if ( str.length() > 0 ) {
             xlator.setText( str );
         } else {
             xlator.setVisibility( View.GONE );
         }
 
-        return new AlertBuilder( m_activity )
+        return LocUtils.makeAlertBuilder( m_activity )
             .setIcon( R.drawable.icon48x48 )
             .setTitle( R.string.app_name )
             .setView( view )
@@ -446,7 +448,7 @@ public class DlgDelegate {
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )
     {
-        Dialog dialog = new AlertBuilder( m_activity )
+        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.info_title )
             .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, null )
@@ -474,7 +476,7 @@ public class DlgDelegate {
                 }
             };
 
-        Dialog dialog = new AlertBuilder( m_activity )
+        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.newbie_title )
             .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, lstnr_p )
@@ -488,7 +490,7 @@ public class DlgDelegate {
     {
         OnClickListener lstnr = mkCallbackClickListener( state );
 
-        Dialog dialog = new AlertBuilder( m_activity )
+        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( state.m_msg )
             .setPositiveButton( state.m_posButton, lstnr )
@@ -513,7 +515,7 @@ public class DlgDelegate {
             msgID = R.string.nfc_or_email;
         }
         
-        AlertDialog.Builder builder = new AlertBuilder( m_activity )
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.query_title )
             .setMessage( msgID )
             .setNegativeButton( R.string.button_html, lstnr );
@@ -530,7 +532,7 @@ public class DlgDelegate {
 
     private Dialog createDictGoneDialog()
     {
-        Dialog dialog = new AlertBuilder( m_activity )
+        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.no_dict_title )
             .setMessage( R.string.no_dict_finish )
             .setPositiveButton( R.string.button_close_game, null )

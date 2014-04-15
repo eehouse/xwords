@@ -340,6 +340,11 @@ public class LocUtils {
         return sb.toString();
     }
 
+    public static AlertBuilder makeAlertBuilder( Context context )
+    {
+        return new AlertBuilder( context );
+    }
+
     public static class AlertBuilder extends AlertDialog.Builder {
         Context m_context;
 
