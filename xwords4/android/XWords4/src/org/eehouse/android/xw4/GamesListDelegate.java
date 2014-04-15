@@ -188,7 +188,7 @@ public class GamesListDelegate extends DelegateBase
                 ab.setNeutralButton( R.string.button_substdict, lstnr );
             }
             dialog = ab.create();
-            Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+            setRemoveOnDismiss( dialog, dlgID );
             break;
         case SHOW_SUBST:
             m_sameLangDicts = 
@@ -218,7 +218,7 @@ public class GamesListDelegate extends DelegateBase
             // called next time and we can insert a different
             // list.  There seems to be no way to change the list
             // inside onPrepareDialog().
-            Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+            setRemoveOnDismiss( dialog, dlgID );
             break;
 
         case RENAME_GAME:
@@ -264,7 +264,7 @@ public class GamesListDelegate extends DelegateBase
             dialog = buildNamerDlg( "", R.string.newgroup_label,
                                     R.string.game_name_group_title,
                                     lstnr, DlgID.RENAME_GROUP );
-            Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+            setRemoveOnDismiss( dialog, dlgID );
             break;
 
         case CHANGE_GROUP:
@@ -304,7 +304,7 @@ public class GamesListDelegate extends DelegateBase
                 .setPositiveButton( R.string.button_move, lstnr2 )
                 .setNegativeButton( R.string.button_cancel, null )
                 .create();
-            Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+            setRemoveOnDismiss( dialog, dlgID );
             break;
 
         case GET_NAME:
@@ -1167,7 +1167,7 @@ public class GamesListDelegate extends DelegateBase
             .setPositiveButton( R.string.button_ok, lstnr )
             .setView( m_namer )
             .create();
-        Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+        setRemoveOnDismiss( dialog, dlgID );
         return dialog;
     }
 

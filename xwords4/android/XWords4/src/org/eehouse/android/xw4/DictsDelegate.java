@@ -349,7 +349,7 @@ public class DictsDelegate extends DelegateBase
         }
 
         if ( doRemove && null != dialog ) {
-            Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+            setRemoveOnDismiss( dialog, dlgID );
         }
 
         return dialog;

@@ -246,7 +246,7 @@ public class NewGameDelegate extends DelegateBase {
                 .setPositiveButton( R.string.button_ok, lstnr )
                 .setView( namerView )
                 .create();
-            Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+            setRemoveOnDismiss( dialog, dlgID );
 
             break;
         case ENABLE_NFC:

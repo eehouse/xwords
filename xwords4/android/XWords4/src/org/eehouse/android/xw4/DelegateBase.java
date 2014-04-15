@@ -102,6 +102,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         return LocUtils.makeAlertBuilder( m_activity );
     }
 
+    protected void setRemoveOnDismiss( Dialog dialog, DlgID dlgID )
+    {
+        Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+    }
+
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         Action action, Object... params )
     {

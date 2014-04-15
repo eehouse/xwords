@@ -279,7 +279,7 @@ public class BoardDelegate extends DelegateBase
                     ab.setNegativeButton( R.string.button_reconnect, lstnr );
                 }
                 dialog = ab.create();
-                Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+                setRemoveOnDismiss( dialog, dlgID );
                 break;
 
             case DLG_USEDICT:
@@ -303,7 +303,7 @@ public class BoardDelegate extends DelegateBase
                     .setPositiveButton( R.string.button_yes, lstnr )
                     .setNegativeButton( R.string.button_no, null )
                     .create();
-                Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
+                setRemoveOnDismiss( dialog, dlgID );
                 break;
 
             case DLG_DELETED:
