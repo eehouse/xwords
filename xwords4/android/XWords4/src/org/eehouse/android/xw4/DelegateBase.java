@@ -21,6 +21,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -37,6 +38,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     private DlgDelegate m_delegate;
     private Activity m_activity;
     private int m_optionsMenuID = 0;
+
+    public DelegateBase( Activity activity, Bundle bundle )
+    {
+        this( activity, bundle, 0 );
+    }
 
     public DelegateBase( Activity activity, Bundle bundle, int optionsMenu )
     {
@@ -57,11 +63,27 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         return handled;
     }
 
-    protected void setContentView( int resID )
+    protected View setContentView( int resID )
     {
         m_activity.setContentView( resID );
         View view = Utils.getContentView( m_activity );
         LocUtils.xlateView( m_activity, view );
+        return view;
+    }
+
+    protected void startActivityForResult( Intent intent, int requestCode )
+    {
+        m_activity.startActivityForResult( intent, requestCode );
+    }
+
+    protected void finish()
+    {
+        m_activity.finish();
+    }
+
+    protected String getString( int resID, Object... params )
+    {
+        return LocUtils.getString( m_activity, resID, params );
     }
 
     protected void showDialog( DlgID dlgID )
