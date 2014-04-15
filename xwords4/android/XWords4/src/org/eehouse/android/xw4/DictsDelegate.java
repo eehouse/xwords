@@ -61,7 +61,6 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
 
 public class DictsDelegate extends DelegateBase 
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
@@ -311,7 +310,7 @@ public class DictsDelegate extends DelegateBase
             String name = row.getText();
             String lang = DictLangCache.getLangName( m_activity, name);
             message = getString( R.string.set_default_message_fmt, name, lang );
-            dialog = new LocUtils.AlertBuilder( m_activity )
+            dialog = makeAlertBuilder()
                 .setTitle( R.string.query_title )
                 .setMessage( message )
                 .setPositiveButton( R.string.button_default_human, lstnr )

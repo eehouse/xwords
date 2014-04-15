@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
+import android.app.AlertDialog;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -94,6 +95,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected Dialog createDialog( int id )
     {
         return m_delegate.createDialog( id );
+    }
+
+    protected AlertDialog.Builder makeAlertBuilder()
+    {
+        return LocUtils.makeAlertBuilder( m_activity );
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,

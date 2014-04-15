@@ -102,7 +102,7 @@ public class PrefsActivity extends PreferenceActivity
             dialog = SMSCheckBoxPreference.onCreateDialog( this, id );
             break;
         case EXPLAIN_TITLE:
-            dialog = new LocUtils.AlertBuilder( this )
+            dialog = LocUtils.makeAlertBuilder( this )
                 .setMessage( R.string.no_hide_titlebar )
                 .setTitle( R.string.info_title )
                 .setPositiveButton( R.string.button_ok, null )
@@ -111,7 +111,7 @@ public class PrefsActivity extends PreferenceActivity
         }
 
         if ( null == dialog && null != lstnr ) {
-            dialog = new LocUtils.AlertBuilder( this )
+            dialog = LocUtils.makeAlertBuilder( this )
                 .setTitle( R.string.query_title )
                 .setMessage( confirmID )
                 .setPositiveButton( R.string.button_ok, lstnr )

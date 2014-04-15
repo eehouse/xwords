@@ -359,7 +359,7 @@ public class LookupAlert extends LinearLayout
             LocUtils.inflate( parent, R.layout.lookup );
         view.init( parent, bundle );
 
-        Dialog result = new LocUtils.AlertBuilder( parent )
+        Dialog result = LocUtils.makeAlertBuilder( parent )
             .setTitle( R.string.lookup_title )
             .setView( view )
             .create();

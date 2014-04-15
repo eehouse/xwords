@@ -239,7 +239,7 @@ public class NewGameDelegate extends DelegateBase {
                     }
                 };
 
-            dialog = new LocUtils.AlertBuilder( m_activity )
+            dialog = makeAlertBuilder()
                 .setTitle( m_nameForBT ? R.string.game_btname_title 
                            : R.string.game_smsname_title )
                 .setNegativeButton( R.string.button_cancel, null )

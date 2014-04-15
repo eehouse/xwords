@@ -63,7 +63,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.JNIThread.*;
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -242,7 +241,7 @@ public class BoardDelegate extends DelegateBase
         Dialog dialog = super.createDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
-            AlertDialog.Builder ab = new AlertBuilder( m_activity );
+            AlertDialog.Builder ab = makeAlertBuilder();
 
             final DlgID dlgID = DlgID.values()[id];
             switch ( dlgID ) {
