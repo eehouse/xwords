@@ -28,6 +28,7 @@ import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class UtilCtxtImpl implements UtilCtxt {
     private Context m_context;
@@ -230,7 +231,7 @@ public class UtilCtxtImpl implements UtilCtxt {
         if ( 0 == id ) {
             result = "";
         } else {
-            result = m_context.getString( id );
+            result = LocUtils.getString( m_context, id );
         }
         return result;
     }

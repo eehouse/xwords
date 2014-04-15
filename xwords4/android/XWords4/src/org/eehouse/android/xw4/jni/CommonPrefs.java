@@ -33,6 +33,7 @@ import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CommonPrefs extends XWPrefs {
     public static final int COLOR_TILE_BACK = 0;
@@ -185,7 +186,7 @@ public class CommonPrefs extends XWPrefs {
             result = null;      // be consistent
         }
         if ( force && null == result ) {
-            String fmt = context.getString( R.string.player_fmt );
+            String fmt = LocUtils.getString( context, R.string.player_fmt );
             result = String.format( fmt, num + 1 );
         }
         return result;

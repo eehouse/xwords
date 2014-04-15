@@ -30,6 +30,7 @@ import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictLangCache;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CurGameInfo {
 
@@ -257,14 +258,14 @@ public class CurGameInfo {
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
                 String name;
                 if ( lp.isRobot() ) {
-                    String format = m_context.getString( R.string.robot_name_fmt );
+                    String format = LocUtils.getString( m_context, R.string.robot_name_fmt );
                     name = String.format( format, lp.name );
                 } else {
                     name = lp.name;
                 }
                 names[ii] = String.format( nameFmt, name, dictName(lp) );
             } else {
-                names[ii] = m_context.getString( R.string.guest_name );
+                names[ii] = LocUtils.getString( m_context, R.string.guest_name );
             }
         }
         return names;
