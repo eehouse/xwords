@@ -248,8 +248,8 @@ public class DictsDelegate extends DelegateBase
         case MOVE_DICT:
             final XWListItem[] selItems = getSelItems();
             final int[] moveTo = { -1 };
-            message = LocUtils.getString( m_activity, R.string.move_dict_fmt,
-                                          getJoinedNames( selItems ) );
+            message = getString( R.string.move_dict_fmt,
+                                 getJoinedNames( selItems ) );
 
             OnClickListener newSelLstnr =
                 new OnClickListener() {
@@ -310,9 +310,7 @@ public class DictsDelegate extends DelegateBase
                 };
             String name = row.getText();
             String lang = DictLangCache.getLangName( m_activity, name);
-            message = LocUtils.getString( m_activity, 
-                                          R.string.set_default_message_fmt,
-                                          name, lang );
+            message = getString( R.string.set_default_message_fmt, name, lang );
             dialog = new LocUtils.AlertBuilder( m_activity )
                 .setTitle( R.string.query_title )
                 .setMessage( message )
@@ -336,7 +334,7 @@ public class DictsDelegate extends DelegateBase
                 };
             lstnr2 = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        m_activity.finish();
+                        finish();
                     }
                 };
 
@@ -381,7 +379,7 @@ public class DictsDelegate extends DelegateBase
 
         m_locNames = LocUtils.getStringArray( m_activity, R.array.loc_names );
 
-        m_downloadStr = LocUtils.getString( m_activity, R.string.download_dicts );
+        m_downloadStr = getString( R.string.download_dicts );
             
         setContentView( R.layout.dict_browse );
         m_expView = m_activity.getExpandableListView();
@@ -495,7 +493,7 @@ public class DictsDelegate extends DelegateBase
             String url = 
                 intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
             DictImportActivity.downloadDictInBack( m_activity, url );
-            m_activity.finish();
+            finish();
         }
     }
 
@@ -504,7 +502,7 @@ public class DictsDelegate extends DelegateBase
         SharedPreferences sp
             = PreferenceManager.getDefaultSharedPreferences( m_activity );
         SharedPreferences.Editor editor = sp.edit();
-        String key = LocUtils.getString( m_activity, keyId );
+        String key = getString( keyId );
         String name = view.getText();
         editor.putString( key, name );
         editor.commit();
@@ -538,9 +536,8 @@ public class DictsDelegate extends DelegateBase
     private void deleteSelected()
     {
         XWListItem[] items = getSelItems();
-        String msg = LocUtils.getString( m_activity, 
-                                         R.string.confirm_delete_dict_fmt, 
-                                         getJoinedNames( items ) );
+        String msg = getString( R.string.confirm_delete_dict_fmt, 
+                                getJoinedNames( items ) );
 
         // When and what to warn about.  First off, if there's another
         // identical dict, simply confirm.  Or if nobody's using this
@@ -563,15 +560,12 @@ public class DictsDelegate extends DelegateBase
 
                 if ( 1 == langDals.length ) { // last in this language?
                     if ( 0 < nUsingLang ) {
-                        newMsg = 
-                            LocUtils.getString( m_activity, R.string
-                                                .confirm_deleteonly_dict_fmt,
-                                                dict, langName );
+                        newMsg = getString( R.string.confirm_deleteonly_dict_fmt,
+                                            dict, langName );
                     }
                 } else if ( 0 < DBUtils.countGamesUsingDict( m_activity, dict ) ) {
-                    newMsg = LocUtils.getString( m_activity, R.string.
-                                                 confirm_deletemore_dict_fmt,
-                                                 langName );
+                    newMsg = getString( R.string.confirm_deletemore_dict_fmt,
+                                        langName );
                 }
                 if ( null != newMsg ) {
                     msg += "\n\n" + newMsg;
@@ -720,9 +714,7 @@ public class DictsDelegate extends DelegateBase
     {
         int nSels = m_selDicts.size();
         if ( 0 < nSels ) {
-            m_activity.setTitle( LocUtils.getString( m_activity, 
-                                                     R.string.sel_items_fmt, 
-                                                     nSels ) );
+            m_activity.setTitle( getString( R.string.sel_items_fmt, nSels ) );
         } else {
             m_activity.setTitle( m_origTitle );
         }
@@ -795,7 +787,7 @@ public class DictsDelegate extends DelegateBase
                             Intent intent = m_activity.getIntent();
                             if ( MultiService.returnOnDownload( m_activity,
                                                                 intent ) ) {
-                                m_activity.finish();
+                                finish();
                             }
                         } else {
                             Utils.showToast( m_activity, 

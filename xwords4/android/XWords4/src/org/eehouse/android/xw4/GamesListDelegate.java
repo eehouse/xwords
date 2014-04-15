@@ -786,9 +786,8 @@ public class GamesListDelegate extends DelegateBase
 
             // Game menus: one or more games selected
         case R.id.games_game_delete:
-            String msg = LocUtils.getString( m_activity, 
-                                             R.string.confirm_seldeletes_fmt, 
-                                             selRowIDs.length );
+            String msg = getString( R.string.confirm_seldeletes_fmt, 
+                                    selRowIDs.length );
             showConfirmThen( msg, R.string.button_delete, 
                              Action.DELETE_GAMES, selRowIDs );
             break;
@@ -928,7 +927,7 @@ public class GamesListDelegate extends DelegateBase
         if ( 0 == fmt ) {
             m_activity.setTitle( m_origTitle );
         } else {
-            m_activity.setTitle( LocUtils.getString( m_activity, fmt, nSels ) );
+            m_activity.setTitle( getString( fmt, nSels ) );
         }
     }
 

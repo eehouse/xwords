@@ -264,7 +264,7 @@ public class StudyListDelegate extends DelegateBase
     {
         m_langCodes = DBUtils.studyListLangs( m_activity );
         if ( 0 == m_langCodes.length ) {
-            m_activity.finish();
+            finish();
         } else if ( 1 == m_langCodes.length ) {
             m_pickView.setVisibility( View.GONE );
             m_langPosition = 0;

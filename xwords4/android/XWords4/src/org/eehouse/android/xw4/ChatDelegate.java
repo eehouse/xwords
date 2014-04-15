@@ -71,13 +71,12 @@ public class ChatDelegate extends DelegateBase
             ((Button)m_activity.findViewById( R.id.send_button ))
                 .setOnClickListener( this );
 
-            String title = 
-                LocUtils.getString( m_activity, R.string.chat_title_fmt, 
-                                    GameUtils.getName( m_activity, m_rowid ) );
+            String title = getString( R.string.chat_title_fmt, 
+                                      GameUtils.getName( m_activity, m_rowid ) );
             m_activity.setTitle( title );
         } else {
             // Should really assert....
-            m_activity.finish();
+            finish();
         }
     }
 
@@ -106,6 +105,6 @@ public class ChatDelegate extends DelegateBase
             result.putExtra( BoardActivity.INTENT_KEY_CHAT, text );
             m_activity.setResult( Activity.RESULT_OK, result );
         }
-        m_activity.finish();
+        finish();
     }
 }

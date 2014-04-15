@@ -182,7 +182,7 @@ public class NewGameDelegate extends DelegateBase {
                     // We'll leave it up to BoardActivity to detect that
                     // it's not had any remote connections yet.
                     GameUtils.launchGame( m_activity, m_newRowID );
-                    m_activity.finish();
+                    finish();
                 }
                 break;
             case INVITE_FOR_BT:     // user selected device 
