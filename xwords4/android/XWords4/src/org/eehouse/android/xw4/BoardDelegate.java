@@ -2037,7 +2037,7 @@ public class BoardDelegate extends DelegateBase
         if ( BuildConstants.CHAT_SUPPORTED ) {
             Intent intent = new Intent( m_activity, ChatActivity.class );
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
-            m_activity.startActivityForResult( intent, CHAT_REQUEST );
+            startActivityForResult( intent, CHAT_REQUEST );
         }
     }
 
