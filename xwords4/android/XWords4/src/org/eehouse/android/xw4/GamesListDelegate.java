@@ -1054,7 +1054,7 @@ public class GamesListDelegate extends DelegateBase
 
     private void startNewGameActivity( long groupID )
     {
-        NewGameActivity.startActivity( m_activity, groupID );
+        NewGameDelegate.startActivity( m_activity, groupID );
     }
 
     private void startNewNetGame( NetLaunchInfo nli )
