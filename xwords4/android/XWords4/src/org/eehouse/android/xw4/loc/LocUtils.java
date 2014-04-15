@@ -149,11 +149,6 @@ public class LocUtils {
 
     public static String getString( Context context, int id )
     {
-        return getString( context, id, (Object)null );
-    }
-
-    public static String getString( Context context, int id, Object... params )
-    {
         String result = null;
         String key = keyForID( context, id );
         if ( null != key ) {
@@ -164,7 +159,14 @@ public class LocUtils {
             result = context.getString( id );
         }
 
-        if ( null != result && null != params ) {
+        return result;
+    }
+
+    public static String getString( Context context, int id, Object... params )
+    {
+        Assert.assertNotNull( params );
+        String result = getString( context, id );
+        if ( null != result ) {
             result = String.format( result, params );
         }
         return result;
