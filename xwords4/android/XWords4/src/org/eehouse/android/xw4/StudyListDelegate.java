@@ -73,8 +73,7 @@ public class StudyListDelegate extends DelegateBase
 
     private void init( Bundle savedInstanceState ) 
     {
-
-        m_activity.setContentView( R.layout.studylist );
+        setContentView( R.layout.studylist );
         m_list = (ListView)m_activity.findViewById( android.R.id.list );
 
         m_spinner = (Spinner)m_activity.findViewById( R.id.pick_lang_spinner );
