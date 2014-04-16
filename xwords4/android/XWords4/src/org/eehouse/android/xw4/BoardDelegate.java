@@ -66,7 +66,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
-               DictImportActivity.DownloadFinishedListener, 
+               DictImportDelegate.DownloadFinishedListener, 
                ConnStatusHandler.ConnStatusCBacks,
                NFCUtils.NFCActor {
 
@@ -290,7 +290,7 @@ public class BoardDelegate extends DelegateBase
                             if ( DlgID.DLG_USEDICT == dlgID ) {
                                 setGotGameDict( m_getDict );
                             } else {
-                                DictImportActivity
+                                DictImportDelegate
                                     .downloadDictInBack( m_activity,
                                                          m_gi.dictLang,
                                                          m_getDict,
@@ -525,13 +525,13 @@ public class BoardDelegate extends DelegateBase
         setContentView( R.layout.board );
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
-        m_view = (BoardView)m_activity.findViewById( R.id.board_view );
-        m_tradeButtons = m_activity.findViewById( R.id.exchange_buttons );
+        m_view = (BoardView)findViewById( R.id.board_view );
+        m_tradeButtons = findViewById( R.id.exchange_buttons );
         m_exchCommmitButton = setListenerOrHide( R.id.exchange_commit );
         m_exchCancelButton = setListenerOrHide( R.id.exchange_cancel );
         m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
 
-        Intent intent = m_activity.getIntent();
+        Intent intent = getIntent();
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
         DbgUtils.logf( "BoardActivity: opening rowid %d", m_rowid );
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
@@ -831,7 +831,7 @@ public class BoardDelegate extends DelegateBase
             // small devices only
         case R.id.board_menu_dict:
             String dictName = m_gi.dictName( m_view.getCurPlayer() );
-            DictBrowseActivity.launch( m_activity, dictName );
+            DictBrowseDelegate.launch( m_activity, dictName );
             break;
 
         case R.id.board_menu_game_counts:
@@ -940,7 +940,7 @@ public class BoardDelegate extends DelegateBase
                      DictsActivity.handleDictsPopup( m_activity, button, curDict ) ) {
                     break;
                 }
-                DictBrowseActivity.launch( m_activity, curDict );
+                DictBrowseDelegate.launch( m_activity, curDict );
                 break;
             case PREV_HINT_ACTION:
                 cmd = JNICmd.CMD_PREV_HINT;
@@ -1853,7 +1853,7 @@ public class BoardDelegate extends DelegateBase
                     m_jniThread.handle( JNICmd.CMD_START );
 
                     if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
-                        m_activity.setTitle( GameUtils.getName( m_activity, m_rowid ) );
+                        setTitle( GameUtils.getName( m_activity, m_rowid ) );
                     }
                     m_toolbar = new Toolbar( m_activity, this, R.id.toolbar_horizontal );
 
@@ -2157,7 +2157,7 @@ public class BoardDelegate extends DelegateBase
 
     private void setBackgroundColor()
     {
-        View view = m_activity.findViewById( R.id.board_root );
+        View view = findViewById( R.id.board_root );
         // Google's reported an NPE here, so test
         if ( null != view ) {
             int back = CommonPrefs.get( m_activity )
@@ -2239,14 +2239,14 @@ public class BoardDelegate extends DelegateBase
     {
         Intent intent = GamesListActivity.makeRematchIntent( m_activity, m_gi, m_rowid );
         if ( null != intent ) {
-            m_activity.startActivity( intent );
+            startActivity( intent );
             finish();
         }
     }
     
     private Button setListenerOrHide( int id )
     {
-        Button button = (Button)m_activity.findViewById( id );
+        Button button = (Button)findViewById( id );
         if ( null != button ) {
             if ( ABUtils.haveActionBar() ) {
                 button.setVisibility( View.INVISIBLE );
@@ -2263,4 +2263,4 @@ public class BoardDelegate extends DelegateBase
             + "too many open Boards";
         DbgUtils.logf(msg );
     }
-} // class BoardActivity
+} // class BoardDelegate

@@ -68,7 +68,6 @@ public class NewGameDelegate extends DelegateBase {
     private long m_groupID;
     private String m_remoteDev;
     private Activity m_activity;
-    private View m_rootView;
 
     protected NewGameDelegate( Activity activity, Bundle savedInstanceState )
     {
@@ -81,7 +80,7 @@ public class NewGameDelegate extends DelegateBase {
     {
         getBundledData( savedInstanceState );
 
-        m_groupID = m_activity.getIntent().getLongExtra( GROUPID_EXTRA, -1 );
+        m_groupID = getIntent().getLongExtra( GROUPID_EXTRA, -1 );
 
         setContentView( R.layout.new_game );
 

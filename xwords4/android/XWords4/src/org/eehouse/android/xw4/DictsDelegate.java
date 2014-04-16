@@ -66,7 +66,7 @@ public class DictsDelegate extends DelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
                SelectableItem, MountEventReceiver.SDCardNotifiee, 
                DlgDelegate.DlgClickNotify,
-               DictImportActivity.DownloadFinishedListener {
+               DictImportDelegate.DownloadFinishedListener {
 
     protected static final String DICT_DOLAUNCH = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
@@ -82,7 +82,7 @@ public class DictsDelegate extends DelegateBase
     private String[] m_locNames;
     private DictListAdapter m_adapter;
     private HashSet<XWListItem> m_selDicts;
-    private CharSequence m_origTitle;
+    private String m_origTitle;
 
     private boolean m_launchedForMissing = false;
 
@@ -322,11 +322,11 @@ public class DictsDelegate extends DelegateBase
         case DICT_OR_DECLINE:
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        Intent intent = m_activity.getIntent();
+                        Intent intent = getIntent();
                         int lang = intent.getIntExtra( MultiService.LANG, -1 );
                         String name = intent.getStringExtra( MultiService.DICT );
                         m_launchedForMissing = true;
-                        DictImportActivity
+                        DictImportDelegate
                             .downloadDictInBack( m_activity, lang, 
                                                  name, DictsDelegate.this );
                     }
@@ -337,8 +337,7 @@ public class DictsDelegate extends DelegateBase
                     }
                 };
 
-            dialog = MultiService.missingDictDialog( m_activity, 
-                                                     m_activity.getIntent(), 
+            dialog = MultiService.missingDictDialog( m_activity, getIntent(), 
                                                      lstnr, lstnr2 );
             break;
 
@@ -384,7 +383,7 @@ public class DictsDelegate extends DelegateBase
         m_expView = m_activity.getExpandableListView();
         m_expView.setOnItemLongClickListener( this );
         
-        Button download = (Button)m_activity.findViewById( R.id.download );
+        Button download = (Button)findViewById( R.id.download );
         if ( ABUtils.haveActionBar() ) {
             download.setVisibility( View.GONE );
         } else {
@@ -393,7 +392,7 @@ public class DictsDelegate extends DelegateBase
 
         mkListAdapter();
 
-        Intent intent = m_activity.getIntent();
+        Intent intent = getIntent();
         if ( null != intent ) {
             if ( MultiService.isMissingDictIntent( intent ) ) {
                 showDialog( DlgID.DICT_OR_DECLINE );
@@ -409,7 +408,7 @@ public class DictsDelegate extends DelegateBase
             }
         }
 
-        m_origTitle = m_activity.getTitle();
+        m_origTitle = getTitle();
     } // onCreate
 
     protected void onResume()
@@ -432,7 +431,7 @@ public class DictsDelegate extends DelegateBase
             startDownload( 0, null );
         } else {
             XWListItem item = (XWListItem)view;
-            DictBrowseActivity.launch( m_activity, item.getText(), 
+            DictBrowseDelegate.launch( m_activity, item.getText(), 
                                        (DictLoc)item.getCached() );
         }
     }
@@ -491,7 +490,7 @@ public class DictsDelegate extends DelegateBase
         if ( 0 < loci ) {
             String url = 
                 intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
-            DictImportActivity.downloadDictInBack( m_activity, url );
+            DictImportDelegate.downloadDictInBack( m_activity, url );
             finish();
         }
     }
@@ -642,7 +641,7 @@ public class DictsDelegate extends DelegateBase
     private void startDownload( Intent downloadIntent )
     {
         try {
-            m_activity.startActivity( downloadIntent );
+            startActivity( downloadIntent );
         } catch ( android.content.ActivityNotFoundException anfe ) {
             Utils.showToast( m_activity, R.string.no_download_warning );
         }
@@ -713,9 +712,9 @@ public class DictsDelegate extends DelegateBase
     {
         int nSels = m_selDicts.size();
         if ( 0 < nSels ) {
-            m_activity.setTitle( getString( R.string.sel_items_fmt, nSels ) );
+            setTitle( getString( R.string.sel_items_fmt, nSels ) );
         } else {
-            m_activity.setTitle( m_origTitle );
+            setTitle( m_origTitle );
         }
     }
 
@@ -783,7 +782,7 @@ public class DictsDelegate extends DelegateBase
             post( new Runnable() {
                     public void run() {
                         if ( success ) {
-                            Intent intent = m_activity.getIntent();
+                            Intent intent = getIntent();
                             if ( MultiService.returnOnDownload( m_activity,
                                                                 intent ) ) {
                                 finish();

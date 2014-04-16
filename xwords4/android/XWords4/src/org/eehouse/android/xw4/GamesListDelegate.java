@@ -63,7 +63,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class GamesListDelegate extends DelegateBase
     implements OnItemLongClickListener,
                DBUtils.DBChangeListener, SelectableItem, 
-               DictImportActivity.DownloadFinishedListener,
+               DictImportDelegate.DownloadFinishedListener,
                DlgDelegate.HasDlgDelegate {
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
@@ -119,7 +119,7 @@ public class GamesListDelegate extends DelegateBase
     private boolean m_menuPrepared;
     private HashSet<Long> m_selGames;
     private HashSet<Long> m_selGroupIDs;
-    private CharSequence m_origTitle;
+    private String m_origTitle;
 
     public GamesListDelegate( GamesListActivity activity, Bundle savedInstanceState )
     {
@@ -148,7 +148,7 @@ public class GamesListDelegate extends DelegateBase
                                 .launchAndDownload( m_activity, 
                                                     m_missingDictLang );
                         } else {
-                            DictImportActivity
+                            DictImportDelegate
                                 .downloadDictInBack( m_activity,
                                                      m_missingDictLang,
                                                      m_missingDictName,
@@ -372,11 +372,11 @@ public class GamesListDelegate extends DelegateBase
 
         NetUtils.informOfDeaths( m_activity );
 
-        tryStartsFromIntent( m_activity.getIntent() );
+        tryStartsFromIntent( getIntent() );
 
         askDefaultNameIf();
 
-        m_origTitle = m_activity.getTitle();
+        m_origTitle = getTitle();
     } // init
 
     // called when we're brought to the front (probably as a result of
@@ -755,7 +755,7 @@ public class GamesListDelegate extends DelegateBase
             String str = String.format( "market://details?id=%s",
                                         m_activity.getPackageName() );
             try {
-                m_activity.startActivity( new Intent( Intent.ACTION_VIEW, Uri.parse( str ) ) );
+                startActivity( new Intent( Intent.ACTION_VIEW, Uri.parse( str ) ) );
             } catch ( android.content.ActivityNotFoundException anf ) {
                 showOKOnlyDialog( R.string.no_market );
             }
@@ -924,9 +924,9 @@ public class GamesListDelegate extends DelegateBase
         }
 
         if ( 0 == fmt ) {
-            m_activity.setTitle( m_origTitle );
+            setTitle( m_origTitle );
         } else {
-            m_activity.setTitle( getString( fmt, nSels ) );
+            setTitle( getString( fmt, nSels ) );
         }
     }
 
@@ -1280,7 +1280,7 @@ public class GamesListDelegate extends DelegateBase
             // config.
             Class clazz;
             
-            if ( RelayGameActivity.isSimpleGame( summary ) ) {
+            if ( RelayGameDelegate.isSimpleGame( summary ) ) {
                 clazz = RelayGameActivity.class;
             } else {
                 clazz = GameConfig.class;

@@ -191,7 +191,7 @@ public class DictsActivity extends ExpandableListActivity {
                         if ( null == dal ) {
                             DictsActivity.start( context );
                         } else {
-                            DictBrowseActivity.launch( context, dal.name, 
+                            DictBrowseDelegate.launch( context, dal.name, 
                                                        dal.loc );
                         }
                         return true;

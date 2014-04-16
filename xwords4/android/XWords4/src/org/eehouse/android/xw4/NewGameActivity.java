@@ -21,10 +21,11 @@
 package org.eehouse.android.xw4;
 
 import android.app.Dialog;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-public class NewGameActivity extends XWActivity {
+public class NewGameActivity extends Activity {
 
     private NewGameDelegate m_dlgt;
 

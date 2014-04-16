@@ -51,12 +51,12 @@ public class ChatDelegate extends DelegateBase
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
     
-            m_rowid = m_activity.getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+            m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
      
             DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( m_activity, m_rowid );
             if ( null != pairs ) {
                 LinearLayout layout = (LinearLayout)
-                    m_activity.findViewById( R.id.chat_history );
+                    findViewById( R.id.chat_history );
 
                 for ( DBUtils.HistoryPair pair : pairs ) {
                     TextView view = (TextView)
@@ -68,12 +68,12 @@ public class ChatDelegate extends DelegateBase
                 }
             }
 
-            ((Button)m_activity.findViewById( R.id.send_button ))
+            ((Button)findViewById( R.id.send_button ))
                 .setOnClickListener( this );
 
             String title = getString( R.string.chat_title_fmt, 
                                       GameUtils.getName( m_activity, m_rowid ) );
-            m_activity.setTitle( title );
+            setTitle( title );
         } else {
             // Should really assert....
             finish();
@@ -86,7 +86,7 @@ public class ChatDelegate extends DelegateBase
         if ( handled ) {
             DBUtils.clearChatHistory( m_activity, m_rowid );
             LinearLayout layout = 
-                (LinearLayout)m_activity.findViewById( R.id.chat_history );
+                (LinearLayout)findViewById( R.id.chat_history );
             layout.removeAllViews();
         }
         return handled;
@@ -94,7 +94,7 @@ public class ChatDelegate extends DelegateBase
 
     public void onClick( View view ) 
     {
-        EditText edit = (EditText)m_activity.findViewById( R.id.chat_edit );
+        EditText edit = (EditText)findViewById( R.id.chat_edit );
         String text = edit.getText().toString();
         if ( null == text || text.length() == 0 ) {
             m_activity.setResult( Activity.RESULT_CANCELED );

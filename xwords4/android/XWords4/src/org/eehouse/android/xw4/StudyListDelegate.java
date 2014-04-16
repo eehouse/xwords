@@ -62,7 +62,7 @@ public class StudyListDelegate extends DelegateBase
     private int m_langPosition;
     private SLWordsAdapter m_adapter;
     private ListView m_list;
-    private CharSequence m_origTitle;
+    private String m_origTitle;
 
     protected StudyListDelegate( ListActivity activity, Bundle savedInstanceState )
     {
@@ -74,12 +74,12 @@ public class StudyListDelegate extends DelegateBase
     private void init( Bundle savedInstanceState ) 
     {
         setContentView( R.layout.studylist );
-        m_list = (ListView)m_activity.findViewById( android.R.id.list );
+        m_list = (ListView)findViewById( android.R.id.list );
 
-        m_spinner = (Spinner)m_activity.findViewById( R.id.pick_lang_spinner );
-        m_pickView = m_activity.findViewById( R.id.pick_lang );
+        m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
+        m_pickView = findViewById( R.id.pick_lang );
 
-        initOrFinish( m_activity.getIntent() );
+        initOrFinish( getIntent() );
     }
 
     protected boolean backPressed() 
@@ -250,7 +250,7 @@ public class StudyListDelegate extends DelegateBase
         makeAdapter();
 
         String langName = DictLangCache.getLangNames( m_activity )[lang];
-        m_origTitle = m_activity.getString( R.string.studylist_title_fmt, langName );
+        m_origTitle = getString( R.string.studylist_title_fmt, langName );
         setTitleBar();
     }
 
@@ -302,14 +302,14 @@ public class StudyListDelegate extends DelegateBase
 
     private void setTitleBar()
     {
-        CharSequence newTitle;
+        String newTitle;
         int nSels = m_checkeds.size();
         if ( 0 == nSels ) {
             newTitle = m_origTitle;
         } else {
             newTitle = m_activity.getString( R.string.sel_items_fmt, nSels );
         }
-        m_activity.setTitle( newTitle );
+        setTitle( newTitle );
 
         ABUtils.invalidateOptionsMenuIf( m_activity );
     }

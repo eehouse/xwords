@@ -21,14 +21,12 @@
 package org.eehouse.android.xw4;
 
 import android.app.Dialog;
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.app.ListActivity;
-
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import org.eehouse.android.xw4.jni.CurGameInfo;
