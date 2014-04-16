@@ -44,6 +44,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class StudyListDelegate extends DelegateBase 
     implements OnItemSelectedListener, SelectableItem,
@@ -100,8 +101,8 @@ public class StudyListDelegate extends DelegateBase
         Utils.setItemVisible( menu, R.id.slmenu_deselect_all, 0 < nSel );
         boolean enable = 1 == nSel;
         if ( enable ) {
-            String title = 
-                m_activity.getString( R.string.button_lookup_fmt, getSelWords()[0] );
+            String title = getString( R.string.button_lookup_fmt, 
+                                      getSelWords()[0] );
             menu.findItem( R.id.slmenu_lookup_sel ).setTitle( title );
         }
         Utils.setItemVisible( menu, R.id.slmenu_lookup_sel, enable );
@@ -118,9 +119,8 @@ public class StudyListDelegate extends DelegateBase
                                  Action.SL_COPY_ACTION );
             break;
         case R.id.slmenu_clear_sel:
-            String msg =
-                m_activity.getString( R.string.confirm_studylist_clear_fmt, 
-                                      m_checkeds.size() );
+            String msg = getString( R.string.confirm_studylist_clear_fmt, 
+                                    m_checkeds.size() );
             showConfirmThen( msg, Action.SL_CLEAR_ACTION );
             break;
 
@@ -167,8 +167,8 @@ public class StudyListDelegate extends DelegateBase
                     m_activity.getSystemService( Context.CLIPBOARD_SERVICE );
                 clipboard.setText( TextUtils.join( "\n", selWords ) );
 
-                String msg  = m_activity.getString( R.string.paste_done_fmt, 
-                                                    selWords.length );
+                String msg = getString( R.string.paste_done_fmt, 
+                                        selWords.length );
                 Utils.showToast( m_activity, msg );
                 break;
             default:
@@ -306,7 +306,7 @@ public class StudyListDelegate extends DelegateBase
         if ( 0 == nSels ) {
             newTitle = m_origTitle;
         } else {
-            newTitle = m_activity.getString( R.string.sel_items_fmt, nSels );
+            newTitle = getString( R.string.sel_items_fmt, nSels );
         }
         setTitle( newTitle );
 
@@ -341,11 +341,12 @@ public class StudyListDelegate extends DelegateBase
     {
         String msg = null;
         if ( 0 == DBUtils.studyListLangs( context ).length ) {
-            msg = context.getString( R.string.study_no_lists );
+            msg = LocUtils.getString( context, R.string.study_no_lists );
         } else if ( NO_LANG != lang && 
                     0 == DBUtils.studyListWords( context, lang ).length ) {
             String langname = DictLangCache.getLangName( context, lang );
-            msg = context.getString( R.string.study_no_lang_fmt, langname );
+            msg = LocUtils.getString( context, R.string.study_no_lang_fmt, 
+                                      langname );
         } else {
             Intent intent = new Intent( context, StudyListActivity.class );
             if ( NO_LANG != lang ) {

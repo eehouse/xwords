@@ -30,6 +30,8 @@ import android.view.MenuItem;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class StudyListActivity extends ListActivity {
 
     private StudyListDelegate m_dlgt;
@@ -85,11 +87,11 @@ public class StudyListActivity extends ListActivity {
     {
         String msg = null;
         if ( 0 == DBUtils.studyListLangs( context ).length ) {
-            msg = context.getString( R.string.study_no_lists );
+            msg = LocUtils.getString( context, R.string.study_no_lists );
         } else if ( StudyListDelegate.NO_LANG != lang && 
                     0 == DBUtils.studyListWords( context, lang ).length ) {
             String langname = DictLangCache.getLangName( context, lang );
-            msg = context.getString( R.string.study_no_lang_fmt, langname );
+            msg = LocUtils.getString( context, R.string.study_no_lang_fmt, langname );
         } else {
             Intent intent = new Intent( context, StudyListActivity.class );
             if ( StudyListDelegate.NO_LANG != lang ) {
