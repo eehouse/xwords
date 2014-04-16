@@ -39,6 +39,7 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     private DlgDelegate m_delegate;
     private Activity m_activity;
     private int m_optionsMenuID = 0;
+    private View m_rootView;
 
     public DelegateBase( Activity activity, Bundle bundle )
     {
@@ -64,17 +65,41 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         return handled;
     }
 
-    protected View setContentView( int resID )
+    protected Intent getIntent()
+    {
+        return m_activity.getIntent();
+    }
+
+    protected void setContentView( int resID )
     {
         m_activity.setContentView( resID );
-        View view = Utils.getContentView( m_activity );
-        LocUtils.xlateView( m_activity, view );
-        return view;
+        m_rootView = Utils.getContentView( m_activity );
+        LocUtils.xlateView( m_activity, m_rootView );
+    }
+
+    protected View findViewById( int resID )
+    {
+        return m_rootView.findViewById( resID );
+    }
+
+    protected void setTitle( String title )
+    {
+        m_activity.setTitle( title );
+    }
+
+    protected String getTitle()
+    {
+        return m_activity.getTitle().toString();
     }
 
     protected void startActivityForResult( Intent intent, int requestCode )
     {
         m_activity.startActivityForResult( intent, requestCode );
+    }
+
+    protected void startActivity( Intent intent )
+    {
+        m_activity.startActivity( intent );
     }
 
     protected void finish()
@@ -85,6 +110,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected String getString( int resID, Object... params )
     {
         return LocUtils.getString( m_activity, resID, params );
+    }
+
+    protected View inflate( int resID )
+    {
+        return LocUtils.inflate( m_activity, resID );
     }
 
     protected void showDialog( DlgID dlgID )
@@ -195,6 +225,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void showInviteChoicesThen( Action action )
     {
         m_delegate.showInviteChoicesThen( action );
+    }
+
+    protected void showOKOnlyDialogThen( String msg, Action action )
+    {
+        m_delegate.showOKOnlyDialog( msg, action );
     }
 
     protected void startProgress( int id )

@@ -83,7 +83,7 @@ public class NewGameDelegate extends DelegateBase {
 
         m_groupID = m_activity.getIntent().getLongExtra( GROUPID_EXTRA, -1 );
 
-        m_rootView = setContentView( R.layout.new_game );
+        setContentView( R.layout.new_game );
 
         TextView desc = (TextView)findViewById( R.id.newgame_local_desc );
         m_dict = CommonPrefs.getDefaultHumanDict( m_activity );
@@ -473,11 +473,6 @@ public class NewGameDelegate extends DelegateBase {
                     } );
             }
         }
-    }
-
-    private View findViewById( int resID )
-    {
-        return m_rootView.findViewById( resID );
     }
 
     public static void startActivity( Activity parent, long groupID )
