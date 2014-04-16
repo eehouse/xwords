@@ -887,6 +887,7 @@ public class DBUtils {
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             db.close();
         }
+        invalGroupsCache();
         notifyListeners( lock.getRowid(), true );
     }
 
