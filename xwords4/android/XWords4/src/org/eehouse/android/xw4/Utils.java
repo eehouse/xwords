@@ -156,13 +156,16 @@ public class Utils {
         Intent intent = new Intent( Intent.ACTION_SEND );
         intent.setType( "message/rfc822" ); // force email
         intent.putExtra( Intent.EXTRA_SUBJECT,
-                         context.getString( R.string.email_author_subject ) );
-        String[] addrs = { context.getString( R.string.email_author_email ) };
+                         LocUtils.getString( context, 
+                                             R.string.email_author_subject ) );
+        String[] addrs = { LocUtils.getString( context, 
+                                               R.string.email_author_email ) };
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
         String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
                                           BuildConstants.GIT_REV );
         intent.putExtra( Intent.EXTRA_TEXT, body );
-        String chooserMsg = context.getString( R.string.email_author_chooser );
+        String chooserMsg = LocUtils.getString( context,
+                                                R.string.email_author_chooser );
         context.startActivity( Intent.createChooser( intent, chooserMsg ) );
     }
 
@@ -170,13 +173,13 @@ public class Utils {
                                          int titleID, int bodyID, int id )
     {
         postNotification( context, intent, titleID, 
-                          context.getString( bodyID ), id );
+                          LocUtils.getString( context, bodyID ), id );
     }
 
     public static void postNotification( Context context, Intent intent, 
                                          int titleID, String body, int id )
     {
-        String title = context.getString( titleID );
+        String title = LocUtils.getString( context, titleID );
         postNotification( context, intent, title, body, id );
     }
 
