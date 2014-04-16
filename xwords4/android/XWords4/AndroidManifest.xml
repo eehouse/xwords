@@ -100,7 +100,7 @@
               android:screenOrientation="portrait"
               />
 
-    <activity android:name="GameConfig"
+    <activity android:name="GameConfigActivity"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation|screenSize"
               >
