@@ -195,7 +195,7 @@ public class LookupAlert extends LinearLayout
             String word = m_words[m_wordIndex];
             DBUtils.addToStudyList( m_context, word, s_lang );
 
-            String msg = m_context.getString( R.string.add_done_fmt, word );
+            String msg = LocUtils.getString( m_context, R.string.add_done_fmt, word );
             Utils.showToast( m_context, msg );
         }
     }
@@ -257,8 +257,8 @@ public class LookupAlert extends LinearLayout
             String txt = LocUtils.getString( m_context, R.string.button_done_fmt,
                                              m_words[m_wordIndex] );
             m_doneButton.setText( txt );
-            txt = m_context.getString( R.string.add_to_study_fmt,
-                                       m_words[m_wordIndex] );
+            txt = LocUtils.getString( m_context, R.string.add_to_study_fmt,
+                                      m_words[m_wordIndex] );
             if ( m_studyOn ) {
                 m_studyButton.setVisibility( View.VISIBLE );
                 m_studyButton.setText( txt );
@@ -321,12 +321,13 @@ public class LookupAlert extends LinearLayout
 
     private void setSummary( int id )
     {
-        m_summary.setText( m_context.getString( id ) );
+        m_summary.setText( LocUtils.getString( m_context, id ) );
     }
 
     private void setSummary( String word )
     {
-        String title = m_context.getString( R.string.pick_url_title_fmt, word );
+        String title = 
+            LocUtils.getString( m_context, R.string.pick_url_title_fmt, word );
         m_summary.setText( title );
     }
 
