@@ -348,7 +348,7 @@ public class LocUtils {
     public static class AlertBuilder extends AlertDialog.Builder {
         Context m_context;
 
-        public AlertBuilder( Context context )
+        private AlertBuilder( Context context )
         {
             super( context );
             m_context = context;
