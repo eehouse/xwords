@@ -104,15 +104,18 @@ public class %s {
 """
     fil.write( lines % name )
 
-    for key in pairs.keys():
-            fil.write( "        R.string.%s,\n" % (key) )
+    keys = pairs.keys()
+    for ii in range( len( keys ) ):
+        key = keys[ii]
+        fil.write( "        /*%4d*/ R.string.%s,\n" % (ii, key) )
 
     fil.write( "    };\n\n" )
 
     if "debug" == target:
         fil.write( "    static final String[] strs = {\n")
-        for key in pairs.keys():
-            fil.write( "        \"%s\",\n" % pairs[key]['text'] )
+        for ii in range( len( keys ) ):
+            key = keys[ii]
+            fil.write( "        /*%4d*/ \"%s\",\n" % (ii, pairs[key]['text']) )
         fil.write( "    };\n" );
 
     func = "    protected static void checkStrings( Context context ) {\n"
