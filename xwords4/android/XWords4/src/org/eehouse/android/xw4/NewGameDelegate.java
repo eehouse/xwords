@@ -73,10 +73,9 @@ public class NewGameDelegate extends DelegateBase {
     {
         super( activity, savedInstanceState );
         m_activity = activity;
-        init( savedInstanceState );
     }
 
-    private void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState ) 
     {
         getBundledData( savedInstanceState );
 

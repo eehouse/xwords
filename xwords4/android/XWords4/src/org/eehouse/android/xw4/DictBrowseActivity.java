@@ -32,6 +32,7 @@ public class DictBrowseActivity extends ListActivity {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = new DictBrowseDelegate( this, savedInstanceState );
+        m_dlgt.init( savedInstanceState );
     } // onCreate
 
     @Override

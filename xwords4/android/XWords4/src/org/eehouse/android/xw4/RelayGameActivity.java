@@ -45,6 +45,7 @@ public class RelayGameActivity extends Activity {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = new RelayGameDelegate( this, savedInstanceState );
+        m_dlgt.init( savedInstanceState );
     } // onCreate
 
     @Override

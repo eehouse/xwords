@@ -45,6 +45,7 @@ public class ChatActivity extends Activity {
             setContentView( R.layout.chat );
 
             m_dlgt = new ChatDelegate( this, savedInstanceState );
+            m_dlgt.init( savedInstanceState );
         }
     }
 

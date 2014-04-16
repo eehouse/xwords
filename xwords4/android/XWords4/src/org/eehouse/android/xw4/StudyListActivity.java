@@ -40,6 +40,7 @@ public class StudyListActivity extends ListActivity {
         super.onCreate( savedInstanceState );
 
         m_dlgt = new StudyListDelegate( this, savedInstanceState );
+        m_dlgt.init( savedInstanceState );
     }
 
     @Override

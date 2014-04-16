@@ -232,7 +232,6 @@ public class DictsDelegate extends DelegateBase
     {
         super( activity, savedInstanceState, R.menu.dicts_menu );
         m_activity = activity;
-        init( savedInstanceState );
     }
 
     protected Dialog createDialog( int id )
@@ -365,7 +364,7 @@ public class DictsDelegate extends DelegateBase
         }
     }
 
-    private void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState ) 
     {
         m_closedLangs = new HashSet<String>();
         String[] closed = XWPrefs.getClosedLangs( m_activity );

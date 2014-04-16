@@ -62,7 +62,6 @@ public class DictImportDelegate extends DelegateBase {
     {
         super( activity, savedInstanceState );
         m_activity = activity;
-        init( savedInstanceState );
     }
 
     // Track callbacks for downloads.

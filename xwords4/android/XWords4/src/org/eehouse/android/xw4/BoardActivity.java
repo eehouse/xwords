@@ -107,6 +107,7 @@ public class BoardActivity extends Activity {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = new BoardDelegate( this, savedInstanceState );
+        m_dlgt.init( savedInstanceState );
     } // onCreate
 
     @Override

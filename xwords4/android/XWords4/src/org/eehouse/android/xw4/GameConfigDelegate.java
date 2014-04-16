@@ -129,7 +129,6 @@ public class GameConfigDelegate extends DelegateBase
     {
         super( activity, savedInstanceState, R.menu.board_menu );
         m_activity = activity;
-        init( savedInstanceState );
     }
 
     class RemoteChoices extends XWListAdapter {
@@ -388,7 +387,7 @@ public class GameConfigDelegate extends DelegateBase
         lp.isLocal = !Utils.getChecked( dialog, R.id.remote_check );
     }
 
-    private void init( Bundle savedInstanceState )
+    protected void init( Bundle savedInstanceState )
     {
         getBundledData( savedInstanceState );
 

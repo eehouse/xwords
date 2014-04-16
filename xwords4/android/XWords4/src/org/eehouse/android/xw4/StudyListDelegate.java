@@ -68,10 +68,9 @@ public class StudyListDelegate extends DelegateBase
     {
         super( activity, savedInstanceState, R.menu.studylist );
         m_activity = activity;
-        init( savedInstanceState );
     }
 
-    private void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState ) 
     {
         setContentView( R.layout.studylist );
         m_list = (ListView)findViewById( android.R.id.list );

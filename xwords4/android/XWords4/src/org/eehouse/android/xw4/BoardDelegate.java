@@ -504,10 +504,9 @@ public class BoardDelegate extends DelegateBase
     {
         super( activity, savedInstanceState, R.menu.board_menu );
         m_activity = activity;
-        init( savedInstanceState );
     }
 
-    private void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState ) 
     {
         getBundledData( savedInstanceState );
 

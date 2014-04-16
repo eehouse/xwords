@@ -34,6 +34,7 @@ public class GameConfigActivity extends Activity {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = new GameConfigDelegate( this, savedInstanceState );
+        m_dlgt.init( savedInstanceState );
     } // onCreate
 
     @Override

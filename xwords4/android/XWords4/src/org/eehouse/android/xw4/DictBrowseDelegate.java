@@ -161,10 +161,9 @@ public class DictBrowseDelegate extends DelegateBase
     {
         super( activity, savedInstanceState );
         m_activity = activity;
-        init( savedInstanceState );
     }
 
-    private void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState ) 
     {
         Intent intent = getIntent();
         String name = null == intent? null:intent.getStringExtra( DICT_NAME );
