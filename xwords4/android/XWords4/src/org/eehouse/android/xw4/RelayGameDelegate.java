@@ -115,7 +115,7 @@ public class RelayGameDelegate extends DelegateBase
             }
         } else if ( view == m_configButton ) {
             if ( saveRoomAndName( room ) ) {
-                GameUtils.doConfig( m_activity, m_rowid, GameConfig.class );
+                GameUtils.doConfig( m_activity, m_rowid, GameConfigActivity.class );
                 finish();
             }
         }

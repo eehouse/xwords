@@ -730,7 +730,7 @@ public class GamesListDelegate extends DelegateBase
             break;
 
         case R.id.games_game_config:
-            GameUtils.doConfig( m_activity, selRowIDs[0], GameConfig.class );
+            GameUtils.doConfig( m_activity, selRowIDs[0], GameConfigActivity.class );
             break;
 
         case R.id.games_menu_dicts:
@@ -1283,7 +1283,7 @@ public class GamesListDelegate extends DelegateBase
             if ( RelayGameDelegate.isSimpleGame( summary ) ) {
                 clazz = RelayGameActivity.class;
             } else {
-                clazz = GameConfig.class;
+                clazz = GameConfigActivity.class;
             }
             GameUtils.doConfig( m_activity, rowid, clazz );
         } else {

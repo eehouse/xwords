@@ -21,47 +21,20 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-// import android.content.Intent;
 import android.os.Bundle;
-// import java.io.File;
-// import java.util.ArrayList;
-// import java.util.Arrays;
-// import android.view.Gravity;
-// import android.view.Menu;
-// import android.view.MenuItem;
-// import android.widget.TextView;
-// import android.widget.AdapterView;
-// import android.widget.AdapterView.OnItemSelectedListener;
-// import android.view.View;
-// import android.view.ViewGroup;
-// import android.widget.Button;
 import android.app.Dialog;
-// import android.app.AlertDialog;
-// import android.content.DialogInterface;
-// import android.widget.CheckBox;
-// import android.widget.CompoundButton;
-// import android.widget.ImageButton;
-// import android.view.MenuInflater;
 import android.view.KeyEvent;
-// import android.widget.Spinner;
-// import android.widget.ArrayAdapter;
-// import android.widget.LinearLayout;
-// import android.widget.ListView;
-// import android.widget.ListAdapter;
-// import android.widget.SpinnerAdapter;
-// import android.widget.Toast;
-// import android.database.DataSetObserver;
-// import junit.framework.Assert;
 
-// import org.eehouse.android.xw4.DlgDelegate.Action;
-// import org.eehouse.android.xw4.jni.*;
-// import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
-// import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-// import org.eehouse.android.xw4.loc.LocUtils;
-
-public class GameConfig extends Activity {
+public class GameConfigActivity extends Activity {
 
     private GameConfigDelegate m_dlgt;
+
+    @Override
+    public void onCreate( Bundle savedInstanceState )
+    {
+        super.onCreate( savedInstanceState );
+        m_dlgt = new GameConfigDelegate( this, savedInstanceState );
+    } // onCreate
 
     @Override
     protected Dialog onCreateDialog( int id )
@@ -79,14 +52,6 @@ public class GameConfig extends Activity {
         m_dlgt.onPrepareDialog( id, dialog );
         super.onPrepareDialog( id, dialog );
     }
-
-    @Override
-    public void onCreate( Bundle savedInstanceState )
-    {
-        super.onCreate( savedInstanceState );
-        m_dlgt = new GameConfigDelegate( this, savedInstanceState );
-    } // onCreate
-
     @Override
     protected void onStart()
     {

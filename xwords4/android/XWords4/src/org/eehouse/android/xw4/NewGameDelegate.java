@@ -340,7 +340,7 @@ public class NewGameDelegate extends DelegateBase {
                                                     nPlayers );
                 }
             } else {
-                GameUtils.doConfig( m_activity, rowid, GameConfig.class );
+                GameUtils.doConfig( m_activity, rowid, GameConfigActivity.class );
             }
 
             finish();
@@ -355,7 +355,7 @@ public class NewGameDelegate extends DelegateBase {
                 m_newRowID = GameUtils.makeNewBTGame( m_activity, 
                                                       m_groupID, gameID, null, 
                                                       m_lang, m_dict, 2, 1 );
-                Intent intent = new Intent( m_activity, GameConfig.class );
+                Intent intent = new Intent( m_activity, GameConfigActivity.class );
                 intent.setAction( Intent.ACTION_EDIT );
                 intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
                 intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
@@ -376,7 +376,7 @@ public class NewGameDelegate extends DelegateBase {
             String name = getString( R.string.dft_sms_name_fmt, gameID & 0xFFFF );
             DBUtils.setName( m_activity, m_newRowID, name );
 
-            Intent intent = new Intent( m_activity, GameConfig.class );
+            Intent intent = new Intent( m_activity, GameConfigActivity.class );
             intent.setAction( Intent.ACTION_EDIT );
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
             intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
