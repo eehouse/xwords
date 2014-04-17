@@ -90,3 +90,15 @@ DlgID.java
 GamesListActivity.java
 GamesListDelegate.java
 LookupAlert.java
+BoardDelegate.java
+ChatDelegate.java
+DictBrowseDelegate.java
+DictImportDelegate.java
+DictsDelegate.java
+DrawSelDelegate.java
+GameConfigActivity.java
+GameConfigDelegate.java
+NewGameDelegate.java
+RelayGameDelegate.java
+StudyListActivity.java
+StudyListDelegate.java

@@ -78,7 +78,7 @@ def checkText( text ):
             seen.add( digit )
     return text
 
-def printStrings( pairs, outfile, target ):
+def printStrings( pairs, outfile, target, variant ):
     match = CLASS_NAME.match(outfile)
     if not match:
         print "did you give me a java file?:", outfile
@@ -91,18 +91,18 @@ def printStrings( pairs, outfile, target ):
 /***********************************************************************
 * Generated file; do not edit!!! 
 ***********************************************************************/
-package org.eehouse.android.xw4.loc;
+package org.eehouse.android.%s.loc;
 
 import android.content.Context;
 
-import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.%s.R;
+import org.eehouse.android.%s.DbgUtils;
 
 public class %s {
     public static final int NOT_FOUND = -1;
     protected static final int[] S_IDS = {
 """
-    fil.write( lines % name )
+    fil.write( lines % (variant, variant, variant, name) )
 
     keys = pairs.keys()
     for ii in range( len( keys ) ):
@@ -160,10 +160,12 @@ def main():
     outfile = ''
     outfileDbg = ''
     target=''
-    pairs, rest = getopt.getopt(sys.argv[1:], "o:t:d:")
+    variant=''
+    pairs, rest = getopt.getopt(sys.argv[1:], "o:t:d:v:")
     for option, value in pairs:
         if option == '-o': outfile = value
         elif option == '-t': target = value
+        elif option == '-v': variant = value
 
     # Gather all localizable strings
     pairs = getStrings("res/values/strings.xml")
@@ -174,7 +176,7 @@ def main():
     #         dest = src.replace( 'res_src', 'res', 1 )
     #         xform( src, dest )
 
-    if outfile: printStrings( pairs, outfile, target )
+    if outfile: printStrings( pairs, outfile, target, variant )
 
 ##############################################################################
 if __name__ == '__main__':
