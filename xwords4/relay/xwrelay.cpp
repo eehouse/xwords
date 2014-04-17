@@ -1657,6 +1657,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                          && getVLIString( &ptr, end, devDesc )
                          && getVLIString( &ptr, end, model )
                          && getVLIString( &ptr, end, osVers ) ) {
+                        logf( XW_LOGINFO, "%s: model=%s", __func__, model.c_str() );
                         registerDevice( relayID, &devID, utc->addr(), 
                                         clientVers, devDesc, model, osVers );
                     }
