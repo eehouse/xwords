@@ -49,14 +49,20 @@
     />
 
 
-<!-- extension targets. Uncomment the ones where you want to do custom work
-     in between standard targets -->
+    <!-- extension targets. Uncomment the ones where you want to do custom work
+         in between standard targets -->
 
     <property name="INITIAL_CLIENT_VERS" value="3"/>
-    <target name="-pre-clean" depends="my-pre-clean"/>
-    <property name="VARIANT_NAME" value="xw4"/>
-    <property name="APP_NAME" value="Crosswords"/>
-    <target name="-pre-build" depends="my-pre-build"/>
+    <target name="-pre-clean">
+        <antcall target="my-pre-clean" />
+    </target>
+
+    <target name="-pre-build">
+        <antcall target="my-pre-build">
+            <param name="VARIANT_NAME" value="xw4"/>
+            <param name="APP_NAME" value="Crosswords"/>
+        </antcall>
+    </target>
 
 <!--
     <target name="-pre-compile">
