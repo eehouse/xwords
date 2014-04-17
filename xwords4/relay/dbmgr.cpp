@@ -819,7 +819,7 @@ DBMgr::execSql( const char* const query )
         PGresult* result = PQexec( getThreadConn(), query );
         ok = PGRES_COMMAND_OK == PQresultStatus(result);
         if ( !ok ) {
-            logf( XW_LOGERROR, "%s: PQexec=>%s;%s", __func__,
+            logf( XW_LOGERROR, "%s(%s): PQexec=>%s;%s", __func__, query, 
                   PQresStatus(PQresultStatus(result)), 
                   PQresultErrorMessage(result) );
             clearThreadConn();
