@@ -328,7 +328,7 @@ vli2un( const uint8_t** bufpp, const uint8_t* end, uint32_t* out )
 }
 
 static void
-checkAllAscii( string& str )
+checkAllAscii( string& str, const char* ifBad )
 {
     const char* strp = str.c_str();
     bool bad = false;
@@ -337,7 +337,7 @@ checkAllAscii( string& str )
     }
     if ( bad ) {
         logf( XW_LOGERROR, "emptying string %s", str.c_str() );
-        str.clear();
+        str.assign( ifBad );
     } else {
         logf( XW_LOGINFO, "string %s is ok", str.c_str() );
     }
@@ -1674,7 +1674,7 @@ handle_udp_packet( UdpThreadClosure* utc )
                          && getVLIString( &ptr, end, model )
                          && getVLIString( &ptr, end, osVers ) ) {
                         if ( 3 >= clientVers ) {
-                            checkAllAscii( model );
+                            checkAllAscii( model, "bad model" );
                         }
                         registerDevice( relayID, &devID, utc->addr(), 
                                         clientVers, devDesc, model, osVers );
