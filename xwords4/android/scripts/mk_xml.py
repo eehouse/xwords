@@ -141,19 +141,30 @@ public class %s {
 
 def getStrings(path):
     pairs = {}
+    texts = {}
     prevComments = []
+    foundDupe = False
     for elem in etree.parse(path).getroot().iter():
         if not isinstance( elem.tag, basestring ):
             prevComments.append( elem.text )
         elif 'string' == elem.tag and elem.text:
+            name = elem.get('name')
             text = checkText( elem.text )
+            if text in texts:
+                print "duplicate string: name: %s, text: '%s'" % (name, text)
+                foundDupe = True
+            texts[text] = True
             rec = { 'text' : text }
             if 0 < len(prevComments):
                 rec['comments'] = prevComments
                 prevComments = []
             # not having a name is an error!!!
-            pairs[elem.get('name')] = rec
+            pairs[name] = rec
     
+    if foundDupe:
+        print "Exiting: please remove duplicates listed above from", path
+        sys.exit(1);
+
     return pairs
 
 def main():

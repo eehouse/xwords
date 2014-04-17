@@ -124,11 +124,11 @@
     <string name="list_item_move">Move to group…</string>
 
     <!-- pulls up dialog to delete the selected game -->
-    <string name="list_item_delete">Delete</string>
+    <string name="list_item_delete">Delete game</string>
     <!-- pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. -->
-    <string name="list_item_reset">Reset</string>
+    <string name="list_item_reset">Reset#1</string>
     <!-- creates a new game with all configuation copied from the
          selected game -->
     <string name="list_item_new_from">New from</string>
@@ -888,7 +888,7 @@
     <!-- Put nothing in the summary space, so it just reads "Game 2" -->
     <string name="game_summary_field_empty">\u003cNothing\u003E</string>
     <!-- Put the language there, so it reads "Game 2 (English)" -->
-    <string name="game_summary_field_language">Game language</string>
+    <string name="game_summary_field_language">Game language#1</string>
     <!-- List names of opponents (summarized), e.g. "Game 2 (vs Kati)" -->
     <string name="game_summary_field_opponents">Opponent name[s]</string>
     <!-- List the state of the game, "Game over" or "10 moves made"
@@ -935,13 +935,13 @@
          title of the color editor that comes up when the name is
          tapped. -->
     <!-- First of four players (color for, that is ) -->
-    <string name="player0">First player</string>
+    <string name="player0">First player#1</string>
     <!-- Second of four players (color for, that is ) -->
-    <string name="player1">Second player</string>
+    <string name="player1">Second player#1</string>
     <!-- Third of four players (color for, that is ) -->
-    <string name="player2">Third player</string>
+    <string name="player2">Third player#1</string>
     <!-- Fourth of four players (color for, that is ) -->
-    <string name="player3">Fourth player</string>
+    <string name="player3">Fourth player#1</string>
 
     <!-- (color for) double-letter bonus squares on the board -->
     <string name="bonus_l2x">Double letter</string>
@@ -1155,7 +1155,7 @@
 
     <!-- Text of second of two buttons for new networked games.  Tap
     this and you'll get taken to the "Game configure" screen -->
-    <string name="newgame_net_config">Configure first</string>
+    <string name="newgame_net_config">Configure first#1</string>
 
     <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
@@ -1557,7 +1557,7 @@
          score and an accounting of it (including subtractions for
          running out the game timer if there is one.)
      -->
-    <string name="finalscores_title">Final scores</string>
+    <string name="finalscores_title">Final scores#1</string>
 
     <!-- text of confirmation dialog shown when user chooses the menu
          item with text board_menu_game_final and the game is not over
@@ -1781,7 +1781,7 @@
     <string name="changes_title">Recent changes</string>
     <!-- text of button in About Crosswords dialog summoning above
          dialog -->
-    <string name="changes_button">Recent changes</string>
+    <string name="changes_button">Recent changes#1</string>
 
     <!-- New strings that need to be documented and found a home
          above. -->
@@ -1817,7 +1817,7 @@
       <!--  -->
     <string name="word_search_hint">First letters</string>
       <!--  -->
-    <string name="tilepick_undo">Undo last</string>
+    <string name="tilepick_undo">Undo last#1</string>
       <!--  -->
     <string name="tilepick_all">Pick for me</string>
       <!--  -->
@@ -1882,7 +1882,7 @@
       <!--  -->
     <string name="summary_wait_guest">Unconnected</string>
       <!--  -->
-    <string name="summary_gameover">Game over</string>
+    <string name="summary_gameover">Game over#1</string>
       <!--  -->
     <string name="summary_conn">Game in play</string>
       <!--  -->
@@ -2111,7 +2111,7 @@
 
     <string name="newgroup_label">Name your new group:</string>
 
-    <string name="list_group_delete">Delete</string>
+    <string name="list_group_delete">Delete group</string>
     <string name="list_group_rename">Rename</string>
     <string name="list_group_default">Put new games here</string>
     <string name="list_group_moveup">Move up</string>
@@ -2175,7 +2175,7 @@
     <string name="enable_nfc">NFC is turned off on this device. You
     can use the Android Settings app to turn it on .</string>
 
-    <string name="button_go_settings">Launch Settings</string>
+    <string name="button_go_settings">Launch Settings#1</string>
 
     <string name="no_hide_titlebar">This setting is ignored on devices
     like yours that depend on the \"Action bar.\"</string>
@@ -2204,7 +2204,7 @@
     <string name="gamel_menu_study">Studylist…</string>
 
     <string name="slmenu_copy_sel">Copy to clipboard</string>
-    <string name="slmenu_clear_sel">Delete</string>
+    <string name="slmenu_clear_sel">Delete selected</string>
     <string name="confirm_studylist_clear_fmt">Are you sure you want to
     delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>
     <string name="paste_done_fmt">%1$d word[s] copied</string>
