@@ -1786,6 +1786,27 @@ public class DBUtils {
         return result;
     }
 
+    public static String getStringFor( Context context, String key, String dflt )
+    {
+        String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
+        String[] columns = { DBHelper.VALUE };
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_PAIRS, columns, 
+                                      selection, null, null, null, null );
+            Assert.assertTrue( 1 >= cursor.getCount() );
+            int indx = cursor.getColumnIndex( DBHelper.VALUE );
+            if ( cursor.moveToNext() ) {
+                dflt = cursor.getString( indx );
+            }
+            cursor.close();
+            db.close();
+        }
+        return dflt;
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
