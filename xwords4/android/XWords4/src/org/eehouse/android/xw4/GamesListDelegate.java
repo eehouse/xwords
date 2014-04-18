@@ -144,7 +144,7 @@ public class GamesListDelegate extends DelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
-                            DictsActivity
+                            DictsDelegate
                                 .launchAndDownload( m_activity, 
                                                     m_missingDictLang );
                         } else {

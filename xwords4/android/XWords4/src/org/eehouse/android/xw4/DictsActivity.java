@@ -137,47 +137,6 @@ public class DictsActivity extends ExpandableListActivity {
             || super.onOptionsItemSelected( item );
     }
 
-    private static Intent mkDownloadIntent( Context context, String dict_url )
-    {
-        Uri uri = Uri.parse( dict_url );
-        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-        return intent;
-    }
-
-    private static Intent mkDownloadIntent( Context context,
-                                            int lang, String dict )
-    {
-        String dict_url = Utils.makeDictUrl( context, lang, dict );
-        return mkDownloadIntent( context, dict_url );
-    }
-
-    public static void launchAndDownload( Activity activity, int lang, 
-                                          String name )
-    {
-        Intent intent = new Intent( activity, DictsActivity.class );
-        intent.putExtra( DictsDelegate.DICT_DOLAUNCH, true );
-        if ( lang > 0 ) {
-            intent.putExtra( DictsDelegate.DICT_LANG_EXTRA, lang );
-        }
-        if ( null != name ) {
-            Assert.assertTrue( lang != 0 );
-            intent.putExtra( DictsDelegate.DICT_NAME_EXTRA, name );
-        }
-
-        activity.startActivity( intent );
-    }
-
-    public static void launchAndDownload( Activity activity, int lang )
-    {
-        launchAndDownload( activity, lang, null );
-    }
-
-    public static void launchAndDownload( Activity activity )
-    {
-        launchAndDownload( activity, 0, null );
-    }
-
     private static class SafePopupImpl implements SafePopup {
         public void doPopup( final Context context, View button, 
                              String curDict ) {
