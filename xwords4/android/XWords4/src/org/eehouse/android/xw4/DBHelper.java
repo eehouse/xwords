@@ -260,8 +260,19 @@ public class DBHelper extends SQLiteOpenHelper {
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
-            if ( oldVersion >= 6 ) {
-                db.execSQL( "DROP TABLE " + TABLE_NAME_OBITS + ";" );
+
+            TableAndVersion[] tav = new TableAndVersion[] {
+                new TableAndVersion( TABLE_NAME_OBITS, 5 ),
+                new TableAndVersion( TABLE_NAME_DICTINFO, 12 ),
+                new TableAndVersion( TABLE_NAME_DICTBROWSE, 12 ),
+                new TableAndVersion( TABLE_NAME_GROUPS, 14 ),
+                new TableAndVersion( TABLE_NAME_STUDYLIST, 18 ),
+                new TableAndVersion( TABLE_NAME_LOC, 20 ),
+            };
+            for ( TableAndVersion entry : tav ) {
+                if ( oldVersion >= 1 + entry.addedVersion ) {
+                    db.execSQL( "DROP TABLE " + entry.name + ";" );
+                }
             }
             onCreate( db );
         }
@@ -430,6 +441,14 @@ public class DBHelper extends SQLiteOpenHelper {
         int result = cursor.getInt(0);
         cursor.close();
         return result;
+    }
+
+    private class TableAndVersion {
+        public String name;
+        public int addedVersion;
+        public TableAndVersion( String nn, int vers ) {
+            name = nn; addedVersion = vers;
+        }
     }
 
 }
