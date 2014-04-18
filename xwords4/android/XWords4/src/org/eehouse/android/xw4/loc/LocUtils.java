@@ -42,6 +42,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils;
@@ -53,11 +56,16 @@ import org.eehouse.android.xw4.XWPrefs;
 public class LocUtils {
     // Keep this in sync with gen_loc_ids.py and what's used in the menu.xml
     // files to mark me-localized strings.
+    private static final int FMT_LEN = 4;
+    private static final String k_LOCALE = "locale";
+    private static final String k_XLATPROTO = "proto";
+    private static final int XLATE_CUR_VERSION = 1;
+    private static final String k_XLATEVERS = "xlatevers";
+
     private static HashMap<String, String>s_xlations = null;
     private static HashMap<Integer, String> s_idsToKeys = null;
     private static Boolean s_enabled = null;
     private static Boolean UPPER_CASE = true;
-    private static final int FMT_LEN = 4;
 
     public interface LocIface {
         void setText( CharSequence text );
@@ -115,7 +123,7 @@ public class LocUtils {
     public static String xlateString( Context context, String str )
     {
         if ( LocIDs.getS_MAP( context ).containsKey( str ) ) {
-            String xlation = getXlation( context, str );
+            String xlation = getXlation( context, true, str );
             if ( null != xlation ) {
                 str = xlation;
             }
@@ -148,12 +156,17 @@ public class LocUtils {
         return result;
     }
 
-    public static String getString( Context context, int id )
+    public static String getString( Context context, int id ) 
+    {
+        return  getString( context, true, id );
+    }
+
+    public static String getString( Context context, boolean canUseDB, int id )
     {
         String result = null;
         String key = keyForID( context, id );
         if ( null != key ) {
-            result = getXlation( context, key );
+            result = getXlation( context, canUseDB, key );
         }
         
         if ( null == result ) {
@@ -179,10 +192,16 @@ public class LocUtils {
         s_xlations.put( key, txt );
     }
 
-    public static String getXlation( Context context, String key )
+    public static String getXlation( Context context, boolean canUseDB, 
+                                     String key )
     {
-        loadXlations( context );
-        String result = s_xlations.get( key );
+        if ( canUseDB ) {
+            loadXlations( context );
+        }
+        String result = null;
+        if ( null != s_xlations ) {
+            result = s_xlations.get( key );
+        }
         if ( UPPER_CASE && null == result ) {
             result = toUpperCase( key );
         }
@@ -194,6 +213,27 @@ public class LocUtils {
         DBUtils.saveXlations( context, "te_ST", s_xlations );
     }
 
+    public static JSONObject makeForXlationUpdate( Context context )
+    {
+        JSONObject result = null;
+        String locale = XWPrefs.getLocale( context );
+        if ( null != locale && 0 < locale.length() ) {
+            try {
+                String version = DBUtils.getStringFor( context, k_XLATEVERS, "0" );
+                result = new JSONObject()
+                    .put( k_XLATPROTO, XLATE_CUR_VERSION )
+                    .put( k_LOCALE, locale )
+                    .put( k_XLATEVERS, version );
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
+        }
+        return result;
+    }
+
+    public static void addXlation( Context context, String jsonData )
+    {
+    }
 
     protected static LocSearcher.Pair[] makePairs( Context context )
     {
@@ -208,7 +248,7 @@ public class LocUtils {
             String key = iter.next();
             String english = context.getString( map.get( key ) );
             Assert.assertTrue( english.equals( key ) );
-            String xlation = getXlation( context, key );
+            String xlation = getXlation( context, true, key );
             result[ii] = new LocSearcher.Pair( key, english, xlation );
         }
         return result;
@@ -359,6 +399,12 @@ public class LocUtils {
         {
             String str = getString( m_context, id );
             return setTitle( str );
+        }
+
+        public AlertDialog.Builder setMessage( int textId )
+        {
+            String str = getString( m_context, textId );
+            return setMessage( str );
         }
 
         @Override
