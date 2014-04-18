@@ -697,6 +697,7 @@ public class RelayService extends XWService
 
                 out.writeShort( BuildConstants.CLIENT_VERS_RELAY );
                 writeVLIString( out, BuildConstants.GIT_REV );
+                // writeVLIString( out, String.format( "€%s", Build.MODEL) );
                 writeVLIString( out, Build.MODEL );
                 writeVLIString( out, Build.VERSION.RELEASE );
 
@@ -1153,9 +1154,10 @@ public class RelayService extends XWService
         if ( null == str ) {
             str = "";
         }
-        int len = str.length();
+        byte[] bytes = str.getBytes( "UTF-8" );
+        int len = bytes.length;
         un2vli( len, os );
-        os.writeBytes( str );
+        os.write( bytes, 0, len );
     }
 
     private void setMaxIntervalSeconds( int maxIntervalSeconds )

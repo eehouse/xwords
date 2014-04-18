@@ -327,6 +327,20 @@ vli2un( const uint8_t** bufpp, const uint8_t* end, uint32_t* out )
     return success;
 }
 
+static void
+checkAllAscii( string& str, const char* ifBad )
+{
+    const char* strp = str.c_str();
+    while ( '\0' != *strp ) {
+        if ( 0 != (0x80 & *strp) ) {
+            logf( XW_LOGERROR, "%s: replacing string %s", __func__, str.c_str(), ifBad );
+            str.assign( ifBad );
+            break;
+        }
+        ++strp;
+    }
+}
+
 static bool
 getVLIString( const uint8_t** bufpp, const uint8_t* end, 
               string& out )
@@ -1657,6 +1671,9 @@ handle_udp_packet( UdpThreadClosure* utc )
                          && getVLIString( &ptr, end, devDesc )
                          && getVLIString( &ptr, end, model )
                          && getVLIString( &ptr, end, osVers ) ) {
+                        if ( 3 >= clientVers ) {
+                            checkAllAscii( model, "bad model" );
+                        }
                         registerDevice( relayID, &devID, utc->addr(), 
                                         clientVers, devDesc, model, osVers );
                     }
