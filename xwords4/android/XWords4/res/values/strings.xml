@@ -2230,4 +2230,6 @@
 
     <string name="loc_main_yourlang">Your language</string>
     <string name="loc_menu_xlate">Translate</string>
+
+    <string name="new_xlation_avail">New translations are available</string>
 </resources>

@@ -53,6 +53,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
+    public static final String NEW_XLATION_CBK = "NEW_XLATION_CBK";
 
     // weekly
     private static final long INTERVAL_ONEDAY = 1000 * 60 * 60 * 24;
@@ -72,6 +73,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_URL = "url";
     private static final String k_PARAMS = "params";
     private static final String k_DEVID = "did";
+    private static final String k_XLATEINFO = "xlatinfo";
+    private static final String k_CALLBACK = "callback";
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -79,6 +82,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         if ( null != intent && null != intent.getAction() 
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
             restartTimer( context );
+        } else if ( null != intent ) {
+            String callback = intent.getStringExtra( NEW_XLATION_CBK );
+            new UpdateQueryTask( context, callback ).execute();
         } else {
             checkVersions( context, false );
             restartTimer( context );
@@ -121,6 +127,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
 
+        // App update
         if ( Utils.isGooglePlayApp( context ) ) {
             // Do nothing
         } else {
@@ -146,6 +153,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 DbgUtils.loge( jse );
             }
         }
+
+        // Dict update
         DictUtils.DictAndLoc[] dals = getDownloadedDicts( context );
         if ( null != dals ) {
             JSONArray dictParams = new JSONArray();
@@ -155,6 +164,16 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             try {
                 params.put( k_DICTS, dictParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
+        }
+
+        // Xlations update
+        JSONObject xlationUpdate = LocUtils.makeForXlationUpdate( context );
+        if ( null != xlationUpdate ) {
+            try {
+                params.put( k_XLATEINFO, xlationUpdate );
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
             }
@@ -264,6 +283,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         private PackageManager m_pm;
         private String m_packageName;
         private DictUtils.DictAndLoc[] m_dals;
+        private String m_callback;
 
         public UpdateQueryTask( Context context, JSONObject params, 
                                 boolean fromUI, PackageManager pm, 
@@ -278,9 +298,16 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             m_dals = dals;
         }
 
+        public UpdateQueryTask( Context context, String callback )
+        {
+            m_context = context;
+            m_callback = callback;
+        }
+
         @Override protected String doInBackground( Void... unused )
         {
-            HttpPost post = makePost( m_context, "getUpdates" );
+            String rest = null == m_callback ? "getUpdates" : m_callback;
+            HttpPost post = makePost( m_context, rest );
             String json = null;
             if ( null != post ) {
                 json = runPost( post, m_params );
@@ -291,7 +318,11 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         @Override protected void onPostExecute( String json )
         {
             if ( null != json ) {
-                makeNotificationsIf( json );
+                if ( null == m_callback ) {
+                    makeNotificationsIf( json );
+                } else {
+                    LocUtils.addXlation( m_context, json );
+                }
             }
         }
 
@@ -301,6 +332,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             try {
                 JSONObject jobj = new JSONObject( jstr );
                 if ( null != jobj ) {
+
+                    // Add upgrade
                     if ( jobj.has( k_APP ) ) {
                         JSONObject app = jobj.getJSONObject( k_APP );
                         if ( app.has( k_URL ) ) {
@@ -342,6 +375,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                             gotOne = true;
                         }
                     }
+                    
+                    // dictionaries upgrade
                     if ( jobj.has( k_DICTS ) ) {
                         JSONArray dicts = jobj.getJSONArray( k_DICTS );
                         for ( int ii = 0; ii < dicts.length(); ++ii ) {
@@ -365,6 +400,19 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                             }
                         }
                     }
+
+                    // translations info
+                    if ( jobj.has( k_XLATEINFO ) ) {
+                        JSONObject data = jobj.getJSONObject( k_XLATEINFO );
+                        String callback = data.getString( k_CALLBACK );
+                        Intent intent = new Intent( m_context, UpdateCheckReceiver.class );
+                        intent.putExtra( NEW_XLATION_CBK, callback );
+                        String body = LocUtils.getString( m_context, 
+                                                          R.string.new_xlation_avail );
+                        Utils.postNotification( m_context, intent, 
+                                                R.string.new_xlation_avail,
+                                                body, callback.hashCode() );
+                    }
                 }
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
@@ -377,5 +425,4 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             }
         }
     }
-
 }
