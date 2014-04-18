@@ -588,7 +588,7 @@ public class GameUtils {
 
                 int fmtId = choseEmail? R.string.invite_htm_fmt : R.string.invite_txt_fmt;
                 int choiceID;
-                String message = activity.getString( fmtId, msgString );
+                String message = LocUtils.getString( activity, fmtId, msgString );
 
                 Intent intent = new Intent();
                 if ( choseEmail ) {
@@ -610,7 +610,7 @@ public class GameUtils {
                     if ( null == attach ) { // no attachment
                         intent.setType( "message/rfc822");
                     } else {
-                        String mime = activity.getString( R.string.invite_mime );
+                        String mime = LocUtils.getString( activity, R.string.invite_mime );
                         intent.setType( mime );
                         Uri uri = Uri.fromFile( attach );
                         intent.putExtra( Intent.EXTRA_STREAM, uri );
@@ -624,7 +624,7 @@ public class GameUtils {
                     choiceID = R.string.invite_chooser_sms;
                 }
 
-                String choiceType = activity.getString( choiceID );
+                String choiceType = LocUtils.getString( activity, choiceID );
                 String chooserMsg = 
                     LocUtils.getString( activity, R.string.invite_chooser_fmt, 
                                         choiceType );

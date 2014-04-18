@@ -23,6 +23,8 @@ package org.eehouse.android.xw4;
 import android.content.Context;
 import android.util.AttributeSet;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class XWThumbListPreference extends XWListPreference {
     private Context m_context;
 
@@ -39,8 +41,8 @@ public class XWThumbListPreference extends XWListPreference {
 
         CharSequence[] newEntries = new CharSequence[7];
         int indx = 0;
-        newEntries[indx++] = m_context.getString( R.string.thumb_off );
-        String suffix = m_context.getString( R.string.pct_suffix );
+        newEntries[indx++] = LocUtils.getString( m_context, R.string.thumb_off );
+        String suffix = LocUtils.getString( m_context, R.string.pct_suffix );
         for ( int pct = 20; pct <= 45; pct += 5 ) {
             newEntries[indx++] = String.format( "%d%s", pct, suffix );
         }

@@ -30,6 +30,7 @@ import java.io.InputStream;
 import org.json.JSONObject;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NetLaunchInfo {
     public String room;
@@ -137,8 +138,8 @@ public class NetLaunchInfo {
         Uri.Builder ub = new Uri.Builder()
             .scheme( "http" )
             .path( String.format( "//%s%s", 
-                                  context.getString(R.string.invite_host),
-                                  context.getString(R.string.invite_prefix) ) )
+                                  LocUtils.getString(context, R.string.invite_host),
+                                  LocUtils.getString(context, R.string.invite_prefix) ) )
             .appendQueryParameter( "lang", String.format("%d", lang ) )
             .appendQueryParameter( "np", String.format( "%d", nPlayersT ) )
             .appendQueryParameter( "room", room )

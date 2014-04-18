@@ -139,7 +139,7 @@ public class MultiService {
         String inviter = intent.getStringExtra( INVITER );
         int msgID = (null == inviter) ? R.string.invite_dict_missing_body_noname_fmt
             : R.string.invite_dict_missing_body_fmt;
-        String msg = context.getString( msgID, inviter, dict, langStr );
+        String msg = LocUtils.getString( context, msgID, inviter, dict, langStr );
 
         return LocUtils.makeAlertBuilder( context )
             .setTitle( R.string.invite_dict_missing_title )

@@ -145,7 +145,7 @@ public class NFCUtils {
 
     private static NdefMessage makeMessage( Activity activity, String data )
     {
-        String mimeType = activity.getString( R.string.xwords_nfc_mime );
+        String mimeType = LocUtils.getString( activity, R.string.xwords_nfc_mime );
         NdefMessage msg = new NdefMessage( new NdefRecord[] {
                 new NdefRecord(NdefRecord.TNF_MIME_MEDIA, 
                                mimeType.getBytes(), new byte[0], 

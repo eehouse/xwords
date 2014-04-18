@@ -60,6 +60,7 @@ import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DictsActivity extends ExpandableListActivity {
 
@@ -165,9 +166,10 @@ public class DictsActivity extends ExpandableListActivity {
                 .setOnMenuItemClickListener( listener );
 
             // Add at top but save until have dal info
-            MenuItem curItem = 
-                menu.add( context.getString( R.string.cur_menu_marker_fmt, 
-                                             curDict ) );
+            MenuItem curItem =
+                menu.add( LocUtils.getString( context, 
+                                              R.string.cur_menu_marker_fmt, 
+                                              curDict ) );
 
             DictAndLoc[] dals = DictUtils.dictList( context );
             for ( DictAndLoc dal : dals ) {

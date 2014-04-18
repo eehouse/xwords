@@ -203,7 +203,7 @@ public class SMSService extends XWService {
         if ( null == s_showToasts ) {
             SharedPreferences sp
                 = PreferenceManager.getDefaultSharedPreferences( context );
-            String key = context.getString( R.string.key_show_sms );
+            String key = LocUtils.getString( context, R.string.key_show_sms );
             s_showToasts = sp.getBoolean( key, false );
         }
 

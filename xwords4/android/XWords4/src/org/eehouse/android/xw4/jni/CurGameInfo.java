@@ -250,7 +250,8 @@ public class CurGameInfo {
 
     public String[] visibleNames( boolean withDicts )
     {
-        String nameFmt = withDicts? m_context.getString( R.string.name_dict_fmt )
+        String nameFmt = withDicts?
+            LocUtils.getString( m_context, R.string.name_dict_fmt )
             : "%s";
         String[] names = new String[nPlayers];
         for ( int ii = 0; ii < nPlayers; ++ii ) {

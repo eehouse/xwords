@@ -39,6 +39,7 @@ import org.eehouse.android.xw4.jni.DrawScoreInfo;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
 
@@ -526,7 +527,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         drawCentered( text, rect, null );
 
         rect.offset( 0, rect.height() );
-        drawCentered( m_context.getResources().getString( R.string.pts ), 
+        drawCentered( LocUtils.getString( m_context, R.string.pts ), 
                       rect, null );
     }
 

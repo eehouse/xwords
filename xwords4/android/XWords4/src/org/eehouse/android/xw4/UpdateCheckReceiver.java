@@ -335,7 +335,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 LocUtils.getString( m_context, R.string.new_app_avail_fmt,
                                                     label );
                             String body = 
-                                m_context.getString( R.string.new_app_avail );
+                                LocUtils.getString( m_context, 
+                                                    R.string.new_app_avail );
                             Utils.postNotification( m_context, intent, title, 
                                                     body, url.hashCode() );
                             gotOne = true;

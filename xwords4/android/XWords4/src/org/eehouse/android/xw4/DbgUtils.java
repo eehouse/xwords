@@ -40,6 +40,8 @@ import java.util.Iterator;
 import java.util.Set;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class DbgUtils {
     private static final String TAG = "XW4";
     private static boolean s_doLog = BuildConfig.DEBUG;
@@ -85,7 +87,7 @@ public class DbgUtils {
 
     public static void showf( Context context, int formatid, Object... args )
     {
-        showf( context, context.getString( formatid ), args );
+        showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
     public static void loge( Exception exception )

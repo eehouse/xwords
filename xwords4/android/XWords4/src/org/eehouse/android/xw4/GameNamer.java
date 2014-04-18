@@ -29,6 +29,8 @@ import android.widget.TextView;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class GameNamer extends LinearLayout {
 
     private Context m_context;
@@ -52,7 +54,7 @@ public class GameNamer extends LinearLayout {
 
     public void setLabel( int id )
     {
-        setLabel( m_context.getString( id ) );
+        setLabel( LocUtils.getString( getContext(), id ) );
     }
 
     public void setName( String text )

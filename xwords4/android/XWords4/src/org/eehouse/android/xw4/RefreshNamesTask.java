@@ -31,6 +31,8 @@ import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.net.Socket;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
 
     public interface NoNameFound {
@@ -55,8 +57,8 @@ public class RefreshNamesTask extends AsyncTask<Void, Void, String[]> {
         m_lang = lang;
         m_nInGame = nInGame;
 
-        String msg = context.getString( R.string.public_names_progress_fmt,
-                                        nInGame, 
+        String msg = LocUtils.getString( context, R.string.public_names_progress_fmt,
+                                         nInGame, 
                                         DictLangCache.getLangName(context,lang) );
         m_progress = ProgressDialog.show( context, msg, null, true, 
                                           true );

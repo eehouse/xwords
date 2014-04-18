@@ -120,13 +120,13 @@ public class CommonPrefs extends XWPrefs {
     private boolean getBoolean( Context context, SharedPreferences sp, 
                                 int id, boolean dflt )
     {
-        String key = context.getString( id );
+        String key = LocUtils.getString( context, id );
         return sp.getBoolean( key, dflt );
     }
 
     private int prefToColor( Context context, SharedPreferences sp, int id )
     {
-        String key = context.getString( id );
+        String key = LocUtils.getString( context, id );
         return 0xFF000000 | sp.getInt( key, 0 );
     }
 

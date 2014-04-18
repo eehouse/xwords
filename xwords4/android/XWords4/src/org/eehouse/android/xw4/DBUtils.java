@@ -52,7 +52,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
-
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DBUtils {
     public static final int ROWID_NOTFOUND = -1;
@@ -947,7 +947,8 @@ public class DBUtils {
     {
         HistoryPair[] result = null;
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            final String localPrefix = context.getString( R.string.chat_local_id );
+            final String localPrefix =
+                LocUtils.getString( context, R.string.chat_local_id );
             String history = getChatHistoryStr( context, rowid );
             if ( null != history ) {
                 String[] msgs = history.split( "\n" );
@@ -1351,7 +1352,7 @@ public class DBUtils {
         if ( BuildConstants.CHAT_SUPPORTED ) {
             Assert.assertNotNull( msg );
             int id = local ? R.string.chat_local_id : R.string.chat_other_id;
-            msg = context.getString( id ) + msg;
+            msg = LocUtils.getString( context, id ) + msg;
 
             String cur = getChatHistoryStr( context, rowid );
             if ( null != cur ) {
