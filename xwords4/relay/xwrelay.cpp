@@ -331,15 +331,13 @@ static void
 checkAllAscii( string& str, const char* ifBad )
 {
     const char* strp = str.c_str();
-    bool bad = false;
-    while ( '\0' != *strp && !bad ) {
-        bad = 0 != (0x80 & *strp);
-    }
-    if ( bad ) {
-        logf( XW_LOGERROR, "emptying string %s", str.c_str() );
-        str.assign( ifBad );
-    } else {
-        logf( XW_LOGINFO, "string %s is ok", str.c_str() );
+    while ( '\0' != *strp ) {
+        if ( 0 != (0x80 & *strp) ) {
+            logf( XW_LOGERROR, "%s: replacing string %s", __func__, str.c_str(), ifBad );
+            str.assign( ifBad );
+            break;
+        }
+        ++strp;
     }
 }
 
