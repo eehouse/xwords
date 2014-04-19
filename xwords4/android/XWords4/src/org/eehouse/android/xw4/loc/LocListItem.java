@@ -64,7 +64,7 @@ public class LocListItem extends LinearLayout implements OnFocusChangeListener {
 
     private void setXlated()
     {
-        m_xlation = LocUtils.getXlation( m_context, m_pair.getKey() );
+        m_xlation = LocUtils.getXlation( m_context, true, m_pair.getKey() );
         if ( null != m_xlation ) {
             m_pair.setXlation( m_xlation );
             m_edit.setText( m_xlation );
