@@ -18,7 +18,8 @@
     </target>
 
     <target name="my-pre-build">
-        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
+        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null"
+              failonerror="true">
             <arg value="${build.target}"/>
         </exec>
 
@@ -53,8 +54,8 @@
               >
           <arg value="${VARIANT_NAME}"/>
           </exec>
-        <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt">
-          <arg value="${APP_NAME}"/>
+        <exec dir="." executable="../scripts/genvers.sh" output="ant_out.txt" 
+              failonerror="true">
           <arg value="${VARIANT_NAME}"/>
           <arg value="${INITIAL_CLIENT_VERS}" />
           <arg value="${CHAT_ENABLED}" />

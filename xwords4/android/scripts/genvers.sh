@@ -2,21 +2,21 @@
 
 set -e -u
 
-DIR=$1
-VARIANT=$2
-CLIENT_VERS_RELAY=$3
-CHAT_SUPPORTED=$4
-THUMBNAIL_SUPPORTED=$5
+VARIANT=$1
+CLIENT_VERS_RELAY=$2
+CHAT_SUPPORTED=$3
+THUMBNAIL_SUPPORTED=$4
 
+BUILD_DIR=$(basename $(pwd))
 cd $(dirname $0)
-cd ../../
+cd ../
 
-GITVERSION=$(scripts/gitversion.sh)
+GITVERSION=$(../scripts/gitversion.sh)
 
 # TODO: deal with case where there's no hash available -- exported
 # code maybe?  Better: gitversion.sh does that.
 
-cat <<EOF > android/${DIR}/res/values/git_string.xml
+cat <<EOF > ${BUILD_DIR}/res/values/git_string.xml
 <?xml version="1.0" encoding="utf-8"?>
 <!-- auto-generated; do not edit -->
 
@@ -29,7 +29,7 @@ EOF
 # the way to mark a release
 SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo unknown)"
 
-cat <<EOF > android/${DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
+cat <<EOF > ${BUILD_DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
 // auto-generated; do not edit
 package org.eehouse.android.${VARIANT};
 class BuildConstants {
@@ -44,6 +44,8 @@ EOF
 # touch the files that depend on git_string.xml.  (I'm not sure that
 # this list is complete or if ant and java always get dependencies
 # right.  Clean builds are the safest.)
-touch android/${DIR}/res/xml/xwprefs.xml 
-touch android/${DIR}/gen/org/eehouse/android/${VARIANT}/R.java
-touch android/${DIR}/src/org/eehouse/android/${VARIANT}/Utils.java
+touch ${BUILD_DIR}/res/xml/xwprefs.xml 
+echo "touched ${BUILD_DIR}/res/xml/xwprefs.xml"
+mkdir -p ${BUILD_DIR}/gen/org/eehouse/android/${VARIANT}
+touch ${BUILD_DIR}/gen/org/eehouse/android/${VARIANT}/R.java
+touch ${BUILD_DIR}/src/org/eehouse/android/${VARIANT}/Utils.java
