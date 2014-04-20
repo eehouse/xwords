@@ -74,7 +74,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_PARAMS = "params";
     private static final String k_DEVID = "did";
     private static final String k_XLATEINFO = "xlatinfo";
-    private static final String k_CALLBACK = "callback";
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -82,9 +81,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         if ( null != intent && null != intent.getAction() 
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
             restartTimer( context );
-        } else if ( null != intent ) {
-            String callback = intent.getStringExtra( NEW_XLATION_CBK );
-            new UpdateQueryTask( context, callback ).execute();
         } else {
             checkVersions( context, false );
             restartTimer( context );
@@ -283,7 +279,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         private PackageManager m_pm;
         private String m_packageName;
         private DictUtils.DictAndLoc[] m_dals;
-        private String m_callback;
 
         public UpdateQueryTask( Context context, JSONObject params, 
                                 boolean fromUI, PackageManager pm, 
@@ -298,16 +293,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             m_dals = dals;
         }
 
-        public UpdateQueryTask( Context context, String callback )
-        {
-            m_context = context;
-            m_callback = callback;
-        }
-
         @Override protected String doInBackground( Void... unused )
         {
-            String rest = null == m_callback ? "getUpdates" : m_callback;
-            HttpPost post = makePost( m_context, rest );
+            HttpPost post = makePost( m_context, "getUpdates" );
             String json = null;
             if ( null != post ) {
                 json = runPost( post, m_params );
@@ -318,11 +306,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         @Override protected void onPostExecute( String json )
         {
             if ( null != json ) {
-                if ( null == m_callback ) {
-                    makeNotificationsIf( json );
-                } else {
-                    LocUtils.addXlation( m_context, json );
-                }
+                makeNotificationsIf( json );
             }
         }
 
@@ -404,14 +388,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                     // translations info
                     if ( jobj.has( k_XLATEINFO ) ) {
                         JSONObject data = jobj.getJSONObject( k_XLATEINFO );
-                        String callback = data.getString( k_CALLBACK );
-                        Intent intent = new Intent( m_context, UpdateCheckReceiver.class );
-                        intent.putExtra( NEW_XLATION_CBK, callback );
-                        String body = LocUtils.getString( m_context, 
-                                                          R.string.new_xlation_avail );
-                        Utils.postNotification( m_context, intent, 
-                                                R.string.new_xlation_avail,
-                                                body, callback.hashCode() );
+                        LocUtils.addXlation( m_context, data );
                     }
                 }
             } catch ( org.json.JSONException jse ) {

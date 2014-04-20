@@ -231,8 +231,34 @@ public class LocUtils {
         return result;
     }
 
-    public static void addXlation( Context context, String jsonData )
+    private static final String k_OLD = "old";
+    private static final String k_NEW = "new";
+    private static final String k_PAIRS = "pairs";
+
+    public static void addXlation( Context context, JSONObject data )
     {
+        try {
+            String version = DBUtils.getStringFor( context, k_XLATEVERS, "0" );
+            int newVersion = data.getInt( k_NEW );
+            JSONArray pairs = data.getJSONArray( k_PAIRS );
+            DbgUtils.logf( "got pairs of len %d, version %d", pairs.length(), 
+                           newVersion );
+
+            loadXlations( context );
+            for ( int ii = 0; ii < pairs.length(); ++ii ) {
+                JSONObject pair = pairs.getJSONObject( ii );
+                String key = pair.getString( "en" );
+                String txt = pair.getString( "loc" );
+                s_xlations.put( key, txt );
+            }
+
+            saveData( context );
+
+            DBUtils.setStringFor( context, k_XLATEVERS, 
+                                  String.format( "%d", newVersion ) );
+        } catch ( org.json.JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
     }
 
     protected static LocSearcher.Pair[] makePairs( Context context )
