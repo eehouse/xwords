@@ -1786,6 +1786,26 @@ public class DBUtils {
         return result;
     }
 
+    public static void setStringFor( Context context, String key, String value )
+    {
+        String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.VALUE, value );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            long result = db.update( DBHelper.TABLE_NAME_PAIRS,
+                                     values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.KEY, key );
+                db.insert( DBHelper.TABLE_NAME_PAIRS, null, values );
+            }
+
+            db.close();
+        }
+    }
+
     public static String getStringFor( Context context, String key, String dflt )
     {
         String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
