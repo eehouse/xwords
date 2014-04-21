@@ -3,28 +3,30 @@
 import sys, getopt, re
 from lxml import etree
 
-FMT = re.compile('.*%\d\$[dsXx].*', re.DOTALL)
 FMT = re.compile('(%\d\$[dsXx])', re.DOTALL)
 
 def capitalize( str ):
     split = re.split( FMT, str )
     for ii in range(len(split)):
-        part = split[ii]
-        if not re.match( FMT, part ):
+        if not re.match( FMT, split[ii] ):
             split[ii] = split[ii].upper()
     result = ''.join(split)
-    print str, '=>', result
     return result;
 
 def reverse( str ):
-    return str
+    split = re.split( FMT, str )
+    split.reverse()
+    for ii in range(len(split)):
+        if not re.match( FMT, split[ii] ):
+            split[ii] = split[ii][::-1]
+    result = ''.join(split)
+    return result
 
 def usage():
     print "usage:", sys.argv[0], '-l ca_PS|ba_CK [-o outfile]'
     sys.exit(1)
 
 def main():
-    print 'main'
     algo = None
     outfile = None
     try:
@@ -33,20 +35,14 @@ def main():
             if option == '-l': algo = value
             elif option == '-o': outfile = value
             else: 
-                print 'WTF'
                 usage()
     except:
-        print 'got except'
         print "Unexpected error:", sys.exc_info()[0]
         usage()
-
-    print 'here'
 
     if not algo: 
         print "no algo"
         usage()
-
-    print 'here 2'
 
     if algo == 'ca_PS':
         func = capitalize
