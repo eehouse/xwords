@@ -181,6 +181,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ LOCALE,  "TEXT(5)" }
         ,{ BLESSED,  "INTEGER(1)" }
         ,{ XLATION,  "TEXT" }
+        ,{ "UNIQUE", "(" + KEY + ", " + LOCALE + "," + BLESSED + ")" }
     };
 
     private static final String[][] s_pairsSchema = {
