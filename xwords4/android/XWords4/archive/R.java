@@ -1603,7 +1603,7 @@ public final class R {
         /**   
          */
         public static final int new_smsmove_title=0x7f060226;
-        public static final int new_xlation_avail=0x7f0602a7;
+        public static final int new_xlations_fmt=0x7f0602a7;
         /** 
        ###########################################################
        # :Dialogs:
