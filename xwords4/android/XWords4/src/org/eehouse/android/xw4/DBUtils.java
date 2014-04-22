@@ -23,8 +23,10 @@ package org.eehouse.android.xw4;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -45,6 +47,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import junit.framework.Assert;
@@ -1727,30 +1730,56 @@ public class DBUtils {
     }
 
     public static void saveXlations( Context context, String locale,
-                                     HashMap<String, String> data )
+                                     Map<String, String> data, boolean blessed )
     {
         if ( null != data && 0 < data.size() ) {
+            long blessedLong = blessed ? 1 : 0;
             Iterator<String> iter = data.keySet().iterator();
+
+            String insertQuery = "insert into %s (%s, %s, %s, %s) "
+                + " VALUES (?, ?, ?, ?)";
+            insertQuery = String.format( insertQuery, DBHelper.TABLE_NAME_LOC,
+                                         DBHelper.KEY, DBHelper.LOCALE,
+                                         DBHelper.BLESSED, DBHelper.XLATION );
+                                         
+            String updateQuery = "update %s set %s = ? "
+                + " WHERE %s = ? and %s = ? and %s = ?";
+            updateQuery = String.format( updateQuery, DBHelper.TABLE_NAME_LOC,
+                                         DBHelper.XLATION, DBHelper.KEY, 
+                                         DBHelper.LOCALE, DBHelper.BLESSED );
 
             initDB( context );
             synchronized( s_dbHelper ) {
                 SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+                SQLiteStatement insertStmt = db.compileStatement( insertQuery );
+                SQLiteStatement updateStmt = db.compileStatement( updateQuery );
 
                 while ( iter.hasNext() ) {
                     String key = iter.next();
-                    String value = data.get( key );
+                    String xlation = data.get( key );
+                    // DbgUtils.logf( "adding key %s, xlation %s, locale %s, blessed: %d",
+                    //                key, xlation, locale, blessedLong );
 
-                    String selection = 
-                        String.format( "%s = '%s'", DBHelper.KEY, key );
-                    ContentValues values = new ContentValues();
-                    values.put( DBHelper.BLESSED, 0 );
-                    values.put( DBHelper.XLATION, value );
-                    values.put( DBHelper.LOCALE, locale );
-                    long result = db.update( DBHelper.TABLE_NAME_LOC,
-                                             values, selection, null );
-                    if ( 0 == result ) {
-                        values.put( DBHelper.KEY, key );
-                        db.insert( DBHelper.TABLE_NAME_LOC, null, values );
+                    insertStmt.bindString( 1, key );
+                    insertStmt.bindString( 2, locale );
+                    insertStmt.bindLong( 3, blessedLong );
+                    insertStmt.bindString( 4, xlation );
+                    
+                    try {
+                        insertStmt.execute();
+                    } catch ( SQLiteConstraintException sce ) {
+
+                        updateStmt.bindString( 1, xlation );
+                        updateStmt.bindString( 2, key );
+                        updateStmt.bindString( 3, locale );
+                        updateStmt.bindLong( 4, blessedLong );
+
+                        try {
+                            updateStmt.execute();
+                        } catch ( Exception ex ) {
+                            DbgUtils.loge( ex );
+                            Assert.fail();
+                        }
                     }
                 }
                 db.close();
@@ -1758,14 +1787,16 @@ public class DBUtils {
         }
     }
 
-    public static HashMap<String, String> getXlations( Context context, 
-                                                       String locale )
+    // You can't have an array of paramterized types in java, so we'll let the
+    // caller cast.
+    public static Object[] getXlations( Context context, String locale )
     {
-        HashMap<String, String> result = new HashMap<String, String>();
+        HashMap<String, String> local = new HashMap<String, String>();
+        HashMap<String, String> blessed = new HashMap<String, String>();
 
         String selection = String.format( "%s = '%s'", DBHelper.LOCALE, 
                                           locale );
-        String[] columns = { DBHelper.KEY, DBHelper.XLATION };
+        String[] columns = { DBHelper.KEY, DBHelper.XLATION, DBHelper.BLESSED };
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -1774,15 +1805,19 @@ public class DBUtils {
                                       selection, null, null, null, null );
             int keyIndex = cursor.getColumnIndex( DBHelper.KEY );
             int valueIndex = cursor.getColumnIndex( DBHelper.XLATION );
+            int blessedIndex = cursor.getColumnIndex( DBHelper.BLESSED );
             while ( cursor.moveToNext() ) {
                 String key = cursor.getString( keyIndex );
                 String value = cursor.getString( valueIndex );
-                result.put( key, value );
+                HashMap<String, String> map =
+                    (0 == cursor.getInt( blessedIndex )) ? local : blessed;
+                map.put( key, value );
             }
             cursor.close();
             db.close();
         }
 
+        Object result[] = new Object[] { local, blessed };
         return result;
     }
 

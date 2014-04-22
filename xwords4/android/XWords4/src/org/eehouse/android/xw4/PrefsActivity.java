@@ -44,6 +44,7 @@ public class PrefsActivity extends PreferenceActivity
     private String m_downloadPath;
     private String m_thumbSize;
     private String m_hideTitle;
+    private String m_keyLocale;
 
 
     @Override
@@ -136,6 +137,7 @@ public class PrefsActivity extends PreferenceActivity
         m_downloadPath = getString( R.string.key_download_path );
         m_thumbSize = getString( R.string.key_thumbsize );
         m_hideTitle = getString( R.string.key_hide_title );
+        m_keyLocale = getString( R.string.key_xlations_locale );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -208,7 +210,9 @@ public class PrefsActivity extends PreferenceActivity
                 pref.setEnabled( false );
                 showDialog( DlgID.EXPLAIN_TITLE.ordinal() );
             }
-        } 
+        } else if ( key.equals( m_keyLocale ) ) {
+            LocUtils.localeChanged( this, sp.getString( key, null ) );
+        }
     }
 
     private void relaunch()

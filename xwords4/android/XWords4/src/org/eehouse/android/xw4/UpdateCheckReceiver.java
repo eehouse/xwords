@@ -388,7 +388,14 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                     // translations info
                     if ( jobj.has( k_XLATEINFO ) ) {
                         JSONObject data = jobj.getJSONObject( k_XLATEINFO );
-                        LocUtils.addXlation( m_context, data );
+                        int nAdded = LocUtils.addXlation( m_context, data );
+                        if ( 0 < nAdded ) {
+                            gotOne = true;
+                            String msg = LocUtils.getString( m_context, R.string
+                                                             .new_xlations_fmt, 
+                                                             nAdded );
+                            Utils.showToast( m_context, msg );
+                        }
                     }
                 }
             } catch ( org.json.JSONException jse ) {

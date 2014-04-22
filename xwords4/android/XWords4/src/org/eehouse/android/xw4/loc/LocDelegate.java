@@ -50,7 +50,7 @@ public class LocDelegate extends DelegateBase implements View.OnClickListener {
 
     protected boolean onBackPressed()
     {
-        LocUtils.saveData( m_activity );
+        LocUtils.saveLocalData( m_activity );
         return false;
     }
 

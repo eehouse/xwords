@@ -37,9 +37,10 @@ import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.Iterator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -62,10 +63,12 @@ public class LocUtils {
     private static final int XLATE_CUR_VERSION = 1;
     private static final String k_XLATEVERS = "xlatevers";
 
-    private static HashMap<String, String>s_xlations = null;
+    private static Map<String, String> s_xlationsLocal = null;
+    private static Map<String, String> s_xlationsBlessed = null;
     private static HashMap<Integer, String> s_idsToKeys = null;
     private static Boolean s_enabled = null;
-    private static Boolean UPPER_CASE = true;
+    private static Boolean UPPER_CASE = false;
+    private static String s_curLocale;
 
     public interface LocIface {
         void setText( CharSequence text );
@@ -86,6 +89,15 @@ public class LocUtils {
     //         }
     //     }
     // }
+
+    public static void localeChanged( Context context, String newLocale )
+    {
+        saveLocalData( context );
+        s_curLocale = newLocale;
+        s_xlationsLocal = null;
+        s_xlationsBlessed = null;
+        s_enabled = null;
+    }
 
     public static View inflate( Context context, int resID )
     {
@@ -189,7 +201,7 @@ public class LocUtils {
     public static void setXlation( Context context, String key, String txt )
     {
         loadXlations( context );
-        s_xlations.put( key, txt );
+        s_xlationsLocal.put( key, txt );
     }
 
     public static String getXlation( Context context, boolean canUseDB, 
@@ -199,8 +211,11 @@ public class LocUtils {
             loadXlations( context );
         }
         String result = null;
-        if ( null != s_xlations ) {
-            result = s_xlations.get( key );
+        if ( null != s_xlationsLocal ) {
+            result = s_xlationsLocal.get( key );
+        }
+        if ( null == result && null != s_xlationsBlessed ) {
+            result = s_xlationsBlessed.get( key );
         }
         if ( UPPER_CASE && null == result ) {
             result = toUpperCase( key );
@@ -208,21 +223,20 @@ public class LocUtils {
         return result;
     }
 
-    public static void saveData( Context context )
+    public static void saveLocalData( Context context )
     {
-        DBUtils.saveXlations( context, "te_ST", s_xlations );
+        DBUtils.saveXlations( context, s_curLocale, s_xlationsLocal, false );
     }
 
     public static JSONObject makeForXlationUpdate( Context context )
     {
         JSONObject result = null;
-        String locale = XWPrefs.getLocale( context );
-        if ( null != locale && 0 < locale.length() ) {
+        if ( null != s_curLocale && 0 < s_curLocale.length() ) {
             try {
                 String version = DBUtils.getStringFor( context, k_XLATEVERS, "0" );
                 result = new JSONObject()
                     .put( k_XLATPROTO, XLATE_CUR_VERSION )
-                    .put( k_LOCALE, locale )
+                    .put( k_LOCALE, s_curLocale )
                     .put( k_XLATEVERS, version );
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
@@ -235,30 +249,35 @@ public class LocUtils {
     private static final String k_NEW = "new";
     private static final String k_PAIRS = "pairs";
 
-    public static void addXlation( Context context, JSONObject data )
+    public static int addXlation( Context context, JSONObject data )
     {
+        int nAdded = 0;
         try {
-            String version = DBUtils.getStringFor( context, k_XLATEVERS, "0" );
             int newVersion = data.getInt( k_NEW );
             JSONArray pairs = data.getJSONArray( k_PAIRS );
             DbgUtils.logf( "got pairs of len %d, version %d", pairs.length(), 
                            newVersion );
 
-            loadXlations( context );
-            for ( int ii = 0; ii < pairs.length(); ++ii ) {
+            int len = pairs.length();
+            Map<String,String> newXlations = new HashMap<String,String>( len );
+            for ( int ii = 0; ii < len; ++ii ) {
                 JSONObject pair = pairs.getJSONObject( ii );
                 String key = pair.getString( "en" );
                 String txt = pair.getString( "loc" );
-                s_xlations.put( key, txt );
+                newXlations.put( key, txt );
             }
 
-            saveData( context );
-
+            DBUtils.saveXlations( context, s_curLocale, newXlations, true );
             DBUtils.setStringFor( context, k_XLATEVERS, 
                                   String.format( "%d", newVersion ) );
+
+            s_xlationsBlessed = null;
+            loadXlations( context );
+            nAdded = len;
         } catch ( org.json.JSONException jse ) {
             DbgUtils.loge( jse );
         }
+        return nAdded;
     }
 
     protected static LocSearcher.Pair[] makePairs( Context context )
@@ -317,8 +336,16 @@ public class LocUtils {
 
     private static void loadXlations( Context context )
     {
-        if ( null == s_xlations ) {
-            s_xlations = DBUtils.getXlations( context, "te_ST" );
+        if ( null == s_curLocale ) {
+            s_curLocale = XWPrefs.getLocale( context );
+        }
+        if ( null == s_xlationsLocal || null == s_xlationsBlessed ) {
+            Object[] asObjs = DBUtils.getXlations( context, s_curLocale );
+            s_xlationsLocal = (Map<String,String>)asObjs[0];
+            s_xlationsBlessed = (Map<String,String>)asObjs[1];
+            DbgUtils.logf( "loadXlations: got %d local strings, %d blessed strings",
+                           s_xlationsLocal.size(),
+                           s_xlationsBlessed.size() );
         }
     }
 
@@ -343,8 +370,9 @@ public class LocUtils {
     private static boolean isEnabled( Context context )
     {
         if ( null == s_enabled ) {
-            String locale = XWPrefs.getLocale( context );
-            s_enabled = new Boolean( null != locale && 0 < locale.length() );
+            s_curLocale = XWPrefs.getLocale( context );
+            s_enabled = new Boolean( null != s_curLocale && 
+                                     0 < s_curLocale.length() );
         }
         return s_enabled;
     }
