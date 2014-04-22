@@ -64,6 +64,10 @@
         </antcall>
     </target>
 
+    <target name="-pre-compile">
+        <antcall target="my-pre-compile"/>
+    </target>
+
 <!--
     <target name="-pre-compile">
     </target>

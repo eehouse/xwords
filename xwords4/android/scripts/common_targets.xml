@@ -85,4 +85,8 @@
         </exec>
     </target>
 
+    <target name="my-pre-compile">
+        <copy file="./gen/org/eehouse/android/xw4/R.java" todir="archive"/>
+    </target>
+
 </project>
