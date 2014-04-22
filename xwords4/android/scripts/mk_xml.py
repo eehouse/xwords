@@ -89,11 +89,12 @@ def printStrings( pairs, outfile, target, variant ):
     # beginning of the class file
     lines = """
 /***********************************************************************
-* Generated file; do not edit!!! 
+* Generated file (by %s); do not edit!!! 
 ***********************************************************************/
 package org.eehouse.android.%s.loc;
 
 import android.content.Context;
+import junit.framework.Assert;
 
 import org.eehouse.android.%s.R;
 import org.eehouse.android.%s.DbgUtils;
@@ -102,12 +103,12 @@ public class %s {
     public static final int NOT_FOUND = -1;
     protected static final int[] S_IDS = {
 """
-    fil.write( lines % (variant, variant, variant, name) )
+    fil.write( lines % (sys.argv[0], variant, variant, variant, name) )
 
     keys = pairs.keys()
     for ii in range( len( keys ) ):
         key = keys[ii]
-        fil.write( "        /*%4d*/ R.string.%s,\n" % (ii, key) )
+        fil.write( "        /* %04d */ R.string.%s,\n" % (ii, key) )
 
     fil.write( "    };\n\n" )
 
@@ -115,18 +116,20 @@ public class %s {
         fil.write( "    static final String[] strs = {\n")
         for ii in range( len( keys ) ):
             key = keys[ii]
-            fil.write( "        /*%4d*/ \"%s\",\n" % (ii, pairs[key]['text']) )
+            fil.write( "        /* %04d */ \"%s\",\n" % (ii, pairs[key]['text']) )
         fil.write( "    };\n" );
 
     func = "    protected static void checkStrings( Context context ) {\n"
     if "debug" == target:
         func += """
         for ( int ii = 0; ii < strs.length; ++ii ) {
-            if ( ! strs[ii].equals( context.getString( S_IDS[ii] ) ) ) {
+            String fromCtxt = context.getString( S_IDS[ii] );
+            if ( ! strs[ii].equals( fromCtxt ) ) {
                 DbgUtils.logf( "unequal strings: \\"%s\\" vs \\"%s\\"",
-                               strs[ii], S_IDS[ii] );
+                               strs[ii], fromCtxt );
             }
         }
+        DbgUtils.logf( "checkStrings: %d strings matched", strs.length );
 """
     func += "    }"
 
