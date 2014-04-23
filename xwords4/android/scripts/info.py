@@ -2,6 +2,8 @@
 # Script meant to be installed on eehouse.org.
 
 import logging, shelve, hashlib, sys, json, subprocess, glob, os
+import mk_for_download
+
 from stat import ST_CTIME
 try:
     from mod_python import apache
@@ -17,6 +19,15 @@ k_INSTALLER = 'installer'
 k_DEVOK = 'devOK'
 k_APP = 'app'
 k_DICTS = 'dicts'
+k_XLATEINFO = 'xlatinfo'
+k_CALLBACK = 'callback'
+k_LOCALE = 'locale'
+k_XLATPROTO = 'proto'
+k_XLATEVERS = 'xlatevers'
+k_OLD = 'old'
+k_NEW = 'new'
+k_PAIRS = 'pairs'
+
 k_LANG = 'lang'
 k_MD5SUM = 'md5sum'
 k_INDEX = 'index'
@@ -38,7 +49,7 @@ k_suffix = '.xwd'
 k_filebase = "/var/www/"
 k_apkDir = "xw4/android/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
-k_urlbase = "http://eehouse.org/"
+k_urlbase = "http://eehouse.org"
 k_versions = { 'org.eehouse.android.xw4': {
         'version' : 74,
         k_AVERS : 74,
@@ -120,8 +131,9 @@ def getOrderedApks( path ):
 
     pattern = path + "/XWords4-release_android_beta_*.apk"
 
-    files = ((os.stat(apk), apk) for apk in glob.glob(pattern))
-    for stat, file in sorted(files, reverse=True):
+    files = ((os.stat(apk).st_mtime, apk) for apk in glob.glob(pattern))
+    for mtime, file in sorted(files, reverse=True):
+        logging.debug( file + ": " + str(mtime) )
         apks.append( file )
 
     return apks
@@ -140,7 +152,7 @@ def curVersion( req, name, avers = 41, gvers = None, installer = None ):
         versions = k_versions[name]
         if versions[k_AVERS] > int(avers):
             logging.debug( avers + " is old" )
-            result[k_URL] = k_urlbase + versions[k_URL]
+            result[k_URL] = k_urlbase + '/' + versions[k_URL]
         else:
             logging.debug(name + " is up-to-date")
     else:
@@ -160,7 +172,7 @@ def dictVersion( req, name, lang, md5sum ):
             s_shelf[k_SUMS] = dictSums
     if path in dictSums:
         if not md5sum in dictSums[path]:
-            result[k_URL] = k_urlbase + "and_wordlists/" + path
+            result[k_URL] = k_urlbase + "/and_wordlists/" + path
     else:
         logging.debug( path + " not known" )
     if 'close' in s_shelf: s_shelf.close()
@@ -177,9 +189,13 @@ def getApp( params ):
             if 0 < len(apks):
                 apk = apks[0]
                 # Does path NOT contain name of installed file
-                if not params[k_GVERS] in apk:
-                    url = k_urlbase + apk[len(k_filebase):]
+                curApk = params[k_GVERS] + '.apk'
+                if curApk in apk:
+                    logging.debug( "already have " + curApk )
+                else:
+                    url = k_urlbase + '/' + apk[len(k_filebase):]
                     result = {k_URL: url}
+                    logging.debug( result )
                     
         elif k_AVERS in params and k_GVERS in params:
             avers = params[k_AVERS]
@@ -192,9 +208,9 @@ def getApp( params ):
             if name in k_versions:
                 versForName = k_versions[name]
                 if versForName[k_AVERS] > int(avers):
-                    result = {k_URL: k_urlbase + versForName[k_URL]}
+                    result = {k_URL: k_urlbase + '/' + versForName[k_URL]}
                 elif k_GVERS in versForName and not gvers == versForName[k_GVERS]:
-                    result = {k_URL: k_urlbase + versForName[k_URL]}
+                    result = {k_URL: k_urlbase + '/' + versForName[k_URL]}
                 else:
                     logging.debug(name + " is up-to-date")
         else:
@@ -220,7 +236,7 @@ def getDicts( params ):
                 s_shelf[k_SUMS] = dictSums
         if path in dictSums:
             if not md5sum in dictSums[path]:
-                cur = { k_URL : k_urlbase + "and_wordlists/" + path,
+                cur = { k_URL : k_urlbase + "/and_wordlists/" + path,
                         k_INDEX : index, k_ISUM: dictSums[path][1] }
                 result.append( cur )
         else:
@@ -230,6 +246,23 @@ def getDicts( params ):
     if 0 == len(result): result = None
     return result
 
+def getXlate( req, params ):
+    result = None
+    logging.debug( "getXlate:" + json.dumps(params) )
+    locale = params[k_LOCALE]
+    proto = params[k_XLATPROTO]
+    curVers = int(params[k_XLATEVERS])
+
+    data = mk_for_download.getXlationFor( k_filebase + 'xw4', locale )
+    if data:
+        result = { k_LOCALE: locale,
+                   k_OLD: curVers,
+                   k_NEW: curVers + 1,
+                   k_PAIRS: data,
+               }
+    logging.debug( "getXlate=>%s" % (json.dumps(result)) )
+    return result
+
 # public
 def getUpdates( req, params ):
     result = { k_SUCCESS : True }
@@ -237,10 +270,22 @@ def getUpdates( req, params ):
     asJson = json.loads( params )
     if k_APP in asJson:
         appResult = getApp( asJson[k_APP] )
-        if appResult: result[k_APP] = appResult
+        if appResult: 
+            result[k_APP] = appResult
     if k_DICTS in asJson:
         dictsResult = getDicts( asJson[k_DICTS] )
-        if dictsResult: result[k_DICTS] = dictsResult
+        if dictsResult:
+            result[k_DICTS] = dictsResult
+    if k_XLATEINFO in asJson:
+        logging.debug( "found xlate info; calling getXlate" )
+        xlateResult = getXlate( req, asJson[k_XLATEINFO] )
+        if xlateResult: 
+            logging.debug( xlateResult )
+            result[k_XLATEINFO] = xlateResult;
+    else:
+        logging.debug( "NOT FOUND xlate info" )
+        
+    logging.debug( 'getUpdates done' )
     return json.dumps( result )
 
 def clearShelf():
