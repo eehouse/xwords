@@ -70,9 +70,7 @@
                      />
 
                 <ImageButton android:id="@+id/expander"
-                             android:layout_width="32dp" 
-	                         android:layout_height="32dp"
-                             android:src="@drawable/expander_ic_maximized"
+                             style="@style/expander_button"
                              />
 
             </LinearLayout>

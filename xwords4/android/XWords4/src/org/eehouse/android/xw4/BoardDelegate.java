@@ -545,7 +545,7 @@ public class BoardDelegate extends DelegateBase
         m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
         m_overNotShown = true;
 
-        NFCUtils.register( m_activity ); // Don't seem to need to unregister...
+        NFCUtils.register( m_activity, this ); // Don't seem to need to unregister...
 
         setBackgroundColor();
         setKeepScreenOn();

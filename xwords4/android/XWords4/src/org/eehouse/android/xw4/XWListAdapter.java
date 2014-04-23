@@ -24,11 +24,13 @@ import android.app.ListActivity;
 import android.widget.ListAdapter;
 import android.content.Context;
 import android.database.DataSetObserver;
+import android.widget.BaseAdapter;
 
 /**
  * Let's see if we can implement a few of these methods just once.
  */
-public abstract class XWListAdapter implements ListAdapter {
+public abstract class XWListAdapter extends BaseAdapter
+    implements ListAdapter {
     private int m_count;
 
     public XWListAdapter( ) {
@@ -49,6 +51,6 @@ public abstract class XWListAdapter implements ListAdapter {
     public int getViewTypeCount() { return 1; }
     public boolean hasStableIds() { return true; }
     public boolean isEmpty() { return getCount() == 0; }
-    public void registerDataSetObserver( DataSetObserver observer ) {}
-    public void unregisterDataSetObserver( DataSetObserver observer ) {}
+    // public void registerDataSetObserver( DataSetObserver observer ) {}
+    // public void unregisterDataSetObserver( DataSetObserver observer ) {}
 }

@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
@@ -38,10 +37,10 @@ public class XWListItem extends LinearLayout
     private Context m_context;
     private Object m_cached;
     private DeleteCallback m_delCb;
-    private Drawable m_origDrawable;
     private boolean m_selected = false;
     private SelectableItem m_selCb;
     private CheckBox m_checkbox;
+    private DrawSelDelegate m_dsdel;
 
     public interface DeleteCallback {
         void deleteCalled( XWListItem item );
@@ -50,6 +49,7 @@ public class XWListItem extends LinearLayout
     public XWListItem( Context cx, AttributeSet as ) {
         super( cx, as );
         m_context = cx;
+        m_dsdel = new DrawSelDelegate( this );
     }
 
     @Override
@@ -152,12 +152,9 @@ public class XWListItem extends LinearLayout
     private void toggleSelected()
     {
         m_selected = !m_selected;
-        if ( m_selected ) {
-            m_origDrawable = getBackground();
-            setBackgroundColor( XWApp.SEL_COLOR );
-        } else {
-            setBackgroundDrawable( m_origDrawable );
-        }
+
+        m_dsdel.showSelected( m_selected );
+
         m_checkbox.setChecked( m_selected );
 
         m_selCb.itemToggled( this, m_selected );

@@ -49,6 +49,8 @@ public class ExpiringLinearLayout extends LinearLayout {
     protected void onDraw( Canvas canvas ) 
     {
         super.onDraw( canvas );
-        m_delegate.onDraw( canvas );
+        if ( null != m_delegate ) {
+            m_delegate.onDraw( canvas );
+        }
     }
 }

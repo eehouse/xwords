@@ -124,7 +124,6 @@ public class GamesListDelegate extends DelegateBase
     {
         super( activity, savedInstanceState );
         m_activity = activity;
-        init( savedInstanceState );
     }
 
     protected Dialog createDialog( int id )
@@ -348,7 +347,7 @@ public class GamesListDelegate extends DelegateBase
         }
     }
 
-    private void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState ) 
     {
         CrashTrack.init( m_activity );
 
@@ -357,7 +356,7 @@ public class GamesListDelegate extends DelegateBase
         getBundledData( savedInstanceState );
 
         m_activity.setContentView( R.layout.game_list );
-        ExpandableListView listview = m_activity.getExpandableListView();
+        ListView listview = m_activity.getListView();
         DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
@@ -604,7 +603,7 @@ public class GamesListDelegate extends DelegateBase
     protected void contentChanged()
     {
         if ( null != m_adapter ) {
-            m_adapter.expandGroups( m_activity.getExpandableListView() );
+            m_adapter.expandGroups( m_activity.getListView() );
         }
     }
 
@@ -694,7 +693,8 @@ public class GamesListDelegate extends DelegateBase
             enable = nothingSelected && XWPrefs.getStudyEnabled( m_activity );
             Utils.setItemVisible( menu, R.id.games_menu_study, enable );
 
-            enable = 0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
+            enable = nothingSelected && 
+                0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
             Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
             
             m_menuPrepared = true;
@@ -1351,7 +1351,7 @@ public class GamesListDelegate extends DelegateBase
 
     private GameListAdapter makeNewAdapter()
     {
-        ExpandableListView listview = m_activity.getExpandableListView();
+        ListView listview = m_activity.getListView();
         String field = CommonPrefs.getSummaryField( m_activity );
         long[] positions = XWPrefs.getGroupPositions( m_activity );
         GameListAdapter adapter = 

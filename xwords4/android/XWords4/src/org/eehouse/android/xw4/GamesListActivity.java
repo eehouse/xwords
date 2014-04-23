@@ -24,7 +24,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.app.ExpandableListActivity;
+import android.app.ListActivity;
 
 import android.os.Bundle;
 import android.view.Menu;
@@ -35,7 +35,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class GamesListActivity extends ExpandableListActivity {
+public class GamesListActivity extends ListActivity {
 
     // private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -49,7 +49,7 @@ public class GamesListActivity extends ExpandableListActivity {
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
+        if ( null == dialog && null != m_dlgt ) {
             dialog = m_dlgt.createDialog( id );
         }
         return dialog;
@@ -67,6 +67,7 @@ public class GamesListActivity extends ExpandableListActivity {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = new GamesListDelegate( this, savedInstanceState );
+        m_dlgt.init( savedInstanceState );
     } // onCreate
 
     // called when we're brought to the front (probably as a result of
