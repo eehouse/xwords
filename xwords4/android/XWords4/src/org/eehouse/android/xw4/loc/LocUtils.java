@@ -320,7 +320,7 @@ public class LocUtils {
         }
 
         // The caller is loc-aware, so add our menu -- at the top level!
-        if ( 0 == depth ) {
+        if ( 0 == depth && XWPrefs.getXlationEnabled( activity ) ) {
             String title = getString( activity, R.string.loc_menu_xlate );
             menu.add( title )
                 .setOnMenuItemClickListener( new OnMenuItemClickListener() {

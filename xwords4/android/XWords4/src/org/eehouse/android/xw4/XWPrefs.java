@@ -434,4 +434,9 @@ public class XWPrefs {
     {
         return getPrefsString( context, R.string.key_xlations_locale );
     }
+
+    public static boolean getXlationEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_xlations_enabled, false );
+    }
 }

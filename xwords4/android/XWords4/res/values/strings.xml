@@ -2232,5 +2232,8 @@
     <string name="loc_menu_xlate">Translate</string>
 
     <string name="new_xlations_fmt">Installed %1$d new translations</string>
+
+    <string name="xlations_enabled_title">Enable local translating</string>
+    <string name="xlations_enabled_summary">Add option to every screen menu</string>
     
 </resources>
