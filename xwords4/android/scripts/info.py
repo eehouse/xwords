@@ -246,7 +246,7 @@ def getDicts( params ):
     if 0 == len(result): result = None
     return result
 
-def getXlate( req, params ):
+def getXlate( params ):
     result = None
     logging.debug( "getXlate:" + json.dumps(params) )
     locale = params[k_LOCALE]
@@ -278,7 +278,7 @@ def getUpdates( req, params ):
             result[k_DICTS] = dictsResult
     if k_XLATEINFO in asJson:
         logging.debug( "found xlate info; calling getXlate" )
-        xlateResult = getXlate( req, asJson[k_XLATEINFO] )
+        xlateResult = getXlate( asJson[k_XLATEINFO] )
         if xlateResult: 
             logging.debug( xlateResult )
             result[k_XLATEINFO] = xlateResult;
