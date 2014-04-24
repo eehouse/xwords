@@ -136,7 +136,7 @@
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
   <string name="confirm_reset_fmt">ARE YOU SURE YOU WANT TO RESET THE %1$d
-    SELECTED GAME[S]?\N\N(RESETTING ERASES ALL MOVES AND ANY CONNECTION
+    SELECTED GAME[S]?\n\n(RESETTING ERASES ALL MOVES AND ANY CONNECTION
     INFORMATION.)</string>
   <!--
        ############################################################
@@ -580,7 +580,7 @@
   <string name="strd_robot_traded_fmt">EXCHANGED %1$d TILES.</string>
   <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
-  <string name="strs_values_header_fmt">%1$s COUNTS/VALUES:\N</string>
+  <string name="strs_values_header_fmt">%1$s COUNTS/VALUES:\n</string>
   <!-- Used in formatting game history and move summaries -->
   <string name="strd_remaining_tiles_add_fmt">+ %1$d [ALL REMAINING TILES]</string>
   <!-- Used in formatting game history and move summaries -->
@@ -589,7 +589,7 @@
   <string name="strs_new_tiles_fmt">NEW TILES: %1$s</string>
   <!-- Used in formatting game history (not move summaries since
          information about the current rack is hidden then) -->
-  <string name="strd_cumulative_score_fmt">CUMULATIVE SCORE: %1$d\N</string>
+  <string name="strd_cumulative_score_fmt">CUMULATIVE SCORE: %1$d\n</string>
   <!-- Used in formatting remote player move summaries -->
   <string name="str_remote_moved_fmt">REMOTE PLAYER %1$s MADE THIS
     MOVE:\U0020</string>
@@ -598,11 +598,11 @@
   <!-- Used in formatting game history and move summaries -->
   <string name="str_pass_fmt"> - %1$d [TIME]</string>
   <!-- Used in formatting game history and move summaries -->
-  <string name="strs_move_across_fmt">MOVE (FROM %1$s ACROSS)\N</string>
+  <string name="strs_move_across_fmt">MOVE (FROM %1$s ACROSS)\n</string>
   <!-- Used in formatting game history and move summaries -->
-  <string name="strs_move_down_fmt">MOVE (FROM %1$s DOWN)\N</string>
+  <string name="strs_move_down_fmt">MOVE (FROM %1$s DOWN)\n</string>
   <!-- Used in formatting game history and move summaries -->
-  <string name="strs_tray_at_start_fmt">RACK AT START: %1$s\N</string>
+  <string name="strs_tray_at_start_fmt">RACK AT START: %1$s\n</string>
   <!-- Used in formatting exchange move summaries -->
   <string name="strss_traded_for_fmt">EXCHANGED %1$s FOR %2$s.</string>
   <!-- Used to alert user to loss of turn when a move is made and
@@ -625,7 +625,7 @@
   <string name="str_lostturn">LOST TURN</string>
   <!-- Beginning of the message presented to a user when asking him
          to confirm committing the current turn-->
-  <string name="str_commit_confirm">COMMIT THE CURRENT MOVE?\N</string>
+  <string name="str_commit_confirm">COMMIT THE CURRENT MOVE?\n</string>
   <!-- Used, with remote player's name substituted for %1$s, to
     indicate that the player is remote. -->
   <string name="str_nonlocal_name_fmt">%1$s (REMOTE)</string>
@@ -633,16 +633,16 @@
     line in a game summary.  The \u0020 is a space in xml. -->
   <string name="vs_join">\U0020VS.\U0020</string>
   <!-- Used in formatting moves and history -->
-  <string name="str_bonus_all">BONUS FOR USING ALL TILES: 50\N</string>
+  <string name="str_bonus_all">BONUS FOR USING ALL TILES: 50\n</string>
   <!-- Used in formatting moves and history.  The total score for
          one turn is substituted for %1$d.-->
-  <string name="strd_turn_score_fmt">SCORE FOR TURN: %1$d\N</string>
+  <string name="strd_turn_score_fmt">SCORE FOR TURN: %1$d\n</string>
   <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
   <string name="strd_remains_header_fmt">%1$d TILES LEFT IN POOL.</string>
   <!-- Intro to the paragraph lisiting all of the tiles remaining -->
   <string name="strd_remains_expl_fmt">%1$d TILES LEFT IN POOL AND ALL
-    TRAY[S]:\N</string>
+    TRAY[S]:\n</string>
   <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
   <string name="confirm_undo_last">ARE YOU SURE YOU WANT TO UNDO THE
@@ -1365,8 +1365,8 @@
       THE BACKGROUND.)</string>
   <!-- Shown when the user chooses the "board_menu_trade" menu -->
   <string name="not_again_trading">YOU ARE ENTERING TILE-EXCHANGE
-      MODE.\N\NTAP TILES TO ADD/REMOVE THEM FROM THE SET TO BE
-      EXCHANGED.\N\N</string>
+      MODE.\n\nTAP TILES TO ADD/REMOVE THEM FROM THE SET TO BE
+      EXCHANGED.\n\n</string>
   <string name="not_again_trading_buttons">USE THE BUTTONS TO
       COMMIT YOUR TURN OR EXIT EXCHANGE MODE.</string>
   <string name="not_again_trading_menu">USE THE MENU OR ACTION BAR
@@ -1460,7 +1460,7 @@
          Board screen.  The idea is that you're tapping around
          figuring out how to play and when you tap an empty cell the
          arrow appears.  This explains it. -->
-  <string name="not_again_arrow">MOVING TILES TO THE BOARD:\NYOU CAN
+  <string name="not_again_arrow">MOVING TILES TO THE BOARD:\nYOU CAN
       DRAG TILES BETWEEN THE RACK AND THE BOARD, OR YOU CAN TAP AN
       EMPTY SQUARE TO PLACE THE BOARD ARROW. RACK TILES YOU TAP WILL
       REPLACE THE ARROW (MOVING IT ONE SQUARE IN THE DIRECTION IT
@@ -1471,7 +1471,7 @@
          another players turn. The idea is to give a hint about how to
          find out about recent moves. -->
   <string name="not_again_turnchanged">THE PLAYER WHOSE TURN IT IS
-      IS DRAWN LARGE IN THE SCOREBOARD.\N\NHOLD YOUR FINGER ON A NAME IN
+      IS DRAWN LARGE IN THE SCOREBOARD.\n\nHOLD YOUR FINGER ON A NAME IN
       THE SCOREBOARD TO GET DETAILS ABOUT THAT PLAYER\'S MOST RECENT
       MOVE.</string>
   <!-- Shown when you first pick the list_item_new_from menuitem -->
@@ -1494,7 +1494,7 @@
   <string name="default_name_title">WELCOME</string>
   <!-- Welcome dialog text -->
   <string name="default_name_message">THANKS FOR INSTALLING
-      CROSSWORDS!\N\NFEEL FREE TO ENTER YOUR NAME HERE. IT WILL BE USED
+      CROSSWORDS!\n\nFEEL FREE TO ENTER YOUR NAME HERE. IT WILL BE USED
       WHEN CREATING NEW GAMES.  (YOU CAN CHANGE IT LATER IN THE \"NEW
       GAME DEFAULT\" SECTION OF SETTINGS.)</string>
   <!-- 
@@ -1563,7 +1563,7 @@
   <!--  -->
   <string name="tilepick_all">PICK FOR ME</string>
   <!--  -->
-  <string name="cur_tiles_fmt">TILE PICKER\N(SO FAR: %1$s)</string>
+  <string name="cur_tiles_fmt">TILE PICKER\n(SO FAR: %1$s)</string>
   <!--  -->
   <string name="pick_faceup">PICK TILES FACE-UP</string>
   <!--  -->
@@ -1766,7 +1766,7 @@
     PHONES WITH UNLIMITED TEXTING PLANS. ONCE YOU ENABLE IT DOZENS OF
     SMS (TEXT) MESSAGES WILL BE SENT (INVISIBLY) FOR EACH GAME
     PLAYED. IF YOU DON\'T HAVE AN UNLIMITED PLAN YOUR CARRIER MAY
-    CHARGE YOU FOR EACH AND EVERY MESSAGE!\N\NSHOULD PLAY VIA SMS BE
+    CHARGE YOU FOR EACH AND EVERY MESSAGE!\n\nSHOULD PLAY VIA SMS BE
     ENABLED?</string>
   <!--  -->
   <string name="confirm_sms_prompt">ENABLE PLAY VIA SMS?</string>
@@ -1835,7 +1835,7 @@
   <string name="group_new_games">NEW GAMES</string>
   <string name="groups_confirm_del_fmt">ARE YOU SURE YOU WANT TO DELETE
     THE %1$d SELECTED GROUP[S]?</string>
-  <string name="groups_confirm_del_games_fmt">\N\N(%1$d GAME[S] WILL
+  <string name="groups_confirm_del_games_fmt">\n\n(%1$d GAME[S] WILL
     ALSO BE DELETED.)</string>
   <string name="rename_group_label">CHANGE THE NAME OF THIS GROUP TO:</string>
   <string name="game_name_group_title">NAME GROUP</string>
@@ -1854,7 +1854,7 @@
   <string name="change_group">MOVE SELECTED GAMES TO:</string>
   <string name="show_wordlist_browser">WORDLIST BROWSER</string>
   <string name="relay_alert_title">MESSAGE FROM RELAY</string>
-  <string name="not_again_newselect">TAPPING A GAME OPENS IT.\N\NYOU
+  <string name="not_again_newselect">TAPPING A GAME OPENS IT.\n\nYOU
     CAN INSTEAD TAP THE ICONS AT THE LEFT TO SELECT OR DESELECT GAMES,
     THEN ACT ON SELECTED GAMES, E.G. TO DELETE THEM, USING THE MENU OR
     \"ACTIONBAR.\"</string>
@@ -1895,7 +1895,7 @@
   <string name="slmenu_copy_sel">COPY TO CLIPBOARD</string>
   <string name="slmenu_clear_sel">DELETE SELECTED</string>
   <string name="confirm_studylist_clear_fmt">ARE YOU SURE YOU WANT TO
-    DELETE THE %1$d SELECTED WORD[S]?\N\N(THIS ACTION CANNOT BE UNDONE.)</string>
+    DELETE THE %1$d SELECTED WORD[S]?\n\n(THIS ACTION CANNOT BE UNDONE.)</string>
   <string name="paste_done_fmt">%1$d WORD[S] COPIED</string>
   <string name="add_done_fmt">%1$s ADDED TO LIST</string>
   <string name="studylist_title_fmt">STUDYLIST FOR %1$s</string>

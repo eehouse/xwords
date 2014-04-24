@@ -3,7 +3,22 @@
 import sys, getopt, re
 from lxml import etree
 
-FMT = re.compile('(%\d\$[dsXx])', re.DOTALL)
+expr = '(' + \
+    '|'.join( [ \
+        r'%\d\$[dsXx]', \
+        r'\\n', \
+        r'\\t', \
+        r'\\u[\da-fA-F]{4,4}', \
+        r"\\'" , \
+        r'\\"' , \
+        ] ) + \
+    ')'
+
+# Can't make these work...
+        # r'\(' , \
+        # r'\)' , \
+
+FMT = re.compile( expr, re.DOTALL )
 
 def capitalize( str ):
     split = re.split( FMT, str )
@@ -28,7 +43,7 @@ def usage():
 
 def main():
     algo = None
-    outfile = None
+    outfile = '-'
     try:
         pairs, rest = getopt.getopt(sys.argv[1:], "l:o:")
         for option, value in pairs:
@@ -49,7 +64,7 @@ def main():
     elif algo == 'ba_CK':
         func = reverse
     else:
-        print "no algo"
+        print 'no func for algo', algo
         usage()
 
     parser = etree.XMLParser(remove_blank_text=True)
@@ -60,9 +75,9 @@ def main():
             if text:
                 elem.text = func(text)
 
-    if outfile:
-        out = open( outfile, "w" )
-        out.write( etree.tostring( doc, pretty_print=True, encoding="utf-8", xml_declaration=True ) )
+    if '-' == outfile: out = sys.stdout
+    else: out = open( outfile, "w" )
+    out.write( etree.tostring( doc, pretty_print=True, encoding="utf-8", xml_declaration=True ) )
         
 ##############################################################################
 if __name__ == '__main__':
