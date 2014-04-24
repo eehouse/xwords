@@ -38,7 +38,6 @@ import java.util.Iterator;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.loc.LocUtils.AlertBuilder;
 
 public class DlgDelegate {
 

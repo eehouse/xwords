@@ -434,12 +434,12 @@ public class LocUtils {
         return sb.toString();
     }
 
-    public static AlertBuilder makeAlertBuilder( Context context )
+    public static AlertDialog.Builder makeAlertBuilder( Context context )
     {
         return new AlertBuilder( context );
     }
 
-    public static class AlertBuilder extends AlertDialog.Builder {
+    private static class AlertBuilder extends AlertDialog.Builder {
         Context m_context;
 
         private AlertBuilder( Context context )
@@ -483,6 +483,6 @@ public class LocUtils {
             String str = getString( m_context, textId );
             return setNegativeButton( str, listener );
         }
-    } 
+    }
 
 }

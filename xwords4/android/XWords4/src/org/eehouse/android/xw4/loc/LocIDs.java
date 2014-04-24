@@ -33,20 +33,6 @@ public class LocIDs extends LocIDsData {
     private static String[] s_keys;
     private static HashMap<String, Integer> S_MAP = null;
 
-    protected static String getNthKey( Context context, int indx )
-    {
-        if ( null == s_keys ) {
-            Map<String, Integer> map = getS_MAP( context );
-            s_keys = new String[map.size()];
-            Iterator<String> iter = map.keySet().iterator();
-            for ( int ii = 0; iter.hasNext(); ++ii ) {
-                s_keys[ii] = iter.next();
-            }
-        }
-
-        return s_keys[indx];
-    }
-
     protected static int getID( Context context, String key )
     {
         int result = LocIDsData.NOT_FOUND;
