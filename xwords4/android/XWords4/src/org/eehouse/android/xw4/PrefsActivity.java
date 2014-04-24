@@ -25,6 +25,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class PrefsActivity extends PreferenceActivity {
 
     private PrefsDelegate m_dlgt;
@@ -38,12 +40,18 @@ public class PrefsActivity extends PreferenceActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate( savedInstanceState );
-
         m_dlgt = new PrefsDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState );
         m_dlgt.init( savedInstanceState );
     }
     
+    @Override
+    protected void onStart() 
+    {
+        LocUtils.xlatePreferences( this );
+        super.onStart();
+    }
+
     @Override
     protected void onResume() 
     {

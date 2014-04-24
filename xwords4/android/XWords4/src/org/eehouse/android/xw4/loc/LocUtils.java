@@ -36,6 +36,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.preference.Preference;
+import android.preference.PreferenceGroup;
+import android.preference.PreferenceActivity;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -119,6 +122,11 @@ public class LocUtils {
         xlateView( activity, Utils.getContentView( activity ) );
     }
 
+    public static void xlatePreferences( PreferenceActivity activity )
+    {
+        xlatePreferences( activity, activity.getPreferenceScreen(), 0 );
+    }
+
     public static void xlateView( Context context, View view )
     {
         DbgUtils.logf( "xlateView() top level" );
@@ -128,6 +136,15 @@ public class LocUtils {
     public static void xlateMenu( Activity activity, Menu menu )
     {
         xlateMenu( activity, menu, 0 );
+    }
+
+    private static String xlateString( Context context, CharSequence str )
+    {
+        String result = null;
+        if ( null != str ) {
+            result = xlateString( context, str.toString() );
+        }
+        return result;
     }
 
     public static String xlateString( Context context, String str )
@@ -412,6 +429,30 @@ public class LocUtils {
             for ( int ii = 0; ii < count; ++ii ) {
                 View child = asGroup.getChildAt( ii );
                 xlateView( context, child, depth + 1 );
+            }
+        }
+    }
+
+    public static void xlatePreferences( Context context, Preference pref, 
+                                         int depth )
+    {
+        // DbgUtils.logf( "xlatePreferences(depth=%d, view=%s, canRecurse=%b)", depth, 
+        //                pref.getClass().getName(), pref instanceof PreferenceGroup );
+
+        String str = xlateString( context, pref.getSummary() );
+        if ( null != str ) {
+            pref.setSummary( str );
+        }
+        str = xlateString( context, pref.getTitle() );
+        if ( null != str ) {
+            pref.setTitle( str );
+        }
+
+        if ( pref instanceof PreferenceGroup ) {
+            PreferenceGroup group = (PreferenceGroup)pref;
+            int count = group.getPreferenceCount();
+            for ( int ii = 0; ii < count; ++ii ) {
+                xlatePreferences( context, group.getPreference(ii), 1 + depth );
             }
         }
     }
