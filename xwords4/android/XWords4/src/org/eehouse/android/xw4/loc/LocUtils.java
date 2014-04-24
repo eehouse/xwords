@@ -55,8 +55,6 @@ import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
 
 public class LocUtils {
-    // Keep this in sync with gen_loc_ids.py and what's used in the menu.xml
-    // files to mark me-localized strings.
     private static final int FMT_LEN = 4;
     private static final String k_LOCALE = "locale";
     private static final String k_XLATPROTO = "proto";
@@ -262,7 +260,9 @@ public class LocUtils {
             Map<String,String> newXlations = new HashMap<String,String>( len );
             for ( int ii = 0; ii < len; ++ii ) {
                 JSONObject pair = pairs.getJSONObject( ii );
-                String key = pair.getString( "en" );
+                int id = pair.getInt( "id" );
+                String key = context.getString( id );
+                Assert.assertNotNull( key );
                 String txt = pair.getString( "loc" );
                 newXlations.put( key, txt );
             }
@@ -420,18 +420,22 @@ public class LocUtils {
     // formatters.
     private static String toUpperCase( String str )
     {
-        String[] parts = str.split( "%[\\d]\\$[ds]" );
-        StringBuilder sb = new StringBuilder();
-        int offset = 0;
-        for ( String part : parts ) {
-            sb.append( part.toUpperCase() );
-            offset += part.length();
-            if ( offset < str.length() ) {
-                sb.append( str.substring( offset, offset + FMT_LEN ) );
-                offset += FMT_LEN;
+        String result = null;
+        if ( UPPER_CASE ) {
+            String[] parts = str.split( "%[\\d]\\$[ds]" );
+            StringBuilder sb = new StringBuilder();
+            int offset = 0;
+            for ( String part : parts ) {
+                sb.append( part.toUpperCase() );
+                offset += part.length();
+                if ( offset < str.length() ) {
+                    sb.append( str.substring( offset, offset + FMT_LEN ) );
+                    offset += FMT_LEN;
+                }
             }
+            result = sb.toString();
         }
-        return sb.toString();
+        return result;
     }
 
     public static AlertDialog.Builder makeAlertBuilder( Context context )
