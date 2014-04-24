@@ -21,13 +21,17 @@ def asMap( path ):
         if 'string' == elem.tag:
             text = elem.text
             if text:
-                text = " ".join(re.split('\s+', text)).replace('"', '\"')
+                # print 'text before:', text
+                text = " ".join(re.split('\s+', text)) \
+                          .replace("\\'", "'") \
+                          .replace( '\\"', '"' )
+                # print 'text after:', text
                 map[elem.get('name')] = text
     return map
 
-def getXlationFor( loc ):
-    eng = asMap( english )
-    other = asMap( other_f % (loc) )
+def getXlationFor( base, loc ):
+    eng = asMap( base + '/' + english )
+    other = asMap( base + '/' + other_f % (loc) )
     result = []
     for key in eng.keys():
         if key in other:
