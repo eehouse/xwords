@@ -264,6 +264,7 @@ public class LocUtils {
                 String key = context.getString( id );
                 Assert.assertNotNull( key );
                 String txt = pair.getString( "loc" );
+                txt = replaceEscaped( txt );
                 newXlations.put( key, txt );
             }
 
@@ -435,6 +436,13 @@ public class LocUtils {
             }
             result = sb.toString();
         }
+        return result;
+    }
+
+    private static String replaceEscaped( String txt )
+    {
+        String result = txt.replaceAll("\\n", "\n");
+        // DbgUtils.logf( "replaceEscaped(<<%s>>) -> <<%s>>", txt, result );
         return result;
     }
 
