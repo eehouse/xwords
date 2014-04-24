@@ -119,17 +119,20 @@ public class %s {
             fil.write( "        /* %04d */ \"%s\",\n" % (ii, pairs[key]['text']) )
         fil.write( "    };\n" );
 
-    func = "    protected static void checkStrings( Context context ) {\n"
+    func = "\n    protected static void checkStrings( Context context ) \n    {\n"
     if "debug" == target:
         func += """
+        int nMatches = 0;
         for ( int ii = 0; ii < strs.length; ++ii ) {
             String fromCtxt = context.getString( S_IDS[ii] );
-            if ( ! strs[ii].equals( fromCtxt ) ) {
+            if ( strs[ii].equals( fromCtxt ) ) {
+                ++nMatches;
+            } else {
                 DbgUtils.logf( "unequal strings: \\"%s\\" vs \\"%s\\"",
                                strs[ii], fromCtxt );
             }
         }
-        DbgUtils.logf( "checkStrings: %d strings matched", strs.length );
+        DbgUtils.logf( "checkStrings: %d of %d strings matched", nMatches, strs.length );
 """
     func += "    }"
 
