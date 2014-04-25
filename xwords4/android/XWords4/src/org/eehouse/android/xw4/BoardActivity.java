@@ -55,6 +55,12 @@ public class BoardActivity extends Activity {
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
+        
+        if ( 9 <= Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
+            setRequestedOrientation( ActivityInfo.
+                                     SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+        }
+
         m_dlgt = new BoardDelegate( this, savedInstanceState );
     } // onCreate
 
