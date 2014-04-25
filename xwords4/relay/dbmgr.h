@@ -149,6 +149,7 @@ class DBMgr {
     DBMgr();
     bool execSql( const string& query );
     bool execSql( const char* const query ); /* no-results query */
+    bool execParams( const string& query, vector<const char*> params );
     void readArray( const char* const connName, const char* column, int arr[] );
     DevIDRelay getDevID( const char* connName, int hid );
     DevIDRelay getDevID( const DevID* devID );
@@ -160,7 +161,8 @@ class DBMgr {
                              bool nullConnnameOK );
     int CountStoredMessages( const char* const connName, int hid );
     bool UpdateDevice( DevIDRelay relayID );
-    void formatUpdate( StrWPF& query, bool append, const char* const desc, 
+    void formatUpdate( StrWPF& query, StrWPF& prmBuf, vector<size_t>& prmIndices, 
+                       bool append, const char* const desc, 
                        int clientVersion, const char* const model, 
                        const char* const osVers, DevIDRelay relayID );
 

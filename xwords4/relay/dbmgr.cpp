@@ -365,6 +365,18 @@ DBMgr::AllDevsAckd( const char* const connName )
     return full;
 }
 
+static void
+getPtrs( vector<const char*>& paramValues, const char* base, vector<size_t>& offsets )
+{
+    size_t ii;
+    for ( ii = 0; ii < offsets.size(); ++ii ) {
+        const char* ptr = offsets[ii] + base;
+        paramValues.push_back( ptr );
+        logf( XW_LOGINFO, "%s: str[%d] points at: %s", __func__, ii, 
+              paramValues[ii] );
+    }
+}
+
 // Return DevIDRelay for device, adding it to devices table IFF it's not
 // already there.
 DevIDRelay
@@ -397,13 +409,31 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
             } while ( DEVID_NONE == devID );
 
             StrWPF query;
+            StrWPF paramBuf;
+            vector<size_t> paramIndices;
             query.catf( "INSERT INTO " DEVICES_TABLE " (id, devTypes[1],"
                         " devids[1], clntVers, versdesc, model, osvers)"
-                        " VALUES( %d, %d, '%s', %d, '%s', '%s', '%s' )",
-                        devID, host->m_devIDType, devidStr, clientVersion, 
-                        desc, model, osVers );
-            logf( XW_LOGINFO, "%s: %s", __func__, query.c_str() );
-            success = execSql( query );
+                        " VALUES( $1, $2, $3, $4, $5, $6, $7 )" );
+
+            paramIndices.push_back( paramBuf.size() );
+            paramBuf.catf( "%d%c", devID, '\0' );
+            paramIndices.push_back( paramBuf.size() );
+            paramBuf.catf( "%d%c", host->m_devIDType, '\0' );
+            paramIndices.push_back( paramBuf.size() );
+            paramBuf.catf( "%s%c", devidStr, '\0' );
+            paramIndices.push_back( paramBuf.size() );
+            paramBuf.catf( "%d%c", clientVersion, '\0' );
+            paramIndices.push_back( paramBuf.size() );
+            paramBuf.catf( "%s%c", desc, '\0' );
+            paramIndices.push_back( paramBuf.size() );
+            paramBuf.catf( "%s%c", model, '\0' );
+            paramIndices.push_back( paramBuf.size() );
+            paramBuf.catf( "%s%c", osVers, '\0' );
+
+            vector<const char*> paramValues;
+            getPtrs( paramValues, paramBuf.c_str(), paramIndices );
+
+            success = execParams( query, paramValues );
         }
     }
     return devID;
@@ -420,15 +450,24 @@ DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host,
                          const char* const desc, int clientVersion, 
                          const char* const model, const char* const osVers )
 {
-    // First update the existing
     StrWPF query;
-    query.catf( "UPDATE " DEVICES_TABLE " SET "
-                "devTypes = array_prepend( %d, devTypes), "
-                "devids = array_prepend('%s', devids), ",
-                host->m_devIDType, host->m_devIDString.c_str() );
+    StrWPF paramBuf;
+    vector<size_t> paramIndices;
 
-    formatUpdate( query, true, desc, clientVersion, model, osVers, relayID );
-    execSql( query );
+    query.catf( "UPDATE " DEVICES_TABLE " SET "
+                "devTypes = array_prepend( $1, devTypes), "
+                "devids = array_prepend($2, devids), " );
+    paramIndices.push_back( paramBuf.size() );
+    paramBuf.catf( "%d%c", host->m_devIDType, '\0' );
+    paramIndices.push_back( paramBuf.size() );
+    paramBuf.catf( "%s%c", host->m_devIDString.c_str(), '\0' );
+
+    formatUpdate( query, paramBuf, paramIndices, true, desc, clientVersion, 
+                  model, osVers, relayID );
+
+    vector<const char*> paramValues;
+    getPtrs( paramValues, paramBuf.c_str(), paramIndices );
+    execParams( query, paramValues );
 }
 
 // Return true if the relayID exists in the DB already
@@ -447,8 +486,15 @@ DBMgr::UpdateDevice( DevIDRelay relayID, const char* const desc,
     if ( exists ) {
         StrWPF query;
         query.catf( "UPDATE " DEVICES_TABLE " SET " );
-        formatUpdate( query, false, desc, clientVersion, model, osVers, relayID );
-        execSql( query );
+
+        StrWPF paramBuf;
+        vector<size_t> paramIndices;
+
+        formatUpdate( query, paramBuf, paramIndices, false, desc, 
+                      clientVersion, model, osVers, relayID );
+        vector<const char*> paramValues;
+        getPtrs( paramValues, paramBuf.c_str(), paramIndices );
+        execParams( query, paramValues );
     }
     return exists;
 }
@@ -460,7 +506,8 @@ DBMgr::UpdateDevice( DevIDRelay relayID )
 }
 
 void
-DBMgr::formatUpdate( StrWPF& query, bool append, const char* const desc, 
+DBMgr::formatUpdate( StrWPF& query, StrWPF& paramBuf, vector<size_t>& paramIndices,
+                     bool append, const char* const desc, 
                      int clientVersion, const char* const model, 
                      const char* const osVers, DevIDRelay relayID )
 {
@@ -470,16 +517,29 @@ DBMgr::formatUpdate( StrWPF& query, bool append, const char* const desc,
         query.catf( "mtimes[1]='now'" );
     }
 
+    int count = paramIndices.size();
     if ( NULL != desc && '\0' != desc[0] ) {
-        query.catf( ", clntVers=%d, versDesc='%s'", clientVersion, desc );
+        query.catf( ", clntVers=$%d, versDesc=$%d", 1 + count, 2 + count );
+        count += 2;
+
+        paramIndices.push_back( paramBuf.size() );
+        paramBuf.catf( "%d%c", clientVersion, '\0' );
+        paramIndices.push_back( paramBuf.size() );
+        paramBuf.catf( "%s%c", desc, '\0' );
     }
     if ( NULL != model && '\0' != model[0] ) {
-        query.catf( ", model='%s'", model );
+        paramIndices.push_back( paramBuf.size() );
+        paramBuf.catf( "%s%c", model, '\0' );
+        query.catf( ", model=$%d", ++count );
     }
     if ( NULL != osVers && '\0' != osVers[0] ) {
-        query.catf( ", osvers='%s'", osVers );
+        paramIndices.push_back( paramBuf.size() );
+        paramBuf.catf( "%s%c", osVers, '\0' );
+        query.catf( ", osvers=$%d", ++count );
     }
-    query.catf( " WHERE id = %d", relayID );
+    paramIndices.push_back( paramBuf.size() );
+    paramBuf.catf( "%d%c", relayID, '\0' );
+    query.catf( " WHERE id = $%d", ++count );
 }
 
 HostID
@@ -829,6 +889,22 @@ DBMgr::execSql( const char* const query )
     }
     assert( ok );
     return ok;
+}
+
+bool
+DBMgr::execParams( const string& query, vector<const char*> paramValues )
+{
+    PGresult* result = PQexecParams( getThreadConn(), query.c_str(),
+                                     paramValues.size(), NULL,
+                                     &paramValues[0], 
+                                     NULL, NULL, 0 );
+    bool success = PGRES_COMMAND_OK == PQresultStatus( result );
+    if ( !success ) {
+        logf( XW_LOGERROR, "PQexecParams(%s)=>%s;%s", query.c_str(),
+              PQresStatus(PQresultStatus(result)), 
+              PQresultErrorMessage(result) );
+    }
+    return success;
 }
 
 void
