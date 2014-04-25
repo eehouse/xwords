@@ -516,6 +516,10 @@ public class BoardActivity extends XWActivity
     protected void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
+        if ( 9 <= Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
+            setRequestedOrientation( ActivityInfo.
+                                     SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+        }
         getBundledData( savedInstanceState );
 
         if ( CommonPrefs.getHideTitleBar( this )
