@@ -21,67 +21,16 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
-
-import android.content.DialogInterface.OnDismissListener;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
-
-import android.graphics.Bitmap;
-import android.graphics.Rect;
-
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.text.TextUtils;
-
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.HashSet;
-import java.util.concurrent.Semaphore;
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.DlgDelegate.Action;
-import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
-import org.eehouse.android.xw4.jni.JNIThread.*;
-
 
 public class BoardActivity extends Activity {
-
-    public static final String INTENT_KEY_CHAT = "chat";
-
-    private static final int CHAT_REQUEST = 1;
-    private static final int BT_INVITE_RESULT = 2;
-    private static final int SMS_INVITE_RESULT = 3;
-
-    private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
-
-    private static final String DLG_TITLE = "DLG_TITLE";
-    private static final String DLG_TITLESTR = "DLG_TITLESTR";
-    private static final String DLG_BYTES = "DLG_BYTES";
-    private static final String ROOM = "ROOM";
-    private static final String PWDNAME = "PWDNAME";
-    private static final String TOASTSTR = "TOASTSTR";
-    private static final String WORDS = "WORDS";
-    private static final String GETDICT = "GETDICT";
 
     private BoardDelegate m_dlgt;
 

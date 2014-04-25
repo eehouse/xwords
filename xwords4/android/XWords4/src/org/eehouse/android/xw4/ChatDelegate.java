@@ -104,7 +104,7 @@ public class ChatDelegate extends DelegateBase
             DBUtils.appendChatHistory( m_activity, m_rowid, text, true );
 
             Intent result = new Intent();
-            result.putExtra( BoardActivity.INTENT_KEY_CHAT, text );
+            result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
             m_activity.setResult( Activity.RESULT_OK, result );
         }
         m_activity.finish();
