@@ -97,7 +97,7 @@
     <activity android:name="SMSInviteActivity"
               android:theme="@android:style/Theme.Dialog"
               android:configChanges="keyboardHidden|orientation|screenSize"
-              android:screenOrientation="portrait"
+              android:screenOrientation="sensor"
               />
 
     <activity android:name="GameConfigActivity"
