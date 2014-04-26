@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2013 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,20 +17,31 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#ifndef _STRWPF_H_
-#define _STRWPF_H_
+#ifndef _QUERYBLD_H_
+#define _QUERYBLD_H_
 
-#include <string>
-#include <stdarg.h>
+#include <vector>
 
-class StrWPF : public std::string {
+#include "strwpf.h"
+
+using namespace std;
+
+class QueryBuilder {
+    
  public:
-    StrWPF() : m_addsiz(100){}
+    QueryBuilder& appendQueryf( const char* fmt, ... );
+    QueryBuilder& appendParam( const char* value );
+    QueryBuilder& appendParam( int value );
+    void finish();
+    int paramCount() const { return m_paramValues.size(); }
+    const char* const* paramValues() const { return &m_paramValues[0]; }
+    const char* const c_str() const { return m_query.c_str(); }
 
-    void catf( const char* fmt, ... );
-    bool catf( const char* fmt, va_list ap );
  private:
-    int m_addsiz;
+    StrWPF m_query;
+    StrWPF m_paramBuf;
+    vector<size_t> m_paramIndices;
+    vector<const char*> m_paramValues;
 };
 
 #endif
