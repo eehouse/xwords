@@ -45,6 +45,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -480,11 +482,33 @@ public class LocUtils {
         return result;
     }
 
+    private static Pattern s_patUnicode = Pattern.compile("(\\\\[Uu][0-9a-fA-F]{4})");
+    private static Pattern s_patCr = Pattern.compile("\\\\n");
+    
     private static String replaceEscaped( String txt )
     {
-        String result = txt.replaceAll("\\n", "\n");
-        // DbgUtils.logf( "replaceEscaped(<<%s>>) -> <<%s>>", txt, result );
-        return result;
+        // String orig = txt;
+
+        // Swap unicode escapes for real chars
+        Matcher matcher = s_patUnicode.matcher( txt );
+        StringBuffer sb = new StringBuffer();
+        while ( matcher.find() ) {
+            int start = matcher.start();
+            int end = matcher.end();
+            String match = txt.substring( start, end );
+            char ch = (char)Integer.parseInt( match.substring(2), 16 );
+            matcher.appendReplacement( sb, String.valueOf(ch) );
+        }
+        matcher.appendTail(sb);
+        txt = sb.toString();
+
+        // Swap in real carriage returns
+        txt = s_patCr.matcher( txt ).replaceAll( "\n" );
+
+        // if ( ! orig.equals( txt ) ) {
+        //     DbgUtils.logf( "replaceEscaped: <<%s>> -> <<%s>>", orig, txt );
+        // }
+        return txt;
     }
 
     public static AlertDialog.Builder makeAlertBuilder( Context context )
