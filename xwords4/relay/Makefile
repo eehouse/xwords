@@ -38,6 +38,7 @@ SRC = \
 	udpager.cpp \
 	udpqueue.cpp \
 	xwrelay.cpp \
+	querybld.cpp \
 
 # STATIC ?= -static
 GITINFO = gitversion.txt
