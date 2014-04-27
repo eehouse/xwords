@@ -87,7 +87,7 @@ public class DictsActivity extends ExpandableListActivity {
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
-            dialog = m_dlgt.createDialog( id );
+            dialog = m_dlgt.onCreateDialog( id );
         }
         return dialog;
     } // onCreateDialog

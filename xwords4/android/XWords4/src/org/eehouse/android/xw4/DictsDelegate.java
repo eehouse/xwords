@@ -234,7 +234,7 @@ public class DictsDelegate extends DelegateBase
         m_activity = activity;
     }
 
-    protected Dialog createDialog( int id )
+    protected Dialog onCreateDialog( int id )
     {
         OnClickListener lstnr, lstnr2;
         Dialog dialog;
@@ -341,7 +341,7 @@ public class DictsDelegate extends DelegateBase
             break;
 
         default:
-            dialog = super.createDialog( id );
+            dialog = super.onCreateDialog( id );
             doRemove = false;
             break;
         }
@@ -351,7 +351,7 @@ public class DictsDelegate extends DelegateBase
         }
 
         return dialog;
-    } // createDialog
+    } // onCreateDialog
 
     protected void prepareDialog( int id, Dialog dialog )
     {

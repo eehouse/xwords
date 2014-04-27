@@ -122,7 +122,7 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         m_delegate.showDialog( dlgID );
     }
 
-    protected Dialog createDialog( int id )
+    protected Dialog onCreateDialog( int id )
     {
         return m_delegate.createDialog( id );
     }
