@@ -81,7 +81,7 @@ typedef struct AddressRecord {
     XP_PlayerAddr channelNo;
     struct {
         XWHostID hostID;            /* used for relay case */
-    } r;
+    } rr;
 #ifdef COMMS_HEARTBEAT
     XP_Bool initialSeen;
 #endif
@@ -147,7 +147,7 @@ struct CommsCtxt {
         XP_U16 nPlayersHere;
         XP_U16 nPlayersTotal;
         XP_Bool connecting;
-    } r;
+    } rr;
 
     XP_Bool isServer;
     MPSLOT
@@ -276,11 +276,11 @@ XWREASON2Str( XWREASON reason )
 static void
 set_relay_state( CommsCtxt* comms, CommsRelayState state )
 {
-    if ( comms->r.relayState != state ) {
+    if ( comms->rr.relayState != state ) {
         XP_LOGF( "%s: %s => %s", __func__,
-                 CommsRelayState2Str(comms->r.relayState), 
+                 CommsRelayState2Str(comms->rr.relayState), 
                  CommsRelayState2Str(state) );
-        comms->r.relayState = state;
+        comms->rr.relayState = state;
         if ( !!comms->procs.rstatus ) {
             (*comms->procs.rstatus)( comms->procs.closure, state );
         }
@@ -290,15 +290,15 @@ set_relay_state( CommsCtxt* comms, CommsRelayState state )
 static void
 init_relay( CommsCtxt* comms, XP_U16 nPlayersHere, XP_U16 nPlayersTotal )
 {
-    comms->r.myHostID = comms->isServer? HOST_ID_SERVER: HOST_ID_NONE;
-    if ( HOST_ID_NONE != comms->r.myHostID ) {
-        XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
+    comms->rr.myHostID = comms->isServer? HOST_ID_SERVER: HOST_ID_NONE;
+    if ( HOST_ID_NONE != comms->rr.myHostID ) {
+        XP_LOGF( "%s: set hostid: %x", __func__, comms->rr.myHostID );
     }
     set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
-    comms->r.nPlayersHere = nPlayersHere;
-    comms->r.nPlayersTotal = nPlayersTotal;
-    comms->r.cookieID = COOKIE_ID_NONE;
-    comms->r.connName[0] = '\0';
+    comms->rr.nPlayersHere = nPlayersHere;
+    comms->rr.nPlayersTotal = nPlayersTotal;
+    comms->rr.cookieID = COOKIE_ID_NONE;
+    comms->rr.connName[0] = '\0';
 }
 #endif
 
@@ -369,7 +369,7 @@ void
 comms_resetSame( CommsCtxt* comms )
 {
     comms_reset( comms, comms->isServer, 
-                 comms->r.nPlayersHere, comms->r.nPlayersTotal );
+                 comms->rr.nPlayersHere, comms->rr.nPlayersTotal );
 }
 
 static void
@@ -423,8 +423,8 @@ p_comms_resetTimer( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
 
     /* Once we're denied we don't try again.  A new game or save and re-open
        will reset comms and get us out of this state. */
-    if ( comms->r.relayState != COMMS_RELAYSTATE_DENIED ) {
-        XP_Bool success = comms->r.relayState >= COMMS_RELAYSTATE_CONNECTED
+    if ( comms->rr.relayState != COMMS_RELAYSTATE_DENIED ) {
+        XP_Bool success = comms->rr.relayState >= COMMS_RELAYSTATE_CONNECTED
             || relayConnect( comms );
 
         if ( success ) {
@@ -456,7 +456,7 @@ comms_transportFailed( CommsCtxt* comms  )
     LOG_FUNC();
     XP_ASSERT( !!comms );
     if ( COMMS_CONN_RELAY == comms->addr.conType
-         && comms->r.relayState != COMMS_RELAYSTATE_DENIED ) {
+         && comms->rr.relayState != COMMS_RELAYSTATE_DENIED ) {
         relayDisconnect( comms );
 
         set_reset_timer( comms );
@@ -470,7 +470,7 @@ comms_destroy( CommsCtxt* comms )
 {
     /* did I call comms_stop()? */
     XP_ASSERT( COMMS_CONN_RELAY != comms->addr.conType
-               || COMMS_RELAYSTATE_UNCONNECTED == comms->r.relayState );
+               || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState );
 
     CommsAddrRec aNew = { .conType = COMMS_CONN_NONE };
     util_addrChange( comms->util, &comms->addr, &aNew );
@@ -489,7 +489,7 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID )
     XP_ASSERT( CONN_ID_NONE != connID );
     XP_ASSERT( 0 == comms->connID || connID == comms->connID );
     comms->connID = connID;
-    XP_LOGF( "%s: set connID (gameID) to %lx", __func__, connID );
+    XP_LOGF( "%s: set connID (gameID) to %x", __func__, connID );
 } /* comms_setConnID */
 
 static void
@@ -591,9 +591,9 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         comms->nextResend = stream_getU32( stream );
     }
     if ( addr.conType == COMMS_CONN_RELAY ) {
-        comms->r.myHostID = stream_getU8( stream );
-        stringFromStreamHere( stream, comms->r.connName, 
-                              sizeof(comms->r.connName) );
+        comms->rr.myHostID = stream_getU8( stream );
+        stringFromStreamHere( stream, comms->rr.connName, 
+                              sizeof(comms->rr.connName) );
     }
 
     comms->queueLen = stream_getU8( stream );
@@ -612,7 +612,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         }
         rec->channelNo = stream_getU16( stream );
         if ( rec->addr.conType == COMMS_CONN_RELAY ) {
-            rec->r.hostID = stream_getU8( stream );
+            rec->rr.hostID = stream_getU8( stream );
         }
 
         *prevsAddrNext = rec;
@@ -683,7 +683,7 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
 #ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
         if ( breakExisting
-             || COMMS_RELAYSTATE_UNCONNECTED == comms->r.relayState ) {
+             || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState ) {
             set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
             if ( !relayConnect( comms ) ) {
                 XP_LOGF( "%s: relayConnect failed", __func__ );
@@ -761,8 +761,8 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     stream_putU8( stream, (XP_U8)comms->isServer );
     addrToStream( stream, &comms->addr );
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
-        stream_putBits( stream, 4, comms->r.nPlayersHere );
-        stream_putBits( stream, 4, comms->r.nPlayersTotal );
+        stream_putBits( stream, 4, comms->rr.nPlayersHere );
+        stream_putBits( stream, 4, comms->rr.nPlayersTotal );
     }
 
     stream_putU32( stream, comms->connID );
@@ -771,8 +771,8 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     stream_putU16( stream, comms->resendBackoff );
     stream_putU32( stream, comms->nextResend );
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
-        stream_putU8( stream, comms->r.myHostID );
-        stringToStream( stream, comms->r.connName );
+        stream_putU8( stream, comms->rr.myHostID );
+        stringToStream( stream, comms->rr.connName );
     }
 
     XP_ASSERT( comms->queueLen <= 255 );
@@ -791,7 +791,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
         stream_putU16( stream, (XP_U16)rec->lastMsgAckd );
         stream_putU16( stream, rec->channelNo );
         if ( rec->addr.conType == COMMS_CONN_RELAY ) {
-            stream_putU8( stream, rec->r.hostID ); /* unneeded unless RELAY */
+            stream_putU8( stream, rec->rr.hostID ); /* unneeded unless RELAY */
         }
     }
 
@@ -822,8 +822,8 @@ comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken )
     if ( saveToken == comms->lastSaveToken ) {
         AddressRecord* rec;
         for ( rec = comms->recs; !!rec; rec = rec->next ) {
-            XP_LOGF( "%s: lastSave matches; updating lastMsgSaved (%ld) to "
-                     "lastMsgRcd (%ld)", __func__, rec->lastMsgSaved, 
+            XP_LOGF( "%s: lastSave matches; updating lastMsgSaved (%d) to "
+                     "lastMsgRcd (%d)", __func__, rec->lastMsgSaved, 
                      rec->lastMsgRcd );
             rec->lastMsgSaved = rec->lastMsgRcd;
         }
@@ -867,12 +867,19 @@ comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], XP_U16* nRecs )
     *nRecs = count;
 }
 
+XP_U16
+comms_countPendingPackets( const CommsCtxt* comms )
+{
+    // LOG_RETURNF( "%d", comms->queueLen );
+    return comms->queueLen;
+}
+
 #ifdef XWFEATURE_RELAY
 static XP_Bool
 haveRelayID( const CommsCtxt* comms )
 {
-    XP_Bool result = 0 != comms->r.connName[0]
-        && comms->r.myHostID != HOST_ID_NONE;
+    XP_Bool result = 0 != comms->rr.connName[0]
+        && comms->rr.myHostID != HOST_ID_NONE;
     return result;
 }
 
@@ -881,7 +888,7 @@ formatRelayID( const CommsCtxt* comms, XWHostID hostID,
                XP_UCHAR* buf, XP_U16* lenp )
 {
     XP_U16 strln = 1 + XP_SNPRINTF( buf, *lenp, "%s/%d", 
-                                    comms->r.connName, hostID );
+                                    comms->rr.connName, hostID );
     XP_ASSERT( *lenp >= strln );
     *lenp = strln;
     return XP_TRUE;
@@ -892,7 +899,7 @@ XP_Bool
 comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* lenp )
 {
     XP_Bool result = haveRelayID( comms )
-        && formatRelayID( comms, comms->r.myHostID, buf, lenp );
+        && formatRelayID( comms, comms->rr.myHostID, buf, lenp );
     return result;
 }
 #endif
@@ -974,7 +981,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
     MsgID lastMsgSaved = (!!rec)? rec->lastMsgSaved : 0;
     MsgQueueElem* newMsgElem;
-    XWStreamCtxt* msgStream;
+    XWStreamCtxt* hdrStream;
 
     newMsgElem = (MsgQueueElem*)XP_MALLOC( comms->mpool, 
                                            sizeof( *newMsgElem ) );
@@ -984,28 +991,28 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
     newMsgElem->sendCount = 0;
 #endif
 
-    msgStream = mem_stream_make( MPPARM(comms->mpool) 
+    hdrStream = mem_stream_make( MPPARM(comms->mpool) 
                                  util_getVTManager(comms->util),
                                  NULL, 0, 
                                  (MemStreamCloseCallback)NULL );
-    stream_open( msgStream );
-    XP_LOGF( "%s: putting connID %lx", __func__, comms->connID );
-    stream_putU32( msgStream, comms->connID );
+    stream_open( hdrStream );
+    XP_LOGF( "%s: putting connID %x", __func__, comms->connID );
+    stream_putU32( hdrStream, comms->connID );
 
-    stream_putU16( msgStream, channelNo );
-    stream_putU32( msgStream, msgID );
-    XP_LOGF( "put lastMsgSaved: %ld", lastMsgSaved );
-    stream_putU32( msgStream, lastMsgSaved );
+    stream_putU16( hdrStream, channelNo );
+    stream_putU32( hdrStream, msgID );
+    XP_LOGF( "put lastMsgSaved: %d", lastMsgSaved );
+    stream_putU32( hdrStream, lastMsgSaved );
     if ( !!rec ) {
         rec->lastMsgAckd = lastMsgSaved;
     }
 
-    headerLen = stream_getSize( msgStream );
+    headerLen = stream_getSize( hdrStream );
     newMsgElem->len = streamSize + headerLen;
     newMsgElem->msg = (XP_U8*)XP_MALLOC( comms->mpool, newMsgElem->len );
 
-    stream_getBytes( msgStream, newMsgElem->msg, headerLen );
-    stream_destroy( msgStream );
+    stream_getBytes( hdrStream, newMsgElem->msg, headerLen );
+    stream_destroy( hdrStream );
     
     if ( 0 < streamSize ) {
         stream_getBytes( stream, newMsgElem->msg + headerLen, streamSize );
@@ -1218,20 +1225,12 @@ gameID( const CommsCtxt* comms )
         gameID = comms->util->gameInfo->gameID;
     }
 
-    // XP_ASSERT( 0 != gameID );
-    if ( 0 == gameID ) {
-        XP_LOGF( "%s: gameID STILL 0", __func__ );
-    } else if ( 0 == comms->util->gameInfo->gameID ) {
-        XP_LOGF( "%s: setting gi's gameID to 0X%lX", __func__, gameID );
-        comms->util->gameInfo->gameID = gameID;
-    }
-
     /* Most of the time these will be the same, but early in a game they won't
        be.  Would be nice not to have to use gameID. */
     if ( 0 == gameID ) {
         XP_LOGF( "%s: gameID STILL 0", __func__ );
     } else if ( 0 == comms->util->gameInfo->gameID ) {
-        XP_LOGF( "%s: setting gi's gameID to 0X%lX", __func__, gameID );
+        XP_LOGF( "%s: setting gi's gameID to 0X%X", __func__, gameID );
         comms->util->gameInfo->gameID = gameID;
     }
 
@@ -1261,7 +1260,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
         if ( haveRelayID( comms ) && sendNoConn( comms, elem, destID ) ) {
             /* do nothing */
             result = elem->len;
-        } else if ( comms->r.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
+        } else if ( comms->rr.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
             if ( send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
                                  elem->msg, elem->len ) ){
                 result = elem->len;
@@ -1304,7 +1303,7 @@ static void
 send_ack( CommsCtxt* comms )
 {
     LOG_FUNC();
-    (void)send_via_relay( comms, XWRELAY_ACK, comms->r.myHostID, NULL, 0 );
+    (void)send_via_relay( comms, XWRELAY_ACK, comms->rr.myHostID, NULL, 0 );
 }
 
 XP_Bool
@@ -1315,7 +1314,7 @@ comms_resendAll( CommsCtxt* comms, XP_Bool force )
 
     XP_U32 now = util_getCurSeconds( comms->util );
     if ( !force && (now < comms->nextResend) ) {
-        XP_LOGF( "%s: aborting: %ld seconds left in backoff", __func__, 
+        XP_LOGF( "%s: aborting: %d seconds left in backoff", __func__, 
                  comms->nextResend - now );
         success = XP_FALSE;
 
@@ -1355,7 +1354,7 @@ comms_ackAny( CommsCtxt* comms )
 #ifdef DEBUG
                 ++nSent;
 #endif 
-                XP_LOGF( "%s: channel %x; %ld < %ld: rec needs ack", __func__,
+                XP_LOGF( "%s: channel %x; %d < %d: rec needs ack", __func__,
                          rec->channelNo, rec->lastMsgAckd, rec->lastMsgRcd );
                 sendEmptyMsg( comms, rec );
             }
@@ -1409,19 +1408,20 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
 
     set_relay_state( comms, reconnected ? COMMS_RELAYSTATE_RECONNECTED
                      : COMMS_RELAYSTATE_CONNECTED );
-    comms->r.myHostID = stream_getU8( stream );
-    XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
-    isServer = HOST_ID_SERVER == comms->r.myHostID;
+    comms->rr.myHostID = stream_getU8( stream );
+    XP_LOGF( "%s: set hostid: %x", __func__, comms->rr.myHostID );
+    isServer = HOST_ID_SERVER == comms->rr.myHostID;
     if ( isServer != comms->isServer ) {
         comms->isServer = isServer;
         util_setIsServer( comms->util, comms->isServer );
 
-        reset_internal( comms, isServer, comms->r.nPlayersHere, 
-                        comms->r.nPlayersTotal, XP_FALSE );
+        reset_internal( comms, isServer, comms->rr.nPlayersHere, 
+                        comms->rr.nPlayersTotal, XP_FALSE );
     }
 
-    comms->r.cookieID = stream_getU16( stream );
-    comms->r.heartbeat = stream_getU16( stream );
+    comms->rr.cookieID = stream_getU16( stream );
+    XP_ASSERT( COOKIE_ID_NONE != comms->rr.cookieID );
+    comms->rr.heartbeat = stream_getU16( stream );
     nSought = (XP_U16)stream_getU8( stream );
     nHere = (XP_U16)stream_getU8( stream );
     if ( nSought == nHere ) {
@@ -1432,18 +1432,18 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
     {
         XP_UCHAR connName[MAX_CONNNAME_LEN+1];
         stringFromStreamHere( stream, connName, sizeof(connName) );
-        if ( comms->r.connName[0] != '\0' 
-             && 0 != XP_STRCMP( comms->r.connName, connName ) ) {
+        if ( comms->rr.connName[0] != '\0' 
+             && 0 != XP_STRCMP( comms->rr.connName, connName ) ) {
             XP_LOGF( "%s: we're replacing connNames: %s overwritten by %s",
-                     __func__, comms->r.connName, connName );
+                     __func__, comms->rr.connName, connName );
         }
-        XP_MEMCPY( comms->r.connName, connName, sizeof(comms->r.connName) );
+        XP_MEMCPY( comms->rr.connName, connName, sizeof(comms->rr.connName) );
         XP_LOGF( "%s: connName: \"%s\" (reconnect=%d)", __func__, connName, 
                  reconnected );
     }
 #else
-    stringFromStreamHere( stream, comms->r.connName, 
-                          sizeof(comms->r.connName) );
+    stringFromStreamHere( stream, comms->rr.connName, 
+                          sizeof(comms->rr.connName) );
 #endif
 
 #ifdef XWFEATURE_DEVID
@@ -1460,7 +1460,7 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
 
     (*comms->procs.rconnd)( comms->procs.closure, 
                             comms->addr.u.ip_relay.invite, reconnected,
-                            comms->r.myHostID, XP_FALSE, nSought - nHere );
+                            comms->rr.myHostID, XP_FALSE, nSought - nHere );
     XP_LOGF( "%s: have %d of %d players", __func__, nHere, nSought );
     setHeartbeatTimer( comms );
 } /* got_connect_cmd */
@@ -1470,7 +1470,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 {
     XP_Bool consumed = XP_TRUE;
     XWHostID destID, srcID;
-    CookieID cookieID = comms->r.cookieID;
+    CookieID cookieID = comms->rr.cookieID;
     XWREASON relayErr;
 
     /* nothing for us to do here if not using relay */
@@ -1489,36 +1489,36 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
 
     case XWRELAY_ALLHERE:
         srcID = (XWHostID)stream_getU8( stream );
-        if ( comms->r.myHostID != HOST_ID_NONE
-             && comms->r.myHostID != srcID ) {
+        if ( comms->rr.myHostID != HOST_ID_NONE
+             && comms->rr.myHostID != srcID ) {
             XP_LOGF( "%s: changing hostid from %d to %d", __func__, 
-                     comms->r.myHostID, srcID );
+                     comms->rr.myHostID, srcID );
         }
 
-        if ( 0 == comms->r.cookieID ) {
+        if ( COOKIE_ID_NONE == comms->rr.cookieID ) {
             XP_LOGF( "%s: cookieID still 0; background send?", 
                      __func__ );
         }
-        comms->r.myHostID = srcID;
+        comms->rr.myHostID = srcID;
 
-        XP_LOGF( "%s: set hostid: %x", __func__, comms->r.myHostID );
+        XP_LOGF( "%s: set hostid: %x", __func__, comms->rr.myHostID );
 
 #ifdef DEBUG
         {
             XP_UCHAR connName[MAX_CONNNAME_LEN+1];
             stringFromStreamHere( stream, connName, sizeof(connName) );
-            if ( comms->r.connName[0] != '\0' 
-                 && 0 != XP_STRCMP( comms->r.connName, connName ) ) {
+            if ( comms->rr.connName[0] != '\0' 
+                 && 0 != XP_STRCMP( comms->rr.connName, connName ) ) {
                 XP_LOGF( "%s: we're replacing connNames: %s overwritten by %s",
-                         __func__, comms->r.connName, connName );
+                         __func__, comms->rr.connName, connName );
             }
-            XP_MEMCPY( comms->r.connName, connName, 
-                       sizeof(comms->r.connName) );
+            XP_MEMCPY( comms->rr.connName, connName, 
+                       sizeof(comms->rr.connName) );
             XP_LOGF( "%s: connName: \"%s\"", __func__, connName );
         }
 #else
-        stringFromStreamHere( stream, comms->r.connName, 
-                              sizeof(comms->r.connName) );
+        stringFromStreamHere( stream, comms->rr.connName, 
+                              sizeof(comms->rr.connName) );
 #endif
 
         /* We're [re-]connected now.  Send any pending messages.  This may
@@ -1527,13 +1527,13 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
            REconnected, as we'll have sent then.  -- I don't see any send
            on RECONNECTED, so removing the test for now to fix recon
            problems on android. */
-        /* if ( COMMS_RELAYSTATE_RECONNECTED != comms->r.relayState ) { */
+        /* if ( COMMS_RELAYSTATE_RECONNECTED != comms->rr.relayState ) { */
         comms_resendAll( comms, XP_FALSE );
         /* } */
         if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
             (*comms->procs.rconnd)( comms->procs.closure, 
                                     comms->addr.u.ip_relay.invite, XP_FALSE,
-                                    comms->r.myHostID, XP_TRUE, 0 );
+                                    comms->rr.myHostID, XP_TRUE, 0 );
         }
         set_relay_state( comms, COMMS_RELAYSTATE_ALLCONNECTED );
         break;
@@ -1550,16 +1550,16 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
            may not be as expected.  Just commenting these out is probably the
            wrong fix.  Maybe instead the constructor takes a flag that means
            "assume you're connected"  Revisit this. */
-        /* XP_ASSERT( COMMS_RELAYSTATE_ALLCONNECTED == comms->r.relayState */
-        /*            || COMMS_RELAYSTATE_CONNECTED == comms->r.relayState */
-        /*            || COMMS_RELAYSTATE_RECONNECTED == comms->r.relayState ); */
+        /* XP_ASSERT( COMMS_RELAYSTATE_ALLCONNECTED == comms->rr.relayState */
+        /*            || COMMS_RELAYSTATE_CONNECTED == comms->rr.relayState */
+        /*            || COMMS_RELAYSTATE_RECONNECTED == comms->rr.relayState ); */
 
-        if ( destID == comms->r.myHostID ) { /* When would this not happen? */
+        if ( destID == comms->rr.myHostID ) { /* When would this not happen? */
             consumed = XP_FALSE;
-        } else if ( cookieID == comms->r.cookieID ) {
+        } else if ( cookieID == comms->rr.cookieID ) {
             XP_LOGF( "%s: keeping message though hostID not what "
                      "expected (%d vs %d)", __func__, destID, 
-                     comms->r.myHostID );
+                     comms->rr.myHostID );
             consumed = XP_FALSE;
         }
 
@@ -1576,10 +1576,13 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         XP_LOGF( "%s: host id %x disconnected", __func__, srcID );
         /* if we don't have connName then RECONNECTED is the wrong state to
            change to. */
-        XP_ASSERT( 0 != comms->r.connName[0] );
-        set_relay_state( comms, COMMS_RELAYSTATE_RECONNECTED );
-        /* we will eventually want to tell the user which player's gone */
-        util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        if ( COMMS_RELAYSTATE_RECONNECTED < comms->rr.relayState ) {
+            XP_ASSERT( 0 != comms->rr.connName[0] );
+            XP_ASSERT( COOKIE_ID_NONE != comms->rr.cookieID );
+            set_relay_state( comms, COMMS_RELAYSTATE_RECONNECTED );
+            /* we will eventually want to tell the user which player's gone */
+            util_userError( comms->util, ERR_RELAY_BASE + relayErr );
+        }
         break;
 
     case XWRELAY_DISCONNECT_YOU:                /* Close socket for this? */
@@ -1599,7 +1602,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         set_relay_state( comms, COMMS_RELAYSTATE_DENIED );
 
         if ( XWRELAY_ERROR_NORECONN == relayErr ) {
-            init_relay( comms, comms->r.nPlayersHere, comms->r.nPlayersTotal );
+            init_relay( comms, comms->rr.nPlayersHere, comms->rr.nPlayersTotal );
         } else {
             util_userError( comms->util, ERR_RELAY_BASE + relayErr );
             /* requires action, not just notification */
@@ -1852,7 +1855,7 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
         if ( msgID == rec->lastMsgRcd + 1 ) {
             updateChannelAddress( rec, addr );
         } else {
-            XP_LOGF( "%s: expected %ld, got %ld", __func__, 
+            XP_LOGF( "%s: expected %d, got %d", __func__, 
                      rec->lastMsgRcd + 1, msgID );
             rec = NULL;
         }
@@ -1902,11 +1905,11 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             AddressRecord* rec = NULL;
 
             connID = stream_getU32( stream );
-            XP_LOGF( "%s: read connID (gameID) of %lx", __func__, connID );
+            XP_LOGF( "%s: read connID (gameID) of %x", __func__, connID );
             channelNo = stream_getU16( stream );
             msgID = stream_getU32( stream );
             lastMsgRcd = stream_getU32( stream );
-            XP_LOGF( "%s: rcd on channelNo %d(%x): msgID=%ld,lastMsgRcd=%ld ", 
+            XP_LOGF( "%s: rcd on channelNo %d(%x): msgID=%d,lastMsgRcd=%d ", 
                      __func__, channelNo & CHANNEL_MASK, channelNo, 
                      msgID, lastMsgRcd );
 
@@ -1926,7 +1929,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             messageValid = (NULL != rec)
                 && (0 == rec->lastMsgRcd || rec->lastMsgRcd <= msgID);
             if ( messageValid ) {
-                XP_LOGF( "%s: got channelNo=%d;msgID=%ld;len=%d", __func__, 
+                XP_LOGF( "%s: got channelNo=%d;msgID=%d;len=%d", __func__, 
                          channelNo & CHANNEL_MASK, msgID, payloadSize );
                 rec->lastMsgRcd = msgID;
                 comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
@@ -1979,7 +1982,7 @@ comms_isConnected( const CommsCtxt* const comms )
     XP_Bool result = XP_FALSE;
     switch ( comms->addr.conType ) {
     case COMMS_CONN_RELAY:
-        result = 0 != comms->r.connName[0];
+        result = 0 != comms->rr.connName[0];
         break;
     case COMMS_CONN_SMS:
     case COMMS_CONN_BT:
@@ -2066,7 +2069,7 @@ p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
     if (0 ) {
 #if defined XWFEATURE_RELAY && defined RELAY_HEARTBEAT
     } else  if ( (comms->addr.conType == COMMS_CONN_RELAY ) 
-         && (comms->r.heartbeat != HEARTBEAT_NONE) ) {
+         && (comms->rr.heartbeat != HEARTBEAT_NONE) ) {
         (void)send_via_relay( comms, XWRELAY_HEARTBEAT, HOST_ID_NONE, 
                               NULL, 0 );
         /* No need to reset timer.  send_via_relay does that. */
@@ -2093,7 +2096,7 @@ setHeartbeatTimer( CommsCtxt* comms )
         XP_U16 when = 0;
 #ifdef XWFEATURE_RELAY
         if ( comms->addr.conType == COMMS_CONN_RELAY ) {
-            when = comms->r.heartbeat;
+            when = comms->rr.heartbeat;
         }
 #endif
 #ifdef COMMS_HEARTBEAT
@@ -2158,7 +2161,7 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
         stream_catString( stream, buf );
 
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"Last message received: %ld\n", 
+                     (XP_UCHAR*)"Last message received: %d\n", 
                      rec->lastMsgRcd );
         stream_catString( stream, buf );
     }
@@ -2177,7 +2180,7 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
         XP_MEMSET( recs, 0, sizeof(*recs) );
 
         recs->channelNo = channelNo;
-        recs->r.hostID = hostID;
+        recs->rr.hostID = hostID;
         recs->next = comms->recs;
         comms->recs = recs;
     }
@@ -2187,7 +2190,7 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
     if ( !!recs ) {
         if ( !!addr ) {
             XP_MEMCPY( &recs->addr, addr, sizeof(recs->addr) );
-            XP_ASSERT( recs->r.hostID == hostID );
+            XP_ASSERT( recs->rr.hostID == hostID );
         } else {
             XP_MEMSET( &recs->addr, 0, sizeof(recs->addr) );
             recs->addr.conType = comms->addr.conType;
@@ -2237,7 +2240,7 @@ getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
         AddressRecord* recs;
         for ( recs = comms->recs; !!recs; recs = recs->next ) {
             if ( recs->channelNo == channelNo ) {
-                id = recs->r.hostID;
+                id = recs->rr.hostID;
             }
         }
     }
@@ -2263,13 +2266,16 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 
         switch ( cmd ) {
         case XWRELAY_MSG_TORELAY:
-            XP_ASSERT( 0 != comms->r.cookieID );
-            stream_putU16( stream, comms->r.cookieID );
+            if ( COOKIE_ID_NONE == comms->rr.cookieID ) {
+                XP_LOGF( "%s: cookieID still 0; background send?", 
+                         __func__ );
+            }
+            stream_putU16( stream, comms->rr.cookieID );
         case XWRELAY_MSG_TORELAY_NOCONN:
-            stream_putU8( stream, comms->r.myHostID );
+            stream_putU8( stream, comms->rr.myHostID );
             stream_putU8( stream, destID );
             XP_LOGF( "%s: wrote ids src %d, dest %d", __func__, 
-                     comms->r.myHostID, destID );
+                     comms->rr.myHostID, destID );
             if ( data != NULL && datalen > 0 ) {
                 stream_putBytes( stream, data, datalen );
             }
@@ -2281,13 +2287,13 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU8( stream, addr.u.ip_relay.seeksPublicRoom );
             stream_putU8( stream, addr.u.ip_relay.advertiseRoom );
             /* XP_ASSERT( cmd == XWRELAY_GAME_RECONNECT */
-            /*            || comms->r.myHostID == HOST_ID_NONE */
-            /*            || comms->r.myHostID == HOST_ID_SERVER ); */
+            /*            || comms->rr.myHostID == HOST_ID_NONE */
+            /*            || comms->rr.myHostID == HOST_ID_SERVER ); */
             XP_LOGF( "%s: writing nPlayersHere: %d; nPlayersTotal: %d",
-                     __func__, comms->r.nPlayersHere, 
-                     comms->r.nPlayersTotal );
-            stream_putU8( stream, comms->r.nPlayersHere );
-            stream_putU8( stream, comms->r.nPlayersTotal );
+                     __func__, comms->rr.nPlayersHere, 
+                     comms->rr.nPlayersTotal );
+            stream_putU8( stream, comms->rr.nPlayersHere );
+            stream_putU8( stream, comms->rr.nPlayersTotal );
             stream_putU16( stream, comms_getChannelSeed(comms) );
             stream_putU8( stream, comms->util->gameInfo->dictLang );
             putDevID( comms, stream );
@@ -2300,18 +2306,18 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stringToStream( stream, addr.u.ip_relay.invite );
             stream_putU8( stream, addr.u.ip_relay.seeksPublicRoom );
             stream_putU8( stream, addr.u.ip_relay.advertiseRoom );
-            stream_putU8( stream, comms->r.myHostID );
+            stream_putU8( stream, comms->rr.myHostID );
             XP_ASSERT( cmd == XWRELAY_GAME_RECONNECT
-                       || comms->r.myHostID == HOST_ID_NONE
-                       || comms->r.myHostID == HOST_ID_SERVER );
+                       || comms->rr.myHostID == HOST_ID_NONE
+                       || comms->rr.myHostID == HOST_ID_SERVER );
             XP_LOGF( "%s: writing nPlayersHere: %d; nPlayersTotal: %d",
-                     __func__, comms->r.nPlayersHere, 
-                     comms->r.nPlayersTotal );
-            stream_putU8( stream, comms->r.nPlayersHere );
-            stream_putU8( stream, comms->r.nPlayersTotal );
+                     __func__, comms->rr.nPlayersHere, 
+                     comms->rr.nPlayersTotal );
+            stream_putU8( stream, comms->rr.nPlayersHere );
+            stream_putU8( stream, comms->rr.nPlayersTotal );
             stream_putU16( stream, comms_getChannelSeed(comms) );
             stream_putU8( stream, comms->util->gameInfo->dictLang );
-            stringToStream( stream, comms->r.connName );
+            stringToStream( stream, comms->rr.connName );
             putDevID( comms, stream );
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
@@ -2321,16 +2327,16 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             break;
 
         case XWRELAY_GAME_DISCONNECT:
-            stream_putU16( stream, comms->r.cookieID );
-            stream_putU8( stream, comms->r.myHostID );
+            stream_putU16( stream, comms->rr.cookieID );
+            stream_putU8( stream, comms->rr.myHostID );
             break;
 
 #if defined XWFEATURE_RELAY && defined RELAY_HEARTBEAT
         case XWRELAY_HEARTBEAT:
             /* Add these for grins.  Server can assert they match the IP
                address it expects 'em on. */
-            stream_putU16( stream, comms->r.cookieID );
-            stream_putU8( stream, comms->r.myHostID );
+            stream_putU16( stream, comms->rr.cookieID );
+            stream_putU8( stream, comms->rr.myHostID );
             break;
 #endif
         default:
@@ -2409,12 +2415,12 @@ relayConnect( CommsCtxt* comms )
 {
     XP_Bool success = XP_TRUE;
     LOG_FUNC();
-    if ( comms->addr.conType == COMMS_CONN_RELAY && !comms->r.connecting ) {
-        comms->r.connecting = XP_TRUE;
-        success = send_via_relay( comms, comms->r.connName[0]?
+    if ( comms->addr.conType == COMMS_CONN_RELAY && !comms->rr.connecting ) {
+        comms->rr.connecting = XP_TRUE;
+        success = send_via_relay( comms, comms->rr.connName[0]?
                                   XWRELAY_GAME_RECONNECT : XWRELAY_GAME_CONNECT,
-                                  comms->r.myHostID, NULL, 0 );
-        comms->r.connecting = XP_FALSE;
+                                  comms->rr.myHostID, NULL, 0 );
+        comms->rr.connecting = XP_FALSE;
     }
     return success;
 } /* relayConnect */
@@ -2457,7 +2463,7 @@ relayDisconnect( CommsCtxt* comms )
 {
     LOG_FUNC();
     if ( comms->addr.conType == COMMS_CONN_RELAY ) {
-        if ( comms->r.relayState > COMMS_RELAYSTATE_CONNECT_PENDING ) {
+        if ( comms->rr.relayState > COMMS_RELAYSTATE_CONNECT_PENDING ) {
             (void)send_via_relay( comms, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE, 
                                   NULL, 0 );
         }

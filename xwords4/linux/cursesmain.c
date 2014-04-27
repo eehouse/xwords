@@ -80,14 +80,6 @@
 # define CURSES_CELL_WIDTH 2
 #endif
 
-#ifndef CURSES_MAX_HEIGHT
-# define CURSES_MAX_HEIGHT 40
-#endif
-#ifndef CURSES_MAX_WIDTH
-//# define CURSES_MAX_WIDTH 50
-# define CURSES_MAX_WIDTH 70
-#endif
-
 #define INFINITE_TIMEOUT -1
 #define BOARD_SCORE_PADDING 3
 
@@ -228,7 +220,8 @@ cursesUserError( CursesAppGlobals* globals, const char* format, ... )
 
     vsprintf( buf, format, ap );
 
-    (void)cursesask( globals, buf, 1, "OK" );
+    const char* buttons[] = {"OK"};
+    (void)cursesask( globals, buf, VSIZE(buttons), buttons );
 
     va_end(ap);
 } /* cursesUserError */
@@ -287,7 +280,7 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
 {
     CursesAppGlobals* globals;
     char* question;
-    char* answers[3] = {NULL};
+    const char* answers[3] = {NULL};
     short numAnswers = 0;
     XP_Bool freeMe = XP_FALSE;
     XP_Bool result;
@@ -312,8 +305,7 @@ curses_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id, XWStreamCtxt* stream )
         return 0;
     }
     globals = (CursesAppGlobals*)uc->closure;
-    result = cursesask( globals, question, numAnswers, 
-                        answers[0], answers[1], answers[2] ) == okIndex;
+    result = okIndex == cursesask( globals, question, numAnswers, answers );
 
     if ( freeMe ) {
         free( question );
@@ -329,7 +321,8 @@ curses_util_confirmTrade( XW_UtilCtxt* uc, const XP_UCHAR** tiles,
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char question[256];
     formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
-    return 1 == cursesask( globals, question, 2, "Cancel", "Ok" );
+    const char* buttons[] = { "Cancel", "Ok" };
+    return 1 == cursesask( globals, question, VSIZE(buttons), buttons );
 }
 
 static void
@@ -353,7 +346,8 @@ cursesShowFinalScores( CursesAppGlobals* globals )
 
     text = strFromStream( stream );
 
-    (void)cursesask( globals, text, 1, "Ok" );
+    const char* buttons[] = { "Ok" };
+    (void)cursesask( globals, text, VSIZE(buttons), buttons );
 
     free( text );
     stream_destroy( stream );
@@ -365,7 +359,8 @@ curses_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl,
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char* question = strFromStream( expl );
-    (void)cursesask( globals, question, 1, "Ok" );
+    const char* buttons[] = { "Ok" };
+    (void)cursesask( globals, question, VSIZE(buttons), buttons );
     free( question );
 }
 
@@ -515,7 +510,7 @@ curses_util_requestTime( XW_UtilCtxt* uc )
 } /* curses_util_requestTime */
 
 static void
-initCurses( CursesAppGlobals* globals )
+initCurses( CursesAppGlobals* globals, int* widthP, int* heightP )
 {
     WINDOW* mainWin;
     WINDOW* menuWin;
@@ -531,14 +526,8 @@ initCurses( CursesAppGlobals* globals )
     intrflush(stdscr, FALSE);
     keypad(stdscr, TRUE);       /* effects wgetch only? */
 
-    getmaxyx(mainWin, height, width );
-    XP_LOGF( "getmaxyx->w:%d; h:%d", width, height );
-    if ( height > CURSES_MAX_HEIGHT ) {
-        height = CURSES_MAX_HEIGHT;
-    }
-    if ( width > CURSES_MAX_WIDTH ) {
-        width = CURSES_MAX_WIDTH;
-    }
+    getmaxyx( mainWin, height, width );
+    XP_LOGF( "%s: getmaxyx()->w:%d; h:%d", __func__, width, height );
 
     globals->statusLine = height - MENU_WINDOW_HEIGHT - 1;
     menuWin = newwin( MENU_WINDOW_HEIGHT, width, 
@@ -549,6 +538,9 @@ initCurses( CursesAppGlobals* globals )
     globals->menuWin = menuWin;
     globals->boardWin = boardWin;
     globals->mainWin = mainWin;
+
+    *widthP = width;
+    *heightP = height;
 } /* initCurses */
 
 #if 0
@@ -956,7 +948,7 @@ drawMenuFromList( WINDOW* win, const MenuList** menuLists,
 static void 
 SIGWINCH_handler( int signal )
 {
-    int x, y;
+    int height, width;
 
     assert( signal == SIGWINCH );
 
@@ -964,8 +956,9 @@ SIGWINCH_handler( int signal )
 
 /*     (*globals.drawMenu)( &globals );  */
 
-    getmaxyx( stdscr, y, x );
-    wresize( g_globals.mainWin, y-MENU_WINDOW_HEIGHT, x );
+    getmaxyx( stdscr, height, width );
+    XP_LOGF( "%s:, getmaxyx()->w:%d; h:%d", __func__, width, height );
+    wresize( g_globals.mainWin, height-MENU_WINDOW_HEIGHT, width );
 
     board_draw( g_globals.cGlobals.game.board );
 } /* SIGWINCH_handler */
@@ -1059,7 +1052,7 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
         int fd = g_io_channel_unix_get_fd( source );
         unsigned char buf[1024];
         int nBytes;
-        CommsAddrRec addrRec;
+        // CommsAddrRec addrRec;
         CommsAddrRec* addrp = NULL;
 
         /* It's a normal data socket */
@@ -1072,9 +1065,10 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
 #endif
 #ifdef XWFEATURE_SMS
         case COMMS_CONN_SMS:
-            addrp = &addrRec;
-            nBytes = linux_sms_receive( &globals->cGlobals, fd,
-                                        buf, sizeof(buf), addrp );
+            XP_ASSERT(0);
+            /* addrp = &addrRec; */
+            /* nBytes = linux_sms_receive( &globals->cGlobals, fd, */
+            /*                             buf, sizeof(buf), addrp ); */
             break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
@@ -1130,7 +1124,7 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
     }
 
 #ifdef XWFEATURE_RELAY
-    globals->cGlobals.socket = newSock;
+    globals->cGlobals.relaySocket = newSock;
 #endif
 } /* curses_socket_changed */
 
@@ -1523,7 +1517,8 @@ curses_util_remSelected( XW_UtilCtxt* uc )
 
     text = strFromStream( stream );
 
-    (void)cursesask( globals, text, 1, "Ok" );
+    const char* buttons[] = { "Ok" };
+    (void)cursesask( globals, text, VSIZE(buttons), buttons );
 
     free( text );
 }
@@ -1635,10 +1630,18 @@ passKeyToBoard( CursesAppGlobals* globals, char ch )
 static void
 positionSizeStuff( CursesAppGlobals* globals, int width, int height )
 {
-    BoardCtxt* board = globals->cGlobals.game.board;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    BoardCtxt* board = cGlobals->game.board;
 #ifdef COMMON_LAYOUT
-    XP_USE( width );
-    XP_USE( height );
+
+    BoardDims dims;
+    board_figureLayout( board, cGlobals->gi, 
+                        0, 0, width, height,
+                        150, 200, /* percents */
+                        width*75/100, 2, 1, 
+                        XP_FALSE, &dims );
+    board_applyLayout( board, &dims );
+
 #else
     XP_U16 cellWidth, cellHt, scoreLeft, scoreWidth;
     int remWidth = width;
@@ -1775,7 +1778,7 @@ cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
     rowidFromToken( XP_NTOHL( clientToken ), &ignore, &seed );
     XP_ASSERT( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) );
     if ( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) ) {
-        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len );
+        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, NULL );
     } else {
         XP_LOGF( "%s: dropping packet; meant for a different device",
                  __func__ );
@@ -1851,7 +1854,8 @@ cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
     } else {
         g_free( globals->lastErr );
         globals->lastErr = g_strdup( msg );
-        (void)cursesask( globals, msg, 1, "Ok" );
+        const char* buttons[] = { "Ok" };
+        (void)cursesask( globals, msg, VSIZE(buttons), buttons );
     }
 }
 
@@ -1937,7 +1941,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.amServer = isServer;
     g_globals.cGlobals.params = params;
 #ifdef XWFEATURE_RELAY
-    g_globals.cGlobals.socket = -1;
+    g_globals.cGlobals.relaySocket = -1;
 #endif
 
     g_globals.cGlobals.socketChanged = curses_socket_changed;
@@ -2029,8 +2033,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         }
 
         XP_Bool opened = XP_FALSE;
-        initCurses( &g_globals );
-        getmaxyx( g_globals.boardWin, height, width );
+        initCurses( &g_globals, &width, &height );
 
         g_globals.draw = (struct CursesDrawCtx*)
             cursesDrawCtxtMake( g_globals.boardWin );
@@ -2141,7 +2144,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 # ifdef XWFEATURE_SMS
             } else if ( params->conType == COMMS_CONN_SMS ) {
                 addr.conType = COMMS_CONN_SMS;
-                XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.serverPhone,
+                XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone,
                             sizeof(addr.u.sms.phone) - 1 );
                 addr.u.sms.port = params->connInfo.sms.port;
 # endif
@@ -2213,14 +2216,15 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     }
     saveGame( &g_globals.cGlobals );
 
-    game_dispose( &g_globals.cGlobals.game ); /* takes care of the dict */
+    game_dispose( &g_globals.cGlobals.game );
     gi_disposePlayerInfo( MEMPOOL cGlobals->gi );
+    dict_unref( cGlobals->dict );
     
 #ifdef XWFEATURE_BLUETOOTH
     linux_bt_close( &g_globals.cGlobals );
 #endif
 #ifdef XWFEATURE_SMS
-    linux_sms_close( &g_globals.cGlobals );
+    // linux_sms_close( &g_globals.cGlobals );
 #endif
 #ifdef XWFEATURE_IP_DIRECT
     linux_udp_close( &g_globals.cGlobals );

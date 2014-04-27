@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -37,6 +37,9 @@ public class ExpiringDelegate {
     private static final long INTERVAL_SECS = 3 * 24 * 60 * 60;
     // private static final long INTERVAL_SECS = 60 * 10;   // for testing
 
+    private static boolean s_kitkat = 
+        19 <= Integer.valueOf( android.os.Build.VERSION.SDK );
+
     private Context m_context;
     private View m_view;
     private boolean m_active = false;
@@ -49,12 +52,11 @@ public class ExpiringDelegate {
     private long m_startSecs;
     private Runnable m_runnable = null;
     private boolean m_selected;
-    private Drawable m_origDrawable;
     // these can be static as drawing's all in same thread.
     private static Rect s_rect;
     private static Paint s_paint;
     private static float[] s_points;
-    private static Drawable s_selDrawable;
+    private DrawSelDelegate m_dsdel;
 
     static {
         s_rect = new Rect();
@@ -62,14 +64,13 @@ public class ExpiringDelegate {
         s_paint.setStyle(Paint.Style.STROKE);  
         s_paint.setStrokeWidth( 1 );
         s_points = new float[4*6];
-        s_selDrawable = new ColorDrawable( XWApp.SEL_COLOR );
     }
 
     public ExpiringDelegate( Context context, View view )
     {
         m_context = context;
         m_view = view;
-        m_origDrawable = view.getBackground();
+        m_dsdel = new DrawSelDelegate( view );
     }
 
     public void setHandler( Handler handler )
@@ -98,12 +99,7 @@ public class ExpiringDelegate {
     public void setSelected( boolean selected )
     {
         m_selected = selected;
-        if ( selected ) {
-            m_origDrawable = m_view.getBackground();
-            m_view.setBackgroundDrawable( s_selDrawable );
-        } else {
-            m_view.setBackgroundDrawable( m_origDrawable );
-        }
+        m_dsdel.showSelected( m_selected );
     }
 
     public void onDraw( Canvas canvas ) 
@@ -116,6 +112,11 @@ public class ExpiringDelegate {
             int width = s_rect.width();
             int redWidth = width * m_pct / 100;
             Assert.assertTrue( redWidth <= width );
+
+            if ( s_kitkat ) {
+                ++s_rect.top;
+                ++s_rect.left;
+            }
 
             // left edge
             addPoints( 0, s_rect.left, s_rect.top,

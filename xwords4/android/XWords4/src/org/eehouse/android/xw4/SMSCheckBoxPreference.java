@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -58,7 +58,7 @@ public class SMSCheckBoxPreference extends CheckBoxPreference {
     {
         if ( checked && m_attached && m_context instanceof PrefsActivity ) {
             PrefsActivity activity = (PrefsActivity)m_context;
-            activity.showDialog( PrefsActivity.CONFIRM_SMS );
+            activity.showDialog( DlgID.CONFIRM_SMS.ordinal() );
         } else {
             super_setChecked( checked );
         }

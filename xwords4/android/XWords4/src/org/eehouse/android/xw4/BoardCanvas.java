@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2013 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -38,6 +38,7 @@ import org.eehouse.android.xw4.jni.DrawCtx;
 import org.eehouse.android.xw4.jni.DrawScoreInfo;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
 
 import junit.framework.Assert;
 
@@ -84,7 +85,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
     private Drawable m_downArrow;
     private int m_trayOwner = -1;
     private int m_pendingScore;
-    private int m_dictPtr = 0;
+    private DictWrapper m_dict;
     protected String[] m_dictChars;
     private boolean m_hasSmallScreen;
     private int m_backgroundUsed = 0x00000000;
@@ -142,6 +143,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         m_activity = activity;
         m_bitmap = bitmap;
         m_jniThread = jniThread;
+        m_dict = new DictWrapper();
 
         m_hasSmallScreen = Utils.hasSmallScreen( m_context );
 
@@ -542,20 +544,21 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
     }
 
-    public void dictChanged( final int dictPtr )
+    public void dictChanged( final int newPtr )
     {
-        if ( m_dictPtr != dictPtr ) {
-            if ( 0 == dictPtr ) {
+        int curPtr = m_dict.getDictPtr();
+        if ( curPtr != newPtr ) {
+            if ( 0 == newPtr ) {
                 m_fontDims = null;
                 m_dictChars = null;
-            } else if ( m_dictPtr == 0 || 
-                        !XwJNI.dict_tilesAreSame( m_dictPtr, dictPtr ) ) {
+            } else if ( 0 == curPtr
+                        || !XwJNI.dict_tilesAreSame( curPtr, newPtr ) ) {
                 m_fontDims = null;
                 m_dictChars = null;
                 m_activity.runOnUiThread( new Runnable() {
                         public void run() {
                             if ( null != m_jniThread ) {
-                                m_dictChars = XwJNI.dict_getChars( dictPtr );
+                                m_dictChars = XwJNI.dict_getChars( newPtr );
                                 // draw again
                                 m_jniThread.handle( JNIThread.JNICmd
                                                     .CMD_INVALALL );
@@ -563,7 +566,8 @@ public class BoardCanvas extends Canvas implements DrawCtx {
                         }
                     });
             }
-            m_dictPtr = dictPtr;
+            m_dict.release();
+            m_dict = new DictWrapper( newPtr );
         }
     }
 

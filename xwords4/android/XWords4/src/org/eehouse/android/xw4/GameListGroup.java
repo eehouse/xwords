@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -24,33 +24,75 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 
-public class GameListGroup extends ExpiringTextView 
-    implements SelectableItem.LongClickHandler 
+public class GameListGroup extends ExpiringLinearLayout 
+    implements SelectableItem.LongClickHandler,
+               View.OnClickListener,
+               View.OnLongClickListener
 {
+    // Find me a home....
+    interface GroupStateListener {
+        void onGroupExpandedChanged( int groupPosition, boolean expanded );
+    }
+
     private int m_groupPosition;
     private long m_groupID;
     private boolean m_expanded;
     private SelectableItem m_cb;
+    private GroupStateListener m_gcb;
+    private TextView m_etv;
+    private boolean m_selected;
+    private int m_nGames;
+    private DrawSelDelegate m_dsdel;
+    private ImageButton m_expandButton;
 
     public static GameListGroup makeForPosition( Context context,
                                                  int groupPosition, 
                                                  long groupID,
-                                                 SelectableItem cb )
+                                                 int nGames,
+                                                 boolean expanded,
+                                                 SelectableItem cb,
+                                                 GroupStateListener gcb )
     {
         GameListGroup result = 
             (GameListGroup)Utils.inflate( context, R.layout.game_list_group );
         result.m_cb = cb;
+        result.m_gcb = gcb;
         result.m_groupPosition = groupPosition;
         result.m_groupID = groupID;
+        result.m_nGames = nGames;
+        result.m_expanded = expanded;
+
+        result.setButton();     // in case onFinishInflate already called
+
         return result;
     }
 
     public GameListGroup( Context cx, AttributeSet as ) 
     {
         super( cx, as );
+    }
+
+    @Override
+    protected void onFinishInflate()
+    {
+        super.onFinishInflate();
+        m_etv = (TextView)findViewById( R.id.game_name );
+        m_expandButton = (ImageButton)findViewById( R.id.expander );
+
+        // click on me OR the button expands/contracts...
+        setOnClickListener( this );
+        m_expandButton.setOnClickListener( this );
+
+        m_dsdel = new DrawSelDelegate( this );
+        setOnLongClickListener( this );
+
+        setButton();
     }
 
     public void setGroupPosition( int groupPosition )
@@ -76,6 +118,11 @@ public class GameListGroup extends ExpiringTextView
         }
     }
 
+    protected void setText( String text )
+    {
+        m_etv.setText( text );
+    }
+
     // GameListAdapter.ClickHandler interface
     public void longClicked()
     {
@@ -84,8 +131,41 @@ public class GameListGroup extends ExpiringTextView
 
     protected void toggleSelected()
     {
-        super.toggleSelected();
+        m_selected = !m_selected;
+        m_dsdel.showSelected( m_selected );
         m_cb.itemToggled( this, m_selected );
+    }
+
+    //////////////////////////////////////////////////
+    // View.OnLongClickListener interface
+    //////////////////////////////////////////////////
+    public boolean onLongClick( View view ) 
+    {
+        longClicked();
+        return true;
+    }
+
+    //////////////////////////////////////////////////
+    // View.OnClickListener interface
+    //////////////////////////////////////////////////
+    public void onClick( View view ) 
+    {
+        if ( 0 < m_nGames ) {
+            m_expanded = !m_expanded;
+            m_gcb.onGroupExpandedChanged( m_groupPosition, m_expanded );
+            setButton();
+        }
+    }
+
+    private void setButton()
+    {
+        if ( null != m_expandButton ) {
+            m_expandButton.setVisibility( 0 == m_nGames ? 
+                                          View.GONE : View.VISIBLE );
+            m_expandButton.setImageResource( m_expanded ?
+                                             R.drawable.expander_ic_maximized :
+                                             R.drawable.expander_ic_minimized);
+        }
     }
 
 }

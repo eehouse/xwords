@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2010 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -481,7 +481,7 @@ public class BTService extends XWService {
                                                           host.getAddress() );
 
                     for ( long rowid : rowids ) {
-                        if ( BoardActivity.feedMessage( gameID, buffer, addr ) ) {
+                        if ( BoardDelegate.feedMessage( gameID, buffer, addr ) ) {
                             // do nothing
                         } else if ( haveGame && 
                                     GameUtils.feedMessage( BTService.this, rowid, 
@@ -968,7 +968,7 @@ public class BTService extends XWService {
     private void postNotification( int gameID, int title, String body, 
                                    long rowid )
     {
-        Intent intent = GamesList.makeGameIDIntent( this, gameID );
+        Intent intent = GamesListActivity.makeGameIDIntent( this, gameID );
         Utils.postNotification( this, intent, R.string.new_btmove_title, 
                                 body, (int)rowid );
     }
@@ -1017,12 +1017,6 @@ public class BTService extends XWService {
                                + "addr null so not sending" );
             }
             return sent;
-        }
-
-        public boolean relayNoConnProc( byte[] buf, String relayID )
-        {
-            Assert.fail();
-            return false;
         }
     }
 

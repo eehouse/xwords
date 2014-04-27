@@ -273,7 +273,7 @@ typedef struct _PlayerDicts {
 
 #else
 
-# define MPFORMAL_NOCOMMA
+# define MPFORMAL_NOCOMMA void
 # define MPFORMAL
 # define MPSLOT
 # define MPPARM_NOCOMMA(p)

@@ -393,6 +393,18 @@ linux_util_md5sum( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len )
 }
 #endif
 
+#ifdef XWFEATURE_SMS
+static XP_Bool 
+linux_util_phoneNumbersSame( XW_UtilCtxt* uc, const XP_UCHAR* p1,
+                             const XP_UCHAR* p2 )
+{
+    XP_USE( uc );
+    XP_Bool result = 0 == strcmp( p1, p2 );
+    XP_LOGF( "%s(%s, %s) => %d", __func__, p1, p2, result );
+    return result;
+}
+#endif
+
 void
 linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 {
@@ -411,6 +423,9 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
 #endif
 #ifdef COMMS_CHECKSUM
     util->vtable->m_util_md5sum = linux_util_md5sum;
+#endif
+#ifdef XWFEATURE_SMS
+    util->vtable->m_util_phoneNumbersSame = linux_util_phoneNumbersSame;
 #endif
 }
 

@@ -174,14 +174,14 @@ makeDictForStream( CommonGlobals* cGlobals, XWStreamCtxt* stream )
 
 void
 gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf, 
-            XP_U16 len )
+            XP_U16 len, const CommsAddrRec* from )
 {
     XP_LOGF( "%s(hasDraw=%d)", __func__, hasDraw );
     XP_Bool redraw = XP_FALSE;
     XWGame* game = &cGlobals->game;
     XWStreamCtxt* stream = stream_from_msgbuf( cGlobals, buf, len );
     if ( !!stream ) {
-        if ( comms_checkIncomingStream( game->comms, stream, NULL ) ) {
+        if ( comms_checkIncomingStream( game->comms, stream, from ) ) {
             redraw = server_receiveMessage( game->server, stream );
             if ( redraw ) {
                 saveGame( cGlobals );
@@ -393,7 +393,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
         ssize_t nRead = blocking_read( fdin, (unsigned char*)&len, 
                                        sizeof(len) );
         if ( nRead != sizeof(len) ) {
-            XP_LOGF( "%s: 1: unexpected nRead: %d", __func__, nRead );
+            XP_LOGF( "%s: 1: unexpected nRead: %zd", __func__, nRead );
             break;
         }
         len = ntohs( len );
@@ -403,7 +403,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
         unsigned char buf[len];
         nRead = blocking_read( fdin, buf, len );
         if ( nRead != len ) {
-            XP_LOGF( "%s: 2: unexpected nRead: %d", __func__, nRead );
+            XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
             break;
         }
         stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
@@ -457,7 +457,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
             ssize_t nRead = blocking_read( fd, (unsigned char*)&len, 
                                            sizeof(len) );
             if ( nRead != sizeof(len) ) {
-                XP_LOGF( "%s: 1: unexpected nRead: %d", __func__, nRead );
+                XP_LOGF( "%s: 1: unexpected nRead: %zd", __func__, nRead );
                 break;
             }
             len = ntohs( len );
@@ -467,7 +467,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
             unsigned char buf[len];
             nRead = blocking_read( fd, buf, len );
             if ( nRead != len ) {
-                XP_LOGF( "%s: 2: unexpected nRead: %d", __func__, nRead );
+                XP_LOGF( "%s: 2: unexpected nRead: %zd", __func__, nRead );
                 break;
             }
             stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
@@ -669,6 +669,7 @@ typedef enum {
     ,CMD_ASKNEWGAME
     ,CMD_NHIDDENROWS
 #endif
+    ,CMD_ASKTIME
     ,N_CMDS
 } XwLinuxCmd;
 
@@ -780,6 +781,8 @@ static CmdInfoRec CmdInfoRecs[] = {
 #if defined PLATFORM_GTK
     ,{ CMD_ASKNEWGAME, false, "ask-new", "put up ui for new game params" }
     ,{ CMD_NHIDDENROWS, true, "hide-rows", "number of rows obscured by tray" }
+    ,{ CMD_ASKTIME, true, "ask-timeout", 
+       "Wait this many ms before cancelling dialog (default 500 ms; 0 means forever)" }
 #endif
 };
 
@@ -920,7 +923,7 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
 {
     struct sockaddr_in to_sock;
     struct hostent* host;
-    int sock = cGlobals->socket;
+    int sock = cGlobals->relaySocket;
     if ( sock == -1 ) {
 
         /* make a local copy of the address to send to */
@@ -945,7 +948,7 @@ linux_init_relay_socket( CommonGlobals* cGlobals, const CommsAddrRec* addrRec )
         errno = 0;
         if ( 0 == connect( sock, (const struct sockaddr*)&to_sock, 
                            sizeof(to_sock) ) ) {
-            cGlobals->socket = sock;
+            cGlobals->relaySocket = sock;
             XP_LOGF( "%s: connected new socket %d to relay", __func__, sock );
 
             struct timeval tv = {0};
@@ -979,14 +982,14 @@ free_elem_proc( gpointer data )
 static bool
 send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
 {
-    size_t nSent = send( cGlobals->socket, buf, len, 0 );
+    size_t nSent = send( cGlobals->relaySocket, buf, len, 0 );
     bool success = len == nSent;
     if ( !success ) {
-        close( cGlobals->socket );
+        close( cGlobals->relaySocket );
         (*cGlobals->socketChanged)( cGlobals->socketChangedClosure,
-                                    cGlobals->socket, -1, 
+                                    cGlobals->relaySocket, -1, 
                                     &cGlobals->storage );
-        cGlobals->socket = -1;
+        cGlobals->relaySocket = -1;
 
         /* delete all pending packets since the socket's bad */
         for ( GSList* iter = cGlobals->packetQueue; !!iter; iter = iter->next ) {
@@ -1009,7 +1012,7 @@ sendTimerFired( gpointer data )
         SendQueueElem* elem = (SendQueueElem*)cGlobals->packetQueue->data;
         cGlobals->packetQueue = cGlobals->packetQueue->next;
 
-        XP_LOGF( "%s: sending packet %ld of len %d (%d left)", __func__, 
+        XP_LOGF( "%s: sending packet %d of len %zd (%d left)", __func__, 
                  elem->id, elem->len, listLen - 1 );
         bool sent = send_or_close( cGlobals, elem->buf, elem->len );
         free( elem->buf );
@@ -1045,7 +1048,7 @@ send_per_params( const XP_U8* buf, const XP_U16 buflen,
             cGlobals->packetQueue = 
                 g_slist_append( cGlobals->packetQueue, elem );
             nSent += toSend;
-            XP_LOGF( "%s: added packet %ld of len %d", __func__,
+            XP_LOGF( "%s: added packet %d of len %zd", __func__,
                      elem->id, elem->len );
         }
         int when = XP_RANDOM() % (1 + cGlobals->params->splitPackets);
@@ -1067,13 +1070,13 @@ linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
         result = relaycon_send( cGlobals->params, buf, buflen, 
                                 clientToken, addrRec );
     } else {
-        int sock = cGlobals->socket;
+        int sock = cGlobals->relaySocket;
     
         if ( sock == -1 ) {
             XP_LOGF( "%s: socket uninitialized", __func__ );
             sock = linux_init_relay_socket( cGlobals, addrRec );
             if ( sock != -1 ) {
-                assert( cGlobals->socket == sock );
+                assert( cGlobals->relaySocket == sock );
                 (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
                                             -1, sock, &cGlobals->storage );
             }
@@ -1134,7 +1137,7 @@ linux_reset( void* closure )
 
 XP_S16
 linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
-            XP_U32 XP_UNUSED(gameID), void* closure )
+            XP_U32 gameID, void* closure )
 {
     XP_S16 nSent = -1;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;   
@@ -1179,8 +1182,9 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
             comms_getAddr( cGlobals->game.comms, &addr );
             addrRec = &addr;
         }
-        nSent = linux_sms_send( cGlobals, buf, buflen, 
-                                addrRec->u.sms.phone, addrRec->u.sms.port );
+        nSent = linux_sms_send( cGlobals->params, buf, buflen, 
+                                addrRec->u.sms.phone, addrRec->u.sms.port,
+                                gameID );
 #endif
     } else {
         XP_ASSERT(0);
@@ -1193,12 +1197,12 @@ void
 linux_close_socket( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
-    int socket = cGlobals->socket;
+    int socket = cGlobals->relaySocket;
 
     (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
                                 socket, -1, &cGlobals->storage );
 
-    XP_ASSERT( -1 == cGlobals->socket );
+    XP_ASSERT( -1 == cGlobals->relaySocket );
 
     close( socket );
 }
@@ -1213,7 +1217,7 @@ blocking_read( int fd, unsigned char* buf, const int len )
         for ( tries = 5; nRead < len && tries > 0; --tries ) {
             // XP_LOGF( "%s: blocking for %d bytes", __func__, len );
             ssize_t nGot = read( fd, buf + nRead, len - nRead );
-            XP_LOGF( "%s: read(fd=%d, len=%d) => %d", __func__, fd, 
+            XP_LOGF( "%s: read(fd=%d, len=%d) => %zd", __func__, fd, 
                      len - nRead, nGot );
             if ( nGot == 0 ) {
                 XP_LOGF( "%s: read 0; let's try again (%d more times)", __func__, 
@@ -1240,7 +1244,7 @@ int
 linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 {
     LOG_FUNC();
-    int sock = cGlobals->socket;
+    int sock = cGlobals->relaySocket;
     ssize_t nRead = -1;
     if ( 0 <= sock ) {
         unsigned short tmp;
@@ -1304,7 +1308,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
             }
         }
     }
-    XP_LOGF( "%s=>%d", __func__, nRead );
+    XP_LOGF( "%s=>%zd", __func__, nRead );
     return nRead;
 } /* linux_relay_receive */
 #endif  /* XWFEATURE_RELAY */
@@ -1391,20 +1395,29 @@ linux_util_addrChange( XW_UtilCtxt* uc,
                        const CommsAddrRec* newAddr )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    if ( 0 ) {
+    switch ( newAddr->conType ) {
 #ifdef XWFEATURE_BLUETOOTH
-    } else if ( newAddr->conType == COMMS_CONN_BT ) {
+    case COMMS_CONN_BT: {
         XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
         linux_bt_open( cGlobals, isServer );
+    }
+        break;
 #endif
-#if defined XWFEATURE_IP_DIRECT
-    } else if ( newAddr->conType == COMMS_CONN_IP_DIRECT ) {
+#ifdef XWFEATURE_IP_DIRECT
+    case COMMS_CONN_IP_DIRECT:
         linux_udp_open( cGlobals, newAddr );
+        break;
 #endif
-#if defined XWFEATURE_SMS
-    } else if ( COMMS_CONN_SMS == newAddr->conType ) {
-        linux_sms_init( cGlobals, newAddr );
+#ifdef XWFEATURE_SMS
+    case COMMS_CONN_SMS:
+        /* nothing to do??? */
+        // XP_ASSERT(0);
+        // linux_sms_init( cGlobals, newAddr );
+        break;
 #endif
+    default:
+        // XP_ASSERT(0);
+        break;
     }
 }
 
@@ -1445,45 +1458,6 @@ defaultRandomSeed()
     fclose( rfile );
     return rs;
 } /* defaultRandomSeed */
-
-/* This belongs in linuxbt.c */
-#ifdef XWFEATURE_BLUETOOTH
-static XP_Bool
-nameToBtAddr( const char* name, bdaddr_t* ba )
-{
-    XP_Bool success = XP_FALSE;
-    int id, socket;
-    LOG_FUNC();
-# define RESPMAX 5
-
-    id = hci_get_route( NULL );
-    socket = hci_open_dev( id );
-    if ( id >= 0 && socket >= 0 ) {
-        long flags = 0L;
-        inquiry_info inqInfo[RESPMAX];
-        inquiry_info* inqInfoP = inqInfo;
-        int count = hci_inquiry( id, 10, RESPMAX, NULL, &inqInfoP, flags );
-        int i;
-
-        for ( i = 0; i < count; ++i ) {
-            char buf[64];
-            if ( 0 >= hci_read_remote_name( socket, &inqInfo[i].bdaddr, 
-                                            sizeof(buf), buf, 0)) {
-                if ( 0 == strcmp( buf, name ) ) {
-                    XP_MEMCPY( ba, &inqInfo[i].bdaddr, sizeof(*ba) );
-                    success = XP_TRUE;
-                    XP_LOGF( "%s: matched %s", __func__, name );
-                    char addrStr[32];
-                    ba2str(ba, addrStr);
-                    XP_LOGF( "bt_addr is %s", addrStr );
-                    break;
-                }
-            }
-        }
-    }
-    return success;
-} /* nameToBtAddr */
-#endif
 
 #ifdef XWFEATURE_SLOW_ROBOT
 static bool
@@ -1576,7 +1550,7 @@ walk_dict_test( MPFORMAL const DictionaryCtxt* dict,
     XP_U32 sum = 0;
     for ( jj = 0; jj < VSIZE(lens.lens); ++jj ) {
         sum += lens.lens[jj];
-        XP_LOGF( "%ld words of length %ld", lens.lens[jj], jj );
+        XP_LOGF( "%d words of length %ld", lens.lens[jj], jj );
     }
     XP_ASSERT( sum == count );
 
@@ -1714,7 +1688,7 @@ walk_dict_test_all( MPFORMAL const LaunchParams* params, GSList* testDicts,
         if ( NULL != dict ) {
             XP_LOGF( "walk_dict_test(%s)", name );
             walk_dict_test( MPPARM(mpool) dict, testPrefixes, testMinMax );
-            dict_destroy( dict );
+            dict_unref( dict );
         }
     }
 }
@@ -1855,7 +1829,7 @@ initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
 #ifdef XWFEATURE_SMS
     } else if ( params->conType == COMMS_CONN_SMS ) {
         addr->conType = COMMS_CONN_SMS;
-        XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.serverPhone,
+        XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.phone,
                     sizeof(addr->u.sms.phone) - 1 );
         addr->u.sms.port = params->connInfo.sms.port;
 #endif
@@ -1893,6 +1867,8 @@ initParams( LaunchParams* params )
 #endif
 
     params->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(params->mpool));
+    params->dictMgr = dmgr_make( MPPARM_NOCOMMA(params->mpool) );
+
     // linux_util_vt_init( MPPARM(params->mpool) params->util );
 #ifndef XWFEATURE_STANDALONE_ONLY
     /* params->util->vtable->m_util_informMissing = linux_util_informMissing; */
@@ -1905,6 +1881,7 @@ static void
 freeParams( LaunchParams* params )
 {
     vtmgr_destroy( MPPARM(params->mpool) params->vtMgr );
+    dmgr_destroy( params->dictMgr );
 
     gi_disposePlayerInfo( MPPARM(params->mpool) &params->pgi );
     mpool_destroy( params->mpool );
@@ -1921,7 +1898,7 @@ dawg2dict( const LaunchParams* params, GSList* testDicts )
                                    params->useMmap );
         if ( NULL != dict ) {
             dumpDict( dict );
-            dict_destroy( dict );
+            dict_unref( dict );
         }
     }
     return 0;
@@ -1959,7 +1936,7 @@ main( int argc, char** argv )
     
     CommsConnType conType = COMMS_CONN_NONE;
 #ifdef XWFEATURE_SMS
-    char* serverPhone = NULL;
+    char* phone = NULL;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     const char* btaddr = NULL;
@@ -2003,6 +1980,7 @@ main( int argc, char** argv )
     mainParams.noHeartbeat = XP_FALSE;
     mainParams.nHidden = 0;
     mainParams.needsNewGame = XP_FALSE;
+    mainParams.askTimeout = 500;
 #ifdef XWFEATURE_SEARCHLIMIT
     mainParams.allowHintRect = XP_FALSE;
 #endif
@@ -2158,7 +2136,7 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
             XP_ASSERT( COMMS_CONN_NONE == conType );
-            serverPhone = optarg;
+            phone = optarg;
             conType = COMMS_CONN_SMS;
             break;
 #endif
@@ -2341,6 +2319,9 @@ main( int argc, char** argv )
         case CMD_NHIDDENROWS:
             mainParams.nHidden = atoi(optarg);
             break;
+        case CMD_ASKTIME:
+            mainParams.askTimeout = atoi(optarg);
+            break;
 #endif
         default:
             done = true;
@@ -2459,7 +2440,7 @@ main( int argc, char** argv )
 #endif
 #ifdef XWFEATURE_SMS
         } else if ( conType == COMMS_CONN_SMS ) {
-            mainParams.connInfo.sms.serverPhone = serverPhone;
+            mainParams.connInfo.sms.phone = phone;
             if ( !portNum ) {
                 portNum = "1";
             }

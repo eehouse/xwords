@@ -1,5 +1,6 @@
 # ignore backups anywhere
 *.~?~
+*~
 /gitignored
 TAGS
 core

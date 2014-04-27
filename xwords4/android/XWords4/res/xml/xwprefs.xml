@@ -246,6 +246,11 @@
                         android:summary="@string/summary_sort_tiles"
                         android:defaultValue="true"
                         />
+    <CheckBoxPreference android:key="@string/key_studyon"
+                        android:title="@string/title_studyon"
+                        android:summary="@string/summary_studyon"
+                        android:defaultValue="true"
+                        />
     <CheckBoxPreference android:key="@string/key_ringer_zoom"
                         android:title="@string/ringer_zoom"
                         android:summary="@string/ringer_zoom_summary"

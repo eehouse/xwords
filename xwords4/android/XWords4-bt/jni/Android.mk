@@ -68,6 +68,7 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/tray.c       \
 	$(COMMON_PATH)/dictnry.c    \
 	$(COMMON_PATH)/dictiter.c   \
+	$(COMMON_PATH)/dictmgr.c    \
 	$(COMMON_PATH)/mscore.c     \
 	$(COMMON_PATH)/vtabmgr.c    \
 	$(COMMON_PATH)/strutils.c   \
@@ -89,6 +90,11 @@ LOCAL_MODULE    := xwjni
 LOCAL_LDLIBS 	:= -L${SYSROOT}/usr/lib -llog -lz 
 
 include $(BUILD_SHARED_LIBRARY)
+
+ifneq ($(shell which ccache),)
+	TARGET_CC = ccache $(TOOLCHAIN_PREFIX)gcc
+	TARGET_CXX = ccache $(TOOLCHAIN_PREFIX)g++
+endif
 
 COMMON_SRC_FILES :=
 COMMON_PATH :=

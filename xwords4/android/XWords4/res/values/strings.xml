@@ -159,8 +159,8 @@
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-    <string name="confirm_reset">Are you sure you want to reset the
-    selected game[s]? (Resetting erases all moves and any connection
+    <string name="confirm_resetf">Are you sure you want to reset the %d
+    selected game[s]?\n\n(Resetting erases all moves and any connection
     information.)</string>
 
     <!--
@@ -601,7 +601,7 @@
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
          -->
-    <string name="ids_badwords">Word[s] %1$s not found in
+    <string name="ids_badwordsf">Word[s] %1$s not found in
          wordlist %2$s.</string>
 
     <!-- Appended to the above in the phonies_warn case.  User may
@@ -674,6 +674,7 @@
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
     <string name="board_menu_game_resend">Resend messages</string>
+    <string name="resend_finishedf">Resend finished; sent %d message[s].</string>
 
     <!--       
        ############################################################
@@ -1757,9 +1758,9 @@
       -->
     <!-- String giving version info, which is substituted in. -->
     <string name="about_versf">Crosswords for Android, Version %1$s,
-        rev %2$s.</string>
+        rev %2$s, built on %3$s.</string>
     <!-- copyright info -->
-    <string name="about_copyright">Copyright (C) 1998-2013 by Eric
+    <string name="about_copyright">Copyright (C) 1998-2014 by Eric
         House. This free/open source software is released under the GNU Public
         License.</string>
 
@@ -1788,10 +1789,13 @@
     <!-- New strings that need to be documented and found a home
          above. -->
     <string name="button_lookup">Look up words</string>
+    <string name="button_lookup_study">Look up/study words</string>
       <!--  -->
     <string name="button_lookupf">Look up %s</string>
+    <string name="button_lookup_studyf">Look up/study %s</string>
       <!--  -->
     <string name="title_lookup">Tap to look up</string>
+    <string name="title_lookup_study">Tap to look up or study</string>
       <!--  -->
     <string name="button_done">Done</string>
       <!--  -->
@@ -2119,14 +2123,10 @@
     <string name="group_cur_games">My games</string>
     <string name="group_new_games">New games</string>
 
-    <string name="group_confirm_del">Are you sure you want to delete
-    the selected group?</string>
-    <string name="groups_confirm_del">Are you sure you want to delete
-    the selected groups?</string>
-    <string name="group_confirm_delf">\u0020(It contains %d game[s],
-    which will also be deleted.)</string>
-    <string name="groups_confirm_delf">\u0020(They contains %d game[s],
-    which will also be deleted.)</string>
+    <string name="groups_confirm_delf">Are you sure you want to delete
+    the %d selected group[s]?</string>
+    <string name="groups_confirm_del_gamesf">\n\n(%d game[s] will
+    also be deleted.)</string>
 
     <string name="rename_group_label">Change the name of this group to:</string>
     <string name="game_name_group_title">Name group</string>
@@ -2167,13 +2167,12 @@
     <string name="sel_groupsf">Groups: %d</string>
     <string name="summary_thumbsize">Thumbnail size</string>
     <string name="thumb_off">Disabled</string>
-    <string name="sel_dictsf">Wordlists: %d</string>
 
     <!-- <string name="summary_thumb_enabled">Display snapshots of games</string> -->
 
     <string name="dropped_dupe">Invitation received but ignored: it
     has already been used to create a game.</string>
-    <string name="cur_menu_markerf">%1$s (yours)</string>
+    <string name="cur_menu_markerf">%1$s (in use)</string>
     <string name="board_menu_invite">Invite</string>
 
     <string name="enable_nfc">NFC is turned off on this device. You
@@ -2197,4 +2196,39 @@
     browsers for viewing the wordlists downloads page, DO NOT choose
     Firefox. Some versions have a bug that can cause the wordlists to
     be lost.</string>
+
+    <string name="menu_rateme">Rate Crosswords</string>
+    <string name="no_market">Google Play app not found</string>
+
+    <string name="add_to_studyf">Add %s to studylist</string>
+    <string name="title_studyon">Enable studylists</string>
+    <string name="summary_studyon">Offer to add to and display lists
+    of words to remember</string>
+    <string name="gamel_menu_study">Studylist…</string>
+
+    <string name="slmenu_copy_sel">Copy to clipboard</string>
+    <string name="slmenu_clear_sel">Delete</string>
+    <string name="confirm_studylist_clearf">Are you sure you want to
+    delete the %d selected word[s]?\n\n(This action cannot be undone.)</string>
+    <string name="paste_donef">%d word[s] copied</string>
+    <string name="add_donef">%s added to list</string>
+    <string name="studylist_titlef">Studylist for %s</string>
+
+    <string name="study_langpick">Your words for:</string>
+
+    <string name="study_no_langf">You have not yet saved any words
+    into a studylist for %s.</string>
+    <string name="study_no_lists">You have not yet saved any words
+    into a studylist.</string>
+
+    <string name="not_again_studycopy">The selected words will be
+    copied to the system clipboard. You can then paste them into any
+    app that supports pasting text, e.g. an email app.</string>
+
+    <string name="lookup_title">Word lookup</string>
+
+    <string name="slmenu_select_all">Select all</string>
+    <string name="slmenu_deselect_all">Unselect all</string>
+    <string name="sel_itemsf">Selected: %d</string>
+
 </resources>

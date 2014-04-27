@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -49,6 +49,8 @@ public class ExpiringLinearLayout extends LinearLayout {
     protected void onDraw( Canvas canvas ) 
     {
         super.onDraw( canvas );
-        m_delegate.onDraw( canvas );
+        if ( null != m_delegate ) {
+            m_delegate.onDraw( canvas );
+        }
     }
 }

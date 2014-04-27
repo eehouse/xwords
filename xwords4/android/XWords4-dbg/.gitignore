@@ -3,6 +3,5 @@ ant_out.txt
 local.properties
 bin
 gen
-libs
 proguard.cfg
 obj

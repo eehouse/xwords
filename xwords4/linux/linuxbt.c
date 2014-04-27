@@ -30,6 +30,8 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <bluetooth/bluetooth.h>
+#include <bluetooth/hci.h>
+#include <bluetooth/hci_lib.h>
 #if defined BT_USE_L2CAP
 # include <bluetooth/l2cap.h>
 #elif defined BT_USE_RFCOMM
@@ -514,6 +516,91 @@ linux_bt_socketclosed( CommonGlobals* globals, int XP_UNUSED_DBG(sock) )
     LOG_FUNC();
     XP_ASSERT( sock == btStuff->socket );
     btStuff->socket = -1;
+}
+
+#define RESPMAX 20
+
+typedef gboolean (*bt_proc)( const bdaddr_t* bdaddr, int socket, void* closure );
+
+static void
+btDevsIterate( bt_proc proc, void* closure )
+{
+    int id, socket;
+    LOG_FUNC();
+
+    id = hci_get_route( NULL );
+    socket = hci_open_dev( id );
+    if ( id >= 0 && socket >= 0 ) {
+        long flags = IREQ_CACHE_FLUSH;
+        inquiry_info inqInfo[RESPMAX];
+        inquiry_info* inqInfoP = inqInfo;
+        int count = hci_inquiry( id, 8/*wait seconds*/,
+                                 RESPMAX, NULL, &inqInfoP, flags );
+
+        int ii;
+        for ( ii = 0; ii < count; ++ii ) {
+            const bdaddr_t* bdaddr = &inqInfo[ii].bdaddr;
+            if ( !(*proc)( bdaddr, socket, closure ) ) {
+                break;
+            }
+        }
+    }
+}
+
+typedef struct _get_ba_data {
+    const char* name;
+    bdaddr_t* ba;
+    gboolean success;
+} get_ba_data;
+
+static gboolean
+get_ba_proc( const bdaddr_t* bdaddr, int socket, void* closure )
+{
+    get_ba_data* data = (get_ba_data*)closure;
+    char buf[64];
+    if ( 0 >= hci_read_remote_name( socket, bdaddr, sizeof(buf), buf, 0 ) ) {
+        if ( 0 == strcmp( buf, data->name ) ) {
+            XP_MEMCPY( data->ba, bdaddr, sizeof(*data->ba) );
+            data->success = XP_TRUE;
+            XP_LOGF( "%s: matched %s", __func__, data->name );
+            char addrStr[32];
+            ba2str( data->ba, addrStr );
+            XP_LOGF( "bt_addr is %s", addrStr );
+        }
+    }
+    return !data->success;
+}
+
+XP_Bool
+nameToBtAddr( const char* name, bdaddr_t* ba )
+{
+    LOG_FUNC();
+    get_ba_data data = { .name = name, .ba = ba, .success = FALSE };
+    btDevsIterate( get_ba_proc, &data );
+    return data.success;
+} /* nameToBtAddr */
+
+static gboolean
+append_name_proc( const bdaddr_t* bdaddr, int socket, void* closure )
+{
+    GSList** list = (GSList**)closure;
+    char buf[64];
+    char addr[19] = { 0 };
+    ba2str( bdaddr, addr );
+    XP_LOGF( "%s: adding %s", __func__, addr );
+    if ( 0 >= hci_read_remote_name( socket, bdaddr, sizeof(buf), buf, 0 ) ) {
+        gchar* name = g_strdup( buf );
+        *list = g_slist_append( *list, name );
+    }
+    return TRUE;
+}
+
+GSList*
+linux_bt_scan()
+{
+    GSList* list = NULL;
+    btDevsIterate( append_name_proc, &list );
+    return list;
 }
 
 #endif /* XWFEATURE_BLUETOOTH */

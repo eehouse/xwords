@@ -52,6 +52,7 @@ static void notifyTrayListeners( ModelCtxt* model, XP_U16 turn,
 static void notifyDictListeners( ModelCtxt* model, XP_S16 playerNum, 
                                  DictionaryCtxt* oldDict,
                                  DictionaryCtxt* newDict );
+static void model_unrefDicts( ModelCtxt* model );
 
 static CellTile getModelTileRaw( const ModelCtxt* model, XP_U16 col, 
                                  XP_U16 row );
@@ -79,6 +80,7 @@ static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
 static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
                            const DictionaryCtxt* dict,
+
 #ifdef XWFEATURE_BOARDWORDS
                            const MoveInfo* movei, XP_U16 start, XP_U16 end,
 #endif
@@ -151,7 +153,7 @@ model_makeFromStream( MPFORMAL XWStreamCtxt* stream, DictionaryCtxt* dict,
     if ( hasDict ) {
         DictionaryCtxt* savedDict = util_makeEmptyDict( util );
         dict_loadFromStream( savedDict, stream );
-        dict_destroy( savedDict );
+        dict_unref( savedDict );
     }
 
     model = model_make( MPPARM(mpool) dict, dicts, util, nCols );
@@ -299,6 +301,7 @@ model_setSize( ModelCtxt* model, XP_U16 nCols )
 void
 model_destroy( ModelCtxt* model )
 {
+    model_unrefDicts( model );
     stack_destroy( model->vol.stack );
     /* is this it!? */
     if ( !!model->vol.bonuses ) {
@@ -491,12 +494,14 @@ void
 model_setDictionary( ModelCtxt* model, DictionaryCtxt* dict )
 {
     DictionaryCtxt* oldDict = model->vol.dict;
-    model->vol.dict = dict;
-
+    model->vol.dict = dict_ref( dict );
+    
     if ( !!dict ) {
         setStackBits( model, dict );
-        notifyDictListeners( model, -1, oldDict, dict );
     }
+
+    notifyDictListeners( model, -1, oldDict, dict );
+    dict_unref( oldDict );
 } /* model_setDictionary */
 
 void
@@ -513,9 +518,12 @@ model_setPlayerDicts( ModelCtxt* model, const PlayerDicts* dicts )
             if ( oldDict != newDict ) {
                 XP_ASSERT( NULL == newDict || NULL == gameDict 
                            || dict_tilesAreSame( gameDict, newDict ) );
-                model->vol.dicts.dicts[ii] = newDict;
+                model->vol.dicts.dicts[ii] = dict_ref( newDict );
+
                 notifyDictListeners( model, ii, oldDict, newDict );
                 setStackBits( model, newDict );
+
+                dict_unref( oldDict );
             }
         }
     }
@@ -544,22 +552,15 @@ model_getPlayerDict( const ModelCtxt* model, XP_U16 playerNum )
 }
 
 static void
-destroyNotNull( DictionaryCtxt** dictp )
-{
-    if ( !!*dictp ) {
-        dict_destroy( *dictp );
-        *dictp = NULL;
-    }
-}
-
-void
-model_destroyDicts( ModelCtxt* model )
+model_unrefDicts( ModelCtxt* model )
 {
     XP_U16 ii;
     for ( ii = 0; ii < VSIZE(model->vol.dicts.dicts); ++ii ) {
-        destroyNotNull( &model->vol.dicts.dicts[ii] );
+        dict_unref( model->vol.dicts.dicts[ii] );
+        model->vol.dicts.dicts[ii] = NULL;
     }
-    destroyNotNull( &model->vol.dict );
+    dict_unref( model->vol.dict );
+    model->vol.dict = NULL;
 }
 
 static XP_Bool
@@ -830,7 +831,6 @@ model_canUndo( const ModelCtxt* model )
 
     /* More than just tile assignment? */
     XP_Bool result = nStackEntries > model->nPlayers;
-    LOG_RETURNF( "%d", result );
     return result;
 }
 
@@ -1935,7 +1935,6 @@ static void
 notifyDictListeners( ModelCtxt* model, XP_S16 playerNum,
                      DictionaryCtxt* oldDict, DictionaryCtxt* newDict )
 {
-    XP_ASSERT( !!newDict );
     if ( model->vol.dictListenerFunc != NULL ) {
         (*model->vol.dictListenerFunc)( model->vol.dictListenerData, playerNum, 
                                         oldDict, newDict );
@@ -2115,7 +2114,8 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
 } /* printMovePost */
 
 static void
-copyStack( ModelCtxt* model, StackCtxt* destStack, const StackCtxt* srcStack )
+copyStack( const ModelCtxt* model, StackCtxt* destStack, 
+           const StackCtxt* srcStack )
 {
     XWStreamCtxt* stream = mem_stream_make( MPPARM(model->vol.mpool)
                                             util_getVTManager(model->vol.util),
@@ -2128,7 +2128,7 @@ copyStack( ModelCtxt* model, StackCtxt* destStack, const StackCtxt* srcStack )
 } /* copyStack */
 
 static ModelCtxt*
-makeTmpModel( ModelCtxt* model, XWStreamCtxt* stream,
+makeTmpModel( const ModelCtxt* model, XWStreamCtxt* stream,
               MovePrintFuncPre mpf_pre, MovePrintFuncPost mpf_post, 
               void* closure )
 {
@@ -2332,14 +2332,17 @@ void
 model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row, 
                         XWStreamCtxt* stream )
 {
+    ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
+    copyStack( model, tmpModel->vol.stack, model->vol.stack );
+
     XP_ASSERT( !!stream );
-    StackCtxt* stack = model->vol.stack;
+    StackCtxt* stack = tmpModel->vol.stack;
     XP_U16 nEntriesBefore = stack_getNEntries( stack );
     XP_U16 nEntriesAfter;
 
     /* Loop until we undo the move that placed the tile. */
-    while ( model_undoLatestMoves( model, NULL, 1, NULL, NULL ) ) {
-        if ( 0 != (TILE_EMPTY_BIT & getModelTileRaw( model, col, row ) ) ) {
+    while ( model_undoLatestMoves( tmpModel, NULL, 1, NULL, NULL ) ) {
+        if ( 0 != (TILE_EMPTY_BIT & getModelTileRaw( tmpModel, col, row ) ) ) {
             break;
         }
     }
@@ -2360,10 +2363,12 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
                 XP_ASSERT( 0 );
                 break;
             }
-            modelAddEntry( model, nEntriesAfter++, &entry, XP_FALSE, NULL, &ni,
+            modelAddEntry( tmpModel, nEntriesAfter++, &entry, XP_FALSE, NULL, &ni,
                            NULL, NULL, NULL );
         }
     }
+
+    model_destroy( tmpModel );
 } /* model_listWordsThrough */
 #endif
 

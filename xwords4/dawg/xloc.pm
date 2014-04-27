@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# Copyright 2002-2014 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -26,6 +27,8 @@ package xloc;
 
 use strict;
 use warnings;
+# force output in utf8
+use open qw/:std :utf8/;
 
 BEGIN {
     use Exporter   ();
@@ -160,18 +163,20 @@ sub GetNthTile($$) {
 
 sub TileFace($) {
     my ( $tileR ) = @_;
+    my $result;
 
     my $str = ${$tileR}[2];
 
     if ( $str =~ /\'(.(\|.)*)\'/ ) {
-        return $1;
+        $result = $1;
     } elsif ( $str =~ /\"(.+)\"/ ) {
-        return $1;
+        $result = $1;
     } elsif ( $str =~ /(\d+)/ ) {
-        return chr($1);
+        $result = chr($1);
     } else {
         die "TileFace: unrecognized face format: $str";
     }
+    return $result;
 }
 
 sub TileValue($) {

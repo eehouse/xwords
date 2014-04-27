@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2013 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -46,7 +46,6 @@ import org.eehouse.android.xw4.jni.XwJNI;
 
 public class NewGameActivity extends XWActivity {
 
-    private static final int NEW_GAME_ACTION = 1;
     // private static final String SAVE_DEVNAMES = "DEVNAMES";
     private static final String SAVE_REMOTEGAME = "REMOTEGAME";
     private static final String SAVE_GAMEID = "GAMEID";
@@ -57,10 +56,6 @@ public class NewGameActivity extends XWActivity {
     private static final int INVITE_FOR_BT = 3;
     private static final int INVITE_FOR_SMS = 4;
 
-    // Dialogs
-    private static final int NAME_GAME = DlgDelegate.DIALOG_LAST + 1;
-    private static final int ENABLE_NFC = DlgDelegate.DIALOG_LAST + 2;
-    
     private boolean m_showsOn;
     private boolean m_nameForBT;
     private boolean m_firingPrefs = false;
@@ -154,9 +149,9 @@ public class NewGameActivity extends XWActivity {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( DlgDelegate.Action action, int which, Object[] params )
     {
-        switch( id ) {
+        switch( action ) {
         case NEW_GAME_ACTION:
             if ( DlgDelegate.DISMISS_BUTTON != which ) {
                 makeNewGame( true, true, which );
@@ -202,7 +197,7 @@ public class NewGameActivity extends XWActivity {
                     m_gameID = GameUtils.newGameID();
                     m_gameName = Utils.format( this, R.string.dft_namef, 
                                                m_gameID & 0xFFFF );
-                    showDialog( NAME_GAME );
+                    showDialog( DlgID.NAME_GAME.ordinal() );
                 }
                 break;
             }
@@ -214,7 +209,8 @@ public class NewGameActivity extends XWActivity {
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
-            switch( id ) {
+            DlgID dlgID = DlgID.values()[id];
+            switch( dlgID ) {
             case NAME_GAME:
                 final GameNamer namerView =
                     (GameNamer)Utils.inflate( this, R.layout.rename_game );
@@ -253,7 +249,7 @@ public class NewGameActivity extends XWActivity {
                     .setPositiveButton( R.string.button_ok, lstnr )
                     .setView( namerView )
                     .create();
-                Utils.setRemoveOnDismiss( this, dialog, id );
+                Utils.setRemoveOnDismiss( this, dialog, dlgID );
 
                 break;
             case ENABLE_NFC:
@@ -313,7 +309,7 @@ public class NewGameActivity extends XWActivity {
     {
         if ( launch && networked ) {
             // Let 'em cancel before we make the game
-            showInviteChoicesThen( NEW_GAME_ACTION );
+            showInviteChoicesThen( DlgDelegate.Action.NEW_GAME_ACTION );
         } else {
             makeNewGame( networked, launch, DlgDelegate.SMS_BTN );
         }
@@ -324,7 +320,7 @@ public class NewGameActivity extends XWActivity {
     {
         boolean viaNFC = DlgDelegate.NFC_BTN == chosen;
         if ( viaNFC && !NFCUtils.nfcAvail( this )[1] ) {
-            showDialog( ENABLE_NFC );
+            showDialog( DlgID.ENABLE_NFC.ordinal() );
         } else {
             String room = null;
             String inviteID = null;

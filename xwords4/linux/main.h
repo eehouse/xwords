@@ -31,6 +31,7 @@
 #include "util.h"
 #include "game.h"
 #include "vtabmgr.h"
+#include "dictmgr.h"
 
 typedef struct ServerInfo {
     XP_U16 nRemotePlayers;
@@ -63,6 +64,9 @@ typedef struct LaunchParams {
     XP_U32 dbFileID;
 #endif
     void* relayConStorage;      /* opaque outside of relaycon.c */
+#ifdef XWFEATURE_SMS
+    void* smsStorage;
+#endif
     char* pipe;
     char* nbs;
     char* bonusFile;
@@ -72,6 +76,7 @@ typedef struct LaunchParams {
     XP_UCHAR devIDStore[16];
 #endif
     VTableMgr* vtMgr;
+    DictMgrCtxt* dictMgr;
     XP_U16 nLocalPlayers;
     XP_U16 nHidden;
     XP_U16 gameSeed;
@@ -101,6 +106,7 @@ typedef struct LaunchParams {
     XP_Bool useUdp;
     XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
+    XP_U16 askTimeout;
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool allowHintRect;
 #endif
@@ -139,7 +145,7 @@ typedef struct LaunchParams {
 #endif
 #ifdef XWFEATURE_SMS
         struct {
-            const char* serverPhone;
+            const char* phone;
             int port;
         } sms;
 #endif
@@ -159,10 +165,6 @@ typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock,
 typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
                                 CommonGlobals* globals, void** storage );
-
-#ifdef XWFEATURE_SMS
-typedef struct LinSMSData LinSMSData;
-#endif
 
 typedef struct _TimerInfo {
     XWTimerProc proc;
@@ -189,6 +191,7 @@ struct CommonGlobals {
     PlayerDicts dicts;
     XP_U16 lastNTilesToUse;
     XP_U16 lastStreamSize;
+    XP_U16 nMissing;
     XP_Bool manualFinal;        /* use asked for final scores */
     sqlite3* pDb;
     sqlite3_int64 selRow;
@@ -211,7 +214,7 @@ struct CommonGlobals {
     GHashTable* noConnMsgs;
 
 #ifdef XWFEATURE_RELAY
-    int socket;                 /* relay */
+    int relaySocket;                 /* tcp connection to relay */
     void* storage;
     char* defaultServerName;
 #endif
@@ -221,9 +224,6 @@ struct CommonGlobals {
 #endif
 #if defined XWFEATURE_IP_DIRECT
     struct LinUDPStuff* udpStuff;
-#endif
-#ifdef XWFEATURE_SMS
-    LinSMSData* smsData;
 #endif
 
     TimerInfo timerInfo[NUM_TIMERS_PLUS_ONE];

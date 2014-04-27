@@ -81,6 +81,10 @@
     </menu>
   </item>
 
+    <item android:id="@+id/games_menu_study"
+          android:title="@string/gamel_menu_study"
+          />
+
     <item android:id="@+id/gamel_menu_checkmoves"
           android:title="@string/gamel_menu_checkmoves"
           />
@@ -93,5 +97,8 @@
           android:title="@string/board_menu_file_about"
           android:alphabeticShortcut="A"
           />
+
+    <item android:id="@+id/board_menu_game_netstats"
+          android:title="@string/board_menu_game_netstats" />
 
 </menu>

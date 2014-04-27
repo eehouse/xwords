@@ -38,6 +38,7 @@ SRC = \
 	udpager.cpp \
 	udpqueue.cpp \
 	xwrelay.cpp \
+	querybld.cpp \
 
 # STATIC ?= -static
 GITINFO = gitversion.txt
@@ -57,6 +58,11 @@ CPPFLAGS += $(shell pkg-config --cflags glib-2.0)
 # CPPFLAGS += -DLOG_UDP_PACKETS
 # CPPFLAGS += -DDO_HTTP
 CPPFLAGS += -DHAVE_STIME
+
+ifneq ($(shell which ccache),)
+    CC := ccache $(CC)
+    CXX := ccache $(CXX)
+endif
 
 # turn on semaphore debugging
 # CPPFLAGS += -DDEBUG_LOCKS

@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -28,6 +28,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.ImageButton;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
 import org.eehouse.android.xw4.jni.*;
 
 public class Toolbar {
@@ -70,7 +72,8 @@ public class Toolbar {
         new TBButtonInfo( R.id.values_button_horizontal ),
     };
 
-    private XWActivity m_activity;
+    private Activity m_activity;
+    private DlgDelegate.HasDlgDelegate m_dlgDlgt;
     private View m_me;
 
     private enum ORIENTATION { ORIENT_UNKNOWN,
@@ -79,9 +82,10 @@ public class Toolbar {
             };
     private ORIENTATION m_curOrient = ORIENTATION.ORIENT_UNKNOWN;
 
-    public Toolbar( XWActivity activity, int id )
+    public Toolbar( Activity activity, HasDlgDelegate dlgDlgt, int id )
     {
         m_activity = activity;
+        m_dlgDlgt = dlgDlgt;
         m_me = activity.findViewById( id );
     }
 
@@ -117,22 +121,22 @@ public class Toolbar {
     }
 
     public void setListener( int index, final int msgID, final int prefsKey, 
-                             final int callback )
+                             final Action action )
     {
         View.OnClickListener listener = new View.OnClickListener() {
                 public void onClick( View view ) {
-                    m_activity.showNotAgainDlgThen( msgID, prefsKey, callback );
+                    m_dlgDlgt.showNotAgainDlgThen( msgID, prefsKey, action );
                 }
             };
         setListener( index, listener );
     }
 
     public void setLongClickListener( int index, final int msgID, 
-                                      final int prefsKey, final int callback )
+                                      final int prefsKey, final Action action )
     {
         View.OnLongClickListener listener = new View.OnLongClickListener() {
                 public boolean onLongClick( View view ) {
-                    m_activity.showNotAgainDlgThen( msgID, prefsKey, callback );
+                    m_dlgDlgt.showNotAgainDlgThen( msgID, prefsKey, action );
                     return true;
                 }
             };

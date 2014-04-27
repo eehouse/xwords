@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2010 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -68,6 +68,15 @@ public class XWApp extends Application {
         SMSService.checkForInvites( this );
         RelayService.startService( this );
         GCMIntentService.init( this );
+    }
+
+    // This is called on emulator only, but good for ensuring no memory leaks
+    // by forcing JNI cleanup
+    public void onTerminate()
+    {
+        DbgUtils.logf( "XwApp.onTerminate() called" );
+        XwJNI.cleanGlobals();
+        super.onTerminate();
     }
 
     public static UUID getAppUUID()

@@ -35,6 +35,10 @@ endif
 BUILD_PLAT_DIR = $(BUILD_DIR)/$(PLATFORM)
 
 # CC = llvm-gcc
+ifneq ($(shell which ccache),)
+    CC := ccache $(CC)
+    CXX := ccache $(CXX)
+endif
 
 DO_CURSES = -DPLATFORM_NCURSES
 DO_CURSES += -DUSE_GLIBLOOP
@@ -177,6 +181,7 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkboard.o \
 	$(BUILD_PLAT_DIR)/gtkdraw.o \
 	$(BUILD_PLAT_DIR)/gtkask.o \
+	$(BUILD_PLAT_DIR)/gtkaskm.o \
 	$(BUILD_PLAT_DIR)/gtkletterask.o \
 	$(BUILD_PLAT_DIR)/gtkpasswdask.o \
 	$(BUILD_PLAT_DIR)/gtknewgame.o \

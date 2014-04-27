@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -24,14 +24,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.NetworkInfo;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
+import android.os.Handler;
 import java.util.HashSet;
 import java.util.Iterator;
-import android.os.Build;
+
 import junit.framework.Assert;
 
 public class NetStateCache {
+    private static final long WAIT_STABLE_MILLIS = 2 * 1000;
 
     public interface StateChangedIf {
         public void netAvail( boolean nowAvailable );
@@ -40,7 +43,7 @@ public class NetStateCache {
     private static Boolean s_haveReceiver = new Boolean( false );
     private static HashSet<StateChangedIf> s_ifs;
     private static boolean s_netAvail = false;
-    private static CommsBroadcastReceiver s_receiver;
+    private static PvtBroadcastReceiver s_receiver;
     private static final boolean s_onSim = Build.PRODUCT.contains("sdk");
 
     public static void register( Context context, StateChangedIf proc )
@@ -78,12 +81,12 @@ public class NetStateCache {
 
                 s_netAvail = ni != null && ni.isAvailable() && ni.isConnected();
 
-                s_receiver = new CommsBroadcastReceiver();
+                s_receiver = new PvtBroadcastReceiver();
                 IntentFilter filter = new IntentFilter();
                 filter.addAction( ConnectivityManager.CONNECTIVITY_ACTION );
 
-                Intent intent = context.getApplicationContext().
-                    registerReceiver( s_receiver, filter );
+                context.getApplicationContext()
+                    .registerReceiver( s_receiver, filter );
 
                 s_ifs = new HashSet<StateChangedIf>();
                 s_haveReceiver = true;
@@ -91,18 +94,29 @@ public class NetStateCache {
         }
     }
 
-    private static class CommsBroadcastReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive( Context context, Intent intent ) 
+    private static class PvtBroadcastReceiver extends BroadcastReceiver {
+        private Runnable mNotifyLater;
+        private Handler mHandler;
+        private boolean mLastStateSent;
+
+        public PvtBroadcastReceiver()
         {
+            DbgUtils.assertOnUIThread();
+            mHandler = new Handler();
+            mLastStateSent = s_netAvail;
+        }
+
+        @Override
+        public void onReceive( final Context context, Intent intent ) 
+        {
+            DbgUtils.assertOnUIThread();
+
             if ( intent.getAction().
                  equals( ConnectivityManager.CONNECTIVITY_ACTION)) {
 
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo.State state = ni.getState();
-                DbgUtils.logf( "CommsBroadcastReceiver.onReceive: "
-                               + "new network state: %s", state.toString() );
 
                 boolean netAvail;
                 switch ( state ) {
@@ -119,16 +133,42 @@ public class NetStateCache {
                 }
 
                 if ( s_netAvail != netAvail ) {
-                    s_netAvail = netAvail;
-                    Iterator<StateChangedIf> iter = s_ifs.iterator();
-                    while ( iter.hasNext() ) {
-                        StateChangedIf proc = iter.next();
-                        proc.netAvail( netAvail );
+                    s_netAvail = netAvail; // keep current in case we're asked
+
+                    // We want to wait for WAIT_STABLE_MILLIS of inactivity
+                    // before informing listeners.  So each time there's a
+                    // change, kill any existing timer then set another, which
+                    // will only fire if we go that long without coming
+                    // through here again.
+
+                    if ( null != mNotifyLater ) {
+                        mHandler.removeCallbacks( mNotifyLater );
+                        mNotifyLater = null;
+                    }
+                    if ( mLastStateSent != s_netAvail ) {
+                        mNotifyLater = new Runnable() {
+                                @Override
+                                public void run() {
+                                    Assert.assertTrue( mLastStateSent != s_netAvail );
+                                    mLastStateSent = s_netAvail;
+
+                                    synchronized( s_ifs ) {
+                                        Iterator<StateChangedIf> iter = s_ifs.iterator();
+                                        while ( iter.hasNext() ) {
+                                            iter.next().netAvail( s_netAvail );
+                                        }
+                                    }
+
+                                    if ( s_netAvail ) {
+                                        GameUtils.resendAllIf( context, false );
+                                    }
+                                }
+                            };
+                        mHandler.postDelayed( mNotifyLater, WAIT_STABLE_MILLIS );
                     }
                 }
             }
         }
-    } // class CommsBroadcastReceiver
+    } // class PvtBroadcastReceiver
 
 }
-

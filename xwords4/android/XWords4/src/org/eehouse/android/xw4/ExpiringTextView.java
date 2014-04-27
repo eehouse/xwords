@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -28,7 +28,6 @@ import android.widget.TextView;
 class ExpiringTextView extends TextView {
     private ExpiringDelegate m_delegate = null;
     private Context m_context;
-    protected boolean m_selected = false;
 
     public ExpiringTextView( Context context, AttributeSet attrs )
     {
@@ -51,12 +50,6 @@ class ExpiringTextView extends TextView {
         if ( null != m_delegate ) {
             m_delegate.configure( haveTurn, haveTurnLocal, startSecs );
         }
-    }
-
-    protected void toggleSelected()
-    {
-        m_selected = !m_selected;
-        getDelegate().setSelected( m_selected );
     }
 
     @Override

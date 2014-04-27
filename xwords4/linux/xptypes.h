@@ -50,11 +50,11 @@ typedef char XP_UCHAR;
 # define XP_L(s) ##s
 #endif
 
-typedef unsigned short XP_U16;
-typedef signed short XP_S16;
+typedef uint16_t XP_U16;
+typedef int16_t XP_S16;
 
-typedef unsigned long XP_U32;
-typedef signed long XP_S32;
+typedef uint32_t XP_U32;
+typedef int32_t XP_S32;
 
 typedef signed short XP_FontCode; /* not sure how I'm using this yet */
 typedef unsigned char XP_Bool;
@@ -99,6 +99,7 @@ void linux_freep( void** ptrp );
 
 #define XP_MEMSET(src, val, nbytes)     memset( (src), (val), (nbytes) )
 #define XP_MEMCPY(d,s,l) memcpy((d),(s),(l))
+#define XP_MEMMOVE(d,s,l) memmove((d),(s),(l))
 #define XP_MEMCMP( a1, a2, l )  memcmp((a1),(a2),(l))
 #define XP_STRLEN(s) strlen(s)
 #define XP_STRCAT(d,s) strcat((d),(s))
@@ -131,7 +132,7 @@ void linux_backtrace( void );
 #define XP_HTONL(l) htonl(l)
 #define XP_HTONS(s) htons(s)
 
-#define XP_LD "%ld"
+#define XP_LD "%d"
 #define XP_P "%p"
 
 #endif

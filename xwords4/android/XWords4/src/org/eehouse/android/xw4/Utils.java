@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -129,8 +129,9 @@ public class Utils {
     }
 
     public static void setRemoveOnDismiss( final Activity activity, 
-                                           Dialog dialog, final int id )
+                                           Dialog dialog, DlgID dlgID )
     {
+        final int id = dlgID.ordinal();
         dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
                 public void onDismiss( DialogInterface di ) {
                     activity.removeDialog( id );
@@ -458,6 +459,16 @@ public class Utils {
             pm.queryIntentActivities( intent, 
                                       PackageManager.MATCH_DEFAULT_ONLY );
         result = 0 < doers.size();
+        return result;
+    }
+
+    public static boolean isGooglePlayApp( Context context )
+    {
+        PackageManager pm = context.getPackageManager();
+        String packageName = context.getPackageName();
+        String installer = pm.getInstallerPackageName( packageName );
+        boolean result = "com.google.android.feedback".equals( installer ) 
+            || "com.android.vending".equals( installer );
         return result;
     }
 

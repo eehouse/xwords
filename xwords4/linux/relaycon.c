@@ -45,7 +45,9 @@ static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len
 static size_t addVLIStr( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
 static XP_U16 getNetShort( const XP_U8** ptr );
+#ifdef DEBUG
 static XP_U32 getNetLong( const XP_U8** ptr );
+#endif
 static int writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd );
 static bool readHeader( const XP_U8** buf, MsgHeader* header );
 static size_t writeDevID( XP_U8* buf, size_t len, const XP_UCHAR* str );
@@ -125,7 +127,7 @@ relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     if ( nSent > buflen ) {
         nSent = buflen;
     }
-    LOG_RETURNF( "%d", nSent );
+    LOG_RETURNF( "%zd", nSent );
     return nSent;
 }
 
@@ -155,7 +157,7 @@ relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     if ( nSent > buflen ) {
         nSent = buflen;
     }
-    LOG_RETURNF( "%d", nSent );
+    LOG_RETURNF( "%zd", nSent );
     return nSent;
 }
 
@@ -218,7 +220,7 @@ relaycon_receive( void* closure, int socket )
 
     gchar* b64 = g_base64_encode( (const guchar*)buf,
                                   ((0 <= nRead)? nRead : 0) );
-    XP_LOGF( "%s: read %d bytes ('%s')", __func__, nRead, b64 );
+    XP_LOGF( "%s: read %zd bytes ('%s')", __func__, nRead, b64 );
     g_free( b64 );
     if ( 0 <= nRead ) {
         const XP_U8* ptr = buf;
@@ -252,8 +254,10 @@ relaycon_receive( void* closure, int socket )
                 break;
             }
             case XWPDEV_UNAVAIL: {
+#ifdef DEBUG
                 XP_U32 unavail = getNetLong( &ptr );
-                XP_LOGF( "%s: unavail = %lu", __func__, unavail );
+                XP_LOGF( "%s: unavail = %u", __func__, unavail );
+#endif
                 uint32_t len;
                 if ( !vli2un( &ptr, &len ) ) {
                     assert(0);
@@ -326,7 +330,7 @@ hostNameToIP( const XP_UCHAR* name )
         XP_MEMCPY( &ip, host->h_addr_list[0], sizeof(ip) );
         ip = ntohl(ip);
     }
-    XP_LOGF( "%s found %lx for %s", __func__, ip, name );
+    XP_LOGF( "%s found %x for %s", __func__, ip, name );
     return ip;
 }
 
@@ -336,7 +340,7 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     ssize_t nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
                             (struct sockaddr*)&storage->saddr, 
                             sizeof(storage->saddr) );
-    XP_LOGF( "%s()=>%d", __func__, nSent );
+    XP_LOGF( "%s()=>%zd", __func__, nSent );
     return nSent;
 }
 
@@ -387,6 +391,7 @@ getNetShort( const XP_U8** ptr )
     return ntohs( result );
 }
 
+#ifdef DEBUG
 static XP_U32
 getNetLong( const XP_U8** ptr )
 {
@@ -395,6 +400,7 @@ getNetLong( const XP_U8** ptr )
     *ptr += sizeof(result);
     return ntohl( result );
 }
+#endif
 
 static void
 getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf )

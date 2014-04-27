@@ -1313,12 +1313,12 @@ gtkDrawCtxtMake( GtkWidget* drawing_area, GtkGameGlobals* globals )
     GtkDrawCtx* dctx = g_malloc0( sizeof(GtkDrawCtx) );
     GdkColormap* map;
 
-    short i;
+    short ii;
 
     dctx->vtable = g_malloc( sizeof(*(((GtkDrawCtx*)dctx)->vtable)) );
 
-    for ( i = 0; i < sizeof(*dctx->vtable)/4; ++i ) {
-        ((void**)(dctx->vtable))[i] = draw_doNothing;
+    for ( ii = 0; ii < VSIZE(dctx->vtable); ++ii ) {
+        ((void**)(dctx->vtable))[ii] = draw_doNothing; /* bad? */
     }
 
     SET_VTABLE_ENTRY( dctx->vtable, draw_clearRect, gtk );

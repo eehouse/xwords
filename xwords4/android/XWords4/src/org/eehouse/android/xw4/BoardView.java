@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.view.View;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -51,13 +52,14 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private Context m_context;
     private int m_defaultFontHt;
     private int m_mediumFontHt;
+    private Runnable m_invalidator;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
     private int m_layoutWidth;
     private int m_layoutHeight;
     private BoardCanvas m_canvas;    // owns the bitmap
     private JNIThread m_jniThread;
-    private XWActivity m_parent;
+    private Activity m_parent;
     private boolean m_measuredFromDims = false;
     private BoardDims m_dims;
     private CommsAddrRec.CommsConnType m_connType = 
@@ -76,6 +78,11 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         final float scale = getResources().getDisplayMetrics().density;
         m_defaultFontHt = (int)(MIN_FONT_DIPS * scale + 0.5f);
         m_mediumFontHt = m_defaultFontHt * 3 / 2;
+        m_invalidator = new Runnable() {
+                public void run() {
+                    invalidate();
+                }
+            };
     }
 
     @Override
@@ -203,6 +210,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             // nothing to do
         } else if ( null == m_gi ) {
             // nothing to do either
+        } else if ( null == m_jniThread ) {
+            // nothing to do either
         } else if ( null == m_dims ) {
             // m_canvas = null;
             // need to synchronize??
@@ -249,7 +258,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     } // layoutBoardOnce
 
     // BoardHandler interface implementation
-    public void startHandling( XWActivity parent, JNIThread thread, 
+    public void startHandling( Activity parent, JNIThread thread, 
                                int gamePtr, CurGameInfo gi, 
                                CommsAddrRec.CommsConnType connType ) 
     {
@@ -291,11 +300,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         }
 
         // Force update now that we have bits to copy
-        m_parent.runOnUiThread( new Runnable() {
-                public void run() {
-                    invalidate();
-                }
-            });
+        m_parent.runOnUiThread( m_invalidator );
     }
 
     public void dimsChanged( BoardDims dims )

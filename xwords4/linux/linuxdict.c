@@ -33,6 +33,7 @@
 #include "linuxmain.h"
 #include "strutils.h"
 #include "linuxutl.h"
+#include "dictmgr.h"
 
 typedef struct DictStart {
     XP_U32 numNodes;
@@ -62,28 +63,37 @@ DictionaryCtxt*
 linux_dictionary_make( MPFORMAL const LaunchParams* params,
                        const char* dictFileName, XP_Bool useMMap )
 {
-    LinuxDictionaryCtxt* result = 
-        (LinuxDictionaryCtxt*)XP_MALLOC(mpool, sizeof(*result));
-    XP_MEMSET( result, 0, sizeof(*result) );
-
-    dict_super_init( (DictionaryCtxt*)result );
-    MPASSIGN(result->super.mpool, mpool);
-
-    result->useMMap = useMMap;
-
+    LinuxDictionaryCtxt* result = NULL;
     if ( !!dictFileName ) {
-        XP_Bool success = initFromDictFile( result, params, dictFileName );
-        if ( success ) {
-            result->super.destructor = linux_dictionary_destroy;
-            result->super.func_dict_getShortName = linux_dict_getShortName;
-            setBlankTile( &result->super );
-        } else {
-            XP_FREE( mpool, result );
-            result = NULL;
+        /* dmgr_get increments ref count before returning! */
+        result = (LinuxDictionaryCtxt*)dmgr_get( params->dictMgr, dictFileName );
+    }
+    if ( !result ) {
+        result = (LinuxDictionaryCtxt*)XP_CALLOC(mpool, sizeof(*result));
+
+        dict_super_init( &result->super );
+        MPASSIGN( result->super.mpool, mpool );
+
+        result->useMMap = useMMap;
+
+        if ( !!dictFileName ) {
+            XP_Bool success = initFromDictFile( result, params, dictFileName );
+            if ( success ) {
+                result->super.destructor = linux_dictionary_destroy;
+                result->super.func_dict_getShortName = linux_dict_getShortName;
+                setBlankTile( &result->super );
+            } else {
+                XP_ASSERT( 0 ); /* gonna crash anyway */
+                XP_FREE( mpool, result );
+                result = NULL;
+            }
+
+            dmgr_put( params->dictMgr, dictFileName, &result->super );
         }
+        (void)dict_ref( &result->super );
     }
 
-    return (DictionaryCtxt*)result;
+    return &result->super;
 } /* gtk_dictionary_make */
 
 static XP_UCHAR*
@@ -218,7 +228,7 @@ dict_splitFaces( DictionaryCtxt* dict, const XP_U8* utf8,
         if ( isUTF8 ) {
             for ( ; ; ) {
                 gchar* cp = g_utf8_offset_to_pointer( bytes, 1 );
-                XP_U16 len = cp - bytes;
+                size_t len = cp - bytes;
                 XP_MEMCPY( next, bytes, len );
                 next += len;
                 bytes += len;
@@ -248,7 +258,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
                   const char* fileName )
 {
     XP_Bool formatOk = XP_TRUE;
-    long curPos, dictLength;
+    size_t dictLength;
     XP_U32 topOffset;
     unsigned short xloc;
     XP_U16 flags;
@@ -343,7 +353,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
             ptr += sizeof(wordCount);
             headerLen -= sizeof(wordCount);
             dctx->super.nWords = ntohl( wordCount );
-            XP_DEBUGF( "dict contains %ld words", dctx->super.nWords );
+            XP_DEBUGF( "dict contains %d words", dctx->super.nWords );
 
             if ( 0 < headerLen ) {
                 dctx->super.desc = getNullTermParam( dctx, &ptr, &headerLen );
@@ -371,7 +381,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
              || XP_TRUE 
 #endif
              ) {
-            XP_U32 curPos = ptr - dctx->dictBase;
+            size_t curPos = ptr - dctx->dictBase;
             gssize dictLength = dctx->dictLength - curPos;
 
             gchar* checksum = g_compute_checksum_for_data( G_CHECKSUM_MD5, ptr, dictLength );
@@ -410,7 +420,7 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const LaunchParams* params,
         XP_U32 numEdges;
         skipBitmaps( dctx, &ptr );
 
-        curPos = ptr - dctx->dictBase;
+        size_t curPos = ptr - dctx->dictBase;
         dictLength = dctx->dictLength - curPos;
 
         if ( dictLength > 0 ) {
@@ -553,12 +563,12 @@ initFromDictFile( LinuxDictionaryCtxt* dctx, const char* fileName )
     prect = prcgetrecord( pt, 2 );
     dataP = (unsigned short*)prect->data + 1;	/* skip the xloc header */
 
-    for ( i = 0; i < dctx->super.numFaces; ++i ) {
+    for ( ii = 0; ii < dctx->super.numFaces; ++ii ) {
         unsigned short byt = *dataP++;
-        dctx->super.values[i] = byt >> 8;
-        dctx->super.counts[i] = byt & 0xFF;
-        if ( dctx->super.values[i] == 0 ) {
-            dctx->super.counts[i] = 4; /* 4 blanks :-) */
+        dctx->super.values[ii] = byt >> 8;
+        dctx->super.counts[ii] = byt & 0xFF;
+        if ( dctx->super.values[ii] == 0 ) {
+            dctx->super.counts[ii] = 4; /* 4 blanks :-) */
         }
     }
 

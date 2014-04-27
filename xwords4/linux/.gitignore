@@ -7,3 +7,4 @@ log_*_*.txt
 discon_ok2.sh_logs
 test_backsend.sh_*
 *.db
+dawg2dict

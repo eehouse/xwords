@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2013 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -53,19 +53,17 @@ public class NFCUtils {
     }
 
     private static interface SafeNFC {
-        public void register( Activity activity );
+        public void register( Activity activity, NFCActor actor );
     }
 
     private static class SafeNFCImpl implements SafeNFC {
-        public void register( final Activity activity )
+        public void register( final Activity activity, final NFCActor actor )
         {
-            Assert.assertTrue( activity instanceof NFCActor );
             NfcManager manager = 
                 (NfcManager)activity.getSystemService( Context.NFC_SERVICE );
             if ( null != manager ) {
                 NfcAdapter adapter = manager.getDefaultAdapter();
                 if ( null != adapter ) {
-                    final NFCActor actor = (NFCActor)activity;
                     NfcAdapter.CreateNdefMessageCallback cb = 
                         new NfcAdapter.CreateNdefMessageCallback() {
                             public NdefMessage createNdefMessage( NfcEvent evt )
@@ -117,10 +115,10 @@ public class NFCUtils {
         return result;
     }
 
-    public static void register( Activity activity )
+    public static void register( Activity activity, NFCActor actor )
     {
         if ( null != s_safeNFC ) {
-            s_safeNFC.register( activity );
+            s_safeNFC.register( activity, actor );
         }
     }
 

@@ -38,6 +38,54 @@ extern "C" {
 /*****************************************************************************
  *
  ****************************************************************************/
+
+DictionaryCtxt*
+p_dict_ref( DictionaryCtxt* dict
+#ifdef DEBUG_REF
+            ,const char* func, const char* file, int line
+#endif
+            )
+{
+    if ( !!dict ) {
+        pthread_mutex_lock( &dict->mutex );
+        ++dict->refCount;
+        XP_LOGF( "%s(dict=%p): refCount now %d (from line %d of %s() in %s)",
+                 __func__, dict, dict->refCount, line, func, file );
+        pthread_mutex_unlock( &dict->mutex );
+    }
+    return dict;
+}
+
+void
+p_dict_unref( DictionaryCtxt* dict
+#ifdef DEBUG_REF
+            ,const char* func, const char* file, int line
+#endif
+              )
+{
+    if ( !!dict ) {
+        pthread_mutex_lock( &dict->mutex );
+        --dict->refCount;
+        XP_ASSERT( 0 <= dict->refCount );
+        XP_LOGF( "%s(dict=%p): refCount now %d  (from line %d of %s() in %s)",
+                 __func__, dict, dict->refCount, line, func, file );
+        pthread_mutex_unlock( &dict->mutex );
+        if ( 0 == dict->refCount ) {
+            (*dict->destructor)( dict );
+            pthread_mutex_destroy( &dict->mutex );
+        }
+    }
+}
+
+void
+dict_unref_all( PlayerDicts* pd )
+{
+    XP_U16 ii;
+    for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
+        dict_unref( pd->dicts[ii] );
+    }
+}
+
 void
 setBlankTile( DictionaryCtxt* dict ) 
 {
@@ -81,6 +129,7 @@ dict_getTileValue( const DictionaryCtxt* dict, Tile tile )
     }
     XP_ASSERT( tile < dict->nFaces );
     tile *= 2;
+    XP_ASSERT( !!dict->countsAndValues );
     return dict->countsAndValues[tile+1];    
 } /* dict_getTileValue */
 
@@ -674,7 +723,7 @@ dict_super_getTopEdge( const DictionaryCtxt* dict )
     return dict->topEdge;
 } /* dict_super_getTopEdge */
 
-static unsigned long
+static XP_U32
 dict_super_index_from( const DictionaryCtxt* dict, array_edge* p_edge ) 
 {
     unsigned long result;
@@ -732,6 +781,8 @@ dict_super_init( DictionaryCtxt* dict )
     dict->func_dict_follow = dict_super_follow;
     dict->func_dict_edge_with_tile = dict_super_edge_with_tile;
     dict->func_dict_getShortName = dict_getName;
+
+    pthread_mutex_init( &dict->mutex, NULL );
 } /* dict_super_init */
 
 const XP_UCHAR* 
@@ -754,16 +805,16 @@ checkSanity( DictionaryCtxt* dict, const XP_U32 numEdges )
         for ( ii = 0; ii < numEdges && passed; ++ii ) {
             Tile tile = EDGETILE( dict, edge );
             if ( tile < prevTile || tile >= nFaces ) {
-                XP_LOGF( "%s: node %ld (out of %ld) has too-large or "
+                XP_LOGF( "%s: node %d (out of %d) has too-large or "
                          "out-of-order tile", __func__, ii, numEdges );
                 passed = XP_FALSE;
                 break;
             }
             prevTile = tile;
 
-            unsigned long index = dict_index_from( dict, edge );
+            XP_U32 index = dict_index_from( dict, edge );
             if ( index >= numEdges ) {
-                XP_LOGF( "%s: node %ld (out of %ld) has too-high index %ld",
+                XP_LOGF( "%s: node %d (out of %d) has too-high index %d",
                          __func__, ii, numEdges, index );
                 passed = XP_FALSE;
                 break;

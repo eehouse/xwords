@@ -1261,7 +1261,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
         // XP_ASSERT( streamVersion <= CUR_STREAM_VERS ); /* else do what? */
 
         gameID = stream_getU32( stream );
-        XP_LOGF( "read gameID of %lx; calling comms_setConnID", gameID );
+        XP_LOGF( "read gameID of %x; calling comms_setConnID", gameID );
         server->vol.gi->gameID = gameID;
         comms_setConnID( server->vol.comms, gameID );
 
@@ -1309,7 +1309,6 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
             model_setDictionary( model, newDict );
         } else if ( dict_tilesAreSame( newDict, curDict ) ) {
             /* keep the dict the local user installed */
-            dict_destroy( newDict );
 #ifdef STREAM_VERS_BIGBOARD
             if ( '\0' != rmtDictName[0] ) {
                 const XP_UCHAR* ourName = dict_getShortName( curDict );
@@ -1320,11 +1319,11 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
             }
 #endif
         } else {
-            dict_destroy( curDict );
             model_setDictionary( model, newDict );
             util_userError( server->vol.util, ERR_SERVER_DICT_WINS );
             clearLocalRobots( server );
         }
+        dict_unref( newDict );  /* new owner will have ref'd */
 
         XP_ASSERT( !server->pool );
         pool = server->pool = pool_make( MPPARM_NOCOMMA(server->mpool) );
@@ -1424,7 +1423,7 @@ server_sendInitialMessage( ServerCtxt* server )
         stream_putU8( stream, CUR_STREAM_VERS );
 #endif
 
-        XP_LOGF( "putting gameID %lx into msg", gameID );
+        XP_LOGF( "putting gameID %x into msg", gameID );
         stream_putU32( stream, gameID );
 
         makeSendableGICopy( server, &localGI, deviceIndex );
@@ -2412,7 +2411,8 @@ server_getMissingPlayers( const ServerCtxt* server )
 
     XP_U16 result = 0;
     XP_U16 ii;
-    if ( SERVER_ISCLIENT == server->vol.gi->serverRole ) {
+    switch( server->vol.gi->serverRole ) {
+    case SERVER_ISCLIENT:
         if ( 0 == server->nv.addresses[0].channelNo ) {
             CurGameInfo* gi = server->vol.gi;
             const LocalPlayer* lp = gi->players;
@@ -2423,8 +2423,8 @@ server_getMissingPlayers( const ServerCtxt* server )
                 ++lp;
             }
         }
-    } else {
-        XP_ASSERT( SERVER_ISSERVER == server->vol.gi->serverRole );
+        break;
+    case SERVER_ISSERVER:
         if ( 0 < server->nv.pendingRegistrations ) {
             XP_U16 nPlayers = server->vol.gi->nPlayers;
             const ServerPlayer* players = server->players;
@@ -2435,9 +2435,9 @@ server_getMissingPlayers( const ServerCtxt* server )
                 ++players;
             }
         }
+        break;
     }
 
-    LOG_RETURNF( "%x", result );
     return result;
 }
 
@@ -2755,19 +2755,22 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 
     printCode( "Receiving", code );
 
-    if ( code == XWPROTO_DEVICE_REGISTRATION && amServer(server) ) {
+    if ( code == XWPROTO_DEVICE_REGISTRATION ) {
+        accepted = amServer( server );
+        if ( accepted ) {
         /* This message is special: doesn't have the header that's possible
            once the game's in progress and communication's been
            established. */
-        XP_LOGF( "%s: somebody's registering!!!", __func__ );
-        accepted = handleRegistrationMsg( server, incoming );
-
-    } else if ( code == XWPROTO_CLIENT_SETUP && !amServer( server ) ) {
-
-        XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
-        XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
-        accepted = client_readInitialMessage( server, incoming );
-
+            XP_LOGF( "%s: somebody's registering!!!", __func__ );
+            accepted = handleRegistrationMsg( server, incoming );
+        }
+    } else if ( code == XWPROTO_CLIENT_SETUP ) {
+        accepted = !amServer( server );
+        if ( accepted ) {
+            XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
+            XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
+            accepted = client_readInitialMessage( server, incoming );
+        }
 #ifdef XWFEATURE_CHAT
     } else if ( code == XWPROTO_CHAT ) {
         XP_UCHAR* msg = stringFromStream( server->mpool, incoming );

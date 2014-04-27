@@ -18,11 +18,11 @@
 XWLANG = SOWPODS
 LANGCODE = en_US
 TARGET_TYPE = WINCE
-DICTNOTE = "Used in Scrabble™ tournaments especially outside the US"
+DICTNOTE = "From http://www.freescrabbledictionary.com/sowpods.txt, Feb. 2014"
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/English/sow-twl.txt.gz 
+SOURCEDICT ?= $(XWDICTPATH)/English/sowpods.txt.gz 
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) Makefile
 	zcat $< | tr -d '\r' | tr [a-z] [A-Z] | grep -e "^[A-Z]\{2,15\}$$" | \

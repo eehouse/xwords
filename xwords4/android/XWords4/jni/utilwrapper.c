@@ -392,8 +392,10 @@ and_util_makeEmptyDict( XW_UtilCtxt* uc )
 #else
     AndGlobals* globals = (AndGlobals*)uc->closure;
     AndUtil* andutil = (AndUtil*)uc;
-    return and_dictionary_make_empty( MPPARM( ((AndUtil*)uc)->util.mpool )
-                                      *andutil->env, globals->jniutil );
+    DictionaryCtxt* result =  
+        and_dictionary_make_empty( MPPARM( ((AndUtil*)uc)->util.mpool )
+                                   *andutil->env, globals->jniutil );
+    return dict_ref( result );
 #endif
 }
 

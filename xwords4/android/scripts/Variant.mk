@@ -25,5 +25,8 @@ $(DEST_PATH)/%.c : $(SRC_PATH)/%.c
 		-e "s,\(^.*Java_org_eehouse_android_\)xw4\(.*$$\),\1$(VARIANT)\2," \
 		< $< > $@
 
+$(DEST_PATH)/%.jar : $(SRC_PATH)/%.jar
+	@cp $< $@
+
 $(DEST_PATH)/% : $(SRC_PATH)/%
 	@cp $< $@

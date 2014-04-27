@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent"
-              >
+<org.eehouse.android.xw4.LookupAlert
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     android:orientation="vertical"
+     android:layout_width="fill_parent" 
+     android:layout_height="fill_parent"
+     >
 
   <TextView android:id="@+id/summary"
             android:layout_height="wrap_content"
@@ -19,9 +20,13 @@
             android:layout_weight="1"
             />
 
+  <Button android:id="@+id/button_study"
+          android:layout_width="fill_parent" 
+          android:layout_height="wrap_content"
+          />
   <Button android:id="@+id/button_done"
           android:layout_width="fill_parent" 
           android:layout_height="wrap_content"
           />
 
-</LinearLayout>
+</org.eehouse.android.xw4.LookupAlert>

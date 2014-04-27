@@ -3,4 +3,7 @@ local.properties
 bin
 gen
 proguard.cfg
+proguard-project.txt
 obj
+res/drawable*/*gen.png
+img_src

@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -28,6 +28,7 @@ import junit.framework.Assert;
 // obtainable when other read locks are granted but not when a
 // write lock is.  Write-locks are exclusive.
 public class GameLock {
+    private static final int SLEEP_TIME = 25;
     private long m_rowid;
     private boolean m_isForWrite;
     private int m_lockCount;
@@ -68,10 +69,17 @@ public class GameLock {
                     System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
                 }
             } else if ( this == owner && ! m_isForWrite ) {
+                if ( XWApp.DEBUG_LOCKS ) {
+                    DbgUtils.logf( "tryLock(): incrementing lock count" );
+                }
                 Assert.assertTrue( 0 == m_lockCount );
                 ++m_lockCount;
                 gotIt = true;
             }
+        }
+        if ( XWApp.DEBUG_LOCKS ) {
+            DbgUtils.logf( "GameLock.tryLock %H (rowid=%d) => %b", 
+                           this, m_rowid, gotIt );
         }
         return gotIt;
     }
@@ -102,11 +110,16 @@ public class GameLock {
             }
             if ( XWApp.DEBUG_LOCKS ) {
                 DbgUtils.logf( "GameLock.lock() %H failed; sleeping", this );
-                DbgUtils.printStack();
+                if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= assertTime ) {
+                    DbgUtils.logf( "lock holding stack:", this );
+                    DbgUtils.printStack( m_lockTrace );
+                    DbgUtils.logf( "lock %H seeking stack:", this );
+                    DbgUtils.printStack();
+                }
             }
             try {
-                Thread.sleep( 25 ); // milliseconds
-                sleptTime += 25;
+                Thread.sleep( SLEEP_TIME ); // milliseconds
+                sleptTime += SLEEP_TIME;
             } catch( InterruptedException ie ) {
                 DbgUtils.loge( ie );
                 break;
@@ -121,11 +134,7 @@ public class GameLock {
                 break;
             } else if ( sleptTime >= assertTime ) {
                 if ( XWApp.DEBUG_LOCKS ) {
-                    DbgUtils.logf( "lock %H overlocked. lock holding stack:", 
-                                   this );
-                    DbgUtils.printStack( m_lockTrace );
-                    DbgUtils.logf( "lock %H seeking stack:", this );
-                    DbgUtils.printStack();
+                    DbgUtils.logf( "lock %H overlocked", this );
                 }
                 Assert.fail();
             }
@@ -161,6 +170,10 @@ public class GameLock {
     // used only for asserts
     public boolean canWrite()
     {
-        return m_isForWrite && 1 == m_lockCount;
+        boolean result = m_isForWrite && 1 == m_lockCount;
+        if ( !result ) {
+            DbgUtils.logf( "GameLock.canWrite(): %H, returning false", this );
+        }
+        return result;
     }
 }

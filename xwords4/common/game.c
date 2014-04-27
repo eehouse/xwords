@@ -100,7 +100,9 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 #endif
     assertUtilOK( util );
 
-    gi->gameID = makeGameID( util );
+    if ( 0 == gi->gameID ) {
+        gi->gameID = makeGameID( util );
+    }
 
     game->model = model_make( MPPARM(mpool) (DictionaryCtxt*)NULL, NULL, util, 
                               gi->boardSize );
@@ -201,7 +203,6 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
 void
 game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, DictionaryCtxt* dict )
 {
-    model_destroyDicts( game->model );
     model_setDictionary( game->model, dict );
     gi_setDict( MPPARM(mpool) gi, dict );
     server_resetEngines( game->server );
@@ -328,6 +329,8 @@ game_getState( const XWGame* game, GameStateInfo* gsi )
     gsi->canShuffle = board_canShuffle( board );
     gsi->canHideRack = board_canHideRack( board );
     gsi->canTrade = board_canTrade( board );
+    gsi->nPendingMessages = !!game->comms ? 
+        comms_countPendingPackets(game->comms) : 0;
 }
 
 void
@@ -347,7 +350,6 @@ game_dispose( XWGame* game )
     }
 #endif
     if ( !!game->model ) { 
-        model_destroyDicts( game->model );
         model_destroy( game->model );
         game->model = NULL;
     }
@@ -441,6 +443,21 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
         destPl->isLocal = srcPl->isLocal;
     }
 } /* gi_copy */
+
+void
+gi_setNPlayers( CurGameInfo* gi, XP_U16 nTotal, XP_U16 nHere )
+{
+    XP_ASSERT( nTotal < MAX_NUM_PLAYERS );
+    XP_ASSERT( nHere < nTotal );
+
+    gi->nPlayers = nTotal;
+
+    XP_U16 ii;
+    for ( ii = 0; ii < nTotal; ++ii ) {
+        gi->players[ii].isLocal = ii < nHere;
+        XP_ASSERT( !LP_IS_ROBOT(&gi->players[ii]) );
+    }
+}
 
 XP_U16
 gi_countLocalPlayers( const CurGameInfo* gi, XP_Bool humanOnly )

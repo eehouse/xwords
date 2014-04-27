@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -387,32 +387,18 @@ public class CommsTransport implements TransportProcs,
             m_relayAddr = new CommsAddrRec( addr );
         }
 
-        switch ( addr.conType ) {
-        case COMMS_CONN_RELAY:
-            if ( XWApp.UDP_ENABLED ) {
-                nSent = RelayService.sendPacket( m_context, m_rowid, buf );
-            } else {
-                if ( NetStateCache.netAvail( m_context ) ) {
-                    putOut( buf );      // add to queue
-                    if ( null == m_thread ) {
-                        m_thread = new CommsThread();
-                        m_thread.start();
-                    }
-                    nSent = buf.length;
+        if ( !XWApp.UDP_ENABLED
+             && CommsConnType.COMMS_CONN_RELAY == addr.conType ) {
+            if ( NetStateCache.netAvail( m_context ) ) {
+                putOut( buf );      // add to queue
+                if ( null == m_thread ) {
+                    m_thread = new CommsThread();
+                    m_thread.start();
                 }
+                nSent = buf.length;
             }
-            break;
-        case COMMS_CONN_SMS:
-            nSent = SMSService.sendPacket( m_context, addr.sms_phone, 
-                                           gameID, buf );
-            break;
-        case COMMS_CONN_BT:
-            nSent = BTService.enqueueFor( m_context, buf, addr.bt_hostName, 
-                                          addr.bt_btAddr, gameID );
-            break;
-        default:
-            Assert.fail();
-            break;
+        } else {
+            nSent = sendForAddr( m_context, addr, m_rowid, gameID, buf );
         }
 
         // Keep this while debugging why the resend_all that gets
@@ -468,6 +454,30 @@ public class CommsTransport implements TransportProcs,
         return false;
     }
 
+    public static int sendForAddr( Context context, CommsAddrRec addr, 
+                                   long rowID, int gameID, byte[] buf )
+    {
+        int nSent = -1;
+        switch ( addr.conType ) {
+        case COMMS_CONN_RELAY:
+            Assert.assertTrue( XWApp.UDP_ENABLED );
+            nSent = RelayService.sendPacket( context, rowID, buf );
+            break;
+        case COMMS_CONN_SMS:
+            nSent = SMSService.sendPacket( context, addr.sms_phone, 
+                                           gameID, buf );
+            break;
+        case COMMS_CONN_BT:
+            nSent = BTService.enqueueFor( context, buf, addr.bt_hostName, 
+                                          addr.bt_btAddr, gameID );
+            break;
+        default:
+            Assert.fail();
+            break;
+        }
+        return nSent;
+    }
+
     /* NPEs in m_selector calls: sometimes my Moment gets into a state
      * where after 15 or so seconds of Crosswords trying to connect to
      * the relay I get a crash.  Logs show it's inside one or both of
@@ -477,5 +487,4 @@ public class CommsTransport implements TransportProcs,
      * perhaps catch NPEs here just to be safe.  But then do what?
      * Tell user to restart device?
      */
-
 }

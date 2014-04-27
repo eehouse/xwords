@@ -37,6 +37,12 @@ my $gFileType;
 my $gNodeSize;
 
 use Fcntl 'SEEK_CUR';
+
+use constant {
+	DICT_HEADER_MASK => 0x0008,
+	DICT_SYNONYMS_MASK => 0x0010
+};
+
 sub systell { sysseek($_[0], 0, SEEK_CUR) }
 
 sub usage() {
@@ -205,9 +211,9 @@ sub printHeader($$) {
 sub nodeSizeFromFlags($$) {
     my ( $fh, $flags ) = @_;
 
-    my $bitSet = $flags & 0x0008;
+    my $bitSet = $flags & DICT_HEADER_MASK;
     if ( 0 != $bitSet ){
-        $flags = $flags & ~0x0008;
+        $flags = $flags & ~DICT_HEADER_MASK;
         # need to skip header
         my $buf;
         2 == sysread( $fh, $buf, 2 ) || die "couldn't read length of header";
@@ -216,7 +222,9 @@ sub nodeSizeFromFlags($$) {
         printHeader( $buf, $len );
     }
 
-    if ( $flags == 2 || $ flags == 4 ) {
+	$flags = $flags & ~DICT_SYNONYMS_MASK;
+
+    if ( $flags == 2 || $flags == 4 ) {
         return 3;
     } elsif ( $flags == 3 || $flags == 5 ) {
         return 4;

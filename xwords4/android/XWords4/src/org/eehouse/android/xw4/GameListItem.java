@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -66,8 +66,8 @@ public class GameListItem extends LinearLayout
     private int m_fieldID;
     private int m_loadingCount;
     private int m_groupPosition;
-    private Drawable m_origDrawable;
     private boolean m_selected = false;
+    private DrawSelDelegate m_dsdel;
 
     public GameListItem( Context cx, AttributeSet as ) 
     {
@@ -80,6 +80,7 @@ public class GameListItem extends LinearLayout
         m_rowid = DBUtils.ROWID_NOTFOUND;
         m_lastMoveTime = 0;
         m_loadingCount = 0;
+        m_dsdel = new DrawSelDelegate( this );
 
         setOnClickListener( new View.OnClickListener() {
                 @Override
@@ -221,6 +222,9 @@ public class GameListItem extends LinearLayout
             case R.string.game_summary_field_rowid:
                 value = String.format( "%d", m_rowid );
                 break;
+            case R.string.game_summary_field_npackets:
+                value = String.format( "%d", m_summary.nPacketsPending );
+                break;
             case R.string.game_summary_field_language:
                 value = 
                     DictLangCache.getLangName( m_context, 
@@ -329,12 +333,7 @@ public class GameListItem extends LinearLayout
     private void toggleSelected()
     {
         m_selected = !m_selected;
-        if ( m_selected ) {
-            m_origDrawable = getBackground();
-            setBackgroundColor( XWApp.SEL_COLOR );
-        } else {
-            setBackgroundDrawable( m_origDrawable );
-        }
+        m_dsdel.showSelected( m_selected );
         m_cb.itemToggled( this, m_selected );
     }
 

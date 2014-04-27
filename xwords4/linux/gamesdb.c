@@ -28,8 +28,11 @@ static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
 sqlite3* 
 openGamesDB( const char* dbName )
 {
+    int result = sqlite3_initialize();
+    XP_ASSERT( SQLITE_OK == result );
+
     sqlite3* pDb = NULL;
-    int result = sqlite3_open( dbName, &pDb );
+    result = sqlite3_open( dbName, &pDb );
     XP_ASSERT( SQLITE_OK == result );
 
     const char* createGamesStr = 
@@ -37,10 +40,12 @@ openGamesDB( const char* dbName )
         "rowid INTEGER PRIMARY KEY AUTOINCREMENT"
         ",game BLOB"
         ",room VARCHAR(32)"
+        ",connvia VARCHAR(32)"
         ",ended INT(1)"
         ",turn INT(2)"
         ",nmoves INT"
         ",seed INT"
+        ",gameid INT"
         ",nmissing INT(2)"
         ")";
     result = sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
@@ -120,24 +125,40 @@ summarize( CommonGlobals* cGlobals )
     XP_S16 turn = server_getCurrentTurn( cGlobals->game.server );
     XP_U16 seed = 0;
     XP_S16 nMissing = 0;
+    XP_U32 gameID = cGlobals->gi->gameID;
+    XP_ASSERT( 0 != gameID );
     CommsAddrRec addr = {0};
     gchar* room = "";
+
+    gchar* connvia = "local";
 
     if ( !!cGlobals->game.comms ) {
         nMissing = server_getMissingPlayers( cGlobals->game.server );
         comms_getAddr( cGlobals->game.comms, &addr );
-        if ( COMMS_CONN_RELAY == addr.conType ) {
+        switch( addr.conType ) {
+        case COMMS_CONN_RELAY:
             room = addr.u.ip_relay.invite;
+            connvia = "Relay";
+            break;
+        case COMMS_CONN_SMS:
+            connvia = "SMS";
+            break;
+        case COMMS_CONN_BT:
+            connvia = "Bluetooth";
+            break;
+        default:
+            // XP_ASSERT(0);
+            break;
         }
         seed = comms_getChannelSeed( cGlobals->game.comms );
     }
 
     const char* fmt = "UPDATE games "
-        " SET room='%s', ended=%d, turn=%d, nmissing=%d, nmoves=%d, seed=%d"
+        " SET room='%s', ended=%d, turn=%d, nmissing=%d, nmoves=%d, seed=%d, gameid=%d, connvia='%s'"
         " WHERE rowid=%lld";
     XP_UCHAR buf[256];
     snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, nMissing, nMoves,
-              seed, cGlobals->selRow );
+              seed, gameID, connvia, cGlobals->selRow );
     XP_LOGF( "query: %s", buf );
     sqlite3_stmt* stmt = NULL;
     int result = sqlite3_prepare_v2( cGlobals->pDb, buf, -1, &stmt, NULL );        
@@ -185,7 +206,7 @@ XP_Bool
 getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
-    const char* fmt = "SELECT room, ended, turn, nmoves, nmissing, seed "
+    const char* fmt = "SELECT room, ended, turn, nmoves, nmissing, seed, connvia, gameid "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
@@ -202,10 +223,37 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->nMoves = sqlite3_column_int( ppStmt, 3 );
         gib->nMissing = sqlite3_column_int( ppStmt, 4 );
         gib->seed = sqlite3_column_int( ppStmt, 5 );
+        getColumnText( ppStmt, 6, gib->conn, sizeof(gib->conn) );
+        gib->gameID = sqlite3_column_int( ppStmt, 7 );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
     }
     sqlite3_finalize( ppStmt );
     return success;
+}
+
+void
+getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids, 
+                  int* nRowIDs )
+{
+    int maxRowIDs = *nRowIDs;
+    *nRowIDs = 0;
+
+    char buf[256];
+    snprintf( buf, sizeof(buf), "SELECT rowid from games WHERE gameid = %d LIMIT %d", 
+              gameID, maxRowIDs );
+    sqlite3_stmt *ppStmt;
+    int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
+    XP_ASSERT( SQLITE_OK == result );
+    int ii;
+    for ( ii = 0; ii < maxRowIDs; ++ii ) {
+        result = sqlite3_step( ppStmt );
+        if ( SQLITE_ROW != result ) {
+            break;
+        }
+        rowids[ii] = sqlite3_column_int64( ppStmt, 0 );
+        ++*nRowIDs;
+    }
+    sqlite3_finalize( ppStmt );
 }
 
 XP_Bool

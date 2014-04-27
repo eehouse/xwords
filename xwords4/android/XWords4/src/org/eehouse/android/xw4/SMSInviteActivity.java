@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -40,16 +40,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
 public class SMSInviteActivity extends InviteActivity {
 
     private static final int GET_CONTACT = 1;
-    private static final int GET_NUMBER = DlgDelegate.DIALOG_LAST + 1;
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
-
-    private static final int CLEAR_ACTION = 1;
-    private static final int USE_IMMOBILE_ACTION = 2;
-    private static final int POST_WARNING_ACTION = 3;
 
     private ArrayList<PhoneRec> m_phoneRecs;
     private SMSPhonesAdapter m_adapter;
@@ -79,7 +76,7 @@ public class SMSInviteActivity extends InviteActivity {
         m_addButton.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View view )
                 {
-                    showDialog( GET_NUMBER );
+                    showDialog( DlgID.GET_NUMBER.ordinal() );
                 }
             } );
 
@@ -123,7 +120,8 @@ public class SMSInviteActivity extends InviteActivity {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
-            switch( id ) {
+            DlgID dlgID = DlgID.values()[id];
+            switch( dlgID ) {
             case GET_NUMBER:
                 final GameNamer namerView =
                     (GameNamer)Utils.inflate( this, R.layout.rename_game );
@@ -137,7 +135,7 @@ public class SMSInviteActivity extends InviteActivity {
                             m_pendingName = null;
                             showConfirmThen( R.string.warn_unlimited, 
                                              R.string.button_yes, 
-                                             POST_WARNING_ACTION );
+                                             Action.POST_WARNING_ACTION );
                         }
                     };
                 dialog = new AlertDialog.Builder( this )
@@ -147,7 +145,7 @@ public class SMSInviteActivity extends InviteActivity {
                     .create();
                 break;
             }
-            Utils.setRemoveOnDismiss( this, dialog, id );
+            Utils.setRemoveOnDismiss( this, dialog, dlgID );
         }
         return dialog;
     }
@@ -162,7 +160,7 @@ public class SMSInviteActivity extends InviteActivity {
 
     protected void clearSelected()
     {
-        showConfirmThen( R.string.confirm_clear, CLEAR_ACTION );
+        showConfirmThen( R.string.confirm_clear, Action.CLEAR_ACTION );
     }
 
     protected String[] listSelected()
@@ -190,11 +188,11 @@ public class SMSInviteActivity extends InviteActivity {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( int id, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which, Object[] params )
     {
         switch( which ) {
         case AlertDialog.BUTTON_POSITIVE:
-            switch( id ) {
+            switch( action ) {
             case CLEAR_ACTION:
                 clearSelectedImpl();
                 break;
@@ -208,10 +206,10 @@ public class SMSInviteActivity extends InviteActivity {
             }
             break;
         case DlgDelegate.DISMISS_BUTTON:
-            if ( USE_IMMOBILE_ACTION == id && m_immobileConfirmed ) {
+            if ( Action.USE_IMMOBILE_ACTION == action && m_immobileConfirmed ) {
                 showConfirmThen( R.string.warn_unlimited, 
                                  R.string.button_yes, 
-                                 POST_WARNING_ACTION );
+                                 Action.POST_WARNING_ACTION );
             }
             break;
         }
@@ -259,14 +257,14 @@ public class SMSInviteActivity extends InviteActivity {
                 if ( Phone.TYPE_MOBILE == type ) {
                     showConfirmThen( R.string.warn_unlimited, 
                                      R.string.button_yes, 
-                                     POST_WARNING_ACTION );
+                                     Action.POST_WARNING_ACTION );
                 } else {
                     m_immobileConfirmed = false;
                     String msg = 
                         Utils.format( this, R.string.warn_nomobilef,
                                       number, name );
                     showConfirmThen( msg, R.string.button_yes, 
-                                     USE_IMMOBILE_ACTION );
+                                     Action.USE_IMMOBILE_ACTION );
                 }
             }
         }

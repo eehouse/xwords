@@ -16,10 +16,18 @@
           android:icon="@drawable/prefs__gen"
           android:showAsAction="ifRoom"
           />
+
+    <item android:id="@+id/games_menu_rateme"
+          android:title="@string/menu_rateme"
+          />
+
     <item android:id="@+id/games_menu_dicts"
           android:title="@string/gamel_menu_dicts"
           android:icon="@drawable/dict__gen"
           android:showAsAction="ifRoom"
+          />
+    <item android:id="@+id/games_menu_study"
+          android:title="@string/gamel_menu_study"
           />
     <item android:id="@+id/games_menu_email"
           android:title="@string/board_menu_file_email"
@@ -29,6 +37,9 @@
     <item android:id="@+id/games_menu_about"
           android:title="@string/board_menu_file_about"
           android:icon="@android:drawable/ic_menu_info_details"
+          />
+    <item android:id="@+id/games_menu_resend"
+          android:title="@string/board_menu_game_resend"
           />
     <item android:id="@+id/games_menu_checkmoves"
           android:title="@string/gamel_menu_checkmoves"

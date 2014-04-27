@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -20,10 +20,43 @@
 
 package org.eehouse.android.xw4.jni;
 
+import org.eehouse.android.xw4.DbgUtils;
+
 import android.graphics.Rect;
 
-// Collection of native methods
+// Collection of native methods and a bit of state
 public class XwJNI {
+
+    private static XwJNI s_JNI = null;
+    private static XwJNI getJNI()
+    {
+        if ( null == s_JNI ) {
+            s_JNI = new XwJNI();
+        }
+        return s_JNI;
+    }
+
+    private int m_ptr;
+    private XwJNI()
+    {
+        m_ptr = initGlobals();
+    }
+
+    public static void cleanGlobals()
+    {
+        synchronized( XwJNI.class ) { // let's be safe here
+            XwJNI jni = getJNI();
+            cleanGlobals( jni.m_ptr );
+            jni.m_ptr = 0;
+        }
+    }
+
+    // @Override
+    public void finalize() throws java.lang.Throwable
+    {
+        cleanGlobals( m_ptr );
+        super.finalize();
+    }
 
     // This needs to be called before the first attempt to use the
     // jni.
@@ -52,7 +85,10 @@ public class XwJNI {
     public static native String comms_getUUID();
 
     // Game methods
-    public static native int initJNI();
+    public static int initJNI()
+    {
+        return initJNI( getJNI().m_ptr );
+    }
     public static native void game_makeNewGame( int gamePtr,
                                                 CurGameInfo gi, 
                                                 UtilCtxt util,
@@ -260,19 +296,64 @@ public class XwJNI {
     public static native void comms_ackAny( int gamePtr );
     public static native void comms_transportFailed( int gamePtr );
     public static native boolean comms_isConnected( int gamePtr );
+    public static native String comms_getStats( int gamePtr );
 
     // Dicts
-    public static native boolean dict_tilesAreSame( int dictPtr1, int dictPtr2 );
-    public static native String[] dict_getChars( int dictPtr );
-    public static native boolean dict_getInfo( byte[] dict, String name,
-                                               String path, JNIUtils jniu, 
-                                               boolean check, DictInfo info );
+    public static class DictWrapper {
+        private int m_dictPtr;
+
+        public DictWrapper()
+        {
+            m_dictPtr = 0;
+        }
+
+        public DictWrapper( int dictPtr )
+        {
+            m_dictPtr = dictPtr;
+            dict_ref( dictPtr );
+        }
+
+        public void release()
+        {
+            if ( 0 != m_dictPtr ) {
+                dict_unref( m_dictPtr );
+                m_dictPtr = 0;
+            }
+        }
+
+        public int getDictPtr()
+        {
+            return m_dictPtr;
+        }
+
+        // @Override
+        public void finalize() throws java.lang.Throwable 
+        {
+            release();
+            super.finalize();
+        }
+
+    }
+
+    public static native boolean dict_tilesAreSame( int dict1, int dict2 );
+    public static native String[] dict_getChars( int dict );
+    public static boolean dict_getInfo( byte[] dict, String name,
+                                        String path, JNIUtils jniu, 
+                                        boolean check, DictInfo info )
+    {
+        return dict_getInfo( getJNI().m_ptr, dict, name, path, jniu, 
+                             check, info );
+    }
+
     public static native int dict_getTileValue( int dictPtr, int tile );
 
     // Dict iterator
     public final static int MAX_COLS_DICT = 15; // from dictiter.h
-    public static native int dict_iter_init( byte[] dict, String name,
-                                             String path, JNIUtils jniu );
+    public static int dict_iter_init( byte[] dict, String name,
+                                      String path, JNIUtils jniu )
+    {
+        return dict_iter_init( getJNI().m_ptr, dict, name, path, jniu );
+    }
     public static native void dict_iter_setMinMax( int closure,
                                                    int min, int max );
     public static native void dict_iter_destroy( int closure );
@@ -288,4 +369,19 @@ public class XwJNI {
     // base64 stuff since 2.1 doesn't support it in java
     public static native String base64Encode( byte[] in );
     public static native byte[] base64Decode( String in );
+
+
+    // Private methods -- called only here
+    private static native int initGlobals();
+    private static native void cleanGlobals( int ptr );
+    private static native int initJNI( int jniState );
+    private static native void dict_ref( int dictPtr );
+    private static native void dict_unref( int dictPtr );
+    private static native boolean dict_getInfo( int jniState, byte[] dict, 
+                                                String name, String path, 
+                                                JNIUtils jniu, boolean check, 
+                                                DictInfo info );
+    private static native int dict_iter_init( int jniState, byte[] dict, 
+                                              String name, String path, 
+                                              JNIUtils jniu );
 }

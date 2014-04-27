@@ -157,12 +157,6 @@
          list_item_rename) -->
     <string name="rename_label">Mudar o nome desse jogo para:</string>
 
-    <!-- Text of confirmation dialog posted when list_item_reset menu
-         is selected -->
-    <string name="confirm_reset">Você tem certeza que quer reiniciar
-    esse jogo? Reiniciar apaga todas as jogadas e informações de
-    conexão.</string>
-
     <!--
        ############################################################
        # :Screens:
@@ -605,7 +599,7 @@
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
          -->
-    <string name="ids_badwords">Palavra(s) %1$s não encontrada(s) na
+    <string name="ids_badwordsf">Palavra(s) %1$s não encontrada(s) na
     lista de palavras %2$s.</string>
 
     <!-- Appended to the above in the phonies_warn case.  User may
@@ -2143,11 +2137,6 @@
 
     <string name="group_cur_games">Meus jogos</string>
     <string name="group_new_games">Novos jogos</string>
-
-    <string name="group_confirm_del">Você tem certeza que quer apagar
-    esse grupo?</string>
-    <string name="group_confirm_delf">\u0020(Ele contém %d jogo(s),
-    que também serão apagados.)</string>
 
     <string name="rename_group_label">Mudar o nome desse grupo para:</string>
     <string name="game_name_group_title">Nomear grupo</string>

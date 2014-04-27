@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -36,11 +36,6 @@ import java.io.File;
 public class PrefsActivity extends PreferenceActivity 
     implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final int REVERT_COLORS = 1;
-    private static final int REVERT_ALL = 2;
-    public static final int CONFIRM_SMS = 3;
-    public static final int EXPLAIN_TITLE = 4;
-
     private String m_keyLogging;
     private String m_smsEnable;
     private String m_downloadPath;
@@ -54,7 +49,8 @@ public class PrefsActivity extends PreferenceActivity
         DialogInterface.OnClickListener lstnr = null;
         int confirmID = 0;
 
-        switch( id ) {
+        DlgID dlgID = DlgID.values()[id];
+        switch( dlgID ) {
         case REVERT_COLORS:
             confirmID = R.string.confirm_revert_colors;
             lstnr = new DialogInterface.OnClickListener() {
@@ -139,13 +135,13 @@ public class PrefsActivity extends PreferenceActivity
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View v ) {
-                    showDialog( REVERT_COLORS );
+                    showDialog( DlgID.REVERT_COLORS.ordinal() );
                 }
             } );
         button = (Button)findViewById( R.id.revert_all );
         button.setOnClickListener(new View.OnClickListener() {
                 public void onClick( View v ) {
-                    showDialog( REVERT_ALL );
+                    showDialog( DlgID.REVERT_ALL.ordinal() );
                 }
             } );
     }
@@ -203,7 +199,7 @@ public class PrefsActivity extends PreferenceActivity
                     = (CheckBoxPreference)findPreference(key);
                 pref.setChecked( false );
                 pref.setEnabled( false );
-                showDialog( EXPLAIN_TITLE );
+                showDialog( DlgID.EXPLAIN_TITLE.ordinal() );
             }
         } 
     }

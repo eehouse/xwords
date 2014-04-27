@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2010 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -26,6 +26,7 @@ import android.util.AttributeSet;
 public class XWSumListPreference extends XWListPreference {
 
     private static final int[] s_ADDROWS = {
+        R.string.game_summary_field_npackets,
         R.string.game_summary_field_rowid,
         R.string.game_summary_field_gameid,
     };

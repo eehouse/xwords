@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -74,7 +74,6 @@ public class JNIThread extends Thread {
             CMD_CANCELTRADE,
             CMD_UNDO_CUR,
             CMD_UNDO_LAST,
-            CMD_HINT,
             CMD_ZOOM,
             CMD_TOGGLEZOOM,
             CMD_PREV_HINT,
@@ -89,6 +88,7 @@ public class JNIThread extends Thread {
             CMD_ENDGAME,
             CMD_POST_OVER,
             CMD_SENDCHAT,
+            CMD_NETSTATS,
             // CMD_DRAW_CONNS_STATUS,
             // CMD_DRAW_BT_STATUS,
             // CMD_DRAW_SMS_STATUS,
@@ -104,6 +104,7 @@ public class JNIThread extends Thread {
     public class GameStateInfo implements Cloneable {
         public int visTileCount;
         public int trayVisState;
+        public int nPendingMessages;
         public boolean canHint;
         public boolean canUndo;
         public boolean canRedo;
@@ -198,13 +199,6 @@ public class JNIThread extends Thread {
         return result;
     }
 
-    public void setInBackground( boolean inBack )
-    {
-        if ( inBack ) {
-            handle( JNICmd.CMD_SAVE );
-        }
-    }
-
     public GameStateInfo getGameStateInfo()
     {
         synchronized( m_gsi ) {
@@ -296,12 +290,15 @@ public class JNIThread extends Thread {
         if ( Arrays.equals( m_gameAtStart, state ) ) {
             // DbgUtils.logf( "no change in game; can skip saving" );
         } else {
-            GameSummary summary = new GameSummary( m_context, m_gi );
-            XwJNI.game_summarize( m_jniGamePtr, summary );
-            DBUtils.saveGame( m_context, m_lock, state, false );
-            DBUtils.saveSummary( m_context, m_lock, summary );
-            // There'd better be no way for saveGame above to fail!
-            XwJNI.game_saveSucceeded( m_jniGamePtr );
+            synchronized( this ) {
+                Assert.assertNotNull( m_lock );
+                GameSummary summary = new GameSummary( m_context, m_gi );
+                XwJNI.game_summarize( m_jniGamePtr, summary );
+                DBUtils.saveGame( m_context, m_lock, state, false );
+                DBUtils.saveSummary( m_context, m_lock, summary );
+                // There'd better be no way for saveGame above to fail!
+                XwJNI.game_saveSucceeded( m_jniGamePtr );
+            }
         }
     }
 
@@ -316,7 +313,7 @@ public class JNIThread extends Thread {
                 }
             }
 
-            QueueElem elem;
+            final QueueElem elem;
             Object[] args;
             try {
                 elem = m_queue.take();
@@ -327,11 +324,6 @@ public class JNIThread extends Thread {
             boolean draw = false;
             args = elem.m_args;
             switch( elem.m_cmd ) {
-
-            // case CMD_RUN:
-            //     Runnable proc = (Runnable)args[0];
-            //     proc.run();
-            //     break;
 
             case CMD_SAVE:
                 if ( nextSame( JNICmd.CMD_SAVE ) ) {
@@ -478,11 +470,6 @@ public class JNIThread extends Thread {
                 draw = true;
                 break;
 
-            case CMD_HINT:
-                XwJNI.board_resetEngine( m_jniGamePtr );
-                handle( JNICmd.CMD_NEXT_HINT );
-                break;
-
             case CMD_NEXT_HINT:
             case CMD_PREV_HINT:
                 if ( nextSame( elem.m_cmd ) ) {
@@ -574,43 +561,11 @@ public class JNIThread extends Thread {
                 XwJNI.server_sendChat( m_jniGamePtr, (String)args[0] );
                 break;
 
-            // case CMD_DRAW_CONNS_STATUS:
-            //     int newID = 0;
-            //     switch( (TransportProcs.CommsRelayState)(args[0]) ) {
-            //     case COMMS_RELAYSTATE_UNCONNECTED:
-            //     case COMMS_RELAYSTATE_DENIED:
-            //     case COMMS_RELAYSTATE_CONNECT_PENDING:
-            //         newID = R.drawable.netarrow_unconn;
-            //         break;
-            //     case COMMS_RELAYSTATE_CONNECTED: 
-            //     case COMMS_RELAYSTATE_RECONNECTED: 
-            //         newID = R.drawable.netarrow_someconn;
-            //         break;
-            //     case COMMS_RELAYSTATE_ALLCONNECTED:
-            //         newID = R.drawable.netarrow_allconn;
-            //         break;
-            //     default:
-            //         newID = 0;
-            //     }
-            //     if ( m_connsIconID != newID ) {
-            //         draw = true;
-            //         m_connsIconID = newID;
-            //     }
-            //     break;
-            
-            // case CMD_DRAW_BT_STATUS:
-            //     boolean btWorking = ((Boolean)args[0]).booleanValue();
-            //     m_connsIconID = btWorking ? R.drawable.bluetooth_active 
-            //         : R.drawable.bluetooth_disabled;
-            //     draw = true;
-            //     break;
-
-            // case CMD_DRAW_SMS_STATUS:
-            //     boolean smsWorking = ((Boolean)args[0]).booleanValue();
-            //     m_connsIconID = smsWorking ? R.drawable.sms_allconn
-            //         : R.drawable.sms_disabled;
-            //     draw = true;
-            //     break;
+            case CMD_NETSTATS:
+                sendForDialog( ((Integer)args[0]).intValue(),
+                               XwJNI.comms_getStats( m_jniGamePtr )
+                               );
+                break;
 
             case CMD_TIMER_FIRED:
                 draw = XwJNI.timerFired( m_jniGamePtr, 
@@ -639,6 +594,8 @@ public class JNIThread extends Thread {
         if ( m_saveOnStop ) {
             XwJNI.comms_stop( m_jniGamePtr );
             save_jni();
+        } else {
+            DbgUtils.logf( "JNIThread.run(): exiting without saving" );
         }
     } // run
 

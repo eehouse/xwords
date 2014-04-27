@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -368,6 +368,11 @@ public class XWPrefs {
             }
         }
         return result;
+    }
+
+    public static boolean getStudyEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_studyon, true );
     }
 
     protected static String getPrefsString( Context context, int keyID )

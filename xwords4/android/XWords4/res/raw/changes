@@ -5,46 +5,19 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 76 release</b>
-
-<p>(Betas 74 through 76 fix bugs but add nothing new, so the previous
-    notes remain in place.)</p>
-
-<p>Beta 73 adds two new features, snapshots of in-progress games
-  displayed as part of the main Games List screen, and the ability to
-  send invitations by tapping your device against the one you want to
-  invite (using &quot;Near Field Communication&quot;, or NFC, which
-  Google brands &quot;Android beaming&quot;.)</p>
-
-<p>Both features are optional. NFC is off by default, so you have to
-  enable it via Google's system Preferences app. And snapshots, while
-  on by default, can be disabled (or resized to better fit your
-  screen) in Crosswords' App Preferences section under
-  Appearances.</p>
+<b>Crosswords 4.4 beta 83 release</b>
 
 <h3>New with this release</h3>
 <ul>
-  <li>Add thumbnails of board to main screen</li>
-  <li>Add ability to invite via NFC</li>
-  <li>Use Actionbar and select/act pattern on Wordlist Browser
-    screen</li>
-  <li>Highlight most recently opened game in Games List screen by
-    default </li>
-  <li>Disable SMS on KitKat (Android 4.4) devices: Google&apos;s
-    broken some behavior it depended on</li>
-  <li>Disable hiding title bar on devices with Action Bar or without a
-    menu key</li>
-  <li>Make tile borders thicker when selected in trade mode</li>
-  <li>Refuse to create more than one game from an invitation</li>
-  <li>Add the.freedictionary.com lookup for German words</li>
-  <li>Fix disappearing games bug</li>
-  <li>Fix wordlist crasher (Thanks BM!)</li>
+    <li>Display board in upside-down portrait orientation too (where OS version allows)</li>
+    <li>Bug fix (obscure): don't mangle unicode model names</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
+  <li>Much better support for localization</li>
+  <li>Look, again, at play via Bluetooth now that HTC phones aren't quite so common</li>
   <li>Fix SMS play for KitKat</li>
-  <li>Use Actionbar and select/act pattern on more screens</li>
   <li>Offer "Rematch" when game's over</li>
 </ul>
 

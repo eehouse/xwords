@@ -54,6 +54,7 @@
 #include "draw.h"
 #include "game.h"
 #include "gtkask.h"
+#include "gtkaskm.h"
 #include "gtkchat.h"
 #include "gtknewgame.h"
 #include "gtkletterask.h"
@@ -322,6 +323,8 @@ relay_connd_gtk( void* closure, XP_UCHAR* const room,
                  XP_Bool XP_UNUSED(reconnect), XP_U16 devOrder, 
                  XP_Bool allHere, XP_U16 nMissing )
 {
+    GtkGameGlobals* globals = (GtkGameGlobals*)closure;
+    globals->cGlobals.nMissing = nMissing;
     XP_Bool skip = XP_FALSE;
     char buf[256];
 
@@ -340,9 +343,10 @@ relay_connd_gtk( void* closure, XP_UCHAR* const room,
     }
 
     if ( !skip ) {
-        GtkGameGlobals* globals = (GtkGameGlobals*)closure;
-        (void)gtkask_timeout( globals->window, buf, GTK_BUTTONS_OK, 500 );
+        (void)gtkask_timeout( globals->window, buf, GTK_BUTTONS_OK, NULL, 500 );
     }
+
+    disenable_buttons( globals );
 }
 
 static gint
@@ -378,9 +382,9 @@ relay_error_gtk( void* closure, XWREASON relayErr )
         proc = invoke_new_game;
         break;
     case XWRELAY_ERROR_DELETED:
-        gtkask_timeout( globals->window,
-                        "relay says another device deleted game.", 
-                        GTK_BUTTONS_OK, 1000 );
+        (void)gtkask_timeout( globals->window,
+                              "relay says another device deleted game.", 
+                              GTK_BUTTONS_OK, NULL, 1000 );
         break;
     case XWRELAY_ERROR_DEADGAME:
         break;
@@ -505,9 +509,9 @@ createOrLoadObjects( GtkGameGlobals* globals )
                           &cGlobals->cp, &procs, params->gameSeed );
 
         // addr.conType = params->conType;
-        if ( 0 ) {
+        switch( addr.conType ) {
 #ifdef XWFEATURE_RELAY
-        } else if ( addr.conType == COMMS_CONN_RELAY ) {
+        case COMMS_CONN_RELAY:
             /* addr.u.ip_relay.ipAddr = 0; */
             /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
             /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
@@ -516,26 +520,34 @@ createOrLoadObjects( GtkGameGlobals* globals )
             /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
             /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
             /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
+            break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-        } else if ( addr.conType == COMMS_CONN_BT ) {
+        case COMMS_CONN_BT:
             XP_ASSERT( sizeof(addr.u.bt.btAddr) 
                        >= sizeof(params->connInfo.bt.hostAddr));
             XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
                        sizeof(params->connInfo.bt.hostAddr) );
+            break;
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-        } else if ( addr.conType == COMMS_CONN_IP_DIRECT ) {
+        case COMMS_CONN_IP_DIRECT:
             XP_STRNCPY( addr.u.ip.hostName_ip, params->connInfo.ip.hostName,
                         sizeof(addr.u.ip.hostName_ip) - 1 );
             addr.u.ip.port_ip = params->connInfo.ip.port;
+            break;
 #endif
 #ifdef XWFEATURE_SMS
-        } else if ( addr.conType == COMMS_CONN_SMS ) {
-            XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.serverPhone,
-                        sizeof(addr.u.sms.phone) - 1 );
-            addr.u.sms.port = params->connInfo.sms.port;
+        case COMMS_CONN_SMS:
+            /* No! Don't overwrite what may be a return address with local
+               stuff */
+            /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
+            /*             sizeof(addr.u.sms.phone) - 1 ); */
+            /* addr.u.sms.port = params->connInfo.sms.port; */
+            break;
 #endif
+        default:
+            break;
         }
 
         /* Need to save in order to have a valid selRow for the first send */
@@ -544,7 +556,6 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* This may trigger network activity */
         if ( !!cGlobals->game.comms ) {
-            XP_ASSERT( COMMS_CONN_RELAY == addr.conType );
             comms_setAddr( cGlobals->game.comms, &addr );
         }
 #endif
@@ -555,7 +566,6 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #ifdef XWFEATURE_SEARCHLIMIT
         cGlobals->gi->allowHintRect = params->allowHintRect;
 #endif
-
 
         if ( params->needsNewGame ) {
             new_game_impl( globals, XP_FALSE );
@@ -587,6 +597,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
     }
 #endif
     server_do( globals->cGlobals.game.server );
+    saveGame( cGlobals );   /* again, to include address etc. */
 
     disenable_buttons( globals );
 } /* createOrLoadObjects */
@@ -774,26 +785,28 @@ destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 cleanup( GtkGameGlobals* globals )
 {
-    saveGame( &globals->cGlobals );
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    saveGame( cGlobals );
     g_source_remove( globals->idleID );
 
 #ifdef XWFEATURE_BLUETOOTH
-    linux_bt_close( &globals->cGlobals );
+    linux_bt_close( cGlobals );
 #endif
 #ifdef XWFEATURE_SMS
-    linux_sms_close( &globals->cGlobals );
+    // linux_sms_close( cGlobals );
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-    linux_udp_close( &globals->cGlobals );
+    linux_udp_close( cGlobals );
 #endif
 #ifdef XWFEATURE_RELAY
-    linux_close_socket( &globals->cGlobals );
+    linux_close_socket( cGlobals );
 #endif
-    game_dispose( &globals->cGlobals.game ); /* takes care of the dict */
-    gi_disposePlayerInfo( MEMPOOL globals->cGlobals.gi );
+    game_dispose( &cGlobals->game );
+    gi_disposePlayerInfo( MEMPOOL cGlobals->gi );
+    dict_unref( cGlobals->dict );
 
-    linux_util_vt_destroy( globals->cGlobals.util );
-    free( globals->cGlobals.util );
+    linux_util_vt_destroy( cGlobals->util );
+    free( cGlobals->util );
 } /* cleanup */
 
 GtkWidget*
@@ -816,14 +829,15 @@ makeAddSubmenu( GtkWidget* menubar, gchar* label )
 static void
 tile_values( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( !!globals->cGlobals.game.server ) {
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    if ( !!cGlobals->game.server ) {
         XWStreamCtxt* stream = 
             mem_stream_make( MEMPOOL 
-                             globals->cGlobals.params->vtMgr,
+                             cGlobals->params->vtMgr,
                              globals, 
                              CHANNEL_NONE, 
                              catOnClose );
-        server_formatDictCounts( globals->cGlobals.game.server, stream, 5 );
+        server_formatDictCounts( cGlobals->game.server, stream, 5 );
         stream_putU8( stream, '\n' );
         stream_destroy( stream );
     }
@@ -860,14 +874,12 @@ final_scores( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     if ( gameOver ) {
         catFinalScores( &globals->cGlobals, -1 );
-    } else {
-        if ( gtkask( globals->window,
-                     "Are you sure you want to resign?", 
-                     GTK_BUTTONS_YES_NO ) ) {
-            globals->cGlobals.manualFinal = XP_TRUE;
-            server_endGame( globals->cGlobals.game.server );
-            gameOver = TRUE;
-        }
+    } else if ( GTK_RESPONSE_YES == gtkask( globals->window,
+                                            "Are you sure you want to resign?", 
+                                            GTK_BUTTONS_YES_NO, NULL ) ) {
+        globals->cGlobals.manualFinal = XP_TRUE;
+        server_endGame( globals->cGlobals.game.server );
+        gameOver = TRUE;
     }
 
     /* the end game listener will take care of printing the final scores */
@@ -1217,20 +1229,24 @@ makeMenus( GtkGameGlobals* globals )
 static void
 disenable_buttons( GtkGameGlobals* globals )
 {
+    GameStateInfo gsi;
+    game_getState( &globals->cGlobals.game, &gsi );
+
     XP_Bool canFlip = 1 < board_visTileCount( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->flip_button, canFlip );
 
     XP_Bool canToggle = board_canTogglePending( globals->cGlobals.game.board );
     gtk_widget_set_sensitive( globals->toggle_undo_button, canToggle );
 
-    XP_Bool canHint = board_canHint( globals->cGlobals.game.board );
-    gtk_widget_set_sensitive( globals->prevhint_button, canHint );
-    gtk_widget_set_sensitive( globals->nexthint_button, canHint );
+    gtk_widget_set_sensitive( globals->prevhint_button, gsi.canHint );
+    gtk_widget_set_sensitive( globals->nexthint_button, gsi.canHint );
+
+    XP_U16 nMissing = server_getMissingPlayers( globals->cGlobals.game.server );
+    gtk_widget_set_sensitive( globals->invite_button, 0 < nMissing );
+    gtk_widget_set_sensitive( globals->commit_button, gsi.curTurnSelected );
 
 #ifdef XWFEATURE_CHAT
-    XP_Bool canChat = !!globals->cGlobals.game.comms
-        && comms_canChat( globals->cGlobals.game.comms );
-    gtk_widget_set_sensitive( globals->chat_button, canChat );
+    gtk_widget_set_sensitive( globals->chat_button, gsi.canChat );
 #endif
 }
 
@@ -1370,7 +1386,7 @@ handle_zoomin_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         board_draw( globals->cGlobals.game.board );
         setZoomButtons( globals, inOut );
     }
-} /* handle_done_button */
+} /* handle_zoomin_button */
 
 static void
 handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
@@ -1380,7 +1396,7 @@ handle_zoomout_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         board_draw( globals->cGlobals.game.board );
         setZoomButtons( globals, inOut );
     }
-} /* handle_done_button */
+} /* handle_zoomout_button */
 
 #ifdef XWFEATURE_CHAT
 static void
@@ -1453,6 +1469,43 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 } /* handle_commit_button */
 
 static void
+handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    CommsAddrRec addr;
+    CommsCtxt* comms = globals->cGlobals.game.comms;
+    XP_ASSERT( comms );
+    comms_getAddr( comms, &addr );
+    switch ( comms_getConType( comms ) ) {
+#ifdef XWFEATURE_SMS
+    case COMMS_CONN_SMS: {
+        gchar* phone = NULL;
+        gchar* portstr = NULL;
+        AskMInfo infos[] = {
+            { "Remote phone#", &phone },
+            { "Remote port", &portstr },
+        };
+        if ( gtkaskm( "Invite whom?", infos, VSIZE(infos) ) ) { 
+            int port = atoi( portstr );
+            XP_LOGF( "need to invite using number %s and port %d", phone, port );
+            XP_ASSERT( 0 != port );
+            const CurGameInfo* gi = globals->cGlobals.gi;
+            gchar gameName[64];
+            snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
+            linux_sms_invite( globals->cGlobals.params, gi, gameName, 1,
+                              phone, port );
+        }
+        g_free( phone );
+        g_free( portstr );
+    }
+        break;
+#endif
+    default:
+        XP_ASSERT( 0 );
+        break;
+    }
+} /* handle_commit_button */
+
+static void
 gtkUserError( GtkGameGlobals* globals, const char* format, ... )
 {
     char buf[512];
@@ -1462,7 +1515,7 @@ gtkUserError( GtkGameGlobals* globals, const char* format, ... )
 
     vsprintf( buf, format, ap );
 
-    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
 
     va_end(ap);
 } /* gtkUserError */
@@ -1570,10 +1623,20 @@ gtkShowFinalScores( const GtkGameGlobals* globals )
     text = strFromStream( stream );
     stream_destroy( stream );
 
-    XP_U16 timeout = cGlobals->manualFinal? 0 : 500;
-    (void)gtkask_timeout( globals->window, text, GTK_BUTTONS_OK, timeout );
+    XP_U16 timeout = cGlobals->manualFinal? 0 : cGlobals->params->askTimeout;
+    const AskPair buttons[] = {
+      { "OK", 1 },
+      { "Rematch", 2 },
+      { NULL, 0 }
+    };
 
+    gint chosen = gtkask_timeout( globals->window, text, GTK_BUTTONS_NONE, 
+                                  buttons, timeout );
     free( text );
+    if ( 2 == chosen ) {
+        XP_LOGF( "%s: rematch chosen!", __func__ );
+	XP_ASSERT( 0 );
+    }
 } /* gtkShowFinalScores */
 
 static void
@@ -1582,7 +1645,7 @@ gtk_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl,
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     char* question = strFromStream( !!words? words : expl );
-    (void)gtkask( globals->window, question, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, question, GTK_BUTTONS_OK, NULL );
     free( question );
 }
 
@@ -1591,7 +1654,7 @@ gtk_util_informUndo( XW_UtilCtxt* uc )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     (void)gtkask_timeout( globals->window, "Remote player undid a move",
-                          GTK_BUTTONS_OK, 500 );
+                          GTK_BUTTONS_OK, NULL, 500 );
 }
 
 static void
@@ -1634,7 +1697,7 @@ gtk_util_informNetDict( XW_UtilCtxt* uc, XP_LangCode XP_UNUSED(lang),
                       "\nPHONIES_DISALLOW is set so this may "
                       "lead to some surprises." );
         }
-        (void)gtkask( globals->window, buf, GTK_BUTTONS_OK );
+        (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
     }
 }
 
@@ -1877,7 +1940,8 @@ gtk_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, XP_U16 player,
         XP_ASSERT( bwi->nWords == 1 );
         sprintf( buf, "Word \"%s\" not in the current dictionary (%s). "
                  "Use it anyway?", bwi->words[0], bwi->dictName );
-        result = gtkask( globals->window, buf, GTK_BUTTONS_YES_NO );
+        result = GTK_RESPONSE_YES == gtkask( globals->window, buf, 
+                                             GTK_BUTTONS_YES_NO, NULL );
     }
 
     return result;
@@ -1897,7 +1961,7 @@ gtk_util_remSelected( XW_UtilCtxt* uc )
     text = strFromStream( stream );
     stream_destroy( stream );
 
-    (void)gtkask( globals->window, text, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, text, GTK_BUTTONS_OK, NULL );
     free( text );
 }
 
@@ -1919,7 +1983,7 @@ static void
 gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    (void)gtkask( globals->window, msg, GTK_BUTTONS_OK );
+    (void)gtkask( globals->window, msg, GTK_BUTTONS_OK, NULL );
 }
 #endif
 #endif
@@ -2012,8 +2076,8 @@ gtk_util_userQuery( XW_UtilCtxt* uc, UtilQueryID id,
         XP_ASSERT( 0 );
         return XP_FALSE;
     }
-
-    result = gtkask( globals->window, question, buttons );
+    gint chosen = gtkask( globals->window, question, buttons, NULL );
+    result = GTK_RESPONSE_OK == chosen || chosen == GTK_RESPONSE_YES;
 
     if ( freeMe ) {
         free( question );
@@ -2029,7 +2093,8 @@ gtk_util_confirmTrade( XW_UtilCtxt* uc,
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     char question[256];
     formatConfirmTrade( tiles, nTiles, question, sizeof(question) );
-    return gtkask( globals->window, question, GTK_BUTTONS_YES_NO );
+    return GTK_RESPONSE_YES == gtkask( globals->window, question, 
+                                       GTK_BUTTONS_YES_NO, NULL );
 }
 
 static GtkWidget*
@@ -2137,29 +2202,34 @@ makeVerticalBar( GtkGameGlobals* globals, GtkWidget* XP_UNUSED(window) )
 static GtkWidget* 
 makeButtons( GtkGameGlobals* globals )
 {
-    short i;
+    int ii;
     GtkWidget* hbox;
     GtkWidget* button;
 
     struct {
         char* name;
         GCallback func;
+        GtkWidget** widget;
     } buttons[] = {
         /* 	{ "Flip", handle_flip_button }, */
-        { "Grid", G_CALLBACK(handle_grid_button) },
-        { "Hide", G_CALLBACK(handle_hide_button) },
-        { "Commit", G_CALLBACK(handle_commit_button) },
+        { "Grid", G_CALLBACK(handle_grid_button), NULL },
+        { "Hide", G_CALLBACK(handle_hide_button), NULL },
+        { "Commit", G_CALLBACK(handle_commit_button), &globals->commit_button },
+        { "Invite", G_CALLBACK(handle_invite_button), &globals->invite_button },
     };
     
     hbox = gtk_hbox_new( FALSE, 0 );
 
-    for ( i = 0; i < sizeof(buttons)/sizeof(*buttons); ++i ) {
-        button = gtk_button_new_with_label( buttons[i].name );
+    for ( ii = 0; ii < sizeof(buttons)/sizeof(*buttons); ++ii ) {
+        button = gtk_button_new_with_label( buttons[ii].name );
         gtk_widget_show( button );
         g_signal_connect( GTK_OBJECT(button), "clicked",
-                          G_CALLBACK(buttons[i].func), globals );
+                          G_CALLBACK(buttons[ii].func), globals );
 
-        gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0);    
+        gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0);
+        if ( !!buttons[ii].widget ) {
+            *buttons[ii].widget = button;
+        }
     }
 
     gtk_widget_show( hbox );
@@ -2233,14 +2303,14 @@ newConnectionInput( GIOChannel *source,
         ssize_t nRead;
         unsigned char buf[1024];
         CommsAddrRec* addrp = NULL;
-#if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_SMS
+#if defined XWFEATURE_IP_DIRECT
         CommsAddrRec addr;
 #endif
 
         switch ( comms_getConType( globals->cGlobals.game.comms ) ) {
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
-            XP_ASSERT( globals->cGlobals.socket == sock );
+            XP_ASSERT( globals->cGlobals.relaySocket == sock );
             nRead = linux_relay_receive( &globals->cGlobals, buf, sizeof(buf) );
             break;
 #endif
@@ -2251,9 +2321,10 @@ newConnectionInput( GIOChannel *source,
 #endif
 #ifdef XWFEATURE_SMS
         case COMMS_CONN_SMS:
-            addrp = &addr;
-            nRead = linux_sms_receive( &globals->cGlobals, sock, 
-                                       buf, sizeof(buf), addrp );
+            XP_ASSERT(0);
+            /* addrp = &addr; */
+            /* nRead = linux_sms_receive( &globals->cGlobals, sock,  */
+            /*                            buf, sizeof(buf), addrp ); */
             break;
 #endif
 #ifdef XWFEATURE_IP_DIRECT
@@ -2272,7 +2343,7 @@ newConnectionInput( GIOChannel *source,
 
             inboundS = stream_from_msgbuf( &globals->cGlobals, buf, nRead );
             if ( !!inboundS ) {
-                XP_LOGF( "%s: got %d bytes", __func__, nRead );
+                XP_LOGF( "%s: got %zd bytes", __func__, nRead );
                 if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
                                                 inboundS, addrp ) ) {
                     redraw =
@@ -2306,7 +2377,7 @@ newConnectionInput( GIOChannel *source,
         XP_LOGF( "dropping socket %d", sock );
         close( sock );
 #ifdef XWFEATURE_RELAY
-        globals->cGlobals.socket = -1;
+        globals->cGlobals.relaySocket = -1;
 #endif
         if ( 0 ) {
 #ifdef XWFEATURE_BLUETOOTH
@@ -2361,7 +2432,7 @@ gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
         XP_LOGF( "g_io_add_watch(%d) => %d", newSock, result );
     }
 #ifdef XWFEATURE_RELAY
-    globals->cGlobals.socket = newSock;
+    globals->cGlobals.relaySocket = newSock;
 #endif
     /* A hack for the bluetooth case. */
     CommsCtxt* comms = globals->cGlobals.game.comms;
@@ -2461,18 +2532,22 @@ drop_msg_toggle( GtkWidget* toggle, GtkGameGlobals* globals )
 /* } */
 
 static void
-initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params )
+initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params, 
+                   CurGameInfo* gi )
 {
     memset( globals, 0, sizeof(*globals) );
 
     globals->cGlobals.gi = &globals->gi;
-    gi_copy( MPPARM(params->mpool) globals->cGlobals.gi, &params->pgi );
+    if ( !gi ) {
+        gi = &params->pgi;
+    }
+    gi_copy( MPPARM(params->mpool) globals->cGlobals.gi, gi );
 
     globals->cGlobals.params = params;
     globals->cGlobals.lastNTilesToUse = MAX_TRAY_TILES;
 #ifndef XWFEATURE_STANDALONE_ONLY
 # ifdef XWFEATURE_RELAY
-    globals->cGlobals.socket = -1;
+    globals->cGlobals.relaySocket = -1;
 # endif
 
     globals->cGlobals.socketChanged = gtk_socket_changed;
@@ -2503,8 +2578,9 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params )
 }
 
 void
-initGlobals( GtkGameGlobals* globals, LaunchParams* params )
+initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 {
+    CommonGlobals* cGlobals = &globals->cGlobals;
     short width, height;
     GtkWidget* window;
     GtkWidget* drawing_area;
@@ -2516,7 +2592,13 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params )
     GtkWidget* dropCheck;
 #endif
 
-    initGlobalsNoDraw( globals, params );
+    initGlobalsNoDraw( globals, params, gi );
+    if ( !!gi ) {
+        XP_ASSERT( !cGlobals->dict );
+        cGlobals->dict = linux_dictionary_make( MEMPOOL params,
+                                                gi->dictName, XP_TRUE );
+        gi->dictLang = dict_getLangCode( cGlobals->dict );
+    }
 
     globals->window = window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
     if ( !!params->fileName ) {
@@ -2549,11 +2631,11 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params )
     gtk_widget_show( drawing_area );
 
     width = GTK_HOR_SCORE_WIDTH + GTK_TIMER_WIDTH + GTK_TIMER_PAD;
-    if ( globals->cGlobals.params->verticalScore ) {
+    if ( params->verticalScore ) {
         width += GTK_VERT_SCORE_WIDTH;
     }
     height = 196;
-    if ( globals->cGlobals.params->nHidden == 0 ) {
+    if ( params->nHidden == 0 ) {
         height += GTK_MIN_SCALE * GTK_TRAY_HT_ROWS;
     }
 
@@ -2565,10 +2647,10 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params )
     /* install scrollbar even if not needed -- since zooming can make it
        needed later */
     GtkWidget* vscrollbar;
-    gint nRows = globals->cGlobals.gi->boardSize;
+    gint nRows = cGlobals->gi->boardSize;
     globals->adjustment = (GtkAdjustment*)
         gtk_adjustment_new( 0, 0, nRows, 1, 2, 
-                            nRows - globals->cGlobals.params->nHidden );
+                            nRows - params->nHidden );
     vscrollbar = gtk_vscrollbar_new( globals->adjustment );
     g_signal_connect( GTK_OBJECT(globals->adjustment), "value_changed",
                       G_CALLBACK(scroll_value_changed), globals );
@@ -2593,7 +2675,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params )
     g_signal_connect( GTK_OBJECT(drawing_area), "button_release_event",
                       G_CALLBACK(button_release_event), globals );
 
-    setOneSecondTimer( &globals->cGlobals );
+    setOneSecondTimer( cGlobals );
 
 #ifdef KEY_SUPPORT
 # ifdef KEYBOARD_NAV
@@ -2631,7 +2713,7 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
 {
     LOG_FUNC();
     sqlite3* pDb = params->pDb;
-    initGlobalsNoDraw( globals, params );
+    initGlobalsNoDraw( globals, params, NULL );
 
     TransportProcs procs;
     setTransportProcs( &procs, globals );

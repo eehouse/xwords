@@ -22,6 +22,7 @@
 
 #include "gtkconnsdlg.h"
 #include "gtkutils.h"
+#include "linuxbt.h"
 
 typedef struct _GtkConnsState {
     GtkGameGlobals* globals;
@@ -32,8 +33,12 @@ typedef struct _GtkConnsState {
     GtkWidget* hostName;
     GtkWidget* port;
     GtkWidget* bthost;
+    GtkWidget* smsphone;
+    GtkWidget* smsport;
+    GtkWidget* bgScanButton;
 
     GtkWidget* notebook;
+
     CommsConnType pageTypes[COMMS_CONN_NTYPES];
 
     gboolean cancelled;
@@ -91,9 +96,17 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
 #endif
 #ifdef XWFEATURE_BLUETOOTH
         case COMMS_CONN_BT:
+            txt = gtk_entry_get_text( GTK_ENTRY(state->bthost) );
+            XP_STRNCPY( state->addr->u.bt.hostName, txt, 
+                        sizeof(state->addr->u.bt.hostName) );
             break;
 #endif
         case COMMS_CONN_SMS:
+            txt = gtk_entry_get_text( GTK_ENTRY(state->smsphone) );
+            XP_STRNCPY( state->addr->u.sms.phone, txt, 
+                        sizeof(state->addr->u.sms.phone) );
+            txt = gtk_entry_get_text( GTK_ENTRY(state->smsport) );
+            state->addr->u.sms.port = atoi( txt );
             break;
         default:
             XP_ASSERT( 0 );     /* keep compiler happy */
@@ -106,6 +119,27 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
     state->cancelled = XP_FALSE;
     gtk_main_quit();
 } /* handle_ok */
+
+static void
+handle_scan( GtkWidget* XP_UNUSED(widget), gpointer closure )
+{
+    GtkConnsState* state = (GtkConnsState*)closure;
+    XP_USE(state);
+    LOG_FUNC();
+
+    GSList* devNames = linux_bt_scan();
+    if ( !devNames ) {
+        XP_LOGF( "%s: got nothing", __func__ );
+    } else {
+        GSList* iter;
+        for ( iter = devNames; !!iter; iter = iter->next ) {
+#ifdef DEBUG
+            gchar* name = iter->data;
+            XP_LOGF( "%s: got %s", __func__, name );
+#endif
+        }
+    }
+}
 
 static void
 handle_cancel( GtkWidget* XP_UNUSED(widget), void* closure )
@@ -139,22 +173,28 @@ makeRelayPage( GtkConnsState* state )
 
     gtk_box_pack_start( GTK_BOX(vbox), gtk_label_new( hint ), FALSE, TRUE, 0 );
 
-    GtkWidget* hbox = makeLabeledField( "Room", &state->invite );
-    gtk_entry_set_text( GTK_ENTRY(state->invite), 
-                        state->addr->u.ip_relay.invite );
+    GtkWidget* hbox = makeLabeledField( "Room", &state->invite, NULL );
+    if ( COMMS_CONN_RELAY == state->addr->conType ) {
+        gtk_entry_set_text( GTK_ENTRY(state->invite), 
+                            state->addr->u.ip_relay.invite );
+    }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->invite, !state->readOnly );
 
-    hbox = makeLabeledField( "Relay address", &state->hostName );
-    gtk_entry_set_text( GTK_ENTRY(state->hostName), 
-                        state->addr->u.ip_relay.hostName );
+    hbox = makeLabeledField( "Relay address", &state->hostName, NULL );
+    if ( COMMS_CONN_RELAY == state->addr->conType ) {
+        gtk_entry_set_text( GTK_ENTRY(state->hostName), 
+                            state->addr->u.ip_relay.hostName );
+    }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->hostName, !state->readOnly );
 
-    hbox = makeLabeledField( "Relay port", &state->port );
-    char buf[16];
-    snprintf( buf, sizeof(buf), "%d", state->addr->u.ip_relay.port );
-    gtk_entry_set_text( GTK_ENTRY(state->port), buf );
+    hbox = makeLabeledField( "Relay port", &state->port, NULL );
+    if ( COMMS_CONN_RELAY == state->addr->conType ) {
+        char buf[16];
+        snprintf( buf, sizeof(buf), "%d", state->addr->u.ip_relay.port );
+        gtk_entry_set_text( GTK_ENTRY(state->port), buf );
+    }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->port, !state->readOnly );
 
@@ -168,10 +208,41 @@ makeBTPage( GtkConnsState* state )
 {
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
-    GtkWidget* hbox = makeLabeledField( "Host device", &state->bthost );
-    gtk_entry_set_text( GTK_ENTRY(state->bthost), state->addr->u.bt.hostName );
+    GtkWidget* hbox = makeLabeledField( "Host device", &state->bthost, NULL );
+    if ( COMMS_CONN_BT == state->addr->conType ) {
+        gtk_entry_set_text( GTK_ENTRY(state->bthost), state->addr->u.bt.hostName );
+    }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->bthost, !state->readOnly );
+
+    state->bgScanButton = makeButton( "Scan", GTK_SIGNAL_FUNC(handle_scan), 
+                                      state );
+    gtk_box_pack_start( GTK_BOX(vbox), state->bgScanButton, FALSE, TRUE, 0 );
+
+    gtk_widget_show( vbox );
+
+    return vbox;
+} /* makeBTPage */
+
+static GtkWidget*
+makeSMSPage( GtkConnsState* state )
+{
+    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+
+    const gchar* phone = COMMS_CONN_SMS == state->addr->conType ?
+        state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.phone;
+    GtkWidget* hbox = makeLabeledField( "Host phone", &state->smsphone, phone );
+    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+    gtk_widget_set_sensitive( state->smsphone, !state->readOnly );
+
+    int portVal = COMMS_CONN_SMS == state->addr->conType
+        ? state->addr->u.sms.port
+        : state->globals->cGlobals.params->connInfo.sms.port;
+    gchar port[32];
+    snprintf( port, sizeof(port), "%d", portVal );
+    hbox = makeLabeledField( "Host port", &state->smsport, port );
+    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+    gtk_widget_set_sensitive( state->smsport, !state->readOnly );
 
     gtk_widget_show( vbox );
 
@@ -209,6 +280,10 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
                                     makeBTPage(&state),
                                     gtk_label_new( "Bluetooth" ) );
 #endif
+    state.pageTypes[nTypes++] = COMMS_CONN_SMS;
+    (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
+                                    makeSMSPage(&state),
+                                    gtk_label_new( "SMS" ) );
 
     vbox = gtk_vbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), state.notebook, FALSE, TRUE, 0 );
@@ -222,7 +297,7 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     /* buttons at the bottom */
     hbox = gtk_hbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(hbox), 
-                        makeButton( "Ok", GTK_SIGNAL_FUNC(handle_ok) , &state ),
+                        makeButton( "Ok", GTK_SIGNAL_FUNC(handle_ok), &state ),
                         FALSE, TRUE, 0 );
     if ( !readOnly ) {
         gtk_box_pack_start( GTK_BOX(hbox), 

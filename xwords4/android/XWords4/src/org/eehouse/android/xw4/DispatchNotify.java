@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -40,7 +40,7 @@ public class DispatchNotify extends Activity {
 
         Uri data = getIntent().getData();
         if ( null != data ) { // relay invite redirected URL case
-            GamesList.openGame( this, data );
+            GamesListActivity.openGame( this, data );
         }
 
         finish();

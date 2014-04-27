@@ -21,6 +21,12 @@
 #ifndef __DICTNRY_H__
 #define __DICTNRY_H__
 
+#ifdef DEBUG
+# define DEBUG_REF 1
+#endif
+
+#include <pthread.h>
+
 #include "comtypes.h"
 
 #include "dawg.h"
@@ -60,13 +66,15 @@ struct DictionaryCtxt {
     array_edge* (*func_edge_for_index)( const DictionaryCtxt* dict, 
                                         XP_U32 index );
     array_edge* (*func_dict_getTopEdge)( const DictionaryCtxt* dict );
-    unsigned long (*func_dict_index_from)( const DictionaryCtxt* dict, 
+    XP_U32 (*func_dict_index_from)( const DictionaryCtxt* dict, 
                                            array_edge* p_edge );
     array_edge* (*func_dict_follow)( const DictionaryCtxt* dict, 
                                      array_edge* in );
     array_edge* (*func_dict_edge_with_tile)( const DictionaryCtxt* dict, 
                                              array_edge* from, Tile tile );
     const XP_UCHAR* (*func_dict_getShortName)( const DictionaryCtxt* dict );
+
+    pthread_mutex_t mutex;
 
     array_edge* topEdge;
     array_edge* base; /* the physical beginning of the dictionary; not
@@ -87,6 +95,7 @@ struct DictionaryCtxt {
 
     XP_LangCode langCode;
 
+    XP_U16 refCount;
     XP_U8 nFaces;
     XP_U8 nodeSize;
     XP_Bool is_4_byte;
@@ -125,7 +134,6 @@ struct DictionaryCtxt {
 
 /* #define dict_numTileFaces(dc) (dc)->vtable->m_numTileFaces(dc) */
 
-#define dict_destroy(d) (*((d)->destructor))(d)
 #define dict_edge_for_index(d, i) (*((d)->func_edge_for_index))((d), (i))
 #define dict_getTopEdge(d)        (*((d)->func_dict_getTopEdge))(d)
 #define dict_index_from(d,e)        (*((d)->func_dict_index_from))(d,e)
@@ -140,6 +148,26 @@ struct DictionaryCtxt {
 #define EDGETILE(d,edge) \
     ((Tile)(((array_edge_old*)(edge))->bits & \
             ((d)->is_4_byte?LETTERMASK_NEW_4:LETTERMASK_NEW_3)))
+
+DictionaryCtxt* p_dict_ref( DictionaryCtxt* dict
+#ifdef DEBUG_REF
+                          ,const char* func, const char* file, int line
+#endif
+ );
+void p_dict_unref( DictionaryCtxt* dict
+#ifdef DEBUG_REF
+                          ,const char* func, const char* file, int line
+#endif
+ );
+void dict_unref_all( PlayerDicts* dicts );
+
+#ifdef DEBUG_REF
+# define dict_ref(dict) p_dict_ref( dict, __func__, __FILE__, __LINE__ )
+# define dict_unref(dict) p_dict_unref( dict, __func__, __FILE__, __LINE__ )
+#else
+# define dict_ref(dict) p_dict_ref( dict )
+# define dict_unref(dict) p_dict_unref( dict )
+#endif
 
 XP_Bool dict_tilesAreSame( const DictionaryCtxt* dict1, 
                            const DictionaryCtxt* dict2 );

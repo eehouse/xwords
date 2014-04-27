@@ -1,7 +1,10 @@
 #!/usr/bin/python
 # Script meant to be installed on eehouse.org.
 
-import logging, shelve, hashlib, sys, json, subprocess
+import logging, shelve, hashlib, sys, json, subprocess, glob, os
+import mk_for_download
+
+from stat import ST_CTIME
 try:
     from mod_python import apache
     apacheAvailable = True
@@ -16,6 +19,15 @@ k_INSTALLER = 'installer'
 k_DEVOK = 'devOK'
 k_APP = 'app'
 k_DICTS = 'dicts'
+k_XLATEINFO = 'xlatinfo'
+k_CALLBACK = 'callback'
+k_LOCALE = 'locale'
+k_XLATPROTO = 'proto'
+k_XLATEVERS = 'xlatevers'
+k_OLD = 'old'
+k_NEW = 'new'
+k_PAIRS = 'pairs'
+
 k_LANG = 'lang'
 k_MD5SUM = 'md5sum'
 k_INDEX = 'index'
@@ -27,30 +39,31 @@ k_SUMS = 'sums'
 k_COUNT = 'count'
 
 # Version for those sticking with RELEASES
-k_REL_REV = 'android_beta_60'
+k_REL_REV = 'android_beta_81'
 
 # Version for those getting intermediate builds
-k_DBG_REV = 'android_beta_58-33-ga18fb62'
-k_DBG_REV = 'android_beta_59-24-gc31a1d9'
+k_DBG_REV = 'android_beta_81-29-gb776b7c'
+k_DBG_REV = 'android_beta_81-34-g73a1083'
 
 k_suffix = '.xwd'
 k_filebase = "/var/www/"
+k_apkDir = "xw4/android/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
-k_urlbase = "http://eehouse.org/"
+k_urlbase = "http://eehouse.org"
 k_versions = { 'org.eehouse.android.xw4': {
-        'version' : 52,
-        k_AVERS : 52,
-        k_URL : 'xw4/android/XWords4-release_' + k_REL_REV + '.apk',
+        'version' : 74,
+        k_AVERS : 74,
+        k_URL : k_apkDir + 'XWords4-release_' + k_REL_REV + '.apk',
         },
                }
 
-k_versions_dbg = { 'org.eehouse.android.xw4': {
-        'version' : 52,
-        k_AVERS : 52,
-        k_GVERS : k_DBG_REV,
-        k_URL : 'xw4/android/XWords4-release_' + k_DBG_REV + '.apk',
-        },
-               }
+# k_versions_dbg = { 'org.eehouse.android.xw4': {
+#         'version' : 74,
+#         k_AVERS : 74,
+#         k_GVERS : k_DBG_REV,
+#         k_URL : k_apkDir + 'XWords4-release_' + k_DBG_REV + '.apk',
+#         },
+#                }
 s_shelf = None
 
 
@@ -113,6 +126,18 @@ def getDictSums():
     logging.debug( "Count now %d" % s_shelf[k_COUNT] )
     return s_shelf[k_SUMS]
 
+def getOrderedApks( path ):
+    apks = []
+
+    pattern = path + "/XWords4-release_android_beta_*.apk"
+
+    files = ((os.stat(apk).st_mtime, apk) for apk in glob.glob(pattern))
+    for mtime, file in sorted(files, reverse=True):
+        logging.debug( file + ": " + str(mtime) )
+        apks.append( file )
+
+    return apks
+
 # public, but deprecated
 def curVersion( req, name, avers = 41, gvers = None, installer = None ):
     global k_versions
@@ -127,7 +152,7 @@ def curVersion( req, name, avers = 41, gvers = None, installer = None ):
         versions = k_versions[name]
         if versions[k_AVERS] > int(avers):
             logging.debug( avers + " is old" )
-            result[k_URL] = k_urlbase + versions[k_URL]
+            result[k_URL] = k_urlbase + '/' + versions[k_URL]
         else:
             logging.debug(name + " is up-to-date")
     else:
@@ -147,18 +172,32 @@ def dictVersion( req, name, lang, md5sum ):
             s_shelf[k_SUMS] = dictSums
     if path in dictSums:
         if not md5sum in dictSums[path]:
-            result[k_URL] = k_urlbase + "and_wordlists/" + path
+            result[k_URL] = k_urlbase + "/and_wordlists/" + path
     else:
         logging.debug( path + " not known" )
     if 'close' in s_shelf: s_shelf.close()
     return json.dumps( result )
 
 def getApp( params ):
-    global k_versions, k_versions_dbg
     result = None
     if k_NAME in params:
         name = params[k_NAME]
-        if k_AVERS in params and k_GVERS in params:
+
+        # If we're a dev device, always push the latest
+        if k_DEVOK in params and params[k_DEVOK]:
+            apks = getOrderedApks( k_filebase + k_apkDir )
+            if 0 < len(apks):
+                apk = apks[0]
+                # Does path NOT contain name of installed file
+                curApk = params[k_GVERS] + '.apk'
+                if curApk in apk:
+                    logging.debug( "already have " + curApk )
+                else:
+                    url = k_urlbase + '/' + apk[len(k_filebase):]
+                    result = {k_URL: url}
+                    logging.debug( result )
+                    
+        elif k_AVERS in params and k_GVERS in params:
             avers = params[k_AVERS]
             gvers = params[k_GVERS]
             if k_INSTALLER in params: installer = params[k_INSTALLER]
@@ -166,14 +205,12 @@ def getApp( params ):
 
             logging.debug( "name: %s; avers: %s; installer: %s; gvers: %s"
                            % (name, avers, installer, gvers) )
-            if k_DEVOK in params and params[k_DEVOK]: versions = k_versions_dbg
-            else: versions = k_versions
-            if name in versions:
-                versForName = versions[name]
+            if name in k_versions:
+                versForName = k_versions[name]
                 if versForName[k_AVERS] > int(avers):
-                    result = {k_URL: k_urlbase + versForName[k_URL]}
+                    result = {k_URL: k_urlbase + '/' + versForName[k_URL]}
                 elif k_GVERS in versForName and not gvers == versForName[k_GVERS]:
-                    result = {k_URL: k_urlbase + versForName[k_URL]}
+                    result = {k_URL: k_urlbase + '/' + versForName[k_URL]}
                 else:
                     logging.debug(name + " is up-to-date")
         else:
@@ -199,7 +236,7 @@ def getDicts( params ):
                 s_shelf[k_SUMS] = dictSums
         if path in dictSums:
             if not md5sum in dictSums[path]:
-                cur = { k_URL : k_urlbase + "and_wordlists/" + path,
+                cur = { k_URL : k_urlbase + "/and_wordlists/" + path,
                         k_INDEX : index, k_ISUM: dictSums[path][1] }
                 result.append( cur )
         else:
@@ -209,6 +246,23 @@ def getDicts( params ):
     if 0 == len(result): result = None
     return result
 
+def getXlate( req, params ):
+    result = None
+    logging.debug( "getXlate:" + json.dumps(params) )
+    locale = params[k_LOCALE]
+    proto = params[k_XLATPROTO]
+    curVers = int(params[k_XLATEVERS])
+
+    data = mk_for_download.getXlationFor( k_filebase + 'xw4', locale )
+    if data:
+        result = { k_LOCALE: locale,
+                   k_OLD: curVers,
+                   k_NEW: curVers + 1,
+                   k_PAIRS: data,
+               }
+    logging.debug( "getXlate=>%s" % (json.dumps(result)) )
+    return result
+
 # public
 def getUpdates( req, params ):
     result = { k_SUCCESS : True }
@@ -216,10 +270,22 @@ def getUpdates( req, params ):
     asJson = json.loads( params )
     if k_APP in asJson:
         appResult = getApp( asJson[k_APP] )
-        if appResult: result[k_APP] = appResult
+        if appResult: 
+            result[k_APP] = appResult
     if k_DICTS in asJson:
         dictsResult = getDicts( asJson[k_DICTS] )
-        if dictsResult: result[k_DICTS] = dictsResult
+        if dictsResult:
+            result[k_DICTS] = dictsResult
+    if k_XLATEINFO in asJson:
+        logging.debug( "found xlate info; calling getXlate" )
+        xlateResult = getXlate( req, asJson[k_XLATEINFO] )
+        if xlateResult: 
+            logging.debug( xlateResult )
+            result[k_XLATEINFO] = xlateResult;
+    else:
+        logging.debug( "NOT FOUND xlate info" )
+        
+    logging.debug( 'getUpdates done' )
     return json.dumps( result )
 
 def clearShelf():
@@ -231,6 +297,7 @@ def usage():
     print "usage:", sys.argv[0], '--get-sums [lang/dict]*'
     print '                    | --test-get-app app <org.eehouse.app.name> avers gvers'
     print '                    | --test-get-dicts name lang curSum'
+    print '                    | --list-apks [path/to/apks]'
     print '                    | --clear-shelf'
     sys.exit(-1)
 
@@ -260,6 +327,15 @@ def main():
                    k_INDEX : 0,
                    }
         print getDicts( [params] )
+    elif arg == '--list-apks':
+        argc = len(sys.argv)
+        if argc >= 4: usage()
+        path = ""
+        if argc >= 3: path = sys.argv[2]
+        apks = getOrderedApks( path )
+        if 0 == len(apks): print "No apks in", path
+        for apk in apks:
+            print apk
     else:
         usage()
 

@@ -27,10 +27,16 @@
 
 /* Returns true for "yes" or "ok" answer, false otherwise.
  */
-XP_Bool gtkask( GtkWidget* parent, const gchar *message, 
-                GtkButtonsType buttons );
-XP_Bool gtkask_timeout( GtkWidget* parent, const gchar *message, 
-                        GtkButtonsType buttons, XP_U16 timeout );
+typedef struct _AskPair {
+    const gchar* txt;
+    gint result;
+} AskPair;
+
+gint gtkask( GtkWidget* parent, const gchar *message, 
+             GtkButtonsType buttons, const AskPair* buttxts );
+gint gtkask_timeout( GtkWidget* parent, const gchar *message, 
+                     GtkButtonsType buttons, const AskPair* buttxts, 
+                     XP_U16 timeout );
 
 #endif
 #endif /* PLATFORM_GTK */

@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -22,23 +22,25 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.CheckBox;
 
+import junit.framework.Assert;
 
 public class XWListItem extends LinearLayout 
-    implements SelectableItem.LongClickHandler {
+    implements SelectableItem.LongClickHandler, View.OnClickListener {
     private int m_position;
     private Context m_context;
     private Object m_cached;
     private DeleteCallback m_delCb;
-    private Drawable m_origDrawable;
     private boolean m_selected = false;
     private SelectableItem m_selCb;
+    private CheckBox m_checkbox;
+    private DrawSelDelegate m_dsdel;
 
     public interface DeleteCallback {
         void deleteCalled( XWListItem item );
@@ -47,6 +49,15 @@ public class XWListItem extends LinearLayout
     public XWListItem( Context cx, AttributeSet as ) {
         super( cx, as );
         m_context = cx;
+        m_dsdel = new DrawSelDelegate( this );
+    }
+
+    @Override
+    protected void onFinishInflate()
+    {
+        super.onFinishInflate();
+        m_checkbox = (CheckBox)findViewById( R.id.checkbox );
+        m_checkbox.setOnClickListener( this );
     }
 
     public int getPosition() { return m_position; }
@@ -86,9 +97,10 @@ public class XWListItem extends LinearLayout
         button.setVisibility( View.VISIBLE );
     }
 
-    public void setSelCB( SelectableItem selCB )
+    private void setSelCB( SelectableItem selCB )
     {
         m_selCb = selCB;
+        m_checkbox.setVisibility( null == selCB ? View.GONE : View.VISIBLE );
     }
 
     public void setSelected( boolean selected )
@@ -129,15 +141,29 @@ public class XWListItem extends LinearLayout
         toggleSelected();
     }
 
+    // View.OnClickListener interface
+    public void onClick( View view ) 
+    {
+        if ( m_checkbox == view ) {
+            setSelected( m_checkbox.isChecked() );
+        }
+    }
+
     private void toggleSelected()
     {
         m_selected = !m_selected;
-        if ( m_selected ) {
-            m_origDrawable = getBackground();
-            setBackgroundColor( XWApp.SEL_COLOR );
-        } else {
-            setBackgroundDrawable( m_origDrawable );
-        }
+
+        m_dsdel.showSelected( m_selected );
+
+        m_checkbox.setChecked( m_selected );
+
         m_selCb.itemToggled( this, m_selected );
+    }
+
+    public static XWListItem inflate( Context context, SelectableItem selCB )
+    {
+        XWListItem item = (XWListItem)Utils.inflate( context,  R.layout.list_item );
+        item.setSelCB( selCB );
+        return item;
     }
 }

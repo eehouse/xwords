@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -170,7 +170,7 @@ public class MultiService {
                     SMSService.onGameDictDownload( context, intent );
                     break;
                 case OWNER_RELAY:
-                    GamesList.onGameDictDownload( context, intent );
+                    GamesListActivity.onGameDictDownload( context, intent );
                     break;
                 default:
                     DbgUtils.logf( "unexpected OWNER" );

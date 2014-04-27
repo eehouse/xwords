@@ -59,6 +59,7 @@
   <string name="key_enable_sms">key_enable_sms</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_thumbsize">key_thumbsize3</string>
+  <string name="key_studyon">key_studyon</string>
 
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>
@@ -107,6 +108,7 @@
   <string name="key_na_browse">key_na_browse</string>
   <string name="key_na_browseall">key_na_browseall</string>
   <string name="key_na_values">key_na_values</string>
+  <string name="key_na_studycopy">key_na_studycopy</string>
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_enable_dup_invite">key_enable_dup_invite</string>
   <string name="key_download_path">key_download_path</string>
@@ -122,6 +124,7 @@
   <string name="invite_mime">application/x-xwordsinvite</string>
   <string name="game_summary_field_rowid">rowid</string>
   <string name="game_summary_field_gameid">gameid</string>
+  <string name="game_summary_field_npackets">Pending packet count</string>
   <!--string name="invite_mime">text/plain</string-->
 
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
@@ -141,6 +144,8 @@
   only)</string>
   <string name="title_send_data_sms">Send SMS as data</string>
   <string name="summary_send_data_sms">(fails on CDMA phones)</string>
+  <string name="board_menu_game_netstats">Network stats</string>
+  <string name="netstats_title">Game network stats</string>
 
   <string name="git_rev_title">Source version id</string>
   <string name="relay_port">Relay game port</string>

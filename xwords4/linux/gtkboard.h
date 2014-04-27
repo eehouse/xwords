@@ -100,6 +100,10 @@ typedef struct GtkGameGlobals {
     GtkWidget* prevhint_button;
     GtkWidget* nexthint_button;
 
+    GtkWidget* commit_button;
+    GtkWidget* invite_button;
+
+
 #ifdef XWFEATURE_CHAT
     GtkWidget* chat_button;
 #endif
@@ -168,7 +172,8 @@ typedef struct GtkGameGlobals {
 #define GTK_BOTTOM_MARGIN GTK_TOP_MARGIN
 #define GTK_RIGHT_MARGIN GTK_BOARD_LEFT_MARGIN
 
-void initGlobals( GtkGameGlobals* globals, LaunchParams* params );
+void initGlobals( GtkGameGlobals* globals, LaunchParams* params, 
+                  CurGameInfo* gi );
 void freeGlobals( GtkGameGlobals* globals );
 XP_Bool makeNewGame( GtkGameGlobals* globals );
 XP_Bool loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params, 

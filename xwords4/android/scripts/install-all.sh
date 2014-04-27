@@ -15,6 +15,9 @@ fi
 APK=./bin/XWords4-debug.apk
 DIRNAME=$(basename $(pwd))
 case $DIRNAME in
+    XWords4-dbg)
+        PKG=xw4dbg
+        ;;
     XWords4-bt)
         PKG=xw4bt
         ;;
@@ -64,7 +67,7 @@ for DEVICE in $DEVICES; do
     echo $DEVICE
     adb -s $DEVICE install -r $APK
     adb -s $DEVICE shell am start \
-        -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesList
+        -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
     COUNT=$((COUNT+1))
 done
 

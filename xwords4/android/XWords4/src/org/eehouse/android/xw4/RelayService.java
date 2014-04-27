@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2010 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -68,6 +68,7 @@ public class RelayService extends XWService
             , PROCESS_DEV_MSGS
             , UDP_CHANGED
             , SEND
+            , SENDNOCONN
             , RECEIVE
             , TIMER_FIRED
             , RESET
@@ -169,6 +170,21 @@ public class RelayService extends XWService
             result = msg.length;
         } else {
             DbgUtils.logf( "RelayService.sendPacket: network down" );
+        }
+        return result;
+    }
+
+    public static int sendNoConnPacket( Context context, long rowid, String relayID, 
+                                        byte[] msg )
+    {
+        int result = -1;
+        if ( NetStateCache.netAvail( context ) ) {
+            Intent intent = getIntentTo( context, MsgCmds.SENDNOCONN )
+                .putExtra( ROWID, rowid )
+                .putExtra( RELAY_ID, relayID )
+                .putExtra( BINBUFFER, msg );
+            context.startService( intent );
+            result = msg.length;
         }
         return result;
     }
@@ -290,11 +306,15 @@ public class RelayService extends XWService
                     break;
                 case SEND:
                 case RECEIVE:
+                case SENDNOCONN:
                     startUDPThreadsIfNot();
                     long rowid = intent.getLongExtra( ROWID, -1 );
                     byte[] msg = intent.getByteArrayExtra( BINBUFFER );
                     if ( MsgCmds.SEND.equals( cmd ) ) {
                         sendMessage( rowid, msg );
+                    } else if ( MsgCmds.SENDNOCONN.equals( cmd ) ) {
+                        String relayID = intent.getStringExtra( RELAY_ID );
+                        sendNoConnMessage( rowid, relayID, msg );
                     } else {
                         feedMessage( rowid, msg );
                     }
@@ -358,7 +378,7 @@ public class RelayService extends XWService
 
     private void setupNotification( long rowid )
     {
-        Intent intent = GamesList.makeRowidIntent( this, rowid );
+        Intent intent = GamesListActivity.makeRowidIntent( this, rowid );
         String msg = Utils.format( this, R.string.notify_bodyf, 
                                    GameUtils.getName( this, rowid ) );
         Utils.postNotification( this, intent, R.string.notify_title,
@@ -434,7 +454,6 @@ public class RelayService extends XWService
         }
     } // startUDPThreadsIfNot
 
-    // Some of this must not be done on main (UI) thread
     private void connectSocket()
     {
         if ( null == m_UDPSocket ) {
@@ -443,7 +462,7 @@ public class RelayService extends XWService
             try { 
                 m_UDPSocket = new DatagramSocket();
                 m_UDPSocket.setSoTimeout(30 * 1000); // timeout so we can log
-                // put on background thread!!
+
                 InetAddress addr = InetAddress.getByName( host );
                 m_UDPSocket.connect( addr, port ); // remember this address
             } catch( java.net.SocketException se ) {
@@ -463,7 +482,7 @@ public class RelayService extends XWService
         if ( null == m_UDPWriteThread ) {
             m_UDPWriteThread = new Thread( null, new Runnable() {
                     public void run() {
-                        DbgUtils.logf( "RelayService: write thread running" );
+                        DbgUtils.logf( "RelayService: write thread starting" );
                         for ( ; ; ) {
                             PacketData outData;
                             try {
@@ -560,7 +579,7 @@ public class RelayService extends XWService
                     break;
                 case XWPDEV_ALERT:
                     str = getVLIString( dis );
-                    Intent intent = GamesList.makeAlertIntent( this, str );
+                    Intent intent = GamesListActivity.makeAlertIntent( this, str );
                     Utils.postNotification( this, intent, 
                                             R.string.relay_alert_title,
                                             str, str.hashCode() );
@@ -677,6 +696,7 @@ public class RelayService extends XWService
 
                 out.writeShort( BuildConstants.CLIENT_VERS_RELAY );
                 writeVLIString( out, BuildConstants.GIT_REV );
+                // writeVLIString( out, String.format( "€%s", Build.MODEL) );
                 writeVLIString( out, Build.MODEL );
                 writeVLIString( out, Build.VERSION.RELEASE );
 
@@ -741,7 +761,7 @@ public class RelayService extends XWService
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
             DataOutputStream out = new DataOutputStream( bas );
-            Assert.assertTrue( rowid < Integer.MAX_VALUE );
+            Assert.assertTrue( rowid < Integer.MAX_VALUE ); // ???
             out.writeInt( (int)rowid );
             out.writeBytes( relayID );
             out.write( '\n' );
@@ -798,7 +818,8 @@ public class RelayService extends XWService
     private void postPacket( ByteArrayOutputStream bas, XWRelayReg cmd )
     {
         m_queue.add( new PacketData( bas, cmd ) );
-        DbgUtils.logf( "postPacket() done; %d in queue", m_queue.size() );
+        // 0 ok; thread will often have sent already!
+        // DbgUtils.logf( "postPacket() done; %d in queue", m_queue.size() );
     }
 
     private String getDevID( DevIDType[] typp )
@@ -833,7 +854,7 @@ public class RelayService extends XWService
     {
         DbgUtils.logf( "RelayService::feedMessage: %d bytes for rowid %d", 
                        msg.length, rowid );
-        if ( BoardActivity.feedMessage( rowid, msg ) ) {
+        if ( BoardDelegate.feedMessage( rowid, msg ) ) {
             DbgUtils.logf( "feedMessage: board ate it" );
             // do nothing
         } else {
@@ -873,7 +894,7 @@ public class RelayService extends XWService
                 // if game has messages, open it and feed 'em to it.
                 if ( null != forOne ) {
                     sink.setRowID( rowIDs[ii] );
-                    if ( BoardActivity.feedMessages( rowIDs[ii], forOne )
+                    if ( BoardDelegate.feedMessages( rowIDs[ii], forOne )
                          || GameUtils.feedMessages( this, rowIDs[ii],
                                                     forOne, null,
                                                     sink ) ) {
@@ -1132,9 +1153,10 @@ public class RelayService extends XWService
         if ( null == str ) {
             str = "";
         }
-        int len = str.length();
+        byte[] bytes = str.getBytes( "UTF-8" );
+        int len = bytes.length;
         un2vli( len, os );
-        os.writeBytes( str );
+        os.write( bytes, 0, len );
     }
 
     private void setMaxIntervalSeconds( int maxIntervalSeconds )

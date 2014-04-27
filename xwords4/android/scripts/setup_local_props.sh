@@ -2,7 +2,7 @@
 
 set -u -e
 
-TARGET="Google Inc.:Google APIs:14"
+TARGET="android-14"
 
 usage() {
     echo "usage: $0 [--target TARGET]"

@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2012 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -24,8 +24,8 @@ import android.database.DataSetObserver;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import java.util.Collections;
 import java.util.HashMap;       // class is not synchronized
@@ -40,18 +40,21 @@ import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 
-public class GameListAdapter implements ExpandableListAdapter {
+public class GameListAdapter extends XWListAdapter
+    implements GameListGroup.GroupStateListener {
+
     private Context m_context;
-    private ExpandableListView m_list;
+    private ListView m_list;
     private int m_fieldID;
     private Handler m_handler;
     private SelectableItem m_cb;
     private long[] m_positions;
 
-    public GameListAdapter( Context context, ExpandableListView list, 
+    public GameListAdapter( Context context, ListView list, 
                             Handler handler, SelectableItem cb, 
                             long[] positions, String fieldName ) 
     {
+        super( 0 );
         m_context = context;
         m_list = list;
         m_handler = handler;
@@ -60,6 +63,23 @@ public class GameListAdapter implements ExpandableListAdapter {
 
         m_fieldID = fieldToID( fieldName );
     }
+
+    @Override
+    public int getCount() 
+    { 
+        HashMap<Long,GameGroupInfo> groups = DBUtils.getGroups( m_context );
+        int count = groups.size();
+        for ( GameGroupInfo ggi : groups.values() ) {
+            if ( ggi.m_expanded ) {
+                count += ggi.m_count;
+            }
+        }            
+        // DbgUtils.logf( "GameListAdapter.getCount() => %d", count );
+        return count;
+    }
+
+    @Override
+    public int getViewTypeCount() { return 2; }
 
     public long[] getGroupPositions()
     {
@@ -103,15 +123,16 @@ public class GameListAdapter implements ExpandableListAdapter {
         return success;
     }
 
-    public void expandGroups( ExpandableListView view )
+    public void expandGroups( ListView view )
     {
-        HashMap<Long,GameGroupInfo> info = gameInfo();
-        for ( int ii = 0; ii < info.size(); ++ii ) {
-            GameGroupInfo ggi = getInfoForGroup( ii );
-            if ( ggi.m_expanded ) {
-                view.expandGroup( ii );
-            }
-        }
+        DbgUtils.logf( "expandGroups not implemented" );
+        // HashMap<Long,GameGroupInfo> info = gameInfo();
+        // for ( int ii = 0; ii < info.size(); ++ii ) {
+        //     GameGroupInfo ggi = getInfoForGroup( ii );
+        //     if ( ggi.m_expanded ) {
+        //         view.expandGroup( ii );
+        //     }
+        // }
     }
 
     public long getRowIDFor( int group, int child )
@@ -126,11 +147,13 @@ public class GameListAdapter implements ExpandableListAdapter {
 
     public long getRowIDFor( long packedPosition )
     {
-        int childPosition = ExpandableListView.
-            getPackedPositionChild( packedPosition );
-        int groupPosition = ExpandableListView.
-            getPackedPositionGroup( packedPosition );
-        return getRowIDFor( groupPosition, childPosition );
+        // int childPosition = ListView.
+        //     getPackedPositionChild( packedPosition );
+        // int groupPosition = ListView.
+        //     getPackedPositionGroup( packedPosition );
+        // return getRowIDFor( groupPosition, childPosition );
+        Assert.fail();
+        return 0;
     }
 
     public long getGroupIDFor( int groupPos )
@@ -156,121 +179,202 @@ public class GameListAdapter implements ExpandableListAdapter {
         deselectGroups( groupIDs );
     }
 
+    //////////////////////////////////////////////////////////////////////
+    // GroupStateListener interface
+    //////////////////////////////////////////////////////////////////////
+    public void onGroupExpandedChanged( int groupPosition, boolean expanded )
+    {
+        if ( expanded ) {
+            onGroupExpanded( groupPosition );
+        } else {
+            onGroupCollapsed( groupPosition );
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // ListAdapter interface
+    //////////////////////////////////////////////////////////////////////////
+    public View getView( final int position, View convertView, ViewGroup parent )
+    {
+        DbgUtils.logf( "getView(convertView=%H)", convertView );
+        View result = null;
+        HashMap<Long,GameGroupInfo> info = gameInfo();
+        int groupPosition = 0;
+        int indx = position;
+
+        long[] groupPosns = getGroupPositions();
+        for ( long groupID : groupPosns ) {
+            GameGroupInfo groupInfo = info.get( groupID );
+            if ( indx == 0 ) {
+                int nKids = getChildrenCount( groupPosition );
+                GameListGroup group =
+                    GameListGroup.makeForPosition( m_context, groupPosition, 
+                                                   groupID, nKids, 
+                                                   groupInfo.m_expanded, 
+                                                   m_cb, this );
+
+                if ( !groupInfo.m_expanded ) {
+                    GameGroupInfo ggi = getInfoForGroup( groupPosition );
+                    group.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
+                                  ggi.m_lastMoveTime );
+                }
+
+                String name = m_context.getString( R.string.group_namef, 
+                                                   groupNames()[groupPosition], 
+                                                   nKids );
+                group.setText( name );
+                group.setSelected( m_cb.getSelected( group ) );
+                result = group;
+                break;
+            } else {
+                int count = groupInfo.m_expanded ? groupInfo.m_count : 0;
+                // int count = groupInfo.m_count;
+                // DbgUtils.logf( "group[%d] visible count: %d", groupPosition, count );
+                if ( indx <= count ) {
+                    long[] rows = DBUtils.getGroupGames( m_context, groupID );
+                    long rowid = rows[indx - 1];
+                    result = 
+                        GameListItem.makeForRow( m_context, rowid, m_handler, 
+                                                 groupPosition, m_fieldID, m_cb );
+                    result.setVisibility( groupInfo.m_expanded ? 
+                                          View.VISIBLE : View.GONE );
+                    break;
+                }
+                indx -= 1 + count;
+                ++groupPosition;
+            }
+        }
+        DbgUtils.logf( "GameListAdapter.getView(pos=%d, group=%d)=>%H", 
+                       position, groupPosition, result );
+        return result;
+    }
+
+    @Override
+    public Object getItem( int position ) 
+    {
+        return getView( position, null, null ); 
+    }
+
     //////////////////////////////////////////////////////////////////////////
     // ExpandableListAdapter interface
     //////////////////////////////////////////////////////////////////////////
-    public long getCombinedGroupId( long groupId )
-    {
-        return groupId;
-    }
+    // public long getCombinedGroupId( long groupId )
+    // {
+    //     return groupId;
+    // }
 
-    public long getCombinedChildId( long groupId, long childId )
-    {
-        return groupId << 16 | childId;
-    }
+    // public long getCombinedChildId( long groupId, long childId )
+    // {
+    //     return groupId << 16 | childId;
+    // }
 
-    public boolean isEmpty() { return false; }
+    // public boolean isEmpty() { return false; }
 
-    public void onGroupCollapsed( int groupPosition )
+
+    private void onGroupCollapsed( int groupPosition )
     {
         long groupid = getGroupIDFor( groupPosition );
         DBUtils.setGroupExpanded( m_context, groupid, false );
 
         long[] rowids = DBUtils.getGroupGames( m_context, groupid );
         deselectGames( rowids );
+
+        notifyDataSetChanged();
     }
 
-    public void onGroupExpanded( int groupPosition )
+    private void onGroupExpanded( int groupPosition )
     {
         long groupid = getGroupIDFor( groupPosition );
         DBUtils.setGroupExpanded( m_context, groupid, true );
+
+        notifyDataSetChanged();
     }
 
-    public boolean areAllItemsEnabled() { return true; }
+    // public boolean areAllItemsEnabled() { return true; }
 
-    public boolean isChildSelectable( int groupPosition, int childPosition ) 
-    { return true; }
+    // public boolean isChildSelectable( int groupPosition, int childPosition ) 
+    // { return true; }
 
-    public View getChildView( int groupPosition, int childPosition, 
-                              boolean isLastChild, View convertView, 
-                              ViewGroup parent)
-    {
-        View result = null;
-        if ( null != convertView ) {
-            // DbgUtils.logf( "getChildView gave non-null convertView" );
-            if ( convertView instanceof GameListItem ) {
-                GameListItem child = (GameListItem)convertView;
-                long rowid = getRowIDFor( groupPosition, childPosition );
-                if ( child.getRowID() == rowid ) {
-                    child.setSelected( m_cb.getSelected( child ) );
-                    result = child;
-                }
-            }
-        }
-        if ( null == result ) {
-            result = getChildView( groupPosition, childPosition );
-        }
-        return result;
-    }
+    // public View getChildView( int groupPosition, int childPosition, 
+    //                           boolean isLastChild, View convertView, 
+    //                           ViewGroup parent)
+    // {
+    //     View result = null;
+    //     if ( null != convertView ) {
+    //         // DbgUtils.logf( "getChildView gave non-null convertView" );
+    //         if ( convertView instanceof GameListItem ) {
+    //             GameListItem child = (GameListItem)convertView;
+    //             long rowid = getRowIDFor( groupPosition, childPosition );
+    //             if ( child.getRowID() == rowid ) {
+    //                 child.setSelected( m_cb.getSelected( child ) );
+    //                 result = child;
+    //             }
+    //         }
+    //     }
+    //     if ( null == result ) {
+    //         result = getChildView( groupPosition, childPosition );
+    //     }
+    //     return result;
+    // }
 
-    private View getChildView( int groupPosition, int childPosition )
-    {
-        long rowid = getRowIDFor( groupPosition, childPosition );
-        GameListItem result = 
-            GameListItem.makeForRow( m_context, rowid, m_handler, 
-                                     groupPosition, m_fieldID, m_cb );
-        result.setSelected( m_cb.getSelected( result ) );
-        return result;
-    }
+    // private View getChildView( int groupPosition, int childPosition )
+    // {
+    //     long rowid = getRowIDFor( groupPosition, childPosition );
+    //     GameListItem result = 
+    //         GameListItem.makeForRow( m_context, rowid, m_handler, 
+    //                                  groupPosition, m_fieldID, m_cb );
+    //     result.setSelected( m_cb.getSelected( result ) );
+    //     return result;
+    // }
 
-    public View getGroupView( int groupPosition, boolean isExpanded, 
-                              View convertView, ViewGroup parent )
-    {
-        // if ( null != convertView ) {
-        //     DbgUtils.logf( "getGroupView gave non-null convertView" );
-        // }
-        long groupID = getGroupIDFor( groupPosition );
-        GameListGroup view = 
-            GameListGroup.makeForPosition( m_context, groupPosition, groupID, 
-                                           m_cb );
+    // public View getGroupView( int groupPosition, boolean isExpanded, 
+    //                           View convertView, ViewGroup parent )
+    // {
+    //     // if ( null != convertView ) {
+    //     //     DbgUtils.logf( "getGroupView gave non-null convertView" );
+    //     // }
+    //     long groupID = getGroupIDFor( groupPosition );
+    //     GameListGroup view = 
+    //         GameListGroup.makeForPosition( m_context, groupPosition, groupID, 
+    //                                        m_cb );
 
-        if ( !isExpanded ) {
-            GameGroupInfo ggi = getInfoForGroup( groupPosition );
-            view.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
-                         ggi.m_lastMoveTime );
-        }
+    //     if ( !isExpanded ) {
+    //         GameGroupInfo ggi = getInfoForGroup( groupPosition );
+    //         view.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
+    //                      ggi.m_lastMoveTime );
+    //     }
 
-        int nKids = getChildrenCount( groupPosition );
-        String name = m_context.getString( R.string.group_namef, 
-                                           groupNames()[groupPosition], nKids );
-        view.setText( name );
+    //     int nKids = getChildrenCount( groupPosition );
+    //     String name = m_context.getString( R.string.group_namef, 
+    //                                        groupNames()[groupPosition], nKids );
+    //     view.setText( name );
 
-        view.setSelected( m_cb.getSelected( view ) );
+    //     view.setSelected( m_cb.getSelected( view ) );
 
-        return view;
-    }
+    //     return view;
+    // }
 
-    public boolean hasStableIds() { return false; }
+    // public boolean hasStableIds() { return false; }
     
-    public long getChildId( int groupPosition, int childPosition )
-    {
-        return childPosition;
-    }
+    // public long getChildId( int groupPosition, int childPosition )
+    // {
+    //     return childPosition;
+    // }
 
-    public long getGroupId( int groupPosition )
-    {
-        return groupPosition;
-    }
+    // public long getGroupId( int groupPosition )
+    // {
+    //     return groupPosition;
+    // }
 
-    public Object getChild( int groupPosition, int childPosition )
-    {
-        return null;
-    }
+    // public Object getChild( int groupPosition, int childPosition )
+    // {
+    //     return null;
+    // }
     
-    public Object getGroup( int groupPosition )
-    {
-        return null;
-    }
+    // public Object getGroup( int groupPosition )
+    // {
+    //     return null;
+    // }
 
     public int getChildrenCount( int groupPosition )
     {
@@ -283,13 +387,13 @@ public class GameListAdapter implements ExpandableListAdapter {
         return rows.length;
     }
 
-    public int getGroupCount()
+    protected int getGroupCount()
     {
         return gameInfo().size();
     }
 
-    public void registerDataSetObserver( DataSetObserver obs ){}
-    public void unregisterDataSetObserver( DataSetObserver obs ){}
+    // public void registerDataSetObserver( DataSetObserver obs ){}
+    // public void unregisterDataSetObserver( DataSetObserver obs ){}
 
     public void inval( long rowid )
     {
@@ -457,6 +561,7 @@ public class GameListAdapter implements ExpandableListAdapter {
             R.string.game_summary_field_state,
             R.string.game_summary_field_rowid,
             R.string.game_summary_field_gameid,
+            R.string.game_summary_field_npackets,
         };
         int result = -1;
         for ( int id : ids ) {
@@ -473,7 +578,7 @@ public class GameListAdapter implements ExpandableListAdapter {
         GameListGroup group = getGroupItemFor( groupPosition );
         if ( null != group ) {
             GameGroupInfo ggi = getInfoForGroup( groupPosition );
-            group.setPct( ggi.m_hasTurn, ggi.m_turnLocal, ggi.m_lastMoveTime );
+            group.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, ggi.m_lastMoveTime );
         }
     }
 

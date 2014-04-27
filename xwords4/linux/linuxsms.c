@@ -52,104 +52,76 @@
  * checked.
  */
 
-struct LinSMSData {
-    XP_UCHAR myPhone[MAX_PHONE_LEN+1];
-    XP_UCHAR myQueue[256];
-    FILE* lock;
-    int wd, fd;                 /* for inotify */
-    void* storage;
-    XP_U16 count;
-    XP_U16 port;
-    XP_Bool amServer;
-};
-
 static void
 makeQueuePath( const XP_UCHAR* phone, XP_U16 port,
                XP_UCHAR* path, XP_U16 pathlen )
 {
+    XP_ASSERT( 0 != port );
     snprintf( path, pathlen, "%s/%s_%d", SMS_DIR, phone, port );
 }
 
+typedef struct _LinSMSData {
+    int fd, wd;
+    XP_UCHAR myQueue[256];
+    XP_U16 port;
+    FILE* lock;
+    XP_U16 count;
+
+    const gchar* myPhone;
+    const SMSProcs* procs;
+    void* procClosure;
+} LinSMSData;
+
+typedef enum { NONE, INVITE, DATA, DEATH, ACK, } SMS_CMD;
+#define SMS_PROTO_VERSION 0
+
+
+static LinSMSData* getStorage( LaunchParams* params );
+static void writeHeader( XWStreamCtxt* stream, SMS_CMD cmd );
+
+
 static void
-lock_queue( LinSMSData* data )
+lock_queue( LinSMSData* storage )
 {
     char lock[256];
-    snprintf( lock, sizeof(lock), "%s/%s", data->myQueue, LOCK_FILE );
+    snprintf( lock, sizeof(lock), "%s/%s", storage->myQueue, LOCK_FILE );
     FILE* fp = fopen( lock, "w" );
-    XP_ASSERT( NULL == data->lock );
-    data->lock = fp;
+    XP_ASSERT( NULL == storage->lock );
+    storage->lock = fp;
 }
 
 static void
-unlock_queue( LinSMSData* data )
+unlock_queue( LinSMSData* storage )
 {
-    XP_ASSERT( NULL != data->lock );
-    fclose( data->lock );
-    data->lock = NULL;
+    XP_ASSERT( NULL != storage->lock );
+    fclose( storage->lock );
+    storage->lock = NULL;
 }
 
-void
-linux_sms_init( CommonGlobals* globals, const CommsAddrRec* addr )
+
+static XP_S16
+send_sms( LinSMSData* storage, XWStreamCtxt* stream, 
+          const XP_UCHAR* phone, XP_U16 port )
 {
-    LinSMSData* data = globals->smsData;
-    if ( !data ) {
-        data = XP_MALLOC( globals->util->mpool, sizeof(*data) );
-        XP_ASSERT( !!data );
-        XP_MEMSET( data, 0, sizeof(*data) );
-        globals->smsData = data;
+    const XP_U8* buf = stream_getPtr( stream );
+    XP_U16 buflen = stream_getSize( stream );
 
-        data->amServer = comms_getIsServer( globals->game.comms );
-
-        if ( data->amServer ) {
-            XP_STRNCPY( data->myPhone, addr->u.sms.phone, 
-                        sizeof(data->myPhone) );
-        } else {
-            snprintf( data->myPhone, sizeof(data->myPhone), "%.6d", getpid() );
-        }
-
-        makeQueuePath( data->myPhone, addr->u.sms.port,
-                       data->myQueue, sizeof(data->myQueue) );
-        data->port = addr->u.sms.port;
-
-        (void)g_mkdir_with_parents( data->myQueue, 0777 );
-
-        int fd = inotify_init();
-        data->fd = fd;
-        data->wd = inotify_add_watch( fd, data->myQueue, IN_MODIFY );
-        (*globals->socketChanged)( globals, -1, fd, &data->storage );
-    }
-} /* linux_sms_init */
-
-void
-linux_sms_close( CommonGlobals* globals )
-{
-    LinSMSData* data = globals->smsData;
-    if ( !!data ) {
-        XP_FREE( globals->util->mpool, data );
-        globals->smsData = NULL;
-    }
-} /* linux_sms_close */
-
-XP_S16
-linux_sms_send( CommonGlobals* globals,
-                const XP_U8* buf, XP_U16 buflen, 
-                const XP_UCHAR* phone, XP_U16 port )
-{
     XP_S16 nSent = -1;
-    LinSMSData* data = globals->smsData;
-    XP_ASSERT( !!data );
+    XP_ASSERT( !!storage );
     char path[256];
 
-    lock_queue( data );
+    lock_queue( storage );
 
 #ifdef DEBUG
     gchar* str64 = g_base64_encode( buf, buflen );
 #endif
 
+    XP_U16 count = ++storage->count;
     makeQueuePath( phone, port, path, sizeof(path) );
+    XP_LOGF( "%s: writing msg %d to %s", __func__, count, path );
     g_mkdir_with_parents( path, 0777 ); /* just in case */
     int len = strlen( path );
-    snprintf( &path[len], sizeof(path)-len, "/%d", ++data->count );
+    snprintf( &path[len], sizeof(path)-len, "/%d", count );
 
     XP_UCHAR sms[buflen*2];     /* more like (buflen*4/3) */
     XP_U16 smslen = sizeof(sms);
@@ -169,12 +141,12 @@ linux_sms_send( CommonGlobals* globals,
 
     FILE* fp = fopen( path, "w" );
     XP_ASSERT( !!fp );
-    (void)fprintf( fp, "from: %s\n", data->myPhone );
+    (void)fprintf( fp, "from: %s\n", storage->myPhone );
     (void)fprintf( fp, "%s\n", sms );
     fclose( fp );
     sync();
 
-    unlock_queue( data );
+    unlock_queue( storage );
 
     nSent = buflen;
 
@@ -182,12 +154,13 @@ linux_sms_send( CommonGlobals* globals,
 } /* linux_sms_send */
 
 static XP_S16
-decodeAndDelete( LinSMSData* data, const gchar* name, 
+decodeAndDelete( LinSMSData* storage, const gchar* name, 
                  XP_U8* buf, XP_U16 buflen, CommsAddrRec* addr )
 {
+    LOG_FUNC();
     XP_S16 nRead = -1;
     char path[256];
-    snprintf( path, sizeof(path), "%s/%s", data->myQueue, name );
+    snprintf( path, sizeof(path), "%s/%s", storage->myQueue, name );
 
     gchar* contents;
     gsize length;
@@ -199,9 +172,10 @@ decodeAndDelete( LinSMSData* data, const gchar* name,
     unlink( path );
 
     if ( 0 == strncmp( "from: ", contents, 6 ) ) {
+        char phone[32];
         gchar* eol = strstr( contents, "\n" );
         *eol = '\0';
-        XP_STRNCPY( addr->u.sms.phone, &contents[6], sizeof(addr->u.sms.phone) );
+        XP_STRNCPY( phone, &contents[6], sizeof(phone) );
         XP_ASSERT( !*eol );
         ++eol;         /* skip NULL */
         *strstr(eol, "\n" ) = '\0';
@@ -215,53 +189,226 @@ decodeAndDelete( LinSMSData* data, const gchar* name,
             XP_MEMCPY( buf, out, outlen );
             nRead = outlen;
             addr->conType = COMMS_CONN_SMS;
-            addr->u.sms.port = data->port;
+            XP_STRNCPY( addr->u.sms.phone, phone, sizeof(addr->u.sms.phone) );
+            XP_LOGF( "%s: message came from phone: %s", __func__, phone );
+            addr->u.sms.port = 1; /* for now */
         }
     }
 
     g_free( contents );
 
+    LOG_RETURNF( "%d", nRead );
     return nRead;
 } /* decodeAndDelete */
 
-XP_S16
-linux_sms_receive( CommonGlobals* globals, int sock, 
-                   XP_U8* buf, XP_U16 buflen, CommsAddrRec* addr )
+static void
+dispatch_invite( LinSMSData* storage, XP_U16 XP_UNUSED(proto), 
+                 XWStreamCtxt* stream, const CommsAddrRec* addr )
 {
-    XP_S16 nRead = -1;
-    LinSMSData* data = globals->smsData;
+    XP_UCHAR gameName[256];
+    XP_UCHAR dictName[256];
 
-    XP_ASSERT( sock == data->fd );
+    XP_U32 gameID = stream_getU32( stream );
+    XP_LOGF( "%s: got gameID %d", __func__, gameID );
+    stringFromStreamHere( stream, gameName, VSIZE(gameName) );
+    XP_U32 dictLang = stream_getU32( stream );
+    stringFromStreamHere( stream, dictName, VSIZE(dictName) );
+    XP_U8 nMissing = stream_getU8( stream );
+    XP_U8 nPlayers = stream_getU8( stream );
 
-    lock_queue( data );
+    (*storage->procs->inviteReceived)( storage->procClosure, gameName, gameID,
+                                       dictLang, dictName, nPlayers, nMissing,
+                                       addr );
+}
+
+static void
+dispatch_data( LinSMSData* storage, XP_U16 XP_UNUSED(proto), 
+               XWStreamCtxt* stream, const CommsAddrRec* addr )
+{
+    XP_USE( addr );
+    XP_U32 gameID = stream_getU32( stream );
+    XP_U16 len = stream_getSize( stream );
+    XP_U8 data[len];
+    stream_getBytes( stream, data, len );
+    
+    (*storage->procs->msgReceived)( storage->procClosure, gameID, 
+                                    data, len, addr );
+}
+
+static void
+parseAndDispatch( LaunchParams* params, uint8_t* buf, int len, 
+                  const CommsAddrRec* addr )
+{
+    LinSMSData* storage = getStorage( params );
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool)
+                                            params->vtMgr, 
+                                            NULL, CHANNEL_NONE, NULL );
+    stream_putBytes( stream, buf, len );
+
+    XP_U8 proto = stream_getU8( stream );
+    XP_ASSERT( SMS_PROTO_VERSION == proto );
+    XP_U8 cmd = stream_getU8( stream );
+    switch( cmd ) {
+    case INVITE:
+        dispatch_invite( storage, proto, stream, addr );
+        break;
+    case DATA:
+        dispatch_data( storage, proto, stream, addr );
+        break;
+    case DEATH:
+    case ACK:
+        break;
+    default:
+        XP_ASSERT( 0 );
+    }
+
+    stream_destroy( stream );
+}
+
+static void 
+sms_receive( void* closure, int socket )
+{
+    LOG_FUNC();
+    LaunchParams* params = (LaunchParams*)closure;
+    XP_ASSERT( !!params->smsStorage );
+    LinSMSData* storage = getStorage( params );
+
+    XP_ASSERT( socket == storage->fd );
+
+    lock_queue( storage );
 
     /* read required or we'll just get the event again.  But we don't care
        about the result or the buffer contents. */
     XP_U8 buffer[sizeof(struct inotify_event) + 16];
-    if ( 0 > read( sock, buffer, sizeof(buffer) ) ) {
+    if ( 0 > read( socket, buffer, sizeof(buffer) ) ) {
     }
-    char shortest[256] = { '\0' };
-    GDir* dir = g_dir_open( data->myQueue, 0, NULL );
     for ( ; ; ) {
-        const gchar* name = g_dir_read_name( dir );
-        if ( NULL == name ) {
+        XP_S16 nRead = -1;
+        char shortest[256] = { '\0' };
+        GDir* dir = g_dir_open( storage->myQueue, 0, NULL );
+        XP_LOGF( "%s: opening queue %s", __func__, storage->myQueue );
+        for ( ; ; ) {
+            const gchar* name = g_dir_read_name( dir );
+            if ( NULL == name ) {
+                break;
+            } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
+                continue;
+            }
+            if ( !shortest[0] || 0 < strcmp( shortest, name ) ) {
+                snprintf( shortest, sizeof(shortest), "%s", name );
+            }
+        }
+        g_dir_close( dir );
+
+        uint8_t buf[256];
+        CommsAddrRec fromAddr = {0};
+        if ( !!shortest[0] ) {
+            XP_LOGF( "%s: decoding message %s", __func__, shortest );
+            nRead = decodeAndDelete( storage, shortest, buf, 
+                                     sizeof(buf), &fromAddr );
+        }
+
+        unlock_queue( storage );
+
+        if ( 0 < nRead ) {
+            parseAndDispatch( params, buf, nRead, &fromAddr );
+            lock_queue( storage );
+        } else {
             break;
-        } else if ( 0 == strcmp( name, LOCK_FILE ) ) {
-            continue;
-        }
-        if ( !shortest[0] || 0 < strcmp( shortest, name ) ) {
-            snprintf( shortest, sizeof(shortest), "%s", name );
         }
     }
-    g_dir_close( dir );
+} /* sms_receive */
 
-    if ( !!shortest[0] ) {
-        nRead = decodeAndDelete( data, shortest, buf, buflen, addr );
+void
+linux_sms_init( LaunchParams* params, const gchar* phone, XP_U16 port,
+                const SMSProcs* procs, void* procClosure )
+{
+    XP_ASSERT( !!phone );
+    LinSMSData* storage = getStorage( params );
+    XP_ASSERT( !!storage );
+    storage->myPhone = phone;
+    storage->procs = procs;
+    storage->procClosure = procClosure;
+
+    makeQueuePath( phone, port, storage->myQueue, sizeof(storage->myQueue) );
+    XP_LOGF( "%s: my queue: %s", __func__, storage->myQueue );
+    storage->port = params->connInfo.sms.port;
+
+    (void)g_mkdir_with_parents( storage->myQueue, 0777 );
+
+    int fd = inotify_init();
+    storage->fd = fd;
+    storage->wd = inotify_add_watch( fd, storage->myQueue, IN_MODIFY );
+    
+    (*procs->socketChanged)( procClosure, fd, -1, sms_receive, params );
+} /* linux_sms_init */
+
+void
+linux_sms_invite( LaunchParams* params, const CurGameInfo* gi, 
+                  const gchar* gameName, XP_U16 nMissing, const gchar* phone,
+                  int port )
+{
+    LOG_FUNC();
+    XWStreamCtxt* stream;
+    stream = mem_stream_make( MPPARM(params->mpool) params->vtMgr,
+                              NULL, CHANNEL_NONE, NULL );
+    writeHeader( stream, INVITE );
+    stream_putU32( stream, gi->gameID );
+    stringToStream( stream, gameName );
+    stream_putU32( stream, gi->dictLang );
+    stringToStream( stream, gi->dictName );
+    stream_putU8( stream, nMissing );
+    stream_putU8( stream, gi->nPlayers );
+
+    LinSMSData* storage = getStorage( params );
+    send_sms( storage, stream, phone, port );
+
+    stream_destroy( stream );
+}
+
+XP_S16
+linux_sms_send( LaunchParams* params, const XP_U8* buf,
+                 XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port,
+                 XP_U32 gameID )
+{
+    LOG_FUNC();
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool) params->vtMgr,
+                                            NULL, CHANNEL_NONE, NULL );
+    writeHeader( stream, DATA );
+    stream_putU32( stream, gameID );
+    stream_putBytes( stream, buf, buflen );
+
+    LinSMSData* storage = getStorage( params );
+    if ( 0 >= send_sms( storage, stream, phone, port ) ) {
+        buflen = -1;
     }
+    stream_destroy( stream );
 
-    unlock_queue( data );
+    return buflen;
+}
 
-    return nRead;
-} /* linux_sms_receive */
+void
+linux_sms_cleanup( LaunchParams* params )
+{
+    XP_FREEP( params->mpool, &params->smsStorage );
+}
+
+static LinSMSData* 
+getStorage( LaunchParams* params )
+{
+    LinSMSData* storage = (LinSMSData*)params->smsStorage;
+    if ( NULL == storage ) {
+        storage = XP_CALLOC( params->mpool, sizeof(*storage) );
+        params->smsStorage = storage;
+    }
+    return storage;
+}
+
+static void
+writeHeader( XWStreamCtxt* stream, SMS_CMD cmd )
+{
+    stream_putU8( stream, SMS_PROTO_VERSION );
+    stream_putU8( stream, cmd );
+}
 
 #endif /* XWFEATURE_SMS */

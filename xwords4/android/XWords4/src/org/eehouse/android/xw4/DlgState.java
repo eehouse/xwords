@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2013 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -20,54 +20,61 @@
 
 package org.eehouse.android.xw4;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
 import android.os.Parcelable;
 import android.os.Parcel;
 
 public class DlgState implements Parcelable {
-    public int m_id;
+    public DlgID m_id;
     public String m_msg;
     public int m_posButton;
-    public int m_cbckID = 0;
+    public Action m_action = null;
     public int m_prefsKey;
     public Object[] m_params;
 
-    public DlgState( int id, String msg, int cbckID )
+    public DlgState( DlgID dlgID, String msg, Action action )
     {
-        this( id, msg, R.string.button_ok, cbckID, 0 );
+        this( dlgID, msg, R.string.button_ok, action, 0 );
     }
 
-    public DlgState( int id, String msg, int cbckID, int prefsKey )
+    public DlgState( DlgID dlgID, String msg, Action action, int prefsKey )
     {
-        this( id, msg, R.string.button_ok, cbckID, prefsKey );
+        this( dlgID, msg, R.string.button_ok, action, prefsKey );
     }
 
-    public DlgState( int id, String msg, int cbckID, int prefsKey, 
+    public DlgState( DlgID dlgID, String msg, Action action, int prefsKey, 
                      Object[] params )
     {
-        this( id, msg, R.string.button_ok, cbckID, prefsKey );
+        this( dlgID, msg, R.string.button_ok, action, prefsKey );
         m_params = params;
     }
 
-    public DlgState( int id, String msg, int posButton, 
-                     int cbckID, int prefsKey )
+    public DlgState( DlgID dlgID, String msg, int posButton, 
+                     Action action, int prefsKey )
     {
-        this( id, msg, posButton, cbckID, prefsKey, null );
+        this( dlgID, msg, posButton, action, prefsKey, null );
     }
 
-    public DlgState( int id, String msg, int posButton, 
-                     int cbckID, int prefsKey, Object[] params )
+    public DlgState( DlgID dlgID, String msg, int posButton, 
+                     Action action, int prefsKey, Object[] params )
     {
-        m_id = id;
+        m_id = dlgID;
         m_msg = msg;
         m_posButton = posButton;
-        m_cbckID = cbckID;
+        m_action = action;
         m_prefsKey = prefsKey;
         m_params = params;
     }
 
-    public DlgState( int id, int cbckID )
+    public DlgState( DlgID dlgID, Action action )
     {
-        this( id, null, 0, cbckID, 0 );
+        this( dlgID, null, 0, action, 0 );
+    }
+
+    public DlgState( DlgID dlgID, Object[] params )
+    {
+        this( dlgID, null, 0, null, 0, params );
     }
 
     public int describeContents() {
@@ -75,9 +82,9 @@ public class DlgState implements Parcelable {
     }
 
     public void writeToParcel( Parcel out, int flags ) {
-        out.writeInt( m_id );
+        out.writeInt( m_id.ordinal() );
         out.writeInt( m_posButton );
-        out.writeInt( m_cbckID );
+        out.writeInt( null == m_action ? -1 : m_action.ordinal() );
         out.writeInt( m_prefsKey );
         out.writeString( m_msg );
     }
@@ -85,12 +92,13 @@ public class DlgState implements Parcelable {
     public static final Parcelable.Creator<DlgState> CREATOR
         = new Parcelable.Creator<DlgState>() {
         public DlgState createFromParcel(Parcel in) {
-            int id = in.readInt();
+            DlgID id = DlgID.values()[in.readInt()];
             int posButton = in.readInt();
-            int cbckID = in.readInt();
+            int tmp = in.readInt();
+            Action action = 0 > tmp ? null : Action.values()[tmp];
             int prefsKey = in.readInt();
             String msg = in.readString();
-            return new DlgState( id, msg, posButton, cbckID, prefsKey );
+            return new DlgState( id, msg, posButton, action, prefsKey );
         }
 
         public DlgState[] newArray(int size) {

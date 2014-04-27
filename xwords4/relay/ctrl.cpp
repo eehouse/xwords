@@ -547,7 +547,7 @@ cmd_print( int socket, const char* cmd, int argc, gchar** argv )
 static void 
 onAckProc( bool acked, DevIDRelay devid, uint32_t packetID, void* data )
 {
-    int socket = (int)data;
+    int socket = (int)(uintptr_t)data;
     if ( acked ) {
         print_to_sock( socket, true, "got ack for packet %d from dev %d", 
                        packetID, devid );
@@ -660,7 +660,7 @@ cmd_devs( int socket, const char* cmd, int argc, gchar** argv )
                 DevIDRelay devid = *iter;
                 if ( 0 != devid ) {
                     if ( post_message( devid, unesc, onAckProc, 
-                                       (void*)socket ) ) {
+                                       (void*)(uintptr_t)socket ) ) {
                         result.catf( "posted message: %s\n", unesc );
                     } else {
                         result.catf( "unable to post; does dev %d exist\n",
@@ -744,7 +744,7 @@ static void*
 ctrl_thread_main( void* arg )
 {
     blockSignals();
-    int sock = (int)arg;
+    int sock = (int)(uintptr_t)arg;
 
     {
         MutexLock ml( &g_ctrlSocksMutex );
@@ -819,7 +819,7 @@ run_ctrl_thread( int ctrl_sock )
 
     pthread_t thread;
     int result = pthread_create( &thread, NULL, 
-                                 ctrl_thread_main, (void*)newSock );
+                                 ctrl_thread_main, (void*)(uintptr_t)newSock );
     pthread_detach( thread );
 
     assert( result == 0 );

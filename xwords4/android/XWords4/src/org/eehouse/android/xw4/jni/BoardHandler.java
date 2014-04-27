@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -20,12 +20,12 @@
 
 package org.eehouse.android.xw4.jni;
 
-import org.eehouse.android.xw4.XWActivity;
+import android.app.Activity;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public interface BoardHandler {
 
-    void startHandling( XWActivity parent, JNIThread thread, 
+    void startHandling( Activity parent, JNIThread thread, 
                         int gamePtr, CurGameInfo gi,
                         CommsConnType connType );
 

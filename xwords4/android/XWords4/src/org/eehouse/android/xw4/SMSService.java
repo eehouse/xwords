@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -765,7 +765,7 @@ public class SMSService extends XWService {
             sendDiedPacket( addr.sms_phone, gameID );
         } else {
             for ( long rowid : rowids ) {
-                if ( BoardActivity.feedMessage( gameID, msg, addr ) ) {
+                if ( BoardDelegate.feedMessage( gameID, msg, addr ) ) {
                     // do nothing
                 } else {
                     SMSMsgSink sink = new SMSMsgSink( this );
@@ -783,7 +783,7 @@ public class SMSService extends XWService {
     private void postNotification( int gameID, int title, String body, 
                                    long rowid )
     {
-        Intent intent = GamesList.makeGameIDIntent( this, gameID );
+        Intent intent = GamesListActivity.makeGameIDIntent( this, gameID );
         Utils.postNotification( this, intent, title, body, (int)rowid );
     }
 

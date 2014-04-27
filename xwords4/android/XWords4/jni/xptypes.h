@@ -28,11 +28,11 @@
 typedef unsigned char XP_U8;
 typedef signed char XP_S8;
 
-typedef unsigned short XP_U16;
-typedef signed short XP_S16;
+typedef uint16_t XP_U16;
+typedef int16_t XP_S16;
 
-typedef unsigned long XP_U32;
-typedef signed long XP_S32;
+typedef uint32_t XP_U32;
+typedef int32_t XP_S32;
 
 typedef char XP_UCHAR;
 
@@ -46,7 +46,7 @@ typedef XP_U32 XP_Time;
 #define XP_S "%s"
 #define XP_P "%p"
 #define XP_CR "\n"
-#define XP_LD "%ld"
+#define XP_LD "%d"
 
 # define XP_RANDOM() rand()
 

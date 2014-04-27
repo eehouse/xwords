@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -237,9 +237,9 @@ public class ConnStatusHandler {
         updateStatusImpl( context, cbacks, connType, success, false );
     }
 
-    public static void updateStatusImpl( Context context, ConnStatusCBacks cbacks,
-                                         CommsConnType connType, boolean success,
-                                         boolean isIn )
+    private static void updateStatusImpl( Context context, ConnStatusCBacks cbacks,
+                                          CommsConnType connType, boolean success,
+                                          boolean isIn )
     {
         if ( null == cbacks ) {
             cbacks = s_cbacks;

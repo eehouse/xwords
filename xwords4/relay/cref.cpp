@@ -903,7 +903,7 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
                 break;
             }
             if ( !UDPAckTrack::setOnAck( onMsgAcked, packetID, 
-                                         (void*)msg.msgID() ) ) {
+                                         (void*)(uintptr_t)msg.msgID() ) ) {
                 sentIDs.push_back( msg.msgID() );
             }
         }

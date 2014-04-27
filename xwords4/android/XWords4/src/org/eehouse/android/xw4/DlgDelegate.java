@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -39,25 +39,79 @@ import junit.framework.Assert;
 
 public class DlgDelegate {
 
-    public static final int DIALOG_ABOUT = 1;
-    public static final int DIALOG_OKONLY = 2;
-    public static final int DIALOG_NOTAGAIN = 3;
-    public static final int CONFIRM_THEN = 4;
-    public static final int INVITE_CHOICES_THEN = 5;
-    public static final int DLG_DICTGONE = 6;
-    public static final int DIALOG_LAST = DLG_DICTGONE;
+    public static enum Action {
+        SKIP_CALLBACK,
+
+        // GameListDelegate
+        RESET_GAMES,
+        SYNC_MENU,
+        NEW_FROM,
+        DELETE_GAMES,
+        DELETE_GROUPS,
+        OPEN_GAME,
+        CLEAR_SELS,
+        NEW_NET_GAME,
+
+        // BoardDelegate
+        UNDO_LAST_ACTION,
+        LAUNCH_INVITE_ACTION,
+        SYNC_ACTION,
+        COMMIT_ACTION,
+        SHOW_EXPL_ACTION,
+        PREV_HINT_ACTION,
+        NEXT_HINT_ACTION,
+        JUGGLE_ACTION,
+        FLIP_ACTION,
+        ZOOM_ACTION,
+        UNDO_ACTION,
+        CHAT_ACTION,
+        START_TRADE_ACTION,
+        LOOKUP_ACTION,
+        BUTTON_BROWSE_ACTION,
+        VALUES_ACTION,
+        BT_PICK_ACTION,
+        SMS_PICK_ACTION,
+        SMS_CONFIG_ACTION,
+        BUTTON_BROWSEALL_ACTION,
+
+        // Dict Browser
+        FINISH_ACTION,
+        DELETE_DICT_ACTION,
+        DOWNLOAD_DICT_ACTION,
+
+        // Game configs
+        LOCKED_CHANGE_ACTION,
+
+        // New Game
+        NEW_GAME_ACTION,
+
+        // SMS invite
+        CLEAR_ACTION,
+        USE_IMMOBILE_ACTION,
+        POST_WARNING_ACTION,
+
+        // Study list
+        SL_CLEAR_ACTION,
+        SL_COPY_ACTION,
+
+        __LAST
+    }
 
     public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
     public static final int EMAIL_BTN = AlertDialog.BUTTON_NEGATIVE;
     public static final int NFC_BTN = AlertDialog.BUTTON_NEUTRAL;
     public static final int DISMISS_BUTTON = 0;
-    public static final int SKIP_CALLBACK = -1;
 
     private static final String IDS = "IDS";
     private static final String STATE_KEYF = "STATE_%d";
 
     public interface DlgClickNotify {
-        void dlgButtonClicked( int id, int button, Object[] params );
+        void dlgButtonClicked( Action action, int button, Object[] params );
+    }
+    public interface HasDlgDelegate {
+        void showOKOnlyDialog( int msgID );
+        void showOKOnlyDialog( String msg );
+        void showNotAgainDlgThen( int msgID, int prefsKey, Action action );
     }
 
     private Activity m_activity;
@@ -66,7 +120,7 @@ public class DlgDelegate {
     private ProgressDialog m_progress;
     private Handler m_handler;
 
-    private HashMap<Integer, DlgState> m_dlgStates;
+    private HashMap<DlgID, DlgState> m_dlgStates;
 
     public DlgDelegate( Activity activity, DlgClickNotify callback,
                         Bundle bundle ) 
@@ -74,7 +128,7 @@ public class DlgDelegate {
         m_activity = activity;
         m_clickCallback = callback;
         m_handler = new Handler();
-        m_dlgStates = new HashMap<Integer,DlgState>();
+        m_dlgStates = new HashMap<DlgID,DlgState>();
 
         if ( null != bundle ) {
             int[] ids = bundle.getIntArray( IDS );
@@ -93,34 +147,44 @@ public class DlgDelegate {
             Iterator<DlgState> iter = m_dlgStates.values().iterator();
             while ( iter.hasNext() ) {
                 DlgState state = iter.next();
-                String key = String.format( STATE_KEYF, state.m_id );
+                int id = state.m_id.ordinal();
+                String key = String.format( STATE_KEYF, id );
                 outState.putParcelable( key, state );
-                ids[indx++] = state.m_id;
+                ids[indx++] = id;
             }
         }
         outState.putIntArray( IDS, ids );
     }
-    
-    public Dialog onCreateDialog( int id )
+
+    protected void showDialog( DlgID dlgID )
     {
-        // DbgUtils.logf("onCreateDialog(id=%d)", id );
+        m_activity.showDialog( dlgID.ordinal() );
+    }
+    
+    public Dialog createDialog( int id )
+    {
+        // DbgUtils.logf("createDialog(id=%d)", id );
         Dialog dialog = null;
-        DlgState state = findForID( id );
-        switch( id ) {
+        DlgID dlgID = DlgID.values()[id];
+        DlgState state = findForID( dlgID );
+        switch( dlgID ) {
+        case LOOKUP:
+            dialog = createLookupDialog();
+            break;
         case DIALOG_ABOUT:
             dialog = createAboutDialog();
             break;
         case DIALOG_OKONLY:
-            dialog = createOKDialog( state, id );
+            dialog = createOKDialog( state, dlgID );
             break;
         case DIALOG_NOTAGAIN:
-            dialog = createNotAgainDialog( state, id );
+            dialog = createNotAgainDialog( state, dlgID );
             break;
         case CONFIRM_THEN:
-            dialog = createConfirmThenDialog( state, id );
+            dialog = createConfirmThenDialog( state, dlgID );
             break;
         case INVITE_CHOICES_THEN:
-            dialog = createInviteChoicesDialog( state, id );
+            dialog = createInviteChoicesDialog( state, dlgID );
             break;
         case DLG_DICTGONE:
             dialog = createDictGoneDialog();
@@ -131,52 +195,52 @@ public class DlgDelegate {
 
     public void showOKOnlyDialog( String msg )
     {
-        showOKOnlyDialog( msg, SKIP_CALLBACK );
+        showOKOnlyDialog( msg, Action.SKIP_CALLBACK );
     }
 
-    public void showOKOnlyDialog( String msg, int callbackID )
+    public void showOKOnlyDialog( String msg, Action action )
     {
         // Assert.assertNull( m_dlgStates );
-        DlgState state = new DlgState( DIALOG_OKONLY, msg, callbackID );
+        DlgState state = new DlgState( DlgID.DIALOG_OKONLY, msg, action );
         addState( state );
-        m_activity.showDialog( DIALOG_OKONLY );
+        m_activity.showDialog( DlgID.DIALOG_OKONLY.ordinal() );
     }
 
     public void showOKOnlyDialog( int msgID )
     {
-        showOKOnlyDialog( m_activity.getString( msgID ), SKIP_CALLBACK );
+        showOKOnlyDialog( m_activity.getString( msgID ), Action.SKIP_CALLBACK );
     }
 
     public void showDictGoneFinish()
     {
-        m_activity.showDialog( DLG_DICTGONE );
+        m_activity.showDialog( DlgID.DLG_DICTGONE.ordinal() );
     }
 
     public void showAboutDialog()
     {
-        m_activity.showDialog( DIALOG_ABOUT );
+        m_activity.showDialog( DlgID.DIALOG_ABOUT.ordinal() );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     final int callbackID, 
+                                     final Action action,
                                      final Object[] params )
     {
         showNotAgainDlgThen( m_activity.getString( msgID ), prefsKey, 
-                             callbackID, params );
+                             action, params );
     }
 
     public void showNotAgainDlgThen( String msg, int prefsKey,
-                                     final int callbackID, 
+                                     final Action action,
                                      final Object[] params )
     {
         if ( XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
             // If it's set, do the action without bothering with the
             // dialog
-            if ( SKIP_CALLBACK != callbackID ) {
+            if ( Action.SKIP_CALLBACK != action ) {
                 post( new Runnable() {
                         public void run() {
                             m_clickCallback
-                                .dlgButtonClicked( callbackID, 
+                                .dlgButtonClicked( action,
                                                    AlertDialog.BUTTON_POSITIVE,
                                                    params );
                         }
@@ -184,59 +248,72 @@ public class DlgDelegate {
             }
         } else {
             DlgState state = 
-                new DlgState( DIALOG_NOTAGAIN, msg, callbackID, prefsKey, 
+                new DlgState( DlgID.DIALOG_NOTAGAIN, msg, action, prefsKey, 
                               params );
             addState( state );
-            m_activity.showDialog( DIALOG_NOTAGAIN );
+            m_activity.showDialog( DlgID.DIALOG_NOTAGAIN.ordinal() );
         }
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     int callbackID  )
+                                     Action action)
     {
-        showNotAgainDlgThen( msgID, prefsKey, callbackID, null );
+        showNotAgainDlgThen( msgID, prefsKey, action, null );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey )
     {
-        showNotAgainDlgThen( msgID, prefsKey, SKIP_CALLBACK );
+        showNotAgainDlgThen( msgID, prefsKey, Action.SKIP_CALLBACK );
     }
 
-    public void showConfirmThen( String msg, int callbackID )
+    public void showConfirmThen( String msg, Action action )
     {
-        showConfirmThen( msg, R.string.button_ok, callbackID, null );
+        showConfirmThen( msg, R.string.button_ok, action, null );
     }
 
-    public void showConfirmThen( String msg, int callbackID, Object[] params )
+    public void showConfirmThen( int msgID, Action action )
     {
-        showConfirmThen( msg, R.string.button_ok, callbackID, params );
+        showConfirmThen( m_activity.getString( msgID ),
+                         R.string.button_ok, action, null );
     }
 
-    public void showConfirmThen( String msg, int posButton, int callbackID )
+    public void showConfirmThen( String msg, Action action, Object[] params )
     {
-        showConfirmThen( msg, posButton, callbackID, null );
+        showConfirmThen( msg, R.string.button_ok, action, params );
     }
 
-    public void showConfirmThen( String msg, int posButton, int callbackID,
+    public void showConfirmThen( String msg, int posButton, Action action )
+    {
+        showConfirmThen( msg, posButton, action, null );
+    }
+
+    public void showConfirmThen( int msg, int posButton, Action action,
                                  Object[] params )
     {
-        DlgState state = new DlgState( CONFIRM_THEN, msg, posButton, 
-                                       callbackID, 0, params );
-        addState( state );
-        m_activity.showDialog( CONFIRM_THEN );
+        showConfirmThen( m_activity.getString( msg ), posButton, action, 
+                         params );
     }
 
-    public void showInviteChoicesThen( final int callbackID )
+    public void showConfirmThen( String msg, int posButton, Action action,
+                                 Object[] params )
+    {
+        DlgState state = new DlgState( DlgID.CONFIRM_THEN, msg, posButton, 
+                                       action, 0, params );
+        addState( state );
+        m_activity.showDialog( DlgID.CONFIRM_THEN.ordinal() );
+    }
+
+    public void showInviteChoicesThen( final Action action )
     {
         if ( Utils.deviceSupportsSMS( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0] ) {
-            DlgState state = new DlgState( INVITE_CHOICES_THEN, callbackID );
+            DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN, action );
             addState( state );
-            m_activity.showDialog( INVITE_CHOICES_THEN );
+            m_activity.showDialog( DlgID.INVITE_CHOICES_THEN.ordinal() );
         } else {
             post( new Runnable() {
                     public void run() {
-                        m_clickCallback.dlgButtonClicked( callbackID, EMAIL_BTN,
+                        m_clickCallback.dlgButtonClicked( action, EMAIL_BTN,
                                                           null );
                     } 
                 });
@@ -253,13 +330,11 @@ public class DlgDelegate {
         }
     }
 
-    public void launchLookup( String[] words, int lang, boolean forceList )
+    public void launchLookup( String[] words, int lang, boolean noStudyOption )
     {
-        Intent intent = new Intent( m_activity, LookupActivity.class );
-        intent.putExtra( LookupActivity.WORDS, words );
-        intent.putExtra( LookupActivity.LANG, lang );
-
-        m_activity.startActivity( intent );
+        Bundle params = LookupAlert.makeParams( words, lang, noStudyOption );
+        addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
+        m_activity.showDialog( DlgID.LOOKUP.ordinal() );
     }
 
     public void startProgress( int id )
@@ -315,7 +390,7 @@ public class DlgDelegate {
             post( new Runnable() {
                     public void run() {
                         if ( asDlg ) {
-                            showOKOnlyDialog( fmsg, SKIP_CALLBACK );
+                            showOKOnlyDialog( fmsg, Action.SKIP_CALLBACK );
                         } else {
                             DbgUtils.showf( m_activity, fmsg );
                         }
@@ -330,7 +405,8 @@ public class DlgDelegate {
         TextView vers = (TextView)view.findViewById( R.id.version_string );
         vers.setText( String.format( m_activity.getString(R.string.about_versf), 
                                      m_activity.getString(R.string.app_version),
-                                     BuildConstants.GIT_REV ) );
+                                     BuildConstants.GIT_REV, 
+                                     BuildConstants.BUILD_STAMP ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
         String str = m_activity.getString( R.string.xlator );
@@ -344,7 +420,7 @@ public class DlgDelegate {
             .setIcon( R.drawable.icon48x48 )
             .setTitle( R.string.app_name )
             .setView( view )
-            .setPositiveButton( R.string.changes_button,
+            .setNegativeButton( R.string.changes_button,
                                 new OnClickListener() {
                                     @Override
                                     public void onClick( DialogInterface dlg, 
@@ -353,22 +429,30 @@ public class DlgDelegate {
                                         FirstRunDialog.show( m_activity );
                                     }
                                 } )
+            .setPositiveButton( R.string.button_ok, null )
             .create();
     }
 
-    private Dialog createOKDialog( DlgState state, int id )
+    private Dialog createLookupDialog()
+    {
+        DlgState state = findForID( DlgID.LOOKUP );
+        Bundle bundle = (Bundle)state.m_params[0];
+        return LookupAlert.createDialog( m_activity, bundle );
+    }
+
+    private Dialog createOKDialog( DlgState state, DlgID dlgID )
     {
         Dialog dialog = new AlertDialog.Builder( m_activity )
             .setTitle( R.string.info_title )
             .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, null )
             .create();
-        dialog = setCallbackDismissListener( dialog, state, id );
+        dialog = setCallbackDismissListener( dialog, state, dlgID );
 
         return dialog;
     }
 
-    private Dialog createNotAgainDialog( final DlgState state, int id )
+    private Dialog createNotAgainDialog( final DlgState state, DlgID dlgID )
     {
         OnClickListener lstnr_p = mkCallbackClickListener( state );
 
@@ -377,9 +461,9 @@ public class DlgDelegate {
                 public void onClick( DialogInterface dlg, int item ) {
                     XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
                                              true );
-                    if ( SKIP_CALLBACK != state.m_cbckID ) {
+                    if ( Action.SKIP_CALLBACK != state.m_action ) {
                         m_clickCallback.
-                            dlgButtonClicked( state.m_cbckID, 
+                            dlgButtonClicked( state.m_action, 
                                               AlertDialog.BUTTON_POSITIVE, 
                                               state.m_params );
                     }
@@ -393,10 +477,10 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_notagain, lstnr_n )
             .create();
 
-        return setCallbackDismissListener( dialog, state, id );
+        return setCallbackDismissListener( dialog, state, dlgID );
     } // createNotAgainDialog
 
-    private Dialog createConfirmThenDialog( DlgState state, int id )
+    private Dialog createConfirmThenDialog( DlgState state, DlgID dlgID )
     {
         OnClickListener lstnr = mkCallbackClickListener( state );
 
@@ -407,10 +491,10 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_cancel, lstnr )
             .create();
         
-        return setCallbackDismissListener( dialog, state, id );
+        return setCallbackDismissListener( dialog, state, dlgID );
     }
 
-    private Dialog createInviteChoicesDialog( DlgState state, int id )
+    private Dialog createInviteChoicesDialog( DlgState state, DlgID dlgID )
     {
         OnClickListener lstnr = mkCallbackClickListener( state );
 
@@ -437,7 +521,7 @@ public class DlgDelegate {
             builder.setNeutralButton( R.string.button_nfc, lstnr );
         }
 
-        return setCallbackDismissListener( builder.create(), state, id );
+        return setCallbackDismissListener( builder.create(), state, dlgID );
     }
 
     private Dialog createDictGoneDialog()
@@ -462,8 +546,8 @@ public class DlgDelegate {
         OnClickListener cbkOnClickLstnr;
         cbkOnClickLstnr = new OnClickListener() {
                 public void onClick( DialogInterface dlg, int button ) {
-                    if ( SKIP_CALLBACK != state.m_cbckID ) {
-                        m_clickCallback.dlgButtonClicked( state.m_cbckID, 
+                    if ( Action.SKIP_CALLBACK != state.m_action ) {
+                        m_clickCallback.dlgButtonClicked( state.m_action, 
                                                           button, 
                                                           state.m_params );
                     }
@@ -474,14 +558,15 @@ public class DlgDelegate {
 
     private Dialog setCallbackDismissListener( final Dialog dialog, 
                                                final DlgState state,
-                                               final int id )
+                                               DlgID dlgID )
     {
+        final int id = dlgID.ordinal();
         DialogInterface.OnDismissListener cbkOnDismissLstnr
             = new DialogInterface.OnDismissListener() {
                     public void onDismiss( DialogInterface di ) {
                         dropState( state );
-                        if ( SKIP_CALLBACK != state.m_cbckID ) {
-                            m_clickCallback.dlgButtonClicked( state.m_cbckID, 
+                        if ( Action.SKIP_CALLBACK != state.m_action ) {
+                            m_clickCallback.dlgButtonClicked( state.m_action, 
                                                               DISMISS_BUTTON, 
                                                               state.m_params );
                         }
@@ -493,9 +578,9 @@ public class DlgDelegate {
         return dialog;
     }
 
-    private DlgState findForID( int id )
+    private DlgState findForID( DlgID dlgID )
     {
-        DlgState state = m_dlgStates.get( id );
+        DlgState state = m_dlgStates.get( dlgID );
         // DbgUtils.logf( "findForID(%d)=>%H", id, state );
         return state;
     }

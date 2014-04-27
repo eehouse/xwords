@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -36,8 +36,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_DICTBROWSE = "dictbrowse";
     public static final String TABLE_NAME_DICTINFO = "dictinfo";
     public static final String TABLE_NAME_GROUPS = "groups";
+    public static final String TABLE_NAME_STUDYLIST = "study";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 18;
+    private static final int DB_VERSION = 20;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -69,6 +70,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String SMSPHONE = "SMSPHONE"; // unused -- so far
     public static final String LASTMOVE = "LASTMOVE";
     public static final String GROUPID = "GROUPID";
+    public static final String NPACKETSPENDING = "NPACKETSPENDING";
 
     public static final String DICTNAME = "DICTNAME";
     public static final String MD5SUM = "MD5SUM";
@@ -86,6 +88,9 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String GROUPNAME = "GROUPNAME";
     public static final String EXPANDED = "EXPANDED";
+
+    public static final String WORD = "WORD";
+    public static final String LANGUAGE = "LANGUAGE";
 
     private Context m_context;
 
@@ -120,6 +125,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ CONTRACTED,   "INTEGER DEFAULT 0" }
         ,{ CREATE_TIME,  "INTEGER" }
         ,{ LASTPLAY_TIME,"INTEGER" }
+        ,{ NPACKETSPENDING,"INTEGER" }
         ,{ SNAPSHOT,     "BLOB" }
         ,{ THUMBNAIL,    "BLOB" }
     };
@@ -153,6 +159,12 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ EXPANDED,  "INTEGER(1)" }
     };
 
+    private static final String[][] s_studySchema = {
+        { WORD,  "TEXT" }
+        ,{ LANGUAGE,  "INTEGER(1)" }
+        ,{ "UNIQUE", "(" + WORD + ", " + LANGUAGE + ")" }
+    };
+
     public DBHelper( Context context )
     {
         super( context, DB_NAME, null, DB_VERSION );
@@ -172,7 +184,8 @@ public class DBHelper extends SQLiteOpenHelper {
         createTable( db, TABLE_NAME_DICTINFO, s_dictInfoColsAndTypes );
         createTable( db, TABLE_NAME_DICTBROWSE, s_dictBrowseColsAndTypes );
         forceRowidHigh( db, TABLE_NAME_SUM );
-        createGroupsTable( db );
+        createGroupsTable( db, false );
+        createStudyTable( db );
     }
 
     @Override
@@ -181,6 +194,7 @@ public class DBHelper extends SQLiteOpenHelper {
     {
         DbgUtils.logf( "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
 
+        boolean madeSumTable = false;
         switch( oldVersion ) {
         case 5:
             createTable( db, TABLE_NAME_OBITS, s_obitsColsAndTypes );
@@ -206,16 +220,26 @@ public class DBHelper extends SQLiteOpenHelper {
             addSumColumn( db, LASTMOVE );
         case 14:
             addSumColumn( db, GROUPID );
-            createGroupsTable( db );
+            createGroupsTable( db, true );
         case 15:
             moveToCurGames( db );
         case 16:
             addSumColumn( db, VISID );
             setColumnsEqual( db, TABLE_NAME_SUM, VISID, "rowid" );
             makeAutoincrement( db, TABLE_NAME_SUM, s_summaryColsAndTypes );
+            madeSumTable = true;
         case 17:
-            addSumColumn( db, THUMBNAIL );
-            // nothing yet
+            if ( !madeSumTable ) {
+                // THUMBNAIL also added by makeAutoincrement above
+                addSumColumn( db, THUMBNAIL );
+            }
+        case 18:
+            createStudyTable( db );
+        case 19:
+            if ( !madeSumTable ) {
+                // NPACKETSPENDING also added by makeAutoincrement above
+                addSumColumn( db, NPACKETSPENDING );
+            }
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
@@ -256,26 +280,38 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL( query.toString() );
     }
 
-    private void createGroupsTable( SQLiteDatabase db )
+    private void createGroupsTable( SQLiteDatabase db, boolean isUpgrade )
     {
+        // Do we have any existing games we'll be grouping?
+        if ( isUpgrade ) {
+            isUpgrade = 0 < countGames( db );
+        }
+
         createTable( db, TABLE_NAME_GROUPS, s_groupsSchema );
 
         // Create an empty group name
         ContentValues values = new ContentValues();
-        values.put( GROUPNAME, m_context.getString(R.string.group_cur_games) );
-        values.put( EXPANDED, 1 );
-        long curGroup = db.insert( TABLE_NAME_GROUPS, null, values );
+        if ( isUpgrade ) {
+            values.put( GROUPNAME, m_context.getString(R.string.group_cur_games) );
+            values.put( EXPANDED, 1 );
+            long curGroup = db.insert( TABLE_NAME_GROUPS, null, values );
+
+            // place all existing games in the initial unnamed group
+            values = new ContentValues();
+            values.put( GROUPID, curGroup );
+            db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
+        }
+
         values = new ContentValues();
         values.put( GROUPNAME, m_context.getString(R.string.group_new_games) );
         values.put( EXPANDED, 1 );
         long newGroup = db.insert( TABLE_NAME_GROUPS, null, values );
-
-        // place all existing games in the initial unnamed group
-        values = new ContentValues();
-        values.put( GROUPID, curGroup );
-        db.update( DBHelper.TABLE_NAME_SUM, values, null, null );
-
         XWPrefs.setDefaultNewGameGroup( m_context, newGroup );
+    }
+
+    private void createStudyTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_STUDYLIST, s_studySchema );
     }
 
     // Move all existing games to the row previously named "cur games'
@@ -362,4 +398,16 @@ public class DBHelper extends SQLiteOpenHelper {
         query = String.format( "DELETE FROM %s", name );
         db.execSQL( query );
     }
+
+    private int countGames( SQLiteDatabase db )
+    {
+        final String query = "SELECT COUNT(*) FROM " + TABLE_NAME_SUM;
+
+        Cursor cursor = db.rawQuery( query, null );
+        cursor.moveToFirst();
+        int result = cursor.getInt(0);
+        cursor.close();
+        return result;
+    }
+
 }
