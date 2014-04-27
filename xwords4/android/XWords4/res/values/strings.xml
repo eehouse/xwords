@@ -2235,5 +2235,7 @@
 
     <string name="xlations_enabled_title">Enable local translating</string>
     <string name="xlations_enabled_summary">Add option to every screen menu</string>
+
+    <string name="data_gsm_only">SMS Data is only available on GSM phones.</string>
     
 </resources>

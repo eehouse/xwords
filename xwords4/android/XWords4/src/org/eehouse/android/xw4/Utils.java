@@ -97,21 +97,39 @@ public class Utils {
         return s_isFirstBootThisVersion;
     }
 
-    // Does the device have ability to send SMS -- e.g. is it a phone
-    // and not a Kindle Fire.  Not related to XWApp.SMSSUPPORTED
+    public static boolean isGSMPhone( Context context )
+    {
+        boolean result = false;
+        TelephonyManager tm = (TelephonyManager)
+            context.getSystemService( Context.TELEPHONY_SERVICE );
+        if ( null != tm ) {
+            result = TelephonyManager.PHONE_TYPE_GSM == tm.getPhoneType();
+        }
+        return result;
+    }
+
+    // Does the device have ability to send SMS -- e.g. is it a phone and not
+    // a Kindle Fire.  Not related to XWApp.SMSSUPPORTED.  Note that as a
+    // temporary workaround for KitKat having broken use of non-data messages,
+    // we only support SMS on kitkat if data messages have been turned on (and
+    // that's not allowed except on GSM phones.)
     public static boolean deviceSupportsSMS( Context context )
     {
         if ( null == s_deviceSupportSMS ) {
             boolean doesSMS = false;
             // TEMPORARY: disable SMS on KITKAT UNLESS use-text turned on
-            if ( 19 > Integer.valueOf( android.os.Build.VERSION.SDK )
-                 || XWPrefs.getPrefsBoolean( context, R.string.key_send_data_sms,
-                                             false ) ) {
+            boolean preKitkat = 19 > Integer.valueOf( android.os.Build.VERSION.SDK);
+            boolean usingData =
+                XWPrefs.getPrefsBoolean( context, R.string.key_send_data_sms,
+                                         false );
+            if ( preKitkat || usingData ) {
                 TelephonyManager tm = (TelephonyManager)
                     context.getSystemService(Context.TELEPHONY_SERVICE);
                 if ( null != tm ) {
                     int type = tm.getPhoneType();
-                    doesSMS = TelephonyManager.PHONE_TYPE_NONE != type;
+                    doesSMS = (usingData && !preKitkat) 
+                        ? TelephonyManager.PHONE_TYPE_GSM == type
+                        : TelephonyManager.PHONE_TYPE_NONE != type;
                 }
             }
             s_deviceSupportSMS = new Boolean( doesSMS );
