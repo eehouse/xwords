@@ -41,6 +41,7 @@
   <string name="key_dict_host">key_dict_host3</string>
   <string name="key_logging_on">key_logging_on</string>
   <string name="key_show_sms">key_show_sms</string>
+  <string name="key_send_data_sms">key_send_data_sms</string>
   <string name="key_init_hintsallowed">key_init_hintsallowed</string>
   <string name="key_init_nethintsallowed">key_init_nethintsallowed</string>
   <string name="key_init_autojuggle">key_init_autojuggle</string>
@@ -146,6 +147,8 @@
   <string name="debug_features">Enable debug features</string>
   <string name="debug_features_summary">Menuitems etc. (release builds
   only)</string>
+  <string name="title_send_data_sms">Send SMS as data</string>
+  <string name="summary_send_data_sms">(fails on CDMA phones)</string>
   <string name="board_menu_game_netstats">Network stats</string>
   <string name="netstats_title">Game network stats</string>
 

@@ -103,8 +103,10 @@ public class Utils {
     {
         if ( null == s_deviceSupportSMS ) {
             boolean doesSMS = false;
-            // TEMPORARY: disable SMS on KITKAT
-            if ( 19 > Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
+            // TEMPORARY: disable SMS on KITKAT UNLESS use-text turned on
+            if ( 19 > Integer.valueOf( android.os.Build.VERSION.SDK )
+                 || XWPrefs.getPrefsBoolean( context, R.string.key_send_data_sms,
+                                             false ) ) {
                 TelephonyManager tm = (TelephonyManager)
                     context.getSystemService(Context.TELEPHONY_SERVICE);
                 if ( null != tm ) {

@@ -33,28 +33,37 @@ public class SMSReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
+        String action = intent.getAction();
         Bundle bundle = intent.getExtras();
+        DbgUtils.logf( "onReceive: action=%s", action );
         if ( null != bundle ) {
+            boolean isData = 
+                action.equals("android.intent.action.DATA_SMS_RECEIVED");
             boolean isMine = false;
             Object[] pdus = (Object[])bundle.get( "pdus" );
             SmsMessage[] smses = new SmsMessage[pdus.length];
 
             for ( int ii = 0; ii < pdus.length; ++ii ) {
                 SmsMessage sms = SmsMessage.createFromPdu((byte[])pdus[ii]);
-                String body = sms.getMessageBody();
-                String postDetectable = SMSService.fromPublicFmt( body );
-                isMine = null != postDetectable;
-                if ( isMine ) {
-                    String phone = sms.getOriginatingAddress();
-                    DbgUtils.logf( "SMSReceiver: \"%s\" from %s", 
-                                   body, phone );
-                    SMSService.handleFrom( context, postDetectable, phone );
+                String phone = sms.getOriginatingAddress();
+                if ( isData ) {
+                    byte[] body = sms.getUserData();
+                    SMSService.handleFrom( context, body, phone );
+                } else {
+                    String body = sms.getMessageBody();
+                    String postDetectable = SMSService.fromPublicFmt( body );
+                    isMine = null != postDetectable;
+                    if ( isMine ) {
+                        DbgUtils.logf( "SMSReceiver: \"%s\" from %s", 
+                                       body, phone );
+                        SMSService.handleFrom( context, postDetectable, phone );
+                    }
                 }
-            }
 
-            if ( isMine ) {
-                 DbgUtils.logf( "SMSReceiver: CONSUMING message" );
-                 abortBroadcast();
+                if ( isMine ) {
+                    DbgUtils.logf( "SMSReceiver: CONSUMING message" );
+                    abortBroadcast();
+                }
             }
         }
     }
