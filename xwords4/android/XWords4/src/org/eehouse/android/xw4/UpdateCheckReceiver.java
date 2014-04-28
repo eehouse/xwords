@@ -170,7 +170,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
 
         // Xlations update
-        JSONObject xlationUpdate = LocUtils.makeForXlationUpdate( context );
+        JSONArray xlationUpdate = LocUtils.makeForXlationUpdate( context );
         if ( null != xlationUpdate ) {
             try {
                 params.put( k_XLATEINFO, xlationUpdate );
@@ -184,6 +184,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_APPGITREV, BuildConstants.GIT_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
+                DbgUtils.logf( "current update: %s", params.toString() );
                 new UpdateQueryTask( context, params, fromUI, pm, 
                                      packageName, dals ).execute();
             } catch ( org.json.JSONException jse ) {
@@ -398,8 +399,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
                     // translations info
                     if ( jobj.has( k_XLATEINFO ) ) {
-                        JSONObject data = jobj.getJSONObject( k_XLATEINFO );
-                        int nAdded = LocUtils.addXlation( m_context, data );
+                        JSONArray data = jobj.getJSONArray( k_XLATEINFO );
+                        int nAdded = LocUtils.addXlations( m_context, data );
                         if ( 0 < nAdded ) {
                             gotOne = true;
                             String msg = LocUtils.getString( m_context, R.string
