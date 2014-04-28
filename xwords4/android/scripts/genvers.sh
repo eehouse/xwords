@@ -2,6 +2,13 @@
 
 set -e -u
 
+usage() {
+    echo "usage: $0 <variant> <relay_vers> <chatSupported> <thumbSupported>"
+    exit 1
+}
+
+[ $# -eq 4 ] || usage
+
 VARIANT=$1
 CLIENT_VERS_RELAY=$2
 CHAT_SUPPORTED=$3
@@ -12,6 +19,11 @@ cd $(dirname $0)
 cd ../
 
 GITVERSION=$(../scripts/gitversion.sh)
+if git rev-parse $GITVERSION 2>/dev/null 1>/dev/null; then
+    GIT_HASH=$(git rev-parse $GITVERSION)
+else
+    GIT_HASH=unknown
+fi
 
 # TODO: deal with case where there's no hash available -- exported
 # code maybe?  Better: gitversion.sh does that.
@@ -34,6 +46,7 @@ cat <<EOF > ${BUILD_DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
 package org.eehouse.android.${VARIANT};
 class BuildConstants {
     public static final String GIT_REV = "$SHORTVERS";
+    public static final String GIT_HASH = "$GIT_HASH";
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
     public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
