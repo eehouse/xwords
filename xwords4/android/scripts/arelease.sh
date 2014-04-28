@@ -77,7 +77,7 @@ for PACK_UNSIGNED in $FILES; do
 
     if [ -n "$XW_RELEASE_SCP_DEST" ]; then
         echo "running scp ${TARGET} $XW_RELEASE_SCP_DEST"
-        scp "${TARGET}" "$XW_RELEASE_SCP_DEST"
+        scp "${TARGET}" "$XW_RELEASE_SCP_DEST" || true
     else
         echo "XW_RELEASE_SCP_DEST not set; you're on your own"
     fi
