@@ -148,7 +148,7 @@
   <string name="debug_features_summary">Menuitems etc. (release builds
   only)</string>
   <string name="title_send_data_sms">Send SMS as data</string>
-  <string name="summary_send_data_sms">(fails on CDMA phones)</string>
+  <string name="summary_send_data_sms">(GSM phones only)</string>
   <string name="board_menu_game_netstats">Network stats</string>
   <string name="netstats_title">Game network stats</string>
 
