@@ -74,6 +74,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_PARAMS = "params";
     private static final String k_DEVID = "did";
     private static final String k_XLATEINFO = "xlatinfo";
+    private static final String k_APPGITREV = "apprev";
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -122,6 +123,13 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         JSONObject params = new JSONObject();
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
+        int versionCode;
+        try { 
+            versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
+        } catch ( PackageManager.NameNotFoundException nnfe ) {
+            DbgUtils.loge( nnfe );
+            versionCode = 0;
+        }
 
         // App update
         if ( Utils.isGooglePlayApp( context ) ) {
@@ -130,8 +138,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             String installer = pm.getInstallerPackageName( packageName );
 
             try { 
-                int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
-
                 JSONObject appParams = new JSONObject();
 
                 appParams.put( k_NAME, packageName );
@@ -143,8 +149,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 }
                 params.put( k_APP, appParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
-            } catch ( PackageManager.NameNotFoundException nnfe ) {
-                DbgUtils.loge( nnfe );
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
             }
@@ -176,8 +180,15 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         }
 
         if ( 0 < params.length() ) {
-            new UpdateQueryTask( context, params, fromUI, pm, 
-                                 packageName, dals ).execute();
+            try {
+                params.put( k_APPGITREV, BuildConstants.GIT_HASH );
+                params.put( k_NAME, packageName );
+                params.put( k_AVERS, versionCode );
+                new UpdateQueryTask( context, params, fromUI, pm, 
+                                     packageName, dals ).execute();
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
         }
     }
 
