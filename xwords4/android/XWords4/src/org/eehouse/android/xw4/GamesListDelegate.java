@@ -347,6 +347,9 @@ public class GamesListDelegate extends DelegateBase
 
     protected void init( Bundle savedInstanceState ) 
     {
+        // Next line useful if contents of DB are crashing app on start
+        // DBUtils.saveDB( m_activity );
+
         CrashTrack.init( m_activity );
 
         m_selGames = new HashSet<Long>();
