@@ -247,19 +247,20 @@ def getDicts( params ):
     return result
 
 def getXlate( params ):
-    result = None
+    result = []
     logging.debug( "getXlate:" + json.dumps(params) )
-    locale = params[k_LOCALE]
-    proto = params[k_XLATPROTO]
-    curVers = int(params[k_XLATEVERS])
+    for entry in params:
+        locale = entry[k_LOCALE]
+        curVers = entry[k_XLATEVERS]
 
-    data = mk_for_download.getXlationFor( k_filebase + 'xw4', locale )
-    if data:
-        result = { k_LOCALE: locale,
-                   k_OLD: curVers,
-                   k_NEW: curVers + 1,
-                   k_PAIRS: data,
-               }
+        data = mk_for_download.getXlationFor( k_filebase + 'xw4', locale )
+        if data: result.append( { k_LOCALE: locale,
+                                  k_OLD: curVers,
+                                  k_NEW: curVers + "_new",
+                                  k_PAIRS: data,
+                                  } )
+
+    if 0 == len(result): result = None
     logging.debug( "getXlate=>%s" % (json.dumps(result)) )
     return result
 
