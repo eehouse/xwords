@@ -886,7 +886,7 @@
     <string name="summary_field">Include in game listing</string>
 
     <!-- Put nothing in the summary space, so it just reads "Game 2" -->
-    <string name="game_summary_field_empty">\u003cNothing\u003E</string>
+    <string name="game_summary_field_empty">\u003CNothing\u003E</string>
     <!-- Put the language there, so it reads "Game 2 (English)" -->
     <string name="game_summary_field_language">Game language#1</string>
     <!-- List names of opponents (summarized), e.g. "Game 2 (vs Kati)" -->
@@ -1200,13 +1200,13 @@
          substituted for "%1$s".  (The funky \u003c and friends are
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
-    <string name="invite_htm_fmt">\u003ca href=\"%1$s\"\u003ETap
-    here\u003c/a\u003E (or tap the full link below, or, if you already
+    <string name="invite_htm_fmt">\u003Ca href=\"%1$s\"\u003ETap
+    here\u003C/a\u003E (or tap the full link below, or, if you already
     have Crosswords installed, open the attachment) to accept my
     invitation and join this game.
 
-    \u003cbr \\\u003E
-    \u003cbr \\\u003E
+    \u003Cbr \\\u003E
+    \u003Cbr \\\u003E
     (full link: %1$s )
     </string>
 
@@ -2235,5 +2235,7 @@
 
     <string name="xlations_enabled_title">Enable local translating</string>
     <string name="xlations_enabled_summary">Add option to every screen menu</string>
+
+    <string name="data_gsm_only">SMS Data is only available on GSM phones.</string>
     
 </resources>

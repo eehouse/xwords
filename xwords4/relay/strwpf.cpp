@@ -27,26 +27,37 @@
 /* From stack overflow: snprintf with an expanding buffer.
  */
 
+bool
+StrWPF::catf( const char* fmt, va_list ap )
+{
+    bool success = false;
+    const int origsiz = size();
+    resize( origsiz + m_addsiz );
+
+    int len = vsnprintf( (char*)c_str() + origsiz, m_addsiz, fmt, ap );
+
+    if ( len >= m_addsiz ) {   // needs more space
+        m_addsiz = len + 1;
+        resize( origsiz );
+    } else if ( -1 == len ) {
+        assert(0);          // should be impossible
+    } else {
+        resize( origsiz + len );
+        m_addsiz = 100;
+        success = true;
+    }
+
+    return success;
+}
+
 void 
 StrWPF::catf( const char* fmt, ... )
 {
-    const int origsiz = size();
-    int addsiz = 100;
-    va_list ap;
-    for ( ; ; ) {
-        resize( origsiz + addsiz );
-
+    bool done;
+    do {
+        va_list ap;
         va_start( ap, fmt );
-        int len = vsnprintf( (char *)c_str() + origsiz, addsiz, fmt, ap );
+        done = catf( fmt, ap );
         va_end( ap );
-
-        if ( len >= addsiz ) {   // needs more space
-            addsiz = len + 1;
-        } else if ( -1 == len ) {
-            assert(0);          // should be impossible
-        } else {
-            resize( origsiz + len );
-            break;
-        }
-    }
+    } while ( !done );
 }

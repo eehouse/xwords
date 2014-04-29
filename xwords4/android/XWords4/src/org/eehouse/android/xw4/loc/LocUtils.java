@@ -36,12 +36,18 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.preference.Preference;
+import android.preference.PreferenceGroup;
+import android.preference.PreferenceActivity;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -55,12 +61,8 @@ import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
 
 public class LocUtils {
-    // Keep this in sync with gen_loc_ids.py and what's used in the menu.xml
-    // files to mark me-localized strings.
     private static final int FMT_LEN = 4;
     private static final String k_LOCALE = "locale";
-    private static final String k_XLATPROTO = "proto";
-    private static final int XLATE_CUR_VERSION = 1;
     private static final String k_XLATEVERS = "xlatevers";
 
     private static Map<String, String> s_xlationsLocal = null;
@@ -121,6 +123,11 @@ public class LocUtils {
         xlateView( activity, Utils.getContentView( activity ) );
     }
 
+    public static void xlatePreferences( PreferenceActivity activity )
+    {
+        xlatePreferences( activity, activity.getPreferenceScreen(), 0 );
+    }
+
     public static void xlateView( Context context, View view )
     {
         DbgUtils.logf( "xlateView() top level" );
@@ -130,6 +137,15 @@ public class LocUtils {
     public static void xlateMenu( Activity activity, Menu menu )
     {
         xlateMenu( activity, menu, 0 );
+    }
+
+    private static String xlateString( Context context, CharSequence str )
+    {
+        String result = null;
+        if ( null != str ) {
+            result = xlateString( context, str.toString() );
+        }
+        return result;
     }
 
     public static String xlateString( Context context, String str )
@@ -225,55 +241,77 @@ public class LocUtils {
 
     public static void saveLocalData( Context context )
     {
-        DBUtils.saveXlations( context, s_curLocale, s_xlationsLocal, false );
+        DBUtils.saveXlations( context, getCurLocale( context ),
+                              s_xlationsLocal, false );
     }
 
-    public static JSONObject makeForXlationUpdate( Context context )
+    public static JSONArray makeForXlationUpdate( Context context )
     {
-        JSONObject result = null;
-        if ( null != s_curLocale && 0 < s_curLocale.length() ) {
-            try {
-                String version = DBUtils.getStringFor( context, k_XLATEVERS, "0" );
-                result = new JSONObject()
-                    .put( k_XLATPROTO, XLATE_CUR_VERSION )
-                    .put( k_LOCALE, s_curLocale )
-                    .put( k_XLATEVERS, version );
-            } catch ( org.json.JSONException jse ) {
-                DbgUtils.loge( jse );
-            }
+        String locale = getCurLocale( context );
+        String fake = XWPrefs.getFakeLocale( context );
+        JSONArray result = new JSONArray()
+            .put( entryForLocale( context, locale ) );
+        if ( null != fake && 0 < fake.length() && ! fake.equals(locale) ) {
+            result.put( entryForLocale( context, fake ) );
         }
         return result;
+    }
+
+    private static JSONObject entryForLocale( Context context, String locale )
+    {
+        JSONObject result = null;
+        try {
+            String version = 
+                DBUtils.getStringFor( context, localeKey(locale), "0" );
+            result = new JSONObject()
+                .put( k_LOCALE, locale )
+                .put( k_XLATEVERS, version );
+        } catch ( org.json.JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
+        return result;
+    }
+
+    private static String localeKey( String locale )
+    {
+        return String.format( "%s:%s", k_XLATEVERS, locale );
     }
 
     private static final String k_OLD = "old";
     private static final String k_NEW = "new";
     private static final String k_PAIRS = "pairs";
 
-    public static int addXlation( Context context, JSONObject data )
+    public static int addXlations( Context context, JSONArray data )
     {
         int nAdded = 0;
         try {
-            int newVersion = data.getInt( k_NEW );
-            JSONArray pairs = data.getJSONArray( k_PAIRS );
-            DbgUtils.logf( "got pairs of len %d, version %d", pairs.length(), 
-                           newVersion );
+            int nLocales = data.length();
+            for ( int ii = 0; ii < nLocales; ++ii ) {
+                JSONObject entry = data.getJSONObject( ii );
+                String locale = entry.getString( k_LOCALE );
+                String newVersion = entry.getString( k_NEW );
+                JSONArray pairs = entry.getJSONArray( k_PAIRS );
+                DbgUtils.logf( "addXlations: locale %s: got pairs of len %d, version %s", locale,
+                               pairs.length(), newVersion );
 
-            int len = pairs.length();
-            Map<String,String> newXlations = new HashMap<String,String>( len );
-            for ( int ii = 0; ii < len; ++ii ) {
-                JSONObject pair = pairs.getJSONObject( ii );
-                String key = pair.getString( "en" );
-                String txt = pair.getString( "loc" );
-                newXlations.put( key, txt );
+                int len = pairs.length();
+                Map<String,String> newXlations = new HashMap<String,String>( len );
+                for ( int jj = 0; jj < len; ++jj ) {
+                    JSONObject pair = pairs.getJSONObject( jj );
+                    int id = pair.getInt( "id" );
+                    String key = context.getString( id );
+                    Assert.assertNotNull( key );
+                    String txt = pair.getString( "loc" );
+                    txt = replaceEscaped( txt );
+                    newXlations.put( key, txt );
+                }
+
+                DBUtils.saveXlations( context, locale, newXlations, true );
+                DBUtils.setStringFor( context, localeKey(locale), newVersion );
+                nAdded += len;
             }
-
-            DBUtils.saveXlations( context, s_curLocale, newXlations, true );
-            DBUtils.setStringFor( context, k_XLATEVERS, 
-                                  String.format( "%d", newVersion ) );
-
             s_xlationsBlessed = null;
             loadXlations( context );
-            nAdded = len;
         } catch ( org.json.JSONException jse ) {
             DbgUtils.loge( jse );
         }
@@ -334,13 +372,23 @@ public class LocUtils {
         }
     }
 
-    private static void loadXlations( Context context )
+    private static String getCurLocale( Context context )
     {
         if ( null == s_curLocale ) {
-            s_curLocale = XWPrefs.getLocale( context );
+            String locale = XWPrefs.getFakeLocale( context );
+            if ( null == locale || 0 == locale.length() ) {
+                locale = Locale.getDefault().toString();
+            }
+            s_curLocale = locale;
         }
+        return s_curLocale;
+    }
+
+    private static void loadXlations( Context context )
+    {
         if ( null == s_xlationsLocal || null == s_xlationsBlessed ) {
-            Object[] asObjs = DBUtils.getXlations( context, s_curLocale );
+            Object[] asObjs = DBUtils.getXlations( context, 
+                                                   getCurLocale( context ) );
             s_xlationsLocal = (Map<String,String>)asObjs[0];
             s_xlationsBlessed = (Map<String,String>)asObjs[1];
             DbgUtils.logf( "loadXlations: got %d local strings, %d blessed strings",
@@ -367,16 +415,6 @@ public class LocUtils {
         return s_idsToKeys.get( id );
     }
 
-    private static boolean isEnabled( Context context )
-    {
-        if ( null == s_enabled ) {
-            s_curLocale = XWPrefs.getLocale( context );
-            s_enabled = new Boolean( null != s_curLocale && 
-                                     0 < s_curLocale.length() );
-        }
-        return s_enabled;
-    }
-
     private static void xlateView( Context context, View view, int depth )
     {
         // DbgUtils.logf( "xlateView(depth=%d, view=%s, canRecurse=%b)", depth, 
@@ -388,11 +426,6 @@ public class LocUtils {
         } else if ( view instanceof TextView ) {
             TextView tv = (TextView)view;
             tv.setText( xlateString( context, tv.getText().toString() ) );
-        // } else if ( view instanceof CheckBox ) {
-        //     CheckBox box = (CheckBox)view;
-        //     String str = box.getText().toString();
-        //     str = xlateString( context, str );
-        //     box.setText( str );
         } else if ( view instanceof Spinner ) {
             Spinner sp = (Spinner)view;
             CharSequence prompt = sp.getPrompt();
@@ -415,23 +448,80 @@ public class LocUtils {
         }
     }
 
+    public static void xlatePreferences( Context context, Preference pref, 
+                                         int depth )
+    {
+        // DbgUtils.logf( "xlatePreferences(depth=%d, view=%s, canRecurse=%b)", depth, 
+        //                pref.getClass().getName(), pref instanceof PreferenceGroup );
+
+        String str = xlateString( context, pref.getSummary() );
+        if ( null != str ) {
+            pref.setSummary( str );
+        }
+        str = xlateString( context, pref.getTitle() );
+        if ( null != str ) {
+            pref.setTitle( str );
+        }
+
+        if ( pref instanceof PreferenceGroup ) {
+            PreferenceGroup group = (PreferenceGroup)pref;
+            int count = group.getPreferenceCount();
+            for ( int ii = 0; ii < count; ++ii ) {
+                xlatePreferences( context, group.getPreference(ii), 1 + depth );
+            }
+        }
+    }
+
     // This is for testing, but the ability to pull the formatters will be
     // critical for validating local transations of strings containing
     // formatters.
     private static String toUpperCase( String str )
     {
-        String[] parts = str.split( "%[\\d]\\$[ds]" );
-        StringBuilder sb = new StringBuilder();
-        int offset = 0;
-        for ( String part : parts ) {
-            sb.append( part.toUpperCase() );
-            offset += part.length();
-            if ( offset < str.length() ) {
-                sb.append( str.substring( offset, offset + FMT_LEN ) );
-                offset += FMT_LEN;
+        String result = null;
+        if ( UPPER_CASE ) {
+            String[] parts = str.split( "%[\\d]\\$[ds]" );
+            StringBuilder sb = new StringBuilder();
+            int offset = 0;
+            for ( String part : parts ) {
+                sb.append( part.toUpperCase() );
+                offset += part.length();
+                if ( offset < str.length() ) {
+                    sb.append( str.substring( offset, offset + FMT_LEN ) );
+                    offset += FMT_LEN;
+                }
             }
+            result = sb.toString();
         }
-        return sb.toString();
+        return result;
+    }
+
+    private static Pattern s_patUnicode = Pattern.compile("(\\\\[Uu][0-9a-fA-F]{4})");
+    private static Pattern s_patCr = Pattern.compile("\\\\n");
+    
+    private static String replaceEscaped( String txt )
+    {
+        // String orig = txt;
+
+        // Swap unicode escapes for real chars
+        Matcher matcher = s_patUnicode.matcher( txt );
+        StringBuffer sb = new StringBuffer();
+        while ( matcher.find() ) {
+            int start = matcher.start();
+            int end = matcher.end();
+            String match = txt.substring( start, end );
+            char ch = (char)Integer.parseInt( match.substring(2), 16 );
+            matcher.appendReplacement( sb, String.valueOf(ch) );
+        }
+        matcher.appendTail(sb);
+        txt = sb.toString();
+
+        // Swap in real carriage returns
+        txt = s_patCr.matcher( txt ).replaceAll( "\n" );
+
+        // if ( ! orig.equals( txt ) ) {
+        //     DbgUtils.logf( "replaceEscaped: <<%s>> -> <<%s>>", orig, txt );
+        // }
+        return txt;
     }
 
     public static AlertDialog.Builder makeAlertBuilder( Context context )

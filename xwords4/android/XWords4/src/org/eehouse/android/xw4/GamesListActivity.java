@@ -48,7 +48,7 @@ public class GamesListActivity extends ListActivity {
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog && null != m_dlgt ) {
-            dialog = m_dlgt.createDialog( id );
+            dialog = m_dlgt.onCreateDialog( id );
         }
         return dialog;
     } // onCreateDialog

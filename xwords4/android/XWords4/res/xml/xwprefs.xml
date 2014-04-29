@@ -344,6 +344,11 @@
 			            android:title="Show SMS sends, receives"
 			            android:defaultValue="false"
 			            />
+    <CheckBoxPreference android:key="@string/key_send_data_sms"
+			            android:title="@string/title_send_data_sms"
+                        android:summary="@string/summary_send_data_sms"
+			            android:defaultValue="false"
+			            />
     <org.eehouse.android.xw4.XWEditTextPreference 
 	   android:key="@string/key_relay_host"
 	   android:title="@string/relay_host"

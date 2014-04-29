@@ -42,6 +42,7 @@ public class PrefsDelegate extends DelegateBase
     private String m_keyLogging;
     private String m_smsToasting;
     private String m_smsEnable;
+    private String m_smsData;
     private String m_downloadPath;
     private String m_thumbSize;
     private String m_hideTitle;
@@ -55,71 +56,73 @@ public class PrefsDelegate extends DelegateBase
 
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = null;
-        DialogInterface.OnClickListener lstnr = null;
-        int confirmID = 0;
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            DialogInterface.OnClickListener lstnr = null;
+            int confirmID = 0;
 
-        switch( DlgID.values()[id] ) {
-        case REVERT_COLORS:
-            confirmID = R.string.confirm_revert_colors;
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        SharedPreferences sp = getSharedPreferences();
-                        SharedPreferences.Editor editor = sp.edit();
-                        int[] colorKeys = {
-                            R.string.key_player0,
-                            R.string.key_player1,
-                            R.string.key_player2,
-                            R.string.key_player3,
-                            R.string.key_bonus_l2x,
-                            R.string.key_bonus_l3x,
-                            R.string.key_bonus_w2x,
-                            R.string.key_bonus_w3x,
-                            R.string.key_tile_back,
-                            R.string.key_clr_crosshairs,
-                            R.string.key_empty,
-                            R.string.key_background,
-                            R.string.key_clr_bonushint,
-                        };
-                        for ( int colorKey : colorKeys ) {
-                            editor.remove( getString(colorKey) );
+            switch( DlgID.values()[id] ) {
+            case REVERT_COLORS:
+                confirmID = R.string.confirm_revert_colors;
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            SharedPreferences sp = getSharedPreferences();
+                            SharedPreferences.Editor editor = sp.edit();
+                            int[] colorKeys = {
+                                R.string.key_player0,
+                                R.string.key_player1,
+                                R.string.key_player2,
+                                R.string.key_player3,
+                                R.string.key_bonus_l2x,
+                                R.string.key_bonus_l3x,
+                                R.string.key_bonus_w2x,
+                                R.string.key_bonus_w3x,
+                                R.string.key_tile_back,
+                                R.string.key_clr_crosshairs,
+                                R.string.key_empty,
+                                R.string.key_background,
+                                R.string.key_clr_bonushint,
+                            };
+                            for ( int colorKey : colorKeys ) {
+                                editor.remove( getString(colorKey) );
+                            }
+                            editor.commit();
+                            relaunch();
                         }
-                        editor.commit();
-                        relaunch();
-                    }
-                };
-            break;
-        case REVERT_ALL:
-            confirmID = R.string.confirm_revert_all;
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        SharedPreferences sp = getSharedPreferences();
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.clear();
-                        editor.commit();
-                        relaunch();
-                    }
-                };
-            break;
-        case CONFIRM_SMS:
-            dialog = SMSCheckBoxPreference.onCreateDialog( m_activity, id );
-            break;
-        case EXPLAIN_TITLE:
-            dialog = LocUtils.makeAlertBuilder( m_activity )
-                .setMessage( R.string.no_hide_titlebar )
-                .setTitle( R.string.info_title )
-                .setPositiveButton( R.string.button_ok, null )
-                .create();
-            break;
-        }
+                    };
+                break;
+            case REVERT_ALL:
+                confirmID = R.string.confirm_revert_all;
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            SharedPreferences sp = getSharedPreferences();
+                            SharedPreferences.Editor editor = sp.edit();
+                            editor.clear();
+                            editor.commit();
+                            relaunch();
+                        }
+                    };
+                break;
+            case CONFIRM_SMS:
+                dialog = SMSCheckBoxPreference.onCreateDialog( m_activity, id );
+                break;
+            case EXPLAIN_TITLE:
+                dialog = LocUtils.makeAlertBuilder( m_activity )
+                    .setMessage( R.string.no_hide_titlebar )
+                    .setTitle( R.string.info_title )
+                    .setPositiveButton( R.string.button_ok, null )
+                    .create();
+                break;
+            }
 
-        if ( null == dialog && null != lstnr ) {
-            dialog = LocUtils.makeAlertBuilder( m_activity )
-                .setTitle( R.string.query_title )
-                .setMessage( confirmID )
-                .setPositiveButton( R.string.button_ok, lstnr )
-                .setNegativeButton( R.string.button_cancel, null )
-                .create();
+            if ( null == dialog && null != lstnr ) {
+                dialog = LocUtils.makeAlertBuilder( m_activity )
+                    .setTitle( R.string.query_title )
+                    .setMessage( confirmID )
+                    .setPositiveButton( R.string.button_ok, lstnr )
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .create();
+            }
         }
         return dialog;
     }
@@ -133,6 +136,7 @@ public class PrefsDelegate extends DelegateBase
         m_keyLogging = getString( R.string.key_logging_on );
         m_smsToasting = getString( R.string.key_show_sms );
         m_smsEnable = getString( R.string.key_enable_sms );
+        m_smsData = getString( R.string.key_send_data_sms );
         m_downloadPath = getString( R.string.key_download_path );
         m_thumbSize = getString( R.string.key_thumbsize );
         m_hideTitle = getString( R.string.key_hide_title );
@@ -165,6 +169,7 @@ public class PrefsDelegate extends DelegateBase
     @Override
     public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
     {
+        // DbgUtils.logf( "onSharedPreferenceChanged(key=%s)", key );
         if ( key.equals( m_keyLogging ) ) {
             DbgUtils.logEnable( sp.getBoolean( key, false ) );
         } else if ( key.equals( m_smsToasting ) ) {
@@ -175,6 +180,13 @@ public class PrefsDelegate extends DelegateBase
             } else {
                 SMSService.stopService( m_activity );
                 XWPrefs.setHaveCheckedSMS( m_activity, false );
+            }
+        } else if ( key.equals( m_smsData ) ) {
+            boolean turningOn = sp.getBoolean( key, true );
+            if ( turningOn && !Utils.isGSMPhone( m_activity ) ) {
+                showOKOnlyDialog( R.string.data_gsm_only );
+                ((CheckBoxPreference)(m_activity.findPreference( key )))
+                    .setChecked( false );
             }
         } else if ( key.equals( m_downloadPath ) ) {
             String value = sp.getString( key, null );

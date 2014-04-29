@@ -75,7 +75,7 @@ public class StudyListActivity extends ListActivity {
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = m_dlgt.createDialog( id );
+        Dialog dialog = m_dlgt.onCreateDialog( id );
         if ( null == dialog ) {
             dialog = super.onCreateDialog( id );
         }

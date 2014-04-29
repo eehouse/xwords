@@ -127,7 +127,7 @@ public class GamesListDelegate extends DelegateBase
         m_activity = activity;
     }
 
-    protected Dialog createDialog( int id )
+    protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = null;
         DialogInterface.OnClickListener lstnr;
@@ -331,7 +331,7 @@ public class GamesListDelegate extends DelegateBase
             break;
 
         default:
-            dialog = super.createDialog( id );
+            dialog = super.onCreateDialog( id );
             break;
         }
         return dialog;

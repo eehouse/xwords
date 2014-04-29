@@ -236,9 +236,9 @@ public class BoardDelegate extends DelegateBase
         }
     } 
 
-    protected Dialog createDialog( int id )
+    protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = super.createDialog( id );
+        Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
             DialogInterface.OnClickListener lstnr;
             AlertDialog.Builder ab = makeAlertBuilder();
