@@ -2,6 +2,7 @@
 
 import re, sys
 from lxml import etree
+import mygit, xwconfig
 
 
 # Take an English strings.xml file and another, "join" them on the
@@ -13,16 +14,13 @@ from lxml import etree
 english = 'res/values/strings.xml'
 other_f = 'res_src/values-%s/strings.xml'
 
-def readIDs(base):
+def readIDs(rDotJava):
     ids = {}
     start = re.compile('\s*public static final class string {\s*')
     end = re.compile('\s*}\s*')
     entry = re.compile('\s*public static final int (\S+)=(0x.*);\s*')
     inLine = False
-    path = base + '/archive/R.java'
-    for line in open(path, 'r'):
-        line = line.strip()
-        # print line
+    for line in rDotJava.splitlines():
         if inLine:
             if end.match(line):
                 break
@@ -36,11 +34,11 @@ def readIDs(base):
             inLine = True
     return ids
 
-def asMap( path, ids ):
+def asMap( repo, rev, path, ids ):
     map = {}
-    parser = etree.XMLParser(remove_blank_text=True)
-    doc = etree.parse( path, parser )
-    for elem in doc.getroot().iter():
+    data = repo.cat( path, rev )
+    doc = etree.fromstring( data )
+    for elem in doc.iter():
         if 'string' == elem.tag:
             text = elem.text
             if text:
@@ -54,20 +52,28 @@ def asMap( path, ids ):
                 map[id] = text
     return map
 
-def getXlationFor( base, loc ):
-    ids = readIDs(base)
-    eng = asMap( base + '/' + english, ids )
-    other = asMap( base + '/' + other_f % (loc), ids )
+# Build from the most recent revisions of the english and locale
+# strings.xml files that are compatible (haven't changed since)
+# stringsHash on the R.java file.  For now, just get what matches,
+# assuming that all are updated with the same commit -- which they
+# aren't.
+def getXlationFor( repo, rDotJava, locale, stringsHash ):
+    ids = readIDs(rDotJava)
+    eng = asMap( repo, stringsHash, english, ids )
+    other = asMap( repo, stringsHash, other_f % (locale), ids )
     result = []
     for key in eng.keys():
         if key in other:
             result.append( { 'id' : key, 'loc' : other[key] } )
-    return result
+    return result, stringsHash
 
 def main():
-    data = getXlationFor( '.', 'ba_CK' )
+    repo = mygit.GitRepo( xwconfig.k_REPOPATH )
+    hash = '33a83b0e2fcf062f4f640ccab0785b2d2b439542'
+    rDotJava = repo.cat( 'R.java', hash )
+    data = getXlationFor( repo, rDotJava, 'ca_PS', hash )
     print data
-    data = getXlationFor( '.', 'ca_PS' )
+    data = getXlationFor( repo, rDotJava, 'ba_CK', hash )
     print data
 
 ##############################################################################
