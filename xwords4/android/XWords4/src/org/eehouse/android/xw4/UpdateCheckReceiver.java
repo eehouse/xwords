@@ -140,7 +140,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             try { 
                 JSONObject appParams = new JSONObject();
 
-                appParams.put( k_NAME, packageName );
                 appParams.put( k_AVERS, versionCode );
                 appParams.put( k_GVERS, BuildConstants.GIT_REV );
                 appParams.put( k_INSTALLER, installer );
