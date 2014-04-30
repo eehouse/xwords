@@ -19,11 +19,7 @@ cd $(dirname $0)
 cd ../
 
 GITVERSION=$(../scripts/gitversion.sh)
-if git rev-parse $GITVERSION 2>/dev/null 1>/dev/null; then
-    GIT_HASH=$(git rev-parse $GITVERSION)
-else
-    GIT_HASH=unknown
-fi
+STRINGS_HASH=$(git log -- ${BUILD_DIR}/archive/R.java | grep '^commit ' | head -n 1 | awk '{print $2}')
 
 # TODO: deal with case where there's no hash available -- exported
 # code maybe?  Better: gitversion.sh does that.
@@ -42,11 +38,11 @@ EOF
 SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo unknown)"
 
 cat <<EOF > ${BUILD_DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
-// auto-generated; do not edit
+// auto-generated (by $(basename $0)); do not edit
 package org.eehouse.android.${VARIANT};
 class BuildConstants {
     public static final String GIT_REV = "$SHORTVERS";
-    public static final String GIT_HASH = "$GIT_HASH";
+    public static final String STRINGS_HASH = "$STRINGS_HASH";
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
     public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;

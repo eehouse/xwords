@@ -74,7 +74,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_PARAMS = "params";
     private static final String k_DEVID = "did";
     private static final String k_XLATEINFO = "xlatinfo";
-    private static final String k_APPGITREV = "apprev";
+    private static final String k_STRINGSHASH = "strings";
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -181,7 +181,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
         if ( 0 < params.length() ) {
             try {
-                params.put( k_APPGITREV, BuildConstants.GIT_HASH );
+                params.put( k_STRINGSHASH, BuildConstants.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
                 DbgUtils.logf( "current update: %s", params.toString() );
