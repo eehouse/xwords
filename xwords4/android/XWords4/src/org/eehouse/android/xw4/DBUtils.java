@@ -1821,6 +1821,19 @@ public class DBUtils {
         return result;
     }
 
+    public static void dropXLations( Context context, String locale )
+    {
+        String selection = String.format( "%s = '%s'", DBHelper.LOCALE, 
+                                          locale );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.delete( DBHelper.TABLE_NAME_LOC, selection, null );
+            db.close();
+        }
+    }
+
     public static void setStringFor( Context context, String key, String value )
     {
         String selection = String.format( "%s = '%s'", DBHelper.KEY, key );

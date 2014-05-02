@@ -25,6 +25,9 @@ import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.preference.Preference;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceGroup;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -36,12 +39,10 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.preference.Preference;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceActivity;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IllegalFormatConversionException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -209,7 +210,12 @@ public class LocUtils {
         Assert.assertNotNull( params );
         String result = getString( context, id );
         if ( null != result ) {
-            result = String.format( result, params );
+            try {
+                result = String.format( result, params );
+            } catch ( IllegalFormatConversionException fce ) {
+                dropXLations( context );
+                result = getString( context, id, params );
+            }
         }
         return result;
     }
@@ -493,6 +499,20 @@ public class LocUtils {
             result = sb.toString();
         }
         return result;
+    }
+
+    private static void dropXLations( Context context )
+    {
+        s_xlationsBlessed = null;
+        s_idsToKeys = null;
+
+        String locale = getCurLocale( context );
+        String msg = String.format( "Dropping bad translations for %s", locale );
+        Utils.showToast( context, msg );
+        DbgUtils.logf( msg );
+
+        DBUtils.dropXLations( context, locale );
+        DBUtils.setStringFor( context, localeKey(locale), "" );
     }
 
     private static Pattern s_patUnicode = Pattern.compile("(\\\\[Uu][0-9a-fA-F]{4})");
