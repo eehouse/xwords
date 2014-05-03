@@ -11,6 +11,8 @@ expr = '(' + \
         r'\\u[\da-fA-F]{4,4}', \
         r"\\'" , \
         r'\\"' , \
+        r'\s' , \
+        r'[;:.]' , \
         ] ) + \
     ')'
 
@@ -30,10 +32,10 @@ def capitalize( str ):
 
 def reverse( str ):
     split = re.split( FMT, str )
-    split.reverse()
     for ii in range(len(split)):
-        if not re.match( FMT, split[ii] ):
-            split[ii] = split[ii][::-1]
+        word = split[ii]
+        if not re.match( FMT, word ): 
+            split[ii] = word[::-1]
     result = ''.join(split)
     return result
 

@@ -204,7 +204,7 @@
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is NOT the last in its language. The
          name of the language is substituted for %1$s. -->
-  <string name="confirm_deletemore_dict_fmt">\U0020ONE GAME (AT LEAST)
+  <string name="confirm_deletemore_dict_fmt">\u0020ONE GAME (AT LEAST)
       IS USING IT, BUT THERE IS ANOTHER %1$s WORDLIST INSTALLED THAT CAN
       REPLACE IT.</string>
   <!--
@@ -458,7 +458,7 @@
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
-  <string name="invite_multiple">\U0020(YOU ARE EXPECTING MULTIPLE
+  <string name="invite_multiple">\u0020(YOU ARE EXPECTING MULTIPLE
       REMOTE PLAYERS.  BE SURE TO ADDRESS YOUR INVITATION TO
       THAT MANY PEOPLE.)</string>
   <!-- Short for "points", this is shown at the right end of the
@@ -509,7 +509,7 @@
          WORDLIST %2$s.</string>
   <!-- Appended to the above in the phonies_warn case.  User may
          ignore the warning -->
-  <string name="badwords_accept">\U0020DO YOU STILL WANT TO ACCEPT
+  <string name="badwords_accept">\u0020DO YOU STILL WANT TO ACCEPT
     THIS MOVE?</string>
   <!-- Appended to the above in the phonies_disallow case.  User has
          lost his turn. -->
@@ -575,7 +575,7 @@
        ############################################################
       -->
   <!-- Notifies user of a normal robot move -->
-  <string name="str_robot_moved">THE ROBOT MADE THIS MOVE:\U0020</string>
+  <string name="str_robot_moved">THE ROBOT MADE THIS MOVE:\u0020</string>
   <!-- Notifies user of a robot trade move -->
   <string name="strd_robot_traded_fmt">EXCHANGED %1$d TILES.</string>
   <!-- title for window you get when you select menu with text
@@ -592,7 +592,7 @@
   <string name="strd_cumulative_score_fmt">CUMULATIVE SCORE: %1$d\n</string>
   <!-- Used in formatting remote player move summaries -->
   <string name="str_remote_moved_fmt">REMOTE PLAYER %1$s MADE THIS
-    MOVE:\U0020</string>
+    MOVE:\u0020</string>
   <!-- I don't know how this is used. :-) -->
   <string name="strd_time_penalty_sub"/>
   <!-- Used in formatting game history and move summaries -->
@@ -631,7 +631,7 @@
   <string name="str_nonlocal_name_fmt">%1$s (REMOTE)</string>
   <!-- Used to separate names of players when listing them on one
     line in a game summary.  The \u0020 is a space in xml. -->
-  <string name="vs_join">\U0020VS.\U0020</string>
+  <string name="vs_join">\u0020VS.\u0020</string>
   <!-- Used in formatting moves and history -->
   <string name="str_bonus_all">BONUS FOR USING ALL TILES: 50\n</string>
   <!-- Used in formatting moves and history.  The total score for
@@ -757,7 +757,7 @@
          possible values -->
   <string name="summary_field">INCLUDE IN GAME LISTING</string>
   <!-- Put nothing in the summary space, so it just reads "Game 2" -->
-  <string name="game_summary_field_empty">\U003CNOTHING\U003E</string>
+  <string name="game_summary_field_empty">\u003CNOTHING\u003E</string>
   <!-- Put the language there, so it reads "Game 2 (English)" -->
   <string name="game_summary_field_language">GAME LANGUAGE#1</string>
   <!-- List names of opponents (summarized), e.g. "Game 2 (vs Kati)" -->
@@ -1028,13 +1028,13 @@
          substituted for "%1$s".  (The funky \u003c and friends are
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
-  <string name="invite_htm_fmt">\U003CA HREF=\"%1$s\"\U003ETAP
-    HERE\U003C/A\U003E (OR TAP THE FULL LINK BELOW, OR, IF YOU ALREADY
+  <string name="invite_htm_fmt">\u003CA HREF=\"%1$s\"\u003ETAP
+    HERE\u003C/A\u003E (OR TAP THE FULL LINK BELOW, OR, IF YOU ALREADY
     HAVE CROSSWORDS INSTALLED, OPEN THE ATTACHMENT) TO ACCEPT MY
     INVITATION AND JOIN THIS GAME.
 
-    \U003CBR \\\U003E
-    \U003CBR \\\U003E
+    \u003CBR \\\u003E
+    \u003CBR \\\u003E
     (FULL LINK: %1$s )
     </string>
   <!-- This is the body of the text version of the invitation. A URL
@@ -1070,9 +1070,9 @@
          substituted for %1$s. -->
   <string name="chat_title_fmt">%1$s MESSAGE HISTORY</string>
   <!-- Prefix for local messages -->
-  <string name="chat_local_id">ME:\U0020</string>
+  <string name="chat_local_id">ME:\u0020</string>
   <!-- Prefix for remote messages -->
-  <string name="chat_other_id">NOT ME:\U0020</string>
+  <string name="chat_other_id">NOT ME:\u0020</string>
   <!-- Text on the button that causes the contents of the
          message-composition field to be sent. -->
   <string name="chat_send">SEND</string>
@@ -1804,7 +1804,7 @@
   <string name="inform_dict_diffdict_fmt">YOU ARE USING THE WORDLIST
     %1$s BUT THE GAME HOST IS USING %2$s. WOULD YOU LIKE TO USE %3$s
     TOO?</string>
-  <string name="inform_dict_download">\U0020(YOU WILL HAVE TO DOWNLOAD IT
+  <string name="inform_dict_download">\u0020(YOU WILL HAVE TO DOWNLOAD IT
     FIRST.)</string>
   <!-- Shown in toast when relaunching after switching dicts -->
   <string name="reload_new_dict_fmt">RELOADING GAME WITH %1$s</string>
@@ -1880,7 +1880,7 @@
     MEANS THAT ANY TIME A BOARD THAT\'S MISSING A PLAYER IS OPEN, YOU
     CAN TAP A NEARBY PERSON\'S DEVICE TO INVITE HIM/HER TO
     PLAY – IF HE/SHE IS ALSO USING NFC.</string>
-  <string name="pct_suffix">\U0020PCT.</string>
+  <string name="pct_suffix">\u0020PCT.</string>
   <string name="not_again_firefox">IF ANDROID GIVES YOU A CHOICE OF
     BROWSERS FOR VIEWING THE WORDLISTS DOWNLOADS PAGE, DO NOT CHOOSE
     FIREFOX. SOME VERSIONS HAVE A BUG THAT CAN CAUSE THE WORDLISTS TO
@@ -1916,4 +1916,5 @@
   <string name="new_xlations_fmt">INSTALLED %1$d NEW TRANSLATIONS</string>
   <string name="xlations_enabled_title">ENABLE LOCAL TRANSLATING</string>
   <string name="xlations_enabled_summary">ADD OPTION TO EVERY SCREEN MENU</string>
+  <string name="data_gsm_only">SMS DATA IS ONLY AVAILABLE ON GSM PHONES.</string>
 </resources>
