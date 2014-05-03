@@ -72,55 +72,17 @@ def asMap( repo, rev, path, ids ):
 # second revision in that list is the identifier of the newest
 # strings.xml we an safely use.
 # 
-def getXlationFor( repo, rDotJava, rDotHash, locale ):
+def getXlationFor( repo, rDotJava, locale, firstHash ):
     ids = readIDs(rDotJava)
 
-    assert rDotHash == '33a83b0e2fcf062f4f640ccab0785b2d2b439542'
-
-    ############################################################
-    # This clusterf*ck needs to be rewritten!!!!
-    ############################################################
-
-    # Find the hash that's sure to include the newest strings.xml files
-    # compatible with the R.java indicated by the app hash
-    head = repo.getHeadRev()
+    eng = asMap( repo, firstHash, english, ids )
     locFileName = other_f % (locale)
-    newerRDotJavas = repo.getRevsBetween( head, rDotHash, 'R.java' )
-    print 'newerRDotJavas:', newerRDotJavas
-    assert newerRDotJavas[len(newerRDotJavas)-1] == rDotHash
-
-    # If newerRDotJavas is of length 1, there have been no changes to
-    # R.java since the client shipped so we can safely use HEAD for
-    # locale files.  Otherwise there's more work to do
-
-    if 1 == len(newerRDotJavas): 
-        locFileRev = head
-    else: 
-        newerRDot = newerRDotJavas[len(newerRDotJavas)-2]
-        print 'last rev before new R.java:', newerRDot
-    
-        # now find the newest revision of our file prior to the change in
-        # R.java.  Worst case we use the hash of R.java passed in
-        locFileRev = rDotHash
-
-        newestToRDot = repo.getRevsBetween( newerRDot, rDotHash, locFileName )
-        print 'newestToRDot:', newestToRDot
-
-        # If the list includes newerRDot, that's an entry we can't use.
-        if newestToRDot and newestToRDot[0] == newerRDot:
-            newestToRDot = newestToRDot[1:]
-            if 0 == len(newestToRDot): newestToRDot = None
-
-            if newestToRDot: locFileRev = newestToRDot[0]
-            print 'rev of locale string.xml:', locFileRev
-
-    eng = asMap( repo, locFileRev, english, ids )
-    other = asMap( repo, locFileRev, locFileName, ids )
+    other = asMap( repo, firstHash, locFileName, ids )
     result = []
     for key in eng.keys():
         if key in other:
             result.append( { 'id' : key, 'loc' : other[key] } )
-    return result, locFileRev
+    return result
 
 def main():
     repo = mygit.GitRepo( xwconfig.k_REPOPATH )
@@ -129,9 +91,9 @@ def main():
     hash = '33a83b0e2fcf062f4f640ccab0785b2d2b439542'
 
     rDotJava = repo.cat( 'R.java', hash )
-    data, newHash = getXlationFor( repo, rDotJava, hash, 'ca_PS' )
+    data, newHash = getXlationFor( repo, rDotJava, 'ca_PS', hash )
     print 'data for:', newHash, ':' , data
-    data, newHash = getXlationFor( repo, rDotJava, hash, 'ba_CK' )
+    data, newHash = getXlationFor( repo, rDotJava, 'ba_CK', hash )
     print 'data for:', newHash, ':' , data
 
 ##############################################################################

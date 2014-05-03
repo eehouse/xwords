@@ -2,7 +2,8 @@
 # Script meant to be installed on eehouse.org.
 
 import logging, shelve, hashlib, sys, json, subprocess, glob, os
-import mk_for_download
+import mk_for_download, mygit
+import xwconfig
 
 from stat import ST_CTIME
 try:
@@ -12,6 +13,7 @@ except ImportError:
     apacheAvailable = False
 
 # constants that are also used in UpdateCheckReceiver.java
+VERBOSE = False
 k_NAME = 'name'
 k_AVERS = 'avers'
 k_GVERS = 'gvers'
@@ -24,6 +26,8 @@ k_CALLBACK = 'callback'
 k_LOCALE = 'locale'
 k_XLATPROTO = 'proto'
 k_XLATEVERS = 'xlatevers'
+k_STRINGSHASH = 'strings'
+
 k_OLD = 'old'
 k_NEW = 'new'
 k_PAIRS = 'pairs'
@@ -133,7 +137,7 @@ def getOrderedApks( path ):
 
     files = ((os.stat(apk).st_mtime, apk) for apk in glob.glob(pattern))
     for mtime, file in sorted(files, reverse=True):
-        logging.debug( file + ": " + str(mtime) )
+        # logging.debug( file + ": " + str(mtime) )
         apks.append( file )
 
     return apks
@@ -178,11 +182,11 @@ def dictVersion( req, name, lang, md5sum ):
     if 'close' in s_shelf: s_shelf.close()
     return json.dumps( result )
 
-def getApp( params ):
+def getApp( params, name ):
     result = None
     if k_NAME in params:
         name = params[k_NAME]
-
+    if name:
         # If we're a dev device, always push the latest
         if k_DEVOK in params and params[k_DEVOK]:
             apks = getOrderedApks( k_filebase + k_apkDir )
@@ -246,19 +250,56 @@ def getDicts( params ):
     if 0 == len(result): result = None
     return result
 
-def getXlate( params ):
-    result = []
-    logging.debug( "getXlate:" + json.dumps(params) )
-    for entry in params:
-        locale = entry[k_LOCALE]
-        curVers = entry[k_XLATEVERS]
+def variantFor( name ):
+    if name == 'xw4': result = 'XWords4'
+    logging.debug( 'variantFor(%s)=>%s' % (name, result))
+    return result
 
-        data = mk_for_download.getXlationFor( k_filebase + 'xw4', locale )
-        if data: result.append( { k_LOCALE: locale,
-                                  k_OLD: curVers,
-                                  k_NEW: curVers + "_new",
-                                  k_PAIRS: data,
-                                  } )
+def getXlate( params, name, stringsHash ):
+    result = []
+    path = xwconfig.k_REPOPATH
+    logging.debug('creating repo with path ' + path)
+    repo = mygit.GitRepo( path )
+    logging.debug( "getXlate: %s, hash=%s" % (json.dumps(params), stringsHash) )
+    # logging.debug( 'status: ' + repo.status() )
+
+    # reduce org.eehouse.anroid.xxx to xxx, then turn it into a
+    # variant and get the contents of the R.java file
+    splits = name.split('.')
+    name = splits[len(splits)-1]
+    variant = variantFor( name );
+    rPath = '%s/archive/R.java' % variant
+    rDotJava = repo.cat( rPath, stringsHash )
+
+    # Figure out the newest hash possible for translated strings.xml
+    # files.  If our R.java's the newest, that's HEAD.  Otherwise it's
+    # the revision BEFORE the revision that changed R.java
+
+    head = repo.getHeadRev()
+    logging.debug('head = %s' % head)
+    rjavarevs = repo.getRevsBetween(head, stringsHash, rPath)
+    assert( 1 >= len(rjavarevs) )
+    assert( stringsHash == rjavarevs[len(rjavarevs)-1] )
+    if 1 == len(rjavarevs): 
+        firstPossible = head
+    else: 
+        firstPossible = rjavarevs[len(rjavarevs)-2] + '^'
+        # get actual number for rev^
+        firstPossible = repo.getRevsBetween( firstPossible, firstPossible )[0]
+    logging.debug('firstPossible: %s' % firstPossible)
+
+    for entry in params:
+        curVers = entry[k_XLATEVERS]
+        if not curVers == firstPossible: 
+            locale = entry[k_LOCALE]
+
+            data = mk_for_download.getXlationFor( repo, rDotJava, locale, \
+                                                      firstPossible )
+            if data: result.append( { k_LOCALE: locale,
+                                      k_OLD: curVers,
+                                      k_NEW: firstPossible,
+                                      k_PAIRS: data,
+                                      } )
 
     if 0 == len(result): result = None
     logging.debug( "getXlate=>%s" % (json.dumps(result)) )
@@ -270,16 +311,17 @@ def getUpdates( req, params ):
     logging.debug( "getUpdates: got params: %s" % params )
     asJson = json.loads( params )
     if k_APP in asJson:
-        appResult = getApp( asJson[k_APP] )
+        name = None
+        if k_NAME in asJson: name = asJson[k_NAME]
+        appResult = getApp( asJson[k_APP], name )
         if appResult: 
             result[k_APP] = appResult
     if k_DICTS in asJson:
         dictsResult = getDicts( asJson[k_DICTS] )
         if dictsResult:
             result[k_DICTS] = dictsResult
-    if k_XLATEINFO in asJson:
-        logging.debug( "found xlate info; calling getXlate" )
-        xlateResult = getXlate( asJson[k_XLATEINFO] )
+    if k_XLATEINFO in asJson and k_NAME in asJson and k_STRINGSHASH in asJson:
+        xlateResult = getXlate( asJson[k_XLATEINFO], asJson[k_NAME], asJson[k_STRINGSHASH] )
         if xlateResult: 
             logging.debug( xlateResult )
             result[k_XLATEINFO] = xlateResult;
