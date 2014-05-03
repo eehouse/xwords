@@ -266,7 +266,7 @@ def getXlate( params, name, stringsHash ):
     # reduce org.eehouse.anroid.xxx to xxx, then turn it into a
     # variant and get the contents of the R.java file
     splits = name.split('.')
-    name = splits[len(splits)-1]
+    name = splits[-1]
     variant = variantFor( name );
     rPath = '%s/archive/R.java' % variant
     rDotJava = repo.cat( rPath, stringsHash )
@@ -279,11 +279,11 @@ def getXlate( params, name, stringsHash ):
     logging.debug('head = %s' % head)
     rjavarevs = repo.getRevsBetween(head, stringsHash, rPath)
     assert( 1 >= len(rjavarevs) )
-    assert( stringsHash == rjavarevs[len(rjavarevs)-1] )
+    assert( stringsHash == rjavarevs[-1] )
     if 1 == len(rjavarevs): 
         firstPossible = head
     else: 
-        firstPossible = rjavarevs[len(rjavarevs)-2] + '^'
+        firstPossible = rjavarevs[-2] + '^'
         # get actual number for rev^
         firstPossible = repo.getRevsBetween( firstPossible, firstPossible )[0]
     logging.debug('firstPossible: %s' % firstPossible)
