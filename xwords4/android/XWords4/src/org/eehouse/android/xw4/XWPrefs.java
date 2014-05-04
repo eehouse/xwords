@@ -31,6 +31,9 @@ import junit.framework.Assert;
 
 public class XWPrefs {
 
+    // No reason to put this in xml if they're private to this file!
+    private static final String key_checked_upgrades = "key_checked_upgrades";
+
     public static boolean getSMSEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_sms, false );
@@ -141,6 +144,12 @@ public class XWPrefs {
                                            boolean defaultValue )
     {
         String key = context.getString( keyID );
+        return getPrefsBoolean( context, key, defaultValue );
+    }
+
+    private static boolean getPrefsBoolean( Context context, String key,
+                                            boolean defaultValue )
+    {
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
         return sp.getBoolean( key, defaultValue );
@@ -149,10 +158,16 @@ public class XWPrefs {
     public static void setPrefsBoolean( Context context, int keyID, 
                                         boolean newValue )
     {
+        String key = context.getString( keyID );
+        setPrefsBoolean( context, key, newValue );
+    }
+
+    private static void setPrefsBoolean( Context context, String key, 
+                                         boolean newValue )
+    {
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
         SharedPreferences.Editor editor = sp.edit();
-        String key = context.getString( keyID );
         editor.putBoolean( key, newValue );
         editor.commit();
     }
@@ -438,5 +453,15 @@ public class XWPrefs {
     public static boolean getXlationEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_xlations_enabled, false );
+    }
+
+    public static void setHaveCheckedUpgrades( Context context, boolean haveChecked )
+    {
+        setPrefsBoolean( context, key_checked_upgrades, haveChecked );
+    }
+
+    public static boolean getHaveCheckedUpgrades( Context context )
+    {
+        return getPrefsBoolean( context, key_checked_upgrades, false );
     }
 }

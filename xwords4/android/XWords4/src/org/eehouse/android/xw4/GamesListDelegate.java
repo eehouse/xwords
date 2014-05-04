@@ -33,7 +33,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -365,7 +364,6 @@ public class GamesListDelegate extends DelegateBase
             FirstRunDialog.show( m_activity );
             s_firstShown = true;
         }
-        PreferenceManager.setDefaultValues( m_activity, R.xml.xwprefs, isUpgrade );
 
         m_adapter = makeNewAdapter();
         listview.setOnItemLongClickListener( this );

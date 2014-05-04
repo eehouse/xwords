@@ -318,6 +318,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         {
             if ( null != json ) {
                 makeNotificationsIf( json );
+                XWPrefs.setHaveCheckedUpgrades( m_context, true );
             }
         }
 

@@ -24,6 +24,7 @@ import android.app.Application;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+import android.preference.PreferenceManager;
 
 import java.util.UUID;
 
@@ -62,6 +63,17 @@ public class XWApp extends Application {
         ConnStatusHandler.loadState( this );
 
         RelayReceiver.RestartTimer( this );
+
+        boolean mustCheck = Utils.firstBootThisVersion( this );
+        PreferenceManager.setDefaultValues( this, R.xml.xwprefs, mustCheck );
+        if ( mustCheck ) {
+            XWPrefs.setHaveCheckedUpgrades( this, false );
+        } else {
+            mustCheck = ! XWPrefs.getHaveCheckedUpgrades( this );
+        }
+        if ( mustCheck ) {
+            UpdateCheckReceiver.checkVersions( this, false );
+        }
         UpdateCheckReceiver.restartTimer( this );
 
         BTService.startService( this );
