@@ -35,21 +35,26 @@ def readIDs(rDotJava):
     return ids
 
 def asMap( repo, rev, path, ids ):
-    map = {}
+    map = None
     data = repo.cat( path, rev )
-    doc = etree.fromstring( data )
-    for elem in doc.iter():
-        if 'string' == elem.tag:
-            text = elem.text
-            if text:
-                # print 'text before:', text
-                text = " ".join(re.split('\s+', text)) \
-                          .replace("\\'", "'") \
-                          .replace( '\\"', '"' )
-                # print 'text after:', text
-                name = elem.get('name')
-                id = ids[name]
-                map[id] = text
+    if data:
+        map = {}
+        doc = etree.fromstring( data )
+        for elem in doc.iter():
+            if 'string' == elem.tag:
+                text = elem.text
+                if text:
+                    # print 'text before:', text
+                    text = " ".join(re.split('\s+', text)) \
+                        .replace("\\'", "'") \
+                        .replace( '\\"', '"' )
+                    # print 'text after:', text
+                    name = elem.get('name')
+                    # All should be there, but aren't yet, and I wanna
+                    # test
+                    if name in ids:
+                        id = ids[name]
+                        map[id] = text
     return map
 
 # Build from the most recent revisions of the english and locale
@@ -76,12 +81,16 @@ def getXlationFor( repo, rDotJava, locale, firstHash ):
     ids = readIDs(rDotJava)
 
     eng = asMap( repo, firstHash, english, ids )
-    locFileName = other_f % (locale)
-    other = asMap( repo, firstHash, locFileName, ids )
+    other = asMap( repo, firstHash, other_f % (locale), ids )
+    if not other:
+        locale = locale.split('_')
+        if 2 == len(locale):
+            other = asMap( repo, firstHash, other_f % (locale[0]), ids )
     result = []
-    for key in eng.keys():
-        if key in other:
-            result.append( { 'id' : key, 'loc' : other[key] } )
+    if other:
+        for key in eng.keys():
+            if key in other:
+                result.append( { 'id' : key, 'loc' : other[key] } )
     return result
 
 def main():
