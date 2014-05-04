@@ -116,7 +116,7 @@ def usage():
     print "   -a   # insert missing string elements for translation"
     print "   -c   # compare each file with the English, listing string not in both"
     print "   -f   # work on this strings.xml file (does all if none specified)"
-    print "   -x   # save any changes made (does not by default)"
+    print "   -s   # save any changes made (does not by default)"
     sys.exit(1)
 
 def main():
