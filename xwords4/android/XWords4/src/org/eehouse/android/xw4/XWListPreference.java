@@ -26,6 +26,8 @@ import android.util.AttributeSet;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class XWListPreference extends ListPreference {
     protected Context m_context;
 
@@ -46,4 +48,15 @@ public class XWListPreference extends ListPreference {
         setSummary( value );
         return super.persistString( value );
     }
+
+    @Override
+    public void setSummary( CharSequence summary )
+    {
+        String xlated = LocUtils.xlateString( getContext(), summary.toString() );
+        if ( null != xlated ) {
+            summary = xlated;
+        }
+        super.setSummary( summary );
+    }
+
 }
