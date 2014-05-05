@@ -495,21 +495,6 @@ public class Utils {
         return result;
     }
 
-    public static void addSpinnerArray( Spinner spinner, int arrayID )
-    {
-        Context context = spinner.getContext();
-        String[] array = context.getResources().getStringArray( arrayID );
-        array = LocUtils.xlateStrings( context, array );
-        int displayID = android.R.layout.simple_spinner_item;
-        // displayID = android.R.layout.simple_list_item_1;
-        ArrayAdapter<String> adapter = 
-            new ArrayAdapter<String>( context, displayID/*, array */ );
-        for ( String item : array ) {
-            adapter.add( item );
-        }
-        spinner.setAdapter( adapter );
-    }
-
     private static void setFirstBootStatics( Context context )
     {
         int thisVersion = getAppVersion( context );

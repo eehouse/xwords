@@ -425,10 +425,8 @@ public class GameConfigDelegate extends DelegateBase
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
         m_langSpinner = (Spinner)findViewById( R.id.lang_spinner );
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
-        Utils.addSpinnerArray( m_phoniesSpinner, R.array.phony_names );
         m_boardsizeSpinner = (Spinner)findViewById( R.id.boardsize_spinner );
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
-        Utils.addSpinnerArray( m_smartnessSpinner, R.array.robot_levels );
     } // onCreate
 
     protected void onStart()
