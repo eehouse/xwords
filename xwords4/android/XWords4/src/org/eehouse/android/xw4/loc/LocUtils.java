@@ -25,10 +25,10 @@ import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceGroup;
-import android.preference.ListPreference;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,6 +39,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
 import java.util.HashMap;
@@ -424,8 +425,8 @@ public class LocUtils {
 
     private static void xlateView( Context context, View view, int depth )
     {
-        // DbgUtils.logf( "xlateView(depth=%d, view=%s, canRecurse=%b)", depth, 
-        //                view.getClass().getName(), view instanceof ViewGroup );
+        DbgUtils.logf( "xlateView(depth=%d, view=%s, canRecurse=%b)", depth, 
+                       view.getClass().getName(), view instanceof ViewGroup );
         if ( view instanceof Button ) {
             Button button = (Button)view;
             String str = xlateString( context, button.getText().toString() );
@@ -442,6 +443,8 @@ public class LocUtils {
                     sp.setPrompt( xlation );
                 }
             }
+            SpinnerAdapter adapter = sp.getAdapter();
+            sp.setAdapter( new XlatingSpinnerAdapter( context, adapter ) );
         }
 
         // A Spinner, for instance, ISA ViewGroup, so this is a separate test.
