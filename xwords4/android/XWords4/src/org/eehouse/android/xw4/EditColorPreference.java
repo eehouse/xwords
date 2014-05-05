@@ -35,6 +35,8 @@ import android.text.TextWatcher;
 import android.text.Editable;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class EditColorPreference extends DialogPreference {
 
     private Context m_context;
@@ -111,6 +113,14 @@ public class EditColorPreference extends DialogPreference {
         
         setWidgetLayoutResource( R.layout.color_display );
         setDialogLayoutResource( R.layout.color_edit );
+
+        String title = getDialogTitle().toString();
+        String newTitle = LocUtils.xlateString( m_context, title );
+        if ( null != newTitle ) {
+            setDialogTitle( newTitle );
+        }
+
+        setNegativeButtonText( LocUtils.getString( context, R.string.button_cancel ) );
     }
 
     @Override
@@ -136,6 +146,8 @@ public class EditColorPreference extends DialogPreference {
     @Override
     protected void onBindDialogView( View view )
     {
+        LocUtils.xlateView( m_context, view );
+
         m_curColor = getPersistedColor();
         setOneByte( view, 0 );
         setOneByte( view, 1 );
@@ -161,7 +173,9 @@ public class EditColorPreference extends DialogPreference {
                     notifyChanged();
                 }
             };
-        builder.setPositiveButton( R.string.button_ok, lstnr );
+
+        String okText = LocUtils.getString( m_context, R.string.button_ok );
+        builder.setPositiveButton( okText, lstnr );
         super.onPrepareDialogBuilder( builder );
     }
 
