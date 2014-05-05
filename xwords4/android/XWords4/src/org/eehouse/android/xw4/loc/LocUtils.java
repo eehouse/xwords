@@ -28,6 +28,7 @@ import android.content.res.Resources;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceGroup;
+import android.preference.ListPreference;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -467,6 +468,15 @@ public class LocUtils {
         str = xlateString( context, pref.getTitle() );
         if ( null != str ) {
             pref.setTitle( str );
+        }
+
+        if ( pref instanceof ListPreference ) { 
+            ListPreference lp = (ListPreference) pref;
+            CharSequence[] entries = lp.getEntries();
+            if ( null != entries ) {
+                CharSequence[] newEntries = xlateStrings( context, entries );
+                lp.setEntries( newEntries );
+            }
         }
 
         if ( pref instanceof PreferenceGroup ) {
