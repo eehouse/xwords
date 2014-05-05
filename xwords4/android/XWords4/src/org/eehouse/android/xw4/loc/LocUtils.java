@@ -425,8 +425,8 @@ public class LocUtils {
 
     private static void xlateView( Context context, View view, int depth )
     {
-        DbgUtils.logf( "xlateView(depth=%d, view=%s, canRecurse=%b)", depth, 
-                       view.getClass().getName(), view instanceof ViewGroup );
+        // DbgUtils.logf( "xlateView(depth=%d, view=%s, canRecurse=%b)", depth, 
+        //                view.getClass().getName(), view instanceof ViewGroup );
         if ( view instanceof Button ) {
             Button button = (Button)view;
             String str = xlateString( context, button.getText().toString() );
@@ -444,7 +444,9 @@ public class LocUtils {
                 }
             }
             SpinnerAdapter adapter = sp.getAdapter();
-            sp.setAdapter( new XlatingSpinnerAdapter( context, adapter ) );
+            if ( null != adapter ) {
+                sp.setAdapter( new XlatingSpinnerAdapter( context, adapter ) );
+            }
         }
 
         // A Spinner, for instance, ISA ViewGroup, so this is a separate test.
