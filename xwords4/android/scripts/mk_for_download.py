@@ -95,15 +95,18 @@ def getXlationFor( repo, rDotJava, locale, firstHash ):
 
 def main():
     repo = mygit.GitRepo( xwconfig.k_REPOPATH )
+    head = repo.getHeadRev()
 
     # testing with the most recent (as of now) R.java change
-    hash = '33a83b0e2fcf062f4f640ccab0785b2d2b439542'
+    hash = repo.getRevsBetween( head, '33a83b0e2fcf062f4f640ccab0785b2d2b439542', \
+                                'R.java' )[0]
+    print 'using hash:', hash
 
     rDotJava = repo.cat( 'R.java', hash )
-    data, newHash = getXlationFor( repo, rDotJava, 'ca_PS', hash )
-    print 'data for:', newHash, ':' , data
-    data, newHash = getXlationFor( repo, rDotJava, 'ba_CK', hash )
-    print 'data for:', newHash, ':' , data
+    data = getXlationFor( repo, rDotJava, 'ca_PS', hash )
+    print 'data :' , data
+    data = getXlationFor( repo, rDotJava, 'ba_CK', hash )
+    print 'data :' , data
 
 ##############################################################################
 if __name__ == '__main__':
