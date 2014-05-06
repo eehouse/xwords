@@ -1,5 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+  <!-- What is \u200C? English strings are used as keys, so they all
+         need to be unique.  This glyph is non-printing and of
+         zero-width, so it should do the trick:
+         http://en.wikipedia.org/wiki/Zero-width_non-joiner 
+      -->
   <!--
        ############################################################
        # :Screens:
@@ -110,7 +115,7 @@
   <!-- pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. -->
-  <string name="list_item_reset">1#teseR</string>
+  <string name="list_item_reset">teseR\u200C</string>
   <!-- creates a new game with all configuation copied from the
          selected game -->
   <string name="list_item_new_from">weN morf</string>
@@ -759,7 +764,7 @@
   <!-- Put nothing in the summary space, so it just reads "Game 2" -->
   <string name="game_summary_field_empty">\u003CgnihtoN\u003E</string>
   <!-- Put the language there, so it reads "Game 2 (English)" -->
-  <string name="game_summary_field_language">emaG 1#egaugnal</string>
+  <string name="game_summary_field_language">emaG egaugnal\u200C</string>
   <!-- List names of opponents (summarized), e.g. "Game 2 (vs Kati)" -->
   <string name="game_summary_field_opponents">tnenoppO ]s[eman</string>
   <!-- List the state of the game, "Game over" or "10 moves made"
@@ -800,14 +805,6 @@
          are showns as the names of editable colors and as the the
          title of the color editor that comes up when the name is
          tapped. -->
-  <!-- First of four players (color for, that is ) -->
-  <string name="player0">tsriF 1#reyalp</string>
-  <!-- Second of four players (color for, that is ) -->
-  <string name="player1">dnoceS 1#reyalp</string>
-  <!-- Third of four players (color for, that is ) -->
-  <string name="player2">drihT 1#reyalp</string>
-  <!-- Fourth of four players (color for, that is ) -->
-  <string name="player3">htruoF 1#reyalp</string>
   <!-- (color for) double-letter bonus squares on the board -->
   <string name="bonus_l2x">elbuoD rettel</string>
   <!-- (color for) triple-letter bonus squares on the board -->
@@ -970,7 +967,7 @@
   <string name="newgame_local">yalP won</string>
   <!-- Text of second of two buttons for new standalone games.  Tap
     this and you'll get taken to the "Game configure" screen -->
-  <string name="newgame_local_config">erugifnoC tsrif</string>
+  <string name="newgame_configure_first">erugifnoC tsrif</string>
   <!-- section separator (white-on-gray bar) for second section:
          networked games -->
   <string name="newgame_networked_header">weN dekrowteN emag</string>
@@ -988,9 +985,6 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">etivnI won</string>
-  <!-- Text of second of two buttons for new networked games.  Tap
-    this and you'll get taken to the "Game configure" screen -->
-  <string name="newgame_net_config">erugifnoC 1#tsrif</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">weN htooteulB emag</string>
@@ -1331,7 +1325,7 @@
          score and an accounting of it (including subtractions for
          running out the game timer if there is one.)
      -->
-  <string name="finalscores_title">laniF 1#serocs</string>
+  <string name="finalscores_title">laniF serocs\u200C</string>
   <!-- text of confirmation dialog shown when user chooses the menu
          item with text board_menu_game_final and the game is not over
          -->
@@ -1529,7 +1523,7 @@
   <string name="changes_title">tneceR segnahc</string>
   <!-- text of button in About Crosswords dialog summoning above
          dialog -->
-  <string name="changes_button">tneceR 1#segnahc</string>
+  <string name="changes_button">tneceR segnahc\u200C</string>
   <!-- New strings that need to be documented and found a home
          above. -->
   <string name="button_lookup">kooL pu sdrow</string>
@@ -1559,7 +1553,7 @@
   <!--  -->
   <string name="word_search_hint">tsriF srettel</string>
   <!--  -->
-  <string name="tilepick_undo">odnU 1#tsal</string>
+  <string name="tilepick_undo">odnU tsal\u200C</string>
   <!--  -->
   <string name="tilepick_all">kciP rof em</string>
   <!--  -->
@@ -1616,7 +1610,7 @@
   <!--  -->
   <string name="summary_wait_guest">detcennocnU</string>
   <!--  -->
-  <string name="summary_gameover">emaG 1#revo</string>
+  <string name="summary_gameover">emaG revo\u200C</string>
   <!--  -->
   <string name="summary_conn">emaG ni yalp</string>
   <!--  -->
@@ -1665,8 +1659,6 @@
   <!--  -->
   <string name="sms_disabled">gniyalP aiv SMS si yltnerruc delbasid.
     uoY nac elbane ti ni krowteN&gt;-sgnitteS emag sgnittes.</string>
-  <!--  -->
-  <string name="newgame_enable_sms">hcnuaL sgnitteS</string>
   <!--  -->
   <string name="dft_sms_name_fmt">SMS emaG %1$X</string>
   <!--  -->
@@ -1872,7 +1864,7 @@
   <string name="board_menu_invite">etivnI</string>
   <string name="enable_nfc">CFN si denrut ffo no siht ecived. uoY
     nac esu eht diordnA sgnitteS ppa ot nrut ti no .</string>
-  <string name="button_go_settings">hcnuaL 1#sgnitteS</string>
+  <string name="button_go_settings">hcnuaL sgnitteS</string>
   <string name="no_hide_titlebar">sihT gnittes si derongi no secived
     ekil sruoy taht dneped no eht \"noitcA rab.\"</string>
   <string name="sms_ready_text">paT eht gniviecer ecived won</string>

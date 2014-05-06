@@ -1,5 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+  <!-- What is \u200C? English strings are used as keys, so they all
+         need to be unique.  This glyph is non-printing and of
+         zero-width, so it should do the trick:
+         http://en.wikipedia.org/wiki/Zero-width_non-joiner 
+      -->
   <!--
        ############################################################
        # :Screens:
@@ -110,7 +115,7 @@
   <!-- pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. -->
-  <string name="list_item_reset">RESET#1</string>
+  <string name="list_item_reset">RESET\u200C</string>
   <!-- creates a new game with all configuation copied from the
          selected game -->
   <string name="list_item_new_from">NEW FROM</string>
@@ -759,7 +764,7 @@
   <!-- Put nothing in the summary space, so it just reads "Game 2" -->
   <string name="game_summary_field_empty">\u003CNOTHING\u003E</string>
   <!-- Put the language there, so it reads "Game 2 (English)" -->
-  <string name="game_summary_field_language">GAME LANGUAGE#1</string>
+  <string name="game_summary_field_language">GAME LANGUAGE\u200C</string>
   <!-- List names of opponents (summarized), e.g. "Game 2 (vs Kati)" -->
   <string name="game_summary_field_opponents">OPPONENT NAME[S]</string>
   <!-- List the state of the game, "Game over" or "10 moves made"
@@ -800,14 +805,6 @@
          are showns as the names of editable colors and as the the
          title of the color editor that comes up when the name is
          tapped. -->
-  <!-- First of four players (color for, that is ) -->
-  <string name="player0">FIRST PLAYER#1</string>
-  <!-- Second of four players (color for, that is ) -->
-  <string name="player1">SECOND PLAYER#1</string>
-  <!-- Third of four players (color for, that is ) -->
-  <string name="player2">THIRD PLAYER#1</string>
-  <!-- Fourth of four players (color for, that is ) -->
-  <string name="player3">FOURTH PLAYER#1</string>
   <!-- (color for) double-letter bonus squares on the board -->
   <string name="bonus_l2x">DOUBLE LETTER</string>
   <!-- (color for) triple-letter bonus squares on the board -->
@@ -970,7 +967,7 @@
   <string name="newgame_local">PLAY NOW</string>
   <!-- Text of second of two buttons for new standalone games.  Tap
     this and you'll get taken to the "Game configure" screen -->
-  <string name="newgame_local_config">CONFIGURE FIRST</string>
+  <string name="newgame_configure_first">CONFIGURE FIRST</string>
   <!-- section separator (white-on-gray bar) for second section:
          networked games -->
   <string name="newgame_networked_header">NEW NETWORKED GAME</string>
@@ -988,9 +985,6 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">INVITE NOW</string>
-  <!-- Text of second of two buttons for new networked games.  Tap
-    this and you'll get taken to the "Game configure" screen -->
-  <string name="newgame_net_config">CONFIGURE FIRST#1</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">NEW BLUETOOTH GAME</string>
@@ -1331,7 +1325,7 @@
          score and an accounting of it (including subtractions for
          running out the game timer if there is one.)
      -->
-  <string name="finalscores_title">FINAL SCORES#1</string>
+  <string name="finalscores_title">FINAL SCORES\u200C</string>
   <!-- text of confirmation dialog shown when user chooses the menu
          item with text board_menu_game_final and the game is not over
          -->
@@ -1529,7 +1523,7 @@
   <string name="changes_title">RECENT CHANGES</string>
   <!-- text of button in About Crosswords dialog summoning above
          dialog -->
-  <string name="changes_button">RECENT CHANGES#1</string>
+  <string name="changes_button">RECENT CHANGES\u200C</string>
   <!-- New strings that need to be documented and found a home
          above. -->
   <string name="button_lookup">LOOK UP WORDS</string>
@@ -1559,7 +1553,7 @@
   <!--  -->
   <string name="word_search_hint">FIRST LETTERS</string>
   <!--  -->
-  <string name="tilepick_undo">UNDO LAST#1</string>
+  <string name="tilepick_undo">UNDO LAST\u200C</string>
   <!--  -->
   <string name="tilepick_all">PICK FOR ME</string>
   <!--  -->
@@ -1616,7 +1610,7 @@
   <!--  -->
   <string name="summary_wait_guest">UNCONNECTED</string>
   <!--  -->
-  <string name="summary_gameover">GAME OVER#1</string>
+  <string name="summary_gameover">GAME OVER\u200C</string>
   <!--  -->
   <string name="summary_conn">GAME IN PLAY</string>
   <!--  -->
@@ -1665,8 +1659,6 @@
   <!--  -->
   <string name="sms_disabled">PLAYING VIA SMS IS CURRENTLY DISABLED.
     YOU CAN ENABLE IT IN SETTINGS-&gt;NETWORK GAME SETTINGS.</string>
-  <!--  -->
-  <string name="newgame_enable_sms">LAUNCH SETTINGS</string>
   <!--  -->
   <string name="dft_sms_name_fmt">SMS GAME %1$X</string>
   <!--  -->
@@ -1872,7 +1864,7 @@
   <string name="board_menu_invite">INVITE</string>
   <string name="enable_nfc">NFC IS TURNED OFF ON THIS DEVICE. YOU
     CAN USE THE ANDROID SETTINGS APP TO TURN IT ON .</string>
-  <string name="button_go_settings">LAUNCH SETTINGS#1</string>
+  <string name="button_go_settings">LAUNCH SETTINGS</string>
   <string name="no_hide_titlebar">THIS SETTING IS IGNORED ON DEVICES
     LIKE YOURS THAT DEPEND ON THE \"ACTION BAR.\"</string>
   <string name="sms_ready_text">TAP THE RECEIVING DEVICE NOW</string>
