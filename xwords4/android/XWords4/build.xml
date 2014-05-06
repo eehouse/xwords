@@ -65,7 +65,9 @@
     </target>
 
     <target name="-pre-compile">
-        <antcall target="my-pre-compile"/>
+        <antcall target="my-pre-compile">
+            <param name="VARIANT_NAME" value="xw4"/>
+        </antcall>
     </target>
 
 <!--
