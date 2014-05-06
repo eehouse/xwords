@@ -2078,7 +2078,7 @@ public class BoardDelegate extends DelegateBase
         case COMMS_CONN_SMS:
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( m_activity ) ) {
                 showConfirmThen( R.string.warn_sms_disabled, 
-                                 R.string.newgame_enable_sms, 
+                                 R.string.button_go_settings,
                                  Action.SMS_CONFIG_ACTION );
             }
             break;

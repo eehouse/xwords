@@ -56,7 +56,7 @@
               style="@style/evenly_spaced_horizontal"
               />
       <Button android:id="@+id/newgame_local_config"
-              android:text="@string/newgame_local_config" 
+              android:text="@string/newgame_configure_first" 
               style="@style/evenly_spaced_horizontal"
               />
     </LinearLayout>
@@ -95,7 +95,7 @@
               />
 
       <Button android:id="@+id/newgame_net_config"
-              android:text="@string/newgame_net_config" 
+              android:text="@string/newgame_configure_first" 
               style="@style/evenly_spaced_horizontal"
               />
     </LinearLayout>
@@ -121,7 +121,7 @@
       <Button android:id="@+id/newgame_enable_sms"
               android:layout_width="fill_parent" 
               android:layout_height="wrap_content"
-              android:text="@string/newgame_enable_sms" 
+              android:text="@string/button_go_settings" 
               />
     </LinearLayout>
 
@@ -158,7 +158,7 @@
                 />
 
         <Button android:id="@+id/newgame_sms_config"
-                android:text="@string/newgame_net_config" 
+                android:text="@string/newgame_configure_first" 
                 style="@style/evenly_spaced_horizontal"
                 />
       </LinearLayout>
@@ -222,7 +222,7 @@
                   />
 
           <Button android:id="@+id/newgame_bt_config"
-                  android:text="@string/newgame_net_config" 
+                  android:text="@string/newgame_configure_first" 
                   style="@style/evenly_spaced_horizontal"
                   />
       </LinearLayout>

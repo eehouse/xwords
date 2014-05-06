@@ -152,22 +152,22 @@
                       >
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_player0"
-         android:title="@string/player0"
+         android:title="@string/pref_player1_name"
          android:defaultValue="0x000000"
          />
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_player1"
-         android:title="@string/player1"
+         android:title="@string/pref_player2_name"
          android:defaultValue="0xFF0000"
          />
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_player2"
-         android:title="@string/player2"
+         android:title="@string/pref_player3_name"
          android:defaultValue="0x0000FF"
          />
       <org.eehouse.android.xw4.EditColorPreference
          android:key="@string/key_player3"
-         android:title="@string/player3"
+         android:title="@string/pref_player4_name"
          android:defaultValue="0x008F00"
          />
       <org.eehouse.android.xw4.EditColorPreference
