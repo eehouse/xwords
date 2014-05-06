@@ -67,4 +67,12 @@ mkdir -p /tmp/releases_${VARIANT}
 cp *.apk /tmp/releases_${VARIANT}
 
 cd $CURDIR
-rm -rf $BUILDIR
+echo "remove build dir $BUILDIR? (y or n):"
+echo -n "==> "
+read ANSWER
+if [ "$ANSWER" = 'y' ]; then
+	rm -rf $BUILDIR
+	echo "removed $BUILDIR"
+else
+	echo "$BUILDIR not removed"
+fi
