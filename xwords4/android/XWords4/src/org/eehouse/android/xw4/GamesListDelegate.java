@@ -57,9 +57,8 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.loc.LocUtils;
 
-public class GamesListDelegate extends DelegateBase
+public class GamesListDelegate extends ListDelegateBase
     implements OnItemLongClickListener,
                DBUtils.DBChangeListener, SelectableItem, 
                DictImportDelegate.DownloadFinishedListener,
@@ -239,7 +238,7 @@ public class GamesListDelegate extends DelegateBase
                         DBUtils.setGroupName( m_activity,
                                               m_groupid, name );
                         m_adapter.inval( m_rowid );
-                        m_activity.onContentChanged();
+                        onContentChanged();
                     }
                 };
             dialog = buildNamerDlg( m_adapter.groupName( m_groupid ),
@@ -254,7 +253,7 @@ public class GamesListDelegate extends DelegateBase
                         String name = m_namer.getName();
                         DBUtils.addGroup( m_activity, name );
                         // m_adapter.inval();
-                        m_activity.onContentChanged();
+                        onContentChanged();
                     }
                 };
             dialog = buildNamerDlg( "", R.string.newgroup_label,
@@ -289,7 +288,7 @@ public class GamesListDelegate extends DelegateBase
                             DBUtils.moveGame( m_activity, rowid, gid );
                         }
                         DBUtils.setGroupExpanded( m_activity, gid, true );
-                        m_activity.onContentChanged();
+                        onContentChanged();
                     }
                 };
             String[] groups = m_adapter.groupNames();
@@ -304,8 +303,7 @@ public class GamesListDelegate extends DelegateBase
             break;
 
         case GET_NAME:
-            layout = 
-                (LinearLayout)LocUtils.inflate( m_activity, R.layout.dflt_name );
+            layout = (LinearLayout)inflate( R.layout.dflt_name );
             final EditText etext =
                 (EditText)layout.findViewById( R.id.name_edit );
             etext.setText( CommonPrefs.getDefaultPlayerName( m_activity,
@@ -356,7 +354,7 @@ public class GamesListDelegate extends DelegateBase
         getBundledData( savedInstanceState );
 
         setContentView( R.layout.game_list );
-        ListView listview = m_activity.getListView();
+        ListView listview = getListView();
         DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
@@ -458,7 +456,7 @@ public class GamesListDelegate extends DelegateBase
         m_activity.runOnUiThread( new Runnable() {
                 public void run() {
                     if ( countChanged || DBUtils.ROWID_NOTFOUND == rowid ) {
-                        m_activity.onContentChanged();
+                        onContentChanged();
                         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
                             m_launchedGame = rowid;
                         }
@@ -562,7 +560,7 @@ public class GamesListDelegate extends DelegateBase
                 for ( long rowid : rowids ) {
                     GameUtils.resetGame( m_activity, rowid );
                 }
-                m_activity.onContentChanged(); // required because position may change
+                onContentChanged(); // required because position may change
                 break;
             case SYNC_MENU:
                 doSyncMenuitem();
@@ -582,7 +580,7 @@ public class GamesListDelegate extends DelegateBase
                     GameUtils.deleteGroup( m_activity, groupID );
                 }
                 clearSelections();
-                m_activity.onContentChanged();
+                onContentChanged();
                 break;
             case DELETE_GAMES:
                 deleteGames( (long[])params[0] );
@@ -602,7 +600,7 @@ public class GamesListDelegate extends DelegateBase
     protected void contentChanged()
     {
         if ( null != m_adapter ) {
-            m_adapter.expandGroups( m_activity.getListView() );
+            m_adapter.expandGroups( getListView() );
         }
     }
 
@@ -821,7 +819,7 @@ public class GamesListDelegate extends DelegateBase
                             DBUtils.saveSummary( self, lock, smry );
                             m_selGames.add( lock.getRowid() );
                             lock.unlock();
-                            m_activity.onContentChanged();
+                            onContentChanged();
                         }
                     });
             }
@@ -884,7 +882,7 @@ public class GamesListDelegate extends DelegateBase
             clearSelections();
         }
         if ( changeContent ) {
-            m_activity.onContentChanged();
+            onContentChanged();
         }
 
         return handled;// || super.onOptionsItemSelected( item );
@@ -1147,7 +1145,7 @@ public class GamesListDelegate extends DelegateBase
         if ( m_adapter.setField( newField ) ) {
             // The adapter should be able to decide whether full
             // content change is required.  PENDING
-            m_activity.onContentChanged();
+            onContentChanged();
         }
     }
 
@@ -1155,8 +1153,7 @@ public class GamesListDelegate extends DelegateBase
                                   DialogInterface.OnClickListener lstnr, 
                                   DlgID dlgID )
     {
-        m_namer = (GameNamer)
-            LocUtils.inflate( m_activity, R.layout.rename_game );
+        m_namer = (GameNamer)inflate( R.layout.rename_game );
         m_namer.setName( curname );
         m_namer.setLabel( labelID );
         Dialog dialog = makeAlertBuilder()
@@ -1343,13 +1340,13 @@ public class GamesListDelegate extends DelegateBase
 
     private GameListAdapter makeNewAdapter()
     {
-        ListView listview = m_activity.getListView();
+        ListView listview = getListView();
         String field = CommonPrefs.getSummaryField( m_activity );
         long[] positions = XWPrefs.getGroupPositions( m_activity );
         GameListAdapter adapter = 
             new GameListAdapter( m_activity, listview, new Handler(), 
                                  this, positions, field );
-        m_activity.setListAdapter( adapter );
+        setListAdapter( adapter );
         adapter.expandGroups( listview );
         return adapter;
     }

@@ -42,7 +42,6 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NewGameDelegate extends DelegateBase {
 
@@ -188,7 +187,7 @@ public class NewGameDelegate extends DelegateBase {
                 if ( Activity.RESULT_CANCELED != resultCode ) {
                     m_nameForBT = INVITE_FOR_BT == requestCode;
                     String[] remoteDevs =
-                        data.getStringArrayExtra( InviteActivity.DEVS );
+                        data.getStringArrayExtra( InviteDelegate.DEVS );
                     Assert.assertTrue( 1 == remoteDevs.length );
                     m_remoteDev = remoteDevs[0];
 
@@ -208,8 +207,7 @@ public class NewGameDelegate extends DelegateBase {
         DlgID dlgID = DlgID.values()[id];
         switch( dlgID ) {
         case NAME_GAME:
-            final GameNamer namerView =
-                (GameNamer)LocUtils.inflate( m_activity, R.layout.rename_game );
+            final GameNamer namerView = (GameNamer)inflate( R.layout.rename_game );
             namerView.setLabel( m_nameForBT ? R.string.btname_label
                                 : R.string.smsname_label );
             namerView.setName( m_gameName );
@@ -360,7 +358,7 @@ public class NewGameDelegate extends DelegateBase {
                 intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
                 startActivityForResult( intent, CONFIG_FOR_BT );
             } else {
-                BTInviteActivity.launchForResult( m_activity, 1, INVITE_FOR_BT );
+                BTInviteDelegate.launchForResult( m_activity, 1, INVITE_FOR_BT );
             }
         }
     }
@@ -381,7 +379,7 @@ public class NewGameDelegate extends DelegateBase {
             intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
             startActivityForResult( intent, CONFIG_FOR_SMS );
         } else {
-            SMSInviteActivity.launchForResult( m_activity, 1, INVITE_FOR_SMS );
+            SMSInviteDelegate.launchForResult( m_activity, 1, INVITE_FOR_SMS );
         }
     }
 

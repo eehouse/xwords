@@ -57,7 +57,6 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameConfigDelegate extends DelegateBase
     implements View.OnClickListener
@@ -629,7 +628,7 @@ public class GameConfigDelegate extends DelegateBase
             saveChanges();
             if ( m_forResult ) {
                 applyChanges( true );
-                m_activity.setResult( Activity.RESULT_OK, null );
+                setResult( Activity.RESULT_OK, null );
                 finish();
             } else if ( !m_gameStarted ) { // no confirm needed 
                 applyChanges( true );

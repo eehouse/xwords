@@ -46,7 +46,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class StudyListDelegate extends DelegateBase 
+public class StudyListDelegate extends ListDelegateBase
     implements OnItemSelectedListener, SelectableItem,
                View.OnLongClickListener, View.OnClickListener {
 
@@ -256,7 +256,7 @@ public class StudyListDelegate extends DelegateBase
     private void makeAdapter()
     {
         m_adapter = new SLWordsAdapter();
-        m_activity.setListAdapter( m_adapter );
+        setListAdapter( m_adapter );
     }
 
     private void initOrFinish( Intent startIntent )

@@ -107,7 +107,7 @@ public class PrefsDelegate extends DelegateBase
                 dialog = SMSCheckBoxPreference.onCreateDialog( m_activity, id );
                 break;
             case EXPLAIN_TITLE:
-                dialog = LocUtils.makeAlertBuilder( m_activity )
+                dialog = makeAlertBuilder()
                     .setMessage( R.string.no_hide_titlebar )
                     .setTitle( R.string.info_title )
                     .setPositiveButton( R.string.button_ok, null )
@@ -116,7 +116,7 @@ public class PrefsDelegate extends DelegateBase
             }
 
             if ( null == dialog && null != lstnr ) {
-                dialog = LocUtils.makeAlertBuilder( m_activity )
+                dialog = makeAlertBuilder()
                     .setTitle( R.string.query_title )
                     .setMessage( confirmID )
                     .setPositiveButton( R.string.button_ok, lstnr )

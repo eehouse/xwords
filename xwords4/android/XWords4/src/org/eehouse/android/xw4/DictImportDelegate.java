@@ -40,8 +40,6 @@ import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.util.HashMap;
 
-import org.eehouse.android.xw4.loc.LocUtils;
-
 import junit.framework.Assert;
 
 public class DictImportDelegate extends DelegateBase {

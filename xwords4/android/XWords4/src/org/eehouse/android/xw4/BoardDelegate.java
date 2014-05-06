@@ -62,7 +62,6 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.JNIThread.*;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -400,7 +399,7 @@ public class BoardDelegate extends DelegateBase
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
                                     m_resultCode = UtilCtxt.PICKER_BACKUP;
-                                    m_activity.removeDialog( dlgID.ordinal() );
+                                    removeDialog( dlgID );
                                 }
                             };
                         ab.setPositiveButton( R.string.tilepick_undo, 
@@ -411,7 +410,7 @@ public class BoardDelegate extends DelegateBase
                             public void onClick( DialogInterface dialog, 
                                                  int whichButton ) {
                                 m_resultCode = UtilCtxt.PICKER_PICKALL;
-                                m_activity.removeDialog( dlgID.ordinal() );
+                                removeDialog( dlgID );
                             }
                         };
                     ab.setNegativeButton( R.string.tilepick_all, doAllClicked );
@@ -603,12 +602,12 @@ public class BoardDelegate extends DelegateBase
             case BT_INVITE_RESULT:
                 // onActivityResult is called immediately *before*
                 // onResume -- meaning m_gi etc are still null.
-                m_missingDevs = data.getStringArrayExtra( BTInviteActivity.DEVS );
+                m_missingDevs = data.getStringArrayExtra( BTInviteDelegate.DEVS );
                 break;
             case SMS_INVITE_RESULT:
                 // onActivityResult is called immediately *before*
                 // onResume -- meaning m_gi etc are still null.
-                m_missingDevs = data.getStringArrayExtra( SMSInviteActivity.DEVS );
+                m_missingDevs = data.getStringArrayExtra( SMSInviteDelegate.DEVS );
                 break;
             }
         }
@@ -913,11 +912,11 @@ public class BoardDelegate extends DelegateBase
                 doSyncMenuitem();
                 break;
             case BT_PICK_ACTION:
-                BTInviteActivity.launchForResult( m_activity, m_nMissingPlayers, 
+                BTInviteDelegate.launchForResult( m_activity, m_nMissingPlayers, 
                                                   BT_INVITE_RESULT );
                 break;
             case SMS_PICK_ACTION:
-                SMSInviteActivity.launchForResult( m_activity, m_nMissingPlayers, 
+                SMSInviteDelegate.launchForResult( m_activity, m_nMissingPlayers, 
                                                    SMS_INVITE_RESULT );
                 break;
             case SMS_CONFIG_ACTION:
@@ -1728,8 +1727,7 @@ public class BoardDelegate extends DelegateBase
                 m_dlgTitle = R.string.badwords_title;
                 waitBlockingDialog( DlgID.DLG_BADWORDS_BLK, 0 );
             } else {
-                m_dlgBytes = message + 
-                    LocUtils.getString( m_activity, R.string.badwords_accept );
+                m_dlgBytes = message + getString( R.string.badwords_accept );
                 m_dlgTitle = R.string.query_title;
                 accept = 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
             }
@@ -1953,7 +1951,7 @@ public class BoardDelegate extends DelegateBase
         return new OnDismissListener() {
             public void onDismiss( DialogInterface di ) {
                 releaseIfBlocking();
-                m_activity.removeDialog( id );
+                removeDialog( id );
             }
         };
     }
@@ -2229,8 +2227,7 @@ public class BoardDelegate extends DelegateBase
     private void setupPasswdVars()
     {
         m_dlgTitleStr = getString( R.string.msg_ask_password_fmt, m_pwdName );
-        m_passwdLyt = (LinearLayout)LocUtils.inflate( m_activity,
-                                                      R.layout.passwd_view );
+        m_passwdLyt = (LinearLayout)inflate( R.layout.passwd_view );
         m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
     }
 

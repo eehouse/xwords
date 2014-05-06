@@ -60,7 +60,6 @@ import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DictsDelegate extends DelegateBase 
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
@@ -186,8 +185,7 @@ public class DictsDelegate extends DelegateBase
         public View getGroupView( int groupPosition, boolean isExpanded, 
                                   View convertView, ViewGroup parent )
         {
-            View row = LocUtils.inflate( m_activity, android.R.layout
-                                         .simple_expandable_list_item_1 );
+            View row = inflate( android.R.layout.simple_expandable_list_item_1 );
             TextView view = (TextView)row.findViewById( android.R.id.text1 );
             view.setText( m_langs[groupPosition] );
             return view;
@@ -374,7 +372,7 @@ public class DictsDelegate extends DelegateBase
             }
         }
 
-        m_locNames = LocUtils.getStringArray( m_activity, R.array.loc_names );
+        m_locNames = getStringArray( R.array.loc_names );
 
         m_downloadStr = getString( R.string.download_dicts );
             

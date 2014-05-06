@@ -32,8 +32,6 @@ import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.widget.LinearLayout;
 
-import org.eehouse.android.xw4.loc.LocUtils;
-
 public class ChatDelegate extends DelegateBase
     implements View.OnClickListener {
 
@@ -59,9 +57,9 @@ public class ChatDelegate extends DelegateBase
 
                 for ( DBUtils.HistoryPair pair : pairs ) {
                     TextView view = (TextView)
-                        LocUtils.inflate( m_activity, pair.sourceLocal
-                                          ? R.layout.chat_history_local
-                                          : R.layout.chat_history_remote );
+                        inflate( pair.sourceLocal
+                                 ? R.layout.chat_history_local
+                                 : R.layout.chat_history_remote );
                     view.setText( pair.msg );
                     layout.addView( view );
                 }
@@ -96,13 +94,13 @@ public class ChatDelegate extends DelegateBase
         EditText edit = (EditText)findViewById( R.id.chat_edit );
         String text = edit.getText().toString();
         if ( null == text || text.length() == 0 ) {
-            m_activity.setResult( Activity.RESULT_CANCELED );
+            setResult( Activity.RESULT_CANCELED );
         } else {
             DBUtils.appendChatHistory( m_activity, m_rowid, text, true );
 
             Intent result = new Intent();
             result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
-            m_activity.setResult( Activity.RESULT_OK, result );
+            setResult( Activity.RESULT_OK, result );
         }
         finish();
     }

@@ -1,7 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2014 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,15 +21,37 @@ package org.eehouse.android.xw4;
 
 import android.app.ListActivity;
 import android.os.Bundle;
-import android.view.Window;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
-public class InviteActivity extends ListActivity {
+public class ListDelegateBase extends DelegateBase {
+    
+    private ListActivity m_activity;
 
-    @Override
-    protected void onCreate( Bundle savedInstanceState )
+    protected ListDelegateBase( ListActivity activity, Bundle savedInstanceState,
+                                int menuID )
     {
-        super.onCreate( savedInstanceState );
-        requestWindowFeature( Window.FEATURE_NO_TITLE );
+        super( activity, savedInstanceState, menuID );
+        m_activity = activity;
     }
 
+    protected ListDelegateBase( ListActivity activity, Bundle savedState )
+    {
+        this( activity, savedState, 0);
+    }
+
+    protected void setListAdapter( ListAdapter adapter )
+    {
+        m_activity.setListAdapter( adapter );
+    }
+
+    protected ListAdapter setListAdapter()
+    {
+        return m_activity.getListAdapter();
+    }
+
+    protected ListView getListView()
+    {
+        return m_activity.getListView();
+    }
 }

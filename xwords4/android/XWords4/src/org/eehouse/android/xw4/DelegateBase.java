@@ -97,6 +97,21 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         m_activity.startActivityForResult( intent, requestCode );
     }
 
+    protected void setResult( int result, Intent intent )
+    {
+        m_activity.setResult( result, intent );
+    }
+
+    protected void setResult( int result )
+    {
+        m_activity.setResult( result );
+    }
+
+    protected void onContentChanged()
+    {
+        m_activity.onContentChanged();
+    }
+
     protected void startActivity( Intent intent )
     {
         m_activity.startActivity( intent );
@@ -112,6 +127,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         return LocUtils.getString( m_activity, resID, params );
     }
 
+    protected String[] getStringArray( int resID )
+    {
+        return LocUtils.getStringArray( m_activity, resID );
+    }
+
     protected View inflate( int resID )
     {
         return LocUtils.inflate( m_activity, resID );
@@ -120,6 +140,16 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void showDialog( DlgID dlgID )
     {
         m_delegate.showDialog( dlgID );
+    }
+
+    protected void removeDialog( DlgID dlgID )
+    {
+        removeDialog( dlgID.ordinal() );
+    }
+
+    protected void removeDialog( int id )
+    {
+        m_activity.removeDialog( id );
     }
 
     protected Dialog onCreateDialog( int id )

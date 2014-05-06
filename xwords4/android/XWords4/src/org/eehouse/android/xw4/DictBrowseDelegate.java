@@ -46,9 +46,8 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.loc.LocUtils;
 
-public class DictBrowseDelegate extends DelegateBase
+public class DictBrowseDelegate extends ListDelegateBase
     implements View.OnClickListener, OnItemSelectedListener {
 
     private static final String DICT_NAME = "DICT_NAME";
@@ -91,9 +90,9 @@ public class DictBrowseDelegate extends DelegateBase
 
             int format = m_browseState.m_minShown == m_browseState.m_maxShown ?
                 R.string.dict_browse_title1_fmt : R.string.dict_browse_title_fmt;
-            setTitle( LocUtils.getString( m_activity, format,
-                                          m_name, m_nWords, m_browseState.m_minShown, 
-                                          m_browseState.m_maxShown ));
+            setTitle( getString( format,
+                                 m_name, m_nWords, m_browseState.m_minShown, 
+                                 m_browseState.m_maxShown ));
 
             String desc = XwJNI.dict_iter_getDesc( m_dictClosure );
             if ( null != desc ) {
@@ -107,8 +106,7 @@ public class DictBrowseDelegate extends DelegateBase
         public Object getItem( int position ) 
         {
             TextView text = (TextView)
-                LocUtils.inflate( m_activity,
-                                  android.R.layout.simple_list_item_1 );
+                inflate( android.R.layout.simple_list_item_1 );
             String str = XwJNI.dict_iter_nthWord( m_dictClosure, position );
             if ( null != str ) {
                 text.setText( str );
@@ -198,8 +196,7 @@ public class DictBrowseDelegate extends DelegateBase
                 // this is extended to include tile info -- it should
                 // be -- then use an empty list elem and disable
                 // search/minmax stuff.
-                String msg = LocUtils.getString( m_activity, R.string.alert_empty_dict_fmt,
-                                                 name );
+                String msg = getString( R.string.alert_empty_dict_fmt, name );
                 showOKOnlyDialogThen( msg, Action.FINISH_ACTION );
             } else {
                 figureMinMax( m_browseState.m_counts );
@@ -220,9 +217,9 @@ public class DictBrowseDelegate extends DelegateBase
 
                 setUpSpinners();
 
-                m_activity.setListAdapter( new DictListAdapter() );
-                m_activity.getListView().setFastScrollEnabled( true );
-                m_activity.getListView().setSelectionFromTop( m_browseState.m_pos,
+                setListAdapter( new DictListAdapter() );
+                getListView().setFastScrollEnabled( true );
+                getListView().setSelectionFromTop( m_browseState.m_pos,
                                                               m_browseState.m_top );
             }
         }
@@ -231,7 +228,7 @@ public class DictBrowseDelegate extends DelegateBase
     protected void onPause()
     {
         if ( null != m_browseState ) { // already saved?
-            ListView list = m_activity.getListView();
+            ListView list = getListView();
             m_browseState.m_pos = list.getFirstVisiblePosition();
             View view = list.getChildAt( 0 );
             m_browseState.m_top = (view == null) ? 0 : view.getTop();
@@ -339,7 +336,7 @@ public class DictBrowseDelegate extends DelegateBase
         if ( null != text && 0 < text.length() ) {
             int pos = XwJNI.dict_iter_getStartsWith( m_dictClosure, text );
             if ( 0 <= pos ) {
-                m_activity.getListView().setSelection( pos );
+                getListView().setSelection( pos );
             } else {
                 DbgUtils.showf( m_activity, R.string.dict_browse_nowords_fmt, 
                                 m_name, text );
