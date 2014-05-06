@@ -32,7 +32,7 @@ public class XlatingSpinnerAdapter implements SpinnerAdapter {
     private SpinnerAdapter m_adapter;
     private Context m_context;
 
-    public XlatingSpinnerAdapter( Context context, SpinnerAdapter adapter )
+    protected XlatingSpinnerAdapter( Context context, SpinnerAdapter adapter )
     {
         m_adapter = adapter;
         m_context = context;
