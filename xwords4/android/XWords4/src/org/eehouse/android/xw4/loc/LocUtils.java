@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.preference.DialogPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -475,12 +476,29 @@ public class LocUtils {
             pref.setTitle( str );
         }
 
-        if ( pref instanceof ListPreference ) { 
-            ListPreference lp = (ListPreference) pref;
-            CharSequence[] entries = lp.getEntries();
-            if ( null != entries ) {
-                CharSequence[] newEntries = xlateStrings( context, entries );
-                lp.setEntries( newEntries );
+        if ( pref instanceof DialogPreference ) {
+            DialogPreference dp = (DialogPreference)pref;
+            if ( null != (str = xlateString( context, dp.getDialogMessage()))) {
+                dp.setDialogMessage( str );
+            }
+            if ( null != (str = xlateString( context, dp.getDialogTitle()))) {
+                dp.setDialogTitle( str );
+            }
+            if ( null != (str = xlateString( context, dp.getNegativeButtonText()))) {
+                dp.setNegativeButtonText( str );
+            }
+            if ( null != (str = xlateString( context, dp.getPositiveButtonText()))) {
+                dp.setPositiveButtonText( str );
+            }
+
+            // ListPreference isa DialogPreference
+            if ( dp instanceof ListPreference ) { 
+                ListPreference lp = (ListPreference) dp;
+                CharSequence[] entries = lp.getEntries();
+                if ( null != entries ) {
+                    CharSequence[] newEntries = xlateStrings( context, entries );
+                    lp.setEntries( newEntries );
+                }
             }
         }
 
