@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, getopt, re
+import sys, getopt, re, os
 from lxml import etree
 
 expr = '(' + \
@@ -17,6 +17,7 @@ expr = '(' + \
     ')'
 
 # Can't make these work...
+        # r'[;:.]' , \
         # r'\(' , \
         # r'\)' , \
 
@@ -35,8 +36,22 @@ def reverse( str ):
     for ii in range(len(split)):
         word = split[ii]
         if not re.match( FMT, word ): 
-            split[ii] = word[::-1]
+            split[ii] = revcaps(word)
     result = ''.join(split)
+    return result
+
+def revcaps(word):
+    newWord = list(word[::-1])
+    nLetters = len(word)
+    for indx in range( nLetters ):
+        letter = newWord[indx]
+        if word[indx].isupper():
+            letter = letter.upper()
+        else:
+            letter = letter.lower()
+        newWord[indx] = letter
+    result = ''.join(newWord)
+    # print 'revcaps(%s) => %s' % (word, result)
     return result
 
 def usage():
@@ -78,7 +93,13 @@ def main():
                 elem.text = func(text)
 
     if '-' == outfile: out = sys.stdout
-    else: out = open( outfile, "w" )
+    else: 
+        dir = os.path.dirname( outfile )
+        print 'making', dir
+        try: os.makedirs( dir )
+        except: pass
+
+        out = open( outfile, "w" )
     out.write( etree.tostring( doc, pretty_print=True, encoding="utf-8", xml_declaration=True ) )
         
 ##############################################################################
