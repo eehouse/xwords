@@ -39,6 +39,9 @@
          application and should be checked into Version Control Systems. -->
     <loadproperties srcFile="project.properties" />
 
+    <!-- An attempt to define stuff to be included from multiple build.xml files -->
+    <import file="../scripts/common_targets.xml" />
+
     <!-- quick check on sdk.dir -->
     <fail
             message="sdk.dir is missing. Make sure to generate local.properties using 'android update project'"
@@ -49,78 +52,26 @@
 <!-- extension targets. Uncomment the ones where you want to do custom work
      in between standard targets -->
 
-    <property name="INITIAL_CLIENT_VERS" value="3"/>
+    <property name="INITIAL_CLIENT_VERS" value="4"/>
+    <property name="VARIANT_NAME" value="xw4bt"/>
+
     <target name="-pre-clean">
-        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
-            <arg value="${build.target}"/>
-        </exec>
-        <exec dir="." executable="../scripts/ndkbuild.sh" output="/dev/null">
-            <arg value="clean"/>
-        </exec>
-
-        <exec dir="." executable="../scripts/mkimages.sh" 
-              failonerror="true" >
-          <arg value="--clean"/>
-        </exec>
-      </target>
-
-    <target name="-pre-build">
-        <exec dir="." executable="../scripts/mkvariant.sh" failonerror="true"
-              output="/dev/null">
-            <arg value="--variant-name"/>
-            <arg value="xw4bt"/>
-            <arg value="--app-name"/>
-            <arg value="cWords-BT"/>
-            <arg value="--dest-dir"/>
-            <arg value="./res"/>
-            <arg value="--dest-dir"/>
-            <arg value="./src"/>
-            <arg value="--dest-dir"/>
-            <arg value="./jni"/>
-            <arg value="--dest-dir"/>
-            <arg value="./assets"/>
-            <arg value="--dest-dir"/>
-            <arg value="./libs"/>
-            <arg value="--dest-dir"/>
-            <arg value="./img_src"/>
-        </exec>
-        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
-            <arg value="${build.target}"/>
-        </exec>
-
-        <property name="CHAT_ENABLED" value="true" />
-        <property name="THUMBNAIL_ENABLED" value="true" />
-        <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true">
-            <arg value="BUILD_TARGET=${build.target}" />
-            <arg value="-j3"/>
-            <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
-            <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
-            <arg value="THUMBNAIL_ENABLED=${THUMBNAIL_ENABLED}" />
-        </exec>
-
-        <exec dir="." executable="../scripts/mkimages.sh" 
-              failonerror="true" output="/dev/null" 
-              />
-
-        <exec dir="." executable="../scripts/mk_xml.py" 
-              failonerror="true" output="/dev/null" 
-              >
-        </exec>
-
-        <exec dir="." executable="../scripts/gen_gcmid.sh"
-              output="src/org/eehouse/android/xw4bt/GCMConsts.java"
-              failonerror="true" logError="true"
-              >
-          <arg value="xw4bt"/>
-        </exec>
-        <exec dir=".." executable="./scripts/genvers.sh" output="/dev/null">
-            <arg value="XWords4-bt"/>
-            <arg value="xw4bt"/>
-            <arg value="${INITIAL_CLIENT_VERS}" />
-            <arg value="${CHAT_ENABLED}" />
-            <arg value="${THUMBNAIL_ENABLED}" />
-        </exec>
+        <antcall target="my-pre-clean" />
     </target>
+
+    <target name="-pre-build" depends="my-copy-src">
+        <antcall target="my-pre-build">
+            <param name="VARIANT_NAME" value="${VARIANT_NAME}"/>
+            <param name="APP_NAME" value="cWords-BT"/>
+        </antcall>
+    </target>
+
+    <target name="-pre-compile">
+        <antcall target="my-pre-compile">
+            <param name="VARIANT_NAME" value="${VARIANT_NAME}"/>
+        </antcall>
+    </target>
+
 <!--
     <target name="-pre-compile">
     </target>

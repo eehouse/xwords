@@ -3,17 +3,15 @@
 <project name="XWords4">
 
     <target name="my-pre-clean">
+        <exec dir="." executable="../scripts/rm-non-git.sh" output="/dev/null" 
+	          failonerror="true" >
+          <arg value="--except" />
+          <arg value="./local.properties" />
+        </exec>
+
         <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null" 
 	          failonerror="true" >
             <arg value="${build.target}"/>
-        </exec>
-        <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true" >
-            <arg value="clean"/>
-        </exec>
-
-        <exec dir="." executable="../scripts/mkimages.sh" 
-              failonerror="true" output="/dev/null" >
-            <arg value="--clean"/>
         </exec>
     </target>
 
@@ -54,7 +52,7 @@
               >
           <arg value="${VARIANT_NAME}"/>
           </exec>
-        <exec dir="." executable="../scripts/genvers.sh" output="ant_out.txt" 
+        <exec dir="." executable="../scripts/genvers.sh" output="/dev/null" 
               failonerror="true">
           <arg value="${VARIANT_NAME}"/>
           <arg value="${INITIAL_CLIENT_VERS}" />

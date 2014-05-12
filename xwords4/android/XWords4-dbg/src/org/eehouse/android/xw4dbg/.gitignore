@@ -102,3 +102,8 @@ NewGameDelegate.java
 RelayGameDelegate.java
 StudyListActivity.java
 StudyListDelegate.java
+BTInviteDelegate.java
+InviteDelegate.java
+ListDelegateBase.java
+PrefsDelegate.java
+SMSInviteDelegate.java

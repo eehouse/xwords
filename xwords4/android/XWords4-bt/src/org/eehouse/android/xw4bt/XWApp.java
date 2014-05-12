@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../../../../../; ant debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2010 - 2011 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -24,6 +24,8 @@ import android.app.Application;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+import android.preference.PreferenceManager;
+
 import java.util.UUID;
 
 import org.eehouse.android.xw4bt.jni.XwJNI;
@@ -62,12 +64,32 @@ public class XWApp extends Application {
         ConnStatusHandler.loadState( this );
 
         RelayReceiver.RestartTimer( this );
+
+        boolean mustCheck = Utils.firstBootThisVersion( this );
+        PreferenceManager.setDefaultValues( this, R.xml.xwprefs, mustCheck );
+        if ( mustCheck ) {
+            XWPrefs.setHaveCheckedUpgrades( this, false );
+        } else {
+            mustCheck = ! XWPrefs.getHaveCheckedUpgrades( this );
+        }
+        if ( mustCheck ) {
+            UpdateCheckReceiver.checkVersions( this, false );
+        }
         UpdateCheckReceiver.restartTimer( this );
 
         BTService.startService( this );
         SMSService.checkForInvites( this );
         RelayService.startService( this );
         GCMIntentService.init( this );
+    }
+
+    // This is called on emulator only, but good for ensuring no memory leaks
+    // by forcing JNI cleanup
+    public void onTerminate()
+    {
+        DbgUtils.logf( "XwApp.onTerminate() called" );
+        XwJNI.cleanGlobals();
+        super.onTerminate();
     }
 
     public static UUID getAppUUID()
