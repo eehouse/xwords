@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import sys, getopt, re, os
 from lxml import etree
@@ -12,12 +13,11 @@ expr = '(' + \
         r"\\'" , \
         r'\\"' , \
         r'\s' , \
-        r'[;:.]' , \
+        u'[;:.…]' , \
         ] ) + \
     ')'
 
 # Can't make these work...
-        # r'[;:.]' , \
         # r'\(' , \
         # r'\)' , \
 
