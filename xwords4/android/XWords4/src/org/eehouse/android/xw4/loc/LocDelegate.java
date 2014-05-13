@@ -21,22 +21,28 @@ package org.eehouse.android.xw4.loc;
 
 import android.app.ListActivity;
 import android.os.Bundle;
-import android.widget.ListView;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.Spinner;
 
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DelegateBase;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 
-public class LocDelegate extends DelegateBase implements View.OnClickListener {
+public class LocDelegate extends DelegateBase 
+    implements View.OnClickListener,
+               OnItemSelectedListener {
 
     private ListActivity m_activity;
     private LocListAdapter m_adapter;
     private EditText m_searchField;
+    private Spinner m_filterBy;
     private ImageButton m_searchButton;
     private LocSearcher m_searcher;
     private String m_curSearch;
@@ -81,6 +87,8 @@ public class LocDelegate extends DelegateBase implements View.OnClickListener {
         m_searchButton.setOnClickListener( this );
 
         m_searchField = (EditText)root.findViewById( R.id.loc_search_field );
+        m_filterBy = (Spinner)root.findViewById( R.id.filters );
+        m_filterBy.setOnItemSelectedListener( this );
 
         LocSearcher.Pair[] pairs = LocUtils.makePairs( m_activity );
         m_searcher = new LocSearcher( pairs );
@@ -88,4 +96,17 @@ public class LocDelegate extends DelegateBase implements View.OnClickListener {
         makeNewAdapter();
     }
 
+    //////////////////////////////////////////////////
+    // AdapterView.OnItemSelectedListener interface
+    //////////////////////////////////////////////////
+    public void onItemSelected( AdapterView<?> parent, View view, 
+                                int position, long id )
+    {
+        DbgUtils.logf( "LocDelegate: item %d selected", position );
+        Utils.notImpl( m_activity );
+    }
+
+    public void onNothingSelected( AdapterView<?> parent )
+    {
+    }
 }

@@ -2228,5 +2228,10 @@
     <string name="xlations_enabled_summary">Add option to every screen menu</string>
 
     <string name="data_gsm_only">SMS Data is only available on GSM phones.</string>
+
+    <string name="loc_filters_prompt">Filter by:</string>
+    <string name="loc_filters_all">All</string>
+    <string name="loc_filters_screen">This screen</string>
+    <string name="loc_filters_menu">This menu</string>
     
 </resources>

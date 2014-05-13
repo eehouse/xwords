@@ -308,4 +308,10 @@
     <item>@string/confirm_sms_willpay</item>
   </string-array>
 
+  <string-array name="loc_filters">
+      <item>@string/loc_filters_all</item>
+      <item>@string/loc_filters_screen</item>
+      <item>@string/loc_filters_menu</item>
+  </string-array>
+
 </resources>
