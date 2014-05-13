@@ -37,7 +37,8 @@ public class ListDelegateBase extends DelegateBase {
 
     protected ListDelegateBase( ListActivity activity, Bundle savedState )
     {
-        this( activity, savedState, 0);
+        super( activity, savedState );
+        m_activity = activity;
     }
 
     protected void setListAdapter( ListAdapter adapter )

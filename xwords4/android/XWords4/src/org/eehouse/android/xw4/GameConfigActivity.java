@@ -25,16 +25,15 @@ import android.os.Bundle;
 import android.app.Dialog;
 import android.view.KeyEvent;
 
-public class GameConfigActivity extends Activity {
+public class GameConfigActivity extends XWActivity {
 
     private GameConfigDelegate m_dlgt;
 
     @Override
     public void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate( savedInstanceState );
         m_dlgt = new GameConfigDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
     @Override
@@ -52,26 +51,6 @@ public class GameConfigActivity extends Activity {
     { 
         m_dlgt.onPrepareDialog( id, dialog );
         super.onPrepareDialog( id, dialog );
-    }
-    @Override
-    protected void onStart()
-    {
-        super.onStart();
-        m_dlgt.onStart();
-    }
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        m_dlgt.onResume();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        m_dlgt.onPause();
-        super.onPause();
     }
 
     @Override

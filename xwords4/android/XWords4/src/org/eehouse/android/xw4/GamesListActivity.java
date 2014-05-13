@@ -33,7 +33,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class GamesListActivity extends ListActivity {
+public class GamesListActivity extends XWListActivity {
 
     // private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -63,9 +63,8 @@ public class GamesListActivity extends ListActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate( savedInstanceState );
         m_dlgt = new GamesListDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
     // called when we're brought to the front (probably as a result of
@@ -75,20 +74,6 @@ public class GamesListActivity extends ListActivity {
     {
         super.onNewIntent( intent );
         m_dlgt.onNewIntent( intent );
-    }
-
-    @Override
-    protected void onStop()
-    {
-        m_dlgt.onStop();
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        m_dlgt.onDestroy();
-        super.onDestroy();
     }
 
     @Override
@@ -119,25 +104,6 @@ public class GamesListActivity extends ListActivity {
         if ( !m_dlgt.onBackPressed() ) {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu )
-    {
-        return m_dlgt.onCreateOptionsMenu( menu );
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onPrepareOptionsMenu( menu )
-            || super.onPrepareOptionsMenu( menu );
-    }
-
-    public boolean onOptionsItemSelected( MenuItem item )
-    {
-        return m_dlgt.onOptionsItemSelected( item )
-            || super.onOptionsItemSelected( item );
     }
 
     public static void onGameDictDownload( Context context, Intent intent )

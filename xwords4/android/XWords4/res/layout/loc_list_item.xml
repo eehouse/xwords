@@ -9,9 +9,11 @@
 
     <TextView android:id="@+id/english_view"
               style="@style/evenly_spaced_horizontal"
+              android:singleLine="true"
               />
-    <EditText android:id="@+id/xlated_view"
+    <TextView android:id="@+id/xlated_view"
               style="@style/evenly_spaced_horizontal"
+              android:singleLine="true"
               />
 
 </org.eehouse.android.xw4.loc.LocListItem>

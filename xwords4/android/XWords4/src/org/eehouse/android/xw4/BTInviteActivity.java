@@ -24,13 +24,10 @@ import android.os.Bundle;
 
 public class BTInviteActivity extends InviteActivity {
 
-    private BTInviteDelegate m_dlgt;
-
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate( savedInstanceState );
-        m_dlgt = new BTInviteDelegate( this, savedInstanceState );
-        m_dlgt.init();
+        BTInviteDelegate dlgt = new BTInviteDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, dlgt );
     }
 }

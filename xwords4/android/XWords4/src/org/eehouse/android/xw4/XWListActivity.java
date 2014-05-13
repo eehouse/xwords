@@ -1,7 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,50 +19,42 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Dialog;
-import android.content.SharedPreferences;
+import android.app.ListActivity;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 
-import org.eehouse.android.xw4.loc.LocUtils;
+public class XWListActivity extends ListActivity {
 
-public class PrefsActivity extends PreferenceActivity {
+    private DelegateBase m_dlgt;
 
-    private PrefsDelegate m_dlgt;
-
-    @Override
-    protected Dialog onCreateDialog( int id )
+    protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
-        return m_dlgt.onCreateDialog( id );
-    }
-
-    @Override
-    protected void onCreate( Bundle savedInstanceState )
-    {
+        DbgUtils.logf( "<eeh>XWListActivity.onCreate()" );
         super.onCreate( savedInstanceState );
-        m_dlgt = new PrefsDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
-    }
-    
-    @Override
-    protected void onStart() 
-    {
-        LocUtils.xlatePreferences( this );
-        super.onStart();
+        m_dlgt = dlgt;
+        dlgt.init( savedInstanceState );
     }
 
     @Override
-    protected void onResume() 
+    protected void onPause()
+    {
+        m_dlgt.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume()
     {
         super.onResume();
         m_dlgt.onResume();
-   }
+    }
 
     @Override
-    protected void onPause() 
+    protected void onStart()
     {
-        super.onPause();
-        m_dlgt.onPause();
+        super.onStart();
+        m_dlgt.onStart();
     }
 
     @Override
@@ -78,5 +69,26 @@ public class PrefsActivity extends PreferenceActivity {
     {
         m_dlgt.onDestroy();
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu ) 
+    {
+        DbgUtils.logf( "XWListActivity.onCreateOptionsMenu called" );
+        return m_dlgt.onCreateOptionsMenu( menu );
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
+    {
+        return m_dlgt.onPrepareOptionsMenu( menu )
+            || super.onPrepareOptionsMenu( menu );
+    } // onPrepareOptionsMenu
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) 
+    {
+        return m_dlgt.onOptionsItemSelected( item )
+            || super.onOptionsItemSelected( item );
     }
 }

@@ -30,7 +30,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-public class BoardActivity extends Activity {
+public class BoardActivity extends XWActivity {
 
     private BoardDelegate m_dlgt;
 
@@ -54,30 +54,14 @@ public class BoardActivity extends Activity {
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
-        
+        m_dlgt = new BoardDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
+
         if ( 9 <= Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
             setRequestedOrientation( ActivityInfo.
                                      SCREEN_ORIENTATION_SENSOR_PORTRAIT );
         }
-
-        m_dlgt = new BoardDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
     } // onCreate
-
-    @Override
-    protected void onPause()
-    {
-        m_dlgt.onPause();
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        m_dlgt.onResume();
-    }
 
     @Override
     protected void onSaveInstanceState( Bundle outState ) 
@@ -110,25 +94,6 @@ public class BoardActivity extends Activity {
     public boolean onKeyUp( int keyCode, KeyEvent event )
     {
         return m_dlgt.onKeyUp( keyCode, event ) || super.onKeyUp( keyCode, event );
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onCreateOptionsMenu( menu );
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onPrepareOptionsMenu( menu )
-            || super.onPrepareOptionsMenu( menu );
-    } // onPrepareOptionsMenu
-
-    public boolean onOptionsItemSelected( MenuItem item ) 
-    {
-        return m_dlgt.onOptionsItemSelected( item )
-            || super.onOptionsItemSelected( item );
     }
 
     private static void noteSkip()

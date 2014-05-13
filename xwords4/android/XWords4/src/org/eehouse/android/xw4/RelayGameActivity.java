@@ -25,40 +25,15 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
-// import java.io.File;
 import android.os.Bundle;
-// import android.widget.Button;
-// import android.widget.TextView;
-// import android.view.View;
-// import android.content.Intent;
-// import junit.framework.Assert;
 
-// import org.eehouse.android.xw4.jni.*;
-
-public class RelayGameActivity extends Activity {
-
-    private RelayGameDelegate m_dlgt;
+public class RelayGameActivity extends XWActivity {
 
     @Override
     public void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
-        m_dlgt = new RelayGameDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        RelayGameDelegate dlgt = new RelayGameDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, dlgt );
     } // onCreate
 
-    @Override
-    protected void onStart()
-    {
-        super.onStart();
-        m_dlgt.onStart();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        m_dlgt.onPause();
-        super.onPause();
-    }
 } // class RelayGameActivity

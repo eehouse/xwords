@@ -25,16 +25,15 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-public class NewGameActivity extends Activity {
+public class NewGameActivity extends XWActivity {
 
     private NewGameDelegate m_dlgt;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
         m_dlgt = new NewGameDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     }
 
     @Override
@@ -49,12 +48,6 @@ public class NewGameActivity extends Activity {
     {
         super.onWindowFocusChanged( hasFocus );
         m_dlgt.onWindowFocusChanged( hasFocus );
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        m_dlgt.onResume();
     }
 
     @Override

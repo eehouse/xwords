@@ -21,38 +21,15 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-// import android.content.Context;
-// import android.content.Intent;
-// import android.net.Uri;
-// import android.os.AsyncTask;
 import android.os.Bundle;
-// import android.os.Handler;
-// import android.view.Window;
-// import android.widget.ProgressBar;
-// import android.widget.TextView;
 
-// import java.io.File;
-// import java.io.FileOutputStream;
-// import java.io.InputStream;
-
-// import java.net.URI;
-// import java.net.URLConnection;
-// import java.security.MessageDigest;
-// import java.util.HashMap;
-
-// import org.eehouse.android.xw4.loc.LocUtils;
-
-// import junit.framework.Assert;
-
-public class DictImportActivity extends Activity {
-
-    private DictImportDelegate m_dlgt;
+public class DictImportActivity extends XWActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
-        m_dlgt = new DictImportDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        DictImportDelegate dlgt = 
+            new DictImportDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, dlgt );
     }
 }

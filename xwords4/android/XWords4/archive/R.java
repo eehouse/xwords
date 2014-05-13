@@ -311,8 +311,8 @@ public final class R {
         public static final int board_menu=0x7f090000;
         public static final int chat_menu=0x7f090001;
         public static final int dicts_menu=0x7f090002;
-        public static final int games_list_menu=0x7f090003;
-        public static final int loc_menu=0x7f090004;
+        public static final int empty=0x7f090003;
+        public static final int games_list_menu=0x7f090004;
         public static final int studylist=0x7f090005;
     }
     public static final class raw {

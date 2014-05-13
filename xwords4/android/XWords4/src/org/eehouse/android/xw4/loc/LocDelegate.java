@@ -43,7 +43,7 @@ public class LocDelegate extends DelegateBase implements View.OnClickListener {
 
     protected LocDelegate( ListActivity activity, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.loc_menu );
+        super( activity, savedInstanceState );
         m_activity = activity;
         init( savedInstanceState );
     }
@@ -72,7 +72,7 @@ public class LocDelegate extends DelegateBase implements View.OnClickListener {
         m_activity.setListAdapter( m_adapter );
     }
 
-    private void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState ) 
     {
         m_activity.setContentView( R.layout.loc_main );
 

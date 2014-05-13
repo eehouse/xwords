@@ -77,8 +77,8 @@ public class DictsActivity extends ExpandableListActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
         m_dlgt = new DictsDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState );
         m_dlgt.init( savedInstanceState );
     } // onCreate
 
@@ -100,42 +100,10 @@ public class DictsActivity extends ExpandableListActivity {
     }
 
     @Override
-    protected void onResume()
-    {
-        super.onResume();
-        m_dlgt.onResume();
-    }
-
-    @Override
-    protected void onStop() {
-        m_dlgt.onStop();
-        super.onStop();
-    }
-
-    @Override
     public void onBackPressed() {
         if ( !m_dlgt.onBackPressed() ) {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu )
-    {
-        return m_dlgt.onCreateOptionsMenu( menu );
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onPrepareOptionsMenu( menu ) 
-            || super.onPrepareOptionsMenu( menu );
-    }
-
-    public boolean onOptionsItemSelected( MenuItem item )
-    {
-        return m_dlgt.onOptionsItemSelected( item )
-            || super.onOptionsItemSelected( item );
     }
 
     private static class SafePopupImpl implements SafePopup {

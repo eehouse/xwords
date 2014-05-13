@@ -32,17 +32,15 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class StudyListActivity extends ListActivity {
+public class StudyListActivity extends XWListActivity {
 
     private StudyListDelegate m_dlgt;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
-
         m_dlgt = new StudyListDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     }
 
     @Override
@@ -50,26 +48,6 @@ public class StudyListActivity extends ListActivity {
         if ( !m_dlgt.backPressed() ) {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu )
-    {
-        return m_dlgt.onCreateOptionsMenu( menu );
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onPrepareOptionsMenu( menu )
-            || super.onPrepareOptionsMenu( menu );
-    }
-
-    @Override
-    public boolean onOptionsItemSelected( MenuItem item )
-    {
-        return m_dlgt.onOptionsItemSelected( item )
-            || super.onOptionsItemSelected( item );
     }
 
     @Override

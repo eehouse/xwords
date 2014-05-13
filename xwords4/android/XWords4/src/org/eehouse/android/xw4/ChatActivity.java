@@ -32,7 +32,7 @@ import android.view.MenuItem;
 import android.view.MenuInflater;
 import android.widget.LinearLayout;
 
-public class ChatActivity extends Activity {
+public class ChatActivity extends XWActivity {
 
     private ChatDelegate m_dlgt;
 
@@ -40,25 +40,10 @@ public class ChatActivity extends Activity {
     public void onCreate( Bundle savedInstanceState ) 
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            super.onCreate( savedInstanceState );
+            m_dlgt = new ChatDelegate( this, savedInstanceState );
+            super.onCreate( savedInstanceState, m_dlgt );
 
             setContentView( R.layout.chat );
-
-            m_dlgt = new ChatDelegate( this, savedInstanceState );
-            m_dlgt.init( savedInstanceState );
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu )
-    {
-        return m_dlgt.onCreateOptionsMenu( menu );
-    }
-
-    @Override
-    public boolean onOptionsItemSelected( MenuItem item ) 
-    {
-        return m_dlgt.onOptionsItemSelected( item )
-            || super.onOptionsItemSelected( item );
     }
 }

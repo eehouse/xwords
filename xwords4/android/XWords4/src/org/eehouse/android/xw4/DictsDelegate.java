@@ -442,7 +442,8 @@ public class DictsDelegate extends DelegateBase
         return handled;
     }
 
-    protected boolean onPrepareOptionsMenu( Menu menu ) 
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
     {
         int nSel = m_selDicts.size();
         Utils.setItemVisible( menu, R.id.dicts_download, 
@@ -457,7 +458,8 @@ public class DictsDelegate extends DelegateBase
         return true;
     }
 
-    protected boolean onOptionsItemSelected( MenuItem item )
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
 

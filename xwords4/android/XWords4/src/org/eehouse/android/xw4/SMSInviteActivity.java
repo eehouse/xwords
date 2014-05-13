@@ -32,9 +32,8 @@ public class SMSInviteActivity extends InviteActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate( savedInstanceState );
         m_dlgt = new SMSInviteDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     }
 
     @Override

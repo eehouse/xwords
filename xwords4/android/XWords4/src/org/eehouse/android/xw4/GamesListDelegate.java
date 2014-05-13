@@ -614,7 +614,8 @@ public class GamesListDelegate extends ListDelegateBase
         return handled;
     }
 
-    protected boolean onPrepareOptionsMenu( Menu menu ) 
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
     {
         int nGamesSelected = m_selGames.size();
         int nGroupsSelected = m_selGroupIDs.size();
@@ -693,7 +694,8 @@ public class GamesListDelegate extends ListDelegateBase
         return m_menuPrepared;
     }
 
-    protected boolean onOptionsItemSelected( MenuItem item )
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         Assert.assertTrue( m_menuPrepared );
 

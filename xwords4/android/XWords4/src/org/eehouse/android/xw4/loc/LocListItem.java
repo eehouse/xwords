@@ -34,12 +34,12 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.DbgUtils;
 
-public class LocListItem extends LinearLayout implements OnFocusChangeListener {
+public class LocListItem extends LinearLayout {
 
     private Context m_context;
     private LocSearcher.Pair m_pair;
     private int m_position;
-    private EditText m_edit;
+    private TextView m_xlated;
     private String m_xlation;
 
     public LocListItem( Context cx, AttributeSet as ) 
@@ -52,8 +52,7 @@ public class LocListItem extends LinearLayout implements OnFocusChangeListener {
     protected void onFinishInflate()
     {
         super.onFinishInflate();
-        m_edit = (EditText)findViewById( R.id.xlated_view ); 
-        m_edit.setOnFocusChangeListener( this );
+        m_xlated = (TextView)findViewById( R.id.xlated_view ); 
     }
 
     private void setEnglish()
@@ -67,20 +66,7 @@ public class LocListItem extends LinearLayout implements OnFocusChangeListener {
         m_xlation = LocUtils.getXlation( m_context, true, m_pair.getKey() );
         if ( null != m_xlation ) {
             m_pair.setXlation( m_xlation );
-            m_edit.setText( m_xlation );
-        }
-    }
-
-    public void onFocusChange( View view, boolean hasFocus )
-    {
-        Assert.assertTrue( view == m_edit );
-        if ( !hasFocus ) {
-            CharSequence txt = m_edit.getText();
-            DbgUtils.logf( "view with text %s lost focus", txt );
-            if ( ! txt.equals( m_xlation ) ) {
-                LocUtils.setXlation( m_context, m_pair.getKey(),
-                                     txt.toString() );
-            }
+            m_xlated.setText( m_xlation );
         }
     }
 

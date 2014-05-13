@@ -41,7 +41,6 @@ import android.text.TextUtils;
 
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -665,7 +664,8 @@ public class BoardDelegate extends DelegateBase
         return handled;
     }
 
-    protected boolean onPrepareOptionsMenu( Menu menu ) 
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
     {
         boolean inTrade = false;
         MenuItem item;
@@ -750,7 +750,8 @@ public class BoardDelegate extends DelegateBase
         return true;
     } // onPrepareOptionsMenu
 
-    protected boolean onOptionsItemSelected( MenuItem item ) 
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) 
     {
         boolean handled = true;
         JNICmd cmd = JNICmd.CMD_NONE;

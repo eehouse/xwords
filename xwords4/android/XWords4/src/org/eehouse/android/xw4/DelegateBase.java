@@ -20,12 +20,13 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.app.AlertDialog;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -38,28 +39,46 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
 
     private DlgDelegate m_delegate;
     private Activity m_activity;
-    private int m_optionsMenuID = 0;
+    private int m_optionsMenuID;
     private View m_rootView;
 
     public DelegateBase( Activity activity, Bundle bundle )
     {
-        this( activity, bundle, 0 );
+        this( activity, bundle, R.menu.empty );
     }
 
     public DelegateBase( Activity activity, Bundle bundle, int optionsMenu )
     {
+        Assert.assertTrue( 0 < optionsMenu );
         m_activity = activity;
         m_delegate = new DlgDelegate( activity, this, bundle );
         m_optionsMenuID = optionsMenu;
         LocUtils.xlateTitle( activity );
     }
 
+    // Does nothing unless overridden. These belong in an interface.
+    protected void init( Bundle savedInstanceState ) { Assert.fail(); }
+    public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
+    public boolean onOptionsItemSelected( MenuItem item ) { return false; }
+    protected void onStart() {}
+    protected void onResume() {}
+    protected void onPause() {}
+    protected void onStop() {}
+    protected void onDestroy() {}
+
+    // public boolean onOptionsItemSelected( MenuItem item ) 
+    // {
+    // }
+
     public boolean onCreateOptionsMenu( Menu menu )
     {
+        DbgUtils.logf( "DelegateBase.onCreateOptionsMenu()" );
         boolean handled = 0 < m_optionsMenuID;
         if ( handled ) {
             m_activity.getMenuInflater().inflate( m_optionsMenuID, menu );
             LocUtils.xlateMenu( m_activity, menu );
+        } else {
+            Assert.fail();
         }
 
         return handled;

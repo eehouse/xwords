@@ -23,36 +23,14 @@ package org.eehouse.android.xw4;
 import android.app.ListActivity;
 import android.os.Bundle;
 
-public class DictBrowseActivity extends ListActivity {
+public class DictBrowseActivity extends XWListActivity {
 
     private DictBrowseDelegate m_dlgt;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
         m_dlgt = new DictBrowseDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
-
-    @Override
-    protected void onPause()
-    {
-        m_dlgt.onPause();
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        m_dlgt.onResume();
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        m_dlgt.onDestroy();
-        super.onDestroy();
-    }
 }

@@ -44,6 +44,7 @@ public class ChatDelegate extends DelegateBase
         m_activity = activity;
     }
 
+    @Override
     protected void init( Bundle savedInstanceState ) 
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
@@ -77,7 +78,8 @@ public class ChatDelegate extends DelegateBase
         }
     }
 
-    protected boolean onOptionsItemSelected( MenuItem item ) 
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) 
     {
         boolean handled = R.id.chat_menu_clear == item.getItemId();
         if ( handled ) {
