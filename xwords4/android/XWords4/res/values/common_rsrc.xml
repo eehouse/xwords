@@ -119,7 +119,6 @@
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>
-  <string name="loc_main_english">English</string>
 
   <!-- other -->
   <string name="default_host">eehouse.org</string>
@@ -312,6 +311,7 @@
       <item>@string/loc_filters_all</item>
       <item>@string/loc_filters_screen</item>
       <item>@string/loc_filters_menu</item>
+      <item>@string/loc_filters_modified</item>
   </string-array>
 
 </resources>

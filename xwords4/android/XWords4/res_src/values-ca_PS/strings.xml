@@ -1913,4 +1913,6 @@
   <string name="loc_filters_all">ALL</string>
   <string name="loc_filters_screen">THIS SCREEN</string>
   <string name="loc_filters_menu">THIS MENU</string>
+  <string name="loc_filters_modified">MODIFIED BY ME</string>
+  <string name="loc_main_english">ENGLISH</string>
 </resources>

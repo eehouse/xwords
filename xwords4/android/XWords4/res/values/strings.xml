@@ -2233,5 +2233,8 @@
     <string name="loc_filters_all">All</string>
     <string name="loc_filters_screen">This screen</string>
     <string name="loc_filters_menu">This menu</string>
+    <string name="loc_filters_modified">Modified by me</string>
+    
+    <string name="loc_main_english">English</string>
     
 </resources>

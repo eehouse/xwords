@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent" 
+              android:layout_height="match_parent"
+              >
+
+    <TextView style="@style/config_separator"
+              android:id="@+id/english_label"
+              />
+    <TextView android:id="@+id/english_view"
+              android:layout_width="match_parent" 
+              android:layout_height="wrap_content"
+              />
+
+    <TextView style="@style/config_separator"
+              android:id="@+id/blessed_label"
+              />
+    <TextView android:id="@+id/xlated_view_blessed"
+              android:layout_width="match_parent" 
+              android:layout_height="wrap_content"
+              />
+
+    <TextView style="@style/config_separator"
+              android:id="@+id/local_label"
+              />
+    <EditText android:id="@+id/xlated_view_local"
+              android:layout_width="match_parent" 
+              android:layout_height="wrap_content"
+              />
+
+</LinearLayout>

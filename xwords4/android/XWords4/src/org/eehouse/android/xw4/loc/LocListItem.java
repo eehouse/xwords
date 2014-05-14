@@ -34,9 +34,9 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.DbgUtils;
 
-public class LocListItem extends LinearLayout {
+public class LocListItem extends LinearLayout
+    implements View.OnClickListener {
 
-    private Context m_context;
     private LocSearcher.Pair m_pair;
     private int m_position;
     private TextView m_xlated;
@@ -45,7 +45,6 @@ public class LocListItem extends LinearLayout {
     public LocListItem( Context cx, AttributeSet as ) 
     {
         super( cx, as );
-        m_context = cx;
     }
 
     @Override
@@ -53,6 +52,7 @@ public class LocListItem extends LinearLayout {
     {
         super.onFinishInflate();
         m_xlated = (TextView)findViewById( R.id.xlated_view ); 
+        setOnClickListener( this );
     }
 
     private void setEnglish()
@@ -63,11 +63,20 @@ public class LocListItem extends LinearLayout {
 
     private void setXlated()
     {
-        m_xlation = LocUtils.getXlation( m_context, true, m_pair.getKey() );
+        m_xlation = LocUtils.getXlation( getContext(), true, m_pair.getKey() );
         if ( null != m_xlation ) {
             m_pair.setXlation( m_xlation );
             m_xlated.setText( m_xlation );
         }
+    }
+
+    //////////////////////////////////////////////////
+    // View.OnClickListener interface
+    //////////////////////////////////////////////////
+    @Override
+    public void onClick( View view )
+    {
+        LocItemEditDelegate.launch( getContext(), m_pair );
     }
 
     protected static LocListItem create( Context context, 
