@@ -63,7 +63,7 @@ public class LocListItem extends LinearLayout
 
     private void setXlated()
     {
-        m_xlation = LocUtils.getXlation( getContext(), true, m_pair.getKey() );
+        m_xlation = LocUtils.getXlation( getContext(), m_pair.getKey(), true );
         if ( null != m_xlation ) {
             m_pair.setXlation( m_xlation );
             m_xlated.setText( m_xlation );

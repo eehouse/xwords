@@ -19,10 +19,11 @@
 
 package org.eehouse.android.xw4.loc;
 
-import android.content.Intent;
 import android.app.Activity;
-import android.os.Bundle;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.DelegateBase;
@@ -32,6 +33,8 @@ public class LocItemEditDelegate extends DelegateBase {
 
     private static final String KEY = "KEY";
     private Activity m_activity;
+    private String m_key;
+    private EditText m_edit;
 
     protected LocItemEditDelegate( Activity activity, Bundle savedInstanceState )
     {
@@ -44,14 +47,30 @@ public class LocItemEditDelegate extends DelegateBase {
         setContentView( R.layout.loc_item_edit );
 
         String key = getIntent().getStringExtra( KEY );
+        m_key = key;
+
         TextView view = (TextView)findViewById( R.id.english_view );
         view.setText( key );
         view = (TextView)findViewById( R.id.xlated_view_blessed );
-        view.setText( LocUtils.getXlation( m_activity, true, key ) );
+        view.setText( LocUtils.getXlation( m_activity, key, false, true ) );
+        m_edit = (EditText)findViewById( R.id.xlated_view_local );
+        m_edit.setText( LocUtils.getXlation( m_activity, key, true, true ) );
 
         setLabel( R.id.english_label, R.string.loc_main_english );
         setLabel( R.id.blessed_label, R.string.loc_main_yourlang );
         setLabel( R.id.local_label, R.string.loc_main_yourlang );
+    }
+
+    @Override
+    protected void onPause()
+    {
+        // Save any local translation
+        CharSequence txt = m_edit.getText();
+        if ( null != txt && 0 < txt.length() ) {
+            LocUtils.setXlation( m_activity, m_key, txt.toString() );
+        }
+
+        super.onPause();
     }
 
     private void setLabel( int viewID, int strID )

@@ -155,7 +155,7 @@ public class LocUtils {
     public static String xlateString( Context context, String str )
     {
         if ( LocIDs.getS_MAP( context ).containsKey( str ) ) {
-            String xlation = getXlation( context, true, str );
+            String xlation = getXlation( context, str, true );
             if ( null != xlation ) {
                 str = xlation;
             }
@@ -198,7 +198,7 @@ public class LocUtils {
         String result = null;
         String key = keyForID( context, id );
         if ( null != key ) {
-            result = getXlation( context, canUseDB, key );
+            result = getXlation( context, key, canUseDB );
         }
         
         if ( null == result ) {
@@ -229,19 +229,38 @@ public class LocUtils {
         s_xlationsLocal.put( key, txt );
     }
 
-    public static String getXlation( Context context, boolean canUseDB, 
-                                     String key )
+    protected static String getXlation( Context context, String key,
+                                        boolean canUseDB )
+    {
+        return getXlation( context, key, null, canUseDB );
+    }
+
+    protected static String getXlation( Context context, String key,
+                                        boolean forceLocal, boolean canUseDB )
+    {
+        return getXlation( context, key, new Boolean(forceLocal), canUseDB );
+    }
+
+    private static String getXlation( Context context, String key,
+                                      Boolean forceLocal, boolean canUseDB )
     {
         if ( canUseDB ) {
             loadXlations( context );
         }
         String result = null;
-        if ( null != s_xlationsLocal ) {
-            result = s_xlationsLocal.get( key );
+
+        if ( null == forceLocal || forceLocal ) {
+            if ( null != s_xlationsLocal ) {
+                result = s_xlationsLocal.get( key );
+            }
         }
-        if ( null == result && null != s_xlationsBlessed ) {
-            result = s_xlationsBlessed.get( key );
+
+        if ( null == forceLocal || !forceLocal ) {
+            if ( null == result && null != s_xlationsBlessed ) {
+                result = s_xlationsBlessed.get( key );
+            }
         }
+
         if ( UPPER_CASE && null == result ) {
             result = toUpperCase( key );
         }
@@ -340,7 +359,7 @@ public class LocUtils {
             String key = iter.next();
             String english = context.getString( map.get( key ) );
             Assert.assertTrue( english.equals( key ) );
-            String xlation = getXlation( context, true, key );
+            String xlation = getXlation( context, key, true );
             result[ii] = new LocSearcher.Pair( key, english, xlation );
         }
         return result;
@@ -396,8 +415,8 @@ public class LocUtils {
     private static void loadXlations( Context context )
     {
         if ( null == s_xlationsLocal || null == s_xlationsBlessed ) {
-            Object[] asObjs = DBUtils.getXlations( context, 
-                                                   getCurLocale( context ) );
+            Object[] asObjs = 
+                DBUtils.getXlations( context, getCurLocale( context ) );
             s_xlationsLocal = (Map<String,String>)asObjs[0];
             s_xlationsBlessed = (Map<String,String>)asObjs[1];
             DbgUtils.logf( "loadXlations: got %d local strings, %d blessed strings",
