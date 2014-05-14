@@ -1910,6 +1910,7 @@
   <string name="xlations_enabled_summary">ADD OPTION TO EVERY SCREEN MENU</string>
   <string name="data_gsm_only">SMS DATA IS ONLY AVAILABLE ON GSM PHONES.</string>
   <string name="loc_filters_prompt">FILTER BY:</string>
+  <string name="loc_search_prompt">SEARCH FOR:</string>
   <string name="loc_filters_all">ALL</string>
   <string name="loc_filters_screen">THIS SCREEN</string>
   <string name="loc_filters_menu">THIS MENU</string>

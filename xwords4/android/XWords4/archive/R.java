@@ -1452,17 +1452,18 @@ public final class R {
         /**   
          */
         public static final int loc_external=0x7f0600bb;
-        public static final int loc_filters_all=0x7f0602a9;
-        public static final int loc_filters_menu=0x7f0602ab;
-        public static final int loc_filters_modified=0x7f0602ac;
+        public static final int loc_filters_all=0x7f0602aa;
+        public static final int loc_filters_menu=0x7f0602ac;
+        public static final int loc_filters_modified=0x7f0602ad;
         public static final int loc_filters_prompt=0x7f0602a8;
-        public static final int loc_filters_screen=0x7f0602aa;
+        public static final int loc_filters_screen=0x7f0602ab;
         /**  see move_dictf above 
          */
         public static final int loc_internal=0x7f0600ba;
-        public static final int loc_main_english=0x7f0602ad;
+        public static final int loc_main_english=0x7f0602ae;
         public static final int loc_main_yourlang=0x7f0602a2;
         public static final int loc_menu_xlate=0x7f0602a3;
+        public static final int loc_search_prompt=0x7f0602a9;
         /**  This is the "hint" printed in light text in the empty player
          name field 
          */

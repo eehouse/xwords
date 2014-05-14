@@ -1910,6 +1910,7 @@
   <string name="xlations_enabled_summary">Dda noitpo ot yreve neercs unem</string>
   <string name="data_gsm_only">SMS Atad si ylno elbaliava no MSG senohp.</string>
   <string name="loc_filters_prompt">Retlif yb:</string>
+  <string name="loc_search_prompt">Hcraes rof:</string>
   <string name="loc_filters_all">Lla</string>
   <string name="loc_filters_screen">Siht neercs</string>
   <string name="loc_filters_menu">Siht unem</string>
