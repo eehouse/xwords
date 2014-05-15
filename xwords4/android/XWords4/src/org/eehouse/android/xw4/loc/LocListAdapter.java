@@ -46,13 +46,13 @@ public class LocListAdapter extends XWListAdapter {
     public int getCount() 
     {
         int count = m_searcher.matchSize();
-        DbgUtils.logf(" LocListAdapter.getCount() => %d", count );
+        // DbgUtils.logf(" LocListAdapter.getCount() => %d", count );
         return count;
     }
 
     public View getView( int position, View convertView, ViewGroup parent )
     {
-        DbgUtils.logf( "LocListAdapter.getView(position=%d)", position );
+        // DbgUtils.logf( "LocListAdapter.getView(position=%d)", position );
         LocSearcher.Pair pair = m_searcher.getNthMatch( position );
         return LocListItem.create( m_context, pair, position );
     }
