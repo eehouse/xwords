@@ -96,7 +96,9 @@ public class LocSearcher {
                     FilterFunc proc = s_falseProc;
                     switch ( showBy ) {
                     case LOC_FILTERS_SCREEN:
+                        break;
                     case LOC_FILTERS_MENU:
+                        proc = s_menuProc;
                         break;
                     case LOC_FILTERS_MODIFIED:
                         proc = s_modifiedProc;
@@ -152,6 +154,12 @@ public class LocSearcher {
             public boolean passes( Context context, Pair pair ) {
                 return null != 
                     LocUtils.getLocalXlation( context, pair.getKey(), true );
+            }
+        };
+
+    private static FilterFunc s_menuProc = new FilterFunc() {
+            public boolean passes( Context context, Pair pair ) {
+                return LocUtils.inLatestMenu( context, pair.getKey() );
             }
         };
 

@@ -75,6 +75,9 @@ public class LocUtils {
     private static Boolean s_enabled = null;
     private static Boolean UPPER_CASE = false;
     private static String s_curLocale;
+    private static int s_latestMenuCode = 0;
+    private static HashMap<Integer, HashSet<String> > s_menuSets
+        = new HashMap<Integer, HashSet<String> >();
 
     public interface LocIface {
         void setText( CharSequence text );
@@ -134,13 +137,15 @@ public class LocUtils {
 
     public static void xlateView( Context context, View view )
     {
-        DbgUtils.logf( "xlateView() top level" );
+        // DbgUtils.logf( "xlateView() top level" );
         xlateView( context, view, 0 );
     }
 
     public static void xlateMenu( Activity activity, Menu menu )
     {
-        xlateMenu( activity, menu, 0 );
+        int rootID = menu.hashCode();
+        DbgUtils.logf( "got rootID %x for menu", rootID );
+        xlateMenu( activity, rootID, menu, 0 );
     }
 
     private static String xlateString( Context context, CharSequence str )
@@ -369,8 +374,8 @@ public class LocUtils {
         return result;
     }
 
-    private static void xlateMenu( final Activity activity, Menu menu, 
-                                   int depth )
+    private static void xlateMenu( final Activity activity, final int rootID,
+                                   Menu menu, int depth )
     {
         int count = menu.size();
         for ( int ii = 0; ii < count; ++ii ) {
@@ -379,13 +384,15 @@ public class LocUtils {
             if ( null != ts ) {
                 String title = ts.toString();
                 if ( LocIDs.getS_MAP( activity ).containsKey(title) ) {
+                    associateMenuString( rootID, title );
+
                     title = xlateString( activity, title );
                     item.setTitle( title );
                 }
             }
 
             if ( item.hasSubMenu() ) {
-                xlateMenu( activity, item.getSubMenu(), 1 + depth );
+                xlateMenu( activity, rootID, item.getSubMenu(), 1 + depth );
             }
         }
 
@@ -395,6 +402,8 @@ public class LocUtils {
             menu.add( title )
                 .setOnMenuItemClickListener( new OnMenuItemClickListener() {
                         public boolean onMenuItemClick( MenuItem item ) {
+                            s_latestMenuCode = rootID;
+
                             Intent intent = 
                                 new Intent( activity, LocActivity.class );
                             activity.startActivity( intent );
@@ -534,6 +543,18 @@ public class LocUtils {
         }
     }
 
+    public static boolean inLatestMenu( Context context, String key )
+    {
+        boolean result = false;
+        if ( 0 != s_latestMenuCode ) {
+            HashSet<String> keys = s_menuSets.get( s_latestMenuCode );
+            if ( null != keys ) {
+                result = keys.contains( key );
+            }
+        }
+        return result;
+    }
+
     // This is for testing, but the ability to pull the formatters will be
     // critical for validating local transations of strings containing
     // formatters.
@@ -569,6 +590,19 @@ public class LocUtils {
 
         DBUtils.dropXLations( context, locale );
         DBUtils.setStringFor( context, localeKey(locale), "" );
+    }
+
+    // Add key (english string) to the hashset associated with this menu
+    private static void associateMenuString( int menuID, String key )
+    {
+        HashSet<String> keys = s_menuSets.get(menuID);
+        if ( null == keys ) {
+            keys = new HashSet<String>();
+            s_menuSets.put( menuID, keys );
+            // Watch for leaking -- currently nothing ever removed from s_menuSets
+            DbgUtils.logf( "associateMenuString: %d menu codes now known", s_menuSets.size() );
+        }
+        keys.add( key );
     }
 
     private static Pattern s_patUnicode = Pattern.compile("(\\\\[Uu][0-9a-fA-F]{4})");

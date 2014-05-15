@@ -102,8 +102,6 @@ public class LocDelegate extends ListDelegateBase
     public void onItemSelected( AdapterView<?> parent, View view, 
                                 int position, long id )
     {
-        DbgUtils.logf( "LocDelegate: item %d selected", position );
-        Utils.notImpl( m_activity );
         m_searcher.start( position );
         makeNewAdapter();
     }
