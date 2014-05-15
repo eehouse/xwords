@@ -1912,8 +1912,8 @@
   <string name="loc_filters_prompt">Retlif yb:</string>
   <string name="loc_search_prompt">Hcraes rof:</string>
   <string name="loc_filters_all">Lla</string>
-  <string name="loc_filters_screen">Siht neercs</string>
-  <string name="loc_filters_menu">Siht unem</string>
+  <string name="loc_filters_screen">Tsetal neercs</string>
+  <string name="loc_filters_menu">Tsetal unem</string>
   <string name="loc_filters_modified">Deifidom yb em</string>
   <string name="loc_main_english">Hsilgne</string>
 </resources>

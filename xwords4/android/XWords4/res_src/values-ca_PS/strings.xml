@@ -1912,8 +1912,8 @@
   <string name="loc_filters_prompt">FILTER BY:</string>
   <string name="loc_search_prompt">SEARCH FOR:</string>
   <string name="loc_filters_all">ALL</string>
-  <string name="loc_filters_screen">THIS SCREEN</string>
-  <string name="loc_filters_menu">THIS MENU</string>
+  <string name="loc_filters_screen">LATEST SCREEN</string>
+  <string name="loc_filters_menu">LATEST MENU</string>
   <string name="loc_filters_modified">MODIFIED BY ME</string>
   <string name="loc_main_english">ENGLISH</string>
 </resources>
