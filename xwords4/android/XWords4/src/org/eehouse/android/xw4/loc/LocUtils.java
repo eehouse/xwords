@@ -43,6 +43,8 @@ import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IllegalFormatConversionException;
@@ -50,6 +52,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,9 +78,9 @@ public class LocUtils {
     private static Boolean s_enabled = null;
     private static Boolean UPPER_CASE = false;
     private static String s_curLocale;
-    private static int s_latestMenuCode = 0;
-    private static HashMap<Integer, HashSet<String> > s_menuSets
-        = new HashMap<Integer, HashSet<String> >();
+    private static WeakReference<Menu> s_latestMenuRef;
+    private static HashMap<WeakReference<Menu>, HashSet<String> > s_menuSets
+        = new HashMap<WeakReference<Menu>, HashSet<String> >();
 
     public interface LocIface {
         void setText( CharSequence text );
@@ -143,9 +146,9 @@ public class LocUtils {
 
     public static void xlateMenu( Activity activity, Menu menu )
     {
-        int rootID = menu.hashCode();
-        DbgUtils.logf( "got rootID %x for menu", rootID );
-        xlateMenu( activity, rootID, menu, 0 );
+        pareMenus();
+
+        xlateMenu( activity, new WeakReference<Menu>( menu ), menu, 0 );
     }
 
     private static String xlateString( Context context, CharSequence str )
@@ -374,7 +377,8 @@ public class LocUtils {
         return result;
     }
 
-    private static void xlateMenu( final Activity activity, final int rootID,
+    private static void xlateMenu( final Activity activity, 
+                                   final WeakReference<Menu> rootRef,
                                    Menu menu, int depth )
     {
         int count = menu.size();
@@ -384,7 +388,7 @@ public class LocUtils {
             if ( null != ts ) {
                 String title = ts.toString();
                 if ( LocIDs.getS_MAP( activity ).containsKey(title) ) {
-                    associateMenuString( rootID, title );
+                    associateMenuString( rootRef, title );
 
                     title = xlateString( activity, title );
                     item.setTitle( title );
@@ -392,17 +396,20 @@ public class LocUtils {
             }
 
             if ( item.hasSubMenu() ) {
-                xlateMenu( activity, rootID, item.getSubMenu(), 1 + depth );
+                xlateMenu( activity, rootRef, item.getSubMenu(), 1 + depth );
             }
         }
 
         // The caller is loc-aware, so add our menu -- at the top level!
         if ( 0 == depth && XWPrefs.getXlationEnabled( activity ) ) {
-            String title = getString( activity, R.string.loc_menu_xlate );
+            String title = activity.getString( R.string.loc_menu_xlate );
+            associateMenuString( rootRef, title );
+
+            title = getXlation( activity, title, true );
             menu.add( title )
                 .setOnMenuItemClickListener( new OnMenuItemClickListener() {
                         public boolean onMenuItemClick( MenuItem item ) {
-                            s_latestMenuCode = rootID;
+                            s_latestMenuRef = rootRef;
 
                             Intent intent = 
                                 new Intent( activity, LocActivity.class );
@@ -410,6 +417,21 @@ public class LocUtils {
                             return true;
                         } 
                     });
+        }
+    }
+
+    private static void pareMenus()
+    {
+        DbgUtils.assertOnUIThread();
+
+        Set<WeakReference<Menu>> keys = s_menuSets.keySet();
+        Iterator<WeakReference<Menu>> iter = keys.iterator();
+        while ( iter.hasNext() ) {
+            WeakReference<Menu> ref = iter.next();
+            if ( null == ref.get() ) {
+                DbgUtils.logf( "LocUtils.pareMenus(): removing menu as ref is gone" );
+                s_menuSets.remove( ref );
+            }
         }
     }
 
@@ -546,8 +568,8 @@ public class LocUtils {
     public static boolean inLatestMenu( Context context, String key )
     {
         boolean result = false;
-        if ( 0 != s_latestMenuCode ) {
-            HashSet<String> keys = s_menuSets.get( s_latestMenuCode );
+        if ( null != s_latestMenuRef ) {
+            HashSet<String> keys = s_menuSets.get( s_latestMenuRef );
             if ( null != keys ) {
                 result = keys.contains( key );
             }
@@ -593,14 +615,13 @@ public class LocUtils {
     }
 
     // Add key (english string) to the hashset associated with this menu
-    private static void associateMenuString( int menuID, String key )
+    private static void associateMenuString( WeakReference<Menu> ref, String key )
     {
-        HashSet<String> keys = s_menuSets.get(menuID);
+        HashSet<String> keys = s_menuSets.get( ref );
         if ( null == keys ) {
             keys = new HashSet<String>();
-            s_menuSets.put( menuID, keys );
+            s_menuSets.put( ref, keys );
             // Watch for leaking -- currently nothing ever removed from s_menuSets
-            DbgUtils.logf( "associateMenuString: %d menu codes now known", s_menuSets.size() );
         }
         keys.add( key );
     }
