@@ -430,7 +430,7 @@ public class LocUtils {
             WeakReference<Menu> ref = iter.next();
             if ( null == ref.get() ) {
                 DbgUtils.logf( "LocUtils.pareMenus(): removing menu as ref is gone" );
-                s_menuSets.remove( ref );
+                iter.remove();
             }
         }
     }
