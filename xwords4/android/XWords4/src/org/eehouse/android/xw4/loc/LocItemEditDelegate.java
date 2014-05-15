@@ -52,9 +52,9 @@ public class LocItemEditDelegate extends DelegateBase {
         TextView view = (TextView)findViewById( R.id.english_view );
         view.setText( key );
         view = (TextView)findViewById( R.id.xlated_view_blessed );
-        view.setText( LocUtils.getXlation( m_activity, key, false, true ) );
+        view.setText( LocUtils.getBlessedXlation( m_activity, key, true ) );
         m_edit = (EditText)findViewById( R.id.xlated_view_local );
-        m_edit.setText( LocUtils.getXlation( m_activity, key, true, true ) );
+        m_edit.setText( LocUtils.getLocalXlation( m_activity, key, true ) );
 
         setLabel( R.id.english_label, R.string.loc_main_english );
         setLabel( R.id.blessed_label, R.string.loc_main_yourlang );

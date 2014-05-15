@@ -20,13 +20,14 @@
 
 package org.eehouse.android.xw4.loc;
 
-import android.widget.LinearLayout;
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
-import android.widget.TextView;
-import android.widget.EditText;
-import android.view.View;
 import android.view.View.OnFocusChangeListener;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import junit.framework.Assert;
 
@@ -36,6 +37,8 @@ import org.eehouse.android.xw4.DbgUtils;
 
 public class LocListItem extends LinearLayout
     implements View.OnClickListener {
+
+    private static final int LOCAL_COLOR = Color.argb( 0xFF, 0x7f, 0x00, 0x00 );
 
     private LocSearcher.Pair m_pair;
     private int m_position;
@@ -63,10 +66,21 @@ public class LocListItem extends LinearLayout
 
     private void setXlated()
     {
-        m_xlation = LocUtils.getXlation( getContext(), m_pair.getKey(), true );
-        if ( null != m_xlation ) {
-            m_pair.setXlation( m_xlation );
-            m_xlated.setText( m_xlation );
+        boolean local = false;
+        String key = m_pair.getKey();
+        String xlation = LocUtils.getLocalXlation( getContext(), key, true );
+        if ( null != xlation ) {
+            local = true;
+        } else {
+            xlation = LocUtils.getBlessedXlation( getContext(), key, true );
+        }
+        if ( null != xlation ) {
+            m_xlation = xlation;
+            m_pair.setXlation( xlation );
+            m_xlated.setText( xlation );
+            if ( local ) {
+                m_xlated.setTextColor( LOCAL_COLOR );
+            }
         }
     }
 

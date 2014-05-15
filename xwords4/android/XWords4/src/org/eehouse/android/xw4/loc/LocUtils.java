@@ -229,36 +229,40 @@ public class LocUtils {
         s_xlationsLocal.put( key, txt );
     }
 
-    protected static String getXlation( Context context, String key,
-                                        boolean canUseDB )
-    {
-        return getXlation( context, key, null, canUseDB );
-    }
-
-    protected static String getXlation( Context context, String key,
-                                        boolean forceLocal, boolean canUseDB )
-    {
-        return getXlation( context, key, new Boolean(forceLocal), canUseDB );
-    }
-
-    private static String getXlation( Context context, String key,
-                                      Boolean forceLocal, boolean canUseDB )
+    protected static String getLocalXlation( Context context, String key,
+                                             boolean canUseDB )
     {
         if ( canUseDB ) {
             loadXlations( context );
         }
         String result = null;
-
-        if ( null == forceLocal || forceLocal ) {
-            if ( null != s_xlationsLocal ) {
-                result = s_xlationsLocal.get( key );
-            }
+        if ( null != s_xlationsLocal ) {
+            result = s_xlationsLocal.get( key );
         }
+        return result;
+    }
 
-        if ( null == forceLocal || !forceLocal ) {
-            if ( null == result && null != s_xlationsBlessed ) {
-                result = s_xlationsBlessed.get( key );
-            }
+    protected static String getBlessedXlation( Context context, String key,
+                                               boolean canUseDB )
+    {
+        if ( canUseDB ) {
+            loadXlations( context );
+        }
+        String result = null;
+        if ( null != s_xlationsBlessed ) {
+            result = s_xlationsBlessed.get( key );
+        }
+        return result;
+    }
+
+    protected static String getXlation( Context context, String key,
+                                        boolean canUseDB )
+    {
+        String result = null;
+
+        result = getLocalXlation( context, key, canUseDB );
+        if ( null == result ) {
+            result = getBlessedXlation( context, key, canUseDB );
         }
 
         if ( UPPER_CASE && null == result ) {
