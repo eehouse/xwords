@@ -80,14 +80,13 @@ public class LocDelegate extends ListDelegateBase
 
     protected void init( Bundle savedInstanceState ) 
     {
-        m_activity.setContentView( R.layout.loc_main );
+        setContentView( R.layout.loc_main );
 
-        View root = Utils.getContentView( m_activity );
-        m_searchButton = (ImageButton)root.findViewById( R.id.loc_search_button );
+        m_searchButton = (ImageButton)findViewById( R.id.loc_search_button );
         m_searchButton.setOnClickListener( this );
 
-        m_searchField = (EditText)root.findViewById( R.id.loc_search_field );
-        m_filterBy = (Spinner)root.findViewById( R.id.filters );
+        m_searchField = (EditText)findViewById( R.id.loc_search_field );
+        m_filterBy = (Spinner)findViewById( R.id.filters );
         m_filterBy.setOnItemSelectedListener( this );
 
         LocSearcher.Pair[] pairs = LocUtils.makePairs( m_activity );
