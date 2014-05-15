@@ -21,10 +21,30 @@
 package org.eehouse.android.xw4.loc;
 
 import java.util.ArrayList;
+import android.content.Context;
 
 import org.eehouse.android.xw4.DbgUtils;
 
+/** This class provides filtering on the list of translations, first by
+ * built-in filters like "recent menu", and then by a search string.  Either
+ * can be changed independently of the other.
+ *
+ */
+
 public class LocSearcher {
+
+    private interface FilterFunc {
+        public boolean passes( Context context, Pair pair );
+    }
+
+    // keep in sync with loc_filters in common_rsrc.xml
+    protected static enum SHOW_BYS {
+        LOC_FILTERS_ALL
+        ,LOC_FILTERS_SCREEN
+        ,LOC_FILTERS_MENU
+        ,LOC_FILTERS_MODIFIED
+    };
+    private SHOW_BYS m_showBy;
 
     public static class Pair {
         public Pair( String key, String eng, String xlation ) {
@@ -51,30 +71,69 @@ public class LocSearcher {
         private String m_xlation;
     }
 
+    private Context m_context;
     private Pair[] m_pairs;
+    private Pair[] m_filteredPairs;
     private Pair[] m_matchingPairs;
     private String m_lastTerm;
 
-    public LocSearcher( Pair pairs[] )
+    public LocSearcher( Context context, Pair pairs[] )
     {
-        m_pairs = m_matchingPairs = pairs;
+        m_pairs = m_filteredPairs = m_matchingPairs = pairs;
+        m_context = context;
+    }
+
+    protected void start( int position )
+    {
+        if ( 0 <= position && position < SHOW_BYS.values().length ) {
+            SHOW_BYS showBy = SHOW_BYS.values()[position];
+            if ( m_showBy != showBy ) {
+                m_showBy = showBy;
+
+                if ( SHOW_BYS.LOC_FILTERS_ALL == showBy ) {
+                    m_filteredPairs = m_pairs;
+                } else {
+                    FilterFunc proc = s_falseProc;
+                    switch ( showBy ) {
+                    case LOC_FILTERS_SCREEN:
+                    case LOC_FILTERS_MENU:
+                        break;
+                    case LOC_FILTERS_MODIFIED:
+                        proc = s_modifiedProc;
+                        break;
+                    }
+
+                    ArrayList<Pair> matches = new ArrayList<Pair>();
+                    for ( Pair pair : m_pairs ) {
+                        if ( proc.passes( m_context, pair ) ) {
+                            matches.add( pair );
+                        }
+                    }
+                    m_filteredPairs = m_matchingPairs = 
+                        matches.toArray( new Pair[matches.size()] );
+                }
+                String term = m_lastTerm;
+                m_lastTerm = null;
+                start( term );
+            }
+        }
     }
 
     protected void start( String term )
     {
-        if ( 0 == term.length() ) {
-            m_matchingPairs = m_pairs;
+        if ( null == term || 0 == term.length() ) {
+            m_matchingPairs = m_filteredPairs;
         } else {
             Pair[] usePairs = null != m_lastTerm && term.contains(m_lastTerm) 
-                ? m_matchingPairs : m_pairs;
+                ? m_matchingPairs : m_filteredPairs;
             DbgUtils.logf( "start: searching %d pairs", usePairs.length );
-            ArrayList<Pair> matchers = new ArrayList<Pair>();
+            ArrayList<Pair> matches = new ArrayList<Pair>();
             for ( Pair pair : usePairs ) {
                 if ( pair.matches( term ) ) {
-                    matchers.add( pair );
+                    matches.add( pair );
                 }
             }
-            m_matchingPairs = matchers.toArray( new Pair[matchers.size()] );
+            m_matchingPairs = matches.toArray( new Pair[matches.size()] );
         }
         m_lastTerm = term;
     }
@@ -88,5 +147,20 @@ public class LocSearcher {
     {
         return m_matchingPairs.length;
     }
+
+    private static FilterFunc s_modifiedProc = new FilterFunc() {
+            public boolean passes( Context context, Pair pair ) {
+                return null != 
+                    LocUtils.getLocalXlation( context, pair.getKey(), true );
+            }
+        };
+
+    // Remove later
+    private static FilterFunc s_falseProc = new FilterFunc() {
+            public boolean passes( Context context, Pair pair ) {
+                return false;
+            }
+        };
+
 
 }

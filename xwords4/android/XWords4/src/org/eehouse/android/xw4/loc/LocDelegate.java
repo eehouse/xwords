@@ -31,11 +31,11 @@ import android.widget.ListView;
 import android.widget.Spinner;
 
 import org.eehouse.android.xw4.DbgUtils;
-import org.eehouse.android.xw4.DelegateBase;
+import org.eehouse.android.xw4.ListDelegateBase;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 
-public class LocDelegate extends DelegateBase 
+public class LocDelegate extends ListDelegateBase 
     implements View.OnClickListener,
                OnItemSelectedListener {
 
@@ -73,7 +73,7 @@ public class LocDelegate extends DelegateBase
 
     private void makeNewAdapter()
     {
-        ListView listview = m_activity.getListView();
+        ListView listview = getListView();
         m_adapter = new LocListAdapter( m_activity, listview, m_searcher );
         m_activity.setListAdapter( m_adapter );
     }
@@ -91,7 +91,7 @@ public class LocDelegate extends DelegateBase
         m_filterBy.setOnItemSelectedListener( this );
 
         LocSearcher.Pair[] pairs = LocUtils.makePairs( m_activity );
-        m_searcher = new LocSearcher( pairs );
+        m_searcher = new LocSearcher( m_activity, pairs );
 
         makeNewAdapter();
     }
@@ -104,6 +104,8 @@ public class LocDelegate extends DelegateBase
     {
         DbgUtils.logf( "LocDelegate: item %d selected", position );
         Utils.notImpl( m_activity );
+        m_searcher.start( position );
+        makeNewAdapter();
     }
 
     public void onNothingSelected( AdapterView<?> parent )

@@ -18,6 +18,8 @@ public final class R {
         public static final int game_summary_values=0x7f070009;
         public static final int language_codes=0x7f070007;
         public static final int language_names=0x7f070006;
+        /**  Keep in sync with LocSearcher SHOW_BYS enum 
+         */
         public static final int loc_filters=0x7f07000b;
         /**  Keep in sync with DictUtils.DictLoc enum 
          */

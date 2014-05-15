@@ -307,6 +307,7 @@
     <item>@string/confirm_sms_willpay</item>
   </string-array>
 
+  <!-- Keep in sync with LocSearcher SHOW_BYS enum -->
   <string-array name="loc_filters">
       <item>@string/loc_filters_all</item>
       <item>@string/loc_filters_screen</item>
