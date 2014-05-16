@@ -41,7 +41,6 @@ public class XlatingSpinnerAdapter implements SpinnerAdapter {
     public View getDropDownView( int position, View convertView, ViewGroup parent )
     {
         View view = m_adapter.getDropDownView( position, convertView, parent );
-        // DbgUtils.logf( "getDropDownView()=>%s", view.getClass().getName() );
         LocUtils.xlateView( m_context, view );
         return view;
     }
@@ -49,7 +48,6 @@ public class XlatingSpinnerAdapter implements SpinnerAdapter {
     public View getView( int position, View convertView, ViewGroup parent )
     {
         View view = m_adapter.getView( position, convertView, parent );
-        // DbgUtils.logf( "getView()=>%s", view.getClass().getName() );
         LocUtils.xlateView( m_context, view );
         return view;
     }

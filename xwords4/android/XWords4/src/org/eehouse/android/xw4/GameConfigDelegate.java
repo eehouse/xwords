@@ -433,8 +433,10 @@ public class GameConfigDelegate extends DelegateBase
         loadGame();
     }
 
+    @Override
     protected void onResume()
     {
+        super.onResume();
         loadGame();
     }
 

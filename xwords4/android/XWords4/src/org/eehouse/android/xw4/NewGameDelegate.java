@@ -162,7 +162,9 @@ public class NewGameDelegate extends DelegateBase {
         }
     }
     
+    @Override
     protected void onResume() {
+        super.onResume();
         checkEnableBT( false );
     }
 

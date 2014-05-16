@@ -81,27 +81,11 @@ public class LocUtils {
     private static WeakReference<Menu> s_latestMenuRef;
     private static HashMap<WeakReference<Menu>, HashSet<String> > s_menuSets
         = new HashMap<WeakReference<Menu>, HashSet<String> >();
-
-    public interface LocIface {
-        void setText( CharSequence text );
-    }
-
-    // public static void loadStrings( Context context, AttributeSet as, LocIface view )
-    // {
-    //     // There should be a way to look up the index of "strid" but I don't
-    //     // have it yet.  This got things working.
-    //     int count = as.getAttributeCount();
-    //     for ( int ii = 0; ii < count; ++ii ) {
-    //         if ( "strid".equals( as.getAttributeName(ii) ) ) {
-    //             String value = as.getAttributeValue(ii);
-    //             Assert.assertTrue( '@' == value.charAt(0) );
-    //             int id = Integer.parseInt( value.substring(1) );
-    //             view.setText( getString( context, id ) );
-    //             break;
-    //         }
-    //     }
-    // }
-
+    private static String s_latestContextName;
+    private static String s_newContextName;
+    private static HashMap<String, HashSet<String> > s_contextSets
+        = new HashMap<String, HashSet<String> >();
+    
     public static void localeChanged( Context context, String newLocale )
     {
         saveLocalData( context );
@@ -109,6 +93,14 @@ public class LocUtils {
         s_xlationsLocal = null;
         s_xlationsBlessed = null;
         s_enabled = null;
+    }
+
+    public static void setLatestContext( Context context )
+    {
+        String newName = context.getClass().getName();
+        s_latestContextName = s_newContextName;
+        s_newContextName = newName;
+        DbgUtils.logf( "setLatestContext(%s): now %s", newName, s_latestContextName );
     }
 
     public static View inflate( Context context, int resID )
@@ -140,8 +132,9 @@ public class LocUtils {
 
     public static void xlateView( Context context, View view )
     {
-        // DbgUtils.logf( "xlateView() top level" );
-        xlateView( context, view, 0 );
+        // DbgUtils.logf( "xlateView(%s, %s)", context.getClass().getName(),
+        //                view.getClass().getName() );
+        xlateView( context, context.getClass().getName(), view, 0 );
     }
 
     public static void xlateMenu( Activity activity, Menu menu )
@@ -160,15 +153,24 @@ public class LocUtils {
         return result;
     }
 
-    public static String xlateString( Context context, String str )
+    private static String xlateString( Context context, String str, 
+                                       boolean associate )
     {
         if ( LocIDs.getS_MAP( context ).containsKey( str ) ) {
+            if ( associate ) {
+                associateContextString( context, str );
+            }
             String xlation = getXlation( context, str, true );
             if ( null != xlation ) {
                 str = xlation;
             }
         }
         return str;
+    }
+
+    public static String xlateString( Context context, String str )
+    {
+        return xlateString( context, str, true );
     }
 
     public static CharSequence[] xlateStrings( Context context, CharSequence[] strs )
@@ -206,6 +208,7 @@ public class LocUtils {
         String result = null;
         String key = keyForID( context, id );
         if ( null != key ) {
+            associateContextString( context, key );
             result = getXlation( context, key, canUseDB );
         }
         
@@ -390,7 +393,7 @@ public class LocUtils {
                 if ( LocIDs.getS_MAP( activity ).containsKey(title) ) {
                     associateMenuString( rootRef, title );
 
-                    title = xlateString( activity, title );
+                    title = xlateString( activity, title, false );
                     item.setTitle( title );
                 }
             }
@@ -478,25 +481,28 @@ public class LocUtils {
         return s_idsToKeys.get( id );
     }
 
-    private static void xlateView( Context context, View view, int depth )
+    private static void xlateView( Context context, String contextName, 
+                                   View view, int depth )
     {
         // DbgUtils.logf( "xlateView(depth=%d, view=%s, canRecurse=%b)", depth, 
         //                view.getClass().getName(), view instanceof ViewGroup );
         if ( view instanceof Button ) {
             Button button = (Button)view;
-            String str = xlateString( context, button.getText().toString() );
-            button.setText( str );
+            String str = xlateAndStore( context, button.getText() );
+            if ( null != str ) {
+                button.setText( str );
+            }
         } else if ( view instanceof TextView ) {
             TextView tv = (TextView)view;
-            tv.setText( xlateString( context, tv.getText().toString() ) );
+            String str = xlateAndStore( context, tv.getText() );
+            if ( null != str ) {
+                tv.setText( str );
+            }
         } else if ( view instanceof Spinner ) {
             Spinner sp = (Spinner)view;
-            CharSequence prompt = sp.getPrompt();
-            if ( null != prompt ) {
-                String xlation = xlateString( context, prompt.toString() );
-                if ( null != xlation ) {
-                    sp.setPrompt( xlation );
-                }
+            String str = xlateAndStore( context, sp.getPrompt() );
+            if ( null != str ) {
+                sp.setPrompt( str );
             }
             SpinnerAdapter adapter = sp.getAdapter();
             if ( null != adapter ) {
@@ -510,7 +516,7 @@ public class LocUtils {
             int count =	asGroup.getChildCount();
             for ( int ii = 0; ii < count; ++ii ) {
                 View child = asGroup.getChildAt( ii );
-                xlateView( context, child, depth + 1 );
+                xlateView( context, contextName, child, depth + 1 );
             }
         }
     }
@@ -565,13 +571,43 @@ public class LocUtils {
         }
     }
 
-    public static boolean inLatestMenu( Context context, String key )
+    public static boolean inLatestMenu( String key )
     {
         boolean result = false;
         if ( null != s_latestMenuRef ) {
             HashSet<String> keys = s_menuSets.get( s_latestMenuRef );
             if ( null != keys ) {
                 result = keys.contains( key );
+            }
+        }
+        return result;
+    }
+
+    public static boolean inLatestScreen( String key )
+    {
+        boolean result = false;
+        Assert.assertNotNull( s_latestContextName );
+        HashSet<String> keys = s_contextSets.get( s_latestContextName );
+        Assert.assertNotNull( keys ); // failing
+        result = keys.contains( key );
+        // DbgUtils.logf( "inLatestScreen(%s [in %s])=>%b", key, s_latestContextName, result );
+        return result;
+    }
+
+    private static String xlateAndStore( Context context, CharSequence cs )
+    {
+        String result = null;
+        if ( null == cs ) {
+            // DbgUtils.logf( "xlateAndStore: cs null" );
+        } else if ( 0 == cs.length() ) {
+            Assert.assertTrue( 0 == cs.toString().length() );
+            // DbgUtils.logf( "xlateAndStore: cs 0 len" );
+        } else {
+            String key = cs.toString();
+            // DbgUtils.logf( "xlateAndStore: key=%s", key );
+            result = xlateString( context, key );
+            if ( null != result ) {
+                associateContextString( context, key );
             }
         }
         return result;
@@ -621,9 +657,25 @@ public class LocUtils {
         if ( null == keys ) {
             keys = new HashSet<String>();
             s_menuSets.put( ref, keys );
-            // Watch for leaking -- currently nothing ever removed from s_menuSets
         }
         keys.add( key );
+    }
+
+    private static void associateContextString( Context context, final String key )
+    {
+        associateContextString( context.getClass().getName(), key );
+    }
+
+    private static void associateContextString( String contextName, final String key )
+    {
+        HashSet<String> keys = s_contextSets.get( contextName );
+        if ( null == keys ) {
+            keys = new HashSet<String>();
+            s_contextSets.put( contextName, keys );
+            // DbgUtils.logf( "adding keys hash to %s", contextName );
+        }
+        keys.add( key );
+        // DbgUtils.logf( "associated with context %s string '%s'", contextName, key );
     }
 
     private static Pattern s_patUnicode = Pattern.compile("(\\\\[Uu][0-9a-fA-F]{4})");

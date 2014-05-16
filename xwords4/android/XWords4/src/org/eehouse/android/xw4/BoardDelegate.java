@@ -547,8 +547,10 @@ public class BoardDelegate extends DelegateBase
         waitCloseGame( true );
     }
 
+    @Override
     protected void onResume()
     {
+        super.onResume();
         m_handler = new Handler();
         m_blockingDlgID = DlgID.NONE;
 

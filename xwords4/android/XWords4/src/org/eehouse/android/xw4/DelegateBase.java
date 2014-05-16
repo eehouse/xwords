@@ -61,10 +61,14 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
     public boolean onOptionsItemSelected( MenuItem item ) { return false; }
     protected void onStart() {}
-    protected void onResume() {}
     protected void onPause() {}
     protected void onStop() {}
     protected void onDestroy() {}
+
+    protected void onResume()
+    {
+        LocUtils.setLatestContext( m_activity );
+    }
 
     // public boolean onOptionsItemSelected( MenuItem item ) 
     // {

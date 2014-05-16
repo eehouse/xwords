@@ -238,8 +238,10 @@ public class DictBrowseDelegate extends ListDelegateBase
         }
     }
 
+    @Override
     protected void onResume()
     {
+        super.onResume();
         if ( null == m_browseState ) {
             m_browseState = DBUtils.dictsGetOffset( m_activity, m_name, m_loc );
         }

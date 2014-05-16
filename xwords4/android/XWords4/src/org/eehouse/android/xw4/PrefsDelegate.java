@@ -156,10 +156,12 @@ public class PrefsDelegate extends DelegateBase
             } );
     }
     
+    @Override
     protected void onResume() 
     {
+        super.onResume();
         getSharedPreferences().registerOnSharedPreferenceChangeListener(this);   
-   }
+    }
 
     protected void onPause() 
     {

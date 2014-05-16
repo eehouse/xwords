@@ -408,8 +408,11 @@ public class DictsDelegate extends DelegateBase
         m_origTitle = getTitle();
     } // onCreate
 
+    @Override
     protected void onResume()
     {
+        super.onResume();
+
         MountEventReceiver.register( this );
 
         mkListAdapter();
