@@ -19,19 +19,20 @@
 
 package org.eehouse.android.xw4.loc;
 
-import android.app.ListActivity;
 import android.os.Bundle;
 import android.view.Menu;
 
-public class LocActivity extends ListActivity {
+import org.eehouse.android.xw4.XWListActivity;
+
+public class LocActivity extends XWListActivity {
 
     private LocDelegate m_dlgt;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
         m_dlgt = new LocDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
     @Override
