@@ -431,7 +431,16 @@ public class LocUtils {
         }
     }
 
-    private static String getCurLocale( Context context )
+    protected static String getCurLocaleName( Context context )
+    {
+        String locale_code = getCurLocale( context );
+        Locale locale = new Locale( locale_code );
+        String name = locale.getDisplayLanguage( locale );
+        DbgUtils.logf( "getCurLocaleName(%s)=>%s", locale_code, name );
+        return name;
+    }
+
+    protected static String getCurLocale( Context context )
     {
         if ( null == s_curLocale ) {
             String locale = XWPrefs.getFakeLocale( context );

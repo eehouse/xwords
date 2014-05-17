@@ -29,6 +29,7 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.ListDelegateBase;
@@ -103,6 +104,9 @@ public class LocDelegate extends ListDelegateBase
         m_searchField = (EditText)findViewById( R.id.loc_search_field );
         m_filterBy = (Spinner)findViewById( R.id.filters );
         m_filterBy.setOnItemSelectedListener( this );
+
+        TextView view = (TextView)findViewById( R.id.other_lang );
+        view.setText( LocUtils.getCurLocaleName( m_activity ) );
 
         LocSearcher.Pair[] pairs = LocUtils.makePairs( m_activity );
         String contextName = getIntent().getStringExtra( LocUtils.CONTEXT_NAME );

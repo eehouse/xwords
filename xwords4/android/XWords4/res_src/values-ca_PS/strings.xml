@@ -1903,8 +1903,9 @@
   <string name="slmenu_select_all">SELECT ALL</string>
   <string name="slmenu_deselect_all">UNSELECT ALL</string>
   <string name="sel_items_fmt">SELECTED: %1$d</string>
-  <string name="loc_main_yourlang">YOUR LANGUAGE</string>
   <string name="loc_menu_xlate">TRANSLATE</string>
+  <string name="loc_lang_blessed">%1$s (OFFICIAL)</string>
+  <string name="loc_lang_local">%1$s (YOURS)</string>
   <string name="new_xlations_fmt">INSTALLED %1$d NEW TRANSLATIONS</string>
   <string name="xlations_enabled_title">ENABLE LOCAL TRANSLATING</string>
   <string name="xlations_enabled_summary">ADD OPTION TO EVERY SCREEN MENU</string>

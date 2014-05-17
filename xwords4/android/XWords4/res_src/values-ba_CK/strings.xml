@@ -1903,8 +1903,9 @@
   <string name="slmenu_select_all">Tceles lla</string>
   <string name="slmenu_deselect_all">Tcelesnu lla</string>
   <string name="sel_items_fmt">Detceles: %1$d</string>
-  <string name="loc_main_yourlang">Ruoy egaugnal</string>
   <string name="loc_menu_xlate">Etalsnart</string>
+  <string name="loc_lang_blessed">%1$s )laiciffo(</string>
+  <string name="loc_lang_local">%1$s )sruoy(</string>
   <string name="new_xlations_fmt">Dellatsni %1$d wen snoitalsnart</string>
   <string name="xlations_enabled_title">Elbane lacol gnitalsnart</string>
   <string name="xlations_enabled_summary">Dda noitpo ot yreve neercs unem</string>

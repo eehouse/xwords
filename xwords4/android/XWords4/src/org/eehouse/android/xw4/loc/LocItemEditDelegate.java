@@ -56,9 +56,16 @@ public class LocItemEditDelegate extends DelegateBase {
         m_edit = (EditText)findViewById( R.id.xlated_view_local );
         m_edit.setText( LocUtils.getLocalXlation( m_activity, key, true ) );
 
-        setLabel( R.id.english_label, R.string.loc_main_english );
-        setLabel( R.id.blessed_label, R.string.loc_main_yourlang );
-        setLabel( R.id.local_label, R.string.loc_main_yourlang );
+        view = (TextView)findViewById( R.id.english_label );
+        view.setText( LocUtils.getString( m_activity, R.string.loc_main_english ) );
+
+        String langName = LocUtils.getCurLocaleName( m_activity );
+        view = (TextView)findViewById( R.id.blessed_label );
+        view.setText( LocUtils.getString( m_activity, R.string.loc_lang_blessed,
+                                          langName ) );
+        view = (TextView)findViewById( R.id.local_label );
+        view.setText( LocUtils.getString( m_activity, R.string.loc_lang_local,
+                                          langName ) );
     }
 
     @Override
@@ -71,12 +78,6 @@ public class LocItemEditDelegate extends DelegateBase {
         }
 
         super.onPause();
-    }
-
-    private void setLabel( int viewID, int strID )
-    {
-        TextView view = (TextView)findViewById( viewID );
-        view.setText( LocUtils.getString( m_activity, strID ) );
     }
 
     protected static void launch( Context context, LocSearcher.Pair pair )
