@@ -35,8 +35,7 @@ import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.DbgUtils;
 
-public class LocListItem extends LinearLayout
-    implements View.OnClickListener {
+public class LocListItem extends LinearLayout {
 
     private static final int LOCAL_COLOR = Color.argb( 0xFF, 0x7f, 0x00, 0x00 );
 
@@ -55,7 +54,16 @@ public class LocListItem extends LinearLayout
     {
         super.onFinishInflate();
         m_xlated = (TextView)findViewById( R.id.xlated_view ); 
-        setOnClickListener( this );
+    }
+
+    protected void update()
+    {
+        setXlated();
+    }
+
+    protected LocSearcher.Pair getPair()
+    {
+        return m_pair;
     }
 
     private void setEnglish()
@@ -82,15 +90,6 @@ public class LocListItem extends LinearLayout
                 m_xlated.setTextColor( LOCAL_COLOR );
             }
         }
-    }
-
-    //////////////////////////////////////////////////
-    // View.OnClickListener interface
-    //////////////////////////////////////////////////
-    @Override
-    public void onClick( View view )
-    {
-        LocItemEditDelegate.launch( getContext(), m_pair );
     }
 
     protected static LocListItem create( Context context, 

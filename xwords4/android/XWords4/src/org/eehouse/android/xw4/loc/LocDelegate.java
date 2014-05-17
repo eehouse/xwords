@@ -46,6 +46,7 @@ public class LocDelegate extends ListDelegateBase
     private ImageButton m_searchButton;
     private LocSearcher m_searcher;
     private String m_curSearch;
+    private LocListItem m_lastItem;
 
     protected LocDelegate( ListActivity activity, Bundle savedInstanceState )
     {
@@ -63,18 +64,32 @@ public class LocDelegate extends ListDelegateBase
     @Override
     public void onClick( View view ) 
     {
-        String newText = m_searchField.getText().toString();
-        if ( null == m_curSearch || ! m_curSearch.equals( newText ) ) {
-            m_curSearch = newText;
-            m_searcher.start( newText ); // synchronous for now
-            makeNewAdapter();
+        if ( view instanceof LocListItem ) {
+            m_lastItem = (LocListItem)view;
+            LocItemEditDelegate.launch( m_activity, m_lastItem.getPair() );
+        } else if ( view == m_searchButton ) {
+            String newText = m_searchField.getText().toString();
+            if ( null == m_curSearch || ! m_curSearch.equals( newText ) ) {
+                m_curSearch = newText;
+                m_searcher.start( newText ); // synchronous for now
+                makeNewAdapter();
+            }
+        }
+    }
+
+    protected void onWindowFocusChanged( boolean hasFocus )
+    {
+        if ( hasFocus && null != m_lastItem ) {
+            DbgUtils.logf( "updating LocListItem instance %H", m_lastItem );
+            m_lastItem.update();
+            m_lastItem = null;
         }
     }
 
     private void makeNewAdapter()
     {
         ListView listview = getListView();
-        m_adapter = new LocListAdapter( m_activity, listview, m_searcher );
+        m_adapter = new LocListAdapter( m_activity, listview, m_searcher, this );
         m_activity.setListAdapter( m_adapter );
     }
 

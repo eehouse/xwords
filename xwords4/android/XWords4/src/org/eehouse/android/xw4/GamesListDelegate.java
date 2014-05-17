@@ -427,7 +427,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    public void onWindowFocusChanged( boolean hasFocus )
+    protected void onWindowFocusChanged( boolean hasFocus )
     {
         // super.onWindowFocusChanged( hasFocus );
         if ( hasFocus ) {

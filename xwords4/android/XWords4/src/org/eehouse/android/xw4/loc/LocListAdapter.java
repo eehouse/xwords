@@ -33,13 +33,16 @@ public class LocListAdapter extends XWListAdapter {
     private Context m_context;
     private ListView m_listView;
     private LocSearcher m_searcher;
+    private View.OnClickListener m_listener;
 
     protected LocListAdapter( Context context, ListView listView,
-                              LocSearcher searcher )
+                              LocSearcher searcher, 
+                              View.OnClickListener listener )
     {
         m_context = context;
         m_listView = listView;
         m_searcher = searcher;
+        m_listener = listener;
     }
 
     @Override
@@ -54,6 +57,8 @@ public class LocListAdapter extends XWListAdapter {
     {
         // DbgUtils.logf( "LocListAdapter.getView(position=%d)", position );
         LocSearcher.Pair pair = m_searcher.getNthMatch( position );
-        return LocListItem.create( m_context, pair, position );
+        View view = LocListItem.create( m_context, pair, position );
+        view.setOnClickListener( m_listener );
+        return view;
     }
 }
