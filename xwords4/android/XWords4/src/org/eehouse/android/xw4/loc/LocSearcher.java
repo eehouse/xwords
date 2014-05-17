@@ -33,6 +33,8 @@ import org.eehouse.android.xw4.DbgUtils;
 
 public class LocSearcher {
 
+    private String m_contextName;
+
     private interface FilterFunc {
         public boolean passes( Context context, Pair pair );
     }
@@ -77,10 +79,11 @@ public class LocSearcher {
     private Pair[] m_matchingPairs;
     private String m_lastTerm;
 
-    public LocSearcher( Context context, Pair pairs[] )
+    public LocSearcher( Context context, Pair pairs[], String contextName )
     {
         m_pairs = m_filteredPairs = m_matchingPairs = pairs;
         m_context = context;
+        m_contextName = contextName;
     }
 
     protected void start( int position )
@@ -93,10 +96,10 @@ public class LocSearcher {
                 if ( SHOW_BYS.LOC_FILTERS_ALL == showBy ) {
                     m_filteredPairs = m_pairs;
                 } else {
-                    FilterFunc proc = s_falseProc;
+                    FilterFunc proc = null;
                     switch ( showBy ) {
                     case LOC_FILTERS_SCREEN:
-                        proc = s_screenProc;
+                        proc = new ScreenFilter( m_contextName );
                         break;
                     case LOC_FILTERS_MENU:
                         proc = s_menuProc;
@@ -158,24 +161,22 @@ public class LocSearcher {
             }
         };
 
-    private static FilterFunc s_screenProc = new FilterFunc() {
-            public boolean passes( Context context, Pair pair ) {
-                return LocUtils.inLatestScreen( pair.getKey() );
-            }
-        };
-
     private static FilterFunc s_menuProc = new FilterFunc() {
             public boolean passes( Context context, Pair pair ) {
                 return LocUtils.inLatestMenu( pair.getKey() );
             }
         };
 
-    // Remove later
-    private static FilterFunc s_falseProc = new FilterFunc() {
-            public boolean passes( Context context, Pair pair ) {
-                return false;
-            }
-        };
+    private static class ScreenFilter implements FilterFunc {
+        private String m_contextName;
+        public ScreenFilter( String contextName )
+        {
+            m_contextName = contextName;
+        }
 
-
+        public boolean passes( Context context, Pair pair ) 
+        {
+            return LocUtils.inLatestScreen( pair.getKey(), m_contextName );
+        }
+    }
 }

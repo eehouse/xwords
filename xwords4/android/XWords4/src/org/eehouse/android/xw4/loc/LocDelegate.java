@@ -90,7 +90,8 @@ public class LocDelegate extends ListDelegateBase
         m_filterBy.setOnItemSelectedListener( this );
 
         LocSearcher.Pair[] pairs = LocUtils.makePairs( m_activity );
-        m_searcher = new LocSearcher( m_activity, pairs );
+        String contextName = getIntent().getStringExtra( LocUtils.CONTEXT_NAME );
+        m_searcher = new LocSearcher( m_activity, pairs, contextName );
 
         makeNewAdapter();
     }

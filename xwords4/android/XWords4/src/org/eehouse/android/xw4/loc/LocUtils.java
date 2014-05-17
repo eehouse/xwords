@@ -68,6 +68,7 @@ import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
 
 public class LocUtils {
+    public static final String CONTEXT_NAME = "CONTEXT_NAME";
     private static final int FMT_LEN = 4;
     private static final String k_LOCALE = "locale";
     private static final String k_XLATEVERS = "xlatevers";
@@ -81,8 +82,6 @@ public class LocUtils {
     private static WeakReference<Menu> s_latestMenuRef;
     private static HashMap<WeakReference<Menu>, HashSet<String> > s_menuSets
         = new HashMap<WeakReference<Menu>, HashSet<String> >();
-    private static String s_latestContextName;
-    private static String s_newContextName;
     private static HashMap<String, HashSet<String> > s_contextSets
         = new HashMap<String, HashSet<String> >();
     
@@ -93,14 +92,6 @@ public class LocUtils {
         s_xlationsLocal = null;
         s_xlationsBlessed = null;
         s_enabled = null;
-    }
-
-    public static void setLatestContext( Context context )
-    {
-        String newName = context.getClass().getName();
-        s_latestContextName = s_newContextName;
-        s_newContextName = newName;
-        DbgUtils.logf( "setLatestContext(%s): now %s", newName, s_latestContextName );
     }
 
     public static View inflate( Context context, int resID )
@@ -416,6 +407,8 @@ public class LocUtils {
 
                             Intent intent = 
                                 new Intent( activity, LocActivity.class );
+                            intent.putExtra( CONTEXT_NAME, 
+                                             activity.getClass().getName() );
                             activity.startActivity( intent );
                             return true;
                         } 
@@ -583,14 +576,13 @@ public class LocUtils {
         return result;
     }
 
-    public static boolean inLatestScreen( String key )
+    public static boolean inLatestScreen( String key, String contextName )
     {
         boolean result = false;
-        Assert.assertNotNull( s_latestContextName );
-        HashSet<String> keys = s_contextSets.get( s_latestContextName );
-        Assert.assertNotNull( keys ); // failing
-        result = keys.contains( key );
-        // DbgUtils.logf( "inLatestScreen(%s [in %s])=>%b", key, s_latestContextName, result );
+        HashSet<String> keys = s_contextSets.get( contextName );
+        if ( null != keys ) {
+            result = keys.contains( key );
+        }
         return result;
     }
 
