@@ -399,7 +399,10 @@ public class LocUtils {
             String title = activity.getString( R.string.loc_menu_xlate );
             associateMenuString( rootRef, title );
 
-            title = getXlation( activity, title, true );
+            String xlated = getXlation( activity, title, true );
+            if ( null != xlated ) {
+                title = xlated;
+            }
             menu.add( title )
                 .setOnMenuItemClickListener( new OnMenuItemClickListener() {
                         public boolean onMenuItemClick( MenuItem item ) {
