@@ -250,6 +250,9 @@ public class NewGameDelegate extends DelegateBase {
         case ENABLE_NFC:
             dialog = NFCUtils.makeEnableNFCDialog( m_activity );
             break;
+        default:
+            dialog = super.onCreateDialog( id );
+            break;
         }
         return dialog;
     }
