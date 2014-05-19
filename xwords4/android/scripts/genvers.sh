@@ -2,6 +2,8 @@
 
 set -e -u
 
+STRINGS_HASH=""
+
 usage() {
     echo "usage: $0 <variant> <relay_vers> <chatSupported> <thumbSupported>"
     exit 1
@@ -19,8 +21,13 @@ cd $(dirname $0)
 cd ../
 
 GITVERSION=$(../scripts/gitversion.sh)
-STRINGS_HASH=$(git log -- ${BUILD_DIR}/archive/R.java | grep '^commit ' | head -n 1 | awk '{print $2}')
 
+# Need to verify that R.java is unmodified; otherwise we can't set
+# this constant!!!  Shouldn't be a problem with release builds,
+# though.
+if ! git status | grep -q "modified:.*${BUILD_DIR}/archive/R.java"; then
+	STRINGS_HASH=$(git log -- ${BUILD_DIR}/archive/R.java | grep '^commit ' | head -n 1 | awk '{print $2}')
+fi
 # TODO: deal with case where there's no hash available -- exported
 # code maybe?  Better: gitversion.sh does that.
 
