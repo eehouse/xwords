@@ -42,7 +42,7 @@ EOF
 
 # Eventually this should pick up a tag if we're at one.  That'll be
 # the way to mark a release
-SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo unknown)"
+SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo ${GITVERSION}+)"
 
 cat <<EOF > ${BUILD_DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
 // auto-generated (by $(basename $0)); do not edit
