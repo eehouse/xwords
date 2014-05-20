@@ -72,10 +72,7 @@ public class LocItemEditDelegate extends DelegateBase {
     protected void onPause()
     {
         // Save any local translation
-        CharSequence txt = m_edit.getText();
-        if ( null != txt && 0 < txt.length() ) {
-            LocUtils.setXlation( m_activity, m_key, txt.toString() );
-        }
+        LocUtils.setXlation( m_activity, m_key, m_edit.getText() );
 
         super.onPause();
     }

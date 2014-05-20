@@ -225,10 +225,14 @@ public class LocUtils {
         return result;
     }
 
-    public static void setXlation( Context context, String key, String txt )
+    public static void setXlation( Context context, String key, CharSequence txt )
     {
         loadXlations( context );
-        s_xlationsLocal.put( key, txt );
+        if ( null == txt || 0 == txt.length() ) {
+            s_xlationsLocal.remove( key );
+        } else {
+            s_xlationsLocal.put( key, txt.toString() );
+        }
     }
 
     protected static String getLocalXlation( Context context, String key,
