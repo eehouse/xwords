@@ -1,5 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-
 <resources>
   <!-- Text of menuitem in main games-list screen's menu -->
   <string name="button_new_game">Pridať hru</string>
