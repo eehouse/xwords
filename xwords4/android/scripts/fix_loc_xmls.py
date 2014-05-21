@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import mk_xml, os, sys, getopt
+import mk_xml, os, sys, getopt, re
 
 from lxml import etree
 
@@ -75,6 +75,25 @@ def insertAfter( locRoot, englishElem, lastMatch, prevComments ):
     index += 1
     locRoot.insert( index, newNode )
 
+def longFormFor(fmt ):
+    if fmt == '%s': return '%1$s'
+    elif fmt == '%d': return '%1$d'
+    else: assert False
+
+def replacePcts( doc ):
+    pat = re.compile( '(%[sd])', re.DOTALL | re.MULTILINE )
+    for string in doc.findall('string'):
+        if string.text:
+            splits = re.split( pat, string.text )
+            nParts = len(splits)
+            if 1 < nParts:
+                for ii in range(nParts):
+                    part = splits[ii]
+                    if re.match( pat, part ): splits[ii] = longFormFor(part)
+                string.text = ''.join( splits )
+
+                
+
 # For each name in pairs, check if it's in doc. If not, find the last
 # elem before it that is in doc and insert it after.  Start over each
 # time to avoid problems with iteration and order
@@ -116,6 +135,7 @@ def usage():
     print "   -a   # insert missing string elements for translation"
     print "   -c   # compare each file with the English, listing string not in both"
     print "   -f   # work on this strings.xml file (does all if none specified)"
+    print "   -%   # replace %[sd] with the correct longer form"
     print "   -s   # save any changes made (does not by default)"
     sys.exit(1)
 
@@ -124,11 +144,13 @@ def main():
     addMissing = False
     doSave = False
     doCompare = False
+    doReplace = False
     try:
-        pairs, rest = getopt.getopt(sys.argv[1:], "acf:s")
+        pairs, rest = getopt.getopt(sys.argv[1:], "acf:s%")
         for option, value in pairs:
             if option == '-a': addMissing = True
-            if option == '-c': doCompare = True
+            elif option == '-c': doCompare = True
+            elif option == '-%': doReplace = True
             elif option == '-f': stringsFiles.append(value)
             elif option == '-s': doSave = True
             else: usage()
@@ -143,10 +165,11 @@ def main():
             for file in [file for file in files if file == "strings.xml"]:
                 stringsFiles.append( "%s/%s" % (subdir, file) )
 
-    parser = etree.XMLParser(remove_blank_text=True)
+    parser = etree.XMLParser(remove_blank_text=True, encoding="utf-8")
     for path in stringsFiles:
         doc = etree.parse(path, parser)
         # checkAgainst( doc, pairs )
+        if doReplace: replacePcts( doc )
         if addMissing: doAddMissing( doc )
         if doCompare: compare( pairs, path )
         if doSave:
