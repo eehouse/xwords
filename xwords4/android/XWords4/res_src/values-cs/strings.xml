@@ -22,7 +22,7 @@
   <string name="list_item_new_from">Nová hra podle vzoru</string>
   <string name="play">Hrát hru</string>
   <string name="title_dicts_list">Slovníky Crosswords</string>
-  <string name="title_game_config_fmt">Konfigurovat %s</string>
+  <string name="title_game_config_fmt">Konfigurovat %1$s</string>
   <string name="title_prefs">Předvolby Crosswords</string>
   <string name="button_ok">OK</string>
   <string name="button_cancel">Zrušit</string>
@@ -49,26 +49,26 @@
   <string name="board_menu_game_resend">Přeposlat zprávy</string>
   <string name="board_menu_file_about">O Crosswords</string>
   <!-- returned by util_getUserString -->
-  <string name="strd_robot_traded">Robot v tomto tahu vyměnil %d kamenů.</string>
+  <string name="strd_robot_traded">Robot v tomto tahu vyměnil %1$d kamenů.</string>
   <string name="str_robot_moved">Robot provedl tento tah:</string>
-  <string name="strs_values_header">%s počet/hodnota:\n</string>
-  <string name="strd_remaining_tiles_add">+ %d [všechny zbývající kameny]</string>
-  <string name="strd_unused_tiles_sub">- %d [nepoužité kameny]</string>
+  <string name="strs_values_header">%1$s počet/hodnota:\n</string>
+  <string name="strd_remaining_tiles_add">+ %1$d [všechny zbývající kameny]</string>
+  <string name="strd_unused_tiles_sub">- %1$d [nepoužité kameny]</string>
   <string name="strd_time_penalty_sub"/>
-  <string name="str_pass"> - %d [čas]</string>
-  <string name="strs_move_across">tah (od %s napříč)</string>
-  <string name="strs_move_down">tah (od %s dolů)</string>
-  <string name="strs_tray_at_start">Zásobník při startu: %s</string>
+  <string name="str_pass"> - %1$d [čas]</string>
+  <string name="strs_move_across">tah (od %1$s napříč)</string>
+  <string name="strs_move_down">tah (od %1$s dolů)</string>
+  <string name="strs_tray_at_start">Zásobník při startu: %1$s</string>
   <string name="strss_traded_for">Vyměnil %1$s za %2$s.</string>
   <string name="str_phony_rejected">Nepovolené slovo; tah ztracen!</string>
-  <string name="strd_cumulative_score">Souhrnné skóre: %d</string>
-  <string name="strs_new_tiles">Nové kameny: %s</string>
+  <string name="strd_cumulative_score">Souhrnné skóre: %1$d</string>
+  <string name="strs_new_tiles">Nové kameny: %1$s</string>
   <string name="str_passed">Prošel</string>
   <string name="strsd_summaryscored">%1$s:%2$d</string>
   <string name="str_lostturn">Tah byl ztracen</string>
   <string name="str_commit_confirm">Potvrdit tento tah?\n</string>
   <string name="str_bonus_all">Bonus za využití všech kamenů: 50\n</string>
-  <string name="strd_turn_score">Skóre za tah: %d\n</string>
+  <string name="strd_turn_score">Skóre za tah: %1$d\n</string>
   <!-- error messages -->
   <string name="str_tiles_not_in_line">Kameny musí ležet v jedné řadě.</string>
   <string name="str_no_empties_in_turn">Mezi kameny nesmí být žádná prázdná políčka.</string>
@@ -85,7 +85,7 @@
   <string name="str_reg_server_sans_remote">Alespoň jeden hráč musí být označen jako \"Vzdálený\" abyste mohli hru spustit jako Server.</string>
   <string name="remote_label">Hráč klient</string>
   <string name="robot_label">Hráč robot</string>
-  <string name="robot_namef">%s (robot)</string>
+  <string name="robot_namef">%1$s (robot)</string>
   <string name="guest_name">(hráč klient)</string>
   <string name="password_label">Heslo</string>
   <string name="player_edit_title">Hráč</string>
@@ -132,13 +132,13 @@
   <string name="bonus_w3x">Trojitá hodnota slova</string>
   <string name="tile_back">Pozadí kamenů</string>
   <string name="empty">Prázdné pole/pozadí</string>
-  <string name="msg_relay_waiting">Připojen na relay. Čekám na %d hráče.</string>
+  <string name="msg_relay_waiting">Připojen na relay. Čekám na %1$d hráče.</string>
   <string name="relay_alert">Chyba připojení</string>
   <string name="msg_too_many">Chcete přihlásit více hráčů než očekává server.</string>
   <string name="msg_no_room">Žádný server si nezaregistroval místnost s tímto jménem.</string>
   <string name="msg_dup_room">Jiný server si již zaregistroval místnost s tímto jménem. Přejmenujte ji nebo to zkuste později.</string>
   <string name="msg_lost_other">Relay ztratil kontakt s nějakým zařízením ve hře.</string>
-  <string name="ids_badwordsf">Slovo[a] %s nebylo nalezeno ve slovníku.</string>
+  <string name="ids_badwordsf">Slovo[a] %1$s nebylo nalezeno ve slovníku.</string>
   <string name="badwords_accept">  Chcete přesto přijmout tento tah?</string>
   <string name="badwords_lost">  Tah ztracen.</string>
   <string name="badwords_title">Neplatné slovo[a]</string>
@@ -147,7 +147,7 @@
   <string name="force_expl">Jako Server vyberte jedoho nebo více hráčů kteří se budou moct
     připojit jako Klient.</string>
   <string name="gameOver">Hra skončena</string>
-  <string name="movesf">Bylo zahráno %d tahů</string>
+  <string name="movesf">Bylo zahráno %1$d tahů</string>
   <!-- about dialog stuff -->
   <string name="about_versf">Crosswords pro Android, Verze %1$s,
       revize %2$s.</string>
@@ -158,15 +158,15 @@
     můžete na email: eehouse@eehouse.org.</string>
   <!-- fill this in other than in English -->
   <string name="xlator">Český překlad Tomáš Morkus</string>
-  <string name="downloading_dictf">Nahrávám slovník Crosswords %s...</string>
+  <string name="downloading_dictf">Nahrávám slovník Crosswords %1$s...</string>
   <string name="no_dict_title">Slovník nebyl nalezen</string>
   <string name="button_download">Nahrát</string>
-  <string name="no_dictf">Slovník %s nebyl nalezen, nemohu spustit hru.</string>
-  <string name="msg_ask_password">Heslo pro \"%s\":</string>
+  <string name="no_dictf">Slovník %1$s nebyl nalezen, nemohu spustit hru.</string>
+  <string name="msg_ask_password">Heslo pro \"%1$s\":</string>
   <string name="red">Červená</string>
   <string name="green">Zelená</string>
   <string name="blue">Modrá</string>
-  <string name="gamef">Hra %d</string>
-  <string name="playerf">Hráč %d</string>
+  <string name="gamef">Hra %1$d</string>
+  <string name="playerf">Hráč %1$d</string>
   <string name="initial_player_minutes">Délka hry v minutách</string>
 </resources>
