@@ -2238,5 +2238,11 @@
     <string name="loc_filters_modified">Modified by me</string>
     
     <string name="loc_main_english">English</string>
+
+    <!-- for loc item edit menu -->
+    <string name="loc_item_clear">Clear</string>
+    <string name="loc_item_check">Check</string>
+    <string name="loc_item_copy_eng">Copy English</string>
+    <string name="loc_item_copy_bless">Copy official</string>
     
 </resources>

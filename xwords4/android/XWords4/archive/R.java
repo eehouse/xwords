@@ -193,6 +193,10 @@ public final class R {
         public static final int juggle_players=0x7f0a0033;
         public static final int lang_separator=0x7f0a002d;
         public static final int lang_spinner=0x7f0a002e;
+        public static final int loc_item_check=0x7f0a00c7;
+        public static final int loc_item_clear=0x7f0a00c6;
+        public static final int loc_item_copy_bless=0x7f0a00c9;
+        public static final int loc_item_copy_eng=0x7f0a00c8;
         public static final int loc_search_button=0x7f0a0060;
         public static final int loc_search_field=0x7f0a005f;
         public static final int local_label=0x7f0a005b;
@@ -249,11 +253,11 @@ public final class R {
         public static final int seek_red=0x7f0a001a;
         public static final int send_button=0x7f0a0017;
         public static final int shuffle_button_horizontal=0x7f0a000a;
-        public static final int slmenu_clear_sel=0x7f0a00ca;
-        public static final int slmenu_copy_sel=0x7f0a00c9;
-        public static final int slmenu_deselect_all=0x7f0a00c8;
-        public static final int slmenu_lookup_sel=0x7f0a00c6;
-        public static final int slmenu_select_all=0x7f0a00c7;
+        public static final int slmenu_clear_sel=0x7f0a00ce;
+        public static final int slmenu_copy_sel=0x7f0a00cd;
+        public static final int slmenu_deselect_all=0x7f0a00cc;
+        public static final int slmenu_lookup_sel=0x7f0a00ca;
+        public static final int slmenu_select_all=0x7f0a00cb;
         public static final int smart_robot=0x7f0a0042;
         public static final int sms_disabled=0x7f0a006b;
         public static final int sms_phones=0x7f0a003d;
@@ -324,7 +328,8 @@ public final class R {
         public static final int dicts_menu=0x7f090002;
         public static final int empty=0x7f090003;
         public static final int games_list_menu=0x7f090004;
-        public static final int studylist=0x7f090005;
+        public static final int loc_item_menu=0x7f090005;
+        public static final int studylist=0x7f090006;
     }
     public static final class raw {
         public static final int changes=0x7f050000;
@@ -1463,6 +1468,12 @@ public final class R {
         /**  see move_dictf above 
          */
         public static final int loc_internal=0x7f0600ba;
+        public static final int loc_item_check=0x7f0602b1;
+        /**  for loc item edit menu 
+         */
+        public static final int loc_item_clear=0x7f0602b0;
+        public static final int loc_item_copy_bless=0x7f0602b3;
+        public static final int loc_item_copy_eng=0x7f0602b2;
         public static final int loc_lang_blessed=0x7f0602a3;
         public static final int loc_lang_local=0x7f0602a4;
         public static final int loc_main_english=0x7f0602af;

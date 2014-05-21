@@ -29,11 +29,20 @@ import org.eehouse.android.xw4.XWActivity;
 
 public class LocItemEditActivity extends XWActivity {
 
+    private LocItemEditDelegate m_dlgt;
+
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        LocItemEditDelegate dlgt = new LocItemEditDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, dlgt );
+        m_dlgt = new LocItemEditDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
+    // Belongs in superclass?
+    @Override
+    public void onBackPressed() {
+        if ( !m_dlgt.backPressed() ) {
+            super.onBackPressed();
+        }
+    }
 }

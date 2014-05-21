@@ -156,6 +156,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         return LocUtils.inflate( m_activity, resID );
     }
 
+    public void invalidateOptionsMenuIf()
+    {
+        ABUtils.invalidateOptionsMenuIf( m_activity );
+    }
+
     protected void showDialog( DlgID dlgID )
     {
         m_delegate.showDialog( dlgID );

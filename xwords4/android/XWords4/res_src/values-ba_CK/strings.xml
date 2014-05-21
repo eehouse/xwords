@@ -1917,4 +1917,9 @@
   <string name="loc_filters_menu">Tsetal unem</string>
   <string name="loc_filters_modified">Deifidom yb em</string>
   <string name="loc_main_english">Hsilgne</string>
+  <!-- for loc item edit menu -->
+  <string name="loc_item_clear">Raelc</string>
+  <string name="loc_item_check">Kcehc</string>
+  <string name="loc_item_copy_eng">Ypoc Hsilgne</string>
+  <string name="loc_item_copy_bless">Ypoc laiciffo</string>
 </resources>

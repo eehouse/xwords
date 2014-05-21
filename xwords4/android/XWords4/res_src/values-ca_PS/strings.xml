@@ -1917,4 +1917,9 @@
   <string name="loc_filters_menu">LATEST MENU</string>
   <string name="loc_filters_modified">MODIFIED BY ME</string>
   <string name="loc_main_english">ENGLISH</string>
+  <!-- for loc item edit menu -->
+  <string name="loc_item_clear">CLEAR</string>
+  <string name="loc_item_check">CHECK</string>
+  <string name="loc_item_copy_eng">COPY ENGLISH</string>
+  <string name="loc_item_copy_bless">COPY OFFICIAL</string>
 </resources>
