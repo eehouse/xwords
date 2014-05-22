@@ -506,7 +506,7 @@ public class GamesListDelegate extends ListDelegateBase
                 m_selGroupIDs.remove( id );
             }
         }
-        ABUtils.invalidateOptionsMenuIf( m_activity );
+        invalidateOptionsMenuIf();
         setTitleBar();
     }
 
@@ -1198,7 +1198,7 @@ public class GamesListDelegate extends ListDelegateBase
             inval = true;
         }
         if ( inval ) {
-            ABUtils.invalidateOptionsMenuIf( m_activity );
+            invalidateOptionsMenuIf();
             setTitleBar();
         }
     }

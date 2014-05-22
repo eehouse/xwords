@@ -814,7 +814,7 @@ public class DictsDelegate extends DelegateBase
         } else {
             m_selDicts.remove( dictView );
         }
-        ABUtils.invalidateOptionsMenuIf( m_activity );
+        invalidateOptionsMenuIf();
         setTitleBar();
     }
 

@@ -1308,7 +1308,7 @@ public class BoardDelegate extends DelegateBase
                 m_room = room;
                 m_missing = nMissing;
                 showDialog( DlgID.DLG_INVITE );
-                ABUtils.invalidateOptionsMenuIf( m_activity );
+                invalidateOptionsMenuIf();
             } else {
                 toastStr = getString( R.string.msg_relay_waiting_fmt, devOrder, 
                                       room, nMissing );
@@ -1333,7 +1333,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         m_missing = nMissing;
-        ABUtils.invalidateOptionsMenuIf( m_activity );
+        invalidateOptionsMenuIf();
     } // handleConndMessage
 
     private class BoardUtilCtxt extends UtilCtxtImpl {
@@ -1822,7 +1822,7 @@ public class BoardDelegate extends DelegateBase
                                         }
                                         m_view.setInTrade( m_inTrade );
                                         adjustTradeVisibility();
-                                        ABUtils.invalidateOptionsMenuIf( m_activity );
+                                        invalidateOptionsMenuIf();
                                     }
                                     break;
                                 case JNIThread.GOT_WORDS:

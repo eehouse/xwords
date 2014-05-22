@@ -312,7 +312,7 @@ public class StudyListDelegate extends ListDelegateBase
         }
         setTitle( newTitle );
 
-        ABUtils.invalidateOptionsMenuIf( m_activity );
+        invalidateOptionsMenuIf();
     }
 
     private String[] getSelWords()
