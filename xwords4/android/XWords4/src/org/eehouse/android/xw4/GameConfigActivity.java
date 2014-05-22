@@ -22,7 +22,6 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.app.Dialog;
 import android.view.KeyEvent;
 
 public class GameConfigActivity extends XWActivity {
@@ -35,23 +34,6 @@ public class GameConfigActivity extends XWActivity {
         m_dlgt = new GameConfigDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            dialog = m_dlgt.onCreateDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
-
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    { 
-        m_dlgt.onPrepareDialog( id, dialog );
-        super.onPrepareDialog( id, dialog );
-    }
 
     @Override
     protected void onSaveInstanceState( Bundle outState ) 

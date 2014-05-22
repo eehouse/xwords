@@ -19,14 +19,10 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import junit.framework.Assert;
 
@@ -49,16 +45,6 @@ public class StudyListActivity extends XWListActivity {
             super.onBackPressed();
         }
     }
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = m_dlgt.onCreateDialog( id );
-        if ( null == dialog ) {
-            dialog = super.onCreateDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
 
     public static void launchOrAlert( Context context, int lang, 
                                       DlgDelegate.HasDlgDelegate dlg )

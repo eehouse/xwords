@@ -20,7 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Dialog;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -55,15 +54,5 @@ public class NewGameActivity extends XWActivity {
                                      Intent data )
     {
         m_dlgt.onActivityResult( requestCode, resultCode, data );
-    }
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            dialog = m_dlgt.onCreateDialog( id );
-        }
-        return dialog;
     }
 }

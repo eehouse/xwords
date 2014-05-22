@@ -21,7 +21,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
@@ -30,23 +29,6 @@ import android.view.KeyEvent;
 public class BoardActivity extends XWActivity {
 
     private BoardDelegate m_dlgt;
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            dialog = m_dlgt.onCreateDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
-
-    @Override
-    public void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( id, dialog );
-    }
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 

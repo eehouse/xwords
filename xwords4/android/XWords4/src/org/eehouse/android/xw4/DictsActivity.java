@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -21,12 +21,8 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ExpandableListActivity;
 import android.content.Context;
-import android.content.DialogInterface.OnClickListener;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -81,23 +77,6 @@ public class DictsActivity extends ExpandableListActivity {
         super.onCreate( savedInstanceState );
         m_dlgt.init( savedInstanceState );
     } // onCreate
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            dialog = m_dlgt.onCreateDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
-
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( id, dialog );
-    }
 
     @Override
     public void onBackPressed() {

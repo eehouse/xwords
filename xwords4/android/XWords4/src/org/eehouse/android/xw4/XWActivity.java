@@ -20,6 +20,7 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -90,5 +91,22 @@ public class XWActivity extends Activity {
     {
         return m_dlgt.onOptionsItemSelected( item )
             || super.onOptionsItemSelected( item );
+    }
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        Dialog dialog = super.onCreateDialog( id );
+        if ( null == dialog ) {
+            dialog = m_dlgt.onCreateDialog( id );
+        }
+        return dialog;
+    } // onCreateDialog
+
+    @Override
+    public void onPrepareDialog( int id, Dialog dialog )
+    {
+        super.onPrepareDialog( id, dialog );
+        m_dlgt.prepareDialog( id, dialog );
     }
 }

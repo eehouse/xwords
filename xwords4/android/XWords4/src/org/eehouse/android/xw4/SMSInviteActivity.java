@@ -21,7 +21,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -49,15 +48,5 @@ public class SMSInviteActivity extends InviteActivity {
     {
         super.onActivityResult( requestCode, resultCode, data );
         m_dlgt.onActivityResult( requestCode, resultCode, data );
-    }
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            dialog = m_dlgt.onCreateDialog( id );
-        }
-        return dialog;
     }
 }

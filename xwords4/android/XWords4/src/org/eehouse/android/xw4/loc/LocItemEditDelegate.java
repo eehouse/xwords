@@ -143,8 +143,7 @@ public class LocItemEditDelegate extends DelegateBase {
                 == m_key.split( "%[\\d]\\$[ds]" ).length;
 
             if ( !ok ) {
-                // FIX ME -- should be an alert
-                Utils.showToast( m_activity, "Bad xlation" );
+                showOKOnlyDialog( "Bad xlation" );
             }
         }
 

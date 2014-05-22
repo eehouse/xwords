@@ -20,7 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -42,23 +41,6 @@ public class GamesListActivity extends XWListActivity {
     private static final String ALERT_MSG = "alert_msg";
 
     private GamesListDelegate m_dlgt;
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog && null != m_dlgt ) {
-            dialog = m_dlgt.onCreateDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
-
-    @Override 
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( id, dialog );
-    }
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
