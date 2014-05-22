@@ -67,7 +67,7 @@ public class LocDelegate extends ListDelegateBase
     {
         if ( view instanceof LocListItem ) {
             m_lastItem = (LocListItem)view;
-            LocItemEditDelegate.launch( m_activity, m_lastItem.getPair() );
+            LocItemEditDelegate.launch( m_activity, m_lastItem.getKey() );
         } else if ( view == m_searchButton ) {
             String newText = m_searchField.getText().toString();
             if ( null == m_curSearch || ! m_curSearch.equals( newText ) ) {

@@ -1465,6 +1465,7 @@ public final class R {
         public static final int loc_filters_modified=0x7f0602ae;
         public static final int loc_filters_prompt=0x7f0602a9;
         public static final int loc_filters_screen=0x7f0602ac;
+        public static final int loc_fmts_mismatch=0x7f0602b4;
         /**  see move_dictf above 
          */
         public static final int loc_internal=0x7f0600ba;

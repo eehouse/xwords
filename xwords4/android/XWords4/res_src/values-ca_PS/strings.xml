@@ -1922,4 +1922,7 @@
   <string name="loc_item_check">CHECK</string>
   <string name="loc_item_copy_eng">COPY ENGLISH</string>
   <string name="loc_item_copy_bless">COPY OFFICIAL</string>
+  <string name="loc_fmts_mismatch">ILLEGAL TRANSLATION: A TRANSLATED
+    STRING MUST HAVE THE SAME FORMAT SPECIFIERS (E.G. %1$s) AS THE
+    ORIGINAL.</string>
 </resources>

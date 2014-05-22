@@ -69,6 +69,7 @@ import org.eehouse.android.xw4.XWPrefs;
 
 public class LocUtils {
     public static final String CONTEXT_NAME = "CONTEXT_NAME";
+    protected static final String RES_FORMAT = "%[\\d]\\$[ds]";
     private static final int FMT_LEN = 4;
     private static final String k_LOCALE = "locale";
     private static final String k_XLATEVERS = "xlatevers";
@@ -628,7 +629,7 @@ public class LocUtils {
     {
         String result = null;
         if ( UPPER_CASE ) {
-            String[] parts = str.split( "%[\\d]\\$[ds]" );
+            String[] parts = str.split( RES_FORMAT );
             StringBuilder sb = new StringBuilder();
             int offset = 0;
             for ( String part : parts ) {

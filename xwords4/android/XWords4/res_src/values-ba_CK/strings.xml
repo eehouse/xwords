@@ -1922,4 +1922,7 @@
   <string name="loc_item_check">Kcehc</string>
   <string name="loc_item_copy_eng">Ypoc Hsilgne</string>
   <string name="loc_item_copy_bless">Ypoc laiciffo</string>
+  <string name="loc_fmts_mismatch">Lagelli noitalsnart: a detalsnart
+    gnirts tsum evah eht emas tamrof sreificeps e(.g. %1$s) sa eht
+    lanigiro.</string>
 </resources>

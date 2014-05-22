@@ -23,22 +23,30 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
+import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DelegateBase;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 
-public class LocItemEditDelegate extends DelegateBase {
+public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
 
     private static final String KEY = "KEY";
     private Activity m_activity;
     private String m_key;
+    private HashSet<String> m_keyFmts;
     private EditText m_edit;
     private boolean m_haveBlessed;
+    private static Pattern s_patFormat = Pattern.compile(LocUtils.RES_FORMAT);
 
     protected LocItemEditDelegate( Activity activity, Bundle savedInstanceState )
     {
@@ -60,6 +68,8 @@ public class LocItemEditDelegate extends DelegateBase {
         m_haveBlessed = null != blessed && 0 < blessed.length();
         view.setText( blessed );
         m_edit = (EditText)findViewById( R.id.xlated_view_local );
+        m_edit.addTextChangedListener( this );
+        m_edit.setTextColor( LocListItem.LOCAL_COLOR );
         m_edit.setText( LocUtils.getLocalXlation( m_activity, key, true ) );
 
         view = (TextView)findViewById( R.id.english_label );
@@ -138,22 +148,42 @@ public class LocItemEditDelegate extends DelegateBase {
         boolean ok = true;
         CharSequence cs = m_edit.getText();
         if ( null != cs && 0 < cs.length() ) {
-            String txt = cs.toString();
-            ok = txt.split( "%[\\d]\\$[ds]" ).length
-                == m_key.split( "%[\\d]\\$[ds]" ).length;
+            if ( null == m_keyFmts ) {
+                m_keyFmts = getFmtSet( m_key );
+            }
+
+            ok = m_keyFmts.equals( getFmtSet( cs.toString() ) );
 
             if ( !ok ) {
-                showOKOnlyDialog( "Bad xlation" );
+                showOKOnlyDialog( R.string.loc_fmts_mismatch );
             }
         }
-
         return ok;
     }
 
-    protected static void launch( Context context, LocSearcher.Pair pair )
+    private HashSet<String> getFmtSet( String txt )
+    {
+        HashSet<String> fmts = new HashSet<String>();
+        Matcher matcher = s_patFormat.matcher( txt );
+        while ( matcher.find() ) {
+            fmts.add( txt.substring( matcher.start(), matcher.end() ) );
+        }
+        return fmts;
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // TextWatcher interface
+    //////////////////////////////////////////////////////////////////////
+    public void afterTextChanged( Editable s )
+    {
+        invalidateOptionsMenuIf();
+    }
+    public void beforeTextChanged( CharSequence s, int start, int count, int after ){}
+    public void onTextChanged( CharSequence s, int start, int before, int count ){}
+
+    protected static void launch( Context context, String key )
     {
         Intent intent = new Intent( context, LocItemEditActivity.class );
-        String key = pair.getKey();
 
         intent.putExtra( KEY, key );
 

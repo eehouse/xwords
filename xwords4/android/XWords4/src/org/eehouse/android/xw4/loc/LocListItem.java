@@ -37,12 +37,11 @@ import org.eehouse.android.xw4.DbgUtils;
 
 public class LocListItem extends LinearLayout {
 
-    private static final int LOCAL_COLOR = Color.argb( 0xFF, 0x7f, 0x00, 0x00 );
+    protected static final int LOCAL_COLOR = Color.argb( 0xFF, 0x7f, 0x00, 0x00 );
 
     private LocSearcher.Pair m_pair;
     private int m_position;
     private TextView m_xlated;
-    private String m_xlation;
 
     public LocListItem( Context cx, AttributeSet as ) 
     {
@@ -61,21 +60,21 @@ public class LocListItem extends LinearLayout {
         setXlated();
     }
 
-    protected LocSearcher.Pair getPair()
+    protected String getKey()
     {
-        return m_pair;
+        return m_pair.getKey();
     }
 
     private void setEnglish()
     {
         TextView tv = (TextView)findViewById( R.id.english_view );
-        tv.setText( m_pair.getKey() );
+        tv.setText( getKey() );
     }
 
     private void setXlated()
     {
         boolean local = false;
-        String key = m_pair.getKey();
+        String key = getKey();
         String xlation = LocUtils.getLocalXlation( getContext(), key, true );
         if ( null != xlation ) {
             local = true;
@@ -83,7 +82,6 @@ public class LocListItem extends LinearLayout {
             xlation = LocUtils.getBlessedXlation( getContext(), key, true );
         }
         if ( null != xlation ) {
-            m_xlation = xlation;
             m_pair.setXlation( xlation );
             m_xlated.setText( xlation );
             if ( local ) {
