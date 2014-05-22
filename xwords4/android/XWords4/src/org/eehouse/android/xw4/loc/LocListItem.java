@@ -81,12 +81,11 @@ public class LocListItem extends LinearLayout {
         } else {
             xlation = LocUtils.getBlessedXlation( getContext(), key, true );
         }
-        if ( null != xlation ) {
-            m_pair.setXlation( xlation );
-            m_xlated.setText( xlation );
-            if ( local ) {
-                m_xlated.setTextColor( LOCAL_COLOR );
-            }
+
+        m_pair.setXlation( xlation );
+        m_xlated.setText( xlation );
+        if ( local ) {
+            m_xlated.setTextColor( LOCAL_COLOR );
         }
     }
 
