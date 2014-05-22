@@ -83,16 +83,13 @@ def longFormFor(fmt ):
 def replacePcts( doc ):
     pat = re.compile( '(%[sd])', re.DOTALL | re.MULTILINE )
     for string in doc.findall('string'):
-        if string.text:
-            splits = re.split( pat, string.text )
-            nParts = len(splits)
-            if 1 < nParts:
-                for ii in range(nParts):
-                    part = splits[ii]
-                    if re.match( pat, part ): splits[ii] = longFormFor(part)
-                string.text = ''.join( splits )
-
-                
+        splits = re.split( pat, string.text )
+        nParts = len(splits)
+        if 1 < nParts:
+            for ii in range(nParts):
+                part = splits[ii]
+                if re.match( pat, part ): splits[ii] = longFormFor(part)
+            string.text = ''.join( splits )
 
 # For each name in pairs, check if it's in doc. If not, find the last
 # elem before it that is in doc and insert it after.  Start over each
@@ -123,7 +120,7 @@ def doAddMissing( doc ):
                 prevComments = []
                     
 def compare( engPairs, docPath ):
-    locStrings = mk_xml.getStrings( docPath )
+    locStrings = mk_xml.getStrings( docPath, True )
     engOnly = []
     engOnly = [key for key in engPairs.keys() if not key in locStrings]
     print "%d strings missing from %s: %s" % (len(engOnly), docPath, ", ".join(engOnly))
@@ -157,7 +154,7 @@ def main():
     except:
         usage()
 
-    pairs = mk_xml.getStrings('res/values/strings.xml')
+    pairs = mk_xml.getStrings('res/values/strings.xml', False)
 
     # Build list of files to work on
     if 0 == len(stringsFiles):

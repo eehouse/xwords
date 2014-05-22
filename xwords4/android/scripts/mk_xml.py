@@ -65,17 +65,18 @@ def xform(src, dest):
 #     # doc.write( sys.stdout, pretty_print=True )
 
 def checkText( text ):
-    text = " ".join(re.split('\s+', text)).replace('"', '\"')
-    seen = set()
-    split = re.split( '(%\d\$[sd])', text )
-    for part in split:
-        if 4 <= len(part) and '%' == part[0]:
-            digit = int(part[1:2])
-            if digit in seen:
-                pass
-                # print "ERROR: has duplicate format digit %d (text = %s)" % (digit, text)
-                # print "This might not be what you want"
-            seen.add( digit )
+    if text:
+        text = " ".join(re.split('\s+', text)).replace('"', '\"')
+        seen = set()
+        split = re.split( '(%\d\$[sd])', text )
+        for part in split:
+            if 4 <= len(part) and '%' == part[0]:
+                digit = int(part[1:2])
+                if digit in seen: pass
+                    # print "ERROR: has duplicate format digit %d
+                    # (text = %s)" % (digit, text) print "This might
+                    # not be what you want"
+                seen.add( digit )
     return text
 
 def printStrings( pairs, outfile, target, variant ):
@@ -145,7 +146,7 @@ public class %s {
 """
     fil.write( lines )
 
-def getStrings(path):
+def getStrings( path, dupesOK ):
     pairs = {}
     texts = {}
     prevComments = []
@@ -153,10 +154,10 @@ def getStrings(path):
     for elem in etree.parse(path).getroot().iter():
         if not isinstance( elem.tag, basestring ):
             prevComments.append( elem.text )
-        elif 'string' == elem.tag and elem.text:
+        elif 'string' == elem.tag:
             name = elem.get('name')
             text = checkText( elem.text )
-            if text in texts:
+            if text in texts and not dupesOK:
                 print "duplicate string: name: %s, text: '%s'" % (name, text)
                 foundDupe = True
             texts[text] = True
@@ -185,7 +186,7 @@ def main():
         elif option == '-v': variant = value
 
     # Gather all localizable strings
-    pairs = getStrings("res/values/strings.xml")
+    pairs = getStrings("res/values/strings.xml", False)
 
     # for subdir, dirs, files in os.walk('res_src'):
     #     for file in files:
