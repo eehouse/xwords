@@ -2303,7 +2303,7 @@ public final class R {
         public static final int str_not_your_turn=0x7f0601a1;
         /**  Used in formatting game history and move summaries 
          */
-        public static final int str_pass_fmt=0x7f060118;
+        public static final int str_pass=0x7f060118;
         /**  Used in formatting exchange move summaries: passed means the
          user skipped his turn, or made a move involving 0 tiles for 0
          points 
@@ -2394,7 +2394,7 @@ public final class R {
         public static final int strd_robot_traded_fmt=0x7f060110;
         /**  I don't know how this is used. :-) 
          */
-        public static final int strd_time_penalty_sub=0x7f060117;
+        public static final int strd_time_penalty_sub_fmt=0x7f060117;
         /**  Used in formatting reports of trades (exchanges of tiles).
          Number of tiles traded is substituted for %1$d
          */

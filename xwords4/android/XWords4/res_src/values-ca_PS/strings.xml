@@ -599,9 +599,9 @@
   <string name="str_remote_moved_fmt">REMOTE PLAYER %1$s MADE THIS
     MOVE:\u0020</string>
   <!-- I don't know how this is used. :-) -->
-  <string name="strd_time_penalty_sub"/>
+  <string name="strd_time_penalty_sub_fmt"> - %1$d [TIME]</string>
   <!-- Used in formatting game history and move summaries -->
-  <string name="str_pass_fmt"> - %1$d [TIME]</string>
+  <string name="str_pass">PASS\n</string>
   <!-- Used in formatting game history and move summaries -->
   <string name="strs_move_across_fmt">MOVE (FROM %1$s ACROSS)\n</string>
   <!-- Used in formatting game history and move summaries -->

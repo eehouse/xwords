@@ -318,9 +318,7 @@
   <string name="strs_values_header_fmt">%1$s počet/hodnota:\n</string>
   <string name="strd_remaining_tiles_add_fmt">+ %1$d [všetky zostávajúce kamene]</string>
   <string name="strd_unused_tiles_sub_fmt">- %1$d [nepoužité kamene]</string>
-  <string name="strd_time_penalty_sub"/>
-  <!-- Used in formatting game history and move summaries -->
-  <string name="str_pass_fmt"> - %1$d [čas]</string>
+  <string name="strd_time_penalty_sub_fmt"> - %1$d [čas]</string>
   <string name="strs_move_across_fmt">ťah (od %1$s naprieč)</string>
   <string name="strs_move_down_fmt">ťah (od %1$s dolu)</string>
   <string name="strs_tray_at_start_fmt">Zásobník pri štarte: %1$s</string>
@@ -772,9 +770,6 @@
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">XLATE ME: New Bluetooth game</string>
-  <!-- Text of second of two buttons for new networked games.  Tap
-    this and you'll get taken to the "Game configure" screen -->
-  <string name="newgame_net_config">XLATE ME: Configure first</string>
   <!-- Text of first of two buttons for new networked games.  Tap
          this and a game will be created, but you probably won't see
          it immediately because an email or messaging app will be
@@ -792,9 +787,6 @@
   <!-- section separator (white-on-gray bar) for second section:
          networked games -->
   <string name="newgame_networked_header">XLATE ME: New Networked game</string>
-  <!-- Text of second of two buttons for new standalone games.  Tap
-    this and you'll get taken to the "Game configure" screen -->
-  <string name="newgame_local_config">XLATE ME: Configure first</string>
   <!-- Text of first of two buttons for new standalone games.  Tap
          this and a new game will be created and opened.  If the first
          player is a robot it will immediately take its turn.-->
@@ -975,10 +967,6 @@
   <string name="prefs_appearance">XLATE ME: Appearance</string>
   <string name="prefs_colors">Farby</string>
   <string name="prefs_colors_summary">Upraviť farby hráčov a hracej plochy</string>
-  <string name="player0">Prvý hráč</string>
-  <string name="player1">Druhý hráč</string>
-  <string name="player2">Tretí hráč</string>
-  <string name="player3">Štvrtý hráč</string>
   <string name="bonus_l2x">Dvojitá hodnota písmena</string>
   <string name="bonus_l3x">Trojitá hodnota písmena</string>
   <string name="bonus_w2x">Dvojitá hodnota slova</string>
@@ -1043,7 +1031,6 @@
   <!-- fill this in other than in English -->
   <string name="xlator">Slovenský preklad Tomáš Morkus</string>
   <string name="loc_menu_xlate">XLATE ME: Translate</string>
-  <string name="loc_main_yourlang">XLATE ME: Your language</string>
   <string name="sel_items_fmt">XLATE ME: Selected: %1$d</string>
   <string name="slmenu_deselect_all">XLATE ME: Unselect all</string>
   <string name="slmenu_select_all">XLATE ME: Select all</string>
@@ -1288,8 +1275,6 @@
   <string name="new_sms_title">XLATE ME: New game via SMS</string>
   <!--  -->
   <string name="dft_sms_name_fmt">XLATE ME: SMS Game %1$X</string>
-  <!--  -->
-  <string name="newgame_enable_sms">XLATE ME: Launch Settings</string>
   <!--  -->
   <string name="sms_disabled">XLATE ME: Playing via SMS is currently disabled.
     You can enable it in Settings-&gt;Network game settings.</string>

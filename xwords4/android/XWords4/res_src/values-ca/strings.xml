@@ -50,26 +50,24 @@
   <string name="board_menu_game_resend">Reenvia els missatges</string>
   <string name="board_menu_file_about">Quant al Crosswords</string>
   <!-- returned by util_getUserString -->
-  <string name="strd_robot_traded">El robot ha canviat %1$d fitxes en aquest torn.</string>
+  <string name="strd_robot_traded_fmt">El robot ha canviat %1$d fitxes en aquest torn.</string>
   <string name="str_robot_moved">El robot ha fet aquesta jugada:</string>
-  <string name="strs_values_header">%1$s quantitat/valors:\n</string>
-  <string name="strd_remaining_tiles_add">+ %1$d [fitxes romanents]</string>
-  <string name="strd_unused_tiles_sub">- %1$d [fitxes al faristol]</string>
-  <string name="strd_time_penalty_sub"/>
-  <string name="str_pass"> - %1$d [temps]</string>
-  <string name="strs_move_across">mou (des de %1$s horitzontal)</string>
-  <string name="strs_move_down">mou (des de %1$s avall)</string>
-  <string name="strs_tray_at_start">Faristol a l\'inici: %1$s</string>
-  <string name="strss_traded_for">Ha canviat %1$s per %2$s.</string>
+  <string name="strs_values_header_fmt">%1$s quantitat/valors:\n</string>
+  <string name="strd_remaining_tiles_add_fmt">+ %1$d [fitxes romanents]</string>
+  <string name="strd_unused_tiles_sub_fmt"> - %1$d [fitxes al faristol]</string>
+  <string name="strd_time_penalty_sub_fmt"> - %1$d [temps]</string>
+  <string name="strs_move_across_fmt">mou (des de %1$s horitzontal)</string>
+  <string name="strs_move_down_fmt">mou (des de %1$s avall)</string>
+  <string name="strs_tray_at_start_fmt">Faristol a l\'inici: %1$s</string>
+  <string name="strss_traded_for_fmt">Ha canviat %1$s per %2$s.</string>
   <string name="str_phony_rejected">Hi ha una o més paraules no vàlides a la jugada; torn perdut!</string>
-  <string name="strd_cumulative_score">Puntuació acumulada: %1$d</string>
-  <string name="strs_new_tiles">Fitxes noves: %1$s</string>
+  <string name="strd_cumulative_score_fmt">Puntuació acumulada: %1$d</string>
+  <string name="strs_new_tiles_fmt">Fitxes noves: %1$s</string>
   <string name="str_passed">Ha passat</string>
-  <string name="strsd_summaryscored"/>
   <string name="str_lostturn">Torn perdut</string>
   <string name="str_commit_confirm">Voleu fer la jugada?\n</string>
   <string name="str_bonus_all">Bonificació per usar totes les fitxes: 50\n</string>
-  <string name="strd_turn_score">Puntuació del torn: %1$d\n</string>
+  <string name="strd_turn_score_fmt">Puntuació del torn: %1$d\n</string>
   <!-- error messages -->
   <string name="str_tiles_not_in_line">Heu de jugar les fitxes en una mateixa línia.</string>
   <string name="str_no_empties_in_turn">No podeu deixar caselles buides entre les fitxes jugades.</string>
@@ -87,11 +85,11 @@
   <string name="remote_label">Jugador remot (s\'ignora)</string>
   <string name="robot_label">Jugador robot</string>
   <string name="password_label">Contrasenya (s\'ignora)</string>
-  <string name="robot_namef">%1$s (robot)</string>
+  <string name="robot_name_fmt">%1$s (robot)</string>
   <string name="guest_name">(jugador visitant)</string>
   <string name="player_edit_title">Jugador</string>
   <string name="players_label_standalone">Jugadors</string>
-  <string name="players_label_host">Jugadors</string>
+  <string name="players_label_host_fmt">Jugadors</string>
   <string name="button_add_player">Afegeix un jugador</string>
   <string name="button_juggle_players">Remena els jugadors</string>
   <string name="dicts_item_select">Estableix com a predeterminat</string>
@@ -132,10 +130,10 @@
   <string name="board_size">Mida del tauler</string>
   <string name="prefs_colors">Colors</string>
   <string name="prefs_colors_summary">Canvieu els colors emprats al tauler</string>
-  <string name="player0">Primer jugador</string>
-  <string name="player1">Segon jugador</string>
-  <string name="player2">Tercer jugador</string>
-  <string name="player3">Quart jugador</string>
+  <string name="pref_player1_name">Primer jugador</string>
+  <string name="pref_player2_name">Segon jugador</string>
+  <string name="pref_player3_name">Tercer jugador</string>
+  <string name="pref_player4_name">Quart jugador</string>
   <string name="bonus_l2x">Doble de lletra</string>
   <string name="bonus_l3x">Triple de lletra</string>
   <string name="bonus_w2x">Doble de paraula</string>
@@ -148,13 +146,13 @@
   <string name="tile_back">Fons de la fitxa</string>
   <string name="empty">Cel·la buida/fons</string>
   <string name="clr_crosshairs">Creu d\'ubicació</string>
-  <string name="msg_relay_waiting">Esteu connectat al repetidor. S\'està esperant a %1$d jugador/s.</string>
+  <string name="msg_relay_waiting_fmt">Esteu connectat al repetidor. S\'està esperant a %1$d jugador/s.</string>
   <string name="relay_alert">Error en la connexió</string>
   <string name="msg_too_many">Esteu proveint més jugadors dels que espera l\'amfitrió.</string>
   <string name="msg_no_room">Cap amfitrió no ha registrat una sala amb aquest nom.</string>
   <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o intentenu més tard.</string>
   <string name="msg_lost_other">El repetidor ha perdut el contacte amb algun altre dispositiu durant aquesta partida.</string>
-  <string name="ids_badwordsf">Les paraules %1$s no es troben al diccionari.</string>
+  <string name="ids_badwords_fmt">Les paraules %1$s no es troben al diccionari.</string>
   <string name="badwords_accept">  Voleu acceptar aquesta jugada?</string>
   <string name="badwords_lost">  Torn perdut.</string>
   <string name="badwords_title">Les paraules no són vàlides</string>
@@ -162,25 +160,22 @@
   <string name="force_title">Jugador/s remot/s</string>
   <string name="force_expl">Un amfitrió ha de tenir com a mínim un jugador remot.</string>
   <string name="gameOver">Final de partida</string>
-  <string name="movesf">%1$d torns jugats</string>
+  <string name="moves_fmt">%1$d torns jugats</string>
   <!-- about dialog stuff -->
-  <string name="about_versf">Crosswords per a l\'Android, Versió
-      %1$s, rev %2$s.</string>
   <string name="about_copyright">Copyright (C) 1998-2012 d\'Eric
     House. Aquest programari es troba sota la Llicència Pública General GNU.</string>
   <string name="about_web">Per a l\'ajuda o el codi font visiteu:
     http://xwords.sf.net.  Per informar d\'errors, suggerir noves funcionalitats, oferir ajuda, etc., envieu un correu a: eehouse@eehouse.org.</string>
   <!-- fill this in other than in English -->
   <string name="xlator">Traducció: Joan Montané --- Softcatalà</string>
-  <string name="downloading_dictf">S\'està baixant el diccionari %1$s per al Crosswords...</string>
+  <string name="downloading_dict_fmt">S\'està baixant el diccionari %1$s per al Crosswords...</string>
   <string name="no_dict_title">No s\'ha trobat el diccionari</string>
   <string name="button_download">Baixa</string>
-  <string name="no_dictf">No s\'ha pogut obrir la partida perquè no s\'ha trobat el diccionari %1$s.</string>
-  <string name="msg_ask_password">Contrasenya per \"%1$s\":</string>
+  <string name="msg_ask_password_fmt">Contrasenya per \"%1$s\":</string>
   <string name="red">Roig</string>
   <string name="green">Verd</string>
   <string name="blue">Blau</string>
-  <string name="gamef">Partida %1$d</string>
-  <string name="playerf">Jugador %1$d</string>
+  <string name="game_fmt">Partida %1$d</string>
+  <string name="player_fmt">Jugador %1$d</string>
   <string name="initial_player_minutes">Minuts de partida</string>
 </resources>

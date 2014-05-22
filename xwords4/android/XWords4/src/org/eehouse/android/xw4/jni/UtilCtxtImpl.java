@@ -163,10 +163,10 @@ public class UtilCtxtImpl implements UtilCtxt {
             id = R.string.str_remote_moved_fmt;
             break;
         case UtilCtxt.STRD_TIME_PENALTY_SUB:
-            id = R.string.strd_time_penalty_sub;
+            id = R.string.strd_time_penalty_sub_fmt;
             break;
         case UtilCtxt.STR_PASS:
-            id = R.string.str_pass_fmt;
+            id = R.string.str_pass;
             break;
         case UtilCtxt.STRS_MOVE_ACROSS:
             id = R.string.strs_move_across_fmt;

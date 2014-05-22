@@ -1,8 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!-- -*- compile-command: "cd ../../; ant install"; -*- -->
 <resources>
-  <!-- The name of the app.  Not localized! -->
-  <string name="app_name">Crosswords</string>
   <!--
        ############################################################
        # :Screens:
@@ -136,11 +134,6 @@
   <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
   <string name="rename_label">Mudar o nome desse jogo para:</string>
-  <!-- Text of confirmation dialog posted when list_item_reset menu
-         is selected -->
-  <string name="confirm_reset">Você tem certeza que quer reiniciar
-    esse jogo? Reiniciar apaga todas as jogadas e informações de
-    conexão.</string>
   <!--
        ############################################################
        # :Screens:
@@ -600,9 +593,7 @@
   <string name="str_remote_moved_fmt">Jogador remoto %1$s fez esta
     jogada:\u0020</string>
   <!-- I don't know how this is used. :-) -->
-  <string name="strd_time_penalty_sub"/>
-  <!-- Used in formatting game history and move summaries -->
-  <string name="str_pass"> - %1$d [tempo]</string>
+  <string name="strd_time_penalty_sub_fmt"> - %1$d [tempo]</string>
   <!-- Used in formatting game history and move summaries -->
   <string name="strs_move_across_fmt">jogada (de %1$s transversal)\n</string>
   <!-- Used in formatting game history and move summaries -->
@@ -815,14 +806,6 @@
          are showns as the names of editable colors and as the the
          title of the color editor that comes up when the name is
          tapped. -->
-  <!-- First of four players (color for, that is ) -->
-  <string name="player0">Primeiro jogador</string>
-  <!-- Second of four players (color for, that is ) -->
-  <string name="player1">Segundo jogador</string>
-  <!-- Third of four players (color for, that is ) -->
-  <string name="player2">Terceiro jogador</string>
-  <!-- Fourth of four players (color for, that is ) -->
-  <string name="player3">Quarto jogador</string>
   <!-- (color for) double-letter bonus squares on the board -->
   <string name="bonus_l2x">Letra dupla</string>
   <!-- (color for) triple-letter bonus squares on the board -->
@@ -990,9 +973,6 @@
          this and a new game will be created and opened.  If the first
          player is a robot it will immediately take its turn.-->
   <string name="newgame_local">Jogar agora</string>
-  <!-- Text of second of two buttons for new standalone games.  Tap
-    this and you'll get taken to the "Game configure" screen -->
-  <string name="newgame_local_config">Configurar primeiro</string>
   <!-- section separator (white-on-gray bar) for second section:
          networked games -->
   <string name="newgame_networked_header">Novo jogo de rede</string>
@@ -1010,9 +990,6 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">Convidar agora</string>
-  <!-- Text of second of two buttons for new networked games.  Tap
-    this and you'll get taken to the "Game configure" screen -->
-  <string name="newgame_net_config">Configurar primeiro</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">Novo jogo por Bluetooth</string>
@@ -1065,7 +1042,7 @@
          of the installed apps that can process the request he'd like
          to have launched.  This string is passed to Android and used
          as the title of the dialog that presents that choice. -->
-  <string name="invite_chooserf">Enviar convite por %1$s</string>
+  <string name="invite_chooser_fmt">Enviar convite por %1$s</string>
   <string name="invite_chooser_email">email</string>
   <string name="invite_chooser_sms">sms</string>
   <!-- Text of dialog asking user to confirm a move that exchanges
@@ -1246,8 +1223,8 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-  <string name="no_dictf">Você precisa baixar uma lista de palavras
-    substituta em %2$santes de poder abrir o jogo \"%1$s\". (A original
+  <string name="no_dict_fmt">Você precisa baixar uma lista de palavras
+    substituta em %2$s antes de poder abrir o jogo \"%1$s\". (A original
     pode ter sido apagada ou armazenada em um cartão de memória externo
     que não está mais disponível.)</string>
   <!-- This is an alternative message presented when there's also
@@ -1282,10 +1259,10 @@
   <string name="msg_ask_password_fmt">Senha para \"%1$s\":</string>
   <!-- used to create default names of games (when user has not
          named them.) -->
-  <string name="gamef">Jogo %1$d</string>
+  <string name="game_fmt">Jogo %1$d</string>
   <!-- used to create default player names.  Number between 1 and 4
          is substituted -->
-  <string name="playerf">Jogador %1$d</string>
+  <string name="player_fmt">Jogador %1$d</string>
   <!-- When a move is fetched from the relay a Notification is
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
@@ -1557,13 +1534,13 @@
          above. -->
   <string name="button_lookup">Procurar palavras</string>
   <!--  -->
-  <string name="button_lookupf">Procurar %1$s</string>
+  <string name="button_lookup_fmt">Procurar %1$s</string>
   <!--  -->
   <string name="title_lookup">Selecione para procurar</string>
   <!--  -->
   <string name="button_done">Pronto</string>
   <!--  -->
-  <string name="button_donef">Pronto com %1$s</string>
+  <string name="button_done_fmt">Pronto com %1$s</string>
   <!--  -->
   <string name="pick_url_title_fmt">Procurar %1$s em</string>
   <!--  -->
@@ -1682,8 +1659,6 @@
   <!--  -->
   <string name="sms_disabled">Jogar por SMS está desabilitado. Você
     pode habilitar nas configurações de Rede.</string>
-  <!--  -->
-  <string name="newgame_enable_sms">Configurações de início</string>
   <!--  -->
   <string name="dft_sms_name_fmt">Jogo SMS %X</string>
   <!--  -->
@@ -1856,10 +1831,6 @@
   <string name="list_group_movedown">Mover para baixo</string>
   <string name="group_cur_games">Meus jogos</string>
   <string name="group_new_games">Novos jogos</string>
-  <string name="group_confirm_del">Você tem certeza que quer apagar
-    esse grupo?</string>
-  <string name="group_confirm_delf">\u0020(Ele contém %1$d jogo(s),
-    que também serão apagados.)</string>
   <string name="rename_group_label">Mudar o nome desse grupo para:</string>
   <string name="game_name_group_title">Nomear grupo</string>
   <string name="no_move_onegroup">Não é possível mover até que exista
