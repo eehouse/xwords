@@ -216,8 +216,7 @@ public class GameConfigDelegate extends DelegateBase
                     public void onDismiss( DialogInterface di ) 
                     {
                         if ( m_gi.forceRemoteConsistent() ) {
-                            Utils.showToast( m_activity,
-                                             R.string.forced_consistent );
+                            showToast( R.string.forced_consistent );
                             loadPlayersList();
                         }
                     }

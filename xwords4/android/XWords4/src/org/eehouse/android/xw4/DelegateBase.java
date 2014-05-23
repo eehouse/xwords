@@ -162,6 +162,31 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         ABUtils.invalidateOptionsMenuIf( m_activity );
     }
 
+    public void showToast( int msg )
+    {
+        Utils.showToast( m_activity, msg );
+    }
+
+    public void showToast( String msg )
+    {
+        Utils.showToast( m_activity, msg );
+    }
+
+    public boolean requestWindowFeature( int feature )
+    {
+        return m_activity.requestWindowFeature( feature );
+    }
+
+    public Object getSystemService( String name )
+    {
+        return m_activity.getSystemService( name );
+    }
+
+    public void runOnUiThread( Runnable runnable )
+    {
+        m_activity.runOnUiThread( runnable );
+    }
+
     protected void showDialog( DlgID dlgID )
     {
         m_delegate.showDialog( dlgID );
@@ -170,6 +195,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void removeDialog( DlgID dlgID )
     {
         removeDialog( dlgID.ordinal() );
+    }
+
+    protected void dismissDialog( DlgID dlgID )
+    {
+        m_activity.dismissDialog( dlgID.ordinal() );
     }
 
     protected void removeDialog( int id )

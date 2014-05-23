@@ -645,7 +645,7 @@ public class DictsDelegate extends DelegateBase
         try {
             startActivity( downloadIntent );
         } catch ( android.content.ActivityNotFoundException anfe ) {
-            Utils.showToast( m_activity, R.string.no_download_warning );
+            showToast( R.string.no_download_warning );
         }
     }
 
@@ -790,8 +790,7 @@ public class DictsDelegate extends DelegateBase
                                 finish();
                             }
                         } else {
-                            Utils.showToast( m_activity, 
-                                             R.string.download_failed );
+                            showToast( R.string.download_failed );
                         }
                     }
                 } );

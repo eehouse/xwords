@@ -166,12 +166,12 @@ public class StudyListDelegate extends ListDelegateBase
             case SL_COPY_ACTION:
                 selWords = getSelWords();
                 ClipboardManager clipboard = (ClipboardManager)
-                    m_activity.getSystemService( Context.CLIPBOARD_SERVICE );
+                    getSystemService( Context.CLIPBOARD_SERVICE );
                 clipboard.setText( TextUtils.join( "\n", selWords ) );
 
                 String msg = getString( R.string.paste_done_fmt, 
                                         selWords.length );
-                Utils.showToast( m_activity, msg );
+                showToast( msg );
                 break;
             default:
                 Assert.fail();

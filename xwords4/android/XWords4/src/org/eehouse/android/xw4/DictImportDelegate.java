@@ -176,7 +176,7 @@ public class DictImportDelegate extends DelegateBase {
 
         m_handler = new Handler();
 
-        m_activity.requestWindowFeature( Window.FEATURE_LEFT_ICON );
+        requestWindowFeature( Window.FEATURE_LEFT_ICON );
         setContentView( R.layout.import_dict );
         m_activity.getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
                                                            R.drawable.icon48x48 );

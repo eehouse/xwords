@@ -453,7 +453,7 @@ public class GamesListDelegate extends ListDelegateBase
     // DBUtils.DBChangeListener interface
     public void gameSaved( final long rowid, final boolean countChanged )
     {
-        m_activity.runOnUiThread( new Runnable() {
+        runOnUiThread( new Runnable() {
                 public void run() {
                     if ( countChanged || DBUtils.ROWID_NOTFOUND == rowid ) {
                         onContentChanged();
@@ -902,7 +902,7 @@ public class GamesListDelegate extends ListDelegateBase
                     if ( ! madeGame ) {
                         int id = success ? R.string.download_done 
                             : R.string.download_failed;
-                        Utils.showToast( m_activity, id );
+                        showToast( id );
                     }
                 }
             } );

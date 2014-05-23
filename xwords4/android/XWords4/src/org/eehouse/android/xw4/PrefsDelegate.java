@@ -203,7 +203,7 @@ public class PrefsDelegate extends DelegateBase
                     msg = String.format( "Cannot write to %s", value );
                 }
                 if ( null != msg ) {
-                    Utils.showToast( m_activity, msg );
+                    showToast( msg );
                 }
             }
             DictUtils.invalDictList();

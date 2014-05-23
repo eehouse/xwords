@@ -510,7 +510,7 @@ public class BoardDelegate extends DelegateBase
 
         if ( CommonPrefs.getHideTitleBar( m_activity )
              && ABUtils.haveMenuKey( m_activity ) ) {
-            m_activity.requestWindowFeature( Window.FEATURE_NO_TITLE );
+            requestWindowFeature( Window.FEATURE_NO_TITLE );
         }
 
         if ( BuildConstants.CHAT_SUPPORTED ) {
@@ -930,7 +930,7 @@ public class BoardDelegate extends DelegateBase
                 cmd = JNICmd.CMD_COMMIT;
                 break;
             case SHOW_EXPL_ACTION:
-                Utils.showToast( m_activity, m_toastStr );
+                showToast( m_toastStr );
                 m_toastStr = null;
                 break;
             case BUTTON_BROWSEALL_ACTION:
@@ -968,7 +968,7 @@ public class BoardDelegate extends DelegateBase
                 startChatActivity();
                 break;
             case START_TRADE_ACTION:
-                Utils.showToast( m_activity, R.string.entering_trade );
+                showToast( R.string.entering_trade );
                 cmd = JNICmd.CMD_TRADE;
                 break;
             case LOOKUP_ACTION:
@@ -1122,7 +1122,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( doToast ) {
-            Utils.showToast( m_activity, strID );
+            showToast( strID );
         } else if ( dlgID != DlgID.NONE ) {
             final int strIDf = strID;
             final DlgID dlgIDf = dlgID;
@@ -1173,7 +1173,7 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     public void invalidateParent()
     {
-        m_activity.runOnUiThread(new Runnable() {
+        runOnUiThread(new Runnable() {
                 public void run() {
                     m_view.invalidate();
                 }
@@ -1202,7 +1202,7 @@ public class BoardDelegate extends DelegateBase
         m_jniThread.setSaveDict( getDict );
 
         String msg = getString( R.string.reload_new_dict_fmt, getDict );
-        Utils.showToast( m_activity, msg );
+        showToast( msg );
         finish();
         GameUtils.launchGame( m_activity, m_rowid, false );
     }
@@ -1400,7 +1400,7 @@ public class BoardDelegate extends DelegateBase
                 final String bonusStr = getString( id );
                 post( new Runnable() {
                         public void run() {
-                            Utils.showToast( m_activity, bonusStr );
+                            showToast( bonusStr );
                         }
                     } );
             }
@@ -1418,7 +1418,7 @@ public class BoardDelegate extends DelegateBase
             final String text = String.format( "%s\n%s", name, expl );
             post( new Runnable() {
                     public void run() {
-                        Utils.showToast( m_activity, text );
+                        showToast( text );
                     }
                 } );
         }
@@ -1983,7 +1983,7 @@ public class BoardDelegate extends DelegateBase
                     DbgUtils.loge( ie );
                     if ( DlgID.NONE != m_blockingDlgID ) {
                         try {
-                            m_activity.dismissDialog( m_blockingDlgID.ordinal() );
+                            dismissDialog( m_blockingDlgID );
                         } catch ( java.lang.IllegalArgumentException iae ) {
                             DbgUtils.loge( iae );
                         }
