@@ -2248,5 +2248,9 @@
     <string name="loc_fmts_mismatch">Illegal translation: a translated
     string must have the same format specifiers (e.g. %1$s) as the
     original.</string>
+    <string name="not_again_fmt_expl">This string has special format
+    specifiers (e.g. %1$s). Please be sure that your translation has
+    the same ones as the original.\n\n(You will not be able to save it
+    unless it does.)</string>
     
 </resources>

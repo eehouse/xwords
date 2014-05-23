@@ -22,9 +22,13 @@ package org.eehouse.android.xw4.loc;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.TextWatcher;
+import android.text.style.BackgroundColorSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
@@ -46,7 +50,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
     private HashSet<String> m_keyFmts;
     private EditText m_edit;
     private boolean m_haveBlessed;
-    private static Pattern s_patFormat = Pattern.compile(LocUtils.RES_FORMAT);
+    private static Pattern s_patFormat = Pattern.compile( LocUtils.RES_FORMAT );
 
     protected LocItemEditDelegate( Activity activity, Bundle savedInstanceState )
     {
@@ -62,7 +66,12 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
         m_key = key;
 
         TextView view = (TextView)findViewById( R.id.english_view );
-        view.setText( key );
+        m_keyFmts = getFmtSet( key, view );
+        if ( 0 < m_keyFmts.size() ) {
+            showNotAgainDlg( R.string.not_again_fmt_expl, 
+                             R.string.key_na_fmt_expl );
+        }
+
         view = (TextView)findViewById( R.id.xlated_view_blessed );
         String blessed = LocUtils.getBlessedXlation( m_activity, key, true );
         m_haveBlessed = null != blessed && 0 < blessed.length();
@@ -148,11 +157,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
         boolean ok = true;
         CharSequence cs = m_edit.getText();
         if ( null != cs && 0 < cs.length() ) {
-            if ( null == m_keyFmts ) {
-                m_keyFmts = getFmtSet( m_key );
-            }
-
-            ok = m_keyFmts.equals( getFmtSet( cs.toString() ) );
+            ok = m_keyFmts.equals( getFmtSet( cs.toString(), null ) );
 
             if ( !ok ) {
                 showOKOnlyDialog( R.string.loc_fmts_mismatch );
@@ -161,13 +166,38 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
         return ok;
     }
 
-    private HashSet<String> getFmtSet( String txt )
+    // Performance hack: set up highlighting of format specifiers since we're
+    // searching for them anyway.
+    private HashSet<String> getFmtSet( String txt, TextView owner )
     {
         HashSet<String> fmts = new HashSet<String>();
+        Spannable spanText = null; // null unless used
+
         Matcher matcher = s_patFormat.matcher( txt );
         while ( matcher.find() ) {
-            fmts.add( txt.substring( matcher.start(), matcher.end() ) );
+            int start = matcher.start();
+            int end = matcher.end();
+            fmts.add( txt.substring( start, end ) );
+
+            if ( null == owner ) {
+                continue;
+            }
+
+            if ( null == spanText ) {
+                spanText = new SpannableString( txt );
+            }
+            spanText.setSpan( new BackgroundColorSpan(Color.BLUE), start, end,
+                              Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
         }
+
+        if ( null != owner ) {
+            if ( null != spanText ) {
+                owner.setText( spanText );
+            } else {
+                owner.setText( txt );
+            }
+        }
+
         return fmts;
     }
 

@@ -1925,4 +1925,8 @@
   <string name="loc_fmts_mismatch">Lagelli noitalsnart: a detalsnart
     gnirts tsum evah eht emas tamrof sreificeps e(.g. %1$s) sa eht
     lanigiro.</string>
+  <string name="not_again_fmt_expl">Siht gnirts sah laiceps tamrof
+    sreificeps e(.g. %1$s). Esaelp eb erus taht ruoy noitalsnart sah
+    eht emas seno sa eht lanigiro.\n\nuOy( lliw ton eb elba ot evas ti
+    sselnu ti seod.)</string>
 </resources>

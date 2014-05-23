@@ -111,6 +111,7 @@
   <string name="key_na_browseall">key_na_browseall</string>
   <string name="key_na_values">key_na_values</string>
   <string name="key_na_studycopy">key_na_studycopy</string>
+  <string name="key_na_fmt_expl">key_na_fmt_expl</string>
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_enable_dup_invite">key_enable_dup_invite</string>
   <string name="key_download_path">key_download_path</string>
