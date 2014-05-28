@@ -308,6 +308,7 @@ def getXlate( params, name, stringsHash ):
 # public
 def getUpdates( req, params ):
     result = { k_SUCCESS : True }
+    appResult = None
     logging.debug( "getUpdates: got params: %s" % params )
     asJson = json.loads( params )
     if k_APP in asJson:
@@ -320,7 +321,11 @@ def getUpdates( req, params ):
         dictsResult = getDicts( asJson[k_DICTS] )
         if dictsResult:
             result[k_DICTS] = dictsResult
-    if k_XLATEINFO in asJson and k_NAME in asJson and k_STRINGSHASH in asJson:
+
+    # Let's not upgrade strings at the same time as we're upgrading the app
+    if appResult:
+        logging.debug( 'skipping xlation upgrade because app being updated' )
+    elif k_XLATEINFO in asJson and k_NAME in asJson and k_STRINGSHASH in asJson:
         xlateResult = getXlate( asJson[k_XLATEINFO], asJson[k_NAME], asJson[k_STRINGSHASH] )
         if xlateResult: 
             logging.debug( xlateResult )
