@@ -223,6 +223,17 @@ def getApp( params, name ):
         logging.debug( 'missing param' )
     return result
 
+def listDicts():
+    result = {}
+    root = k_filebase + "and_wordlists/"
+    for path in glob.iglob(root + "*/*.xwd"):
+        relpath = path.replace( root, '' )
+        slashLoc = relpath.index( '/' )
+        lang = relpath[ 0:slashLoc ]
+        if not lang in result: result[lang] = []
+        result[lang].append({ 'name' : relpath[1+slashLoc:] })
+    return result
+
 def getDicts( params ):
     result = []
     dictSums = getDictSums()
@@ -346,6 +357,7 @@ def usage():
     print '                    | --test-get-app app <org.eehouse.app.name> avers gvers'
     print '                    | --test-get-dicts name lang curSum'
     print '                    | --list-apks [path/to/apks]'
+    print '                    | --list-dicts'
     print '                    | --clear-shelf'
     sys.exit(-1)
 
@@ -354,6 +366,9 @@ def main():
     arg = sys.argv[1]
     if arg == '--clear-shelf':
         clearShelf()
+    elif arg == '--list-dicts':
+        dictsJson = listDicts()
+        print json.dumps( dictsJson )
     elif arg == '--get-sums':
         dictSums = getDictSums()
         for arg in sys.argv[2:]:
