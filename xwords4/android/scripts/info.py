@@ -226,12 +226,14 @@ def getApp( params, name ):
 def listDicts():
     result = {}
     root = k_filebase + "and_wordlists/"
-    for path in glob.iglob(root + "*/*.xwd"):
-        relpath = path.replace( root, '' )
-        slashLoc = relpath.index( '/' )
-        lang = relpath[ 0:slashLoc ]
+    dictSums = getDictSums()
+    for path in glob.iglob( root + "*/*.xwd" ):
+        path = path.replace( root, '' )
+        lang, xwd = path.split( '/' )
         if not lang in result: result[lang] = []
-        result[lang].append({ 'name' : relpath[1+slashLoc:] })
+        result[lang].append({ 'md5sums' : md5Checksums( dictSums, path ),
+                              'xwd' : xwd,
+                           })
     return result
 
 def getDicts( params ):
