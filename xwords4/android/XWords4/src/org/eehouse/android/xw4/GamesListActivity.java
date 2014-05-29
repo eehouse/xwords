@@ -20,13 +20,10 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 
 import org.eehouse.android.xw4.jni.CurGameInfo;
 
@@ -78,13 +75,6 @@ public class GamesListActivity extends XWListActivity {
         super.onContentChanged();
         if ( null != m_dlgt ) {
             m_dlgt.contentChanged();
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if ( !m_dlgt.onBackPressed() ) {
-            super.onBackPressed();
         }
     }
 

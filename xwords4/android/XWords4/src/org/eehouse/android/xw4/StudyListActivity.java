@@ -39,13 +39,6 @@ public class StudyListActivity extends XWListActivity {
         super.onCreate( savedInstanceState, m_dlgt );
     }
 
-    @Override
-    public void onBackPressed() {
-        if ( !m_dlgt.backPressed() ) {
-            super.onBackPressed();
-        }
-    }
-
     public static void launchOrAlert( Context context, int lang, 
                                       DlgDelegate.HasDlgDelegate dlg )
     {

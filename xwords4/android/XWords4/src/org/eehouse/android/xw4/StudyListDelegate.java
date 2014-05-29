@@ -82,7 +82,8 @@ public class StudyListDelegate extends ListDelegateBase
         initOrFinish( getIntent() );
     }
 
-    protected boolean backPressed() 
+    @Override
+    protected boolean onBackPressed() 
     {
         boolean handled = 0 < m_checkeds.size();
         if ( handled ) {

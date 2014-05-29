@@ -429,7 +429,6 @@ public class GamesListDelegate extends ListDelegateBase
 
     protected void onWindowFocusChanged( boolean hasFocus )
     {
-        // super.onWindowFocusChanged( hasFocus );
         if ( hasFocus ) {
             updateField();
 
@@ -604,6 +603,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
+    @Override
     protected boolean onBackPressed() {
         boolean handled = 0 < m_selGames.size() || 0 < m_selGroupIDs.size();
         if ( handled ) {

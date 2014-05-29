@@ -73,6 +73,13 @@ public class XWActivity extends Activity {
     }
 
     @Override
+    public void onBackPressed() {
+        if ( !m_dlgt.onBackPressed() ) {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu( Menu menu ) 
     {
         DbgUtils.logf( "XWListActivity.onCreateOptionsMenu called" );

@@ -65,6 +65,7 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void onPause() {}
     protected void onStop() {}
     protected void onDestroy() {}
+    protected boolean onBackPressed() { return false; }
     protected void prepareDialog( int id, Dialog dialog ) {}
 
     // public boolean onOptionsItemSelected( MenuItem item ) 

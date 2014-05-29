@@ -42,13 +42,6 @@ public class LocActivity extends XWListActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        if ( !m_dlgt.onBackPressed() ) {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
     public void onWindowFocusChanged( boolean hasFocus )
     {
         m_dlgt.onWindowFocusChanged( hasFocus );

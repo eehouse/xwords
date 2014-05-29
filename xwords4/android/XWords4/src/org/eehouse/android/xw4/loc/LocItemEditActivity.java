@@ -38,11 +38,4 @@ public class LocItemEditActivity extends XWActivity {
         super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
-    // Belongs in superclass?
-    @Override
-    public void onBackPressed() {
-        if ( !m_dlgt.backPressed() ) {
-            super.onBackPressed();
-        }
-    }
 }
