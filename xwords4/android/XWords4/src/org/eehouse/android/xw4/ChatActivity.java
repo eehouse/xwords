@@ -20,30 +20,16 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.view.View;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.MenuInflater;
-import android.widget.LinearLayout;
 
 public class ChatActivity extends XWActivity {
-
-    private ChatDelegate m_dlgt;
 
     @Override
     public void onCreate( Bundle savedInstanceState ) 
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            m_dlgt = new ChatDelegate( this, savedInstanceState );
-            super.onCreate( savedInstanceState, m_dlgt );
-
-            setContentView( R.layout.chat );
+            ChatDelegate dlgt = new ChatDelegate( this, savedInstanceState );
+            super.onCreate( savedInstanceState, dlgt );
         }
     }
 }

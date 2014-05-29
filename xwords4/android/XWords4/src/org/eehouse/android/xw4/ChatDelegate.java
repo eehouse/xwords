@@ -48,6 +48,8 @@ public class ChatDelegate extends DelegateBase
     protected void init( Bundle savedInstanceState ) 
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
+
+            setContentView( R.layout.chat );
     
             m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
      
