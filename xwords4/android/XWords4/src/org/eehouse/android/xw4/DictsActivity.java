@@ -20,42 +20,18 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
 import android.app.ExpandableListActivity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.database.DataSetObserver;
-import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.text.TextUtils;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
 import android.widget.PopupMenu;
-import android.widget.TextView;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
-import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.jni.JNIUtilsImpl;
-import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DictsActivity extends ExpandableListActivity {
