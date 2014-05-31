@@ -20,7 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.ExpandableListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -34,7 +33,7 @@ import java.util.HashMap;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class DictsActivity extends ExpandableListActivity {
+public class DictsActivity extends XWListActivity {
 
     private static interface SafePopup {
         public void doPopup( Context context, View button, String curDict );
@@ -50,8 +49,7 @@ public class DictsActivity extends ExpandableListActivity {
     protected void onCreate( Bundle savedInstanceState ) 
     {
         m_dlgt = new DictsDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
     @Override
