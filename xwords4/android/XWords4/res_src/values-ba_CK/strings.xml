@@ -1929,4 +1929,7 @@
     sreificeps e(.g. %1$s). Esaelp eb erus taht ruoy noitalsnart sah
     eht emas seno sa eht lanigiro.\n\nuOy( lliw ton eb elba ot evas ti
     sselnu ti seod.)</string>
+  <string name="remote_empty">Gnihctef morf revres…</string>
+  <string name="remote_no_net">Elbanu ot hctef tsildrow noitamrofni
+        morf revres.</string>
 </resources>

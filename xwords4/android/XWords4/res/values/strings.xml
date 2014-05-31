@@ -2252,5 +2252,9 @@
     specifiers (e.g. %1$s). Please be sure that your translation has
     the same ones as the original.\n\n(You will not be able to save it
     unless it does.)</string>
+
+    <string name="remote_empty">Fetching from server…</string>
+    <string name="remote_no_net">Unable to fetch wordlist information
+        from server.</string>
     
 </resources>

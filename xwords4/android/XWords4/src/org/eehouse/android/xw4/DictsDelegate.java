@@ -61,7 +61,7 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 
-public class DictsDelegate extends DelegateBase 
+public class DictsDelegate extends ListDelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
                SelectableItem, MountEventReceiver.SDCardNotifiee, 
                DlgDelegate.DlgClickNotify, GroupStateListener,
@@ -120,6 +120,7 @@ public class DictsDelegate extends DelegateBase
         @Override
         public int getViewTypeCount() { return 2; }
 
+        @Override
         public View getView( final int position, View convertView, ViewGroup parent )
         {
             View result = null;
@@ -314,7 +315,7 @@ public class DictsDelegate extends DelegateBase
         m_downloadStr = getString( R.string.download_dicts );
             
         setContentView( R.layout.dict_browse );
-        m_listView = m_activity.getListView();
+        m_listView = getListView();
         m_listView.setOnItemLongClickListener( this );
         
         Button download = (Button)findViewById( R.id.download );
@@ -691,9 +692,12 @@ public class DictsDelegate extends DelegateBase
 
     private static Intent mkDownloadIntent( Context context, String dict_url )
     {
-        Uri uri = Uri.parse( dict_url );
-        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        // Uri uri = Uri.parse( dict_url );
+        // Intent intent = new Intent( Intent.ACTION_VIEW, uri );
+        // intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+        // return intent;
+
+        Intent intent = new Intent( context, RemoteDictsActivity.class );
         return intent;
     }
 

@@ -1929,4 +1929,7 @@
     SPECIFIERS (E.G. %1$s). PLEASE BE SURE THAT YOUR TRANSLATION HAS
     THE SAME ONES AS THE ORIGINAL.\n\n(YOU WILL NOT BE ABLE TO SAVE IT
     UNLESS IT DOES.)</string>
+  <string name="remote_empty">FETCHING FROM SERVER…</string>
+  <string name="remote_no_net">UNABLE TO FETCH WORDLIST INFORMATION
+        FROM SERVER.</string>
 </resources>

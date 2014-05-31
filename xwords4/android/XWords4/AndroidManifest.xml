@@ -123,6 +123,9 @@
     <activity android:name="StudyListActivity"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
+    <activity android:name="RemoteDictsActivity"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
 
     <receiver android:name="RelayReceiver">
       <intent-filter>

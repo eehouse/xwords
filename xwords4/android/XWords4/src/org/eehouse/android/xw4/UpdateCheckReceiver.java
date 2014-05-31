@@ -216,7 +216,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         return result;
     }
 
-    private static HttpPost makePost( Context context, String proc )
+    protected static HttpPost makePost( Context context, String proc )
     {
         String url = String.format( "%s/%s", 
                                     XWPrefs.getDefaultUpdateUrl( context ),
@@ -231,7 +231,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         return result;
     }
 
-    private static String runPost( HttpPost post, JSONObject params )
+    protected static String runPost( HttpPost post, JSONObject params )
     {
         String result = null;
         try {

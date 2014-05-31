@@ -318,10 +318,11 @@ public final class R {
         public static final int player_list_elem=0x7f03001d;
         public static final int prefs_w_buttons=0x7f03001e;
         public static final int relay_game_config=0x7f03001f;
-        public static final int rename_game=0x7f030020;
-        public static final int smsinviter=0x7f030021;
-        public static final int smsinviter_item=0x7f030022;
-        public static final int studylist=0x7f030023;
+        public static final int remote_dicts=0x7f030020;
+        public static final int rename_game=0x7f030021;
+        public static final int smsinviter=0x7f030022;
+        public static final int smsinviter_item=0x7f030023;
+        public static final int studylist=0x7f030024;
     }
     public static final class menu {
         public static final int board_menu=0x7f090000;
@@ -2144,11 +2145,13 @@ public final class R {
         /**  Shown in toast when relaunching after switching dicts 
          */
         public static final int reload_new_dict_fmt=0x7f06025d;
+        public static final int remote_empty=0x7f0602b7;
         /**  checkbox determining of this player is on this device or
          remote.  If remote, then the rest of the fields disappear
          (since they will be set by the remote device.) 
          */
         public static final int remote_label=0x7f0600e5;
+        public static final int remote_no_net=0x7f0602b8;
         /**   
          */
         public static final int remote_undone=0x7f060231;
