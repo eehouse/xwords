@@ -36,10 +36,6 @@ public class GameListGroup extends ExpiringLinearLayout
                View.OnClickListener,
                View.OnLongClickListener
 {
-    // Find me a home....
-    interface GroupStateListener {
-        void onGroupExpandedChanged( int groupPosition, boolean expanded );
-    }
 
     private int m_groupPosition;
     private long m_groupID;

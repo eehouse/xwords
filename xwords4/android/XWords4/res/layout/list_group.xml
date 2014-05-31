@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<org.eehouse.android.xw4.GameListGroup
+<org.eehouse.android.xw4.ListGroup
      xmlns:android="http://schemas.android.com/apk/res/android"
      android:layout_width="fill_parent"
      android:layout_height="fill_parent"
@@ -16,4 +16,4 @@
                  style="@style/expander_button"
                  />
 
-</org.eehouse.android.xw4.GameListGroup>
+</org.eehouse.android.xw4.ListGroup>

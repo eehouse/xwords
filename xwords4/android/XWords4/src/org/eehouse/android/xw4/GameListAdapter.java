@@ -42,7 +42,7 @@ import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameListAdapter extends XWListAdapter
-    implements GameListGroup.GroupStateListener {
+    implements GroupStateListener {
 
     private Context m_context;
     private ListView m_list;

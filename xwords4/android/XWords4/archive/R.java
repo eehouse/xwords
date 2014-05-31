@@ -306,21 +306,22 @@ public final class R {
         public static final int game_list_group=0x7f030011;
         public static final int game_list_item=0x7f030012;
         public static final int import_dict=0x7f030013;
-        public static final int list_item=0x7f030014;
-        public static final int loc_item_edit=0x7f030015;
-        public static final int loc_list_item=0x7f030016;
-        public static final int loc_main=0x7f030017;
-        public static final int lookup=0x7f030018;
-        public static final int new_game=0x7f030019;
-        public static final int passwd_view=0x7f03001a;
-        public static final int player_edit=0x7f03001b;
-        public static final int player_list_elem=0x7f03001c;
-        public static final int prefs_w_buttons=0x7f03001d;
-        public static final int relay_game_config=0x7f03001e;
-        public static final int rename_game=0x7f03001f;
-        public static final int smsinviter=0x7f030020;
-        public static final int smsinviter_item=0x7f030021;
-        public static final int studylist=0x7f030022;
+        public static final int list_group=0x7f030014;
+        public static final int list_item=0x7f030015;
+        public static final int loc_item_edit=0x7f030016;
+        public static final int loc_list_item=0x7f030017;
+        public static final int loc_main=0x7f030018;
+        public static final int lookup=0x7f030019;
+        public static final int new_game=0x7f03001a;
+        public static final int passwd_view=0x7f03001b;
+        public static final int player_edit=0x7f03001c;
+        public static final int player_list_elem=0x7f03001d;
+        public static final int prefs_w_buttons=0x7f03001e;
+        public static final int relay_game_config=0x7f03001f;
+        public static final int rename_game=0x7f030020;
+        public static final int smsinviter=0x7f030021;
+        public static final int smsinviter_item=0x7f030022;
+        public static final int studylist=0x7f030023;
     }
     public static final class menu {
         public static final int board_menu=0x7f090000;
@@ -2605,6 +2606,7 @@ public final class R {
         public static final int config_separator=0x7f080000;
         public static final int evenly_spaced_horizontal=0x7f080007;
         public static final int expander_button=0x7f080008;
+        public static final int expander_label=0x7f080009;
         public static final int relay_explain=0x7f080006;
         public static final int role_config_hint=0x7f080001;
         public static final int toolbar_button=0x7f080004;

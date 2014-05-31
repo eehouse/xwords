@@ -64,7 +64,7 @@ import org.eehouse.android.xw4.DictUtils.DictLoc;
 public class DictsDelegate extends DelegateBase 
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
                SelectableItem, MountEventReceiver.SDCardNotifiee, 
-               DlgDelegate.DlgClickNotify,
+               DlgDelegate.DlgClickNotify, GroupStateListener,
                DictImportDelegate.DownloadFinishedListener {
 
     protected static final String DICT_DOLAUNCH = "do_launch";
@@ -73,7 +73,6 @@ public class DictsDelegate extends DelegateBase
 
     private ListActivity m_activity;
     private HashSet<String> m_closedLangs;
-
 
     private String[] m_langs;
     private String m_downloadStr;
@@ -87,6 +86,7 @@ public class DictsDelegate extends DelegateBase
 
     private class DictListAdapter extends XWListAdapter {
         private Context m_context;
+        private Integer m_count = null;
         // private XWListItem[][] m_cache;
 
         public DictListAdapter( Context context ) 
@@ -98,17 +98,23 @@ public class DictsDelegate extends DelegateBase
         @Override
         public int getCount() 
         {
-            int nLangs = m_langs.length;
-            int result = nLangs;
-            for ( int ii = 0; ii < nLangs; ++ii ) {
-                int lang = DictLangCache.getLangLangCode( m_context, m_langs[ii] );
-                DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, lang );
-                if ( null != dals ) {
-                    result += dals.length;
+            if ( null == m_count ) {
+                int nLangs = m_langs.length;
+                int result = nLangs;
+                for ( int ii = 0; ii < nLangs; ++ii ) {
+                    String langName = m_langs[ii];
+                    if ( m_closedLangs.contains( langName ) ) {
+                        continue;
+                    }
+                    int lang = DictLangCache.getLangLangCode( m_context, langName );
+                    DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, lang );
+                    if ( null != dals ) {
+                        result += dals.length;
+                    }
                 }
+                m_count = new Integer( result );
             }
-            DbgUtils.logf( "getCount() => %d", result );
-            return result;
+            return m_count;
         }
 
         @Override
@@ -119,19 +125,22 @@ public class DictsDelegate extends DelegateBase
             View result = null;
             int indx = position;
 
-            for ( String lang : m_langs ) {
+            for ( int ii = 0; ii < m_langs.length; ++ii ) {
+                String langName = m_langs[ii];
+                int langCode = DictLangCache.getLangLangCode( m_context, 
+                                                              langName );
+                boolean expanded = ! m_closedLangs.contains( langName );
                 if ( indx == 0 ) {
-                    result = inflate( android.R.layout.simple_expandable_list_item_1 );
-                    TextView view = (TextView)result.findViewById( android.R.id.text1 );
-                    view.setText( lang );
+                    result = ListGroup.make( m_context, DictsDelegate.this, ii, 
+                                             langName, expanded );
                     break;
                 } else {
-                    int langCode = DictLangCache.getLangLangCode( m_context, lang );
-                    DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, 
-                                                                       langCode );
-                    int count = dals.length;
+                    DictAndLoc[] dals = 
+                        DictLangCache.getDALsHaveLang( m_context, langCode );
+                    int count = expanded ? dals.length : 0;
                     if ( indx <= count ) {
-                        XWListItem item = XWListItem.inflate( m_activity, DictsDelegate.this );
+                        XWListItem item = 
+                            XWListItem.inflate( m_activity, DictsDelegate.this );
                         result = item;
 
                         DictAndLoc dal = dals[indx - 1];
@@ -152,136 +161,6 @@ public class DictsDelegate extends DelegateBase
         }
 
         // public boolean areAllItemsEnabled() { return false; }
-
-        // public Object getChild( int groupPosition, int childPosition )
-        // {
-        //     return null;
-        // }
-
-        // public long getChildId( int groupPosition, int childPosition )
-        // {
-        //     return childPosition;
-        // }
-
-        // public View getChildView( int groupPosition, int childPosition, 
-        //                           boolean isLastChild, View convertView, 
-        //                           ViewGroup parent)
-        // {
-        //     return getChildView( groupPosition, childPosition );
-        // }
-
-        // private View getChildView( int groupPosition, int childPosition )
-        // {
-        //     XWListItem view = null;
-        //     if ( null != m_cache && null != m_cache[groupPosition] ) {
-        //         view = m_cache[groupPosition][childPosition];
-        //     }
-
-        //     if ( null == view ) {
-        //         view = XWListItem.inflate( m_activity, DictsDelegate.this );
-
-        //         int lang = (int)getGroupId( groupPosition );
-        //         DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, 
-        //                                                            lang );
-
-        //         if ( null != dals && childPosition < dals.length ) {
-        //             DictAndLoc dal;
-        //             dal = dals[childPosition];
-        //             view.setText( dal.name );
-
-        //             DictLoc loc = dal.loc;
-        //             view.setComment( m_locNames[loc.ordinal()] );
-        //             view.cache( loc );
-        //         } else {
-        //             view.setText( m_downloadStr );
-        //         }
-
-        //         addToCache( groupPosition, childPosition, view );
-        //         view.setOnClickListener( DictsDelegate.this );
-        //     }
-        //     return view;
-        // }
-
-        // public int getChildrenCount( int groupPosition )
-        // {
-        //     int lang = (int)getGroupId( groupPosition );
-        //     DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, lang );
-        //     int result = 0; // 1;     // 1 for the download option
-        //     if ( null != dals ) {
-        //         result += dals.length;
-        //     }
-        //     return result;
-        // }
-
-        // public long getCombinedChildId( long groupId, long childId )
-        // {
-        //     return groupId << 16 | childId;
-        // }
-
-        // public long getCombinedGroupId( long groupId )
-        // {
-        //     return groupId;
-        // }
-
-        // public Object getGroup( int groupPosition )
-        // {
-        //     return null;
-        // }
-
-        // public int getGroupCount()
-        // {
-        //     return m_langs.length;
-        // }
-
-        // public long getGroupId( int groupPosition )
-        // {
-        //     int lang = DictLangCache.getLangLangCode( m_context, 
-        //                                               m_langs[groupPosition] );
-        //     return lang;
-        // }
-
-        // public View getGroupView( int groupPosition, boolean isExpanded, 
-        //                           View convertView, ViewGroup parent )
-        // {
-        //     View row = inflate( android.R.layout.simple_expandable_list_item_1 );
-        //     TextView view = (TextView)row.findViewById( android.R.id.text1 );
-        //     view.setText( m_langs[groupPosition] );
-        //     return view;
-        // }
-
-        // public boolean hasStableIds() { return false; }
-        // public boolean isChildSelectable( int groupPosition, 
-        //                                   int childPosition ) { return true; }
-        // public boolean isEmpty() { return false; }
-        // public void onGroupCollapsed(int groupPosition)
-        // {
-        //     m_closedLangs.add( m_langs[groupPosition] );
-        //     saveClosed();
-        // }
-        // public void onGroupExpanded(int groupPosition){
-        //     m_closedLangs.remove( m_langs[groupPosition] );
-        //     saveClosed();
-        // }
-        // public void registerDataSetObserver( DataSetObserver obs ){}
-        // public void unregisterDataSetObserver( DataSetObserver obs ){}
-
-        // protected XWListItem getSelChildView()
-        // {
-        //     Assert.assertTrue( 1 == m_selDicts.size() );
-        //     return m_selDicts.iterator().next();
-        // }
-
-        // private void addToCache( int group, int child, XWListItem view )
-        // {
-        //     if ( null == m_cache ) {
-        //         m_cache = new XWListItem[getGroupCount()][];
-        //     }
-        //     if ( null == m_cache[group] ) {
-        //         m_cache[group] = new XWListItem[getChildrenCount(group)];
-        //     }
-        //     Assert.assertTrue( null == m_cache[group][child] );
-        //     m_cache[group][child] = view;
-        // }
     }
 
     protected DictsDelegate( ListActivity activity, Bundle savedInstanceState )
@@ -566,6 +445,21 @@ public class DictsDelegate extends DelegateBase
         editor.commit();
     }
 
+    //////////////////////////////////////////////////////////////////////
+    // GroupStateListener interface
+    //////////////////////////////////////////////////////////////////////
+    public void onGroupExpandedChanged( int groupPosition, boolean expanded )
+    {
+        String langName = m_langs[groupPosition];
+        if ( expanded ) {
+            m_closedLangs.remove( langName );
+        } else {
+            m_closedLangs.add( langName );
+        }
+        saveClosed();
+        mkListAdapter();
+    }
+    
     //////////////////////////////////////////////////////////////////////
     // OnItemLongClickListener interface
     //////////////////////////////////////////////////////////////////////
