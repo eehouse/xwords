@@ -134,9 +134,11 @@ public class DlgDelegate {
 
         if ( null != bundle ) {
             int[] ids = bundle.getIntArray( IDS );
-            for ( int id : ids ) {
-                String key = String.format( STATE_KEYF, id );
-                addState( (DlgState)bundle.getParcelable( key ) );
+            if ( null != ids ) {
+                for ( int id : ids ) {
+                    String key = String.format( STATE_KEYF, id );
+                    addState( (DlgState)bundle.getParcelable( key ) );
+                }
             }
         }
     }
