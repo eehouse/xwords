@@ -176,6 +176,7 @@
       -->
     <!-- window title -->
     <string name="title_dicts_list">Installed Crosswords Wordlists</string>   
+    <string name="title_remote_dicts">Available Crosswords Wordlists</string>   
 
     <!-- text of button at the bottom of the screen.  It launches the
          browser pointed at the site where additional wordlists can be
@@ -2253,8 +2254,11 @@
     the same ones as the original.\n\n(You will not be able to save it
     unless it does.)</string>
 
-    <string name="remote_empty">Fetching from server…</string>
+    <string name="remote_empty">Fetching wordlist information from server…</string>
     <string name="remote_no_net">Unable to fetch wordlist information
         from server.</string>
-    
+    <string name="getinfo">Get info</string>
+
+    <string name="delete_dicts">Delete wordlist[s]</string>
+
 </resources>

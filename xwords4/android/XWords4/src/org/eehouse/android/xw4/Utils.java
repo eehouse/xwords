@@ -430,16 +430,25 @@ public class Utils {
         return result;
     }
 
-    public static String makeDictUrl( Context context, int lang, String name )
+    public static String makeDictUrl( Context context, String langName, String name )
     {
         String dict_url = CommonPrefs.getDefaultDictURL( context );
-        if ( 0 != lang ) {
-            dict_url += "/" + DictLangCache.getLangName( context, lang );
+        if ( null != langName ) {
+            dict_url += "/" + langName;
         }
         if ( null != name ) {
             dict_url += "/" + name + XWConstants.DICT_EXTN;
         }
         return dict_url;
+    }
+
+    public static String makeDictUrl( Context context, int lang, String name )
+    {
+        String langName = null;
+        if ( 0 < lang ) {
+            langName = DictLangCache.getLangName( context, lang );
+        }
+        return makeDictUrl( context, langName, name );
     }
 
     public static int getAppVersion( Context context )

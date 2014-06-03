@@ -124,6 +124,7 @@
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
     <activity android:name="RemoteDictsActivity"
+              android:label="@string/title_remote_dicts"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
 

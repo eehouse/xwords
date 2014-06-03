@@ -153,6 +153,7 @@
       -->
   <!-- window title -->
   <string name="title_dicts_list">Dellatsni Sdrowssorc Stsildrow</string>
+  <string name="title_remote_dicts">Elbaliava Sdrowssorc Stsildrow</string>
   <!-- text of button at the bottom of the screen.  It launches the
          browser pointed at the site where additional wordlists can be
          found. -->
@@ -1929,7 +1930,9 @@
     sreificeps e(.g. %1$s). Esaelp eb erus taht ruoy noitalsnart sah
     eht emas seno sa eht lanigiro.\n\nuOy( lliw ton eb elba ot evas ti
     sselnu ti seod.)</string>
-  <string name="remote_empty">Gnihctef morf revres…</string>
+  <string name="remote_empty">Gnihctef tsildrow noitamrofni morf revres…</string>
   <string name="remote_no_net">Elbanu ot hctef tsildrow noitamrofni
         morf revres.</string>
+  <string name="getinfo">Teg ofni</string>
+  <string name="delete_dicts">Eteled ]s[tsildrow</string>
 </resources>

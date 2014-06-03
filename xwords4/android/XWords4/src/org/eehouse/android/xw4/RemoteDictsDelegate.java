@@ -19,19 +19,23 @@
 
 package org.eehouse.android.xw4;
 
-import org.apache.http.client.methods.HttpPost;
-import java.util.Arrays;
-import android.content.Context;
 import android.app.ListActivity;
-import android.os.Bundle;
-import android.widget.ListView;
+import android.content.Context;
 import android.os.AsyncTask;
-import org.json.JSONObject;
-import org.json.JSONArray;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import org.json.JSONException;
+import android.widget.ListView;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import org.apache.http.client.methods.HttpPost;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import junit.framework.Assert;
 
@@ -39,18 +43,19 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.GameSummary;
 
 public class RemoteDictsDelegate extends ListDelegateBase 
-    implements GroupStateListener, SelectableItem {
+    implements GroupStateListener, SelectableItem,
+               DictImportDelegate.DownloadFinishedListener {
     private ListActivity m_activity;
     private ListView m_listView;
     private boolean[] m_expanded;
     private String[] m_langNames;
     private HashMap<String, String[]> m_langInfo;
-
-
+    private HashSet<XWListItem> m_selDicts = new HashSet<XWListItem>();
+    private String m_origTitle;
 
     protected RemoteDictsDelegate( ListActivity activity, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
+        super( activity, savedInstanceState, R.menu.remote_dicts );
         m_activity = activity;
     }
 
@@ -59,7 +64,65 @@ public class RemoteDictsDelegate extends ListDelegateBase
         setContentView( R.layout.remote_dicts );
         m_listView = getListView();
         JSONObject params = new JSONObject(); // empty for now
+        m_origTitle = getTitle();
+
         new FetchListTask( m_activity, params ).execute();
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
+    {
+        int nSelected = m_selDicts.size();
+        Utils.setItemVisible( menu, R.id.remote_dicts_download, 
+                              0 < nSelected );
+        Utils.setItemVisible( menu, R.id.remote_dicts_deselect_all, 
+                              0 < nSelected );
+        Utils.setItemVisible( menu, R.id.remote_dicts_getinfo, 1 == nSelected );
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) 
+    {
+        boolean handled = true;
+        switch ( item.getItemId() ) {
+        case R.id.remote_dicts_deselect_all:
+            clearSelection();
+            break;
+        case R.id.remote_dicts_download:
+            for ( Iterator<XWListItem> iter = m_selDicts.iterator(); 
+                  iter.hasNext(); ) {
+                XWListItem litm = iter.next();
+                String langName = (String)litm.getCached();
+                String url = Utils.makeDictUrl( m_activity, langName, 
+                                                litm.getText() );
+                DictImportDelegate.downloadDictInBack( m_activity, url );
+            }
+            break;
+        default:
+            handled = false;
+        }
+
+        return handled;
+    }
+
+    @Override
+    protected boolean onBackPressed() {
+        boolean handled = 0 < m_selDicts.size();
+        if ( handled ) {
+            clearSelection();
+        }
+        return handled;
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // DownloadFinishedListener interface
+    //////////////////////////////////////////////////////////////////////
+    public void downloadFinished( String name, boolean success )
+    {
+        if ( success ) {
+            showToast( name );
+        }
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -80,11 +143,20 @@ public class RemoteDictsDelegate extends ListDelegateBase
 
     public void itemToggled( LongClickHandler toggled, boolean selected )
     {
+        XWListItem item = (XWListItem)toggled;
+        if ( selected ) {
+            m_selDicts.add( item );
+        } else {
+            m_selDicts.remove( item );
+        }
+        invalidateOptionsMenuIf();
+        setTitleBar();
     }
 
     public boolean getSelected( LongClickHandler obj )
     {
-        return false;
+        XWListItem item = (XWListItem)obj;
+        return m_selDicts.contains( item );
     }
 
     //////////////////////////////////////////////////
@@ -101,6 +173,16 @@ public class RemoteDictsDelegate extends ListDelegateBase
     {
         RDListAdapter adapter = new RDListAdapter();
         setListAdapter( adapter );
+    }
+
+    private void setTitleBar()
+    {
+        int nSels = m_selDicts.size();
+        if ( 0 == nSels ) {
+            setTitle( m_origTitle );
+        } else {
+            setTitle( getString( R.string.sel_items_fmt, nSels ) );
+        }
     }
 
     private boolean digestData( String jsonData )
@@ -126,7 +208,8 @@ public class RemoteDictsDelegate extends ListDelegateBase
                     String[] dictNames = new String[nDicts];
                     for ( int jj = 0; jj < nDicts; ++jj ) {
                         JSONObject dict = dicts.getJSONObject( jj );
-                        dictNames[jj] = dict.getString( "xwd" );
+                        dictNames[jj] = 
+                            DictUtils.removeDictExtn( dict.getString( "xwd" ) );
                     }
                     m_langInfo.put( langName, dictNames );
                 }
@@ -139,6 +222,14 @@ public class RemoteDictsDelegate extends ListDelegateBase
         }
 
         return success;
+    }
+
+    private void clearSelection()
+    {
+        m_selDicts.clear();
+        mkListAdapter();
+        invalidateOptionsMenuIf();
+        setTitleBar();
     }
 
     private class FetchListTask extends AsyncTask<Void, Void, Boolean> {
@@ -200,7 +291,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
                 }
                 m_count = new Integer( count );
             }
-            DbgUtils.logf( "RemoteDictsDelegate.getCount() => %d", m_count );
+            // DbgUtils.logf( "RemoteDictsDelegate.getCount() => %d", m_count );
             return m_count;
         }
 
@@ -210,7 +301,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
         @Override
         public View getView( final int position, View convertView, ViewGroup parent )
         {
-            DbgUtils.logf( "RemoteDictsDelegate(position=%d)", position );
+            // DbgUtils.logf( "RemoteDictsDelegate(position=%d)", position );
             View result = null;
             int indx = position;
 
@@ -230,6 +321,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
                         result = item;
 
                         item.setText( dicts[indx-1] );
+                        item.cache( langName );
 
                         //item.setOnClickListener( RemoteDictsDelegate.this );
                         break;
