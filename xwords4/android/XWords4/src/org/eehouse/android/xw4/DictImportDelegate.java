@@ -206,6 +206,7 @@ public class DictImportDelegate extends DelegateBase {
             finish();
         } else {
             String showName = basename( uri.getPath() );
+            showName = DictUtils.removeDictExtn( showName );
             String msg = getString( R.string.downloading_dict_fmt, showName );
             TextView view = (TextView)findViewById( R.id.dwnld_message );
             view.setText( msg );
