@@ -223,18 +223,29 @@ def getApp( params, name ):
         logging.debug( 'missing param' )
     return result
 
+# create obj containing array of objects each with 'lang' and 'xwds',
+# the latter an array of objects giving info about a dict.
 def listDicts():
-    result = {}
+    ldict = {}
     root = k_filebase + "and_wordlists/"
     dictSums = getDictSums()
     for path in glob.iglob( root + "*/*.xwd" ):
         path = path.replace( root, '' )
         lang, xwd = path.split( '/' )
-        if not lang in result: result[lang] = []
-        result[lang].append({ 'md5sums' : md5Checksums( dictSums, path ),
+        if not lang in ldict: ldict[lang] = []
+        ldict[lang].append({ 'md5sums' : md5Checksums( dictSums, path ),
                               'xwd' : xwd,
                            })
-    return result
+
+    # now format as we want 'em
+    langs = []
+    for lang, entry in ldict.iteritems():
+        obj = { 'lang' : lang,
+                'dicts' : entry,
+                }
+        langs.append( obj )
+
+    return { 'langs' : langs }
 
 def getDicts( params ):
     result = []
