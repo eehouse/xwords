@@ -430,7 +430,7 @@ public class DictsDelegate extends ListDelegateBase
         if ( 0 < loci ) {
             String url = 
                 intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
-            DictImportDelegate.downloadDictInBack( m_activity, url );
+            DictImportDelegate.downloadDictInBack( m_activity, url, null );
             finish();
         }
     }

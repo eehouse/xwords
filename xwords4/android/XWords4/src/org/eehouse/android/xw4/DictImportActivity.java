@@ -23,7 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.os.Bundle;
 
-public class DictImportActivity extends XWActivity {
+public class DictImportActivity extends XWListActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 

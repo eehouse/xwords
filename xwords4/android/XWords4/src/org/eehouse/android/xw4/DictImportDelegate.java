@@ -21,13 +21,18 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -42,21 +47,22 @@ import java.util.HashMap;
 
 import junit.framework.Assert;
 
-public class DictImportDelegate extends DelegateBase {
+public class DictImportDelegate extends ListDelegateBase {
 
     // URIs coming in in intents
     private static final String APK_EXTRA = "APK";
-    private static final String DICT_EXTRA = "XWD";
+    private static final String DICTS_EXTRA = "XWDS";
 
-    private Activity m_activity;
-    private ProgressBar m_progressBar;
+    private ListActivity m_activity;
     private Handler m_handler;
+    private LinearLayout[] m_views;
+    int m_pending = 0;
 
     public interface DownloadFinishedListener {
         void downloadFinished( String name, boolean success );
     }
 
-    public DictImportDelegate( Activity activity, Bundle savedInstanceState )
+    public DictImportDelegate( ListActivity activity, Bundle savedInstanceState )
     {
         super( activity, savedInstanceState );
         m_activity = activity;
@@ -64,98 +70,99 @@ public class DictImportDelegate extends DelegateBase {
 
     // Track callbacks for downloads.
     private static class ListenerData {
-        public ListenerData( String dictName, DownloadFinishedListener lstnr )
+        public ListenerData( String name, DownloadFinishedListener lstnr )
         {
-            m_dictName = dictName;
+            m_name = name;
             m_lstnr = lstnr;
         }
-        public String m_dictName;
+        public String m_name;
         public DownloadFinishedListener m_lstnr;
     }
     private static HashMap<String,ListenerData> s_listeners =
         new HashMap<String,ListenerData>();
 
-    private class DownloadFilesTask extends AsyncTask<Uri, Integer, Long> 
+    private class DownloadFilesTask extends AsyncTask<Void, Void, Void> 
         implements DictUtils.DownProgListener {
         private String m_savedDict = null;
-        private String m_url = null;
+        private Uri m_uri = null;
         private boolean m_isApp = false;
         private File m_appFile = null;
         private int m_totalRead = 0;
+        private LinearLayout m_listItem;
+        private ProgressBar m_progressBar;
 
-        public DownloadFilesTask( boolean isApp )
+        public DownloadFilesTask( Uri uri, LinearLayout item, boolean isApp )
         {
             super();
+            m_uri = uri;
             m_isApp = isApp;
+            m_listItem = item;
+            m_progressBar = (ProgressBar)
+                item.findViewById( R.id.progress_bar );
         }
 
-        public DownloadFilesTask( String url, boolean isApp )
+        public void setLabel( String text )
         {
-            this( isApp );
-            m_url = url;
+            TextView tv = (TextView)m_listItem.findViewById( R.id.dwnld_message );
+            tv.setText( text );
         }
 
         @Override
-        protected Long doInBackground( Uri... uris )
+        protected Void doInBackground( Void... unused )
         {
             m_savedDict = null;
             m_appFile = null;
 
-            int count = uris.length;
-            Assert.assertTrue( 1 == count );
-            for ( int ii = 0; ii < count; ii++ ) {
-                Uri uri = uris[ii];
-                DbgUtils.logf( "trying %s", uri );
-
-                try {
-                    URI jUri = new URI( uri.getScheme(), 
-                                        uri.getSchemeSpecificPart(), 
-                                        uri.getFragment() );
-                    URLConnection conn = jUri.toURL().openConnection();
-                    final int fileLen = conn.getContentLength();
-                    m_handler.post( new Runnable() {
-                            public void run() {
-                                m_progressBar.setMax( fileLen );
-                            }
-                        });
-                    InputStream is = conn.getInputStream();
-                    String name = basename( uri.getPath() );
-                    if ( m_isApp ) {
-                        m_appFile = saveToDownloads( is, name, this );
-                    } else {
-                        m_savedDict = saveDict( is, name, this );
-                    }
-                    is.close();
-                } catch ( java.net.URISyntaxException use ) {
-                    DbgUtils.loge( use );
-                } catch ( java.net.MalformedURLException mue ) {
-                    DbgUtils.loge( mue );
-                } catch ( java.io.IOException ioe ) {
-                    DbgUtils.loge( ioe );
+            try {
+                URI jUri = new URI( m_uri.getScheme(), 
+                                    m_uri.getSchemeSpecificPart(), 
+                                    m_uri.getFragment() );
+                URLConnection conn = jUri.toURL().openConnection();
+                final int fileLen = conn.getContentLength();
+                m_handler.post( new Runnable() {
+                        public void run() {
+                            m_progressBar.setMax( fileLen );
+                        }
+                    });
+                InputStream is = conn.getInputStream();
+                String name = basename( m_uri.getPath() );
+                if ( m_isApp ) {
+                    m_appFile = saveToDownloads( is, name, this );
+                } else {
+                    m_savedDict = saveDict( is, name, this );
                 }
+                is.close();
+            } catch ( java.net.URISyntaxException use ) {
+                DbgUtils.loge( use );
+            } catch ( java.net.MalformedURLException mue ) {
+                DbgUtils.loge( mue );
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.loge( ioe );
             }
-            return new Long(0);
+            return null;
         }
 
         @Override
-        protected void onPostExecute( Long result )
+        protected void onPostExecute( Void unused )
         {
-            DbgUtils.logf( "onPostExecute passed %d", result );
             if ( null != m_savedDict ) {
                 DictUtils.DictLoc loc = 
                     XWPrefs.getDefaultLoc( m_activity );
                 DictLangCache.inval( m_activity, m_savedDict, 
                                      loc, true );
-                callListener( m_url, true );
+                callListener( m_uri, true );
             } else if ( null != m_appFile ) {
                 // launch the installer
                 Intent intent = Utils.makeInstallIntent( m_appFile );
                 startActivity( intent );
             } else {
                 // we failed at something....
-                callListener( m_url, false );
+                callListener( m_uri, false );
             }
-            finish();
+
+            if ( 0 == --m_pending ) {
+                finish();
+            }
         }
 
         // interface DictUtils.DownProgListener
@@ -170,10 +177,20 @@ public class DictImportDelegate extends DelegateBase {
         }
     } // class DownloadFilesTask
 
-    protected void init( Bundle savedInstanceState ) 
-    {
-        DownloadFilesTask dft = null;
+    private class ImportListAdapter extends XWListAdapter {
+        public ImportListAdapter( int count) { super( count ); }
+        public View getView( int position, View convertView, ViewGroup parent )
+        {
+            return m_views[position];
+        }
+    }
 
+    protected void init( Bundle savedInstanceState )
+    {
+        DownloadFilesTask[] dfts = null;
+        DownloadFilesTask dft = null;
+        String[] urls = null;
+        LinearLayout item = null;
         m_handler = new Handler();
 
         requestWindowFeature( Window.FEATURE_LEFT_ICON );
@@ -181,37 +198,55 @@ public class DictImportDelegate extends DelegateBase {
         m_activity.getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
                                                            R.drawable.icon48x48 );
 
-        m_progressBar = (ProgressBar)findViewById( R.id.progress_bar );
-
         Intent intent = getIntent();
-        Uri uri = intent.getData();
+        Uri uri = intent.getData(); // launched from Manifest case
         if ( null == uri ) {
-            String url = intent.getStringExtra( APK_EXTRA );
-            boolean isApp = null != url;
-            if ( !isApp ) {
-                url = intent.getStringExtra( DICT_EXTRA );
+            String appUrl = intent.getStringExtra( APK_EXTRA );
+            boolean isApp = null != appUrl;
+            if ( isApp ) {
+                urls = new String[] { appUrl };
+            } else {
+                urls = intent.getStringArrayExtra( DICTS_EXTRA );
             }
-            if ( null != url ) {
-                dft = new DownloadFilesTask( url, isApp );
-                uri = Uri.parse( url );
+            if ( null != urls ) {
+                dfts = new DownloadFilesTask[urls.length];
+                m_views = new LinearLayout[urls.length];
+                for ( int ii = 0; ii < dfts.length; ++ii ) {
+                    item = (LinearLayout)inflate( R.layout.import_dict_item );
+                    dfts[ii] = new DownloadFilesTask( Uri.parse( urls[ii] ), item,
+                                                      isApp );
+                    m_views[ii] = item;
+                }
             }
-        } else if ( null != intent.getType() 
-                    && intent.getType().equals( "application/x-xwordsdict" ) ) {
-            dft = new DownloadFilesTask( false );
-        } else if ( uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
-            dft = new DownloadFilesTask( uri.toString(), false );
+        } else if ( (null != intent.getType() 
+                     && intent.getType().equals( "application/x-xwordsdict" ))
+                    || uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
+            item = (LinearLayout)inflate( R.layout.import_dict_item );
+            dft = new DownloadFilesTask( uri, item, false );
         }
 
-        if ( null == dft ) {
+        if ( null != dft ) {
+            Assert.assertNull( dfts );
+            dfts = new DownloadFilesTask[] { dft };
+            m_views = new LinearLayout[] { item };
+            dft = null;
+        }
+
+        if ( null == dfts ) {
             finish();
         } else {
-            String showName = basename( uri.getPath() );
-            showName = DictUtils.removeDictExtn( showName );
-            String msg = getString( R.string.downloading_dict_fmt, showName );
-            TextView view = (TextView)findViewById( R.id.dwnld_message );
-            view.setText( msg );
-        
-            dft.execute( uri );
+            m_pending = m_views.length;
+
+            setListAdapter( new ImportListAdapter( dfts.length ) );
+
+            for ( int ii = 0; ii < dfts.length; ++ii ) {
+                String showName = basename( Uri.parse( urls[ii] ).getPath() );
+                showName = DictUtils.removeDictExtn( showName );
+                String msg = 
+                    getString( R.string.downloading_dict_fmt, showName );
+                dfts[ii].setLabel( msg );
+                dfts[ii].execute();
+            }
         }
     } // init
 
@@ -268,9 +303,18 @@ public class DictImportDelegate extends DelegateBase {
         }
     }
 
-    private static void callListener( String url, boolean success ) 
+    private static void rememberListener( String url, DownloadFinishedListener lstnr )
     {
-        if ( null != url ) {
+        ListenerData ld = new ListenerData( url, lstnr );
+        synchronized( s_listeners ) {
+            s_listeners.put( url, ld );
+        }
+    }
+
+    private static void callListener( Uri uri, boolean success ) 
+    {
+        if ( null != uri ) {
+            String url = uri.toString();
             ListenerData ld;
             synchronized( s_listeners ) {
                 ld = s_listeners.get( url );
@@ -278,9 +322,11 @@ public class DictImportDelegate extends DelegateBase {
                     s_listeners.remove( url );
                 }
             }
-            if ( null != ld ) {
-                ld.m_lstnr.downloadFinished( ld.m_dictName, success );
+            String name = ld.m_name;
+            if ( null == name ) {
+                name = uri.toString();
             }
+            ld.m_lstnr.downloadFinished( name, success );
         }
     }
 
@@ -289,17 +335,31 @@ public class DictImportDelegate extends DelegateBase {
                                            DownloadFinishedListener lstnr )
     {
         String url = Utils.makeDictUrl( context, lang, name );
-        if ( null != lstnr ) {
-            rememberListener( url, name, lstnr );
-        }
-        downloadDictInBack( context, url );
+        // if ( null != lstnr ) {
+        //     rememberListener( url, name, lstnr );
+        // }
+        downloadDictInBack( context, url, lstnr );
     }
 
-    public static void downloadDictInBack( Context context, String url )
+    public static void downloadDictsInBack( Context context, String[] urls,
+                                           DownloadFinishedListener lstnr )
     {
+        if ( null != lstnr ) {
+            for ( String url : urls ) {
+                rememberListener( url, lstnr );
+            }
+        }
+
         Intent intent = new Intent( context, DictImportActivity.class );
-        intent.putExtra( DICT_EXTRA, url );
+        intent.putExtra( DICTS_EXTRA, urls );
         context.startActivity( intent );
+    }
+
+    public static void downloadDictInBack( Context context, String url,
+                                           DownloadFinishedListener lstnr )
+    {
+        String[] urls = new String[] { url };
+        downloadDictsInBack( context, urls, lstnr );
     }
 
     public static Intent makeAppDownloadIntent( Context context, String url )
@@ -310,5 +370,3 @@ public class DictImportDelegate extends DelegateBase {
     }
 
 }
-
-
