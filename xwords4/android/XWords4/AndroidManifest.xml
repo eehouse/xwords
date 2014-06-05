@@ -168,7 +168,7 @@
     </activity>
 
     <!-- downloading dicts -->
-    <activity android:name=".DictImportActivity"
+    <activity android:name=".DwnldActivity"
               android:label="@string/app_name"
               android:theme="@android:style/Theme.Dialog">
       <intent-filter>
