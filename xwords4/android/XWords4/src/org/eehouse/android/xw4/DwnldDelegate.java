@@ -47,7 +47,7 @@ import java.util.HashMap;
 
 import junit.framework.Assert;
 
-public class DictImportDelegate extends ListDelegateBase {
+public class DwnldDelegate extends ListDelegateBase {
 
     // URIs coming in in intents
     private static final String APK_EXTRA = "APK";
@@ -62,7 +62,7 @@ public class DictImportDelegate extends ListDelegateBase {
         void downloadFinished( String name, boolean success );
     }
 
-    public DictImportDelegate( ListActivity activity, Bundle savedInstanceState )
+    public DwnldDelegate( ListActivity activity, Bundle savedInstanceState )
     {
         super( activity, savedInstanceState );
         m_activity = activity;
@@ -350,7 +350,7 @@ public class DictImportDelegate extends ListDelegateBase {
             }
         }
 
-        Intent intent = new Intent( context, DictImportActivity.class );
+        Intent intent = new Intent( context, DwnldActivity.class );
         intent.putExtra( DICTS_EXTRA, urls );
         context.startActivity( intent );
     }
@@ -364,7 +364,7 @@ public class DictImportDelegate extends ListDelegateBase {
 
     public static Intent makeAppDownloadIntent( Context context, String url )
     {
-        Intent intent = new Intent( context, DictImportActivity.class );
+        Intent intent = new Intent( context, DwnldActivity.class );
         intent.putExtra( APK_EXTRA, url );
         return intent;
     }

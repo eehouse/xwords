@@ -64,7 +64,7 @@ import org.eehouse.android.xw4.jni.JNIThread.*;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
-               DictImportDelegate.DownloadFinishedListener, 
+               DwnldDelegate.DownloadFinishedListener, 
                ConnStatusHandler.ConnStatusCBacks,
                NFCUtils.NFCActor {
 
@@ -288,7 +288,7 @@ public class BoardDelegate extends DelegateBase
                             if ( DlgID.DLG_USEDICT == dlgID ) {
                                 setGotGameDict( m_getDict );
                             } else {
-                                DictImportDelegate
+                                DwnldDelegate
                                     .downloadDictInBack( m_activity,
                                                          m_gi.dictLang,
                                                          m_getDict,
@@ -1137,7 +1137,7 @@ public class BoardDelegate extends DelegateBase
     }
 
     //////////////////////////////////////////////////
-    // DictImportActivity.DownloadFinishedListener interface
+    // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////
     public void downloadFinished( final String name, final boolean success )
     {

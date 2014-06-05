@@ -65,7 +65,7 @@ public class DictsDelegate extends ListDelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
                SelectableItem, MountEventReceiver.SDCardNotifiee, 
                DlgDelegate.DlgClickNotify, GroupStateListener,
-               DictImportDelegate.DownloadFinishedListener {
+               DwnldDelegate.DownloadFinishedListener {
 
     protected static final String DICT_DOLAUNCH = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
@@ -261,7 +261,7 @@ public class DictsDelegate extends ListDelegateBase
                         int lang = intent.getIntExtra( MultiService.LANG, -1 );
                         String name = intent.getStringExtra( MultiService.DICT );
                         m_launchedForMissing = true;
-                        DictImportDelegate
+                        DwnldDelegate
                             .downloadDictInBack( m_activity, lang, 
                                                  name, DictsDelegate.this );
                     }
@@ -430,7 +430,7 @@ public class DictsDelegate extends ListDelegateBase
         if ( 0 < loci ) {
             String url = 
                 intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
-            DictImportDelegate.downloadDictInBack( m_activity, url, null );
+            DwnldDelegate.downloadDictInBack( m_activity, url, null );
             finish();
         }
     }
@@ -734,7 +734,7 @@ public class DictsDelegate extends ListDelegateBase
         launchAndDownload( activity, 0, null );
     }
 
-    // DictImportActivity.DownloadFinishedListener interface
+    // DwnldActivity.DownloadFinishedListener interface
     public void downloadFinished( String name, final boolean success )
     {
         if ( m_launchedForMissing ) {

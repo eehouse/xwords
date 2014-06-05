@@ -44,7 +44,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 
 public class RemoteDictsDelegate extends ListDelegateBase 
     implements GroupStateListener, SelectableItem,
-               DictImportDelegate.DownloadFinishedListener {
+               DwnldDelegate.DownloadFinishedListener {
     private ListActivity m_activity;
     private ListView m_listView;
     private boolean[] m_expanded;
@@ -99,7 +99,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
                 urls[count++] = Utils.makeDictUrl( m_activity, langName, 
                                                    litm.getText() );
             }
-            DictImportDelegate.downloadDictsInBack( m_activity, urls, this );
+            DwnldDelegate.downloadDictsInBack( m_activity, urls, this );
             break;
         default:
             handled = false;

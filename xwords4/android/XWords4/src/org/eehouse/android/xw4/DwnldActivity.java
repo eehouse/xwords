@@ -23,13 +23,13 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.os.Bundle;
 
-public class DictImportActivity extends XWListActivity {
+public class DwnldActivity extends XWListActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        DictImportDelegate dlgt = 
-            new DictImportDelegate( this, savedInstanceState );
+        DwnldDelegate dlgt = 
+            new DwnldDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, dlgt );
     }
 }
