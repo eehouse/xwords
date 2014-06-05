@@ -43,6 +43,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URLConnection;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import junit.framework.Assert;
@@ -55,8 +56,7 @@ public class DwnldDelegate extends ListDelegateBase {
 
     private ListActivity m_activity;
     private Handler m_handler;
-    private LinearLayout[] m_views;
-    int m_pending = 0;
+    private ArrayList<LinearLayout> m_views;
 
     public interface DownloadFinishedListener {
         void downloadFinished( String name, boolean success );
@@ -160,7 +160,10 @@ public class DwnldDelegate extends ListDelegateBase {
                 callListener( m_uri, false );
             }
 
-            if ( 0 == --m_pending ) {
+            m_views.remove( m_listItem );
+            mkListAdapter();
+
+            if ( 0 == m_views.size() ) {
                 finish();
             }
         }
@@ -178,10 +181,10 @@ public class DwnldDelegate extends ListDelegateBase {
     } // class DownloadFilesTask
 
     private class ImportListAdapter extends XWListAdapter {
-        public ImportListAdapter( int count) { super( count ); }
+        public ImportListAdapter() { super( m_views.size() ); }
         public View getView( int position, View convertView, ViewGroup parent )
         {
-            return m_views[position];
+            return m_views.get( position );
         }
     }
 
@@ -210,12 +213,12 @@ public class DwnldDelegate extends ListDelegateBase {
             }
             if ( null != urls ) {
                 dfts = new DownloadFilesTask[urls.length];
-                m_views = new LinearLayout[urls.length];
+                m_views = new ArrayList<LinearLayout>();
                 for ( int ii = 0; ii < dfts.length; ++ii ) {
                     item = (LinearLayout)inflate( R.layout.import_dict_item );
                     dfts[ii] = new DownloadFilesTask( Uri.parse( urls[ii] ), item,
                                                       isApp );
-                    m_views[ii] = item;
+                    m_views.add( item );
                 }
             }
         } else if ( (null != intent.getType() 
@@ -228,16 +231,15 @@ public class DwnldDelegate extends ListDelegateBase {
         if ( null != dft ) {
             Assert.assertNull( dfts );
             dfts = new DownloadFilesTask[] { dft };
-            m_views = new LinearLayout[] { item };
+            m_views = new ArrayList<LinearLayout>( 1 );
+            m_views.add( item );
             dft = null;
         }
 
         if ( null == dfts ) {
             finish();
         } else {
-            m_pending = m_views.length;
-
-            setListAdapter( new ImportListAdapter( dfts.length ) );
+            mkListAdapter();
 
             for ( int ii = 0; ii < dfts.length; ++ii ) {
                 String showName = basename( Uri.parse( urls[ii] ).getPath() );
@@ -249,6 +251,11 @@ public class DwnldDelegate extends ListDelegateBase {
             }
         }
     } // init
+
+    private void mkListAdapter()
+    {
+        setListAdapter( new ImportListAdapter() );
+    }
 
     private File saveToDownloads( InputStream is, String name, 
                                   DictUtils.DownProgListener dpl )
