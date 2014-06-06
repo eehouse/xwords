@@ -58,6 +58,7 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
 
     // Does nothing unless overridden. These belong in an interface.
     protected void init( Bundle savedInstanceState ) { Assert.fail(); }
+    protected void onSaveInstanceState( Bundle outState ) {}
     public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
     public boolean onOptionsItemSelected( MenuItem item ) { return false; }
     protected void onStart() {}
