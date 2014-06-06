@@ -26,9 +26,6 @@ import android.os.Bundle;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -41,16 +38,13 @@ import android.content.DialogInterface;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
-import android.view.MenuInflater;
 import android.view.KeyEvent;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ListAdapter;
 import android.widget.SpinnerAdapter;
-import android.widget.Toast;
-import android.database.DataSetObserver;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -126,7 +120,7 @@ public class GameConfigDelegate extends DelegateBase
 
     public GameConfigDelegate( Activity activity, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.board_menu );
+        super( activity, savedInstanceState );
         m_activity = activity;
     }
 
