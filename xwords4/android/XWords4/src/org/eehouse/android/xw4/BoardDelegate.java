@@ -483,7 +483,6 @@ public class BoardDelegate extends DelegateBase
 
     protected void prepareDialog( int id, Dialog dialog )
     {
-        DbgUtils.logf( "BoardActivity:onPrepareDialog(id=%d)", id );
         DlgID dlgID = DlgID.values()[id];
         switch( dlgID ) {
         case DLG_INVITE:

@@ -269,7 +269,8 @@ public class GameConfigDelegate extends DelegateBase
         return dialog;
     } // onCreateDialog
 
-    protected void onPrepareDialog( int id, Dialog dialog )
+    @Override
+    protected void prepareDialog( int id, Dialog dialog )
     { 
         DlgID dlgID = DlgID.values()[id];
         switch ( dlgID ) {
