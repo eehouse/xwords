@@ -160,11 +160,11 @@ public class DwnldDelegate extends ListDelegateBase {
                 callListener( m_uri, false );
             }
 
-            m_views.remove( m_listItem );
-            mkListAdapter();
-
-            if ( 0 == m_views.size() ) {
+            if ( 1 >= m_views.size() ) {
                 finish();
+            } else {
+                m_views.remove( m_listItem );
+                mkListAdapter();
             }
         }
 
