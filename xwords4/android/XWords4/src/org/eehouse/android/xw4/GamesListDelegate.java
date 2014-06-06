@@ -323,9 +323,9 @@ public class GamesListDelegate extends ListDelegateBase
         return dialog;
     } // onCreateDialog
 
-    protected void prepareDialog( int id, Dialog dialog )
+    protected void prepareDialog( DlgID dlgID, Dialog dialog )
     {
-        if ( DlgID.CHANGE_GROUP.ordinal() == id ) {
+        if ( DlgID.CHANGE_GROUP == dlgID ) {
             ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
                 .setEnabled( false );
         }

@@ -289,9 +289,10 @@ public class DictsDelegate extends ListDelegateBase
         return dialog;
     } // onCreateDialog
 
-    protected void prepareDialog( int id, Dialog dialog )
+    @Override
+    protected void prepareDialog( DlgID dlgID, Dialog dialog )
     {
-        if ( DlgID.MOVE_DICT.ordinal() == id ) {
+        if ( DlgID.MOVE_DICT == dlgID ) {
             // The move button should always start out disabled
             // because the selected location should be where it
             // currently is.

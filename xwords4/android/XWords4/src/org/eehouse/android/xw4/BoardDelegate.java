@@ -481,9 +481,9 @@ public class BoardDelegate extends DelegateBase
         return dialog;
     } // onCreateDialog
 
-    protected void prepareDialog( int id, Dialog dialog )
+    @Override
+    protected void prepareDialog( DlgID dlgID, Dialog dialog )
     {
-        DlgID dlgID = DlgID.values()[id];
         switch( dlgID ) {
         case DLG_INVITE:
             AlertDialog ad = (AlertDialog)dialog;

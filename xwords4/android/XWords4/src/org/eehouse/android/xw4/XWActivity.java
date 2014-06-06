@@ -121,6 +121,6 @@ public class XWActivity extends Activity {
     public void onPrepareDialog( int id, Dialog dialog )
     {
         super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( id, dialog );
+        m_dlgt.prepareDialog( DlgID.values()[id], dialog );
     }
 }

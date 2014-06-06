@@ -270,9 +270,8 @@ public class GameConfigDelegate extends DelegateBase
     } // onCreateDialog
 
     @Override
-    protected void prepareDialog( int id, Dialog dialog )
+    protected void prepareDialog( DlgID dlgID, Dialog dialog )
     { 
-        DlgID dlgID = DlgID.values()[id];
         switch ( dlgID ) {
         case PLAYER_EDIT:
             setPlayerSettings( dialog );
