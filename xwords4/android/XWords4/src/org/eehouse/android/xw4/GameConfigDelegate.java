@@ -373,7 +373,7 @@ public class GameConfigDelegate extends DelegateBase
             int position = spinner.getSelectedItemPosition();
             SpinnerAdapter adapter = spinner.getAdapter();
 
-            if ( position < adapter.getCount() ) {
+            if ( null != adapter && position < adapter.getCount() ) {
                 String name = (String)adapter.getItem( position );
                 if ( ! name.equals( m_browseText ) ) {
                     lp.dictName = name;
