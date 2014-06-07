@@ -27,7 +27,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -55,7 +54,6 @@ public class DwnldDelegate extends ListDelegateBase {
     private static final String DICTS_EXTRA = "XWDS";
 
     private ListActivity m_activity;
-    private Handler m_handler;
     private ArrayList<LinearLayout> m_views;
 
     public interface DownloadFinishedListener {
@@ -119,7 +117,7 @@ public class DwnldDelegate extends ListDelegateBase {
                                     m_uri.getFragment() );
                 URLConnection conn = jUri.toURL().openConnection();
                 final int fileLen = conn.getContentLength();
-                m_handler.post( new Runnable() {
+                post( new Runnable() {
                         public void run() {
                             m_progressBar.setMax( fileLen );
                         }
@@ -172,7 +170,7 @@ public class DwnldDelegate extends ListDelegateBase {
         public void progressMade( int nBytes )
         {
             m_totalRead += nBytes;
-            m_handler.post( new Runnable() {
+            post( new Runnable() {
                     public void run() {
                         m_progressBar.setProgress( m_totalRead );
                     }
@@ -194,7 +192,6 @@ public class DwnldDelegate extends ListDelegateBase {
         DownloadFilesTask dft = null;
         String[] urls = null;
         LinearLayout item = null;
-        m_handler = new Handler();
 
         requestWindowFeature( Window.FEATURE_LEFT_ICON );
         setContentView( R.layout.import_dict );
