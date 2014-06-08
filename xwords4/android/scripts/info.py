@@ -41,6 +41,7 @@ k_URL = 'url'
 
 k_SUMS = 'sums'
 k_COUNT = 'count'
+k_LANGS = 'langs'
 
 # Version for those sticking with RELEASES
 k_REL_REV = 'android_beta_81'
@@ -115,19 +116,27 @@ def md5Checksums( sums, filePath ):
             result = None
     return result
 
-def getDictSums():
+def openShelf():
     global s_shelf
     # shelve will fail if permissions are wrong.  That's ok for some
     # testing: just make a fake shelf and test before saving it later.
-    try:
-        s_shelf = shelve.open(k_shelfFile)
-    except:
-        s_shelf = {}
-
-    if not k_SUMS in s_shelf: s_shelf[k_SUMS] = {}
-    if not k_COUNT in s_shelf: s_shelf[k_COUNT] = 0
+    if not s_shelf:
+        try:
+            s_shelf = shelve.open(k_shelfFile)
+        except:
+            s_shelf = {}
+        if not k_SUMS in s_shelf: s_shelf[k_SUMS] = {}
+        if not k_COUNT in s_shelf: s_shelf[k_COUNT] = 0
     s_shelf[k_COUNT] += 1
     logging.debug( "Count now %d" % s_shelf[k_COUNT] )
+
+def closeShelf():
+    global s_shelf
+    if 'close' in s_shelf: s_shelf.close()
+
+def getDictSums():
+    global s_shelf
+    openShelf()
     return s_shelf[k_SUMS]
 
 def getOrderedApks( path ):
@@ -179,7 +188,7 @@ def dictVersion( req, name, lang, md5sum ):
             result[k_URL] = k_urlbase + "/and_wordlists/" + path
     else:
         logging.debug( path + " not known" )
-    if 'close' in s_shelf: s_shelf.close()
+    closeShelf()
     return json.dumps( result )
 
 def getApp( params, name ):
@@ -226,26 +235,32 @@ def getApp( params, name ):
 # create obj containing array of objects each with 'lang' and 'xwds',
 # the latter an array of objects giving info about a dict.
 def listDicts():
+    global s_shelf
     ldict = {}
     root = k_filebase + "and_wordlists/"
-    dictSums = getDictSums()
-    for path in glob.iglob( root + "*/*.xwd" ):
-        path = path.replace( root, '' )
-        lang, xwd = path.split( '/' )
-        if not lang in ldict: ldict[lang] = []
-        ldict[lang].append({ 'md5sums' : md5Checksums( dictSums, path ),
-                              'xwd' : xwd,
-                           })
+    openShelf()
+    if not k_LANGS in s_shelf:
+        dictSums = getDictSums()
+        for path in glob.iglob( root + "*/*.xwd" ):
+            path = path.replace( root, '' )
+            lang, xwd = path.split( '/' )
+            if not lang in ldict: ldict[lang] = []
+            ldict[lang].append({ 'md5sums' : md5Checksums( dictSums, path ),
+                                 'xwd' : xwd,
+                             })
 
-    # now format as we want 'em
-    langs = []
-    for lang, entry in ldict.iteritems():
-        obj = { 'lang' : lang,
-                'dicts' : entry,
+        # now format as we want 'em
+        langs = []
+        for lang, entry in ldict.iteritems():
+            obj = { 'lang' : lang,
+                    'dicts' : entry,
                 }
-        langs.append( obj )
+            langs.append( obj )
+        s_shelf[k_LANGS] = langs
 
-    return { 'langs' : langs }
+    result = { 'langs' : s_shelf[k_LANGS] }
+    closeShelf();
+    return result
 
 def getDicts( params ):
     result = []
@@ -270,7 +285,7 @@ def getDicts( params ):
         else:
             logging.debug( path + " not known" )
 
-    if 'close' in s_shelf: s_shelf.close()
+    closeShelf()
     if 0 == len(result): result = None
     return result
 
@@ -388,7 +403,7 @@ def main():
         for arg in sys.argv[2:]:
             print arg, md5Checksums(dictSums, arg)
         s_shelf[k_SUMS] = dictSums
-        if 'close' in s_shelf: s_shelf.close()
+        closeShelf()
     elif arg == '--test-get-app':
         if not 5 == len(sys.argv): usage()
         params = { k_NAME: sys.argv[2], 
