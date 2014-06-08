@@ -26,9 +26,6 @@ import android.os.Bundle;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -41,16 +38,13 @@ import android.content.DialogInterface;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
-import android.view.MenuInflater;
 import android.view.KeyEvent;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ListAdapter;
 import android.widget.SpinnerAdapter;
-import android.widget.Toast;
-import android.database.DataSetObserver;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -126,7 +120,7 @@ public class GameConfigDelegate extends DelegateBase
 
     public GameConfigDelegate( Activity activity, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.board_menu );
+        super( activity, savedInstanceState );
         m_activity = activity;
     }
 
@@ -156,126 +150,128 @@ public class GameConfigDelegate extends DelegateBase
 
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = null;
-        DialogInterface.OnClickListener dlpos;
-        AlertDialog.Builder ab;
+        Dialog dialog = super.onCreateDialog( id );
 
-        final DlgID dlgID = DlgID.values()[id];
-        switch (dlgID) {
-        case PLAYER_EDIT:
-            View playerEditView = inflate( R.layout.player_edit );
+        if ( null == dialog ) {
+            DialogInterface.OnClickListener dlpos;
+            AlertDialog.Builder ab;
 
-            dialog = makeAlertBuilder()
-                .setTitle(R.string.player_edit_title)
-                .setView(playerEditView)
-                .setPositiveButton( R.string.button_ok,
-                                    new DialogInterface.OnClickListener() {
-                                        public void 
-                                            onClick( DialogInterface dlg, 
-                                                     int button ) {
-                                            getPlayerSettings( dlg );
-                                            loadPlayersList();
-                                        }
-                                    })
-                .setNegativeButton( R.string.button_cancel, null )
-                .create();
-            break;
-            // case ROLE_EDIT_RELAY:
-            // case ROLE_EDIT_SMS:
-            // case ROLE_EDIT_BT:
-            //     dialog = new AlertDialog.Builder( this )
-            //         .setTitle(titleForDlg(id))
-            //         .setView( LayoutInflater.from(this)
-            //                   .inflate( layoutForDlg(id), null ))
-            //         .setPositiveButton( R.string.button_ok,
-            //                             new DialogInterface.OnClickListener() {
-            //                                 public void onClick( DialogInterface dlg, 
-            //                                                      int whichButton ) {
-            //                                     getRoleSettings();
-            //                                 }
-            //                             })
-            //         .setNegativeButton( R.string.button_cancel, null )
-            //         .create();
-            //     break;
+            final DlgID dlgID = DlgID.values()[id];
+            switch (dlgID) {
+            case PLAYER_EDIT:
+                View playerEditView = inflate( R.layout.player_edit );
 
-        case FORCE_REMOTE:
-            dlpos = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, 
-                                         int whichButton ) {
-                        loadPlayersList();
-                    }
-                };
-            dialog = makeAlertBuilder()
-                .setTitle( R.string.force_title )
-                .setView( inflate( layoutForDlg(dlgID) ) )
-                .setPositiveButton( R.string.button_ok, dlpos )
-                .create();
-            DialogInterface.OnDismissListener dismiss = 
-                new DialogInterface.OnDismissListener() {
-                    @Override
-                    public void onDismiss( DialogInterface di ) 
-                    {
-                        if ( m_gi.forceRemoteConsistent() ) {
-                            showToast( R.string.forced_consistent );
-                            loadPlayersList();
-                        }
-                    }
-                };
-            dialog.setOnDismissListener( dismiss );
-            break;
-        case CONFIRM_CHANGE_PLAY:
-        case CONFIRM_CHANGE:
-            dlpos = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, 
-                                         int whichButton ) {
-                        applyChanges( true );
-                        if ( DlgID.CONFIRM_CHANGE_PLAY == dlgID ) {
-                            launchGame();
-                        }
-                    }
-                };
-            ab = makeAlertBuilder()
-                .setTitle( R.string.confirm_save_title )
-                .setMessage( R.string.confirm_save )
-                .setPositiveButton( R.string.button_save, dlpos );
-            if ( DlgID.CONFIRM_CHANGE_PLAY == dlgID ) {
+                dialog = makeAlertBuilder()
+                    .setTitle(R.string.player_edit_title)
+                    .setView(playerEditView)
+                    .setPositiveButton( R.string.button_ok,
+                                        new DialogInterface.OnClickListener() {
+                                            public void 
+                                                onClick( DialogInterface dlg, 
+                                                         int button ) {
+                                                getPlayerSettings( dlg );
+                                                loadPlayersList();
+                                            }
+                                        })
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .create();
+                break;
+                // case ROLE_EDIT_RELAY:
+                // case ROLE_EDIT_SMS:
+                // case ROLE_EDIT_BT:
+                //     dialog = new AlertDialog.Builder( this )
+                //         .setTitle(titleForDlg(id))
+                //         .setView( LayoutInflater.from(this)
+                //                   .inflate( layoutForDlg(id), null ))
+                //         .setPositiveButton( R.string.button_ok,
+                //                             new DialogInterface.OnClickListener() {
+                //                                 public void onClick( DialogInterface dlg, 
+                //                                                      int whichButton ) {
+                //                                     getRoleSettings();
+                //                                 }
+                //                             })
+                //         .setNegativeButton( R.string.button_cancel, null )
+                //         .create();
+                //     break;
+
+            case FORCE_REMOTE:
                 dlpos = new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
-                            launchGame();
+                            loadPlayersList();
                         }
                     };
-            } else {
-                dlpos = null;
+                dialog = makeAlertBuilder()
+                    .setTitle( R.string.force_title )
+                    .setView( inflate( layoutForDlg(dlgID) ) )
+                    .setPositiveButton( R.string.button_ok, dlpos )
+                    .create();
+                DialogInterface.OnDismissListener dismiss = 
+                    new DialogInterface.OnDismissListener() {
+                        @Override
+                        public void onDismiss( DialogInterface di ) 
+                        {
+                            if ( m_gi.forceRemoteConsistent() ) {
+                                showToast( R.string.forced_consistent );
+                                loadPlayersList();
+                            }
+                        }
+                    };
+                dialog.setOnDismissListener( dismiss );
+                break;
+            case CONFIRM_CHANGE_PLAY:
+            case CONFIRM_CHANGE:
+                dlpos = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, 
+                                             int whichButton ) {
+                            applyChanges( true );
+                            if ( DlgID.CONFIRM_CHANGE_PLAY == dlgID ) {
+                                launchGame();
+                            }
+                        }
+                    };
+                ab = makeAlertBuilder()
+                    .setTitle( R.string.confirm_save_title )
+                    .setMessage( R.string.confirm_save )
+                    .setPositiveButton( R.string.button_save, dlpos );
+                if ( DlgID.CONFIRM_CHANGE_PLAY == dlgID ) {
+                    dlpos = new DialogInterface.OnClickListener() {
+                            public void onClick( DialogInterface dlg, 
+                                                 int whichButton ) {
+                                launchGame();
+                            }
+                        };
+                } else {
+                    dlpos = null;
+                }
+                ab.setNegativeButton( R.string.button_discard, dlpos );
+                dialog = ab.create();
+
+                dialog.setOnDismissListener( new DialogInterface.
+                                             OnDismissListener() {
+                        public void onDismiss( DialogInterface di ) {
+                            finish();
+                        }
+                    });
+                break;
+            case NO_NAME_FOUND:
+                String msg = getString( R.string.no_name_found_fmt,
+                                        m_gi.nPlayers, DictLangCache.
+                                        getLangName( m_activity, m_gi.dictLang ) );
+                dialog = makeAlertBuilder()
+                    .setPositiveButton( R.string.button_ok, null )
+                    // message added below since varies with language etc.
+                    .setMessage( msg )
+                    .create();
+                break;
             }
-            ab.setNegativeButton( R.string.button_discard, dlpos );
-            dialog = ab.create();
-
-            dialog.setOnDismissListener( new DialogInterface.
-                                         OnDismissListener() {
-                    public void onDismiss( DialogInterface di ) {
-                        finish();
-                    }
-                });
-            break;
-        case NO_NAME_FOUND:
-            String msg = getString( R.string.no_name_found_fmt,
-                                    m_gi.nPlayers, DictLangCache.
-                                    getLangName( m_activity, m_gi.dictLang ) );
-            dialog = makeAlertBuilder()
-                .setPositiveButton( R.string.button_ok, null )
-                // message added below since varies with language etc.
-                .setMessage( msg )
-                .create();
-            break;
         }
-
         return dialog;
     } // onCreateDialog
 
-    protected void onPrepareDialog( int id, Dialog dialog )
+    @Override
+    protected void prepareDialog( DlgID dlgID, Dialog dialog )
     { 
-        DlgID dlgID = DlgID.values()[id];
         switch ( dlgID ) {
         case PLAYER_EDIT:
             setPlayerSettings( dialog );
@@ -373,7 +369,7 @@ public class GameConfigDelegate extends DelegateBase
             int position = spinner.getSelectedItemPosition();
             SpinnerAdapter adapter = spinner.getAdapter();
 
-            if ( position < adapter.getCount() ) {
+            if ( null != adapter && position < adapter.getCount() ) {
                 String name = (String)adapter.getItem( position );
                 if ( ! name.equals( m_browseText ) ) {
                     lp.dictName = name;

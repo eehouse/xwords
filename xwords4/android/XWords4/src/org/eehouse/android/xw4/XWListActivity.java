@@ -38,6 +38,13 @@ public class XWListActivity extends ListActivity {
     }
 
     @Override
+    protected void onSaveInstanceState( Bundle outState ) 
+    {
+        super.onSaveInstanceState( outState );
+        m_dlgt.onSaveInstanceState( outState );
+    }
+
+    @Override
     protected void onPause()
     {
         m_dlgt.onPause();
@@ -114,6 +121,6 @@ public class XWListActivity extends ListActivity {
     public void onPrepareDialog( int id, Dialog dialog )
     {
         super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( id, dialog );
+        m_dlgt.prepareDialog( DlgID.values()[id], dialog );
     }
 }

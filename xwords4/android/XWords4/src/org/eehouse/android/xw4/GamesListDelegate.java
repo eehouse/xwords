@@ -50,7 +50,7 @@ import org.eehouse.android.xw4.jni.*;
 public class GamesListDelegate extends ListDelegateBase
     implements OnItemLongClickListener,
                DBUtils.DBChangeListener, SelectableItem, 
-               DictImportDelegate.DownloadFinishedListener,
+               DwnldDelegate.DownloadFinishedListener,
                DlgDelegate.HasDlgDelegate {
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
@@ -135,7 +135,7 @@ public class GamesListDelegate extends ListDelegateBase
                                 .launchAndDownload( m_activity, 
                                                     m_missingDictLang );
                         } else {
-                            DictImportDelegate
+                            DwnldDelegate
                                 .downloadDictInBack( m_activity,
                                                      m_missingDictLang,
                                                      m_missingDictName,
@@ -323,9 +323,9 @@ public class GamesListDelegate extends ListDelegateBase
         return dialog;
     } // onCreateDialog
 
-    protected void prepareDialog( int id, Dialog dialog )
+    protected void prepareDialog( DlgID dlgID, Dialog dialog )
     {
-        if ( DlgID.CHANGE_GROUP.ordinal() == id ) {
+        if ( DlgID.CHANGE_GROUP == dlgID ) {
             ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
                 .setEnabled( false );
         }
@@ -879,7 +879,7 @@ public class GamesListDelegate extends ListDelegateBase
         return handled;// || super.onOptionsItemSelected( item );
     }
 
-    // DictImportActivity.DownloadFinishedListener interface
+    // DwnldActivity.DownloadFinishedListener interface
     public void downloadFinished( String name, final boolean success )
     {
         post( new Runnable() {

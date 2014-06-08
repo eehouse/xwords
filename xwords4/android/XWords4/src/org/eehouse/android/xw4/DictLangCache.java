@@ -42,9 +42,9 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 public class DictLangCache {
     private static String[] s_langNames;
 
-    private static int m_adaptedLang = -1;
-    private static ArrayAdapter<String> m_langsAdapter;
-    private static ArrayAdapter<String> m_dictsAdapter;
+    private static int s_adaptedLang = -1;
+    private static ArrayAdapter<String> s_langsAdapter;
+    private static ArrayAdapter<String> s_dictsAdapter;
     private static String s_last;
     private static Handler s_handler;
     private static Comparator<String> KeepLast = 
@@ -257,14 +257,14 @@ public class DictLangCache {
         if ( null != s_handler ) {
             s_handler.post( new Runnable() {
                     public void run() {
-                        if ( null != m_dictsAdapter ) {
-                            rebuildAdapter( m_dictsAdapter, 
+                        if ( null != s_dictsAdapter ) {
+                            rebuildAdapter( s_dictsAdapter, 
                                             DictLangCache.
                                             getHaveLang( context, 
-                                                         m_adaptedLang ) );
+                                                         s_adaptedLang ) );
                         }
-                        if ( null != m_langsAdapter ) {
-                            rebuildAdapter( m_langsAdapter, 
+                        if ( null != s_langsAdapter ) {
+                            rebuildAdapter( s_langsAdapter, 
                                             DictLangCache.listLangs( context ) );
                         }
                     }
@@ -326,26 +326,26 @@ public class DictLangCache {
 
     public static ArrayAdapter<String> getLangsAdapter( Context context )
     {
-        if ( null == m_langsAdapter ) {
-            m_langsAdapter = 
+        if ( null == s_langsAdapter ) {
+            s_langsAdapter = 
                 new ArrayAdapter<String>( context,
                                           android.R.layout.simple_spinner_item );
-            rebuildAdapter( m_langsAdapter, listLangs( context ) );
+            rebuildAdapter( s_langsAdapter, listLangs( context ) );
         }
-        return m_langsAdapter;
+        return s_langsAdapter;
     }
 
     public static ArrayAdapter<String> getDictsAdapter( Context context, 
                                                         int lang )
     {
-        if ( lang != m_adaptedLang ) {
-            m_dictsAdapter = 
+        if ( lang != s_adaptedLang ) {
+            s_dictsAdapter = 
                 new ArrayAdapter<String>( context,
                                           android.R.layout.simple_spinner_item );
-            rebuildAdapter( m_dictsAdapter, getHaveLang( context, lang ) );
-            m_adaptedLang = lang;
+            rebuildAdapter( s_dictsAdapter, getHaveLang( context, lang ) );
+            s_adaptedLang = lang;
         }
-        return m_dictsAdapter;
+        return s_dictsAdapter;
     }
 
     public static String[] getLangNames( Context context )

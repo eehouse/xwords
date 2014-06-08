@@ -356,7 +356,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 intent = new Intent( Intent.ACTION_VIEW, 
                                                      Uri.parse(url) );
                             } else {
-                                intent = DictImportDelegate
+                                intent = DwnldDelegate
                                     .makeAppDownloadIntent( m_context, url );
                             }
 

@@ -36,13 +36,6 @@ public class SMSInviteActivity extends InviteActivity {
     }
 
     @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-        m_dlgt.onSaveInstanceState( outState );
-    }
-
-    @Override
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data )
     {

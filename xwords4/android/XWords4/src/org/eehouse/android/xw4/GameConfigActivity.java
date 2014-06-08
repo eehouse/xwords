@@ -36,13 +36,6 @@ public class GameConfigActivity extends XWActivity {
     } // onCreate
 
     @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-        m_dlgt.onSaveInstanceState( outState );
-    }
-
-    @Override
     public boolean onKeyDown( int keyCode, KeyEvent event )
     {
         boolean consumed = m_dlgt.onKeyDown( keyCode, event );

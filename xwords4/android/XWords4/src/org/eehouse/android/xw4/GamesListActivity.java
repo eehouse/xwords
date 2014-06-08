@@ -56,13 +56,6 @@ public class GamesListActivity extends XWListActivity {
     }
 
     @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-        m_dlgt.onSaveInstanceState( outState );
-    }
-
-    @Override
     public void onWindowFocusChanged( boolean hasFocus )
     {
         super.onWindowFocusChanged( hasFocus );
