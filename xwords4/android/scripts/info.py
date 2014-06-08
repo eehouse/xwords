@@ -302,28 +302,29 @@ def getXlate( params, name, stringsHash ):
     head = repo.getHeadRev()
     logging.debug('head = %s' % head)
     rjavarevs = repo.getRevsBetween(head, stringsHash, rPath)
-    assert( 1 >= len(rjavarevs) )
-    assert( stringsHash == rjavarevs[-1] )
-    if 1 == len(rjavarevs): 
-        firstPossible = head
-    else: 
-        firstPossible = rjavarevs[-2] + '^'
-        # get actual number for rev^
-        firstPossible = repo.getRevsBetween( firstPossible, firstPossible )[0]
-    logging.debug('firstPossible: %s' % firstPossible)
+    if rjavarevs:
+        assert( 1 >= len(rjavarevs) )
+        assert( stringsHash == rjavarevs[-1] )
+        if 1 == len(rjavarevs): 
+            firstPossible = head
+        else: 
+            firstPossible = rjavarevs[-2] + '^'
+            # get actual number for rev^
+            firstPossible = repo.getRevsBetween( firstPossible, firstPossible )[0]
+        logging.debug('firstPossible: %s' % firstPossible)
 
-    for entry in params:
-        curVers = entry[k_XLATEVERS]
-        if not curVers == firstPossible: 
-            locale = entry[k_LOCALE]
+        for entry in params:
+            curVers = entry[k_XLATEVERS]
+            if not curVers == firstPossible: 
+                locale = entry[k_LOCALE]
 
-            data = mk_for_download.getXlationFor( repo, rDotJava, locale, \
-                                                      firstPossible )
-            if data: result.append( { k_LOCALE: locale,
-                                      k_OLD: curVers,
-                                      k_NEW: firstPossible,
-                                      k_PAIRS: data,
-                                      } )
+                data = mk_for_download.getXlationFor( repo, rDotJava, locale, \
+                                                          firstPossible )
+                if data: result.append( { k_LOCALE: locale,
+                                          k_OLD: curVers,
+                                          k_NEW: firstPossible,
+                                          k_PAIRS: data,
+                                          } )
 
     if 0 == len(result): result = None
     logging.debug( "getXlate=>%s" % (json.dumps(result)) )
