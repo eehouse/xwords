@@ -41,6 +41,7 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictLangCache {
     private static String[] s_langNames;
+    private static HashMap<String, Integer> s_langCodes;
 
     private static int s_adaptedLang = -1;
     private static ArrayAdapter<String> s_langsAdapter;
@@ -119,6 +120,17 @@ public class DictLangCache {
             }
         }
         DictInfo[] result = al.toArray( new DictInfo[al.size()] );
+        return result;
+    }
+
+    public static boolean haveDict( Context context, String lang, String name )
+    {
+        boolean result = false;
+        getLangNames( context ); /* inits s_langCodes */
+        Integer code = s_langCodes.get( lang );
+        if ( null != code ) {
+            result = haveDict( context, code, name );
+        }
         return result;
     }
 
@@ -353,6 +365,11 @@ public class DictLangCache {
         if ( null == s_langNames ) {
             Resources res = context.getResources();
             s_langNames = res.getStringArray( R.array.language_names );
+
+            s_langCodes = new HashMap<String, Integer>();
+            for ( int ii = 0; ii < s_langNames.length; ++ii ) {
+                s_langCodes.put( s_langNames[ii], ii );
+            }
         }
         return s_langNames;
     }
