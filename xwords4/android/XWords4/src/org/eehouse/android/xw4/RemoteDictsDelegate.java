@@ -28,7 +28,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,7 +51,16 @@ public class RemoteDictsDelegate extends ListDelegateBase
     private ListView m_listView;
     private boolean[] m_expanded;
     private String[] m_langNames;
-    private HashMap<String, String[]> m_langInfo;
+    private static class DictInfo implements Comparable {
+        public String m_name;
+        public String m_comment;
+        public DictInfo( String name ) { m_name = name; }
+        public int compareTo( Object obj ) {
+            DictInfo other = (DictInfo)obj;
+            return m_name.compareTo( other.m_name );
+        }
+    }
+    private HashMap<String, DictInfo[]> m_langInfo;
     private HashSet<XWListItem> m_selDicts = new HashSet<XWListItem>();
     private String m_origTitle;
 
@@ -192,31 +203,43 @@ public class RemoteDictsDelegate extends ListDelegateBase
         boolean success = false;
         JSONArray langs = null;
         if ( null != jsonData ) {
+            // DictLangCache hits the DB hundreds of times below. Fix!
+            DbgUtils.logf( "Fix me I'm stupid" );
             try {
                 JSONObject obj = new JSONObject( jsonData );
                 langs = obj.optJSONArray( "langs" );
 
                 int nLangs = langs.length();
-                m_langNames = new String[nLangs];
+                ArrayList<String> langNames = new ArrayList<String>();
                 m_expanded = new boolean[nLangs];
-                m_langInfo = new HashMap<String, String[]>();
+                m_langInfo = new HashMap<String, DictInfo[]>();
                 for ( int ii = 0; ii < nLangs; ++ii ) {
                     JSONObject langObj = langs.getJSONObject( ii );
                     String langName = langObj.getString( "lang" );
-                    m_langNames[ii] = langName;
 
                     JSONArray dicts = langObj.getJSONArray( "dicts" );
                     int nDicts = dicts.length();
-                    String[] dictNames = new String[nDicts];
+                    ArrayList<DictInfo> dictNames = new ArrayList<DictInfo>();
                     for ( int jj = 0; jj < nDicts; ++jj ) {
                         JSONObject dict = dicts.getJSONObject( jj );
-                        dictNames[jj] = 
-                            DictUtils.removeDictExtn( dict.getString( "xwd" ) );
+                        String name = dict.getString( "xwd" );
+                        name = DictUtils.removeDictExtn( name );
+                        DictInfo info = new DictInfo( name );
+                        if ( DictLangCache.haveDict( m_activity, langName, name ) ) {
+                            info.m_comment = "installed";
+                        }
+                        dictNames.add( info );
                     }
-                    m_langInfo.put( langName, dictNames );
-                }
+                    if ( 0 < dictNames.size() ) {
+                        DictInfo[] asArray = dictNames.toArray( new DictInfo[dictNames.size()] );
+                        Arrays.sort( asArray );
+                        m_langInfo.put( langName, asArray );
 
-                Arrays.sort( m_langNames );
+                        langNames.add( langName );
+                    }
+                }
+                Collections.sort( langNames );
+                m_langNames = langNames.toArray( new String[langNames.size()] );
                 success = true;
             } catch ( JSONException ex ) {
                 DbgUtils.loge( ex );
@@ -315,14 +338,16 @@ public class RemoteDictsDelegate extends ListDelegateBase
                                              ii, langName, expanded );
                     break;
                 } else {
-                    String[] dicts = m_langInfo.get( langName );
+                    DictInfo[] dicts = m_langInfo.get( langName );
                     int count = expanded ? dicts.length : 0;
                     if ( indx <= count ) {
                         XWListItem item = 
                             XWListItem.inflate( m_activity, RemoteDictsDelegate.this );
                         result = item;
 
-                        item.setText( dicts[indx-1] );
+                        DictInfo info = dicts[indx-1];
+                        item.setText( info.m_name );
+                        item.setComment( info.m_comment );
                         item.cache( langName );
 
                         //item.setOnClickListener( RemoteDictsDelegate.this );
