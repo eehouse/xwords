@@ -1935,4 +1935,6 @@
         FROM SERVER.</string>
   <string name="getinfo">GET INFO</string>
   <string name="delete_dicts">DELETE WORDLIST[S]</string>
+  <string name="dict_installed">INSTALLED</string>
+  <string name="dict_needs_update">NEEDS UPDATING</string>
 </resources>

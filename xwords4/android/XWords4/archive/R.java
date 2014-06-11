@@ -942,12 +942,14 @@ public final class R {
          */
         public static final int dict_browse_title_fmt=0x7f0601fa;
         public static final int dict_host=0x7f060079;
+        public static final int dict_installed=0x7f0602bc;
         /**  label for dropdown by which wordlist is chosen that this
          player will use.  The language the game will use (which
          constrains the choice of wordlists) is substituted in for
          "%1$s". 
          */
         public static final int dict_lang_label_fmt=0x7f0600e8;
+        public static final int dict_needs_update=0x7f0602bd;
         /** string name="invite_mime">text/plain</string
          */
         public static final int dict_url=0x7f060072;

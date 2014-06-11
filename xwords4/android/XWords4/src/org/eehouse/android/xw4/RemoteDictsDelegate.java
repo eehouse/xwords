@@ -51,9 +51,10 @@ public class RemoteDictsDelegate extends ListDelegateBase
     private ListView m_listView;
     private boolean[] m_expanded;
     private String[] m_langNames;
+    private static enum DictState { AVAILABLE, INSTALLED, NEEDS_UPDATE };
     private static class DictInfo implements Comparable {
         public String m_name;
-        public String m_comment;
+        public DictState m_state;
         public DictInfo( String name ) { m_name = name; }
         public int compareTo( Object obj ) {
             DictInfo other = (DictInfo)obj;
@@ -211,7 +212,6 @@ public class RemoteDictsDelegate extends ListDelegateBase
 
                 int nLangs = langs.length();
                 ArrayList<String> langNames = new ArrayList<String>();
-                m_expanded = new boolean[nLangs];
                 m_langInfo = new HashMap<String, DictInfo[]>();
                 for ( int ii = 0; ii < nLangs; ++ii ) {
                     JSONObject langObj = langs.getJSONObject( ii );
@@ -226,7 +226,20 @@ public class RemoteDictsDelegate extends ListDelegateBase
                         name = DictUtils.removeDictExtn( name );
                         DictInfo info = new DictInfo( name );
                         if ( DictLangCache.haveDict( m_activity, langName, name ) ) {
-                            info.m_comment = "installed";
+                            boolean matches = true;
+                            String curSum = DictLangCache.getDictMD5Sum( m_activity, name );
+                            if ( null != curSum ) {
+                                JSONArray sums = dict.getJSONArray("md5sums");
+                                if ( null != sums ) {
+                                    matches = false;
+                                    for ( int kk = 0; !matches && kk < sums.length(); ++kk ) {
+                                        String sum = sums.getString( kk );
+                                        matches = sum.equals( curSum );
+                                    }
+                                }
+                            }
+                            info.m_state = matches? DictState.INSTALLED 
+                                : DictState.NEEDS_UPDATE;
                         }
                         dictNames.add( info );
                     }
@@ -240,6 +253,21 @@ public class RemoteDictsDelegate extends ListDelegateBase
                 }
                 Collections.sort( langNames );
                 m_langNames = langNames.toArray( new String[langNames.size()] );
+
+                // Now start out with languages expanded that have an
+                // installed dict.
+                nLangs = m_langNames.length;
+                m_expanded = new boolean[nLangs];
+                for ( int ii = 0; ii < nLangs; ++ii ) {
+                    DictInfo[] dicts = m_langInfo.get( m_langNames[ii] );
+                    for ( DictInfo info : dicts ) {
+                        if ( null != info.m_state ) {
+                            m_expanded[ii] = true;
+                            break;
+                        }
+                    }
+                }
+
                 success = true;
             } catch ( JSONException ex ) {
                 DbgUtils.loge( ex );
@@ -297,10 +325,14 @@ public class RemoteDictsDelegate extends ListDelegateBase
 
     private class RDListAdapter extends XWListAdapter {
         private Integer m_count = null;
+        private String m_installed;
+        private String m_needsUpdate;
 
         public RDListAdapter() 
         {
             super( 0 );
+            m_installed = getString( R.string.dict_installed );
+            m_needsUpdate = getString( R.string.dict_needs_update );
         }
 
         @Override
@@ -326,7 +358,10 @@ public class RemoteDictsDelegate extends ListDelegateBase
         @Override
         public View getView( final int position, View convertView, ViewGroup parent )
         {
-            // DbgUtils.logf( "RemoteDictsDelegate(position=%d)", position );
+            if ( null != convertView ) {
+                DbgUtils.logf( "RemoteDictsDelegate(position=%d, convertView=%H)", 
+                               position, convertView );
+            }
             View result = null;
             int indx = position;
 
@@ -347,7 +382,19 @@ public class RemoteDictsDelegate extends ListDelegateBase
 
                         DictInfo info = dicts[indx-1];
                         item.setText( info.m_name );
-                        item.setComment( info.m_comment );
+
+                        if ( null != info.m_state ) {
+                            String comment = null;
+                            switch( info.m_state ) {
+                            case INSTALLED:
+                                comment = m_installed;
+                                break;
+                            case NEEDS_UPDATE:
+                                comment = m_needsUpdate;
+                                break;
+                            }
+                            item.setComment( comment );
+                        }
                         item.cache( langName );
 
                         //item.setOnClickListener( RemoteDictsDelegate.this );

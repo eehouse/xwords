@@ -2261,4 +2261,6 @@
 
     <string name="delete_dicts">Delete wordlist[s]</string>
 
+    <string name="dict_installed">Installed</string>
+    <string name="dict_needs_update">Needs updating</string>
 </resources>

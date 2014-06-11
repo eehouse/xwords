@@ -1935,4 +1935,6 @@
         morf revres.</string>
   <string name="getinfo">Teg ofni</string>
   <string name="delete_dicts">Eteled ]s[tsildrow</string>
+  <string name="dict_installed">Dellatsni</string>
+  <string name="dict_needs_update">Sdeen gnitadpu</string>
 </resources>
