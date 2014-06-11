@@ -5,7 +5,8 @@
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
               android:paddingLeft="8dp"
-              android:paddingRight="8dp">
+              android:paddingRight="8dp"
+              >
          
   <ListView android:id="@id/android:list"
             android:layout_width="match_parent" 
@@ -26,11 +27,13 @@
                    android:indeterminate="true"
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
+                   android:paddingBottom="20dp"
                    />
 
       <TextView android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/remote_empty" 
+                android:gravity="center"
                 />
 
   </LinearLayout>
