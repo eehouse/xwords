@@ -79,7 +79,7 @@ public class DictsDelegate extends ListDelegateBase
     private ListView m_listView;
     private String[] m_locNames;
     private DictListAdapter m_adapter;
-    private HashSet<XWListItem> m_selDicts;
+    private HashMap<String, XWListItem> m_selDicts;
     private String m_origTitle;
 
     private boolean m_launchedForMissing = false;
@@ -145,13 +145,21 @@ public class DictsDelegate extends ListDelegateBase
                         result = item;
 
                         DictAndLoc dal = dals[indx - 1];
-                        item.setText( dal.name );
+                        String name = dal.name;
+                        item.setText( name );
 
                         DictLoc loc = dal.loc;
                         item.setComment( m_locNames[loc.ordinal()] );
                         item.cache( loc );
 
                         item.setOnClickListener( DictsDelegate.this );
+
+                        // Replace sel entry if present
+                        if ( m_selDicts.containsKey( name ) ) {
+                            m_selDicts.put( name, item );
+                            item.setSelected( true );
+                        }
+
                         break;
                     }
                     indx -= 1 + count;
@@ -229,7 +237,7 @@ public class DictsDelegate extends ListDelegateBase
             break;
 
         case SET_DEFAULT:
-            final XWListItem row = m_selDicts.iterator().next();
+            final XWListItem row = m_selDicts.values().iterator().next();
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         if ( DialogInterface.BUTTON_NEGATIVE == item
@@ -477,7 +485,7 @@ public class DictsDelegate extends ListDelegateBase
     private boolean selItemsVolatile() 
     {
         boolean result = 0 < m_selDicts.size();
-        for ( Iterator<XWListItem> iter = m_selDicts.iterator(); 
+        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
               result && iter.hasNext(); ) {
             DictLoc loc = (DictLoc)iter.next().getCached();
             if ( loc == DictLoc.BUILT_IN ) {
@@ -610,7 +618,7 @@ public class DictsDelegate extends ListDelegateBase
         m_adapter = new DictListAdapter( m_activity );
         m_activity.setListAdapter( m_adapter );
 
-        m_selDicts = new HashSet<XWListItem>();
+        m_selDicts = new HashMap<String, XWListItem>();
     }
 
     private void expandGroups()
@@ -658,7 +666,7 @@ public class DictsDelegate extends ListDelegateBase
     {
         XWListItem[] items = new XWListItem[m_selDicts.size()];
         int indx = 0;
-        for ( Iterator<XWListItem> iter = m_selDicts.iterator(); 
+        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
               iter.hasNext(); ) {
             items[indx++] = iter.next();
         }
@@ -766,10 +774,11 @@ public class DictsDelegate extends ListDelegateBase
                              boolean selected )
     {
         XWListItem dictView = (XWListItem)toggled;
+        String lang = dictView.getText();
         if ( selected ) {
-            m_selDicts.add( dictView );
+            m_selDicts.put( lang, dictView );
         } else {
-            m_selDicts.remove( dictView );
+            m_selDicts.remove( lang );
         }
         invalidateOptionsMenuIf();
         setTitleBar();
@@ -778,7 +787,8 @@ public class DictsDelegate extends ListDelegateBase
     public boolean getSelected( SelectableItem.LongClickHandler obj )
     {
         XWListItem dictView = (XWListItem)obj;
-        return m_selDicts.contains( dictView );
+        boolean result = m_selDicts.containsKey( dictView.getText() );
+        return result;
     }
 
 }
