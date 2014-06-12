@@ -63,6 +63,9 @@ public class RemoteDictsDelegate extends ListDelegateBase
     private HashMap<String, DictInfo[]> m_langInfo;
     private HashMap<String, XWListItem> m_selDicts = new HashMap<String, XWListItem>();
     private String m_origTitle;
+    private String m_installed;
+    private String m_needsUpdate;
+    private HashMap<String, XWListItem> m_curDownloads;
 
     protected RemoteDictsDelegate( ListActivity activity, Bundle savedInstanceState )
     {
@@ -72,6 +75,9 @@ public class RemoteDictsDelegate extends ListDelegateBase
 
     protected void init( Bundle savedInstanceState ) 
     {
+        m_installed = getString( R.string.dict_installed );
+        m_needsUpdate = getString( R.string.dict_needs_update );
+
         setContentView( R.layout.remote_dicts );
         JSONObject params = new JSONObject(); // empty for now
         m_origTitle = getTitle();
@@ -102,12 +108,15 @@ public class RemoteDictsDelegate extends ListDelegateBase
         case R.id.remote_dicts_download:
             String[] urls = new String[m_selDicts.size()];
             int count = 0;
+            m_curDownloads = new HashMap<String, XWListItem>();
             for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
                   iter.hasNext(); ) {
                 XWListItem litm = iter.next();
-                String langName = (String)litm.getCached();
-                urls[count++] = Utils.makeDictUrl( m_activity, langName, 
-                                                   litm.getText() );
+                DictInfo info = (DictInfo)litm.getCached();
+                String url = Utils.makeDictUrl( m_activity, info.m_lang, 
+                                                litm.getText() );
+                urls[count++] = url;
+                m_curDownloads.put( url, litm );
             }
             DwnldDelegate.downloadDictsInBack( m_activity, urls, this );
             break;
@@ -132,8 +141,14 @@ public class RemoteDictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     public void downloadFinished( String name, boolean success )
     {
-        if ( success ) {
-            showToast( name );
+        XWListItem item = m_curDownloads.get( name );
+        if ( null != item ) {
+            if ( success ) {
+                DictInfo info = (DictInfo)item.getCached();
+                info.m_state = DictState.INSTALLED;
+                item.setComment( m_installed );
+            }
+            m_curDownloads.remove( name );
         }
     }
 
@@ -325,15 +340,11 @@ public class RemoteDictsDelegate extends ListDelegateBase
     }
 
     private class RDListAdapter extends XWListAdapter {
-        private String m_installed;
-        private String m_needsUpdate;
         private Object[] m_listInfo;
 
         public RDListAdapter() 
         {
             super( 0 );
-            m_installed = getString( R.string.dict_installed );
-            m_needsUpdate = getString( R.string.dict_needs_update );
         }
 
         @Override
@@ -396,7 +407,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
                     }
                     item.setComment( comment );
                 }
-                item.cache( info.m_lang );
+                item.cache( info );
 
                 if ( m_selDicts.containsKey( name ) ) {
                     m_selDicts.put( name, item );
