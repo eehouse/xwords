@@ -71,7 +71,6 @@ public class DictsDelegate extends ListDelegateBase
     private String m_downloadStr;
     private ListView m_listView;
     private String[] m_locNames;
-    private DictListAdapter m_adapter;
     private HashMap<String, XWListItem> m_selDicts;
     private String m_origTitle;
 
@@ -600,8 +599,13 @@ public class DictsDelegate extends ListDelegateBase
     {
         m_langs = DictLangCache.listLangs( m_activity );
         Arrays.sort( m_langs );
-        m_adapter = new DictListAdapter( m_activity );
-        m_activity.setListAdapter( m_adapter );
+
+        int pos = m_listView.getFirstVisiblePosition();
+        View child = m_listView.getChildAt( 0 );
+        int top = (child == null) ? 0 : child.getTop();
+
+        setListAdapter( new DictListAdapter( m_activity ) );
+        m_listView.setSelectionFromTop( pos, top );
 
         m_selDicts = new HashMap<String, XWListItem>();
     }

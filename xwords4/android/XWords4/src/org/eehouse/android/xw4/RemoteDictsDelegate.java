@@ -47,7 +47,6 @@ public class RemoteDictsDelegate extends ListDelegateBase
     implements GroupStateListener, SelectableItem,
                DwnldDelegate.DownloadFinishedListener {
     private ListActivity m_activity;
-    private ListView m_listView;
     private boolean[] m_expanded;
     private String[] m_langNames;
     private static enum DictState { AVAILABLE, INSTALLED, NEEDS_UPDATE };
@@ -74,7 +73,6 @@ public class RemoteDictsDelegate extends ListDelegateBase
     protected void init( Bundle savedInstanceState ) 
     {
         setContentView( R.layout.remote_dicts );
-        m_listView = getListView();
         JSONObject params = new JSONObject(); // empty for now
         m_origTitle = getTitle();
 
@@ -186,8 +184,13 @@ public class RemoteDictsDelegate extends ListDelegateBase
 
     private void mkListAdapter()
     {
-        RDListAdapter adapter = new RDListAdapter();
-        setListAdapter( adapter );
+        ListView listView = getListView();
+        int pos = listView.getFirstVisiblePosition();
+        View child = listView.getChildAt( 0 );
+        int top = (child == null) ? 0 : child.getTop();
+
+        setListAdapter( new RDListAdapter() );
+        listView.setSelectionFromTop( pos, top );
     }
 
     private void setTitleBar()
