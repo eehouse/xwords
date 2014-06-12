@@ -29,9 +29,6 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.database.DataSetObserver;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -42,11 +39,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.ExpandableListAdapter;
 import android.widget.ListView;
-import android.widget.PopupMenu;
-import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,8 +51,6 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
-import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 
@@ -86,8 +79,7 @@ public class DictsDelegate extends ListDelegateBase
 
     private class DictListAdapter extends XWListAdapter {
         private Context m_context;
-        private Integer m_count = null;
-        // private XWListItem[][] m_cache;
+        private Object[] m_listInfo;
 
         public DictListAdapter( Context context ) 
         {
@@ -98,10 +90,12 @@ public class DictsDelegate extends ListDelegateBase
         @Override
         public int getCount() 
         {
-            if ( null == m_count ) {
+            if ( null == m_listInfo ) {
+                ArrayList<Object> alist = new ArrayList<Object>();
                 int nLangs = m_langs.length;
-                int result = nLangs;
                 for ( int ii = 0; ii < nLangs; ++ii ) {
+                    alist.add( new Integer(ii) );
+
                     String langName = m_langs[ii];
                     if ( m_closedLangs.contains( langName ) ) {
                         continue;
@@ -109,12 +103,14 @@ public class DictsDelegate extends ListDelegateBase
                     int lang = DictLangCache.getLangLangCode( m_context, langName );
                     DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, lang );
                     if ( null != dals ) {
-                        result += dals.length;
+                        for ( DictAndLoc dal : dals ) {
+                            alist.add( dal );
+                        }
                     }
                 }
-                m_count = new Integer( result );
+                m_listInfo = alist.toArray( new Object[alist.size()] );
             }
-            return m_count;
+            return m_listInfo.length;
         }
 
         @Override
@@ -124,52 +120,41 @@ public class DictsDelegate extends ListDelegateBase
         public View getView( final int position, View convertView, ViewGroup parent )
         {
             View result = null;
-            int indx = position;
 
-            for ( int ii = 0; ii < m_langs.length; ++ii ) {
-                String langName = m_langs[ii];
-                int langCode = DictLangCache.getLangLangCode( m_context, 
+            Object obj = m_listInfo[position];
+            if ( obj instanceof Integer ) {
+                int groupPos = (Integer)obj;
+                String langName = m_langs[groupPos];
+                int langCode = DictLangCache.getLangLangCode( m_context,
                                                               langName );
                 boolean expanded = ! m_closedLangs.contains( langName );
-                if ( indx == 0 ) {
-                    result = ListGroup.make( m_context, DictsDelegate.this, ii, 
-                                             langName, expanded );
-                    break;
-                } else {
-                    DictAndLoc[] dals = 
-                        DictLangCache.getDALsHaveLang( m_context, langCode );
-                    int count = expanded ? dals.length : 0;
-                    if ( indx <= count ) {
-                        XWListItem item = 
-                            XWListItem.inflate( m_activity, DictsDelegate.this );
-                        result = item;
+                result = ListGroup.make( m_context, DictsDelegate.this, groupPos,
+                                         langName, expanded );
+            } else if ( obj instanceof DictAndLoc ) {
+                DictAndLoc dal = (DictAndLoc)obj;
+                XWListItem item = 
+                    XWListItem.inflate( m_activity, DictsDelegate.this );
+                result = item;
 
-                        DictAndLoc dal = dals[indx - 1];
-                        String name = dal.name;
-                        item.setText( name );
+                String name = dal.name;
+                item.setText( name );
 
-                        DictLoc loc = dal.loc;
-                        item.setComment( m_locNames[loc.ordinal()] );
-                        item.cache( loc );
+                DictLoc loc = dal.loc;
+                item.setComment( m_locNames[loc.ordinal()] );
+                item.cache( loc );
 
-                        item.setOnClickListener( DictsDelegate.this );
+                item.setOnClickListener( DictsDelegate.this );
 
-                        // Replace sel entry if present
-                        if ( m_selDicts.containsKey( name ) ) {
-                            m_selDicts.put( name, item );
-                            item.setSelected( true );
-                        }
-
-                        break;
-                    }
-                    indx -= 1 + count;
+                // Replace sel entry if present
+                if ( m_selDicts.containsKey( name ) ) {
+                    m_selDicts.put( name, item );
+                    item.setSelected( true );
                 }
-            }
-
+            } else {
+                Assert.fail();
+            } 
             return result;
         }
-
-        // public boolean areAllItemsEnabled() { return false; }
     }
 
     protected DictsDelegate( ListActivity activity, Bundle savedInstanceState )

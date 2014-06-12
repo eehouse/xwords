@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import org.apache.http.client.methods.HttpPost;
 import org.json.JSONArray;
@@ -55,14 +54,15 @@ public class RemoteDictsDelegate extends ListDelegateBase
     private static class DictInfo implements Comparable {
         public String m_name;
         public DictState m_state;
-        public DictInfo( String name ) { m_name = name; }
+        public String m_lang;
+        public DictInfo( String name, String lang ) { m_name = name; m_lang = lang; }
         public int compareTo( Object obj ) {
             DictInfo other = (DictInfo)obj;
             return m_name.compareTo( other.m_name );
         }
     }
     private HashMap<String, DictInfo[]> m_langInfo;
-    private HashSet<XWListItem> m_selDicts = new HashSet<XWListItem>();
+    private HashMap<String, XWListItem> m_selDicts = new HashMap<String, XWListItem>();
     private String m_origTitle;
 
     protected RemoteDictsDelegate( ListActivity activity, Bundle savedInstanceState )
@@ -104,7 +104,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
         case R.id.remote_dicts_download:
             String[] urls = new String[m_selDicts.size()];
             int count = 0;
-            for ( Iterator<XWListItem> iter = m_selDicts.iterator(); 
+            for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
                   iter.hasNext(); ) {
                 XWListItem litm = iter.next();
                 String langName = (String)litm.getCached();
@@ -158,10 +158,11 @@ public class RemoteDictsDelegate extends ListDelegateBase
     public void itemToggled( LongClickHandler toggled, boolean selected )
     {
         XWListItem item = (XWListItem)toggled;
+        String name = item.getText();
         if ( selected ) {
-            m_selDicts.add( item );
+            m_selDicts.put( name, item );
         } else {
-            m_selDicts.remove( item );
+            m_selDicts.remove( name );
         }
         invalidateOptionsMenuIf();
         setTitleBar();
@@ -170,7 +171,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
     public boolean getSelected( LongClickHandler obj )
     {
         XWListItem item = (XWListItem)obj;
-        return m_selDicts.contains( item );
+        return m_selDicts.containsKey( item.getText() );
     }
 
     //////////////////////////////////////////////////
@@ -224,7 +225,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
                         JSONObject dict = dicts.getJSONObject( jj );
                         String name = dict.getString( "xwd" );
                         name = DictUtils.removeDictExtn( name );
-                        DictInfo info = new DictInfo( name );
+                        DictInfo info = new DictInfo( name, langName );
                         if ( DictLangCache.haveDict( m_activity, langName, name ) ) {
                             boolean matches = true;
                             String curSum = DictLangCache.getDictMD5Sum( m_activity, name );
@@ -303,9 +304,6 @@ public class RemoteDictsDelegate extends ListDelegateBase
             if ( null != post ) {
                 String json = null;
                 json = UpdateCheckReceiver.runPost( post, m_params );
-                // if ( null == json ) {
-                //     json = s_fakeData;
-                // }
                 success = digestData( json );
             }
             return new Boolean( success );
@@ -324,9 +322,9 @@ public class RemoteDictsDelegate extends ListDelegateBase
     }
 
     private class RDListAdapter extends XWListAdapter {
-        private Integer m_count = null;
         private String m_installed;
         private String m_needsUpdate;
+        private Object[] m_listInfo;
 
         public RDListAdapter() 
         {
@@ -338,18 +336,21 @@ public class RemoteDictsDelegate extends ListDelegateBase
         @Override
         public int getCount() 
         {
-            if ( null == m_count ) {
+            if ( null == m_listInfo ) {
+                ArrayList<Object> alist = new ArrayList<Object>();
                 int nLangs = m_langNames.length;
-                int count = nLangs;
                 for ( int ii = 0; ii < nLangs; ++ii ) {
+                    alist.add( new Integer(ii) );
                     if ( m_expanded[ii] ) {
-                        count += m_langInfo.get( m_langNames[ii] ).length;
+                        for ( DictInfo di : m_langInfo.get( m_langNames[ii] ) ) {
+                            alist.add( di );
+                        }
                     }
                 }
-                m_count = new Integer( count );
+                m_listInfo = alist.toArray( new Object[alist.size()] );
             }
-            // DbgUtils.logf( "RemoteDictsDelegate.getCount() => %d", m_count );
-            return m_count;
+            // DbgUtils.logf( "RemoteDictsDelegate.getCount() => %d", m_listInfo.length );
+            return m_listInfo.length;
         }
 
         @Override
@@ -363,45 +364,43 @@ public class RemoteDictsDelegate extends ListDelegateBase
                                position, convertView );
             }
             View result = null;
-            int indx = position;
 
-            for ( int ii = 0; ii < m_langNames.length; ++ii ) {
+            Object obj = m_listInfo[position];
+            if ( obj instanceof Integer ) {
+                int ii = (Integer)obj;
                 String langName = m_langNames[ii];
                 boolean expanded = m_expanded[ii];
-                if ( indx == 0 ) {
-                    result = ListGroup.make( m_activity, RemoteDictsDelegate.this, 
-                                             ii, langName, expanded );
-                    break;
-                } else {
-                    DictInfo[] dicts = m_langInfo.get( langName );
-                    int count = expanded ? dicts.length : 0;
-                    if ( indx <= count ) {
-                        XWListItem item = 
-                            XWListItem.inflate( m_activity, RemoteDictsDelegate.this );
-                        result = item;
+                result = ListGroup.make( m_activity, RemoteDictsDelegate.this, 
+                                         ii, langName, expanded );
+            } else if ( obj instanceof DictInfo ) {
+                DictInfo info = (DictInfo)obj;
+                XWListItem item = 
+                    XWListItem.inflate( m_activity, RemoteDictsDelegate.this );
+                result = item;
 
-                        DictInfo info = dicts[indx-1];
-                        item.setText( info.m_name );
+                String name = info.m_name;
+                item.setText( name );
 
-                        if ( null != info.m_state ) {
-                            String comment = null;
-                            switch( info.m_state ) {
-                            case INSTALLED:
-                                comment = m_installed;
-                                break;
-                            case NEEDS_UPDATE:
-                                comment = m_needsUpdate;
-                                break;
-                            }
-                            item.setComment( comment );
-                        }
-                        item.cache( langName );
-
-                        //item.setOnClickListener( RemoteDictsDelegate.this );
+                if ( null != info.m_state ) {
+                    String comment = null;
+                    switch( info.m_state ) {
+                    case INSTALLED:
+                        comment = m_installed;
+                        break;
+                    case NEEDS_UPDATE:
+                        comment = m_needsUpdate;
                         break;
                     }
-                    indx -= 1 + count;
+                    item.setComment( comment );
                 }
+                item.cache( info.m_lang );
+
+                if ( m_selDicts.containsKey( name ) ) {
+                    m_selDicts.put( name, item );
+                    item.setSelected( true );
+                }
+            } else {
+                Assert.fail();
             }
 
             Assert.assertNotNull( result );
