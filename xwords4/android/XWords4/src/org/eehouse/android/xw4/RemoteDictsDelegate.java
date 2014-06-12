@@ -90,7 +90,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
     {
         int nSelected = m_selDicts.size();
         Utils.setItemVisible( menu, R.id.remote_dicts_download, 
-                              0 < nSelected );
+                              0 < countNeedDownload() );
         Utils.setItemVisible( menu, R.id.remote_dicts_deselect_all, 
                               0 < nSelected );
         Utils.setItemVisible( menu, R.id.remote_dicts_getinfo, 1 == nSelected );
@@ -106,17 +106,20 @@ public class RemoteDictsDelegate extends ListDelegateBase
             clearSelection();
             break;
         case R.id.remote_dicts_download:
-            String[] urls = new String[m_selDicts.size()];
+            String[] urls = new String[countNeedDownload()];
             int count = 0;
             m_curDownloads = new HashMap<String, XWListItem>();
             for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
                   iter.hasNext(); ) {
                 XWListItem litm = iter.next();
                 DictInfo info = (DictInfo)litm.getCached();
-                String url = Utils.makeDictUrl( m_activity, info.m_lang, 
-                                                litm.getText() );
-                urls[count++] = url;
-                m_curDownloads.put( url, litm );
+                if ( null == info.m_state || 
+                     DictState.INSTALLED != info.m_state ) {
+                    String url = Utils.makeDictUrl( m_activity, info.m_lang, 
+                                                    litm.getText() );
+                    urls[count++] = url;
+                    m_curDownloads.put( url, litm );
+                }
             }
             DwnldDelegate.downloadDictsInBack( m_activity, urls, this );
             break;
@@ -195,6 +198,20 @@ public class RemoteDictsDelegate extends ListDelegateBase
     {
         Assert.assertTrue( Action.FINISH_ACTION == action ); 
         finish();
+    }
+
+    private int countNeedDownload()
+    {
+        int result = 0;
+        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
+              iter.hasNext(); ) {
+            XWListItem litm = iter.next();
+            DictInfo info = (DictInfo)litm.getCached();
+            if ( null == info.m_state || DictState.INSTALLED != info.m_state ) {
+                ++result;
+            }
+        }
+        return result;
     }
 
     private void mkListAdapter()
