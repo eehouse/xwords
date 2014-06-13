@@ -216,13 +216,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
 
     private void mkListAdapter()
     {
-        ListView listView = getListView();
-        int pos = listView.getFirstVisiblePosition();
-        View child = listView.getChildAt( 0 );
-        int top = (child == null) ? 0 : child.getTop();
-
-        setListAdapter( new RDListAdapter() );
-        listView.setSelectionFromTop( pos, top );
+        setListAdapterKeepScroll( new RDListAdapter() );
     }
 
     private void setTitleBar()
@@ -373,9 +367,8 @@ public class RemoteDictsDelegate extends ListDelegateBase
                 for ( int ii = 0; ii < nLangs; ++ii ) {
                     alist.add( new Integer(ii) );
                     if ( m_expanded[ii] ) {
-                        for ( DictInfo di : m_langInfo.get( m_langNames[ii] ) ) {
-                            alist.add( di );
-                        }
+                        DictInfo[] dis = m_langInfo.get( m_langNames[ii] );
+                        alist.addAll( Arrays.asList( dis ) );
                     }
                 }
                 m_listInfo = alist.toArray( new Object[alist.size()] );

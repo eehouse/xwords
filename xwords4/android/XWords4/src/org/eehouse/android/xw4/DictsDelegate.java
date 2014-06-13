@@ -102,9 +102,7 @@ public class DictsDelegate extends ListDelegateBase
                     int lang = DictLangCache.getLangLangCode( m_context, langName );
                     DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, lang );
                     if ( null != dals ) {
-                        for ( DictAndLoc dal : dals ) {
-                            alist.add( dal );
-                        }
+                        alist.addAll( Arrays.asList(dals) );
                     }
                 }
                 m_listInfo = alist.toArray( new Object[alist.size()] );
@@ -600,12 +598,7 @@ public class DictsDelegate extends ListDelegateBase
         m_langs = DictLangCache.listLangs( m_activity );
         Arrays.sort( m_langs );
 
-        int pos = m_listView.getFirstVisiblePosition();
-        View child = m_listView.getChildAt( 0 );
-        int top = (child == null) ? 0 : child.getTop();
-
-        setListAdapter( new DictListAdapter( m_activity ) );
-        m_listView.setSelectionFromTop( pos, top );
+        setListAdapterKeepScroll( new DictListAdapter( m_activity ) );
 
         m_selDicts = new HashMap<String, XWListItem>();
     }

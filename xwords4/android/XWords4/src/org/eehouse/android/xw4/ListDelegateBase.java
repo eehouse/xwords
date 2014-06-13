@@ -21,6 +21,7 @@ package org.eehouse.android.xw4;
 
 import android.app.ListActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -55,4 +56,16 @@ public class ListDelegateBase extends DelegateBase {
     {
         return m_activity.getListView();
     }
+
+    protected void setListAdapterKeepScroll( ListAdapter adapter )
+    {
+        ListView listView = getListView();
+        int pos = listView.getFirstVisiblePosition();
+        View child = listView.getChildAt( 0 );
+        int top = (null == child) ? 0 : child.getTop();
+
+        setListAdapter( adapter );
+        listView.setSelectionFromTop( pos, top );
+    }
+
 }
