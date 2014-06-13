@@ -345,7 +345,6 @@ public class DictsDelegate extends ListDelegateBase
         MountEventReceiver.register( this );
 
         mkListAdapter();
-        expandGroups();
         setTitleBar();
     }
 
@@ -532,7 +531,6 @@ public class DictsDelegate extends ListDelegateBase
         post( new Runnable() {
                 public void run() {
                     mkListAdapter();
-                    expandGroups();
                 }
             } );
     }
@@ -555,7 +553,7 @@ public class DictsDelegate extends ListDelegateBase
             }
             break;
         case DOWNLOAD_DICT_ACTION:
-            startDownload( (Intent)params[0] );
+            startActivity( (Intent)params[0] );
             break;
         default:
             Assert.fail();
@@ -573,24 +571,12 @@ public class DictsDelegate extends ListDelegateBase
         DictUtils.deleteDict( m_activity, dict, loc );
         DictLangCache.inval( m_activity, dict, loc, false );
         mkListAdapter();
-        expandGroups();
     }
 
     private void startDownload( int lang, String name )
     {
         Intent intent = mkDownloadIntent( m_activity, lang, name );
-        showNotAgainDlgThen( R.string.not_again_firefox, 
-                             R.string.key_na_firefox, 
-                             Action.DOWNLOAD_DICT_ACTION, intent );
-    }
-
-    private void startDownload( Intent downloadIntent )
-    {
-        try {
-            startActivity( downloadIntent );
-        } catch ( android.content.ActivityNotFoundException anfe ) {
-            showToast( R.string.no_download_warning );
-        }
+        startActivity( intent );
     }
 
     private void mkListAdapter()
@@ -601,18 +587,6 @@ public class DictsDelegate extends ListDelegateBase
         setListAdapterKeepScroll( new DictListAdapter( m_activity ) );
 
         m_selDicts = new HashMap<String, XWListItem>();
-    }
-
-    private void expandGroups()
-    {
-        DbgUtils.logf( "expandGroups() not implemented" );
-        // for ( int ii = 0; ii < m_langs.length; ++ii ) {
-        //     boolean open = true;
-        //     String lang = m_langs[ii];
-        //     if ( ! m_closedLangs.contains( lang ) ) {
-        //         m_expView.expandGroup( ii );
-        //     }
-        // }
     }
 
     private void saveClosed()

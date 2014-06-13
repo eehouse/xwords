@@ -363,8 +363,8 @@ public final class R {
         /**  Another paragraph in the about dialog 
          */
         public static final int about_web=0x7f0601e3;
-        public static final int add_done_fmt=0x7f06029a;
-        public static final int add_to_study_fmt=0x7f060292;
+        public static final int add_done_fmt=0x7f060299;
+        public static final int add_to_study_fmt=0x7f060291;
         /**  Debugging stuff. No point in localizing it. 
          */
         public static final int advanced=0x7f060075;
@@ -806,7 +806,7 @@ public final class R {
         /**   
          */
         public static final int confirm_sms_willpay=0x7f060250;
-        public static final int confirm_studylist_clear_fmt=0x7f060298;
+        public static final int confirm_studylist_clear_fmt=0x7f060297;
         /**  text of dialog shown when the menu item board_menu_undo_last
          is chosen. 
          */
@@ -886,7 +886,7 @@ public final class R {
         /**   
          */
         public static final int cur_tiles_fmt=0x7f0601f8;
-        public static final int data_gsm_only=0x7f0602aa;
+        public static final int data_gsm_only=0x7f0602a9;
         public static final int debug_features=0x7f06007c;
         public static final int debug_features_summary=0x7f06007d;
         /**  dictionary used by default for human players when creating
@@ -925,7 +925,7 @@ public final class R {
          */
         public static final int default_robodict=0x7f06013d;
         public static final int default_update_url=0x7f060074;
-        public static final int delete_dicts=0x7f0602bb;
+        public static final int delete_dicts=0x7f0602ba;
         /**   
          */
         public static final int dft_name_fmt=0x7f06021e;
@@ -942,14 +942,14 @@ public final class R {
          */
         public static final int dict_browse_title_fmt=0x7f0601fa;
         public static final int dict_host=0x7f060079;
-        public static final int dict_installed=0x7f0602bc;
+        public static final int dict_installed=0x7f0602bb;
         /**  label for dropdown by which wordlist is chosen that this
          player will use.  The language the game will use (which
          constrains the choice of wordlists) is substituted in for
          "%1$s". 
          */
         public static final int dict_lang_label_fmt=0x7f0600e8;
-        public static final int dict_needs_update=0x7f0602bd;
+        public static final int dict_needs_update=0x7f0602bc;
         /** string name="invite_mime">text/plain</string
          */
         public static final int dict_url=0x7f060072;
@@ -1146,11 +1146,11 @@ public final class R {
         public static final int gamel_menu_dicts=0x7f060099;
         public static final int gamel_menu_loaddb=0x7f060087;
         public static final int gamel_menu_storedb=0x7f060086;
-        public static final int gamel_menu_study=0x7f060295;
+        public static final int gamel_menu_study=0x7f060294;
         /**   
          */
         public static final int get_sms_number=0x7f06022b;
-        public static final int getinfo=0x7f0602ba;
+        public static final int getinfo=0x7f0602b9;
         public static final int git_rev=0x7f06008b;
         public static final int git_rev_title=0x7f060082;
         public static final int green=0x7f06015e;
@@ -1472,33 +1472,33 @@ public final class R {
         /**   
          */
         public static final int loc_external=0x7f0600bd;
-        public static final int loc_filters_all=0x7f0602ad;
-        public static final int loc_filters_menu=0x7f0602af;
-        public static final int loc_filters_modified=0x7f0602b0;
-        public static final int loc_filters_prompt=0x7f0602ab;
-        public static final int loc_filters_screen=0x7f0602ae;
-        public static final int loc_fmts_mismatch=0x7f0602b6;
+        public static final int loc_filters_all=0x7f0602ac;
+        public static final int loc_filters_menu=0x7f0602ae;
+        public static final int loc_filters_modified=0x7f0602af;
+        public static final int loc_filters_prompt=0x7f0602aa;
+        public static final int loc_filters_screen=0x7f0602ad;
+        public static final int loc_fmts_mismatch=0x7f0602b5;
         /**  see move_dictf above 
          */
         public static final int loc_internal=0x7f0600bc;
-        public static final int loc_item_check=0x7f0602b3;
+        public static final int loc_item_check=0x7f0602b2;
         /**  for loc item edit menu 
          */
-        public static final int loc_item_clear=0x7f0602b2;
-        public static final int loc_item_copy_bless=0x7f0602b5;
-        public static final int loc_item_copy_eng=0x7f0602b4;
-        public static final int loc_lang_blessed=0x7f0602a5;
-        public static final int loc_lang_local=0x7f0602a6;
-        public static final int loc_main_english=0x7f0602b1;
-        public static final int loc_menu_xlate=0x7f0602a4;
-        public static final int loc_search_prompt=0x7f0602ac;
+        public static final int loc_item_clear=0x7f0602b1;
+        public static final int loc_item_copy_bless=0x7f0602b4;
+        public static final int loc_item_copy_eng=0x7f0602b3;
+        public static final int loc_lang_blessed=0x7f0602a4;
+        public static final int loc_lang_local=0x7f0602a5;
+        public static final int loc_main_english=0x7f0602b0;
+        public static final int loc_menu_xlate=0x7f0602a3;
+        public static final int loc_search_prompt=0x7f0602ab;
         /**  This is the "hint" printed in light text in the empty player
          name field 
          */
         public static final int local_name_hint=0x7f06019c;
         public static final int logging_on=0x7f06007a;
         public static final int logging_on_summary=0x7f06007b;
-        public static final int lookup_title=0x7f0602a0;
+        public static final int lookup_title=0x7f06029f;
         /**   
          */
         public static final int manual_owner_name=0x7f060228;
@@ -1523,7 +1523,7 @@ public final class R {
         /**  text of menu that brings up the Settings (preferences) dialog 
          */
         public static final int menu_prefs=0x7f06009a;
-        public static final int menu_rateme=0x7f060290;
+        public static final int menu_rateme=0x7f06028f;
         /**   
          */
         public static final int menu_toggle_values=0x7f06023a;
@@ -1657,7 +1657,7 @@ public final class R {
         /**   
          */
         public static final int new_smsmove_title=0x7f060225;
-        public static final int new_xlations_fmt=0x7f0602a7;
+        public static final int new_xlations_fmt=0x7f0602a6;
         /** 
        ###########################################################
        # :Dialogs:
@@ -1777,7 +1777,7 @@ public final class R {
          */
         public static final int no_games_to_refresh=0x7f06009d;
         public static final int no_hide_titlebar=0x7f06028b;
-        public static final int no_market=0x7f060291;
+        public static final int no_market=0x7f060290;
         public static final int no_move_onegroup=0x7f060277;
         /**  displayed when you long-tap a scoreboard entry and there's no
          most recent score to show 
@@ -1834,12 +1834,11 @@ public final class R {
          the same thing. 
          */
         public static final int not_again_done=0x7f0601d7;
-        public static final int not_again_firefox=0x7f06028f;
         /**  Shown when you tap the flip button on the toolbar of the main
          Board screen 
          */
         public static final int not_again_flip=0x7f0601d2;
-        public static final int not_again_fmt_expl=0x7f0602b7;
+        public static final int not_again_fmt_expl=0x7f0602b6;
         /**  Shown when you tap the next hint button on the toolbar of the
          main Board screen 
          */
@@ -1865,7 +1864,7 @@ public final class R {
         public static final int not_again_newfrom=0x7f0601de;
         public static final int not_again_newselect=0x7f060280;
         public static final int not_again_sms_ready=0x7f06028d;
-        public static final int not_again_studycopy=0x7f06029f;
+        public static final int not_again_studycopy=0x7f06029e;
         /**  The following strings (all whose names start with
          "not_again") appear in the New user info dialog.
       
@@ -1930,7 +1929,7 @@ public final class R {
          games as well. 
          */
         public static final int password_label=0x7f0600eb;
-        public static final int paste_done_fmt=0x7f060299;
+        public static final int paste_done_fmt=0x7f060298;
         public static final int pct_suffix=0x7f06028e;
         /**  If this preference is checked, tapping on the scoreboard
          entry for any player reveals that player's tiles and any
@@ -2154,13 +2153,13 @@ public final class R {
         /**  Shown in toast when relaunching after switching dicts 
          */
         public static final int reload_new_dict_fmt=0x7f06025e;
-        public static final int remote_empty=0x7f0602b8;
+        public static final int remote_empty=0x7f0602b7;
         /**  checkbox determining of this player is on this device or
          remote.  If remote, then the rest of the fields disappear
          (since they will be set by the remote device.) 
          */
         public static final int remote_label=0x7f0600e6;
-        public static final int remote_no_net=0x7f0602b9;
+        public static final int remote_no_net=0x7f0602b8;
         /**   
          */
         public static final int remote_undone=0x7f060232;
@@ -2206,7 +2205,7 @@ public final class R {
         public static final int scan_progress=0x7f06020b;
         public static final int sel_games_fmt=0x7f060282;
         public static final int sel_groups_fmt=0x7f060283;
-        public static final int sel_items_fmt=0x7f0602a3;
+        public static final int sel_items_fmt=0x7f0602a2;
         /** 
        ############################################################
        # :Dialogs:
@@ -2238,10 +2237,10 @@ public final class R {
         /**  explanation of the above 
          */
         public static final int skip_confirm_turn_summary=0x7f060165;
-        public static final int slmenu_clear_sel=0x7f060297;
-        public static final int slmenu_copy_sel=0x7f060296;
-        public static final int slmenu_deselect_all=0x7f0602a2;
-        public static final int slmenu_select_all=0x7f0602a1;
+        public static final int slmenu_clear_sel=0x7f060296;
+        public static final int slmenu_copy_sel=0x7f060295;
+        public static final int slmenu_deselect_all=0x7f0602a1;
+        public static final int slmenu_select_all=0x7f0602a0;
         /**   
          */
         public static final int sms_disabled=0x7f060221;
@@ -2444,10 +2443,10 @@ public final class R {
         /**  Used in formatting exchange move summaries 
          */
         public static final int strss_traded_for_fmt=0x7f06011e;
-        public static final int study_langpick=0x7f06029c;
-        public static final int study_no_lang_fmt=0x7f06029d;
-        public static final int study_no_lists=0x7f06029e;
-        public static final int studylist_title_fmt=0x7f06029b;
+        public static final int study_langpick=0x7f06029b;
+        public static final int study_no_lang_fmt=0x7f06029c;
+        public static final int study_no_lists=0x7f06029d;
+        public static final int studylist_title_fmt=0x7f06029a;
         /**  If substituting an existing same-language wordlist by
          choosing button_substdict user gets to choose from a list of
          wordlists.  This is the title of that list. 
@@ -2497,7 +2496,7 @@ public final class R {
         /**  explanation of the above 
          */
         public static final int summary_sort_tiles=0x7f060167;
-        public static final int summary_studyon=0x7f060294;
+        public static final int summary_studyon=0x7f060293;
         public static final int summary_thumbsize=0x7f060284;
         /**   
          */
@@ -2578,7 +2577,7 @@ public final class R {
          i.e. after ever move.
          */
         public static final int title_sort_tiles=0x7f060166;
-        public static final int title_studyon=0x7f060293;
+        public static final int title_studyon=0x7f060292;
         /**  title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) 
          */
@@ -2602,8 +2601,8 @@ public final class R {
         /**   
          */
         public static final int word_search_hint=0x7f0601f5;
-        public static final int xlations_enabled_summary=0x7f0602a9;
-        public static final int xlations_enabled_title=0x7f0602a8;
+        public static final int xlations_enabled_summary=0x7f0602a8;
+        public static final int xlations_enabled_title=0x7f0602a7;
         public static final int xlations_locale=0x7f060089;
         /**  Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this

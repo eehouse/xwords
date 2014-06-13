@@ -2181,11 +2181,6 @@
 
     <string name="pct_suffix">\u0020pct.</string>
 
-    <string name="not_again_firefox">If Android gives you a choice of
-    browsers for viewing the wordlists downloads page, DO NOT choose
-    Firefox. Some versions have a bug that can cause the wordlists to
-    be lost.</string>
-
     <string name="menu_rateme">Rate Crosswords</string>
     <string name="no_market">Google Play app not found</string>
 

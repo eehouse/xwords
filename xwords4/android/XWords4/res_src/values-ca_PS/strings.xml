@@ -1874,10 +1874,6 @@
     CAN TAP A NEARBY PERSON\'S DEVICE TO INVITE HIM/HER TO
     PLAY – IF HE/SHE IS ALSO USING NFC.</string>
   <string name="pct_suffix">\u0020PCT.</string>
-  <string name="not_again_firefox">IF ANDROID GIVES YOU A CHOICE OF
-    BROWSERS FOR VIEWING THE WORDLISTS DOWNLOADS PAGE, DO NOT CHOOSE
-    FIREFOX. SOME VERSIONS HAVE A BUG THAT CAN CAUSE THE WORDLISTS TO
-    BE LOST.</string>
   <string name="menu_rateme">RATE CROSSWORDS</string>
   <string name="no_market">GOOGLE PLAY APP NOT FOUND</string>
   <string name="add_to_study_fmt">ADD %1$s TO STUDYLIST</string>
