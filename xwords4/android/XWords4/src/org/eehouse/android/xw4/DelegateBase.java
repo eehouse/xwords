@@ -324,6 +324,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         m_delegate.startProgress( id );
     }
 
+    protected void setProgressMsg( int id )
+    {
+        m_delegate.setProgressMsg( id );
+    }
+
     protected void stopProgress()
     {
         m_delegate.stopProgress();

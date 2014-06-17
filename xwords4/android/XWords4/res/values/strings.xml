@@ -178,11 +178,6 @@
     <string name="title_dicts_list">Installed Crosswords Wordlists</string>   
     <string name="title_remote_dicts">Available Crosswords Wordlists</string>   
 
-    <!-- text of button at the bottom of the screen.  It launches the
-         browser pointed at the site where additional wordlists can be
-         found. -->
-    <string name="download_dicts">Download more…</string>
-
     <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
          Crosswords and that cannot be uninstalled or moved.
@@ -2250,12 +2245,18 @@
     unless it does.)</string>
 
     <string name="remote_empty">Fetching wordlist information from server…</string>
+    <string name="remote_digesting">Processing wordlist information…</string>
     <string name="remote_no_net">Unable to fetch wordlist information
         from server.</string>
     <string name="getinfo">Get info</string>
 
     <string name="delete_dicts">Delete wordlist[s]</string>
 
-    <string name="dict_installed">Installed</string>
-    <string name="dict_needs_update">Needs updating</string>
+    <string name="show_remote">Include downloadable</string>
+    <string name="update_dicts">Updates are available for one or more
+    installed wordlists. Would you like to download the new
+    version[s] now?</string>
+
+    <string name="progress_title">Downloading</string>
+    
 </resources>

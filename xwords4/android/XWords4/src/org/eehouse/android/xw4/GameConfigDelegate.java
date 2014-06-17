@@ -391,8 +391,8 @@ public class GameConfigDelegate extends DelegateBase
         //     sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
         // } catch ( Exception ex ) {}
         // m_canDoSMS = sdk_int >= android.os.Build.VERSION_CODES.DONUT;
-        m_browseText = getString( R.string.download_dicts );
-        DictLangCache.setLast( m_browseText );
+        // m_browseText = getString( R.string.download_dicts );
+        // DictLangCache.setLast( m_browseText );
 
         m_cp = CommonPrefs.get( m_activity );
 

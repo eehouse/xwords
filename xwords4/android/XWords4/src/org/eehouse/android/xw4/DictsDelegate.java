@@ -29,6 +29,7 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -39,11 +40,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ListView;
 
+import org.apache.http.client.methods.HttpPost;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Collections;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -63,16 +74,36 @@ public class DictsDelegate extends ListDelegateBase
     protected static final String DICT_DOLAUNCH = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
     protected static final String DICT_NAME_EXTRA = "use_dict";
+    private static final int SEL_LOCAL = 0;
+    private static final int SEL_REMOTE = 1;
 
     private ListActivity m_activity;
     private HashSet<String> m_closedLangs;
+    private DictListAdapter m_adapter;
 
     private String[] m_langs;
-    private String m_downloadStr;
     private ListView m_listView;
+    private CheckBox m_checkbox;
     private String[] m_locNames;
-    private HashMap<String, XWListItem> m_selDicts;
+    private Map<String, XWListItem> m_selDicts;
     private String m_origTitle;
+    private boolean m_showRemote = false;
+    private HashSet<String> m_needUpdates;
+    private HashMap<String, XWListItem> m_curDownloads;
+    // private String m_needsUpdateComment;
+
+    private static class DictInfo implements Comparable {
+        public String m_name;
+        // public boolean m_needsUpdate;
+        public String m_lang;
+        public DictInfo( String name, String lang ) { m_name = name; m_lang = lang; }
+        public int compareTo( Object obj ) {
+            DictInfo other = (DictInfo)obj;
+            return m_name.compareTo( other.m_name );
+        }
+    }
+    private HashMap<String, DictAndLoc[]> m_localInfo;
+    private HashMap<String, DictInfo[]> m_remoteInfo;
 
     private boolean m_launchedForMissing = false;
 
@@ -99,16 +130,14 @@ public class DictsDelegate extends ListDelegateBase
                     if ( m_closedLangs.contains( langName ) ) {
                         continue;
                     }
-                    int lang = DictLangCache.getLangLangCode( m_context, langName );
-                    DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, lang );
-                    if ( null != dals ) {
-                        alist.addAll( Arrays.asList(dals) );
-                    }
+
+                    ArrayList<Object> items = makeLangItems( langName );
+                    alist.addAll( items );
                 }
                 m_listInfo = alist.toArray( new Object[alist.size()] );
             }
             return m_listInfo.length;
-        }
+        } // getCount
 
         @Override
         public int getViewTypeCount() { return 2; }
@@ -147,9 +176,104 @@ public class DictsDelegate extends ListDelegateBase
                     m_selDicts.put( name, item );
                     item.setSelected( true );
                 }
+            } else if ( obj instanceof DictInfo ) {
+                DictInfo info = (DictInfo)obj;
+                XWListItem item = 
+                    XWListItem.inflate( m_activity, DictsDelegate.this );
+                result = item;
+
+                String name = info.m_name;
+                item.setText( name );
+
+                // if ( info.m_needsUpdate ) {
+                //     item.setComment( m_needsUpdateComment );
+                // }
+                item.cache( info );
+
+                if ( m_selDicts.containsKey( name ) ) {
+                    m_selDicts.put( name, item );
+                    item.setSelected( true );
+                }
             } else {
                 Assert.fail();
             } 
+            return result;
+        }
+
+        protected void removeLangItems( String langName )
+        {
+            ArrayList<Object> asList = new ArrayList<Object>();
+            asList.addAll( Arrays.asList( m_listInfo ) );
+
+            int indx = findLangItem( langName ) + 1;
+            while ( indx < asList.size() && ! (asList.get(indx) instanceof Integer) ) {
+                asList.remove( indx );
+            }
+
+            m_listInfo = asList.toArray( new Object[asList.size()] );
+        }
+
+        protected void addLangItems( String langName )
+        {
+            ArrayList<Object> asList = new ArrayList<Object>();
+            asList.addAll( Arrays.asList( m_listInfo ) );
+
+            ArrayList<Object> items = makeLangItems( langName );
+            int indx = findLangItem( langName );
+            asList.addAll( 1 + indx, items );
+
+            m_listInfo = asList.toArray( new Object[asList.size()] );
+        }
+
+        private ArrayList<Object> makeLangItems( String langName )
+        {
+            ArrayList<Object> result = new ArrayList<Object>();
+
+            HashSet<String> locals = new HashSet<String>();
+            int lang = DictLangCache.getLangLangCode( m_context, langName );
+            DictAndLoc[] dals = DictLangCache.getDALsHaveLang( m_context, lang );
+            if ( null != dals ) {
+                for ( DictAndLoc dal : dals ) {
+                    locals.add( dal.name );
+                }
+            }
+
+            if ( m_showRemote ) {
+                DictInfo[] infos = m_remoteInfo.get( langName );
+                if ( null != infos ) {
+                    for ( DictInfo info : infos ) {
+                        if ( ! locals.contains( info.m_name ) ) {
+                            result.add( info );
+                        }
+                    }
+                } else {
+                    DbgUtils.logf( "No remote info for lang %s", langName );
+                }
+            }
+
+            // Now append locals
+            if ( null != dals ) {
+                result.addAll( Arrays.asList( dals ) );
+            }
+
+            return result;
+        }
+
+        private int findLangItem( String langName )
+        {
+            int result = -1;
+            int nLangs = m_langs.length;
+            for ( int ii = 0; ii < m_listInfo.length; ++ii ) {
+                Object obj = m_listInfo[ii];
+                if ( obj instanceof Integer ) {
+                    if ( m_langs[(Integer)obj].equals( langName ) ) {
+                        result = ii;
+                        break;
+                    }
+                }
+            }
+            Assert.assertTrue( -1 != result );
+            DbgUtils.logf( "findLangItem(%s) => %d", langName, result );
             return result;
         }
     }
@@ -303,18 +427,12 @@ public class DictsDelegate extends ListDelegateBase
 
         m_locNames = getStringArray( R.array.loc_names );
 
-        m_downloadStr = getString( R.string.download_dicts );
-            
         setContentView( R.layout.dict_browse );
         m_listView = getListView();
         m_listView.setOnItemLongClickListener( this );
         
-        Button download = (Button)findViewById( R.id.download );
-        if ( ABUtils.haveActionBar() ) {
-            download.setVisibility( View.GONE );
-        } else {
-            download.setOnClickListener( this );
-        }
+        m_checkbox = (CheckBox)findViewById( R.id.show_remote );
+        m_checkbox.setOnClickListener( this );
 
         mkListAdapter();
 
@@ -355,8 +473,8 @@ public class DictsDelegate extends ListDelegateBase
 
     public void onClick( View view ) 
     {
-        if ( view instanceof Button ) {
-            startDownload( 0, null );
+        if ( view == m_checkbox ) {
+            switchShowingRemote( m_checkbox.isChecked() );
         } else {
             XWListItem item = (XWListItem)view;
             DictBrowseDelegate.launch( m_activity, item.getText(), 
@@ -376,12 +494,22 @@ public class DictsDelegate extends ListDelegateBase
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
-        int nSel = m_selDicts.size();
-        Utils.setItemVisible( menu, R.id.dicts_download, 
-                              0 == nSel && ABUtils.haveActionBar() );
-        Utils.setItemVisible( menu, R.id.dicts_select, 1 == nSel );
+        // int nSel = m_selDicts.size();
+        int[] nSels = countSelDicts();
+        Utils.setItemVisible( menu, R.id.dicts_select, 
+                              1 == nSels[SEL_LOCAL] && 0 == nSels[SEL_REMOTE] );
 
-        boolean allVolatile = selItemsVolatile();
+        // NO -- test if any downloadable selected
+        Utils.setItemVisible( menu, R.id.dicts_download, 
+                              0 == nSels[SEL_LOCAL] && 0 < nSels[SEL_REMOTE] );
+
+        Utils.setItemVisible( menu, R.id.dicts_deselect_all, 
+                              0 < nSels[SEL_LOCAL] || 0 < nSels[SEL_REMOTE] );
+
+        Utils.setItemVisible( menu, R.id.dicts_getinfo,
+                              1 == (nSels[SEL_LOCAL] + nSels[SEL_REMOTE] ) );
+
+        boolean allVolatile = 0 == nSels[SEL_REMOTE] && selItemsVolatile();
         Utils.setItemVisible( menu, R.id.dicts_move, 
                               allVolatile && DictUtils.haveWriteableSD() );
         Utils.setItemVisible( menu, R.id.dicts_delete, allVolatile );
@@ -395,8 +523,8 @@ public class DictsDelegate extends ListDelegateBase
         boolean handled = true;
 
         switch ( item.getItemId() ) {
-        case R.id.dicts_download:
-            startDownload( 0, null );
+        case R.id.dicts_getinfo:
+            Utils.notImpl( m_activity );
             break;
         case R.id.dicts_delete:
             deleteSelected();
@@ -407,11 +535,61 @@ public class DictsDelegate extends ListDelegateBase
         case R.id.dicts_select:
             showDialog( DlgID.SET_DEFAULT );
             break;
+        case R.id.dicts_deselect_all:
+            clearSelections();
+            break;
+        case R.id.dicts_download:
+            String[] urls = new String[countNeedDownload()];
+            int count = 0;
+            m_curDownloads = new HashMap<String, XWListItem>();
+            for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
+                  iter.hasNext(); ) {
+                XWListItem litm = iter.next();
+                Object cached = litm.getCached();
+                if ( cached instanceof DictInfo ) {
+                    DictInfo info = (DictInfo)cached;
+                    String url = Utils.makeDictUrl( m_activity, info.m_lang, 
+                                                    litm.getText() );
+                    urls[count++] = url;
+                    m_curDownloads.put( url, litm );
+                }
+            }
+            DwnldDelegate.downloadDictsInBack( m_activity, urls, this );
+            break;
         default:
             handled = false;
         }
 
         return handled;
+    }
+
+    private void switchShowingRemote( boolean showRemote )
+    {
+        // if showing for the first time, download remote info and let the
+        // completion routine finish (or clear the checkbox if cancelled.)
+        // Otherwise just toggle boolean and redraw.
+        if ( m_showRemote != showRemote ) {
+            m_showRemote = showRemote;
+            if ( showRemote && null == m_remoteInfo ) {
+                new FetchListTask( m_activity ).execute();
+            } else {
+                mkListAdapter();
+            }
+        }
+    }
+
+    private int countNeedDownload()
+    {
+        int result = 0;
+        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
+              iter.hasNext(); ) {
+            XWListItem litm = iter.next();
+            Object obj = litm.getCached();
+            if ( obj instanceof DictInfo ) {
+                ++result;
+            }
+        }
+        return result;
     }
 
     private void downloadNewDict( Intent intent )
@@ -444,11 +622,14 @@ public class DictsDelegate extends ListDelegateBase
         String langName = m_langs[groupPosition];
         if ( expanded ) {
             m_closedLangs.remove( langName );
+            m_adapter.addLangItems( langName );
         } else {
             m_closedLangs.add( langName );
+            m_adapter.removeLangItems( langName );
         }
         saveClosed();
-        mkListAdapter();
+        // mkListAdapter();
+        m_adapter.notifyDataSetChanged();
     }
     
     //////////////////////////////////////////////////////////////////////
@@ -468,8 +649,13 @@ public class DictsDelegate extends ListDelegateBase
         boolean result = 0 < m_selDicts.size();
         for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
               result && iter.hasNext(); ) {
-            DictLoc loc = (DictLoc)iter.next().getCached();
-            if ( loc == DictLoc.BUILT_IN ) {
+            Object obj = iter.next().getCached();
+            if ( obj instanceof DictLoc ) {
+                DictLoc loc = (DictLoc)obj;
+                if ( loc == DictLoc.BUILT_IN ) {
+                    result = false;
+                }
+            } else {
                 result = false;
             }
         }
@@ -555,6 +741,12 @@ public class DictsDelegate extends ListDelegateBase
         case DOWNLOAD_DICT_ACTION:
             startActivity( (Intent)params[0] );
             break;
+        case UPDATE_DICTS_ACTION:
+            if ( DialogInterface.BUTTON_POSITIVE == which ) {
+                String[] urls = m_needUpdates.toArray( new String[m_needUpdates.size()] );
+                DwnldDelegate.downloadDictsInBack( m_activity, urls, this );
+            }
+            break;
         default:
             Assert.fail();
         }
@@ -581,10 +773,16 @@ public class DictsDelegate extends ListDelegateBase
 
     private void mkListAdapter()
     {
-        m_langs = DictLangCache.listLangs( m_activity );
+        Set<String> langs = new HashSet<String>();
+        langs.addAll( Arrays.asList(DictLangCache.listLangs( m_activity )) );
+        if ( m_showRemote ) {
+            langs.addAll( m_remoteInfo.keySet() );
+        }
+        m_langs = langs.toArray( new String[langs.size()] );
         Arrays.sort( m_langs );
 
-        setListAdapterKeepScroll( new DictListAdapter( m_activity ) );
+        m_adapter = new DictListAdapter( m_activity );
+        setListAdapterKeepScroll( m_adapter );
 
         m_selDicts = new HashMap<String, XWListItem>();
     }
@@ -627,6 +825,27 @@ public class DictsDelegate extends ListDelegateBase
             items[indx++] = iter.next();
         }
         return items;
+    }
+
+
+    private int[] countSelDicts()
+    {
+        int[] results = new int[2];
+        Assert.assertTrue( 0 == results[0] && 0 == results[1] );
+        for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
+              iter.hasNext(); ) {
+            Object obj = iter.next().getCached();
+            if ( obj instanceof DictLoc ) {
+                ++results[SEL_LOCAL];
+            } else if ( obj instanceof DictInfo ) {
+                ++results[SEL_REMOTE];
+            } else {
+                Assert.fail();
+            }
+        }
+        DbgUtils.logf( "countSelDicts() => {loc: %d; remote: %d}",
+                       results[SEL_LOCAL], results[SEL_REMOTE] );
+        return results;
     }
 
     private void setTitleBar()
@@ -719,7 +938,9 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
+    //////////////////////////////////////////////////////////////////////
     // SelectableItem interface
+    //////////////////////////////////////////////////////////////////////
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
@@ -747,4 +968,128 @@ public class DictsDelegate extends ListDelegateBase
         return result;
     }
 
+    private boolean digestData( String jsonData )
+    {
+        boolean success = false;
+        JSONArray langs = null;
+        m_needUpdates = new HashSet<String>();
+        if ( null != jsonData ) {
+            // DictLangCache hits the DB hundreds of times below. Fix!
+            DbgUtils.logf( "Fix me I'm stupid" );
+            try {
+                JSONObject obj = new JSONObject( jsonData );
+                langs = obj.optJSONArray( "langs" );
+
+                int nLangs = langs.length();
+                m_remoteInfo = new HashMap<String, DictInfo[]>();
+                for ( int ii = 0; ii < nLangs; ++ii ) {
+                    JSONObject langObj = langs.getJSONObject( ii );
+                    String langName = langObj.getString( "lang" );
+
+                    JSONArray dicts = langObj.getJSONArray( "dicts" );
+                    int nDicts = dicts.length();
+                    ArrayList<DictInfo> dictNames = new ArrayList<DictInfo>();
+                    for ( int jj = 0; jj < nDicts; ++jj ) {
+                        JSONObject dict = dicts.getJSONObject( jj );
+                        String name = dict.getString( "xwd" );
+                        name = DictUtils.removeDictExtn( name );
+                        DictInfo info = new DictInfo( name, langName );
+                        if ( DictLangCache.haveDict( m_activity, langName, name ) ) {
+                            boolean matches = true;
+                            String curSum = DictLangCache.getDictMD5Sum( m_activity, name );
+                            if ( null != curSum ) {
+                                JSONArray sums = dict.getJSONArray("md5sums");
+                                if ( null != sums ) {
+                                    matches = false;
+                                    for ( int kk = 0; !matches && kk < sums.length(); ++kk ) {
+                                        String sum = sums.getString( kk );
+                                        matches = sum.equals( curSum );
+                                    }
+                                }
+                            }
+                            if ( !matches ) {
+                                DbgUtils.logf( "adding %s to set needing update", name );
+                                String url = Utils.makeDictUrl( m_activity, langName, name );
+                                m_needUpdates.add( url );
+                            }
+                        }
+                        dictNames.add( info );
+                    }
+                    if ( 0 < dictNames.size() ) {
+                        DictInfo[] asArray = dictNames.toArray( new DictInfo[dictNames.size()] );
+                        Arrays.sort( asArray );
+                        m_remoteInfo.put( langName, asArray );
+                    }
+                }
+
+                // Now start out with languages expanded that have an
+                // installed dict.
+                // nLangs = m_langNames.length;
+                // m_expanded = new boolean[nLangs];
+                // for ( int ii = 0; ii < nLangs; ++ii ) {
+                //     DictInfo[] dicts = m_langInfo.get( m_langNames[ii] );
+                //     for ( DictInfo info : dicts ) {
+                //         if ( null != info.m_state ) {
+                //             m_expanded[ii] = true;
+                //             break;
+                //         }
+                //     }
+                // }
+
+                success = true;
+            } catch ( JSONException ex ) {
+                DbgUtils.loge( ex );
+            }
+        }
+
+        return success;
+    }
+
+    private class FetchListTask extends AsyncTask<Void, Void, Boolean> {
+        private Context m_context;
+
+        public FetchListTask( Context context )
+        {
+            m_context = context;
+            startProgress( R.string.remote_empty );
+        }
+
+        @Override 
+        public Boolean doInBackground( Void... unused )
+        {
+            boolean success = false;
+            HttpPost post = UpdateCheckReceiver.makePost( m_context, "listDicts" );
+            if ( null != post ) {
+                String json = UpdateCheckReceiver.runPost( post, new JSONObject() );
+                if ( null != json ) {
+                    post( new Runnable() {
+                            public void run() {
+                                setProgressMsg( R.string.remote_digesting );
+                            }
+                        } );
+                }
+                success = digestData( json );
+            }
+            return new Boolean( success );
+        }
+            
+        @Override 
+        protected void onPostExecute( Boolean success )
+        {
+            if ( success ) {
+                mkListAdapter();
+
+                if ( 0 < m_needUpdates.size() ) {
+                    showConfirmThen( R.string.update_dicts, 
+                                     R.string.button_download, 
+                                     Action.UPDATE_DICTS_ACTION );
+                }
+            } else {
+                String msg = getString( R.string.remote_no_net );
+                showOKOnlyDialogThen( msg, Action.FINISH_ACTION );
+                m_checkbox.setChecked( false );
+            }
+            stopProgress();
+        }
+    }
 }

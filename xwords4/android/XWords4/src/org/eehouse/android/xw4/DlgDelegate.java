@@ -80,6 +80,7 @@ public class DlgDelegate {
         FINISH_ACTION,
         DELETE_DICT_ACTION,
         DOWNLOAD_DICT_ACTION,
+        UPDATE_DICTS_ACTION,
 
         // Game configs
         LOCKED_CHANGE_ACTION,
@@ -343,8 +344,14 @@ public class DlgDelegate {
 
     public void startProgress( int id )
     {
+        String title = LocUtils.getString( m_activity, R.string.progress_title );
         String msg = LocUtils.getString( m_activity, id );
-        m_progress = ProgressDialog.show( m_activity, msg, null, true, true );
+        m_progress = ProgressDialog.show( m_activity, title, msg, true, true );
+    }
+
+    public void setProgressMsg( int id )
+    {
+        m_progress.setMessage( LocUtils.getString( m_activity, id ) );
     }
 
     public void stopProgress()

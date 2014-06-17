@@ -63,8 +63,8 @@ public class RemoteDictsDelegate extends ListDelegateBase
     private HashMap<String, DictInfo[]> m_langInfo;
     private HashMap<String, XWListItem> m_selDicts = new HashMap<String, XWListItem>();
     private String m_origTitle;
-    private String m_installed;
-    private String m_needsUpdate;
+    // private String m_installed;
+    // private String m_needsUpdate;
     private HashMap<String, XWListItem> m_curDownloads;
 
     protected RemoteDictsDelegate( ListActivity activity, Bundle savedInstanceState )
@@ -75,8 +75,8 @@ public class RemoteDictsDelegate extends ListDelegateBase
 
     protected void init( Bundle savedInstanceState ) 
     {
-        m_installed = getString( R.string.dict_installed );
-        m_needsUpdate = getString( R.string.dict_needs_update );
+        // m_installed = getString( R.string.dict_installed );
+        // m_needsUpdate = getString( R.string.dict_needs_update );
 
         setContentView( R.layout.remote_dicts );
         JSONObject params = new JSONObject(); // empty for now
@@ -149,7 +149,7 @@ public class RemoteDictsDelegate extends ListDelegateBase
             if ( success ) {
                 DictInfo info = (DictInfo)item.getCached();
                 info.m_state = DictState.INSTALLED;
-                item.setComment( m_installed );
+                // item.setComment( m_installed );
             }
             m_curDownloads.remove( name );
         }
@@ -405,18 +405,18 @@ public class RemoteDictsDelegate extends ListDelegateBase
                 String name = info.m_name;
                 item.setText( name );
 
-                if ( null != info.m_state ) {
-                    String comment = null;
-                    switch( info.m_state ) {
-                    case INSTALLED:
-                        comment = m_installed;
-                        break;
-                    case NEEDS_UPDATE:
-                        comment = m_needsUpdate;
-                        break;
-                    }
-                    item.setComment( comment );
-                }
+                // if ( null != info.m_state ) {
+                //     String comment = null;
+                //     switch( info.m_state ) {
+                //     case INSTALLED:
+                //         comment = m_installed;
+                //         break;
+                //     case NEEDS_UPDATE:
+                //         comment = m_needsUpdate;
+                //         break;
+                //     }
+                //     item.setComment( comment );
+                // }
                 item.cache( info );
 
                 if ( m_selDicts.containsKey( name ) ) {

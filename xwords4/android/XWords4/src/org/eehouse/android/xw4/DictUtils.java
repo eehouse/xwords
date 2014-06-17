@@ -104,7 +104,7 @@ public class DictUtils {
         }
     } // DictPairs
 
-    public static class DictAndLoc {
+    public static class DictAndLoc implements Comparable {
         public DictAndLoc( String pname, DictLoc ploc ) {
             name = removeDictExtn(pname); loc = ploc;
         }
@@ -122,6 +122,11 @@ public class DictUtils {
                     && loc.equals( other.loc );
             }
             return result;
+        }
+
+        public int compareTo( Object obj ) {
+            DictAndLoc other = (DictAndLoc)obj;
+            return name.compareTo( other.name );
         }
     }
  

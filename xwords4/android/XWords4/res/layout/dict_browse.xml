@@ -6,17 +6,18 @@
               android:layout_height="fill_parent"
               android:paddingLeft="8dp"
               android:paddingRight="8dp">
+
+  <CheckBox android:id="@+id/show_remote"
+            android:text="@string/show_remote"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            />
          
   <ListView android:id="@id/android:list"
             android:layout_width="fill_parent" 
             android:layout_height="fill_parent"
             android:layout_weight="1"
             android:drawSelectorOnTop="false"/>
-
-  <Button android:id="@+id/download"
-          android:layout_width="fill_parent" 
-          android:layout_height="wrap_content"
-          android:text="@string/download_dicts" 
-          />
 
 </LinearLayout>

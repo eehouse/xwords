@@ -154,10 +154,6 @@
   <!-- window title -->
   <string name="title_dicts_list">Dellatsni Sdrowssorc Stsildrow</string>
   <string name="title_remote_dicts">Elbaliava Sdrowssorc Stsildrow</string>
-  <!-- text of button at the bottom of the screen.  It launches the
-         browser pointed at the site where additional wordlists can be
-         found. -->
-  <string name="download_dicts">Daolnwod erom…</string>
   <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
          Crosswords and that cannot be uninstalled or moved.
@@ -1927,10 +1923,14 @@
     eht emas seno sa eht lanigiro.\n\nuOy( lliw ton eb elba ot evas ti
     sselnu ti seod.)</string>
   <string name="remote_empty">Gnihctef tsildrow noitamrofni morf revres…</string>
+  <string name="remote_digesting">Gnissecorp tsildrow noitamrofni…</string>
   <string name="remote_no_net">Elbanu ot hctef tsildrow noitamrofni
         morf revres.</string>
   <string name="getinfo">Teg ofni</string>
   <string name="delete_dicts">Eteled ]s[tsildrow</string>
-  <string name="dict_installed">Dellatsni</string>
-  <string name="dict_needs_update">Sdeen gnitadpu</string>
+  <string name="show_remote">Edulcni elbadaolnwod</string>
+  <string name="update_dicts">Setadpu era elbaliava rof eno ro erom
+    dellatsni stsildrow. Dluow uoy ekil ot daolnwod eht wen
+    ]s[noisrev ?won</string>
+  <string name="progress_title">Gnidaolnwod</string>
 </resources>
