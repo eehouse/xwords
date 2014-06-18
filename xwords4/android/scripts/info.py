@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Script meant to be installed on eehouse.org.
 
-import logging, shelve, hashlib, sys, json, subprocess, glob, os
+import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct
 import mk_for_download, mygit
 import xwconfig
 
@@ -42,6 +42,7 @@ k_URL = 'url'
 k_SUMS = 'sums'
 k_COUNT = 'count'
 k_LANGS = 'langs'
+k_LANGSVERS = 'lvers'
 
 # Version for those sticking with RELEASES
 k_REL_REV = 'android_beta_81'
@@ -232,22 +233,37 @@ def getApp( params, name ):
         logging.debug( 'missing param' )
     return result
 
+def getStats( path ):
+    nBytes = os.stat( path ).st_size
+
+    nWords = -1
+    with open(path, "rb") as f:
+        f.read(4)      # ignore first four bytes
+        nWords = struct.unpack('>i', f.read(4))[0]
+        f.close()
+
+    return { 'nWords' : nWords, 'nBytes' : nBytes, }
+
 # create obj containing array of objects each with 'lang' and 'xwds',
 # the latter an array of objects giving info about a dict.
 def listDicts():
     global s_shelf
+    langsVers = 1            # change this to force recalc of shelf langs data
     ldict = {}
     root = k_filebase + "and_wordlists/"
     openShelf()
-    if not k_LANGS in s_shelf:
+    if not k_LANGS in s_shelf or not k_LANGSVERS in s_shelf \
+       or s_shelf[k_LANGSVERS] != langsVers:
         dictSums = getDictSums()
         for path in glob.iglob( root + "*/*.xwd" ):
+            entry = getStats( path )
             path = path.replace( root, '' )
             lang, xwd = path.split( '/' )
+            entry.update( { 'xwd' : xwd,
+                            'md5sums' : md5Checksums( dictSums, path ),
+                        } )
             if not lang in ldict: ldict[lang] = []
-            ldict[lang].append({ 'md5sums' : md5Checksums( dictSums, path ),
-                                 'xwd' : xwd,
-                             })
+            ldict[lang].append( entry )
 
         # now format as we want 'em
         langs = []
@@ -257,6 +273,7 @@ def listDicts():
                 }
             langs.append( obj )
         s_shelf[k_LANGS] = langs
+        s_shelf[k_LANGSVERS] = langsVers
 
     result = { 'langs' : s_shelf[k_LANGS] }
     closeShelf();
