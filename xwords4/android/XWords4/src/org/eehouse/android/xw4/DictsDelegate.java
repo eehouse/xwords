@@ -96,9 +96,10 @@ public class DictsDelegate extends ListDelegateBase
         public String m_name;
         // public boolean m_needsUpdate;
         public String m_lang;
-        public int m_nWords, m_nBytes;
+        public int m_nWords;
+        public long m_nBytes;
         public String m_note;
-        public DictInfo( String name, String lang, int nWords, int nBytes ) { 
+        public DictInfo( String name, String lang, int nWords, long nBytes ) { 
             m_name = name;
             m_lang = lang;
             m_nWords = nWords;
@@ -490,7 +491,7 @@ public class DictsDelegate extends ListDelegateBase
                                            (DictLoc)obj );
             } else {
                 DictInfo info = (DictInfo)obj;
-                int kBytes = (info.m_nBytes + 999) / 1000;
+                long kBytes = (info.m_nBytes + 999) / 1000;
                 String msg = getString( R.string.dict_info_fmt, info.m_name, 
                                         info.m_nWords, kBytes, info.m_note );
                 int langCode = DictLangCache.getLangLangCode( m_activity, info.m_lang );
@@ -739,9 +740,9 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     public void dlgButtonClicked( Action action, int which, Object[] params )
     {
-        switch( action ) {
-        case DELETE_DICT_ACTION:
-            if ( DialogInterface.BUTTON_POSITIVE == which ) {
+        if ( DialogInterface.BUTTON_POSITIVE == which ) {
+            switch( action ) {
+            case DELETE_DICT_ACTION:
                 XWListItem[] items = (XWListItem[])params[0];
                 for ( XWListItem item : items ) {
                     String name = item.getText();
@@ -749,24 +750,20 @@ public class DictsDelegate extends ListDelegateBase
                     deleteDict( name, loc );
                 }
                 clearSelections();
-            }
-            break;
-        case DOWNLOAD_DICT_ACTION:
-            if ( DialogInterface.BUTTON_POSITIVE == which ) {
+                break;
+            case DOWNLOAD_DICT_ACTION:
                 int lang = (Integer)params[0];
                 String name = (String)params[1];
                 DwnldDelegate.downloadDictInBack( m_activity, lang, name, this );
-            }
-            break;
-        case UPDATE_DICTS_ACTION:
-            if ( DialogInterface.BUTTON_POSITIVE == which ) {
+                break;
+            case UPDATE_DICTS_ACTION:
                 String[] urls = m_needUpdates.values().
                     toArray( new String[m_needUpdates.size()] );
                 DwnldDelegate.downloadDictsInBack( m_activity, urls, this );
+                break;
+            default:
+                Assert.fail();
             }
-            break;
-        default:
-            Assert.fail();
         }
     }
 
@@ -1020,7 +1017,7 @@ public class DictsDelegate extends ListDelegateBase
                         JSONObject dict = dicts.getJSONObject( jj );
                         String name = dict.getString( "xwd" );
                         name = DictUtils.removeDictExtn( name );
-                        int nBytes = dict.optInt( "nBytes", -1 );
+                        long nBytes = dict.optLong( "nBytes", -1 );
                         int nWords = dict.optInt( "nWords", -1 );
                         DictInfo info = new DictInfo( name, langName, nWords, nBytes );
                         if ( DictLangCache.haveDict( m_activity, langName, name ) ) {
