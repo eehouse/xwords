@@ -1929,8 +1929,12 @@
   <string name="getinfo">GET INFO</string>
   <string name="delete_dicts">DELETE WORDLIST[S]</string>
   <string name="show_remote">INCLUDE DOWNLOADABLE</string>
-  <string name="update_dicts">UPDATES ARE AVAILABLE FOR ONE OR MORE
+  <string name="update_dicts_fmt">UPDATES ARE AVAILABLE FOR ONE OR MORE
     INSTALLED WORDLISTS. WOULD YOU LIKE TO DOWNLOAD THE NEW
-    VERSION[S] NOW?</string>
+    VERSION[S] OF %1$s NOW?</string>
   <string name="progress_title">DOWNLOADING</string>
+  <string name="dict_info_fmt">WORDLIST %1$s IS AVAILABLE FOR
+    DOWNLOAD.\n\nDETAILS:\nNUMBER OF WORDS: %2$d\nDOWNLOAD SIZE:
+    %3$dK\nNOTE: %4$s</string>
+  <string name="dict_on_server">DOWNLOADABLE</string>
 </resources>

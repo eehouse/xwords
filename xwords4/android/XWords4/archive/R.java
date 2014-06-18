@@ -133,12 +133,11 @@ public final class R {
         public static final int dict_label=0x7f0a007a;
         public static final int dict_spinner=0x7f0a002f;
         public static final int dictlist_button_horizontal=0x7f0a000c;
-        public static final int dicts_delete=0x7f0a00ad;
-        public static final int dicts_deselect_all=0x7f0a00ac;
+        public static final int dicts_delete=0x7f0a00ac;
+        public static final int dicts_deselect_all=0x7f0a00ab;
         public static final int dicts_download=0x7f0a00aa;
-        public static final int dicts_getinfo=0x7f0a00ab;
-        public static final int dicts_move=0x7f0a00ae;
-        public static final int dicts_select=0x7f0a00af;
+        public static final int dicts_move=0x7f0a00ad;
+        public static final int dicts_select=0x7f0a00ae;
         public static final int divider=0x7f0a0028;
         public static final int dwnld_message=0x7f0a0050;
         public static final int edit=0x7f0a0076;
@@ -157,30 +156,30 @@ public final class R {
         public static final int game_locked_check=0x7f0a002a;
         public static final int game_name=0x7f0a0046;
         public static final int gamel_menu_checkmoves=0x7f0a009a;
-        public static final int games_game_config=0x7f0a00ba;
-        public static final int games_game_copy=0x7f0a00bf;
-        public static final int games_game_delete=0x7f0a00b9;
-        public static final int games_game_move=0x7f0a00bb;
-        public static final int games_game_new_from=0x7f0a00bd;
-        public static final int games_game_rename=0x7f0a00be;
-        public static final int games_game_reset=0x7f0a00bc;
-        public static final int games_group_default=0x7f0a00c3;
-        public static final int games_group_delete=0x7f0a00c2;
-        public static final int games_group_movedown=0x7f0a00c1;
-        public static final int games_group_moveup=0x7f0a00c0;
-        public static final int games_group_rename=0x7f0a00c4;
-        public static final int games_menu_about=0x7f0a00b6;
-        public static final int games_menu_checkmoves=0x7f0a00b8;
-        public static final int games_menu_checkupdates=0x7f0a00c5;
-        public static final int games_menu_dicts=0x7f0a00b4;
-        public static final int games_menu_email=0x7f0a00b5;
-        public static final int games_menu_loaddb=0x7f0a00c7;
-        public static final int games_menu_newgame=0x7f0a00b0;
-        public static final int games_menu_newgroup=0x7f0a00b1;
-        public static final int games_menu_prefs=0x7f0a00b2;
-        public static final int games_menu_rateme=0x7f0a00b3;
-        public static final int games_menu_resend=0x7f0a00b7;
-        public static final int games_menu_storedb=0x7f0a00c6;
+        public static final int games_game_config=0x7f0a00b9;
+        public static final int games_game_copy=0x7f0a00be;
+        public static final int games_game_delete=0x7f0a00b8;
+        public static final int games_game_move=0x7f0a00ba;
+        public static final int games_game_new_from=0x7f0a00bc;
+        public static final int games_game_rename=0x7f0a00bd;
+        public static final int games_game_reset=0x7f0a00bb;
+        public static final int games_group_default=0x7f0a00c2;
+        public static final int games_group_delete=0x7f0a00c1;
+        public static final int games_group_movedown=0x7f0a00c0;
+        public static final int games_group_moveup=0x7f0a00bf;
+        public static final int games_group_rename=0x7f0a00c3;
+        public static final int games_menu_about=0x7f0a00b5;
+        public static final int games_menu_checkmoves=0x7f0a00b7;
+        public static final int games_menu_checkupdates=0x7f0a00c4;
+        public static final int games_menu_dicts=0x7f0a00b3;
+        public static final int games_menu_email=0x7f0a00b4;
+        public static final int games_menu_loaddb=0x7f0a00c6;
+        public static final int games_menu_newgame=0x7f0a00af;
+        public static final int games_menu_newgroup=0x7f0a00b0;
+        public static final int games_menu_prefs=0x7f0a00b1;
+        public static final int games_menu_rateme=0x7f0a00b2;
+        public static final int games_menu_resend=0x7f0a00b6;
+        public static final int games_menu_storedb=0x7f0a00c5;
         public static final int games_menu_study=0x7f0a0099;
         public static final int group_done=0x7f0a008c;
         public static final int group_exchange=0x7f0a009e;
@@ -194,10 +193,10 @@ public final class R {
         public static final int juggle_players=0x7f0a0033;
         public static final int lang_separator=0x7f0a002d;
         public static final int lang_spinner=0x7f0a002e;
-        public static final int loc_item_check=0x7f0a00c9;
-        public static final int loc_item_clear=0x7f0a00c8;
-        public static final int loc_item_copy_bless=0x7f0a00cb;
-        public static final int loc_item_copy_eng=0x7f0a00ca;
+        public static final int loc_item_check=0x7f0a00c8;
+        public static final int loc_item_clear=0x7f0a00c7;
+        public static final int loc_item_copy_bless=0x7f0a00ca;
+        public static final int loc_item_copy_eng=0x7f0a00c9;
         public static final int loc_search_button=0x7f0a0060;
         public static final int loc_search_field=0x7f0a005f;
         public static final int local_label=0x7f0a005b;
@@ -241,9 +240,6 @@ public final class R {
         public static final int public_rooms_set=0x7f0a0039;
         public static final int refresh_button=0x7f0a003b;
         public static final int remote_check=0x7f0a0077;
-        public static final int remote_dicts_deselect_all=0x7f0a00ce;
-        public static final int remote_dicts_download=0x7f0a00cc;
-        public static final int remote_dicts_getinfo=0x7f0a00cd;
         public static final int revert_all=0x7f0a0081;
         public static final int revert_colors=0x7f0a0080;
         public static final int robot_check=0x7f0a007b;
@@ -258,11 +254,11 @@ public final class R {
         public static final int send_button=0x7f0a0017;
         public static final int show_remote=0x7f0a0022;
         public static final int shuffle_button_horizontal=0x7f0a000a;
-        public static final int slmenu_clear_sel=0x7f0a00d3;
-        public static final int slmenu_copy_sel=0x7f0a00d2;
-        public static final int slmenu_deselect_all=0x7f0a00d1;
-        public static final int slmenu_lookup_sel=0x7f0a00cf;
-        public static final int slmenu_select_all=0x7f0a00d0;
+        public static final int slmenu_clear_sel=0x7f0a00cf;
+        public static final int slmenu_copy_sel=0x7f0a00ce;
+        public static final int slmenu_deselect_all=0x7f0a00cd;
+        public static final int slmenu_lookup_sel=0x7f0a00cb;
+        public static final int slmenu_select_all=0x7f0a00cc;
         public static final int smart_robot=0x7f0a0042;
         public static final int sms_disabled=0x7f0a006b;
         public static final int sms_phones=0x7f0a003d;
@@ -324,11 +320,10 @@ public final class R {
         public static final int player_list_elem=0x7f03001e;
         public static final int prefs_w_buttons=0x7f03001f;
         public static final int relay_game_config=0x7f030020;
-        public static final int remote_dicts=0x7f030021;
-        public static final int rename_game=0x7f030022;
-        public static final int smsinviter=0x7f030023;
-        public static final int smsinviter_item=0x7f030024;
-        public static final int studylist=0x7f030025;
+        public static final int rename_game=0x7f030021;
+        public static final int smsinviter=0x7f030022;
+        public static final int smsinviter_item=0x7f030023;
+        public static final int studylist=0x7f030024;
     }
     public static final class menu {
         public static final int board_menu=0x7f090000;
@@ -337,8 +332,7 @@ public final class R {
         public static final int empty=0x7f090003;
         public static final int games_list_menu=0x7f090004;
         public static final int loc_item_menu=0x7f090005;
-        public static final int remote_dicts=0x7f090006;
-        public static final int studylist=0x7f090007;
+        public static final int studylist=0x7f090006;
     }
     public static final class raw {
         public static final int changes=0x7f050000;
@@ -944,12 +938,14 @@ public final class R {
          */
         public static final int dict_browse_title_fmt=0x7f0601f9;
         public static final int dict_host=0x7f060079;
+        public static final int dict_info_fmt=0x7f0602be;
         /**  label for dropdown by which wordlist is chosen that this
          player will use.  The language the game will use (which
          constrains the choice of wordlists) is substituted in for
          "%1$s". 
          */
         public static final int dict_lang_label_fmt=0x7f0600e7;
+        public static final int dict_on_server=0x7f0602bf;
         /** string name="invite_mime">text/plain</string
          */
         public static final int dict_url=0x7f060072;
@@ -2580,7 +2576,7 @@ public final class R {
          feature is not yet supported on Android.) 
          */
         public static final int title_tile_picker=0x7f0601c1;
-        public static final int update_dicts=0x7f0602bc;
+        public static final int update_dicts_fmt=0x7f0602bc;
         /**  text of checkbox controlling whether there's a game timer 
          */
         public static final int use_timer=0x7f0600d2;

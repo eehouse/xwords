@@ -2253,10 +2253,15 @@
     <string name="delete_dicts">Delete wordlist[s]</string>
 
     <string name="show_remote">Include downloadable</string>
-    <string name="update_dicts">Updates are available for one or more
+    <string name="update_dicts_fmt">Updates are available for one or more
     installed wordlists. Would you like to download the new
-    version[s] now?</string>
+    version[s] of %1$s now?</string>
 
     <string name="progress_title">Downloading</string>
+
+    <string name="dict_info_fmt">Wordlist %1$s is available for
+    download.\n\nDetails:\nNumber of words: %2$d\nDownload size:
+    %3$dK\nNote: %4$s</string>
+    <string name="dict_on_server">Downloadable</string>
     
 </resources>

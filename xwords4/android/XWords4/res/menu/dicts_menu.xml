@@ -8,11 +8,6 @@
           android:showAsAction="ifRoom"
           />
 
-    <item android:id="@+id/dicts_getinfo"
-          android:title="@string/getinfo"
-          android:showAsAction="ifRoom"
-          />
-
     <item android:id="@+id/dicts_deselect_all"
           android:title="@string/slmenu_deselect_all"
           android:icon="@drawable/clear_all__gen"
