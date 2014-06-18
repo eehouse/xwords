@@ -291,9 +291,14 @@ public class DictLangCache {
 
     public static String[] listLangs( Context context, DictAndLoc[] dals )
     {
-        HashSet<String> langs = new HashSet<String>();
+        Set<String> langs = new HashSet<String>();
         for ( DictAndLoc dal : dals ) {
-            langs.add( getLangName( context, dal.name ) );
+            String name = getLangName( context, dal.name );
+            if ( null == name || 0 == name.length() ) {
+                DbgUtils.logf( "bad lang name for dal name %s", dal.name );
+                // Assert.fail();
+            }
+            langs.add( name );
         }
         String[] result = new String[langs.size()];
         return langs.toArray( result );
