@@ -234,7 +234,7 @@ def getApp( params, name ):
     return result
 
 def getStats( path ):
-    nBytes = os.stat( path ).st_size
+    nBytes = int(os.stat( path ).st_size)
 
     nWords = -1
     with open(path, "rb") as f:
