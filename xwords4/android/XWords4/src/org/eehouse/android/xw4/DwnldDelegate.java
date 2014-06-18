@@ -326,11 +326,13 @@ public class DwnldDelegate extends ListDelegateBase {
                     s_listeners.remove( url );
                 }
             }
-            String name = ld.m_name;
-            if ( null == name ) {
-                name = uri.toString();
+            if ( null != ld ) {
+                String name = ld.m_name;
+                if ( null == name ) {
+                    name = uri.toString();
+                }
+                ld.m_lstnr.downloadFinished( name, success );
             }
-            ld.m_lstnr.downloadFinished( name, success );
         }
     }
 
