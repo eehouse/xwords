@@ -99,12 +99,14 @@ public class DictsDelegate extends ListDelegateBase
         public int m_nWords;
         public long m_nBytes;
         public String m_note;
-        public DictInfo( String name, String lang, int nWords, long nBytes ) { 
+        public DictInfo( String name, String lang, int nWords, long nBytes, 
+                         String note )
+        {
             m_name = name;
             m_lang = lang;
             m_nWords = nWords;
             m_nBytes = nBytes;
-            m_note = "This is the note";
+            m_note = null == note? "" : note;
         }
         public int compareTo( Object obj ) {
             DictInfo other = (DictInfo)obj;
@@ -1019,7 +1021,8 @@ public class DictsDelegate extends ListDelegateBase
                         name = DictUtils.removeDictExtn( name );
                         long nBytes = dict.optLong( "nBytes", -1 );
                         int nWords = dict.optInt( "nWords", -1 );
-                        DictInfo info = new DictInfo( name, langName, nWords, nBytes );
+                        String note = dict.optString( "note" );
+                        DictInfo info = new DictInfo( name, langName, nWords, nBytes, note );
                         if ( DictLangCache.haveDict( m_activity, langName, name ) ) {
                             boolean matches = true;
                             String curSum = DictLangCache.getDictMD5Sum( m_activity, name );
