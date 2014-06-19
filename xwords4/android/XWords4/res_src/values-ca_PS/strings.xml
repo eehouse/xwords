@@ -152,8 +152,7 @@
        ############################################################ 
       -->
   <!-- window title -->
-  <string name="title_dicts_list">INSTALLED CROSSWORDS WORDLISTS</string>
-  <string name="title_remote_dicts">AVAILABLE CROSSWORDS WORDLISTS</string>
+  <string name="title_dicts_list">CROSSWORDS WORDLISTS</string>
   <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
