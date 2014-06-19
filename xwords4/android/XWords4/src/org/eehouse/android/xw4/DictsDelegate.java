@@ -71,7 +71,7 @@ public class DictsDelegate extends ListDelegateBase
                DlgDelegate.DlgClickNotify, GroupStateListener,
                DwnldDelegate.DownloadFinishedListener {
 
-    protected static final String DICT_DOLAUNCH = "do_launch";
+    protected static final String DICT_SHOWREMOTE = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
     protected static final String DICT_NAME_EXTRA = "use_dict";
     private static final int SEL_LOCAL = 0;
@@ -81,13 +81,16 @@ public class DictsDelegate extends ListDelegateBase
     private Set<String> m_closedLangs;
     private DictListAdapter m_adapter;
 
+    private boolean m_quickFetchMode;
     private String[] m_langs;
     private ListView m_listView;
     private CheckBox m_checkbox;
     private String[] m_locNames;
+    private String m_finishOnName;
     private Map<String, XWListItem> m_selDicts;
     private String m_origTitle;
     private boolean m_showRemote = false;
+    private String m_filterLang;
     private Map<String, String> m_needUpdates;
     private HashMap<String, XWListItem> m_curDownloads;
     private String m_onServerStr;
@@ -135,9 +138,14 @@ public class DictsDelegate extends ListDelegateBase
                 ArrayList<Object> alist = new ArrayList<Object>();
                 int nLangs = m_langs.length;
                 for ( int ii = 0; ii < nLangs; ++ii ) {
+                    String langName = m_langs[ii];
+                    if ( null != m_filterLang && 
+                         ! m_filterLang.equals(langName) ) {
+                        continue;
+                    }
+
                     alist.add( new Integer(ii) );
 
-                    String langName = m_langs[ii];
                     if ( m_closedLangs.contains( langName ) ) {
                         continue;
                     }
@@ -249,7 +257,7 @@ public class DictsDelegate extends ListDelegateBase
                 }
             }
 
-            if ( m_showRemote ) {
+            if ( m_showRemote && null != m_remoteInfo ) {
                 DictInfo[] infos = m_remoteInfo.get( langName );
                 if ( null != infos ) {
                     for ( DictInfo info : infos ) {
@@ -451,11 +459,24 @@ public class DictsDelegate extends ListDelegateBase
             if ( MultiService.isMissingDictIntent( intent ) ) {
                 showDialog( DlgID.DICT_OR_DECLINE );
             } else {
-                boolean downloadNow = intent.getBooleanExtra( DICT_DOLAUNCH, false );
-                if ( downloadNow ) {
+                boolean showRemote = intent.getBooleanExtra( DICT_SHOWREMOTE, 
+                                                             false );
+                if ( showRemote ) {
+                    m_quickFetchMode = true;
+                    m_showRemote = true;
+                    m_checkbox.setVisibility( View.GONE );
+
                     int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
+                    if ( 0 < lang ) {
+                        m_filterLang = DictLangCache.getLangNames( m_activity )[lang];
+                    }
                     String name = intent.getStringExtra( DICT_NAME_EXTRA );
-                    startDownload( lang, name );
+                    if ( null == name ) {
+                        new FetchListTask( m_activity ).execute();
+                    } else {
+                        m_finishOnName = name;
+                        startDownload( lang, name );
+                    }
                 }
 
                 downloadNewDict( intent );
@@ -793,7 +814,7 @@ public class DictsDelegate extends ListDelegateBase
     {
         Set<String> langs = new HashSet<String>();
         langs.addAll( Arrays.asList(DictLangCache.listLangs( m_activity )) );
-        if ( m_showRemote ) {
+        if ( m_showRemote && null != m_remoteInfo ) {
             langs.addAll( m_remoteInfo.keySet() );
         }
         m_langs = langs.toArray( new String[langs.size()] );
@@ -909,11 +930,11 @@ public class DictsDelegate extends ListDelegateBase
         // return mkDownloadIntent( context, dict_url );
     }
 
-    public static void launchAndDownload( Activity activity, int lang, 
+    public static void launchForDownload( Activity activity, int lang, 
                                           String name )
     {
         Intent intent = new Intent( activity, DictsActivity.class );
-        intent.putExtra( DICT_DOLAUNCH, true );
+        intent.putExtra( DICT_SHOWREMOTE, true );
         if ( lang > 0 ) {
             intent.putExtra( DICT_LANG_EXTRA, lang );
         }
@@ -925,18 +946,20 @@ public class DictsDelegate extends ListDelegateBase
         activity.startActivity( intent );
     }
 
-    public static void launchAndDownload( Activity activity, int lang )
+    public static void launchForDownload( Activity activity, int lang )
     {
-        launchAndDownload( activity, lang, null );
+        launchForDownload( activity, lang, null );
     }
 
-    public static void launchAndDownload( Activity activity )
+    public static void launchForDownload( Activity activity )
     {
-        launchAndDownload( activity, 0, null );
+        launchForDownload( activity, 0, null );
     }
 
+    //////////////////////////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
-    public void downloadFinished( String name, final boolean success )
+    //////////////////////////////////////////////////////////////////////
+    public void downloadFinished( final String name, final boolean success )
     {
         if ( m_launchedForMissing ) {
             post( new Runnable() {
@@ -945,6 +968,9 @@ public class DictsDelegate extends ListDelegateBase
                             Intent intent = getIntent();
                             if ( MultiService.returnOnDownload( m_activity,
                                                                 intent ) ) {
+                                finish();
+                            } else if ( null != m_finishOnName
+                                        && m_finishOnName.equals( name ) ) {
                                 finish();
                             }
                         } else {
@@ -989,6 +1015,7 @@ public class DictsDelegate extends ListDelegateBase
     {
         boolean success = false;
         JSONArray langs = null;
+
         m_needUpdates = new HashMap<String, String>();
         if ( null != jsonData ) {
             Set<String> closedLangs = new HashSet<String>();
@@ -1007,6 +1034,10 @@ public class DictsDelegate extends ListDelegateBase
                 for ( int ii = 0; ii < nLangs; ++ii ) {
                     JSONObject langObj = langs.getJSONObject( ii );
                     String langName = langObj.getString( "lang" );
+                    
+                    if ( null != m_filterLang && ! m_filterLang.equals( langName ) ) {
+                        continue;
+                    }
 
                     if ( ! curLangs.contains( langName ) ) {
                         closedLangs.add( langName );
@@ -1023,23 +1054,27 @@ public class DictsDelegate extends ListDelegateBase
                         int nWords = dict.optInt( "nWords", -1 );
                         String note = dict.optString( "note" );
                         DictInfo info = new DictInfo( name, langName, nWords, nBytes, note );
-                        if ( DictLangCache.haveDict( m_activity, langName, name ) ) {
-                            boolean matches = true;
-                            String curSum = DictLangCache.getDictMD5Sum( m_activity, name );
-                            if ( null != curSum ) {
-                                JSONArray sums = dict.getJSONArray("md5sums");
-                                if ( null != sums ) {
-                                    matches = false;
-                                    for ( int kk = 0; !matches && kk < sums.length(); ++kk ) {
-                                        String sum = sums.getString( kk );
-                                        matches = sum.equals( curSum );
+
+                        if ( !m_quickFetchMode ) {
+                            // Check if we have it and it needs an update
+                            if ( DictLangCache.haveDict( m_activity, langName, name ) ) {
+                                boolean matches = true;
+                                String curSum = DictLangCache.getDictMD5Sum( m_activity, name );
+                                if ( null != curSum ) {
+                                    JSONArray sums = dict.getJSONArray("md5sums");
+                                    if ( null != sums ) {
+                                        matches = false;
+                                        for ( int kk = 0; !matches && kk < sums.length(); ++kk ) {
+                                            String sum = sums.getString( kk );
+                                            matches = sum.equals( curSum );
+                                        }
                                     }
                                 }
-                            }
-                            if ( !matches ) {
-                                DbgUtils.logf( "adding %s to set needing update", name );
-                                String url = Utils.makeDictUrl( m_activity, langName, name );
-                                m_needUpdates.put( name, url );
+                                if ( !matches ) {
+                                    DbgUtils.logf( "adding %s to set needing update", name );
+                                    String url = Utils.makeDictUrl( m_activity, langName, name );
+                                    m_needUpdates.put( name, url );
+                                }
                             }
                         }
                         dictNames.add( info );
