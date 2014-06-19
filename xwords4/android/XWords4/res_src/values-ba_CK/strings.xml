@@ -154,6 +154,10 @@
   <!-- window title -->
   <string name="title_dicts_list">Dellatsni Sdrowssorc Stsildrow</string>
   <string name="title_remote_dicts">Elbaliava Sdrowssorc Stsildrow</string>
+  <!-- text of item at bottom of dicts choice spinner.  It
+         launches the browser pointed at the site where additional
+         wordlists can be found. -->
+  <string name="download_dicts">Daolnwod erom…</string>
   <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
          Crosswords and that cannot be uninstalled or moved.
