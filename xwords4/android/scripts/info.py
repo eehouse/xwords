@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Script meant to be installed on eehouse.org.
 
-import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct
+import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct, random
 import mk_for_download, mygit
 import xwconfig
 
@@ -27,6 +27,9 @@ k_LOCALE = 'locale'
 k_XLATPROTO = 'proto'
 k_XLATEVERS = 'xlatevers'
 k_STRINGSHASH = 'strings'
+
+k_DICT_HEADER_MASK = 0x08
+
 
 k_OLD = 'old'
 k_NEW = 'new'
@@ -237,18 +240,37 @@ def getStats( path ):
     nBytes = int(os.stat( path ).st_size)
 
     nWords = -1
+    note = md5sum = None
     with open(path, "rb") as f:
-        f.read(4)      # ignore first four bytes
-        nWords = struct.unpack('>i', f.read(4))[0]
+        flags = struct.unpack('>h', f.read(2))[0]
+        hasHeader = not 0 == (flags & k_DICT_HEADER_MASK)
+        if hasHeader:
+            headerLen = struct.unpack('>h', f.read(2))[0]
+            nWords = struct.unpack('>i', f.read(4))[0]
+            headerLen -= 4
+            if 0 < headerLen:
+                rest = f.read(headerLen)
+                for ii in range(len(rest)):
+                    if '\0' == rest[ii]:
+                        if not note:
+                            note = rest[:ii]
+                            start = ii + 1
+                        elif not md5sum:
+                            md5sum = rest[start:ii]
+
         f.close()
 
-    return { 'nWords' : nWords, 'nBytes' : nBytes, }
+    result = { 'nWords' : nWords, 'nBytes' : nBytes }
+    if note: result['note'] = note
+    if md5sum: result['md5sum'] = md5sum
+    return result
 
 # create obj containing array of objects each with 'lang' and 'xwds',
 # the latter an array of objects giving info about a dict.
 def listDicts():
     global s_shelf
-    langsVers = 1            # change this to force recalc of shelf langs data
+    langsVers = 2
+    # langsVers = random.random()            # change this to force recalc of shelf langs data
     ldict = {}
     root = k_filebase + "and_wordlists/"
     openShelf()
