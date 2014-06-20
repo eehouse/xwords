@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -57,7 +58,7 @@ public class DwnldDelegate extends ListDelegateBase {
     private ArrayList<LinearLayout> m_views;
 
     public interface DownloadFinishedListener {
-        void downloadFinished( String name, boolean success );
+        void downloadFinished( String lang, String name, boolean success );
     }
 
     public DwnldDelegate( ListActivity activity, Bundle savedInstanceState )
@@ -298,6 +299,14 @@ public class DwnldDelegate extends ListDelegateBase {
         return new File(path).getName();
     }
 
+    private static String langFromUrl( String url )
+    {
+        String[] parts = TextUtils.split( url, "/" );
+        String result = parts[parts.length - 2];
+        // DbgUtils.logf( "langFromUrl(%s) => %s", url, result );
+        return result;
+    }
+
     private static void rememberListener( String url, String name, 
                                           DownloadFinishedListener lstnr )
     {
@@ -328,10 +337,11 @@ public class DwnldDelegate extends ListDelegateBase {
             }
             if ( null != ld ) {
                 String name = ld.m_name;
+                String lang = langFromUrl( url );
                 if ( null == name ) {
                     name = uri.toString();
                 }
-                ld.m_lstnr.downloadFinished( name, success );
+                ld.m_lstnr.downloadFinished( lang, name, success );
             }
         }
     }

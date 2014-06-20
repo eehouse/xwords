@@ -1138,7 +1138,8 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////
-    public void downloadFinished( final String name, final boolean success )
+    public void downloadFinished( String lang, final String name, 
+                                  boolean success )
     {
         if ( success ) {
             post( new Runnable() {

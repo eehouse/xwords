@@ -58,6 +58,8 @@ public class GameConfigDelegate extends DelegateBase
                ,RefreshNamesTask.NoNameFound {
 
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
+    private static final int REQUEST_LANG = 1;
+    private static final int REQUEST_DICT = 2;
 
     private Activity m_activity;
     private CheckBox m_joinPublicCheck;
@@ -74,6 +76,7 @@ public class GameConfigDelegate extends DelegateBase
     private View m_connectSetRelay;
     private View m_connectSetSMS;
     private Spinner m_dictSpinner;
+    private Spinner m_playerDictSpinner;
     private Spinner m_roomChoose;
     // private Button m_configureButton;
     private long m_rowid;
@@ -314,11 +317,12 @@ public class GameConfigDelegate extends DelegateBase
         } else {
             dictLabel.setVisibility( View.GONE );
         }
-        Spinner dictSpinner = (Spinner)dialog.findViewById( R.id.dict_spinner );
+        m_playerDictSpinner = (Spinner)dialog.findViewById( R.id.dict_spinner );
         if ( localOnlyGame() ) {
-            configDictSpinner( dictSpinner, m_gi.dictLang, m_gi.dictName(lp) );
+            configDictSpinner( m_playerDictSpinner, m_gi.dictLang, m_gi.dictName(lp) );
         } else {
-            dictSpinner.setVisibility( View.GONE );
+            m_playerDictSpinner.setVisibility( View.GONE );
+            m_playerDictSpinner = null;
         }
 
         final View localSet = dialog.findViewById( R.id.local_player_set );
@@ -364,10 +368,13 @@ public class GameConfigDelegate extends DelegateBase
         lp.password = Utils.getText( dialog, R.id.password_edit );
 
         if ( localOnlyGame() ) {
-            Spinner spinner =
-                (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
-            int position = spinner.getSelectedItemPosition();
-            SpinnerAdapter adapter = spinner.getAdapter();
+            {
+                Spinner spinner =
+                    (Spinner)((Dialog)di).findViewById( R.id.dict_spinner );
+                Assert.assertTrue( m_playerDictSpinner == spinner );
+            }
+            int position = m_playerDictSpinner.getSelectedItemPosition();
+            SpinnerAdapter adapter = m_playerDictSpinner.getAdapter();
 
             if ( null != adapter && position < adapter.getCount() ) {
                 String name = (String)adapter.getItem( position );
@@ -417,11 +424,10 @@ public class GameConfigDelegate extends DelegateBase
         m_playButton.setOnClickListener( this );
 
         m_playerLayout = (LinearLayout)findViewById( R.id.player_list );
-        m_langSpinner = (Spinner)findViewById( R.id.lang_spinner );
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
         m_boardsizeSpinner = (Spinner)findViewById( R.id.boardsize_spinner );
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
-    } // onCreate
+    } // init
 
     protected void onStart()
     {
@@ -447,6 +453,25 @@ public class GameConfigDelegate extends DelegateBase
     protected void onSaveInstanceState( Bundle outState ) 
     {
         outState.putInt( WHICH_PLAYER, m_whichPlayer );
+    }
+
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    {
+        if ( Activity.RESULT_CANCELED != resultCode ) {
+            switch( requestCode ) {
+            case REQUEST_DICT:
+                String dictName = data.getStringExtra( DictsDelegate.RESULT_LAST_DICT );
+                setSpinnerSelection( m_playerDictSpinner, dictName );
+                break;
+            case REQUEST_LANG:
+                String langName = data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
+                setSpinnerSelection( m_langSpinner, langName );
+                break;
+            default:
+                Assert.fail();
+            }
+        }
     }
 
     private void loadGame()
@@ -740,8 +765,8 @@ public class GameConfigDelegate extends DelegateBase
                         (String)parentView.getItemAtPosition( position );
 
                     if ( chosen.equals( m_browseText ) ) {
-                        DictsDelegate.launchForDownload( m_activity, 
-                                                         m_gi.dictLang );
+                        DictsDelegate.launchForResult( m_activity, REQUEST_DICT,
+                                                       m_gi.dictLang );
                     }
                 }
 
@@ -757,40 +782,43 @@ public class GameConfigDelegate extends DelegateBase
 
     private void configLangSpinner()
     {
-        OnItemSelectedListener onSel = 
-            new OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parentView, 
-                                           View selectedItemView, 
-                                           int position, long id ) {
-                    String chosen = 
-                        (String)parentView.getItemAtPosition( position );
-                    if ( chosen.equals( m_browseText ) ) {
-                        DictsDelegate.launchForDownload( m_activity );
-                    } else {
-                        m_gi.setLang( DictLangCache.
-                                      getLangLangCode( m_activity,
-                                                       chosen ) );
-                        loadPlayersList();
-                        if ( null != m_dictSpinner ) {
-                            configDictSpinner( m_dictSpinner, m_gi.dictLang, 
-                                               m_gi.dictName );
+        if ( null == m_langSpinner ) {
+            m_langSpinner = (Spinner)findViewById( R.id.lang_spinner );
+
+            OnItemSelectedListener onSel = 
+                new OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parentView, 
+                                               View selectedItemView, 
+                                               int position, long id ) {
+                        String chosen = 
+                            (String)parentView.getItemAtPosition( position );
+                        if ( chosen.equals( m_browseText ) ) {
+                            DictsDelegate.launchForResult( m_activity, REQUEST_LANG );
+                        } else {
+                            m_gi.setLang( DictLangCache.
+                                          getLangLangCode( m_activity,
+                                                           chosen ) );
+                            loadPlayersList();
+                            if ( null != m_dictSpinner ) {
+                                configDictSpinner( m_dictSpinner, m_gi.dictLang, 
+                                                   m_gi.dictName );
+                            }
                         }
                     }
-                }
 
-                @Override
+                    @Override
                     public void onNothingSelected(AdapterView<?> parentView) {}
-            };
+                };
 
-        ArrayAdapter<String> adapter = 
-            DictLangCache.getLangsAdapter( m_activity );
-        String lang = DictLangCache.getLangName( m_activity, m_gi.dictLang );
-        configSpinnerWDownload( m_langSpinner, adapter, onSel, lang );
+            ArrayAdapter adapter = DictLangCache.getLangsAdapter( m_activity );
+            String lang = DictLangCache.getLangName( m_activity, m_gi.dictLang );
+            configSpinnerWDownload( m_langSpinner, adapter, onSel, lang );
+        }
     }
 
     private void configSpinnerWDownload( Spinner spinner, 
-                                         ArrayAdapter<String> adapter,
+                                         ArrayAdapter adapter,
                                          OnItemSelectedListener onSel,
                                          String curSel )
     {
@@ -798,17 +826,17 @@ public class GameConfigDelegate extends DelegateBase
         adapter.setDropDownViewResource( resID );
         spinner.setAdapter( adapter );
         spinner.setOnItemSelectedListener( onSel );
-        setSpinnerSelection( spinner, adapter, curSel );
+        setSpinnerSelection( spinner, curSel );
     }
 
-    private void setSpinnerSelection( Spinner spinner, 
-                                      ArrayAdapter<String> adapter,
-                                      String sel )
+    private void setSpinnerSelection( Spinner spinner, String sel )
     {
-        if ( null != sel ) {
-            for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
-                if ( sel.equals( adapter.getItem(ii) ) ) {
-                    spinner.setSelection( ii );
+        if ( null != sel && null != spinner ) {
+            SpinnerAdapter adapter = spinner.getAdapter();
+            int count = adapter.getCount();
+            for ( int ii = 0; ii < count; ++ii ) {
+                if ( sel.equals( adapter.getItem( ii ) ) ) {
+                    spinner.setSelection( ii, true );
                     break;
                 }
             }

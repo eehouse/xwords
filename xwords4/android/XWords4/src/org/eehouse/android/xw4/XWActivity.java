@@ -21,6 +21,7 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -122,5 +123,12 @@ public class XWActivity extends Activity {
     {
         super.onPrepareDialog( id, dialog );
         m_dlgt.prepareDialog( DlgID.values()[id], dialog );
+    }
+
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, 
+                                     Intent data )
+    {
+        m_dlgt.onActivityResult( requestCode, resultCode, data );
     }
 }

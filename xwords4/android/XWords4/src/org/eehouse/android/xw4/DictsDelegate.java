@@ -74,6 +74,9 @@ public class DictsDelegate extends ListDelegateBase
     protected static final String DICT_SHOWREMOTE = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
     protected static final String DICT_NAME_EXTRA = "use_dict";
+    protected static final String RESULT_LAST_LANG = "last_lang";
+    protected static final String RESULT_LAST_DICT = "last_dict";
+
     private static final int SEL_LOCAL = 0;
     private static final int SEL_REMOTE = 1;
 
@@ -94,6 +97,8 @@ public class DictsDelegate extends ListDelegateBase
     private Map<String, String> m_needUpdates;
     private HashMap<String, XWListItem> m_curDownloads;
     private String m_onServerStr;
+    private String m_lastLang;
+    private String m_lastDict;
 
     private static class DictInfo implements Comparable {
         public String m_name;
@@ -530,6 +535,15 @@ public class DictsDelegate extends ListDelegateBase
         boolean handled = 0 < m_selDicts.size();
         if ( handled ) {
             clearSelections();
+        } else {
+            Intent intent = new Intent();
+            if ( null != m_lastLang ) {
+                intent.putExtra( RESULT_LAST_LANG, m_lastLang );
+            }
+            if ( null != m_lastDict ) {
+                intent.putExtra( RESULT_LAST_DICT, m_lastDict );
+            }
+            setResult( Activity.RESULT_OK, intent );
         }
         return handled;
     }
@@ -930,8 +944,8 @@ public class DictsDelegate extends ListDelegateBase
         // return mkDownloadIntent( context, dict_url );
     }
 
-    public static void launchForDownload( Activity activity, int lang, 
-                                          String name )
+    public static void launchForResult( Activity activity, int requestCode, 
+                                        int lang, String name )
     {
         Intent intent = new Intent( activity, DictsActivity.class );
         intent.putExtra( DICT_SHOWREMOTE, true );
@@ -943,24 +957,31 @@ public class DictsDelegate extends ListDelegateBase
             intent.putExtra( DICT_NAME_EXTRA, name );
         }
 
-        activity.startActivity( intent );
+        activity.startActivityForResult( intent, requestCode );
     }
 
-    public static void launchForDownload( Activity activity, int lang )
+    public static void launchForResult( Activity activity, int requestCode,
+                                        int lang )
     {
-        launchForDownload( activity, lang, null );
+        launchForResult( activity, requestCode, lang, null );
     }
 
-    public static void launchForDownload( Activity activity )
+    public static void launchForResult( Activity activity, int requestCode )
     {
-        launchForDownload( activity, 0, null );
+        launchForResult( activity, requestCode, 0, null );
     }
 
     //////////////////////////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////////////////////////
-    public void downloadFinished( final String name, final boolean success )
+    public void downloadFinished( String lang, final String name, 
+                                  final boolean success )
     {
+        if ( success && m_showRemote ) {
+            m_lastLang = lang;
+            m_lastDict = name;
+        }
+
         if ( m_launchedForMissing ) {
             post( new Runnable() {
                     public void run() {

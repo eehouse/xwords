@@ -34,12 +34,4 @@ public class SMSInviteActivity extends InviteActivity {
         m_dlgt = new SMSInviteDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
     }
-
-    @Override
-    protected void onActivityResult( int requestCode, int resultCode, 
-                                     Intent data )
-    {
-        super.onActivityResult( requestCode, resultCode, data );
-        m_dlgt.onActivityResult( requestCode, resultCode, data );
-    }
 }

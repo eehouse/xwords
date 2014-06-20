@@ -131,8 +131,8 @@ public class GamesListDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
-                            DictsDelegate.launchForDownload( m_activity, 
-                                                             m_missingDictLang );
+                            DictsDelegate.launchForResult( m_activity, 
+                                                           m_missingDictLang );
                         } else {
                             DwnldDelegate
                                 .downloadDictInBack( m_activity,
@@ -879,7 +879,8 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     // DwnldActivity.DownloadFinishedListener interface
-    public void downloadFinished( String name, final boolean success )
+    public void downloadFinished( String lang, String name, 
+                                  final boolean success )
     {
         post( new Runnable() {
                 public void run() {

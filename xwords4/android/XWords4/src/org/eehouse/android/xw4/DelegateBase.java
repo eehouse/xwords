@@ -68,14 +68,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void onDestroy() {}
     protected boolean onBackPressed() { return false; }
     protected void prepareDialog( DlgID dlgID, Dialog dialog ) {}
-
-    // public boolean onOptionsItemSelected( MenuItem item ) 
-    // {
-    // }
+    protected void onActivityResult( int requestCode, int resultCode, 
+                                     Intent data ) {}
 
     public boolean onCreateOptionsMenu( Menu menu )
     {
-        DbgUtils.logf( "DelegateBase.onCreateOptionsMenu()" );
         boolean handled = 0 < m_optionsMenuID;
         if ( handled ) {
             m_activity.getMenuInflater().inflate( m_optionsMenuID, menu );
