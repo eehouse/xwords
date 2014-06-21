@@ -127,7 +127,7 @@ public class XWListItem extends LinearLayout
     // cast exception when inflating it and casting to the subclass.
     // So rather than create a subclass that knows about its purpose
     // I'll extend this with a general mechanism.  Hackery but ok.
-    public void cache( Object obj )
+    public void setCached( Object obj )
     {
         m_cached = obj;
     }

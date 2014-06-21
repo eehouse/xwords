@@ -191,7 +191,7 @@ public class DictsDelegate extends ListDelegateBase
 
                 DictLoc loc = dal.loc;
                 item.setComment( m_locNames[loc.ordinal()] );
-                item.cache( loc );
+                item.setCached( loc );
 
                 item.setOnClickListener( DictsDelegate.this );
 
@@ -212,7 +212,7 @@ public class DictsDelegate extends ListDelegateBase
                 item.setOnClickListener( DictsDelegate.this );
                 item.setComment( m_onServerStr );
 
-                item.cache( info );
+                item.setCached( info );
 
                 if ( m_selDicts.containsKey( name ) ) {
                     m_selDicts.put( name, item );
@@ -346,7 +346,7 @@ public class DictsDelegate extends ListDelegateBase
                                                             name, fromLoc, 
                                                             toLoc ) ) {
                                 selItem.setComment( m_locNames[toLoc.ordinal()] );
-                                selItem.cache( toLoc );
+                                selItem.setCached( toLoc );
                                 selItem.invalidate();
                                 DBUtils.dictsMoveInfo( m_activity, name, 
                                                        fromLoc, toLoc );
