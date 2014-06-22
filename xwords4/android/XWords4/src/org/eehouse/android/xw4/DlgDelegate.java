@@ -208,7 +208,7 @@ public class DlgDelegate {
         // Assert.assertNull( m_dlgStates );
         DlgState state = new DlgState( DlgID.DIALOG_OKONLY, msg, action );
         addState( state );
-        m_activity.showDialog( DlgID.DIALOG_OKONLY.ordinal() );
+        showDialog( DlgID.DIALOG_OKONLY );
     }
 
     public void showOKOnlyDialog( int msgID )
@@ -218,12 +218,12 @@ public class DlgDelegate {
 
     public void showDictGoneFinish()
     {
-        m_activity.showDialog( DlgID.DLG_DICTGONE.ordinal() );
+        showDialog( DlgID.DLG_DICTGONE );
     }
 
     public void showAboutDialog()
     {
-        m_activity.showDialog( DlgID.DIALOG_ABOUT.ordinal() );
+        showDialog( DlgID.DIALOG_ABOUT );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey,
@@ -256,7 +256,7 @@ public class DlgDelegate {
                 new DlgState( DlgID.DIALOG_NOTAGAIN, msg, action, prefsKey, 
                               params );
             addState( state );
-            m_activity.showDialog( DlgID.DIALOG_NOTAGAIN.ordinal() );
+            showDialog( DlgID.DIALOG_NOTAGAIN );
         }
     }
 
@@ -305,7 +305,7 @@ public class DlgDelegate {
         DlgState state = new DlgState( DlgID.CONFIRM_THEN, msg, posButton, 
                                        action, 0, params );
         addState( state );
-        m_activity.showDialog( DlgID.CONFIRM_THEN.ordinal() );
+        showDialog( DlgID.CONFIRM_THEN );
     }
 
     public void showInviteChoicesThen( final Action action )
@@ -314,7 +314,7 @@ public class DlgDelegate {
              || NFCUtils.nfcAvail( m_activity )[0] ) {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN, action );
             addState( state );
-            m_activity.showDialog( DlgID.INVITE_CHOICES_THEN.ordinal() );
+            showDialog( DlgID.INVITE_CHOICES_THEN );
         } else {
             post( new Runnable() {
                     public void run() {
@@ -339,7 +339,7 @@ public class DlgDelegate {
     {
         Bundle params = LookupAlert.makeParams( words, lang, noStudyOption );
         addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
-        m_activity.showDialog( DlgID.LOOKUP.ordinal() );
+        showDialog( DlgID.LOOKUP );
     }
 
     public void startProgress( int id )
