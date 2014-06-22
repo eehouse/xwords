@@ -1936,9 +1936,9 @@
     dellatsni stsildrow. Dluow uoy ekil ot daolnwod eht wen
     ]s[noisrev fo %1$s ?won</string>
   <string name="progress_title">Gnidaolnwod</string>
-  <string name="dict_info_fmt">Tsildrow %1$s si elbaliava rof
-    daolnwod.\n\nSliated:\nRebmun fo sdrow: %2$d\nDaolnwod ezis:
-    %3$dK\nEton: %4$s</string>
+  <string name="dict_info_fmt">Rebmun fo sdrow: %1$d\nDaolnwod ezis:
+    %2$dK\nEton: %3$s</string>
+  <string name="note_none">)Enon(</string>
   <string name="dict_on_server">Elbadaolnwod</string>
   <string name="lang_name_fmt">%1$s (%2$d )stsildrow</string>
 </resources>

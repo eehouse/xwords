@@ -79,7 +79,6 @@ public class DlgDelegate {
         // Dict Browser
         FINISH_ACTION,
         DELETE_DICT_ACTION,
-        DOWNLOAD_DICT_ACTION,
         UPDATE_DICTS_ACTION,
 
         // Game configs

@@ -44,8 +44,16 @@ public class XWListItem extends LinearLayout
     private CheckBox m_checkbox;
     private DrawSelDelegate m_dsdel;
 
+    private ExpandedListener m_expListener;
+    private boolean m_expanded = false;
+    private View m_expandedView;
+
     public interface DeleteCallback {
         void deleteCalled( XWListItem item );
+    }
+
+    public interface ExpandedListener {
+        void expanded( XWListItem me, boolean expanded );
     }
 
     public XWListItem( Context cx, AttributeSet as ) {
@@ -64,6 +72,28 @@ public class XWListItem extends LinearLayout
 
     public int getPosition() { return m_position; }
     public void setPosition( int indx ) { m_position = indx; }
+
+    protected void setExpandedListener( ExpandedListener lstnr )
+    {
+        Assert.assertNull( m_expListener ); // call me only once
+        m_expListener = lstnr;
+        setOnClickListener( this );
+    }
+
+    protected void addExpandedView( View view )
+    {
+        if ( null != m_expandedView ) {
+            removeExpandedView();
+        }
+        m_expandedView = view;
+        addView( view );
+    }
+
+    protected void removeExpandedView()
+    {
+        removeView( m_expandedView );
+        m_expandedView = null;
+    }
 
     public void setText( String text )
     {
@@ -148,6 +178,9 @@ public class XWListItem extends LinearLayout
     {
         if ( m_checkbox == view ) {
             setSelected( m_checkbox.isChecked() );
+        } else if ( null != m_expListener ) {
+            m_expanded = !m_expanded;
+            m_expListener.expanded( this, m_expanded );
         }
     }
 

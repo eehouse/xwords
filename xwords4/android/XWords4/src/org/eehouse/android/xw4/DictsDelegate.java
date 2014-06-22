@@ -41,7 +41,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.apache.http.client.methods.HttpPost;
 import org.json.JSONArray;
@@ -69,7 +71,8 @@ public class DictsDelegate extends ListDelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
                SelectableItem, MountEventReceiver.SDCardNotifiee, 
                DlgDelegate.DlgClickNotify, GroupStateListener,
-               DwnldDelegate.DownloadFinishedListener {
+               DwnldDelegate.DownloadFinishedListener, 
+               XWListItem.ExpandedListener {
 
     protected static final String DICT_SHOWREMOTE = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
@@ -99,6 +102,7 @@ public class DictsDelegate extends ListDelegateBase
     private String m_onServerStr;
     private String m_lastLang;
     private String m_lastDict;
+    private String m_noteNone;
 
     private static class DictInfo implements Comparable {
         public String m_name;
@@ -114,7 +118,7 @@ public class DictsDelegate extends ListDelegateBase
             m_lang = lang;
             m_nWords = nWords;
             m_nBytes = nBytes;
-            m_note = null == note? "" : note;
+            m_note = note;
         }
         public int compareTo( Object obj ) {
             DictInfo other = (DictInfo)obj;
@@ -219,7 +223,7 @@ public class DictsDelegate extends ListDelegateBase
                 String name = info.m_name;
                 item.setText( name );
 
-                item.setOnClickListener( DictsDelegate.this );
+                item.setExpandedListener( DictsDelegate.this );
                 item.setComment( m_onServerStr );
 
                 item.setCached( info );
@@ -459,6 +463,7 @@ public class DictsDelegate extends ListDelegateBase
         }
 
         m_locNames = getStringArray( R.array.loc_names );
+        m_noteNone = getString( R.string.note_none );
 
         setContentView( R.layout.dict_browse );
         m_listView = getListView();
@@ -523,20 +528,8 @@ public class DictsDelegate extends ListDelegateBase
             switchShowingRemote( m_checkbox.isChecked() );
         } else {
             XWListItem item = (XWListItem)view;
-            Object obj = item.getCached();
-            if ( obj instanceof DictLoc ) {
-                DictBrowseDelegate.launch( m_activity, item.getText(), 
-                                           (DictLoc)obj );
-            } else {
-                DictInfo info = (DictInfo)obj;
-                long kBytes = (info.m_nBytes + 999) / 1000;
-                String msg = getString( R.string.dict_info_fmt, info.m_name, 
-                                        info.m_nWords, kBytes, info.m_note );
-                int langCode = DictLangCache.getLangLangCode( m_activity, info.m_lang );
-                showConfirmThen( msg, R.string.button_download, 
-                                 Action.DOWNLOAD_DICT_ACTION, 
-                                 langCode, info.m_name );
-            }
+            DictBrowseDelegate.launch( m_activity, item.getText(), 
+                                       (DictLoc)item.getCached() );
         }
     }
 
@@ -798,11 +791,6 @@ public class DictsDelegate extends ListDelegateBase
                 }
                 clearSelections();
                 break;
-            case DOWNLOAD_DICT_ACTION:
-                int lang = (Integer)params[0];
-                String name = (String)params[1];
-                DwnldDelegate.downloadDictInBack( m_activity, lang, name, this );
-                break;
             case UPDATE_DICTS_ACTION:
                 String[] urls = m_needUpdates.values().
                     toArray( new String[m_needUpdates.size()] );
@@ -982,6 +970,39 @@ public class DictsDelegate extends ListDelegateBase
     }
 
     //////////////////////////////////////////////////////////////////////
+    // XWListItem.ExpandedListener
+    //////////////////////////////////////////////////////////////////////
+    public void expanded( XWListItem me, boolean expanded )
+    {
+        if ( expanded ) {
+            LinearLayout view = 
+                (LinearLayout)inflate( R.layout.remote_dict_details );
+            final DictInfo info = (DictInfo)me.getCached();
+            Button button = (Button)view.findViewById( R.id.download_button );
+            button.setOnClickListener( new View.OnClickListener() {
+                    public void onClick( View view ) {
+                        int langCode = DictLangCache.getLangLangCode( m_activity, 
+                                                                      info.m_lang );
+                        DwnldDelegate.downloadDictInBack( m_activity, langCode, 
+                                                          info.m_name, 
+                                                          DictsDelegate.this );
+                    }
+                } );
+            
+            long kBytes = (info.m_nBytes + 999) / 1000;
+            String note = null == info.m_note ? m_noteNone : info.m_note;
+            String msg = getString( R.string.dict_info_fmt, info.m_nWords, 
+                                    kBytes, note );
+            TextView summary = (TextView)view.findViewById( R.id.details );
+            summary.setText( msg );
+            
+            me.addExpandedView( view );
+        } else {
+            me.removeExpandedView();
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////
     // DwnldActivity.DownloadFinishedListener interface
     //////////////////////////////////////////////////////////////////////
     public void downloadFinished( String lang, final String name, 
@@ -1084,6 +1105,9 @@ public class DictsDelegate extends ListDelegateBase
                         long nBytes = dict.optLong( "nBytes", -1 );
                         int nWords = dict.optInt( "nWords", -1 );
                         String note = dict.optString( "note" );
+                        if ( 0 == note.length() ) {
+                            note = null;
+                        }
                         DictInfo info = new DictInfo( name, langName, nWords, nBytes, note );
 
                         if ( !m_quickFetchMode ) {
