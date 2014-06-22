@@ -1931,7 +1931,7 @@
         FROM SERVER.</string>
   <string name="getinfo">GET INFO</string>
   <string name="delete_dicts">DELETE WORDLIST[S]</string>
-  <string name="show_remote">INCLUDE DOWNLOADABLE</string>
+  <string name="show_remote">SHOW DOWNLOADABLE</string>
   <string name="update_dicts_fmt">UPDATES ARE AVAILABLE FOR ONE OR MORE
     INSTALLED WORDLISTS. WOULD YOU LIKE TO DOWNLOAD THE NEW
     VERSION[S] OF %1$s NOW?</string>

@@ -2256,7 +2256,7 @@
 
     <string name="delete_dicts">Delete wordlist[s]</string>
 
-    <string name="show_remote">Include downloadable</string>
+    <string name="show_remote">Show downloadable</string>
     <string name="update_dicts_fmt">Updates are available for one or more
     installed wordlists. Would you like to download the new
     version[s] of %1$s now?</string>
