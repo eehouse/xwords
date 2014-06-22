@@ -121,6 +121,15 @@ public class DictsDelegate extends ListDelegateBase
             return m_name.compareTo( other.m_name );
         }
     }
+    private static class LangInfo {
+        int m_numDicts;
+        int m_posn;
+        public LangInfo( int posn, int numDicts ) 
+        {
+            m_posn = posn;
+            m_numDicts = numDicts;
+        }
+    }
     private HashMap<String, DictAndLoc[]> m_localInfo;
     private HashMap<String, DictInfo[]> m_remoteInfo;
 
@@ -149,14 +158,12 @@ public class DictsDelegate extends ListDelegateBase
                         continue;
                     }
 
-                    alist.add( new Integer(ii) );
-
-                    if ( m_closedLangs.contains( langName ) ) {
-                        continue;
-                    }
-
                     ArrayList<Object> items = makeLangItems( langName );
-                    alist.addAll( items );
+
+                    alist.add( new LangInfo( ii, items.size() ) );
+                    if ( ! m_closedLangs.contains( langName ) ) {
+                        alist.addAll( items );
+                    }
                 }
                 m_listInfo = alist.toArray( new Object[alist.size()] );
             }
@@ -172,14 +179,17 @@ public class DictsDelegate extends ListDelegateBase
             View result = null;
 
             Object obj = m_listInfo[position];
-            if ( obj instanceof Integer ) {
-                int groupPos = (Integer)obj;
+            if ( obj instanceof LangInfo ) {
+                LangInfo info = (LangInfo)obj;
+                int groupPos = info.m_posn;
                 String langName = m_langs[groupPos];
                 int langCode = DictLangCache.getLangLangCode( m_context,
                                                               langName );
                 boolean expanded = ! m_closedLangs.contains( langName );
-                result = ListGroup.make( m_context, DictsDelegate.this, groupPos,
-                                         langName, expanded );
+                String name = getString( R.string.lang_name_fmt, langName, 
+                                         info.m_numDicts );
+                result = ListGroup.make( m_context, DictsDelegate.this,
+                                         groupPos, name, expanded );
             } else if ( obj instanceof DictAndLoc ) {
                 DictAndLoc dal = (DictAndLoc)obj;
                 XWListItem item = 
@@ -230,7 +240,7 @@ public class DictsDelegate extends ListDelegateBase
             asList.addAll( Arrays.asList( m_listInfo ) );
 
             int indx = findLangItem( langName ) + 1;
-            while ( indx < asList.size() && ! (asList.get(indx) instanceof Integer) ) {
+            while ( indx < asList.size() && ! (asList.get(indx) instanceof LangInfo) ) {
                 asList.remove( indx );
             }
 
@@ -289,8 +299,8 @@ public class DictsDelegate extends ListDelegateBase
             int nLangs = m_langs.length;
             for ( int ii = 0; ii < m_listInfo.length; ++ii ) {
                 Object obj = m_listInfo[ii];
-                if ( obj instanceof Integer ) {
-                    if ( m_langs[(Integer)obj].equals( langName ) ) {
+                if ( obj instanceof LangInfo ) {
+                    if ( m_langs[((LangInfo)obj).m_posn].equals( langName ) ) {
                         result = ii;
                         break;
                     }

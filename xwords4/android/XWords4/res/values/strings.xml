@@ -2267,5 +2267,5 @@
     download.\n\nDetails:\nNumber of words: %2$d\nDownload size:
     %3$dK\nNote: %4$s</string>
     <string name="dict_on_server">Downloadable</string>
-    
+    <string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    
 </resources>
