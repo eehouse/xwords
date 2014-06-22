@@ -168,7 +168,6 @@ public class DlgDelegate {
     
     public Dialog createDialog( int id )
     {
-        // DbgUtils.logf("createDialog(id=%d)", id );
         Dialog dialog = null;
         DlgID dlgID = DlgID.values()[id];
         DlgState state = findForID( dlgID );
@@ -337,9 +336,13 @@ public class DlgDelegate {
 
     public void launchLookup( String[] words, int lang, boolean noStudyOption )
     {
-        Bundle params = LookupAlert.makeParams( words, lang, noStudyOption );
-        addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
-        showDialog( DlgID.LOOKUP );
+        if ( LookupAlert.needAlert( m_activity, words, lang ) ) {
+            Bundle params = LookupAlert.makeParams( words, lang, noStudyOption );
+            addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
+            showDialog( DlgID.LOOKUP );
+        } else {
+            LookupAlert.launchWordLookup( m_activity, words[0], lang );
+        }
     }
 
     public void startProgress( int id )
@@ -451,7 +454,7 @@ public class DlgDelegate {
     {
         DlgState state = findForID( DlgID.LOOKUP );
         Bundle bundle = (Bundle)state.m_params[0];
-        return LookupAlert.createDialog( m_activity, bundle );
+        return LookupAlert.makeDialog( m_activity, bundle );
     }
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )
