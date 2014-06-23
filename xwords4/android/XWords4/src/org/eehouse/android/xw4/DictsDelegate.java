@@ -85,6 +85,7 @@ public class DictsDelegate extends ListDelegateBase
 
     private ListActivity m_activity;
     private Set<String> m_closedLangs;
+    private Set<DictInfo> m_expandedItems;
     private DictListAdapter m_adapter;
 
     private boolean m_quickFetchMode;
@@ -222,11 +223,11 @@ public class DictsDelegate extends ListDelegateBase
 
                 String name = info.m_name;
                 item.setText( name );
+                item.setCached( info );
 
                 item.setExpandedListener( DictsDelegate.this );
+                item.setExpanded( m_expandedItems.contains( info ) );
                 item.setComment( m_onServerStr );
-
-                item.setCached( info );
 
                 if ( m_selDicts.containsKey( name ) ) {
                     m_selDicts.put( name, item );
@@ -461,6 +462,8 @@ public class DictsDelegate extends ListDelegateBase
         if ( null != closed ) {
             m_closedLangs.addAll( Arrays.asList( closed ) );
         }
+
+        m_expandedItems = new HashSet<DictInfo>();
 
         m_locNames = getStringArray( R.array.loc_names );
         m_noteNone = getString( R.string.note_none );
@@ -970,14 +973,15 @@ public class DictsDelegate extends ListDelegateBase
     }
 
     //////////////////////////////////////////////////////////////////////
-    // XWListItem.ExpandedListener
+    // XWListItem.ExpandedListener interface
     //////////////////////////////////////////////////////////////////////
     public void expanded( XWListItem me, boolean expanded )
     {
+        final DictInfo info = (DictInfo)me.getCached();
         if ( expanded ) {
+            m_expandedItems.add( info ); // may already be there
             LinearLayout view = 
                 (LinearLayout)inflate( R.layout.remote_dict_details );
-            final DictInfo info = (DictInfo)me.getCached();
             Button button = (Button)view.findViewById( R.id.download_button );
             button.setOnClickListener( new View.OnClickListener() {
                     public void onClick( View view ) {
@@ -999,6 +1003,7 @@ public class DictsDelegate extends ListDelegateBase
             me.addExpandedView( view );
         } else {
             me.removeExpandedView();
+            m_expandedItems.remove( info );
         }
     }
 

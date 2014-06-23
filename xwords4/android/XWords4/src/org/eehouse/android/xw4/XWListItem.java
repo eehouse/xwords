@@ -80,6 +80,14 @@ public class XWListItem extends LinearLayout
         setOnClickListener( this );
     }
 
+    protected void setExpanded( boolean expanded )
+    {
+        m_expanded = expanded;
+        if ( null != m_expListener ) {
+            m_expListener.expanded( this, m_expanded );
+        }
+    }
+
     protected void addExpandedView( View view )
     {
         if ( null != m_expandedView ) {
@@ -178,9 +186,8 @@ public class XWListItem extends LinearLayout
     {
         if ( m_checkbox == view ) {
             setSelected( m_checkbox.isChecked() );
-        } else if ( null != m_expListener ) {
-            m_expanded = !m_expanded;
-            m_expListener.expanded( this, m_expanded );
+        } else {
+            setExpanded( !m_expanded ); // toggle
         }
     }
 
