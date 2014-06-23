@@ -687,6 +687,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         Assert.assertTrue( m_menuPrepared );
 
+        int itemID = item.getItemId();
         boolean handled = true;
         boolean changeContent = false;
         boolean dropSels = false;
@@ -697,12 +698,12 @@ public class GamesListDelegate extends ListDelegateBase
         }
         final long[] selRowIDs = getSelRowIDs();
 
-        if ( 1 == selRowIDs.length && !checkWarnNoDict( selRowIDs[0] ) ) {
+        if ( 1 == selRowIDs.length && R.id.games_game_delete != itemID
+             && !checkWarnNoDict( selRowIDs[0] ) ) {
             return true;        // FIXME: RETURN FROM MIDDLE!!!
         }
 
-        switch ( item.getItemId() ) {
-
+        switch ( itemID ) {
             // There's no selection for these items, so nothing to clear
         case R.id.games_menu_resend:
             GameUtils.resendAllIf( m_activity, true );
