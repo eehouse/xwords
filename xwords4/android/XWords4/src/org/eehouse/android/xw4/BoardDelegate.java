@@ -814,7 +814,7 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
         case R.id.games_menu_study:
-            StudyListActivity.launchOrAlert( m_activity, m_gi.dictLang, this );
+            StudyListDelegate.launchOrAlert( m_activity, m_gi.dictLang, this );
             break;
         case R.id.board_menu_game_netstats:
             m_jniThread.handle( JNICmd.CMD_NETSTATS, R.string.netstats_title );

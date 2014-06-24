@@ -38,6 +38,7 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.Iterator;
 
 import junit.framework.Assert;
@@ -50,7 +51,7 @@ public class StudyListDelegate extends ListDelegateBase
     implements OnItemSelectedListener, SelectableItem,
                View.OnLongClickListener, View.OnClickListener {
 
-    public static final int NO_LANG = -1;
+    protected static final int NO_LANG = -1;
 
     protected static final String START_LANG = "START_LANG";
     
@@ -59,7 +60,7 @@ public class StudyListDelegate extends ListDelegateBase
     private View m_pickView;    // LinearLayout, actually
     private int[] m_langCodes;
     private String[] m_words;
-    private HashSet<Integer> m_checkeds;
+    private Set<Integer> m_checkeds;
     private int m_langPosition;
     private SLWordsAdapter m_adapter;
     private ListView m_list;
@@ -78,6 +79,7 @@ public class StudyListDelegate extends ListDelegateBase
 
         m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
         m_pickView = findViewById( R.id.pick_lang );
+        m_checkeds = new HashSet<Integer>();
 
         initOrFinish( getIntent() );
     }
@@ -247,7 +249,8 @@ public class StudyListDelegate extends ListDelegateBase
     {
         int lang = m_langCodes[m_langPosition];
         m_words = DBUtils.studyListWords( m_activity, lang );
-        m_checkeds = new HashSet<Integer>();
+
+        m_checkeds.clear();
 
         makeAdapter();
 

@@ -19,46 +19,16 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.ListActivity;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.loc.LocUtils;
-
 public class StudyListActivity extends XWListActivity {
-
-    private StudyListDelegate m_dlgt;
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        m_dlgt = new StudyListDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, m_dlgt );
+        StudyListDelegate dlgt = 
+            new StudyListDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, dlgt );
     }
 
-    public static void launchOrAlert( Context context, int lang, 
-                                      DlgDelegate.HasDlgDelegate dlg )
-    {
-        String msg = null;
-        if ( 0 == DBUtils.studyListLangs( context ).length ) {
-            msg = LocUtils.getString( context, R.string.study_no_lists );
-        } else if ( StudyListDelegate.NO_LANG != lang && 
-                    0 == DBUtils.studyListWords( context, lang ).length ) {
-            String langname = DictLangCache.getLangName( context, lang );
-            msg = LocUtils.getString( context, R.string.study_no_lang_fmt, langname );
-        } else {
-            Intent intent = new Intent( context, StudyListActivity.class );
-            if ( StudyListDelegate.NO_LANG != lang ) {
-                intent.putExtra( StudyListDelegate.START_LANG, lang );
-            }
-            context.startActivity( intent );
-        }
-
-        if ( null != msg ) {
-            dlg.showOKOnlyDialog( msg );
-        }
-    }
 }
