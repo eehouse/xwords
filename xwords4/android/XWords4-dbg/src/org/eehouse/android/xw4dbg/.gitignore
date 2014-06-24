@@ -107,3 +107,7 @@ InviteDelegate.java
 ListDelegateBase.java
 PrefsDelegate.java
 SMSInviteDelegate.java
+DwnldActivity.java
+DwnldDelegate.java
+GroupStateListener.java
+ListGroup.java

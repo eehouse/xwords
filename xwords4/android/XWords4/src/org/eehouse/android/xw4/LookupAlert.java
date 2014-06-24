@@ -136,7 +136,7 @@ public class LookupAlert extends LinearLayout
     {
         m_parent = activity;
         m_words = params.getStringArray( WORDS );
-        setLang( params.getInt( LANG, -1 ) );
+        setLang( activity, params.getInt( LANG, -1 ) );
         m_forceList = params.getBoolean( FORCELIST, false );
         m_studyOn = XWPrefs.getStudyEnabled( m_context );
         if ( m_studyOn ) {
@@ -186,7 +186,9 @@ public class LookupAlert extends LinearLayout
     //     }
     // }
 
-    /* View.OnClickListener -- just the Done button */
+    //////////////////////////////////////////////////////////////////////
+    // View.OnClickListener 
+    //////////////////////////////////////////////////////////////////////
     public void onClick( View view ) 
     {
         if ( view == m_doneButton ) {
@@ -200,8 +202,10 @@ public class LookupAlert extends LinearLayout
         }
     }
 
-    /* AdapterView.OnItemClickListener */
-    public void onItemClick( AdapterView<?> parent, View view, 
+    //////////////////////////////////////////////////////////////////////
+    // AdapterView.OnItemClickListener 
+    //////////////////////////////////////////////////////////////////////
+    public void onItemClick( AdapterView<?> parentView, View view, 
                              int position, long id )
     {
         if ( STATE_WORDS == m_state ) {
@@ -265,7 +269,8 @@ public class LookupAlert extends LinearLayout
             }
             break;
         case STATE_LOOKUP:
-            lookupWord( m_words[m_wordIndex], s_lookupUrls[m_urlIndex] );
+            lookupWord( m_context, m_words[m_wordIndex], 
+                        s_lookupUrls[m_urlIndex] );
             switchState( -1 );
             break;
         default:
@@ -274,7 +279,7 @@ public class LookupAlert extends LinearLayout
         }
     } // switchState
 
-    private void lookupWord( String word, String fmt )
+    private static void lookupWord( Context context, String word, String fmt )
     {
         if ( false ) {
             DbgUtils.logf( "skipping lookupWord(%s)", word );
@@ -286,21 +291,21 @@ public class LookupAlert extends LinearLayout
             intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
         
             try {
-                m_context.startActivity( intent );
+                context.startActivity( intent );
             } catch ( android.content.ActivityNotFoundException anfe ) {
                 DbgUtils.loge( anfe );
             }
         }
     } // lookupWord
 
-    private void setLang( int lang )
+    private static void setLang( Context context, int lang )
     {
         if ( null == s_langCodes ) {
-            s_langCodes = getResources().getStringArray( R.array.language_codes );
+            s_langCodes = context.getResources().getStringArray( R.array.language_codes );
         }
 
         if ( s_lang != lang ) {
-            String[] urls = getResources().getStringArray( R.array.lookup_urls );
+            String[] urls = context.getResources().getStringArray( R.array.lookup_urls );
             ArrayList<String> tmpUrls = new ArrayList<String>();
             ArrayList<String> tmpNames = new ArrayList<String>();
             String langCode = String.format( ":%s:", s_langCodes[lang] );
@@ -313,7 +318,7 @@ public class LookupAlert extends LinearLayout
             }
             s_lookupNames = tmpNames.toArray( new String[tmpNames.size()] );
             s_lookupUrls = tmpUrls.toArray( new String[tmpUrls.size()] );
-            s_urlsAdapter = new ArrayAdapter<String>( m_context, LIST_LAYOUT, 
+            s_urlsAdapter = new ArrayAdapter<String>( context, LIST_LAYOUT, 
                                                       s_lookupNames );
             s_lang = lang;
         }
@@ -344,6 +349,17 @@ public class LookupAlert extends LinearLayout
         return handled;
     }
 
+    public static boolean needAlert( Context context, String[] words, 
+                                     int langCode )
+    {
+        boolean result = 1 < words.length;
+        if ( !result ) {
+            setLang( context, langCode );
+            result = 1 < s_lookupUrls.length;
+        }
+        return result;
+    }
+
     public static Bundle makeParams( String[] words, int lang, 
                                      boolean noStudyOption )
     {
@@ -354,7 +370,7 @@ public class LookupAlert extends LinearLayout
         return bundle;
     }
 
-    public static Dialog createDialog( Activity parent, Bundle bundle )
+    public static Dialog makeDialog( Activity parent, Bundle bundle )
     {
         LookupAlert view = (LookupAlert)
             LocUtils.inflate( parent, R.layout.lookup );
@@ -366,5 +382,12 @@ public class LookupAlert extends LinearLayout
             .create();
         result.setOnKeyListener( view );
         return result;
+    }
+
+    protected static void launchWordLookup( Context context, String word, 
+                                            int langCode )
+    {
+        setLang( context, langCode );
+        lookupWord( context, word, s_lookupUrls[0] );
     }
 }

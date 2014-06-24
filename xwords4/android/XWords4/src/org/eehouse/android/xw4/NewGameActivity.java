@@ -41,11 +41,4 @@ public class NewGameActivity extends XWActivity {
         super.onWindowFocusChanged( hasFocus );
         m_dlgt.onWindowFocusChanged( hasFocus );
     }
-
-    @Override
-    protected void onActivityResult( int requestCode, int resultCode, 
-                                     Intent data )
-    {
-        m_dlgt.onActivityResult( requestCode, resultCode, data );
-    }
 }

@@ -79,7 +79,6 @@ public class DlgDelegate {
         // Dict Browser
         FINISH_ACTION,
         DELETE_DICT_ACTION,
-        DOWNLOAD_DICT_ACTION,
         UPDATE_DICTS_ACTION,
 
         // Game configs
@@ -168,7 +167,6 @@ public class DlgDelegate {
     
     public Dialog createDialog( int id )
     {
-        // DbgUtils.logf("createDialog(id=%d)", id );
         Dialog dialog = null;
         DlgID dlgID = DlgID.values()[id];
         DlgState state = findForID( dlgID );
@@ -208,7 +206,7 @@ public class DlgDelegate {
         // Assert.assertNull( m_dlgStates );
         DlgState state = new DlgState( DlgID.DIALOG_OKONLY, msg, action );
         addState( state );
-        m_activity.showDialog( DlgID.DIALOG_OKONLY.ordinal() );
+        showDialog( DlgID.DIALOG_OKONLY );
     }
 
     public void showOKOnlyDialog( int msgID )
@@ -218,12 +216,12 @@ public class DlgDelegate {
 
     public void showDictGoneFinish()
     {
-        m_activity.showDialog( DlgID.DLG_DICTGONE.ordinal() );
+        showDialog( DlgID.DLG_DICTGONE );
     }
 
     public void showAboutDialog()
     {
-        m_activity.showDialog( DlgID.DIALOG_ABOUT.ordinal() );
+        showDialog( DlgID.DIALOG_ABOUT );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey,
@@ -256,7 +254,7 @@ public class DlgDelegate {
                 new DlgState( DlgID.DIALOG_NOTAGAIN, msg, action, prefsKey, 
                               params );
             addState( state );
-            m_activity.showDialog( DlgID.DIALOG_NOTAGAIN.ordinal() );
+            showDialog( DlgID.DIALOG_NOTAGAIN );
         }
     }
 
@@ -305,7 +303,7 @@ public class DlgDelegate {
         DlgState state = new DlgState( DlgID.CONFIRM_THEN, msg, posButton, 
                                        action, 0, params );
         addState( state );
-        m_activity.showDialog( DlgID.CONFIRM_THEN.ordinal() );
+        showDialog( DlgID.CONFIRM_THEN );
     }
 
     public void showInviteChoicesThen( final Action action )
@@ -314,7 +312,7 @@ public class DlgDelegate {
              || NFCUtils.nfcAvail( m_activity )[0] ) {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN, action );
             addState( state );
-            m_activity.showDialog( DlgID.INVITE_CHOICES_THEN.ordinal() );
+            showDialog( DlgID.INVITE_CHOICES_THEN );
         } else {
             post( new Runnable() {
                     public void run() {
@@ -337,9 +335,13 @@ public class DlgDelegate {
 
     public void launchLookup( String[] words, int lang, boolean noStudyOption )
     {
-        Bundle params = LookupAlert.makeParams( words, lang, noStudyOption );
-        addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
-        m_activity.showDialog( DlgID.LOOKUP.ordinal() );
+        if ( LookupAlert.needAlert( m_activity, words, lang ) ) {
+            Bundle params = LookupAlert.makeParams( words, lang, noStudyOption );
+            addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
+            showDialog( DlgID.LOOKUP );
+        } else {
+            LookupAlert.launchWordLookup( m_activity, words[0], lang );
+        }
     }
 
     public void startProgress( int id )
@@ -451,7 +453,7 @@ public class DlgDelegate {
     {
         DlgState state = findForID( DlgID.LOOKUP );
         Bundle bundle = (Bundle)state.m_params[0];
-        return LookupAlert.createDialog( m_activity, bundle );
+        return LookupAlert.makeDialog( m_activity, bundle );
     }
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )

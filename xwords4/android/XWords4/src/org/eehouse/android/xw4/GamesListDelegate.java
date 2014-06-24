@@ -131,9 +131,8 @@ public class GamesListDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
-                            DictsDelegate
-                                .launchAndDownload( m_activity, 
-                                                    m_missingDictLang );
+                            DictsDelegate.launchForResult( m_activity, 
+                                                           m_missingDictLang );
                         } else {
                             DwnldDelegate
                                 .downloadDictInBack( m_activity,
@@ -688,6 +687,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         Assert.assertTrue( m_menuPrepared );
 
+        int itemID = item.getItemId();
         boolean handled = true;
         boolean changeContent = false;
         boolean dropSels = false;
@@ -698,12 +698,12 @@ public class GamesListDelegate extends ListDelegateBase
         }
         final long[] selRowIDs = getSelRowIDs();
 
-        if ( 1 == selRowIDs.length && !checkWarnNoDict( selRowIDs[0] ) ) {
+        if ( 1 == selRowIDs.length && R.id.games_game_delete != itemID
+             && !checkWarnNoDict( selRowIDs[0] ) ) {
             return true;        // FIXME: RETURN FROM MIDDLE!!!
         }
 
-        switch ( item.getItemId() ) {
-
+        switch ( itemID ) {
             // There's no selection for these items, so nothing to clear
         case R.id.games_menu_resend:
             GameUtils.resendAllIf( m_activity, true );
@@ -880,7 +880,8 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     // DwnldActivity.DownloadFinishedListener interface
-    public void downloadFinished( String name, final boolean success )
+    public void downloadFinished( String lang, String name, 
+                                  final boolean success )
     {
         post( new Runnable() {
                 public void run() {

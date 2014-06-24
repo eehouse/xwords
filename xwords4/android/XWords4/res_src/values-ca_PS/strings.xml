@@ -152,8 +152,11 @@
        ############################################################ 
       -->
   <!-- window title -->
-  <string name="title_dicts_list">INSTALLED CROSSWORDS WORDLISTS</string>
-  <string name="title_remote_dicts">AVAILABLE CROSSWORDS WORDLISTS</string>
+  <string name="title_dicts_list">CROSSWORDS WORDLISTS</string>
+  <!-- text of item at bottom of dicts choice spinner.  It
+         launches the browser pointed at the site where additional
+         wordlists can be found. -->
+  <string name="download_dicts">DOWNLOAD MORE…</string>
   <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
          Crosswords and that cannot be uninstalled or moved.
@@ -1928,13 +1931,14 @@
         FROM SERVER.</string>
   <string name="getinfo">GET INFO</string>
   <string name="delete_dicts">DELETE WORDLIST[S]</string>
-  <string name="show_remote">INCLUDE DOWNLOADABLE</string>
+  <string name="show_remote">SHOW DOWNLOADABLE</string>
   <string name="update_dicts_fmt">UPDATES ARE AVAILABLE FOR ONE OR MORE
     INSTALLED WORDLISTS. WOULD YOU LIKE TO DOWNLOAD THE NEW
     VERSION[S] OF %1$s NOW?</string>
   <string name="progress_title">DOWNLOADING</string>
-  <string name="dict_info_fmt">WORDLIST %1$s IS AVAILABLE FOR
-    DOWNLOAD.\n\nDETAILS:\nNUMBER OF WORDS: %2$d\nDOWNLOAD SIZE:
-    %3$dK\nNOTE: %4$s</string>
+  <string name="dict_info_fmt">NUMBER OF WORDS: %1$d\nDOWNLOAD SIZE:
+    %2$dK\nNOTE: %3$s</string>
+  <string name="note_none">(NONE)</string>
   <string name="dict_on_server">DOWNLOADABLE</string>
+  <string name="lang_name_fmt">%1$s (%2$d WORDLISTS)</string>
 </resources>

@@ -43,12 +43,6 @@ public class BoardActivity extends XWActivity {
     } // onCreate
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, Intent data )
-    {
-        m_dlgt.onActivityResult( requestCode, resultCode, data );
-    }
-
-    @Override
     public void onWindowFocusChanged( boolean hasFocus )
     {
         super.onWindowFocusChanged( hasFocus );

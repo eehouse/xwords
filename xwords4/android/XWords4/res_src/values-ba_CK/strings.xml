@@ -152,8 +152,11 @@
        ############################################################ 
       -->
   <!-- window title -->
-  <string name="title_dicts_list">Dellatsni Sdrowssorc Stsildrow</string>
-  <string name="title_remote_dicts">Elbaliava Sdrowssorc Stsildrow</string>
+  <string name="title_dicts_list">Sdrowssorc Stsildrow</string>
+  <!-- text of item at bottom of dicts choice spinner.  It
+         launches the browser pointed at the site where additional
+         wordlists can be found. -->
+  <string name="download_dicts">Daolnwod erom…</string>
   <!-- One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
          Crosswords and that cannot be uninstalled or moved.
@@ -1928,13 +1931,14 @@
         morf revres.</string>
   <string name="getinfo">Teg ofni</string>
   <string name="delete_dicts">Eteled ]s[tsildrow</string>
-  <string name="show_remote">Edulcni elbadaolnwod</string>
+  <string name="show_remote">Wohs elbadaolnwod</string>
   <string name="update_dicts_fmt">Setadpu era elbaliava rof eno ro erom
     dellatsni stsildrow. Dluow uoy ekil ot daolnwod eht wen
     ]s[noisrev fo %1$s ?won</string>
   <string name="progress_title">Gnidaolnwod</string>
-  <string name="dict_info_fmt">Tsildrow %1$s si elbaliava rof
-    daolnwod.\n\nSliated:\nRebmun fo sdrow: %2$d\nDaolnwod ezis:
-    %3$dK\nEton: %4$s</string>
+  <string name="dict_info_fmt">Rebmun fo sdrow: %1$d\nDaolnwod ezis:
+    %2$dK\nEton: %3$s</string>
+  <string name="note_none">)Enon(</string>
   <string name="dict_on_server">Elbadaolnwod</string>
+  <string name="lang_name_fmt">%1$s (%2$d )stsildrow</string>
 </resources>

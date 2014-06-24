@@ -68,7 +68,7 @@ cp *.apk /tmp/releases_${VARIANT}
 
 cd $CURDIR
 echo "remove build dir $BUILDIR? (y or n):"
-echo -n "==> "
+echo -n "(y or n) ==> "
 read ANSWER
 if [ "$ANSWER" = 'y' ]; then
 	rm -rf $BUILDIR

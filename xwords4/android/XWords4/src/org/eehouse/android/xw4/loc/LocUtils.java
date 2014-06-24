@@ -78,7 +78,6 @@ public class LocUtils {
     private static Map<String, String> s_xlationsBlessed = null;
     private static HashMap<Integer, String> s_idsToKeys = null;
     private static Boolean s_enabled = null;
-    private static Boolean UPPER_CASE = false;
     private static String s_curLocale;
     private static WeakReference<Menu> s_latestMenuRef;
     private static HashMap<WeakReference<Menu>, HashSet<String> > s_menuSets
@@ -272,9 +271,6 @@ public class LocUtils {
             result = getBlessedXlation( context, key, canUseDB );
         }
 
-        if ( UPPER_CASE && null == result ) {
-            result = toUpperCase( key );
-        }
         return result;
     }
 
@@ -618,29 +614,6 @@ public class LocUtils {
             if ( null != result ) {
                 associateContextString( context, key );
             }
-        }
-        return result;
-    }
-
-    // This is for testing, but the ability to pull the formatters will be
-    // critical for validating local transations of strings containing
-    // formatters.
-    private static String toUpperCase( String str )
-    {
-        String result = null;
-        if ( UPPER_CASE ) {
-            String[] parts = str.split( RES_FORMAT );
-            StringBuilder sb = new StringBuilder();
-            int offset = 0;
-            for ( String part : parts ) {
-                sb.append( part.toUpperCase() );
-                offset += part.length();
-                if ( offset < str.length() ) {
-                    sb.append( str.substring( offset, offset + FMT_LEN ) );
-                    offset += FMT_LEN;
-                }
-            }
-            result = sb.toString();
         }
         return result;
     }
