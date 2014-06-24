@@ -417,7 +417,7 @@ def getUpdates( req, params ):
 
 def clearShelf():
     shelf = shelve.open(k_shelfFile)
-    shelf[k_SUMS] = {}
+    for key in shelf: del shelf[key]
     shelf.close()
 
 def usage():
