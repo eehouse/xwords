@@ -346,14 +346,21 @@ public class DwnldDelegate extends ListDelegateBase {
         }
     }
 
+    public static void downloadDictInBack( Context context, String langName, 
+                                           String name, 
+                                           DownloadFinishedListener lstnr )
+    {
+        String url = Utils.makeDictUrl( context, langName, name );
+        // DbgUtils.logf( "downloadDictInBack(lang=%s): url=%s", langName, url );
+        downloadDictInBack( context, url, lstnr );
+    }
+
     public static void downloadDictInBack( Context context, int lang, 
                                            String name, 
                                            DownloadFinishedListener lstnr )
     {
         String url = Utils.makeDictUrl( context, lang, name );
-        // if ( null != lstnr ) {
-        //     rememberListener( url, name, lstnr );
-        // }
+        // DbgUtils.logf( "downloadDictInBack(lang=%d): url=%s", lang, url );
         downloadDictInBack( context, url, lstnr );
     }
 

@@ -986,11 +986,10 @@ public class DictsDelegate extends ListDelegateBase
             Button button = (Button)view.findViewById( R.id.download_button );
             button.setOnClickListener( new View.OnClickListener() {
                     public void onClick( View view ) {
-                        int langCode = DictLangCache.getLangLangCode( m_activity, 
-                                                                      info.m_lang );
-                        DwnldDelegate.downloadDictInBack( m_activity, langCode, 
-                                                          info.m_name, 
-                                                          DictsDelegate.this );
+                        DwnldDelegate.
+                            downloadDictInBack( m_activity, info.m_lang, 
+                                                info.m_name, 
+                                                DictsDelegate.this );
                     }
                 } );
             
