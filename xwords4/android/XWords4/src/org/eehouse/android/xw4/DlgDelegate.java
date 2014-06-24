@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -346,9 +347,19 @@ public class DlgDelegate {
 
     public void startProgress( int id )
     {
+        startProgress( id, null );
+    }
+
+    public void startProgress( int id, OnCancelListener canLstnr )
+    {
         String title = LocUtils.getString( m_activity, R.string.progress_title );
         String msg = LocUtils.getString( m_activity, id );
         m_progress = ProgressDialog.show( m_activity, title, msg, true, true );
+        
+        if ( null != canLstnr ) {
+            m_progress.setCancelable( true );
+            m_progress.setOnCancelListener( canLstnr );
+        }
     }
 
     public void setProgressMsg( int id )

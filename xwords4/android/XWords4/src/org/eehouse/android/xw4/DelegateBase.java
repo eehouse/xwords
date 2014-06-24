@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -319,6 +320,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void startProgress( int id )
     {
         m_delegate.startProgress( id );
+    }
+
+    protected void startProgress( int id, OnCancelListener lstnr )
+    {
+        m_delegate.startProgress( id, lstnr );
     }
 
     protected void setProgressMsg( int id )

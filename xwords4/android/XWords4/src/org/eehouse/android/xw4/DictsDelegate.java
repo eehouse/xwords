@@ -25,6 +25,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -1068,102 +1069,14 @@ public class DictsDelegate extends ListDelegateBase
         return result;
     }
 
-    private boolean digestData( String jsonData )
-    {
-        boolean success = false;
-        JSONArray langs = null;
-
-        m_needUpdates = new HashMap<String, String>();
-        if ( null != jsonData ) {
-            Set<String> closedLangs = new HashSet<String>();
-            final Set<String> curLangs =
-                new HashSet<String>( Arrays.asList( m_langs ) );
-
-            // DictLangCache hits the DB hundreds of times below. Fix!
-            DbgUtils.logf( "Fix me I'm stupid" );
-            try {
-                // DbgUtils.logf( "data: %s", jsonData );
-                JSONObject obj = new JSONObject( jsonData );
-                langs = obj.optJSONArray( "langs" );
-
-                int nLangs = langs.length();
-                m_remoteInfo = new HashMap<String, DictInfo[]>();
-                for ( int ii = 0; ii < nLangs; ++ii ) {
-                    JSONObject langObj = langs.getJSONObject( ii );
-                    String langName = langObj.getString( "lang" );
-                    
-                    if ( null != m_filterLang && ! m_filterLang.equals( langName ) ) {
-                        continue;
-                    }
-
-                    if ( ! curLangs.contains( langName ) ) {
-                        closedLangs.add( langName );
-                    }
-
-                    JSONArray dicts = langObj.getJSONArray( "dicts" );
-                    int nDicts = dicts.length();
-                    ArrayList<DictInfo> dictNames = new ArrayList<DictInfo>();
-                    for ( int jj = 0; jj < nDicts; ++jj ) {
-                        JSONObject dict = dicts.getJSONObject( jj );
-                        String name = dict.getString( "xwd" );
-                        name = DictUtils.removeDictExtn( name );
-                        long nBytes = dict.optLong( "nBytes", -1 );
-                        int nWords = dict.optInt( "nWords", -1 );
-                        String note = dict.optString( "note" );
-                        if ( 0 == note.length() ) {
-                            note = null;
-                        }
-                        DictInfo info = new DictInfo( name, langName, nWords, nBytes, note );
-
-                        if ( !m_quickFetchMode ) {
-                            // Check if we have it and it needs an update
-                            if ( DictLangCache.haveDict( m_activity, langName, name ) ) {
-                                boolean matches = true;
-                                String curSum = DictLangCache.getDictMD5Sum( m_activity, name );
-                                if ( null != curSum ) {
-                                    JSONArray sums = dict.getJSONArray("md5sums");
-                                    if ( null != sums ) {
-                                        matches = false;
-                                        for ( int kk = 0; !matches && kk < sums.length(); ++kk ) {
-                                            String sum = sums.getString( kk );
-                                            matches = sum.equals( curSum );
-                                        }
-                                    }
-                                }
-                                if ( !matches ) {
-                                    DbgUtils.logf( "adding %s to set needing update", name );
-                                    String url = Utils.makeDictUrl( m_activity, langName, name );
-                                    m_needUpdates.put( name, url );
-                                }
-                            }
-                        }
-                        dictNames.add( info );
-                    }
-                    if ( 0 < dictNames.size() ) {
-                        DictInfo[] asArray = dictNames.toArray( new DictInfo[dictNames.size()] );
-                        Arrays.sort( asArray );
-                        m_remoteInfo.put( langName, asArray );
-                    }
-                }
-
-                m_closedLangs.addAll( closedLangs );
-
-                success = true;
-            } catch ( JSONException ex ) {
-                DbgUtils.loge( ex );
-            }
-        }
-
-        return success;
-    }
-
-    private class FetchListTask extends AsyncTask<Void, Void, Boolean> {
+    private class FetchListTask extends AsyncTask<Void, Void, Boolean> 
+        implements OnCancelListener {
         private Context m_context;
 
         public FetchListTask( Context context )
         {
             m_context = context;
-            startProgress( R.string.remote_empty );
+            startProgress( R.string.remote_empty, this );
         }
 
         @Override 
@@ -1173,18 +1086,34 @@ public class DictsDelegate extends ListDelegateBase
             HttpPost post = UpdateCheckReceiver.makePost( m_context, "listDicts" );
             if ( null != post ) {
                 String json = UpdateCheckReceiver.runPost( post, new JSONObject() );
-                if ( null != json ) {
-                    post( new Runnable() {
-                            public void run() {
-                                setProgressMsg( R.string.remote_digesting );
-                            }
-                        } );
+                if ( !isCancelled() ) {
+                    if ( null != json ) {
+                        post( new Runnable() {
+                                public void run() {
+                                    setProgressMsg( R.string.remote_digesting );
+                                }
+                            } );
+                    }
+                    success = digestData( json );
                 }
-                success = digestData( json );
             }
             return new Boolean( success );
         }
             
+        @Override 
+        protected void onCancelled()
+        {
+            m_checkbox.setChecked( false );
+            m_remoteInfo = null;
+            m_showRemote = false;
+        }
+
+        @Override 
+        protected void onCancelled( Boolean success )
+        {
+            onCancelled();
+        }
+
         @Override 
         protected void onPostExecute( Boolean success )
         {
@@ -1206,5 +1135,114 @@ public class DictsDelegate extends ListDelegateBase
             }
             stopProgress();
         }
-    }
+
+        private boolean digestData( String jsonData )
+        {
+            boolean success = false;
+            JSONArray langs = null;
+
+            m_needUpdates = new HashMap<String, String>();
+            if ( null != jsonData ) {
+                Set<String> closedLangs = new HashSet<String>();
+                final Set<String> curLangs =
+                    new HashSet<String>( Arrays.asList( m_langs ) );
+
+                // DictLangCache hits the DB hundreds of times below. Fix!
+                DbgUtils.logf( "Fix me I'm stupid" );
+                try {
+                    // DbgUtils.logf( "data: %s", jsonData );
+                    JSONObject obj = new JSONObject( jsonData );
+                    langs = obj.optJSONArray( "langs" );
+
+                    int nLangs = langs.length();
+                    m_remoteInfo = new HashMap<String, DictInfo[]>();
+                    for ( int ii = 0; !isCancelled() && ii < nLangs; ++ii ) {
+                        JSONObject langObj = langs.getJSONObject( ii );
+                        String langName = langObj.getString( "lang" );
+                    
+                        if ( null != m_filterLang && 
+                             ! m_filterLang.equals( langName ) ) {
+                            continue;
+                        }
+
+                        if ( ! curLangs.contains( langName ) ) {
+                            closedLangs.add( langName );
+                        }
+
+                        JSONArray dicts = langObj.getJSONArray( "dicts" );
+                        int nDicts = dicts.length();
+                        ArrayList<DictInfo> dictNames = 
+                            new ArrayList<DictInfo>();
+                        for ( int jj = 0; !isCancelled() && jj < nDicts; 
+                              ++jj ) {
+                            JSONObject dict = dicts.getJSONObject( jj );
+                            String name = dict.getString( "xwd" );
+                            name = DictUtils.removeDictExtn( name );
+                            long nBytes = dict.optLong( "nBytes", -1 );
+                            int nWords = dict.optInt( "nWords", -1 );
+                            String note = dict.optString( "note" );
+                            if ( 0 == note.length() ) {
+                                note = null;
+                            }
+                            DictInfo info = 
+                                new DictInfo( name, langName, nWords, nBytes, 
+                                              note );
+
+                            if ( !m_quickFetchMode ) {
+                                // Check if we have it and it needs an update
+                                if ( DictLangCache.haveDict( m_activity, 
+                                                             langName, name )){
+                                    boolean matches = true;
+                                    String curSum = DictLangCache
+                                        .getDictMD5Sum( m_activity, name );
+                                    if ( null != curSum ) {
+                                        JSONArray sums = 
+                                            dict.getJSONArray("md5sums");
+                                        if ( null != sums ) {
+                                            matches = false;
+                                            for ( int kk = 0; 
+                                                  !matches && kk < sums.length(); 
+                                                  ++kk ) {
+                                                String sum = sums.getString( kk );
+                                                matches = sum.equals( curSum );
+                                            }
+                                        }
+                                    }
+                                    if ( !matches ) {
+                                        String url = 
+                                            Utils.makeDictUrl( m_activity, 
+                                                               langName, name );
+                                        m_needUpdates.put( name, url );
+                                    }
+                                }
+                            }
+                            dictNames.add( info );
+                        }
+                        if ( 0 < dictNames.size() ) {
+                            DictInfo[] asArray = new DictInfo[dictNames.size()];
+                            asArray = dictNames.toArray( asArray );
+                            Arrays.sort( asArray );
+                            m_remoteInfo.put( langName, asArray );
+                        }
+                    }
+
+                    m_closedLangs.addAll( closedLangs );
+
+                    success = true;
+                } catch ( JSONException ex ) {
+                    DbgUtils.loge( ex );
+                }
+            }
+
+            return success;
+        }
+
+        /////////////////////////////////////////////////////////////////
+        // DialogInterface.OnCancelListener interface
+        /////////////////////////////////////////////////////////////////
+        public void	onCancel( DialogInterface dialog )
+        {
+            cancel( true );
+        }
+    } // class FetchListTask
 }
