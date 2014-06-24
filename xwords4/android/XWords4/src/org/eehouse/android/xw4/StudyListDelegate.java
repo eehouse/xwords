@@ -80,6 +80,7 @@ public class StudyListDelegate extends ListDelegateBase
         m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
         m_pickView = findViewById( R.id.pick_lang );
         m_checkeds = new HashSet<Integer>();
+        m_words = new String[0];
 
         initOrFinish( getIntent() );
     }
