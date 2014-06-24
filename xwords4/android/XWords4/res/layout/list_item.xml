@@ -29,6 +29,7 @@
 	              android:layout_height="wrap_content"
                   android:layout_weight="1"
    	              android:textAppearance="?android:attr/textAppearanceMedium"
+                  android:singleLine="true"
                   />
 
         <TextView android:id="@+id/text_item2"
@@ -36,6 +37,7 @@
 	              android:layout_height="wrap_content"
                   android:layout_weight="1"
                   android:gravity="right"
+                  android:singleLine="true"
                   android:visibility="gone"
                   />
 
