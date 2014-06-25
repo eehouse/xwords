@@ -517,7 +517,6 @@ public class DictsDelegate extends ListDelegateBase
 
         MountEventReceiver.register( this );
 
-        mkListAdapter();
         setTitleBar();
     }
 
@@ -822,8 +821,6 @@ public class DictsDelegate extends ListDelegateBase
     private void startDownload( int lang, String name )
     {
         DwnldDelegate.downloadDictInBack( m_activity, lang, name, this );
-        // Intent intent = mkDownloadIntent( m_activity, lang, name );
-        // startActivity( intent );
     }
 
     private void mkListAdapter()
