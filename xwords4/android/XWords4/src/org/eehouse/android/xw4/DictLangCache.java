@@ -184,7 +184,11 @@ public class DictLangCache {
         DictAndLoc[] dals = DictUtils.dictList( context );
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
-            if ( null != info && code == info.langCode ) {
+            int langCode = info.langCode;
+            if ( langCode >= s_langNames.length ) {
+                langCode = 0;
+            }
+            if ( null != info && code == langCode ) {
                 al.add( dal );
             }
         }

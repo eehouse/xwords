@@ -1420,6 +1420,7 @@ public final class R {
          */
         public static final int lang_label=0x7f0600c6;
         public static final int lang_name_fmt=0x7f0602c1;
+        public static final int lang_unknown=0x7f0602c2;
         public static final int langdict_label=0x7f0600c7;
         public static final int list_group_default=0x7f06026c;
         public static final int list_group_delete=0x7f06026a;
