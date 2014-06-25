@@ -793,6 +793,7 @@ public class DictsDelegate extends ListDelegateBase
                     deleteDict( name, loc );
                 }
                 clearSelections();
+                mkListAdapter();
                 break;
             case UPDATE_DICTS_ACTION:
                 String[] urls = m_needUpdates.values().
@@ -815,7 +816,6 @@ public class DictsDelegate extends ListDelegateBase
     {
         DictUtils.deleteDict( m_activity, dict, loc );
         DictLangCache.inval( m_activity, dict, loc, false );
-        mkListAdapter();
     }
 
     private void startDownload( int lang, String name )
@@ -1032,6 +1032,8 @@ public class DictsDelegate extends ListDelegateBase
                         }
                     }
                 } );
+        } else {
+            mkListAdapter();
         }
     }
 
