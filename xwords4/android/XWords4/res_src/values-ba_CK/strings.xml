@@ -202,16 +202,9 @@
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is the last in its language.  The name
          of the language is substituted for %1$s. -->
-  <string name="confirm_deleteonly_dict_fmt">%1$s si eht ylno %2$s
-      tsildrow dellatsni. Eno ro erom semag lliw eb elbaneponu
-      tuohtiw ti.</string>
-  <!-- Additional text appended to text confirm_delete_dictf in the
-         wordlist delete confiration dialog in the case where the
-         wordlist to be deleted is NOT the last in its language. The
-         name of the language is substituted for %1$s. -->
-  <string name="confirm_deletemore_dict_fmt">\u0020Eno emag ta( )tsael
-      si gnisu ,ti tub ereht si rehtona %1$s tsildrow dellatsni taht nac
-      ecalper ti.</string>
+  <string name="confirm_deleteonly_dicts_fmt">Gniteled %1$s lliw
+        evael uoy tuohtiw yna %2$s stsildrow. Eno ro erom semag lliw eb
+        elbaneponu litnu( uoy daolnwod a tnemecalper tsil.)</string>
   <!--
        ############################################################
        # :Dialogs:

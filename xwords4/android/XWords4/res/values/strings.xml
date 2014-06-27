@@ -234,16 +234,9 @@
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is the last in its language.  The name
          of the language is substituted for %1$s. -->
-    <string name="confirm_deleteonly_dict_fmt">%1$s is the only %2$s
-      wordlist installed. One or more games will be unopenable
-      without it.</string>
-    <!-- Additional text appended to text confirm_delete_dictf in the
-         wordlist delete confiration dialog in the case where the
-         wordlist to be deleted is NOT the last in its language. The
-         name of the language is substituted for %1$s. -->
-    <string name="confirm_deletemore_dict_fmt">\u0020One game (at least)
-      is using it, but there is another %1$s wordlist installed that can
-      replace it.</string>
+    <string name="confirm_deleteonly_dicts_fmt">Deleting %1$s will
+        leave you without any %2$s wordlists. One or more games will be
+        unopenable (until you download a replacement list.)</string>
 
     <!--
        ############################################################

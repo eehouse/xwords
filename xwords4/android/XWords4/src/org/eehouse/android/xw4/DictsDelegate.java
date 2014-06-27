@@ -725,37 +725,61 @@ public class DictsDelegate extends ListDelegateBase
         String msg = getString( R.string.confirm_delete_dict_fmt, 
                                 getJoinedNames( items ) );
 
-        // When and what to warn about.  First off, if there's another
-        // identical dict, simply confirm.  Or if nobody's using this
-        // dict *and* it's not the last of a language that somebody's
-        // using, simply confirm.  If somebody is using it, then we
-        // want different warnings depending on whether it's the last
-        // available dict in its language.
+        // Confirm.  And for each dict, warn if (after ALL are deleted) any
+        // game will no longer be openable without downloading.  For now
+        // anyway skip warning for the case where user will have to switch to
+        // a different same-lang wordlist to open a game.
 
+        class LangDelData {
+            public LangDelData( int langCode ) {
+                delDicts = new HashSet<String>();
+                langName = DictLangCache.getLangName( m_activity, langCode );
+                nDicts = DictLangCache.getDALsHaveLang( m_activity, langCode ).length;
+            }
+            public String dictsStr()
+            {
+                if ( null == m_asArray ) {
+                    String[] arr = delDicts.toArray(new String[delDicts.size()]); 
+                    m_asArray = TextUtils.join( ", ", arr );
+                }
+                return m_asArray;
+            }
+            Set<String> delDicts;
+            private String m_asArray;
+            String langName;
+            int nDicts;
+        }
+
+        Map<Integer, LangDelData> dels = new HashMap<Integer, LangDelData>();
+        Set<Integer> skipLangs = new HashSet<Integer>();
         for ( XWListItem item : items ) {
             String dict = item.getText();
-            if ( 1 < DictLangCache.getDictCount( m_activity, dict ) ) {
-                // there's another; do nothing
+            int langCode = DictLangCache.getDictLangCode( m_activity, dict );
+            if ( skipLangs.contains( langCode ) ) {
+                continue;
+            }
+            int nUsingLang = DBUtils.countGamesUsingLang( m_activity, langCode );
+            if ( 0 == nUsingLang ) {
+                // remember, since countGamesUsingLang is expensive
+                skipLangs.add( langCode );
             } else {
-                String newMsg = null;
-                int langcode = DictLangCache.getDictLangCode( m_activity, dict );
-                String langName = DictLangCache.getLangName( m_activity, langcode );
-                DictAndLoc[] langDals = DictLangCache.getDALsHaveLang( m_activity, 
-                                                                       langcode );
-                int nUsingLang = DBUtils.countGamesUsingLang( m_activity, langcode );
+                LangDelData data = dels.get( langCode );
+                if ( null == data ) {
+                    data = new LangDelData( langCode );
+                    dels.put( langCode, data );
+                }
+                data.delDicts.add( dict );
+            }
+        }
 
-                if ( 1 == langDals.length ) { // last in this language?
-                    if ( 0 < nUsingLang ) {
-                        newMsg = getString( R.string.confirm_deleteonly_dict_fmt,
-                                            dict, langName );
-                    }
-                } else if ( 0 < DBUtils.countGamesUsingDict( m_activity, dict ) ) {
-                    newMsg = getString( R.string.confirm_deletemore_dict_fmt,
-                                        langName );
-                }
-                if ( null != newMsg ) {
-                    msg += "\n\n" + newMsg;
-                }
+        for ( Iterator<LangDelData> iter = dels.values().iterator(); iter.hasNext(); ) {
+            LangDelData data = iter.next();
+            int nLeftAfter = data.nDicts - data.delDicts.size();
+
+            if ( 0 == nLeftAfter ) { // last in this language?
+                String newMsg = getString( R.string.confirm_deleteonly_dicts_fmt,
+                                           data.dictsStr(), data.langName );
+                msg += "\n\n" + newMsg;
             }
         }
 
