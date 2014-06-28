@@ -370,7 +370,7 @@ public class DlgDelegate {
     public void stopProgress()
     {
         if ( null != m_progress ) {
-            m_progress.cancel();
+            m_progress.dismiss();
             m_progress = null;
         }
     }

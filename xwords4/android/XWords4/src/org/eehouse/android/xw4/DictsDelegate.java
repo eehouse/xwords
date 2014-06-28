@@ -1125,7 +1125,6 @@ public class DictsDelegate extends ListDelegateBase
         @Override 
         protected void onCancelled()
         {
-            m_checkbox.setChecked( false );
             m_remoteInfo = null;
             m_showRemote = false;
         }
@@ -1262,8 +1261,9 @@ public class DictsDelegate extends ListDelegateBase
         /////////////////////////////////////////////////////////////////
         // DialogInterface.OnCancelListener interface
         /////////////////////////////////////////////////////////////////
-        public void	onCancel( DialogInterface dialog )
+        public void onCancel( DialogInterface dialog )
         {
+            m_checkbox.setChecked( false );
             cancel( true );
         }
     } // class FetchListTask
