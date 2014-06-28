@@ -94,6 +94,7 @@ public class GamesListDelegate extends ListDelegateBase
     private String m_missingDict;
     private String m_missingDictName;
     private long m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
+    private int m_missingDictMenuId;
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
     private long m_rowid;
@@ -699,7 +700,7 @@ public class GamesListDelegate extends ListDelegateBase
         final long[] selRowIDs = getSelRowIDs();
 
         if ( 1 == selRowIDs.length && R.id.games_game_delete != itemID
-             && !checkWarnNoDict( selRowIDs[0] ) ) {
+             && !checkWarnNoDict( selRowIDs[0], itemID ) ) {
             return true;        // FIXME: RETURN FROM MIDDLE!!!
         }
 
@@ -817,9 +818,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_reset:
-            msg = getString( R.string.confirm_reset_fmt, selRowIDs.length );
-            showConfirmThen( msg, R.string.button_reset, 
-                             Action.RESET_GAMES, selRowIDs );
+            doConfirmReset( selRowIDs );
             break;
 
         case R.id.games_game_rename:
@@ -946,6 +945,11 @@ public class GamesListDelegate extends ListDelegateBase
 
     private boolean checkWarnNoDict( long rowid )
     {
+        return checkWarnNoDict( rowid, -1 );
+    }
+
+    private boolean checkWarnNoDict( long rowid, int forMenu )
+    {
         String[][] missingNames = new String[1][];
         int[] missingLang = new int[1];
         boolean hasDicts = 
@@ -958,6 +962,7 @@ public class GamesListDelegate extends ListDelegateBase
                 m_missingDictName = null;
             }
             m_missingDictRowId = rowid;
+            m_missingDictMenuId = forMenu;
             if ( 0 == DictLangCache.getLangCount( m_activity, m_missingDictLang ) ) {
                 showDialog( DlgID.WARN_NODICT );
             } else if ( null != m_missingDictName ) {
@@ -1220,8 +1225,14 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
         if ( madeGame ) {
-            GameUtils.launchGame( m_activity, m_missingDictRowId );
+            if ( R.id.games_game_reset == m_missingDictMenuId ) {
+                long[] rowIDs = { m_missingDictRowId };
+                doConfirmReset( rowIDs );
+            } else {
+                GameUtils.launchGame( m_activity, m_missingDictRowId );
+            }
             m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
+            m_missingDictMenuId = -1;
         }
         return madeGame;
     }
@@ -1328,6 +1339,13 @@ public class GamesListDelegate extends ListDelegateBase
                 item.setSelected( true );
             }
         }
+    }
+
+    private void doConfirmReset( long[] rowIDs )
+    {
+        String msg = getString( R.string.confirm_reset_fmt, rowIDs.length );
+        showConfirmThen( msg, R.string.button_reset, Action.RESET_GAMES, 
+                         rowIDs );
     }
 
     private GameListAdapter makeNewAdapter()
