@@ -1536,9 +1536,8 @@
   <!--  -->
   <string name="board_menu_pass">PASS</string>
   <!--  -->
-  <string name="not_again_lookup">THIS BUTTON LETS YOU LOOK UP THE
-      WORDS JUST PLAYED ONLINE.  (NOTE THAT NOT ALL LANGUAGES ARE
-      SUPPORTED YET.)</string>
+  <string name="not_again_lookup">THIS BUTTON LETS YOU LOOK UP,
+      ONLINE, THE WORDS JUST PLAYED.</string>
   <!--  -->
   <string name="button_move">MOVE</string>
   <!--  -->

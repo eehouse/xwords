@@ -1791,9 +1791,8 @@
     <string name="board_menu_pass">Pass</string>
 
       <!--  -->
-    <string name="not_again_lookup">This button lets you look up the
-      words just played online.  (Note that not all languages are
-      supported yet.)</string>
+    <string name="not_again_lookup">This button lets you look up,
+      online, the words just played.</string>
 
       <!--  -->
     <string name="button_move">Move</string>
