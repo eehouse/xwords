@@ -45,6 +45,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,21 +74,16 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
     private static final String ALERT_MSG = "alert_msg";
 
-    private class GameListAdapter2 extends XWListAdapter {
-        private int m_nGroups = 0;
-        private Object[] m_listObjs = null;
+    private class GameListAdapter extends XWExpListAdapter {
         private int m_fieldID;
-        private Map<Long,GameGroupInfo> m_gameInfo;
         private long[] m_groupPositions;
 
         private class GroupRec {
-            public GroupRec( long groupID, int position, GameGroupInfo ggi )
+            public GroupRec( long groupID, int position )
             {
-                m_ggi = ggi;
                 m_groupID = groupID;
                 m_position = position;
             }
-            GameGroupInfo m_ggi;
             long m_groupID;
             int m_position;
         }
@@ -99,55 +95,45 @@ public class GamesListDelegate extends ListDelegateBase
             long m_rowID;
         }
 
-        GameListAdapter2()
+        GameListAdapter()
         {
-            super();
-            m_gameInfo = DBUtils.getGroups( m_activity );
+            super( GroupRec.class );
             m_groupPositions = checkPositions();
         }
 
-        @Override
-        public int getCount() 
+        protected Object[] makeListData()
         {
-            if ( null == m_listObjs ) {
-                m_nGroups = 0;
-                ArrayList<Object> alist = new ArrayList<Object>();
-                long[] positions = getGroupPositions();
-                for ( int ii = 0; ii < positions.length; ++ii ) {
-                    long groupID = positions[ii];
-                    GameGroupInfo ggi = m_gameInfo.get( groupID );
-                    int nKids = ggi.m_count;
-                    alist.add( new GroupRec( groupID, ii, ggi ) );
-                    ++m_nGroups;
+            DbgUtils.logf( "GamesListDelegate.makeListData()" );
+            final Map<Long,GameGroupInfo> gameInfo = DBUtils.getGroups( m_activity );
+            ArrayList<Object> alist = new ArrayList<Object>();
+            long[] positions = getGroupPositions();
+            for ( int ii = 0; ii < positions.length; ++ii ) {
+                long groupID = positions[ii];
+                GameGroupInfo ggi = gameInfo.get( groupID );
+                int nKids = ggi.m_count;
+                // m_groupIndices[ii] = alist.size();
+                alist.add( new GroupRec( groupID, ii ) );
 
-                    // DbgUtils.logf( "getCount(): m_expanded[%d] = %b", groupPosition, 
-                    //                ggi.m_expanded );
-                    if ( ggi.m_expanded ) {
-                        long[] rows = DBUtils.getGroupGames( m_activity, groupID );
-                        for ( long row : rows ) {
-                            GameRec rec = new GameRec(row);
-                            alist.add( rec );
-                        }
-                    }
+                DbgUtils.logf( "makeListData(): m_expanded[%d] = %b", ii, ggi.m_expanded );
+                if ( ggi.m_expanded ) {
+                    alist.addAll( makeChildren( groupID ) );
                 }
-
-                m_listObjs = alist.toArray( new Object[alist.size()] );
-                DbgUtils.logf( "new adapter: getCount() => %d", m_listObjs.length );
             }
-            return m_listObjs.length;
+
+            return alist.toArray( new Object[alist.size()] );
         }
         
         @Override
         public int getViewTypeCount() { return 2; }
 
         @Override
-        public View getView( final int position, View convertView, ViewGroup parent )
+        public View getView( Object dataObj )
         {
             View result = null;
-            Object obj = m_listObjs[position];
-            if ( obj instanceof GroupRec ) {
-                GroupRec rec = (GroupRec)obj;
-                GameGroupInfo ggi = rec.m_ggi;
+            if ( dataObj instanceof GroupRec ) {
+                GroupRec rec = (GroupRec)dataObj;
+                GameGroupInfo ggi = DBUtils.getGroups( m_activity )
+                    .get( rec.m_groupID );
                 GameListGroup group =
                     GameListGroup.makeForPosition( m_activity, rec.m_position, 
                                                    rec.m_groupID, ggi.m_count,
@@ -160,13 +146,12 @@ public class GamesListDelegate extends ListDelegateBase
                 }
 
                 String name = LocUtils.getString( m_activity, R.string.group_name_fmt, 
-                                                  groupNames()[rec.m_position], 
-                                                  ggi.m_count );
+                                                  ggi.m_name, ggi.m_count );
                 group.setText( name );
                 group.setSelected( getSelected( group ) );
                 result = group;
-            } else if ( obj instanceof GameRec ) {
-                GameRec rec = (GameRec)obj;
+            } else if ( dataObj instanceof GameRec ) {
+                GameRec rec = (GameRec)dataObj;
                 GameListItem item = 
                     GameListItem.makeForRow( m_activity, rec.m_rowID, m_handler, 
                                              m_fieldID, GamesListDelegate.this );
@@ -196,8 +181,9 @@ public class GamesListDelegate extends ListDelegateBase
 
         String groupName( long groupID )
         {
-            GameGroupInfo ggi = m_gameInfo.get(groupID);
-            return ggi.m_name;
+            final Map<Long,GameGroupInfo> gameInfo = 
+                DBUtils.getGroups( m_activity );
+            return gameInfo.get(groupID).m_name;
         }
 
         long getGroupIDFor( int groupPos )
@@ -208,10 +194,12 @@ public class GamesListDelegate extends ListDelegateBase
         String[] groupNames()
         {
             long[] positions = getGroupPositions();
-            Assert.assertTrue( positions.length == m_gameInfo.size() );
-            String[] names = new String[m_gameInfo.size()];
+            final Map<Long,GameGroupInfo> gameInfo = 
+                DBUtils.getGroups( m_activity );
+            Assert.assertTrue( positions.length == gameInfo.size() );
+            String[] names = new String[positions.length];
             for ( int ii = 0; ii < positions.length; ++ii ) {
-                names[ii] = m_gameInfo.get( positions[ii] ).m_name;
+                names[ii] = gameInfo.get( positions[ii] ).m_name;
             }
             return names;
         }
@@ -232,9 +220,12 @@ public class GamesListDelegate extends ListDelegateBase
 
         long[] getGroupPositions()
         {
-            final Set<Long> keys = m_gameInfo.keySet(); // do not modify!!!!
+            // do not modify!!!!
+            final Set<Long> keys = DBUtils.getGroups( m_activity ).keySet();
+
             if ( null == m_groupPositions || 
                  m_groupPositions.length != keys.size() ) {
+
                 HashSet<Long> unused = new HashSet<Long>( keys );
                 long[] newArray = new long[unused.size()];
 
@@ -256,36 +247,62 @@ public class GamesListDelegate extends ListDelegateBase
                 }
                 m_groupPositions = newArray;
             }
-            String asStr = "";
-            for ( long id : m_groupPositions ) {
-                asStr += id + " ";
-            }
             return m_groupPositions;
-        }
-
-        int getGroupCount()
-        {
-            return m_nGroups;
         }
 
         int getChildrenCount( long groupID )
         {
-            GameGroupInfo ggi = m_gameInfo.get( groupID );
+            GameGroupInfo ggi = DBUtils.getGroups( m_activity ).get( groupID );
             return ggi.m_count;
         }
 
-        boolean moveGroup( long groupID, int moveBy )
+        void moveGroup( long groupID, boolean moveUp )
         {
-            int src = getGroupPosition( groupID );
-            int dest = src + moveBy;
-            long[] positions = getGroupPositions();
-            boolean success = 0 <= dest && dest < positions.length;
-            if ( success ) {
-                long tmp = positions[src];
-                positions[src] = positions[dest];
-                positions[dest] = tmp;
-            }
-            return success;
+            Assert.fail();
+            // int src = getGroupPosition( groupID );
+            // int high, low;      // high: high index, but lower position on screen
+            // if ( moveUp ) {
+            //     high = src;
+            //     low = src - 1;
+            // } else {
+            //     low = src;
+            //     high = src + 1;
+            // }
+            // Assert.assertTrue( high > low );
+
+            // long[] positions = getGroupPositions();
+            // boolean success = 0 <= low && high < positions.length;
+            // if ( success ) {
+            //     long tmp = positions[low];
+            //     positions[low] = positions[high];
+            //     positions[high] = tmp;
+
+            //     // Now rearrange the array backing the list view so we
+            //     // don't have to create a new adapter.
+            //     int lowIndex = indexForPosition( low );
+            //     GameGroupInfo ggi = ((GroupRec)m_listObjs[lowIndex]).m_ggi;
+            //     int lowLen = 1 + (ggi.m_expanded ? ggi.m_count : 0);
+            //     int highIndex = indexForPosition( high );
+            //     ggi = ((GroupRec)m_listObjs[highIndex]).m_ggi;
+            //     int highLen = 1 + (ggi.m_expanded ? ggi.m_count : 0);
+
+            //     ArrayList<Object> asList = new ArrayList<Object>();
+            //     asList.addAll( Arrays.asList( m_listObjs ) );
+            //     // get high first since low will change high's indices
+            //     ArrayList<Object> highList = removeRange( asList, highIndex, highLen );
+            //     ArrayList<Object> lowList = removeRange( asList, lowIndex, lowLen );
+            //     DbgUtils.logf( "inserting %s at %d", 
+            //                    ((GroupRec)highList.iterator().next()).m_ggi.m_name,
+            //                    lowIndex );
+            //     asList.addAll( lowIndex, highList );
+            //     DbgUtils.logf( "inserting %s at %d", 
+            //                    ((GroupRec)lowList.iterator().next()).m_ggi.m_name,
+            //                    highIndex + (highLen - lowLen) );
+            //     asList.addAll( highIndex + (highLen - lowLen), lowList );
+            //     Assert.assertTrue( asList.size() == m_listObjs.length );
+            //     m_listObjs = asList.toArray( new Object[asList.size()] );
+            // }
+            // return success;
         }
 
         boolean setField( String newField )
@@ -293,7 +310,7 @@ public class GamesListDelegate extends ListDelegateBase
             boolean changed = false;
             int newID = fieldToID( newField );
             if ( -1 == newID ) {
-                DbgUtils.logf( "GameListAdapter2.setField(): unable to match"
+                DbgUtils.logf( "GameListAdapter.setField(): unable to match"
                                + " fieldName %s", newField );
             } else if ( m_fieldID != newID ) {
                 m_fieldID = newID;
@@ -320,6 +337,63 @@ public class GamesListDelegate extends ListDelegateBase
             for ( GameListGroup group : groups ) {
                 group.setSelected( false );
             }
+        }
+
+        void setExpanded( long groupID, boolean expanded )
+        {
+            if ( expanded ) {
+                addChildrenOf( groupID );
+            } else {
+                removeChildrenOf( groupID );
+            }
+        }
+
+        private void removeChildrenOf( long groupID )
+        {
+            int indx = findGroupItem( makeTestFor( groupID ) );
+            GroupRec rec = (GroupRec)getObjectAt( indx );
+            // rec.m_ggi.m_expanded = false;
+            removeChildrenOf( indx );
+        }
+
+        private void addChildrenOf( long groupID )
+        {
+            int indx = findGroupItem( makeTestFor( groupID ) );
+            GroupRec rec = (GroupRec)getObjectAt( indx );
+            // rec.m_ggi.m_expanded = false;
+            addChildrenOf( indx, makeChildren( groupID ) );
+        }
+
+        private List<Object> makeChildren( long groupID )
+        {
+            List<Object> alist = new ArrayList<Object>();
+            long[] rows = DBUtils.getGroupGames( m_activity, groupID );
+            for ( long row : rows ) {
+                alist.add( new GameRec( row ) );
+            }
+            DbgUtils.logf( "makeChildren(%d) => %d kids", groupID, alist.size() );
+            return alist;
+        }
+
+        private XWExpListAdapter.ItemTest makeTestFor( final long groupID  )
+        {
+            return new XWExpListAdapter.ItemTest() {
+                public boolean isItem( Object item ) {
+                    GroupRec rec = (GroupRec)item;
+                    return rec.m_groupID == groupID;
+                }
+            };
+        }
+
+        private ArrayList<Object> removeRange( ArrayList<Object> list, 
+                                               int start, int len )
+        {
+            DbgUtils.logf( "removeRange(start=%d, len=%d)", start, len );
+            ArrayList<Object> result = new ArrayList<Object>(len);
+            for ( int ii = 0; ii < len; ++ii ) {
+                result.add( list.remove( start ) );
+            }
+            return result;
         }
 
         private Set<GameListGroup> getGroupsFromElems( Set<Long> selRows )
@@ -388,8 +462,11 @@ public class GamesListDelegate extends ListDelegateBase
         private long[] checkPositions()
         {
             long[] result = XWPrefs.getGroupPositions( m_activity );
+
             if ( null != result ) {
-                Set<Long> posns = m_gameInfo.keySet();
+                final Map<Long,GameGroupInfo> gameInfo = 
+                    DBUtils.getGroups( m_activity );
+                Set<Long> posns = gameInfo.keySet();
                 if ( result.length != posns.size() ) {
                     result = null;
                 } else {
@@ -403,7 +480,7 @@ public class GamesListDelegate extends ListDelegateBase
             }
             return result;
         }
-    }
+    } // class GameListAdapter
 
     private static final int[] DEBUG_ITEMS = { 
         // R.id.games_menu_loaddb,
@@ -431,7 +508,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static boolean s_firstShown = false;
 
     private GamesListActivity m_activity;
-    private GameListAdapter2 m_adapter;
+    private GameListAdapter m_adapter;
     private Handler m_handler;
     private String m_missingDict;
     private String m_missingDictName;
@@ -760,13 +837,15 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void moveGroup( long groupID, int moveBy )
+    private void moveGroup( long groupID, boolean moveUp )
     {
-        if ( m_adapter.moveGroup( groupID, moveBy ) ) {
-            long[] positions = m_adapter.getGroupPositions();
-            XWPrefs.setGroupPositions( m_activity, positions );
-            mkListAdapter();
-        }
+        m_adapter.moveGroup( groupID, moveUp );
+        //     long[] positions = m_adapter.getGroupPositions();
+        //     XWPrefs.setGroupPositions( m_activity, positions );
+
+        //     m_adapter.notifyDataSetChanged();
+        //     // mkListAdapter();
+        // }
     }
 
     protected void onWindowFocusChanged( boolean hasFocus )
@@ -1054,7 +1133,9 @@ public class GamesListDelegate extends ListDelegateBase
         }
         final long[] selRowIDs = getSelRowIDs();
 
-        if ( 1 == selRowIDs.length && R.id.games_game_delete != itemID
+        if ( 1 == selRowIDs.length
+             && R.id.games_game_delete != itemID
+             && R.id.games_game_move != itemID
              && !checkWarnNoDict( selRowIDs[0], itemID ) ) {
             return true;        // FIXME: RETURN FROM MIDDLE!!!
         }
@@ -1213,10 +1294,10 @@ public class GamesListDelegate extends ListDelegateBase
             showDialog( DlgID.RENAME_GROUP );
             break;
         case R.id.games_group_moveup:
-            moveGroup( groupID, -1 );
+            moveGroup( groupID, true );
             break;
         case R.id.games_group_movedown:
-            moveGroup( groupID, 1 );
+            moveGroup( groupID, false );
             break;
 
         default:
@@ -1263,7 +1344,8 @@ public class GamesListDelegate extends ListDelegateBase
         DbgUtils.logf( "onGroupExpandedChanged(pos=%d, expanded=%b); groupID = %d",
                        groupPosition, expanded , groupID );
         DBUtils.setGroupExpanded( m_activity, groupID, expanded );
-        mkListAdapter();
+
+        m_adapter.setExpanded( groupID, expanded );
     }
 
     private void setTitleBar()
@@ -1710,7 +1792,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void mkListAdapter()
     {
-        m_adapter = new GameListAdapter2();
+        m_adapter = new GameListAdapter();
         setListAdapterKeepScroll( m_adapter );
 
         // ListView listview = getListView();

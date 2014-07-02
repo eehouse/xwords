@@ -1,0 +1,154 @@
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
+/*
+ * Copyright 2009-2014 by Eric House (xwords@eehouse.org).  All
+ * rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+package org.eehouse.android.xw4;
+
+import java.util.Iterator;
+import java.util.List;
+import android.view.View;
+import android.view.ViewGroup;
+
+import junit.framework.Assert;
+
+abstract class XWExpListAdapter extends XWListAdapter {
+
+    interface ItemTest {
+        boolean isItem( Object item );
+    }
+
+    private Object[] m_listObjs;
+    private Class m_groupClass;
+    private int m_nGroups;
+
+    public XWExpListAdapter( Class parentClass )
+    {
+        m_groupClass = parentClass;
+    }
+
+    abstract Object[] makeListData();
+    abstract View getView( Object dataObj );
+
+    @Override
+    public int getCount() 
+    {
+        if ( null == m_listObjs ) {
+            m_listObjs = makeListData();
+            m_nGroups = 0;
+            for ( int ii = 0; ii < m_listObjs.length; ++ii ) {
+                if ( m_listObjs[ii].getClass() == m_groupClass ) {
+                    ++m_nGroups;
+                }
+            }
+        }
+        return m_listObjs.length;
+    }
+
+    @Override
+    public View getView( int position, View convertView, ViewGroup parent )
+    {
+        if ( null != convertView ) {
+            DbgUtils.logf( "getView: missing opportunity to reuse view %H", 
+                           convertView );
+        }
+        View result = getView( m_listObjs[position] );
+        DbgUtils.logf( "getView(position=%d) => %H (%s)", position, result, 
+                       result.getClass().getName() );
+        return result;
+    }
+
+
+    protected int getGroupCount()
+    {
+        return m_nGroups;
+    }
+
+    protected Object getObjectAt( int indx )
+    {
+        return m_listObjs[indx];
+    }
+
+    protected int findGroupItem( ItemTest test )
+    {
+        int result = -1;
+        for ( int ii = 0; ii < m_listObjs.length; ++ii ) {
+            Object obj = m_listObjs[ii];
+            if ( obj.getClass() == m_groupClass && test.isItem( obj ) ) {
+                result = ii;
+                break;
+            }
+        }
+        return result;
+    }
+
+    protected int indexForPosition( final int posn )
+    {
+        int result = -1;
+        int curGroup = 0;
+        for ( int ii = 0; ii < m_listObjs.length; ++ii ) {
+            Object obj = m_listObjs[ii];
+            if ( obj.getClass() == m_groupClass ) {
+                if ( curGroup == posn ) {
+                    result = ii;
+                    break;
+                }
+                ++curGroup;
+            }
+        }
+        DbgUtils.logf( "indexForPosition(%d) => %d", posn, result );
+        return result;
+    }
+
+    protected void removeChildrenOf( int groupIndex )
+    {
+        Assert.assertTrue( m_groupClass == m_listObjs[groupIndex].getClass() );
+        int end = 1 + groupIndex;
+        while ( end < m_listObjs.length && ! (m_listObjs[end].getClass() == m_groupClass) ) {
+            ++end;
+        }
+        int nChildren = end - groupIndex - 1; // 1: don't remove parent
+        Object[] newArray = new Object[m_listObjs.length - nChildren];
+        System.arraycopy( m_listObjs, 0, newArray, 0, groupIndex + 1 ); // 1: include parent
+        int nAbove = m_listObjs.length - (groupIndex + nChildren + 1);
+        if ( end < m_listObjs.length ) {
+            System.arraycopy( m_listObjs, end, newArray, groupIndex + 1, 
+                              m_listObjs.length - end );
+        }
+        m_listObjs = newArray;
+        notifyDataSetChanged();
+    }
+    
+    protected void addChildrenOf( int groupIndex, List<Object> children )
+    {
+        int nToAdd = children.size();
+        Object[] newArray = new Object[m_listObjs.length + nToAdd];
+        System.arraycopy( m_listObjs, 0, newArray, 0, groupIndex + 1 ); // up to and including parent
+
+        Iterator<Object> iter = children.iterator();
+        for ( int ii = 0; iter.hasNext(); ++ii ) {
+            newArray[groupIndex + 1 + ii] = iter.next();
+        }
+        System.arraycopy( m_listObjs, groupIndex + 1,
+                          newArray, groupIndex + 1 + nToAdd,
+                          m_listObjs.length - groupIndex - 1 ); 
+        m_listObjs = newArray;
+        notifyDataSetChanged();
+    }
+
+}

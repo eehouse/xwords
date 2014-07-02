@@ -141,52 +141,47 @@ public class DictsDelegate extends ListDelegateBase
 
     private boolean m_launchedForMissing = false;
 
-    private class DictListAdapter extends XWListAdapter {
+    private class DictListAdapter extends XWExpListAdapter {
         private Context m_context;
-        private Object[] m_listInfo;
 
         public DictListAdapter( Context context ) 
         {
-            super( 0 );
+            super( LangInfo.class );
             m_context = context;
         }
         
         @Override
-        public int getCount() 
+        public Object[] makeListData()
         {
-            if ( null == m_listInfo ) {
-                ArrayList<Object> alist = new ArrayList<Object>();
-                int nLangs = m_langs.length;
-                for ( int ii = 0; ii < nLangs; ++ii ) {
-                    String langName = m_langs[ii];
-                    if ( null != m_filterLang && 
-                         ! m_filterLang.equals(langName) ) {
-                        continue;
-                    }
-
-                    ArrayList<Object> items = makeLangItems( langName );
-
-                    alist.add( new LangInfo( ii, items.size() ) );
-                    if ( ! m_closedLangs.contains( langName ) ) {
-                        alist.addAll( items );
-                    }
+            ArrayList<Object> alist = new ArrayList<Object>();
+            int nLangs = m_langs.length;
+            for ( int ii = 0; ii < nLangs; ++ii ) {
+                String langName = m_langs[ii];
+                if ( null != m_filterLang && 
+                     ! m_filterLang.equals(langName) ) {
+                    continue;
                 }
-                m_listInfo = alist.toArray( new Object[alist.size()] );
+
+                ArrayList<Object> items = makeLangItems( langName );
+
+                alist.add( new LangInfo( ii, items.size() ) );
+                if ( ! m_closedLangs.contains( langName ) ) {
+                    alist.addAll( items );
+                }
             }
-            return m_listInfo.length;
-        } // getCount
+            return alist.toArray( new Object[alist.size()] );
+        } // makeListData
 
         @Override
         public int getViewTypeCount() { return 2; }
 
         @Override
-        public View getView( final int position, View convertView, ViewGroup parent )
+        public View getView( Object dataObj )
         {
             View result = null;
 
-            Object obj = m_listInfo[position];
-            if ( obj instanceof LangInfo ) {
-                LangInfo info = (LangInfo)obj;
+            if ( dataObj instanceof LangInfo ) {
+                LangInfo info = (LangInfo)dataObj;
                 int groupPos = info.m_posn;
                 String langName = m_langs[groupPos];
                 int langCode = DictLangCache.getLangLangCode( m_context,
@@ -196,8 +191,8 @@ public class DictsDelegate extends ListDelegateBase
                                          info.m_numDicts );
                 result = ListGroup.make( m_context, DictsDelegate.this,
                                          groupPos, name, expanded );
-            } else if ( obj instanceof DictAndLoc ) {
-                DictAndLoc dal = (DictAndLoc)obj;
+            } else if ( dataObj instanceof DictAndLoc ) {
+                DictAndLoc dal = (DictAndLoc)dataObj;
                 XWListItem item = 
                     XWListItem.inflate( m_activity, DictsDelegate.this );
                 result = item;
@@ -216,8 +211,8 @@ public class DictsDelegate extends ListDelegateBase
                     m_selDicts.put( name, item );
                     item.setSelected( true );
                 }
-            } else if ( obj instanceof DictInfo ) {
-                DictInfo info = (DictInfo)obj;
+            } else if ( dataObj instanceof DictInfo ) {
+                DictInfo info = (DictInfo)dataObj;
                 XWListItem item = 
                     XWListItem.inflate( m_activity, DictsDelegate.this );
                 result = item;
@@ -240,29 +235,26 @@ public class DictsDelegate extends ListDelegateBase
             return result;
         }
 
+        private XWExpListAdapter.ItemTest makeTestFor( final String langName )
+        {
+            return new XWExpListAdapter.ItemTest() {
+                public boolean isItem( Object item ) {
+                    LangInfo info = (LangInfo)item;
+                    return m_langs[info.m_posn].equals( langName );
+                }
+            };
+        }
+
         protected void removeLangItems( String langName )
         {
-            ArrayList<Object> asList = new ArrayList<Object>();
-            asList.addAll( Arrays.asList( m_listInfo ) );
-
-            int indx = findLangItem( langName ) + 1;
-            while ( indx < asList.size() && ! (asList.get(indx) instanceof LangInfo) ) {
-                asList.remove( indx );
-            }
-
-            m_listInfo = asList.toArray( new Object[asList.size()] );
+            int indx = findGroupItem( makeTestFor( langName ) );
+            removeChildrenOf( indx );
         }
 
         protected void addLangItems( String langName )
         {
-            ArrayList<Object> asList = new ArrayList<Object>();
-            asList.addAll( Arrays.asList( m_listInfo ) );
-
-            ArrayList<Object> items = makeLangItems( langName );
-            int indx = findLangItem( langName );
-            asList.addAll( 1 + indx, items );
-
-            m_listInfo = asList.toArray( new Object[asList.size()] );
+            int indx = findGroupItem( makeTestFor( langName ) );
+            addChildrenOf( indx, makeLangItems( langName ) );
         }
 
         private ArrayList<Object> makeLangItems( String langName )
@@ -296,24 +288,6 @@ public class DictsDelegate extends ListDelegateBase
                 result.addAll( Arrays.asList( dals ) );
             }
 
-            return result;
-        }
-
-        private int findLangItem( String langName )
-        {
-            int result = -1;
-            int nLangs = m_langs.length;
-            for ( int ii = 0; ii < m_listInfo.length; ++ii ) {
-                Object obj = m_listInfo[ii];
-                if ( obj instanceof LangInfo ) {
-                    if ( m_langs[((LangInfo)obj).m_posn].equals( langName ) ) {
-                        result = ii;
-                        break;
-                    }
-                }
-            }
-            Assert.assertTrue( -1 != result );
-            DbgUtils.logf( "findLangItem(%s) => %d", langName, result );
             return result;
         }
     }
@@ -685,8 +659,6 @@ public class DictsDelegate extends ListDelegateBase
             m_adapter.removeLangItems( langName );
         }
         saveClosed();
-        // mkListAdapter();
-        m_adapter.notifyDataSetChanged();
     }
     
     //////////////////////////////////////////////////////////////////////
