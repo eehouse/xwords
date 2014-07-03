@@ -75,7 +75,6 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String ALERT_MSG = "alert_msg";
 
     private class GameListAdapter extends XWExpListAdapter {
-        private int m_fieldID;
         private long[] m_groupPositions;
 
         private class GroupRec {
@@ -135,9 +134,8 @@ public class GamesListDelegate extends ListDelegateBase
                 GameGroupInfo ggi = DBUtils.getGroups( m_activity )
                     .get( rec.m_groupID );
                 GameListGroup group =
-                    GameListGroup.makeForPosition( m_activity, rec.m_position, 
-                                                   rec.m_groupID, ggi.m_count,
-                                                   ggi.m_expanded, 
+                    GameListGroup.makeForPosition( m_activity, rec.m_groupID, 
+                                                   ggi.m_count, ggi.m_expanded, 
                                                    GamesListDelegate.this, 
                                                    GamesListDelegate.this );
                 if ( !ggi.m_expanded ) {
@@ -258,51 +256,16 @@ public class GamesListDelegate extends ListDelegateBase
 
         void moveGroup( long groupID, boolean moveUp )
         {
-            Assert.fail();
-            // int src = getGroupPosition( groupID );
-            // int high, low;      // high: high index, but lower position on screen
-            // if ( moveUp ) {
-            //     high = src;
-            //     low = src - 1;
-            // } else {
-            //     low = src;
-            //     high = src + 1;
-            // }
-            // Assert.assertTrue( high > low );
+            int src = getGroupPosition( groupID );
+            int dest = src + (moveUp ? -1 : 1);
 
-            // long[] positions = getGroupPositions();
-            // boolean success = 0 <= low && high < positions.length;
-            // if ( success ) {
-            //     long tmp = positions[low];
-            //     positions[low] = positions[high];
-            //     positions[high] = tmp;
+            long[] positions = getGroupPositions();
+            long tmp = positions[src];
+            positions[src] = positions[dest];
+            positions[dest] = tmp;
+            // DbgUtils.logf( "positions now %s", DbgUtils.toString( positions ) );
 
-            //     // Now rearrange the array backing the list view so we
-            //     // don't have to create a new adapter.
-            //     int lowIndex = indexForPosition( low );
-            //     GameGroupInfo ggi = ((GroupRec)m_listObjs[lowIndex]).m_ggi;
-            //     int lowLen = 1 + (ggi.m_expanded ? ggi.m_count : 0);
-            //     int highIndex = indexForPosition( high );
-            //     ggi = ((GroupRec)m_listObjs[highIndex]).m_ggi;
-            //     int highLen = 1 + (ggi.m_expanded ? ggi.m_count : 0);
-
-            //     ArrayList<Object> asList = new ArrayList<Object>();
-            //     asList.addAll( Arrays.asList( m_listObjs ) );
-            //     // get high first since low will change high's indices
-            //     ArrayList<Object> highList = removeRange( asList, highIndex, highLen );
-            //     ArrayList<Object> lowList = removeRange( asList, lowIndex, lowLen );
-            //     DbgUtils.logf( "inserting %s at %d", 
-            //                    ((GroupRec)highList.iterator().next()).m_ggi.m_name,
-            //                    lowIndex );
-            //     asList.addAll( lowIndex, highList );
-            //     DbgUtils.logf( "inserting %s at %d", 
-            //                    ((GroupRec)lowList.iterator().next()).m_ggi.m_name,
-            //                    highIndex + (highLen - lowLen) );
-            //     asList.addAll( highIndex + (highLen - lowLen), lowList );
-            //     Assert.assertTrue( asList.size() == m_listObjs.length );
-            //     m_listObjs = asList.toArray( new Object[asList.size()] );
-            // }
-            // return success;
+            swapGroups( src, dest );
         }
 
         boolean setField( String newField )
@@ -506,6 +469,7 @@ public class GamesListDelegate extends ListDelegateBase
     };
 
     private static boolean s_firstShown = false;
+    private int m_fieldID;
 
     private GamesListActivity m_activity;
     private GameListAdapter m_adapter;
@@ -1338,11 +1302,12 @@ public class GamesListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // GroupStateListener interface
     //////////////////////////////////////////////////////////////////////
-    public void onGroupExpandedChanged( int groupPosition, boolean expanded )
+    public void onGroupExpandedChanged( Object obj, boolean expanded )
     {
-        long groupID = m_adapter.getGroupPositions()[groupPosition];
-        DbgUtils.logf( "onGroupExpandedChanged(pos=%d, expanded=%b); groupID = %d",
-                       groupPosition, expanded , groupID );
+        GameListGroup glg = (GameListGroup)obj;
+        long groupID = glg.getGroupID();
+        // DbgUtils.logf( "onGroupExpandedChanged(expanded=%b); groupID = %d",
+        //                expanded , groupID );
         DBUtils.setGroupExpanded( m_activity, groupID, expanded );
 
         m_adapter.setExpanded( groupID, expanded );

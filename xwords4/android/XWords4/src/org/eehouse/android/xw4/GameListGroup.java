@@ -37,7 +37,6 @@ public class GameListGroup extends ExpiringLinearLayout
                View.OnLongClickListener
 {
 
-    private int m_groupPosition;
     private long m_groupID;
     private boolean m_expanded;
     private SelectableItem m_cb;
@@ -49,7 +48,6 @@ public class GameListGroup extends ExpiringLinearLayout
     private ImageButton m_expandButton;
 
     public static GameListGroup makeForPosition( Context context,
-                                                 int groupPosition, 
                                                  long groupID,
                                                  int nGames,
                                                  boolean expanded,
@@ -60,7 +58,6 @@ public class GameListGroup extends ExpiringLinearLayout
             LocUtils.inflate( context, R.layout.game_list_group );
         result.m_cb = cb;
         result.m_gcb = gcb;
-        result.m_groupPosition = groupPosition;
         result.m_groupID = groupID;
         result.m_nGames = nGames;
         result.m_expanded = expanded;
@@ -90,16 +87,6 @@ public class GameListGroup extends ExpiringLinearLayout
         setOnLongClickListener( this );
 
         setButton();
-    }
-
-    public void setGroupPosition( int groupPosition )
-    {
-        m_groupPosition = groupPosition;
-    }
-
-    public int getGroupPosition()
-    {
-        return m_groupPosition;
     }
 
     public long getGroupID()
@@ -149,7 +136,7 @@ public class GameListGroup extends ExpiringLinearLayout
     {
         if ( 0 < m_nGames ) {
             m_expanded = !m_expanded;
-            m_gcb.onGroupExpandedChanged( m_groupPosition, m_expanded );
+            m_gcb.onGroupExpandedChanged( this, m_expanded );
             setButton();
         }
     }

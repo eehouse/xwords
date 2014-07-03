@@ -154,6 +154,15 @@ public class DbgUtils {
     //     return TextUtils.join( ", ", asStrs );
     // }
 
+    // public static String toString( Object[] objs )
+    // {
+    //     String[] asStrs = new String[objs.length];
+    //     for ( int ii = 0; ii < objs.length; ++ii ) {
+    //         asStrs[ii] = objs[ii].toString();
+    //     }
+    //     return TextUtils.join( ", ", asStrs );
+    // }
+
     // public static String hexDump( byte[] bytes )
     // {
     //     StringBuilder dump = new StringBuilder();

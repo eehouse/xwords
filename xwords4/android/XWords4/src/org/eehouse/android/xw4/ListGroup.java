@@ -56,13 +56,18 @@ public class ListGroup extends LinearLayout
         setText();
     }
 
+    protected int getPosition()
+    {
+        return m_posn;
+    }
+
     //////////////////////////////////////////////////
     // View.OnClickListener interface
     //////////////////////////////////////////////////
     public void onClick( View view ) 
     {
         m_expanded = !m_expanded;
-        m_listener.onGroupExpandedChanged( m_posn, m_expanded );
+        m_listener.onGroupExpandedChanged( this, m_expanded );
         setButton();
     }
 

@@ -648,9 +648,10 @@ public class DictsDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     // GroupStateListener interface
     //////////////////////////////////////////////////////////////////////
-    public void onGroupExpandedChanged( int groupPosition, boolean expanded )
+    public void onGroupExpandedChanged( Object groupObj, boolean expanded )
     {
-        String langName = m_langs[groupPosition];
+        ListGroup lg = (ListGroup)groupObj;
+        String langName = m_langs[lg.getPosition()];
         if ( expanded ) {
             m_closedLangs.remove( langName );
             m_adapter.addLangItems( langName );

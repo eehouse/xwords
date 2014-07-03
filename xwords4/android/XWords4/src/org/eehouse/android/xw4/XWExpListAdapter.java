@@ -20,10 +20,11 @@
 
 package org.eehouse.android.xw4;
 
-import java.util.Iterator;
-import java.util.List;
 import android.view.View;
 import android.view.ViewGroup;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -68,8 +69,8 @@ abstract class XWExpListAdapter extends XWListAdapter {
                            convertView );
         }
         View result = getView( m_listObjs[position] );
-        DbgUtils.logf( "getView(position=%d) => %H (%s)", position, result, 
-                       result.getClass().getName() );
+        // DbgUtils.logf( "getView(position=%d) => %H (%s)", position, result, 
+        //                result.getClass().getName() );
         return result;
     }
 
@@ -111,17 +112,13 @@ abstract class XWExpListAdapter extends XWListAdapter {
                 ++curGroup;
             }
         }
-        DbgUtils.logf( "indexForPosition(%d) => %d", posn, result );
         return result;
     }
 
     protected void removeChildrenOf( int groupIndex )
     {
         Assert.assertTrue( m_groupClass == m_listObjs[groupIndex].getClass() );
-        int end = 1 + groupIndex;
-        while ( end < m_listObjs.length && ! (m_listObjs[end].getClass() == m_groupClass) ) {
-            ++end;
-        }
+        int end = findGroupEnd( groupIndex );
         int nChildren = end - groupIndex - 1; // 1: don't remove parent
         Object[] newArray = new Object[m_listObjs.length - nChildren];
         System.arraycopy( m_listObjs, 0, newArray, 0, groupIndex + 1 ); // 1: include parent
@@ -151,4 +148,38 @@ abstract class XWExpListAdapter extends XWListAdapter {
         notifyDataSetChanged();
     }
 
+    protected void swapGroups( int groupPosn1, int groupPosn2 )
+    {
+        // switch if needed so we know the direction 
+        if ( groupPosn1 > groupPosn2 ) {
+            int tmp = groupPosn2;
+            groupPosn2 = groupPosn1;
+            groupPosn1 = tmp;
+        }
+
+        int groupIndx1 = indexForPosition( groupPosn1 );
+        int groupIndx2 = indexForPosition( groupPosn2 );
+        
+        // copy out the lower group subarray
+        int groupEnd1 = findGroupEnd( groupIndx1 );
+        Object[] tmp1 = Arrays.copyOfRange( m_listObjs, groupIndx1, groupEnd1 );
+
+        int groupEnd2 = findGroupEnd( groupIndx2 );
+        int nToCopy = groupEnd2 - groupEnd1;
+        System.arraycopy( m_listObjs, groupEnd1, m_listObjs, groupIndx1, nToCopy );
+
+        // copy the saved subarray back in
+        System.arraycopy( tmp1, 0, m_listObjs, groupIndx1 + nToCopy, tmp1.length );
+
+        notifyDataSetChanged();
+    }
+
+    private int findGroupEnd( int indx )
+    {
+        ++indx;
+        while ( indx < m_listObjs.length && ! (m_listObjs[indx].getClass() == m_groupClass) ) {
+            ++indx;
+        }
+        return indx;
+    }
 }
