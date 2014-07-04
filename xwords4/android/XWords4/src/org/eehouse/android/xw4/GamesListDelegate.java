@@ -169,12 +169,15 @@ public class GamesListDelegate extends ListDelegateBase
             }
         }
 
-        void inval( long rowID )
+        protected GameListItem reload( long rowID )
         {
+            GameListItem item = null;
             Set<GameListItem> games = getGamesFromElems( rowID );
             if ( 0 < games.size() ) {
-                games.iterator().next().invalidate();
+                item = games.iterator().next();
+                item.forceReload();
             }
+            return item;
         }
 
         String groupName( long groupID )
@@ -212,7 +215,9 @@ public class GamesListDelegate extends ListDelegateBase
                     break;
                 }
             }
-            Assert.assertTrue( -1 != posn );
+            if ( -1 == posn ) {
+                DbgUtils.logf( "getGroupPosition: group %d not found", groupID );
+            }
             return posn;
         }
 
@@ -609,7 +614,7 @@ public class GamesListDelegate extends ListDelegateBase
                         String name = m_namer.getName();
                         DBUtils.setGroupName( m_activity,
                                               m_groupid, name );
-                        m_adapter.inval( m_rowid );
+                        m_adapter.reload( m_rowid );
                         mkListAdapter();
                     }
                 };
@@ -757,7 +762,7 @@ public class GamesListDelegate extends ListDelegateBase
         m_launchedGame = DBUtils.ROWID_NOTFOUND;
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
-        invalRowID( intent.getLongExtra( ROWID_EXTRA, -1 ) );
+        m_adapter.reload( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         tryStartsFromIntent( intent );
     }
 
@@ -818,8 +823,14 @@ public class GamesListDelegate extends ListDelegateBase
             updateField();
 
             if ( DBUtils.ROWID_NOTFOUND != m_launchedGame ) {
-                m_selGames.clear();
+                clearSelections();
+
+                GameListItem item = m_adapter.reload( m_launchedGame );
+                if ( null != item ) { // currently visible in list?
+                    item.setSelected( true );
+                }
                 m_selGames.add( m_launchedGame );
+
                 m_launchedGame = DBUtils.ROWID_NOTFOUND;
             }
         }
@@ -847,7 +858,7 @@ public class GamesListDelegate extends ListDelegateBase
                         }
                     } else {
                         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
-                        m_adapter.inval( rowid );
+                        m_adapter.reload( rowid );
                     }
                 }
             } );
@@ -956,7 +967,7 @@ public class GamesListDelegate extends ListDelegateBase
                 long newid = GameUtils.dupeGame( m_activity, curID );
                 m_selGames.add( newid );
                 if ( null != m_adapter ) {
-                    m_adapter.inval( newid );
+                    m_adapter.reload( newid );
                 }
                 break;
 
@@ -1006,6 +1017,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         int nGamesSelected = m_selGames.size();
         int nGroupsSelected = m_selGroupIDs.size();
+        int groupCount = m_adapter.getGroupCount();
         m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
         if ( m_menuPrepared ) {
             boolean nothingSelected = 0 == (nGroupsSelected + nGamesSelected);
@@ -1031,22 +1043,21 @@ public class GamesListDelegate extends ListDelegateBase
                 selGroupPos = m_adapter.getGroupPosition( id );
             }
 
-            // You can't delete the default group, nor make it the default
-            boolean defaultAvail = 1 == nGroupsSelected;
-            if ( defaultAvail ) {
-                long selID = m_adapter.getGroupIDFor( selGroupPos );
-                defaultAvail = selID != XWPrefs.getDefaultNewGameGroup( m_activity );
-            }
-            Utils.setItemVisible( menu, R.id.games_group_default, defaultAvail );
-            Utils.setItemVisible( menu, R.id.games_group_delete, defaultAvail );
+            // You can't delete the default group, nor make it the default.
+            // But we enable delete so a warning message later can explain.
+            Utils.setItemVisible( menu, R.id.games_group_delete, 
+                                  1 <= nGroupsSelected );
+            enable = (1 == nGroupsSelected) && ! m_selGroupIDs
+                .contains( XWPrefs.getDefaultNewGameGroup( m_activity ) );
+            Utils.setItemVisible( menu, R.id.games_group_default, enable );
 
             // Move up/down enabled for groups if not the top-most or bottommost
             // selected
+            enable = 1 == nGroupsSelected;
             Utils.setItemVisible( menu, R.id.games_group_moveup, 
-                                  0 < selGroupPos );
-            enable = 0 <= selGroupPos
-                && (selGroupPos + 1) < m_adapter.getGroupCount();
-            Utils.setItemVisible( menu, R.id.games_group_movedown, enable );
+                                  enable && 0 <= selGroupPos );
+            Utils.setItemVisible( menu, R.id.games_group_movedown, enable
+                                  && (selGroupPos + 1) < groupCount );
 
             // New game available when nothing selected or one group
             Utils.setItemVisible( menu, R.id.games_menu_newgame,
@@ -1058,8 +1069,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // multiple games can be regrouped/reset.
             Utils.setItemVisible( menu, R.id.games_game_move, 
-                                  (1 < m_adapter.getGroupCount()
-                                    && 0 < nGamesSelected) );
+                                  (1 < groupCount && 0 < nGamesSelected) );
             Utils.setItemVisible( menu, R.id.games_game_reset, 
                                   0 < nGamesSelected );
 
@@ -1402,17 +1412,10 @@ public class GamesListDelegate extends ListDelegateBase
                 long[] rowids = DBUtils.getRowIDsFor( m_activity, relayID );
                 if ( null != rowids ) {
                     for ( long rowid : rowids ) {
-                        m_adapter.inval( rowid );
+                        m_adapter.reload( rowid );
                     }
                 }
             }
-        }
-    }
-
-    private void invalRowID( long rowid )
-    {
-        if ( -1 != rowid ) {
-            m_adapter.inval( rowid );
         }
     }
 
@@ -1757,6 +1760,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void mkListAdapter()
     {
+        DbgUtils.logf( "GamesListDelegate.mkListAdapter()" );
         m_adapter = new GameListAdapter();
         setListAdapterKeepScroll( m_adapter );
 
