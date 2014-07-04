@@ -328,7 +328,7 @@ public class DictUtils {
                 // check that with len bytes we've read the whole file
                 Assert.assertTrue( -1 == dict.read() );
             } catch ( java.io.IOException ee ){
-                DbgUtils.logf( "%s failed to open; likely not built-in", name );
+                // DbgUtils.logf( "%s failed to open; likely not built-in", name );
             }
         }
 
@@ -364,7 +364,7 @@ public class DictUtils {
                 fis.close();
                 DbgUtils.logf( "Successfully loaded %s", name );
             } catch ( java.io.FileNotFoundException fnf ) {
-                DbgUtils.loge( fnf );
+                // DbgUtils.loge( fnf );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
             }
