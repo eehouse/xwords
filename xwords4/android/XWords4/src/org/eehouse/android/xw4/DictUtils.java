@@ -49,6 +49,7 @@ public class DictUtils {
 
     public interface DownProgListener {
         void progressMade( int nBytes );
+        boolean isCancelled();
     }
 
     // Standard hack for using APIs from an SDK in code to ship on
@@ -461,14 +462,25 @@ public class DictUtils {
                     fos = context.openFileOutput( name, Context.MODE_PRIVATE );
                 }
                 byte[] buf = new byte[1024];
-                int nRead;
-                while( 0 <= (nRead = in.read( buf, 0, buf.length )) ) {
+                boolean cancelled = false;
+                for ( ; ; ) {
+                    cancelled = dpl.isCancelled();
+                    if ( cancelled ) {
+                        deleteDict( context, name );
+                        break;
+                    }
+                    int nRead = in.read( buf, 0, buf.length );
+                    if ( 0 > nRead ) {
+                        break;
+                    }
                     fos.write( buf, 0, nRead );
                     dpl.progressMade( nRead );
                 }
                 fos.close();
-                invalDictList();
-                success = true;
+                success = !cancelled;
+                if ( success ) {
+                    invalDictList();
+                }
             } catch ( java.io.FileNotFoundException fnf ) {
                 DbgUtils.loge( fnf );
             } catch ( java.io.IOException ioe ) {

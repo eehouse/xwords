@@ -45,6 +45,8 @@ import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -56,6 +58,7 @@ public class DwnldDelegate extends ListDelegateBase {
 
     private ListActivity m_activity;
     private ArrayList<LinearLayout> m_views;
+    private ArrayList<DownloadFilesTask> m_dfts;
 
     public interface DownloadFinishedListener {
         void downloadFinished( String lang, String name, boolean success );
@@ -77,7 +80,7 @@ public class DwnldDelegate extends ListDelegateBase {
         public String m_name;
         public DownloadFinishedListener m_lstnr;
     }
-    private static HashMap<String,ListenerData> s_listeners =
+    private static Map<String,ListenerData> s_listeners =
         new HashMap<String,ListenerData>();
 
     private class DownloadFilesTask extends AsyncTask<Void, Void, Void> 
@@ -141,6 +144,12 @@ public class DwnldDelegate extends ListDelegateBase {
             return null;
         }
 
+        @Override 
+        protected void onCancelled()
+        {
+            callListener( m_uri, false );
+        }
+
         @Override
         protected void onPostExecute( Void unused )
         {
@@ -163,11 +172,14 @@ public class DwnldDelegate extends ListDelegateBase {
                 finish();
             } else {
                 m_views.remove( m_listItem );
+                m_dfts.remove( this );
                 mkListAdapter();
             }
         }
 
+        //////////////////////////////////////////////////////////////////////
         // interface DictUtils.DownProgListener
+        //////////////////////////////////////////////////////////////////////
         public void progressMade( int nBytes )
         {
             m_totalRead += nBytes;
@@ -176,6 +188,43 @@ public class DwnldDelegate extends ListDelegateBase {
                         m_progressBar.setProgress( m_totalRead );
                     }
                 });
+        }
+
+        private File saveToDownloads( InputStream is, String name, 
+                                      DictUtils.DownProgListener dpl )
+        {
+            boolean success = false;
+            File appFile = new File( DictUtils.getDownloadDir( m_activity ), name );
+
+            byte[] buf = new byte[1024*4];
+            try {
+                FileOutputStream fos = new FileOutputStream( appFile );
+                boolean cancelled = false;
+                for ( ; ; ) {
+                    cancelled = isCancelled();
+                    if ( cancelled ) {
+                        break;
+                    }
+                    int nRead = is.read( buf, 0, buf.length );
+                    if ( 0 > nRead ) {
+                        break;
+                    }
+                    fos.write( buf, 0, nRead );
+                    dpl.progressMade( nRead );
+                }
+                fos.close();
+                success = !cancelled;
+            } catch ( java.io.FileNotFoundException fnf ) {
+                DbgUtils.loge( fnf );
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.loge( ioe );
+            }
+
+            if ( !success ) {
+                appFile.delete();
+                appFile = null;
+            }
+            return appFile;
         }
     } // class DownloadFilesTask
 
@@ -189,7 +238,7 @@ public class DwnldDelegate extends ListDelegateBase {
 
     protected void init( Bundle savedInstanceState )
     {
-        DownloadFilesTask[] dfts = null;
+        m_dfts = new ArrayList<DownloadFilesTask>();
         DownloadFilesTask dft = null;
         String[] urls = null;
         LinearLayout item = null;
@@ -210,12 +259,11 @@ public class DwnldDelegate extends ListDelegateBase {
                 urls = intent.getStringArrayExtra( DICTS_EXTRA );
             }
             if ( null != urls ) {
-                dfts = new DownloadFilesTask[urls.length];
                 m_views = new ArrayList<LinearLayout>();
-                for ( int ii = 0; ii < dfts.length; ++ii ) {
+                for ( int ii = 0; ii < urls.length; ++ii ) {
                     item = (LinearLayout)inflate( R.layout.import_dict_item );
-                    dfts[ii] = new DownloadFilesTask( Uri.parse( urls[ii] ), item,
-                                                      isApp );
+                    m_dfts.add( new DownloadFilesTask( Uri.parse( urls[ii] ), item,
+                                                       isApp ) );
                     m_views.add( item );
                 }
             }
@@ -227,61 +275,47 @@ public class DwnldDelegate extends ListDelegateBase {
         }
 
         if ( null != dft ) {
-            Assert.assertNull( dfts );
-            dfts = new DownloadFilesTask[] { dft };
+            Assert.assertTrue( 0 == m_dfts.size() );
+            m_dfts.add( dft );
             m_views = new ArrayList<LinearLayout>( 1 );
             m_views.add( item );
             dft = null;
         }
 
-        if ( null == dfts ) {
+        if ( 0 == m_dfts.size() ) {
             finish();
         } else {
+            Assert.assertTrue( m_dfts.size() == urls.length );
             mkListAdapter();
 
-            for ( int ii = 0; ii < dfts.length; ++ii ) {
+            for ( int ii = 0; ii < urls.length; ++ii ) {
                 String showName = basename( Uri.parse( urls[ii] ).getPath() );
                 showName = DictUtils.removeDictExtn( showName );
                 String msg = 
                     getString( R.string.downloading_dict_fmt, showName );
-                dfts[ii].setLabel( msg );
-                dfts[ii].execute();
+                
+                dft = m_dfts.get( ii );
+                dft.setLabel( msg );
+                dft.execute();
             }
         }
     } // init
 
+    @Override
+    protected boolean onBackPressed() 
+    {  
+        // cancel any tasks that remain
+        for ( Iterator<DownloadFilesTask> iter = m_dfts.iterator(); 
+              iter.hasNext(); ) {
+            DownloadFilesTask dft = iter.next();
+            dft.cancel( true );
+        }
+        return super.onBackPressed();
+    }
+
     private void mkListAdapter()
     {
         setListAdapter( new ImportListAdapter() );
-    }
-
-    private File saveToDownloads( InputStream is, String name, 
-                                  DictUtils.DownProgListener dpl )
-    {
-        boolean success = false;
-        File appFile = new File( DictUtils.getDownloadDir( m_activity ), name );
-
-        byte[] buf = new byte[1024*4];
-        try {
-            FileOutputStream fos = new FileOutputStream( appFile );
-            int nRead;
-            while ( 0 <= (nRead = is.read( buf, 0, buf.length )) ) {
-                fos.write( buf, 0, nRead );
-                dpl.progressMade( nRead );
-            }
-            fos.close();
-            success = true;
-        } catch ( java.io.FileNotFoundException fnf ) {
-            DbgUtils.loge( fnf );
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
-        }
-
-        if ( !success ) {
-            appFile.delete();
-            appFile = null;
-        }
-        return appFile;
     }
 
     private String saveDict( InputStream inputStream, String name, 
