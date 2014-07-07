@@ -196,13 +196,6 @@
          it saves files it downloads. -->
     <string name="loc_downloads">Downloads</string>
 
-    <!-- If you tap the download_dicts button and Android fails to
-         find and launch an app that's registered to handle http
-         downloads a Toast is posted with this message. -->
-    <string name="no_download_warning">Unable to download. Do you have
-      a web browser installed?</string>
-
-
     <!--
        ############################################################
        # :Menus:

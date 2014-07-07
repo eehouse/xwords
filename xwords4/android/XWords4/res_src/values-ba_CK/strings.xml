@@ -169,11 +169,6 @@
          the built-in Android web browser uses for the directory where
          it saves files it downloads. -->
   <string name="loc_downloads">Sdaolnwod</string>
-  <!-- If you tap the download_dicts button and Android fails to
-         find and launch an app that's registered to handle http
-         downloads a Toast is posted with this message. -->
-  <string name="no_download_warning">Elbanu ot daolnwod. Od uoy evah
-      a bew resworb ?dellatsni</string>
   <!--
        ############################################################
        # :Menus:
