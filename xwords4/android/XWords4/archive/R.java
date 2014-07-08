@@ -1345,13 +1345,13 @@ public final class R {
         public static final int key_keep_screenon=0x7f060035;
         public static final int key_last_packet=0x7f060046;
         public static final int key_logging_on=0x7f060021;
-        public static final int key_na_browse=0x7f06005f;
-        public static final int key_na_browseall=0x7f060060;
-        public static final int key_na_firefox=0x7f06005e;
-        public static final int key_na_fmt_expl=0x7f060063;
+        public static final int key_na_browse=0x7f06005e;
+        public static final int key_na_browseall=0x7f06005f;
+        public static final int key_na_dicts=0x7f060063;
+        public static final int key_na_fmt_expl=0x7f060062;
         public static final int key_na_lookup=0x7f06005d;
-        public static final int key_na_studycopy=0x7f060062;
-        public static final int key_na_values=0x7f060061;
+        public static final int key_na_studycopy=0x7f060061;
+        public static final int key_na_values=0x7f060060;
         public static final int key_notagain_arrow=0x7f060059;
         public static final int key_notagain_backclears=0x7f06004b;
         public static final int key_notagain_chat=0x7f06004c;
@@ -1818,6 +1818,7 @@ public final class R {
          for games with more than two devices, which are rare. 
          */
         public static final int not_again_conndmid=0x7f0601d7;
+        public static final int not_again_dicts=0x7f0602c1;
         /**  This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. 

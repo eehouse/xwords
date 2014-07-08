@@ -1929,4 +1929,10 @@
   <string name="dict_on_server">DOWNLOADABLE</string>
   <string name="lang_name_fmt">%1$s (%2$d WORDLISTS)</string>
   <string name="lang_unknown">UNKNOWN</string>
+  <string name="not_again_dicts">THIS SCREEN LETS YOU INSTALL NEW
+    WORDSLISTS AND VIEW THE ONES YOU ALREADY HAVE.\n\nWHAT WORDLIST
+    YOU HAVE INSTALLED DETERMINES:\n• WHAT LANGUAGES YOU CAN PLAY
+    IN\n• HOW SMART THE ROBOT PLAYER IS\n• WHAT WORDS ARE
+    LEGAL.\n\nCHECK THE \"SHOW DOWNLOADABLE\" BOX AT THE TOP TO SEE
+    WHAT\'S AVAILABLE.</string>
 </resources>

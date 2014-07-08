@@ -482,6 +482,8 @@ public class DictsDelegate extends ListDelegateBase
         }
 
         m_origTitle = getTitle();
+
+        showNotAgainDlg( R.string.not_again_dicts, R.string.key_na_dicts );
     } // init
 
     @Override
