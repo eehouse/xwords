@@ -16,10 +16,12 @@
     than handing off to a browser</li>
     <li>Add debug option to play via "data" SMS, which works if both
     devices are NOT on Verizon or Sprint</li>
+    <li>Fix lookup/studylist for languages with only one lookup option</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
+  <li>Improve notifications sent to Google Wearable devices (since I just got one :-)</li>
   <li>Look, again, at play via Bluetooth now that HTC phones aren't quite so common</li>
   <li>Fix SMS play for KitKat</li>
   <li>Offer "Rematch" when game's over</li>

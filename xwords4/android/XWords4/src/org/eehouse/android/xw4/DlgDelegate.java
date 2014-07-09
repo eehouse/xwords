@@ -334,10 +334,10 @@ public class DlgDelegate {
         }
     }
 
-    public void launchLookup( String[] words, int lang, boolean noStudyOption )
+    public void launchLookup( String[] words, int lang, boolean noStudy )
     {
-        if ( LookupAlert.needAlert( m_activity, words, lang ) ) {
-            Bundle params = LookupAlert.makeParams( words, lang, noStudyOption );
+        if ( LookupAlert.needAlert( m_activity, words, lang, noStudy ) ) {
+            Bundle params = LookupAlert.makeParams( words, lang, noStudy );
             addState( new DlgState( DlgID.LOOKUP, new Object[]{params} ) );
             showDialog( DlgID.LOOKUP );
         } else {

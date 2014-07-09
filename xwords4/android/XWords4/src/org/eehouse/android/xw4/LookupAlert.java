@@ -350,9 +350,9 @@ public class LookupAlert extends LinearLayout
     }
 
     public static boolean needAlert( Context context, String[] words, 
-                                     int langCode )
+                                     int langCode, boolean noStudy )
     {
-        boolean result = 1 < words.length;
+        boolean result = !noStudy || 1 < words.length;
         if ( !result ) {
             setLang( context, langCode );
             result = 1 < s_lookupUrls.length;
