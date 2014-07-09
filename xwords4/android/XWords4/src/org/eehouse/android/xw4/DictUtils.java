@@ -445,28 +445,26 @@ public class DictUtils {
                                     DownProgListener dpl )
     {
         boolean success = false;
-        File sdFile = null;
+        File tmpFile;
         boolean useSD = DictLoc.EXTERNAL == loc;
 
         name = addDictExtn( name );
+        String tmpName = name + "_tmp";
         if ( useSD ) {
-            sdFile = getSDPathFor( context, name );
+            tmpFile = getSDPathFor( context, tmpName );
+        } else {
+            tmpFile = new File( context.getFilesDir(), tmpName );
         }
 
-        if ( null != sdFile || !useSD ) {
+        if ( null != tmpFile ) {
             try {
-                FileOutputStream fos;
-                if ( null != sdFile ) {
-                    fos = new FileOutputStream( sdFile );
-                } else {
-                    fos = context.openFileOutput( name, Context.MODE_PRIVATE );
-                }
-                byte[] buf = new byte[1024];
+                FileOutputStream fos = new FileOutputStream( tmpFile );
+                byte[] buf = new byte[1024 * 4];
                 boolean cancelled = false;
                 for ( ; ; ) {
                     cancelled = dpl.isCancelled();
                     if ( cancelled ) {
-                        deleteDict( context, name );
+                        tmpFile.delete();
                         break;
                     }
                     int nRead = in.read( buf, 0, buf.length );
@@ -485,9 +483,15 @@ public class DictUtils {
                 DbgUtils.loge( fnf );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
-                deleteDict( context, name );
+                tmpFile.delete();
             }
         }
+
+        if ( success ) {
+            File file = new File( tmpFile.getParent(), name );
+            tmpFile.renameTo( file );
+        }
+
         return success;
     }
 
