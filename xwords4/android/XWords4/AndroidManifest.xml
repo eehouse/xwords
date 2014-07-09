@@ -166,7 +166,9 @@
     <!-- downloading dicts -->
     <activity android:name=".DwnldActivity"
               android:label="@string/app_name"
-              android:theme="@android:style/Theme.Dialog">
+              android:theme="@android:style/Theme.Dialog"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              >
       <intent-filter>
         <action android:name="android.intent.action.VIEW"></action>
         <category android:name="android.intent.category.DEFAULT"></category>
@@ -180,7 +182,9 @@
       </intent-filter> 
     </activity>
 
-    <activity android:name="RelayGameActivity"/>
+    <activity android:name="RelayGameActivity"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
     <activity android:name="DictBrowseActivity"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
