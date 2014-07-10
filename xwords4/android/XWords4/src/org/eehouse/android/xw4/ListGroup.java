@@ -87,11 +87,17 @@ public class ListGroup extends LinearLayout
         }
     }
 
-    public static ListGroup make( Context context, GroupStateListener lstnr,
-                                  int posn, String lang, boolean expanded )
+    public static ListGroup make( Context context, View convertView, 
+                                  GroupStateListener lstnr, int posn, 
+                                  String lang, boolean expanded )
     {
-        ListGroup result = (ListGroup)
-            LocUtils.inflate( context, R.layout.list_group );
+        ListGroup result;
+        if ( null != convertView && convertView instanceof ListGroup ) {
+            result = (ListGroup)convertView;
+        } else {
+            result = (ListGroup)
+                LocUtils.inflate( context, R.layout.list_group );
+        }
         result.m_posn = posn;
         result.m_expanded = expanded;
         result.m_langName = lang;

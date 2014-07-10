@@ -123,7 +123,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
         
         @Override
-        public View getView( Object dataObj )
+        public View getView( Object dataObj, View convertView )
         {
             View result = null;
             if ( dataObj instanceof GroupRec ) {

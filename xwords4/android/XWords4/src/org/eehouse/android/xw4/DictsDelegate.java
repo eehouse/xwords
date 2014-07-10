@@ -176,7 +176,7 @@ public class DictsDelegate extends ListDelegateBase
         } // makeListData
 
         @Override
-        public View getView( Object dataObj )
+        public View getView( Object dataObj, View convertView )
         {
             View result = null;
 
@@ -189,48 +189,53 @@ public class DictsDelegate extends ListDelegateBase
                 boolean expanded = ! m_closedLangs.contains( langName );
                 String name = getString( R.string.lang_name_fmt, langName, 
                                          info.m_numDicts );
-                result = ListGroup.make( m_context, DictsDelegate.this,
-                                         groupPos, name, expanded );
-            } else if ( dataObj instanceof DictAndLoc ) {
-                DictAndLoc dal = (DictAndLoc)dataObj;
-                XWListItem item = 
-                    XWListItem.inflate( m_activity, DictsDelegate.this );
-                result = item;
-
-                String name = dal.name;
-                item.setText( name );
-
-                DictLoc loc = dal.loc;
-                item.setComment( m_locNames[loc.ordinal()] );
-                item.setCached( loc );
-
-                item.setOnClickListener( DictsDelegate.this );
-
-                // Replace sel entry if present
-                if ( m_selDicts.containsKey( name ) ) {
-                    m_selDicts.put( name, item );
-                    item.setSelected( true );
-                }
-            } else if ( dataObj instanceof DictInfo ) {
-                DictInfo info = (DictInfo)dataObj;
-                XWListItem item = 
-                    XWListItem.inflate( m_activity, DictsDelegate.this );
-                result = item;
-
-                String name = info.m_name;
-                item.setText( name );
-                item.setCached( info );
-
-                item.setExpandedListener( DictsDelegate.this );
-                item.setExpanded( m_expandedItems.contains( info ) );
-                item.setComment( m_onServerStr );
-
-                if ( m_selDicts.containsKey( name ) ) {
-                    m_selDicts.put( name, item );
-                    item.setSelected( true );
-                }
+                result = ListGroup.make( m_context, convertView, 
+                                         DictsDelegate.this, groupPos, name, 
+                                         expanded );
             } else {
-                Assert.fail();
+                XWListItem item;
+                if ( null != convertView && convertView instanceof XWListItem ) {
+                    item = (XWListItem)convertView;
+                } else {
+                    item = XWListItem.inflate( m_activity, DictsDelegate.this );
+                }
+                result = item;
+
+                if ( dataObj instanceof DictAndLoc ) {
+                    DictAndLoc dal = (DictAndLoc)dataObj;
+
+                    String name = dal.name;
+                    item.setText( name );
+
+                    DictLoc loc = dal.loc;
+                    item.setComment( m_locNames[loc.ordinal()] );
+                    item.setCached( loc );
+
+                    item.setOnClickListener( DictsDelegate.this );
+                    item.setExpandedListener( null ); // item might be reused
+
+                    // Replace sel entry if present
+                    if ( m_selDicts.containsKey( name ) ) {
+                        m_selDicts.put( name, item );
+                        item.setSelected( true );
+                    }
+                } else if ( dataObj instanceof DictInfo ) {
+                    DictInfo info = (DictInfo)dataObj;
+                    String name = info.m_name;
+                    item.setText( name );
+                    item.setCached( info );
+
+                    item.setExpandedListener( DictsDelegate.this );
+                    item.setExpanded( m_expandedItems.contains( info ) );
+                    item.setComment( m_onServerStr );
+
+                    if ( m_selDicts.containsKey( name ) ) {
+                        m_selDicts.put( name, item );
+                        item.setSelected( true );
+                    }
+                } else {
+                    Assert.fail();
+                }
             } 
             return result;
         }

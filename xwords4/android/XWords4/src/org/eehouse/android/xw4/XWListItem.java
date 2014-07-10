@@ -75,9 +75,10 @@ public class XWListItem extends LinearLayout
 
     protected void setExpandedListener( ExpandedListener lstnr )
     {
-        Assert.assertNull( m_expListener ); // call me only once
         m_expListener = lstnr;
-        setOnClickListener( this );
+        if ( null != lstnr ) {
+            setOnClickListener( this );
+        }
     }
 
     protected void setExpanded( boolean expanded )

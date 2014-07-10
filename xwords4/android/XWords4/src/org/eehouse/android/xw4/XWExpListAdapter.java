@@ -51,7 +51,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
     }
 
     abstract Object[] makeListData();
-    abstract View getView( Object dataObj );
+    abstract View getView( Object dataObj, View convertView );
 
     @Override
     public int getCount() 
@@ -86,7 +86,7 @@ abstract class XWExpListAdapter extends XWListAdapter {
             DbgUtils.logf( "getView: missing opportunity to reuse view %H", 
                            convertView );
         }
-        View result = getView( m_listObjs[position] );
+        View result = getView( m_listObjs[position], convertView );
         // DbgUtils.logf( "getView(position=%d) => %H (%s)", position, result, 
         //                result.getClass().getName() );
         return result;
