@@ -58,6 +58,14 @@ public class GameListItem extends LinearLayout
     private View m_hideable;
     private ImageView m_thumb;
     private ExpiringTextView m_name;
+    private View m_viewUnloaded;
+    private View m_viewLoaded;
+    private LinearLayout m_list;
+    private TextView m_state;
+    private TextView m_modTime;
+    private ImageView m_marker;
+    private TextView m_role;
+
     private boolean m_expanded, m_haveTurn, m_haveTurnLocal;
     private long m_lastMoveTime;
     private ImageButton m_expandButton;
@@ -149,10 +157,6 @@ public class GameListItem extends LinearLayout
         m_lastMoveTime = lastMoveTime;
         m_haveTurn = haveTurn;
         m_haveTurnLocal = haveTurnLocal;
-        m_hideable = (LinearLayout)findViewById( R.id.hideable );
-        m_name = (ExpiringTextView)findViewById( R.id.game_name );
-        m_expandButton = (ImageButton)findViewById( R.id.expander );
-        m_expandButton.setOnClickListener( this );
         showHide();
     }
 
@@ -171,15 +175,32 @@ public class GameListItem extends LinearLayout
         showHide();
     }
 
+    private void findViews()
+    {
+        m_hideable = (LinearLayout)findViewById( R.id.hideable );
+        m_name = (ExpiringTextView)findViewById( R.id.game_name );
+        m_expandButton = (ImageButton)findViewById( R.id.expander );
+        m_expandButton.setOnClickListener( this );
+        m_viewUnloaded = findViewById( R.id.view_unloaded );
+        m_viewLoaded = findViewById( R.id.view_loaded );
+        m_list = (LinearLayout)findViewById( R.id.player_list );
+        m_state = (TextView)findViewById( R.id.state );
+        m_modTime = (TextView)findViewById( R.id.modtime );
+        m_marker = (ImageView)findViewById( R.id.msg_marker );
+        if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
+            m_thumb = (ImageView)findViewById( R.id.thumbnail );
+        }
+        m_role = (TextView)findViewById( R.id.role );
+    }
+
     private void setLoaded( boolean loaded )
     {
         if ( loaded != m_loaded ) {
             m_loaded = loaded;
+
             // This should be enough to invalidate
-            findViewById( R.id.view_unloaded )
-                .setVisibility( loaded ? View.GONE : View.VISIBLE );
-            findViewById( R.id.view_loaded )
-                .setVisibility( loaded ? View.VISIBLE : View.GONE );
+            m_viewUnloaded.setVisibility( loaded ? View.GONE : View.VISIBLE );
+            m_viewLoaded.setVisibility( loaded ? View.VISIBLE : View.GONE );
         }
     }
 
@@ -205,7 +226,6 @@ public class GameListItem extends LinearLayout
         String state = null;    // hack to avoid calling summarizeState twice
         if ( null != m_summary ) {
             state = m_summary.summarizeState();
-            TextView view = (TextView)findViewById( R.id.game_name );
             String value = null;
             switch ( m_fieldID ) {
             case R.string.game_summary_field_empty:
@@ -240,7 +260,7 @@ public class GameListItem extends LinearLayout
                 value = name;
             }
                         
-            view.setText( value );
+            m_name.setText( value );
         }
         return state;
     }
@@ -248,19 +268,16 @@ public class GameListItem extends LinearLayout
     private void setData( GameSummary summary, boolean expanded )
     {
         if ( null != summary ) {
-            TextView tview;
             String state = setName();
 
-            LinearLayout list =
-                (LinearLayout)findViewById( R.id.player_list );
-            list.removeAllViews();
+            m_list.removeAllViews();
             boolean haveATurn = false;
             boolean haveALocalTurn = false;
             boolean[] isLocal = new boolean[1];
             for ( int ii = 0; ii < summary.nPlayers; ++ii ) {
                 ExpiringLinearLayout tmp = (ExpiringLinearLayout)
                     LocUtils.inflate( m_context, R.layout.player_list_elem );
-                tview = (TextView)tmp.findViewById( R.id.item_name );
+                TextView tview = (TextView)tmp.findViewById( R.id.item_name );
                 tview.setText( summary.summarizePlayer( ii ) );
                 tview = (TextView)tmp.findViewById( R.id.item_score );
                 tview.setText( String.format( "  %d", summary.scores[ii] ) );
@@ -273,22 +290,18 @@ public class GameListItem extends LinearLayout
                 }
                 tmp.setPct( m_handler, thisHasTurn, isLocal[0], 
                             summary.lastMoveTime );
-                list.addView( tmp, ii );
+                m_list.addView( tmp, ii );
             }
 
-            tview = (TextView)findViewById( R.id.state );
-            tview.setText( state );
-            tview = (TextView)findViewById( R.id.modtime );
+            m_state.setText( state );
+
             long lastMoveTime = summary.lastMoveTime;
             lastMoveTime *= 1000;
-
             DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
                                                             DateFormat.SHORT );
-            tview.setText( df.format( new Date( lastMoveTime ) ) );
+            m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
 
             int iconID;
-            ImageView marker =
-                (ImageView)findViewById( R.id.msg_marker );
             CommsConnType conType = summary.conType;
             if ( CommsConnType.COMMS_CONN_RELAY == conType ) {
                 iconID = R.drawable.relaygame;
@@ -299,24 +312,19 @@ public class GameListItem extends LinearLayout
             } else {
                 iconID = R.drawable.sologame;
             }
-            marker.setImageResource( iconID );
-            marker.setOnClickListener( new View.OnClickListener() {
+            m_marker.setImageResource( iconID );
+            m_marker.setOnClickListener( new View.OnClickListener() {
                     @Override
                     public void onClick( View view ) {
                         toggleSelected();
                     }
                 } );
 
-            if ( BuildConstants.THUMBNAIL_SUPPORTED ) {
-                m_thumb = (ImageView)findViewById( R.id.thumbnail );
-            }
-
-            tview = (TextView)findViewById( R.id.role );
             String roleSummary = summary.summarizeRole();
             if ( null != roleSummary ) {
-                tview.setText( roleSummary );
+                m_role.setText( roleSummary );
             } else {
-                tview.setVisibility( View.GONE );
+                m_role.setVisibility( View.GONE );
             }
 
             update( expanded, summary.lastMoveTime, haveATurn, 
@@ -374,6 +382,7 @@ public class GameListItem extends LinearLayout
         } else {
             result = (GameListItem)LocUtils.inflate( context, 
                                                      R.layout.game_list_item );
+            result.findViews();
         }
         result.init( handler, rowid, fieldID, cb );
         return result;
