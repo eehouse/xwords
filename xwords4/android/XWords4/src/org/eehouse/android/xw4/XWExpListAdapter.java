@@ -23,8 +23,10 @@ package org.eehouse.android.xw4;
 import android.view.View;
 import android.view.ViewGroup;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -37,10 +39,15 @@ abstract class XWExpListAdapter extends XWListAdapter {
     private Object[] m_listObjs;
     private Class m_groupClass;
     private int m_nGroups;
+    private Map<Class, Integer> m_types;
 
-    public XWExpListAdapter( Class parentClass )
+    public XWExpListAdapter( Class[] childClasses )
     {
-        m_groupClass = parentClass;
+        m_groupClass = childClasses[0];
+        m_types = new HashMap<Class, Integer>();
+        for ( int ii = 0; ii < childClasses.length; ++ii ) {
+            m_types.put( childClasses[ii], ii );
+        }
     }
 
     abstract Object[] makeListData();
@@ -61,6 +68,17 @@ abstract class XWExpListAdapter extends XWListAdapter {
         return m_listObjs.length;
     }
 
+    @Override
+    public int getItemViewType( int position )
+    { 
+        return m_types.get( m_listObjs[position].getClass() );
+    }
+
+    public int getViewTypeCount()
+    {
+        return m_types.size();
+    }
+        
     @Override
     public View getView( int position, View convertView, ViewGroup parent )
     {

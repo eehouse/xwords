@@ -146,10 +146,13 @@ public class DictsDelegate extends ListDelegateBase
 
         public DictListAdapter( Context context ) 
         {
-            super( LangInfo.class );
+            super( new Class[] { LangInfo.class,
+                                 DictAndLoc.class,
+                                 DictInfo.class
+                } );
             m_context = context;
         }
-        
+
         @Override
         public Object[] makeListData()
         {
@@ -171,9 +174,6 @@ public class DictsDelegate extends ListDelegateBase
             }
             return alist.toArray( new Object[alist.size()] );
         } // makeListData
-
-        @Override
-        public int getViewTypeCount() { return 2; }
 
         @Override
         public View getView( Object dataObj )

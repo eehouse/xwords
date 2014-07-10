@@ -96,7 +96,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         GameListAdapter()
         {
-            super( GroupRec.class );
+            super( new Class[] { GroupRec.class, GameRec.class } );
             m_groupPositions = checkPositions();
         }
 
@@ -122,9 +122,6 @@ public class GamesListDelegate extends ListDelegateBase
             return alist.toArray( new Object[alist.size()] );
         }
         
-        @Override
-        public int getViewTypeCount() { return 2; }
-
         @Override
         public View getView( Object dataObj )
         {
