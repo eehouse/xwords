@@ -82,10 +82,6 @@ abstract class XWExpListAdapter extends XWListAdapter {
     @Override
     public View getView( int position, View convertView, ViewGroup parent )
     {
-        if ( null != convertView ) {
-            DbgUtils.logf( "getView: missing opportunity to reuse view %H", 
-                           convertView );
-        }
         View result = getView( m_listObjs[position], convertView );
         // DbgUtils.logf( "getView(position=%d) => %H (%s)", position, result, 
         //                result.getClass().getName() );

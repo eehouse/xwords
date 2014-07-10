@@ -48,14 +48,20 @@ public class GameListGroup extends ExpiringLinearLayout
     private ImageButton m_expandButton;
 
     public static GameListGroup makeForPosition( Context context,
+                                                 View convertView,
                                                  long groupID,
                                                  int nGames,
                                                  boolean expanded,
                                                  SelectableItem cb,
                                                  GroupStateListener gcb )
     {
-        GameListGroup result = (GameListGroup)
-            LocUtils.inflate( context, R.layout.game_list_group );
+        GameListGroup result;
+        if ( null != convertView && convertView instanceof GameListGroup ) {
+            result = (GameListGroup)convertView;
+        } else {
+            result = (GameListGroup)
+                LocUtils.inflate( context, R.layout.game_list_group );
+        }
         result.m_cb = cb;
         result.m_gcb = gcb;
         result.m_groupID = groupID;

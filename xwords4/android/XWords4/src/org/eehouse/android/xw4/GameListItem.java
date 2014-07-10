@@ -364,12 +364,17 @@ public class GameListItem extends LinearLayout
         }
     } // class LoadItemTask
 
-    public static GameListItem makeForRow( Context context, long rowid, 
-                                           Handler handler, int fieldID, 
-                                           SelectableItem cb )
+    public static GameListItem makeForRow( Context context, View convertView,
+                                           long rowid, Handler handler, 
+                                           int fieldID, SelectableItem cb )
     {
-        GameListItem result = 
-            (GameListItem)LocUtils.inflate( context, R.layout.game_list_item );
+        GameListItem result;
+        if ( null != convertView && convertView instanceof GameListItem ) {
+            result = (GameListItem)convertView;
+        } else {
+            result = (GameListItem)LocUtils.inflate( context, 
+                                                     R.layout.game_list_item );
+        }
         result.init( handler, rowid, fieldID, cb );
         return result;
     }

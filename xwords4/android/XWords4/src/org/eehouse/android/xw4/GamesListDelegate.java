@@ -131,8 +131,9 @@ public class GamesListDelegate extends ListDelegateBase
                 GameGroupInfo ggi = DBUtils.getGroups( m_activity )
                     .get( rec.m_groupID );
                 GameListGroup group =
-                    GameListGroup.makeForPosition( m_activity, rec.m_groupID, 
-                                                   ggi.m_count, ggi.m_expanded, 
+                    GameListGroup.makeForPosition( m_activity, convertView, 
+                                                   rec.m_groupID, ggi.m_count, 
+                                                   ggi.m_expanded, 
                                                    GamesListDelegate.this, 
                                                    GamesListDelegate.this );
                 if ( !ggi.m_expanded ) {
@@ -148,7 +149,8 @@ public class GamesListDelegate extends ListDelegateBase
             } else if ( dataObj instanceof GameRec ) {
                 GameRec rec = (GameRec)dataObj;
                 GameListItem item = 
-                    GameListItem.makeForRow( m_activity, rec.m_rowID, m_handler, 
+                    GameListItem.makeForRow( m_activity, convertView, 
+                                             rec.m_rowID, m_handler, 
                                              m_fieldID, GamesListDelegate.this );
                 item.setSelected( m_selGames.contains( rec.m_rowID ) );
                 result = item;
