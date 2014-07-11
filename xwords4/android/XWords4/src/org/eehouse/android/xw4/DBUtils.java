@@ -814,7 +814,7 @@ public class DBUtils {
             lock = new GameLock( rowid, true ).lock();
             notifyListeners( rowid, GameChangeType.GAME_CREATED );
         }
-
+        invalGroupsCache();
         return lock;
     } // saveNewGame
 
@@ -893,8 +893,8 @@ public class DBUtils {
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             db.close();
         }
-        invalGroupsCache();
         notifyListeners( lock.getRowid(), GameChangeType.GAME_DELETED );
+        invalGroupsCache();
     }
 
     public static int getVisID( Context context, long rowid )

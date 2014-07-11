@@ -114,7 +114,9 @@ public class GamesListDelegate extends ListDelegateBase
                 alist.add( new GroupRec( groupID, ii ) );
 
                 if ( ggi.m_expanded ) {
-                    alist.addAll( makeChildren( groupID ) );
+                    List<Object> children = makeChildren( groupID );
+                    alist.addAll( children );
+                    Assert.assertTrue( nKids == children.size() );
                 }
             }
 
@@ -342,7 +344,7 @@ public class GamesListDelegate extends ListDelegateBase
             for ( long row : rows ) {
                 alist.add( new GameRec( row ) );
             }
-            DbgUtils.logf( "makeChildren(%d) => %d kids", groupID, alist.size() );
+            DbgUtils.logf( "GamesListDelegate.makeChildren(%d) => %d kids", groupID, alist.size() );
             return alist;
         }
 
@@ -864,7 +866,7 @@ public class GamesListDelegate extends ListDelegateBase
     //////////////////////////////////////////////////////////////////////
     public void gameSaved( final long rowid, final GameChangeType change )
     {
-        runOnUiThread( new Runnable() {
+        post( new Runnable() {
                 public void run() {
                     switch( change ) {
                     case GAME_DELETED:
