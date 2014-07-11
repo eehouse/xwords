@@ -240,10 +240,10 @@ public class DictsDelegate extends ListDelegateBase
             return result;
         }
 
-        private XWExpListAdapter.ItemTest makeTestFor( final String langName )
+        private XWExpListAdapter.GroupTest makeTestFor( final String langName )
         {
-            return new XWExpListAdapter.ItemTest() {
-                public boolean isItem( Object item ) {
+            return new XWExpListAdapter.GroupTest() {
+                public boolean isTheGroup( Object item ) {
                     LangInfo info = (LangInfo)item;
                     return m_langs[info.m_posn].equals( langName );
                 }

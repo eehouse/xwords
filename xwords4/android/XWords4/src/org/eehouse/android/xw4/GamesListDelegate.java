@@ -55,6 +55,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
+import org.eehouse.android.xw4.DBUtils.GameChangeType;
 
 public class GamesListDelegate extends ListDelegateBase
     implements OnItemLongClickListener,
@@ -102,7 +103,6 @@ public class GamesListDelegate extends ListDelegateBase
 
         protected Object[] makeListData()
         {
-            DbgUtils.logf( "GamesListDelegate.makeListData()" );
             final Map<Long,GameGroupInfo> gameInfo = DBUtils.getGroups( m_activity );
             ArrayList<Object> alist = new ArrayList<Object>();
             long[] positions = getGroupPositions();
@@ -113,7 +113,6 @@ public class GamesListDelegate extends ListDelegateBase
                 // m_groupIndices[ii] = alist.size();
                 alist.add( new GroupRec( groupID, ii ) );
 
-                DbgUtils.logf( "makeListData(): m_expanded[%d] = %b", ii, ggi.m_expanded );
                 if ( ggi.m_expanded ) {
                     alist.addAll( makeChildren( groupID ) );
                 }
@@ -168,7 +167,12 @@ public class GamesListDelegate extends ListDelegateBase
             }
         }
 
-        protected GameListItem reload( long rowID )
+        protected void removeGame( long rowID )
+        {
+            removeChildren( makeChildTestFor( rowID  ) );
+        }
+
+        protected GameListItem reloadGame( long rowID )
         {
             GameListItem item = null;
             Set<GameListItem> games = getGamesFromElems( rowID );
@@ -317,7 +321,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         private void removeChildrenOf( long groupID )
         {
-            int indx = findGroupItem( makeTestFor( groupID ) );
+            int indx = findGroupItem( makeGroupTestFor( groupID ) );
             GroupRec rec = (GroupRec)getObjectAt( indx );
             // rec.m_ggi.m_expanded = false;
             removeChildrenOf( indx );
@@ -325,7 +329,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         private void addChildrenOf( long groupID )
         {
-            int indx = findGroupItem( makeTestFor( groupID ) );
+            int indx = findGroupItem( makeGroupTestFor( groupID ) );
             GroupRec rec = (GroupRec)getObjectAt( indx );
             // rec.m_ggi.m_expanded = false;
             addChildrenOf( indx, makeChildren( groupID ) );
@@ -342,12 +346,22 @@ public class GamesListDelegate extends ListDelegateBase
             return alist;
         }
 
-        private XWExpListAdapter.ItemTest makeTestFor( final long groupID  )
+        private XWExpListAdapter.GroupTest makeGroupTestFor( final long groupID  )
         {
-            return new XWExpListAdapter.ItemTest() {
-                public boolean isItem( Object item ) {
+            return new XWExpListAdapter.GroupTest() {
+                public boolean isTheGroup( Object item ) {
                     GroupRec rec = (GroupRec)item;
                     return rec.m_groupID == groupID;
+                }
+            };
+        }
+
+        private XWExpListAdapter.ChildTest makeChildTestFor( final long rowID  )
+        {
+            return new XWExpListAdapter.ChildTest() {
+                public boolean isTheChild( Object item ) {
+                    GameRec rec = (GameRec)item;
+                    return rec.m_rowID == rowID;
                 }
             };
         }
@@ -613,7 +627,7 @@ public class GamesListDelegate extends ListDelegateBase
                         String name = m_namer.getName();
                         DBUtils.setGroupName( m_activity,
                                               m_groupid, name );
-                        m_adapter.reload( m_rowid );
+                        m_adapter.reloadGame( m_rowid );
                         mkListAdapter();
                     }
                 };
@@ -761,7 +775,7 @@ public class GamesListDelegate extends ListDelegateBase
         m_launchedGame = DBUtils.ROWID_NOTFOUND;
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
-        m_adapter.reload( intent.getLongExtra( ROWID_EXTRA, -1 ) );
+        m_adapter.reloadGame( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         tryStartsFromIntent( intent );
     }
 
@@ -824,7 +838,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( DBUtils.ROWID_NOTFOUND != m_launchedGame ) {
                 clearSelections();
 
-                GameListItem item = m_adapter.reload( m_launchedGame );
+                GameListItem item = m_adapter.reloadGame( m_launchedGame );
                 if ( null != item ) { // currently visible in list?
                     item.setSelected( true );
                 }
@@ -845,25 +859,39 @@ public class GamesListDelegate extends ListDelegateBase
         return success;
     }
 
+    //////////////////////////////////////////////////////////////////////
     // DBUtils.DBChangeListener interface
-    public void gameSaved( final long rowid, final boolean countChanged )
+    //////////////////////////////////////////////////////////////////////
+    public void gameSaved( final long rowid, final GameChangeType change )
     {
         runOnUiThread( new Runnable() {
                 public void run() {
-                    if ( countChanged || DBUtils.ROWID_NOTFOUND == rowid ) {
-                        mkListAdapter();
-                        if ( DBUtils.ROWID_NOTFOUND != rowid ) {
-                            m_launchedGame = rowid;
+                    switch( change ) {
+                    case GAME_DELETED:
+                        m_adapter.removeGame( rowid );
+                        break;
+                    case GAME_CHANGED:
+                        if ( DBUtils.ROWIDS_ALL == rowid ) { // all changed
+                            mkListAdapter();
+                        } else {
+                            m_adapter.reloadGame( rowid );
                         }
-                    } else {
-                        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
-                        m_adapter.reload( rowid );
+                        break;
+                    case GAME_CREATED:
+                        mkListAdapter();
+                        m_launchedGame = rowid;
+                        break;
+                    default:
+                        Assert.fail();
+                        break;
                     }
                 }
             } );
     }
 
+    //////////////////////////////////////////////////////////////////////
     // SelectableItem interface
+    //////////////////////////////////////////////////////////////////////
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
@@ -966,7 +994,7 @@ public class GamesListDelegate extends ListDelegateBase
                 long newid = GameUtils.dupeGame( m_activity, curID );
                 m_selGames.add( newid );
                 if ( null != m_adapter ) {
-                    m_adapter.reload( newid );
+                    m_adapter.reloadGame( newid );
                 }
                 break;
 
@@ -1411,7 +1439,7 @@ public class GamesListDelegate extends ListDelegateBase
                 long[] rowids = DBUtils.getRowIDsFor( m_activity, relayID );
                 if ( null != rowids ) {
                     for ( long rowid : rowids ) {
-                        m_adapter.reload( rowid );
+                        m_adapter.reloadGame( rowid );
                     }
                 }
             }
@@ -1618,7 +1646,6 @@ public class GamesListDelegate extends ListDelegateBase
 
     private boolean clearSelectedGames()
     {
-        DbgUtils.logf( "clearSelectedGames()" );
         // clear any selection
         boolean needsClear = 0 < m_selGames.size();
         if ( needsClear ) {

@@ -32,8 +32,12 @@ import junit.framework.Assert;
 
 abstract class XWExpListAdapter extends XWListAdapter {
 
-    interface ItemTest {
-        boolean isItem( Object item );
+    interface GroupTest {
+        boolean isTheGroup( Object item );
+    }
+
+    interface ChildTest {
+        boolean isTheChild( Object item );
     }
 
     private Object[] m_listObjs;
@@ -99,12 +103,12 @@ abstract class XWExpListAdapter extends XWListAdapter {
         return m_listObjs[indx];
     }
 
-    protected int findGroupItem( ItemTest test )
+    protected int findGroupItem( GroupTest test )
     {
         int result = -1;
         for ( int ii = 0; ii < m_listObjs.length; ++ii ) {
             Object obj = m_listObjs[ii];
-            if ( obj.getClass() == m_groupClass && test.isItem( obj ) ) {
+            if ( obj.getClass() == m_groupClass && test.isTheGroup( obj ) ) {
                 result = ii;
                 break;
             }
@@ -160,6 +164,27 @@ abstract class XWExpListAdapter extends XWListAdapter {
                           m_listObjs.length - groupIndex - 1 ); 
         m_listObjs = newArray;
         notifyDataSetChanged();
+    }
+
+    protected void removeChildren( ChildTest test )
+    {
+        // Run over the array testing non-parents. For each that passes, mark
+        // it as null.  Then reallocate.
+        int nLost = 0;
+        for ( int ii = 0; ii < m_listObjs.length; ++ii ) {
+            Object obj = m_listObjs[ii];
+            if ( obj.getClass() != m_groupClass && test.isTheChild( obj ) ) {
+                ++nLost;
+            } else if ( 0 < nLost ) {
+                m_listObjs[ii - nLost] = obj;
+            }
+        }
+
+        if ( 0 < nLost ) {
+            m_listObjs = Arrays.copyOfRange( m_listObjs, 
+                                             0, m_listObjs.length - nLost );
+            notifyDataSetChanged();
+        }
     }
 
     protected void swapGroups( int groupPosn1, int groupPosn2 )

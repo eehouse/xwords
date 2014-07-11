@@ -59,6 +59,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DBUtils {
     public static final int ROWID_NOTFOUND = -1;
+    public static final int ROWIDS_ALL = -2;
     public static final int GROUPID_UNSPEC = -1;
 
     private static final String DICTS_SEP = ",";
@@ -71,8 +72,10 @@ public class DBUtils {
     private static long s_cachedRowID = ROWID_NOTFOUND;
     private static byte[] s_cachedBytes = null;
 
+    public static enum GameChangeType { GAME_CHANGED, GAME_CREATED, GAME_DELETED };
+
     public static interface DBChangeListener {
-        public void gameSaved( long rowid, boolean countChanged );
+        public void gameSaved( long rowid, GameChangeType change );
     }
     private static HashSet<DBChangeListener> s_listeners = 
         new HashSet<DBChangeListener>();
@@ -333,7 +336,7 @@ public class DBUtils {
                 Assert.assertTrue( result >= 0 );
             }
             db.close();
-            notifyListeners( rowid, false );
+            notifyListeners( rowid, GameChangeType.GAME_CHANGED );
             invalGroupsCache();
         }
     } // saveSummary
@@ -390,7 +393,7 @@ public class DBUtils {
     public static void setMsgFlags( long rowid, int flags )
     {
         setInt( rowid, DBHelper.HASMSGS, flags );
-        notifyListeners( rowid, false );
+        notifyListeners( rowid, GameChangeType.GAME_CHANGED );
     }
 
     public static void setExpanded( long rowid, boolean expanded )
@@ -461,7 +464,7 @@ public class DBUtils {
 
                 db.close();
 
-                notifyListeners( rowid, false );
+                notifyListeners( rowid, GameChangeType.GAME_CHANGED );
             }
         }
     }
@@ -478,7 +481,7 @@ public class DBUtils {
                                          values, null, null );
                 db.close();
 
-                notifyListeners( ROWID_NOTFOUND, false );
+                notifyListeners( ROWIDS_ALL, GameChangeType.GAME_CHANGED );
             }
         }
     }
@@ -809,7 +812,7 @@ public class DBUtils {
             setCached( rowid, null ); // force reread
 
             lock = new GameLock( rowid, true ).lock();
-            notifyListeners( rowid, true );
+            notifyListeners( rowid, GameChangeType.GAME_CREATED );
         }
 
         return lock;
@@ -834,7 +837,7 @@ public class DBUtils {
 
         setCached( rowid, null ); // force reread
         if ( ROWID_NOTFOUND != rowid ) {      // Means new game?
-            notifyListeners( rowid, false );
+            notifyListeners( rowid, GameChangeType.GAME_CHANGED );
         }
         invalGroupsCache();
         return rowid;
@@ -891,7 +894,7 @@ public class DBUtils {
             db.close();
         }
         invalGroupsCache();
-        notifyListeners( lock.getRowid(), true );
+        notifyListeners( lock.getRowid(), GameChangeType.GAME_DELETED );
     }
 
     public static int getVisID( Context context, long rowid )
@@ -1956,12 +1959,12 @@ public class DBUtils {
         return result;
     }
     
-    private static void notifyListeners( long rowid, boolean countChanged )
+    private static void notifyListeners( long rowid, GameChangeType change )
     {
         synchronized( s_listeners ) {
             Iterator<DBChangeListener> iter = s_listeners.iterator();
             while ( iter.hasNext() ) {
-                iter.next().gameSaved( rowid, countChanged );
+                iter.next().gameSaved( rowid, change );
             }
         }
     }
