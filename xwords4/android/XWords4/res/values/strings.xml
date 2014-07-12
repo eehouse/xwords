@@ -2179,7 +2179,7 @@
     <string name="confirm_studylist_clear_fmt">Are you sure you want to
     delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>
     <string name="paste_done_fmt">%1$d word[s] copied</string>
-    <string name="add_done_fmt">%1$s added to list</string>
+    <string name="add_done_fmt">%1$s added to %2$s list</string>
     <string name="studylist_title_fmt">Studylist for %1$s</string>
 
     <string name="study_langpick">Your words for:</string>

@@ -74,6 +74,7 @@ public class LookupAlert extends LinearLayout
     private static final int LIST_LAYOUT = android.R.layout.simple_list_item_1;
     
     private static int s_lang = -1;
+    private static String s_langName;
 
     // These two are probably always the same object
     private Context m_context;
@@ -197,7 +198,8 @@ public class LookupAlert extends LinearLayout
             String word = m_words[m_wordIndex];
             DBUtils.addToStudyList( m_context, word, s_lang );
 
-            String msg = LocUtils.getString( m_context, R.string.add_done_fmt, word );
+            String msg = LocUtils.getString( m_context, R.string.add_done_fmt, 
+                                             word, s_langName );
             Utils.showToast( m_context, msg );
         }
     }
@@ -321,6 +323,7 @@ public class LookupAlert extends LinearLayout
             s_urlsAdapter = new ArrayAdapter<String>( context, LIST_LAYOUT, 
                                                       s_lookupNames );
             s_lang = lang;
+            s_langName = DictLangCache.getLangNames( context )[lang];
         }
     }
 
