@@ -9,14 +9,18 @@
 
 <h3>New with this release</h3>
 <ul>
-    <li>Rewrite lots of internals getting ready for dual-window display (on tablets)</li>
-    <li>Make translations (e.g. of menus) downloadable rather than
-    built in to the app</li>
+    <li>Rewrite lots of internals getting ready for dual-window
+        display (on tablets)</li>
+    <li>Make translations (e.g. of menus) downloadable separately
+        rather than built in to the app</li>
     <li>Handle display and download of wordlists internally rather
-    than handing off to a browser</li>
-    <li>Add debug option to play via "data" SMS, which works if both
-    devices are NOT on Verizon or Sprint</li>
-    <li>Fix lookup/studylist for languages with only one lookup option</li>
+        than handing off to a browser</li>
+    <li>Fix lookup/studylist for languages with only one lookup
+        option</li>
+    <li>When you return from downloading a new wordlist or language
+        your new game is now configured to use it</li>
+    <li>Add debug option to play via "data" SMS (works only if both
+        devices are NOT on Verizon or Sprint in the US)</li>
 </ul>
 
 <h3>Next up</h3>
