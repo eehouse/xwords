@@ -55,10 +55,18 @@ public class GameListGroup extends ExpiringLinearLayout
                                                  SelectableItem cb,
                                                  GroupStateListener gcb )
     {
-        GameListGroup result;
+        GameListGroup result = null;
         if ( null != convertView && convertView instanceof GameListGroup ) {
             result = (GameListGroup)convertView;
-        } else {
+
+            // Hack: once an ExpiringLinearLayout has a background it's not
+            // set up to be reused without one.  Until that's fixed, don't
+            // reuse in that case.
+            if ( result.hasDelegate() ) {
+                result = null;
+            }
+        }
+        if ( null == result ) {
             result = (GameListGroup)
                 LocUtils.inflate( context, R.layout.game_list_group );
         }

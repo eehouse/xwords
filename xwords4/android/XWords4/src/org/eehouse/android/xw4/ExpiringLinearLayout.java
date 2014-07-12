@@ -44,6 +44,11 @@ public class ExpiringLinearLayout extends LinearLayout {
         m_delegate.configure( haveTurn, haveTurnLocal, startSecs );
     }
 
+    public boolean hasDelegate()
+    {
+        return null != m_delegate;
+    }
+
     @Override
     // not called unless setWillNotDraw( false ) called
     protected void onDraw( Canvas canvas ) 
