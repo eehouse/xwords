@@ -49,10 +49,12 @@ public class ListGroup extends LinearLayout
     {
         super.onFinishInflate();
         m_expandButton = (ImageButton)findViewById( R.id.expander );
-        m_expandButton.setOnClickListener( this );
         m_text = (TextView)findViewById( R.id.game_name );
         
-        setButton();
+        m_expandButton.setOnClickListener( this );
+        setOnClickListener( this );
+
+        setButtonImage();
         setText();
     }
 
@@ -68,10 +70,10 @@ public class ListGroup extends LinearLayout
     {
         m_expanded = !m_expanded;
         m_listener.onGroupExpandedChanged( this, m_expanded );
-        setButton();
+        setButtonImage();
     }
 
-    private void setButton()
+    private void setButtonImage()
     {
         if ( null != m_expandButton ) {
             m_expandButton.setImageResource( m_expanded ?
@@ -103,7 +105,7 @@ public class ListGroup extends LinearLayout
         result.m_langName = lang;
         result.m_listener = lstnr;
 
-        result.setButton();     // in case onFinishInflate already called
+        result.setButtonImage();     // in case onFinishInflate already called
         result.setText();
 
         return result;
