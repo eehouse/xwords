@@ -2610,10 +2610,11 @@ public final class R {
         public static final int color_edit_text=0x7f080003;
         public static final int color_seek_bar=0x7f080002;
         public static final int config_separator=0x7f080000;
-        public static final int evenly_spaced_horizontal=0x7f080007;
-        public static final int expander_button=0x7f080008;
-        public static final int expander_label=0x7f080009;
-        public static final int relay_explain=0x7f080006;
+        public static final int evenly_spaced_horizontal=0x7f080008;
+        public static final int expander_button=0x7f080009;
+        public static final int expander_label=0x7f08000a;
+        public static final int group_items=0x7f080006;
+        public static final int relay_explain=0x7f080007;
         public static final int role_config_hint=0x7f080001;
         public static final int toolbar_button=0x7f080004;
     }
