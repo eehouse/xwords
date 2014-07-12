@@ -466,6 +466,7 @@ public class GameConfigDelegate extends DelegateBase
                 break;
             case REQUEST_LANG:
                 String langName = data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
+                selLangChanged( langName );
                 setSpinnerSelection( m_langSpinner, langName );
                 break;
             default:
@@ -796,14 +797,7 @@ public class GameConfigDelegate extends DelegateBase
                         if ( chosen.equals( m_browseText ) ) {
                             DictsDelegate.launchForResult( m_activity, REQUEST_LANG );
                         } else {
-                            m_gi.setLang( DictLangCache.
-                                          getLangLangCode( m_activity,
-                                                           chosen ) );
-                            loadPlayersList();
-                            if ( null != m_dictSpinner ) {
-                                configDictSpinner( m_dictSpinner, m_gi.dictLang, 
-                                                   m_gi.dictName );
-                            }
+                            selLangChanged( chosen );
                         }
                     }
 
@@ -814,6 +808,15 @@ public class GameConfigDelegate extends DelegateBase
             ArrayAdapter adapter = DictLangCache.getLangsAdapter( m_activity );
             String lang = DictLangCache.getLangName( m_activity, m_gi.dictLang );
             configSpinnerWDownload( m_langSpinner, adapter, onSel, lang );
+        }
+    }
+
+    private void selLangChanged( String chosen )
+    {
+        m_gi.setLang( DictLangCache.getLangLangCode( m_activity, chosen ) );
+        loadPlayersList();
+        if ( null != m_dictSpinner ) {
+            configDictSpinner( m_dictSpinner, m_gi.dictLang, m_gi.dictName );
         }
     }
 
