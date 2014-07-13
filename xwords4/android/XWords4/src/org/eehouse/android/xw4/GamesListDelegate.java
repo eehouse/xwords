@@ -161,6 +161,14 @@ public class GamesListDelegate extends ListDelegateBase
             return result;
         }
 
+        void setSelected( long rowID, boolean selected )
+        {
+            Set<GameListItem> games = getGamesFromElems( rowID );
+            if ( 1 == games.size() ) {
+                games.iterator().next().setSelected( selected );
+            }
+        }
+
         void invalName( long rowID )
         {
             Set<GameListItem> games = getGamesFromElems( rowID );
@@ -838,14 +846,7 @@ public class GamesListDelegate extends ListDelegateBase
             updateField();
 
             if ( DBUtils.ROWID_NOTFOUND != m_launchedGame ) {
-                clearSelections();
-
-                GameListItem item = m_adapter.reloadGame( m_launchedGame );
-                if ( null != item ) { // currently visible in list?
-                    item.setSelected( true );
-                }
-                m_selGames.add( m_launchedGame );
-
+                setSelGame( m_launchedGame );
                 m_launchedGame = DBUtils.ROWID_NOTFOUND;
             }
         }
@@ -881,7 +882,7 @@ public class GamesListDelegate extends ListDelegateBase
                         break;
                     case GAME_CREATED:
                         mkListAdapter();
-                        m_launchedGame = rowid;
+                        setSelGame( rowid );
                         break;
                     default:
                         Assert.fail();
@@ -1629,6 +1630,14 @@ public class GamesListDelegate extends ListDelegateBase
             m_netLaunchInfo = null;
         }
         return madeGame;
+    }
+
+    private void setSelGame( long rowid )
+    {
+        clearSelections();
+
+        m_selGames.add( rowid );
+        m_adapter.setSelected( rowid, true );
     }
 
     private void clearSelections()
