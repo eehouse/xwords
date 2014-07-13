@@ -1872,7 +1872,7 @@
   <string name="confirm_studylist_clear_fmt">Era uoy erus uoy tnaw ot
     eteled eht %1$d detceles ?]s[drow\n\nsIht( noitca tonnac eb enodnu.)</string>
   <string name="paste_done_fmt">%1$d ]s[drow deipoc</string>
-  <string name="add_done_fmt">%1$s dedda ot %2$s tsil</string>
+  <string name="add_done_fmt">%1$s dedda ot %2$s tsilyduts</string>
   <string name="studylist_title_fmt">Tsilyduts rof %1$s</string>
   <string name="study_langpick">Ruoy sdrow rof:</string>
   <string name="study_no_lang_fmt">Uoy evah ton tey devas yna sdrow

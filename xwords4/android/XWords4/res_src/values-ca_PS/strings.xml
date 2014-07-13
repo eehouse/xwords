@@ -1872,7 +1872,7 @@
   <string name="confirm_studylist_clear_fmt">ARE YOU SURE YOU WANT TO
     DELETE THE %1$d SELECTED WORD[S]?\n\n(THIS ACTION CANNOT BE UNDONE.)</string>
   <string name="paste_done_fmt">%1$d WORD[S] COPIED</string>
-  <string name="add_done_fmt">%1$s ADDED TO %2$s LIST</string>
+  <string name="add_done_fmt">%1$s ADDED TO %2$s STUDYLIST</string>
   <string name="studylist_title_fmt">STUDYLIST FOR %1$s</string>
   <string name="study_langpick">YOUR WORDS FOR:</string>
   <string name="study_no_lang_fmt">YOU HAVE NOT YET SAVED ANY WORDS
