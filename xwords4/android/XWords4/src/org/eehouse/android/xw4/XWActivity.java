@@ -32,7 +32,6 @@ public class XWActivity extends Activity {
 
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
-        DbgUtils.logf( "<eeh>XWActivity.onCreate()" );
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
         dlgt.init( savedInstanceState );
@@ -90,7 +89,6 @@ public class XWActivity extends Activity {
     @Override
     public boolean onCreateOptionsMenu( Menu menu ) 
     {
-        DbgUtils.logf( "XWListActivity.onCreateOptionsMenu called" );
         return m_dlgt.onCreateOptionsMenu( menu );
     }
 
