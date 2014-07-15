@@ -5,6 +5,5 @@ bin
 gen
 libs
 proguard.cfg
-proguard-project.txt
 obj
 res/drawable*/*gen.png
