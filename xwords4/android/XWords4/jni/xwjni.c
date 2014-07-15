@@ -478,7 +478,7 @@ typedef struct _JNIState {
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
-( JNIEnv* env, jclass C, int jniGlobalPtr )
+( JNIEnv* env, jclass C, int jniGlobalPtr, jint seed )
 {
     /* Why am I doing this twice? */
     /* struct timeval tv; */
@@ -494,9 +494,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
     MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
 
-    XP_U32 secs = getCurSeconds( env );
-    XP_LOGF( "initing srand with %d", secs );
-    srandom( secs );
+    XP_LOGF( "%s: initing srand with %d", __func__, seed );
+    srandom( seed );
 
     return (jint) state;
 }

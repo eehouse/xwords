@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4.jni;
 
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.Utils;
 
 import android.graphics.Rect;
 
@@ -87,8 +88,10 @@ public class XwJNI {
     // Game methods
     public static int initJNI()
     {
-        return initJNI( getJNI().m_ptr );
+        int seed = Utils.nextRandomInt();
+        return initJNI( getJNI().m_ptr, seed );
     }
+
     public static native void game_makeNewGame( int gamePtr,
                                                 CurGameInfo gi, 
                                                 UtilCtxt util,
@@ -374,7 +377,7 @@ public class XwJNI {
     // Private methods -- called only here
     private static native int initGlobals();
     private static native void cleanGlobals( int ptr );
-    private static native int initJNI( int jniState );
+    private static native int initJNI( int jniState, int seed );
     private static native void dict_ref( int dictPtr );
     private static native void dict_unref( int dictPtr );
     private static native boolean dict_getInfo( int jniState, byte[] dict, 
