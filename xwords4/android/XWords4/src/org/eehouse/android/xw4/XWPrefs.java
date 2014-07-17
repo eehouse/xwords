@@ -464,4 +464,11 @@ public class XWPrefs {
     {
         return getPrefsBoolean( context, key_checked_upgrades, false );
     }
+
+    public static boolean getIsTablet( Context context )
+    {
+        boolean fakeTablet = 
+            getPrefsBoolean( context, R.string.key_force_tablet, false );
+        return fakeTablet;
+    }
 }

@@ -2263,4 +2263,6 @@
     legal.\n\nCheck the \"Show downloadable\" box at the top to see
     what\'s available.</string>
 
+    <string name="force_tablet_title">Force tablet layout</string>
+    <string name="force_tablet_summary">Even if my screen is too small</string>
 </resources>

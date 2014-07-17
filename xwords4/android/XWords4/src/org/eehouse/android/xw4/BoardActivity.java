@@ -36,9 +36,14 @@ public class BoardActivity extends XWActivity {
         m_dlgt = new BoardDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
 
-        if ( 9 <= Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
-            setRequestedOrientation( ActivityInfo.
-                                     SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+        int orientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+        if ( XWPrefs.getIsTablet( this ) ) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_USER;
+        } else if ( 9 <= Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+        }
+        if ( ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED != orientation ) {
+            setRequestedOrientation( orientation );
         }
     } // onCreate
 

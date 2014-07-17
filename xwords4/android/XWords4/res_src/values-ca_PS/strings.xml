@@ -1935,4 +1935,6 @@
     IN\n• HOW SMART THE ROBOT PLAYER IS\n• WHAT WORDS ARE
     LEGAL.\n\nCHECK THE \"SHOW DOWNLOADABLE\" BOX AT THE TOP TO SEE
     WHAT\'S AVAILABLE.</string>
+  <string name="force_tablet_title">FORCE TABLET LAYOUT</string>
+  <string name="force_tablet_summary">EVEN IF MY SCREEN IS TOO SMALL</string>
 </resources>
