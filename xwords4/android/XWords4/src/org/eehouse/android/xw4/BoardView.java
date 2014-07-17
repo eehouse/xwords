@@ -43,7 +43,7 @@ import junit.framework.Assert;
 
 public class BoardView extends View implements BoardHandler, SyncedDraw {
 
-    private static final float MIN_FONT_DIPS = 14.0f;
+    private static final float MIN_FONT_DIPS = 10.0f;
     private static final int MULTI_INACTIVE = -1;
 
     private static Bitmap s_bitmap;    // the board
@@ -220,7 +220,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             Rect scratch = new Rect();
             paint.getTextBounds( "-00:00", 0, 6, scratch );
             int timerWidth = scratch.width();
-            int fontWidth = timerWidth / 6;
+            int fontWidth = Math.min(m_defaultFontHt, timerWidth / 6);
             m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, width, height, 
                                 fontWidth, m_defaultFontHt );
             // We'll be back....
