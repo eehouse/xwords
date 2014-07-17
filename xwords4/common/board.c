@@ -70,6 +70,12 @@
 # define MAX_BOARD_ZOOM 4
 #endif
 
+#ifndef DIVIDER_RATIO
+# define DIVIDER_RATIO 5        /* 1/5 tray tile width */
+#endif
+#define DIVIDER_WIDTH(trayWidth) \
+    ((trayWidth) / (1 + (MAX_TRAY_TILES*DIVIDER_RATIO)))
+
 #ifdef CPLUS
 extern "C" {
 #endif
@@ -394,6 +400,34 @@ board_reset( BoardCtxt* board )
 } /* board_reset */
 
 #ifdef COMMON_LAYOUT
+# ifdef DEBUG
+static void
+printDims( const BoardDims* dimsp )
+{
+    XP_LOGF( "dims.left: %d", dimsp->left );
+    XP_LOGF( "dims.top: %d", dimsp->top );
+    XP_LOGF( "dims.width: %d", dimsp->width );
+    XP_LOGF( "dims.height: %d", dimsp->height );
+
+
+    XP_LOGF( "dims.scoreWidth: %d", dimsp->scoreWidth );
+    XP_LOGF( "dims.scoreHt: %d", dimsp->scoreHt );
+
+    XP_LOGF( "dims.boardWidth: %d", dimsp->boardWidth );
+    XP_LOGF( "dims.boardHt: %d", dimsp->boardHt );
+
+    XP_LOGF( "dims.trayLeft: %d", dimsp->trayLeft );
+    XP_LOGF( "dims.trayTop: %d", dimsp->trayTop );
+    XP_LOGF( "dims.trayWidth: %d", dimsp->trayWidth );
+    XP_LOGF( "dims.trayHt: %d", dimsp->trayHt );
+
+    /* XP_U16 cellSize, maxCellSize; */
+    /* XP_U16 timerWidth; */
+}
+# else
+#  define printDims( ldims )
+# endif
+
 void
 board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
                     XP_U16 bLeft, XP_U16 bTop, XP_U16 bWidth, XP_U16 bHeight,
@@ -472,7 +506,21 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
             heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
         }
 
+        /* Figure tray width.  Tray tiles can be taller than wide, but not
+           vice-versa. */
+        XP_U16 tileWidth = DIVIDER_RATIO * DIVIDER_WIDTH(ldims.width);
+        if ( tileWidth > trayHt ) {
+            tileWidth = trayHt;
+        }
+
         ldims.trayHt = trayHt;
+        ldims.trayWidth = (tileWidth * MAX_TRAY_TILES) + (tileWidth / DIVIDER_RATIO);
+        /* But: tray is never narrower than board */
+        if ( ldims.trayWidth < ldims.boardWidth ) {
+            ldims.trayWidth = ldims.boardWidth;
+        }
+        ldims.trayLeft = ldims.left + ((ldims.width - ldims.trayWidth) / 2);
+        
         ldims.scoreHt = scoreHt;
         ldims.scoreWidth = scoreWidth;
 
@@ -487,6 +535,8 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
         }
         break;
     }
+
+    printDims( &ldims );
 
     if ( !!dimsp ) {
         XP_MEMCPY( dimsp, &ldims, sizeof(ldims) );
@@ -510,8 +560,8 @@ board_applyLayout( BoardCtxt* board, const BoardDims* dims )
     board_setTimerLoc( board, dims->left + dims->scoreWidth,
                        dims->top, dims->timerWidth, dims->scoreHt );
 
-    board_setTrayLoc( board, dims->left, dims->trayTop, 
-                      dims->width, dims->trayHt, dims->width / 20 );
+    board_setTrayLoc( board, dims->trayLeft, dims->trayTop, 
+                      dims->trayWidth, dims->trayHt );
 }
 #endif
 
@@ -1523,13 +1573,12 @@ onBorderCanScroll( const BoardCtxt* board, SDIndex indx,
 
 void
 board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
-                  XP_U16 trayWidth, XP_U16 trayHeight,
-                  XP_U16 minDividerWidth )
+                  XP_U16 trayWidth, XP_U16 trayHeight )
 {
     /* XP_LOGF( "%s(%d,%d,%d,%d)", __func__, trayLeft, trayTop,  */
              /* trayWidth, trayHeight ); */
 
-    XP_U16 dividerWidth;
+    XP_U16 dividerWidth = DIVIDER_WIDTH( trayWidth );
     /* XP_U16 boardBottom, boardRight; */
     /* XP_Bool boardHidesTray; */
 
@@ -1538,8 +1587,8 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
     board->trayBounds.width = trayWidth;
     board->trayBounds.height = trayHeight;
 
-    dividerWidth = minDividerWidth + 
-        ((trayWidth - minDividerWidth) % MAX_TRAY_TILES);
+    dividerWidth = dividerWidth + 
+        ((trayWidth - dividerWidth) % MAX_TRAY_TILES);
 
     board->trayScaleH = (trayWidth - dividerWidth) / MAX_TRAY_TILES;
     board->trayScaleV = trayHeight;
