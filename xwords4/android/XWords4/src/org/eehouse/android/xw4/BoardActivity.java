@@ -43,13 +43,6 @@ public class BoardActivity extends XWActivity {
     } // onCreate
 
     @Override
-    public void onWindowFocusChanged( boolean hasFocus )
-    {
-        super.onWindowFocusChanged( hasFocus );
-        m_dlgt.onWindowFocusChanged( hasFocus );
-    }
-
-    @Override
     public boolean onKeyDown( int keyCode, KeyEvent event )
     {
         return m_dlgt.onKeyDown( keyCode, event )

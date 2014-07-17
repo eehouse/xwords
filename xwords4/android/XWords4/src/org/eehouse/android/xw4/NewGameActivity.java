@@ -34,11 +34,4 @@ public class NewGameActivity extends XWActivity {
         m_dlgt = new NewGameDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
     }
-
-    @Override
-    public void onWindowFocusChanged( boolean hasFocus )
-    {
-        super.onWindowFocusChanged( hasFocus );
-        m_dlgt.onWindowFocusChanged( hasFocus );
-    }
 }

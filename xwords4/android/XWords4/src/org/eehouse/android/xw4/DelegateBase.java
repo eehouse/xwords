@@ -67,6 +67,7 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void onPause() {}
     protected void onStop() {}
     protected void onDestroy() {}
+    protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean onBackPressed() { return false; }
     protected void prepareDialog( DlgID dlgID, Dialog dialog ) {}
     protected void onActivityResult( int requestCode, int resultCode, 

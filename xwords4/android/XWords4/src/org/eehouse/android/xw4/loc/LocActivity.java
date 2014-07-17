@@ -40,11 +40,4 @@ public class LocActivity extends XWListActivity {
     {
         return m_dlgt.onCreateOptionsMenu( menu );
     }
-
-    @Override
-    public void onWindowFocusChanged( boolean hasFocus )
-    {
-        m_dlgt.onWindowFocusChanged( hasFocus );
-        super.onWindowFocusChanged( hasFocus );
-    }
 }

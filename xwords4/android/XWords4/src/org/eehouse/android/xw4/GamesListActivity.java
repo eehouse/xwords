@@ -55,13 +55,6 @@ public class GamesListActivity extends XWListActivity {
         m_dlgt.onNewIntent( intent );
     }
 
-    @Override
-    public void onWindowFocusChanged( boolean hasFocus )
-    {
-        super.onWindowFocusChanged( hasFocus );
-        m_dlgt.onWindowFocusChanged( hasFocus );
-    }
-
     public static void onGameDictDownload( Context context, Intent intent )
     {
         intent.setClass( context, GamesListActivity.class );

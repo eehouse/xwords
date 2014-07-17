@@ -80,6 +80,13 @@ public class XWListActivity extends ListActivity {
     }
 
     @Override
+    public void onWindowFocusChanged( boolean hasFocus )
+    {
+        super.onWindowFocusChanged( hasFocus );
+        m_dlgt.onWindowFocusChanged( hasFocus );
+    }
+
+    @Override
     public void onBackPressed() {
         if ( !m_dlgt.onBackPressed() ) {
             super.onBackPressed();
