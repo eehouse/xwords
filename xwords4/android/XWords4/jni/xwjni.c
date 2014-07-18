@@ -208,6 +208,7 @@ static const SetInfo bd_ints[] = {
     ,ARR_MEMBER( BoardDims, top )
     ,ARR_MEMBER( BoardDims, width )
     ,ARR_MEMBER( BoardDims, height )
+    ,ARR_MEMBER( BoardDims, scoreLeft )
     ,ARR_MEMBER( BoardDims, scoreHt )
     ,ARR_MEMBER( BoardDims, scoreWidth )
     ,ARR_MEMBER( BoardDims, boardWidth )

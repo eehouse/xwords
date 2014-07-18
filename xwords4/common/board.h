@@ -79,12 +79,16 @@ typedef struct _BoardDims {
     /* The whole board */
     XP_U16 left, top;
     XP_U16 width, height;
-    /* scoreboard (full width) */
-    XP_U16 scoreWidth, scoreHt;
+
     /* board */
     XP_U16 boardWidth, boardHt;
+
+    /* scoreboard */
+    XP_U16 scoreLeft, scoreWidth, scoreHt;
+
     /* tray */
     XP_U16 trayLeft, trayTop, trayWidth, trayHt;
+
     /* other */
     XP_U16 cellSize, maxCellSize;
     XP_U16 timerWidth;

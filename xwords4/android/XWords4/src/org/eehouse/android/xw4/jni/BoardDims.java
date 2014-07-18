@@ -25,7 +25,7 @@ package org.eehouse.android.xw4.jni;
 public class BoardDims {
     public int left, top;
     public int width, height;       // of the bitmap
-    public int scoreWidth, scoreHt;
+    public int scoreLeft, scoreWidth, scoreHt;
     public int boardWidth, boardHt;
     public int trayLeft, trayTop, trayWidth, trayHt;
     public int cellSize, maxCellSize;
@@ -37,6 +37,7 @@ public class BoardDims {
     //         + " height: " + height
     //         + " left: " + left
     //         + " top: " + top
+    //         + " scoreLeft: " + scoreLeft
     //         + " scoreHt: " + scoreHt
     //         + " scoreWidth: " + scoreWidth
     //         + " boardHt: " + boardHt

@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make -j5 MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -521,8 +521,15 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
         }
         ldims.trayLeft = ldims.left + ((ldims.width - ldims.trayWidth) / 2);
         
-        ldims.scoreHt = scoreHt;
+        // totally arbitrary: don't let the scoreboard be more than 20% wider
+        // than the board
+        XP_U16 maxScoreWidth = (ldims.boardWidth * 5) / 4;
+        if ( scoreWidth > maxScoreWidth ) {
+            scoreWidth = maxScoreWidth;
+        }
         ldims.scoreWidth = scoreWidth;
+        ldims.scoreLeft = ldims.left + ((ldims.width - scoreWidth) / 2);
+        ldims.scoreHt = scoreHt;
 
         ldims.boardHt = cellSize * nCells;
         ldims.trayTop = ldims.top + scoreHt + (cellSize * (nCells-nToScroll));
@@ -543,7 +550,7 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
     } else {
         board_applyLayout( board, &ldims );
     }
-}
+} /* board_figureLayout */
 
 void
 board_applyLayout( BoardCtxt* board, const BoardDims* dims )
@@ -553,11 +560,10 @@ board_applyLayout( BoardCtxt* board, const BoardDims* dims )
                   dims->boardWidth, dims->boardHt,
                   dims->maxCellSize, XP_FALSE );
 
-    board_setScoreboardLoc( board, dims->left, dims->top,
-                            dims->scoreWidth, 
-                            dims->scoreHt, XP_TRUE );
+    board_setScoreboardLoc( board, dims->scoreLeft, dims->top,
+                            dims->scoreWidth, dims->scoreHt, XP_TRUE );
 
-    board_setTimerLoc( board, dims->left + dims->scoreWidth,
+    board_setTimerLoc( board, dims->scoreLeft + dims->scoreWidth,
                        dims->top, dims->timerWidth, dims->scoreHt );
 
     board_setTrayLoc( board, dims->trayLeft, dims->trayTop, 
