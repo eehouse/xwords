@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import com.google.android.gcm.GCMRegistrar;
@@ -467,8 +468,21 @@ public class XWPrefs {
 
     public static boolean getIsTablet( Context context )
     {
-        boolean fakeTablet = 
+        return isTablet( context ) ||
             getPrefsBoolean( context, R.string.key_force_tablet, false );
-        return fakeTablet;
     }
+
+    private static Boolean s_isTablet = null;
+    private static boolean isTablet( Context context )
+    {
+        if ( null == s_isTablet ) {
+            int screenLayout = 
+                context.getResources().getConfiguration().screenLayout;
+            int size = screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+            DbgUtils.showf( context, "screenSize: %d", size );
+            s_isTablet = 
+                new Boolean(Configuration.SCREENLAYOUT_SIZE_LARGE <= size);
+        }
+        return s_isTablet;
+    }        
 }
