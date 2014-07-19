@@ -176,8 +176,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         for ( int ii = 0; ii < ids.length; ++ii ) {
             m_bonusSummaries[ ii+1 ] = res.getString( ids[ii] );
         }
-
-        m_boundsScratch.set( 0, 0, bitmap.getWidth(), bitmap.getHeight() );
     }
 
     public void setJNIThread( JNIThread jniThread )
