@@ -218,9 +218,11 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             Paint paint = new Paint();
             paint.setTextSize( m_mediumFontHt );
             Rect scratch = new Rect();
-            paint.getTextBounds( "-00:00", 0, 6, scratch );
+            String timerTxt = "-00:00";
+            paint.getTextBounds( timerTxt, 0, timerTxt.length(), scratch );
             int timerWidth = scratch.width();
-            int fontWidth = Math.min(m_defaultFontHt, timerWidth / 6);
+            int fontWidth = 
+                Math.min(m_defaultFontHt, timerWidth / timerTxt.length());
             m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, width, height, 
                                 fontWidth, m_defaultFontHt );
             // We'll be back....
