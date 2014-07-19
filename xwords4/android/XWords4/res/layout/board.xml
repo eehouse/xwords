@@ -18,13 +18,13 @@
      android:longClickable="true"
      android:drawSelectorOnTop="false"
      android:layout_gravity="center_vertical|center_horizontal"
+     android:background="@android:color/transparent"
      />
 
   <LinearLayout android:id="@+id/exchange_buttons"
                 android:orientation="horizontal"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:background="#FF000000"
                 >
     <Button android:id="@+id/exchange_commit"
             android:text="@string/button_trade_commit" 

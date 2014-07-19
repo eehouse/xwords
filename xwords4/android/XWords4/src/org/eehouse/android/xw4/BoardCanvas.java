@@ -178,7 +178,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         }
 
         m_boundsScratch.set( 0, 0, bitmap.getWidth(), bitmap.getHeight() );
-        fillRect( m_boundsScratch, WHITE );
     }
 
     public void setJNIThread( JNIThread jniThread )
