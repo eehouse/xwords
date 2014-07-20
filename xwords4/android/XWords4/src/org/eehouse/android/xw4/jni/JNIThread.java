@@ -239,11 +239,11 @@ public class JNIThread extends Thread {
         XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, width, height,
                                   150, 200, width, fontWidth, 
                                   fontHeight, squareTiles, dims );
-        int statusDim = Math.min(dims.width / 15, dims.scoreHt);
-        dims.scoreWidth -= statusDim;
+        int statusWidth = dims.boardWidth / 15;
+        dims.scoreWidth -= statusWidth;
         int left = dims.scoreLeft + dims.scoreWidth;
-        ConnStatusHandler.setRect( left, dims.top, left + statusDim, 
-                                   dims.top + statusDim );
+        ConnStatusHandler.setRect( left, dims.top, left + statusWidth, 
+                                   dims.top + dims.scoreHt );
 
         XwJNI.board_applyLayout( m_jniGamePtr, dims );
 
