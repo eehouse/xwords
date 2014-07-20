@@ -236,15 +236,14 @@ public class JNIThread extends Thread {
         BoardDims dims = new BoardDims();
 
         boolean squareTiles = XWPrefs.getSquareTiles( m_context );
-        int statusWidth = width / 15;
-        int scoreWidth = width - statusWidth;
         XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, width, height,
-                                  150, 200, scoreWidth, fontWidth, 
+                                  150, 200, width, fontWidth, 
                                   fontHeight, squareTiles, dims );
-
-        ConnStatusHandler.setRect( dims.left + scoreWidth, dims.top, 
-                                   dims.left + scoreWidth + statusWidth, 
-                                   dims.top + dims.scoreHt );
+        int statusDim = Math.min(dims.width / 15, dims.scoreHt);
+        dims.scoreWidth -= statusDim;
+        int left = dims.scoreLeft + dims.scoreWidth;
+        ConnStatusHandler.setRect( left, dims.top, left + statusDim, 
+                                   dims.top + statusDim );
 
         XwJNI.board_applyLayout( m_jniGamePtr, dims );
 
