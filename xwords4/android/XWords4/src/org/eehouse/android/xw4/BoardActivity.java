@@ -59,11 +59,4 @@ public class BoardActivity extends XWActivity {
     {
         return m_dlgt.onKeyUp( keyCode, event ) || super.onKeyUp( keyCode, event );
     }
-
-    private static void noteSkip()
-    {
-        String msg = "BoardActivity.feedMessage[s](): skipped because "
-            + "too many open Boards";
-        DbgUtils.logf(msg );
-    }
 } // class BoardActivity
