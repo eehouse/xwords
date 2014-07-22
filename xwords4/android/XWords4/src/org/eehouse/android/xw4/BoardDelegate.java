@@ -23,16 +23,13 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 
 import android.content.DialogInterface.OnDismissListener;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -46,10 +43,8 @@ import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashSet;
@@ -1859,7 +1854,11 @@ public class BoardDelegate extends DelegateBase
                     if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
                         setTitle( GameUtils.getName( m_activity, m_rowid ) );
                     }
-                    m_toolbar = new Toolbar( m_activity, this, R.id.toolbar_horizontal );
+
+                    int orient = m_activity.getResources().getConfiguration().orientation;
+                    boolean isLandscape = Configuration.ORIENTATION_LANDSCAPE == orient;
+                    m_toolbar = new Toolbar( m_activity, this );
+                    m_toolbar.setIsLandscape( isLandscape );
 
                     populateToolbar();
                     adjustTradeVisibility();
@@ -2150,7 +2149,7 @@ public class BoardDelegate extends DelegateBase
 
     private void adjustTradeVisibility()
     {
-        m_toolbar.setVisibility( m_inTrade? View.GONE : View.VISIBLE );
+        m_toolbar.setVisible( !m_inTrade );
         if ( null != m_tradeButtons ) {
             m_tradeButtons.setVisibility( m_inTrade? View.VISIBLE : View.GONE );
         }

@@ -2,88 +2,142 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:id="@+id/board_root"
-              android:orientation="vertical"
+              android:orientation="horizontal"
               android:layout_width="fill_parent" 
               android:layout_height="fill_parent"
-              android:layout_weight="1"
               >
-  <org.eehouse.android.xw4.BoardView
-     android:id="@+id/board_view"
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     android:layout_weight="1"
-     android:focusable="true"
-     android:clickable="true"
-     android:longClickable="true"
-     android:drawSelectorOnTop="false"
-     android:layout_gravity="center_horizontal"
-     android:background="@android:color/transparent"
-     />
+  <LinearLayout android:orientation="vertical"
+				android:layout_width="wrap_content" 
+				android:layout_height="fill_parent"
+				android:layout_weight="1"
+				>
+	<org.eehouse.android.xw4.BoardView
+		android:id="@+id/board_view"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:focusable="true"
+		android:clickable="true"
+		android:longClickable="true"
+		android:drawSelectorOnTop="false"
+		android:layout_gravity="center_horizontal"
+		android:background="@android:color/transparent"
+		/>
 
-  <LinearLayout android:id="@+id/exchange_buttons"
-                android:orientation="horizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                >
-    <Button android:id="@+id/exchange_commit"
-            android:text="@string/button_trade_commit" 
-            style="@style/evenly_spaced_horizontal"
-            />
-    <Button android:id="@+id/exchange_cancel"
-            android:text="@string/button_trade_cancel" 
-            style="@style/evenly_spaced_horizontal"
-            />
-  </LinearLayout>
-
-  <HorizontalScrollView android:orientation="horizontal"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        >     
-    <LinearLayout android:id="@+id/toolbar_horizontal"
+	<LinearLayout android:id="@+id/exchange_buttons"
                   android:orientation="horizontal"
                   android:layout_width="fill_parent"
                   android:layout_height="wrap_content"
-                  android:minHeight="48dp"
+                  android:visibility="gone"
                   >
+      <Button android:id="@+id/exchange_commit"
+              android:text="@string/button_trade_commit" 
+              style="@style/evenly_spaced_horizontal"
+              />
+      <Button android:id="@+id/exchange_cancel"
+              android:text="@string/button_trade_cancel" 
+              style="@style/evenly_spaced_horizontal"
+              />
+	</LinearLayout>
 
-   	  <ImageButton android:id="@+id/prevhint_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/prev_hint"
-                   />
-   	  <ImageButton android:id="@+id/nexthint_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/next_hint"
-                   />
-   	  <ImageButton android:id="@+id/shuffle_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/shuffle"
-                   />
-   	  <ImageButton android:id="@+id/undo_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/undo"
-                   />
-   	  <ImageButton android:id="@+id/dictlist_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/dicticon"
-                   />
-   	  <ImageButton android:id="@+id/chat_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/stat_notify_chat"
-                   />
-   	  <ImageButton android:id="@+id/values_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/values"
-                   />
-   	  <ImageButton android:id="@+id/flip_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/flip"
-                   />
-   	  <ImageButton android:id="@+id/zoom_button_horizontal"
-                   style="@style/toolbar_button"
-    	           android:src="@drawable/zoom"
-                   />
-    </LinearLayout>
-  </HorizontalScrollView>
+	<HorizontalScrollView android:orientation="horizontal"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:layout_gravity="center_horizontal"
+                          >     
+      <LinearLayout android:id="@+id/toolbar_horizontal"
+					android:orientation="horizontal"
+					android:layout_width="fill_parent"
+					android:layout_height="wrap_content"
+					android:minHeight="48dp"
+					>
+
+   		<ImageButton android:id="@+id/prevhint_button_horizontal"
+					 style="@style/toolbar_button"
+    				 android:src="@drawable/prev_hint"
+					 />
+   		<ImageButton android:id="@+id/nexthint_button_horizontal"
+					 style="@style/toolbar_button"
+    				 android:src="@drawable/next_hint"
+					 />
+   		<ImageButton android:id="@+id/shuffle_button_horizontal"
+					 style="@style/toolbar_button"
+    				 android:src="@drawable/shuffle"
+					 />
+   		<ImageButton android:id="@+id/undo_button_horizontal"
+					 style="@style/toolbar_button"
+    				 android:src="@drawable/undo"
+					 />
+   		<ImageButton android:id="@+id/dictlist_button_horizontal"
+					 style="@style/toolbar_button"
+    				 android:src="@drawable/dicticon"
+					 />
+   		<ImageButton android:id="@+id/chat_button_horizontal"
+					 style="@style/toolbar_button"
+    				 android:src="@drawable/stat_notify_chat"
+					 />
+   		<ImageButton android:id="@+id/values_button_horizontal"
+					 style="@style/toolbar_button"
+    				 android:src="@drawable/values"
+					 />
+   		<ImageButton android:id="@+id/flip_button_horizontal"
+					 style="@style/toolbar_button"
+    				 android:src="@drawable/flip"
+					 />
+   		<ImageButton android:id="@+id/zoom_button_horizontal"
+					 style="@style/toolbar_button"
+    				 android:src="@drawable/zoom"
+					 />
+      </LinearLayout>
+	</HorizontalScrollView>
+  </LinearLayout>
+
+  <ScrollView android:orientation="horizontal"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="center_vertical"
+              >     
+	<LinearLayout android:id="@+id/toolbar_vertical"
+				  android:orientation="vertical"
+				  android:layout_width="wrap_content"
+				  android:layout_height="match_parent"
+				  >
+   	  <ImageButton android:id="@+id/prevhint_button_vertical"
+				   style="@style/toolbar_button"
+    			   android:src="@drawable/prev_hint"
+				   />
+   	  <ImageButton android:id="@+id/nexthint_button_vertical"
+				   style="@style/toolbar_button"
+    			   android:src="@drawable/next_hint"
+				   />
+   	  <ImageButton android:id="@+id/shuffle_button_vertical"
+				   style="@style/toolbar_button"
+    			   android:src="@drawable/shuffle"
+				   />
+   	  <ImageButton android:id="@+id/undo_button_vertical"
+				   style="@style/toolbar_button"
+    			   android:src="@drawable/undo"
+				   />
+   	  <ImageButton android:id="@+id/dictlist_button_vertical"
+				   style="@style/toolbar_button"
+    			   android:src="@drawable/dicticon"
+				   />
+   	  <ImageButton android:id="@+id/chat_button_vertical"
+				   style="@style/toolbar_button"
+    			   android:src="@drawable/stat_notify_chat"
+				   />
+   	  <ImageButton android:id="@+id/values_button_vertical"
+				   style="@style/toolbar_button"
+    			   android:src="@drawable/values"
+				   />
+   	  <ImageButton android:id="@+id/flip_button_vertical"
+				   style="@style/toolbar_button"
+    			   android:src="@drawable/flip"
+				   />
+   	  <ImageButton android:id="@+id/zoom_button_vertical"
+				   style="@style/toolbar_button"
+    			   android:src="@drawable/zoom"
+				   />
+	</LinearLayout>
+  </ScrollView>
 </LinearLayout>
