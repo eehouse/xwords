@@ -5,27 +5,17 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 84 release</b>
+<b>Crosswords 4.4 beta 85 release</b>
 
 <h3>New with this release</h3>
 <ul>
-    <li>Rewrite lots of internals getting ready for dual-window
-        display (on tablets)</li>
-    <li>Make translations (e.g. of menus) downloadable separately
-        rather than built in to the app</li>
-    <li>Handle display and download of wordlists internally rather
-        than handing off to a browser</li>
-    <li>Fix lookup/studylist for languages with only one lookup
-        option</li>
-    <li>When you return from downloading a new wordlist or language
-        your new game is now configured to use it</li>
-    <li>Add debug option to play via "data" SMS (works only if both
-        devices are NOT on Verizon or Sprint in the US)</li>
+    <li>Display board in landscape mode on large and x-large devices (tablets)</li>
 </ul>
 
 <h3>Next up</h3>
 <ul>
-  <li>Improve notifications sent to Google Wearable devices (since I just got one :-)</li>
+  <li>Side-by-side display (e.g. games list and a game open at the
+      same time) for tablets in landscape mode</li>
   <li>Look, again, at play via Bluetooth now that HTC phones aren't quite so common</li>
   <li>Fix SMS play for KitKat</li>
   <li>Offer "Rematch" when game's over</li>
