@@ -522,9 +522,13 @@ public class BoardDelegate extends DelegateBase
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
         m_view = (BoardView)findViewById( R.id.board_view );
-        m_tradeButtons = findViewById( R.id.exchange_buttons );
-        m_exchCommmitButton = setListenerOrHide( R.id.exchange_commit );
-        m_exchCancelButton = setListenerOrHide( R.id.exchange_cancel );
+        if ( ! ABUtils.haveActionBar() ) {
+            m_tradeButtons = findViewById( R.id.exchange_buttons );
+            m_exchCommmitButton = (Button)findViewById( R.id.exchange_commit );
+            m_exchCommmitButton.setOnClickListener( this );
+            m_exchCancelButton = (Button)findViewById( R.id.exchange_cancel );
+            m_exchCancelButton.setOnClickListener( this );
+        }
         m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
 
         Intent intent = getIntent();
@@ -2243,19 +2247,6 @@ public class BoardDelegate extends DelegateBase
         }
     }
     
-    private Button setListenerOrHide( int id )
-    {
-        Button button = (Button)findViewById( id );
-        if ( null != button ) {
-            if ( ABUtils.haveActionBar() ) {
-                button.setVisibility( View.INVISIBLE );
-            } else {
-                button.setOnClickListener( this );
-            }
-        }
-        return button;
-    }
-
     private static void noteSkip()
     {
         String msg = "BoardActivity.feedMessage[s](): skipped because "
