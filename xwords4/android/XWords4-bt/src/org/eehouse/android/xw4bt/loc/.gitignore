@@ -7,3 +7,5 @@ LocListItem.java
 LocSearcher.java
 LocUtils.java
 XlatingSpinnerAdapter.java
+LocItemEditActivity.java
+LocItemEditDelegate.java

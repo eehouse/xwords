@@ -102,3 +102,8 @@ RelayGameDelegate.java
 SMSInviteDelegate.java
 StudyListActivity.java
 StudyListDelegate.java
+DwnldActivity.java
+DwnldDelegate.java
+GroupStateListener.java
+ListGroup.java
+XWExpListAdapter.java
