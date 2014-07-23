@@ -1857,8 +1857,7 @@ public class BoardDelegate extends DelegateBase
 
                     int orient = m_activity.getResources().getConfiguration().orientation;
                     boolean isLandscape = Configuration.ORIENTATION_LANDSCAPE == orient;
-                    m_toolbar = new Toolbar( m_activity, this );
-                    m_toolbar.setIsLandscape( isLandscape );
+                    m_toolbar = new Toolbar( m_activity, this, isLandscape );
 
                     populateToolbar();
                     adjustTradeVisibility();

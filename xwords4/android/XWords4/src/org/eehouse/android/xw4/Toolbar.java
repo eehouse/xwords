@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ImageButton;
 
@@ -33,6 +34,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class Toolbar {
     public static final int BUTTON_BROWSE_DICT = 0;
@@ -45,45 +47,42 @@ public class Toolbar {
     public static final int BUTTON_CHAT = 7;
     public static final int BUTTON_VALUES = 8;
 
-    private static int[][] s_buttonInfo = {
+    private static int[] s_buttonInfo = {
         // BUTTON_BROWSE_DICT
-        { R.id.dictlist_button_horizontal, R.id.dictlist_button_vertical },
+        R.id.dictlist_button,
         // BUTTON_HINT_PREV
-        { R.id.prevhint_button_horizontal, R.id.prevhint_button_vertical },
+        R.id.prevhint_button,
         // BUTTON_HINT_NEXT
-        { R.id.nexthint_button_horizontal, R.id.nexthint_button_vertical },
+        R.id.nexthint_button,
         // BUTTON_FLIP
-        { R.id.flip_button_horizontal, R.id.flip_button_vertical },
+        R.id.flip_button,
         // BUTTON_JUGGLE
-        {  R.id.shuffle_button_horizontal, R.id.shuffle_button_vertical },
+        R.id.shuffle_button,
         // BUTTON_ZOOM
-        {  R.id.zoom_button_horizontal, R.id.zoom_button_vertical },
+        R.id.zoom_button,
         // BUTTON_UNDO
-        {  R.id.undo_button_horizontal, R.id.undo_button_vertical },
+        R.id.undo_button,
         // BUTTON_CHAT
-        {  R.id.chat_button_horizontal, R.id.chat_button_vertical },
+        R.id.chat_button,
         // BUTTON_VALUES
-        {  R.id.values_button_horizontal, R.id.values_button_vertical },
+        R.id.values_button,
     };
 
     private Activity m_activity;
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
-    private View m_horLayout;
-    private View m_vertLayout;
+    private LinearLayout m_layout;
     private boolean m_visible;
 
-    private enum ORIENTATION { ORIENT_UNKNOWN,
-            ORIENT_PORTRAIT,
-            ORIENT_LANDSCAPE,
-            };
-    private ORIENTATION m_curOrient = ORIENTATION.ORIENT_UNKNOWN;
+    private enum ORIENTATION { ORIENT_PORTRAIT, ORIENT_LANDSCAPE };
+    private ORIENTATION m_curOrient = null;
 
-    public Toolbar( Activity activity, HasDlgDelegate dlgDlgt )
+    public Toolbar( Activity activity, HasDlgDelegate dlgDlgt, 
+                    boolean isLandscape )
     {
         m_activity = activity;
         m_dlgDlgt = dlgDlgt;
-        m_horLayout = activity.findViewById( R.id.toolbar_horizontal );
-        m_vertLayout = activity.findViewById( R.id.toolbar_vertical );
+
+        setIsLandscape( isLandscape );
     }
 
     public void setVisible( boolean visible )
@@ -96,7 +95,7 @@ public class Toolbar {
 
     public ImageButton getViewFor( int index )
     {
-        int id = idForIndex( index );
+        int id = s_buttonInfo[index];
         ImageButton button = (ImageButton)m_activity.findViewById( id );
         return button;
     }
@@ -124,7 +123,7 @@ public class Toolbar {
         setLongClickListener( index, listener );
     }
 
-    public void setIsLandscape( boolean landscape )
+    private void setIsLandscape( boolean landscape )
     {
         if ( landscape && m_curOrient == ORIENTATION.ORIENT_LANDSCAPE ) {
             // do nothing
@@ -143,7 +142,7 @@ public class Toolbar {
     public void update( int index, boolean enable )
     {
         int vis = enable ? View.VISIBLE : View.GONE;
-        int id = idForIndex( index );
+        int id = s_buttonInfo[index];
         ImageButton button = (ImageButton)m_activity.findViewById( id );
         if ( null != button ) {
             button.setVisibility( vis );
@@ -152,15 +151,19 @@ public class Toolbar {
 
     private void doShowHide()
     {
-        boolean show;
-        if ( null != m_horLayout ) {
-            show = m_visible && ORIENTATION.ORIENT_PORTRAIT == m_curOrient;
-            m_horLayout.setVisibility( show? View.VISIBLE : View.GONE );
+        Assert.assertTrue( null != m_curOrient );
+        boolean isLandscape = ORIENTATION.ORIENT_LANDSCAPE == m_curOrient;
+        if ( null == m_layout ) {
+            m_layout = (LinearLayout)LocUtils.inflate( m_activity, R.layout.toolbar );
+            m_layout.setOrientation(ORIENTATION.ORIENT_PORTRAIT == m_curOrient
+                                    ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL );
+
+            int id = isLandscape ? R.id.tbar_parent_vert : R.id.tbar_parent_hor;
+            ViewGroup scroller = (ViewGroup)m_activity.findViewById( id );
+            scroller.addView( m_layout );
         }
-        if ( null != m_vertLayout ) {
-            show = m_visible && ORIENTATION.ORIENT_LANDSCAPE == m_curOrient;
-            m_vertLayout.setVisibility( show? View.VISIBLE : View.GONE );
-        }
+
+        m_layout.setVisibility( m_visible? View.VISIBLE : View.GONE );
     }
 
     private void setListener( int index, View.OnClickListener listener )
@@ -178,12 +181,5 @@ public class Toolbar {
         if ( null != button ) {
             button.setOnLongClickListener( listener );
         }
-    }
-
-    private int idForIndex( int index )
-    {
-        Assert.assertTrue( ORIENTATION.ORIENT_UNKNOWN != m_curOrient );
-        int indx = ORIENTATION.ORIENT_PORTRAIT == m_curOrient ? 0 : 1;
-        return s_buttonInfo[index][indx];
     }
 }
