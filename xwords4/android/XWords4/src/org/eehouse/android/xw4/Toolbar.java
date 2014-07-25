@@ -160,7 +160,9 @@ public class Toolbar {
 
             int id = isLandscape ? R.id.tbar_parent_vert : R.id.tbar_parent_hor;
             ViewGroup scroller = (ViewGroup)m_activity.findViewById( id );
-            scroller.addView( m_layout );
+            // Google's had reports of a crash adding second view
+            scroller.removeAllViews();
+            scroller.addView( m_layout ); // failing
         }
 
         m_layout.setVisibility( m_visible? View.VISIBLE : View.GONE );
