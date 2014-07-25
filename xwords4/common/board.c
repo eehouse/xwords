@@ -439,7 +439,7 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
     XP_MEMSET( &ldims, 0, sizeof(ldims) );
 
     XP_U16 nCells = gi->boardSize;
-    XP_U16 maxCellSize = 4 * fontHt;
+    XP_U16 maxCellSize = 8 * fontHt;
     XP_U16 trayHt;
     XP_U16 scoreHt;
     XP_U16 wantHt;
