@@ -26,7 +26,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class XWActivity extends Activity {
+public class XWActivity extends Activity implements Delegator {
 
     private DelegateBase m_dlgt;
 
@@ -135,5 +135,13 @@ public class XWActivity extends Activity {
                                      Intent data )
     {
         m_dlgt.onActivityResult( requestCode, resultCode, data );
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // Delegator interface
+    //////////////////////////////////////////////////////////////////////
+    public Activity getActivity()
+    {
+        return this;
     }
 }

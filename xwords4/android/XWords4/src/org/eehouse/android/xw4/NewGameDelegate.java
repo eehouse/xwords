@@ -68,10 +68,10 @@ public class NewGameDelegate extends DelegateBase {
     private String m_remoteDev;
     private Activity m_activity;
 
-    protected NewGameDelegate( Activity activity, Bundle savedInstanceState )
+    protected NewGameDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
+        super( delegator, savedInstanceState );
+        m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState ) 

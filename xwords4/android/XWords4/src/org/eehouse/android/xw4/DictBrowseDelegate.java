@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -55,7 +56,7 @@ public class DictBrowseDelegate extends ListDelegateBase
 
     private static final int MIN_LEN = 2;
 
-    private ListActivity m_activity;
+    private Activity m_activity;
     private int m_dictClosure = 0;
     private int m_lang;
     private String m_name;
@@ -155,10 +156,10 @@ public class DictBrowseDelegate extends ListDelegateBase
         }
     }
 
-    protected DictBrowseDelegate( ListActivity activity, Bundle savedInstanceState )
+    protected DictBrowseDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
+        super( delegator, savedInstanceState );
+        m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState ) 

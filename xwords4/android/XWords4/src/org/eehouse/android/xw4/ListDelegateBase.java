@@ -19,7 +19,7 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.ListActivity;
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListAdapter;
@@ -27,34 +27,36 @@ import android.widget.ListView;
 
 public class ListDelegateBase extends DelegateBase {
     
-    private ListActivity m_activity;
+    private Activity m_activity;
+    private ListDelegator m_delegator;
 
-    protected ListDelegateBase( ListActivity activity, Bundle savedInstanceState,
+    protected ListDelegateBase( ListDelegator delegator, Bundle savedInstanceState,
                                 int menuID )
     {
-        super( activity, savedInstanceState, menuID );
-        m_activity = activity;
+        super( delegator, savedInstanceState, menuID );
+        m_delegator = delegator;
+        m_activity = delegator.getActivity();
     }
 
-    protected ListDelegateBase( ListActivity activity, Bundle savedState )
+    protected ListDelegateBase( ListDelegator delegator, Bundle savedState )
     {
-        super( activity, savedState );
-        m_activity = activity;
+        super( delegator, savedState );
+        m_activity = delegator.getActivity();
     }
 
     protected void setListAdapter( ListAdapter adapter )
     {
-        m_activity.setListAdapter( adapter );
+        m_delegator.setListAdapter( adapter );
     }
 
     protected ListAdapter setListAdapter()
     {
-        return m_activity.getListAdapter();
+        return m_delegator.getListAdapter();
     }
 
     protected ListView getListView()
     {
-        return m_activity.getListView();
+        return m_delegator.getListView();
     }
 
     protected void setListAdapterKeepScroll( ListAdapter adapter )

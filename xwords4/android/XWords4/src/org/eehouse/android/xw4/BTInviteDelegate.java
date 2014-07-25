@@ -43,7 +43,7 @@ import junit.framework.Assert;
 public class BTInviteDelegate extends InviteDelegate
     implements CompoundButton.OnCheckedChangeListener {
 
-    private ListActivity m_activity;
+    private Activity m_activity;
     private boolean m_firstScan;
     private int m_checkCount;
 
@@ -55,10 +55,10 @@ public class BTInviteDelegate extends InviteDelegate
         activity.startActivityForResult( intent, requestCode );
     }
 
-    protected BTInviteDelegate( ListActivity activity, Bundle savedInstanceState )
+    protected BTInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
+        super( delegator, savedInstanceState );
+        m_activity = delegator.getActivity();
     }
 
     protected void init()

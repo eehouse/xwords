@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
@@ -55,7 +56,7 @@ public class StudyListDelegate extends ListDelegateBase
 
     protected static final String START_LANG = "START_LANG";
     
-    private ListActivity m_activity;
+    private Activity m_activity;
     private Spinner m_spinner;
     private View m_pickView;    // LinearLayout, actually
     private int[] m_langCodes;
@@ -66,10 +67,10 @@ public class StudyListDelegate extends ListDelegateBase
     private ListView m_list;
     private String m_origTitle;
 
-    protected StudyListDelegate( ListActivity activity, Bundle savedInstanceState )
+    protected StudyListDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.studylist );
-        m_activity = activity;
+        super( delegator, savedInstanceState, R.menu.studylist );
+        m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState ) 

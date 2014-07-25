@@ -492,10 +492,10 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    public BoardDelegate( Activity activity, Bundle savedInstanceState )
+    public BoardDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.board_menu );
-        m_activity = activity;
+        super( delegator, savedInstanceState, R.menu.board_menu );
+        m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState ) 

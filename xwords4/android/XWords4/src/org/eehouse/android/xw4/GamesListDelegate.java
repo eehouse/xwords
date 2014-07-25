@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -499,7 +500,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static boolean s_firstShown = false;
     private int m_fieldID;
 
-    private GamesListActivity m_activity;
+    private Activity m_activity;
     private GameListAdapter m_adapter;
     private Handler m_handler;
     private String m_missingDict;
@@ -520,10 +521,10 @@ public class GamesListDelegate extends ListDelegateBase
     private Set<Long> m_selGroupIDs;
     private String m_origTitle;
 
-    public GamesListDelegate( GamesListActivity activity, Bundle savedInstanceState )
+    public GamesListDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.games_list_menu );
-        m_activity = activity;
+        super( delegator, savedInstanceState, R.menu.games_list_menu );
+        m_activity = delegator.getActivity();
     }
 
     protected Dialog onCreateDialog( int id )
@@ -1241,7 +1242,7 @@ public class GamesListDelegate extends ListDelegateBase
                 dropSels = true;    // will select the new game instead
                 post( new Runnable() {
                         public void run() {
-                            GamesListActivity self = m_activity;
+                            Activity self = m_activity;
                             byte[] stream =
                                 GameUtils.savedGame( self, selRowIDs[0] );
                             long groupID = XWPrefs

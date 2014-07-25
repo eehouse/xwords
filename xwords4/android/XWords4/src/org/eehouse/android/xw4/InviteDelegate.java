@@ -42,12 +42,12 @@ abstract class InviteDelegate extends ListDelegateBase
     protected Button m_okButton;
     protected Button m_rescanButton;
     protected Button m_clearButton;
-    private ListActivity m_activity;
+    private Activity m_activity;
 
-    public InviteDelegate( ListActivity activity, Bundle savedInstanceState )
+    public InviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
+        super( delegator, savedInstanceState );
+        m_activity = delegator.getActivity();
     }
 
     protected void init( int view_id, int button_invite, int button_rescan, 

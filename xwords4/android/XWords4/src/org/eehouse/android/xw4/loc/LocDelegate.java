@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4.loc;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -35,12 +36,13 @@ import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.ListDelegateBase;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.ListDelegator;
 
 public class LocDelegate extends ListDelegateBase 
     implements View.OnClickListener,
                OnItemSelectedListener {
 
-    private ListActivity m_activity;
+    private Activity m_activity;
     private LocListAdapter m_adapter;
     private EditText m_searchField;
     private Spinner m_filterBy;
@@ -49,10 +51,10 @@ public class LocDelegate extends ListDelegateBase
     private String m_curSearch;
     private LocListItem m_lastItem;
 
-    protected LocDelegate( ListActivity activity, Bundle savedInstanceState )
+    protected LocDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
+        super( delegator, savedInstanceState );
+        m_activity = delegator.getActivity();
         init( savedInstanceState );
     }
 
@@ -91,7 +93,7 @@ public class LocDelegate extends ListDelegateBase
     {
         ListView listview = getListView();
         m_adapter = new LocListAdapter( m_activity, listview, m_searcher, this );
-        m_activity.setListAdapter( m_adapter );
+        setListAdapter( m_adapter );
     }
 
     protected void init( Bundle savedInstanceState ) 

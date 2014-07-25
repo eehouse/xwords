@@ -39,22 +39,24 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
                                      MultiService.MultiEventListener {
 
     private DlgDelegate m_delegate;
+    private Delegator m_delegator;
     private Activity m_activity;
     private int m_optionsMenuID;
     private View m_rootView;
 
-    public DelegateBase( Activity activity, Bundle bundle )
+    public DelegateBase( Delegator delegator, Bundle bundle )
     {
-        this( activity, bundle, R.menu.empty );
+        this( delegator, bundle, R.menu.empty );
     }
 
-    public DelegateBase( Activity activity, Bundle bundle, int optionsMenu )
+    public DelegateBase( Delegator delegator, Bundle bundle, int optionsMenu )
     {
         Assert.assertTrue( 0 < optionsMenu );
-        m_activity = activity;
-        m_delegate = new DlgDelegate( activity, this, bundle );
+        m_delegator = delegator;
+        m_activity = delegator.getActivity();
+        m_delegate = new DlgDelegate( m_activity, this, bundle );
         m_optionsMenuID = optionsMenu;
-        LocUtils.xlateTitle( activity );
+        LocUtils.xlateTitle( m_activity );
     }
 
     // Does nothing unless overridden. These belong in an interface.

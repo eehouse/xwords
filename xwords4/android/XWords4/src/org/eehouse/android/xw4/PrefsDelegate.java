@@ -48,9 +48,10 @@ public class PrefsDelegate extends DelegateBase
     private String m_hideTitle;
     private String m_keyLocale;
 
-    public PrefsDelegate( PreferenceActivity activity, Bundle savedInstanceState )
+    public PrefsDelegate( PreferenceActivity activity, Delegator delegator,
+                          Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.board_menu );
+        super( delegator, savedInstanceState, R.menu.board_menu );
         m_activity = activity;
     }
 

@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
@@ -26,7 +27,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class XWListActivity extends ListActivity {
+public class XWListActivity extends ListActivity implements ListDelegator {
 
     private DelegateBase m_dlgt;
 
@@ -136,4 +137,13 @@ public class XWListActivity extends ListActivity {
     {
         m_dlgt.onActivityResult( requestCode, resultCode, data );
     }
+
+    //////////////////////////////////////////////////////////////////////
+    // Delegator interface
+    //////////////////////////////////////////////////////////////////////
+    public Activity getActivity()
+    {
+        return this;
+    }
+
 }

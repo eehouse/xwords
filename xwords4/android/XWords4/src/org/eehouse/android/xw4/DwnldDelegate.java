@@ -56,7 +56,7 @@ public class DwnldDelegate extends ListDelegateBase {
     private static final String APK_EXTRA = "APK";
     private static final String DICTS_EXTRA = "XWDS";
 
-    private ListActivity m_activity;
+    private Activity m_activity;
     private ArrayList<LinearLayout> m_views;
     private ArrayList<DownloadFilesTask> m_dfts;
 
@@ -64,10 +64,10 @@ public class DwnldDelegate extends ListDelegateBase {
         void downloadFinished( String lang, String name, boolean success );
     }
 
-    public DwnldDelegate( ListActivity activity, Bundle savedInstanceState )
+    public DwnldDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
+        super( delegator, savedInstanceState );
+        m_activity = delegator.getActivity();
     }
 
     // Track callbacks for downloads.

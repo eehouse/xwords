@@ -38,10 +38,10 @@ public class ChatDelegate extends DelegateBase
     private long m_rowid;
     private Activity m_activity;
 
-    public ChatDelegate( Activity activity, Bundle savedInstanceState )
+    public ChatDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.chat_menu );
-        m_activity = activity;
+        super( delegator, savedInstanceState, R.menu.chat_menu );
+        m_activity = delegator.getActivity();
     }
 
     @Override

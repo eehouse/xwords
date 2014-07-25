@@ -121,10 +121,10 @@ public class GameConfigDelegate extends DelegateBase
             ,R.id.phonies_spinner
     };
 
-    public GameConfigDelegate( Activity activity, Bundle savedInstanceState )
+    public GameConfigDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
+        super( delegator, savedInstanceState );
+        m_activity = delegator.getActivity();
     }
 
     class RemoteChoices extends XWListAdapter {

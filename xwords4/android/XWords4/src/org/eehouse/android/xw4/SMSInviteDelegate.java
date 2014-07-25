@@ -55,7 +55,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     private String m_pendingName;
     private String m_pendingNumber;
     private boolean m_immobileConfirmed;
-    private ListActivity m_activity;
+    private Activity m_activity;
 
     public static void launchForResult( Activity activity, int nMissing, 
                                         int requestCode )
@@ -65,10 +65,10 @@ public class SMSInviteDelegate extends InviteDelegate {
         activity.startActivityForResult( intent, requestCode );
     }
 
-    public SMSInviteDelegate( ListActivity activity, Bundle savedInstanceState )
+    public SMSInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
+        super( delegator, savedInstanceState );
+        m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState )

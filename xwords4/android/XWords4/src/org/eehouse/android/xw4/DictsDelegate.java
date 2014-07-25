@@ -84,7 +84,7 @@ public class DictsDelegate extends ListDelegateBase
     private static final int SEL_LOCAL = 0;
     private static final int SEL_REMOTE = 1;
 
-    private ListActivity m_activity;
+    private Activity m_activity;
     private Set<String> m_closedLangs;
     private Set<DictInfo> m_expandedItems;
     private DictListAdapter m_adapter;
@@ -297,10 +297,10 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    protected DictsDelegate( ListActivity activity, Bundle savedInstanceState )
+    protected DictsDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.dicts_menu );
-        m_activity = activity;
+        super( delegator, savedInstanceState, R.menu.dicts_menu );
+        m_activity = delegator.getActivity();
     }
 
     protected Dialog onCreateDialog( int id )

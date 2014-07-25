@@ -39,6 +39,7 @@ import java.util.regex.Pattern;
 
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DelegateBase;
+import org.eehouse.android.xw4.Delegator;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
 
@@ -52,10 +53,10 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
     private boolean m_haveBlessed;
     private static Pattern s_patFormat = Pattern.compile( LocUtils.RES_FORMAT );
 
-    protected LocItemEditDelegate( Activity activity, Bundle savedInstanceState )
+    protected LocItemEditDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState, R.menu.loc_item_menu );
-        m_activity = activity;
+        super( delegator, savedInstanceState, R.menu.loc_item_menu );
+        m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState )

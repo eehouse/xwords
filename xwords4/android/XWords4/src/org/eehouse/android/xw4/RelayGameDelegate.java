@@ -47,10 +47,10 @@ public class RelayGameDelegate extends DelegateBase
     private Button m_playButton;
     private Button m_configButton;
 
-    protected RelayGameDelegate( Activity activity, Bundle savedInstanceState )
+    protected RelayGameDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
+        super( delegator, savedInstanceState );
+        m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState ) 
