@@ -11,8 +11,10 @@
 <ul>
     <li>Don't prevent board displaying in the landscape orientation on
     large and x-large devices (tablets)</li>
-    <li>Fix changes for above so Nexus 10 and other x-large screened
-    devices still use the full screen in the portrait orientation</li>
+    <li>Fix changes for above so Nexus 10 and other x-large devices
+    still use the full screen in the portrait orientation (thanks DS)</li>
+    <li>Fix reported crash in new toolbar code (thanks Anonymous)</li>
+    <li>Fix reported crash receiving malformed SMS (thanks Anonymous)</li>
 </ul>
 
 <p>(The full changelog 
