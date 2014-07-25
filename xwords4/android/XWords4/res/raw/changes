@@ -5,12 +5,14 @@
 </style>
 </head>
 <body>
-<b>Crosswords 4.4 beta 85 release</b>
+<b>Crosswords 4.4 beta 86 release</b>
 
-<h3>New with this release</h3>
+<h3>New with this (and prev.) release</h3>
 <ul>
-    <li>Don't prevent board displaying in landscape mode on large and
-    x-large devices (tablets)</li>
+    <li>Don't prevent board displaying in the landscape orientation on
+    large and x-large devices (tablets)</li>
+    <li>Fix changes for above so Nexus 10 and other x-large screened
+    devices still use the full screen in the portrait orientation</li>
 </ul>
 
 <p>(The full changelog 
