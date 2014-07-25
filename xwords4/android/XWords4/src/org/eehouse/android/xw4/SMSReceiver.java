@@ -45,6 +45,10 @@ public class SMSReceiver extends BroadcastReceiver {
 
             for ( int ii = 0; ii < pdus.length; ++ii ) {
                 SmsMessage sms = SmsMessage.createFromPdu((byte[])pdus[ii]);
+                if ( null == sms ) {
+                    continue;
+                }
+
                 String phone = sms.getOriginatingAddress();
                 if ( isData ) {
                     byte[] body = sms.getUserData();
