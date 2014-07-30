@@ -519,10 +519,14 @@ public class BoardDelegate extends DelegateBase
         m_view = (BoardView)findViewById( R.id.board_view );
         if ( ! ABUtils.haveActionBar() ) {
             m_tradeButtons = findViewById( R.id.exchange_buttons );
-            m_exchCommmitButton = (Button)findViewById( R.id.exchange_commit );
-            m_exchCommmitButton.setOnClickListener( this );
-            m_exchCancelButton = (Button)findViewById( R.id.exchange_cancel );
-            m_exchCancelButton.setOnClickListener( this );
+            if ( null != m_tradeButtons ) {
+                m_exchCommmitButton = (Button)
+                    findViewById( R.id.exchange_commit );
+                m_exchCommmitButton.setOnClickListener( this );
+                m_exchCancelButton = (Button)
+                    findViewById( R.id.exchange_cancel );
+                m_exchCancelButton.setOnClickListener( this );
+            }
         }
         m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
 
@@ -1855,9 +1859,11 @@ public class BoardDelegate extends DelegateBase
                         setTitle( GameUtils.getName( m_activity, m_rowid ) );
                     }
 
-                    int orient = m_activity.getResources().getConfiguration().orientation;
-                    boolean isLandscape = Configuration.ORIENTATION_LANDSCAPE == orient;
-                    m_toolbar = new Toolbar( m_activity, this, isLandscape );
+                    if ( null != findViewById( R.id.tbar_parent_hor ) ) {
+                        int orient = m_activity.getResources().getConfiguration().orientation;
+                        boolean isLandscape = Configuration.ORIENTATION_LANDSCAPE == orient;
+                        m_toolbar = new Toolbar( m_activity, this, isLandscape );
+                    }
 
                     populateToolbar();
                     adjustTradeVisibility();
@@ -1907,47 +1913,49 @@ public class BoardDelegate extends DelegateBase
 
     private void populateToolbar()
     {
-        m_toolbar.setListener( Toolbar.BUTTON_BROWSE_DICT,
-                               R.string.not_again_browseall,
-                               R.string.key_na_browseall,
-                               Action.BUTTON_BROWSEALL_ACTION );
-        m_toolbar.setLongClickListener( Toolbar.BUTTON_BROWSE_DICT,
-                                        R.string.not_again_browse,
-                                        R.string.key_na_browse,
-                                        Action.BUTTON_BROWSE_ACTION );
-        m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
-                               R.string.not_again_hintprev,
-                               R.string.key_notagain_hintprev,
-                               Action.PREV_HINT_ACTION );
-        m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
-                               R.string.not_again_hintnext,
-                               R.string.key_notagain_hintnext,
-                               Action.NEXT_HINT_ACTION );
-        m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
-                               R.string.not_again_juggle,
-                               R.string.key_notagain_juggle,
-                               Action.JUGGLE_ACTION );
-        m_toolbar.setListener( Toolbar.BUTTON_FLIP,
-                               R.string.not_again_flip,
-                               R.string.key_notagain_flip,
-                               Action.FLIP_ACTION );
-        m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
-                               R.string.not_again_zoom,
-                               R.string.key_notagain_zoom,
-                               Action.ZOOM_ACTION );
-        m_toolbar.setListener( Toolbar.BUTTON_VALUES,
-                               R.string.not_again_values,
-                               R.string.key_na_values,
-                               Action.VALUES_ACTION );
-        m_toolbar.setListener( Toolbar.BUTTON_UNDO,
-                               R.string.not_again_undo,
-                               R.string.key_notagain_undo,
-                               Action.UNDO_ACTION );
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            m_toolbar.setListener( Toolbar.BUTTON_CHAT,
-                                   R.string.not_again_chat, 
-                                   R.string.key_notagain_chat,
-                                   Action.CHAT_ACTION );
+        if ( null != m_toolbar ) {
+            m_toolbar.setListener( Toolbar.BUTTON_BROWSE_DICT,
+                                   R.string.not_again_browseall,
+                                   R.string.key_na_browseall,
+                                   Action.BUTTON_BROWSEALL_ACTION );
+            m_toolbar.setLongClickListener( Toolbar.BUTTON_BROWSE_DICT,
+                                            R.string.not_again_browse,
+                                            R.string.key_na_browse,
+                                            Action.BUTTON_BROWSE_ACTION );
+            m_toolbar.setListener( Toolbar.BUTTON_HINT_PREV, 
+                                   R.string.not_again_hintprev,
+                                   R.string.key_notagain_hintprev,
+                                   Action.PREV_HINT_ACTION );
+            m_toolbar.setListener( Toolbar.BUTTON_HINT_NEXT,
+                                   R.string.not_again_hintnext,
+                                   R.string.key_notagain_hintnext,
+                                   Action.NEXT_HINT_ACTION );
+            m_toolbar.setListener( Toolbar.BUTTON_JUGGLE,
+                                   R.string.not_again_juggle,
+                                   R.string.key_notagain_juggle,
+                                   Action.JUGGLE_ACTION );
+            m_toolbar.setListener( Toolbar.BUTTON_FLIP,
+                                   R.string.not_again_flip,
+                                   R.string.key_notagain_flip,
+                                   Action.FLIP_ACTION );
+            m_toolbar.setListener( Toolbar.BUTTON_ZOOM,
+                                   R.string.not_again_zoom,
+                                   R.string.key_notagain_zoom,
+                                   Action.ZOOM_ACTION );
+            m_toolbar.setListener( Toolbar.BUTTON_VALUES,
+                                   R.string.not_again_values,
+                                   R.string.key_na_values,
+                                   Action.VALUES_ACTION );
+            m_toolbar.setListener( Toolbar.BUTTON_UNDO,
+                                   R.string.not_again_undo,
+                                   R.string.key_notagain_undo,
+                                   Action.UNDO_ACTION );
+            if ( BuildConstants.CHAT_SUPPORTED ) {
+                m_toolbar.setListener( Toolbar.BUTTON_CHAT,
+                                       R.string.not_again_chat, 
+                                       R.string.key_notagain_chat,
+                                       Action.CHAT_ACTION );
+            }
         }
     } // populateToolbar
 
@@ -2134,21 +2142,25 @@ public class BoardDelegate extends DelegateBase
 
     private void updateToolbar()
     {
-        m_toolbar.update( Toolbar.BUTTON_FLIP, m_gsi.visTileCount >= 1 );
-        m_toolbar.update( Toolbar.BUTTON_VALUES, m_gsi.visTileCount >= 1 );
-        m_toolbar.update( Toolbar.BUTTON_JUGGLE, m_gsi.canShuffle );
-        m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
-        m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
-        m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
-        m_toolbar.update( Toolbar.BUTTON_CHAT, 
-                          BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
-        m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
-                          null != m_gi.dictName( m_view.getCurPlayer() ) );
+        if ( null != m_toolbar ) {
+            m_toolbar.update( Toolbar.BUTTON_FLIP, m_gsi.visTileCount >= 1 );
+            m_toolbar.update( Toolbar.BUTTON_VALUES, m_gsi.visTileCount >= 1 );
+            m_toolbar.update( Toolbar.BUTTON_JUGGLE, m_gsi.canShuffle );
+            m_toolbar.update( Toolbar.BUTTON_UNDO, m_gsi.canRedo );
+            m_toolbar.update( Toolbar.BUTTON_HINT_PREV, m_gsi.canHint );
+            m_toolbar.update( Toolbar.BUTTON_HINT_NEXT, m_gsi.canHint );
+            m_toolbar.update( Toolbar.BUTTON_CHAT, 
+                              BuildConstants.CHAT_SUPPORTED && m_gsi.canChat );
+            m_toolbar.update( Toolbar.BUTTON_BROWSE_DICT, 
+                              null != m_gi.dictName( m_view.getCurPlayer() ) );
+        }
     }
 
     private void adjustTradeVisibility()
     {
-        m_toolbar.setVisible( !m_inTrade );
+        if ( null != m_toolbar ) {
+            m_toolbar.setVisible( !m_inTrade );
+        }
         if ( null != m_tradeButtons ) {
             m_tradeButtons.setVisibility( m_inTrade? View.VISIBLE : View.GONE );
         }
