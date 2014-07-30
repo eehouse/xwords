@@ -41,6 +41,7 @@ public class ListDelegateBase extends DelegateBase {
     protected ListDelegateBase( ListDelegator delegator, Bundle savedState )
     {
         super( delegator, savedState );
+        m_delegator = delegator;
         m_activity = delegator.getActivity();
     }
 
