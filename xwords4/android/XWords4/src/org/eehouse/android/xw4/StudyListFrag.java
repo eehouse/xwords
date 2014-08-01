@@ -20,21 +20,19 @@
 package org.eehouse.android.xw4;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class BoardFrag extends XWFragment implements Delegator {
-    private BoardDelegate m_dlgt;
+public class StudyListFrag extends XWListFragment implements ListDelegator {
+    private StudyListDelegate m_dlgt;
 
     @Override
     public void onCreate( Bundle savedInstanceState )
     {
-        DbgUtils.logf( "GamesListFrag.onCreate()" );
-        m_dlgt = new BoardDelegate( this, savedInstanceState );
-        super.onCreate( m_dlgt, savedInstanceState, R.layout.board );
+        DbgUtils.logf( "StudyListFrag.onCreate()" );
+        m_dlgt = new StudyListDelegate( this, savedInstanceState );
+        super.onCreate( m_dlgt, savedInstanceState, R.layout.studylist );
     }
 
     @Override

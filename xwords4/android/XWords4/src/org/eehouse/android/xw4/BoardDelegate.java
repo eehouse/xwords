@@ -515,7 +515,9 @@ public class BoardDelegate extends DelegateBase
 
         m_utils = new BoardUtilCtxt();
         m_jniu = JNIUtilsImpl.get( m_activity );
-        setContentView( R.layout.board );
+        if ( null == getContentView() ) {
+            setContentView( R.layout.board );
+        }
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
         m_view = (BoardView)findViewById( R.id.board_view );

@@ -105,6 +105,17 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         return m_delegator.getArguments();
     }
 
+    protected View getContentView()
+    {
+        return m_rootView;
+    }
+
+    protected void setContentView( View view )
+    {
+        LocUtils.xlateView( m_activity, view );
+        m_rootView = view;
+    }
+
     protected void setContentView( int resID )
     {
         m_activity.setContentView( resID );

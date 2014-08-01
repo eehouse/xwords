@@ -22,15 +22,27 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class XWListFragment extends ListFragment {
 
     private ListDelegateBase m_dlgt;
+    private int m_layoutID = -1;
+
+    protected void onCreate( ListDelegateBase dlgt, Bundle sis, int layoutID )
+    {
+        onCreate( dlgt, sis );
+        m_layoutID = layoutID;
+    }
 
     public void onCreate( ListDelegateBase dlgt, Bundle savedInstanceState )
     {
@@ -39,8 +51,23 @@ public class XWListFragment extends ListFragment {
     }
 
     @Override
+    public View onCreateView( LayoutInflater inflater, ViewGroup container, 
+                              Bundle savedInstanceState ) 
+    {
+        DbgUtils.logf( "%s.onCreateView() called", this.getClass().getName() );
+        View view = null;
+        if ( 0 < m_layoutID ) {
+            view = inflater.inflate( m_layoutID, container, false );
+            m_dlgt.setContentView( view );
+            // LocUtils.xlateView( getActivity(), view );
+        }
+        return view;
+    }
+
+    @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
+        DbgUtils.logf( "%s.onActivityCreated() called", this.getClass().getName() );
         m_dlgt.init( savedInstanceState );
         super.onActivityCreated( savedInstanceState );
     }
@@ -48,6 +75,7 @@ public class XWListFragment extends ListFragment {
     @Override
     public void onPause()
     {
+        DbgUtils.logf( "%s.onPause() called", this.getClass().getName() );
         m_dlgt.onPause();
         super.onPause();
     }
@@ -55,6 +83,7 @@ public class XWListFragment extends ListFragment {
     @Override
     public void onResume()
     {
+        DbgUtils.logf( "%s.onResume() called", this.getClass().getName() );
         super.onResume();
         m_dlgt.onResume();
     }
@@ -62,6 +91,7 @@ public class XWListFragment extends ListFragment {
     @Override
     public void onStart()
     {
+        DbgUtils.logf( "%s.onStart() called", this.getClass().getName() );
         super.onStart();
         m_dlgt.onStart();
     }
@@ -69,6 +99,7 @@ public class XWListFragment extends ListFragment {
     @Override
     public void onStop()
     {
+        DbgUtils.logf( "%s.onStop() called", this.getClass().getName() );
         m_dlgt.onStop();
         super.onStop();
     }
@@ -76,6 +107,7 @@ public class XWListFragment extends ListFragment {
     @Override
     public void onDestroy()
     {
+        DbgUtils.logf( "%s.onDestroy() called", this.getClass().getName() );
         m_dlgt.onDestroy();
         super.onDestroy();
     }

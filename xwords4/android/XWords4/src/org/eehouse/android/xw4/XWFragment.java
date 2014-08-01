@@ -22,25 +22,52 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class XWFragment extends Fragment {
 
     private DelegateBase m_dlgt;
+    private int m_layoutID = -1;
 
-    public void onCreate( DelegateBase dlgt, Bundle savedInstanceState )
+    protected void onCreate( DelegateBase dlgt, Bundle sis, int layoutID )
     {
-        super.onCreate( savedInstanceState );
+        onCreate( dlgt, sis );
+        m_layoutID = layoutID;
+    }
+
+    public void onCreate( DelegateBase dlgt, Bundle sis )
+    {
+        super.onCreate( sis );
         m_dlgt = dlgt;
+    }
+
+    @Override
+    public View onCreateView( LayoutInflater inflater, ViewGroup container, 
+                              Bundle savedInstanceState ) 
+    {
+        DbgUtils.logf( "%s.onCreateView() called", this.getClass().getName() );
+        View view = null;
+        if ( 0 < m_layoutID ) {
+            view = inflater.inflate( m_layoutID, container, false );
+            m_dlgt.setContentView( view );
+        }
+        DbgUtils.logf( "%s.onCreateView() => %H", this.getClass().getName(), view );
+        return view;
     }
 
     @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
+        DbgUtils.logf( "%s.onActivityCreated() called", this.getClass().getName() );
         m_dlgt.init( savedInstanceState );
         super.onActivityCreated( savedInstanceState );
     }

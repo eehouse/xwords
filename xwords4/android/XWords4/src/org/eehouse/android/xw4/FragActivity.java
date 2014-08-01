@@ -137,6 +137,12 @@ public class FragActivity extends FragmentActivity
         getSupportFragmentManager().popBackStack();
     }
 
+    protected void addFragment( Fragment fragment, Bundle bundle ) 
+    {
+        fragment.setArguments( bundle );
+        addFragment( fragment );
+    }
+
     protected void addFragment( Fragment fragment ) 
     {
         String newName = fragment.getClass().getName();

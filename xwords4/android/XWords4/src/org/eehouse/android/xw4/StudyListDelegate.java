@@ -76,7 +76,10 @@ public class StudyListDelegate extends ListDelegateBase
 
     protected void init( Bundle savedInstanceState ) 
     {
-        setContentView( R.layout.studylist );
+        DbgUtils.logf( "%s.init() called", getClass().getName() );
+        if ( null == getContentView() ) {
+            setContentView( R.layout.studylist );
+        }
         m_list = (ListView)findViewById( android.R.id.list );
 
         m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
@@ -294,6 +297,7 @@ public class StudyListDelegate extends ListDelegateBase
                 }
             }
 
+            DbgUtils.logf( "creating studylist adapter" );
             ArrayAdapter<String> adapter = new
                 ArrayAdapter<String>( m_activity, 
                                       android.R.layout.simple_spinner_item,
@@ -345,23 +349,31 @@ public class StudyListDelegate extends ListDelegateBase
         setTitleBar();
     }
 
-    public static void launchOrAlert( Context context, int lang, 
+    public static void launchOrAlert( Activity activity, int lang, 
                                       DlgDelegate.HasDlgDelegate dlg )
     {
         String msg = null;
-        if ( 0 == DBUtils.studyListLangs( context ).length ) {
-            msg = LocUtils.getString( context, R.string.study_no_lists );
+        if ( 0 == DBUtils.studyListLangs( activity ).length ) {
+            msg = LocUtils.getString( activity, R.string.study_no_lists );
         } else if ( NO_LANG != lang && 
-                    0 == DBUtils.studyListWords( context, lang ).length ) {
-            String langname = DictLangCache.getLangName( context, lang );
-            msg = LocUtils.getString( context, R.string.study_no_lang_fmt, 
+                    0 == DBUtils.studyListWords( activity, lang ).length ) {
+            String langname = DictLangCache.getLangName( activity, lang );
+            msg = LocUtils.getString( activity, R.string.study_no_lang_fmt, 
                                       langname );
         } else {
-            Intent intent = new Intent( context, StudyListActivity.class );
+            Bundle bundle = new Bundle();
             if ( NO_LANG != lang ) {
-                intent.putExtra( START_LANG, lang );
+                bundle.putInt( START_LANG, lang );
             }
-            context.startActivity( intent );
+
+            if ( activity instanceof FragActivity ) {
+                StudyListFrag frag = new StudyListFrag();
+                ((FragActivity)activity).addFragment( frag, bundle );
+            } else {
+                Intent intent = new Intent( activity, StudyListActivity.class );
+                intent.putExtras( bundle );
+                activity.startActivity( intent );
+            }
         }
 
         if ( null != msg ) {
