@@ -501,6 +501,7 @@ public class GamesListDelegate extends ListDelegateBase
     private int m_fieldID;
 
     private Activity m_activity;
+    private static GamesListDelegate s_self;
     private GamesListDelegator m_delegator;
     private GameListAdapter m_adapter;
     private Handler m_handler;
@@ -516,7 +517,7 @@ public class GamesListDelegate extends ListDelegateBase
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
-    private long m_launchedGame = DBUtils.ROWID_NOTFOUND;
+    private Set<Long> m_launchedGames;
     private boolean m_menuPrepared;
     private Set<Long> m_selGames;
     private Set<Long> m_selGroupIDs;
@@ -527,6 +528,8 @@ public class GamesListDelegate extends ListDelegateBase
         super( delegator, sis, R.menu.games_list_menu );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
+        m_launchedGames = new HashSet<Long>();
+        s_self = this;
     }
 
     protected Dialog onCreateDialog( int id )
@@ -792,7 +795,7 @@ public class GamesListDelegate extends ListDelegateBase
     protected void onNewIntent( Intent intent )
     {
         // super.onNewIntent( intent );
-        m_launchedGame = DBUtils.ROWID_NOTFOUND;
+        m_launchedGames.clear();
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         m_adapter.reloadGame( intent.getLongExtra( ROWID_EXTRA, -1 ) );
@@ -813,7 +816,7 @@ public class GamesListDelegate extends ListDelegateBase
     protected void onDestroy()
     {
         DBUtils.clearDBChangeListener( this );
-        // super.onDestroy();
+        s_self = null;
     }
 
     protected void onSaveInstanceState( Bundle outState ) 
@@ -855,10 +858,10 @@ public class GamesListDelegate extends ListDelegateBase
         if ( hasFocus ) {
             updateField();
 
-            if ( DBUtils.ROWID_NOTFOUND != m_launchedGame ) {
-                setSelGame( m_launchedGame );
-                m_launchedGame = DBUtils.ROWID_NOTFOUND;
-            }
+            // if ( DBUtils.ROWID_NOTFOUND != m_launchedGame ) {
+            //     setSelGame( m_launchedGame );
+            //     m_launchedGame = DBUtils.ROWID_NOTFOUND;
+            // }
         }
     }
 
@@ -913,9 +916,9 @@ public class GamesListDelegate extends ListDelegateBase
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
         if ( clicked instanceof GameListItem ) {
-            if ( DBUtils.ROWID_NOTFOUND == m_launchedGame ) {
-                long rowid = ((GameListItem)clicked).getRowID();
-                DbgUtils.logf( "GamesListDelegate.itemClicked(%d)", rowid );
+            long rowid = ((GameListItem)clicked).getRowID();
+            DbgUtils.logf( "GamesListDelegate.itemClicked(%d)", rowid );
+            if ( ! m_launchedGames.contains( rowid ) ) {
                 showNotAgainDlgThen( R.string.not_again_newselect, 
                                      R.string.key_notagain_newselect,
                                      Action.OPEN_GAME, rowid,
@@ -1710,8 +1713,8 @@ public class GamesListDelegate extends ListDelegateBase
     private void launchGame( long rowid, boolean invited )
     {
         DbgUtils.logf( "launchGame(%d)", rowid );
-        if ( DBUtils.ROWID_NOTFOUND == m_launchedGame ) {
-            m_launchedGame = rowid;
+        if ( ! m_launchedGames.contains( rowid ) ) {
+            m_launchedGames.add( rowid );
             m_delegator.launchGame( rowid, invited );
         }
     }
@@ -1824,6 +1827,13 @@ public class GamesListDelegate extends ListDelegateBase
         // setListAdapter( adapter );
         // adapter.expandGroups( listview );
         // return adapter;
+    }
+
+    public static void boardDestroyed( long rowid )
+    {
+        if ( null != s_self ) {
+            s_self.m_launchedGames.remove( rowid );
+        }
     }
 
     public static void onGameDictDownload( Context context, Intent intent )

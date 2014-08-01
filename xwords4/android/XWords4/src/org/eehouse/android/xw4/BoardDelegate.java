@@ -567,6 +567,13 @@ public class BoardDelegate extends DelegateBase
         ConnStatusHandler.setHandler( this );
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        GamesListDelegate.boardDestroyed( m_rowid );
+        super.onDestroy();
+    }
+
     protected void onSaveInstanceState( Bundle outState ) 
     {
         outState.putInt( DLG_TITLE, m_dlgTitle );
