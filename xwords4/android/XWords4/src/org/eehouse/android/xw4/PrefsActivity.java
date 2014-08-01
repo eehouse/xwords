@@ -88,4 +88,9 @@ public class PrefsActivity extends PreferenceActivity implements Delegator {
     {
         return this;
     }
+
+    public Bundle getArguments()
+    {
+        return getIntent().getExtras();
+    }
 }

@@ -49,5 +49,5 @@ esac
 ant $CMDS
 
 if [ "$CMDS" != "${CMDS%%install}" ]; then
-	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
+	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.Main
 fi

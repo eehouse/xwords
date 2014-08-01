@@ -146,4 +146,8 @@ public class XWListActivity extends ListActivity implements ListDelegator {
         return this;
     }
 
+    public Bundle getArguments()
+    {
+        return getIntent().getExtras();
+    }
 }

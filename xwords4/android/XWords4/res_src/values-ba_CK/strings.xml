@@ -1937,4 +1937,6 @@
     tahw\'s elbaliava.</string>
   <string name="force_tablet_title">Ecrof telbat tuoyal</string>
   <string name="force_tablet_summary">Neve fi ym neercs si oot llams</string>
+  <string name="activity_button">Enap-elgnis</string>
+  <string name="fragment_button">Enap-laud</string>
 </resources>

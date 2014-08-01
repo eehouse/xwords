@@ -27,6 +27,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 
 import android.text.Html;
 import android.text.TextUtils;
@@ -710,14 +711,22 @@ public class GameUtils {
         return file.endsWith( XWConstants.GAME_EXTN );
     }
 
+    public static Bundle makeLaunchExtras( long rowid, boolean invited )
+    {
+        Bundle bundle = new Bundle();
+        bundle.putLong( INTENT_KEY_ROWID, rowid );
+        if ( invited ) {
+            bundle.putBoolean( INVITED, true );
+        }
+        return bundle;
+    }
+
     public static void launchGame( Activity activity, long rowid,
                                    boolean invited )
     {
         Intent intent = new Intent( activity, BoardActivity.class );
-        intent.putExtra( INTENT_KEY_ROWID, rowid );
-        if ( invited ) {
-            intent.putExtra( INVITED, true );
-        }
+        Bundle extras = makeLaunchExtras( rowid, invited );
+        intent.putExtras( extras );
         activity.startActivity( intent );
     }
 

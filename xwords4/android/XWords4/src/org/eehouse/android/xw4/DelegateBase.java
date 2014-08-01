@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.view.MenuInflater;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -75,11 +76,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data ) {}
 
-    public boolean onCreateOptionsMenu( Menu menu )
+    public boolean onCreateOptionsMenu( Menu menu, MenuInflater inflater )
     {
         boolean handled = 0 < m_optionsMenuID;
         if ( handled ) {
-            m_activity.getMenuInflater().inflate( m_optionsMenuID, menu );
+            inflater.inflate( m_optionsMenuID, menu );
             LocUtils.xlateMenu( m_activity, menu );
         } else {
             Assert.fail();
@@ -88,9 +89,20 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         return handled;
     }
 
+    public boolean onCreateOptionsMenu( Menu menu )
+    {
+        MenuInflater inflater = m_activity.getMenuInflater();
+        return onCreateOptionsMenu( menu, inflater );
+    }
+
     protected Intent getIntent()
     {
         return m_activity.getIntent();
+    }
+
+    protected Bundle getArguments()
+    {
+        return m_delegator.getArguments();
     }
 
     protected void setContentView( int resID )

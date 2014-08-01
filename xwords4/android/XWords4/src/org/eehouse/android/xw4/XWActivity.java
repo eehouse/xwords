@@ -144,4 +144,9 @@ public class XWActivity extends Activity implements Delegator {
     {
         return this;
     }
+
+    public Bundle getArguments()
+    {
+        return getIntent().getExtras();
+    }
 }

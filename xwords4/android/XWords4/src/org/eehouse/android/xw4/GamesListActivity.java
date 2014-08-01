@@ -29,7 +29,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class GamesListActivity extends XWListActivity {
+public class GamesListActivity extends XWListActivity implements GamesListDelegator {
 
     // private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -53,6 +53,14 @@ public class GamesListActivity extends XWListActivity {
     {
         super.onNewIntent( intent );
         m_dlgt.onNewIntent( intent );
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // GamesListDelegator interface
+    //////////////////////////////////////////////////////////////////////
+    public void launchGame( long rowID, boolean invited )
+    {
+        GameUtils.launchGame( this, rowID, invited );
     }
 
     public static void onGameDictDownload( Context context, Intent intent )

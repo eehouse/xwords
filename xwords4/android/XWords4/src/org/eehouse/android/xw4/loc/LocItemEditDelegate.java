@@ -42,6 +42,7 @@ import org.eehouse.android.xw4.DelegateBase;
 import org.eehouse.android.xw4.Delegator;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.Delegator;
 
 public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
 

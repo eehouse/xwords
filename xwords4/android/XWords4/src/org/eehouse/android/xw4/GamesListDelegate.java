@@ -501,6 +501,7 @@ public class GamesListDelegate extends ListDelegateBase
     private int m_fieldID;
 
     private Activity m_activity;
+    private GamesListDelegator m_delegator;
     private GameListAdapter m_adapter;
     private Handler m_handler;
     private String m_missingDict;
@@ -521,9 +522,10 @@ public class GamesListDelegate extends ListDelegateBase
     private Set<Long> m_selGroupIDs;
     private String m_origTitle;
 
-    public GamesListDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    public GamesListDelegate( GamesListDelegator delegator, Bundle sis )
     {
-        super( delegator, savedInstanceState, R.menu.games_list_menu );
+        super( delegator, sis, R.menu.games_list_menu );
+        m_delegator = delegator;
         m_activity = delegator.getActivity();
     }
 
@@ -756,8 +758,8 @@ public class GamesListDelegate extends ListDelegateBase
         m_selGroupIDs = new HashSet<Long>();
         getBundledData( savedInstanceState );
 
-        setContentView( R.layout.game_list );
-        ListView listview = getListView();
+        // setContentView( R.layout.game_list );
+        // ListView listview = getListView();
         DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
@@ -767,7 +769,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
 
         mkListAdapter();
-        listview.setOnItemLongClickListener( this );
+        getListView().setOnItemLongClickListener( this );
 
         NetUtils.informOfDeaths( m_activity );
 
@@ -777,6 +779,13 @@ public class GamesListDelegate extends ListDelegateBase
 
         m_origTitle = getTitle();
     } // init
+
+    // protected View onCreateView( Bundle savedInstanceState )
+    // {
+    //     View result = inflate( R.layout.game_list );
+    //     // init( savedInstanceState );
+    //     return result;
+    // }
 
     // called when we're brought to the front (probably as a result of
     // notification)
@@ -899,12 +908,14 @@ public class GamesListDelegate extends ListDelegateBase
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
+        DbgUtils.logf( "GamesListDelegate.itemClicked()" );
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
         if ( clicked instanceof GameListItem ) {
             if ( DBUtils.ROWID_NOTFOUND == m_launchedGame ) {
                 long rowid = ((GameListItem)clicked).getRowID();
+                DbgUtils.logf( "GamesListDelegate.itemClicked(%d)", rowid );
                 showNotAgainDlgThen( R.string.not_again_newselect, 
                                      R.string.key_notagain_newselect,
                                      Action.OPEN_GAME, rowid,
@@ -1046,7 +1057,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
-        int nGamesSelected = m_selGames.size();
+        int nGamesSelected = m_selGames.size(); // NPE!
         int nGroupsSelected = m_selGroupIDs.size();
         int groupCount = m_adapter.getGroupCount();
         m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
@@ -1688,7 +1699,7 @@ public class GamesListDelegate extends ListDelegateBase
                 long[] rowIDs = { m_missingDictRowId };
                 doConfirmReset( rowIDs );
             } else {
-                GameUtils.launchGame( m_activity, m_missingDictRowId );
+                launchGame( m_missingDictRowId );
             }
             m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
             m_missingDictMenuId = -1;
@@ -1698,9 +1709,10 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void launchGame( long rowid, boolean invited )
     {
+        DbgUtils.logf( "launchGame(%d)", rowid );
         if ( DBUtils.ROWID_NOTFOUND == m_launchedGame ) {
             m_launchedGame = rowid;
-            GameUtils.launchGame( m_activity, rowid, invited );
+            m_delegator.launchGame( rowid, invited );
         }
     }
 
@@ -1729,6 +1741,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         GameSummary summary = (GameSummary)params[1];
         long rowid = (Long)params[0];
+        DbgUtils.logf( "GamesListDelegate.doOpenGame(%d)", rowid );
 
         if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
              && summary.roomName.length() == 0 ) {

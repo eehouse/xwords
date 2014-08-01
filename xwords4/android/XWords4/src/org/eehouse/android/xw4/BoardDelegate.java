@@ -81,6 +81,7 @@ public class BoardDelegate extends DelegateBase
     private static final String GETDICT = "GETDICT";
 
     private Activity m_activity;
+    private Delegator m_delegator;
     private BoardView m_view;
     private int m_jniGamePtr;
     private GameLock m_gameLock;
@@ -309,7 +310,7 @@ public class BoardDelegate extends DelegateBase
 
                             waitCloseGame( false );
                             GameUtils.deleteGame( m_activity, m_rowid, false );
-                            finish();
+                            m_delegator.finish();
                         }
                     };
                 ab.setNegativeButton( R.string.button_delete, lstnr );
@@ -496,6 +497,7 @@ public class BoardDelegate extends DelegateBase
     {
         super( delegator, savedInstanceState, R.menu.board_menu );
         m_activity = delegator.getActivity();
+        m_delegator = delegator;
     }
 
     protected void init( Bundle savedInstanceState ) 
@@ -530,17 +532,17 @@ public class BoardDelegate extends DelegateBase
         }
         m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
 
-        Intent intent = getIntent();
-        m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+        Bundle args = getArguments();
+        m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
         DbgUtils.logf( "BoardActivity: opening rowid %d", m_rowid );
-        m_haveInvited = intent.getBooleanExtra( GameUtils.INVITED, false );
+        m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
         NFCUtils.register( m_activity, this ); // Don't seem to need to unregister...
 
         setBackgroundColor();
         setKeepScreenOn();
-    } // onCreate
+    } // init
 
     protected void onPause()
     {
@@ -1206,7 +1208,7 @@ public class BoardDelegate extends DelegateBase
 
         String msg = getString( R.string.reload_new_dict_fmt, getDict );
         showToast( msg );
-        finish();
+        m_delegator.finish();
         GameUtils.launchGame( m_activity, m_rowid, false );
     }
 
@@ -1899,7 +1901,7 @@ public class BoardDelegate extends DelegateBase
                 }
            } catch ( GameUtils.NoSuchGameException nsge ) {
                 DbgUtils.loge( nsge );
-                finish();
+                m_delegator.finish();
             }
         }
     } // loadGame
@@ -2253,7 +2255,7 @@ public class BoardDelegate extends DelegateBase
         Intent intent = GamesListActivity.makeRematchIntent( m_activity, m_gi, m_rowid );
         if ( null != intent ) {
             startActivity( intent );
-            finish();
+            m_delegator.finish();
         }
     }
     

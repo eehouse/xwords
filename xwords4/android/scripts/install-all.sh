@@ -67,7 +67,7 @@ for DEVICE in $DEVICES; do
     echo $DEVICE
     adb -s $DEVICE install -r $APK
     adb -s $DEVICE shell am start \
-        -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
+        -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.Main
     COUNT=$((COUNT+1))
 done
 

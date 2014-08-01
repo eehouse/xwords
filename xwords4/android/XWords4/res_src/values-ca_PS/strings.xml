@@ -1937,4 +1937,6 @@
     WHAT\'S AVAILABLE.</string>
   <string name="force_tablet_title">FORCE TABLET LAYOUT</string>
   <string name="force_tablet_summary">EVEN IF MY SCREEN IS TOO SMALL</string>
+  <string name="activity_button">SINGLE-PANE</string>
+  <string name="fragment_button">DUAL-PANE</string>
 </resources>
