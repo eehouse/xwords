@@ -40,7 +40,7 @@ public class ChatDelegate extends DelegateBase
 
     public ChatDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.menu.chat_menu );
+        super( delegator, savedInstanceState, R.layout.chat, R.menu.chat_menu );
         m_activity = delegator.getActivity();
     }
 
@@ -48,9 +48,6 @@ public class ChatDelegate extends DelegateBase
     protected void init( Bundle savedInstanceState ) 
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
-
-            setContentView( R.layout.chat );
-    
             m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
      
             DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( m_activity, m_rowid );

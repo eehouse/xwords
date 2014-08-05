@@ -35,9 +35,9 @@ public class LocActivity extends XWListActivity {
         super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onCreateOptionsMenu( menu );
-    }
+    // @Override
+    // public boolean onCreateOptionsMenu( Menu menu ) 
+    // {
+    //     return m_dlgt.onCreateOptionsMenu( menu );
+    // }
 }

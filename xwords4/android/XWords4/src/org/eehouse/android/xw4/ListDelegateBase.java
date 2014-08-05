@@ -31,16 +31,15 @@ public class ListDelegateBase extends DelegateBase {
     private ListDelegator m_delegator;
 
     protected ListDelegateBase( ListDelegator delegator, Bundle savedInstanceState,
-                                int menuID )
+                                int layoutID )
     {
-        super( delegator, savedInstanceState, menuID );
-        m_delegator = delegator;
-        m_activity = delegator.getActivity();
+        this( delegator, savedInstanceState, layoutID, R.menu.empty );
     }
 
-    protected ListDelegateBase( ListDelegator delegator, Bundle savedState )
+    protected ListDelegateBase( ListDelegator delegator, Bundle savedInstanceState,
+                                int layoutID, int menuID )
     {
-        super( delegator, savedState );
+        super( delegator, savedInstanceState, layoutID, menuID );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
     }

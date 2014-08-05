@@ -43,6 +43,12 @@ public class PrefsActivity extends PreferenceActivity implements Delegator {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = new PrefsDelegate( this, this, savedInstanceState );
+
+        int layoutID = m_dlgt.getLayoutID();
+        if ( 0 < layoutID ) {
+            m_dlgt.setContentView( layoutID );
+        }
+
         m_dlgt.init( savedInstanceState );
     }
     

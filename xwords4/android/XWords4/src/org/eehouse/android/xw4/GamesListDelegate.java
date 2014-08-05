@@ -525,7 +525,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     public GamesListDelegate( GamesListDelegator delegator, Bundle sis )
     {
-        super( delegator, sis, R.menu.games_list_menu );
+        super( delegator, sis, R.layout.game_list, R.menu.games_list_menu );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
         m_launchedGames = new HashSet<Long>();
@@ -761,8 +761,6 @@ public class GamesListDelegate extends ListDelegateBase
         m_selGroupIDs = new HashSet<Long>();
         getBundledData( savedInstanceState );
 
-        // setContentView( R.layout.game_list );
-        // ListView listview = getListView();
         DBUtils.setDBChangeListener( this );
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );

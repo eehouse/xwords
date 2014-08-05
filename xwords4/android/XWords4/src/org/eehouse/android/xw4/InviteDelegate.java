@@ -44,17 +44,16 @@ abstract class InviteDelegate extends ListDelegateBase
     protected Button m_clearButton;
     private Activity m_activity;
 
-    public InviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    public InviteDelegate( ListDelegator delegator, Bundle savedInstanceState,
+                           int layoutID )
     {
-        super( delegator, savedInstanceState );
+        super( delegator, savedInstanceState, layoutID, R.menu.empty );
         m_activity = delegator.getActivity();
     }
 
-    protected void init( int view_id, int button_invite, int button_rescan, 
+    protected void init( int button_invite, int button_rescan, 
                          int button_clear, int desc_id, int desc_strf )
     {
-        setContentView( view_id );
-
         Intent intent = getIntent();
         m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
 

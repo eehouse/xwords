@@ -34,6 +34,12 @@ public class XWActivity extends Activity implements Delegator {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
+
+        int layoutID = m_dlgt.getLayoutID();
+        if ( 0 < layoutID ) {
+            m_dlgt.setContentView( layoutID );
+        }
+
         dlgt.init( savedInstanceState );
     }
 

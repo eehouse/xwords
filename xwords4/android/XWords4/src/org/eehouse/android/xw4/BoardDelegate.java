@@ -495,7 +495,7 @@ public class BoardDelegate extends DelegateBase
 
     public BoardDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.menu.board_menu );
+        super( delegator, savedInstanceState, R.layout.board, R.menu.board_menu );
         m_activity = delegator.getActivity();
         m_delegator = delegator;
     }
@@ -515,9 +515,6 @@ public class BoardDelegate extends DelegateBase
 
         m_utils = new BoardUtilCtxt();
         m_jniu = JNIUtilsImpl.get( m_activity );
-        if ( null == getContentView() ) {
-            setContentView( R.layout.board );
-        }
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
         m_view = (BoardView)findViewById( R.id.board_view );

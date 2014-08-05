@@ -32,7 +32,7 @@ public class StudyListFrag extends XWListFragment implements ListDelegator {
     {
         DbgUtils.logf( "StudyListFrag.onCreate()" );
         m_dlgt = new StudyListDelegate( this, savedInstanceState );
-        super.onCreate( m_dlgt, savedInstanceState, R.layout.studylist );
+        super.onCreate( m_dlgt, savedInstanceState );
     }
 
     @Override

@@ -19,16 +19,18 @@
 
 package org.eehouse.android.xw4;
 
-import android.view.MenuInflater;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -43,20 +45,23 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     private Delegator m_delegator;
     private Activity m_activity;
     private int m_optionsMenuID;
+    private int m_layoutID;
     private View m_rootView;
 
-    public DelegateBase( Delegator delegator, Bundle bundle )
+    public DelegateBase( Delegator delegator, Bundle bundle, int layoutID )
     {
-        this( delegator, bundle, R.menu.empty );
+        this( delegator, bundle, layoutID, R.menu.empty );
     }
 
-    public DelegateBase( Delegator delegator, Bundle bundle, int optionsMenu )
+    public DelegateBase( Delegator delegator, Bundle bundle, 
+                         int layoutID, int menuID )
     {
-        Assert.assertTrue( 0 < optionsMenu );
+        Assert.assertTrue( 0 < menuID );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
         m_delegate = new DlgDelegate( m_activity, this, bundle );
-        m_optionsMenuID = optionsMenu;
+        m_layoutID = layoutID;
+        m_optionsMenuID = menuID;
         LocUtils.xlateTitle( m_activity );
     }
 
@@ -75,6 +80,17 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void prepareDialog( DlgID dlgID, Dialog dialog ) {}
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data ) {}
+    // Fragments only
+    protected View inflateView( LayoutInflater inflater, ViewGroup container )
+    {
+        View view = null;
+        int layoutID = getLayoutID();
+        if ( 0 < layoutID ) {
+            view = inflater.inflate( layoutID, container, false );
+            setContentView( view );
+        }
+        return view;
+    }
 
     public boolean onCreateOptionsMenu( Menu menu, MenuInflater inflater )
     {
@@ -98,6 +114,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected Intent getIntent()
     {
         return m_activity.getIntent();
+    }
+
+    protected int getLayoutID()
+    {
+        return m_layoutID;
     }
 
     protected Bundle getArguments()

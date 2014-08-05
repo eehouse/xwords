@@ -57,14 +57,13 @@ public class BTInviteDelegate extends InviteDelegate
 
     protected BTInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.btinviter );
         m_activity = delegator.getActivity();
     }
 
     protected void init()
     {
-        super.init( R.layout.btinviter,
-                    R.id.button_invite, R.id.button_rescan, 
+        super.init( R.id.button_invite, R.id.button_rescan, 
                     R.id.button_clear, R.id.invite_desc,
                     R.string.invite_bt_desc_fmt );
         m_firstScan = true;

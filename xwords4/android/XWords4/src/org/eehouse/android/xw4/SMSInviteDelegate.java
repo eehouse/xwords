@@ -67,14 +67,13 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     public SMSInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.smsinviter );
         m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState )
     {
-        super.init( R.layout.smsinviter,
-                    R.id.button_invite, R.id.button_add, 
+        super.init( R.id.button_invite, R.id.button_add, 
                     R.id.button_clear, R.id.invite_desc,
                     R.string.invite_sms_desc_fmt );
         getBundledData( savedInstanceState );

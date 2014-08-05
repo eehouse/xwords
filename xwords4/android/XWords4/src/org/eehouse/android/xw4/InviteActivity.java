@@ -20,7 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.ListActivity;
 import android.os.Bundle;
 import android.view.Window;
 

@@ -70,16 +70,13 @@ public class StudyListDelegate extends ListDelegateBase
 
     protected StudyListDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.menu.studylist );
+        super( delegator, savedInstanceState, R.layout.studylist, R.menu.studylist );
         m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState ) 
     {
         DbgUtils.logf( "%s.init() called", getClass().getName() );
-        if ( null == getContentView() ) {
-            setContentView( R.layout.studylist );
-        }
         m_list = (ListView)findViewById( android.R.id.list );
 
         m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );

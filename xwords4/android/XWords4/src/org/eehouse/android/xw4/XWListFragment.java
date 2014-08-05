@@ -36,13 +36,6 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class XWListFragment extends ListFragment {
 
     private ListDelegateBase m_dlgt;
-    private int m_layoutID = -1;
-
-    protected void onCreate( ListDelegateBase dlgt, Bundle sis, int layoutID )
-    {
-        onCreate( dlgt, sis );
-        m_layoutID = layoutID;
-    }
 
     public void onCreate( ListDelegateBase dlgt, Bundle savedInstanceState )
     {
@@ -55,16 +48,9 @@ public class XWListFragment extends ListFragment {
                               Bundle savedInstanceState ) 
     {
         DbgUtils.logf( "%s.onCreateView() called", this.getClass().getName() );
-        View view = null;
-        if ( 0 < m_layoutID ) {
-            view = inflater.inflate( m_layoutID, container, false );
-            m_dlgt.setContentView( view );
-            // LocUtils.xlateView( getActivity(), view );
-        }
-        return view;
+        return m_dlgt.inflateView( inflater, container );
     }
 
-    @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
         DbgUtils.logf( "%s.onActivityCreated() called", this.getClass().getName() );

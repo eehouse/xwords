@@ -49,14 +49,12 @@ public class RelayGameDelegate extends DelegateBase
 
     protected RelayGameDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.relay_game_config );
         m_activity = delegator.getActivity();
     }
 
     protected void init( Bundle savedInstanceState ) 
     {
-        setContentView( R.layout.relay_game_config );
-
         m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
 
         m_playButton = (Button)findViewById( R.id.play_button );

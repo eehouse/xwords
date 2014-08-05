@@ -158,7 +158,7 @@ public class DictBrowseDelegate extends ListDelegateBase
 
     protected DictBrowseDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.dict_browser );
         m_activity = delegator.getActivity();
     }
 
@@ -205,8 +205,6 @@ public class DictBrowseDelegate extends ListDelegateBase
                     m_browseState.m_minShown = m_minAvail;
                     m_browseState.m_maxShown = m_maxAvail;
                 }
-
-                setContentView( R.layout.dict_browser );
 
                 Button button = (Button)findViewById( R.id.search_button );
                 button.setOnClickListener( new View.OnClickListener() {
