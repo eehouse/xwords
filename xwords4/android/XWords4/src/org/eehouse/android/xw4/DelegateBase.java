@@ -59,7 +59,7 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         Assert.assertTrue( 0 < menuID );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
-        m_delegate = new DlgDelegate( m_activity, this, bundle );
+        m_delegate = new DlgDelegate( m_activity, this, this, bundle );
         m_layoutID = layoutID;
         m_optionsMenuID = menuID;
         LocUtils.xlateTitle( m_activity );

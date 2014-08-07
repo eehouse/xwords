@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Dialog;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -95,6 +96,12 @@ public class FragActivity extends FragmentActivity
             tellOrientationChanged( orientation );
         }
         super.onConfigurationChanged( newConfig );
+    }
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        return DlgDelegate.onCreateDialog( id );
     }
 
     //////////////////////////////////////////////////////////////////////
