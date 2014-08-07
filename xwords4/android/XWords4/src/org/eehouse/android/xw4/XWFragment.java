@@ -36,13 +36,6 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class XWFragment extends Fragment {
 
     private DelegateBase m_dlgt;
-    private int m_layoutID = -1;
-
-    protected void onCreate( DelegateBase dlgt, Bundle sis, int layoutID )
-    {
-        onCreate( dlgt, sis );
-        m_layoutID = layoutID;
-    }
 
     public void onCreate( DelegateBase dlgt, Bundle sis )
     {
@@ -55,13 +48,7 @@ public class XWFragment extends Fragment {
                               Bundle savedInstanceState ) 
     {
         DbgUtils.logf( "%s.onCreateView() called", this.getClass().getName() );
-        View view = null;
-        if ( 0 < m_layoutID ) {
-            view = inflater.inflate( m_layoutID, container, false );
-            m_dlgt.setContentView( view );
-        }
-        DbgUtils.logf( "%s.onCreateView() => %H", this.getClass().getName(), view );
-        return view;
+        return m_dlgt.inflateView( inflater, container );
     }
 
     @Override

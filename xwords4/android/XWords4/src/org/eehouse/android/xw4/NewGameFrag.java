@@ -20,26 +20,12 @@
 package org.eehouse.android.xw4;
 
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
-import org.eehouse.android.xw4.loc.LocUtils;
-
-public class BoardFrag extends XWFragment implements Delegator {
-    private BoardDelegate m_dlgt;
+public class NewGameFrag extends XWFragment implements Delegator {
 
     @Override
-    public void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle sis )
     {
-        m_dlgt = new BoardDelegate( this, savedInstanceState );
-        super.onCreate( m_dlgt, savedInstanceState );
-    }
-
-    @Override
-    public void onActivityCreated( Bundle savedInstanceState )
-    {
-        super.onActivityCreated( savedInstanceState );
-        setHasOptionsMenu( true );
+        super.onCreate( new NewGameDelegate( this, sis ), sis );
     }
 }

@@ -58,22 +58,13 @@ public class FragActivity extends FragmentActivity
         m_root = (LinearLayout)findViewById( R.id.main_container );
         getSupportFragmentManager().addOnBackStackChangedListener( this );
 
-        int orientation = getResources().getConfiguration().orientation;
         m_maxPanes = maxPanes();
 
         // Nothing to do if we're restarting
-        if (savedInstanceState == null) {
-            DbgUtils.logf( "calling new GamesListFrag()" );
-            GamesListFrag glf = new GamesListFrag();
-            DbgUtils.logf( "new GamesListFrag() done" );
-
+        if ( savedInstanceState == null ) {
             // In case this activity was started with special instructions from an Intent,
             // pass the Intent's extras to the fragment as arguments
-            glf.setArguments( getIntent().getExtras() );
-
-            DbgUtils.logf( "calling addFragment(glf)" );
-            addFragment( glf );
-            DbgUtils.logf( "addFragment(glf) DONE" );
+            addFragmentImpl( new GamesListFrag(), getIntent().getExtras() );
         }
     }
 
@@ -120,37 +111,25 @@ public class FragActivity extends FragmentActivity
         }
     }
 
-    //////////////////////////////////////////////////////////////////////
-    // GameListDelegate.DlgtOwner
-    //////////////////////////////////////////////////////////////////////
-    public static void launchGame( long rowid, boolean invited )
-    {
-        DbgUtils.logf( "FragActivity.launchGame(%d)", rowid );
-        Bundle args = GameUtils.makeLaunchExtras( rowid, invited );
-        BoardFrag bf = new BoardFrag();
-        bf.setArguments( args );
-        getThis().addFragment( bf );
-    }
-
-    public void launchDictFrag( Bundle args )
-    {
-        // DictBrowseFrag dbf = new DictBrowseFrag();
-        // dbf.setArguments( args );
-        // addFragment( dbf );
-    }
+    // public void launchDictFrag( Bundle args )
+    // {
+    //     // DictBrowseFrag dbf = new DictBrowseFrag();
+    //     // dbf.setArguments( args );
+    //     // addFragment( dbf );
+    // }
 
     protected void popFragment( Fragment frag )
     {
         getSupportFragmentManager().popBackStack();
     }
 
-    protected void addFragment( Fragment fragment, Bundle bundle ) 
+    private void addFragmentImpl( Fragment fragment, Bundle bundle ) 
     {
         fragment.setArguments( bundle );
-        addFragment( fragment );
+        addFragmentImpl( fragment );
     }
 
-    protected void addFragment( Fragment fragment ) 
+    private void addFragmentImpl( Fragment fragment ) 
     {
         String newName = fragment.getClass().getName();
         boolean replace = false;
@@ -240,4 +219,14 @@ public class FragActivity extends FragmentActivity
         return s_this;
     }
 
+    public static void launchGame( long rowid, boolean invited )
+    {
+        Bundle args = GameUtils.makeLaunchExtras( rowid, invited );
+        addFragment( new BoardFrag(), args );
+    }
+
+    public static void addFragment( Fragment fragment, Bundle bundle ) 
+    {
+        getThis().addFragmentImpl( fragment, bundle );
+    }
 }

@@ -476,9 +476,14 @@ public class NewGameDelegate extends DelegateBase {
 
     public static void startActivity( Activity parent, long groupID )
     {
-        Intent intent = new Intent( parent, NewGameActivity.class );
-        intent.putExtra( GROUPID_EXTRA, groupID );
-        parent.startActivity( intent );
+        Bundle extras = new Bundle();
+        extras.putLong( GROUPID_EXTRA, groupID );
+        if ( parent instanceof FragActivity ) {
+            FragActivity.addFragment( new NewGameFrag(), extras );
+        } else {
+            Intent intent = new Intent( parent, NewGameActivity.class );
+            intent.putExtras( extras );
+            parent.startActivity( intent );
+        }
     }
-
 }
