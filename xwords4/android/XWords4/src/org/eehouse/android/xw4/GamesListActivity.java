@@ -55,60 +55,11 @@ public class GamesListActivity extends XWListActivity {
         m_dlgt.onNewIntent( intent );
     }
 
-    public static void onGameDictDownload( Context context, Intent intent )
+    //////////////////////////////////////////////////////////////////////
+    // GamesListDelegator interface
+    //////////////////////////////////////////////////////////////////////
+    public void launchGame( long rowID, boolean invited )
     {
-        intent.setClass( context, GamesListActivity.class );
-        context.startActivity( intent );
-    }
-
-    private static Intent makeSelfIntent( Context context )
-    {
-        Intent intent = new Intent( context, GamesListActivity.class );
-        intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
-                         | Intent.FLAG_ACTIVITY_NEW_TASK );
-        return intent;
-    }
-
-    public static Intent makeRowidIntent( Context context, long rowid )
-    {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( ROWID_EXTRA, rowid );
-        return intent;
-    }
-
-    public static Intent makeGameIDIntent( Context context, int gameID )
-    {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( GAMEID_EXTRA, gameID );
-        return intent;
-    }
-
-    public static Intent makeRematchIntent( Context context, CurGameInfo gi,
-                                            long rowid )
-    {
-        Intent intent = null;
-        
-        if ( CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
-            intent = makeSelfIntent( context )
-                .putExtra( REMATCH_ROWID_EXTRA, rowid );
-        } else {
-            Utils.notImpl( context );
-        }
-
-        return intent;
-    }
-
-    public static Intent makeAlertIntent( Context context, String msg )
-    {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( ALERT_MSG, msg );
-        return intent;
-    }
-
-    public static void openGame( Context context, Uri data )
-    {
-        Intent intent = makeSelfIntent( context );
-        intent.setData( data );
-        context.startActivity( intent );
+        GameUtils.launchGame( this, rowID, invited );
     }
 }

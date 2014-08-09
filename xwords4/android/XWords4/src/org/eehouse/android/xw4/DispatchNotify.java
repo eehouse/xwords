@@ -40,7 +40,7 @@ public class DispatchNotify extends Activity {
 
         Uri data = getIntent().getData();
         if ( null != data ) { // relay invite redirected URL case
-            GamesListActivity.openGame( this, data );
+            GamesListDelegate.openGame( this, data );
         }
 
         finish();
