@@ -70,7 +70,7 @@ public class NewGameDelegate extends DelegateBase {
 
     protected NewGameDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.new_game );
         m_activity = delegator.getActivity();
     }
 
@@ -79,8 +79,6 @@ public class NewGameDelegate extends DelegateBase {
         getBundledData( savedInstanceState );
 
         m_groupID = getIntent().getLongExtra( GROUPID_EXTRA, -1 );
-
-        setContentView( R.layout.new_game );
 
         TextView desc = (TextView)findViewById( R.id.newgame_local_desc );
         m_dict = CommonPrefs.getDefaultHumanDict( m_activity );
@@ -478,9 +476,10 @@ public class NewGameDelegate extends DelegateBase {
 
     public static void startActivity( Activity parent, long groupID )
     {
+        Bundle extras = new Bundle();
+        extras.putLong( GROUPID_EXTRA, groupID );
         Intent intent = new Intent( parent, NewGameActivity.class );
-        intent.putExtra( GROUPID_EXTRA, groupID );
+        intent.putExtras( extras );
         parent.startActivity( intent );
     }
-
 }

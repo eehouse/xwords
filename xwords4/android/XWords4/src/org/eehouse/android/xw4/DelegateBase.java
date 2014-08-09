@@ -25,9 +25,12 @@ import android.app.Dialog;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -42,20 +45,23 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     private Delegator m_delegator;
     private Activity m_activity;
     private int m_optionsMenuID;
+    private int m_layoutID;
     private View m_rootView;
 
-    public DelegateBase( Delegator delegator, Bundle bundle )
+    public DelegateBase( Delegator delegator, Bundle bundle, int layoutID )
     {
-        this( delegator, bundle, R.menu.empty );
+        this( delegator, bundle, layoutID, R.menu.empty );
     }
 
-    public DelegateBase( Delegator delegator, Bundle bundle, int optionsMenu )
+    public DelegateBase( Delegator delegator, Bundle bundle, 
+                         int layoutID, int menuID )
     {
-        Assert.assertTrue( 0 < optionsMenu );
+        Assert.assertTrue( 0 < menuID );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
-        m_delegate = new DlgDelegate( m_activity, this, bundle );
-        m_optionsMenuID = optionsMenu;
+        m_delegate = new DlgDelegate( m_activity, this, this, bundle );
+        m_layoutID = layoutID;
+        m_optionsMenuID = menuID;
         LocUtils.xlateTitle( m_activity );
     }
 
@@ -75,11 +81,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data ) {}
 
-    public boolean onCreateOptionsMenu( Menu menu )
+    public boolean onCreateOptionsMenu( Menu menu, MenuInflater inflater )
     {
         boolean handled = 0 < m_optionsMenuID;
         if ( handled ) {
-            m_activity.getMenuInflater().inflate( m_optionsMenuID, menu );
+            inflater.inflate( m_optionsMenuID, menu );
             LocUtils.xlateMenu( m_activity, menu );
         } else {
             Assert.fail();
@@ -88,9 +94,36 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         return handled;
     }
 
+    public boolean onCreateOptionsMenu( Menu menu )
+    {
+        MenuInflater inflater = m_activity.getMenuInflater();
+        return onCreateOptionsMenu( menu, inflater );
+    }
+
     protected Intent getIntent()
     {
         return m_activity.getIntent();
+    }
+
+    protected int getLayoutID()
+    {
+        return m_layoutID;
+    }
+
+    protected Bundle getArguments()
+    {
+        return m_delegator.getArguments();
+    }
+
+    protected View getContentView()
+    {
+        return m_rootView;
+    }
+
+    protected void setContentView( View view )
+    {
+        LocUtils.xlateView( m_activity, view );
+        m_rootView = view;
     }
 
     protected void setContentView( int resID )

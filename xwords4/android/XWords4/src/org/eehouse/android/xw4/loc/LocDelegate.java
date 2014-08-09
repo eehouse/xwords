@@ -53,9 +53,8 @@ public class LocDelegate extends ListDelegateBase
 
     protected LocDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.loc_main );
         m_activity = delegator.getActivity();
-        init( savedInstanceState );
     }
 
     protected boolean onBackPressed()
@@ -98,8 +97,6 @@ public class LocDelegate extends ListDelegateBase
 
     protected void init( Bundle savedInstanceState ) 
     {
-        setContentView( R.layout.loc_main );
-
         m_searchButton = (ImageButton)findViewById( R.id.loc_search_button );
         m_searchButton.setOnClickListener( this );
 

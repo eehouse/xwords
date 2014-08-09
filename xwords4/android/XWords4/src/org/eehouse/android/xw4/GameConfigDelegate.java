@@ -123,7 +123,7 @@ public class GameConfigDelegate extends DelegateBase
 
     public GameConfigDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.game_config );
         m_activity = delegator.getActivity();
     }
 
@@ -407,8 +407,6 @@ public class GameConfigDelegate extends DelegateBase
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
         m_forResult = intent.getBooleanExtra( GameUtils.INTENT_FORRESULT_ROWID, 
                                               false );
-
-        setContentView( R.layout.game_config );
 
         m_connectSetRelay = findViewById(R.id.connect_set_relay);
         m_connectSetSMS = findViewById(R.id.connect_set_sms);

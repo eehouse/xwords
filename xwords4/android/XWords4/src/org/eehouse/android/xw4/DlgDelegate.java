@@ -118,6 +118,7 @@ public class DlgDelegate {
     }
 
     private Activity m_activity;
+    private DelegateBase m_dlgt;
     private DlgClickNotify m_clickCallback;
     private String m_dictName = null;
     private ProgressDialog m_progress;
@@ -125,10 +126,11 @@ public class DlgDelegate {
 
     private HashMap<DlgID, DlgState> m_dlgStates;
 
-    public DlgDelegate( Activity activity, DlgClickNotify callback,
-                        Bundle bundle ) 
+    public DlgDelegate( Activity activity, DelegateBase dlgt, 
+                        DlgClickNotify callback, Bundle bundle ) 
     {
         m_activity = activity;
+        m_dlgt = dlgt;
         m_clickCallback = callback;
         m_handler = new Handler();
         m_dlgStates = new HashMap<DlgID,DlgState>();
@@ -163,7 +165,8 @@ public class DlgDelegate {
 
     protected void showDialog( DlgID dlgID )
     {
-        m_activity.showDialog( dlgID.ordinal() );
+        int id = dlgID.ordinal();
+        m_activity.showDialog( id );
     }
     
     public Dialog createDialog( int id )
@@ -212,7 +215,8 @@ public class DlgDelegate {
 
     public void showOKOnlyDialog( int msgID )
     {
-        showOKOnlyDialog( LocUtils.getString( m_activity, msgID ), Action.SKIP_CALLBACK );
+        showOKOnlyDialog( LocUtils.getString( m_activity, msgID ), 
+                          Action.SKIP_CALLBACK );
     }
 
     public void showDictGoneFinish()
@@ -381,7 +385,8 @@ public class DlgDelegate {
         return true;
     }
 
-    public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
+    public void eventOccurred( MultiService.MultiEvent event, 
+                               final Object ... args )
     {
         String msg = null;
         boolean asToast = true;

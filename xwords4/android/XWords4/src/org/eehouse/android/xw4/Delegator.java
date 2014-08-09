@@ -20,7 +20,10 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.os.Bundle;
 
 public interface Delegator {
     Activity getActivity();
+    Bundle getArguments();
+    void finish();
 }

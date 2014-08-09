@@ -26,6 +26,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import junit.framework.Assert;
+
 public class XWActivity extends Activity implements Delegator {
 
     private DelegateBase m_dlgt;
@@ -34,6 +36,12 @@ public class XWActivity extends Activity implements Delegator {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
+
+        int layoutID = m_dlgt.getLayoutID();
+        if ( 0 < layoutID ) {
+            m_dlgt.setContentView( layoutID );
+        }
+
         dlgt.init( savedInstanceState );
     }
 
@@ -117,6 +125,7 @@ public class XWActivity extends Activity implements Delegator {
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
+        Assert.assertNull( dialog );
         if ( null == dialog ) {
             dialog = m_dlgt.onCreateDialog( id );
         }
@@ -143,5 +152,10 @@ public class XWActivity extends Activity implements Delegator {
     public Activity getActivity()
     {
         return this;
+    }
+
+    public Bundle getArguments()
+    {
+        return getIntent().getExtras();
     }
 }

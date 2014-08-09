@@ -299,7 +299,8 @@ public class DictsDelegate extends ListDelegateBase
 
     protected DictsDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.menu.dicts_menu );
+        super( delegator, savedInstanceState, R.layout.dict_browse, 
+               R.menu.dicts_menu );
         m_activity = delegator.getActivity();
     }
 
@@ -448,7 +449,6 @@ public class DictsDelegate extends ListDelegateBase
         m_locNames = getStringArray( R.array.loc_names );
         m_noteNone = getString( R.string.note_none );
 
-        setContentView( R.layout.dict_browse );
         m_listView = getListView();
         m_listView.setOnItemLongClickListener( this );
         

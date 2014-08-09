@@ -66,7 +66,7 @@ public class DwnldDelegate extends ListDelegateBase {
 
     public DwnldDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.import_dict );
         m_activity = delegator.getActivity();
     }
 
@@ -244,7 +244,6 @@ public class DwnldDelegate extends ListDelegateBase {
         LinearLayout item = null;
 
         requestWindowFeature( Window.FEATURE_LEFT_ICON );
-        setContentView( R.layout.import_dict );
         m_activity.getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
                                                            R.drawable.icon48x48 );
 

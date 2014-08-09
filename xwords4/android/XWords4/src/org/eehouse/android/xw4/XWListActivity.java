@@ -35,6 +35,12 @@ public class XWListActivity extends ListActivity implements ListDelegator {
     {
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
+
+        int layoutID = m_dlgt.getLayoutID();
+        if ( 0 < layoutID ) {
+            m_dlgt.setContentView( layoutID );
+        }
+
         dlgt.init( savedInstanceState );
     }
 
@@ -146,4 +152,8 @@ public class XWListActivity extends ListActivity implements ListDelegator {
         return this;
     }
 
+    public Bundle getArguments()
+    {
+        return getIntent().getExtras();
+    }
 }

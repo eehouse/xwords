@@ -51,7 +51,7 @@ public class PrefsDelegate extends DelegateBase
     public PrefsDelegate( PreferenceActivity activity, Delegator delegator,
                           Bundle savedInstanceState )
     {
-        super( delegator, savedInstanceState, R.menu.board_menu );
+        super( delegator, savedInstanceState, R.layout.prefs_w_buttons );
         m_activity = activity;
     }
 
@@ -132,7 +132,6 @@ public class PrefsDelegate extends DelegateBase
     {
         // Load the preferences from an XML resource
         m_activity.addPreferencesFromResource( R.xml.xwprefs );
-        setContentView( R.layout.prefs_w_buttons );
 
         m_keyLogging = getString( R.string.key_logging_on );
         m_smsToasting = getString( R.string.key_show_sms );
