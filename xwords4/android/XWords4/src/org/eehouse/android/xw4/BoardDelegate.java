@@ -2258,7 +2258,7 @@ public class BoardDelegate extends DelegateBase
 
     private void doRematch()
     {
-        Intent intent = GamesListActivity.makeRematchIntent( m_activity, m_gi, m_rowid );
+        Intent intent = GamesListDelegate.makeRematchIntent( m_activity, m_gi, m_rowid );
         if ( null != intent ) {
             startActivity( intent );
             m_delegator.finish();

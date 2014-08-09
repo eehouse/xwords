@@ -724,10 +724,14 @@ public class GameUtils {
     public static void launchGame( Activity activity, long rowid,
                                    boolean invited )
     {
-        Intent intent = new Intent( activity, BoardActivity.class );
         Bundle extras = makeLaunchExtras( rowid, invited );
-        intent.putExtras( extras );
-        activity.startActivity( intent );
+        if ( activity instanceof FragActivity ) {
+            FragActivity.addFragment( new BoardFrag(), extras );
+        } else {
+            Intent intent = new Intent( activity, BoardActivity.class );
+            intent.putExtras( extras );
+            activity.startActivity( intent );
+        }
     }
 
     public static void launchGame( Activity activity, long rowid )
