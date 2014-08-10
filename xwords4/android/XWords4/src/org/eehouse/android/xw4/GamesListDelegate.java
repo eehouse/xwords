@@ -1356,6 +1356,15 @@ public class GamesListDelegate extends ListDelegateBase
         DBUtils.setGroupExpanded( m_activity, groupID, expanded );
 
         m_adapter.setExpanded( groupID, expanded );
+
+        // Deselect any games that are being hidden.
+        if ( !expanded ) {
+            long[] rows = DBUtils.getGroupGames( m_activity, groupID );
+            for ( long row : rows ) {
+                m_selGames.remove( row );
+            }
+            setTitleBar();
+        }
     }
 
     private void setTitleBar()
