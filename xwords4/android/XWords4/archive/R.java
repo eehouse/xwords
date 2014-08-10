@@ -1605,6 +1605,9 @@ public final class R {
         /**  Text of progress indicator shown while check is being conducted 
          */
         public static final int msgs_progress=0x7f06009d;
+        /**  Nagging 
+         */
+        public static final int nag_title=0x7f0602c5;
         public static final int name_dict_fmt=0x7f060086;
         /**  text of checkbox.  If this checkbox is checked, games created
          for network play will by default have the hint feature

@@ -2265,4 +2265,7 @@
 
     <string name="force_tablet_title">Force tablet layout</string>
     <string name="force_tablet_summary">Even if my screen is too small</string>
+
+    <!-- Nagging -->
+    <string name="nag_title">Make your move already</string>
 </resources>

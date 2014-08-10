@@ -1937,4 +1937,6 @@
     tahw\'s elbaliava.</string>
   <string name="force_tablet_title">Ecrof telbat tuoyal</string>
   <string name="force_tablet_summary">Neve fi ym neercs si oot llams</string>
+  <!-- Nagging -->
+  <string name="nag_title">Ekam ruoy evom ydaerla</string>
 </resources>

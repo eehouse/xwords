@@ -35,7 +35,7 @@ import org.eehouse.android.xw4.DBUtils.NeedsNagInfo;
 public class NagTurnReceiver extends BroadcastReceiver {
 
     private static final long INTERVAL_MILLIS = 1000 * 30; // every half minute for now
-    private static final long NAG_INTERVAL = 1000 * 30;    // 90 seconds for now
+    private static final long NAG_INTERVAL = 1000 * 60 * 30;    // 90 seconds for now
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -47,8 +47,11 @@ public class NagTurnReceiver extends BroadcastReceiver {
             long now = new Date().getTime(); // in milliseconds
             for ( NeedsNagInfo info : needNagging ) {
                 Assert.assertTrue( info.m_nextNag < now );
-                DbgUtils.logf( "%d hasn't moved in %d seconds", info.m_rowid, 
-                               (now - info.m_lastMoveMillis )/ 1000 );
+                long rowid = info.m_rowid;
+                Intent msgIntent = GamesListDelegate.makeRowidIntent( context, rowid );
+                String body = String.format( "It's been your turn in game %d for %d seconds", 
+                                             rowid, (now - info.m_lastMoveMillis)/ 1000 );
+                Utils.postNotification( context, msgIntent, R.string.nag_title, body, (int)rowid );
 
                 info.m_nextNag = figureNextNag( info.m_lastMoveMillis );
             }
