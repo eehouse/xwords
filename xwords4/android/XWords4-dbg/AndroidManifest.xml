@@ -127,11 +127,13 @@
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
-    <receiver android:name="RelayReceiver">
+    <receiver android:name="OnBootReceiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
       </intent-filter>
     </receiver>
+    <receiver android:name="RelayReceiver"/>
+    <receiver android:name="NagTurnReceiver"/>
 
     <receiver android:name="UpdateCheckReceiver">
       <intent-filter>
