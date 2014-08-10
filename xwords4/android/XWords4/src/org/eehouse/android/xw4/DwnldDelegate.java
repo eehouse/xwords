@@ -243,10 +243,6 @@ public class DwnldDelegate extends ListDelegateBase {
         String[] urls = null;
         LinearLayout item = null;
 
-        requestWindowFeature( Window.FEATURE_LEFT_ICON );
-        m_activity.getWindow().setFeatureDrawableResource( Window.FEATURE_LEFT_ICON,
-                                                           R.drawable.icon48x48 );
-
         Intent intent = getIntent();
         Uri uri = intent.getData(); // launched from Manifest case
         if ( null == uri ) {

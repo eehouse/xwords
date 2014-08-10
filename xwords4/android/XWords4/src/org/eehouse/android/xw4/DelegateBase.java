@@ -208,11 +208,6 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         Utils.showToast( m_activity, msg );
     }
 
-    public boolean requestWindowFeature( int feature )
-    {
-        return m_activity.requestWindowFeature( feature );
-    }
-
     public Object getSystemService( String name )
     {
         return m_activity.getSystemService( name );

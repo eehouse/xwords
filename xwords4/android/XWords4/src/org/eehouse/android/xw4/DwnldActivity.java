@@ -22,14 +22,18 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.view.Window;
 
 public class DwnldActivity extends XWListActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
+        requestWindowFeature( Window.FEATURE_NO_TITLE );
+
         DwnldDelegate dlgt = 
             new DwnldDelegate( this, savedInstanceState );
+
         super.onCreate( savedInstanceState, dlgt );
     }
 }

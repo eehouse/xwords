@@ -24,7 +24,7 @@ import android.app.ListActivity;
 import android.os.Bundle;
 import android.view.Window;
 
-public class InviteActivity extends XWListActivity {
+public abstract class InviteActivity extends XWListActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState )

@@ -504,11 +504,6 @@ public class BoardDelegate extends DelegateBase
     {
         getBundledData( savedInstanceState );
 
-        if ( CommonPrefs.getHideTitleBar( m_activity )
-             && ABUtils.haveMenuKey( m_activity ) ) {
-            requestWindowFeature( Window.FEATURE_NO_TITLE );
-        }
-
         if ( BuildConstants.CHAT_SUPPORTED ) {
             m_pendingChats = new ArrayList<String>();
         }

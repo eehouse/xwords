@@ -25,6 +25,9 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.Window;
+
+import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class BoardActivity extends XWActivity {
 
@@ -33,6 +36,11 @@ public class BoardActivity extends XWActivity {
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
+        if ( CommonPrefs.getHideTitleBar( this )
+             && ABUtils.haveMenuKey( this ) ) {
+            requestWindowFeature( Window.FEATURE_NO_TITLE );
+        }
+        
         m_dlgt = new BoardDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
 
