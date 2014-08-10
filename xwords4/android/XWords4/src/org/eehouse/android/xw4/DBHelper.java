@@ -42,7 +42,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_LOC = "loc";
     public static final String TABLE_NAME_PAIRS = "pairs";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 22;
+    private static final int DB_VERSION = 23;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -73,6 +73,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE"; // unused -- so far
     public static final String LASTMOVE = "LASTMOVE";
+    public static final String NEXTNAG = "NEXTNAG";
     public static final String GROUPID = "GROUPID";
     public static final String NPACKETSPENDING = "NPACKETSPENDING";
 
@@ -130,6 +131,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ GAMEID,       "INTEGER" }
         ,{ REMOTEDEVS,   "TEXT" }
         ,{ LASTMOVE,     "INTEGER DEFAULT 0" }
+        ,{ NEXTNAG,      "INTEGER DEFAULT 0" }
         ,{ GROUPID,      "INTEGER" }
         // HASMSGS: sqlite doesn't have bool; use 0 and 1
         ,{ HASMSGS,      "INTEGER DEFAULT 0" }
@@ -271,6 +273,10 @@ public class DBHelper extends SQLiteOpenHelper {
             createLocTable( db );
         case 21:
             createPairsTable( db );
+        case 22:
+            if ( !madeSumTable ) {
+                addSumColumn( db, NEXTNAG );
+            }
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
