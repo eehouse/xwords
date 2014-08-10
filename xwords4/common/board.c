@@ -543,7 +543,7 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
         break;
     }
 
-    printDims( &ldims );
+    // printDims( &ldims );
 
     if ( !!dimsp ) {
         XP_MEMCPY( dimsp, &ldims, sizeof(ldims) );
