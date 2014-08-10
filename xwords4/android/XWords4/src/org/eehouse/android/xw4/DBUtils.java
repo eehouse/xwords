@@ -289,6 +289,10 @@ public class DBUtils {
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
+            long nextNag = summary.nextTurnIsLocal()
+                ? NagTurnReceiver.figureNextNag( summary.lastMoveTime ) : 0;
+            DbgUtils.logf( "setting nag time for %d: %d", rowid, nextNag );
+            values.put( DBHelper.NEXTNAG, nextNag );
                 
             values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
             values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
@@ -338,6 +342,10 @@ public class DBUtils {
             db.close();
             notifyListeners( rowid, GameChangeType.GAME_CHANGED );
             invalGroupsCache();
+        }
+
+        if ( null != summary ) { // nag time may have changed
+            NagTurnReceiver.setNagTimer( context );
         }
     } // saveSummary
 
@@ -967,6 +975,93 @@ public class DBUtils {
             }
         }
         return result;
+    }
+
+    public static class NeedsNagInfo {
+        public long m_rowid;
+        public long m_nextNag;
+        public long m_lastMoveMillis;
+        public NeedsNagInfo( long rowid, long nextNag, long lastMove ) {
+            m_rowid = rowid;
+            m_nextNag = nextNag;
+            m_lastMoveMillis = 1000 * lastMove;
+        }
+    }
+
+    public static NeedsNagInfo[] getNeedNagging( Context context )
+    {
+        NeedsNagInfo[] result = null;
+        long now = new Date().getTime(); // in milliseconds
+        String[] columns = { ROW_ID, DBHelper.NEXTNAG, DBHelper.LASTMOVE };
+        // where nextnag > 0 AND nextnag < now
+        String selection = 
+            String.format( "%s > 0 AND %s < %s", DBHelper.NEXTNAG, 
+                           DBHelper.NEXTNAG, now );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            int count = cursor.getCount();
+            if ( 0 < count ) {
+                result = new NeedsNagInfo[count];
+                int rowIndex = cursor.getColumnIndex(ROW_ID);
+                int nagIndex = cursor.getColumnIndex( DBHelper.NEXTNAG );
+                int lastMoveIndex = cursor.getColumnIndex( DBHelper.LASTMOVE );
+                for ( int ii = 0; ii < result.length && cursor.moveToNext(); ++ii ) {
+                    long rowid = cursor.getLong( rowIndex );
+                    long nextNag = cursor.getLong( nagIndex );
+                    long lastMove = cursor.getLong( lastMoveIndex );
+                    result[ii] = new NeedsNagInfo( rowid, nextNag, lastMove );
+                }
+            }
+
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static long getNextNag( Context context )
+    {
+        long result = 0;
+        String[] columns = { "MIN(" + DBHelper.NEXTNAG + ") as min" };
+        String selection = "NOT " + DBHelper.NEXTNAG + "= 0";
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( cursor.moveToNext() ) {
+                result = cursor.getLong( cursor.getColumnIndex( "min" ) );
+            }
+            cursor.close();
+            db.close();
+        }
+        DbgUtils.logf( "getNextNag()=>%d", result );
+        return result;
+    }
+
+    public static void updateNeedNagging( Context context, NeedsNagInfo[] needNagging )
+    {
+        String updateQuery = "update %s set %s = ? "
+            + " WHERE %s = ? ";
+        updateQuery = String.format( updateQuery, DBHelper.TABLE_NAME_SUM,
+                                     DBHelper.NEXTNAG, ROW_ID );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            SQLiteStatement updateStmt = db.compileStatement( updateQuery );
+
+            for ( NeedsNagInfo info : needNagging ) {
+                updateStmt.bindLong( 1, info.m_nextNag );
+                updateStmt.bindLong( 2, info.m_rowid );
+                updateStmt.execute();
+                DbgUtils.logf( "updated rowid %d nextnag to %d", info.m_rowid, info.m_nextNag );
+            }
+            db.close();
+        }
     }
 
     // Groups stuff

@@ -312,12 +312,24 @@ public class GameSummary {
         return result;
     }
 
-    public boolean isNextToPlay( int indx, boolean[] isLocal ) {
+    public boolean isNextToPlay( int indx, boolean[] isLocal ) 
+    {
         boolean isNext = indx == turn;
         if ( isNext ) {
             isLocal[0] = isLocal(indx);
         }
         return isNext;
+    }
+
+    public boolean nextTurnIsLocal()
+    {
+        boolean result = false;
+        if ( !gameOver && 0 <= turn ) {
+            // HACK!!! Need to fix so we ensure m_giFlags is set here
+            Assert.assertNotNull( m_gi );
+            result = localTurnNextImpl( giflags(), turn );
+        }
+        return result;
     }
 
     public String dictNames( String separator ) 

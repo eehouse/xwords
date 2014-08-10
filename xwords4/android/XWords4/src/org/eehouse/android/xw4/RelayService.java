@@ -353,7 +353,7 @@ public class RelayService extends XWService
 
         if ( shouldMaintainConnection() ) {
             long interval_millis = getMaxIntervalSeconds() * 1000;
-            RelayReceiver.RestartTimer( this, interval_millis );
+            RelayReceiver.restartTimer( this, interval_millis );
         }
         stopThreads();
         super.onDestroy();

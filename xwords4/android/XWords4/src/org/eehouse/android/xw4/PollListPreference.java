@@ -51,7 +51,7 @@ public class PollListPreference extends ListPreference
     {
         String valstr = (String)newValue;
         int val = Integer.parseInt(valstr);
-        RelayReceiver.RestartTimer( m_context, val * 1000 );
+        RelayReceiver.restartTimer( m_context, val * 1000 );
 
         setSummaryToMatch( valstr );
         return true;

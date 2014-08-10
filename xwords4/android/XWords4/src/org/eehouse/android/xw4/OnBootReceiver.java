@@ -28,36 +28,22 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.widget.Toast;
 
-public class RelayReceiver extends BroadcastReceiver {
+public class OnBootReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        RelayService.timerFired( context );
-    }
-
-    public static void restartTimer( Context context )
-    {
-        restartTimer( context, 1000 * XWPrefs.getProxyInterval( context ) );
-    }
-
-    public static void restartTimer( Context context, long interval_millis )
-    {
-        AlarmManager am =
-            (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
-
-        Intent intent = new Intent( context, RelayReceiver.class );
-        PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
-
-        if ( interval_millis > 0 ) {
-            long first_millis = SystemClock.elapsedRealtime() + interval_millis;
-            am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
-                                    first_millis, // first firing
-                                    interval_millis, pi );
-        } else {
-            // will happen if user's set getProxyInterval to return 0
-            am.cancel( pi );
+        if ( null != intent && null != intent.getAction() 
+             && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
+            DbgUtils.logf("OnBootReceiver: got ACTION_BOOT_COMPLETED");
+            startTimers( context );
         }
+    }
+
+    protected static void startTimers( Context context )
+    {
+        NagTurnReceiver.restartTimer( context );
+        RelayReceiver.restartTimer( context );
     }
 
 }
