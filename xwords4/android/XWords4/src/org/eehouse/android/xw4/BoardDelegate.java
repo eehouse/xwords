@@ -1892,10 +1892,11 @@ public class BoardDelegate extends DelegateBase
                         DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
                     }
 
+                    Utils.cancelNotification( m_activity, (int)m_rowid );
+
                     if ( null != m_xport ) {
                         warnIfNoTransport();
                         trySendChats();
-                        Utils.cancelNotification( m_activity, (int)m_rowid );
                         m_xport.tickle( m_connType );
                         tryInvites();
                     }
