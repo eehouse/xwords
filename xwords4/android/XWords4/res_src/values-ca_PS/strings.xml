@@ -1938,5 +1938,7 @@
   <string name="force_tablet_title">FORCE TABLET LAYOUT</string>
   <string name="force_tablet_summary">EVEN IF MY SCREEN IS TOO SMALL</string>
   <!-- Nagging -->
-  <string name="nag_title">MAKE YOUR MOVE ALREADY</string>
+  <string name="nag_title">REMINDER: IT\'S YOUR TURN</string>
+  <string name="nag_body_fmt">AND IT\'S BEEN YOUR TURN FOR MORE THAN %1$d MINUTES</string>
+  <string name="nag_warn_last">(THIS IS YOUR LAST WARNING.)</string>
 </resources>

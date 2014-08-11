@@ -31,11 +31,17 @@ import java.util.Date;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.NeedsNagInfo;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NagTurnReceiver extends BroadcastReceiver {
 
     private static final long INTERVAL_MILLIS = 1000 * 30; // every half minute for now
-    private static final long NAG_INTERVAL = 1000 * 60 * 30;    // 90 seconds for now
+    private static final long[] NAG_INTERVAL_SECONDS = {2*60, // five minutes (for testing)
+                                                        5*60,
+                                                        // 60*1*24, // one day
+                                                        // 60*2*24, // two days
+                                                        // 60*3*24, // three days
+    };
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -47,13 +53,21 @@ public class NagTurnReceiver extends BroadcastReceiver {
             long now = new Date().getTime(); // in milliseconds
             for ( NeedsNagInfo info : needNagging ) {
                 Assert.assertTrue( info.m_nextNag < now );
+                info.m_nextNag = figureNextNag( info.m_lastMoveMillis );
+                boolean lastWarning = 0 == info.m_nextNag;
+
                 long rowid = info.m_rowid;
                 Intent msgIntent = GamesListDelegate.makeRowidIntent( context, rowid );
-                String body = String.format( "It's been your turn in game %d for %d seconds", 
-                                             rowid, (now - info.m_lastMoveMillis)/ 1000 );
-                Utils.postNotification( context, msgIntent, R.string.nag_title, body, (int)rowid );
+                // Change this to hours or days before ship
+                int nMinutes = (int)(now - info.m_lastMoveMillis) / (1000 * 60);
+                String body = String.format( LocUtils.getString(context, R.string.nag_body_fmt),
+                                             nMinutes );
+                if ( lastWarning ) {
+                    body += " " + LocUtils.getString( context, R.string.nag_warn_last );
+                }
+                Utils.postNotification( context, msgIntent, R.string.nag_title, 
+                                        body, (int)rowid );
 
-                info.m_nextNag = figureNextNag( info.m_lastMoveMillis );
             }
             DBUtils.updateNeedNagging( context, needNagging );
 
@@ -91,12 +105,19 @@ public class NagTurnReceiver extends BroadcastReceiver {
 
     public static long figureNextNag( long moveTimeMillis )
     {
+        long result = 0;
         long now = new Date().getTime(); // in milliseconds
-        while ( moveTimeMillis < now ) {
-            moveTimeMillis += NAG_INTERVAL;
+        Assert.assertTrue( now >= moveTimeMillis );
+        for ( long nSecs : NAG_INTERVAL_SECONDS ) {
+            long asMillis = moveTimeMillis + (nSecs * 1000);
+            if ( asMillis >= now ) {
+                result = asMillis;
+                break;
+            }
         }
-        DbgUtils.logf( "figureNextNag => %d (%d seconds in future)", moveTimeMillis, 
-                       (moveTimeMillis - now) / 1000 );
-        return moveTimeMillis;
+
+        DbgUtils.logf( "figureNextNag => %d (%s)", result, 
+                       DbgUtils.millisToDateStr(result) );
+        return result;
     }
 }
