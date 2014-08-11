@@ -288,9 +288,12 @@ public class DBUtils {
             values.put( DBHelper.DICTLANG, summary.dictLang );
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
+            // DbgUtils.logf("saveSummary(%d): lastMoveTime: %s", rowid,
+            //               DbgUtils.secondsToDateStr(summary.lastMoveTime) );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
-            long nextNag = summary.nextTurnIsLocal()
-                ? NagTurnReceiver.figureNextNag( summary.lastMoveTime ) : 0;
+            long nextNag = summary.nextTurnIsLocal() ?
+                NagTurnReceiver.figureNextNag( 1000*(long)summary.lastMoveTime )
+                : 0;
             DbgUtils.logf( "setting nag time for %d: %d", rowid, nextNag );
             values.put( DBHelper.NEXTNAG, nextNag );
                 
@@ -1038,7 +1041,7 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "getNextNag()=>%d", result );
+        DbgUtils.logf( "getNextNag()=>%s", DbgUtils.millisToDateStr(result) );
         return result;
     }
 
