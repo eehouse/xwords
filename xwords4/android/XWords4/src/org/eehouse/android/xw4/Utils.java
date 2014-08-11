@@ -415,6 +415,8 @@ public class Utils {
 
     public static long getCurSeconds()
     {
+        // Note: an int is big enough for *seconds* (not milliseconds) since 1970
+        // until 2038
         long millis = new Date().getTime();
         int result = (int)(millis / 1000);
         return result;
