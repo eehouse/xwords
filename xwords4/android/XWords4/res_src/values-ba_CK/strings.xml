@@ -1939,6 +1939,6 @@
   <string name="force_tablet_summary">Neve fi ym neercs si oot llams</string>
   <!-- Nagging -->
   <string name="nag_title">Rednimer: Ti\'s ruoy nrut</string>
-  <string name="nag_body_fmt">Dna ti\'s neeb ruoy nrut rof erom naht %1$d setunim</string>
+  <string name="nag_body_fmt">Dna ti\'s neeb ruoy nrut rof erom naht %1$d setunim.</string>
   <string name="nag_warn_last">sIht( si ruoy tsal gninraw.)</string>
 </resources>

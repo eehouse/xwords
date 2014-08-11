@@ -2268,6 +2268,6 @@
 
     <!-- Nagging -->
     <string name="nag_title">Reminder: It\'s your turn</string>
-    <string name="nag_body_fmt">And it\'s been your turn for more than %1$d minutes.</string>
+    <string name="nag_body_fmt">It\'s been your turn for more than %1$d minutes.</string>
     <string name="nag_warn_last">(This is your last warning.)</string>
 </resources>
