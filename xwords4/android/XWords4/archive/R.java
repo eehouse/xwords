@@ -1609,7 +1609,7 @@ public final class R {
         /**  Nagging 
          */
         public static final int nag_title=0x7f0602c5;
-        public static final int nag_warn_last=0x7f0602c7;
+        public static final int nag_warn_last_fmt=0x7f0602c7;
         public static final int name_dict_fmt=0x7f060086;
         /**  text of checkbox.  If this checkbox is checked, games created
          for network play will by default have the hint feature

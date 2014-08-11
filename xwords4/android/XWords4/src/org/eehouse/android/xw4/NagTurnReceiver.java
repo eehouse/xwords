@@ -60,11 +60,12 @@ public class NagTurnReceiver extends BroadcastReceiver {
                 long rowid = info.m_rowid;
                 Intent msgIntent = GamesListDelegate.makeRowidIntent( context, rowid );
                 // Change this to hours or days before ship
-                int nMinutes = (int)(now - info.m_lastMoveMillis) / (1000 * 60);
+                int nHours = (int)(now - info.m_lastMoveMillis) / (1000 * 60 * 60);
                 String body = String.format( LocUtils.getString(context, R.string.nag_body_fmt),
-                                             nMinutes );
+                                             nHours );
                 if ( lastWarning ) {
-                    body += " " + LocUtils.getString( context, R.string.nag_warn_last );
+                    body = LocUtils
+                        .getString( context, R.string.nag_warn_last_fmt, body );
                 }
                 Utils.postNotification( context, msgIntent, R.string.nag_title, 
                                         body, (int)rowid );
