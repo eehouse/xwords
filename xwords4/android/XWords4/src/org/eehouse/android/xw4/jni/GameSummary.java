@@ -50,7 +50,7 @@ public class GameSummary {
     public int missingPlayers;
     public int[] scores;
     public boolean gameOver;
-    public String[] players;
+    private String[] m_players;
     public CommsConnType conType;
     // relay-related fields
     public String roomName;
@@ -135,7 +135,7 @@ public class GameSummary {
     public void readPlayers( String playersStr ) 
     {
         if ( null != playersStr ) {
-            players = new String[nPlayers];
+            m_players = new String[nPlayers];
             String sep;
             if ( playersStr.contains("\n") ) {
                 sep = "\n";
@@ -150,7 +150,7 @@ public class GameSummary {
                 String name = -1 == nxt ?
                     playersStr.substring( prev ) : 
                     playersStr.substring( prev, nxt );
-                players[ii] = name;
+                m_players[ii] = name;
                 if ( -1 == nxt ) {
                     break;
                 }
@@ -275,7 +275,7 @@ public class GameSummary {
 
     public String summarizePlayer( int indx ) 
     {
-        String player = players[indx];
+        String player = m_players[indx];
         int formatID = 0;
         if ( !isLocal(indx) ) {
             boolean isMissing = 0 != ((1 << indx) & missingPlayers);
@@ -330,6 +330,12 @@ public class GameSummary {
             result = localTurnNextImpl( giflags(), turn );
         }
         return result;
+    }
+
+    public String getPrevPlayer()
+    {
+        int prevTurn = (turn + nPlayers - 1) % nPlayers;
+        return m_players[prevTurn];
     }
 
     public String dictNames( String separator ) 

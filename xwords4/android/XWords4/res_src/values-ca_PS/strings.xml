@@ -1939,6 +1939,7 @@
   <string name="force_tablet_summary">EVEN IF MY SCREEN IS TOO SMALL</string>
   <!-- Nagging -->
   <string name="nag_title">REMINDER: IT\'S YOUR TURN</string>
-  <string name="nag_body_fmt">IT\'S BEEN YOUR TURN FOR MORE THAN %1$d HOURS.</string>
+  <string name="nag_body_fmt">%1$s HAS BEEN WAITING MORE THAN %2$d HOURS.</string>
   <string name="nag_warn_last_fmt">LAST WARNING: %1$s</string>
+  <string name="prev_player">YOUR OPPONENT</string>
 </resources>

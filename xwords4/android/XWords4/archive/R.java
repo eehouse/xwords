@@ -2084,6 +2084,7 @@ public final class R {
         /**  clarification of the above 
          */
         public static final int prefs_names_summary=0x7f060132;
+        public static final int prev_player=0x7f0602c8;
         public static final int progress_title=0x7f0602bc;
         /**   
          */

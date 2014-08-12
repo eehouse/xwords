@@ -32,6 +32,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.NeedsNagInfo;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.jni.GameSummary;
 
 public class NagTurnReceiver extends BroadcastReceiver {
 
@@ -58,11 +59,16 @@ public class NagTurnReceiver extends BroadcastReceiver {
                 boolean lastWarning = 0 == info.m_nextNag;
 
                 long rowid = info.m_rowid;
+                GameSummary summary = DBUtils.getSummary( context, rowid, 10 );
+                String prevPlayer = null == summary 
+                    ? LocUtils.getString(context, R.string.prev_player)
+                    : summary.getPrevPlayer();
+
                 Intent msgIntent = GamesListDelegate.makeRowidIntent( context, rowid );
                 // Change this to hours or days before ship
                 int nHours = (int)(now - info.m_lastMoveMillis) / (1000 * 60 * 60);
                 String body = String.format( LocUtils.getString(context, R.string.nag_body_fmt),
-                                             nHours );
+                                             prevPlayer, nHours );
                 if ( lastWarning ) {
                     body = LocUtils
                         .getString( context, R.string.nag_warn_last_fmt, body );
