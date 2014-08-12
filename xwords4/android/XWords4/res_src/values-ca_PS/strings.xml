@@ -1937,9 +1937,12 @@
     WHAT\'S AVAILABLE.</string>
   <string name="force_tablet_title">FORCE TABLET LAYOUT</string>
   <string name="force_tablet_summary">EVEN IF MY SCREEN IS TOO SMALL</string>
-  <!-- Nagging -->
+  <!-- Nagging: title of notification reminder message -->
   <string name="nag_title">REMINDER: IT\'S YOUR TURN</string>
-  <string name="nag_body_fmt">%1$s HAS BEEN WAITING MORE THAN %2$d HOURS.</string>
+  <!-- body of warning notification reminder message -->
+  <string name="nag_body_fmt">%1$s MOVED MORE THAN %2$d HOURS AGO.</string>
+  <!-- above is inserted in this the last time I warn -->
   <string name="nag_warn_last_fmt">LAST WARNING: %1$s</string>
+  <!-- Used when prev player's name can't be looked up -->
   <string name="prev_player">YOUR OPPONENT</string>
 </resources>

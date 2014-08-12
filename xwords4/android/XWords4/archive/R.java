@@ -1605,10 +1605,14 @@ public final class R {
         /**  Text of progress indicator shown while check is being conducted 
          */
         public static final int msgs_progress=0x7f06009d;
+        /**  body of warning notification reminder message 
+         */
         public static final int nag_body_fmt=0x7f0602c6;
-        /**  Nagging 
+        /**  Nagging: title of notification reminder message 
          */
         public static final int nag_title=0x7f0602c5;
+        /**  above is inserted in this the last time I warn 
+         */
         public static final int nag_warn_last_fmt=0x7f0602c7;
         public static final int name_dict_fmt=0x7f060086;
         /**  text of checkbox.  If this checkbox is checked, games created
@@ -2084,6 +2088,8 @@ public final class R {
         /**  clarification of the above 
          */
         public static final int prefs_names_summary=0x7f060132;
+        /**  Used when prev player's name can't be looked up 
+         */
         public static final int prev_player=0x7f0602c8;
         public static final int progress_title=0x7f0602bc;
         /**   

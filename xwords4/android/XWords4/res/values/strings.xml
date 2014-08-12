@@ -2266,9 +2266,12 @@
     <string name="force_tablet_title">Force tablet layout</string>
     <string name="force_tablet_summary">Even if my screen is too small</string>
 
-    <!-- Nagging -->
+    <!-- Nagging: title of notification reminder message -->
     <string name="nag_title">Reminder: It\'s your turn</string>
-    <string name="nag_body_fmt">%1$s has been waiting more than %2$d hours.</string>
+    <!-- body of warning notification reminder message -->
+    <string name="nag_body_fmt">%1$s moved more than %2$d hours ago.</string>
+    <!-- above is inserted in this the last time I warn -->
     <string name="nag_warn_last_fmt">Last warning: %1$s</string>
+    <!-- Used when prev player's name can't be looked up -->
     <string name="prev_player">Your opponent</string>
 </resources>
