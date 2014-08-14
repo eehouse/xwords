@@ -523,9 +523,9 @@ public class Utils {
         s_isFirstBootEver = new Boolean( -1 == prevVersion );
 
         if ( newVersion ) {
-            Editor editor = prefs.edit();
-            editor.putInt( SHOWN_VERSION_KEY, thisVersion );
-            editor.commit();
+            prefs.edit()
+                .putInt( SHOWN_VERSION_KEY, thisVersion )
+                .commit();
         }
     }
 
