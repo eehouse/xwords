@@ -513,7 +513,7 @@ public class Utils {
     private static void setFirstBootStatics( Context context )
     {
         if ( null == s_isFirstBootThisVersion ) {
-            int thisVersion = getAppVersion( context );
+            final int thisVersion = getAppVersion( context );
             int prevVersion = 0;
             SharedPreferences prefs = 
                 context.getSharedPreferences( HIDDEN_PREFS, 
@@ -530,11 +530,13 @@ public class Utils {
             s_isFirstBootThisVersion = new Boolean( newVersion );
             s_isFirstBootEver = new Boolean( -1 == prevVersion );
 
-            int firstVersion = prefs.getInt( FIRST_VERSION_KEY, thisVersion );
+            int firstVersion = prefs.getInt( FIRST_VERSION_KEY, 0 );
             s_firstVersion = new Boolean( firstVersion == thisVersion );
-            if ( newVersion || s_firstVersion ) {
-                SharedPreferences.Editor editor = prefs.edit()
-                    .putInt( SHOWN_VERSION_KEY, thisVersion );
+            if ( newVersion || 0 == firstVersion ) {
+                SharedPreferences.Editor editor = prefs.edit();
+                if ( newVersion ) {
+                    editor.putInt( SHOWN_VERSION_KEY, thisVersion );
+                }
                 if ( 0 == firstVersion ) {
                     editor.putInt( FIRST_VERSION_KEY, thisVersion );
                 }
