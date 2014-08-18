@@ -37,12 +37,12 @@ import org.eehouse.android.xw4.jni.GameSummary;
 public class NagTurnReceiver extends BroadcastReceiver {
 
     private static final long INTERVAL_MILLIS = 1000 * 30; // every half minute for now
-    private static final long[] NAG_INTERVAL_SECONDS = {2*60, // five minutes (for testing)
-                                                        5*60,
-                                                        10*60,
-                                                        // 60*1*24, // one day
-                                                        // 60*2*24, // two days
-                                                        // 60*3*24, // three days
+    private static final long[] NAG_INTERVAL_SECONDS = {// 2*60, // five minutes (for testing)
+                                                        // 5*60,
+                                                        // 10*60,
+                                                        60*1*24, // one day
+                                                        60*2*24, // two days
+                                                        60*3*24, // three days
     };
 
     @Override
@@ -65,7 +65,6 @@ public class NagTurnReceiver extends BroadcastReceiver {
                     : summary.getPrevPlayer();
 
                 Intent msgIntent = GamesListDelegate.makeRowidIntent( context, rowid );
-                // Change this to hours or days before ship
                 int nHours = (int)(now - info.m_lastMoveMillis) / (1000 * 60 * 60);
                 String body = String.format( LocUtils.getString(context, R.string.nag_body_fmt),
                                              prevPlayer, nHours );
