@@ -36,8 +36,10 @@ import org.eehouse.android.xw4.loc.LocUtils;
  */
 
 public class FirstRunDialog {
-    public static void show( final Context context, final boolean isUpgrade )
+    public static void show( final Context context )
     {
+        final boolean showSurvey = !Utils.onFirstVersion( context );
+
         // This won't support e.g mailto refs.  Probably want to
         // launch the browser with an intent eventually.
         final WebView view = new WebView( context );
@@ -58,7 +60,7 @@ public class FirstRunDialog {
                 {
                     if ( !m_loaded ) {
                         m_loaded = true;
-                        if ( isUpgrade ) {
+                        if ( showSurvey ) {
                             view.loadUrl( "javascript:showSurvey();" );
                         }
                     }

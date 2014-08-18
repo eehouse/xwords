@@ -458,10 +458,7 @@ public class DlgDelegate {
                                     public void onClick( DialogInterface dlg, 
                                                          int which )
                                     {
-                                        boolean firstVersion = 
-                                            Utils.onFirstVersion( m_activity );
-                                        FirstRunDialog.show( m_activity, 
-                                                             !firstVersion );
+                                        FirstRunDialog.show( m_activity );
                                     }
                                 } )
             .setPositiveButton( R.string.button_ok, null )

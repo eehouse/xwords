@@ -531,7 +531,7 @@ public class Utils {
             s_isFirstBootEver = new Boolean( -1 == prevVersion );
 
             int firstVersion = prefs.getInt( FIRST_VERSION_KEY, Integer.MAX_VALUE );
-            s_firstVersion = new Boolean( firstVersion < thisVersion );
+            s_firstVersion = new Boolean( firstVersion >= thisVersion );
             if ( newVersion || Integer.MAX_VALUE == firstVersion ) {
                 SharedPreferences.Editor editor = prefs.edit();
                 if ( newVersion ) {
