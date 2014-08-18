@@ -765,7 +765,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
         if ( isUpgrade && !s_firstShown ) {
-            FirstRunDialog.show( m_activity );
+            FirstRunDialog.show( m_activity, isUpgrade );
             s_firstShown = true;
         }
 

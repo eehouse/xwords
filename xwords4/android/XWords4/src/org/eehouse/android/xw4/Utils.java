@@ -63,9 +63,11 @@ public class Utils {
 
     private static final String DB_PATH = "XW_GAMES";
     private static final String HIDDEN_PREFS = "xwprefs_hidden";
+    private static final String FIRST_VERSION_KEY = "FIRST_VERSION_KEY";
     private static final String SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY";
 
     private static Boolean s_isFirstBootThisVersion = null;
+    private static Boolean s_firstVersion = null;
     private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
     private static Integer s_appVersion = null;
@@ -81,19 +83,21 @@ public class Utils {
         return s_random.nextInt();
     }
 
+    public static boolean onFirstVersion( Context context )
+    {
+        setFirstBootStatics( context );
+        return s_firstVersion;
+    }
+
     public static boolean firstBootEver( Context context )
     {
-        if ( null == s_isFirstBootEver ) {
-            setFirstBootStatics( context );
-        }
+        setFirstBootStatics( context );
         return s_isFirstBootEver;
     }
 
     public static boolean firstBootThisVersion( Context context )
     {
-        if ( null == s_isFirstBootThisVersion ) {
-            setFirstBootStatics( context );
-        }
+        setFirstBootStatics( context );
         return s_isFirstBootThisVersion;
     }
 
@@ -508,24 +512,34 @@ public class Utils {
 
     private static void setFirstBootStatics( Context context )
     {
-        int thisVersion = getAppVersion( context );
-        int prevVersion = 0;
+        if ( null == s_isFirstBootThisVersion ) {
+            int thisVersion = getAppVersion( context );
+            int prevVersion = 0;
+            SharedPreferences prefs = 
+                context.getSharedPreferences( HIDDEN_PREFS, 
+                                              Context.MODE_PRIVATE );
 
-        SharedPreferences prefs = null;
-        if ( 0 < thisVersion ) {
-            prefs = context.getSharedPreferences( HIDDEN_PREFS, 
-                                                  Context.MODE_PRIVATE );
-            prevVersion = prefs.getInt( SHOWN_VERSION_KEY, -1 );
-        }
-        boolean newVersion = prevVersion != thisVersion;
+
+            if ( 0 < thisVersion ) {
+                prefs = context.getSharedPreferences( HIDDEN_PREFS, 
+                                                      Context.MODE_PRIVATE );
+                prevVersion = prefs.getInt( SHOWN_VERSION_KEY, -1 );
+            }
+            boolean newVersion = prevVersion != thisVersion;
         
-        s_isFirstBootThisVersion = new Boolean( newVersion );
-        s_isFirstBootEver = new Boolean( -1 == prevVersion );
+            s_isFirstBootThisVersion = new Boolean( newVersion );
+            s_isFirstBootEver = new Boolean( -1 == prevVersion );
 
-        if ( newVersion ) {
-            prefs.edit()
-                .putInt( SHOWN_VERSION_KEY, thisVersion )
-                .commit();
+            int firstVersion = prefs.getInt( FIRST_VERSION_KEY, thisVersion );
+            s_firstVersion = new Boolean( firstVersion == thisVersion );
+            if ( newVersion || s_firstVersion ) {
+                SharedPreferences.Editor editor = prefs.edit()
+                    .putInt( SHOWN_VERSION_KEY, thisVersion );
+                if ( 0 == firstVersion ) {
+                    editor.putInt( FIRST_VERSION_KEY, thisVersion );
+                }
+                editor.commit();
+            }
         }
     }
 

@@ -36,12 +36,13 @@ import org.eehouse.android.xw4.loc.LocUtils;
  */
 
 public class FirstRunDialog {
-    public static void show( final Context context )
+    public static void show( final Context context, final boolean isUpgrade )
     {
         // This won't support e.g mailto refs.  Probably want to
         // launch the browser with an intent eventually.
-        WebView view = new WebView( context );
+        final WebView view = new WebView( context );
         view.setWebViewClient( new WebViewClient() {
+                private boolean m_loaded = false;
                 @Override
                 public boolean shouldOverrideUrlLoading( WebView view, 
                                                          String url ) {
@@ -51,6 +52,16 @@ public class FirstRunDialog {
                         result = true;
                     }
                     return result;
+                }
+                @Override
+                public void onPageFinished(WebView view, String url)
+                {
+                    if ( !m_loaded ) {
+                        m_loaded = true;
+                        if ( isUpgrade ) {
+                            view.loadUrl( "javascript:showSurvey();" );
+                        }
+                    }
                 }
             });
         view.getSettings().setJavaScriptEnabled( true ); // for surveymonkey
