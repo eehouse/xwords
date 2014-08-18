@@ -530,14 +530,14 @@ public class Utils {
             s_isFirstBootThisVersion = new Boolean( newVersion );
             s_isFirstBootEver = new Boolean( -1 == prevVersion );
 
-            int firstVersion = prefs.getInt( FIRST_VERSION_KEY, 0 );
-            s_firstVersion = new Boolean( firstVersion == thisVersion );
-            if ( newVersion || 0 == firstVersion ) {
+            int firstVersion = prefs.getInt( FIRST_VERSION_KEY, Integer.MAX_VALUE );
+            s_firstVersion = new Boolean( firstVersion < thisVersion );
+            if ( newVersion || Integer.MAX_VALUE == firstVersion ) {
                 SharedPreferences.Editor editor = prefs.edit();
                 if ( newVersion ) {
                     editor.putInt( SHOWN_VERSION_KEY, thisVersion );
                 }
-                if ( 0 == firstVersion ) {
+                if ( Integer.MAX_VALUE == firstVersion ) {
                     editor.putInt( FIRST_VERSION_KEY, thisVersion );
                 }
                 editor.commit();
