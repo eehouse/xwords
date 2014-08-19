@@ -100,8 +100,7 @@ public class BoardDelegate extends DelegateBase
     private ArrayList<String> m_pendingChats;
 
     private String m_dlgBytes = null;
-    private EditText m_passwdEdit = null;
-    private LinearLayout m_passwdLyt = null;
+    private EditText m_passwdEdit;
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
@@ -416,12 +415,13 @@ public class BoardDelegate extends DelegateBase
                 break;
 
             case ASK_PASSWORD_BLK:
-                if ( null == m_passwdLyt ) {
-                    setupPasswdVars();
-                }
+                m_dlgTitleStr = getString( R.string.msg_ask_password_fmt, m_pwdName );
+                LinearLayout pwdLayout = 
+                    (LinearLayout)inflate( R.layout.passwd_view );
+                m_passwdEdit = (EditText)pwdLayout.findViewById( R.id.edit );
                 m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
                 ab.setTitle( m_dlgTitleStr )
-                    .setView( m_passwdLyt )
+                    .setView( pwdLayout )
                     .setPositiveButton( R.string.button_ok,
                                         new DialogInterface.OnClickListener() {
                                             public void 
@@ -1495,17 +1495,14 @@ public class BoardDelegate extends DelegateBase
         @Override
         public String askPassword( String name )
         {
-            // call this each time dlg created or will get exception
-            // for reusing m_passwdLyt
             m_pwdName = name;
-            setupPasswdVars();  
 
             waitBlockingDialog( DlgID.ASK_PASSWORD_BLK, 0 );
 
-            String result = null;      // means cancelled
-            if ( 0 != m_resultCode ) {
-                result = m_passwdEdit.getText().toString();
-            }
+            String result = 0 == m_resultCode
+                ? null      // means cancelled
+                : m_passwdEdit.getText().toString();
+            m_passwdEdit = null;
             return result;
         }
 
@@ -2243,13 +2240,6 @@ public class BoardDelegate extends DelegateBase
             wordsArray[ii] = tmp[jj-1];
         }
         return wordsArray;
-    }
-
-    private void setupPasswdVars()
-    {
-        m_dlgTitleStr = getString( R.string.msg_ask_password_fmt, m_pwdName );
-        m_passwdLyt = (LinearLayout)inflate( R.layout.passwd_view );
-        m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
     }
 
     private void doRematch()
