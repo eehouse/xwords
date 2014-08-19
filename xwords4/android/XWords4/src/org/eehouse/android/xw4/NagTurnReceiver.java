@@ -37,12 +37,12 @@ import org.eehouse.android.xw4.jni.GameSummary;
 public class NagTurnReceiver extends BroadcastReceiver {
 
     private static final long INTERVAL_MILLIS = 1000 * 30; // every half minute for now
-    private static final long[] NAG_INTERVAL_SECONDS = {// 2*60, // five minutes (for testing)
+    private static final long[] NAG_INTERVAL_SECONDS = {// 2*60, // two minutes (for testing)
                                                         // 5*60,
                                                         // 10*60,
-                                                        60*1*24, // one day
-                                                        60*2*24, // two days
-                                                        60*3*24, // three days
+                                                        60*60*24*1, // one day
+                                                        60*60*24*2, // two days
+                                                        60*60*24*3, // three days
     };
 
     @Override
