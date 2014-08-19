@@ -534,14 +534,14 @@ public class GameConfigDelegate extends DelegateBase
                         (CheckBox)findViewById(R.id.join_public_room_check);
                     m_joinPublicCheck.setOnClickListener( this );
                     m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
-                    Utils.setChecked( m_activity, R.id.advertise_new_room_check, 
-                                      m_car.ip_relay_advertiseRoom );
+                    setChecked( R.id.advertise_new_room_check, 
+                                m_car.ip_relay_advertiseRoom );
                     m_publicRoomsSet = 
                         (LinearLayout)findViewById(R.id.public_rooms_set );
                     m_privateRoomsSet = 
                         (LinearLayout)findViewById(R.id.private_rooms_set );
 
-                    Utils.setText( m_activity, R.id.room_edit, m_car.ip_relay_invite );
+                    setText( R.id.room_edit, m_car.ip_relay_invite );
         
                     m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
 
@@ -561,12 +561,10 @@ public class GameConfigDelegate extends DelegateBase
 
                 setSmartnessSpinner();
 
-                Utils.setChecked( m_activity, R.id.hints_allowed, 
-                                  !m_gi.hintsNotAllowed );
-                Utils.setChecked( m_activity, R.id.pick_faceup, 
-                                  m_gi.allowPickTiles );
-                Utils.setInt( m_activity, R.id.timer_minutes_edit, 
-                              m_gi.gameSeconds/60/m_gi.nPlayers );
+                setChecked( R.id.hints_allowed, !m_gi.hintsNotAllowed );
+                setChecked( R.id.pick_faceup, m_gi.allowPickTiles );
+                setInt( R.id.timer_minutes_edit, 
+                        m_gi.gameSeconds/60/m_gi.nPlayers );
 
                 CheckBox check = (CheckBox)findViewById( R.id.use_timer );
                 CompoundButton.OnCheckedChangeListener lstnr =
@@ -578,7 +576,7 @@ public class GameConfigDelegate extends DelegateBase
                         }
                     };
                 check.setOnCheckedChangeListener( lstnr );
-                Utils.setChecked( m_activity, R.id.use_timer, m_gi.timerEnabled );
+                setChecked( R.id.use_timer, m_gi.timerEnabled );
 
                 setBoardsizeSpinner();
             }
@@ -1067,11 +1065,11 @@ public class GameConfigDelegate extends DelegateBase
             }
         }
 
-        m_gi.hintsNotAllowed = !Utils.getChecked( m_activity, R.id.hints_allowed );
-        m_gi.allowPickTiles = Utils.getChecked( m_activity, R.id.pick_faceup );
-        m_gi.timerEnabled = Utils.getChecked(  m_activity, R.id.use_timer );
-        m_gi.gameSeconds = 60 * m_gi.nPlayers *
-            Utils.getInt(  m_activity, R.id.timer_minutes_edit );
+        m_gi.hintsNotAllowed = !getChecked( R.id.hints_allowed );
+        m_gi.allowPickTiles = getChecked( R.id.pick_faceup );
+        m_gi.timerEnabled = getChecked( R.id.use_timer );
+        m_gi.gameSeconds = 
+            60 * m_gi.nPlayers * getInt( R.id.timer_minutes_edit );
 
         int position = m_phoniesSpinner.getSelectedItemPosition();
         m_gi.phoniesAction = CurGameInfo.XWPhoniesChoice.values()[position];
@@ -1085,10 +1083,8 @@ public class GameConfigDelegate extends DelegateBase
         switch( m_conType ) {
         case COMMS_CONN_RELAY:
             m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
-            DbgUtils.logf( "ip_relay_seeksPublicRoom: %b", 
-                           m_car.ip_relay_seeksPublicRoom );
             m_car.ip_relay_advertiseRoom = 
-                Utils.getChecked( m_activity, R.id.advertise_new_room_check );
+                getChecked( R.id.advertise_new_room_check );
             if ( m_car.ip_relay_seeksPublicRoom ) {
                 SpinnerAdapter adapter = m_roomChoose.getAdapter();
                 if ( null != adapter ) {
@@ -1098,8 +1094,7 @@ public class GameConfigDelegate extends DelegateBase
                     }
                 }
             } else {
-                m_car.ip_relay_invite = 
-                    Utils.getText( m_activity, R.id.room_edit ).trim();
+                m_car.ip_relay_invite = getText( R.id.room_edit ).trim();
             }
             break;
             // nothing to save for BT yet

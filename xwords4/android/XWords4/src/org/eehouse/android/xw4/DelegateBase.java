@@ -31,6 +31,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -216,6 +219,50 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     public void runOnUiThread( Runnable runnable )
     {
         m_activity.runOnUiThread( runnable );
+    }
+
+    public void setText( int id, String value )
+    {
+        EditText editText = (EditText)findViewById( id );
+        if ( null != editText ) {
+            editText.setText( value, TextView.BufferType.EDITABLE );
+        }
+    }
+
+    public String getText( int id )
+    {
+        EditText editText = (EditText)findViewById( id );
+        return editText.getText().toString();
+    }
+
+    public void setInt( int id, int value )
+    {
+        String str = Integer.toString( value );
+        setText( id, str );
+    }
+
+    public int getInt( int id )
+    {
+        int result = 0;
+        String str = getText( id );
+        try {
+            result = Integer.parseInt( str );
+        } catch ( NumberFormatException nfe ) {
+        }
+        return result;
+    }
+
+
+    public void setChecked( int id, boolean value )
+    {
+        CheckBox cbx = (CheckBox)findViewById( id );
+        cbx.setChecked( value );
+    }
+
+    public boolean getChecked( int id )
+    {
+        CheckBox cbx = (CheckBox)findViewById( id );
+        return cbx.isChecked();
     }
 
     protected void showDialog( DlgID dlgID )

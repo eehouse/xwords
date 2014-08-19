@@ -101,7 +101,7 @@ public class RelayGameDelegate extends DelegateBase
 
     public void onClick( View view ) 
     {
-        String room = Utils.getText( m_activity, R.id.room_edit ).trim();
+        String room = getText( R.id.room_edit ).trim();
         if ( view == m_playButton ) {
             if ( room.length() == 0 ) {
                 showOKOnlyDialog( R.string.no_empty_rooms );
@@ -127,7 +127,7 @@ public class RelayGameDelegate extends DelegateBase
     {
         boolean canSave = null != m_gameLock;
         if ( canSave ) {
-            String name = Utils.getText( m_activity, R.id.local_name_edit );
+            String name = getText( R.id.local_name_edit );
             if ( name.length() > 0 ) { // don't wipe existing
                 m_gi.setFirstLocalName( name );
             }

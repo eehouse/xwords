@@ -283,12 +283,6 @@ public class Utils {
         return name;
     }
 
-    public static void setChecked( Activity activity, int id, boolean value )
-    {
-        CheckBox cbx = (CheckBox)activity.findViewById( id );
-        cbx.setChecked( value );
-    }
-
     public static void setChecked( Dialog dialog, int id, boolean value )
     {
         CheckBox cbx = (CheckBox)dialog.findViewById( id );
@@ -303,36 +297,16 @@ public class Utils {
         }
     }
 
-    public static void setText( Activity activity, int id, String value )
-    {
-        EditText editText = (EditText)activity.findViewById( id );
-        if ( null != editText ) {
-            editText.setText( value, TextView.BufferType.EDITABLE   );
-        }
-    }
-
     public static void setInt( Dialog dialog, int id, int value )
     {
         String str = Integer.toString(value);
         setText( dialog, id, str );
     }
 
-    public static void setInt( Activity activity, int id, int value )
-    {
-        String str = Integer.toString(value);
-        setText( activity, id, str );
-    }
-
     public static void setEnabled( Dialog dialog, int id, boolean enabled )
     {
         View view = dialog.findViewById( id );
         view.setEnabled( enabled );
-    }
-
-    public static boolean getChecked( Activity activity, int id )
-    {
-        CheckBox cbx = (CheckBox)activity.findViewById( id );
-        return cbx.isChecked();
     }
 
     public static boolean getChecked( Dialog dialog, int id )
@@ -347,25 +321,9 @@ public class Utils {
         return editText.getText().toString();
     }
 
-    public static String getText( Activity activity, int id )
-    {
-        EditText editText = (EditText)activity.findViewById( id );
-        return editText.getText().toString();
-    }
-
     public static int getInt( Dialog dialog, int id )
     {
         String str = getText( dialog, id );
-        try {
-            return Integer.parseInt( str );
-        } catch ( NumberFormatException nfe ) {
-            return 0;
-        }
-    }
-
-    public static int getInt( Activity activity, int id )
-    {
-        String str = getText( activity, id );
         try {
             return Integer.parseInt( str );
         } catch ( NumberFormatException nfe ) {
