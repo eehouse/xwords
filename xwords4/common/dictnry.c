@@ -49,8 +49,8 @@ p_dict_ref( DictionaryCtxt* dict
     if ( !!dict ) {
         pthread_mutex_lock( &dict->mutex );
         ++dict->refCount;
-        XP_LOGF( "%s(dict=%p): refCount now %d (from line %d of %s() in %s)",
-                 __func__, dict, dict->refCount, line, func, file );
+        /* XP_LOGF( "%s(dict=%p): refCount now %d (from line %d of %s() in %s)", */
+        /*          __func__, dict, dict->refCount, line, func, file ); */
         pthread_mutex_unlock( &dict->mutex );
     }
     return dict;
@@ -67,8 +67,8 @@ p_dict_unref( DictionaryCtxt* dict
         pthread_mutex_lock( &dict->mutex );
         --dict->refCount;
         XP_ASSERT( 0 <= dict->refCount );
-        XP_LOGF( "%s(dict=%p): refCount now %d  (from line %d of %s() in %s)",
-                 __func__, dict, dict->refCount, line, func, file );
+        /* XP_LOGF( "%s(dict=%p): refCount now %d  (from line %d of %s() in %s)", */
+        /*          __func__, dict, dict->refCount, line, func, file ); */
         pthread_mutex_unlock( &dict->mutex );
         if ( 0 == dict->refCount ) {
             (*dict->destructor)( dict );
