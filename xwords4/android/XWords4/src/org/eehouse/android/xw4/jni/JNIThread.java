@@ -237,11 +237,12 @@ public class JNIThread extends Thread {
 
         boolean squareTiles = XWPrefs.getSquareTiles( m_context );
         XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, width, height,
-                                  150, 200, width, fontWidth, 
-                                  fontHeight, squareTiles, dims );
+                                  150 /*scorePct*/, 200 /*trayPct*/, 
+                                  width, fontWidth, fontHeight, squareTiles, 
+                                  dims /* out param */ );
         int statusWidth = dims.boardWidth / 15;
         dims.scoreWidth -= statusWidth;
-        int left = dims.scoreLeft + dims.scoreWidth;
+        int left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth;
         ConnStatusHandler.setRect( left, dims.top, left + statusWidth, 
                                    dims.top + dims.scoreHt );
 
