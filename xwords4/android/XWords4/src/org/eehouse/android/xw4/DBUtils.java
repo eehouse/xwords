@@ -288,13 +288,10 @@ public class DBUtils {
             values.put( DBHelper.DICTLANG, summary.dictLang );
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
-            // DbgUtils.logf("saveSummary(%d): lastMoveTime: %s", rowid,
-            //               DbgUtils.secondsToDateStr(summary.lastMoveTime) );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
             long nextNag = summary.nextTurnIsLocal() ?
                 NagTurnReceiver.figureNextNag( 1000*(long)summary.lastMoveTime )
                 : 0;
-            DbgUtils.logf( "setting nag time for %d: %d", rowid, nextNag );
             values.put( DBHelper.NEXTNAG, nextNag );
                 
             values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
@@ -1041,7 +1038,6 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "getNextNag()=>%s", DbgUtils.millisToDateStr(result) );
         return result;
     }
 
@@ -1061,7 +1057,6 @@ public class DBUtils {
                 updateStmt.bindLong( 1, info.m_nextNag );
                 updateStmt.bindLong( 2, info.m_rowid );
                 updateStmt.execute();
-                DbgUtils.logf( "updated rowid %d nextnag to %d", info.m_rowid, info.m_nextNag );
             }
             db.close();
         }
@@ -1150,7 +1145,6 @@ public class DBUtils {
 
             String query = "SELECT rowid, groupname as groups_groupname, "
                 + " groups.expanded as groups_expanded FROM groups";
-            DbgUtils.logf( "query: %s", query );
 
             initDB( context );
             synchronized( s_dbHelper ) {
@@ -1276,7 +1270,6 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "DBUtils.countGames()=>%d", result );
         return result;
     }
 

@@ -48,7 +48,6 @@ public class NagTurnReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        DbgUtils.logf( "NagTurnReceiver.onReceive() called" );
         // loop through all games testing who's been sitting on a turn
         NeedsNagInfo[] needNagging = DBUtils.getNeedNagging( context );
         if ( null != needNagging ) {
@@ -89,7 +88,6 @@ public class NagTurnReceiver extends BroadcastReceiver {
 
     private static void restartTimer( Context context, long atMillis )
     {
-        DbgUtils.logf( "NagTurnReceiver.restartTimer() called" );
         AlarmManager am =
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
 
@@ -97,8 +95,6 @@ public class NagTurnReceiver extends BroadcastReceiver {
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
         long now = new Date().getTime(); // in milliseconds
-        DbgUtils.logf( "NagTurnReceiver: setting alarm %d seconds in future",
-                       (atMillis - now) / 1000 );
         am.set( AlarmManager.RTC, atMillis, pi );
     }
 
@@ -123,8 +119,6 @@ public class NagTurnReceiver extends BroadcastReceiver {
             }
         }
 
-        DbgUtils.logf( "figureNextNag => %d (%s)", result, 
-                       DbgUtils.millisToDateStr(result) );
         return result;
     }
 }

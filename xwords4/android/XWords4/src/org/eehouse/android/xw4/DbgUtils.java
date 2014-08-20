@@ -145,17 +145,17 @@ public class DbgUtils {
         }
     }
 
-    public static String secondsToDateStr( long seconds )
-    {
-        return millisToDateStr( seconds * 1000 );
-    }
+    // public static String secondsToDateStr( long seconds )
+    // {
+    //     return millisToDateStr( seconds * 1000 );
+    // }
 
-    public static String millisToDateStr( long millis )
-    {
-        Time tim = new Time();
-        tim.set( millis );
-        return tim.format2445();
-    }
+    // public static String millisToDateStr( long millis )
+    // {
+    //     Time tim = new Time();
+    //     tim.set( millis );
+    //     return tim.format2445();
+    // }
 
     // public static String toString( long[] longs )
     // {

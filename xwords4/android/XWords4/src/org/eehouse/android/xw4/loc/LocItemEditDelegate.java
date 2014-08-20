@@ -63,8 +63,6 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
 
     protected void init( Bundle savedInstanceState )
     {
-        // setContentView( R.layout.loc_item_edit );
-
         String key = getIntent().getStringExtra( KEY );
         m_key = key;
 
