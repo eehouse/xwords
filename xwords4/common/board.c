@@ -400,7 +400,7 @@ board_reset( BoardCtxt* board )
 } /* board_reset */
 
 #ifdef COMMON_LAYOUT
-# ifdef DEBUG
+# if 0
 static void
 printDims( const BoardDims* dimsp )
 {
@@ -543,7 +543,7 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
         break;
     }
 
-    // printDims( &ldims );
+    printDims( &ldims );
 
     if ( !!dimsp ) {
         XP_MEMCPY( dimsp, &ldims, sizeof(ldims) );
