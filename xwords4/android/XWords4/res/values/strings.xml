@@ -2268,10 +2268,17 @@
 
     <!-- Nagging: title of notification reminder message -->
     <string name="nag_title">Reminder: It\'s your turn</string>
-    <!-- body of warning notification reminder message -->
-    <string name="nag_body_fmt">%1$s moved more than %2$d hours ago.</string>
+    <!-- body of warning notification reminder message. First three
+    are used to build a string based on the length of time that's then
+    inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
+    4 hour[s] ago." -->
+    <string name="nag_minutes_fmt">%1$d minute[s]</string>
+    <string name="nag_hours_fmt">%1$d hour[s]</string>
+    <string name="nag_days_fmt">%1$d day[s]</string>
+    <string name="nag_body_fmt">%1$s moved more than %2$s ago.</string>
     <!-- above is inserted in this the last time I warn -->
     <string name="nag_warn_last_fmt">Last warning: %1$s</string>
     <!-- Used when prev player's name can't be looked up -->
     <string name="prev_player">Your opponent</string>
+
 </resources>

@@ -1939,8 +1939,14 @@
   <string name="force_tablet_summary">EVEN IF MY SCREEN IS TOO SMALL</string>
   <!-- Nagging: title of notification reminder message -->
   <string name="nag_title">REMINDER: IT\'S YOUR TURN</string>
-  <!-- body of warning notification reminder message -->
-  <string name="nag_body_fmt">%1$s MOVED MORE THAN %2$d HOURS AGO.</string>
+  <!-- body of warning notification reminder message. First three
+    are used to build a string based on the length of time that's then
+    inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
+    4 hour[s] ago." -->
+  <string name="nag_minutes_fmt">%1$d MINUTE[S]</string>
+  <string name="nag_hours_fmt">%1$d HOUR[S]</string>
+  <string name="nag_days_fmt">%1$d DAY[S]</string>
+  <string name="nag_body_fmt">%1$s MOVED MORE THAN %2$s AGO.</string>
   <!-- above is inserted in this the last time I warn -->
   <string name="nag_warn_last_fmt">LAST WARNING: %1$s</string>
   <!-- Used when prev player's name can't be looked up -->

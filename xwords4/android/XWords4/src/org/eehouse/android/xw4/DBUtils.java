@@ -290,7 +290,8 @@ public class DBUtils {
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
             long nextNag = summary.nextTurnIsLocal() ?
-                NagTurnReceiver.figureNextNag( 1000*(long)summary.lastMoveTime )
+                NagTurnReceiver.figureNextNag( context, 
+                                               1000*(long)summary.lastMoveTime )
                 : 0;
             values.put( DBHelper.NEXTNAG, nextNag );
                 
