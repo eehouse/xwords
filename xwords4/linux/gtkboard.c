@@ -2019,7 +2019,7 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
     
     if ( model_getPlayersLastScore( globals->cGlobals.game.model,
                                     player, scoreExpl, &explLen ) ) {
-        XP_LOGF( "got: %s", scoreExpl );
+        (void)gtkask( globals->window, scoreExpl, GTK_BUTTONS_OK, NULL );
     }
 }
 #endif
