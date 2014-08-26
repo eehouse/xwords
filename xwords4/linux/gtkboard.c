@@ -53,6 +53,7 @@
 
 #include "draw.h"
 #include "game.h"
+#include "movestak.h"
 #include "gtkask.h"
 #include "gtkaskm.h"
 #include "gtkchat.h"
@@ -2014,11 +2015,13 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
 
-    XP_UCHAR scoreExpl[48] = {0};
+    XP_UCHAR scoreExpl[128] = {0};
     XP_U16 explLen = sizeof(scoreExpl);
     
+    LastMoveInfo lmi;
     if ( model_getPlayersLastScore( globals->cGlobals.game.model,
-                                    player, scoreExpl, &explLen ) ) {
+                                    player, &lmi, scoreExpl, &explLen ) ) {
+        formatLMI( &lmi, scoreExpl, VSIZE(scoreExpl) );
         (void)gtkask( globals->window, scoreExpl, GTK_BUTTONS_OK, NULL );
     }
 }

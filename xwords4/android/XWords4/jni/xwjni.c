@@ -202,6 +202,16 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     }
 } /* setJGI */
 
+static void
+setLMI( JNIEnv* env, jobject jlmi, const LastMoveInfo* lmi )
+{
+    setInt( env, jlmi, "score", lmi->score );
+    setInt( env, jlmi, "nTiles", lmi->nTiles );
+    setInt( env, jlmi, "moveType", lmi->moveType );
+    setString( env, jlmi, "name", lmi->name );
+    setString( env, jlmi, "word", lmi->word );
+}
+
 #ifdef COMMON_LAYOUT
 static const SetInfo bd_ints[] = {
     ARR_MEMBER( BoardDims, left )
@@ -1135,17 +1145,19 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getNumTilesInTray
 
 JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
-(JNIEnv* env, jclass C, jint gamePtr, jint player )
+( JNIEnv* env, jclass C, jint gamePtr, jint player, jobject jlmi )
 {
     jstring result = NULL;
     XWJNI_START();
     XP_ASSERT( !!state->game.model );
     XP_UCHAR buf[64] = {0};
     XP_U16 buflen = sizeof(buf);
-    if ( !model_getPlayersLastScore( state->game.model, player, buf, 
-                                     &buflen ) ) {
+    LastMoveInfo lmi;
+    if ( !model_getPlayersLastScore( state->game.model, player, &lmi,
+                                     buf, &buflen ) ) {
         buf[0] = '\0';
     }
+    setLMI( env, jlmi, &lmi );
     result = (*env)->NewStringUTF( env, buf );
     XWJNI_END();
     return result;

@@ -29,6 +29,7 @@
 # include <execinfo.h>          /* for backtrace */
 #endif
 
+#include "movestak.h"
 #include "linuxutl.h"
 #include "main.h"
 #include "linuxdict.h"
@@ -569,6 +570,32 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 
     return (XP_UCHAR*)message;
 } /* linux_getErrString */
+
+void
+formatLMI( const LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16 len )
+{
+    const XP_UCHAR* name = lmi->name;
+    switch( lmi->moveType ) {
+    case MOVE_TYPE:
+        if ( 0 == lmi->nTiles ) {
+            XP_SNPRINTF( buf, len, "%s passed", name );
+        } else {
+            XP_SNPRINTF( buf, len, "%s played %s for %d points", name,
+                         lmi->word, lmi->score );
+        }
+        break;
+    case TRADE_TYPE:
+        XP_SNPRINTF( buf, len, "%s traded %d tiles", 
+                     name, lmi->nTiles );
+        break;
+    case PHONY_TYPE:
+        XP_SNPRINTF( buf, len, "%s lost a turn", name );
+        break;
+    default:
+        XP_ASSERT(0);
+        break;
+    }
+}
 
 void
 formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles, 

@@ -488,7 +488,7 @@ public class BTService extends XWService {
                         } else if ( haveGame && 
                                     GameUtils.feedMessage( BTService.this, rowid, 
                                                            buffer, addr, 
-                                                           m_btMsgSink ) ) {
+                                                           m_btMsgSink, null ) ) {
                             postNotification( gameID, R.string.new_btmove_title, 
                                               R.string.new_move_body, rowid );
                             // do nothing

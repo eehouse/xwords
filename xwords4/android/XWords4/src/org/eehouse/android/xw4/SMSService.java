@@ -776,7 +776,7 @@ public class SMSService extends XWService {
                 } else {
                     SMSMsgSink sink = new SMSMsgSink( this );
                     if ( GameUtils.feedMessage( this, rowid, msg, addr, 
-                                                sink ) ) {
+                                                sink, null ) ) {
                         postNotification( gameID, R.string.new_smsmove_title, 
                                           getString(R.string.new_move_body),
                                           rowid );

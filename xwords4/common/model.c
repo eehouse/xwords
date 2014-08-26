@@ -2189,9 +2189,9 @@ getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
 
 static void
 scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany, 
-               XP_UCHAR* buf, XP_U16* bufLen )
+               LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16* bufLen )
 {
-
+    lmi->nTiles = moveInfo->nTiles;
     if ( moveInfo->nTiles == 0 ) {
         const XP_UCHAR* str = util_getUserString( model->vol.util, STR_PASSED );
         XP_U16 len = XP_STRLEN( str );
@@ -2224,6 +2224,8 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
 
         format = util_getUserString( model->vol.util, STRSD_SUMMARYSCORED );
         *bufLen = XP_SNPRINTF( buf, *bufLen, format, data.word, score );
+        lmi->score = score;
+        XP_SNPRINTF( lmi->word, VSIZE(lmi->word), "%s", data.word );
     }
 } /* scoreLastMove */
 
@@ -2374,12 +2376,14 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
 
 XP_Bool
 model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
+                           LastMoveInfo* lmi,
                            XP_UCHAR* expl, XP_U16* explLen )
 {
     StackCtxt* stack = model->vol.stack;
     XP_S16 nEntries, which;
     StackEntry entry;
     XP_Bool found = XP_FALSE;
+    XP_MEMSET( lmi, 0, sizeof(*lmi) );
 
     XP_ASSERT( !!stack );
     XP_ASSERT( player >= 0 );
@@ -2398,13 +2402,16 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
     if ( found ) { /* success? */
         const XP_UCHAR* format;
         XP_U16 nTiles;
+        lmi->name = model->vol.gi->players[player].name;
+        lmi->moveType = entry.moveType;
         switch ( entry.moveType ) {
         case MOVE_TYPE:
             scoreLastMove( model, &entry.u.move.moveInfo, 
-                           nEntries - which, expl, explLen );
+                           nEntries - which, lmi, expl, explLen );
             break;
         case TRADE_TYPE:
             nTiles = entry.u.trade.oldTiles.nTiles;
+            lmi->nTiles = entry.u.trade.oldTiles.nTiles;
             format = util_getUserString( model->vol.util, STRD_TRADED );
             *explLen = XP_SNPRINTF( expl, *explLen, format, nTiles );
             break;

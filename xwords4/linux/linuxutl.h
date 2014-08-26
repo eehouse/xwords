@@ -24,6 +24,7 @@
 
 #include "xptypes.h"
 #include "dictnry.h"
+#include "model.h"
 #include "util.h"
 #include "main.h"
 
@@ -40,6 +41,7 @@ const XP_UCHAR* linux_getErrString( UtilErrID id, XP_Bool* silent );
 
 void formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles, char* buf, 
                          XP_U16 buflen );
+void formatLMI( const LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16 len );
 
 void initNoConnStorage( CommonGlobals* cGlobals );
 XP_Bool storeNoConnMsg( CommonGlobals* cGlobals, const XP_U8* msg, XP_U16 len,

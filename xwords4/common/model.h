@@ -76,6 +76,14 @@ typedef struct MoveInfo {
     MoveInfoTile tiles[MAX_TRAY_TILES];
 } MoveInfo;
 
+typedef struct _LastMoveInfo {
+    const XP_UCHAR* name;
+    XP_U8 moveType;
+    XP_U16 score;
+    XP_U16 nTiles;
+    XP_UCHAR word[MAX_COLS+1];
+} LastMoveInfo;
+
 typedef XP_U8 TrayTile;
 typedef struct TrayTileSet {
     XP_U8 nTiles;
@@ -264,6 +272,7 @@ XP_Bool getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn,
 XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
+                                   LastMoveInfo* info,
                                    XP_UCHAR* expl, XP_U16* explLen );
 #ifdef XWFEATURE_BOARDWORDS
 void model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,

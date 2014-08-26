@@ -1603,19 +1603,22 @@ public final class R {
         /**  Text of progress indicator shown while check is being conducted 
          */
         public static final int msgs_progress=0x7f05009f;
-        /**  body of warning notification reminder message 
-         */
-        public static final int nag_body_fmt=0x7f0502c8;
-        public static final int nag_days_fmt=0x7f0502cd;
-        public static final int nag_hours_fmt=0x7f0502cc;
+        public static final int nag_body_fmt=0x7f0502cb;
+        public static final int nag_days_fmt=0x7f0502ca;
+        public static final int nag_hours_fmt=0x7f0502c9;
         public static final int nag_intervals=0x7f05008d;
-        public static final int nag_minutes_fmt=0x7f0502cb;
+        /**  body of warning notification reminder message. First three
+    are used to build a string based on the length of time that's then
+    inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
+    4 hour[s] ago." 
+         */
+        public static final int nag_minutes_fmt=0x7f0502c8;
         /**  Nagging: title of notification reminder message 
          */
         public static final int nag_title=0x7f0502c7;
         /**  above is inserted in this the last time I warn 
          */
-        public static final int nag_warn_last_fmt=0x7f0502c9;
+        public static final int nag_warn_last_fmt=0x7f0502cc;
         public static final int name_dict_fmt=0x7f050087;
         /**  text of checkbox.  If this checkbox is checked, games created
          for network play will by default have the hint feature
@@ -2092,7 +2095,7 @@ public final class R {
         public static final int prefs_names_summary=0x7f050134;
         /**  Used when prev player's name can't be looked up 
          */
-        public static final int prev_player=0x7f0502ca;
+        public static final int prev_player=0x7f0502cd;
         public static final int progress_title=0x7f0502be;
         /**   
          */

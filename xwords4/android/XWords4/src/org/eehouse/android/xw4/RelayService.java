@@ -51,6 +51,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RelayService extends XWService 
@@ -365,23 +366,28 @@ public class RelayService extends XWService
         startService( this ); // bad name: will *stop* threads too
     }
 
-    private void setupNotification( String[] relayIDs )
+    private void setupNotifications( String[] relayIDs )
     {
         for ( String relayID : relayIDs ) {
             long[] rowids = DBUtils.getRowIDsFor( this, relayID );
             if ( null != rowids ) {
                 for ( long rowid : rowids ) {
-                    setupNotification( rowid );
+                    setupNotification( rowid, null );
                 }
             }
         }
     }
 
-    private void setupNotification( long rowid )
+    private void setupNotification( long rowid, LastMoveInfo lmi )
     {
         Intent intent = GamesListDelegate.makeRowidIntent( this, rowid );
-        String msg = LocUtils.getString( this, R.string.notify_body_fmt, 
-                                         GameUtils.getName( this, rowid ) );
+        String msg;
+        if ( null == lmi ) {
+            msg = LocUtils.getString( this, R.string.notify_body_fmt, 
+                                      GameUtils.getName( this, rowid ) );
+        } else {
+            msg = lmi.format( this );
+        }
         Utils.postNotification( this, intent, R.string.notify_title,
                                 msg, (int)rowid );
     }
@@ -861,9 +867,10 @@ public class RelayService extends XWService
         } else {
             RelayMsgSink sink = new RelayMsgSink();
             sink.setRowID( rowid );
+            LastMoveInfo lmi = new LastMoveInfo();
             if ( GameUtils.feedMessage( this, rowid, msg, null, 
-                                        sink ) ) {
-                setupNotification( rowid );
+                                        sink, lmi ) ) {
+                setupNotification( rowid, lmi );
             } else {
                 DbgUtils.logf( "feedMessage(): background dropped it" );
             }
@@ -898,7 +905,7 @@ public class RelayService extends XWService
                     if ( BoardDelegate.feedMessages( rowIDs[ii], forOne )
                          || GameUtils.feedMessages( this, rowIDs[ii],
                                                     forOne, null,
-                                                    sink ) ) {
+                                                    sink, null ) ) {
                         idsWMsgs.add( relayIDs[ii] );
                     } else {
                         DbgUtils.logf( "message for %s (rowid %d) not consumed",
@@ -909,7 +916,7 @@ public class RelayService extends XWService
             if ( 0 < idsWMsgs.size() ) {
                 String[] tmp = new String[idsWMsgs.size()];
                 idsWMsgs.toArray( tmp );
-                setupNotification( tmp );
+                setupNotifications( tmp );
             }
             sink.send( this );
         }

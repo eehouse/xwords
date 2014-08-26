@@ -1415,8 +1415,10 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void playerScoreHeld( int player )
         {
+            LastMoveInfo lmi = new LastMoveInfo();
             String expl = XwJNI.model_getPlayersLastScore( m_jniGamePtr, 
-                                                           player );
+                                                           player, lmi );
+            expl = lmi.format( m_activity );
             if ( expl.length() == 0 ) {
                 expl = getString( R.string.no_moves_made );
             }

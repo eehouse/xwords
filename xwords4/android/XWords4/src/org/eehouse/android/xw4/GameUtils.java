@@ -47,6 +47,7 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
 
 public class GameUtils {
 
@@ -765,7 +766,7 @@ public class GameUtils {
 
     public static boolean feedMessages( Context context, long rowid,
                                         byte[][] msgs, CommsAddrRec ret,
-                                        MultiMsgSink sink )
+                                        MultiMsgSink sink, LastMoveInfo lmi )
     {
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
@@ -797,6 +798,10 @@ public class GameUtils {
                         DBUtils.saveThumbnail( context, lock, bitmap );
                     }
 
+                    if ( null != lmi ) {
+                        XwJNI.model_getPlayersLastScore( gamePtr, 0, lmi );
+                    }
+
                     saveGame( context, gamePtr, gi, lock, false );
                     summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
 
@@ -813,12 +818,13 @@ public class GameUtils {
     } // feedMessages
 
     public static boolean feedMessage( Context context, long rowid, byte[] msg,
-                                       CommsAddrRec ret, MultiMsgSink sink )
+                                       CommsAddrRec ret, MultiMsgSink sink,
+                                       LastMoveInfo lmi )
     {
         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         byte[][] msgs = new byte[1][];
         msgs[0] = msg;
-        return feedMessages( context, rowid, msgs, ret, sink );
+        return feedMessages( context, rowid, msgs, ret, sink, lmi );
     }
 
     // This *must* involve a reset if the language is changing!!!
