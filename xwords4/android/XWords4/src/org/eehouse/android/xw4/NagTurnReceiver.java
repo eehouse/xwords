@@ -28,14 +28,14 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Date;
+import java.util.Iterator;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.NeedsNagInfo;
-import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NagTurnReceiver extends BroadcastReceiver {
 

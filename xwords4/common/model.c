@@ -2191,35 +2191,32 @@ static void
 scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany, 
                LastMoveInfo* lmi )
 {
-    lmi->nTiles = moveInfo->nTiles;
-    if ( 0 < moveInfo->nTiles ) {
-        XP_U16 score;
-        const XP_UCHAR* format;
-        WordNotifierInfo notifyInfo;
-        FirstWordData data;
+    XP_U16 score;
+    const XP_UCHAR* format;
+    WordNotifierInfo notifyInfo;
+    FirstWordData data;
 
-        ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
-        XP_U16 turn;
-        XP_S16 moveNum = -1;
+    ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
+    XP_U16 turn;
+    XP_S16 moveNum = -1;
 
-        copyStack( model, tmpModel->vol.stack, model->vol.stack );
+    copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
-        if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn,
-                                     &moveNum ) ) {
-            XP_ASSERT( 0 );
-        }
-
-        data.word[0] = '\0';
-        notifyInfo.proc = getFirstWord;
-        notifyInfo.closure = &data;
-        score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL,
-                                 (XWStreamCtxt*)NULL, &notifyInfo );
-
-        model_destroy( tmpModel );
-
-        lmi->score = score;
-        XP_SNPRINTF( lmi->word, VSIZE(lmi->word), "%s", data.word );
+    if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn,
+                                 &moveNum ) ) {
+        XP_ASSERT( 0 );
     }
+
+    data.word[0] = '\0';
+    notifyInfo.proc = getFirstWord;
+    notifyInfo.closure = &data;
+    score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL,
+                             (XWStreamCtxt*)NULL, &notifyInfo );
+
+    model_destroy( tmpModel );
+
+    lmi->score = score;
+    XP_SNPRINTF( lmi->word, VSIZE(lmi->word), "%s", data.word );
 } /* scoreLastMove */
 
 static XP_U16
@@ -2370,8 +2367,6 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
 XP_Bool
 model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
 {
-    XP_LOGF( "%s(player=%d)", __func__, player );
-
     StackCtxt* stack = model->vol.stack;
     XP_S16 nEntries, which;
     StackEntry entry;
@@ -2401,9 +2396,11 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
 
         switch ( entry.moveType ) {
         case MOVE_TYPE:
-            scoreLastMove( model, &entry.u.move.moveInfo, nEntries - which,
-                           lmi );
             lmi->nTiles = entry.u.move.moveInfo.nTiles;
+            if ( 0 < entry.u.move.moveInfo.nTiles ) {
+                scoreLastMove( model, &entry.u.move.moveInfo, nEntries - which,
+                               lmi );
+            }
             break;
         case TRADE_TYPE:
             lmi->nTiles = entry.u.trade.oldTiles.nTiles;
@@ -2416,7 +2413,6 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
         }
     }
 
-    LOG_RETURNF( "%d", found );
     return found;
 } /* model_getPlayersLastScore */
 
