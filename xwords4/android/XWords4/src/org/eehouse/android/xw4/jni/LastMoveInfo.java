@@ -46,6 +46,7 @@ public class LastMoveInfo {
         if ( isValid ) {
             switch( moveType ) {
             case ASSIGN_TYPE:
+                result = LocUtils.getString( context, R.string.lmi_tiles_fmt, name );
                 break;
             case MOVE_TYPE:
                 if ( 0 == nTiles ) {
@@ -66,7 +67,6 @@ public class LastMoveInfo {
                 break;
             }
         }
-        DbgUtils.logf( "LastMoveInfo.format() => %s", result );
         return result;
     }
 }

@@ -1238,8 +1238,7 @@
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
     down. -->
-  <string name="notify_title">Sevom edam</string>
-  <string name="notify_body_fmt">Ytivitca ni emag \"%1$s\"</string>
+  <string name="notify_title_fmt">Evom ni emag %1$s</string>
   <!--
         ############################################################
         # Dialogs
@@ -1938,8 +1937,9 @@
   <!-- Used when prev player's name can't be looked up -->
   <string name="prev_player">Ruoy tnenoppo</string>
   <!-- formatting for last move summary in notifications -->
-  <string name="lmi_pass_fmt">%1$s dessap</string>
+  <string name="lmi_pass_fmt">%1$s dessap 0( )stniop</string>
   <string name="lmi_move_fmt">%1$s deyalp %2$s rof %3$d stniop</string>
   <string name="lmi_trade_fmt">%1$s dedart %2$d selit</string>
   <string name="lmi_phony_fmt">%1$s tsol a nrut</string>
+  <string name="lmi_tiles_fmt">Selit dengissa ot %1$s</string>
 </resources>

@@ -1450,8 +1450,7 @@
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
     down. -->
-    <string name="notify_title">Moves made</string>
-    <string name="notify_body_fmt">Activity in game \"%1$s\"</string>
+    <string name="notify_title_fmt">Move in game %1$s</string>
 
     <!--
         ############################################################
@@ -2268,8 +2267,9 @@
     <string name="prev_player">Your opponent</string>
 
     <!-- formatting for last move summary in notifications -->
-    <string name="lmi_pass_fmt">%1$s passed</string>
+    <string name="lmi_pass_fmt">%1$s passed (0 points)</string>
     <string name="lmi_move_fmt">%1$s played %2$s for %3$d points</string>
     <string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>
     <string name="lmi_phony_fmt">%1$s lost a turn</string>
+    <string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>
 </resources>

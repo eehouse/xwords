@@ -1238,8 +1238,7 @@
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
     down. -->
-  <string name="notify_title">MOVES MADE</string>
-  <string name="notify_body_fmt">ACTIVITY IN GAME \"%1$s\"</string>
+  <string name="notify_title_fmt">MOVE IN GAME %1$s</string>
   <!--
         ############################################################
         # Dialogs
@@ -1938,8 +1937,9 @@
   <!-- Used when prev player's name can't be looked up -->
   <string name="prev_player">YOUR OPPONENT</string>
   <!-- formatting for last move summary in notifications -->
-  <string name="lmi_pass_fmt">%1$s PASSED</string>
+  <string name="lmi_pass_fmt">%1$s PASSED (0 POINTS)</string>
   <string name="lmi_move_fmt">%1$s PLAYED %2$s FOR %3$d POINTS</string>
   <string name="lmi_trade_fmt">%1$s TRADED %2$d TILES</string>
   <string name="lmi_phony_fmt">%1$s LOST A TURN</string>
+  <string name="lmi_tiles_fmt">TILES ASSIGNED TO %1$s</string>
 </resources>

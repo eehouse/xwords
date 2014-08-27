@@ -381,15 +381,13 @@ public class RelayService extends XWService
     private void setupNotification( long rowid, LastMoveInfo lmi )
     {
         Intent intent = GamesListDelegate.makeRowidIntent( this, rowid );
-        String msg;
-        if ( null == lmi ) {
-            msg = LocUtils.getString( this, R.string.notify_body_fmt, 
-                                      GameUtils.getName( this, rowid ) );
-        } else {
+        String msg = "";
+        if ( null != lmi ) {
             msg = lmi.format( this );
         }
-        Utils.postNotification( this, intent, R.string.notify_title,
-                                msg, (int)rowid );
+        String title = LocUtils.getString( this, R.string.notify_title_fmt,
+                                           GameUtils.getName( this, rowid ) );
+        Utils.postNotification( this, intent, title, msg, (int)rowid );
     }
     
     private boolean startFetchThreadIf()

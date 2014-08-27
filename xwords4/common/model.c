@@ -2411,7 +2411,7 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
         case PHONY_TYPE:
             break;
         case ASSIGN_TYPE:
-            found = XP_FALSE;
+            // found = XP_FALSE;
             break;
         }
     }
