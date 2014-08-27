@@ -2189,15 +2189,10 @@ getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
 
 static void
 scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany, 
-               LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16* bufLen )
+               LastMoveInfo* lmi )
 {
     lmi->nTiles = moveInfo->nTiles;
-    if ( moveInfo->nTiles == 0 ) {
-        const XP_UCHAR* str = util_getUserString( model->vol.util, STR_PASSED );
-        XP_U16 len = XP_STRLEN( str );
-        *bufLen = len;
-        XP_STRNCPY( buf, str, len + 1 );
-    } else {
+    if ( 0 < moveInfo->nTiles ) {
         XP_U16 score;
         const XP_UCHAR* format;
         WordNotifierInfo notifyInfo;
@@ -2222,8 +2217,6 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
 
         model_destroy( tmpModel );
 
-        format = util_getUserString( model->vol.util, STRSD_SUMMARYSCORED );
-        *bufLen = XP_SNPRINTF( buf, *bufLen, format, data.word, score );
         lmi->score = score;
         XP_SNPRINTF( lmi->word, VSIZE(lmi->word), "%s", data.word );
     }
@@ -2375,10 +2368,10 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
 #endif
 
 XP_Bool
-model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
-                           LastMoveInfo* lmi,
-                           XP_UCHAR* expl, XP_U16* explLen )
+model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
 {
+    XP_LOGF( "%s(player=%d)", __func__, player );
+
     StackCtxt* stack = model->vol.stack;
     XP_S16 nEntries, which;
     StackEntry entry;
@@ -2386,39 +2379,36 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
     XP_MEMSET( lmi, 0, sizeof(*lmi) );
 
     XP_ASSERT( !!stack );
-    XP_ASSERT( player >= 0 );
 
     nEntries = stack_getNEntries( stack );
 
     for ( which = nEntries; which >= 0; ) {
         if ( stack_getNthEntry( stack, --which, &entry ) ) {
-            if ( entry.playerNum == player ) {
+            if ( -1 == player || entry.playerNum == player ) {
                 found = XP_TRUE;
                 break;
             }
         }
     }
 
+
     if ( found ) { /* success? */
-        const XP_UCHAR* format;
-        XP_U16 nTiles;
-        lmi->name = model->vol.gi->players[player].name;
+        XP_ASSERT( -1 == player || player == entry.playerNum );
+
+        XP_LOGF( "%s: found move %d", __func__, which );
+        lmi->name = model->vol.gi->players[entry.playerNum].name;
         lmi->moveType = entry.moveType;
+
         switch ( entry.moveType ) {
         case MOVE_TYPE:
-            scoreLastMove( model, &entry.u.move.moveInfo, 
-                           nEntries - which, lmi, expl, explLen );
+            scoreLastMove( model, &entry.u.move.moveInfo, nEntries - which,
+                           lmi );
+            lmi->nTiles = entry.u.move.moveInfo.nTiles;
             break;
         case TRADE_TYPE:
-            nTiles = entry.u.trade.oldTiles.nTiles;
             lmi->nTiles = entry.u.trade.oldTiles.nTiles;
-            format = util_getUserString( model->vol.util, STRD_TRADED );
-            *explLen = XP_SNPRINTF( expl, *explLen, format, nTiles );
             break;
         case PHONY_TYPE:
-            format = util_getUserString( model->vol.util, STR_LOSTTURN );
-            *explLen = XP_STRLEN( format );
-            XP_STRCAT( expl, format );
             break;
         case ASSIGN_TYPE:
             found = XP_FALSE;
@@ -2426,6 +2416,7 @@ model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
         }
     }
 
+    LOG_RETURNF( "%d", found );
     return found;
 } /* model_getPlayersLastScore */
 

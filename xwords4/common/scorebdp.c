@@ -29,13 +29,10 @@ extern "C" {
 #endif
 
 static XP_Bool
-board_ScoreCallback( void* closure, XP_S16 player, 
-                     LastMoveInfo* lmi,
-                     XP_UCHAR* expl, XP_U16* explLen)
+board_ScoreCallback( void* closure, XP_S16 player, LastMoveInfo* lmi )
 {
     ModelCtxt* model = (ModelCtxt*)closure;
-    return model_getPlayersLastScore( model, player,
-                                      lmi, expl, explLen );
+    return model_getPlayersLastScore( model, player, lmi );
 } /* board_ScoreCallback */
 
 #ifdef XWFEATURE_SCOREONEPASS

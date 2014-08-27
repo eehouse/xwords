@@ -1416,14 +1416,12 @@ public class BoardDelegate extends DelegateBase
         public void playerScoreHeld( int player )
         {
             LastMoveInfo lmi = new LastMoveInfo();
-            String expl = XwJNI.model_getPlayersLastScore( m_jniGamePtr, 
-                                                           player, lmi );
-            expl = lmi.format( m_activity );
-            if ( expl.length() == 0 ) {
+            XwJNI.model_getPlayersLastScore( m_jniGamePtr, player, lmi );
+            String expl = lmi.format( m_activity );
+            if ( null == expl || 0 == expl.length() ) {
                 expl = getString( R.string.no_moves_made );
             }
-            String name = m_gi.players[player].name;
-            final String text = String.format( "%s\n%s", name, expl );
+            final String text = expl;
             post( new Runnable() {
                     public void run() {
                         showToast( text );

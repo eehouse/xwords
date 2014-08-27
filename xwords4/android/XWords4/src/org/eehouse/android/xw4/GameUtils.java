@@ -799,7 +799,7 @@ public class GameUtils {
                     }
 
                     if ( null != lmi ) {
-                        XwJNI.model_getPlayersLastScore( gamePtr, 0, lmi );
+                        XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
                     }
 
                     saveGame( context, gamePtr, gi, lock, false );

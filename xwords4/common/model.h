@@ -272,8 +272,7 @@ XP_Bool getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn,
 XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
-                                   LastMoveInfo* info,
-                                   XP_UCHAR* expl, XP_U16* explLen );
+                                   LastMoveInfo* info );
 #ifdef XWFEATURE_BOARDWORDS
 void model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
                              XWStreamCtxt* stream );

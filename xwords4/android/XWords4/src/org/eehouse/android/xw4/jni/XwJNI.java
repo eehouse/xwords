@@ -270,9 +270,9 @@ public class XwJNI {
                                                         boolean gameOver );
     public static native int model_getNMoves( int gamePtr );
     public static native int model_getNumTilesInTray( int gamePtr, int player );
-    public static native String model_getPlayersLastScore( int gamePtr, 
-                                                           int player, 
-                                                           LastMoveInfo lmi );
+    public static native void model_getPlayersLastScore( int gamePtr, 
+                                                         int player, 
+                                                         LastMoveInfo lmi );
     // Server
     public static native void server_reset( int gamePtr );
     public static native void server_handleUndo( int gamePtr );

@@ -314,15 +314,6 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     case STRS_REMOTE_MOVED:
         return (XP_UCHAR*)"Remote player \"%s\" moved:\n";
 
-    case STR_PASSED: 
-        return (XP_UCHAR*)"Passed";
-    case STRSD_SUMMARYSCORED: 
-        return (XP_UCHAR*)"%s:%d";
-    case STRD_TRADED: 
-        return (XP_UCHAR*)"Traded %d";
-    case STR_LOSTTURN:
-        return (XP_UCHAR*)"Lost turn";
-
 #ifndef XWFEATURE_STANDALONE_ONLY
     case STR_LOCALPLAYERS:
         return (XP_UCHAR*)"Local players";

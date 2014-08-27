@@ -2015,14 +2015,12 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
 
-    XP_UCHAR scoreExpl[128] = {0};
-    XP_U16 explLen = sizeof(scoreExpl);
-    
     LastMoveInfo lmi;
     if ( model_getPlayersLastScore( globals->cGlobals.game.model,
-                                    player, &lmi, scoreExpl, &explLen ) ) {
-        formatLMI( &lmi, scoreExpl, VSIZE(scoreExpl) );
-        (void)gtkask( globals->window, scoreExpl, GTK_BUTTONS_OK, NULL );
+                                    player, &lmi ) ) {
+        XP_UCHAR buf[128];
+        formatLMI( &lmi, buf, VSIZE(buf) );
+        (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
     }
 }
 #endif

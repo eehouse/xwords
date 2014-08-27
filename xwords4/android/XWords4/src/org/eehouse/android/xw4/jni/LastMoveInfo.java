@@ -21,7 +21,19 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 
+import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class LastMoveInfo {
+
+    // Keep in sync with StackMoveType in movestak.h
+    private static final int ASSIGN_TYPE = 0;
+    private static final int MOVE_TYPE = 1;
+    private static final int TRADE_TYPE = 2;
+    private static final int PHONY_TYPE = 3;
+
+    public boolean isValid;
     public String name;
     public int moveType;
     public int score;
@@ -30,6 +42,31 @@ public class LastMoveInfo {
 
     public String format( Context context ) 
     {
-        return String.format( "%s did move type %d", name, moveType );
+        String result = null;
+        if ( isValid ) {
+            switch( moveType ) {
+            case ASSIGN_TYPE:
+                break;
+            case MOVE_TYPE:
+                if ( 0 == nTiles ) {
+                    result = LocUtils.getString( context, R.string.lmi_pass_fmt, 
+                                                 name );
+                } else {
+                    result = LocUtils.getString( context, R.string.lmi_move_fmt, 
+                                                 name, word, score );
+                }
+                break;
+            case TRADE_TYPE:
+                result = LocUtils.getString( context, R.string.lmi_trade_fmt, 
+                                             name, nTiles );
+                break;
+            case PHONY_TYPE:
+                result = LocUtils.getString( context, R.string.lmi_phony_fmt, 
+                                             name );
+                break;
+            }
+        }
+        DbgUtils.logf( "LastMoveInfo.format() => %s", result );
+        return result;
     }
 }

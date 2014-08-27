@@ -189,18 +189,6 @@ public class UtilCtxtImpl implements UtilCtxt {
         case UtilCtxt.STRS_NEW_TILES:
             id = R.string.strs_new_tiles_fmt;
             break;
-        case UtilCtxt.STR_PASSED:
-            id = R.string.str_passed;
-            break;
-        case UtilCtxt.STRSD_SUMMARYSCORED:
-            id = R.string.strsd_summaryscored_fmt;
-            break;
-        case UtilCtxt.STRD_TRADED:
-            id = R.string.strd_traded_fmt;
-            break;
-        case UtilCtxt.STR_LOSTTURN:
-            id = R.string.str_lostturn;
-            break;
         case UtilCtxt.STR_COMMIT_CONFIRM:
             id = R.string.str_commit_confirm;
             break;

@@ -709,20 +709,6 @@
          phonies is set to lose turn when word used not in wordlist
          -->
     <string name="str_phony_rejected">Illegal word in move; turn lost!</string>
-    <!-- Used in formatting exchange move summaries: passed means the
-         user skipped his turn, or made a move involving 0 tiles for 0
-         points -->
-    <string name="str_passed">Passed</string>
-    <!-- formats tiles and score together, and probably doesn't need
-         translation unless the colon ':' needs to be replaced -->
-    <string name="strsd_summaryscored_fmt">%1$s:%2$d</string>
-    <!-- Used in formatting reports of trades (exchanges of tiles).
-         Number of tiles traded is substituted for %1$d-->
-    <string name="strd_traded_fmt">Exchanged %1$d tiles</string>
-    <!-- Used in formatting history and move reports; means user
-         skipped a turn because of an attempted illegal move/play of a
-         phony -->
-    <string name="str_lostturn">Lost turn</string>
     <!-- Beginning of the message presented to a user when asking him
          to confirm committing the current turn-->
     <string name="str_commit_confirm">Commit the current move?\n</string>
@@ -2281,4 +2267,9 @@
     <!-- Used when prev player's name can't be looked up -->
     <string name="prev_player">Your opponent</string>
 
+    <!-- formatting for last move summary in notifications -->
+    <string name="lmi_pass_fmt">%1$s passed</string>
+    <string name="lmi_move_fmt">%1$s played %2$s for %3$d points</string>
+    <string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>
+    <string name="lmi_phony_fmt">%1$s lost a turn</string>
 </resources>
