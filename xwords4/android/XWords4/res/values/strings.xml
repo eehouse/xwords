@@ -1194,7 +1194,7 @@
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
     <string name="query_trade_fmt">Are you sure you want to exchange the
-         selected tiles (%1$s)?</string>
+        %1$d selected tiles (%2$s)?</string>
 
     <!-- ############################################################
          # :Screens:

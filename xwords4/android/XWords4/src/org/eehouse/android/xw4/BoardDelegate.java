@@ -1561,7 +1561,7 @@ public class BoardDelegate extends DelegateBase
         public boolean confirmTrade( String[] tiles )
         {
             m_dlgTitle = R.string.info_title;
-            m_dlgBytes = getString( R.string.query_trade_fmt, 
+            m_dlgBytes = getString( R.string.query_trade_fmt, tiles.length,
                                     TextUtils.join( ", ", tiles ) );
             return 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
         }

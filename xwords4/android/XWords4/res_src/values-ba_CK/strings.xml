@@ -1022,7 +1022,7 @@
   <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
   <string name="query_trade_fmt">Era uoy erus uoy tnaw ot egnahcxe eht
-         detceles selit (%1$s?)</string>
+        %1$d detceles selit (%2$s?)</string>
   <!-- ############################################################
          # :Screens:
          # Chat screen
