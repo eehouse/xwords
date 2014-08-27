@@ -55,16 +55,16 @@ public class FirstRunDialog {
                     }
                     return result;
                 }
-                @Override
-                public void onPageFinished(WebView view, String url)
-                {
-                    if ( !m_loaded ) {
-                        m_loaded = true;
-                        if ( showSurvey ) {
-                            view.loadUrl( "javascript:showSurvey();" );
-                        }
-                    }
-                }
+                // @Override
+                // public void onPageFinished(WebView view, String url)
+                // {
+                //     if ( !m_loaded ) {
+                //         m_loaded = true;
+                //         if ( showSurvey ) {
+                //             view.loadUrl( "javascript:showSurvey();" );
+                //         }
+                //     }
+                // }
             });
         view.getSettings().setJavaScriptEnabled( true ); // for surveymonkey
         view.loadUrl("file:///android_asset/changes.html");
