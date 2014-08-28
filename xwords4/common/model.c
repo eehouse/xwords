@@ -2192,7 +2192,6 @@ scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany,
                LastMoveInfo* lmi )
 {
     XP_U16 score;
-    const XP_UCHAR* format;
     WordNotifierInfo notifyInfo;
     FirstWordData data;
 

@@ -63,7 +63,7 @@ public class XWApp extends Application {
 
         ConnStatusHandler.loadState( this );
 
-        RelayReceiver.RestartTimer( this );
+        OnBootReceiver.startTimers( this );
 
         boolean mustCheck = Utils.firstBootThisVersion( this );
         PreferenceManager.setDefaultValues( this, R.xml.xwprefs, mustCheck );

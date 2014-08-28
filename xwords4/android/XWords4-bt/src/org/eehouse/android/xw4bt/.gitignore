@@ -107,3 +107,7 @@ DwnldDelegate.java
 GroupStateListener.java
 ListGroup.java
 XWExpListAdapter.java
+Delegator.java
+ListDelegator.java
+NagTurnReceiver.java
+OnBootReceiver.java
