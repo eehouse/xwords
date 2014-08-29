@@ -33,7 +33,7 @@ public class LastMoveInfo {
     private static final int TRADE_TYPE = 2;
     private static final int PHONY_TYPE = 3;
 
-    public boolean isValid;
+    public boolean isValid = false; // modified in jni world
     public String name;
     public int moveType;
     public int score;
