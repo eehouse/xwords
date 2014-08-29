@@ -366,13 +366,15 @@ public class RelayService extends XWService
         startService( this ); // bad name: will *stop* threads too
     }
 
-    private void setupNotifications( String[] relayIDs )
+    private void setupNotifications( String[] relayIDs, LastMoveInfo[] lmis )
     {
-        for ( String relayID : relayIDs ) {
+        for ( int ii = 0; ii < relayIDs.length; ++ii ) {
+            String relayID = relayIDs[ii];
+            LastMoveInfo lmi = lmis[ii];
             long[] rowids = DBUtils.getRowIDsFor( this, relayID );
             if ( null != rowids ) {
                 for ( long rowid : rowids ) {
-                    setupNotification( rowid, null );
+                    setupNotification( rowid, lmi );
                 }
             }
         }
@@ -893,18 +895,21 @@ public class RelayService extends XWService
             int nameCount = relayIDs.length;
             DbgUtils.logf( "RelayService.process(): nameCount: %d", nameCount );
             ArrayList<String> idsWMsgs = new ArrayList<String>( nameCount );
+            ArrayList<LastMoveInfo> lmis = new ArrayList<LastMoveInfo>( nameCount );
 
             for ( int ii = 0; ii < nameCount; ++ii ) {
                 byte[][] forOne = msgs[ii];
 
                 // if game has messages, open it and feed 'em to it.
                 if ( null != forOne ) {
+                    LastMoveInfo lmi = new LastMoveInfo();
                     sink.setRowID( rowIDs[ii] );
                     if ( BoardDelegate.feedMessages( rowIDs[ii], forOne )
                          || GameUtils.feedMessages( this, rowIDs[ii],
                                                     forOne, null,
-                                                    sink, null ) ) {
+                                                    sink, lmi ) ) {
                         idsWMsgs.add( relayIDs[ii] );
+                        lmis.add( lmi );
                     } else {
                         DbgUtils.logf( "message for %s (rowid %d) not consumed",
                                        relayIDs[ii], rowIDs[ii] );
@@ -914,7 +919,9 @@ public class RelayService extends XWService
             if ( 0 < idsWMsgs.size() ) {
                 String[] tmp = new String[idsWMsgs.size()];
                 idsWMsgs.toArray( tmp );
-                setupNotifications( tmp );
+                LastMoveInfo[] lmisa = new LastMoveInfo[lmis.size()];
+                lmis.toArray( lmisa );
+                setupNotifications( tmp, lmisa );
             }
             sink.send( this );
         }
