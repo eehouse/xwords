@@ -4,13 +4,14 @@ set -u -e
 
 TAGNAME=""
 FILES=""
+LIST_FILE=''
 VARIANT="XWords4"
 XW_WWW_PATH=${XW_WWW_PATH:-""}
 XW_RELEASE_SCP_DEST=${XW_RELEASE_SCP_DEST:-""}
 
 usage() {
-    echo "Error: $*"
-    echo "usage: $0 [--tag <name>] [--variant variant] [<package-unsigned.apk>]" >&2
+    echo "Error: $*" >&2
+    echo "usage: $0 [--tag <name>] [--variant variant] [--apk-list path/to/out.txt] [<package-unsigned.apk>]" >&2
     exit 1
 }
 
@@ -33,6 +34,14 @@ while [ "$#" -gt 0 ]; do
             VARIANT=$2
             shift
             ;;
+		--apk-list)
+			LIST_FILE=$2
+			> $LIST_FILE
+			shift
+			;;
+		--help)
+			usage
+			;;
         *)
             FILES="$1"
             ;;
@@ -64,17 +73,17 @@ fi
 for PACK_UNSIGNED in $FILES; do
 
     PACK_SIGNED=$(basename $PACK_UNSIGNED)
-    echo "base: $PACK_SIGNED"
+    echo "base: $PACK_SIGNED" >&2
     PACK_SIGNED=${PACK_SIGNED/-unsigned}
-    echo "signed: $PACK_SIGNED"
+    echo "signed: $PACK_SIGNED" >&2
     jarsigner -verbose -keystore ~/.keystore $PACK_UNSIGNED mykey
     rm -f $PACK_SIGNED
     zipalign -v 4 $PACK_UNSIGNED $PACK_SIGNED
     [ -n "$XW_WWW_PATH" ] && cp $PACK_SIGNED $XW_WWW_PATH
     TARGET="${PACK_SIGNED%.apk}_$(git describe).apk"
     cp $PACK_SIGNED "${TARGET}"
-    echo "created ${TARGET}"
-
+    echo "created ${TARGET}" >&2
+	[ -n "$LIST_FILE" ] && echo ${TARGET} >> $LIST_FILE
 done
 
 if [ -n "$TAGNAME" ]; then
