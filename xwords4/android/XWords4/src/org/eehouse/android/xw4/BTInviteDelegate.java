@@ -61,7 +61,8 @@ public class BTInviteDelegate extends InviteDelegate
         m_activity = delegator.getActivity();
     }
 
-    protected void init()
+    @Override
+    protected void init( Bundle savedInstanceState )
     {
         super.init( R.id.button_invite, R.id.button_rescan, 
                     R.id.button_clear, R.id.invite_desc,
