@@ -54,22 +54,18 @@
 
     <property name="INITIAL_CLIENT_VERS" value="4"/>
     <property name="VARIANT_NAME" value="xw4bt"/>
+    <property name="APP_NAME" value="cWords-BT"/>
 
     <target name="-pre-clean">
         <antcall target="my-pre-clean" />
     </target>
 
     <target name="-pre-build" depends="my-copy-src">
-        <antcall target="my-pre-build">
-            <param name="VARIANT_NAME" value="${VARIANT_NAME}"/>
-            <param name="APP_NAME" value="cWords-BT"/>
-        </antcall>
+        <antcall target="my-pre-build" />
     </target>
 
     <target name="-pre-compile">
-        <antcall target="my-pre-compile">
-            <param name="VARIANT_NAME" value="${VARIANT_NAME}"/>
-        </antcall>
+        <antcall target="my-pre-compile" />
     </target>
 
 <!--
