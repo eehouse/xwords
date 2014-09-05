@@ -3,15 +3,22 @@
 set -e -u
 
 MANIFEST=AndroidManifest.xml
+INSTALL=''
 
 usage() {
     [ $# -ge 1 ] && echo "ERROR: $1"
-    echo "usage: $0 <cmds to ant>"
+    echo "usage: $0 [-i] <cmds to ant>"
 	echo "   default commands: $CMDS"
     exit 1
 }
 
 CMDS="clean debug install"
+
+if [ $# -ge 1 -a $1 = '-i' ]; then
+	INSTALL=1
+	shift
+fi
+
 if [ $# -gt 0 ]; then
     case $1 in
 	--help|-h|-help|-?)
@@ -48,6 +55,10 @@ esac
 
 ant $CMDS
 
-if [ "$CMDS" != "${CMDS%%install}" ]; then
-	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
+if [ -n "$INSTALL" ]; then
+	adb-install.sh -e -d
 fi
+
+# if [ "$CMDS" != "${CMDS%%install}" ]; then
+# 	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
+# fi
