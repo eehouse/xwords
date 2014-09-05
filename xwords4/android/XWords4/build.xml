@@ -53,21 +53,19 @@
          in between standard targets -->
 
     <property name="INITIAL_CLIENT_VERS" value="4"/>
+    <property name="VARIANT_NAME" value="xw4"/>
+    <property name="APP_NAME" value="Crosswords"/>
+
     <target name="-pre-clean">
         <antcall target="my-pre-clean" />
     </target>
 
     <target name="-pre-build">
-        <antcall target="my-pre-build">
-            <param name="VARIANT_NAME" value="xw4"/>
-            <param name="APP_NAME" value="Crosswords"/>
-        </antcall>
+        <antcall target="my-pre-build" />
     </target>
 
     <target name="-pre-compile">
-        <antcall target="my-pre-compile">
-            <param name="VARIANT_NAME" value="xw4"/>
-        </antcall>
+        <antcall target="my-pre-compile" />
     </target>
 
 <!--
