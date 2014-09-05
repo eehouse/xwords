@@ -1078,7 +1078,7 @@ public class DictsDelegate extends ListDelegateBase
         public FetchListTask( Context context )
         {
             m_context = context;
-            startProgress( R.string.remote_empty, this );
+            startProgress( R.string.progress_title, R.string.remote_empty, this );
         }
 
         @Override 

@@ -109,7 +109,7 @@ public class BTInviteDelegate extends InviteDelegate
 
     protected void scan()
     {
-        startProgress( R.string.scan_progress );
+        startProgress( R.string.scan_progress_title, R.string.scan_progress );
         BTService.scan( m_activity );
     }
 

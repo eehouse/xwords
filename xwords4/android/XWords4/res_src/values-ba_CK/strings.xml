@@ -1574,9 +1574,11 @@
   <!--  -->
   <string name="bt_pick_clear_button">Evomer dekcehc</string>
   <!--  -->
+  <string name="scan_progress_title">Gninnacs...</string>
   <string name="scan_progress">Gninnacs rof Sdrowssorc no deriap secived</string>
   <!--  -->
-  <string name="invite_progress">Gnidnes wen emag ofni…</string>
+  <string name="invite_progress_title">Gnidnes…</string>
+  <string name="invite_progress">Gnidnes wen emag ofni</string>
   <!--  -->
   <string name="summary_wait_host">Gnitiaw rof ]s[noitcennoc</string>
   <!--  -->

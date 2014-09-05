@@ -349,15 +349,15 @@ public class DlgDelegate {
         }
     }
 
-    public void startProgress( int id )
+    public void startProgress( int titleID, int msgID )
     {
-        startProgress( id, null );
+        startProgress( titleID, msgID, null );
     }
 
-    public void startProgress( int id, OnCancelListener canLstnr )
+    public void startProgress( int titleID, int msgID, OnCancelListener canLstnr )
     {
-        String title = LocUtils.getString( m_activity, R.string.progress_title );
-        String msg = LocUtils.getString( m_activity, id );
+        String title = LocUtils.getString( m_activity, titleID );
+        String msg = LocUtils.getString( m_activity, msgID );
         m_progress = ProgressDialog.show( m_activity, title, msg, true, true );
         
         if ( null != canLstnr ) {

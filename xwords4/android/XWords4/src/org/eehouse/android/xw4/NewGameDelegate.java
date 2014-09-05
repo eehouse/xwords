@@ -220,7 +220,8 @@ public class NewGameDelegate extends DelegateBase {
                             BTService.inviteRemote( m_activity, m_remoteDev,
                                                     m_gameID, m_gameName, 
                                                     m_lang, m_dict, 2, 1 );
-                            startProgress( R.string.invite_progress );
+                            startProgress( R.string.invite_progress_title, 
+                                           R.string.invite_progress );
                         } else {
                             SMSService.inviteRemote( m_activity, m_remoteDev,
                                                      m_gameID, m_gameName, 

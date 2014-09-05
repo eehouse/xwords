@@ -1574,9 +1574,11 @@
   <!--  -->
   <string name="bt_pick_clear_button">REMOVE CHECKED</string>
   <!--  -->
+  <string name="scan_progress_title">SCANNING...</string>
   <string name="scan_progress">SCANNING FOR CROSSWORDS ON PAIRED DEVICES</string>
   <!--  -->
-  <string name="invite_progress">SENDING NEW GAME INFO…</string>
+  <string name="invite_progress_title">SENDING…</string>
+  <string name="invite_progress">SENDING NEW GAME INFO</string>
   <!--  -->
   <string name="summary_wait_host">WAITING FOR CONNECTION[S]</string>
   <!--  -->

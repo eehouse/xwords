@@ -396,14 +396,14 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         m_delegate.showOKOnlyDialog( msg, action );
     }
 
-    protected void startProgress( int id )
+    protected void startProgress( int titleID, int msgID )
     {
-        m_delegate.startProgress( id );
+        m_delegate.startProgress( titleID, msgID );
     }
 
-    protected void startProgress( int id, OnCancelListener lstnr )
+    protected void startProgress( int titleID, int msgID, OnCancelListener lstnr )
     {
-        m_delegate.startProgress( id, lstnr );
+        m_delegate.startProgress( titleID, msgID, lstnr );
     }
 
     protected void setProgressMsg( int id )

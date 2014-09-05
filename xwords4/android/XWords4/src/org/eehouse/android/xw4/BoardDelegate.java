@@ -2134,7 +2134,7 @@ public class BoardDelegate extends DelegateBase
                     }
                 }
                 if ( doProgress ) {
-                    startProgress( R.string.invite_progress );
+                    startProgress( R.string.invite_progress_title, R.string.invite_progress );
                 }
                 m_missingDevs = null;
             }
