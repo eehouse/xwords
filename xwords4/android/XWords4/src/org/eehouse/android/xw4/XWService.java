@@ -51,10 +51,7 @@ public class XWService extends Service {
         if ( null != s_srcMgr ) {
             s_srcMgr.sendResult( event, args );
         } else {
-            DbgUtils.logf( "XWService.sendResult: dropping event" );
+            DbgUtils.logf( "XWService.sendResult: dropping %s event", event.toString() );
         }
     }
-
-
-
 }
