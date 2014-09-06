@@ -48,8 +48,9 @@ import java.util.HashSet;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -682,7 +683,10 @@ public class SMSService extends XWService {
         String owner = Utils.phoneToContact( this, phone, true );
         String body = LocUtils.getString( this, R.string.new_name_body_fmt, 
                                           owner );
-        postNotification( gameID, R.string.new_sms_title, body, rowid );
+
+        Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
+        Utils.postNotification( this, intent, R.string.new_sms_title, body, 
+                                (int)rowid );
 
         ackInvite( phone, gameID );
     }
@@ -775,22 +779,14 @@ public class SMSService extends XWService {
                     // do nothing
                 } else {
                     SMSMsgSink sink = new SMSMsgSink( this );
+                    LastMoveInfo lmi = new LastMoveInfo();
                     if ( GameUtils.feedMessage( this, rowid, msg, addr, 
-                                                sink, null ) ) {
-                        postNotification( gameID, R.string.new_smsmove_title, 
-                                          getString(R.string.new_move_body),
-                                          rowid );
+                                                sink, lmi ) ) {
+                        GameUtils.postMoveNotification( this, rowid, lmi );
                     }
                 }
             }
         }
-    }
-
-    private void postNotification( int gameID, int title, String body, 
-                                   long rowid )
-    {
-        Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
-        Utils.postNotification( this, intent, title, body, (int)rowid );
     }
 
     // Runs in separate thread
