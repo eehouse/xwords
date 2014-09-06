@@ -1903,8 +1903,6 @@
     <!--  -->
     <string name="new_name_body_fmt">%1$s has invited you to play</string>
     <!--  -->
-    <string name="new_smsmove_title">New move via SMS</string>
-    <!--  -->
     <string name="button_sms_add">Import contact</string>
     <!--  -->
     <string name="invite_sms_desc_fmt">Please check the %1$d phone
