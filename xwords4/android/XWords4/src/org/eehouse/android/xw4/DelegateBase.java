@@ -74,8 +74,6 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
     public boolean onOptionsItemSelected( MenuItem item ) { return false; }
     protected void onStart() {}
-    protected void onResume() {}
-    protected void onPause() {}
     protected void onStop() {}
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
@@ -83,6 +81,16 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected void prepareDialog( DlgID dlgID, Dialog dialog ) {}
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data ) {}
+
+    protected void onResume() 
+    {
+        XWService.setListener( this );
+    }
+
+    protected void onPause()
+    {
+        XWService.setListener( null );
+    }
 
     public boolean onCreateOptionsMenu( Menu menu, MenuInflater inflater )
     {
@@ -436,5 +444,4 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     {
         Assert.fail();
     }
-
 }

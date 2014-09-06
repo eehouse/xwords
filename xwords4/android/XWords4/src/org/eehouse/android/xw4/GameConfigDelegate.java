@@ -446,6 +446,7 @@ public class GameConfigDelegate extends DelegateBase
             m_gameLock = null;
         }
         m_giOrig = null;        // flag for onStart and onResume
+        super.onPause();
     }
 
     protected void onSaveInstanceState( Bundle outState ) 

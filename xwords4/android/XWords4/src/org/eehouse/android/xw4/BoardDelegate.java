@@ -543,6 +543,7 @@ public class BoardDelegate extends DelegateBase
         m_handler = null;
         ConnStatusHandler.setHandler( null );
         waitCloseGame( true );
+        super.onPause();
     }
 
     @Override

@@ -166,6 +166,7 @@ public class PrefsDelegate extends DelegateBase
     protected void onPause() 
     {
         getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+        super.onPause();
     }
 
     @Override

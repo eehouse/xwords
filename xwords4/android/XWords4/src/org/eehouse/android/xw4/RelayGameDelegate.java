@@ -97,6 +97,7 @@ public class RelayGameDelegate extends DelegateBase
             m_gameLock.unlock();
             m_gameLock = null;
         }
+        super.onPause();
     }
 
     public void onClick( View view ) 

@@ -235,6 +235,7 @@ public class DictBrowseDelegate extends ListDelegateBase
             DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
             m_browseState = null;
         }
+        super.onPause();
     }
 
     @Override
