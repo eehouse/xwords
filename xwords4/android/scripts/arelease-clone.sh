@@ -69,6 +69,7 @@ cp *.apk /tmp/releases_${VARIANT}
 
 if [ -n "$XW_RELEASE_SCP_DEST" ]; then
 	cat $OUT_FILE | while read APK; do
+		echo "running: scp /tmp/releases_${VARIANT}/$APK $XW_RELEASE_SCP_DEST ..."
 		scp /tmp/releases_${VARIANT}/$APK $XW_RELEASE_SCP_DEST
 	done
 fi
