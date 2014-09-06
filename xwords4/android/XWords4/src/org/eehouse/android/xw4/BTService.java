@@ -1,6 +1,6 @@
-/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
+/* -*- compile-command: "find-and-ant.sh -i debug"; -*- */
 /*
- * Copyright 2010 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2014 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
@@ -483,16 +484,19 @@ public class BTService extends XWService {
                                                           host.getAddress() );
 
                     for ( long rowid : rowids ) {
-                        if ( BoardDelegate.feedMessage( gameID, buffer, addr ) ) {
-                            // do nothing
-                        } else if ( haveGame && 
-                                    GameUtils.feedMessage( BTService.this, rowid, 
-                                                           buffer, addr, 
-                                                           m_btMsgSink, null ) ) {
-                            postNotification( gameID, R.string.new_btmove_title, 
-                                              R.string.new_move_body, rowid );
-                            // do nothing
-                        } else {
+                        boolean consumed = 
+                            BoardDelegate.feedMessage( gameID, buffer, addr );
+                        if ( !consumed && haveGame ) {
+                            LastMoveInfo lmi = new LastMoveInfo();
+                            if ( GameUtils.feedMessage( BTService.this, rowid, 
+                                                        buffer, addr, 
+                                                        m_btMsgSink, lmi ) ) {
+                                consumed = true;
+                                GameUtils.postMoveNotification( BTService.this,
+                                                                rowid, lmi );
+                            }
+                        }
+                        if ( !consumed ) {
                             DbgUtils.logf( "nobody took msg for gameID %X", 
                                            gameID );
                         }
@@ -960,12 +964,6 @@ public class BTService extends XWService {
             dos = null;
         }
         return dos;
-    }
-
-    private void postNotification( int gameID, int title, int body, long rowid )
-    {
-        String bstr = LocUtils.getString( this, body );
-        postNotification( gameID, title, bstr, rowid );
     }
 
     private void postNotification( int gameID, int title, String body, 

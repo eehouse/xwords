@@ -1859,7 +1859,7 @@
     <string name="bt_bad_proto_fmt">Crosswords on %1$s wrong version for
       Bluetooth play.</string>
       <!--  -->
-    <string name="new_btmove_title">New move via Bluetooth</string>
+    <string name="new_btmove_title">Message via Bluetooth</string>
     <!--  -->
     <string name="new_move_body">One or more moves has arrived</string>
     <!--  -->

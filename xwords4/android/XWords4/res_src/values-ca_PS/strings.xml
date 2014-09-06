@@ -1596,7 +1596,7 @@
   <string name="bt_bad_proto_fmt">CROSSWORDS ON %1$s WRONG VERSION FOR
       BLUETOOTH PLAY.</string>
   <!--  -->
-  <string name="new_btmove_title">NEW MOVE VIA BLUETOOTH</string>
+  <string name="new_btmove_title">MESSAGE VIA BLUETOOTH</string>
   <!--  -->
   <string name="new_move_body">ONE OR MORE MOVES HAS ARRIVED</string>
   <!--  -->

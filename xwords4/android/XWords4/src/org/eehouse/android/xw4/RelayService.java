@@ -374,24 +374,12 @@ public class RelayService extends XWService
             long[] rowids = DBUtils.getRowIDsFor( this, relayID );
             if ( null != rowids ) {
                 for ( long rowid : rowids ) {
-                    setupNotification( rowid, lmi );
+                    GameUtils.postMoveNotification( this, rowid, lmi );
                 }
             }
         }
     }
 
-    private void setupNotification( long rowid, LastMoveInfo lmi )
-    {
-        Intent intent = GamesListDelegate.makeRowidIntent( this, rowid );
-        String msg = "";
-        if ( null != lmi ) {
-            msg = lmi.format( this );
-        }
-        String title = LocUtils.getString( this, R.string.notify_title_fmt,
-                                           GameUtils.getName( this, rowid ) );
-        Utils.postNotification( this, intent, title, msg, (int)rowid );
-    }
-    
     private boolean startFetchThreadIf()
     {
         // DbgUtils.logf( "startFetchThreadIf()" );
@@ -870,7 +858,7 @@ public class RelayService extends XWService
             LastMoveInfo lmi = new LastMoveInfo();
             if ( GameUtils.feedMessage( this, rowid, msg, null, 
                                         sink, lmi ) ) {
-                setupNotification( rowid, lmi );
+                GameUtils.postMoveNotification( this, rowid, lmi );
             } else {
                 DbgUtils.logf( "feedMessage(): background dropped it" );
             }
