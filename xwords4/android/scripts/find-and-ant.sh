@@ -4,33 +4,31 @@ set -e -u
 
 MANIFEST=AndroidManifest.xml
 INSTALL=''
+CMDS=''
 
 usage() {
     [ $# -ge 1 ] && echo "ERROR: $1"
-    echo "usage: $0 [-i] <cmds to ant>"
-	echo "   default commands: $CMDS"
+    echo "usage: $0 <cmds to ant>"
     exit 1
 }
 
-CMDS="clean debug install"
-
-if [ $# -ge 1 -a $1 = '-i' ]; then
-	INSTALL=1
-	shift
-fi
-
-if [ $# -gt 0 ]; then
+while [ $# -gt 0 ]; do
     case $1 in
-	--help|-h|-help|-?)
-	    usage
-	    ;;
-	*)
-	    CMDS="$*"
-	    break;
-	    ;;
+		--help|-h|-help|-?)
+			usage
+			;;
+		clean|debug|release)
+			CMDS="$CMDS $1"
+			;;
+		install)
+			INSTALL=1
+			;;
+		*)
+			usage "Unexpected param $1"
+			;;
     esac
     shift
-fi
+done
 
 while [ ! -e $MANIFEST -o $(basename $(pwd)) = 'bin' ]; do
     [ '/' = $(pwd) ] && usage "reached root without finding $MANIFEST"
