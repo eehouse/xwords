@@ -67,6 +67,7 @@ public class NewGameDelegate extends DelegateBase {
     private long m_groupID;
     private String m_remoteDev;
     private Activity m_activity;
+    private int m_hidden;
 
     protected NewGameDelegate( Delegator delegator, Bundle savedInstanceState )
     {
@@ -79,6 +80,8 @@ public class NewGameDelegate extends DelegateBase {
         getBundledData( savedInstanceState );
 
         m_groupID = getIntent().getLongExtra( GROUPID_EXTRA, -1 );
+
+        setupShowHide();
 
         TextView desc = (TextView)findViewById( R.id.newgame_local_desc );
         m_dict = CommonPrefs.getDefaultHumanDict( m_activity );
@@ -164,6 +167,12 @@ public class NewGameDelegate extends DelegateBase {
     protected void onResume() {
         super.onResume();
         checkEnableBT( false );
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        saveShowHide();
     }
 
     protected void onActivityResult( int requestCode, int resultCode, 
@@ -395,7 +404,7 @@ public class NewGameDelegate extends DelegateBase {
             if ( force || enabled != m_showsOn ) {
                 m_showsOn = enabled;
 
-                findViewById( R.id.bt_separator ).setVisibility( View.VISIBLE );
+                findViewById( R.id.newgame_bt_header ).setVisibility( View.VISIBLE );
 
                 findViewById( R.id.bt_disabled ).
                     setVisibility( enabled ? View.GONE : View.VISIBLE  );
@@ -438,7 +447,7 @@ public class NewGameDelegate extends DelegateBase {
     { 
         if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS(m_activity) ) {
             boolean enabled = XWPrefs.getSMSEnabled( m_activity );
-            findViewById( R.id.sms_separator ).
+            findViewById( R.id.newgame_sms_header ).
                 setVisibility( View.VISIBLE );
 
             findViewById( R.id.sms_disabled ).
@@ -473,6 +482,64 @@ public class NewGameDelegate extends DelegateBase {
                     } );
             }
         }
+    }
+
+    private static final int HIDE_MASK_LOCAL = 1;
+    private static final int HIDE_MASK_NET = 2;
+    private static final int HIDE_MASK_BT = 4;
+    private static final int HIDE_MASK_SMS = 8;
+    private static final String NGD_HIDDEN = "NGD_HIDDEN";
+
+    private static final int[][] SHOW_HIDE_PAIRS = {
+        { R.id.newgame_local_header, 
+          R.string.newgame_local_header, 
+          R.id.newgame_local_hideable,
+          HIDE_MASK_LOCAL,
+        },
+        { R.id.newgame_relay_header, 
+          R.string.newgame_networked_header,
+          R.id.newgame_networked_hideable,
+          HIDE_MASK_NET,
+        },
+        { R.id.newgame_sms_header, 
+          R.string.newgame_sms_header,
+          R.id.newgame_sms_hideable,
+          HIDE_MASK_SMS,
+        },
+        { R.id.newgame_bt_header, 
+          R.string.newgame_bt_header,
+          R.id.newgame_bt_hideable,
+          HIDE_MASK_BT,
+        },
+    };
+
+    private void setupShowHide()
+    {
+        m_hidden = DBUtils.getIntFor( m_activity, NGD_HIDDEN, 0 );
+
+        for ( int[] pair : SHOW_HIDE_PAIRS ) {
+            HeaderWithExpander header = (HeaderWithExpander)findViewById( pair[0] );
+            header.setText( pair[1] );
+            final View nv = findViewById( pair[2] );
+            final int mask = pair[3];
+            header.setOnExpandedListener(new HeaderWithExpander.OnExpandedListener() {
+                    public void expanded( boolean expanded ) {
+                        if ( expanded ) {
+                            nv.setVisibility( View.VISIBLE );
+                            m_hidden &= ~mask;
+                        } else {
+                            nv.setVisibility( View.GONE );
+                            m_hidden |= mask;
+                        }
+                }
+            });
+            header.setExpanded( 0 == (m_hidden & mask) );
+        }
+    }
+
+    private void saveShowHide()
+    {
+        DBUtils.setIntFor( m_activity, NGD_HIDDEN, m_hidden );
     }
 
     public static void startActivity( Activity parent, long groupID )

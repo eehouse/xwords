@@ -1970,6 +1970,21 @@ public class DBUtils {
         return dflt;
     }
 
+    public static void setIntFor( Context context, String key, int value )
+    {
+        String asStr = String.format( "%d", value );
+        setStringFor( context, key, asStr );
+    }
+
+    public static int getIntFor( Context context, String key, int dflt )
+    {
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            dflt = Integer.parseInt( asStr );
+        }
+        return dflt;
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
