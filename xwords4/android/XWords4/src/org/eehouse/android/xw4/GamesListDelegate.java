@@ -110,14 +110,13 @@ public class GamesListDelegate extends ListDelegateBase
             for ( int ii = 0; ii < positions.length; ++ii ) {
                 long groupID = positions[ii];
                 GameGroupInfo ggi = gameInfo.get( groupID );
-                int nKids = ggi.m_count;
                 // m_groupIndices[ii] = alist.size();
                 alist.add( new GroupRec( groupID, ii ) );
 
                 if ( ggi.m_expanded ) {
                     List<Object> children = makeChildren( groupID );
                     alist.addAll( children );
-                    Assert.assertTrue( nKids == children.size() );
+                    Assert.assertTrue( ggi.m_count == children.size() );
                 }
             }
 
