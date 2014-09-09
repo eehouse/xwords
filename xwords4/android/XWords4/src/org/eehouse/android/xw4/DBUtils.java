@@ -810,6 +810,8 @@ public class DBUtils {
         values.put( DBHelper.LASTPLAY_TIME, timestamp );
         values.put( DBHelper.GROUPID, groupID );
 
+        invalGroupsCache();  // do first in case any listener has cached data
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
@@ -823,7 +825,8 @@ public class DBUtils {
             lock = new GameLock( rowid, true ).lock();
             notifyListeners( rowid, GameChangeType.GAME_CREATED );
         }
-        invalGroupsCache();
+
+        invalGroupsCache();     // then again after
         return lock;
     } // saveNewGame
 
