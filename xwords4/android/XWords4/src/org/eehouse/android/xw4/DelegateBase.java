@@ -434,7 +434,8 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     //////////////////////////////////////////////////
     public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {
-        Assert.fail();
+        DbgUtils.logf( "DelegateBase.eventOccurred(event=%s)", event.toString() );
+        // Assert.fail();
     }
 
     //////////////////////////////////////////////////////////////////////
