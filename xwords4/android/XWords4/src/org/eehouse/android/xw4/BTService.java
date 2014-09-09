@@ -1,4 +1,4 @@
-/* -*- compile-command: "find-and-ant.sh -i debug"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright 2010 - 2014 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -439,6 +439,9 @@ public class BTService extends XWService {
                                                       R.string.new_bt_body_fmt, 
                                                       sender );
                     postNotification( gameID, R.string.new_bt_title, body, rowid );
+                    // m_sender.allowReuse( gameID );
+
+                    // Now: can/should I open the game???
                 }
             } else {
                 result = BTCmd.INVITE_DUPID;
@@ -467,7 +470,7 @@ public class BTService extends XWService {
                                    + "gameID of %d", 
                                    len, host.getName(), gameID );
 
-                    // check if it's still here
+                    // check if still here
                     long[] rowids = DBUtils.getRowIDsFor( BTService.this, 
                                                           gameID );
                     boolean haveGame = null != rowids && 0 < rowids.length;
@@ -576,13 +579,13 @@ public class BTService extends XWService {
     private class BTSenderThread extends Thread {
         private LinkedBlockingQueue<BTQueueElem> m_queue;
         private HashMap<String,LinkedList<BTQueueElem> > m_resends;
-        private HashSet<Integer> m_deadGames;
+        // private HashSet<Integer> m_deadGames;
 
         public BTSenderThread()
         {
             m_queue = new LinkedBlockingQueue<BTQueueElem>();
             m_resends = new HashMap<String,LinkedList<BTQueueElem> >();
-            m_deadGames = new HashSet<Integer>();
+            // m_deadGames = new HashSet<Integer>();
         }
 
         public void add( BTQueueElem elem )
@@ -592,9 +595,9 @@ public class BTService extends XWService {
 
         public void removeFor( int gameID )
         {
-            synchronized( m_deadGames ) {
-                m_deadGames.add( gameID );
-            }
+            // synchronized( m_deadGames ) {
+            //     m_deadGames.add( gameID );
+            // }
         }
 
         @Override
@@ -727,15 +730,15 @@ public class BTService extends XWService {
 
         private boolean sendMsg( BTQueueElem elem )
         {
-            boolean success;
-            synchronized( m_deadGames ) {
-                success = m_deadGames.contains( elem.m_gameID );
-            }
+            boolean success = false;
+            // synchronized( m_deadGames ) {
+            //     success = m_deadGames.contains( elem.m_gameID );
+            // }
             MultiEvent evt;
             if ( success ) {
                 evt = MultiEvent.MESSAGE_DROPPED;
-                DbgUtils.logf( "dropping message because game %X dead", 
-                               elem.m_gameID );
+                DbgUtils.logf( "dropping message %s because game %X dead", 
+                               elem.m_cmd, elem.m_gameID );
             } else {
                 evt = MultiEvent.MESSAGE_REFUSED;
             }
