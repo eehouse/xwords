@@ -26,10 +26,7 @@
                     android:layout_marginBottom="10dip"
                     >
         <ImageView android:src="@drawable/sologame"
-                   android:layout_width="wrap_content"
-	               android:layout_height="wrap_content"
-                   android:layout_weight="0"
-                   android:layout_gravity="center_vertical|center_horizontal"
+                   style="@style/newgame_connicon"
                    />
         <TextView android:id="@+id/newgame_local_desc"
                   style="@style/relay_explain"
@@ -68,10 +65,7 @@
 					android:layout_marginBottom="10dip"
 					>
 		<ImageView android:src="@drawable/relaygame"
-                   android:layout_width="wrap_content"
-	               android:layout_height="wrap_content"
-                   android:layout_weight="0"
-                   android:layout_gravity="center_vertical|center_horizontal"
+                   style="@style/newgame_connicon"
                    />
 		<TextView android:text="@string/newgame_networked_desc"
                   style="@style/relay_explain"
@@ -94,79 +88,11 @@
       </LinearLayout>
 	</LinearLayout>
 
-    <!-- SMS game -->
-    <include layout="@layout/expander_header"
-             android:id="@+id/newgame_sms_header"
-             />
-
-	<!-- Wrapper so can show/hide -->
-    <LinearLayout android:orientation="vertical"
-                  android:id="@+id/newgame_sms_hideable"
-                  android:layout_width="fill_parent" 
-                  android:layout_height="wrap_content"
-                  >
-      <LinearLayout android:id="@+id/sms_disabled"
-					android:orientation="vertical"
-					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content"
-					android:visibility="gone"
-					>
-		<TextView android:text="@string/sms_disabled"
-                  style="@style/relay_explain"
-                  />
-		<Button android:id="@+id/newgame_enable_sms"
-				android:layout_width="fill_parent" 
-				android:layout_height="wrap_content"
-				android:text="@string/button_go_settings" 
-				/>
-      </LinearLayout>
-
-      <LinearLayout android:id="@+id/sms_stuff"
-					android:orientation="vertical"
-					android:layout_width="fill_parent" 
-					android:layout_height="wrap_content"
-					android:visibility="gone"
-					>
-		<LinearLayout android:orientation="horizontal"
-                      android:layout_width="fill_parent" 
-                      android:layout_height="wrap_content"
-                      android:layout_marginTop="10dip"
-                      android:layout_marginBottom="10dip"
-                      >
-          <ImageView android:src="@android:drawable/sym_action_chat"
-					 android:layout_width="wrap_content"
-					 android:layout_height="wrap_content"
-					 android:layout_weight="0"
-					 android:layout_gravity="center_vertical|center_horizontal"
-					 />
-          <TextView android:text="@string/sms_networked_desc"
-					style="@style/relay_explain"
-					/>
-		</LinearLayout>
-
-		<LinearLayout android:orientation="horizontal"
-                      android:layout_width="fill_parent" 
-                      android:layout_height="wrap_content"
-                      >
-          <Button android:id="@+id/newgame_invite_sms"
-                  android:text="@string/newgame_invite" 
-                  style="@style/evenly_spaced_horizontal"
-                  />
-
-          <Button android:id="@+id/newgame_sms_config"
-                  android:text="@string/newgame_configure_first" 
-                  style="@style/evenly_spaced_horizontal"
-                  />
-		</LinearLayout>
-      </LinearLayout>
-    </LinearLayout>
-
     <!-- Bluetooth -->
     <include layout="@layout/expander_header"
              android:id="@+id/newgame_bt_header"
              android:visibility="gone"
              />
-
     <LinearLayout android:orientation="vertical"
                   android:id="@+id/newgame_bt_hideable"
                   android:layout_width="fill_parent" 
@@ -202,10 +128,7 @@
                       android:layout_marginBottom="10dip"
                       >
           <ImageView android:src="@android:drawable/stat_sys_data_bluetooth"
-					 android:layout_width="wrap_content"
-					 android:layout_height="wrap_content"
-					 android:layout_weight="0"
-					 android:layout_gravity="center_vertical|center_horizontal"
+                     style="@style/newgame_connicon"
 					 />
           <TextView android:text="@string/bt_networked_desc"
 					style="@style/relay_explain"
@@ -228,6 +151,69 @@
 		</LinearLayout>
       </LinearLayout>
     </LinearLayout>				<!--bluetooth-->
+
+    <!-- SMS game -->
+    <include layout="@layout/expander_header"
+             android:id="@+id/newgame_sms_header"
+             />
+	<!-- Wrapper so can show/hide -->
+    <LinearLayout android:orientation="vertical"
+                  android:id="@+id/newgame_sms_hideable"
+                  android:layout_width="fill_parent" 
+                  android:layout_height="wrap_content"
+                  >
+      <LinearLayout android:id="@+id/sms_disabled"
+					android:orientation="vertical"
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content"
+					android:visibility="gone"
+					>
+		<TextView android:text="@string/sms_disabled"
+                  style="@style/relay_explain"
+                  />
+		<Button android:id="@+id/newgame_enable_sms"
+				android:layout_width="fill_parent" 
+				android:layout_height="wrap_content"
+				android:text="@string/button_go_settings" 
+				/>
+      </LinearLayout>
+
+      <LinearLayout android:id="@+id/sms_stuff"
+					android:orientation="vertical"
+					android:layout_width="fill_parent" 
+					android:layout_height="wrap_content"
+					android:visibility="gone"
+					>
+		<LinearLayout android:orientation="horizontal"
+                      android:layout_width="fill_parent" 
+                      android:layout_height="wrap_content"
+                      android:layout_marginTop="10dip"
+                      android:layout_marginBottom="10dip"
+                      >
+          <ImageView android:src="@android:drawable/sym_action_chat"
+                     style="@style/newgame_connicon"
+					 />
+          <TextView android:text="@string/sms_networked_desc"
+					style="@style/relay_explain"
+					/>
+		</LinearLayout>
+
+		<LinearLayout android:orientation="horizontal"
+                      android:layout_width="fill_parent" 
+                      android:layout_height="wrap_content"
+                      >
+          <Button android:id="@+id/newgame_invite_sms"
+                  android:text="@string/newgame_invite" 
+                  style="@style/evenly_spaced_horizontal"
+                  />
+
+          <Button android:id="@+id/newgame_sms_config"
+                  android:text="@string/newgame_configure_first" 
+                  style="@style/evenly_spaced_horizontal"
+                  />
+		</LinearLayout>
+      </LinearLayout>
+    </LinearLayout>				<!-- SMS game -->
 
   </LinearLayout>
 </ScrollView>

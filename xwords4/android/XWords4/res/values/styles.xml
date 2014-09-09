@@ -90,5 +90,12 @@
         <item name="android:layout_weight">1</item>
     </style>
 
+    <style name="newgame_connicon">
+	  <item name="android:layout_width">wrap_content</item>
+	  <item name="android:layout_height">wrap_content</item>
+	  <item name="android:layout_weight">0</item>
+	  <item name="android:layout_gravity">center_vertical|center_horizontal</item>
+    </style>
+
 </resources>
 
