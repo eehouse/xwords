@@ -1421,8 +1421,14 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String[][] missingNames = new String[1][];
         int[] missingLang = new int[1];
-        boolean hasDicts = 
-            GameUtils.gameDictsHere( m_activity, rowid, missingNames, missingLang );
+        boolean hasDicts;
+        try { 
+            hasDicts = GameUtils.gameDictsHere( m_activity, rowid, missingNames,
+                                                missingLang );
+        } catch ( GameUtils.NoSuchGameException nsge ) {
+            hasDicts = true;    // irrelevant question
+        }
+
         if ( !hasDicts ) {
             m_missingDictLang = missingLang[0];
             if ( 0 < missingNames[0].length ) {
