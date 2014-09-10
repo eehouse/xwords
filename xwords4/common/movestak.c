@@ -180,7 +180,8 @@ stack_destroy( StackCtxt* stack )
     if ( !!stack->data ) {
         stream_destroy( stack->data );
     }
-    ASSERT_NOT_DIRTY( stack );
+    /* Ok to close with a dirty stack, e.g. if not saving a deleted game */
+    // ASSERT_NOT_DIRTY( stack );
     XP_FREE( stack->mpool, stack );
 } /* stack_destroy */
 
