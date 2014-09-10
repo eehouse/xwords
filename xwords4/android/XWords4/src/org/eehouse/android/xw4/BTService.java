@@ -64,6 +64,7 @@ public class BTService extends XWService {
     private static final int RADIO = 4;
     private static final int CLEAR = 5;
     private static final int REMOVE = 6;
+    private static final int NFCINVITE = 7;
 
     private static final String CMD_STR = "CMD";
     private static final String MSG_STR = "MSG";
@@ -79,6 +80,8 @@ public class BTService extends XWService {
     private static final String DICT_STR = "DCT";
     private static final String NTO_STR = "TOT";
     private static final String NHE_STR = "HER";
+    private static final String BT_NAME_STR = "BT_NAME_STR";
+    private static final String BT_ADDRESS_STR = "BT_ADDRESS_STR";
 
     private enum BTCmd { 
             PING,
@@ -187,6 +190,19 @@ public class BTService extends XWService {
         context.startService( intent );
     }
 
+    public static void gotGameViaNFC( Context context, BTLaunchInfo bli )
+    {
+        Intent intent = getIntentTo( context, NFCINVITE );
+        intent.putExtra( GAMEID_STR, bli.gameID );
+        intent.putExtra( DICT_STR, bli.dict );
+        intent.putExtra( LANG_STR, bli.lang );
+        intent.putExtra( NTO_STR, bli.nPlayersT );
+        intent.putExtra( BT_NAME_STR, bli.btName );
+        intent.putExtra( BT_ADDRESS_STR, bli.btAddress );
+
+        context.startService( intent );
+    }
+
     public static int enqueueFor( Context context, byte[] buf, 
                                   String targetName, String targetAddr,
                                   int gameID )
@@ -271,6 +287,18 @@ public class BTService extends XWService {
                                                    gameID, gameName, lang, 
                                                    dict, nPlayersT, nPlayersH ) );
                     break;
+
+                case NFCINVITE:
+                    gameID = intent.getIntExtra( GAMEID_STR, -1 );
+                    lang = intent.getIntExtra( LANG_STR, -1 );
+                    dict = intent.getStringExtra( DICT_STR );
+                    nPlayersT = intent.getIntExtra( NTO_STR, -1 );
+                    String btName = intent.getStringExtra( BT_NAME_STR );
+                    String btAddress = intent.getStringExtra( BT_ADDRESS_STR );
+                    /*(void)*/makeGame( this, gameID, null, lang, dict, 
+                                        nPlayersT, 1, btName, btAddress );
+                    break;
+
                 case SEND:
                     byte[] buf = intent.getByteArrayExtra( MSG_STR );
                     target = intent.getStringExtra( TARGET_STR );
@@ -308,7 +336,7 @@ public class BTService extends XWService {
             result = Service.START_STICKY_COMPATIBILITY;
         }
         return result;
-    }
+    } // onStartCommand()
 
     private class BTListenerThread extends Thread {
         private BluetoothServerSocket m_serverSocket;
@@ -421,31 +449,9 @@ public class BTService extends XWService {
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
 
-            long[] rowids = DBUtils.getRowIDsFor( BTService.this, gameID );
-            if ( null == rowids || 0 == rowids.length ) {
-                String sender = host.getName();
-                CommsAddrRec addr = new CommsAddrRec( sender, host.getAddress() );
-                long rowid = GameUtils.makeNewBTGame( context, gameID, addr,
-                                                      lang, dict, nPlayersT, 
-                                                      nPlayersH );
-                if ( DBUtils.ROWID_NOTFOUND == rowid ) {
-                    result = BTCmd.INVITE_FAILED;
-                } else {
-                    if ( null != gameName && 0 < gameName.length() ) {
-                        DBUtils.setName( context, rowid, gameName );
-                    }
-                    result = BTCmd.INVITE_ACCPT;
-                    String body = LocUtils.getString( BTService.this, 
-                                                      R.string.new_bt_body_fmt, 
-                                                      sender );
-                    postNotification( gameID, R.string.new_bt_title, body, rowid );
-                    // m_sender.allowReuse( gameID );
-
-                    // Now: can/should I open the game???
-                }
-            } else {
-                result = BTCmd.INVITE_DUPID;
-            }
+            result = makeGame( context, gameID, gameName, lang, dict, 
+                               nPlayersT, nPlayersH, 
+                               host.getName(), host.getAddress() );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( result.ordinal() );
@@ -946,6 +952,35 @@ public class BTService extends XWService {
         }
         m_sender = null;
         DbgUtils.logf( "stopSender done" );
+    }
+
+    private BTCmd makeGame( Context context, int gameID, String gameName, 
+                            int lang, String dict, int nPlayersT, int nPlayersH,
+                            String sender, String senderAddress )
+    {
+        BTCmd result;
+        long[] rowids = DBUtils.getRowIDsFor( BTService.this, gameID );
+        if ( null == rowids || 0 == rowids.length ) {
+            CommsAddrRec addr = new CommsAddrRec( sender, senderAddress );
+            long rowid = GameUtils.makeNewBTGame( context, gameID, addr,
+                                                  lang, dict, nPlayersT, 
+                                                  nPlayersH );
+            if ( DBUtils.ROWID_NOTFOUND == rowid ) {
+                result = BTCmd.INVITE_FAILED;
+            } else {
+                if ( null != gameName && 0 < gameName.length() ) {
+                    DBUtils.setName( context, rowid, gameName );
+                }
+                result = BTCmd.INVITE_ACCPT;
+                String body = LocUtils.getString( BTService.this, 
+                                                  R.string.new_bt_body_fmt, 
+                                                  sender );
+                postNotification( gameID, R.string.new_bt_title, body, rowid );
+            }
+        } else {
+            result = BTCmd.INVITE_DUPID;
+        }
+        return result;
     }
 
     private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd )

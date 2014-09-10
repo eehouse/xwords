@@ -113,7 +113,6 @@ public class BoardDelegate extends DelegateBase
     private boolean m_volKeysZoom;
     private boolean m_inTrade;  // save this in bundle?
     private BoardUtilCtxt m_utils;
-    private int m_nMissingPlayers = -1;
     private int m_invitesPending;
     private boolean m_gameOver = false;
 
@@ -132,6 +131,8 @@ public class BoardDelegate extends DelegateBase
     private String m_pwdName;
     private String m_getDict;
 
+    // Join these two!!!
+    private int m_nMissingPlayers = -1;
     private int m_missing;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
@@ -1164,13 +1165,25 @@ public class BoardDelegate extends DelegateBase
     public String makeNFCMessage()
     {
         String data = null;
-        if ( 0 < m_missing ) {  // Isn't there a better test??
-            String inviteID = String.format( "%X", m_gi.gameID );
-            String room = m_summary.roomName;
-            Assert.assertNotNull( room );
-            data = NetLaunchInfo.makeLaunchJSON( m_activity, room, inviteID,
-                                                 m_gi.dictLang, 
-                                                 m_gi.dictName, m_gi.nPlayers );
+        switch ( m_connType ) {
+        case COMMS_CONN_RELAY:
+            if ( 0 < m_missing ) {  // Isn't there a better test??
+                String room = m_summary.roomName;
+                String inviteID = String.format( "%X", m_gi.gameID );
+                Assert.assertNotNull( room );
+                data = NetLaunchInfo.makeLaunchJSON( room, inviteID, m_gi.dictLang, 
+                                                     m_gi.dictName, m_gi.nPlayers );
+            }
+            break;
+        case COMMS_CONN_BT:
+            if ( 0 < m_nMissingPlayers ) {
+                data = BTLaunchInfo.makeLaunchJSON( m_gi.gameID, m_gi.dictLang, 
+                                                    m_gi.dictName, m_gi.nPlayers );
+            }
+            break;
+        default:
+            DbgUtils.logf( "Not doing NFC join for conn type %s",
+                           m_connType.toString() );
         }
         return data;
     }

@@ -112,3 +112,5 @@ ListDelegator.java
 NagTurnReceiver.java
 OnBootReceiver.java
 HeaderWithExpander.java
+AbsLaunchInfo.java
+BTLaunchInfo.java

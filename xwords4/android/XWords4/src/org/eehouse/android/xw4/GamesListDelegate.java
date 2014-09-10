@@ -1588,10 +1588,18 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String data = NFCUtils.getFromIntent( intent );
         if ( null != data ) {
-            NetLaunchInfo nli = new NetLaunchInfo( data );
-            if ( nli.isValid() ) {
-                startNewNetGame( nli );
-            }
+            do {
+                NetLaunchInfo nli = new NetLaunchInfo( data );
+                if ( nli.isValid() ) {
+                    startNewNetGame( nli );
+                    break;
+                }
+                BTLaunchInfo bli = new BTLaunchInfo( data );
+                if ( bli.isValid() ) {
+                    BTService.gotGameViaNFC( m_activity, bli );
+                    break;
+                }
+            } while ( false );
         }
     }
 
