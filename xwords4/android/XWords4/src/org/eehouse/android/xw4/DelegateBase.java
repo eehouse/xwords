@@ -80,7 +80,10 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     protected boolean onBackPressed() { return false; }
     protected void prepareDialog( DlgID dlgID, Dialog dialog ) {}
     protected void onActivityResult( int requestCode, int resultCode, 
-                                     Intent data ) {}
+                                     Intent data ) 
+    {
+        DbgUtils.logf( "DelegateBase.onActivityResult(): subclass responsibility!!!" );
+    }
 
     protected void onResume() 
     {
