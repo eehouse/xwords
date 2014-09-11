@@ -65,6 +65,8 @@ public class MultiService {
                           , SMS_SEND_FAILED
                           , SMS_SEND_FAILED_NORADIO
 
+                          , BT_GAME_CREATED
+
                           , RELAY_ALERT
             };
 

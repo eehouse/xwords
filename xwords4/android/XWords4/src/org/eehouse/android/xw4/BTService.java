@@ -976,6 +976,7 @@ public class BTService extends XWService {
                                                   R.string.new_bt_body_fmt, 
                                                   sender );
                 postNotification( gameID, R.string.new_bt_title, body, rowid );
+                sendResult( MultiEvent.BT_GAME_CREATED, rowid );
             }
         } else {
             result = BTCmd.INVITE_DUPID;

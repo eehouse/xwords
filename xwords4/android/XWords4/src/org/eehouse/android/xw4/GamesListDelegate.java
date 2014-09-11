@@ -876,6 +876,9 @@ public class GamesListDelegate extends ListDelegateBase
                     switch( change ) {
                     case GAME_DELETED:
                         m_adapter.removeGame( rowid );
+                        m_launchedGames.remove( rowid );
+                        m_selGames.remove( rowid );
+                        invalidateOptionsMenuIf();
                         break;
                     case GAME_CHANGED:
                         if ( DBUtils.ROWIDS_ALL == rowid ) { // all changed
@@ -910,8 +913,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( ! m_launchedGames.contains( rowid ) ) {
                 showNotAgainDlgThen( R.string.not_again_newselect, 
                                      R.string.key_notagain_newselect,
-                                     Action.OPEN_GAME, rowid,
-                                     summary );
+                                     Action.OPEN_GAME, rowid, summary );
             }
         }
     }
@@ -969,6 +971,9 @@ public class GamesListDelegate extends ListDelegateBase
                                         "Pong from %s", args[0].toString() );
                     } 
                 });
+            break;
+        case BT_GAME_CREATED:
+            launchGame( (Long)args[0], true );
             break;
         default:
             // super.eventOccurred( event, args );
@@ -1643,10 +1648,12 @@ public class GamesListDelegate extends ListDelegateBase
     {
         for ( long rowid : rowids ) {
             GameUtils.deleteGame( m_activity, rowid, false );
+            m_selGames.remove( rowid );
         }
+        invalidateOptionsMenuIf();
+        setTitleBar();
 
         NetUtils.informOfDeaths( m_activity );
-        clearSelections();
     }
 
     private boolean makeNewNetGameIf()
