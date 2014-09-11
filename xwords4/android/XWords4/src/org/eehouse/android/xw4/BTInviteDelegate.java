@@ -38,14 +38,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.os.Handler;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import junit.framework.Assert;
 
-public class BTInviteDelegate extends InviteDelegate
-    implements CompoundButton.OnCheckedChangeListener {
+public class BTInviteDelegate extends InviteDelegate {
 
     private Activity m_activity;
     private boolean m_firstScan;
-    private int m_checkCount;
+    private Set<Integer> m_checked;
+    private boolean m_setChecked;
 
     public static void launchForResult( Activity activity, int nMissing, 
                                         int requestCode )
@@ -64,6 +67,7 @@ public class BTInviteDelegate extends InviteDelegate
     @Override
     protected void init( Bundle savedInstanceState )
     {
+        m_checked = new HashSet<Integer>();
         super.init( R.id.button_invite, R.id.button_rescan, 
                     R.id.button_clear, R.id.invite_desc,
                     R.string.invite_bt_desc_fmt );
@@ -94,8 +98,10 @@ public class BTInviteDelegate extends InviteDelegate
                             if ( null == btDevNames && m_firstScan ) {
                                 BTService.scan( m_activity );
                             }
+                            m_setChecked = null != btDevNames
+                                && m_nMissing == btDevNames.length;
                             setListAdapter( new BTDevsAdapter( btDevNames ) );
-                            m_checkCount = 0;
+                            m_checked.clear();
                             tryEnable();
                             m_firstScan = false;
                         }
@@ -121,7 +127,7 @@ public class BTInviteDelegate extends InviteDelegate
     protected String[] listSelected()
     {
         ListView list = (ListView)findViewById( android.R.id.list );
-        String[] result = new String[m_checkCount];
+        String[] result = new String[m_checked.size()];
         int count = list.getChildCount();
         int index = 0;
         for ( int ii = 0; ii < count; ++ii ) {
@@ -135,21 +141,9 @@ public class BTInviteDelegate extends InviteDelegate
 
     protected void tryEnable() 
     {
-        m_okButton.setEnabled( m_checkCount == m_nMissing );
-        m_clearButton.setEnabled( 0 < m_checkCount );
-    }
-
-    public void onCheckedChanged( CompoundButton buttonView, 
-                                  boolean isChecked )
-    {
-        if ( isChecked ) {
-            ++m_checkCount;
-        } else {
-            --m_checkCount;
-        }
-        DbgUtils.logf( "BTInviteActivity.onCheckedChanged( isChecked=%b ); "
-                       + "count now %d", isChecked, m_checkCount );
-        tryEnable();
+        int size = m_checked.size();
+        m_okButton.setEnabled( size == m_nMissing );
+        m_clearButton.setEnabled( 0 < size );
     }
 
     private class BTDevsAdapter extends XWListAdapter {
@@ -165,7 +159,27 @@ public class BTInviteDelegate extends InviteDelegate
                              ViewGroup parent ) {
             CheckBox box = (CheckBox)inflate( R.layout.btinviter_item );
             box.setText( m_devs[position] );
-            box.setOnCheckedChangeListener( BTInviteDelegate.this );
+
+            CompoundButton.OnCheckedChangeListener listener = 
+                new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged( CompoundButton buttonView, 
+                                                  boolean isChecked )
+                    {
+                        if ( isChecked ) {
+                            m_checked.add( position );
+                        } else {
+                            m_checked.remove( position );
+                            // User's now making changes; don't check new views
+                            m_setChecked = false;
+                        }
+                        tryEnable();
+                    }
+                };
+
+            box.setOnCheckedChangeListener( listener );
+            if ( m_setChecked ) {
+                box.setChecked( true );
+            }
             return box;
         }
     }
