@@ -193,18 +193,16 @@ public class NewGameDelegate extends DelegateBase {
                 break;
             case INVITE_FOR_BT:     // user selected device 
             case INVITE_FOR_SMS:
-                if ( Activity.RESULT_CANCELED != resultCode ) {
-                    m_nameForBT = INVITE_FOR_BT == requestCode;
-                    String[] remoteDevs =
-                        data.getStringArrayExtra( InviteDelegate.DEVS );
-                    Assert.assertTrue( 1 == remoteDevs.length );
-                    m_remoteDev = remoteDevs[0];
+                m_nameForBT = INVITE_FOR_BT == requestCode;
+                String[] remoteDevs =
+                    data.getStringArrayExtra( InviteDelegate.DEVS );
+                Assert.assertTrue( 1 == remoteDevs.length );
+                m_remoteDev = remoteDevs[0];
 
-                    m_gameID = GameUtils.newGameID();
-                    m_gameName = getString( R.string.dft_name_fmt, 
-                                            m_gameID & 0xFFFF );
-                    showDialog( DlgID.NAME_GAME );
-                }
+                m_gameID = GameUtils.newGameID();
+                m_gameName = getString( R.string.dft_name_fmt, 
+                                        m_gameID & 0xFFFF );
+                showDialog( DlgID.NAME_GAME );
                 break;
             }
         }

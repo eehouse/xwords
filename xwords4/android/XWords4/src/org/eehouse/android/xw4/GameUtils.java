@@ -948,7 +948,7 @@ public class GameUtils {
         do {
             rint = Utils.nextRandomInt();
         } while ( 0 == rint );
-        DbgUtils.logf( "newGameID()=>%X", rint );
+        DbgUtils.logf( "newGameID()=>%X (%d)", rint, rint );
         return rint;
     }
 
