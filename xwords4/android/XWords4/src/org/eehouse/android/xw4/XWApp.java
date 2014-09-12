@@ -31,7 +31,8 @@ import java.util.UUID;
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class XWApp extends Application {
-    public static final boolean BTSUPPORTED = false;
+
+    public static final boolean BTSUPPORTED = true;
     public static final boolean SMSSUPPORTED = true;
     public static final boolean GCMSUPPORTED = true;
     public static final boolean ATTACH_SUPPORTED = true;
