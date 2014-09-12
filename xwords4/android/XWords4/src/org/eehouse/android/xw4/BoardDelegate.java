@@ -1179,6 +1179,7 @@ public class BoardDelegate extends DelegateBase
             if ( 0 < m_nMissingPlayers ) {
                 data = BTLaunchInfo.makeLaunchJSON( m_gi.gameID, m_gi.dictLang, 
                                                     m_gi.dictName, m_gi.nPlayers );
+                dismissConfirmThen();
             }
             break;
         default:
@@ -1656,15 +1657,21 @@ public class BoardDelegate extends DelegateBase
             if ( null != action ) {
                 m_haveInvited = true;
                 final Action faction = action;
-                final String fmsg = getString( R.string.invite_msg_fmt,
-                                               nMissingPlayers );
                 post( new Runnable() {
                         public void run() {
                             DbgUtils.showf( m_activity,
                                             getString( R.string.players_miss_fmt,
                                                        nMissingPlayers ) );
                             m_nMissingPlayers = nMissingPlayers;
-                            showConfirmThen( fmsg, faction );
+                            String msg = getString( R.string.invite_msg_fmt,
+                                                    nMissingPlayers );
+
+                            boolean[] avail = NFCUtils.nfcAvail( m_activity );
+                            if ( avail[1] ) {
+                                msg += "\n\n" + getString( R.string.invite_if_nfc );
+                            }
+
+                            showConfirmThen( msg, R.string.newgame_invite, faction );
                         }
                     } );
             }

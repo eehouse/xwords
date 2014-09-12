@@ -526,6 +526,10 @@
       player[s].  Would you like to invite someone to join -- assuming
       you haven\'t already?</string>
 
+    <!-- Appended to message above if local device has NFC available -->
+    <string name="invite_if_nfc">(Or just Tap to Invite -- if the
+        other device also has Android Beaming and is nearby.)</string>
+
       <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
       <string name="players_miss_fmt">%1$d player[s] missing</string>

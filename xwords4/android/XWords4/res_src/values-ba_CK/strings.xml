@@ -443,6 +443,9 @@
   <string name="invite_msg_fmt">Siht emag si gnissim %1$d etomer
       ]s[reyalp.  Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa
       uoy nevah\'t ?ydaerla</string>
+  <!-- Appended to message above if local device has NFC available -->
+  <string name="invite_if_nfc">rO( tsuj Pat ot Etivni -- fi eht
+        rehto ecived osla sah Diordna Gnimaeb dna si ybraen.)</string>
   <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
   <string name="players_miss_fmt">%1$d ]s[reyalp gnissim</string>

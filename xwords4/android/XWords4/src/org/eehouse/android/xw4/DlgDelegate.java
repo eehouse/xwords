@@ -311,6 +311,15 @@ public class DlgDelegate {
         showDialog( DlgID.CONFIRM_THEN );
     }
 
+    public void dismissConfirmThen()
+    {
+        try {
+            m_activity.dismissDialog( DlgID.CONFIRM_THEN.ordinal() );
+        } catch ( java.lang.IllegalArgumentException iae ) {
+            // Do nothing. It's ok for the thing not to be there.
+        }
+    }
+
     public void showInviteChoicesThen( final Action action )
     {
         if ( Utils.deviceSupportsSMS( m_activity )
