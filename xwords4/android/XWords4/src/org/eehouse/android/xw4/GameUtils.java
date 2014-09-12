@@ -1089,9 +1089,10 @@ public class GameUtils {
 
             public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
             {
-                return CommsTransport.sendForAddr( m_context, addr, m_rowid, gameID, buf );
+                return null == addr ? -1
+                    : CommsTransport.sendForAddr( m_context, addr, m_rowid, 
+                                                  gameID, buf );
             }
         }
     }
-
 }
