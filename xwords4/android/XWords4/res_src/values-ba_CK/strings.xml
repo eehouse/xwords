@@ -1590,13 +1590,12 @@
   <!--  -->
   <string name="new_bt_title">Wen emag aiv Htooteulb</string>
   <!--  -->
-  <string name="new_bt_body_fmt">Deriap ecived %1$s sah detivni uoy ot
-      yalp</string>
+  <string name="new_bt_body_fmt">Morf a reyalp no eht ecived %1$s stnaw ot trats a emag</string>
   <!--  -->
   <string name="bt_bad_proto_fmt">Sdrowssorc no %1$s gnorw noisrev rof
       Htooteulb yalp.</string>
   <!--  -->
-  <string name="new_btmove_title">Egassem aiv Htooteulb</string>
+  <string name="new_btmove_title">Noitativni aiv Htooteulb</string>
   <!--  -->
   <string name="new_move_body">Eno ro erom sevom sah devirra</string>
   <!--  -->
