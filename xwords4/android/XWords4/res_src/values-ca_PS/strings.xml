@@ -1580,8 +1580,8 @@
   <string name="scan_progress_title">SCANNING...</string>
   <string name="scan_progress">SCANNING FOR CROSSWORDS ON PAIRED DEVICES</string>
   <!--  -->
-  <string name="invite_progress_title">SENDING…</string>
-  <string name="invite_progress">SENDING NEW GAME INFO</string>
+  <!-- <string name="invite_progress_title">Sending…</string> -->
+  <!-- <string name="invite_progress">Sending new game info</string> -->
   <!--  -->
   <string name="summary_wait_host">WAITING FOR CONNECTION[S]</string>
   <!--  -->
@@ -1661,8 +1661,6 @@
   <!--  -->
   <string name="confirm_clear">ARE YOU SURE YOU WANT TO DELETE THE
     CHECKED PHONE NUMBER[S]?</string>
-  <!--  -->
-  <string name="invite_success">INVITATION RECEIVED.</string>
   <!--  -->
   <string name="connect_label_sms">CONNECTION (VIA SMS/TEXT)</string>
   <!--  -->

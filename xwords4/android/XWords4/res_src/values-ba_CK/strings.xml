@@ -1580,8 +1580,8 @@
   <string name="scan_progress_title">Gninnacs...</string>
   <string name="scan_progress">Gninnacs rof Sdrowssorc no deriap secived</string>
   <!--  -->
-  <string name="invite_progress_title">Gnidnes…</string>
-  <string name="invite_progress">Gnidnes wen emag ofni</string>
+  <!-- <string name="invite_progress_title">Sending…</string> -->
+  <!-- <string name="invite_progress">Sending new game info</string> -->
   <!--  -->
   <string name="summary_wait_host">Gnitiaw rof ]s[noitcennoc</string>
   <!--  -->
@@ -1661,8 +1661,6 @@
   <!--  -->
   <string name="confirm_clear">Era uoy erus uoy tnaw ot eteled eht
     dekcehc enohp ?]s[rebmun</string>
-  <!--  -->
-  <string name="invite_success">Noitativni deviecer.</string>
   <!--  -->
   <string name="connect_label_sms">Noitcennoc aiv( )TXet/sms</string>
   <!--  -->

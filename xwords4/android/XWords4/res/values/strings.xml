@@ -1843,10 +1843,6 @@
     <string name="scan_progress_title">Scanning...</string>
     <string name="scan_progress">Scanning for Crosswords on paired devices</string>
       <!--  -->
-    <string name="invite_progress_title">Sending…</string>
-    <string name="invite_progress">Sending new game info</string>
-
-      <!--  -->
     <string name="summary_wait_host">Waiting for connection[s]</string>
       <!--  -->
     <string name="summary_wait_guest">Unconnected</string>
@@ -1925,8 +1921,6 @@
     <!--  -->
     <string name="confirm_clear">Are you sure you want to delete the
     checked phone number[s]?</string>
-    <!--  -->
-    <string name="invite_success">Invitation received.</string>
     <!--  -->
     <string name="connect_label_sms">Connection (via SMS/text)</string>
     <!--  -->

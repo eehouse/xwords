@@ -1033,21 +1033,6 @@ public class BoardDelegate extends DelegateBase
             // thing going.  Not in SMS case.
         case NEWGAME_FAILURE:
             DbgUtils.logf( "failed to create game" );
-        case NEWGAME_SUCCESS:
-            final boolean success = 
-                MultiService.MultiEvent.NEWGAME_SUCCESS == event;
-            final boolean allHere = 0 == --m_invitesPending;
-            m_handler.post( new Runnable() {
-                    public void run() {
-                        if ( allHere ) {
-                            stopProgress();
-                        }
-                        // if ( success ) {
-                        //     DbgUtils.showf( m_activity, 
-                        //                     R.string.invite_success );
-                        // }
-                    }
-                } );
             break;
 
         case SMS_SEND_OK:
@@ -2136,7 +2121,6 @@ public class BoardDelegate extends DelegateBase
         if ( XWApp.BTSUPPORTED || XWApp.SMSSUPPORTED ) {
             if ( null != m_missingDevs ) {
                 String gameName = GameUtils.getName( m_activity, m_rowid );
-                boolean doProgress = false;
                 m_invitesPending = m_missingDevs.length;
                 for ( String dev : m_missingDevs ) {
                     switch( m_connType ) {
@@ -2153,9 +2137,6 @@ public class BoardDelegate extends DelegateBase
                                                  1 );
                         break;
                     }
-                }
-                if ( doProgress ) {
-                    startProgress( R.string.invite_progress_title, R.string.invite_progress );
                 }
                 m_missingDevs = null;
             }
