@@ -1278,11 +1278,17 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 #endif
 #endif
     } else {
-        const CommsAddrRec* addr;
-        (void)channelToAddress( comms, channelNo, &addr );
+        CommsAddrRec addr;
+        const CommsAddrRec* addrP;
+        (void)channelToAddress( comms, channelNo, &addrP );
+
+        if ( NULL == addrP ) {
+            comms_getAddr( comms, &addr );
+            addrP = &addr;
+        }
 
         XP_ASSERT( !!comms->procs.send );
-        result = (*comms->procs.send)( elem->msg, elem->len, addr,
+        result = (*comms->procs.send)( elem->msg, elem->len, addrP,
                                        gameID(comms), comms->procs.closure );
     }
     
