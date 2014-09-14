@@ -25,7 +25,6 @@ import android.view.View;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.content.Context;
@@ -241,6 +240,10 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( null == s_bitmap ) {
                 s_bitmap = Bitmap.createBitmap( bmWidth, bmHeight,
                                                 Bitmap.Config.ARGB_8888 );
+            } else {
+                // clear so prev game doesn't seem to appear briefly.  Color
+                // doesn't seem to matter....
+                s_bitmap.eraseColor( 0 );
             }
             if ( null == m_canvas ) {
                 m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread, 
