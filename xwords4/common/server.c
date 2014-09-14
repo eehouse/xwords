@@ -551,9 +551,10 @@ server_countTilesInPool( ServerCtxt* server )
 #define NAME_LEN_NBITS 6
 #define MAX_NAME_LEN ((1<<(NAME_LEN_NBITS-1))-1)
 #ifndef XWFEATURE_STANDALONE_ONLY
-void
+XP_Bool
 server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 {
+    XP_Bool result;
     LOG_FUNC();
     CurGameInfo* gi = server->vol.gi;
     XP_U16 nPlayers;
@@ -564,7 +565,8 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
     XP_ASSERT( gi->serverRole == SERVER_ISCLIENT );
     XP_ASSERT( stream != NULL );
-    if ( server->nv.gameState == XWSTATE_NONE ) {
+    result = server->nv.gameState == XWSTATE_NONE;
+    if ( result ) {
         stream_open( stream );
 
         writeProto( server, stream, XWPROTO_DEVICE_REGISTRATION );
@@ -598,12 +600,12 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 #ifdef STREAM_VERS_BIGBOARD
         stream_putU8( stream, CUR_STREAM_VERS );
 #endif
-
     } else {
         XP_LOGF( "%s: wierd state %s; dropping message", __func__,
                  getStateStr(server->nv.gameState) );
     }
     stream_destroy( stream );
+    return result;
 } /* server_initClientConnection */
 #endif
 
