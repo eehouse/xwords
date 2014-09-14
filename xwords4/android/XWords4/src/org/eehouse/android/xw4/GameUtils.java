@@ -456,6 +456,16 @@ public class GameUtils {
                                           String inviteID, int gameID,
                                           boolean isHost )
     {
+        return makeNewMultiGame( context, null, groupID, addr, lang, dict,
+                                 nPlayersT, nPlayersH, inviteID, gameID, 
+                                 isHost );
+    }
+
+    private static long makeNewMultiGame( Context context, MultiMsgSink sink, long groupID, 
+                                          CommsAddrRec addr, int[] lang, String[] dict,
+                                          int nPlayersT, int nPlayersH, 
+                                          String inviteID, int gameID, boolean isHost )
+    {
         long rowid = -1;
 
         Assert.assertNotNull( inviteID );
@@ -478,7 +488,7 @@ public class GameUtils {
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             GameLock lock = new GameLock( rowid, true ).lock();
-            applyChanges( context, gi, addr, inviteID, lock, false );
+            applyChanges( context, sink, gi, addr, inviteID, lock, false );
             lock.unlock();
         }
 
@@ -517,6 +527,15 @@ public class GameUtils {
                                info.nPlayersT );
     }
 
+    public static long makeNewBTGame( Context context, MultiMsgSink sink,
+                                      int gameID, CommsAddrRec addr, int lang, 
+                                      String dict, int nPlayersT, 
+                                      int nPlayersH )
+    {
+        return makeNewBTGame( context, sink, DBUtils.GROUPID_UNSPEC, gameID, addr, 
+                              lang, dict, nPlayersT, nPlayersH );
+    }
+
     public static long makeNewBTGame( Context context, int gameID, 
                                       CommsAddrRec addr, int lang, 
                                       String dict, int nPlayersT, 
@@ -526,9 +545,18 @@ public class GameUtils {
                               lang, dict, nPlayersT, nPlayersH );
     }
     
-    public static long makeNewBTGame( Context context, long groupID, 
-                                      int gameID, CommsAddrRec addr, int lang, 
-                                      String dict, int nPlayersT, int nPlayersH )
+    public static long makeNewBTGame( Context context, long groupID,  int gameID, 
+                                      CommsAddrRec addr, int lang, String dict,
+                                      int nPlayersT, int nPlayersH )
+    {
+        return makeNewBTGame( context, null, groupID, gameID, addr, 
+                              lang,  dict, nPlayersT, nPlayersH );
+    }
+
+    public static long makeNewBTGame( Context context, MultiMsgSink sink, 
+                                      long groupID,  int gameID, CommsAddrRec addr, 
+                                      int lang, String dict,
+                                      int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
         int[] langa = { lang };
@@ -538,7 +566,7 @@ public class GameUtils {
             addr = new CommsAddrRec( null, null );
         }
         String inviteID = GameUtils.formatGameID( gameID );
-        return makeNewMultiGame( context, groupID, addr, langa, dicta, 
+        return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
                                  nPlayersT, nPlayersH, inviteID, gameID, 
                                  isHost );
     }
@@ -878,6 +906,14 @@ public class GameUtils {
                                      CommsAddrRec car, String inviteID, 
                                      GameLock lock, boolean forceNew )
     {
+        applyChanges( context, null, gi, car, inviteID, lock, forceNew );
+    }
+
+    public static void applyChanges( Context context, MultiMsgSink sink,
+                                     CurGameInfo gi, CommsAddrRec car, 
+                                     String inviteID, GameLock lock, 
+                                     boolean forceNew )
+    {
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
         // that don't reset the game, e.g. player name for standalone
@@ -904,12 +940,16 @@ public class GameUtils {
 
         if ( forceNew || !madeGame ) {
             XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
-                                    cp, dictNames, pairs.m_bytes, 
+                                    cp, sink, dictNames, pairs.m_bytes, 
                                     pairs.m_paths, langName );
         }
 
         if ( null != car ) {
             XwJNI.comms_setAddr( gamePtr, car );
+        }
+
+        if ( null != sink ) {
+            JNIThread.tryConnectClient( gamePtr, gi );
         }
 
         saveGame( context, gamePtr, gi, lock, false );

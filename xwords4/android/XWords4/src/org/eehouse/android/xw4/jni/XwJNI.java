@@ -127,6 +127,15 @@ public class XwJNI {
                           dictNames, dictBytes, dictPaths, langName );
     }
 
+    public static void game_makeNewGame( int gamePtr, CurGameInfo gi,
+                                         JNIUtils jniu, CommonPrefs cp, 
+                                         TransportProcs procs,
+                                         String[] dictNames, byte[][] dictBytes, 
+                                         String[] dictPaths, String langName ) {
+        game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu, (DrawCtx)null, 
+                          cp, procs, dictNames, dictBytes, dictPaths, langName );
+    }
+
     public static boolean game_makeFromStream( int gamePtr,
                                                byte[] stream, 
                                                CurGameInfo gi, 
@@ -280,7 +289,7 @@ public class XwJNI {
     public static native String server_formatDictCounts( int gamePtr, int nCols );
     public static native boolean server_getGameIsOver( int gamePtr );
     public static native String server_writeFinalScores( int gamePtr );
-    public static native void server_initClientConnection( int gamePtr );
+    public static native boolean server_initClientConnection( int gamePtr );
     public static native void server_endGame( int gamePtr );
     public static native void server_sendChat( int gamePtr, String msg );
 

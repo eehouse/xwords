@@ -223,23 +223,28 @@ public class NewGameDelegate extends DelegateBase {
                 new DialogInterface.OnClickListener() {
                     public void onClick( DialogInterface dlg, int itm ) {
                         m_gameName = namerView.getName();
+                        long rowid;
+                        CommsAddrRec addr = null;
+
                         if ( m_nameForBT ) {
+                            rowid = GameUtils
+                                .makeNewBTGame( m_activity, m_groupID, m_gameID,
+                                                addr, m_lang, m_dict, 2, 1 );
+
                             BTService.inviteRemote( m_activity, m_remoteDev,
                                                     m_gameID, m_gameName, 
                                                     m_lang, m_dict, 2, 1 );
-                            startProgress( R.string.invite_progress_title, 
-                                           R.string.invite_progress );
                         } else {
                             SMSService.inviteRemote( m_activity, m_remoteDev,
                                                      m_gameID, m_gameName, 
                                                      m_lang, m_dict, 2, 1 );
-                            long rowid = GameUtils.
+                            rowid = GameUtils.
                                 makeNewSMSGame( m_activity, m_groupID, m_gameID, 
-                                                null, m_lang, m_dict, 2, 1 );
-                            DBUtils.setName( m_activity, rowid, m_gameName );
-                            GameUtils.launchGame( m_activity, rowid, true );
-                            finish();
+                                                addr, m_lang, m_dict, 2, 1 );
                         }
+                        DBUtils.setName( m_activity, rowid, m_gameName );
+                        GameUtils.launchGame( m_activity, rowid, true );
+                        finish();
                     }
                 };
 
@@ -277,29 +282,29 @@ public class NewGameDelegate extends DelegateBase {
                     }
                 });
             break;
-        case NEWGAME_FAILURE:
-            post( new Runnable() {
-                    public void run() {
-                        stopProgress();
-                        DbgUtils.showf( m_activity, 
-                                        "Remote failed to create game" );
-                    } 
-                } );
-            break;
-        case NEWGAME_SUCCESS:
-            final int gameID = (Integer)args[0];
-            post( new Runnable() {
-                    public void run() {
-                        long rowid = 
-                            GameUtils.makeNewBTGame( m_activity, m_groupID, 
-                                                     gameID, null, m_lang, 
-                                                     m_dict, 2, 1 );
-                        DBUtils.setName( m_activity, rowid, m_gameName );
-                        GameUtils.launchGame( m_activity, rowid, true );
-                        finish();
-                    }
-                } );
-            break;
+        // case NEWGAME_FAILURE:
+        //     post( new Runnable() {
+        //             public void run() {
+        //                 // stopProgress();
+        //                 DbgUtils.showf( m_activity, 
+        //                                 "Remote failed to create game" );
+        //             } 
+        //         } );
+        //     break;
+        // case NEWGAME_SUCCESS:
+        //     final int gameID = (Integer)args[0];
+        //     post( new Runnable() {
+        //             public void run() {
+        //                 long rowid = 
+        //                     GameUtils.makeNewBTGame( m_activity, m_groupID, 
+        //                                              gameID, null, m_lang, 
+        //                                              m_dict, 2, 1 );
+        //                 DBUtils.setName( m_activity, rowid, m_gameName );
+        //                 GameUtils.launchGame( m_activity, rowid, true );
+        //                 finish();
+        //             }
+        //         } );
+        //     break;
         default:
             super.eventOccurred( event, args );
             break;

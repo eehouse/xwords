@@ -135,7 +135,7 @@ public class BTService extends XWService {
     private BluetoothAdapter m_adapter;
     private HashMap<String,String> m_names;
     private static HashMap<String,int[]> s_devGames;
-    private BTMsgSink m_btMsgSink;
+    private MultiMsgSink m_btMsgSink;
     private BTListenerThread m_listener;
     private BTSenderThread m_sender;
 
@@ -323,9 +323,6 @@ public class BTService extends XWService {
                     break;
                 case REMOVE:
                     gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                    if ( -1 != gameID ) {
-                        m_sender.removeFor( gameID );
-                    }
                     break;
                 default:
                     Assert.fail();
@@ -597,13 +594,6 @@ public class BTService extends XWService {
         public void add( BTQueueElem elem )
         {
             m_queue.add( elem );
-        }
-
-        public void removeFor( int gameID )
-        {
-            // synchronized( m_deadGames ) {
-            //     m_deadGames.add( gameID );
-            // }
         }
 
         @Override
@@ -962,8 +952,8 @@ public class BTService extends XWService {
         long[] rowids = DBUtils.getRowIDsFor( BTService.this, gameID );
         if ( null == rowids || 0 == rowids.length ) {
             CommsAddrRec addr = new CommsAddrRec( sender, senderAddress );
-            long rowid = GameUtils.makeNewBTGame( context, gameID, addr,
-                                                  lang, dict, nPlayersT, 
+            long rowid = GameUtils.makeNewBTGame( context, m_btMsgSink, gameID, 
+                                                  addr, lang, dict, nPlayersT, 
                                                   nPlayersH );
             if ( DBUtils.ROWID_NOTFOUND == rowid ) {
                 result = BTCmd.INVITE_FAILED;
