@@ -2510,9 +2510,6 @@ public final class R {
          */
         public static final int summary_wait_guest=0x7f05020a;
         /**   
- <string name="invite_progress_title">Sending…</string> 
- <string name="invite_progress">Sending new game info</string> 
-  
          */
         public static final int summary_wait_host=0x7f050209;
         /**  Used to indicate that a preference is not enabled, i.e. not
