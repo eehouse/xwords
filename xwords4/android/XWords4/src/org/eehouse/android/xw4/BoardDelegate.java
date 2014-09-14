@@ -1042,10 +1042,10 @@ public class BoardDelegate extends DelegateBase
                         if ( allHere ) {
                             stopProgress();
                         }
-                        if ( success ) {
-                            DbgUtils.showf( m_activity, 
-                                            R.string.invite_success );
-                        }
+                        // if ( success ) {
+                        //     DbgUtils.showf( m_activity, 
+                        //                     R.string.invite_success );
+                        // }
                     }
                 } );
             break;
