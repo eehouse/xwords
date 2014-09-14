@@ -1439,7 +1439,8 @@ linuxChangeRoles( CommonGlobals* cGlobals )
         XWStreamCtxt* stream =
             mem_stream_make( MPPARM(cGlobals->util->mpool) cGlobals->params->vtMgr,
                              cGlobals, CHANNEL_NONE, sendOnClose );
-        server_initClientConnection( server, stream );
+        XP_Bool done = server_initClientConnection( server, stream );
+        XP_ASSERT( !done );
     }
     (void)server_do( server );
 }

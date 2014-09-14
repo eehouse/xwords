@@ -578,8 +578,8 @@ createOrLoadObjects( GtkGameGlobals* globals )
                     mem_stream_make( MEMPOOL params->vtMgr, 
                                      cGlobals, CHANNEL_NONE,
                                      sendOnClose );
-                server_initClientConnection( cGlobals->game.server, 
-                                             stream );
+                (void)server_initClientConnection( cGlobals->game.server, 
+                                                   stream );
             }
 #endif
         }
@@ -945,8 +945,8 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
                 mem_stream_make( MEMPOOL globals->cGlobals.params->vtMgr,
                                  &globals->cGlobals, CHANNEL_NONE, 
                                  sendOnClose );
-            server_initClientConnection( globals->cGlobals.game.server, 
-                                         stream );
+            (void)server_initClientConnection( globals->cGlobals.game.server, 
+                                               stream );
         }
 #endif
         (void)server_do( globals->cGlobals.game.server ); /* assign tiles, etc. */

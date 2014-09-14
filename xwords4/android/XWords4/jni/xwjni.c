@@ -1177,17 +1177,19 @@ and_send_on_close( XWStreamCtxt* stream, void* closure )
     comms_send( state->game.comms, stream );
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
+    jboolean result;
     LOG_FUNC();
     XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     stream_setOnCloseProc( stream, and_send_on_close );
-    server_initClientConnection( state->game.server, stream );
+    result = server_initClientConnection( state->game.server, stream );
     XWJNI_END();
-    LOG_RETURN_VOID();
+    LOG_RETURNF( "%d", result );
+    return result;
 }
 
 JNIEXPORT void JNICALL
