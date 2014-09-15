@@ -69,6 +69,10 @@
                android:name=".XWApp"
                >
 
+    <meta-data android:name="android.nfc.disable_beam_default" 
+               android:value="true" 
+               />
+
     <activity android:name="GamesListActivity" 
               android:label="@string/app_name"
               android:launchMode="standard"
