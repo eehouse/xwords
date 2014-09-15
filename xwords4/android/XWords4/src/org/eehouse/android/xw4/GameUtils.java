@@ -553,6 +553,13 @@ public class GameUtils {
                               lang,  dict, nPlayersT, nPlayersH );
     }
 
+    public static long makeNewBTGame( Context context, BTLaunchInfo bli )
+    {
+        return makeNewBTGame( context, null, DBUtils.GROUPID_UNSPEC, bli.gameID, 
+                              bli.getAddrRec(), bli.lang, bli.dict, 
+                              bli.nPlayersT, 1 );
+    }
+
     public static long makeNewBTGame( Context context, MultiMsgSink sink, 
                                       long groupID,  int gameID, CommsAddrRec addr, 
                                       int lang, String dict,

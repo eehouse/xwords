@@ -514,7 +514,7 @@ public class GamesListDelegate extends ListDelegateBase
     private long[] m_rowids;
     private long m_groupid;
     private String m_nameField;
-    private NetLaunchInfo m_netLaunchInfo;
+    private AbsLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
     private Set<Long> m_launchedGames;
     private boolean m_menuPrepared;
@@ -1391,7 +1391,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private boolean checkWarnNoDict( NetLaunchInfo nli )
+    private boolean checkWarnNoDict( AbsLaunchInfo nli )
     {
         // check that we have the dict required
         boolean haveDict;
@@ -1600,7 +1600,7 @@ public class GamesListDelegate extends ListDelegateBase
                     break;
                 }
                 BTLaunchInfo bli = new BTLaunchInfo( data );
-                if ( bli.isValid() ) {
+                if ( bli.isValid() && checkWarnNoDict( bli ) ) {
                     BTService.gotGameViaNFC( m_activity, bli );
                     break;
                 }
@@ -1660,7 +1660,11 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean madeGame = null != m_netLaunchInfo;
         if ( madeGame ) {
-            makeNewNetGame( m_netLaunchInfo );
+            if ( m_netLaunchInfo instanceof NetLaunchInfo ) {
+                makeNewNetGame( (NetLaunchInfo)m_netLaunchInfo );
+            } else if ( m_netLaunchInfo instanceof BTLaunchInfo ) {
+                makeNewBTGame( (BTLaunchInfo)m_netLaunchInfo );
+            }
             m_netLaunchInfo = null;
         }
         return madeGame;
@@ -1745,6 +1749,12 @@ public class GamesListDelegate extends ListDelegateBase
     private void makeNewNetGame( NetLaunchInfo nli )
     {
         long rowid = GameUtils.makeNewNetGame( m_activity, nli );
+        launchGame( rowid, true );
+    }
+
+    private void makeNewBTGame( BTLaunchInfo nli )
+    {
+        long rowid = GameUtils.makeNewBTGame( m_activity, nli );
         launchGame( rowid, true );
     }
 

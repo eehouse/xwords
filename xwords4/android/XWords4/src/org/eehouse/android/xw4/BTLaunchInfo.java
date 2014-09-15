@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.json.JSONException;
 import android.content.Context;
 
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 
 public class BTLaunchInfo extends AbsLaunchInfo {
     private static final String INVITE_GAMEID = "INVITE_GAMEID";
@@ -69,5 +70,10 @@ public class BTLaunchInfo extends AbsLaunchInfo {
             }
         }
         return result;
+    }
+
+    public CommsAddrRec getAddrRec()
+    {
+        return new CommsAddrRec( btName, btAddress );
     }
 }
