@@ -486,9 +486,20 @@ public class BoardDelegate extends DelegateBase
             AlertDialog ad = (AlertDialog)dialog;
             String message = 
                 getString( R.string.invite_msg_fmt, m_missing );
+
+            String ps = null;
             if ( m_missing > 1 ) {
-                message += getString( R.string.invite_multiple );
+                ps = getString( R.string.invite_multiple );
+            } else {
+                boolean[] avail = NFCUtils.nfcAvail( m_activity );
+                if ( avail[1] ) {
+                    ps = getString( R.string.invite_if_nfc );
+                }
             }
+            if ( null != ps ) {
+                message += "\n\n" + ps;
+            }
+
             ad.setMessage( message );
             break;
         }
@@ -1651,9 +1662,11 @@ public class BoardDelegate extends DelegateBase
                             String msg = getString( R.string.invite_msg_fmt,
                                                     nMissingPlayers );
 
-                            boolean[] avail = NFCUtils.nfcAvail( m_activity );
-                            if ( avail[1] ) {
-                                msg += "\n\n" + getString( R.string.invite_if_nfc );
+                            if ( Action.BT_PICK_ACTION == faction ) {
+                                boolean[] avail = NFCUtils.nfcAvail( m_activity );
+                                if ( avail[1] ) {
+                                    msg += "\n\n" + getString( R.string.invite_if_nfc );
+                                }
                             }
 
                             showConfirmThen( msg, R.string.newgame_invite, faction );
