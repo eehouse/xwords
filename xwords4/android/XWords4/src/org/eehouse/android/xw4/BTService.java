@@ -139,6 +139,12 @@ public class BTService extends XWService {
     private BTListenerThread m_listener;
     private BTSenderThread m_sender;
 
+    public static boolean BTAvailable()
+    {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        return null != adapter;
+    }
+
     public static boolean BTEnabled()
     {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();

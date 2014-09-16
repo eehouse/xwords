@@ -401,7 +401,11 @@ public class NewGameDelegate extends DelegateBase {
 
     private void checkEnableBT( boolean force )
     {
-        if ( XWApp.BTSUPPORTED ) {
+        boolean available = XWApp.BTSUPPORTED && BTService.BTAvailable();
+        setVisibility( R.id.newgame_bt_header, 
+                       available? View.VISIBLE : View.GONE );
+
+        if ( available ) {
             boolean enabled = BTService.BTEnabled();
 
             if ( force || enabled != m_showsOn ) {
@@ -447,16 +451,20 @@ public class NewGameDelegate extends DelegateBase {
     }
 
     private void checkEnableSMS()
-    { 
-        if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS(m_activity) ) {
-            boolean enabled = XWPrefs.getSMSEnabled( m_activity );
-            findViewById( R.id.newgame_sms_header ).
-                setVisibility( View.VISIBLE );
+    {
+        boolean available = XWApp.SMSSUPPORTED
+            && Utils.deviceSupportsSMS(m_activity);
+        setVisibility( R.id.newgame_sms_header, 
+                       available? View.VISIBLE : View.GONE );
 
-            findViewById( R.id.sms_disabled ).
-                setVisibility( enabled ? View.GONE : View.VISIBLE  );
-            findViewById( R.id.sms_stuff ).
-                setVisibility( enabled ? View.VISIBLE : View.GONE  );
+        if ( available ) {
+            boolean enabled = XWPrefs.getSMSEnabled( m_activity );
+            setVisibility( R.id.newgame_sms_header, View.VISIBLE );
+
+            setVisibility( R.id.sms_disabled, 
+                           enabled ? View.GONE : View.VISIBLE  );
+            setVisibility( R.id.sms_stuff, 
+                           enabled ? View.VISIBLE : View.GONE  );
 
             Button button;
             if ( enabled ) {
