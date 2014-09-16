@@ -46,28 +46,31 @@ public class MultiService {
 
     private MultiEventListener m_li;
 
-    public enum MultiEvent { BAD_PROTO
-                          , BT_ENABLED
-                          , BT_DISABLED
-                          , SCAN_DONE
-                          , HOST_PONGED
-                          , NEWGAME_SUCCESS
-                          , NEWGAME_FAILURE
-                          , MESSAGE_ACCEPTED
-                          , MESSAGE_REFUSED
-                          , MESSAGE_NOGAME
-                          , MESSAGE_RESEND
-                          , MESSAGE_FAILOUT
-                          , MESSAGE_DROPPED
+    // these do not currently pass between devices so they can change.
+    public enum MultiEvent { _INVALID,
+                             BAD_PROTO,
+                             BT_ENABLED,
+                             BT_DISABLED,
+                             SCAN_DONE,
+                             HOST_PONGED,
+                             NEWGAME_SUCCESS,
+                             NEWGAME_FAILURE,
+                             MESSAGE_ACCEPTED,
+                             MESSAGE_REFUSED,
+                             MESSAGE_NOGAME,
+                             MESSAGE_RESEND,
+                             MESSAGE_FAILOUT,
+                             MESSAGE_DROPPED,
 
-                          , SMS_RECEIVE_OK
-                          , SMS_SEND_OK
-                          , SMS_SEND_FAILED
-                          , SMS_SEND_FAILED_NORADIO
+                             SMS_RECEIVE_OK,
+                             SMS_SEND_OK,
+                             SMS_SEND_FAILED,
+                             SMS_SEND_FAILED_NORADIO,
 
-                          , BT_GAME_CREATED
+                             BT_GAME_CREATED,
+                             BT_ERR_COUNT,
 
-                          , RELAY_ALERT
+                             RELAY_ALERT,
             };
 
     public interface MultiEventListener {

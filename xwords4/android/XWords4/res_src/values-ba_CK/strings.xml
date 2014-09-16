@@ -1939,4 +1939,5 @@
   <string name="lmi_trade_fmt">%1$s dedart %2$d selit</string>
   <string name="lmi_phony_fmt">%1$s tsol a nrut</string>
   <string name="lmi_tiles_fmt">Selit dengissa ot %1$s</string>
+  <string name="bt_err_count_fmt">%1$d htooteulb srorre os raf</string>
 </resources>

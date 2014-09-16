@@ -2269,4 +2269,6 @@
     <string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>
     <string name="lmi_phony_fmt">%1$s lost a turn</string>
     <string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>
+
+    <string name="bt_err_count_fmt">%1$d bluetooth errors so far</string>
 </resources>

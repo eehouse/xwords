@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
@@ -138,6 +139,7 @@ public class BTService extends XWService {
     private MultiMsgSink m_btMsgSink;
     private BTListenerThread m_listener;
     private BTSenderThread m_sender;
+    private static int s_errCount = 0;
 
     public static boolean BTAvailable()
     {
@@ -351,9 +353,9 @@ public class BTService extends XWService {
                 m_serverSocket = m_adapter.
                     listenUsingRfcommWithServiceRecord( appName,
                                                         XWApp.getAppUUID() );
-            } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+            } catch ( IOException ioe ) {
                 m_serverSocket = null;
+                logIOE( ioe );
             }
 
             while ( null != m_serverSocket && m_adapter.isEnabled() ) {
@@ -395,9 +397,9 @@ public class BTService extends XWService {
                             updateStatusIn( BTService.this, null,
                                             CommsConnType.COMMS_CONN_BT, true );
                     }
-                } catch ( java.io.IOException ioe ) {
-                    DbgUtils.loge( ioe );
+                } catch ( IOException ioe ) {
                     DbgUtils.logf( "trying again..." );
+                    logIOE( ioe);
                     continue;
                 }
             }
@@ -405,8 +407,8 @@ public class BTService extends XWService {
             if ( null != m_serverSocket ) {
                 try {
                     m_serverSocket.close();
-                } catch ( java.io.IOException ioe ) {
-                    DbgUtils.loge( ioe );
+                } catch ( IOException ioe ) {
+                    logIOE( ioe );
                 }
                 m_serverSocket = null;
             }
@@ -417,16 +419,15 @@ public class BTService extends XWService {
             if ( null != m_serverSocket ) {
                 try {
                     m_serverSocket.close();
-                } catch ( java.io.IOException ioe ) {
-                    DbgUtils.loge( ioe );
+                } catch ( IOException ioe ) {
+                    logIOE( ioe );
                 }
                 m_serverSocket = null;
             }
             interrupt();
         }
 
-        private void receivePing( BluetoothSocket socket )
-            throws java.io.IOException
+        private void receivePing( BluetoothSocket socket ) throws IOException
         {
             DbgUtils.logf( "got PING!!!" );
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
@@ -439,7 +440,7 @@ public class BTService extends XWService {
         private void receiveInvitation( Context context,
                                         DataInputStream is,
                                         BluetoothSocket socket )
-            throws java.io.IOException
+            throws IOException
         {
             BTCmd result;
             int gameID = is.readInt();
@@ -517,8 +518,8 @@ public class BTService extends XWService {
                     DbgUtils.logf( "receiveMessages: read only %d of %d bytes",
                                    nRead, len );
                 }
-            } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+            } catch ( IOException ioe ) {
+                logIOE( ioe );
             }
         } // receiveMessage
     } // class BTListenerThread
@@ -679,8 +680,8 @@ public class BTService extends XWService {
                         }
                         socket.close();
                     }
-                } catch ( java.io.IOException ioe ) {
-                    DbgUtils.loge( ioe );
+                } catch ( IOException ioe ) {
+                    logIOE( ioe );
                 }
 
                 if ( success ) {
@@ -725,8 +726,8 @@ public class BTService extends XWService {
                         : MultiEvent.NEWGAME_FAILURE;
                     sendResult( evt, elem.m_gameID );
                 }
-            } catch ( java.io.IOException ioe ) {
-                DbgUtils.loge( ioe );
+            } catch ( IOException ioe ) {
+                logIOE( ioe );
             }
         } // sendInvite
 
@@ -780,9 +781,9 @@ public class BTService extends XWService {
                         }
                         socket.close();
                     }
-                } catch ( java.io.IOException ioe ) {
-                    DbgUtils.loge( ioe );
+                } catch ( IOException ioe ) {
                     success = false;
+                    logIOE( ioe );
                 }
             }
 
@@ -994,11 +995,20 @@ public class BTService extends XWService {
             dos.writeByte( BT_PROTO );
             dos.writeByte( cmd.ordinal() );
             DbgUtils.logf( "connect successful" );
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+        } catch ( IOException ioe ) {
             dos = null;
+            logIOE( ioe );
         }
         return dos;
+    }
+
+    private void logIOE( IOException ioe )
+    {
+        DbgUtils.loge( ioe );
+        ++s_errCount;
+        // if ( 0 == s_errCount % 10 ) {
+            sendResult( MultiEvent.BT_ERR_COUNT, s_errCount );
+            // }
     }
 
     private void postNotification( int gameID, int title, String body, 
@@ -1027,7 +1037,7 @@ public class BTService extends XWService {
                     }
                     try {
                         socket.close();
-                    } catch( java.io.IOException ioe ) {
+                    } catch( IOException ioe ) {
                         DbgUtils.loge( ioe );
                     }
                 }

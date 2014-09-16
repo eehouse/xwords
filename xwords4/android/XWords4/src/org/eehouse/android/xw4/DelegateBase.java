@@ -447,7 +447,18 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     //////////////////////////////////////////////////
     public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
     {
-        DbgUtils.logf( "DelegateBase.eventOccurred(event=%s)", event.toString() );
+        switch( event ) {
+        case BT_ERR_COUNT:
+            int count = (Integer)args[0];
+            try {
+                DbgUtils.showf( m_activity, 
+                                getString( R.string.bt_err_count_fmt, count ) );
+            } catch ( java.lang.RuntimeException re ) {}
+            DbgUtils.logf( "Bluetooth error count: %d", count );
+            break;
+        default:
+            DbgUtils.logf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", event.toString() );
+        }
         // Assert.fail();
     }
 

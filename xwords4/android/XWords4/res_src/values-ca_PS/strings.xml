@@ -1939,4 +1939,5 @@
   <string name="lmi_trade_fmt">%1$s TRADED %2$d TILES</string>
   <string name="lmi_phony_fmt">%1$s LOST A TURN</string>
   <string name="lmi_tiles_fmt">TILES ASSIGNED TO %1$s</string>
+  <string name="bt_err_count_fmt">%1$d BLUETOOTH ERRORS SO FAR</string>
 </resources>

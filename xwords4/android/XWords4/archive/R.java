@@ -518,6 +518,7 @@ public final class R {
         /**  EXPLAIN ME 
          */
         public static final int bt_disabled=0x7f050180;
+        public static final int bt_err_count_fmt=0x7f0502cd;
         /**   
          */
         public static final int bt_fail_fmt=0x7f050214;
