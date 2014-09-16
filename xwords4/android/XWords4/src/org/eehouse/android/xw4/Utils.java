@@ -141,6 +141,11 @@ public class Utils {
         return s_deviceSupportSMS;
     }
 
+    public static void smsSupportChanged()
+    {
+        s_deviceSupportSMS = null; // force to check again
+    }
+
     public static void notImpl( Context context ) 
     {
         String text = "Feature coming soon";

@@ -191,6 +191,7 @@ public class PrefsDelegate extends DelegateBase
                 ((CheckBoxPreference)(m_activity.findPreference( key )))
                     .setChecked( false );
             }
+            Utils.smsSupportChanged();
         } else if ( key.equals( m_downloadPath ) ) {
             String value = sp.getString( key, null );
             if ( null != value ) {
