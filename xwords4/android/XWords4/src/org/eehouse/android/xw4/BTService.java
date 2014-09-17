@@ -323,7 +323,9 @@ public class BTService extends XWService {
                     MultiEvent evt = cameOn? MultiEvent.BT_ENABLED
                         : MultiEvent.BT_DISABLED;
                     sendResult( evt );
-                    if ( !cameOn ) {
+                    if ( cameOn ) {
+                        GameUtils.resendAllIf( this, false );
+                    } else {
                         stopListener();
                         stopSender();
                         stopSelf();
