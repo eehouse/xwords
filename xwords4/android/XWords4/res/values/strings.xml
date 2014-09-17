@@ -1548,7 +1548,7 @@
       -->
 
     <!-- Title of New user info dialog-->
-    <string name="newbie_title">New user info</string>
+    <string name="newbie_title">Here\'s a tip</string>
 
     <!-- Text for button in new-user-info dialog with title just
          above.  -->
