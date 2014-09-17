@@ -381,11 +381,6 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         m_delegate.showConfirmThen( msgID, action );
     }
 
-    protected void dismissConfirmThen()
-    {
-        m_delegate.dismissConfirmThen();
-    }
-
     protected boolean post( Runnable runnable )
     {
         return m_delegate.post( runnable );

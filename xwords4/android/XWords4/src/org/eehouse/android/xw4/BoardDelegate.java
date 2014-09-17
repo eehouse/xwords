@@ -1169,13 +1169,14 @@ public class BoardDelegate extends DelegateBase
                 Assert.assertNotNull( room );
                 data = NetLaunchInfo.makeLaunchJSON( room, inviteID, m_gi.dictLang, 
                                                      m_gi.dictName, m_gi.nPlayers );
+                removeDialog( DlgID.DLG_INVITE );
             }
             break;
         case COMMS_CONN_BT:
             if ( 0 < m_nMissingPlayers ) {
                 data = BTLaunchInfo.makeLaunchJSON( m_gi.gameID, m_gi.dictLang, 
                                                     m_gi.dictName, m_gi.nPlayers );
-                dismissConfirmThen();
+                removeDialog( DlgID.CONFIRM_THEN );
             }
             break;
         default:
