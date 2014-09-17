@@ -976,7 +976,7 @@ public class GamesListDelegate extends ListDelegateBase
             launchGame( (Long)args[0], true );
             break;
         default:
-            // super.eventOccurred( event, args );
+            super.eventOccurred( event, args );
             break;
         }
     }
@@ -1128,7 +1128,7 @@ public class GamesListDelegate extends ListDelegateBase
             DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
         }
         return m_menuPrepared;
-    }
+    } // onPrepareOptionsMenu
 
     @Override
     public boolean onOptionsItemSelected( MenuItem item )
