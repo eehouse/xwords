@@ -1320,7 +1320,7 @@
        ########################################################### 
       -->
   <!-- Title of New user info dialog-->
-  <string name="newbie_title">NEW USER INFO</string>
+  <string name="newbie_title">HERE\'S A TIP</string>
   <!-- Text for button in new-user-info dialog with title just
          above.  -->
   <string name="button_notagain">DO NOT SHOW AGAIN</string>

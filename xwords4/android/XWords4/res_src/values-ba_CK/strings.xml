@@ -1320,7 +1320,7 @@
        ########################################################### 
       -->
   <!-- Title of New user info dialog-->
-  <string name="newbie_title">Wen resu ofni</string>
+  <string name="newbie_title">Ereh\'s a pit</string>
   <!-- Text for button in new-user-info dialog with title just
          above.  -->
   <string name="button_notagain">Od ton wohs niaga</string>
