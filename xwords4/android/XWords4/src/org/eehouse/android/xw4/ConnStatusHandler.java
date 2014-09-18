@@ -227,6 +227,13 @@ public class ConnStatusHandler {
         }
     }
 
+    public static void updateStatus( Context context, ConnStatusCBacks cbacks,
+                                     CommsConnType connType, boolean success )
+    {
+        updateStatusImpl( context, cbacks, connType, success, true );
+        updateStatusImpl( context, cbacks, connType, success, false );
+    }
+
     public static void updateStatusIn( Context context, ConnStatusCBacks cbacks,
                                        CommsConnType connType, boolean success )
     {

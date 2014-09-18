@@ -326,6 +326,9 @@ public class BTService extends XWService {
                     if ( cameOn ) {
                         GameUtils.resendAllIf( this, false );
                     } else {
+                        ConnStatusHandler.updateStatus( this, null,
+                                                        CommsConnType.COMMS_CONN_BT, 
+                                                        false );
                         stopListener();
                         stopSender();
                         stopSelf();
