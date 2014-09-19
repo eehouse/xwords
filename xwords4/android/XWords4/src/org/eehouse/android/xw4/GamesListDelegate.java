@@ -1156,7 +1156,7 @@ public class GamesListDelegate extends ListDelegateBase
         switch ( itemID ) {
             // There's no selection for these items, so nothing to clear
         case R.id.games_menu_resend:
-            GameUtils.resendAllIf( m_activity, true );
+            GameUtils.resendAllIf( m_activity, null, true );
             break;
         case R.id.games_menu_newgame:
             startNewGameActivity( groupID );

@@ -33,6 +33,8 @@ import java.util.Iterator;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+
 public class NetStateCache {
     private static final long WAIT_STABLE_MILLIS = 2 * 1000;
 
@@ -160,7 +162,10 @@ public class NetStateCache {
                                     }
 
                                     if ( s_netAvail ) {
-                                        GameUtils.resendAllIf( context, false );
+                                        CommsConnType typ = CommsConnType
+                                            .COMMS_CONN_RELAY;
+                                        GameUtils.resendAllIf( context, typ, 
+                                                               false );
                                     }
                                 }
                             };

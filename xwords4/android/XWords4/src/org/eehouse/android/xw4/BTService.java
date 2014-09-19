@@ -324,7 +324,8 @@ public class BTService extends XWService {
                         : MultiEvent.BT_DISABLED;
                     sendResult( evt );
                     if ( cameOn ) {
-                        GameUtils.resendAllIf( this, false );
+                        GameUtils.resendAllIf( this, CommsConnType.COMMS_CONN_BT,
+                                               false );
                     } else {
                         ConnStatusHandler.updateStatus( this, null,
                                                         CommsConnType.COMMS_CONN_BT, 

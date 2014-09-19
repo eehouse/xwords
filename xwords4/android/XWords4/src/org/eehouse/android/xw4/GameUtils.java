@@ -374,7 +374,8 @@ public class GameUtils {
         return thumb;
     }
 
-    public static void resendAllIf( Context context, boolean force )
+    public static void resendAllIf( Context context, CommsConnType filter,
+                                    boolean force )
     {
         final boolean showUI = force;
 
@@ -393,7 +394,7 @@ public class GameUtils {
         if ( force ) {
             HashMap<Long,CommsConnType> games = DBUtils.getGamesWithSendsPending( context );
             if ( 0 < games.size() ) {
-                new ResendTask( context, games, showUI ).execute();
+                new ResendTask( context, games, filter, showUI ).execute();
             }
         }
     }
@@ -1075,13 +1076,15 @@ public class GameUtils {
         private Context m_context;
         private HashMap<Long,CommsConnType> m_games;
         private boolean m_showUI;
+        private CommsConnType m_filter;
         private int m_nSent = 0;
 
         public ResendTask( Context context, HashMap<Long,CommsConnType> games,
-                           boolean showUI )
+                           CommsConnType filter, boolean showUI )
         {
             m_context = context;
             m_games = games;
+            m_filter = filter;
             m_showUI = showUI;
         }
 
@@ -1091,6 +1094,10 @@ public class GameUtils {
             Iterator<Long> iter = m_games.keySet().iterator();
             while ( iter.hasNext() ) {
                 long rowid = iter.next();
+                if ( null != m_filter && m_filter != m_games.get( rowid ) ) {
+                    continue;
+                }
+
                 GameLock lock = new GameLock( rowid, false );
                 if ( lock.tryLock() ) {
                     CurGameInfo gi = new CurGameInfo( m_context );
@@ -1100,6 +1107,9 @@ public class GameUtils {
                         XwJNI.comms_resendAll( gamePtr, true, false );
                     }
                     lock.unlock();
+                } else {
+                    DbgUtils.logf( "ResendTask.doInBackground: unable to unlock %d", 
+                                   rowid );
                 }
             }
             return null;
