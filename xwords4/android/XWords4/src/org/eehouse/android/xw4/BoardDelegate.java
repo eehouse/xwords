@@ -1040,6 +1040,10 @@ public class BoardDelegate extends DelegateBase
             }
             break;
 
+        case BT_ENABLED:
+            pingBTRemotes();
+            break;
+
             // This can be BT or SMS.  In BT case there's a progress
             // thing going.  Not in SMS case.
         case NEWGAME_FAILURE:
@@ -1634,6 +1638,8 @@ public class BoardDelegate extends DelegateBase
             }
         } // userError
 
+        // Called from server_makeFromStream, whether there's something
+        // missing or not.
         @Override
         public void informMissing( boolean isServer, CommsConnType connType,
                                    final int nMissingPlayers )
@@ -1914,7 +1920,7 @@ public class BoardDelegate extends DelegateBase
                     if ( null != m_xport ) {
                         warnIfNoTransport();
                         trySendChats();
-                        m_xport.tickle( m_connType );
+                        tickle();
                         tryInvites();
                     }
                 }
@@ -1924,6 +1930,38 @@ public class BoardDelegate extends DelegateBase
             }
         }
     } // loadGame
+
+    @SuppressWarnings("fallthrough")
+    private void tickle()
+    {
+        switch( m_connType ) {
+        case COMMS_CONN_BT:
+            pingBTRemotes();
+            // fallthrough
+        case COMMS_CONN_RELAY:
+            // break;     // Try skipping the resend -- later
+            // fallthrough
+        case COMMS_CONN_SMS:
+            // Let other know I'm here
+            // DbgUtils.logf( "tickle calling comms_resendAll" );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
+            break;
+        default:
+            DbgUtils.logf( "tickle: unexpected type %s", 
+                           m_connType.toString() );
+            Assert.fail();
+        }
+    }
+
+    private void pingBTRemotes()
+    {
+        if ( CommsConnType.COMMS_CONN_BT == m_connType ) {
+            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
+            for ( CommsAddrRec addr : addrs ) {
+                BTService.pingHost( m_activity, addr.bt_hostName, addr.bt_btAddr );
+            }
+        }
+    }
 
     private void checkAndHandle( JNICmd cmd )
     {

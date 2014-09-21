@@ -66,6 +66,7 @@ public class BTService extends XWService {
     private static final int CLEAR = 5;
     private static final int REMOVE = 6;
     private static final int NFCINVITE = 7;
+    private static final int PINGHOST = 8;
 
     private static final String CMD_STR = "CMD";
     private static final String MSG_STR = "MSG";
@@ -128,6 +129,10 @@ public class BTService extends XWService {
             m_msg = buf; m_recipient = targetName; 
             m_addr = targetAddr; m_gameID = gameID;
         }
+        public BTQueueElem( BTCmd cmd, String targetName ) {
+            this( cmd );
+            m_recipient = targetName;
+        }
 
         public int incrFailCount() { return ++m_failCount; }
         public boolean failCountExceeded() { return m_failCount >= MAX_SEND_FAIL; }
@@ -179,6 +184,14 @@ public class BTService extends XWService {
         Intent intent = getIntentTo( context, SCAN );
         context.startService( intent );
     }
+
+    public static void pingHost( Context context, String hostName, String hostAddr )
+    {
+        Intent intent = getIntentTo( context, PINGHOST );
+        intent.putExtra( TARGET_STR, hostName );
+        intent.putExtra( ADDR_STR, hostAddr );
+        context.startService( intent );
+    } 
 
     public static void inviteRemote( Context context, String hostName, 
                                      int gameID, String initialName, 
@@ -294,6 +307,11 @@ public class BTService extends XWService {
                     m_sender.add( new BTQueueElem( BTCmd.INVITE, target, addr, 
                                                    gameID, gameName, lang, 
                                                    dict, nPlayersT, nPlayersH ) );
+                    break;
+
+                case PINGHOST:
+                    target = intent.getStringExtra( TARGET_STR );
+                    m_sender.add( new BTQueueElem( BTCmd.PING, target ) );
                     break;
 
                 case NFCINVITE:
@@ -439,6 +457,7 @@ public class BTService extends XWService {
             os.flush();
 
             socket.close();
+            updateStatusOut( true );
         }
 
         private void receiveInvitation( Context context,
@@ -627,7 +646,11 @@ public class BTService extends XWService {
 
                     switch( elem.m_cmd ) {
                     case PING:
-                        sendPings( MultiEvent.HOST_PONGED );
+                        if ( null == elem.m_recipient ) {
+                            sendPings( MultiEvent.HOST_PONGED );
+                        } else {
+                            sendPing( elem.m_recipient );
+                        }
                         break;
                     case SCAN:
                         sendPings( null );
@@ -662,38 +685,61 @@ public class BTService extends XWService {
                 if ( null != addrFor( name ) ) {
                     continue;
                 }
-                boolean success = false;
-                try {
-                    DbgUtils.logf( "PingThread: got socket to device %s", 
-                                   dev.getName() );
-                    BluetoothSocket socket =
-                        dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
-                    if ( null != socket ) {
-                        DataOutputStream os = connect( socket, BTCmd.PING );
-                        if ( null != os ) {
-                            os.flush();
-                            Thread killer = killSocketIn( socket );
 
-                            DataInputStream is = 
-                                new DataInputStream( socket.getInputStream() );
-                            success = BTCmd.PONG == BTCmd.values()[is.readByte()];
-                            killer.interrupt();
-                        }
-                        socket.close();
-                    }
-                } catch ( IOException ioe ) {
-                    logIOE( ioe );
-                }
-
-                if ( success ) {
-                    DbgUtils.logf( "got PONG from %s", dev.getName() );
+                if ( sendPing( dev ) ) {
                     addAddr( dev );
                     if ( null != event ) {
                         sendResult( event, dev.getName() );
                     }
                 }
             }
-        } // sendPings
+        }
+
+        private boolean sendPing( BluetoothDevice dev )
+        {
+            boolean success = false;
+            boolean sendWorking = false;
+            boolean receiveWorking = false;
+            try {
+                DbgUtils.logf( "PingThread: got socket to device %s", 
+                               dev.getName() );
+                BluetoothSocket socket =
+                    dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
+                if ( null != socket ) {
+                    DataOutputStream os = connect( socket, BTCmd.PING );
+                    if ( null != os ) {
+                        os.flush();
+                        Thread killer = killSocketIn( socket );
+
+                        DataInputStream is = 
+                            new DataInputStream( socket.getInputStream() );
+                        success = BTCmd.PONG == BTCmd.values()[is.readByte()];
+                        receiveWorking = true;
+                        killer.interrupt();
+                        sendWorking = true;
+                    }
+                    socket.close();
+                }
+            } catch ( IOException ioe ) {
+                logIOE( ioe );
+            }
+            updateStatusOut( sendWorking );
+            updateStatusIn( receiveWorking );
+            return success;
+        } // sendPing
+
+        private boolean sendPing( String hostName )
+        {
+            boolean success = false;
+            String hostAddr = addrFor( hostName );
+            if ( null == hostAddr ) {
+                DbgUtils.logf( "sendPing: no addr for hostname %s; dropping", hostName );
+            } else {
+                BluetoothDevice dev = m_adapter.getRemoteDevice( hostAddr );
+                success = sendPing( dev );
+            }
+            return success;
+        }
 
         private void sendInvite( BTQueueElem elem )
         {

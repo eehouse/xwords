@@ -228,31 +228,14 @@ public class CommsTransport implements TransportProcs,
         NetStateCache.unregister( m_context, this );
     }
 
+    //////////////////////////////////////////////////////////////////////
     // NetStateCache.StateChangedIf interface
+    //////////////////////////////////////////////////////////////////////
     public void netAvail( boolean nowAvailable )
     {
         if ( !nowAvailable ) {
             waitToStopImpl();
             m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
-        }
-    }
-
-    public void tickle( CommsConnType connType )
-    {
-        switch( connType ) {
-        case COMMS_CONN_RELAY:
-            // do nothing
-            // break;     // Try skipping the resend -- later
-        case COMMS_CONN_BT:
-        case COMMS_CONN_SMS:
-            // Let other know I'm here
-            DbgUtils.logf( "tickle calling comms_resendAll" );
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
-            break;
-        default:
-            DbgUtils.logf( "tickle: unexpected type %s", 
-                           connType.toString() );
-            Assert.fail();
         }
     }
 
