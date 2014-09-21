@@ -137,7 +137,7 @@ typedef struct LaunchParams {
             bdaddr_t hostAddr;      /* unused if a host */
         } bt;
 #endif
-#ifdef XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
         struct {
             const char* hostName;
             int port;
