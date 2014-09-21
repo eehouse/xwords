@@ -49,6 +49,7 @@ public class BTInviteDelegate extends InviteDelegate {
     private boolean m_firstScan;
     private Set<Integer> m_checked;
     private boolean m_setChecked;
+    private BTDevsAdapter m_adapter;
 
     public static void launchForResult( Activity activity, int nMissing, 
                                         int requestCode )
@@ -86,12 +87,15 @@ public class BTInviteDelegate extends InviteDelegate {
                         synchronized( BTInviteDelegate.this ) {
                             stopProgress();
 
+                            String[] btDevAddrs = null;
                             String[] btDevNames = null;
                             if ( 0 < args.length ) {
-                                btDevNames = (String[])(args[0]);
+                                btDevAddrs = (String[])(args[0]);
+                                btDevNames = (String[])(args[1]);
                                 if ( null != btDevNames
                                      && 0 == btDevNames.length ) {
                                     btDevNames = null;
+                                    btDevAddrs = null;
                                 }
                             }
 
@@ -100,7 +104,8 @@ public class BTInviteDelegate extends InviteDelegate {
                             }
                             m_setChecked = null != btDevNames
                                 && m_nMissing == btDevNames.length;
-                            setListAdapter( new BTDevsAdapter( btDevNames ) );
+                            m_adapter = new BTDevsAdapter( btDevAddrs, btDevNames );
+                            setListAdapter( m_adapter );
                             m_checked.clear();
                             tryEnable();
                             m_firstScan = false;
@@ -133,7 +138,10 @@ public class BTInviteDelegate extends InviteDelegate {
         for ( int ii = 0; ii < count; ++ii ) {
             CheckBox box = (CheckBox)list.getChildAt( ii );
             if ( box.isChecked() ) {
-                result[index++] = box.getText().toString();
+                String btAddr = m_adapter.getBTAddr( ii );
+                String btName = m_adapter.getBTName( ii );
+                Assert.assertTrue( box.getText().toString().equals( btName ) );
+                result[index++] = btAddr;
             }
         }
         return result;
@@ -147,18 +155,20 @@ public class BTInviteDelegate extends InviteDelegate {
     }
 
     private class BTDevsAdapter extends XWListAdapter {
-        private String[] m_devs;
-        public BTDevsAdapter( String[] devs )
+        private String[] m_devAddrs;
+        private String[] m_devNames;
+        public BTDevsAdapter( String[] btAddrs, String[] btNames )
         {
-            super( null == devs? 0 : devs.length );
-            m_devs = devs;
+            super( null == btAddrs? 0 : btAddrs.length );
+            m_devAddrs = btAddrs;
+            m_devNames = btNames;
         }
 
-        public Object getItem( int position) { return m_devs[position]; }
+        public Object getItem( int position) { return m_devNames[position]; }
         public View getView( final int position, View convertView, 
                              ViewGroup parent ) {
             CheckBox box = (CheckBox)inflate( R.layout.btinviter_item );
-            box.setText( m_devs[position] );
+            box.setText( m_devNames[position] );
 
             CompoundButton.OnCheckedChangeListener listener = 
                 new CompoundButton.OnCheckedChangeListener() {
@@ -182,5 +192,8 @@ public class BTInviteDelegate extends InviteDelegate {
             }
             return box;
         }
+
+        public String getBTAddr( int indx ) { return m_devAddrs[indx]; }
+        public String getBTName( int indx ) { return m_devNames[indx]; }
     }
 }

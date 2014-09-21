@@ -106,8 +106,8 @@ public class BTService extends XWService {
         // These should perhaps be in some subclasses....
         BTCmd m_cmd;
         byte[] m_msg;
-        String m_recipient;
-        String m_addr;
+        String m_btName;
+        String m_btAddr;
         String m_gameName;
         int m_gameID;
         int m_lang;
@@ -116,22 +116,23 @@ public class BTService extends XWService {
         int m_nPlayersH;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; m_failCount = 0; }
-        public BTQueueElem( BTCmd cmd, String targetName, String targetAddr,
+        public BTQueueElem( BTCmd cmd, String btAddr, 
                             int gameID, String gameName, int lang, 
                             String dict, int nPlayersT, int nPlayersH ) {
-            this( cmd, null, targetName, targetAddr, gameID );
+            this( cmd, null, btAddr, null, gameID );
             m_lang = lang; m_dict = dict; m_nPlayersT = nPlayersT; 
             m_nPlayersH = nPlayersH; m_gameName = gameName;
         }
-        public BTQueueElem( BTCmd cmd, byte[] buf, String targetName, 
-                            String targetAddr, int gameID ) {
+        public BTQueueElem( BTCmd cmd, byte[] buf, String btAddr, 
+                            String btName, int gameID ) {
             this( cmd );
-            m_msg = buf; m_recipient = targetName; 
-            m_addr = targetAddr; m_gameID = gameID;
+            m_msg = buf; m_btAddr = btAddr; m_btName = btName; 
+            m_gameID = gameID;
         }
-        public BTQueueElem( BTCmd cmd, String targetName ) {
+        public BTQueueElem( BTCmd cmd, String btAddr, String btName ) {
             this( cmd );
-            m_recipient = targetName;
+            m_btAddr = btAddr;
+            m_btName = btName;
         }
 
         public int incrFailCount() { return ++m_failCount; }
@@ -172,10 +173,10 @@ public class BTService extends XWService {
         context.startService( intent );
     }
 
-    public static void clearDevices( Context context, String[] names )
+    public static void clearDevices( Context context, String[] btAddrs )
     {
         Intent intent = getIntentTo( context, CLEAR );
-        intent.putExtra( CLEAR_STR, names );
+        intent.putExtra( CLEAR_STR, btAddrs );
         context.startService( intent );
     }
 
@@ -193,14 +194,14 @@ public class BTService extends XWService {
         context.startService( intent );
     } 
 
-    public static void inviteRemote( Context context, String hostName, 
-                                     int gameID, String initialName, 
-                                     int lang, String dict, int nPlayersT, 
-                                     int nPlayersH )
+    public static void inviteRemote( Context context, String btAddr, 
+                                     int gameID, String initialName, int lang, 
+                                     String dict, int nPlayersT, int nPlayersH )
     {
         Intent intent = getIntentTo( context, INVITE );
         intent.putExtra( GAMEID_STR, gameID );
-        intent.putExtra( TARGET_STR, hostName );
+        intent.putExtra( ADDR_STR, btAddr );
+        // intent.putExtra( TARGET_STR, btName );
         Assert.assertNotNull( initialName );
         intent.putExtra( GAMENAME_STR, initialName );
         intent.putExtra( LANG_STR, lang );
@@ -288,8 +289,8 @@ public class BTService extends XWService {
                 case -1:
                     break;
                 case CLEAR:
-                    String[] devs = intent.getStringArrayExtra( CLEAR_STR );
-                    clearDevs( devs );
+                    String[] btAddrs = intent.getStringArrayExtra( CLEAR_STR );
+                    clearDevs( btAddrs );
                     sendNames();
                     break;
                 case SCAN:
@@ -297,21 +298,22 @@ public class BTService extends XWService {
                     break;
                 case INVITE:
                     int gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                    String target = intent.getStringExtra( TARGET_STR );
+                    // String btName = intent.getStringExtra( TARGET_STR );
+                    String btAddr = intent.getStringExtra( ADDR_STR );
                     String gameName = intent.getStringExtra( GAMENAME_STR );
-                    String addr = addrFor( target );
                     int lang = intent.getIntExtra( LANG_STR, -1 );
                     String dict = intent.getStringExtra( DICT_STR );
                     int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
                     int nPlayersH = intent.getIntExtra( NHE_STR, -1 );
-                    m_sender.add( new BTQueueElem( BTCmd.INVITE, target, addr, 
+                    m_sender.add( new BTQueueElem( BTCmd.INVITE, btAddr, 
                                                    gameID, gameName, lang, 
                                                    dict, nPlayersT, nPlayersH ) );
                     break;
 
                 case PINGHOST:
-                    target = intent.getStringExtra( TARGET_STR );
-                    m_sender.add( new BTQueueElem( BTCmd.PING, target ) );
+                    btAddr = intent.getStringExtra( ADDR_STR );
+                    String btName = intent.getStringExtra( TARGET_STR );
+                    m_sender.add( new BTQueueElem( BTCmd.PING, btAddr, btName ) );
                     break;
 
                 case NFCINVITE:
@@ -319,21 +321,21 @@ public class BTService extends XWService {
                     lang = intent.getIntExtra( LANG_STR, -1 );
                     dict = intent.getStringExtra( DICT_STR );
                     nPlayersT = intent.getIntExtra( NTO_STR, -1 );
-                    String btName = intent.getStringExtra( BT_NAME_STR );
-                    String btAddress = intent.getStringExtra( BT_ADDRESS_STR );
+                    btName = intent.getStringExtra( BT_NAME_STR );
+                    btAddr = intent.getStringExtra( BT_ADDRESS_STR );
                     /*(void)*/makeGame( this, gameID, null, lang, dict, 
-                                        nPlayersT, 1, btName, btAddress );
+                                        nPlayersT, 1, btName, btAddr );
                     break;
 
                 case SEND:
                     byte[] buf = intent.getByteArrayExtra( MSG_STR );
-                    target = intent.getStringExtra( TARGET_STR );
-                    addr = intent.getStringExtra( ADDR_STR );
+                    btName = intent.getStringExtra( TARGET_STR );
+                    btAddr = intent.getStringExtra( ADDR_STR );
                     gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                    addAddr( target, addr );
+                    addAddr( btAddr, btName );
                     if ( -1 != gameID ) {
                         m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
-                                                       target, addr, gameID ) );
+                                                       btAddr, btName, gameID ) );
                     }
                     break;
                 case RADIO:
@@ -371,7 +373,7 @@ public class BTService extends XWService {
         private BluetoothServerSocket m_serverSocket;
 
         @Override
-        public void run() {
+        public void run() {     // receive thread
             try {
                 String appName = XWApp.getAppName( BTService.this );
                 m_serverSocket = m_adapter.
@@ -554,17 +556,17 @@ public class BTService extends XWService {
 
     private void addAddr( BluetoothDevice dev )
     {
-        addAddr( dev.getName(), dev.getAddress() );
+        addAddr( dev.getAddress(), dev.getName() );
     }
 
-    private void addAddr( String name, String address )
+    private void addAddr( String btAddr, String btName )
     {
         boolean save = false;
         synchronized( m_names ) {
-            String current = m_names.get( name );
-            save = null == current || ! current.equals( address );
+            String curName = m_names.get( btAddr );
+            save = null == curName || !curName.equals( btName ); // changing things?
             if ( save ) {
-                m_names.put( name, address );
+                m_names.put( btAddr, btName );
             }
         }
         if ( save ) {
@@ -572,38 +574,21 @@ public class BTService extends XWService {
         }
     }
 
-    private String addrFor( String name )
+    private boolean haveAddr( String btAddr )
     {
-        String addr;
+        boolean result;
         synchronized( m_names ) {
-            addr = m_names.get( name );
+            result = null != m_names.get( btAddr );
         }
-        DbgUtils.logf( "addrFor(%s)=>%s", name, addr );
-        return addr;
-    }
-
-    private String[] names()
-    {
-        Set<String> names = null;
-        synchronized( m_names ) {
-            names = m_names.keySet();
-        }
-
-        String[] result = new String[names.size()];
-        Iterator<String> iter = names.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
-            result[ii] = iter.next();
-        }
-
         return result;
     }
 
-    private void clearDevs( String[] devs )
+    private void clearDevs( String[] btAddrs )
     {
-        if ( null != devs ) {
+        if ( null != btAddrs ) {
             synchronized( m_names ) {
-                for ( String dev : devs ) {
-                    m_names.remove( dev );
+                for ( String btAddr : btAddrs ) {
+                    m_names.remove( btAddr );
                 }
             }
         }
@@ -627,7 +612,7 @@ public class BTService extends XWService {
         }
 
         @Override
-        public void run()
+        public void run()       // send thread
         {
             for ( ; ; ) {
                 BTQueueElem elem;
@@ -646,10 +631,10 @@ public class BTService extends XWService {
 
                     switch( elem.m_cmd ) {
                     case PING:
-                        if ( null == elem.m_recipient ) {
+                        if ( null == elem.m_btAddr && null == elem.m_btName ) {
                             sendPings( MultiEvent.HOST_PONGED );
                         } else {
-                            sendPing( elem.m_recipient );
+                            sendPing( elem.m_btAddr, elem.m_btName );
                         }
                         break;
                     case SCAN:
@@ -661,7 +646,7 @@ public class BTService extends XWService {
                         sendInvite( elem );
                         break;
                     case MESG_SEND:
-                        boolean success = doAnyResends( elem.m_addr )
+                        boolean success = doAnyResends( elem.m_btAddr )
                             && sendMsg( elem );
                         if ( !success ) {
                             addToResends( elem );
@@ -681,12 +666,12 @@ public class BTService extends XWService {
             Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
             DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
             for ( BluetoothDevice dev : pairedDevs ) {
-                String name = dev.getName();
-                if ( null != addrFor( name ) ) {
+                String btAddr = dev.getAddress();
+                if ( haveAddr( btAddr ) ) {
                     continue;
                 }
 
-                if ( sendPing( dev ) ) {
+                if ( sendPing( dev ) ) { // did we get a reply?
                     addAddr( dev );
                     if ( null != event ) {
                         sendResult( event, dev.getName() );
@@ -697,7 +682,7 @@ public class BTService extends XWService {
 
         private boolean sendPing( BluetoothDevice dev )
         {
-            boolean success = false;
+            boolean gotReply = false;
             boolean sendWorking = false;
             boolean receiveWorking = false;
             try {
@@ -709,11 +694,11 @@ public class BTService extends XWService {
                     DataOutputStream os = connect( socket, BTCmd.PING );
                     if ( null != os ) {
                         os.flush();
-                        Thread killer = killSocketIn( socket );
+                        Thread killer = killSocketIn( socket, 5 );
 
                         DataInputStream is = 
                             new DataInputStream( socket.getInputStream() );
-                        success = BTCmd.PONG == BTCmd.values()[is.readByte()];
+                        gotReply = BTCmd.PONG == BTCmd.values()[is.readByte()];
                         receiveWorking = true;
                         killer.interrupt();
                         sendWorking = true;
@@ -725,19 +710,14 @@ public class BTService extends XWService {
             }
             updateStatusOut( sendWorking );
             updateStatusIn( receiveWorking );
-            return success;
+            return gotReply;
         } // sendPing
 
-        private boolean sendPing( String hostName )
+        private boolean sendPing( String btAddr, String btName )
         {
             boolean success = false;
-            String hostAddr = addrFor( hostName );
-            if ( null == hostAddr ) {
-                DbgUtils.logf( "sendPing: no addr for hostname %s; dropping", hostName );
-            } else {
-                BluetoothDevice dev = m_adapter.getRemoteDevice( hostAddr );
-                success = sendPing( dev );
-            }
+            BluetoothDevice dev = m_adapter.getRemoteDevice( btAddr );
+            success = sendPing( dev );
             return success;
         }
 
@@ -745,7 +725,7 @@ public class BTService extends XWService {
         {
             try {
                 BluetoothDevice dev = 
-                    m_adapter.getRemoteDevice( addrFor( elem.m_recipient ) );
+                    m_adapter.getRemoteDevice( elem.m_btAddr );
                 BluetoothSocket socket = 
                     dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
                 if ( null != socket ) {
@@ -795,7 +775,7 @@ public class BTService extends XWService {
             if ( !success ) {
                 try {
                     BluetoothDevice dev = 
-                        m_adapter.getRemoteDevice( elem.m_addr );
+                        m_adapter.getRemoteDevice( elem.m_btAddr );
                     BluetoothSocket socket = dev.
                         createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
                     if ( null != socket ) {
@@ -834,10 +814,10 @@ public class BTService extends XWService {
                 }
             }
 
-            sendResult( evt, elem.m_gameID, 0, elem.m_recipient );
+            sendResult( evt, elem.m_gameID, 0, elem.m_btName );
             if ( ! success ) {
                 int failCount = elem.incrFailCount();
-                sendResult( MultiEvent.MESSAGE_RESEND, elem.m_recipient,
+                sendResult( MultiEvent.MESSAGE_RESEND, elem.m_btName,
                             RESEND_TIMEOUT, failCount );
             }
             return success;
@@ -855,7 +835,7 @@ public class BTService extends XWService {
                     if ( success ) {
                         iter.remove();
                     } else if ( elem.failCountExceeded() ) {
-                        sendResult( MultiEvent.MESSAGE_FAILOUT, elem.m_recipient );
+                        sendResult( MultiEvent.MESSAGE_FAILOUT, elem.m_btName );
                         iter.remove();
                     }
                 }
@@ -864,9 +844,9 @@ public class BTService extends XWService {
             return success;
         }
 
-        private boolean doAnyResends( String addr )
+        private boolean doAnyResends( String btAddr )
         {
-            return doAnyResends( m_resends.get( addr ) );
+            return doAnyResends( m_resends.get( btAddr ) );
         }
 
         private void doAnyResends()
@@ -881,7 +861,7 @@ public class BTService extends XWService {
 
         private void addToResends( BTQueueElem elem )
         {
-            String addr = elem.m_addr;
+            String addr = elem.m_btAddr;
             LinkedList<BTQueueElem> resends = m_resends.get( addr );
             if ( null == resends ) {
                 resends = new LinkedList<BTQueueElem>();
@@ -906,7 +886,20 @@ public class BTService extends XWService {
 
     private void sendNames()
     {
-        sendResult( MultiEvent.SCAN_DONE, (Object)(names()) );
+        String[] btAddrs;
+        String[] btNames;
+        synchronized( m_names ) {
+            int size = m_names.size();
+            Iterator<String> iter = m_names.keySet().iterator();
+            btAddrs = new String[size];
+            btNames = new String[size];
+            for ( int ii = 0; iter.hasNext(); ++ii ) {
+                String addr = iter.next();
+                btAddrs[ii] = addr;
+                btNames[ii] = m_names.get( addr );
+            }
+        }
+        sendResult( MultiEvent.SCAN_DONE, (Object)btAddrs, (Object)btNames );
     }
 
     private void listLocalBTGames( boolean force )
@@ -1114,8 +1107,8 @@ public class BTService extends XWService {
             int sent = -1;
             if ( null != addr ) {
                 m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
-                                               addr.bt_hostName, 
-                                               addr.bt_btAddr, gameID ) );
+                                               addr.bt_btAddr, 
+                                               addr.bt_hostName, gameID ) );
                 sent = buf.length;
             } else {
                 DbgUtils.logf( "BTMsgSink.transportSend: "
