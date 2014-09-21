@@ -1958,7 +1958,7 @@ public class BoardDelegate extends DelegateBase
         if ( CommsConnType.COMMS_CONN_BT == m_connType ) {
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
-                BTService.pingHost( m_activity, addr.bt_hostName, addr.bt_btAddr );
+                BTService.pingHost( m_activity, addr.bt_btAddr );
             }
         }
     }

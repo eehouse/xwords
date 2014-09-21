@@ -448,8 +448,7 @@ public class CommsTransport implements TransportProcs,
                                            gameID, buf );
             break;
         case COMMS_CONN_BT:
-            nSent = BTService.enqueueFor( context, buf, addr.bt_hostName, 
-                                          addr.bt_btAddr, gameID );
+            nSent = BTService.enqueueFor( context, buf, addr.bt_btAddr, gameID );
             break;
         default:
             Assert.fail();

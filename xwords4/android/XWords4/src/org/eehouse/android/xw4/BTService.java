@@ -70,7 +70,6 @@ public class BTService extends XWService {
 
     private static final String CMD_STR = "CMD";
     private static final String MSG_STR = "MSG";
-    private static final String TARGET_STR = "TRG";
     private static final String GAMENAME_STR = "NAM";
     private static final String ADDR_STR = "ADR";
     private static final String RADIO_STR = "RDO";
@@ -106,7 +105,6 @@ public class BTService extends XWService {
         // These should perhaps be in some subclasses....
         BTCmd m_cmd;
         byte[] m_msg;
-        String m_btName;
         String m_btAddr;
         String m_gameName;
         int m_gameID;
@@ -119,20 +117,18 @@ public class BTService extends XWService {
         public BTQueueElem( BTCmd cmd, String btAddr, 
                             int gameID, String gameName, int lang, 
                             String dict, int nPlayersT, int nPlayersH ) {
-            this( cmd, null, btAddr, null, gameID );
+            this( cmd, null, btAddr, gameID );
             m_lang = lang; m_dict = dict; m_nPlayersT = nPlayersT; 
             m_nPlayersH = nPlayersH; m_gameName = gameName;
         }
-        public BTQueueElem( BTCmd cmd, byte[] buf, String btAddr, 
-                            String btName, int gameID ) {
+        public BTQueueElem( BTCmd cmd, byte[] buf, String btAddr, int gameID ) {
             this( cmd );
-            m_msg = buf; m_btAddr = btAddr; m_btName = btName; 
+            m_msg = buf; m_btAddr = btAddr; 
             m_gameID = gameID;
         }
-        public BTQueueElem( BTCmd cmd, String btAddr, String btName ) {
+        public BTQueueElem( BTCmd cmd, String btAddr ) {
             this( cmd );
             m_btAddr = btAddr;
-            m_btName = btName;
         }
 
         public int incrFailCount() { return ++m_failCount; }
@@ -186,10 +182,9 @@ public class BTService extends XWService {
         context.startService( intent );
     }
 
-    public static void pingHost( Context context, String hostName, String hostAddr )
+    public static void pingHost( Context context, String hostAddr )
     {
         Intent intent = getIntentTo( context, PINGHOST );
-        intent.putExtra( TARGET_STR, hostName );
         intent.putExtra( ADDR_STR, hostAddr );
         context.startService( intent );
     } 
@@ -201,7 +196,6 @@ public class BTService extends XWService {
         Intent intent = getIntentTo( context, INVITE );
         intent.putExtra( GAMEID_STR, gameID );
         intent.putExtra( ADDR_STR, btAddr );
-        // intent.putExtra( TARGET_STR, btName );
         Assert.assertNotNull( initialName );
         intent.putExtra( GAMENAME_STR, initialName );
         intent.putExtra( LANG_STR, lang );
@@ -226,17 +220,15 @@ public class BTService extends XWService {
     }
 
     public static int enqueueFor( Context context, byte[] buf, 
-                                  String targetName, String targetAddr,
-                                  int gameID )
+                                  String targetAddr, int gameID )
     {
         Intent intent = getIntentTo( context, SEND );
         intent.putExtra( MSG_STR, buf );
-        intent.putExtra( TARGET_STR, targetName );
         intent.putExtra( ADDR_STR, targetAddr );
         intent.putExtra( GAMEID_STR, gameID );
         context.startService( intent );
-        DbgUtils.logf( "got %d bytes for %s (%s), gameID %d", buf.length, 
-                       targetName, targetAddr, gameID );
+        DbgUtils.logf( "got %d bytes for %s, gameID %d", buf.length, 
+                       targetAddr, gameID );
         return buf.length;
     }
     
@@ -312,8 +304,7 @@ public class BTService extends XWService {
 
                 case PINGHOST:
                     btAddr = intent.getStringExtra( ADDR_STR );
-                    String btName = intent.getStringExtra( TARGET_STR );
-                    m_sender.add( new BTQueueElem( BTCmd.PING, btAddr, btName ) );
+                    m_sender.add( new BTQueueElem( BTCmd.PING, btAddr ) );
                     break;
 
                 case NFCINVITE:
@@ -321,7 +312,7 @@ public class BTService extends XWService {
                     lang = intent.getIntExtra( LANG_STR, -1 );
                     dict = intent.getStringExtra( DICT_STR );
                     nPlayersT = intent.getIntExtra( NTO_STR, -1 );
-                    btName = intent.getStringExtra( BT_NAME_STR );
+                    String btName = intent.getStringExtra( BT_NAME_STR );
                     btAddr = intent.getStringExtra( BT_ADDRESS_STR );
                     /*(void)*/makeGame( this, gameID, null, lang, dict, 
                                         nPlayersT, 1, btName, btAddr );
@@ -329,13 +320,11 @@ public class BTService extends XWService {
 
                 case SEND:
                     byte[] buf = intent.getByteArrayExtra( MSG_STR );
-                    btName = intent.getStringExtra( TARGET_STR );
                     btAddr = intent.getStringExtra( ADDR_STR );
                     gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                    addAddr( btAddr, btName );
                     if ( -1 != gameID ) {
                         m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
-                                                       btAddr, btName, gameID ) );
+                                                       btAddr, gameID ) );
                     }
                     break;
                 case RADIO:
@@ -631,10 +620,10 @@ public class BTService extends XWService {
 
                     switch( elem.m_cmd ) {
                     case PING:
-                        if ( null == elem.m_btAddr && null == elem.m_btName ) {
+                        if ( null == elem.m_btAddr ) {
                             sendPings( MultiEvent.HOST_PONGED );
                         } else {
-                            sendPing( elem.m_btAddr, elem.m_btName );
+                            sendPing( elem.m_btAddr );
                         }
                         break;
                     case SCAN:
@@ -713,7 +702,7 @@ public class BTService extends XWService {
             return gotReply;
         } // sendPing
 
-        private boolean sendPing( String btAddr, String btName )
+        private boolean sendPing( String btAddr )
         {
             boolean success = false;
             BluetoothDevice dev = m_adapter.getRemoteDevice( btAddr );
@@ -814,10 +803,11 @@ public class BTService extends XWService {
                 }
             }
 
-            sendResult( evt, elem.m_gameID, 0, elem.m_btName );
+            String btName = m_names.get( elem.m_btAddr );
+            sendResult( evt, elem.m_gameID, 0, btName );
             if ( ! success ) {
                 int failCount = elem.incrFailCount();
-                sendResult( MultiEvent.MESSAGE_RESEND, elem.m_btName,
+                sendResult( MultiEvent.MESSAGE_RESEND, btName,
                             RESEND_TIMEOUT, failCount );
             }
             return success;
@@ -835,7 +825,8 @@ public class BTService extends XWService {
                     if ( success ) {
                         iter.remove();
                     } else if ( elem.failCountExceeded() ) {
-                        sendResult( MultiEvent.MESSAGE_FAILOUT, elem.m_btName );
+                        String btName = m_names.get( elem.m_btAddr );
+                        sendResult( MultiEvent.MESSAGE_FAILOUT, btName );
                         iter.remove();
                     }
                 }
@@ -1107,8 +1098,7 @@ public class BTService extends XWService {
             int sent = -1;
             if ( null != addr ) {
                 m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
-                                               addr.bt_btAddr, 
-                                               addr.bt_hostName, gameID ) );
+                                               addr.bt_btAddr, gameID ) );
                 sent = buf.length;
             } else {
                 DbgUtils.logf( "BTMsgSink.transportSend: "
