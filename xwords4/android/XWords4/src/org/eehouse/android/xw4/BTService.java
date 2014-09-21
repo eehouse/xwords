@@ -399,9 +399,7 @@ public class BTService extends XWService {
                             DbgUtils.logf( "unexpected msg %d", msg );
                             break;
                         }
-                        ConnStatusHandler.
-                            updateStatusIn( BTService.this, null,
-                                            CommsConnType.COMMS_CONN_BT, true );
+                        updateStatusIn( true );
                     }
                 } catch ( IOException ioe ) {
                     DbgUtils.logf( "trying again..." );
@@ -645,10 +643,7 @@ public class BTService extends XWService {
                         if ( !success ) {
                             addToResends( elem );
                         }
-                        ConnStatusHandler
-                            .updateStatusOut( BTService.this, null,
-                                              CommsConnType.COMMS_CONN_BT, 
-                                              success );
+                        updateStatusOut( success );
                         break;
                     default:
                         Assert.fail();
@@ -1023,6 +1018,18 @@ public class BTService extends XWService {
         Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
         Utils.postNotification( this, intent, R.string.new_btmove_title, 
                                 body, (int)rowid );
+    }
+
+    private void updateStatusOut( boolean success )
+    {
+        ConnStatusHandler
+            .updateStatusOut( this, null, CommsConnType.COMMS_CONN_BT, success );
+    }
+
+    private void updateStatusIn( boolean success )
+    {
+        ConnStatusHandler
+            .updateStatusIn( this, null, CommsConnType.COMMS_CONN_BT, success );
     }
 
     private Thread killSocketIn( final BluetoothSocket socket )
