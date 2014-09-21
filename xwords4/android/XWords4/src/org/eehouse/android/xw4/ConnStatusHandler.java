@@ -74,9 +74,6 @@ public class ConnStatusHandler {
         public SuccessRecord()
         {
             m_time = new Time();
-            lastSuccess = 0;
-            lastFailure = 0;
-            successNewer = false;
         }
 
         public boolean haveFailure()
@@ -131,6 +128,8 @@ public class ConnStatusHandler {
             m_time = new Time();
         }
     }
+
+    private ConnStatusHandler() {}
 
     private static HashMap<CommsConnType,SuccessRecord[]> s_records = 
         new HashMap<CommsConnType,SuccessRecord[]>();
@@ -510,6 +509,14 @@ public class ConnStatusHandler {
             result = XWApp.SMSSUPPORTED && XWPrefs.getSMSEnabled( context )
                 && !getAirplaneModeOn( context );
             break;
+        case COMMS_CONN_BT:
+            result = XWApp.BTSUPPORTED && BTService.BTEnabled()
+                && !getAirplaneModeOn( context );
+            break;
+        default:
+            DbgUtils.logf( "ConnStatusHandler:connTypeEnabled: %s not handled",
+                           connType.toString() );
+            break;
         }
         return result;
     }
@@ -521,5 +528,4 @@ public class ConnStatusHandler {
                                          Settings.System.AIRPLANE_MODE_ON, 0 );
         return result;
     }
-
 }
