@@ -640,13 +640,8 @@ public class DlgDelegate {
         m_dlgStates.put( state.m_id, state );
     }
 
-    private String getString( int id )
-    {
-        return LocUtils.getString( m_activity, id );
-    }
-
     private String getString( int id, Object... params )
     {
-        return LocUtils.getString( m_activity, id, params );
+        return m_dlgt.getString( id, params );
     }
 }
