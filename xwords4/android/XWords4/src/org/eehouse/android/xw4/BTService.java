@@ -126,9 +126,10 @@ public class BTService extends XWService {
             m_msg = buf; m_btAddr = btAddr; 
             m_gameID = gameID;
         }
-        public BTQueueElem( BTCmd cmd, String btAddr ) {
+        public BTQueueElem( BTCmd cmd, String btAddr, int gameID ) {
             this( cmd );
             m_btAddr = btAddr;
+            m_gameID = gameID;
         }
 
         public int incrFailCount() { return ++m_failCount; }
@@ -182,10 +183,11 @@ public class BTService extends XWService {
         context.startService( intent );
     }
 
-    public static void pingHost( Context context, String hostAddr )
+    public static void pingHost( Context context, String hostAddr, int gameID )
     {
         Intent intent = getIntentTo( context, PINGHOST );
         intent.putExtra( ADDR_STR, hostAddr );
+        intent.putExtra( GAMEID_STR, gameID );
         context.startService( intent );
     } 
 
@@ -304,7 +306,8 @@ public class BTService extends XWService {
 
                 case PINGHOST:
                     btAddr = intent.getStringExtra( ADDR_STR );
-                    m_sender.add( new BTQueueElem( BTCmd.PING, btAddr ) );
+                    gameID = intent.getIntExtra( GAMEID_STR, 0 );
+                    m_sender.add( new BTQueueElem( BTCmd.PING, btAddr, gameID ) );
                     break;
 
                 case NFCINVITE:
@@ -443,8 +446,13 @@ public class BTService extends XWService {
         private void receivePing( BluetoothSocket socket ) throws IOException
         {
             DbgUtils.logf( "got PING!!!" );
+            DataInputStream inStream = new DataInputStream( socket.getInputStream() );
+            int gameID = inStream.readInt();
+            boolean deleted = 0 != gameID && !DBUtils.haveGame( BTService.this, gameID );
+
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( BTCmd.PONG.ordinal() );
+            os.writeBoolean( deleted );
             os.flush();
 
             socket.close();
@@ -624,7 +632,7 @@ public class BTService extends XWService {
                         if ( null == elem.m_btAddr ) {
                             sendPings( MultiEvent.HOST_PONGED );
                         } else {
-                            sendPing( elem.m_btAddr );
+                            sendPing( elem.m_btAddr, elem.m_gameID );
                         }
                         break;
                     case SCAN:
@@ -661,7 +669,7 @@ public class BTService extends XWService {
                     continue;
                 }
 
-                if ( sendPing( dev ) ) { // did we get a reply?
+                if ( sendPing( dev, 0 ) ) { // did we get a reply?
                     addAddr( dev );
                     if ( null != event ) {
                         sendResult( event, dev.getName() );
@@ -670,7 +678,7 @@ public class BTService extends XWService {
             }
         }
 
-        private boolean sendPing( BluetoothDevice dev )
+        private boolean sendPing( BluetoothDevice dev, int gameID )
         {
             boolean gotReply = false;
             boolean sendWorking = false;
@@ -683,12 +691,17 @@ public class BTService extends XWService {
                 if ( null != socket ) {
                     DataOutputStream os = connect( socket, BTCmd.PING );
                     if ( null != os ) {
+                        os.writeInt( gameID );
                         os.flush();
                         Thread killer = killSocketIn( socket, 5 );
 
                         DataInputStream is = 
                             new DataInputStream( socket.getInputStream() );
                         gotReply = BTCmd.PONG == BTCmd.values()[is.readByte()];
+                        if ( gotReply && is.readBoolean() ) {
+                            sendResult( MultiEvent.MESSAGE_NOGAME, gameID );
+                        }
+
                         receiveWorking = true;
                         killer.interrupt();
                         sendWorking = true;
@@ -703,11 +716,11 @@ public class BTService extends XWService {
             return gotReply;
         } // sendPing
 
-        private boolean sendPing( String btAddr )
+        private boolean sendPing( String btAddr, int gameID )
         {
             boolean success = false;
             BluetoothDevice dev = m_adapter.getRemoteDevice( btAddr );
-            success = sendPing( dev );
+            success = sendPing( dev, gameID );
             return success;
         }
 
