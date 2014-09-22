@@ -1943,5 +1943,6 @@
   <string name="bt_err_count_fmt">%1$d htooteulb srorre os raf</string>
   <string name="bt_no_devs">Uoy yltnerruc evah on deriap Htooteulb
 	secived. Dluow uoy ekil ot nepo eht Diordna Sgnittes Lenap ot dda
-	eno ro ?erom</string>
+	eno ro ?erom\n\nuOy( yam deen ot nepo ti no eht rehto ecived sa
+	llew.)</string>
 </resources>

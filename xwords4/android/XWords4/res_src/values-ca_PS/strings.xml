@@ -1943,5 +1943,6 @@
   <string name="bt_err_count_fmt">%1$d BLUETOOTH ERRORS SO FAR</string>
   <string name="bt_no_devs">YOU CURRENTLY HAVE NO PAIRED BLUETOOTH
 	DEVICES. WOULD YOU LIKE TO OPEN THE ANDROID SETTINGS PANEL TO ADD
-	ONE OR MORE?</string>
+	ONE OR MORE?\n\n(YOU MAY NEED TO OPEN IT ON THE OTHER DEVICE AS
+	WELL.)</string>
 </resources>

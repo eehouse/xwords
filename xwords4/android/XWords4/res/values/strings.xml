@@ -2275,5 +2275,6 @@
 
 	<string name="bt_no_devs">You currently have no paired Bluetooth
 	devices. Would you like to open the Android Settings Panel to add
-	one or more?</string>
+	one or more?\n\n(You may need to open it on the other device as
+	well.)</string>
 </resources>
