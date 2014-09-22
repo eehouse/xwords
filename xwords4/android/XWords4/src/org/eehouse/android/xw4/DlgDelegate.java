@@ -218,8 +218,7 @@ public class DlgDelegate {
 
     public void showOKOnlyDialog( int msgID )
     {
-        showOKOnlyDialog( LocUtils.getString( m_activity, msgID ), 
-                          Action.SKIP_CALLBACK );
+        showOKOnlyDialog( getString( msgID ), Action.SKIP_CALLBACK );
     }
 
     public void showDictGoneFinish()
@@ -236,8 +235,7 @@ public class DlgDelegate {
                                      final Action action,
                                      final Object[] params )
     {
-        showNotAgainDlgThen( LocUtils.getString( m_activity, msgID ), prefsKey, 
-                             action, params );
+        showNotAgainDlgThen( getString( msgID ), prefsKey, action, params );
     }
 
     public void showNotAgainDlgThen( String msg, int prefsKey,
@@ -284,8 +282,7 @@ public class DlgDelegate {
 
     public void showConfirmThen( int msgID, Action action )
     {
-        showConfirmThen( LocUtils.getString( m_activity, msgID ),
-                         R.string.button_ok, action, null );
+        showConfirmThen( getString( msgID ), R.string.button_ok, action, null );
     }
 
     public void showConfirmThen( String msg, Action action, Object[] params )
@@ -301,8 +298,7 @@ public class DlgDelegate {
     public void showConfirmThen( int msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( LocUtils.getString( m_activity, msg ), posButton, action, 
-                         params );
+        showConfirmThen( getString( msg ), posButton, action, params );
     }
 
     public void showConfirmThen( String msg, int posButton, Action action,
@@ -359,12 +355,12 @@ public class DlgDelegate {
 
     public void startProgress( int titleID, int msgID, OnCancelListener canLstnr )
     {
-        startProgress( titleID, LocUtils.getString( m_activity, msgID ), canLstnr );
+        startProgress( titleID, getString( msgID ), canLstnr );
     }
 
     public void startProgress( int titleID, String msg, OnCancelListener canLstnr )
     {
-        String title = LocUtils.getString( m_activity, titleID );
+        String title = getString( titleID );
         m_progress = ProgressDialog.show( m_activity, title, msg, true, true );
         
         if ( null != canLstnr ) {
@@ -375,7 +371,7 @@ public class DlgDelegate {
 
     public void setProgressMsg( int id )
     {
-        m_progress.setMessage( LocUtils.getString( m_activity, id ) );
+        m_progress.setMessage( getString( id ) );
     }
 
     public void stopProgress()
@@ -399,17 +395,14 @@ public class DlgDelegate {
         boolean asToast = true;
         switch( event ) {
         case BAD_PROTO:
-            msg = LocUtils.getString( m_activity, R.string.bt_bad_proto_fmt,
-                                      (String)args[0] );
+            msg = getString( R.string.bt_bad_proto_fmt, (String)args[0] );
             break;
         case MESSAGE_RESEND:
-            msg = LocUtils.getString( m_activity, R.string.bt_resend_fmt,
-                                      (String)args[0], (Long)args[1], 
-                                      (Integer)args[2] );
+            msg = getString( R.string.bt_resend_fmt, (String)args[0], 
+                             (Long)args[1], (Integer)args[2] );
             break;
         case MESSAGE_FAILOUT:
-            msg = LocUtils.getString( m_activity, R.string.bt_fail_fmt, 
-                                      (String)args[0] );
+            msg = getString( R.string.bt_fail_fmt, (String)args[0] );
             asToast = false;
             break;
         case RELAY_ALERT:
@@ -440,15 +433,13 @@ public class DlgDelegate {
     {
         final View view = LocUtils.inflate( m_activity, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
-        vers.setText( String.format( LocUtils.getString( m_activity,
-                                                         R.string.about_vers_fmt ),
-                                     LocUtils.getString( m_activity,
-                                                         R.string.app_version ),
+        vers.setText( String.format( getString( R.string.about_vers_fmt ),
+                                     getString( R.string.app_version ),
                                      BuildConstants.GIT_REV, 
                                      BuildConstants.BUILD_STAMP ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
-        String str = LocUtils.getString( m_activity, R.string.xlator );
+        String str = getString( R.string.xlator );
         if ( str.length() > 0 ) {
             xlator.setText( str );
         } else {
@@ -649,4 +640,13 @@ public class DlgDelegate {
         m_dlgStates.put( state.m_id, state );
     }
 
+    private String getString( int id )
+    {
+        return LocUtils.getString( m_activity, id );
+    }
+
+    private String getString( int id, Object... params )
+    {
+        return LocUtils.getString( m_activity, id, params );
+    }
 }
