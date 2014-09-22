@@ -469,7 +469,6 @@ public class XWPrefs {
             int screenLayout = 
                 context.getResources().getConfiguration().screenLayout;
             int size = screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
-            DbgUtils.showf( context, "screenSize: %d", size );
             s_isTablet = 
                 new Boolean(Configuration.SCREENLAYOUT_SIZE_LARGE <= size);
         }
