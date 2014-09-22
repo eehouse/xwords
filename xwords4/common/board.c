@@ -71,7 +71,7 @@
 #endif
 
 #ifndef DIVIDER_RATIO
-# define DIVIDER_RATIO 5        /* 1/5 tray tile width */
+# define DIVIDER_RATIO 3        /* 1/3 tray tile width */
 #endif
 #define DIVIDER_WIDTH(trayWidth) \
     ((trayWidth) / (1 + (MAX_TRAY_TILES*DIVIDER_RATIO)))
