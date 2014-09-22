@@ -1856,8 +1856,11 @@
       <!--  -->
     <string name="new_bt_body_fmt">From a player on the device %1$s wants to start a game</string>
       <!--  -->
-    <string name="bt_bad_proto_fmt">Crosswords on %1$s wrong version for
-      Bluetooth play.</string>
+    <string name="bt_bad_proto_fmt">The version of Crosswords on
+    \"%1$s\" is incompatible with this one for play using
+    Bluetooth. One of you may need to upgrade before you can
+    continue.</string>
+
       <!--  -->
     <string name="new_btmove_title">Invitation via Bluetooth</string>
     <!--  -->

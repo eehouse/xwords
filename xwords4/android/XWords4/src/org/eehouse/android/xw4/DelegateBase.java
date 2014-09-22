@@ -456,6 +456,14 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
             } catch ( java.lang.RuntimeException re ) {}
             DbgUtils.logf( "Bluetooth error count: %d", count );
             break;
+        case BAD_PROTO:
+            final String msg = getString( R.string.bt_bad_proto_fmt, (String)args[0] );
+            runOnUiThread( new Runnable() {
+                    public void run() {
+                        showOKOnlyDialog( msg );
+                    }
+                });
+            break;
         default:
             DbgUtils.logf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", event.toString() );
         }

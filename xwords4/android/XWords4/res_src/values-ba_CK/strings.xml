@@ -1593,8 +1593,10 @@
   <!--  -->
   <string name="new_bt_body_fmt">Morf a reyalp no eht ecived %1$s stnaw ot trats a emag</string>
   <!--  -->
-  <string name="bt_bad_proto_fmt">Sdrowssorc no %1$s gnorw noisrev rof
-      Htooteulb yalp.</string>
+  <string name="bt_bad_proto_fmt">Eht noisrev fo Sdrowssorc no
+    \"%1$s\" si elbitapmocni htiw siht eno rof yalp gnisu
+    Htooteulb. Eno fo uoy yam deen ot edargpu erofeb uoy nac
+    eunitnoc.</string>
   <!--  -->
   <string name="new_btmove_title">Noitativni aiv Htooteulb</string>
   <!--  -->

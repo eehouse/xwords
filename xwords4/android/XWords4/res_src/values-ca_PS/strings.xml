@@ -1593,8 +1593,10 @@
   <!--  -->
   <string name="new_bt_body_fmt">FROM A PLAYER ON THE DEVICE %1$s WANTS TO START A GAME</string>
   <!--  -->
-  <string name="bt_bad_proto_fmt">CROSSWORDS ON %1$s WRONG VERSION FOR
-      BLUETOOTH PLAY.</string>
+  <string name="bt_bad_proto_fmt">THE VERSION OF CROSSWORDS ON
+    \"%1$s\" IS INCOMPATIBLE WITH THIS ONE FOR PLAY USING
+    BLUETOOTH. ONE OF YOU MAY NEED TO UPGRADE BEFORE YOU CAN
+    CONTINUE.</string>
   <!--  -->
   <string name="new_btmove_title">INVITATION VIA BLUETOOTH</string>
   <!--  -->
