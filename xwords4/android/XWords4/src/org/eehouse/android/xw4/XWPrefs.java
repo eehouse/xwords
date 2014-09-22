@@ -203,19 +203,9 @@ public class XWPrefs {
         return getPrefsStringArray( context, R.string.key_closed_langs );
     }
 
-    public static void setBTNames( Context context, String[] names )
-    {
-        setPrefsStringArray( context, R.string.key_bt_names, names );
-    }
-
     public static void setSMSPhones( Context context, String[] names )
     {
         setPrefsStringArray( context, R.string.key_sms_phones, names );
-    }
-
-    public static String[] getBTNames( Context context )
-    {
-        return getPrefsStringArray( context, R.string.key_bt_names );
     }
 
     public static String[] getSMSPhones( Context context )

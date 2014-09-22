@@ -136,7 +136,7 @@ public class BTService extends XWService {
     }
 
     private BluetoothAdapter m_adapter;
-    private HashMap<String,String> m_names;
+    private Set<String> m_addrs;
     private static HashMap<String,int[]> s_devGames;
     private MultiMsgSink m_btMsgSink;
     private BTListenerThread m_listener;
@@ -255,7 +255,7 @@ public class BTService extends XWService {
             m_adapter = adapter;
             DbgUtils.logf( "BTService.onCreate(); bt name = %s", 
                            adapter.getName() );
-            initNames();
+            initAddrs();
             listLocalBTGames( false );
             startListener();
             startSender();
@@ -551,36 +551,37 @@ public class BTService extends XWService {
     private void addAddr( String btAddr, String btName )
     {
         boolean save = false;
-        synchronized( m_names ) {
-            String curName = m_names.get( btAddr );
-            save = null == curName || !curName.equals( btName ); // changing things?
+        synchronized( m_addrs ) {
+            save = !m_addrs.contains( btAddr );
             if ( save ) {
-                m_names.put( btAddr, btName );
+                m_addrs.add( btAddr );
             }
         }
         if ( save ) {
-            saveNames();
+            saveAddrs();
         }
     }
 
     private boolean haveAddr( String btAddr )
     {
-        boolean result;
-        synchronized( m_names ) {
-            result = null != m_names.get( btAddr );
-        }
-        return result;
+        return m_addrs.contains( btAddr );
     }
 
     private void clearDevs( String[] btAddrs )
     {
         if ( null != btAddrs ) {
-            synchronized( m_names ) {
+            synchronized( m_addrs ) {
                 for ( String btAddr : btAddrs ) {
-                    m_names.remove( btAddr );
+                    m_addrs.remove( btAddr );
                 }
             }
         }
+    }
+
+    private String nameForAddr( String btAddr )
+    {
+        String result = m_adapter.getRemoteDevice( btAddr ).getName();
+        return result;
     }
 
     private class BTSenderThread extends Thread {
@@ -629,7 +630,7 @@ public class BTService extends XWService {
                     case SCAN:
                         sendPings( null );
                         sendNames();
-                        saveNames();
+                        saveAddrs();
                         break;
                     case INVITE:
                         sendInvite( elem );
@@ -803,7 +804,7 @@ public class BTService extends XWService {
                 }
             }
 
-            String btName = m_names.get( elem.m_btAddr );
+            String btName = nameForAddr( elem.m_btAddr );
             sendResult( evt, elem.m_gameID, 0, btName );
             if ( ! success ) {
                 int failCount = elem.incrFailCount();
@@ -825,7 +826,7 @@ public class BTService extends XWService {
                     if ( success ) {
                         iter.remove();
                     } else if ( elem.failCountExceeded() ) {
-                        String btName = m_names.get( elem.m_btAddr );
+                        String btName = nameForAddr( elem.m_btAddr );
                         sendResult( MultiEvent.MESSAGE_FAILOUT, btName );
                         iter.remove();
                     }
@@ -877,18 +878,11 @@ public class BTService extends XWService {
 
     private void sendNames()
     {
-        String[] btAddrs;
-        String[] btNames;
-        synchronized( m_names ) {
-            int size = m_names.size();
-            Iterator<String> iter = m_names.keySet().iterator();
-            btAddrs = new String[size];
-            btNames = new String[size];
-            for ( int ii = 0; iter.hasNext(); ++ii ) {
-                String addr = iter.next();
-                btAddrs[ii] = addr;
-                btNames[ii] = m_names.get( addr );
-            }
+        String[] btAddrs = getAddrs();
+        int size = btAddrs.length;
+        String[] btNames = new String[size];
+        for ( int ii = 0; ii < size; ++ii ) {
+            btNames[ii] = nameForAddr( btAddrs[ii] );
         }
         sendResult( MultiEvent.SCAN_DONE, (Object)btAddrs, (Object)btNames );
     }
@@ -907,40 +901,30 @@ public class BTService extends XWService {
         }
     }
 
-    private void initNames()
+    private void initAddrs()
     {
-        m_names = new HashMap<String, String>();
+        m_addrs = new HashSet<String>();
 
-        String[] names = XWPrefs.getBTNames( this );
-        if ( null != names ) {
-            String[] addrs = XWPrefs.getBTAddresses( this );
-            if ( null != addrs && names.length == addrs.length ) {
-                for ( int ii = 0; ii < names.length; ++ii ) {
-                    m_names.put( names[ii], addrs[ii] );
-                }
+        String[] addrs = XWPrefs.getBTAddresses( this );
+        if ( null != addrs ) {
+            for ( String btAddr : addrs ) {
+                m_addrs.add( btAddr );
             }
         }
     }
 
-    private void saveNames()
+    private String[] getAddrs()
     {
-        Set<Entry<String,String>> entrySet;
-        synchronized( m_names ) {
-            entrySet = m_names.entrySet();
+        String[] addrs;
+        synchronized( m_addrs ) {
+            addrs = m_addrs.toArray( new String[m_addrs.size()] );
         }
-        int count = entrySet.size();
-        String[] names = new String[count];
-        String[] addrs = new String[count];
+        return addrs;
+    }
 
-        Iterator<Entry<String,String>> iter = entrySet.iterator();
-        for ( int ii = 0; iter.hasNext(); ++ii ) {
-            Entry<String,String> entry = iter.next();
-            names[ii] = entry.getKey();
-            addrs[ii] = entry.getValue();
-        }
-
-        XWPrefs.setBTNames( this, names );
-        XWPrefs.setBTAddresses( this, addrs );
+    private void saveAddrs()
+    {
+        XWPrefs.setBTAddresses( this, getAddrs() );
     }
 
     private void startListener()
