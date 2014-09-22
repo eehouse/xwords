@@ -21,27 +21,30 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.ListActivity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.os.Handler;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class BTInviteDelegate extends InviteDelegate {
 
@@ -120,8 +123,15 @@ public class BTInviteDelegate extends InviteDelegate {
 
     protected void scan()
     {
-        startProgress( R.string.scan_progress_title, R.string.scan_progress );
-        BTService.scan( m_activity );
+        int count = BTService.getPairedCount( m_activity );
+        if ( 0 < count ) {
+            String msg = getString( R.string.scan_progress_fmt, count );
+            startProgress( R.string.scan_progress_title, msg );
+            BTService.scan( m_activity );
+        } else {
+            showConfirmThen( R.string.bt_no_devs, R.string.button_go_settings, 
+                             Action.OPEN_BT_PREFS_ACTION );
+        }
     }
 
     protected void clearSelected()
@@ -195,5 +205,20 @@ public class BTInviteDelegate extends InviteDelegate {
 
         public String getBTAddr( int indx ) { return m_devAddrs[indx]; }
         public String getBTName( int indx ) { return m_devNames[indx]; }
+    }
+
+    // DlgDelegate.DlgClickNotify interface
+    @Override
+    public void dlgButtonClicked( Action action, int which, Object[] params )
+    {
+        switch( action ) {
+        case OPEN_BT_PREFS_ACTION:
+            if ( AlertDialog.BUTTON_POSITIVE == which ) {
+                BTService.openBTSettings( m_activity );
+            }
+            break;
+        default:
+            super.dlgButtonClicked( action, which, params );
+        }
     }
 }

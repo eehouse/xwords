@@ -1578,7 +1578,8 @@
   <string name="bt_pick_clear_button">Evomer dekcehc</string>
   <!--  -->
   <string name="scan_progress_title">Gninnacs...</string>
-  <string name="scan_progress">Gninnacs rof Sdrowssorc no deriap secived</string>
+  <string name="scan_progress_fmt">Gninnacs rof Sdrowssorc no %1$d
+    deriap secived</string>
   <!--  -->
   <string name="summary_wait_host">Gnitiaw rof ]s[noitcennoc</string>
   <!--  -->
@@ -1940,4 +1941,7 @@
   <string name="lmi_phony_fmt">%1$s tsol a nrut</string>
   <string name="lmi_tiles_fmt">Selit dengissa ot %1$s</string>
   <string name="bt_err_count_fmt">%1$d htooteulb srorre os raf</string>
+  <string name="bt_no_devs">Uoy yltnerruc evah on deriap Htooteulb
+	secived. Dluow uoy ekil ot nepo eht Diordna Sgnittes Lenap ot dda
+	eno ro ?erom</string>
 </resources>

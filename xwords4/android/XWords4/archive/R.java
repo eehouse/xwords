@@ -525,6 +525,7 @@ public final class R {
         /**  EXPLAIN ME 
          */
         public static final int bt_networked_desc=0x7f050180;
+        public static final int bt_no_devs=0x7f0502cd;
         /**   
          */
         public static final int bt_pick_clear_button=0x7f050205;
@@ -2224,7 +2225,7 @@ public final class R {
         /**  title for popup of public rooms found on server 
          */
         public static final int room_public_prompt=0x7f0500cc;
-        public static final int scan_progress=0x7f050207;
+        public static final int scan_progress_fmt=0x7f050207;
         /**   
          */
         public static final int scan_progress_title=0x7f050206;

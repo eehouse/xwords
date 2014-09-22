@@ -1578,7 +1578,8 @@
   <string name="bt_pick_clear_button">REMOVE CHECKED</string>
   <!--  -->
   <string name="scan_progress_title">SCANNING...</string>
-  <string name="scan_progress">SCANNING FOR CROSSWORDS ON PAIRED DEVICES</string>
+  <string name="scan_progress_fmt">SCANNING FOR CROSSWORDS ON %1$d
+    PAIRED DEVICES</string>
   <!--  -->
   <string name="summary_wait_host">WAITING FOR CONNECTION[S]</string>
   <!--  -->
@@ -1940,4 +1941,7 @@
   <string name="lmi_phony_fmt">%1$s LOST A TURN</string>
   <string name="lmi_tiles_fmt">TILES ASSIGNED TO %1$s</string>
   <string name="bt_err_count_fmt">%1$d BLUETOOTH ERRORS SO FAR</string>
+  <string name="bt_no_devs">YOU CURRENTLY HAVE NO PAIRED BLUETOOTH
+	DEVICES. WOULD YOU LIKE TO OPEN THE ANDROID SETTINGS PANEL TO ADD
+	ONE OR MORE?</string>
 </resources>

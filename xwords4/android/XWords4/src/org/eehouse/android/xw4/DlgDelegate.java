@@ -93,6 +93,9 @@ public class DlgDelegate {
         USE_IMMOBILE_ACTION,
         POST_WARNING_ACTION,
 
+        // BT Invite
+        OPEN_BT_PREFS_ACTION,
+
         // Study list
         SL_CLEAR_ACTION,
         SL_COPY_ACTION,
@@ -356,8 +359,12 @@ public class DlgDelegate {
 
     public void startProgress( int titleID, int msgID, OnCancelListener canLstnr )
     {
+        startProgress( titleID, LocUtils.getString( m_activity, msgID ), canLstnr );
+    }
+
+    public void startProgress( int titleID, String msg, OnCancelListener canLstnr )
+    {
         String title = LocUtils.getString( m_activity, titleID );
-        String msg = LocUtils.getString( m_activity, msgID );
         m_progress = ProgressDialog.show( m_activity, title, msg, true, true );
         
         if ( null != canLstnr ) {

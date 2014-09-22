@@ -417,6 +417,11 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         m_delegate.startProgress( titleID, msgID );
     }
 
+    protected void startProgress( int titleID, String msg )
+    {
+        m_delegate.startProgress( titleID, msg, null );
+    }
+
     protected void startProgress( int titleID, int msgID, OnCancelListener lstnr )
     {
         m_delegate.startProgress( titleID, msgID, lstnr );

@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
@@ -154,6 +155,24 @@ public class BTService extends XWService {
     {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         return null != adapter && adapter.isEnabled();
+    }
+
+    public static int getPairedCount( Activity activity )
+    {
+        int result = 0;
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if ( null != adapter ) {
+            Set<BluetoothDevice> pairedDevs = adapter.getBondedDevices();
+            result = pairedDevs.size();
+        }
+        return result;
+    }
+
+    public static void openBTSettings( Activity activity )
+    {
+        Intent intent = new Intent();
+        intent.setAction( android.provider.Settings.ACTION_BLUETOOTH_SETTINGS );
+        activity.startActivity( intent ); 
     }
 
     public static void startService( Context context )
