@@ -2042,11 +2042,8 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     XP_Bool silent;
     const XP_UCHAR* message = linux_getErrString( id, &silent );
 
-    XP_LOGF( "%s(%d)", __func__, id );
-
-    if ( silent ) {
-        XP_LOGF( "%s", message );
-    } else {
+    XP_LOGF( "%s: %s", __func__, message );
+    if ( !silent ) {
         gtkUserError( globals, message );
     }
 } /* gtk_util_userError */
