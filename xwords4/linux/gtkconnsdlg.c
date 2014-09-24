@@ -35,6 +35,8 @@ typedef struct _GtkConnsState {
     GtkWidget* bthost;
     GtkWidget* smsphone;
     GtkWidget* smsport;
+    GtkWidget* iphost;
+    GtkWidget* ipport;
     GtkWidget* bgScanButton;
 
     GtkWidget* notebook;
@@ -80,7 +82,15 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
         CommsConnType conType = pageNoToConnType( state, page );
 
         switch ( conType ) {
+#ifdef XWFEATURE_DIRECTIP
         case COMMS_CONN_IP_DIRECT:
+            txt = gtk_entry_get_text( GTK_ENTRY(state->iphost) );
+            XP_STRNCPY( state->addr->u.ip.hostName_ip, txt, 
+                        sizeof(state->addr->u.ip.hostName_ip) );
+            txt = gtk_entry_get_text( GTK_ENTRY(state->ipport) );
+            state->addr->u.ip.port_ip = atoi( txt );
+            break;
+#endif
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
             txt = gtk_entry_get_text( GTK_ENTRY(state->invite) );
@@ -224,6 +234,32 @@ makeBTPage( GtkConnsState* state )
     return vbox;
 } /* makeBTPage */
 
+#ifdef XWFEATURE_DIRECTIP
+static GtkWidget*
+makeIPDirPage( GtkConnsState* state )
+{
+    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+
+    /* XP_UCHAR hostName_ip[MAX_HOSTNAME_LEN + 1]; */
+    /* XP_U16 port_ip; */
+
+    const gchar* name = COMMS_CONN_IP_DIRECT == state->addr->conType ?
+        state->addr->u.ip.hostName_ip : state->globals->cGlobals.params->connInfo.ip.hostName;
+    GtkWidget* hbox = makeLabeledField( "Hostname", &state->iphost, name );
+    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+    
+    hbox = makeLabeledField( "Relay port", &state->ipport, NULL );
+    if ( COMMS_CONN_IP_DIRECT == state->addr->conType ) {
+        char buf[16];
+        snprintf( buf, sizeof(buf), "%d", state->addr->u.ip.port_ip );
+        gtk_entry_set_text( GTK_ENTRY(state->ipport), buf );
+    }
+    gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
+
+    return vbox;
+}
+#endif
+
 static GtkWidget*
 makeSMSPage( GtkConnsState* state )
 {
@@ -279,6 +315,12 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
                                     makeBTPage(&state),
                                     gtk_label_new( "Bluetooth" ) );
+#endif
+#ifdef XWFEATURE_DIRECTIP
+    state.pageTypes[nTypes++] = COMMS_CONN_IP_DIRECT;
+    (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
+                                    makeIPDirPage(&state),
+                                    gtk_label_new( "Direct" ) );
 #endif
     state.pageTypes[nTypes++] = COMMS_CONN_SMS;
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
