@@ -315,6 +315,9 @@ close_device() {
     unset ROOMS[$ID]
     unset APPS[$ID]
     unset ARGS_DEVID[$ID]
+
+    COUNT=${#ARGS[*]}
+    echo "$COUNT devices left playing..."
 }
 
 OBITS=""
