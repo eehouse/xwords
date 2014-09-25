@@ -49,6 +49,7 @@ public class MultiService {
     // these do not currently pass between devices so they can change.
     public enum MultiEvent { _INVALID,
                              BAD_PROTO,
+                             APP_NOT_FOUND,
                              BT_ENABLED,
                              BT_DISABLED,
                              SCAN_DONE,

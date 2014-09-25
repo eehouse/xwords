@@ -26,7 +26,7 @@
                 android:layout_height="wrap_content"
                 >
       <Button android:id="@+id/button_rescan"
-              android:text="@string/bt_pick_rescan_button"
+              android:text="@string/bt_pick_addall_button"
               style="@style/evenly_spaced_horizontal"
               />
       <!-- <Button android:id="@+id/button_reconfigure" -->

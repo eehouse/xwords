@@ -1165,7 +1165,7 @@
          many players are expected and only connects devices where the
          numbers match. -->
   <string name="str_reg_unexpected_user">REFUSED ATTEMPT TO REGISTER
-         UNEXPECTED USER[S]</string>
+         UNEXPECTED USER[S].</string>
   <!-- Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. -->
@@ -1572,14 +1572,10 @@
       VERSION: \"%1$s\"; AND MAKE/MODEL OF YOUR PHONE OR
       TABLET.)</string>
   <string name="newgame_enable_bt">TURN BLUETOOTH ON</string>
-  <!--  -->
-  <string name="bt_pick_rescan_button">RESCAN</string>
+  <!-- In the Bluetooth invite device dialog -->
+  <string name="bt_pick_addall_button">ADD ALL PAIRED</string>
   <!--  -->
   <string name="bt_pick_clear_button">REMOVE CHECKED</string>
-  <!--  -->
-  <string name="scan_progress_title">SCANNING...</string>
-  <string name="scan_progress_fmt">SCANNING FOR CROSSWORDS ON %1$d
-    PAIRED DEVICES</string>
   <!--  -->
   <string name="summary_wait_host">WAITING FOR CONNECTION[S]</string>
   <!--  -->
@@ -1602,9 +1598,9 @@
   <!--  -->
   <string name="new_move_body">ONE OR MORE MOVES HAS ARRIVED</string>
   <!--  -->
-  <string name="invite_bt_desc_fmt">PLEASE SELECT THE %1$d DEVICE[S] YOU
-        WANT TO INCLUDE IN THIS GAME.  USE THE RESCAN BUTTON IF YOU
-        DON\'T SEE A DEVICE YOU EXPECT.</string>
+  <string name="invite_bt_desc_fmt">PLEASE SELECT THE %1$d DEVICE[S]
+    YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"ADD ALL PAIRED\"
+    BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</string>
   <!--  -->
   <string name="bt_resend_fmt">BLUETOOTH SEND TO %1$s FAILED; RETRY %3$d IN
         %2$d SECONDS.</string>
@@ -1945,6 +1941,9 @@
   <string name="bt_err_count_fmt">%1$d BLUETOOTH ERRORS SO FAR</string>
   <string name="bt_no_devs">YOU CURRENTLY HAVE NO PAIRED BLUETOOTH
 	DEVICES. WOULD YOU LIKE TO OPEN THE ANDROID SETTINGS PANEL TO ADD
-	ONE OR MORE?\n\n(YOU MAY NEED TO OPEN IT ON THE OTHER DEVICE AS
-	WELL.)</string>
+	ONE OR MORE?\n\n(YOU MAY ALSO NEED TO OPEN IT ON THE DEVICE YOU
+	WANT TO PAIR WITH.)</string>
+  <string name="app_not_found_fmt">UNABLE TO CONNECT TO CROSSWORDS
+	ON THE DEVICE %1$s.  PLEASE CHECK THAT THE DEVICE IS WITHIN RANGE
+	AND THAT CROSSWORDS IS INSTALLED ON IT.</string>
 </resources>

@@ -131,9 +131,7 @@ public class BoardDelegate extends DelegateBase
     private String m_pwdName;
     private String m_getDict;
 
-    // Join these two!!!
-    private int m_nMissingPlayers = -1;
-    private int m_missing;
+    private int m_nMissing = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
 
@@ -485,10 +483,10 @@ public class BoardDelegate extends DelegateBase
         case DLG_INVITE:
             AlertDialog ad = (AlertDialog)dialog;
             String message = 
-                getString( R.string.invite_msg_fmt, m_missing );
+                getString( R.string.invite_msg_fmt, m_nMissing );
 
             String ps = null;
-            if ( m_missing > 1 ) {
+            if ( m_nMissing > 1 ) {
                 ps = getString( R.string.invite_multiple );
             } else {
                 boolean[] avail = NFCUtils.nfcAvail( m_activity );
@@ -727,7 +725,7 @@ public class BoardDelegate extends DelegateBase
                                   m_gsi.canUndo );
         }
 
-        Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_missing );
+        Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_nMissing );
 
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
@@ -845,7 +843,7 @@ public class BoardDelegate extends DelegateBase
             showConfirmThen( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION );
             break;
         case R.id.board_menu_invite:
-            showDialog( DlgID.DLG_INVITE );
+            inviteForMissing();
             break;
             // small devices only
         case R.id.board_menu_dict:
@@ -933,11 +931,11 @@ public class BoardDelegate extends DelegateBase
                 doSyncMenuitem();
                 break;
             case BT_PICK_ACTION:
-                BTInviteDelegate.launchForResult( m_activity, m_nMissingPlayers, 
+                BTInviteDelegate.launchForResult( m_activity, m_nMissing, 
                                                   BT_INVITE_RESULT );
                 break;
             case SMS_PICK_ACTION:
-                SMSInviteDelegate.launchForResult( m_activity, m_nMissingPlayers, 
+                SMSInviteDelegate.launchForResult( m_activity, m_nMissing, 
                                                    SMS_INVITE_RESULT );
                 break;
             case SMS_CONFIG_ACTION:
@@ -1161,13 +1159,12 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // NFCUtils.NFCActor
     //////////////////////////////////////////////////
-
     public String makeNFCMessage()
     {
         String data = null;
         switch ( m_connType ) {
         case COMMS_CONN_RELAY:
-            if ( 0 < m_missing ) {  // Isn't there a better test??
+            if ( 0 < m_nMissing ) {  // Isn't there a better test??
                 String room = m_summary.roomName;
                 String inviteID = String.format( "%X", m_gi.gameID );
                 Assert.assertNotNull( room );
@@ -1177,7 +1174,7 @@ public class BoardDelegate extends DelegateBase
             }
             break;
         case COMMS_CONN_BT:
-            if ( 0 < m_nMissingPlayers ) {
+            if ( 0 < m_nMissing ) {
                 data = BTLaunchInfo.makeLaunchJSON( m_gi.gameID, m_gi.dictLang, 
                                                     m_gi.dictName, m_gi.nPlayers );
                 removeDialog( DlgID.CONFIRM_THEN );
@@ -1311,6 +1308,7 @@ public class BoardDelegate extends DelegateBase
         int naMsg = 0;
         int naKey = 0;
         String toastStr = null;
+        m_nMissing = nMissing;
         if ( allHere ) {
             // All players have now joined the game.  The device that
             // created the room will assign tiles.  Then it will be
@@ -1328,7 +1326,6 @@ public class BoardDelegate extends DelegateBase
             if ( !m_haveInvited ) {
                 m_haveInvited = true;
                 m_room = room;
-                m_missing = nMissing;
                 showDialog( DlgID.DLG_INVITE );
                 invalidateOptionsMenuIf();
             } else {
@@ -1354,7 +1351,6 @@ public class BoardDelegate extends DelegateBase
             }
         }
 
-        m_missing = nMissing;
         invalidateOptionsMenuIf();
     } // handleConndMessage
 
@@ -1526,6 +1522,7 @@ public class BoardDelegate extends DelegateBase
         public void turnChanged( int newTurn )
         {
             if ( 0 <= newTurn ) {
+                m_nMissing = 0;
                 post( new Runnable() {
                         public void run() {
                             showNotAgainDlgThen( R.string.not_again_turnchanged, 
@@ -1642,12 +1639,14 @@ public class BoardDelegate extends DelegateBase
         // missing or not.
         @Override
         public void informMissing( boolean isServer, CommsConnType connType,
-                                   final int nMissingPlayers )
+                                   final int nMissing )
         {
             m_connType = connType;
+            Assert.assertTrue( isServer || 0 == nMissing );
+            m_nMissing = nMissing; // will be 0 unless isServer is true
 
             Action action = null;
-            if ( 0 < nMissingPlayers && isServer && !m_haveInvited ) {
+            if ( 0 < nMissing && isServer && !m_haveInvited ) {
                 switch( connType ) {
                 case COMMS_CONN_BT:
                     action = Action.BT_PICK_ACTION;
@@ -1658,27 +1657,7 @@ public class BoardDelegate extends DelegateBase
                 }
             }
             if ( null != action ) {
-                m_haveInvited = true;
-                final Action faction = action;
-                post( new Runnable() {
-                        public void run() {
-                            DbgUtils.showf( m_activity,
-                                            getString( R.string.players_miss_fmt,
-                                                       nMissingPlayers ) );
-                            m_nMissingPlayers = nMissingPlayers;
-                            String msg = getString( R.string.invite_msg_fmt,
-                                                    nMissingPlayers );
-
-                            if ( Action.BT_PICK_ACTION == faction ) {
-                                boolean[] avail = NFCUtils.nfcAvail( m_activity );
-                                if ( avail[1] ) {
-                                    msg += "\n\n" + getString( R.string.invite_if_nfc );
-                                }
-                            }
-
-                            showConfirmThen( msg, R.string.newgame_invite, faction );
-                        }
-                    } );
+                nonRelayInvite( action );
             }
         }
 
@@ -1785,6 +1764,43 @@ public class BoardDelegate extends DelegateBase
             }
         }
     } // class BoardUtilCtxt 
+
+    private void inviteForMissing() {
+        switch( m_connType ) {
+        case COMMS_CONN_BT:
+            nonRelayInvite( Action.BT_PICK_ACTION );
+            break;
+        case COMMS_CONN_SMS:
+            nonRelayInvite( Action.SMS_PICK_ACTION );
+            break;
+        case COMMS_CONN_RELAY:
+            showDialog( DlgID.DLG_INVITE );
+            break;
+        }
+    }
+
+    private void nonRelayInvite( final Action action )
+    {
+        m_haveInvited = true;
+        post( new Runnable() {
+                public void run() {
+                    DbgUtils.showf( m_activity,
+                                    getString( R.string.players_miss_fmt,
+                                               m_nMissing ) );
+                    String msg = getString( R.string.invite_msg_fmt,
+                                            m_nMissing );
+
+                    if ( Action.BT_PICK_ACTION == action ) {
+                        boolean[] avail = NFCUtils.nfcAvail( m_activity );
+                        if ( avail[1] ) {
+                            msg += "\n\n" + getString( R.string.invite_if_nfc );
+                        }
+                    }
+
+                    showConfirmThen( msg, R.string.newgame_invite, action );
+                }
+            } );
+    }
 
     private void loadGame()
     {

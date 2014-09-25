@@ -1165,7 +1165,7 @@
          many players are expected and only connects devices where the
          numbers match. -->
   <string name="str_reg_unexpected_user">Desufer tpmetta ot retsiger
-         detcepxenu ]s[resu</string>
+         detcepxenu ]s[resu.</string>
   <!-- Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. -->
@@ -1572,14 +1572,10 @@
       noisrev: \"%1$s\"; dna ledom/ekam fo ruoy enohp ro
       telbat.)</string>
   <string name="newgame_enable_bt">Nrut Htooteulb no</string>
-  <!--  -->
-  <string name="bt_pick_rescan_button">Nacser</string>
+  <!-- In the Bluetooth invite device dialog -->
+  <string name="bt_pick_addall_button">Dda lla Deriap</string>
   <!--  -->
   <string name="bt_pick_clear_button">Evomer dekcehc</string>
-  <!--  -->
-  <string name="scan_progress_title">Gninnacs...</string>
-  <string name="scan_progress_fmt">Gninnacs rof Sdrowssorc no %1$d
-    deriap secived</string>
   <!--  -->
   <string name="summary_wait_host">Gnitiaw rof ]s[noitcennoc</string>
   <!--  -->
@@ -1602,9 +1598,9 @@
   <!--  -->
   <string name="new_move_body">Eno ro erom sevom sah devirra</string>
   <!--  -->
-  <string name="invite_bt_desc_fmt">Esaelp tceles eht %1$d ]s[ecived uoy
-        tnaw ot edulcni ni siht emag.  Esu eht Nacser nottub fi uoy
-        nod\'t ees a ecived uoy tcepxe.</string>
+  <string name="invite_bt_desc_fmt">Esaelp tceles eht %1$d ]s[ecived
+    uoy tnaw ot edulcni ni siht emag.  Esu eht \"Dda lla Deriap\"
+    nottub fi uoy nod\'t ees a ecived uoy tcepxe.</string>
   <!--  -->
   <string name="bt_resend_fmt">Htooteulb dnes ot %1$s deliaf; yrter %3$d ni
         %2$d sdnoces.</string>
@@ -1945,6 +1941,9 @@
   <string name="bt_err_count_fmt">%1$d htooteulb srorre os raf</string>
   <string name="bt_no_devs">Uoy yltnerruc evah on deriap Htooteulb
 	secived. Dluow uoy ekil ot nepo eht Diordna Sgnittes Lenap ot dda
-	eno ro ?erom\n\nuOy( yam deen ot nepo ti no eht rehto ecived sa
-	llew.)</string>
+	eno ro ?erom\n\nuOy( yam osla deen ot nepo ti no eht ecived uoy
+	tnaw ot riap htiw.)</string>
+  <string name="app_not_found_fmt">Elbanu ot tcennoc ot Sdrowssorc
+	no eht ecived %1$s.  Esaelp kcehc taht eht ecived si nihtiw egnar
+	dna taht Sdrowssorc si dellatsni no ti.</string>
 </resources>

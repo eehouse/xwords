@@ -275,8 +275,8 @@ public class BTService extends XWService {
             ? BluetoothAdapter.getDefaultAdapter() : null;
         if ( null != adapter && adapter.isEnabled() ) {
             m_adapter = adapter;
-            DbgUtils.logf( "BTService.onCreate(); bt name = %s", 
-                           adapter.getName() );
+            DbgUtils.logf( "BTService.onCreate(); bt name = %s; bt addr = %s", 
+                           adapter.getName(), adapter.getAddress() );
             initAddrs();
             listLocalBTGames( false );
             startListener();
@@ -658,7 +658,7 @@ public class BTService extends XWService {
                         }
                         break;
                     case SCAN:
-                        sendPings( null );
+                        addAllToNames();
                         sendNames();
                         saveAddrs();
                         break;
@@ -776,18 +776,14 @@ public class BTService extends XWService {
                     }
                     socket.close();
 
-                    if ( BTCmd.BAD_PROTO == reply ) {
+                    if ( null == reply ) {
+                        sendResult( MultiEvent.APP_NOT_FOUND, dev.getName() );
+                    } else if ( BTCmd.BAD_PROTO == reply ) {
                         sendBadProto( socket );
-                    } else {
-                        MultiEvent evt = null;
-                        switch( reply ) {
-                        case INVITE_ACCPT:
-                            evt = MultiEvent.NEWGAME_SUCCESS;
-                            break;
-                        default:
-                            evt = MultiEvent.NEWGAME_FAILURE;
-                        }
-                        sendResult( evt, elem.m_gameID );
+                    } else if ( BTCmd.INVITE_ACCPT == reply ) {
+                        sendResult( MultiEvent.NEWGAME_SUCCESS, elem.m_gameID );
+                    } else {                        
+                        sendResult( MultiEvent.NEWGAME_FAILURE, elem.m_gameID );
                     }
                 }
             } catch ( IOException ioe ) {
@@ -928,6 +924,16 @@ public class BTService extends XWService {
         }
 
     } // class BTSenderThread
+
+    private void addAllToNames()
+    {
+        Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
+        synchronized( m_addrs ) {
+            for ( BluetoothDevice dev : pairedDevs ) {
+                m_addrs.add( dev.getAddress() );
+            }
+        }
+    }
 
     private void sendNames()
     {

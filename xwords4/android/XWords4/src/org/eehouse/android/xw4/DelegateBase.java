@@ -37,6 +37,7 @@ import android.widget.TextView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.MultiService.MultiEvent;
 
 import junit.framework.Assert;
 
@@ -445,7 +446,7 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     //////////////////////////////////////////////////
     // MultiService.MultiEventListener interface
     //////////////////////////////////////////////////
-    public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
+    public void eventOccurred( MultiEvent event, final Object ... args )
     {
         switch( event ) {
         case BT_ERR_COUNT:
@@ -457,7 +458,10 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
             DbgUtils.logf( "Bluetooth error count: %d", count );
             break;
         case BAD_PROTO:
-            final String msg = getString( R.string.bt_bad_proto_fmt, (String)args[0] );
+        case APP_NOT_FOUND:
+            final String msg = MultiEvent.BAD_PROTO == event
+                ? getString( R.string.bt_bad_proto_fmt, (String)args[0] )
+                : getString( R.string.app_not_found_fmt, (String)args[0] );
             runOnUiThread( new Runnable() {
                     public void run() {
                         showOKOnlyDialog( msg );
