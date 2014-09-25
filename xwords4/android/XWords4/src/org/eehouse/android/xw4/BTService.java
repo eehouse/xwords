@@ -402,10 +402,8 @@ public class BTService extends XWService {
                 DataInputStream inStream = null;
                 int nRead = 0;
                 try {
-                    DbgUtils.logf( "run: calling accept()" );
                     socket = m_serverSocket.accept(); // blocks
                     addAddr( socket );
-                    DbgUtils.logf( "run: accept() returned" );
                     inStream = new DataInputStream( socket.getInputStream() );
 
                     byte proto = inStream.readByte();
@@ -506,7 +504,7 @@ public class BTService extends XWService {
             os.flush();
 
             socket.close();
-            DbgUtils.logf( "receiveInvitation done", gameID );
+            // DbgUtils.logf( "receiveInvitation done", gameID );
         } // receiveInvitation
 
         private void receiveMessage( DataInputStream dis, BluetoothSocket socket )
@@ -519,10 +517,6 @@ public class BTService extends XWService {
                 if ( nRead == len ) {
                     BluetoothDevice host = socket.getRemoteDevice();
                     addAddr( host );
-
-                    DbgUtils.logf( "receiveMessages: got %d bytes from %s for "
-                                   + "gameID of %d", 
-                                   len, host.getName(), gameID );
 
                     // check if still here
                     long[] rowids = DBUtils.getRowIDsFor( BTService.this, 
@@ -606,6 +600,7 @@ public class BTService extends XWService {
                 }
             }
         }
+        saveAddrs();
     }
 
     private String nameForAddr( String btAddr )
@@ -640,14 +635,14 @@ public class BTService extends XWService {
                 try {
                     elem = m_queue.poll( timeout, TimeUnit.SECONDS );
                 } catch ( InterruptedException ie ) {
-                    DbgUtils.logf( "interrupted; killing thread" );
+                    DbgUtils.logf( "BTService: interrupted; killing thread" );
                     break;
                 }
 
                 if ( null == elem ) {
                     doAnyResends();
                 } else {
-                    DbgUtils.logf( "run: got %s from queue", elem.m_cmd.toString() );
+                    // DbgUtils.logf( "run: got %s from queue", elem.m_cmd.toString() );
 
                     switch( elem.m_cmd ) {
                     case PING:
@@ -684,7 +679,7 @@ public class BTService extends XWService {
         private void sendPings( MultiEvent event )
         {
             Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
-            DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
+            // DbgUtils.logf( "ping: got %d paired devices", pairedDevs.size() );
             for ( BluetoothDevice dev : pairedDevs ) {
                 String btAddr = dev.getAddress();
                 if ( haveAddr( btAddr ) ) {
@@ -706,8 +701,6 @@ public class BTService extends XWService {
             boolean sendWorking = false;
             boolean receiveWorking = false;
             try {
-                DbgUtils.logf( "PingThread: got socket to device %s", 
-                               dev.getName() );
                 BluetoothSocket socket =
                     dev.createRfcommSocketToServiceRecord( XWApp.getAppUUID() );
                 if ( null != socket ) {
@@ -800,7 +793,7 @@ public class BTService extends XWService {
             MultiEvent evt;
             if ( success ) {
                 evt = MultiEvent.MESSAGE_DROPPED;
-                DbgUtils.logf( "dropping message %s because game %X dead", 
+                DbgUtils.logf( "BTService.sendMsg: dropping message %s because game %X dead", 
                                elem.m_cmd, elem.m_gameID );
             } else {
                 evt = MultiEvent.MESSAGE_REFUSED;
