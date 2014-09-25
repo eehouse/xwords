@@ -416,9 +416,9 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         server->nv.prevWordsStream = readStreamIf( server, stream );
     }
 
-    util_informMissing( util, server->vol.gi->serverRole == SERVER_ISSERVER,
-                        comms_getConType( comms ),
-                        server->nv.pendingRegistrations );
+    XP_Bool isServer = amServer( server );
+    util_informMissing( util, isServer, comms_getConType( comms ),
+                        isServer ? server->nv.pendingRegistrations : 0 );
     return server;
 } /* server_makeFromStream */
 
@@ -2551,6 +2551,8 @@ tileCountsOk( const ServerCtxt* server )
 static void
 setTurn( ServerCtxt* server, XP_S16 turn )
 {
+    XP_ASSERT( -1 == turn
+               || (!amServer(server) || (0 == server->nv.pendingRegistrations)));
     if ( server->nv.currentTurn != turn ) {
         server->nv.currentTurn = turn;
         server->nv.lastMoveTime = util_getCurSeconds( server->vol.util );
