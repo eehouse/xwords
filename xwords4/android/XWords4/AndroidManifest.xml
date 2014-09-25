@@ -96,10 +96,12 @@
               android:theme="@android:style/Theme.NoTitleBar"
               />
     <activity android:name="BTInviteActivity"
+			  android:label="@string/bt_invite_title"
               android:theme="@android:style/Theme.Dialog"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
     <activity android:name="SMSInviteActivity"
+			  android:label="@string/sms_invite_title"
               android:theme="@android:style/Theme.Dialog"
               android:configChanges="keyboardHidden|orientation|screenSize"
               android:screenOrientation="sensor"

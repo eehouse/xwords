@@ -1609,6 +1609,10 @@
         semit. Nepo-er eht emag ot yrt niaga.</string>
   <!--  -->
   <string name="button_invite">Etivni dekcehc</string>
+  <!-- Title of device picker during invitation to a game via Bluetooth -->
+  <string name="bt_invite_title">Htooteulb Noitativni</string>
+  <!-- Title of phone number picker during invitation to a game via SMS -->
+  <string name="sms_invite_title">SMS Noitativni</string>
   <!--  -->
   <string name="btname_label">Wen Htooteulb emag eman</string>
   <!--  -->
@@ -1648,9 +1652,9 @@
   <string name="warn_nomobile_fmt">Eht rebmun %1$s rof %2$s si ton
     a \"elibom\" rebmun. Tropmi ?yawyna</string>
   <!--  -->
-  <string name="empty_sms_inviter">Enohp tsil si ytpme. Esu eht
-    \"Tropmi tcatnoc\" nottub ot dda elpoep uoy tnaw ot
-    ,etivni eht + nottub ot retne srebmun yltcerid.</string>
+  <string name="empty_sms_inviter">Siht enohp tsil si ytpme. Esu eht
+    \"Tropmi tcatnoc\" nottub ot dda elpoep uoy tnaw ot ,etivni eht +
+    nottub ot retne srebmun yltcerid.</string>
   <!--  -->
   <string name="get_sms_number">Retne enohp rebmun:</string>
   <!--  -->

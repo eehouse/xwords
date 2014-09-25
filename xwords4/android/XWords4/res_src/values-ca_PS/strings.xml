@@ -1609,6 +1609,10 @@
         TIMES. RE-OPEN THE GAME TO TRY AGAIN.</string>
   <!--  -->
   <string name="button_invite">INVITE CHECKED</string>
+  <!-- Title of device picker during invitation to a game via Bluetooth -->
+  <string name="bt_invite_title">BLUETOOTH INVITATION</string>
+  <!-- Title of phone number picker during invitation to a game via SMS -->
+  <string name="sms_invite_title">SMS INVITATION</string>
   <!--  -->
   <string name="btname_label">NEW BLUETOOTH GAME NAME</string>
   <!--  -->
@@ -1648,9 +1652,9 @@
   <string name="warn_nomobile_fmt">THE NUMBER %1$s FOR %2$s IS NOT
     A \"MOBILE\" NUMBER. IMPORT ANYWAY?</string>
   <!--  -->
-  <string name="empty_sms_inviter">PHONE LIST IS EMPTY. USE THE
-    \"IMPORT CONTACT\" BUTTON TO ADD PEOPLE YOU WANT TO
-    INVITE, THE + BUTTON TO ENTER NUMBERS DIRECTLY.</string>
+  <string name="empty_sms_inviter">THIS PHONE LIST IS EMPTY. USE THE
+    \"IMPORT CONTACT\" BUTTON TO ADD PEOPLE YOU WANT TO INVITE, THE +
+    BUTTON TO ENTER NUMBERS DIRECTLY.</string>
   <!--  -->
   <string name="get_sms_number">ENTER PHONE NUMBER:</string>
   <!--  -->
