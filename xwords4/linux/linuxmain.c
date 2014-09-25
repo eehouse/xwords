@@ -2336,6 +2336,11 @@ main( int argc, char** argv )
         XP_ASSERT( mainParams.pgi.nPlayers == mainParams.nLocalPlayers
                    + mainParams.info.serverInfo.nRemotePlayers );
 
+        /* add cur dir if dict search dir path is empty */
+        if ( !mainParams.dictDirs ) {
+            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, "./" );
+        }
+
         if ( isServer ) {
             if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
                 mainParams.pgi.serverRole = SERVER_STANDALONE;
