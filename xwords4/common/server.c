@@ -76,7 +76,6 @@ typedef struct ServerVolatiles {
     void* turnChangeData;
     GameOverListener gameOverListener;
     void* gameOverData;
-    XP_U16 pendingRegistrations;
     XP_Bool showPrevMove;
 } ServerVolatiles;
 
@@ -87,6 +86,7 @@ typedef struct ServerNonvolatiles {
     XW_State stateAfterShow;
     XP_S8 currentTurn; /* invalid when game is over */
     XP_S8 quitter;     /* -1 unless somebody resigned */
+    XP_U8 pendingRegistrations;
     XP_Bool showRobotScores;
     XP_Bool sortNewTiles;
 #ifdef STREAM_VERS_BIGBOARD
@@ -206,23 +206,21 @@ logNewState( XW_State old, XW_State newst )
  ****************************************************************************/
 #ifndef XWFEATURE_STANDALONE_ONLY
 static void
-figureMissing( ServerCtxt* server )
+syncPlayers( ServerCtxt* server )
 {
-    XP_U16 pendingRegistrations = 0;
     XP_U16 ii;
     CurGameInfo* gi = server->vol.gi;
     LocalPlayer* lp = gi->players;
     ServerPlayer* player = server->players;
     for ( ii = 0; ii < gi->nPlayers; ++ii, ++lp, ++player ) {
-        if ( !lp->isLocal && !lp->name ) {
-            ++pendingRegistrations;
+        if ( !lp->isLocal/*  && !lp->name */ ) {
+            ++server->nv.pendingRegistrations;
         }
         player->deviceIndex = lp->isLocal? SERVER_DEVICE : UNKNOWN_DEVICE;
     }
-    server->vol.pendingRegistrations = pendingRegistrations;
 }
 #else
-# define figureMissing( server )
+# define syncPlayers( server )
 #endif
 
 static XP_Bool
@@ -245,7 +243,7 @@ initServer( ServerCtxt* server )
         SETSTATE( server, XWSTATE_BEGIN );
     }
 
-    figureMissing( server );
+    syncPlayers( server );
 
     server->nv.nDevices = 1; /* local device (0) is always there */
 #ifdef STREAM_VERS_BIGBOARD
@@ -304,8 +302,7 @@ getNV( XWStreamCtxt* stream, ServerNonvolatiles* nv, XP_U16 nPlayers )
     if ( STREAM_VERS_DICTNAME <= version ) {
         nv->quitter = (XP_S8)stream_getBits( stream, NPLAYERS_NBITS ) - 1;
     }
-    /* FIX_NEXT_VERSION_CHANGE */
-    /*nv->pendingRegistrations = (XP_U8)*/ stream_getBits( stream, NPLAYERS_NBITS );
+    nv->pendingRegistrations = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
         nv->addresses[ii].channelNo =
@@ -340,8 +337,7 @@ putNV( XWStreamCtxt* stream, const ServerNonvolatiles* nv, XP_U16 nPlayers )
     /* +1: make -1 (NOTURN) into a positive number */
     stream_putBits( stream, NPLAYERS_NBITS, nv->currentTurn+1 );
     stream_putBits( stream, NPLAYERS_NBITS, nv->quitter+1 );
-    /* FIX_NEXT_VERSION_CHANGE */
-    stream_putBits( stream, NPLAYERS_NBITS, 0 /*nv->pendingRegistrations*/ );
+    stream_putBits( stream, NPLAYERS_NBITS, nv->pendingRegistrations );
 
     for ( ii = 0; ii < nPlayers; ++ii ) {
         stream_putBits( stream, 16, nv->addresses[ii].channelNo );
@@ -420,11 +416,9 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         server->nv.prevWordsStream = readStreamIf( server, stream );
     }
 
-    figureMissing( server );
-
     util_informMissing( util, server->vol.gi->serverRole == SERVER_ISSERVER,
                         comms_getConType( comms ),
-                        server->vol.pendingRegistrations );
+                        server->nv.pendingRegistrations );
     return server;
 } /* server_makeFromStream */
 
@@ -606,6 +600,7 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 #ifdef STREAM_VERS_BIGBOARD
         stream_putU8( stream, CUR_STREAM_VERS );
 #endif
+
     } else {
         XP_LOGF( "%s: wierd state %s; dropping message", __func__,
                  getStateStr(server->nv.gameState) );
@@ -705,7 +700,7 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
     playersInMsg = (XP_U16)stream_getBits( stream, NPLAYERS_NBITS );
     XP_ASSERT( playersInMsg > 0 );
 
-    if ( server->vol.pendingRegistrations < playersInMsg ) {
+    if ( server->nv.pendingRegistrations < playersInMsg ) {
         util_userError( server->vol.util, ERR_REG_UNEXPECTED_USER );
         success = XP_FALSE;
     } else {
@@ -744,7 +739,7 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
         }
 #endif
 
-        if ( server->vol.pendingRegistrations == 0 ) {
+        if ( server->nv.pendingRegistrations == 0 ) {
             XP_ASSERT( ii == playersInMsg ); /* otherwise malformed */
             setStreamVersion( server );
             checkResizeBoard( server );
@@ -1037,7 +1032,7 @@ server_do( ServerCtxt* server )
 
         switch( server->nv.gameState ) {
         case XWSTATE_BEGIN:
-            if ( server->vol.pendingRegistrations == 0 ) { /* all players on
+            if ( server->nv.pendingRegistrations == 0 ) { /* all players on
                                                              device */
                 assignTilesToAll( server );
                 SETSTATE( server, XWSTATE_INTURN );
@@ -1132,7 +1127,7 @@ findFirstPending( ServerCtxt* server, ServerPlayer** playerP )
     LocalPlayer* lp;
     CurGameInfo* gi = server->vol.gi;
     XP_U16 nPlayers = gi->nPlayers;
-    XP_U16 nPending = server->vol.pendingRegistrations;
+    XP_U16 nPending = server->nv.pendingRegistrations;
 
     XP_ASSERT( nPlayers > 0 );
     lp = gi->players + nPlayers;
@@ -1166,7 +1161,7 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
 
     /* The player must already be there with a null name, or it's an error.
        Take the first empty slot. */
-    XP_ASSERT( server->vol.pendingRegistrations > 0 );
+    XP_ASSERT( server->nv.pendingRegistrations > 0 );
 
     /* find the slot to use */
     lp = findFirstPending( server, &player );
@@ -1185,7 +1180,7 @@ registerRemotePlayer( ServerCtxt* server, XWStreamCtxt* stream )
         channelNo = stream_getAddress( stream );
         deviceIndex = getIndexForDevice( server, channelNo );
 
-        --server->vol.pendingRegistrations;
+        --server->nv.pendingRegistrations;
 
         if ( deviceIndex == -1 ) {
             RemoteAddress* addr; 
@@ -1356,7 +1351,7 @@ client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
             sortTilesIf( server, ii );
         }
 
-        figureMissing( server );
+        syncPlayers( server );
 
         SETSTATE( server, XWSTATE_INTURN );
 
@@ -2433,7 +2428,7 @@ server_getMissingPlayers( const ServerCtxt* server )
         }
         break;
     case SERVER_ISSERVER:
-        if ( 0 < server->vol.pendingRegistrations ) {
+        if ( 0 < server->nv.pendingRegistrations ) {
             XP_U16 nPlayers = server->vol.gi->nPlayers;
             const ServerPlayer* players = server->players;
             for ( ii = 0; ii < nPlayers; ++ii ) {
@@ -2556,7 +2551,6 @@ tileCountsOk( const ServerCtxt* server )
 static void
 setTurn( ServerCtxt* server, XP_S16 turn )
 {
-    XP_ASSERT( -1 == turn || 0 == server->vol.pendingRegistrations );
     if ( server->nv.currentTurn != turn ) {
         server->nv.currentTurn = turn;
         server->nv.lastMoveTime = util_getCurSeconds( server->vol.util );
