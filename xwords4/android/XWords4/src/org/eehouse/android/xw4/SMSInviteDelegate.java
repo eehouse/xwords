@@ -73,9 +73,11 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     protected void init( Bundle savedInstanceState )
     {
-        super.init( R.id.button_invite, R.id.button_add, 
-                    R.id.button_clear, R.id.invite_desc,
-                    R.string.invite_sms_desc_fmt );
+        String msg = getString( R.string.button_invite );
+        msg = getString( R.string.invite_sms_desc_fmt, m_nMissing, msg );
+        super.init( R.id.button_invite, R.id.button_add, R.id.button_clear, 
+                    R.id.invite_desc, msg );
+
         getBundledData( savedInstanceState );
 
         m_addButton = (ImageButton)findViewById( R.id.manual_add_button );

@@ -1863,7 +1863,7 @@
     <string name="new_move_body">One or more moves has arrived</string>
     <!--  -->
     <string name="invite_bt_desc_fmt">Please select the %1$d device[s]
-    you want to include in this game.  Use the \"Add all Paired\"
+    you want to include in this game.  Use the \"%2$s\"
     button if you don\'t see a device you expect.</string>
         <!--  -->
     <string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry %3$d in
@@ -1905,8 +1905,7 @@
     <string name="button_sms_add">Import contact</string>
     <!--  -->
     <string name="invite_sms_desc_fmt">Please check the %1$d phone
-    number[s] you want to invite to your new game, then tap \"Invite
-    checked\".</string>
+    number[s] you want to invite to your new game, then tap \"%2$s\".</string>
     <!--  -->
     <string name="manual_owner_name">(Not in contacts)</string>
     <!--  -->

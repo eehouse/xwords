@@ -51,7 +51,6 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 public class BTInviteDelegate extends InviteDelegate {
 
     private Activity m_activity;
-    private boolean m_firstScan;
     private Set<Integer> m_checked;
     private boolean m_setChecked;
     private BTDevsAdapter m_adapter;
@@ -74,10 +73,11 @@ public class BTInviteDelegate extends InviteDelegate {
     protected void init( Bundle savedInstanceState )
     {
         m_checked = new HashSet<Integer>();
+
+        String msg = getString( R.string.bt_pick_addall_button );
+        msg = getString( R.string.invite_bt_desc_fmt, m_nMissing, msg );
         super.init( R.id.button_invite, R.id.button_rescan, 
-                    R.id.button_clear, R.id.invite_desc,
-                    R.string.invite_bt_desc_fmt );
-        m_firstScan = true;
+                    R.id.button_clear, R.id.invite_desc, msg );
         BTService.clearDevices( m_activity, null ); // will return names
     }
 
@@ -109,7 +109,6 @@ public class BTInviteDelegate extends InviteDelegate {
                             setListAdapter( m_adapter );
                             m_checked.clear();
                             tryEnable();
-                            m_firstScan = false;
                         }
                     }
                 } );

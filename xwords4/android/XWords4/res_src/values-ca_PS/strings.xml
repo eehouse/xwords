@@ -1599,7 +1599,7 @@
   <string name="new_move_body">ONE OR MORE MOVES HAS ARRIVED</string>
   <!--  -->
   <string name="invite_bt_desc_fmt">PLEASE SELECT THE %1$d DEVICE[S]
-    YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"ADD ALL PAIRED\"
+    YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
     BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</string>
   <!--  -->
   <string name="bt_resend_fmt">BLUETOOTH SEND TO %1$s FAILED; RETRY %3$d IN
@@ -1641,8 +1641,7 @@
   <string name="button_sms_add">IMPORT CONTACT</string>
   <!--  -->
   <string name="invite_sms_desc_fmt">PLEASE CHECK THE %1$d PHONE
-    NUMBER[S] YOU WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"INVITE
-    CHECKED\".</string>
+    NUMBER[S] YOU WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</string>
   <!--  -->
   <string name="manual_owner_name">(NOT IN CONTACTS)</string>
   <!--  -->

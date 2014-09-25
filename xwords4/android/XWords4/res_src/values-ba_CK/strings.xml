@@ -1599,7 +1599,7 @@
   <string name="new_move_body">Eno ro erom sevom sah devirra</string>
   <!--  -->
   <string name="invite_bt_desc_fmt">Esaelp tceles eht %1$d ]s[ecived
-    uoy tnaw ot edulcni ni siht emag.  Esu eht \"Dda lla Deriap\"
+    uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
     nottub fi uoy nod\'t ees a ecived uoy tcepxe.</string>
   <!--  -->
   <string name="bt_resend_fmt">Htooteulb dnes ot %1$s deliaf; yrter %3$d ni
@@ -1641,8 +1641,7 @@
   <string name="button_sms_add">Tropmi tcatnoc</string>
   <!--  -->
   <string name="invite_sms_desc_fmt">Esaelp kcehc eht %1$d enohp
-    ]s[rebmun uoy tnaw ot etivni ot ruoy wen ,emag neht pat \"Etivni
-    dekcehc\".</string>
+    ]s[rebmun uoy tnaw ot etivni ot ruoy wen ,emag neht pat \"%2$s\".</string>
   <!--  -->
   <string name="manual_owner_name">tOn( ni )stcatnoc</string>
   <!--  -->

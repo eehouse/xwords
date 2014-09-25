@@ -49,14 +49,13 @@ abstract class InviteDelegate extends ListDelegateBase
     {
         super( delegator, savedInstanceState, layoutID, R.menu.empty );
         m_activity = delegator.getActivity();
+        Intent intent = getIntent();
+        m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
     }
 
     protected void init( int button_invite, int button_rescan, 
-                         int button_clear, int desc_id, int desc_strf )
+                         int button_clear, int desc_id, String descTxt )
     {
-        Intent intent = getIntent();
-        m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
-
         m_okButton = (Button)findViewById( button_invite );
         m_okButton.setOnClickListener( this );
         m_rescanButton = (Button)findViewById( button_rescan );
@@ -64,8 +63,8 @@ abstract class InviteDelegate extends ListDelegateBase
         m_clearButton = (Button)findViewById( button_clear );
         m_clearButton.setOnClickListener( this );
 
-        TextView desc = (TextView)findViewById( desc_id );
-        desc.setText( getString( desc_strf, m_nMissing ) );
+        TextView descView = (TextView)findViewById( desc_id );
+        descView.setText( descTxt );
 
         tryEnable();
     }
