@@ -375,6 +375,15 @@ writeStreamIf( XWStreamCtxt* dest, XWStreamCtxt* src )
     }
 }
 
+static void
+informMissing( const ServerCtxt* server )
+{
+    XP_Bool isServer = amServer( server );
+    util_informMissing( server->vol.util, isServer, 
+                        comms_getConType( server->vol.comms ),
+                        isServer ? server->nv.pendingRegistrations : 0 );
+}
+
 ServerCtxt*
 server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model, 
                        CommsCtxt* comms, XW_UtilCtxt* util, XP_U16 nPlayers )
@@ -416,9 +425,7 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         server->nv.prevWordsStream = readStreamIf( server, stream );
     }
 
-    XP_Bool isServer = amServer( server );
-    util_informMissing( util, isServer, comms_getConType( comms ),
-                        isServer ? server->nv.pendingRegistrations : 0 );
+    informMissing( server );
     return server;
 } /* server_makeFromStream */
 
@@ -701,6 +708,8 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
     XP_ASSERT( playersInMsg > 0 );
 
     if ( server->nv.pendingRegistrations < playersInMsg ) {
+        XP_LOGF( "%s: got %d players but missing only %d", __func__, 
+                 playersInMsg, server->nv.pendingRegistrations );
         util_userError( server->vol.util, ERR_REG_UNEXPECTED_USER );
         success = XP_FALSE;
     } else {
@@ -745,6 +754,8 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
             checkResizeBoard( server );
             assignTilesToAll( server );
             SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
+
+            informMissing( server );
         }
     }
 
