@@ -451,10 +451,6 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         switch( event ) {
         case BT_ERR_COUNT:
             int count = (Integer)args[0];
-            try {
-                DbgUtils.showf( m_activity, 
-                                getString( R.string.bt_err_count_fmt, count ) );
-            } catch ( java.lang.RuntimeException re ) {}
             DbgUtils.logf( "Bluetooth error count: %d", count );
             break;
         case BAD_PROTO:
