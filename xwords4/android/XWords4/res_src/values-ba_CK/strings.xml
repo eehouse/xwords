@@ -1651,7 +1651,7 @@
   <!--  -->
   <string name="warn_nomobile_fmt">Eht rebmun %1$s rof %2$s si ton
     a \"elibom\" rebmun. Tropmi ?yawyna</string>
-  <!--  -->
+  <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
   <string name="empty_sms_inviter">Siht enohp tsil si ytpme. Esu eht
     \"Tropmi tcatnoc\" nottub ot dda elpoep uoy tnaw ot ,etivni eht +
     nottub ot retne srebmun yltcerid.</string>

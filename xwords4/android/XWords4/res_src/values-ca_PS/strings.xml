@@ -1651,7 +1651,7 @@
   <!--  -->
   <string name="warn_nomobile_fmt">THE NUMBER %1$s FOR %2$s IS NOT
     A \"MOBILE\" NUMBER. IMPORT ANYWAY?</string>
-  <!--  -->
+  <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
   <string name="empty_sms_inviter">THIS PHONE LIST IS EMPTY. USE THE
     \"IMPORT CONTACT\" BUTTON TO ADD PEOPLE YOU WANT TO INVITE, THE +
     BUTTON TO ENTER NUMBERS DIRECTLY.</string>

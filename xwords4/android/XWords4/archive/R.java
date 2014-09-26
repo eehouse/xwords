@@ -1020,7 +1020,7 @@ public final class R {
         /**  color of empty squares on the board (that are not bonus squares) 
          */
         public static final int empty=0x7f050156;
-        /**   
+        /**  Shows in SMS Invite dialog when no phone numbers have been saved previously 
          */
         public static final int empty_sms_inviter=0x7f050224;
         public static final int enable_dupes_summary=0x7f05008b;
