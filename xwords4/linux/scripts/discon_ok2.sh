@@ -41,8 +41,8 @@ declare -A FILES
 declare -A LOGS
 declare -A MINEND
 declare -A ROOM_PIDS
-declare -a APPS_OLD
-declare -a DICTS
+declare -a APPS_OLD=
+declare -a DICTS=
 declare -A CHECKED_ROOMS
 
 function cleanup() {
@@ -353,7 +353,7 @@ maybe_resign() {
 try_upgrade() {
     KEY=$1
     if [ xx = "${APPS_OLD+xx}" ]; then
-        if [ $APP_NEW != ${APPS[$KEY]} ]; then
+        if [ $APP_NEW != "${APPS[$KEY]}" ]; then
             # one in five chance of upgrading
             if [ 0 -eq $((RANDOM % UPGRADE_ODDS)) ]; then
                 APPS[$KEY]=$APP_NEW
@@ -665,7 +665,7 @@ done
 
 # Assign defaults
 #[ 0 -eq ${#DICTS[@]} ] && DICTS=(dict.xwd)
-[ xx = "${DICTS+xx}" ] || DICTS=(dict.xwd)
+[ 0 -eq ${#DICTS} ] && DICTS=(dict.xwd)
 [ -z "$APP_NEW" ] && APP_NEW=./obj_linux_memdbg/xwords
 [ -z "$MINDEVS" ] && MINDEVS=2
 [ -z "$MAXDEVS" ] && MAXDEVS=4
