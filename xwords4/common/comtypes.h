@@ -47,6 +47,7 @@
 #endif
 #define MAX_COLS MAX_ROWS
 
+#define STREAM_VERS_MULTIADDR 0x17
 #define STREAM_VERS_COMMSBACKOFF 0x16
 #define STREAM_VERS_DICTNAME 0x15
 #ifdef HASH_STREAM 
@@ -84,7 +85,7 @@
 #define STREAM_VERS_405  0x01
 
 /* search for FIX_NEXT_VERSION_CHANGE next time this is changed */
-#define CUR_STREAM_VERS STREAM_VERS_COMMSBACKOFF
+#define CUR_STREAM_VERS STREAM_VERS_MULTIADDR
 
 typedef struct XP_Rect {
     XP_S16 left;

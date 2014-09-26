@@ -123,7 +123,7 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
             break;
         }
 
-        state->addr->conType = conType;
+        addr_setType( state->addr, conType );
     }
         
     state->cancelled = XP_FALSE;
@@ -184,7 +184,7 @@ makeRelayPage( GtkConnsState* state )
     gtk_box_pack_start( GTK_BOX(vbox), gtk_label_new( hint ), FALSE, TRUE, 0 );
 
     GtkWidget* hbox = makeLabeledField( "Room", &state->invite, NULL );
-    if ( COMMS_CONN_RELAY == state->addr->conType ) {
+    if ( COMMS_CONN_RELAY == addr_getType( state->addr ) ) {
         gtk_entry_set_text( GTK_ENTRY(state->invite), 
                             state->addr->u.ip_relay.invite );
     }
@@ -192,7 +192,7 @@ makeRelayPage( GtkConnsState* state )
     gtk_widget_set_sensitive( state->invite, !state->readOnly );
 
     hbox = makeLabeledField( "Relay address", &state->hostName, NULL );
-    if ( COMMS_CONN_RELAY == state->addr->conType ) {
+    if ( COMMS_CONN_RELAY == addr_getType( state->addr ) ) {
         gtk_entry_set_text( GTK_ENTRY(state->hostName), 
                             state->addr->u.ip_relay.hostName );
     }
@@ -200,7 +200,7 @@ makeRelayPage( GtkConnsState* state )
     gtk_widget_set_sensitive( state->hostName, !state->readOnly );
 
     hbox = makeLabeledField( "Relay port", &state->port, NULL );
-    if ( COMMS_CONN_RELAY == state->addr->conType ) {
+    if ( COMMS_CONN_RELAY == addr_getType( state->addr ) ) {
         char buf[16];
         snprintf( buf, sizeof(buf), "%d", state->addr->u.ip_relay.port );
         gtk_entry_set_text( GTK_ENTRY(state->port), buf );
@@ -219,7 +219,7 @@ makeBTPage( GtkConnsState* state )
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
     GtkWidget* hbox = makeLabeledField( "Host device", &state->bthost, NULL );
-    if ( COMMS_CONN_BT == state->addr->conType ) {
+    if ( COMMS_CONN_BT == addr_getType( state->addr ) ) {
         gtk_entry_set_text( GTK_ENTRY(state->bthost), state->addr->u.bt.hostName );
     }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -243,13 +243,13 @@ makeIPDirPage( GtkConnsState* state )
     /* XP_UCHAR hostName_ip[MAX_HOSTNAME_LEN + 1]; */
     /* XP_U16 port_ip; */
 
-    const gchar* name = COMMS_CONN_IP_DIRECT == state->addr->conType ?
+    const gchar* name = COMMS_CONN_IP_DIRECT == addr_getType( state->addr ) ?
         state->addr->u.ip.hostName_ip : state->globals->cGlobals.params->connInfo.ip.hostName;
     GtkWidget* hbox = makeLabeledField( "Hostname", &state->iphost, name );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     
     hbox = makeLabeledField( "Relay port", &state->ipport, NULL );
-    if ( COMMS_CONN_IP_DIRECT == state->addr->conType ) {
+    if ( COMMS_CONN_IP_DIRECT == addr_getType( state->addr ) ) {
         char buf[16];
         snprintf( buf, sizeof(buf), "%d", state->addr->u.ip.port_ip );
         gtk_entry_set_text( GTK_ENTRY(state->ipport), buf );
@@ -265,13 +265,13 @@ makeSMSPage( GtkConnsState* state )
 {
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
-    const gchar* phone = COMMS_CONN_SMS == state->addr->conType ?
+    const gchar* phone = COMMS_CONN_SMS == addr_getType( state->addr ) ?
         state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.phone;
     GtkWidget* hbox = makeLabeledField( "Host phone", &state->smsphone, phone );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->smsphone, !state->readOnly );
 
-    int portVal = COMMS_CONN_SMS == state->addr->conType
+    int portVal = COMMS_CONN_SMS == addr_getType( state->addr )
         ? state->addr->u.sms.port
         : state->globals->cGlobals.params->connInfo.sms.port;
     gchar port[32];
@@ -331,7 +331,7 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     gtk_box_pack_start( GTK_BOX(vbox), state.notebook, FALSE, TRUE, 0 );
     state.pageTypes[nTypes++] = COMMS_CONN_NONE; /* mark end of list */
 
-    gint pageNo = conTypeToPageNum( &state, addr->conType );
+    gint pageNo = conTypeToPageNum( &state, addr_getType( addr ) );
     gtk_notebook_set_current_page( GTK_NOTEBOOK(state.notebook), pageNo );
 
     gtk_widget_show( state.notebook );

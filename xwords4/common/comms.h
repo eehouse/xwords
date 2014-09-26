@@ -1,6 +1,6 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -76,9 +76,9 @@ typedef struct XP_BtAddrStr { XP_UCHAR chars[18]; } XP_BtAddrStr;
 #define MAX_PHONE_LEN    31
 
 typedef struct _CommsAddrRec {
-    CommsConnType conType;
+    XP_U16 _conTypes;
 
-    union {
+    struct {
         struct {
             XP_UCHAR hostName_ip[MAX_HOSTNAME_LEN + 1];
             XP_U32 ipAddr_ip;      /* looked up from above */
@@ -220,6 +220,10 @@ XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
 
 XP_Bool comms_canChat( const CommsCtxt* comms );
 XP_Bool comms_isConnected( const CommsCtxt* const comms );
+
+CommsConnType addr_getType( const CommsAddrRec* addr );
+void addr_setType( CommsAddrRec* addr, CommsConnType type );
+
 
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );

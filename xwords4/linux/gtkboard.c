@@ -510,7 +510,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
                           &cGlobals->cp, &procs, params->gameSeed );
 
         // addr.conType = params->conType;
-        switch( addr.conType ) {
+        switch( addr_getType( &addr ) ) {
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY:
             /* addr.u.ip_relay.ipAddr = 0; */

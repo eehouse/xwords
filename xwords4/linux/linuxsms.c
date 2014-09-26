@@ -188,7 +188,7 @@ decodeAndDelete( LinSMSData* storage, const gchar* name,
         if ( valid && outlen <= buflen ) {
             XP_MEMCPY( buf, out, outlen );
             nRead = outlen;
-            addr->conType = COMMS_CONN_SMS;
+            addr_setType( addr, COMMS_CONN_SMS );
             XP_STRNCPY( addr->u.sms.phone, phone, sizeof(addr->u.sms.phone) );
             XP_LOGF( "%s: message came from phone: %s", __func__, phone );
             addr->u.sms.port = 1; /* for now */

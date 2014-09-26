@@ -1144,7 +1144,7 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
     CommsConnType conType;
 
     if ( !!addrRec ) {
-        conType = addrRec->conType;
+        conType = addr_getType( addrRec );
     } else {
         conType = cGlobals->params->conType;
     }
@@ -1395,7 +1395,7 @@ linux_util_addrChange( XW_UtilCtxt* uc,
                        const CommsAddrRec* newAddr )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    switch ( newAddr->conType ) {
+    switch ( addr_getType( newAddr ) ) {
 #ifdef XWFEATURE_BLUETOOTH
     case COMMS_CONN_BT: {
         XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
@@ -1814,7 +1814,7 @@ initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
     if ( 0 ) {
 #ifdef XWFEATURE_RELAY
     } else if ( params->conType == COMMS_CONN_RELAY ) {
-        addr->conType = COMMS_CONN_RELAY;
+        addr_setType( addr,  COMMS_CONN_RELAY );
         addr->u.ip_relay.ipAddr = 0;       /* ??? */
         addr->u.ip_relay.port = params->connInfo.relay.defaultSendPort;
         addr->u.ip_relay.seeksPublicRoom = 
@@ -1828,14 +1828,14 @@ initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
 #endif
 #ifdef XWFEATURE_SMS
     } else if ( params->conType == COMMS_CONN_SMS ) {
-        addr->conType = COMMS_CONN_SMS;
+        addr_setType( addr, COMMS_CONN_SMS );
         XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.phone,
                     sizeof(addr->u.sms.phone) - 1 );
         addr->u.sms.port = params->connInfo.sms.port;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     } else if ( params->conType == COMMS_CONN_BT ) {
-        addr->conType = COMMS_CONN_BT;
+        addr_setType( addr, COMMS_CONN_BT );
         XP_ASSERT( sizeof(addr->u.bt.btAddr) 
                    >= sizeof(params->connInfo.bt.hostAddr));
         XP_MEMCPY( &addr->u.bt.btAddr, &params->connInfo.bt.hostAddr,

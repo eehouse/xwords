@@ -181,6 +181,8 @@ static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
 
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
 static void sendConnect( CommsCtxt* comms, XP_Bool breakExisting );
+static XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp, 
+                          XP_U32* state );
 
 #ifdef XWFEATURE_RELAY
 static XP_Bool relayConnect( CommsCtxt* comms );
@@ -455,7 +457,7 @@ comms_transportFailed( CommsCtxt* comms  )
 {
     LOG_FUNC();
     XP_ASSERT( !!comms );
-    if ( COMMS_CONN_RELAY == comms->addr.conType
+    if ( COMMS_CONN_RELAY == addr_getType(&comms->addr)
          && comms->rr.relayState != COMMS_RELAYSTATE_DENIED ) {
         relayDisconnect( comms );
 
@@ -469,10 +471,10 @@ void
 comms_destroy( CommsCtxt* comms )
 {
     /* did I call comms_stop()? */
-    XP_ASSERT( COMMS_CONN_RELAY != comms->addr.conType
+    XP_ASSERT( COMMS_CONN_RELAY != addr_getType(&comms->addr)
                || COMMS_RELAYSTATE_UNCONNECTED == comms->rr.relayState );
 
-    CommsAddrRec aNew = { .conType = COMMS_CONN_NONE };
+    CommsAddrRec aNew = {0};
     util_addrChange( comms->util, &comms->addr, &aNew );
 
     cleanupInternal( comms );
@@ -493,54 +495,68 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID )
 } /* comms_setConnID */
 
 static void
-addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
+addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ )
 {
-    CommsAddrRec addr;
-
-    addr.conType = stream_getU8( stream );
-
-    switch( addr.conType ) {
+    switch( typ ) {
     case COMMS_CONN_NONE:
         break;
     case COMMS_CONN_BT:
-        stringFromStreamHere( stream, addr.u.bt.hostName,
-                              sizeof(addr.u.bt.hostName) );
-        stringFromStreamHere( stream, addr.u.bt.btAddr.chars,
-                              sizeof(addr.u.bt.btAddr.chars) );
+        stringFromStreamHere( stream, addrP->u.bt.hostName,
+                              sizeof(addrP->u.bt.hostName) );
+        stringFromStreamHere( stream, addrP->u.bt.btAddr.chars,
+                              sizeof(addrP->u.bt.btAddr.chars) );
         break;
     case COMMS_CONN_IR:
         /* nothing to save */
         break;
     case COMMS_CONN_IP_DIRECT:
-        stringFromStreamHere( stream, addr.u.ip.hostName_ip,
-                              sizeof(addr.u.ip.hostName_ip) );
-        addr.u.ip.ipAddr_ip = stream_getU32( stream );
-        addr.u.ip.port_ip = stream_getU16( stream );
+        stringFromStreamHere( stream, addrP->u.ip.hostName_ip,
+                              sizeof(addrP->u.ip.hostName_ip) );
+        addrP->u.ip.ipAddr_ip = stream_getU32( stream );
+        addrP->u.ip.port_ip = stream_getU16( stream );
         break;
     case COMMS_CONN_RELAY:
-        stringFromStreamHere( stream, addr.u.ip_relay.invite,
-                              sizeof(addr.u.ip_relay.invite) );
-        stringFromStreamHere( stream, addr.u.ip_relay.hostName,
-                              sizeof(addr.u.ip_relay.hostName) );
-        addr.u.ip_relay.ipAddr = stream_getU32( stream );
-        addr.u.ip_relay.port = stream_getU16( stream );
+        stringFromStreamHere( stream, addrP->u.ip_relay.invite,
+                              sizeof(addrP->u.ip_relay.invite) );
+        stringFromStreamHere( stream, addrP->u.ip_relay.hostName,
+                              sizeof(addrP->u.ip_relay.hostName) );
+        addrP->u.ip_relay.ipAddr = stream_getU32( stream );
+        addrP->u.ip_relay.port = stream_getU16( stream );
         if ( stream_getVersion( stream ) >= STREAM_VERS_DICTLANG ) {
-            addr.u.ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
-            addr.u.ip_relay.advertiseRoom = stream_getBits( stream, 1 );
+            addrP->u.ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
+            addrP->u.ip_relay.advertiseRoom = stream_getBits( stream, 1 );
         }
         break;
     case COMMS_CONN_SMS:
-        stringFromStreamHere( stream, addr.u.sms.phone, 
-                              sizeof(addr.u.sms.phone) );
-        addr.u.sms.port = stream_getU16( stream );
+        stringFromStreamHere( stream, addrP->u.sms.phone, 
+                              sizeof(addrP->u.sms.phone) );
+        addrP->u.sms.port = stream_getU16( stream );
         break;
     default:
         /* shut up, compiler */
         break;
     }
+} /* addrFromStreamOne */
 
-    XP_MEMCPY( addrP, &addr, sizeof(*addrP) );
-} /* addrFromStream */
+static void
+addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
+{
+    XP_U8 tmp = stream_getU8( stream );
+    if ( STREAM_VERS_MULTIADDR <= stream_getVersion( stream ) ) {
+        /* do nothing */
+    } else {
+        if ( COMMS_CONN_NONE != tmp ) {
+            tmp = 1 << (tmp - 1);
+        }
+    }
+    addrP->_conTypes = tmp;
+
+    CommsConnType typ;
+    XP_U32 state = 0;
+    while ( addr_iter( addrP, &typ, &state ) ) {
+        addrFromStreamOne( addrP, stream, typ );
+    }
+}
 
 CommsCtxt* 
 comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
@@ -556,14 +572,9 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     short ii;
 
     isServer = stream_getU8( stream );
-    if ( version < STREAM_VERS_RELAY ) {
-        XP_MEMSET( &addr, 0, sizeof(addr) );
-        addr.conType = COMMS_CONN_IR; /* all there was back then */
-    } else {
-        addrFromStream( &addr, stream );
-    }
+    addrFromStream( &addr, stream );
 
-    if ( addr.conType == COMMS_CONN_RELAY ) {
+    if ( addr_getType( &addr ) == COMMS_CONN_RELAY ) {
         nPlayersHere = (XP_U16)stream_getBits( stream, 4 );
         nPlayersTotal = (XP_U16)stream_getBits( stream, 4 );
     } else {
@@ -590,7 +601,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         comms->resendBackoff = stream_getU16( stream );
         comms->nextResend = stream_getU32( stream );
     }
-    if ( addr.conType == COMMS_CONN_RELAY ) {
+    if ( addr_getType(&addr) == COMMS_CONN_RELAY ) {
         comms->rr.myHostID = stream_getU8( stream );
         stringFromStreamHere( stream, comms->rr.connName, 
                               sizeof(comms->rr.connName) );
@@ -611,7 +622,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
             rec->lastMsgAckd = stream_getU16( stream );
         }
         rec->channelNo = stream_getU16( stream );
-        if ( rec->addr.conType == COMMS_CONN_RELAY ) {
+        if ( addr_getType( &rec->addr ) == COMMS_CONN_RELAY ) {
             rec->rr.hostID = stream_getU8( stream );
         }
 
@@ -671,7 +682,7 @@ comms_start( CommsCtxt* comms )
 void
 comms_stop( CommsCtxt* comms )
 {
-    if ( COMMS_CONN_RELAY == comms->addr.conType ) {
+    if ( COMMS_CONN_RELAY == addr_getType( &comms->addr ) ) {
         relayDisconnect( comms );
     }
 }
@@ -679,7 +690,7 @@ comms_stop( CommsCtxt* comms )
 static void
 sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
 {
-    switch( comms->addr.conType ) {
+    switch( addr_getType( &comms->addr ) ) {
 #ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
         if ( breakExisting
@@ -708,47 +719,54 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
 } /* comms_start */
 
 static void
-addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
+addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* addrP )
 {
-    CommsAddrRec addr;
-    XP_MEMCPY( &addr, addrP, sizeof(addr) ); /* does this really speed things
-                                                or reduce code size? */
-    stream_putU8( stream, addr.conType );
-
-    switch( addr.conType ) {
+    switch( typ ) {
     case COMMS_CONN_NONE:
         /* nothing to write */
         break;
     case COMMS_CONN_BT:
-        stringToStream( stream, addr.u.bt.hostName );
+        stringToStream( stream, addrP->u.bt.hostName );
         /* sizeof(.bits) below defeats ARM's padding. */
-        stringToStream( stream, addr.u.bt.btAddr.chars );
+        stringToStream( stream, addrP->u.bt.btAddr.chars );
         break;
     case COMMS_CONN_IR:
         /* nothing to save */
         break;
     case COMMS_CONN_IP_DIRECT:
-        stringToStream( stream, addr.u.ip.hostName_ip );
-        stream_putU32( stream, addr.u.ip.ipAddr_ip );
-        stream_putU16( stream, addr.u.ip.port_ip );
+        stringToStream( stream, addrP->u.ip.hostName_ip );
+        stream_putU32( stream, addrP->u.ip.ipAddr_ip );
+        stream_putU16( stream, addrP->u.ip.port_ip );
         break;
     case COMMS_CONN_RELAY:
-        stringToStream( stream, addr.u.ip_relay.invite );
-        stringToStream( stream, addr.u.ip_relay.hostName );
-        stream_putU32( stream, addr.u.ip_relay.ipAddr );
-        stream_putU16( stream, addr.u.ip_relay.port );
-        stream_putBits( stream, 1, addr.u.ip_relay.seeksPublicRoom );
-        stream_putBits( stream, 1, addr.u.ip_relay.advertiseRoom );
+        stringToStream( stream, addrP->u.ip_relay.invite );
+        stringToStream( stream, addrP->u.ip_relay.hostName );
+        stream_putU32( stream, addrP->u.ip_relay.ipAddr );
+        stream_putU16( stream, addrP->u.ip_relay.port );
+        stream_putBits( stream, 1, addrP->u.ip_relay.seeksPublicRoom );
+        stream_putBits( stream, 1, addrP->u.ip_relay.advertiseRoom );
         break;
     case COMMS_CONN_SMS:
-        stringToStream( stream, addr.u.sms.phone );
-        stream_putU16( stream, addr.u.sms.port );
+        stringToStream( stream, addrP->u.sms.phone );
+        stream_putU16( stream, addrP->u.sms.port );
         break;
     default:
         XP_ASSERT(0);
         break;
     }
-} /* addrToStream */
+} /* addrToStreamOne */
+
+static void
+addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
+{
+    stream_putU8( stream, addrP->_conTypes );
+
+    CommsConnType typ;
+    XP_U32 state = 0;
+    while ( addr_iter( addrP, &typ, &state ) ) {
+        addrToStreamOne( stream, typ, addrP );
+    }
+}
 
 void
 comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream, 
@@ -760,7 +778,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
     stream_putU8( stream, (XP_U8)comms->isServer );
     addrToStream( stream, &comms->addr );
-    if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+    if ( COMMS_CONN_RELAY == addr_getType( &comms->addr ) ) {
         stream_putBits( stream, 4, comms->rr.nPlayersHere );
         stream_putBits( stream, 4, comms->rr.nPlayersTotal );
     }
@@ -770,7 +788,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     stream_putU16( stream, comms->channelSeed );
     stream_putU16( stream, comms->resendBackoff );
     stream_putU32( stream, comms->nextResend );
-    if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+    if ( COMMS_CONN_RELAY == addr_getType( &comms->addr ) ) {
         stream_putU8( stream, comms->rr.myHostID );
         stringToStream( stream, comms->rr.connName );
     }
@@ -790,7 +808,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
         stream_putU16( stream, (XP_U16)rec->lastMsgRcd );
         stream_putU16( stream, (XP_U16)rec->lastMsgAckd );
         stream_putU16( stream, rec->channelNo );
-        if ( rec->addr.conType == COMMS_CONN_RELAY ) {
+        if ( COMMS_CONN_RELAY == addr_getType( &rec->addr ) ) {
             stream_putU8( stream, rec->rr.hostID ); /* unneeded unless RELAY */
         }
     }
@@ -913,7 +931,7 @@ comms_getInitialAddr( CommsAddrRec* addr
                       )
 {
 #if defined  XWFEATURE_RELAY
-    addr->conType = COMMS_CONN_RELAY; /* for temporary ease in debugging */
+    addr_setType( addr, COMMS_CONN_RELAY ); /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
     addr->u.ip_relay.port = relayPort;
     {
@@ -939,7 +957,7 @@ comms_checkAddr( DeviceRole role, const CommsAddrRec* addr, XW_UtilCtxt* util )
     XP_Bool ok = XP_TRUE;
     /* make sure the user's given us enough information to make a connection */
     if ( role == SERVER_ISCLIENT ) {
-        if ( addr->conType == COMMS_CONN_BT ) {
+        if ( COMMS_CONN_BT == addr_getType( addr ) ) {
             XP_U32 empty = 0L;      /* check four bytes to save some code */
             if ( !XP_MEMCMP( &empty, &addr->u.bt.btAddr, sizeof(empty) ) ) {
                 ok = XP_FALSE;
@@ -957,7 +975,7 @@ comms_getConType( const CommsCtxt* comms )
 {
     CommsConnType typ;
     if ( !!comms ) {
-        typ = comms->addr.conType;
+        typ = addr_getType( &comms->addr );
     } else {
         typ = COMMS_CONN_NONE;
         XP_LOGF( "%s: returning COMMS_CONN_NONE for null comms", __func__ );
@@ -1664,14 +1682,14 @@ preProcess( CommsCtxt* comms, XWStreamCtxt* stream,
             XWHostID* XP_UNUSED_RELAY(senderID) )
 {
     XP_Bool consumed = XP_FALSE;
-    switch ( comms->addr.conType ) {
+    switch ( addr_getType( &comms->addr ) ) {
 #ifdef XWFEATURE_RELAY
     /* relayPreProcess returns true if consumes the message.  May just eat the
        header and leave a regular message to be processed below. */
     case COMMS_CONN_RELAY:
         consumed = relayPreProcess( comms, stream, senderID );
         if ( !consumed ) {
-            *usingRelay = comms->addr.conType == COMMS_CONN_RELAY;
+            *usingRelay = COMMS_CONN_RELAY == addr_getType( &comms->addr );
         }
         break;
 #endif
@@ -1698,10 +1716,10 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
     XP_U16 mask = maskChannel? ~CHANNEL_MASK : ~0;
 
     /* Use addr if we have it.  Otherwise use channelNo if non-0 */
-    conType = !!addr? addr->conType : COMMS_CONN_NONE;
+    conType = !!addr? addr_getType( addr ) : COMMS_CONN_NONE;
 
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
-        XP_ASSERT( !addr || (conType == rec->addr.conType) );
+        XP_ASSERT( !addr || (conType == addr_getType( &rec->addr ) ) );
         switch( conType ) {
         case COMMS_CONN_RELAY:
             XP_ASSERT(0);       /* is this being used? */
@@ -1881,7 +1899,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XWHostID senderID = 0;      /* unset; default for non-relay cases */
     XP_Bool usingRelay = XP_FALSE;
 
-    XP_ASSERT( retAddr == NULL || comms->addr.conType == retAddr->conType );
+    XP_ASSERT( retAddr == NULL || addr_getType( &comms->addr ) == addr_getType( retAddr ) );
 #ifdef COMMS_CHECKSUM
     XP_U16 initialLen = stream_getSize( stream );
 #endif
@@ -1960,7 +1978,7 @@ comms_checkComplete( const CommsAddrRec* addr )
 {
     XP_Bool result;
 
-    switch ( addr->conType ) {
+    switch ( addr_getType( addr ) ) {
     case COMMS_CONN_RELAY:
         result = !!addr->u.ip_relay.invite[0]
             && !!addr->u.ip_relay.hostName[0]
@@ -1986,7 +2004,7 @@ XP_Bool
 comms_isConnected( const CommsCtxt* const comms )
 {
     XP_Bool result = XP_FALSE;
-    switch ( comms->addr.conType ) {
+    switch ( addr_getType( &comms->addr ) ) {
     case COMMS_CONN_RELAY:
         result = 0 != comms->rr.connName[0];
         break;
@@ -2131,6 +2149,7 @@ ConnType2Str( CommsConnType typ )
         CASESTR( COMMS_CONN_RELAY );
         CASESTR( COMMS_CONN_BT );
         CASESTR( COMMS_CONN_SMS );
+        CASESTR( COMMS_CONN_NTYPES );
     default:
         XP_ASSERT(0);
     }
@@ -2199,7 +2218,7 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
             XP_ASSERT( recs->rr.hostID == hostID );
         } else {
             XP_MEMSET( &recs->addr, 0, sizeof(recs->addr) );
-            recs->addr.conType = comms->addr.conType;
+            addr_setType( &recs->addr, addr_getType( &comms->addr ) );
         }
     }
     return recs;
@@ -2234,6 +2253,58 @@ countAddrRecs( const CommsCtxt* comms )
     } 
     return count;
 } /* countAddrRecs */
+
+static XP_Bool
+addr_iter( const CommsAddrRec* addr, CommsConnType* typp, XP_U32* state )
+{
+    CommsConnType typ = *state;
+    XP_U16 flags = addr->_conTypes;
+    while ( ++typ < COMMS_CONN_NTYPES ) {
+        *state = typ;
+        XP_U16 mask = 1 << (typ - 1);
+        if ( mask == (flags & mask) ) {
+            break;
+        }
+    }
+    XP_Bool result = typ < COMMS_CONN_NTYPES;
+    if ( result ) {
+        *typp = typ;
+    }
+    XP_LOGF( "%s(flag=%x)=>%d (typ=%s)", __func__, flags, result, ConnType2Str( typ ) );
+    return result;
+}
+
+CommsConnType 
+addr_getType( const CommsAddrRec* addr )
+{
+    CommsConnType typ;
+    XP_U16 flags = addr->_conTypes;
+    if ( 0 == flags ) {
+        typ = COMMS_CONN_NONE;
+    } else {
+        for ( typ = COMMS_CONN_NONE + 1; typ < COMMS_CONN_NTYPES; ++typ ) {
+            XP_U16 mask = (1 << (typ - 1));
+            if ( 0 != (flags & mask) ) {
+                XP_ASSERT( 0 == (flags & ~mask )); /* confirm only bit set */
+                break;
+            }
+        }
+    }
+    XP_ASSERT( COMMS_CONN_NTYPES != typ );
+    // LOG_RETURNF( "%s", ConnType2Str( typ ) );
+    return typ;
+}
+
+void
+addr_setType( CommsAddrRec* addr, CommsConnType type )
+{
+    XP_U16 flags = 0;
+    if ( COMMS_CONN_NONE != type ) {
+        flags = 1 << (type - 1);
+    }
+    addr->_conTypes = flags;
+    XP_ASSERT( type == addr_getType( addr ) );
+}
 
 #ifdef XWFEATURE_RELAY
 static XWHostID
@@ -2421,7 +2492,7 @@ relayConnect( CommsCtxt* comms )
 {
     XP_Bool success = XP_TRUE;
     LOG_FUNC();
-    if ( comms->addr.conType == COMMS_CONN_RELAY && !comms->rr.connecting ) {
+    if ( addr_getType( &comms->addr ) == COMMS_CONN_RELAY && !comms->rr.connecting ) {
         comms->rr.connecting = XP_TRUE;
         success = send_via_relay( comms, comms->rr.connName[0]?
                                   XWRELAY_GAME_RECONNECT : XWRELAY_GAME_CONNECT,
@@ -2468,7 +2539,7 @@ static void
 relayDisconnect( CommsCtxt* comms )
 {
     LOG_FUNC();
-    if ( comms->addr.conType == COMMS_CONN_RELAY ) {
+    if ( addr_getType( &comms->addr ) == COMMS_CONN_RELAY ) {
         if ( comms->rr.relayState > COMMS_RELAYSTATE_CONNECT_PENDING ) {
             (void)send_via_relay( comms, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE, 
                                   NULL, 0 );

@@ -135,7 +135,7 @@ summarize( CommonGlobals* cGlobals )
     if ( !!cGlobals->game.comms ) {
         nMissing = server_getMissingPlayers( cGlobals->game.server );
         comms_getAddr( cGlobals->game.comms, &addr );
-        switch( addr.conType ) {
+        switch( addr_getType( &addr ) ) {
         case COMMS_CONN_RELAY:
             room = addr.u.ip_relay.invite;
             connvia = "Relay";
