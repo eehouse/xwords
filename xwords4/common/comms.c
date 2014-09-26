@@ -542,18 +542,14 @@ static void
 addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 {
     XP_U8 tmp = stream_getU8( stream );
-    if ( STREAM_VERS_MULTIADDR <= stream_getVersion( stream ) ) {
-        /* do nothing */
-    } else {
-        if ( COMMS_CONN_NONE != tmp ) {
-            tmp = 1 << (tmp - 1);
-        }
+    if ( (STREAM_VERS_MULTIADDR > stream_getVersion( stream )) 
+         && (COMMS_CONN_NONE != tmp) ) {
+        tmp = 1 << (tmp - 1);
     }
     addrP->_conTypes = tmp;
 
     CommsConnType typ;
-    XP_U32 state = 0;
-    while ( addr_iter( addrP, &typ, &state ) ) {
+    for ( XP_U32 st = 0; addr_iter( addrP, &typ, &st ); ) {
         addrFromStreamOne( addrP, stream, typ );
     }
 }
@@ -762,8 +758,7 @@ addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
     stream_putU8( stream, addrP->_conTypes );
 
     CommsConnType typ;
-    XP_U32 state = 0;
-    while ( addr_iter( addrP, &typ, &state ) ) {
+    for ( XP_U32 st = 0; addr_iter( addrP, &typ, &st ); ) {
         addrToStreamOne( stream, typ, addrP );
     }
 }
@@ -2258,40 +2253,32 @@ static XP_Bool
 addr_iter( const CommsAddrRec* addr, CommsConnType* typp, XP_U32* state )
 {
     CommsConnType typ = *state;
-    XP_U16 flags = addr->_conTypes;
+    XP_U16 conTypes = addr->_conTypes;
     while ( ++typ < COMMS_CONN_NTYPES ) {
         *state = typ;
         XP_U16 mask = 1 << (typ - 1);
-        if ( mask == (flags & mask) ) {
+        if ( mask == (conTypes & mask) ) {
             break;
         }
     }
-    XP_Bool result = typ < COMMS_CONN_NTYPES;
-    if ( result ) {
+    XP_Bool found = typ < COMMS_CONN_NTYPES;
+    if ( found ) {
         *typp = typ;
     }
-    XP_LOGF( "%s(flag=%x)=>%d (typ=%s)", __func__, flags, result, ConnType2Str( typ ) );
-    return result;
+    XP_LOGF( "%s(flag=%x)=>%d (typ=%s)", __func__, conTypes, found, ConnType2Str( typ ) );
+    return found;
 }
 
 CommsConnType 
 addr_getType( const CommsAddrRec* addr )
 {
     CommsConnType typ;
-    XP_U16 flags = addr->_conTypes;
-    if ( 0 == flags ) {
+    XP_U32 st = 0;
+    if ( !addr_iter( addr, &typ, &st ) ) {
         typ = COMMS_CONN_NONE;
-    } else {
-        for ( typ = COMMS_CONN_NONE + 1; typ < COMMS_CONN_NTYPES; ++typ ) {
-            XP_U16 mask = (1 << (typ - 1));
-            if ( 0 != (flags & mask) ) {
-                XP_ASSERT( 0 == (flags & ~mask )); /* confirm only bit set */
-                break;
-            }
-        }
     }
-    XP_ASSERT( COMMS_CONN_NTYPES != typ );
-    // LOG_RETURNF( "%s", ConnType2Str( typ ) );
+    XP_ASSERT( !addr_iter( addr, &typ, &st ) ); /* shouldn't be a second -- yet */
+    LOG_RETURNF( "%s", ConnType2Str( typ ) );
     return typ;
 }
 
