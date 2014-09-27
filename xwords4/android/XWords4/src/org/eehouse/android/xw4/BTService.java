@@ -140,7 +140,6 @@ public class BTService extends XWService {
 
     private BluetoothAdapter m_adapter;
     private Set<String> m_addrs;
-    private static HashMap<String,int[]> s_devGames;
     private MultiMsgSink m_btMsgSink;
     private BTListenerThread m_listener;
     private BTSenderThread m_sender;
@@ -174,6 +173,21 @@ public class BTService extends XWService {
         Intent intent = new Intent();
         intent.setAction( android.provider.Settings.ACTION_BLUETOOTH_SETTINGS );
         activity.startActivity( intent ); 
+    }
+
+    public static String nameForAddr( String btAddr )
+    {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        return nameForAddr( adapter, btAddr );
+    }
+
+    private static String nameForAddr( BluetoothAdapter adapter, String btAddr )
+    {
+        String result = null;
+        if ( null != adapter ) {
+            result = adapter.getRemoteDevice( btAddr ).getName();
+        }
+        return result;
     }
 
     public static void startService( Context context )
@@ -278,7 +292,6 @@ public class BTService extends XWService {
             DbgUtils.logf( "BTService.onCreate(); bt name = %s; bt addr = %s", 
                            adapter.getName(), adapter.getAddress() );
             initAddrs();
-            listLocalBTGames( false );
             startListener();
             startSender();
         } else {
@@ -603,12 +616,6 @@ public class BTService extends XWService {
         saveAddrs();
     }
 
-    private String nameForAddr( String btAddr )
-    {
-        String result = m_adapter.getRemoteDevice( btAddr ).getName();
-        return result;
-    }
-
     private class BTSenderThread extends Thread {
         private LinkedBlockingQueue<BTQueueElem> m_queue;
         private HashMap<String,LinkedList<BTQueueElem> > m_resends;
@@ -845,7 +852,7 @@ public class BTService extends XWService {
             }
 
             if ( null != evt ) {
-                String btName = nameForAddr( elem.m_btAddr );
+                String btName = nameForAddr( m_adapter, elem.m_btAddr );
                 sendResult( evt, elem.m_gameID, 0, btName );
                 if ( ! success ) {
                     int failCount = elem.incrFailCount();
@@ -868,7 +875,7 @@ public class BTService extends XWService {
                     if ( success ) {
                         iter.remove();
                     } else if ( elem.failCountExceeded() ) {
-                        String btName = nameForAddr( elem.m_btAddr );
+                        String btName = nameForAddr( m_adapter, elem.m_btAddr );
                         sendResult( MultiEvent.MESSAGE_FAILOUT, btName );
                         iter.remove();
                     }
@@ -934,23 +941,9 @@ public class BTService extends XWService {
         int size = btAddrs.length;
         String[] btNames = new String[size];
         for ( int ii = 0; ii < size; ++ii ) {
-            btNames[ii] = nameForAddr( btAddrs[ii] );
+            btNames[ii] = nameForAddr( m_adapter, btAddrs[ii] );
         }
         sendResult( MultiEvent.SCAN_DONE, (Object)btAddrs, (Object)btNames );
-    }
-
-    private void listLocalBTGames( boolean force )
-    {
-        if ( null == s_devGames ) {
-            force = true;
-            s_devGames = new HashMap<String, int[]>();
-        }
-        if ( force ) {
-            synchronized( s_devGames ) {
-                s_devGames.clear();
-                DBUtils.listBTGames( this, s_devGames );
-            }
-        }
     }
 
     private void initAddrs()

@@ -1066,6 +1066,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
+            stopProgress();     // in case it's a BT invite
             super.eventOccurred( event, args );
             break;
         }
@@ -2193,6 +2194,10 @@ public class BoardDelegate extends DelegateBase
                 for ( String dev : m_missingDevs ) {
                     switch( m_connType ) {
                     case COMMS_CONN_BT:
+                        String progMsg = BTService.nameForAddr( dev );
+                        progMsg = getString( R.string.invite_progress_fmt, progMsg );
+                        startProgress( R.string.invite_progress_title, progMsg );
+
                         BTService.inviteRemote( m_activity, dev, m_gi.gameID, 
                                                 gameName, m_gi.dictLang, 
                                                 m_gi.dictName, m_gi.nPlayers,
