@@ -33,6 +33,9 @@ public class XWListActivity extends ListActivity implements ListDelegator {
 
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onCreate()", getClass().getName() );
+        }
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
 
@@ -54,6 +57,9 @@ public class XWListActivity extends ListActivity implements ListDelegator {
     @Override
     protected void onPause()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onPause()", getClass().getName() );
+        }
         m_dlgt.onPause();
         super.onPause();
     }
@@ -61,6 +67,9 @@ public class XWListActivity extends ListActivity implements ListDelegator {
     @Override
     protected void onResume()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onResume()", getClass().getName() );
+        }
         super.onResume();
         m_dlgt.onResume();
     }
@@ -68,6 +77,9 @@ public class XWListActivity extends ListActivity implements ListDelegator {
     @Override
     protected void onStart()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onStart()", getClass().getName() );
+        }
         super.onStart();
         m_dlgt.onStart();
     }
@@ -75,6 +87,9 @@ public class XWListActivity extends ListActivity implements ListDelegator {
     @Override
     protected void onStop()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onStop()", getClass().getName() );
+        }
         m_dlgt.onStop();
         super.onStop();
     }
@@ -82,6 +97,9 @@ public class XWListActivity extends ListActivity implements ListDelegator {
     @Override
     protected void onDestroy()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onDestroy()", getClass().getName() );
+        }
         m_dlgt.onDestroy();
         super.onDestroy();
     }
