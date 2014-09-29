@@ -187,6 +187,24 @@ abstract class XWExpListAdapter extends XWListAdapter {
         }
     }
 
+    protected Object findParent( ChildTest test )
+    {
+        Object result = null;
+        Object curParent = null;
+        for ( int ii = 0; ii < m_listObjs.length; ++ii ) {
+            Object obj = m_listObjs[ii];
+            if ( obj.getClass() == m_groupClass ) {
+                curParent = obj;
+            } else if ( test.isTheChild( obj ) ) {
+                result = curParent;
+                break;
+            }
+        }
+        // DbgUtils.logf( "findParent() => %H (class %s)", result,
+        //                null == result ? "null" : result.getClass().getName() );
+        return result;
+    }
+
     protected void swapGroups( int groupPosn1, int groupPosn2 )
     {
         // switch if needed so we know the direction 

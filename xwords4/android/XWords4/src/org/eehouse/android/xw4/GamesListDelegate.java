@@ -182,6 +182,19 @@ public class GamesListDelegate extends ListDelegateBase
             removeChildren( makeChildTestFor( rowID  ) );
         }
 
+        protected boolean inExpandedGroup( long rowID )
+        {
+            boolean expanded = false;
+            GroupRec rec = (GroupRec)
+                findParent( makeChildTestFor( rowID  ) );
+            if ( null != rec ) {
+                GameGroupInfo ggi = 
+                    DBUtils.getGroups( m_activity ).get( rec.m_groupID );
+                expanded = ggi.m_expanded;
+            }
+            return expanded;
+        }
+
         protected GameListItem reloadGame( long rowID )
         {
             GameListItem item = null;
@@ -850,8 +863,13 @@ public class GamesListDelegate extends ListDelegateBase
 
             if ( 0 != m_launchedGames.size() ) {
                 long rowid = m_launchedGames.iterator().next();
-                setSelGame( rowid );
                 m_launchedGames.remove( rowid );
+
+                if ( m_adapter.inExpandedGroup( rowid ) ) {
+                    setSelGame( rowid );
+                } else {
+                    clearSelections();
+                }
             }
         }
     }
