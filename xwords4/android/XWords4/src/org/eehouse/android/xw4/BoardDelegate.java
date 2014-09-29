@@ -106,6 +106,7 @@ public class BoardDelegate extends DelegateBase
     private String[] m_texts;
     private CommsConnType m_connType = CommsConnType.COMMS_CONN_NONE;
     private String[] m_missingDevs;
+    private boolean m_progressShown = false;
     private String m_curTiles;
     private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
@@ -1066,7 +1067,10 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
-            stopProgress();     // in case it's a BT invite
+            if ( m_progressShown ) {
+                m_progressShown = false;
+                stopProgress();     // in case it's a BT invite
+            }
             super.eventOccurred( event, args );
             break;
         }
@@ -2196,7 +2200,15 @@ public class BoardDelegate extends DelegateBase
                     case COMMS_CONN_BT:
                         String progMsg = BTService.nameForAddr( dev );
                         progMsg = getString( R.string.invite_progress_fmt, progMsg );
-                        startProgress( R.string.invite_progress_title, progMsg );
+                        m_progressShown = true;
+                        startProgress( R.string.invite_progress_title, progMsg,
+                                       new DialogInterface.OnCancelListener() {
+                                           public void 
+                                               onCancel( DialogInterface dlg )
+                                           {
+                                               m_progressShown = false;
+                                           }
+                                       });
 
                         BTService.inviteRemote( m_activity, dev, m_gi.gameID, 
                                                 gameName, m_gi.dictLang, 
