@@ -23,19 +23,15 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-
 import android.content.DialogInterface.OnDismissListener;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-
 import android.graphics.Bitmap;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,10 +41,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -136,7 +135,7 @@ public class BoardDelegate extends DelegateBase
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
 
-    private static HashSet<BoardDelegate> s_this = new HashSet<BoardDelegate>();
+    private static Set<BoardDelegate> s_this = new HashSet<BoardDelegate>();
 
     public static boolean feedMessage( int gameID, byte[] msg, 
                                        CommsAddrRec retAddr )
