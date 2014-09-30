@@ -111,7 +111,6 @@ typedef struct _PerTurnInfo {
 #endif
     BoardArrow boardArrow;
     XP_U16 scoreDims;
-    XP_U8 dividerLoc; /* 0 means left of 0th tile, etc. */
     TileBit traySelBits;
 #ifdef XWFEATURE_SEARCHLIMIT
     BdHintLimits limits;
