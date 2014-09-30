@@ -1822,6 +1822,23 @@ model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
     notifyTrayListeners( model, turn, indexCur, indexNew );
 } /* model_moveTileOnTray */
 
+XP_U16
+model_getDividerLoc( const ModelCtxt* model, XP_S16 turn )
+{
+    XP_ASSERT( turn >= 0 );
+    PlayerCtxt* player = &model->players[turn];
+    return player->dividerLoc;
+}
+
+void
+model_setDividerLoc( const ModelCtxt* model, XP_S16 turn, XP_U16 loc )
+{
+    XP_ASSERT( turn >= 0 );
+    PlayerCtxt* player = &model->players[turn];
+    XP_ASSERT( loc < 0xFF );
+    player->dividerLoc = (XP_U8)loc;
+}
+
 static void
 assignPlayerTiles( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles )
 {
@@ -1851,7 +1868,8 @@ model_sortTiles( ModelCtxt* model, XP_S16 turn )
 
     TrayTileSet sorted;
     const TrayTileSet* curTiles = model_getPlayerTiles( model, turn );
-    sortTiles( &sorted, curTiles, XP_MIN( 3, curTiles->nTiles) );
+    XP_U16 dividerLoc = model_getDividerLoc( model, turn );
+    sortTiles( &sorted, curTiles, dividerLoc );
 
     nTiles = sorted.nTiles;
     while ( nTiles > 0 ) {
@@ -2441,6 +2459,10 @@ loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, XP_U16 version,
     } else {
         XP_ASSERT( 0 == pc->nUndone );
     }
+    XP_ASSERT( 0 == pc->dividerLoc );
+    if ( STREAM_VERS_MULTIADDR <= version ) {
+        pc->dividerLoc = stream_getBits( stream, NTILES_NBITS );
+    }
 
     nTiles = pc->nPending + pc->nUndone;
     for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {
@@ -2475,6 +2497,7 @@ writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
     
     stream_putBits( stream, NTILES_NBITS, pc->nPending );
     stream_putBits( stream, NTILES_NBITS, pc->nUndone );
+    stream_putBits( stream, NTILES_NBITS, pc->dividerLoc );
 
     nTiles = pc->nPending + pc->nUndone;
     for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {

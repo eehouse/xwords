@@ -152,6 +152,8 @@ void model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index,
                           Tile tile );
 void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
                            XP_S16 indexNew );
+XP_U16 model_getDividerLoc( const ModelCtxt* model, XP_S16 turn );
+void model_setDividerLoc( const ModelCtxt* model, XP_S16 turn, XP_U16 loc );
 
 /* As an optimization, return a pointer to the model's array of tiles for a
    player.  Don't even think about modifying the array!!!! */

@@ -256,7 +256,9 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         arrow->vert = (XP_Bool)stream_getBits( stream, 1 );
         arrow->visible = (XP_Bool)stream_getBits( stream, 1 );
 
-        pti->dividerLoc = (XP_U8)stream_getBits( stream, NTILES_NBITS );
+        if ( STREAM_VERS_MULTIADDR > version ) {
+            (void)stream_getBits( stream, NTILES_NBITS );
+        }
         pti->traySelBits = (TileBit)stream_getBits( stream, 
                                                     MAX_TRAY_TILES );
         pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
@@ -343,7 +345,6 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
         stream_putBits( stream, 1, arrow->vert );
         stream_putBits( stream, 1, arrow->visible );
 
-        stream_putBits( stream, NTILES_NBITS, pti->dividerLoc );
         stream_putBits( stream, MAX_TRAY_TILES, pti->traySelBits );
         stream_putBits( stream, 1, pti->tradeInProgress );
 
@@ -383,7 +384,6 @@ board_reset( BoardCtxt* board )
         PerTurnInfo* pti = &board->pti[ii];
         pti->traySelBits = 0;
         pti->tradeInProgress = XP_FALSE;
-        pti->dividerLoc = 0;
         XP_MEMSET( &pti->boardArrow, 0, sizeof(pti->boardArrow) );
     }
     board->gameOver = XP_FALSE;
@@ -2026,6 +2026,7 @@ board_requestHint( BoardCtxt* board,
         EngineCtxt* engine = server_getEngineFor( board->server, selPlayer );
         const TrayTileSet* tileSet;
         ModelCtxt* model = board->model;
+        XP_U16 dividerLoc = model_getDividerLoc( model, selPlayer );
 
         if ( !!engine && preflight( board, XP_TRUE ) ) {
 
@@ -2047,7 +2048,7 @@ board_requestHint( BoardCtxt* board,
             }
 
             tileSet = model_getPlayerTiles( model, selPlayer );
-            nTiles = tileSet->nTiles - pti->dividerLoc;
+            nTiles = tileSet->nTiles - dividerLoc;
             result = nTiles > 0;
         }
 
@@ -2063,7 +2064,7 @@ board_requestHint( BoardCtxt* board,
 
             (void)board_replaceTiles( board );
 
-            tiles = tileSet->tiles + pti->dividerLoc;
+            tiles = tileSet->tiles + dividerLoc;
 
             board_pushTimerSave( board );
 
@@ -2080,7 +2081,7 @@ board_requestHint( BoardCtxt* board,
 #ifdef XWFEATURE_BONUSALL
             XP_U16 allTilesBonus = 0;
 # ifdef XWFEATURE_BONUSALLHINT
-            if ( 0 == pti->dividerLoc ) {
+            if ( 0 == dividerLoc ) {
                 allTilesBonus = server_figureFinishBonus( board->server, 
                                                           selPlayer );
             }
@@ -3219,7 +3220,7 @@ invalFocusOwner( BoardCtxt* board )
     case OBJ_TRAY:
         if ( board->focusHasDived ) {
             XP_S16 loc = pti->trayCursorLoc;
-            if ( loc == pti->dividerLoc ) {
+            if ( loc == model_getDividerLoc(board->model, board->selPlayer)) {
                 board->dividerInvalid = XP_TRUE;
             } else {
                 adjustForDivider( board, &loc );

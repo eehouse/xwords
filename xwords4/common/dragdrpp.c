@@ -156,7 +156,8 @@ ddStartTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
     if ( canDrag ) {
         if ( onDivider ) {
             board->dividerInvalid = XP_TRUE;
-            ds->start.u.tray.index = board->selInfo->dividerLoc;
+            ds->start.u.tray.index =
+                model_getDividerLoc( board->model, board->selPlayer );
 
             ds->dtype = DT_DIVIDER;
         } else {
