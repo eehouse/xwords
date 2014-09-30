@@ -1577,6 +1577,9 @@
   <!--  -->
   <string name="bt_pick_clear_button">REMOVE CHECKED</string>
   <!--  -->
+  <string name="invite_progress_title">CONNECTING...</string>
+  <string name="invite_progress_fmt">SENDING INVITATION TO CROSSWORDS ON %1$s</string>
+  <!--  -->
   <string name="summary_wait_host">WAITING FOR CONNECTION[S]</string>
   <!--  -->
   <string name="summary_wait_guest">UNCONNECTED</string>

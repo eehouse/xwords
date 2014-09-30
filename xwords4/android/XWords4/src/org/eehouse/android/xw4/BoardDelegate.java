@@ -23,19 +23,15 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-
 import android.content.DialogInterface.OnDismissListener;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-
 import android.graphics.Bitmap;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,10 +41,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -106,6 +105,7 @@ public class BoardDelegate extends DelegateBase
     private String[] m_texts;
     private CommsConnType m_connType = CommsConnType.COMMS_CONN_NONE;
     private String[] m_missingDevs;
+    private boolean m_progressShown = false;
     private String m_curTiles;
     private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
@@ -135,7 +135,7 @@ public class BoardDelegate extends DelegateBase
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
 
-    private static HashSet<BoardDelegate> s_this = new HashSet<BoardDelegate>();
+    private static Set<BoardDelegate> s_this = new HashSet<BoardDelegate>();
 
     public static boolean feedMessage( int gameID, byte[] msg, 
                                        CommsAddrRec retAddr )
@@ -1066,6 +1066,10 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
+            if ( m_progressShown ) {
+                m_progressShown = false;
+                stopProgress();     // in case it's a BT invite
+            }
             super.eventOccurred( event, args );
             break;
         }
@@ -2193,6 +2197,18 @@ public class BoardDelegate extends DelegateBase
                 for ( String dev : m_missingDevs ) {
                     switch( m_connType ) {
                     case COMMS_CONN_BT:
+                        String progMsg = BTService.nameForAddr( dev );
+                        progMsg = getString( R.string.invite_progress_fmt, progMsg );
+                        m_progressShown = true;
+                        startProgress( R.string.invite_progress_title, progMsg,
+                                       new DialogInterface.OnCancelListener() {
+                                           public void 
+                                               onCancel( DialogInterface dlg )
+                                           {
+                                               m_progressShown = false;
+                                           }
+                                       });
+
                         BTService.inviteRemote( m_activity, dev, m_gi.gameID, 
                                                 gameName, m_gi.dictLang, 
                                                 m_gi.dictName, m_gi.nPlayers,

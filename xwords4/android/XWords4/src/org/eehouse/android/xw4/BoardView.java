@@ -45,7 +45,10 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private static final float MIN_FONT_DIPS = 10.0f;
     private static final int MULTI_INACTIVE = -1;
 
+    private static boolean s_isFirstDraw;
+    private static int s_curGameID;
     private static Bitmap s_bitmap;    // the board
+
     private static final int PINCH_THRESHOLD = 40;
 
     private Context m_context;
@@ -240,7 +243,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( null == s_bitmap ) {
                 s_bitmap = Bitmap.createBitmap( bmWidth, bmHeight,
                                                 Bitmap.Config.ARGB_8888 );
-            } else {
+            } else if ( s_isFirstDraw ) {
                 // clear so prev game doesn't seem to appear briefly.  Color
                 // doesn't seem to matter....
                 s_bitmap.eraseColor( 0 );
@@ -274,6 +277,9 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         m_connType = connType;
         m_layoutWidth = 0;
         m_layoutHeight = 0;
+
+        s_isFirstDraw = s_curGameID != gi.gameID;
+        s_curGameID = gi.gameID;
 
         // Set the jni layout if we already have one
         if ( null != m_dims ) {

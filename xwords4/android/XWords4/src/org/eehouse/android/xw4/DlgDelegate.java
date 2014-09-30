@@ -348,24 +348,19 @@ public class DlgDelegate {
         }
     }
 
-    public void startProgress( int titleID, int msgID )
+    public void startProgress( int titleID, int msgID, OnCancelListener lstnr )
     {
-        startProgress( titleID, msgID, null );
+        startProgress( titleID, getString( msgID ), lstnr );
     }
 
-    public void startProgress( int titleID, int msgID, OnCancelListener canLstnr )
-    {
-        startProgress( titleID, getString( msgID ), canLstnr );
-    }
-
-    public void startProgress( int titleID, String msg, OnCancelListener canLstnr )
+    public void startProgress( int titleID, String msg, OnCancelListener lstnr )
     {
         String title = getString( titleID );
         m_progress = ProgressDialog.show( m_activity, title, msg, true, true );
         
-        if ( null != canLstnr ) {
+        if ( null != lstnr ) {
             m_progress.setCancelable( true );
-            m_progress.setOnCancelListener( canLstnr );
+            m_progress.setOnCancelListener( lstnr );
         }
     }
 
