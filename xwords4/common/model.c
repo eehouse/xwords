@@ -1838,7 +1838,7 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 {
     XP_ASSERT( turn >= 0 );
     TrayTileSet sorted;
-    sortTiles( &sorted, tiles );
+    sortTiles( &sorted, tiles, 0 );
     stack_addAssign( model->vol.stack, turn, &sorted );
 
     assignPlayerTiles( model, turn, tiles );
@@ -1850,7 +1850,8 @@ model_sortTiles( ModelCtxt* model, XP_S16 turn )
     XP_S16 nTiles;
 
     TrayTileSet sorted;
-    sortTiles( &sorted, model_getPlayerTiles( model, turn ) );
+    const TrayTileSet* curTiles = model_getPlayerTiles( model, turn );
+    sortTiles( &sorted, curTiles, XP_MIN( 3, curTiles->nTiles) );
 
     nTiles = sorted.nTiles;
     while ( nTiles > 0 ) {

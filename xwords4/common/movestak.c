@@ -97,7 +97,7 @@ augmentFor( XP_U32 hash, const StackEntry* entry )
     switch( entry->moveType ) {
     case ASSIGN_TYPE: {
         TrayTileSet tiles;
-        sortTiles( &tiles, &entry->u.assign.tiles );
+        sortTiles( &tiles, &entry->u.assign.tiles, 0 );
         hash = augmentHash( hash, (XP_U8*)&tiles, sizeof(tiles) );
     }
         break;
