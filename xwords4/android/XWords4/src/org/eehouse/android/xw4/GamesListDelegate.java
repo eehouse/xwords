@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1690,22 +1690,25 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void setSelGame( long rowid )
     {
-        clearSelections();
+        clearSelections( false );
 
         m_selGames.add( rowid );
         m_adapter.setSelected( rowid, true );
+
+        invalidateOptionsMenuIf();
+        setTitleBar();
     }
 
     private void clearSelections()
     {
-        boolean inval = false;
-        if ( clearSelectedGames() ) {
-            inval = true;
-        }
-        if ( clearSelectedGroups() ) {
-            inval = true;
-        }
-        if ( inval ) {
+        clearSelections( true );
+    }
+
+    private void clearSelections( boolean updateStuff )
+    {
+        boolean inval = clearSelectedGames();
+        inval = clearSelectedGroups() || inval;
+        if ( updateStuff && inval ) {
             invalidateOptionsMenuIf();
             setTitleBar();
         }
