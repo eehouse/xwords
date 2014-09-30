@@ -84,13 +84,18 @@ removeTile( TrayTileSet* tiles, XP_U16 index )
 }
 
 void
-sortTiles( TrayTileSet* dest, const TrayTileSet* src )
+sortTiles( TrayTileSet* dest, const TrayTileSet* src, XP_U16 skip )
 {
+    XP_ASSERT( src->nTiles >= skip );
     TrayTileSet tmp = *src;
-    dest->nTiles = 0;
-    while ( 0 < tmp.nTiles ) {
+
+    /* Copy in the ones we're not sorting */
+    dest->nTiles = skip;
+    XP_MEMCPY( &dest->tiles, &tmp.tiles, skip * sizeof(tmp.tiles[0]) );
+
+    while ( skip < tmp.nTiles ) {
         XP_U16 ii, smallest;
-        for ( smallest = ii = 0; ii < tmp.nTiles; ++ii ) {
+        for ( smallest = ii = skip; ii < tmp.nTiles; ++ii ) {
             if ( tmp.tiles[ii] < tmp.tiles[smallest] ) {
                 smallest = ii;
             }
