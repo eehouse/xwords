@@ -1772,8 +1772,12 @@
     tsrif.)</string>
   <!-- Shown in toast when relaunching after switching dicts -->
   <string name="reload_new_dict_fmt">Gnidaoler emag htiw %1$s</string>
+  <!-- Title of notification shown when invitation requires a
+	     wordslist that's not installed -->
   <string name="missing_dict_title">Emag noitativni gnidnep</string>
-  <string name="missing_dict_detail">Deriuqer tsildrow gnissim</string>
+  <!-- body of notification shown when invitation requires a
+	     wordslist that's not installed -->
+  <string name="missing_dict_detail">Pat ot daolnwod gnissim tsildrow</string>
   <string name="invite_dict_missing_title">Gnissim tsildrow</string>
   <string name="invite_dict_missing_body_fmt">%1$s sah detivni uoy ot
     yalp Sdrowssorc gnisu eht tsildrow %2$s rof( yalp ni %3$s,) tub ti

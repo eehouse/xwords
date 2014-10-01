@@ -2052,8 +2052,12 @@
     <!-- Shown in toast when relaunching after switching dicts -->
     <string name="reload_new_dict_fmt">Reloading game with %1$s</string>
 
+	<!-- Title of notification shown when invitation requires a
+	     wordslist that's not installed -->
     <string name="missing_dict_title">Game invitation pending</string>
-    <string name="missing_dict_detail">Required wordlist missing</string>
+	<!-- body of notification shown when invitation requires a
+	     wordslist that's not installed -->
+    <string name="missing_dict_detail">Tap to download missing wordlist</string>
     <string name="invite_dict_missing_title">Missing wordlist</string>
     <string name="invite_dict_missing_body_fmt">%1$s has invited you to
     play Crosswords using the wordlist %2$s (for play in %3$s), but it
