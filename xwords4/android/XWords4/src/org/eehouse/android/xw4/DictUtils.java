@@ -91,17 +91,17 @@ public class DictUtils {
         public boolean anyMissing( final String[] names )
         {
             boolean missing = false;
-            for ( int ii = 0; ii < m_paths.length; ++ii ) {
-                if ( names[ii] != null ) {
+            int nNulls = 0;
+            for ( int ii = 0; !missing && ii < m_paths.length; ++ii ) {
+                if ( names[ii] == null ) {
+                    ++nNulls;
+                } else {
                     // It's ok for there to be no dict IFF there's no
                     // name.  That's a player using the default dict.
-                    if ( null == m_paths[ii] && null == m_bytes[ii] ) {
-                        missing = true;
-                        break;
-                    }
+                    missing = null == m_paths[ii] && null == m_bytes[ii];
                 }
             }
-            return missing;
+            return missing || nNulls == m_paths.length;
         }
     } // DictPairs
 
