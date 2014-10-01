@@ -472,6 +472,7 @@ public class DictsDelegate extends ListDelegateBase
                     int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
                     if ( 0 < lang ) {
                         m_filterLang = DictLangCache.getLangNames( m_activity )[lang];
+                        m_closedLangs.remove( m_filterLang );
                     }
                     String name = intent.getStringExtra( DICT_NAME_EXTRA );
                     if ( null == name ) {
@@ -1227,6 +1228,9 @@ public class DictsDelegate extends ListDelegateBase
                         }
                     }
 
+                    if ( null != m_filterLang ) {
+                        closedLangs.remove( m_filterLang );
+                    }
                     m_closedLangs.addAll( closedLangs );
 
                     success = true;
