@@ -1066,10 +1066,8 @@ public class GamesListDelegate extends ListDelegateBase
         if ( Activity.RESULT_CANCELED != resultCode
              && REQUEST_LANG == requestCode ) {
             DbgUtils.logf( "lang need met" );
-            if ( GameUtils.gameDictsHere( m_activity, m_missingDictRowId ) ) {
+            if ( checkWarnNoDict( m_missingDictRowId ) ) {
                 launchGameIf();
-            } else {
-                DbgUtils.logf( "still missing a dict" );
             }
         }
     }
