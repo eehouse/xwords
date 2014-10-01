@@ -508,9 +508,20 @@ public class BTService extends XWService {
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
 
-            result = makeGame( context, gameID, gameName, lang, dict, 
-                               nPlayersT, nPlayersH, 
-                               host.getName(), host.getAddress() );
+            String btName = host.getName();
+            String btAddr = host.getAddress();
+            if ( DictLangCache.haveDict( context, lang, dict ) ) {
+                result = makeGame( context, gameID, gameName, lang, dict, 
+                                   nPlayersT, nPlayersH, btName, btAddr );
+            } else {
+                Intent intent = MultiService
+                    .makeMissingDictIntent( context, gameName, lang, dict, 
+                                            nPlayersT, nPlayersH );
+                BTLaunchInfo.putExtras( intent, gameID, btName, btAddr );
+                MultiService.postMissingDictNotification( context, intent, 
+                                                          gameID );
+                result = BTCmd.INVITE_ACCPT; // ???
+            }
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( result.ordinal() );

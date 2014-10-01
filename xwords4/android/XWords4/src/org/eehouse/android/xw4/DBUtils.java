@@ -658,8 +658,31 @@ public class DBUtils {
 
     // Return creation time of newest game matching this nli, or null
     // if none found.
-    public static Date getMostRecentCreate( Context context, 
-                                            NetLaunchInfo nli )
+    public static Date getMostRecentCreate( Context context, BTLaunchInfo bli )
+    {
+        Date result = null;
+        String[] selectionArgs = new String[] {
+            DBHelper.GAMEID, String.format( "%d", bli.gameID ),
+        };
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.rawQuery( "SELECT " + DBHelper.CREATE_TIME +
+                                         " FROM " + DBHelper.TABLE_NAME_SUM +
+                                         " WHERE ?=? ", selectionArgs );
+            if ( cursor.moveToNext() ) {
+                int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
+                result = new Date( cursor.getLong( indx ) );
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    // Return creation time of newest game matching this nli, or null
+    // if none found.
+    public static Date getMostRecentCreate( Context context, NetLaunchInfo nli )
     {
         Date result = null;
         String[] selectionArgs = new String[] {

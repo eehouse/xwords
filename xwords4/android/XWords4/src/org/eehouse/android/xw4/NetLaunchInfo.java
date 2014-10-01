@@ -38,15 +38,12 @@ public class NetLaunchInfo extends AbsLaunchInfo {
     protected String room;
     protected String inviteID;
 
-    protected static final String INVITEID = "netlaunchinfo_inviteid";
-    protected static final String ROOM = "netlaunchinfo_room";
-
     public NetLaunchInfo( String data )
     {
         try { 
             JSONObject json = init( data );
-            room = json.getString( ROOM );
-            inviteID = json.getString( INVITEID );
+            room = json.getString( MultiService.ROOM );
+            inviteID = json.getString( MultiService.INVITEID );
             setValid( true );
         } catch ( JSONException jse ) {
             // Don't bother logging; it's just not a valid object of this type
@@ -56,15 +53,15 @@ public class NetLaunchInfo extends AbsLaunchInfo {
     public void putSelf( Bundle bundle )
     {
         super.putSelf( bundle );
-        bundle.putString( ROOM, room );
-        bundle.putString( INVITEID, inviteID );
+        bundle.putString( MultiService.ROOM, room );
+        bundle.putString( MultiService.INVITEID, inviteID );
     }
 
     public NetLaunchInfo( Bundle bundle )
     {
         init( bundle );
-        room = bundle.getString( ROOM );
-        inviteID = bundle.getString( INVITEID );
+        room = bundle.getString( MultiService.ROOM );
+        inviteID = bundle.getString( MultiService.INVITEID );
     }
 
     public NetLaunchInfo( Context context, Uri data )
@@ -82,8 +79,8 @@ public class NetLaunchInfo extends AbsLaunchInfo {
                     is.read( buf );
 
                     JSONObject json = init( new String( buf ) );
-                    room = json.getString( ROOM );
-                    inviteID = json.getString( INVITEID );
+                    room = json.getString( MultiService.ROOM );
+                    inviteID = json.getString( MultiService.INVITEID );
                 } else {
                     room = data.getQueryParameter( "room" );
                     inviteID = data.getQueryParameter( "id" );
@@ -103,8 +100,8 @@ public class NetLaunchInfo extends AbsLaunchInfo {
     public NetLaunchInfo( Intent intent )
     {
         init( intent );
-        room = intent.getStringExtra( ROOM );
-        inviteID = intent.getStringExtra( INVITEID );
+        room = intent.getStringExtra( MultiService.ROOM );
+        inviteID = intent.getStringExtra( MultiService.INVITEID );
         // lang = intent.getIntExtra( LANG, -1 );
         // dict = intent.getStringExtra( DICT );
         // nPlayersT = intent.getIntExtra( NPLAYERST, -1 );
@@ -139,8 +136,8 @@ public class NetLaunchInfo extends AbsLaunchInfo {
         String result = null;
         try {
             result = makeLaunchJSONObject( lang, dict, nPlayersT )
-                .put( ROOM, room )
-                .put( INVITEID, inviteID )
+                .put( MultiService.ROOM, room )
+                .put( MultiService.INVITEID, inviteID )
                 .toString();
         } catch ( org.json.JSONException jse ) {
             DbgUtils.loge( jse );

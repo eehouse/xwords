@@ -1553,19 +1553,26 @@ public class GamesListDelegate extends ListDelegateBase
         NewGameDelegate.startActivity( m_activity, groupID );
     }
 
-    private void startNewNetGame( NetLaunchInfo nli )
+    private void startNewNetGame( AbsLaunchInfo ali )
     {
-        Date create = DBUtils.getMostRecentCreate( m_activity, nli );
+        Date create = null;
+        if ( ali instanceof NetLaunchInfo ) {
+            create = DBUtils.getMostRecentCreate( m_activity, 
+                                                  (NetLaunchInfo)ali );
+        } else if ( ali instanceof BTLaunchInfo ) {
+            create = DBUtils.getMostRecentCreate( m_activity, 
+                                                  (BTLaunchInfo)ali );
+        }
 
         if ( null == create ) {
-            if ( checkWarnNoDict( nli ) ) {
-                makeNewNetGame( nli );
+            if ( checkWarnNoDict( ali ) ) {
+                makeNewNetGame( ali );
             }
         } else if ( XWPrefs.getSecondInviteAllowed( m_activity ) ) {
             String msg = getString( R.string.dup_game_query_fmt, 
                                     create.toString() );
-            m_netLaunchInfo = nli;
-            showConfirmThen( msg, Action.NEW_NET_GAME, nli );
+            m_netLaunchInfo = ali;
+            showConfirmThen( msg, Action.NEW_NET_GAME, ali );
         } else {
             showOKOnlyDialog( R.string.dropped_dupe );
         }
@@ -1573,17 +1580,20 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void startNewNetGame( Intent intent )
     {
-        NetLaunchInfo nli = null;
+        AbsLaunchInfo ali = null;
         if ( MultiService.isMissingDictIntent( intent ) ) {
-            nli = new NetLaunchInfo( intent );
+            ali = new NetLaunchInfo( intent );
+            if ( !ali.isValid() ) {
+                ali = new BTLaunchInfo( intent );
+            }
         } else {
             Uri data = intent.getData();
             if ( null != data ) {
-                nli = new NetLaunchInfo( m_activity, data );
+                ali = new NetLaunchInfo( m_activity, data );
             }
         }
-        if ( null != nli && nli.isValid() ) {
-            startNewNetGame( nli );
+        if ( null != ali && ali.isValid() ) {
+            startNewNetGame( ali );
         }
     } // startNewNetGame
 
@@ -1781,9 +1791,16 @@ public class GamesListDelegate extends ListDelegateBase
         launchGame( rowid, false );
     }
 
-    private void makeNewNetGame( NetLaunchInfo nli )
+    private void makeNewNetGame( AbsLaunchInfo ali )
     {
-        long rowid = GameUtils.makeNewNetGame( m_activity, nli );
+        long rowid = DBUtils.ROWID_NOTFOUND;
+        if ( ali instanceof NetLaunchInfo ) {
+            rowid = GameUtils.makeNewNetGame( m_activity, (NetLaunchInfo)ali );
+        } else if ( ali instanceof BTLaunchInfo ) {
+            rowid = GameUtils.makeNewBTGame( m_activity, (BTLaunchInfo)ali );
+        } else {
+            Assert.fail();
+        }
         launchGame( rowid, true );
     }
 
