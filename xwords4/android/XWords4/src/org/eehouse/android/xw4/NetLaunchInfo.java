@@ -102,9 +102,6 @@ public class NetLaunchInfo extends AbsLaunchInfo {
         init( intent );
         room = intent.getStringExtra( MultiService.ROOM );
         inviteID = intent.getStringExtra( MultiService.INVITEID );
-        // lang = intent.getIntExtra( LANG, -1 );
-        // dict = intent.getStringExtra( DICT );
-        // nPlayersT = intent.getIntExtra( NPLAYERST, -1 );
         boolean valid = null != room
             && -1 != lang
             && -1 != nPlayersT;

@@ -347,7 +347,7 @@ public class BTService extends XWService {
                     nPlayersT = intent.getIntExtra( NTO_STR, -1 );
                     String btName = intent.getStringExtra( BT_NAME_STR );
                     btAddr = intent.getStringExtra( BT_ADDRESS_STR );
-                    /*(void)*/makeOrInvite( this, gameID, null, lang, dict, 
+                    /*(void)*/makeOrNotify( this, gameID, null, lang, dict, 
                                             nPlayersT, 1, btName, btAddr );
                     break;
 
@@ -505,7 +505,7 @@ public class BTService extends XWService {
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
 
-            result = makeOrInvite( context, gameID, gameName, lang, dict, 
+            result = makeOrNotify( context, gameID, gameName, lang, dict, 
                                    nPlayersT, nPlayersH, host.getName(), 
                                    host.getAddress() );
 
@@ -1003,7 +1003,7 @@ public class BTService extends XWService {
         m_sender = null;
     }
 
-    private BTCmd makeOrInvite( Context context, int gameID, String gameName, 
+    private BTCmd makeOrNotify( Context context, int gameID, String gameName, 
                                 int lang, String dict, int nPlayersT, 
                                 int nPlayersH, String btName, String btAddr )
     {

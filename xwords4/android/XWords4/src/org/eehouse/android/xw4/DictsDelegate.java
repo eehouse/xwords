@@ -1228,9 +1228,7 @@ public class DictsDelegate extends ListDelegateBase
                         }
                     }
 
-                    if ( null != m_filterLang ) {
-                        closedLangs.remove( m_filterLang );
-                    }
+                    closedLangs.remove( m_filterLang );
                     m_closedLangs.addAll( closedLangs );
 
                     success = true;
