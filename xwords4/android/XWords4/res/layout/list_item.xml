@@ -1,47 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <org.eehouse.android.xw4.XWListItem
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent" 
-    android:layout_height="wrap_content"
-    android:layout_weight="1"
-    android:focusable="true"
-    android:clickable="true"
-    android:textAppearance="?android:attr/textAppearanceLarge"
-    android:longClickable="true"
-    android:background="@android:drawable/list_selector_background"
-    android:orientation="horizontal"
-	android:paddingTop="5dp"
-	android:paddingBottom="5dp"
-    >
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     android:layout_width="fill_parent" 
+     android:layout_height="wrap_content"
+     android:layout_weight="1"
+     android:focusable="true"
+     android:clickable="true"
+     android:textAppearance="?android:attr/textAppearanceLarge"
+     android:longClickable="true"
+     android:background="@android:drawable/list_selector_background"
+     android:orientation="vertical"
+	 android:paddingTop="5dp"
+	 android:paddingBottom="5dp"
+     >
 
-  <CheckBox android:id="@+id/checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            />
+    <LinearLayout android:orientation="horizontal"
+                  android:layout_width="fill_parent"
+                  android:layout_height="wrap_content"
+                  >
 
-  <TextView android:id="@+id/text_item"
-	        android:layout_width="wrap_content" 
-	        android:layout_height="wrap_content"
-            android:layout_weight="1"
-   	        android:textAppearance="?android:attr/textAppearanceMedium"
-            android:singleLine="true"
-            />
+        <CheckBox android:id="@+id/checkbox"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:visibility="gone"
+                  />
 
-  <TextView android:id="@+id/text_item2"
-	        android:layout_width="wrap_content" 
-	        android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="right"
-            android:singleLine="true"
-            android:visibility="gone"
-            />
+        <TextView android:id="@+id/text_item"
+	              android:layout_width="wrap_content" 
+	              android:layout_height="wrap_content"
+                  android:layout_weight="1"
+   	              android:textAppearance="?android:attr/textAppearanceMedium"
+                  android:singleLine="true"
+                  />
 
-  <ImageButton android:id="@+id/del"
-               android:layout_width="32dp" 
-	           android:layout_height="32dp"
-               android:src="@android:drawable/ic_delete"
-               android:visibility="invisible"
-               />
+        <TextView android:id="@+id/text_item2"
+	              android:layout_width="wrap_content" 
+	              android:layout_height="wrap_content"
+                  android:layout_weight="1"
+                  android:gravity="right"
+                  android:singleLine="true"
+                  android:visibility="gone"
+                  />
+
+        <ImageButton android:id="@+id/del"
+                     android:layout_width="32dp" 
+	                 android:layout_height="32dp"
+                     android:src="@android:drawable/ic_delete"
+                     android:visibility="invisible"
+                     />
+    </LinearLayout>
 </org.eehouse.android.xw4.XWListItem>
