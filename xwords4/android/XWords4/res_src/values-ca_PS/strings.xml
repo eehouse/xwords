@@ -1198,10 +1198,8 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-  <string name="no_dict_fmt">YOU NEED TO DOWNLOAD A REPLACEMENT %2$s
-    WORDLIST BEFORE YOU CAN OPEN GAME \"%1$s\". (THE ORIGINAL MAY HAVE
-    BEEN DELETED OR STORED ON AN EXTERNAL CARD THAT IS NO LONGER
-    AVAILABLE.)</string>
+  <string name="no_dict_fmt">GAME \"%1$s\" REQUIRES A %2$s WORDLIST.
+    PLEASE DOWNLOAD ONE BEFORE OPENING.</string>
   <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->

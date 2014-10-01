@@ -1198,10 +1198,8 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-  <string name="no_dict_fmt">Uoy deen ot daolnwod a tnemecalper %2$s
-    tsildrow erofeb uoy nac nepo emag \"%1$s\". eHt( lanigiro yam evah
-    neeb deteled ro derots no na lanretxe drac taht si on regnol
-    elbaliava.)</string>
+  <string name="no_dict_fmt">Emag \"%1$s\" seriuqer a %2$s tsildrow.
+    Esaelp daolnwod eno erofeb gninepo.</string>
   <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
