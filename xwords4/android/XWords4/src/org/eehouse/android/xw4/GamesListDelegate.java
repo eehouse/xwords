@@ -70,6 +70,8 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
 
+    private static final int REQUEST_LANG = 1;
+
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
@@ -561,7 +563,7 @@ public class GamesListDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
-                            DictsDelegate.launchForResult( m_activity, 
+                            DictsDelegate.launchForResult( m_activity, REQUEST_LANG,
                                                            m_missingDictLang );
                         } else {
                             DwnldDelegate
@@ -991,7 +993,14 @@ public class GamesListDelegate extends ListDelegateBase
                 });
             break;
         case BT_GAME_CREATED:
-            launchGame( (Long)args[0], true );
+            post( new Runnable() {
+                    public void run() {
+                        long rowid = (Long)args[0];
+                        if ( checkWarnNoDict( rowid ) ) {
+                            launchGame( rowid, true );
+                        }
+                    } 
+                });
             break;
         default:
             super.eventOccurred( event, args );
@@ -1051,11 +1060,18 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    protected void contentChanged()
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, Intent data )
     {
-        // if ( null != m_adapter ) {
-        //     m_adapter.expandGroups( getListView() );
-        // }
+        if ( Activity.RESULT_CANCELED != resultCode
+             && REQUEST_LANG == requestCode ) {
+            DbgUtils.logf( "lang need met" );
+            if ( GameUtils.gameDictsHere( m_activity, m_missingDictRowId ) ) {
+                launchGameIf();
+            } else {
+                DbgUtils.logf( "still missing a dict" );
+            }
+        }
     }
 
     @Override
