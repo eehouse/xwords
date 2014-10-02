@@ -1555,7 +1555,13 @@ public final class R {
         /**  label for the field used to set the timer's inital value 
          */
         public static final int minutes_label=0x7f0500d3;
+        /**  body of notification shown when invitation requires a
+	     wordslist that's not installed 
+         */
         public static final int missing_dict_detail=0x7f05025b;
+        /**  Title of notification shown when invitation requires a
+	     wordslist that's not installed 
+         */
         public static final int missing_dict_title=0x7f05025a;
         /**  Used as a substitute for the names of remote players when
          they aren't available yet because the connection is not
