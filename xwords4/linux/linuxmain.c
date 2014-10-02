@@ -804,15 +804,31 @@ make_longopts()
 static void
 usage( char* appName, char* msg )
 {
+    const char* param = "<param>";
     int ii;
     if ( msg != NULL ) {
         fprintf( stderr, "Error: %s\n\n", msg );
     }
     fprintf( stderr, "usage: %s \n", appName );
+
+    int maxWidth = 0;
     for ( ii = 0; ii < VSIZE(CmdInfoRecs); ++ii ) {
         const CmdInfoRec* rec = &CmdInfoRecs[ii];
-        fprintf( stderr, "    --%s %-20s # %s\n", rec->param,
-                 rec->hasArg? "<param>" : "", rec->hint );
+        int width = strlen(rec->param) + 1;
+        if ( rec->hasArg ) {
+            width += strlen(param) + 1;
+        }
+        if ( width > maxWidth ) {
+            maxWidth = width;
+        }
+    }
+
+    for ( ii = 0; ii < VSIZE(CmdInfoRecs); ++ii ) {
+        const CmdInfoRec* rec = &CmdInfoRecs[ii];
+        char buf[120];
+        snprintf( buf, sizeof(buf), "--%s %s", rec->param, 
+                 (rec->hasArg ? param : "") );
+        fprintf( stderr, "  %-*s # %s\n", maxWidth, buf, rec->hint );
     }
     fprintf( stderr, "\n(revision: %s)\n", SVN_REV);
     exit(1);
