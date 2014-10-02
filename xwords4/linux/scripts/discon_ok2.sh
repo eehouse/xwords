@@ -41,8 +41,8 @@ declare -A FILES
 declare -A LOGS
 declare -A MINEND
 declare -A ROOM_PIDS
-declare -a APPS_OLD=
-declare -a DICTS=
+declare -a APPS_OLD=()
+declare -a DICTS=				# wants to be =() too?
 declare -A CHECKED_ROOMS
 
 function cleanup() {
@@ -202,7 +202,7 @@ build_cmds() {
             APPS[$COUNTER]="$APP_NEW"
             NEW_ARGS[$COUNTER]="$APP_NEW_PARAMS"
             BOARD_SIZE="--board-size ${BOARD_SIZES_NEW[$((RANDOM%${#BOARD_SIZES_NEW[*]}))]}"
-            if [ xx = "${APPS_OLD+xx}" ]; then
+            if [ 0 -lt ${#APPS_OLD[@]} ]; then
                 # 50% chance of starting out with old app
                 NAPPS=$((1+${#APPS_OLD[*]}))
                 if [ 0 -lt $((RANDOM%$NAPPS)) ]; then
@@ -215,7 +215,7 @@ build_cmds() {
             PARAMS="$(player_params $NLOCALS $NPLAYERS $DEV)"
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
             [ $UNDO_PCT -gt 0 ] && PARAMS="$PARAMS --undo-pct $UNDO_PCT "
-            PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
+            PARAMS="$PARAMS --game-dict $DICT --relay-port $PORT --host $HOST "
             PARAMS="$PARAMS --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --db $FILE"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
@@ -223,6 +223,7 @@ build_cmds() {
             if [ -n "$SEND_CHAT" ]; then
                    PARAMS="$PARAMS --send-chat $SEND_CHAT"
             fi
+			PARAMS="$PARAMS --my-port 1024"
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
@@ -276,6 +277,10 @@ launch() {
     KEY=$1
     LOG=${LOGS[$KEY]}
     APP="${APPS[$KEY]}"
+	if [ -z "$APP" ]; then
+		echo "error: no app set"
+		exit 1
+	fi
     PARAMS="${NEW_ARGS[$KEY]} ${ARGS[$KEY]} ${ARGS_DEVID[$KEY]}"
     exec $APP $PARAMS >/dev/null 2>>$LOG
 }
@@ -352,7 +357,7 @@ maybe_resign() {
 
 try_upgrade() {
     KEY=$1
-    if [ xx = "${APPS_OLD+xx}" ]; then
+    if [ 0 -lt ${#APPS_OLD[@]} ]; then
         if [ $APP_NEW != "${APPS[$KEY]}" ]; then
             # one in five chance of upgrading
             if [ 0 -eq $((RANDOM % UPGRADE_ODDS)) ]; then
