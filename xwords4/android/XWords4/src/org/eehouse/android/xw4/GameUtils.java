@@ -53,7 +53,6 @@ public class GameUtils {
 
     public static final String INVITED = "invited";
     public static final String INTENT_KEY_ROWID = "rowid";
-    public static final String INTENT_FORRESULT_ROWID = "forresult";
 
     private static Integer s_minScreen;
     // Used to determine whether to resend all messages on networking coming

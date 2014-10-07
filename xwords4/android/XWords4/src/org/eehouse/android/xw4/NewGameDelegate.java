@@ -52,8 +52,9 @@ public class NewGameDelegate extends DelegateBase {
     private static final String GROUPID_EXTRA = "groupid";
     private static final int CONFIG_FOR_BT = 1;
     private static final int CONFIG_FOR_SMS = 2;
-    private static final int INVITE_FOR_BT = 3;
-    private static final int INVITE_FOR_SMS = 4;
+    private static final int CONFIG_FOR_NET = 3;
+    private static final int INVITE_FOR_BT = 4;
+    private static final int INVITE_FOR_SMS = 5;
 
     private boolean m_showsOn;
     private boolean m_nameForBT;
@@ -178,18 +179,21 @@ public class NewGameDelegate extends DelegateBase {
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data )
     {
-        if ( Activity.RESULT_CANCELED != resultCode ) {
+        DbgUtils.logf( "NewGameDelegate: onActivityResult()" );
+        if ( Activity.RESULT_CANCELED == resultCode ) {
+            if ( 0 < m_newRowID ) {
+                DBUtils.deleteGame( m_activity, m_newRowID );
+                m_newRowID = -1;
+            }
+        } else {
             switch ( requestCode ) {
             case CONFIG_FOR_BT:
             case CONFIG_FOR_SMS:
-                if ( Activity.RESULT_CANCELED == resultCode ) {
-                    DBUtils.deleteGame( m_activity, m_newRowID );
-                } else {
-                    // We'll leave it up to BoardActivity to detect that
-                    // it's not had any remote connections yet.
-                    GameUtils.launchGame( m_activity, m_newRowID );
-                    finish();
-                }
+            case CONFIG_FOR_NET:
+                // We'll leave it up to BoardActivity to detect that
+                // it's not had any remote connections yet.
+                GameUtils.launchGame( m_activity, m_newRowID );
+                finish();
                 break;
             case INVITE_FOR_BT:     // user selected device 
             case INVITE_FOR_SMS:
@@ -299,15 +303,14 @@ public class NewGameDelegate extends DelegateBase {
     }
 
     private void makeNewGame( boolean networked, boolean launch,
-                              int chosen )
+                              int inviteHow )
     {
-        boolean viaNFC = DlgDelegate.NFC_BTN == chosen;
+        boolean viaNFC = DlgDelegate.NFC_BTN == inviteHow;
         if ( viaNFC && !NFCUtils.nfcAvail( m_activity )[1] ) {
             showDialog( DlgID.ENABLE_NFC );
         } else {
             String room = null;
             String inviteID = null;
-            long rowid;
             int[] lang = {0};
             String[] dict = {null};
             final int nPlayers = 2; // hard-coded for no-configure case
@@ -315,25 +318,27 @@ public class NewGameDelegate extends DelegateBase {
             if ( networked ) {
                 room = GameUtils.makeRandomID();
                 inviteID = GameUtils.makeRandomID();
-                rowid = GameUtils.makeNewNetGame( m_activity, m_groupID, room, inviteID, 
-                                                  lang, dict, nPlayers, 1 );
+                m_newRowID = GameUtils.makeNewNetGame( m_activity, m_groupID, 
+                                                       room, inviteID, lang, 
+                                                       dict, nPlayers, 1 );
             } else {
-                rowid = GameUtils.saveNew( m_activity, new CurGameInfo( m_activity ), 
-                                           m_groupID );
+                m_newRowID = GameUtils.saveNew( m_activity, 
+                                                new CurGameInfo( m_activity ), 
+                                                m_groupID );
             }
 
             if ( launch ) {
-                GameUtils.launchGame( m_activity, rowid, networked );
+                GameUtils.launchGame( m_activity, m_newRowID, networked );
                 if ( networked ) {
-                    GameUtils.launchInviteActivity( m_activity, chosen, room, 
+                    GameUtils.launchInviteActivity( m_activity, inviteHow, room, 
                                                     inviteID, lang[0], dict[0],
                                                     nPlayers );
                 }
+                finish();
             } else {
-                GameUtils.doConfig( m_activity, rowid, GameConfigActivity.class );
+                GameConfigDelegate.editForResult( m_activity, CONFIG_FOR_NET, m_newRowID );
             }
 
-            finish();
         }
     }
 
@@ -345,11 +350,7 @@ public class NewGameDelegate extends DelegateBase {
                 m_newRowID = GameUtils.makeNewBTGame( m_activity, 
                                                       m_groupID, gameID, null, 
                                                       m_lang, m_dict, 2, 1 );
-                Intent intent = new Intent( m_activity, GameConfigActivity.class );
-                intent.setAction( Intent.ACTION_EDIT );
-                intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
-                intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
-                startActivityForResult( intent, CONFIG_FOR_BT );
+                GameConfigDelegate.editForResult( m_activity, CONFIG_FOR_BT, m_newRowID );
             } else {
                 BTInviteDelegate.launchForResult( m_activity, 1, INVITE_FOR_BT );
             }
@@ -366,11 +367,7 @@ public class NewGameDelegate extends DelegateBase {
             String name = getString( R.string.dft_sms_name_fmt, gameID & 0xFFFF );
             DBUtils.setName( m_activity, m_newRowID, name );
 
-            Intent intent = new Intent( m_activity, GameConfigActivity.class );
-            intent.setAction( Intent.ACTION_EDIT );
-            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_newRowID );
-            intent.putExtra( GameUtils.INTENT_FORRESULT_ROWID, true );
-            startActivityForResult( intent, CONFIG_FOR_SMS );
+            GameConfigDelegate.editForResult( m_activity, CONFIG_FOR_SMS, m_newRowID );
         } else {
             SMSInviteDelegate.launchForResult( m_activity, 1, INVITE_FOR_SMS );
         }

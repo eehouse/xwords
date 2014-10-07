@@ -57,6 +57,8 @@ public class GameConfigDelegate extends DelegateBase
                ,XWListItem.DeleteCallback
                ,RefreshNamesTask.NoNameFound {
 
+    private static final String INTENT_FORRESULT_ROWID = "forresult";
+
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
     private static final int REQUEST_LANG = 1;
     private static final int REQUEST_DICT = 2;
@@ -405,8 +407,7 @@ public class GameConfigDelegate extends DelegateBase
 
         Intent intent = getIntent();
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
-        m_forResult = intent.getBooleanExtra( GameUtils.INTENT_FORRESULT_ROWID, 
-                                              false );
+        m_forResult = intent.getBooleanExtra( INTENT_FORRESULT_ROWID, false );
 
         m_connectSetRelay = findViewById(R.id.connect_set_relay);
         m_connectSetSMS = findViewById(R.id.connect_set_sms);
@@ -1149,6 +1150,16 @@ public class GameConfigDelegate extends DelegateBase
     private boolean localOnlyGame()
     {
         return m_conType == CommsConnType.COMMS_CONN_NONE;
+    }
+
+    public static void editForResult( Activity parent, int requestCode, 
+                                      long rowID )
+    {
+        Intent intent = new Intent( parent, GameConfigActivity.class );
+        intent.setAction( Intent.ACTION_EDIT );
+        intent.putExtra( GameUtils.INTENT_KEY_ROWID, rowID );
+        intent.putExtra( INTENT_FORRESULT_ROWID, true );
+        parent.startActivityForResult( intent, requestCode );
     }
 
 }
