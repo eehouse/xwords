@@ -104,7 +104,7 @@ public class NewGameDelegate extends DelegateBase {
                 }
             } );
 
-        button = (Button)findViewById( R.id.newgame_invite_net );
+        button = (Button)findViewById( R.id.newgame_net_invite );
         button.setOnClickListener( new View.OnClickListener() {
                 @Override
                 public void onClick( View v ) {
@@ -397,7 +397,7 @@ public class NewGameDelegate extends DelegateBase {
 
                 Button button;
                 if ( enabled ) {
-                    button = (Button)findViewById( R.id.newgame_invite_bt );
+                    button = (Button)findViewById( R.id.newgame_bt_invite );
                     button.setOnClickListener( new View.OnClickListener() {
                             @Override
                                 public void onClick( View v ) {
@@ -445,7 +445,7 @@ public class NewGameDelegate extends DelegateBase {
 
             Button button;
             if ( enabled ) {
-                button = (Button)findViewById( R.id.newgame_invite_sms );
+                button = (Button)findViewById( R.id.newgame_sms_invite );
                 button.setOnClickListener( new View.OnClickListener() {
                         @Override
                             public void onClick( View v ) {
