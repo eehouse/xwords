@@ -438,21 +438,21 @@ public class DlgDelegate {
             xlator.setVisibility( View.GONE );
         }
 
-        return LocUtils.makeAlertBuilder( m_activity )
-            .setIcon( R.drawable.icon48x48 )
-            .setTitle( R.string.app_name )
-            .setView( view )
-            .setNegativeButton( R.string.changes_button,
-                                new OnClickListener() {
-                                    @Override
-                                    public void onClick( DialogInterface dlg, 
-                                                         int which )
-                                    {
-                                        FirstRunDialog.show( m_activity );
-                                    }
-                                } )
-            .setPositiveButton( R.string.button_ok, null )
-            .create();
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
+        builder.setIcon( R.drawable.icon48x48 );
+        builder.setTitle( R.string.app_name );
+        builder.setView( view );
+        builder.setNegativeButton( R.string.changes_button,
+                                   new OnClickListener() {
+                                       @Override
+                                       public void onClick( DialogInterface dlg, 
+                                                            int which )
+                                       {
+                                           FirstRunDialog.show( m_activity );
+                                       }
+                                   } );
+        builder.setPositiveButton( R.string.button_ok, null );
+        return builder.create();
     }
 
     private Dialog createLookupDialog()
@@ -464,11 +464,11 @@ public class DlgDelegate {
 
     private Dialog createOKDialog( DlgState state, DlgID dlgID )
     {
-        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.info_title )
-            .setMessage( state.m_msg )
-            .setPositiveButton( R.string.button_ok, null )
-            .create();
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
+        builder.setTitle( R.string.info_title );
+        builder.setMessage( state.m_msg );
+        builder.setPositiveButton( R.string.button_ok, null );
+        Dialog dialog = builder.create();
         dialog = setCallbackDismissListener( dialog, state, dlgID );
 
         return dialog;
@@ -492,12 +492,12 @@ public class DlgDelegate {
                 }
             };
 
-        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.newbie_title )
-            .setMessage( state.m_msg )
-            .setPositiveButton( R.string.button_ok, lstnr_p )
-            .setNegativeButton( R.string.button_notagain, lstnr_n )
-            .create();
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
+        builder.setTitle( R.string.newbie_title );
+        builder.setMessage( state.m_msg );
+        builder.setPositiveButton( R.string.button_ok, lstnr_p );
+        builder.setNegativeButton( R.string.button_notagain, lstnr_n );
+        Dialog dialog = builder.create();
 
         return setCallbackDismissListener( dialog, state, dlgID );
     } // createNotAgainDialog
@@ -506,12 +506,12 @@ public class DlgDelegate {
     {
         OnClickListener lstnr = mkCallbackClickListener( state );
 
-        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.query_title )
-            .setMessage( state.m_msg )
-            .setPositiveButton( state.m_posButton, lstnr )
-            .setNegativeButton( R.string.button_cancel, lstnr )
-            .create();
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
+        builder.setTitle( R.string.query_title );
+        builder.setMessage( state.m_msg );
+        builder.setPositiveButton( state.m_posButton, lstnr );
+        builder.setNegativeButton( R.string.button_cancel, lstnr );
+        Dialog dialog = builder.create();
         
         return setCallbackDismissListener( dialog, state, dlgID );
     }
@@ -531,10 +531,10 @@ public class DlgDelegate {
             msgID = R.string.nfc_or_email;
         }
         
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.query_title )
-            .setMessage( msgID )
-            .setNegativeButton( R.string.button_html, lstnr );
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
+        builder.setTitle( R.string.query_title );
+        builder.setMessage( msgID );
+        builder.setNegativeButton( R.string.button_html, lstnr );
 
         if ( haveSMS ) {
             builder.setPositiveButton( R.string.button_text, lstnr );
@@ -548,11 +548,11 @@ public class DlgDelegate {
 
     private Dialog createDictGoneDialog()
     {
-        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
-            .setTitle( R.string.no_dict_title )
-            .setMessage( R.string.no_dict_finish )
-            .setPositiveButton( R.string.button_close_game, null )
-            .create();
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
+        builder.setTitle( R.string.no_dict_title );
+        builder.setMessage( R.string.no_dict_finish );
+        builder.setPositiveButton( R.string.button_close_game, null );
+        Dialog dialog = builder.create();
 
         dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
                 public void onDismiss( DialogInterface di ) {
