@@ -1954,4 +1954,6 @@
   <string name="app_not_found_fmt">Elbanu ot tcennoc ot Sdrowssorc
 	no eht ecived %1$s.  Esaelp kcehc taht eht ecived si nihtiw egnar
 	dna taht Sdrowssorc si dellatsni no ti.</string>
+  <!-- label within default wordlists in app preferences -->
+  <string name="default_language">Tluafed egaugnal</string>
 </resources>

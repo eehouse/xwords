@@ -46,6 +46,13 @@
     <PreferenceScreen android:title="@string/prefs_dicts"
                       android:summary="@string/prefs_dicts_summary"
                       >
+
+	  <!-- entries provided programatically -->
+      <org.eehouse.android.xw4.XWListPreference
+		  android:key="@string/key_default_language"
+		  android:title="@string/default_language"
+		  />
+
       <org.eehouse.android.xw4.DictListPreference 
          android:key="@string/key_default_dict"
          android:title="@string/default_dict"

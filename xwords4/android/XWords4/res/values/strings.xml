@@ -2289,4 +2289,7 @@
 	<string name="app_not_found_fmt">Unable to connect to Crosswords
 	on the device %1$s.  Please check that the device is within range
 	and that Crosswords is installed on it.</string>
+
+	<!-- label within default wordlists in app preferences -->
+	<string name="default_language">Default language</string>
 </resources>

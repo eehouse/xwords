@@ -1954,4 +1954,6 @@
   <string name="app_not_found_fmt">UNABLE TO CONNECT TO CROSSWORDS
 	ON THE DEVICE %1$s.  PLEASE CHECK THAT THE DEVICE IS WITHIN RANGE
 	AND THAT CROSSWORDS IS INSTALLED ON IT.</string>
+  <!-- label within default wordlists in app preferences -->
+  <string name="default_language">DEFAULT LANGUAGE</string>
 </resources>
