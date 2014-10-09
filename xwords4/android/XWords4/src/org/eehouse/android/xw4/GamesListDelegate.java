@@ -1767,14 +1767,18 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
         if ( madeGame ) {
-            if ( R.id.games_game_reset == m_missingDictMenuId ) {
-                long[] rowIDs = { m_missingDictRowId };
-                doConfirmReset( rowIDs );
-            } else {
-                GameUtils.launchGame( m_activity, m_missingDictRowId );
-            }
+            // save in case checkWarnNoDict needs to set them
+            long rowID = m_missingDictRowId;
+            int menuID = m_missingDictMenuId;
             m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
             m_missingDictMenuId = -1;
+
+            if ( R.id.games_game_reset == menuID ) {
+                long[] rowIDs = { rowID };
+                doConfirmReset( rowIDs );
+            } else if ( checkWarnNoDict( rowID ) ) {
+                GameUtils.launchGame( m_activity, rowID );
+            }
         }
         return madeGame;
     }
