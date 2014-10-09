@@ -389,35 +389,27 @@ public class Utils {
         return result;
     }
 
-    public static String dictFromURL( Context context, String url )
+    public static Uri makeDictUri( Context context, String langName, String name )
     {
-        String result = null;
-        int indx = url.lastIndexOf( "/" );
-        if ( 0 <= indx ) {
-            result = url.substring( indx + 1 );
-        }
-        return result;
-    }
-
-    public static String makeDictUrl( Context context, String langName, String name )
-    {
-        String dict_url = CommonPrefs.getDefaultDictURL( context );
+        String dictUrl = CommonPrefs.getDefaultDictURL( context );
+        Uri.Builder builder = Uri.parse( dictUrl ).buildUpon();
         if ( null != langName ) {
-            dict_url += "/" + langName;
+            builder.appendPath( langName );
         }
         if ( null != name ) {
-            dict_url += "/" + name + XWConstants.DICT_EXTN;
+            Assert.assertNotNull( langName );
+            builder.appendPath( DictUtils.addDictExtn( name ) );
         }
-        return dict_url;
+        return builder.build();
     }
 
-    public static String makeDictUrl( Context context, int lang, String name )
+    public static Uri makeDictUri( Context context, int lang, String name )
     {
         String langName = null;
         if ( 0 < lang ) {
             langName = DictLangCache.getLangName( context, lang );
         }
-        return makeDictUrl( context, langName, name );
+        return makeDictUri( context, langName, name );
     }
 
     public static int getAppVersion( Context context )

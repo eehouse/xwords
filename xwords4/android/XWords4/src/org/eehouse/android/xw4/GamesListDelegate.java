@@ -563,8 +563,8 @@ public class GamesListDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
-                            DictsDelegate.launchForResult( m_activity, REQUEST_LANG,
-                                                           m_missingDictLang );
+                            DictsDelegate.downloadForResult( m_activity, REQUEST_LANG,
+                                                             m_missingDictLang );
                         } else {
                             DwnldDelegate
                                 .downloadDictInBack( m_activity,
@@ -584,6 +584,7 @@ public class GamesListDelegate extends ListDelegateBase
                 message = getString( R.string.invite_dict_missing_body_noname_fmt,
                                      null, m_missingDictName, langName );
             } else {
+                // WARN_NODICT_SUBST
                 message = getString( R.string.no_dict_subst_fmt, gameName, 
                                      m_missingDictName, langName );
             }

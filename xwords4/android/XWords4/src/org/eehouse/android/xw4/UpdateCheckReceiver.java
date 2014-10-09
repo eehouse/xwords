@@ -53,6 +53,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
+    public static final String NEW_DICT_NAME = "NEW_DICT_NAME";
     public static final String NEW_XLATION_CBK = "NEW_XLATION_CBK";
 
     // weekly
@@ -384,6 +385,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 Intent intent = 
                                     new Intent( m_context, DictsActivity.class );
                                 intent.putExtra( NEW_DICT_URL, url );
+                                intent.putExtra( NEW_DICT_NAME, dal.name );
                                 intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
                                 String body = 
                                     LocUtils.getString( m_context, 
