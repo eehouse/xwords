@@ -1205,7 +1205,7 @@
          wordlist name and language are substituted in. -->
   <string name="no_dict_subst_fmt">UNABLE TO OPEN GAME \"%1$s\" BECAUSE
       WORDLIST %2$s NOT FOUND. (IT MAY HAVE BEEN DELETED, OR STORED
-      ON AN EXTERNAL CARD THAT IS NO LONGER AVAILABLE.) YOU CAN
+      ON AN EXTERNAL CARD THAT IS NO LONGER AVAILABLE.)\n\nYOU CAN
       DOWNLOAD A REPLACEMENT OR SUBSTITUTE ANOTHER %3$s
       WORDLIST.</string>
   <!-- Text of button displayed when downloading is an option -->

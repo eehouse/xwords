@@ -1410,7 +1410,7 @@
          wordlist name and language are substituted in. -->
     <string name="no_dict_subst_fmt">Unable to open game \"%1$s\" because
       wordlist %2$s not found. (It may have been deleted, or stored
-      on an external card that is no longer available.) You can
+      on an external card that is no longer available.)\n\nYou can
       download a replacement or substitute another %3$s
       wordlist.</string>
 

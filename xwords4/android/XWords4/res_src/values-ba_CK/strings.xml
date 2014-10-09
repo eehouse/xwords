@@ -1205,7 +1205,7 @@
          wordlist name and language are substituted in. -->
   <string name="no_dict_subst_fmt">Elbanu ot nepo emag \"%1$s\" esuaceb
       tsildrow %2$s ton dnuof. tI( yam evah neeb ,deteled ro derots
-      no na lanretxe drac taht si on regnol elbaliava.) Uoy nac
+      no na lanretxe drac taht si on regnol elbaliava.)\n\nUoy nac
       daolnwod a tnemecalper ro etutitsbus rehtona %3$s
       tsildrow.</string>
   <!-- Text of button displayed when downloading is an option -->
