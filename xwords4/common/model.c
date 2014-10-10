@@ -2460,7 +2460,7 @@ loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, XP_U16 version,
         XP_ASSERT( 0 == pc->nUndone );
     }
     XP_ASSERT( 0 == pc->dividerLoc );
-    if ( STREAM_VERS_MULTIADDR <= version ) {
+    if ( STREAM_VERS_MODELDIVIDER <= version ) {
         pc->dividerLoc = stream_getBits( stream, NTILES_NBITS );
     }
 
