@@ -1521,6 +1521,7 @@
       ,enilno eht sdrow tsuj deyalp.</string>
   <!--  -->
   <string name="button_move">Evom</string>
+  <string name="button_newgroup">Wen puorg</string>
   <!--  -->
   <string name="button_search">Dnif</string>
   <!--  -->
@@ -1809,8 +1810,6 @@
   <string name="game_name_group_title">Eman puorg</string>
   <string name="cannot_delete_default_group_fmt">Eht puorg rof wen ,semag %1$s, 
     tonnac eb deteled.</string>
-  <string name="no_move_onegroup">Gnivom si elbissopmi litnu ereht
-    si erom naht eno puorg.</string>
   <string name="group_name_fmt">%1$s (%2$d )semag</string>
   <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that

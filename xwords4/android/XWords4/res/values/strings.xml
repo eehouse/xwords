@@ -1776,6 +1776,7 @@
 
       <!--  -->
     <string name="button_move">Move</string>
+    <string name="button_newgroup">New group</string>
 
       <!--  -->
     <string name="button_search">Find</string>
@@ -2099,8 +2100,6 @@
     <string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
     cannot be deleted.</string>
 
-    <string name="no_move_onegroup">Moving is impossible until there
-    is more than one group.</string>
     <string name="group_name_fmt">%1$s (%2$d games)</string>
 
     <!-- Button shown in game over dialog triggering creation of new

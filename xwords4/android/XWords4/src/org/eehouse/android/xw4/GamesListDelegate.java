@@ -533,6 +533,7 @@ public class GamesListDelegate extends ListDelegateBase
     private GameNamer m_namer;
     private Set<Long> m_launchedGames;
     private boolean m_menuPrepared;
+    private boolean m_moveAfterNewGroup;
     private Set<Long> m_selGames;
     private Set<Long> m_selGroupIDs;
     private String m_origTitle;
@@ -649,7 +650,7 @@ public class GamesListDelegate extends ListDelegateBase
             dialog = buildNamerDlg( GameUtils.getName( m_activity, m_rowid ),
                                     R.string.rename_label,
                                     R.string.game_rename_title,
-                                    lstnr, DlgID.RENAME_GAME );
+                                    lstnr, null, DlgID.RENAME_GAME );
             break;
 
         case RENAME_GROUP:
@@ -665,7 +666,7 @@ public class GamesListDelegate extends ListDelegateBase
             dialog = buildNamerDlg( m_adapter.groupName( m_groupid ),
                                     R.string.rename_group_label,
                                     R.string.game_name_group_title,
-                                    lstnr, DlgID.RENAME_GROUP );
+                                    lstnr, null, DlgID.RENAME_GROUP );
             break;
 
         case NEW_GROUP:
@@ -674,12 +675,17 @@ public class GamesListDelegate extends ListDelegateBase
                         String name = m_namer.getName();
                         DBUtils.addGroup( m_activity, name );
                         mkListAdapter();
-                        // onContentChanged();
+                        showNewGroupIf();
+                    }
+                };
+            lstnr2 = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        showNewGroupIf();
                     }
                 };
             dialog = buildNamerDlg( "", R.string.newgroup_label,
                                     R.string.game_name_group_title,
-                                    lstnr, DlgID.RENAME_GROUP );
+                                    lstnr, lstnr2, DlgID.RENAME_GROUP );
             setRemoveOnDismiss( dialog, dlgID );
             break;
 
@@ -710,7 +716,13 @@ public class GamesListDelegate extends ListDelegateBase
                         }
                         DBUtils.setGroupExpanded( m_activity, gid, true );
                         mkListAdapter();
-                        // onContentChanged();
+                    }
+                };
+            DialogInterface.OnClickListener lstnr3 = 
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        m_moveAfterNewGroup = true;
+                        showDialog( DlgID.NEW_GROUP );
                     }
                 };
             String[] groups = m_adapter.groupNames();
@@ -719,6 +731,7 @@ public class GamesListDelegate extends ListDelegateBase
                 .setTitle( R.string.change_group )
                 .setSingleChoiceItems( groups, curGroupPos, lstnr )
                 .setPositiveButton( R.string.button_move, lstnr2 )
+                .setNeutralButton( R.string.button_newgroup, lstnr3 )
                 .setNegativeButton( R.string.button_cancel, null )
                 .create();
             setRemoveOnDismiss( dialog, dlgID );
@@ -1141,7 +1154,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // multiple games can be regrouped/reset.
             Utils.setItemVisible( menu, R.id.games_game_move, 
-                                  (1 < groupCount && 0 < nGamesSelected) );
+                                  0 < nGamesSelected );
             Utils.setItemVisible( menu, R.id.games_game_reset, 
                                   0 < nGamesSelected );
 
@@ -1196,6 +1209,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_newgroup:
+            m_moveAfterNewGroup = false;
             showDialog( DlgID.NEW_GROUP );
             break;
 
@@ -1262,12 +1276,8 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_move:
-            if ( 1 >= m_adapter.getGroupCount() ) {
-                showOKOnlyDialog( R.string.no_move_onegroup );
-            } else {
-                m_rowids = selRowIDs;
-                showDialog( DlgID.CHANGE_GROUP );
-            }
+            m_rowids = selRowIDs;
+            showDialog( DlgID.CHANGE_GROUP );
             break;
         case R.id.games_game_new_from:
             dropSels = true;    // will select the new game instead
@@ -1671,20 +1681,30 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     private Dialog buildNamerDlg( String curname, int labelID, int titleID,
-                                  DialogInterface.OnClickListener lstnr, 
+                                  DialogInterface.OnClickListener lstnr1, 
+                                  DialogInterface.OnClickListener lstnr2, 
                                   DlgID dlgID )
     {
         m_namer = (GameNamer)inflate( R.layout.rename_game );
         m_namer.setName( curname );
         m_namer.setLabel( labelID );
+        
         Dialog dialog = makeAlertBuilder()
             .setTitle( titleID )
-            .setNegativeButton( R.string.button_cancel, null )
-            .setPositiveButton( R.string.button_ok, lstnr )
+            .setPositiveButton( R.string.button_ok, lstnr1 )
+            .setNegativeButton( R.string.button_cancel, lstnr2 )
             .setView( m_namer )
             .create();
         setRemoveOnDismiss( dialog, dlgID );
         return dialog;
+    }
+
+    private void showNewGroupIf()
+    {
+        if ( m_moveAfterNewGroup ) {
+            m_moveAfterNewGroup = false;
+            showDialog( DlgID.CHANGE_GROUP );
+        }
     }
 
     private void deleteGames( long[] rowids )

@@ -1521,6 +1521,7 @@
       ONLINE, THE WORDS JUST PLAYED.</string>
   <!--  -->
   <string name="button_move">MOVE</string>
+  <string name="button_newgroup">NEW GROUP</string>
   <!--  -->
   <string name="button_search">FIND</string>
   <!--  -->
@@ -1809,8 +1810,6 @@
   <string name="game_name_group_title">NAME GROUP</string>
   <string name="cannot_delete_default_group_fmt">THE GROUP FOR NEW GAMES, %1$s, 
     CANNOT BE DELETED.</string>
-  <string name="no_move_onegroup">MOVING IS IMPOSSIBLE UNTIL THERE
-    IS MORE THAN ONE GROUP.</string>
   <string name="group_name_fmt">%1$s (%2$d GAMES)</string>
   <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
