@@ -423,6 +423,9 @@ public class GamesListDelegate extends ListDelegateBase
             return result;
         }
 
+        // Yes, iterating is bad, but any hashing to get around it will mean
+        // hanging onto Views that Android's list management might otherwise
+        // get to page out when they scroll offscreen.
         private Set<GameListGroup> getGroupsWithIDs( Set<Long> groupIDs )
         {
             Set<GameListGroup> result = new HashSet<GameListGroup>();
