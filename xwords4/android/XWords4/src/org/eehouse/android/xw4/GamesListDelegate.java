@@ -139,10 +139,7 @@ public class GamesListDelegate extends ListDelegateBase
                                                    ggi.m_expanded, 
                                                    GamesListDelegate.this, 
                                                    GamesListDelegate.this );
-                if ( !ggi.m_expanded ) {
-                    group.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
-                                  ggi.m_lastMoveTime );
-                }
+                updateGroupPct( group, ggi );
 
                 String name = LocUtils.getString( m_activity, R.string.group_name_fmt, 
                                                   ggi.m_name, ggi.m_count );
@@ -204,6 +201,13 @@ public class GamesListDelegate extends ListDelegateBase
             if ( 0 < games.size() ) {
                 item = games.iterator().next();
                 item.forceReload();
+            } else {
+                // If the game's not visible, update the parent group in case
+                // the game's changed in a way that makes it draw differently
+                long parent = DBUtils.getGroupForGame( m_activity, rowID );
+                GameListGroup group = getGroupWithID( parent ).iterator().next();
+                GameGroupInfo ggi = DBUtils.getGroups( m_activity ).get( parent );
+                updateGroupPct( group, ggi );
             }
             return item;
         }
@@ -329,7 +333,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         void clearSelectedGroups( Set<Long> groupIDs )
         {
-            Set<GameListGroup> groups = getGroupsFromElems( groupIDs );
+            Set<GameListGroup> groups = getGroupsWithIDs( groupIDs );
             for ( GameListGroup group : groups ) {
                 group.setSelected( false );
             }
@@ -341,6 +345,14 @@ public class GamesListDelegate extends ListDelegateBase
                 addChildrenOf( groupID );
             } else {
                 removeChildrenOf( groupID );
+            }
+        }
+
+        private void updateGroupPct( GameListGroup group, GameGroupInfo ggi )
+        {
+            if ( !ggi.m_expanded ) {
+                group.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
+                              ggi.m_lastMoveTime );
             }
         }
 
@@ -402,7 +414,16 @@ public class GamesListDelegate extends ListDelegateBase
             return result;
         }
 
-        private Set<GameListGroup> getGroupsFromElems( Set<Long> selRows )
+        private Set<GameListGroup> getGroupWithID( long groupID )
+        {
+            Set<Long> groupIDs = new HashSet<Long>();
+            groupIDs.add( groupID );
+            Set<GameListGroup> result = getGroupsWithIDs( groupIDs );
+            Assert.assertTrue( 1 == groupIDs.size() );
+            return result;
+        }
+
+        private Set<GameListGroup> getGroupsWithIDs( Set<Long> groupIDs )
         {
             Set<GameListGroup> result = new HashSet<GameListGroup>();
             ListView listView = getListView();
@@ -411,7 +432,7 @@ public class GamesListDelegate extends ListDelegateBase
                 View view = listView.getChildAt( ii );
                 if ( view instanceof GameListGroup ) {
                     GameListGroup tryme = (GameListGroup)view;
-                    if ( selRows.contains( tryme.getGroupID() ) ) {
+                    if ( groupIDs.contains( tryme.getGroupID() ) ) {
                         result.add( tryme );
                     }
                 }
