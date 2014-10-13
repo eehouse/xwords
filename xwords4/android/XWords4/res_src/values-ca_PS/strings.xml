@@ -1198,16 +1198,14 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-  <string name="no_dict_fmt">YOU NEED TO DOWNLOAD A REPLACEMENT %2$s
-    WORDLIST BEFORE YOU CAN OPEN GAME \"%1$s\". (THE ORIGINAL MAY HAVE
-    BEEN DELETED OR STORED ON AN EXTERNAL CARD THAT IS NO LONGER
-    AVAILABLE.)</string>
+  <string name="no_dict_fmt">GAME \"%1$s\" REQUIRES A %2$s WORDLIST.
+    PLEASE DOWNLOAD ONE BEFORE OPENING.</string>
   <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
   <string name="no_dict_subst_fmt">UNABLE TO OPEN GAME \"%1$s\" BECAUSE
       WORDLIST %2$s NOT FOUND. (IT MAY HAVE BEEN DELETED, OR STORED
-      ON AN EXTERNAL CARD THAT IS NO LONGER AVAILABLE.) YOU CAN
+      ON AN EXTERNAL CARD THAT IS NO LONGER AVAILABLE.)\n\nYOU CAN
       DOWNLOAD A REPLACEMENT OR SUBSTITUTE ANOTHER %3$s
       WORDLIST.</string>
   <!-- Text of button displayed when downloading is an option -->
@@ -1523,6 +1521,7 @@
       ONLINE, THE WORDS JUST PLAYED.</string>
   <!--  -->
   <string name="button_move">MOVE</string>
+  <string name="button_newgroup">NEW GROUP</string>
   <!--  -->
   <string name="button_search">FIND</string>
   <!--  -->
@@ -1774,8 +1773,12 @@
     FIRST.)</string>
   <!-- Shown in toast when relaunching after switching dicts -->
   <string name="reload_new_dict_fmt">RELOADING GAME WITH %1$s</string>
+  <!-- Title of notification shown when invitation requires a
+	     wordslist that's not installed -->
   <string name="missing_dict_title">GAME INVITATION PENDING</string>
-  <string name="missing_dict_detail">REQUIRED WORDLIST MISSING</string>
+  <!-- body of notification shown when invitation requires a
+	     wordslist that's not installed -->
+  <string name="missing_dict_detail">TAP TO DOWNLOAD MISSING WORDLIST</string>
   <string name="invite_dict_missing_title">MISSING WORDLIST</string>
   <string name="invite_dict_missing_body_fmt">%1$s HAS INVITED YOU TO
     PLAY CROSSWORDS USING THE WORDLIST %2$s (FOR PLAY IN %3$s), BUT IT
@@ -1807,8 +1810,6 @@
   <string name="game_name_group_title">NAME GROUP</string>
   <string name="cannot_delete_default_group_fmt">THE GROUP FOR NEW GAMES, %1$s, 
     CANNOT BE DELETED.</string>
-  <string name="no_move_onegroup">MOVING IS IMPOSSIBLE UNTIL THERE
-    IS MORE THAN ONE GROUP.</string>
   <string name="group_name_fmt">%1$s (%2$d GAMES)</string>
   <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
@@ -1913,7 +1914,7 @@
   <string name="dict_info_fmt">NUMBER OF WORDS: %1$d\nDOWNLOAD SIZE:
     %2$dK\nNOTE: %3$s</string>
   <string name="note_none">(NONE)</string>
-  <string name="dict_on_server">DOWNLOADABLE</string>
+  <string name="dict_on_server">TAP TO DOWNLOAD</string>
   <string name="lang_name_fmt">%1$s (%2$d WORDLISTS)</string>
   <string name="lang_unknown">UNKNOWN</string>
   <string name="not_again_dicts">THIS SCREEN LETS YOU INSTALL NEW
@@ -1952,4 +1953,6 @@
   <string name="app_not_found_fmt">UNABLE TO CONNECT TO CROSSWORDS
 	ON THE DEVICE %1$s.  PLEASE CHECK THAT THE DEVICE IS WITHIN RANGE
 	AND THAT CROSSWORDS IS INSTALLED ON IT.</string>
+  <!-- label within default wordlists in app preferences -->
+  <string name="default_language">DEFAULT LANGUAGE</string>
 </resources>

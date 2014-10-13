@@ -21,16 +21,15 @@
 package org.eehouse.android.xw4;
 
 import android.bluetooth.BluetoothAdapter;
-import org.json.JSONObject;
-import org.json.JSONException;
 import android.content.Context;
+import android.content.Intent;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 
 public class BTLaunchInfo extends AbsLaunchInfo {
-    private static final String INVITE_GAMEID = "INVITE_GAMEID";
-    private static final String INVITE_BT_NAME = "INVITE_BT_NAME";
-    private static final String INVITE_BT_ADDRESS = "INVITE_BT_ADDRESS";
 
     protected String btName;
     protected String btAddress;
@@ -40,9 +39,9 @@ public class BTLaunchInfo extends AbsLaunchInfo {
     {
         try {
             JSONObject json = init( data );
-            gameID = json.getInt( INVITE_GAMEID );
-            btName = json.getString( INVITE_BT_NAME );
-            btAddress = json.getString( INVITE_BT_ADDRESS );
+            gameID = json.getInt( MultiService.GAMEID );
+            btName = json.getString( MultiService.BT_NAME );
+            btAddress = json.getString( MultiService.BT_ADDRESS );
             setValid( true );
         } catch ( JSONException ex ) {
             DbgUtils.loge( ex );
@@ -61,15 +60,35 @@ public class BTLaunchInfo extends AbsLaunchInfo {
 
             try {
                 result = makeLaunchJSONObject( lang, dict, nPlayersT )
-                    .put( INVITE_GAMEID, gameID )
-                    .put( INVITE_BT_NAME, name )
-                    .put( INVITE_BT_ADDRESS, address )
+                    .put( MultiService.GAMEID, gameID )
+                    .put( MultiService.BT_NAME, name )
+                    .put( MultiService.BT_ADDRESS, address )
                     .toString();
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
             }
         }
         return result;
+    }
+
+    public BTLaunchInfo( Intent intent )
+    {
+        init( intent );
+        btName = intent.getStringExtra( MultiService.BT_NAME );
+        btAddress = intent.getStringExtra( MultiService.BT_ADDRESS );
+        gameID = intent.getIntExtra( MultiService.GAMEID, 0 );
+        setValid( null != btAddress && 0 != gameID );
+    }
+
+
+    public static void putExtras( Intent intent, int gameID, 
+                                  String btName, String btAddr )
+    {
+        intent.putExtra( MultiService.GAMEID, gameID );
+        intent.putExtra( MultiService.BT_NAME, btName );
+        intent.putExtra( MultiService.BT_ADDRESS, btAddr );
+
+        intent.putExtra( MultiService.OWNER, MultiService.OWNER_BT );
     }
 
     public CommsAddrRec getAddrRec()

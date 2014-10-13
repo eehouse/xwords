@@ -47,6 +47,7 @@
   <string name="key_init_autojuggle">key_init_autojuggle</string>
   <string name="key_board_size">key_board_size</string>
   <string name="key_initial_player_minutes">key_initial_player_minutes</string>
+  <string name="key_default_language">key_default_language</string>
   <string name="key_default_dict">key_default_dict</string>
   <string name="key_player1_name">key_player1_name</string>
   <string name="key_player2_name">key_player2_name</string>

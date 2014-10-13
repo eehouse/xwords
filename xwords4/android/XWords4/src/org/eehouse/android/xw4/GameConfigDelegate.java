@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.net.Uri;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,6 +46,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SpinnerAdapter;
 
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -56,6 +59,8 @@ public class GameConfigDelegate extends DelegateBase
     implements View.OnClickListener
                ,XWListItem.DeleteCallback
                ,RefreshNamesTask.NoNameFound {
+
+    private static final String INTENT_FORRESULT_ROWID = "forresult";
 
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
     private static final int REQUEST_LANG = 1;
@@ -405,8 +410,7 @@ public class GameConfigDelegate extends DelegateBase
 
         Intent intent = getIntent();
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
-        m_forResult = intent.getBooleanExtra( GameUtils.INTENT_FORRESULT_ROWID, 
-                                              false );
+        m_forResult = intent.getBooleanExtra( INTENT_FORRESULT_ROWID, false );
 
         m_connectSetRelay = findViewById(R.id.connect_set_relay);
         m_connectSetSMS = findViewById(R.id.connect_set_sms);
@@ -461,7 +465,8 @@ public class GameConfigDelegate extends DelegateBase
             switch( requestCode ) {
             case REQUEST_DICT:
                 String dictName = data.getStringExtra( DictsDelegate.RESULT_LAST_DICT );
-                setSpinnerSelection( m_playerDictSpinner, dictName );
+                configDictSpinner( m_dictSpinner, m_gi.dictLang, dictName );
+                configDictSpinner( m_playerDictSpinner, m_gi.dictLang, dictName );
                 break;
             case REQUEST_LANG:
                 String langName = data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
@@ -749,33 +754,36 @@ public class GameConfigDelegate extends DelegateBase
     private void configDictSpinner( Spinner dictsSpinner, int lang,
                                     String curDict )
     {
-        String langName = DictLangCache.getLangName( m_activity, lang );
-        dictsSpinner.setPrompt( getString( R.string.dicts_list_prompt_fmt, 
-                                           langName ) );
+        if ( null != dictsSpinner ) {
+            String langName = DictLangCache.getLangName( m_activity, lang );
+            dictsSpinner.setPrompt( getString( R.string.dicts_list_prompt_fmt, 
+                                               langName ) );
 
-        OnItemSelectedListener onSel = 
-            new OnItemSelectedListener() {
-                @Override
-                public void onItemSelected( AdapterView<?> parentView, 
-                                            View selectedItemView, 
-                                            int position, long id ) {
-                    String chosen = 
-                        (String)parentView.getItemAtPosition( position );
+            OnItemSelectedListener onSel = 
+                new OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected( AdapterView<?> parentView, 
+                                                View selectedItemView, 
+                                                int position, long id ) {
+                        String chosen = 
+                            (String)parentView.getItemAtPosition( position );
 
-                    if ( chosen.equals( m_browseText ) ) {
-                        DictsDelegate.launchForResult( m_activity, REQUEST_DICT,
-                                                       m_gi.dictLang );
+                        if ( chosen.equals( m_browseText ) ) {
+                            DictsDelegate.downloadForResult( m_activity, 
+                                                             REQUEST_DICT,
+                                                             m_gi.dictLang );
+                        }
                     }
-                }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> parentView) {}
-            };
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parentView) {}
+                };
 
-        ArrayAdapter<String> adapter = 
-            DictLangCache.getDictsAdapter( m_activity, lang );
+            ArrayAdapter<String> adapter = 
+                DictLangCache.getDictsAdapter( m_activity, lang );
 
-        configSpinnerWDownload( dictsSpinner, adapter, onSel, curDict );
+            configSpinnerWDownload( dictsSpinner, adapter, onSel, curDict );
+        }
     }
 
     private void configLangSpinner()
@@ -792,7 +800,7 @@ public class GameConfigDelegate extends DelegateBase
                         String chosen = 
                             (String)parentView.getItemAtPosition( position );
                         if ( chosen.equals( m_browseText ) ) {
-                            DictsDelegate.launchForResult( m_activity, REQUEST_LANG );
+                            DictsDelegate.downloadForResult( m_activity, REQUEST_LANG );
                         } else {
                             selLangChanged( chosen );
                         }
@@ -812,9 +820,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         m_gi.setLang( DictLangCache.getLangLangCode( m_activity, chosen ) );
         loadPlayersList();
-        if ( null != m_dictSpinner ) {
-            configDictSpinner( m_dictSpinner, m_gi.dictLang, m_gi.dictName );
-        }
+        configDictSpinner( m_dictSpinner, m_gi.dictLang, m_gi.dictName );
     }
 
     private void configSpinnerWDownload( Spinner spinner, 
@@ -1149,6 +1155,16 @@ public class GameConfigDelegate extends DelegateBase
     private boolean localOnlyGame()
     {
         return m_conType == CommsConnType.COMMS_CONN_NONE;
+    }
+
+    public static void editForResult( Activity parent, int requestCode, 
+                                      long rowID )
+    {
+        Intent intent = new Intent( parent, GameConfigActivity.class );
+        intent.setAction( Intent.ACTION_EDIT );
+        intent.putExtra( GameUtils.INTENT_KEY_ROWID, rowID );
+        intent.putExtra( INTENT_FORRESULT_ROWID, true );
+        parent.startActivityForResult( intent, requestCode );
     }
 
 }

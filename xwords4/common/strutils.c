@@ -91,7 +91,9 @@ sortTiles( TrayTileSet* dest, const TrayTileSet* src, XP_U16 skip )
 
     /* Copy in the ones we're not sorting */
     dest->nTiles = skip;
-    XP_MEMCPY( &dest->tiles, &tmp.tiles, skip * sizeof(tmp.tiles[0]) );
+    if ( 0 < skip ) {
+        XP_MEMCPY( &dest->tiles, &tmp.tiles, skip * sizeof(tmp.tiles[0]) );
+    }
 
     while ( skip < tmp.nTiles ) {
         XP_U16 ii, smallest;

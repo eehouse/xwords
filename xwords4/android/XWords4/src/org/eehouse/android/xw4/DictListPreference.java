@@ -24,6 +24,8 @@ import android.preference.ListPreference;
 import android.content.Context;
 import android.util.AttributeSet;
 
+import java.util.ArrayList;
+
 import junit.framework.Assert;
 
 public class DictListPreference extends XWListPreference {
@@ -32,15 +34,35 @@ public class DictListPreference extends XWListPreference {
     {
         super( context, attrs );
 
+        setEntriesForLang();
+    }
+
+    protected void invalidate()
+    {
+        String[] values = setEntriesForLang();
+        setValue( values[0] );
+    }
+
+    private String[] setEntriesForLang()
+    {
+        Context context = getContext();
+        String curLang = XWPrefs.getPrefsString( context, R.string.key_default_language );
+        int langCode = DictLangCache.getLangLangCode( context, curLang );
+
         DictUtils.DictAndLoc[] dals = DictUtils.dictList( context  );
-        String[] dictEntries = new String[dals.length];
-        String[] values = new String[dals.length];
+        ArrayList<String> dictEntries = new ArrayList<String>();
+        ArrayList<String> values = new ArrayList<String>();
         for ( int ii = 0; ii < dals.length; ++ii ) {
-            values[ii] = dals[ii].name;
-            dictEntries[ii] = 
-                DictLangCache.annotatedDictName( context, dals[ii] );
+            String name = dals[ii].name;
+            if ( langCode == DictLangCache.getDictLangCode( context, name ) ) {
+                values.add( name );
+                dictEntries.add( DictLangCache.annotatedDictName( context, 
+                                                                  dals[ii] ) );
+            }
         }
-        setEntries( dictEntries );
-        setEntryValues( values );
+        setEntries( dictEntries.toArray( new String[dictEntries.size()] ) );
+        String[] result = values.toArray( new String[values.size()] );
+        setEntryValues( result );
+        return result;
     }
 }

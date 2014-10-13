@@ -616,11 +616,10 @@ public class JNIThread extends Thread {
     public static boolean tryConnectClient( int gamePtr, CurGameInfo gi )
     {
         XwJNI.comms_start( gamePtr );
-
-        boolean draw = gi.serverRole == DeviceRole.SERVER_ISCLIENT
-            && XwJNI.server_initClientConnection( gamePtr )
-            && XwJNI.server_do( gamePtr ); // call once enough?
-        return draw;
+        if ( gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {
+            XwJNI.server_initClientConnection( gamePtr );
+        }
+        return XwJNI.server_do( gamePtr );
     }
 
     // public void run( boolean isUI, Runnable runnable )

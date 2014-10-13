@@ -11,6 +11,8 @@
      android:longClickable="true"
      android:background="@android:drawable/list_selector_background"
      android:orientation="vertical"
+	 android:paddingTop="5dp"
+	 android:paddingBottom="5dp"
      >
 
     <LinearLayout android:orientation="horizontal"

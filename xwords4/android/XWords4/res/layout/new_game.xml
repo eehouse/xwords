@@ -76,7 +76,7 @@
 					android:layout_width="fill_parent" 
 					android:layout_height="wrap_content"
 					>
-		<Button android:id="@+id/newgame_invite_net"
+		<Button android:id="@+id/newgame_net_invite"
 				android:text="@string/newgame_invite" 
 				style="@style/evenly_spaced_horizontal"
 				/>
@@ -139,7 +139,7 @@
                       android:layout_width="fill_parent" 
                       android:layout_height="wrap_content"
                       >
-          <Button android:id="@+id/newgame_invite_bt"
+          <Button android:id="@+id/newgame_bt_invite"
                   android:text="@string/newgame_invite" 
                   style="@style/evenly_spaced_horizontal"
                   />
@@ -202,7 +202,7 @@
                       android:layout_width="fill_parent" 
                       android:layout_height="wrap_content"
                       >
-          <Button android:id="@+id/newgame_invite_sms"
+          <Button android:id="@+id/newgame_sms_invite"
                   android:text="@string/newgame_invite" 
                   style="@style/evenly_spaced_horizontal"
                   />

@@ -256,7 +256,7 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         arrow->vert = (XP_Bool)stream_getBits( stream, 1 );
         arrow->visible = (XP_Bool)stream_getBits( stream, 1 );
 
-        if ( STREAM_VERS_MULTIADDR > version ) {
+        if ( STREAM_VERS_MODELDIVIDER > version ) {
             (void)stream_getBits( stream, NTILES_NBITS );
         }
         pti->traySelBits = (TileBit)stream_getBits( stream, 
@@ -2022,7 +2022,9 @@ board_requestHint( BoardCtxt* board,
         const Tile* tiles;
         XP_Bool searchComplete = XP_TRUE;
         const XP_U16 selPlayer = board->selPlayer;
+#ifdef XWFEATURE_SEARCHLIMIT
         PerTurnInfo* pti = board->selInfo;
+#endif
         EngineCtxt* engine = server_getEngineFor( board->server, selPlayer );
         const TrayTileSet* tileSet;
         ModelCtxt* model = board->model;

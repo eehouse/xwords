@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -47,6 +48,7 @@ public class PrefsDelegate extends DelegateBase
     private String m_thumbSize;
     private String m_hideTitle;
     private String m_keyLocale;
+    private String m_keyLangs;
 
     public PrefsDelegate( PreferenceActivity activity, Delegator delegator,
                           Bundle savedInstanceState )
@@ -141,6 +143,7 @@ public class PrefsDelegate extends DelegateBase
         m_thumbSize = getString( R.string.key_thumbsize );
         m_hideTitle = getString( R.string.key_hide_title );
         m_keyLocale = getString( R.string.key_xlations_locale );
+        m_keyLangs = getString( R.string.key_default_language );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -154,6 +157,8 @@ public class PrefsDelegate extends DelegateBase
                     showDialog( DlgID.REVERT_ALL );
                 }
             } );
+
+        setupLangPref();
     }
     
     @Override
@@ -221,6 +226,8 @@ public class PrefsDelegate extends DelegateBase
             }
         } else if ( key.equals( m_keyLocale ) ) {
             LocUtils.localeChanged( m_activity, sp.getString( key, null ) );
+        } else if ( key.equals( m_keyLangs ) ) {
+            forceDictsMatch( sp.getString( key, null ) );
         }
     }
 
@@ -238,5 +245,32 @@ public class PrefsDelegate extends DelegateBase
     private SharedPreferences getSharedPreferences()
     {
         return m_activity.getPreferenceScreen().getSharedPreferences();
+    }
+
+    private void setupLangPref()
+    {
+        ListPreference lp = (ListPreference)
+            m_activity.findPreference( m_keyLangs );
+
+        String[] langs = DictLangCache.listLangs( m_activity );
+        lp.setEntries( langs );
+        lp.setDefaultValue( langs[0] );
+        lp.setEntryValues( langs );
+    }
+
+    private void forceDictsMatch( String newLang ) 
+    {
+        int code = DictLangCache.getLangLangCode( m_activity, newLang );
+        int[] keyIds = { R.string.key_default_dict, 
+                       R.string.key_default_robodict };
+        for ( int id : keyIds ) {
+            String key = getString( id );
+            DictListPreference pref = (DictListPreference)m_activity.findPreference( key );
+            String curDict = pref.getValue().toString();
+            int curCode = DictLangCache.getDictLangCode( m_activity, curDict );
+            if ( curCode != code ) {
+                pref.invalidate();
+            }
+        }
     }
 }

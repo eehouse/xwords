@@ -263,8 +263,6 @@ public class BTService extends XWService {
         intent.putExtra( ADDR_STR, targetAddr );
         intent.putExtra( GAMEID_STR, gameID );
         context.startService( intent );
-        DbgUtils.logf( "got %d bytes for %s, gameID %d", buf.length, 
-                       targetAddr, gameID );
         return buf.length;
     }
     
@@ -325,7 +323,6 @@ public class BTService extends XWService {
                     break;
                 case INVITE:
                     int gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                    // String btName = intent.getStringExtra( TARGET_STR );
                     String btAddr = intent.getStringExtra( ADDR_STR );
                     String gameName = intent.getStringExtra( GAMENAME_STR );
                     int lang = intent.getIntExtra( LANG_STR, -1 );
@@ -350,8 +347,8 @@ public class BTService extends XWService {
                     nPlayersT = intent.getIntExtra( NTO_STR, -1 );
                     String btName = intent.getStringExtra( BT_NAME_STR );
                     btAddr = intent.getStringExtra( BT_ADDRESS_STR );
-                    /*(void)*/makeGame( this, gameID, null, lang, dict, 
-                                        nPlayersT, 1, btName, btAddr );
+                    /*(void)*/makeOrNotify( this, gameID, null, lang, dict, 
+                                            nPlayersT, 1, btName, btAddr );
                     break;
 
                 case SEND:
@@ -508,16 +505,15 @@ public class BTService extends XWService {
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
 
-            result = makeGame( context, gameID, gameName, lang, dict, 
-                               nPlayersT, nPlayersH, 
-                               host.getName(), host.getAddress() );
+            result = makeOrNotify( context, gameID, gameName, lang, dict, 
+                                   nPlayersT, nPlayersH, host.getName(), 
+                                   host.getAddress() );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( result.ordinal() );
             os.flush();
 
             socket.close();
-            // DbgUtils.logf( "receiveInvitation done", gameID );
         } // receiveInvitation
 
         private void receiveMessage( DataInputStream dis, BluetoothSocket socket )
@@ -987,7 +983,6 @@ public class BTService extends XWService {
 
     private void stopListener()
     {
-        DbgUtils.logf( "stopListener..." );
         m_listener.stopListening();
         try {
             m_listener.join( 100 );
@@ -995,12 +990,10 @@ public class BTService extends XWService {
             DbgUtils.loge( ie );
         }
         m_listener = null;
-        DbgUtils.logf( "stopListener done" );
     }
 
     private void stopSender()
     {
-        DbgUtils.logf( "stopSender..." );
         m_sender.interrupt();
         try {
             m_sender.join( 100 );
@@ -1008,7 +1001,26 @@ public class BTService extends XWService {
             DbgUtils.loge( ie );
         }
         m_sender = null;
-        DbgUtils.logf( "stopSender done" );
+    }
+
+    private BTCmd makeOrNotify( Context context, int gameID, String gameName, 
+                                int lang, String dict, int nPlayersT, 
+                                int nPlayersH, String btName, String btAddr )
+    {
+        BTCmd result;
+        if ( DictLangCache.haveDict( context, lang, dict ) ) {
+            result = makeGame( context, gameID, gameName, lang, dict, 
+                               nPlayersT, nPlayersH, btName, btAddr );
+        } else {
+            Intent intent = MultiService
+                .makeMissingDictIntent( context, gameName, lang, dict, 
+                                        nPlayersT, nPlayersH );
+            BTLaunchInfo.putExtras( intent, gameID, btName, btAddr );
+            MultiService.postMissingDictNotification( context, intent, 
+                                                      gameID );
+            result = BTCmd.INVITE_ACCPT; // ???
+        }
+        return result;
     }
 
     private BTCmd makeGame( Context context, int gameID, String gameName, 

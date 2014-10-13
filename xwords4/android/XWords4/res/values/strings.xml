@@ -1402,17 +1402,15 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-    <string name="no_dict_fmt">You need to download a replacement %2$s
-    wordlist before you can open game \"%1$s\". (The original may have
-    been deleted or stored on an external card that is no longer
-    available.)</string>
+    <string name="no_dict_fmt">Game \"%1$s\" requires a %2$s wordlist.
+    Please download one before opening.</string>
 
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
     <string name="no_dict_subst_fmt">Unable to open game \"%1$s\" because
       wordlist %2$s not found. (It may have been deleted, or stored
-      on an external card that is no longer available.) You can
+      on an external card that is no longer available.)\n\nYou can
       download a replacement or substitute another %3$s
       wordlist.</string>
 
@@ -1778,6 +1776,7 @@
 
       <!--  -->
     <string name="button_move">Move</string>
+    <string name="button_newgroup">New group</string>
 
       <!--  -->
     <string name="button_search">Find</string>
@@ -2054,8 +2053,12 @@
     <!-- Shown in toast when relaunching after switching dicts -->
     <string name="reload_new_dict_fmt">Reloading game with %1$s</string>
 
+	<!-- Title of notification shown when invitation requires a
+	     wordslist that's not installed -->
     <string name="missing_dict_title">Game invitation pending</string>
-    <string name="missing_dict_detail">Required wordlist missing</string>
+	<!-- body of notification shown when invitation requires a
+	     wordslist that's not installed -->
+    <string name="missing_dict_detail">Tap to download missing wordlist</string>
     <string name="invite_dict_missing_title">Missing wordlist</string>
     <string name="invite_dict_missing_body_fmt">%1$s has invited you to
     play Crosswords using the wordlist %2$s (for play in %3$s), but it
@@ -2097,8 +2100,6 @@
     <string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
     cannot be deleted.</string>
 
-    <string name="no_move_onegroup">Moving is impossible until there
-    is more than one group.</string>
     <string name="group_name_fmt">%1$s (%2$d games)</string>
 
     <!-- Button shown in game over dialog triggering creation of new
@@ -2241,7 +2242,7 @@
     <string name="dict_info_fmt">Number of words: %1$d\nDownload size:
     %2$dK\nNote: %3$s</string>
     <string name="note_none">(None)</string>
-    <string name="dict_on_server">Downloadable</string>
+    <string name="dict_on_server">Tap to download</string>
     <string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    
 
     <string name="lang_unknown">Unknown</string>
@@ -2287,4 +2288,7 @@
 	<string name="app_not_found_fmt">Unable to connect to Crosswords
 	on the device %1$s.  Please check that the device is within range
 	and that Crosswords is installed on it.</string>
+
+	<!-- label within default wordlists in app preferences -->
+	<string name="default_language">Default language</string>
 </resources>

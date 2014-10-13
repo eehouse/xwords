@@ -1198,16 +1198,14 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-  <string name="no_dict_fmt">Uoy deen ot daolnwod a tnemecalper %2$s
-    tsildrow erofeb uoy nac nepo emag \"%1$s\". eHt( lanigiro yam evah
-    neeb deteled ro derots no na lanretxe drac taht si on regnol
-    elbaliava.)</string>
+  <string name="no_dict_fmt">Emag \"%1$s\" seriuqer a %2$s tsildrow.
+    Esaelp daolnwod eno erofeb gninepo.</string>
   <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
   <string name="no_dict_subst_fmt">Elbanu ot nepo emag \"%1$s\" esuaceb
       tsildrow %2$s ton dnuof. tI( yam evah neeb ,deteled ro derots
-      no na lanretxe drac taht si on regnol elbaliava.) Uoy nac
+      no na lanretxe drac taht si on regnol elbaliava.)\n\nUoy nac
       daolnwod a tnemecalper ro etutitsbus rehtona %3$s
       tsildrow.</string>
   <!-- Text of button displayed when downloading is an option -->
@@ -1523,6 +1521,7 @@
       ,enilno eht sdrow tsuj deyalp.</string>
   <!--  -->
   <string name="button_move">Evom</string>
+  <string name="button_newgroup">Wen puorg</string>
   <!--  -->
   <string name="button_search">Dnif</string>
   <!--  -->
@@ -1774,8 +1773,12 @@
     tsrif.)</string>
   <!-- Shown in toast when relaunching after switching dicts -->
   <string name="reload_new_dict_fmt">Gnidaoler emag htiw %1$s</string>
+  <!-- Title of notification shown when invitation requires a
+	     wordslist that's not installed -->
   <string name="missing_dict_title">Emag noitativni gnidnep</string>
-  <string name="missing_dict_detail">Deriuqer tsildrow gnissim</string>
+  <!-- body of notification shown when invitation requires a
+	     wordslist that's not installed -->
+  <string name="missing_dict_detail">Pat ot daolnwod gnissim tsildrow</string>
   <string name="invite_dict_missing_title">Gnissim tsildrow</string>
   <string name="invite_dict_missing_body_fmt">%1$s sah detivni uoy ot
     yalp Sdrowssorc gnisu eht tsildrow %2$s rof( yalp ni %3$s,) tub ti
@@ -1807,8 +1810,6 @@
   <string name="game_name_group_title">Eman puorg</string>
   <string name="cannot_delete_default_group_fmt">Eht puorg rof wen ,semag %1$s, 
     tonnac eb deteled.</string>
-  <string name="no_move_onegroup">Gnivom si elbissopmi litnu ereht
-    si erom naht eno puorg.</string>
   <string name="group_name_fmt">%1$s (%2$d )semag</string>
   <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
@@ -1913,7 +1914,7 @@
   <string name="dict_info_fmt">Rebmun fo sdrow: %1$d\nDaolnwod ezis:
     %2$dK\nEton: %3$s</string>
   <string name="note_none">)Enon(</string>
-  <string name="dict_on_server">Elbadaolnwod</string>
+  <string name="dict_on_server">Pat ot daolnwod</string>
   <string name="lang_name_fmt">%1$s (%2$d )stsildrow</string>
   <string name="lang_unknown">Nwonknu</string>
   <string name="not_again_dicts">Siht neercs stel uoy llatsni wen
@@ -1952,4 +1953,6 @@
   <string name="app_not_found_fmt">Elbanu ot tcennoc ot Sdrowssorc
 	no eht ecived %1$s.  Esaelp kcehc taht eht ecived si nihtiw egnar
 	dna taht Sdrowssorc si dellatsni no ti.</string>
+  <!-- label within default wordlists in app preferences -->
+  <string name="default_language">Tluafed egaugnal</string>
 </resources>

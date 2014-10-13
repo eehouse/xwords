@@ -40,9 +40,12 @@ public class MultiService {
     public static final String NPLAYERSH = "NPLAYERSH";
     public static final String INVITER = "INVITER";
     public static final String OWNER = "OWNER";
+    public static final String BT_NAME = "BT_NAME";
+    public static final String BT_ADDRESS = "BT_ADDRESS";
 
     public static final int OWNER_SMS = 1;
     public static final int OWNER_RELAY = 2;
+    public static final int OWNER_BT = 3;
 
     private MultiEventListener m_li;
 
@@ -72,7 +75,7 @@ public class MultiService {
                              BT_ERR_COUNT,
 
                              RELAY_ALERT,
-            };
+    };
 
     public interface MultiEventListener {
         public void eventOccurred( MultiEvent event, Object ... args );
@@ -127,12 +130,13 @@ public class MultiService {
 
     public static boolean isMissingDictIntent( Intent intent )
     {
-        return intent.hasExtra( LANG )
+        boolean result = intent.hasExtra( LANG )
             // && intent.hasExtra( DICT )
             && (intent.hasExtra( GAMEID ) || intent.hasExtra( ROOM ))
             && intent.hasExtra( GAMENAME )
             && intent.hasExtra( NPLAYERST )
             && intent.hasExtra( NPLAYERSH );
+        return result;
     }
 
     public static Dialog missingDictDialog( Context context, Intent intent,
@@ -178,6 +182,7 @@ public class MultiService {
                     SMSService.onGameDictDownload( context, intent );
                     break;
                 case OWNER_RELAY:
+                case OWNER_BT:
                     GamesListDelegate.onGameDictDownload( context, intent );
                     break;
                 default:

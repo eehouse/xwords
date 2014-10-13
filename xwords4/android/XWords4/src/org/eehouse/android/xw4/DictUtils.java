@@ -553,7 +553,7 @@ public class DictUtils {
         return str;
     }
 
-    private static String addDictExtn( String str ) 
+    public static String addDictExtn( String str ) 
     {
         if ( ! str.endsWith( XWConstants.DICT_EXTN ) ) {
             str += XWConstants.DICT_EXTN;

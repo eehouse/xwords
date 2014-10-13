@@ -70,6 +70,8 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
 
+    private static final int REQUEST_LANG = 1;
+
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
@@ -137,10 +139,7 @@ public class GamesListDelegate extends ListDelegateBase
                                                    ggi.m_expanded, 
                                                    GamesListDelegate.this, 
                                                    GamesListDelegate.this );
-                if ( !ggi.m_expanded ) {
-                    group.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
-                                  ggi.m_lastMoveTime );
-                }
+                updateGroupPct( group, ggi );
 
                 String name = LocUtils.getString( m_activity, R.string.group_name_fmt, 
                                                   ggi.m_name, ggi.m_count );
@@ -202,6 +201,16 @@ public class GamesListDelegate extends ListDelegateBase
             if ( 0 < games.size() ) {
                 item = games.iterator().next();
                 item.forceReload();
+            } else {
+                // If the game's not visible, update the parent group in case
+                // the game's changed in a way that makes it draw differently
+                long parent = DBUtils.getGroupForGame( m_activity, rowID );
+                Iterator<GameListGroup> iter = getGroupWithID( parent ).iterator();
+                if ( iter.hasNext() ) {
+                    GameListGroup group = iter.next();
+                    GameGroupInfo ggi = DBUtils.getGroups( m_activity ).get( parent );
+                    updateGroupPct( group, ggi );
+                }
             }
             return item;
         }
@@ -327,7 +336,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         void clearSelectedGroups( Set<Long> groupIDs )
         {
-            Set<GameListGroup> groups = getGroupsFromElems( groupIDs );
+            Set<GameListGroup> groups = getGroupsWithIDs( groupIDs );
             for ( GameListGroup group : groups ) {
                 group.setSelected( false );
             }
@@ -339,6 +348,14 @@ public class GamesListDelegate extends ListDelegateBase
                 addChildrenOf( groupID );
             } else {
                 removeChildrenOf( groupID );
+            }
+        }
+
+        private void updateGroupPct( GameListGroup group, GameGroupInfo ggi )
+        {
+            if ( !ggi.m_expanded ) {
+                group.setPct( m_handler, ggi.m_hasTurn, ggi.m_turnLocal, 
+                              ggi.m_lastMoveTime );
             }
         }
 
@@ -400,7 +417,18 @@ public class GamesListDelegate extends ListDelegateBase
             return result;
         }
 
-        private Set<GameListGroup> getGroupsFromElems( Set<Long> selRows )
+        private Set<GameListGroup> getGroupWithID( long groupID )
+        {
+            Set<Long> groupIDs = new HashSet<Long>();
+            groupIDs.add( groupID );
+            Set<GameListGroup> result = getGroupsWithIDs( groupIDs );
+            return result;
+        }
+
+        // Yes, iterating is bad, but any hashing to get around it will mean
+        // hanging onto Views that Android's list management might otherwise
+        // get to page out when they scroll offscreen.
+        private Set<GameListGroup> getGroupsWithIDs( Set<Long> groupIDs )
         {
             Set<GameListGroup> result = new HashSet<GameListGroup>();
             ListView listView = getListView();
@@ -409,7 +437,7 @@ public class GamesListDelegate extends ListDelegateBase
                 View view = listView.getChildAt( ii );
                 if ( view instanceof GameListGroup ) {
                     GameListGroup tryme = (GameListGroup)view;
-                    if ( selRows.contains( tryme.getGroupID() ) ) {
+                    if ( groupIDs.contains( tryme.getGroupID() ) ) {
                         result.add( tryme );
                     }
                 }
@@ -531,6 +559,7 @@ public class GamesListDelegate extends ListDelegateBase
     private GameNamer m_namer;
     private Set<Long> m_launchedGames;
     private boolean m_menuPrepared;
+    private boolean m_moveAfterNewGroup;
     private Set<Long> m_selGames;
     private Set<Long> m_selGroupIDs;
     private String m_origTitle;
@@ -561,8 +590,8 @@ public class GamesListDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
-                            DictsDelegate.launchForResult( m_activity, 
-                                                           m_missingDictLang );
+                            DictsDelegate.downloadForResult( m_activity, REQUEST_LANG,
+                                                             m_missingDictLang );
                         } else {
                             DwnldDelegate
                                 .downloadDictInBack( m_activity,
@@ -582,6 +611,7 @@ public class GamesListDelegate extends ListDelegateBase
                 message = getString( R.string.invite_dict_missing_body_noname_fmt,
                                      null, m_missingDictName, langName );
             } else {
+                // WARN_NODICT_SUBST
                 message = getString( R.string.no_dict_subst_fmt, gameName, 
                                      m_missingDictName, langName );
             }
@@ -646,7 +676,7 @@ public class GamesListDelegate extends ListDelegateBase
             dialog = buildNamerDlg( GameUtils.getName( m_activity, m_rowid ),
                                     R.string.rename_label,
                                     R.string.game_rename_title,
-                                    lstnr, DlgID.RENAME_GAME );
+                                    lstnr, null, DlgID.RENAME_GAME );
             break;
 
         case RENAME_GROUP:
@@ -662,7 +692,7 @@ public class GamesListDelegate extends ListDelegateBase
             dialog = buildNamerDlg( m_adapter.groupName( m_groupid ),
                                     R.string.rename_group_label,
                                     R.string.game_name_group_title,
-                                    lstnr, DlgID.RENAME_GROUP );
+                                    lstnr, null, DlgID.RENAME_GROUP );
             break;
 
         case NEW_GROUP:
@@ -671,12 +701,17 @@ public class GamesListDelegate extends ListDelegateBase
                         String name = m_namer.getName();
                         DBUtils.addGroup( m_activity, name );
                         mkListAdapter();
-                        // onContentChanged();
+                        showNewGroupIf();
+                    }
+                };
+            lstnr2 = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        showNewGroupIf();
                     }
                 };
             dialog = buildNamerDlg( "", R.string.newgroup_label,
                                     R.string.game_name_group_title,
-                                    lstnr, DlgID.RENAME_GROUP );
+                                    lstnr, lstnr2, DlgID.RENAME_GROUP );
             setRemoveOnDismiss( dialog, dlgID );
             break;
 
@@ -707,7 +742,13 @@ public class GamesListDelegate extends ListDelegateBase
                         }
                         DBUtils.setGroupExpanded( m_activity, gid, true );
                         mkListAdapter();
-                        // onContentChanged();
+                    }
+                };
+            DialogInterface.OnClickListener lstnr3 = 
+                new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        m_moveAfterNewGroup = true;
+                        showDialog( DlgID.NEW_GROUP );
                     }
                 };
             String[] groups = m_adapter.groupNames();
@@ -716,6 +757,7 @@ public class GamesListDelegate extends ListDelegateBase
                 .setTitle( R.string.change_group )
                 .setSingleChoiceItems( groups, curGroupPos, lstnr )
                 .setPositiveButton( R.string.button_move, lstnr2 )
+                .setNeutralButton( R.string.button_newgroup, lstnr3 )
                 .setNegativeButton( R.string.button_cancel, null )
                 .create();
             setRemoveOnDismiss( dialog, dlgID );
@@ -991,7 +1033,14 @@ public class GamesListDelegate extends ListDelegateBase
                 });
             break;
         case BT_GAME_CREATED:
-            launchGame( (Long)args[0], true );
+            post( new Runnable() {
+                    public void run() {
+                        long rowid = (Long)args[0];
+                        if ( checkWarnNoDict( rowid ) ) {
+                            launchGame( rowid, true );
+                        }
+                    } 
+                });
             break;
         default:
             super.eventOccurred( event, args );
@@ -1051,11 +1100,16 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    protected void contentChanged()
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, Intent data )
     {
-        // if ( null != m_adapter ) {
-        //     m_adapter.expandGroups( getListView() );
-        // }
+        if ( Activity.RESULT_CANCELED != resultCode
+             && REQUEST_LANG == requestCode ) {
+            DbgUtils.logf( "lang need met" );
+            if ( checkWarnNoDict( m_missingDictRowId ) ) {
+                launchGameIf();
+            }
+        }
     }
 
     @Override
@@ -1126,7 +1180,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // multiple games can be regrouped/reset.
             Utils.setItemVisible( menu, R.id.games_game_move, 
-                                  (1 < groupCount && 0 < nGamesSelected) );
+                                  0 < nGamesSelected );
             Utils.setItemVisible( menu, R.id.games_game_reset, 
                                   0 < nGamesSelected );
 
@@ -1181,6 +1235,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_newgroup:
+            m_moveAfterNewGroup = false;
             showDialog( DlgID.NEW_GROUP );
             break;
 
@@ -1247,12 +1302,8 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_move:
-            if ( 1 >= m_adapter.getGroupCount() ) {
-                showOKOnlyDialog( R.string.no_move_onegroup );
-            } else {
-                m_rowids = selRowIDs;
-                showDialog( DlgID.CHANGE_GROUP );
-            }
+            m_rowids = selRowIDs;
+            showDialog( DlgID.CHANGE_GROUP );
             break;
         case R.id.games_game_new_from:
             dropSels = true;    // will select the new game instead
@@ -1539,19 +1590,26 @@ public class GamesListDelegate extends ListDelegateBase
         NewGameDelegate.startActivity( m_activity, groupID );
     }
 
-    private void startNewNetGame( NetLaunchInfo nli )
+    private void startNewNetGame( AbsLaunchInfo ali )
     {
-        Date create = DBUtils.getMostRecentCreate( m_activity, nli );
+        Date create = null;
+        if ( ali instanceof NetLaunchInfo ) {
+            create = DBUtils.getMostRecentCreate( m_activity, 
+                                                  (NetLaunchInfo)ali );
+        } else if ( ali instanceof BTLaunchInfo ) {
+            create = DBUtils.getMostRecentCreate( m_activity, 
+                                                  (BTLaunchInfo)ali );
+        }
 
         if ( null == create ) {
-            if ( checkWarnNoDict( nli ) ) {
-                makeNewNetGame( nli );
+            if ( checkWarnNoDict( ali ) ) {
+                makeNewNetGame( ali );
             }
         } else if ( XWPrefs.getSecondInviteAllowed( m_activity ) ) {
             String msg = getString( R.string.dup_game_query_fmt, 
                                     create.toString() );
-            m_netLaunchInfo = nli;
-            showConfirmThen( msg, Action.NEW_NET_GAME, nli );
+            m_netLaunchInfo = ali;
+            showConfirmThen( msg, Action.NEW_NET_GAME, ali );
         } else {
             showOKOnlyDialog( R.string.dropped_dupe );
         }
@@ -1559,17 +1617,20 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void startNewNetGame( Intent intent )
     {
-        NetLaunchInfo nli = null;
+        AbsLaunchInfo ali = null;
         if ( MultiService.isMissingDictIntent( intent ) ) {
-            nli = new NetLaunchInfo( intent );
+            ali = new NetLaunchInfo( intent );
+            if ( !ali.isValid() ) {
+                ali = new BTLaunchInfo( intent );
+            }
         } else {
             Uri data = intent.getData();
             if ( null != data ) {
-                nli = new NetLaunchInfo( m_activity, data );
+                ali = new NetLaunchInfo( m_activity, data );
             }
         }
-        if ( null != nli && nli.isValid() ) {
-            startNewNetGame( nli );
+        if ( null != ali && ali.isValid() ) {
+            startNewNetGame( ali );
         }
     } // startNewNetGame
 
@@ -1646,20 +1707,30 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     private Dialog buildNamerDlg( String curname, int labelID, int titleID,
-                                  DialogInterface.OnClickListener lstnr, 
+                                  DialogInterface.OnClickListener lstnr1, 
+                                  DialogInterface.OnClickListener lstnr2, 
                                   DlgID dlgID )
     {
         m_namer = (GameNamer)inflate( R.layout.rename_game );
         m_namer.setName( curname );
         m_namer.setLabel( labelID );
+        
         Dialog dialog = makeAlertBuilder()
             .setTitle( titleID )
-            .setNegativeButton( R.string.button_cancel, null )
-            .setPositiveButton( R.string.button_ok, lstnr )
+            .setPositiveButton( R.string.button_ok, lstnr1 )
+            .setNegativeButton( R.string.button_cancel, lstnr2 )
             .setView( m_namer )
             .create();
         setRemoveOnDismiss( dialog, dlgID );
         return dialog;
+    }
+
+    private void showNewGroupIf()
+    {
+        if ( m_moveAfterNewGroup ) {
+            m_moveAfterNewGroup = false;
+            showDialog( DlgID.CHANGE_GROUP );
+        }
     }
 
     private void deleteGames( long[] rowids )
@@ -1742,14 +1813,18 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
         if ( madeGame ) {
-            if ( R.id.games_game_reset == m_missingDictMenuId ) {
-                long[] rowIDs = { m_missingDictRowId };
-                doConfirmReset( rowIDs );
-            } else {
-                GameUtils.launchGame( m_activity, m_missingDictRowId );
-            }
+            // save in case checkWarnNoDict needs to set them
+            long rowID = m_missingDictRowId;
+            int menuID = m_missingDictMenuId;
             m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
             m_missingDictMenuId = -1;
+
+            if ( R.id.games_game_reset == menuID ) {
+                long[] rowIDs = { rowID };
+                doConfirmReset( rowIDs );
+            } else if ( checkWarnNoDict( rowID ) ) {
+                GameUtils.launchGame( m_activity, rowID );
+            }
         }
         return madeGame;
     }
@@ -1767,9 +1842,16 @@ public class GamesListDelegate extends ListDelegateBase
         launchGame( rowid, false );
     }
 
-    private void makeNewNetGame( NetLaunchInfo nli )
+    private void makeNewNetGame( AbsLaunchInfo ali )
     {
-        long rowid = GameUtils.makeNewNetGame( m_activity, nli );
+        long rowid = DBUtils.ROWID_NOTFOUND;
+        if ( ali instanceof NetLaunchInfo ) {
+            rowid = GameUtils.makeNewNetGame( m_activity, (NetLaunchInfo)ali );
+        } else if ( ali instanceof BTLaunchInfo ) {
+            rowid = GameUtils.makeNewBTGame( m_activity, (BTLaunchInfo)ali );
+        } else {
+            Assert.fail();
+        }
         launchGame( rowid, true );
     }
 

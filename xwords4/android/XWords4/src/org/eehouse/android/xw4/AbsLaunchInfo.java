@@ -26,10 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class AbsLaunchInfo {
-    private static final String LANG = "abslaunchinfo_lang";
-    private static final String DICT = "abslaunchinfo_dict";
-    private static final String NPLAYERS = "abslaunchinfo_nplayers";
-    private static final String NPLAYERST = "abslaunchinfo_nplayerst";
     private static final String VALID = "abslaunchinfo_valid";
 
     protected String dict;
@@ -43,9 +39,9 @@ public class AbsLaunchInfo {
     protected JSONObject init( String data ) throws JSONException
     {
         JSONObject json = new JSONObject( data );
-        lang = json.getInt( LANG );
-        dict = json.getString( DICT );
-        nPlayersT = json.getInt( NPLAYERST );
+        lang = json.getInt( MultiService.LANG );
+        dict = json.getString( MultiService.DICT );
+        nPlayersT = json.getInt( MultiService.NPLAYERST );
         return json;
     }
 
@@ -57,17 +53,17 @@ public class AbsLaunchInfo {
 
     protected void init( Bundle bundle )
     {
-        lang = bundle.getInt( LANG );
-        dict = bundle.getString( DICT );
-        nPlayersT = bundle.getInt( NPLAYERS );
+        lang = bundle.getInt( MultiService.LANG );
+        dict = bundle.getString( MultiService.DICT );
+        nPlayersT = bundle.getInt( MultiService.NPLAYERST );
         m_valid = bundle.getBoolean( VALID );
     }
 
     protected void putSelf( Bundle bundle )
     {
-        bundle.putInt( LANG, lang );
-        bundle.putString( DICT, dict );
-        bundle.putInt( NPLAYERS, nPlayersT );
+        bundle.putInt( MultiService.LANG, lang );
+        bundle.putString( MultiService.DICT, dict );
+        bundle.putInt( MultiService.NPLAYERST, nPlayersT );
         bundle.putBoolean( VALID, m_valid );
     }
 
@@ -76,9 +72,9 @@ public class AbsLaunchInfo {
         throws JSONException
     {
         return new JSONObject()
-            .put( LANG, lang )
-            .put( DICT, dict )
-            .put( NPLAYERST, nPlayersT )
+            .put( MultiService.LANG, lang )
+            .put( MultiService.DICT, dict )
+            .put( MultiService.NPLAYERST, nPlayersT )
             ;
     }
 
