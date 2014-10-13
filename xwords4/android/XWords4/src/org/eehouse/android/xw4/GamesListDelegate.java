@@ -205,9 +205,12 @@ public class GamesListDelegate extends ListDelegateBase
                 // If the game's not visible, update the parent group in case
                 // the game's changed in a way that makes it draw differently
                 long parent = DBUtils.getGroupForGame( m_activity, rowID );
-                GameListGroup group = getGroupWithID( parent ).iterator().next();
-                GameGroupInfo ggi = DBUtils.getGroups( m_activity ).get( parent );
-                updateGroupPct( group, ggi );
+                Iterator<GameListGroup> iter = getGroupWithID( parent ).iterator();
+                if ( iter.hasNext() ) {
+                    GameListGroup group = iter.next();
+                    GameGroupInfo ggi = DBUtils.getGroups( m_activity ).get( parent );
+                    updateGroupPct( group, ggi );
+                }
             }
             return item;
         }
@@ -419,7 +422,6 @@ public class GamesListDelegate extends ListDelegateBase
             Set<Long> groupIDs = new HashSet<Long>();
             groupIDs.add( groupID );
             Set<GameListGroup> result = getGroupsWithIDs( groupIDs );
-            Assert.assertTrue( 1 == groupIDs.size() );
             return result;
         }
 
