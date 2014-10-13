@@ -179,7 +179,6 @@ public class NewGameDelegate extends DelegateBase {
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data )
     {
-        DbgUtils.logf( "NewGameDelegate: onActivityResult()" );
         if ( Activity.RESULT_CANCELED == resultCode ) {
             if ( 0 < m_newRowID ) {
                 DBUtils.deleteGame( m_activity, m_newRowID );
