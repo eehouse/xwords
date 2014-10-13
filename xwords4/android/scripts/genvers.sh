@@ -43,12 +43,14 @@ EOF
 # Eventually this should pick up a tag if we're at one.  That'll be
 # the way to mark a release
 SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo ${GITVERSION}+)"
+GITHASH=$(git rev-parse --verify HEAD)
 
 cat <<EOF > ${BUILD_DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
 // auto-generated (by $(basename $0)); do not edit
 package org.eehouse.android.${VARIANT};
 class BuildConstants {
     public static final String GIT_REV = "$SHORTVERS";
+    public static final String GIT_HASH = "$GITHASH";
     public static final String STRINGS_HASH = "$STRINGS_HASH";
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
