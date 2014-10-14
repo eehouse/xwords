@@ -48,11 +48,9 @@ k_LANGS = 'langs'
 k_LANGSVERS = 'lvers'
 
 # Version for those sticking with RELEASES
-k_REL_REV = 'android_beta_81'
+k_REL_REV = 'android_beta_88'
 
 # Version for those getting intermediate builds
-k_DBG_REV = 'android_beta_81-29-gb776b7c'
-k_DBG_REV = 'android_beta_81-34-g73a1083'
 
 k_suffix = '.xwd'
 k_filebase = "/var/www/"
@@ -60,8 +58,8 @@ k_apkDir = "xw4/android/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
 k_urlbase = "http://eehouse.org"
 k_versions = { 'org.eehouse.android.xw4': {
-        'version' : 74,
-        k_AVERS : 74,
+        'version' : 76,
+        k_AVERS : 76,
         k_URL : k_apkDir + 'XWords4-release_' + k_REL_REV + '.apk',
         },
                }
@@ -412,8 +410,10 @@ def getUpdates( req, params ):
     else:
         logging.debug( "NOT FOUND xlate info" )
         
-    logging.debug( 'getUpdates done' )
-    return json.dumps( result )
+    logging.debug( 'getUpdates done:', )
+    result = json.dumps( result )
+    # logging.debug( result )
+    return result
 
 def clearShelf():
     shelf = shelve.open(k_shelfFile)
