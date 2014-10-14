@@ -431,11 +431,6 @@ public class GameConfigDelegate extends DelegateBase
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
     } // init
 
-    protected void onStart()
-    {
-        loadGame();
-    }
-
     @Override
     protected void onResume()
     {
@@ -1112,7 +1107,10 @@ public class GameConfigDelegate extends DelegateBase
 
     private void applyChanges( boolean forceNew )
     {
-        GameUtils.applyChanges( m_activity, m_gi, m_car, m_gameLock, forceNew );
+        if ( null != m_gameLock ) {
+            GameUtils.applyChanges( m_activity, m_gi, m_car, m_gameLock, 
+                                    forceNew );
+        }
     }
 
     private void launchGame()
