@@ -1826,12 +1826,12 @@ XP_U16
 model_getDividerLoc( const ModelCtxt* model, XP_S16 turn )
 {
     XP_ASSERT( turn >= 0 );
-    PlayerCtxt* player = &model->players[turn];
+    const PlayerCtxt* player = &model->players[turn];
     return player->dividerLoc;
 }
 
 void
-model_setDividerLoc( const ModelCtxt* model, XP_S16 turn, XP_U16 loc )
+model_setDividerLoc( ModelCtxt* model, XP_S16 turn, XP_U16 loc )
 {
     XP_ASSERT( turn >= 0 );
     PlayerCtxt* player = &model->players[turn];
