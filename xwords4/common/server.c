@@ -380,7 +380,7 @@ informMissing( const ServerCtxt* server )
 {
     XP_Bool isServer = amServer( server );
     util_informMissing( server->vol.util, isServer, 
-                        comms_getConType( server->vol.comms ),
+                        comms_getConTypes( server->vol.comms ),
                         isServer ? server->nv.pendingRegistrations : 0 );
 }
 

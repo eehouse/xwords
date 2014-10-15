@@ -130,27 +130,36 @@ summarize( CommonGlobals* cGlobals )
     CommsAddrRec addr = {0};
     gchar* room = "";
 
-    gchar* connvia = "local";
+    // gchar* connvia = "local";
+    gchar connvia[128] = {0};
 
     if ( !!cGlobals->game.comms ) {
         nMissing = server_getMissingPlayers( cGlobals->game.server );
         comms_getAddr( cGlobals->game.comms, &addr );
-        switch( addr_getType( &addr ) ) {
-        case COMMS_CONN_RELAY:
-            room = addr.u.ip_relay.invite;
-            connvia = "Relay";
-            break;
-        case COMMS_CONN_SMS:
-            connvia = "SMS";
-            break;
-        case COMMS_CONN_BT:
-            connvia = "Bluetooth";
-            break;
-        default:
-            // XP_ASSERT(0);
-            break;
+        CommsConnType typ;
+        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+            switch( typ) {
+            case COMMS_CONN_RELAY:
+                room = addr.u.ip_relay.invite;
+                strcat( connvia, ", Relay" );
+                break;
+            case COMMS_CONN_SMS:
+                strcat( connvia, ", SMS" );
+                break;
+            case COMMS_CONN_BT:
+                strcat( connvia, ", Bluetooth" );
+                break;
+            case COMMS_CONN_IP_DIRECT:
+                strcat( connvia, ", IP" );
+                break;
+            default:
+                XP_ASSERT(0);
+                break;
+            }
         }
         seed = comms_getChannelSeed( cGlobals->game.comms );
+    } else {
+        strcat( connvia, "local" );
     }
 
     const char* fmt = "UPDATE games "

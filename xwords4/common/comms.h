@@ -45,6 +45,8 @@ typedef enum {
     ,COMMS_CONN_NTYPES
 } CommsConnType;
 
+typedef XP_U8 CommsConnTypes;
+
 typedef enum {
     COMMS_RELAYSTATE_UNCONNECTED
     , COMMS_RELAYSTATE_DENIED   /* terminal; new game or reset required to
@@ -110,6 +112,7 @@ typedef struct _CommsAddrRec {
 
 typedef XP_S16 (*TransportSend)( const XP_U8* buf, XP_U16 len, 
                                  const CommsAddrRec* addr,
+                                 CommsConnType conType,
                                  XP_U32 gameID, void* closure );
 #ifdef COMMS_HEARTBEAT
 typedef void (*TransportReset)( void* closure );
@@ -193,7 +196,7 @@ XP_U16 comms_countPendingPackets( const CommsCtxt* comms );
 XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );
 #endif
 
-CommsConnType comms_getConType( const CommsCtxt* comms );
+CommsConnTypes comms_getConTypes( const CommsCtxt* comms );
 XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
@@ -223,6 +226,10 @@ XP_Bool comms_isConnected( const CommsCtxt* const comms );
 
 CommsConnType addr_getType( const CommsAddrRec* addr );
 void addr_setType( CommsAddrRec* addr, CommsConnType type );
+void addr_addType( CommsAddrRec* addr, CommsConnType type );
+XP_Bool addr_hasType( const CommsAddrRec* addr, CommsConnType type );
+XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp, 
+                   XP_U32* state );
 
 
 # ifdef DEBUG

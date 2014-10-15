@@ -981,6 +981,7 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock
 #ifdef USE_GLIBLOOP
     GIOChannel* channel = g_io_channel_unix_new( newSock );
     XP_LOGF( "%s: created channel %p for socket %d", __func__, channel, newSock );
+    XP_ASSERT( !!func );
     guint watch = g_io_add_watch( channel, 
                                   G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
                                   func, globals );
@@ -1040,6 +1041,7 @@ curses_stop_listening( CursesAppGlobals* globals, int sock )
 } /* curses_stop_listening */
 
 #ifdef USE_GLIBLOOP
+#if 0
 static gboolean
 data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
 {
@@ -1054,30 +1056,43 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
         int nBytes;
         // CommsAddrRec addrRec;
         CommsAddrRec* addrp = NULL;
+        // XP_Bool oneSent = XP_FALSE;
 
         /* It's a normal data socket */
-        switch ( globals->cGlobals.params->conType ) {
+        CommsConnType typ;
+        for ( XP_U32 st = 0; 
+              addr_iter( &globals->cGlobals.params->addr, &typ, &st ); ) {
+            switch ( typ ) {
 #ifdef XWFEATURE_RELAY
-        case COMMS_CONN_RELAY:
-            nBytes = linux_relay_receive( &globals->cGlobals, buf, 
-                                          sizeof(buf) );
-            break;
+            case COMMS_CONN_RELAY:
+                nBytes = linux_relay_receive( &globals->cGlobals, buf, 
+                                              sizeof(buf) );
+                break;
 #endif
 #ifdef XWFEATURE_SMS
-        case COMMS_CONN_SMS:
-            XP_ASSERT(0);
-            /* addrp = &addrRec; */
-            /* nBytes = linux_sms_receive( &globals->cGlobals, fd, */
-            /*                             buf, sizeof(buf), addrp ); */
-            break;
+            case COMMS_CONN_SMS:
+                XP_ASSERT(0);
+                /* addrp = &addrRec; */
+                /* nBytes = linux_sms_receive( &globals->cGlobals, fd, */
+                /*                             buf, sizeof(buf), addrp ); */
+                break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-        case COMMS_CONN_BT:
-            nBytes = linux_bt_receive( fd, buf, sizeof(buf) );
-            break;
+            case COMMS_CONN_BT:
+                nBytes = linux_bt_receive( fd, buf, sizeof(buf) );
+                break;
 #endif
-        default:
-            XP_ASSERT( 0 ); /* fired */
+
+            case COMMS_CONN_IP_DIRECT:
+                XP_LOGF( "OOPS: need separate data procs per address type!!" );
+                XP_ASSERT( 0 );
+                break;
+            case COMMS_CONN_NONE:
+                break;
+
+            default:
+                XP_ASSERT( 0 ); /* fired */
+            }
         }
 
         if ( nBytes != -1 ) {
@@ -1106,10 +1121,11 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
     return keep;
 } /* data_socket_proc */
 #endif
+#endif
 
 static void
 curses_socket_changed( void* closure, int oldSock, int newSock,
-                       void** XP_UNUSED(storage) )
+                       GIOFunc func, void** XP_UNUSED(storage) )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     if ( oldSock != -1 ) {
@@ -1118,7 +1134,7 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
     if ( newSock != -1 ) {
         cursesListenOnSocket( globals, newSock
 #ifdef USE_GLIBLOOP
-                              , data_socket_proc 
+                              , func
 #endif
                               );
     }
@@ -1971,7 +1987,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     initFromParams( &g_globals.cGlobals, params );
 
 #ifdef XWFEATURE_RELAY
-    if ( params->conType == COMMS_CONN_RELAY ) {
+    if ( addr_hasType( &params->addr, COMMS_CONN_RELAY ) ) {
         g_globals.cGlobals.defaultServerName
             = params->connInfo.relay.relayName;
     }
@@ -2128,34 +2144,50 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         if ( cGlobals->game.comms ) {
             CommsAddrRec addr = {0};
 
-            if ( 0 ) {
+            CommsConnType typ;
+            for ( XP_U32 st = 0; addr_iter( &params->addr, &typ, &st ); ) {
+                switch( typ ) {
 # ifdef XWFEATURE_RELAY
-            } else if ( params->conType == COMMS_CONN_RELAY ) {
-                addr_setType( &addr, COMMS_CONN_RELAY );
-                addr.u.ip_relay.ipAddr = 0;       /* ??? */
-                addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
-                addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
-                addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-                XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
-                            sizeof(addr.u.ip_relay.hostName) - 1 );
-                XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
-                            sizeof(addr.u.ip_relay.invite) - 1 );
+                case COMMS_CONN_RELAY:
+                    addr_addType( &addr, COMMS_CONN_RELAY );
+                    addr.u.ip_relay.ipAddr = 0;       /* ??? */
+                    addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
+                    addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
+                    addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
+                    XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
+                                sizeof(addr.u.ip_relay.hostName) - 1 );
+                    XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
+                                sizeof(addr.u.ip_relay.invite) - 1 );
+                    break;
 # endif
 # ifdef XWFEATURE_SMS
-            } else if ( params->conType == COMMS_CONN_SMS ) {
-                addr_setType( &addr, COMMS_CONN_SMS );
-                XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone,
-                            sizeof(addr.u.sms.phone) - 1 );
-                addr.u.sms.port = params->connInfo.sms.port;
+                case COMMS_CONN_SMS:
+                    addr_addType( &addr, COMMS_CONN_SMS );
+                    XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone,
+                                sizeof(addr.u.sms.phone) - 1 );
+                    addr.u.sms.port = params->connInfo.sms.port;
+                    break;
 # endif
 # ifdef XWFEATURE_BLUETOOTH
-            } else if ( params->conType == COMMS_CONN_BT ) {
-                addr_setType( &addr, COMMS_CONN_BT );
-                XP_ASSERT( sizeof(addr.u.bt.btAddr) 
-                           >= sizeof(params->connInfo.bt.hostAddr));
-                XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                           sizeof(params->connInfo.bt.hostAddr) );
+                case COMMS_CONN_BT:
+                    addr_addType( &addr, COMMS_CONN_BT );
+                    XP_ASSERT( sizeof(addr.u.bt.btAddr) 
+                               >= sizeof(params->connInfo.bt.hostAddr));
+                    XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                               sizeof(params->connInfo.bt.hostAddr) );
+                    break;
 # endif
+#ifdef XWFEATURE_DIRECTIP
+                case COMMS_CONN_IP_DIRECT:
+                    addr_addType( &addr, COMMS_CONN_IP_DIRECT );
+                    XP_MEMCPY( addr.u.ip.hostName_ip, &params->connInfo.ip.hostName,
+                               sizeof(addr.u.ip.hostName_ip) );
+                    addr.u.ip.port_ip = params->connInfo.ip.hostPort;
+                    break;
+#endif
+                default:
+                    break;
+                }
             }
             comms_setAddr( cGlobals->game.comms, &addr );
         }

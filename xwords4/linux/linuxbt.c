@@ -70,6 +70,9 @@ typedef struct LinBtStuff {
     XP_Bool amMaster;
 } LinBtStuff;
 
+static gboolean bt_socket_proc( GIOChannel* source, GIOCondition condition, 
+                                gpointer data );
+
 static LinBtStuff*
 lbt_make( MPFORMAL XP_Bool amMaster )
 {
@@ -184,8 +187,8 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
              // connect to server
              && (0 == connect( sock, (struct sockaddr *)&saddr, sizeof(saddr) )) ) {
             CommonGlobals* globals = btStuff->globals;
-            (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       -1, sock, &btStuff->sockStorage );
+            (*globals->socketChanged)( globals->socketChangedClosure, -1, sock,
+                                       bt_socket_proc, &btStuff->sockStorage );
             btStuff->socket = sock;
         } else {
             XP_LOGF( "%s: connect->%s; closing socket %d", __func__, strerror(errno), sock );
@@ -214,8 +217,8 @@ lbt_accept( int listener, void* ctxt )
     
     success = sock >= 0;
     if ( success ) {
-        (*globals->socketChanged)( globals->socketChangedClosure, 
-                                   -1, sock, &btStuff->sockStorage );
+        (*globals->socketChanged)( globals->socketChangedClosure, -1, sock,
+                                   bt_socket_proc, &btStuff->sockStorage );
         XP_ASSERT( btStuff->socket == -1 );
         btStuff->socket = sock;
     } else {
@@ -411,7 +414,8 @@ linux_bt_close( CommonGlobals* globals )
 
         if ( btStuff->socket != -1 ) {
             (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       btStuff->socket, -1, &btStuff->sockStorage );
+                                       btStuff->socket, -1, NULL,
+                                       &btStuff->sockStorage );
             (void)close( btStuff->socket );
         }
 
@@ -601,6 +605,23 @@ linux_bt_scan()
     GSList* list = NULL;
     btDevsIterate( append_name_proc, &list );
     return list;
+}
+
+static gboolean
+bt_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
+{
+    XP_USE( data );
+    int fd = g_io_channel_unix_get_fd( source );
+    if ( 0 != (G_IO_IN & condition) ) {
+        unsigned char buf[1024];
+        XP_S16 nBytes = linux_bt_receive( fd, buf, sizeof(buf) );
+        XP_ASSERT(nBytes==2 || XP_TRUE);
+
+        XP_ASSERT(0);           /* not implemented beyond this point */
+    } else {
+        XP_ASSERT(0);           /* not implemented beyond this point */
+    }
+    return FALSE;
 }
 
 #endif /* XWFEATURE_BLUETOOTH */

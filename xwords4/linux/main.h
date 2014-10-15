@@ -121,7 +121,7 @@ typedef struct LaunchParams {
 
     DeviceRole serverRole;
 
-    CommsConnType conType;
+    CommsAddrRec  addr;
     struct {
 #ifdef XWFEATURE_RELAY
         struct {
@@ -140,7 +140,8 @@ typedef struct LaunchParams {
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
         struct {
             const char* hostName;
-            int port;
+            int hostPort;
+            int myPort;
         } ip;
 #endif
 #ifdef XWFEATURE_SMS
@@ -161,7 +162,7 @@ typedef struct LaunchParams {
 typedef struct CommonGlobals CommonGlobals;
 
 typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock,
-                                  void** storage );
+                                  GIOFunc func, void** storage );
 typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
                                 CommonGlobals* globals, void** storage );

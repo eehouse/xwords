@@ -1476,33 +1476,37 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     CommsCtxt* comms = globals->cGlobals.game.comms;
     XP_ASSERT( comms );
     comms_getAddr( comms, &addr );
-    switch ( comms_getConType( comms ) ) {
+
+    CommsConnType typ;
+    for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+        switch ( typ ) {
 #ifdef XWFEATURE_SMS
-    case COMMS_CONN_SMS: {
-        gchar* phone = NULL;
-        gchar* portstr = NULL;
-        AskMInfo infos[] = {
-            { "Remote phone#", &phone },
-            { "Remote port", &portstr },
-        };
-        if ( gtkaskm( "Invite whom?", infos, VSIZE(infos) ) ) { 
-            int port = atoi( portstr );
-            XP_LOGF( "need to invite using number %s and port %d", phone, port );
-            XP_ASSERT( 0 != port );
-            const CurGameInfo* gi = globals->cGlobals.gi;
-            gchar gameName[64];
-            snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
-            linux_sms_invite( globals->cGlobals.params, gi, gameName, 1,
-                              phone, port );
+        case COMMS_CONN_SMS: {
+            gchar* phone = NULL;
+            gchar* portstr = NULL;
+            AskMInfo infos[] = {
+                { "Remote phone#", &phone },
+                { "Remote port", &portstr },
+            };
+            if ( gtkaskm( "Invite whom?", infos, VSIZE(infos) ) ) { 
+                int port = atoi( portstr );
+                XP_LOGF( "need to invite using number %s and port %d", phone, port );
+                XP_ASSERT( 0 != port );
+                const CurGameInfo* gi = globals->cGlobals.gi;
+                gchar gameName[64];
+                snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
+                linux_sms_invite( globals->cGlobals.params, gi, gameName, 1,
+                                  phone, port );
+            }
+            g_free( phone );
+            g_free( portstr );
         }
-        g_free( phone );
-        g_free( portstr );
-    }
-        break;
+            break;
 #endif
-    default:
-        XP_ASSERT( 0 );
-        break;
+        default:
+            XP_ASSERT( 0 );
+            break;
+        }
     }
 } /* handle_commit_button */
 
@@ -2284,6 +2288,7 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 } /* setupGtkUtilCallbacks */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+#if 0
 static gboolean
 newConnectionInput( GIOChannel *source,
                     GIOCondition condition,
@@ -2379,7 +2384,7 @@ newConnectionInput( GIOChannel *source,
 #endif
         if ( 0 ) {
 #ifdef XWFEATURE_BLUETOOTH
-        } else if ( COMMS_CONN_BT == globals->cGlobals.params->conType ) {
+        } else if ( COMMS_CONN_BT == addr_getType( &globals->cGlobals.params->addr ) ) {
             linux_bt_socketclosed( &globals->cGlobals, sock );
 #endif
 #ifdef XWFEATURE_IP_DIRECT
@@ -2392,6 +2397,7 @@ newConnectionInput( GIOChannel *source,
 
     return keepSource;                /* FALSE means to remove event source */
 } /* newConnectionInput */
+#endif 
 
 typedef struct _SockInfo {
     GIOChannel* channel;
@@ -2400,7 +2406,8 @@ typedef struct _SockInfo {
 } SockInfo;
 
 static void
-gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
+gtk_socket_changed( void* closure, int oldSock, int newSock, GIOFunc proc, 
+                    void** storage )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
     SockInfo* info = (SockInfo*)*storage;
@@ -2416,14 +2423,14 @@ gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
                  oldSock );
     }
     if ( newSock != -1 ) {
+        XP_ASSERT( !!proc );
         info = (SockInfo*)XP_MALLOC( globals->cGlobals.util->mpool,
                                      sizeof(*info) );
         GIOChannel* channel = g_io_channel_unix_new( newSock );
         g_io_channel_set_close_on_unref( channel, TRUE );
         guint result = g_io_add_watch( channel,
                                        G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
-                                       newConnectionInput,
-                                       globals );
+                                       proc, globals );
         info->channel = channel;
         info->watch = result;
         *storage = info;
@@ -2434,7 +2441,10 @@ gtk_socket_changed( void* closure, int oldSock, int newSock, void** storage )
 #endif
     /* A hack for the bluetooth case. */
     CommsCtxt* comms = globals->cGlobals.game.comms;
-    if ( (comms != NULL) && (comms_getConType(comms) == COMMS_CONN_BT) ) {
+    
+    CommsAddrRec addr;
+    comms_getAddr( comms, &addr );
+    if ( (comms != NULL) && (addr_hasType( &addr, COMMS_CONN_BT) ) ) {
         comms_resendAll( comms, XP_FALSE );
     }
     LOG_RETURN_VOID();
