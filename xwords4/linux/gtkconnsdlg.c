@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 2001-2008 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -67,7 +67,6 @@ static CommsConnType
 pageNoToConnType( const GtkConnsState* state, gint page )
 {
     XP_ASSERT( page < VSIZE(state->pageTypes) );
-    XP_ASSERT( state->pageTypes[page] != COMMS_CONN_NONE );
     return state->pageTypes[page];
 }
 
@@ -77,53 +76,60 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
     GtkConnsState* state = (GtkConnsState*)closure;
     if ( !state->readOnly ) {
         const gchar* txt;
-        gint page = gtk_notebook_get_current_page
-            ( GTK_NOTEBOOK(state->notebook) );
-        CommsConnType conType = pageNoToConnType( state, page );
 
-        switch ( conType ) {
+        for ( gint page = 0; ; ++page ) {
+            CommsConnType conType = pageNoToConnType( state, page );
+            if ( COMMS_CONN_NONE == conType ) {
+                break;
+            }
+
+            switch ( conType ) {
 #ifdef XWFEATURE_DIRECTIP
-        case COMMS_CONN_IP_DIRECT:
-            txt = gtk_entry_get_text( GTK_ENTRY(state->iphost) );
-            XP_STRNCPY( state->addr->u.ip.hostName_ip, txt, 
-                        sizeof(state->addr->u.ip.hostName_ip) );
-            txt = gtk_entry_get_text( GTK_ENTRY(state->ipport) );
-            state->addr->u.ip.port_ip = atoi( txt );
-            break;
+            case COMMS_CONN_IP_DIRECT:
+                txt = gtk_entry_get_text( GTK_ENTRY(state->iphost) );
+                XP_STRNCPY( state->addr->u.ip.hostName_ip, txt, 
+                            sizeof(state->addr->u.ip.hostName_ip) );
+                txt = gtk_entry_get_text( GTK_ENTRY(state->ipport) );
+                state->addr->u.ip.port_ip = atoi( txt );
+                break;
 #endif
 #ifdef XWFEATURE_RELAY
-        case COMMS_CONN_RELAY:
-            txt = gtk_entry_get_text( GTK_ENTRY(state->invite) );
-            XP_STRNCPY( state->addr->u.ip_relay.invite, txt, 
-                        sizeof(state->addr->u.ip_relay.invite) );
-            txt = gtk_entry_get_text( GTK_ENTRY(state->hostName) );
-            XP_STRNCPY( state->addr->u.ip_relay.hostName, txt,
-                        sizeof(state->addr->u.ip_relay.hostName) );
+            case COMMS_CONN_RELAY:
+                txt = gtk_entry_get_text( GTK_ENTRY(state->invite) );
+                XP_STRNCPY( state->addr->u.ip_relay.invite, txt, 
+                            sizeof(state->addr->u.ip_relay.invite) );
+                txt = gtk_entry_get_text( GTK_ENTRY(state->hostName) );
+                XP_STRNCPY( state->addr->u.ip_relay.hostName, txt,
+                            sizeof(state->addr->u.ip_relay.hostName) );
 
-            txt = gtk_entry_get_text( GTK_ENTRY(state->port) );
-            state->addr->u.ip_relay.port = atoi( txt );
-            break;
+                txt = gtk_entry_get_text( GTK_ENTRY(state->port) );
+                state->addr->u.ip_relay.port = atoi( txt );
+                break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-        case COMMS_CONN_BT:
-            txt = gtk_entry_get_text( GTK_ENTRY(state->bthost) );
-            XP_STRNCPY( state->addr->u.bt.hostName, txt, 
-                        sizeof(state->addr->u.bt.hostName) );
-            break;
+            case COMMS_CONN_BT:
+                txt = gtk_entry_get_text( GTK_ENTRY(state->bthost) );
+                XP_STRNCPY( state->addr->u.bt.hostName, txt, 
+                            sizeof(state->addr->u.bt.hostName) );
+                break;
 #endif
-        case COMMS_CONN_SMS:
-            txt = gtk_entry_get_text( GTK_ENTRY(state->smsphone) );
-            XP_STRNCPY( state->addr->u.sms.phone, txt, 
-                        sizeof(state->addr->u.sms.phone) );
-            txt = gtk_entry_get_text( GTK_ENTRY(state->smsport) );
-            state->addr->u.sms.port = atoi( txt );
-            break;
-        default:
-            XP_ASSERT( 0 );     /* keep compiler happy */
-            break;
-        }
+            case COMMS_CONN_SMS:
+                txt = gtk_entry_get_text( GTK_ENTRY(state->smsphone) );
+                XP_STRNCPY( state->addr->u.sms.phone, txt, 
+                            sizeof(state->addr->u.sms.phone) );
+                txt = gtk_entry_get_text( GTK_ENTRY(state->smsport) );
+                state->addr->u.sms.port = atoi( txt );
+                break;
+            default:
+                XP_ASSERT( 0 );     /* keep compiler happy */
+                break;
+            }
 
-        addr_setType( state->addr, conType );
+            /* PENDING: This will add them all, when what's needed is an
+               interface to let user choose which will be used to attempt to
+               connect. */
+            addr_addType( state->addr, conType );
+        }
     }
         
     state->cancelled = XP_FALSE;
@@ -184,7 +190,8 @@ makeRelayPage( GtkConnsState* state )
     gtk_box_pack_start( GTK_BOX(vbox), gtk_label_new( hint ), FALSE, TRUE, 0 );
 
     GtkWidget* hbox = makeLabeledField( "Room", &state->invite, NULL );
-    if ( COMMS_CONN_RELAY == addr_getType( state->addr ) ) {
+    XP_Bool hasRelay = addr_hasType( state->addr, COMMS_CONN_RELAY );
+    if ( hasRelay ) {
         gtk_entry_set_text( GTK_ENTRY(state->invite), 
                             state->addr->u.ip_relay.invite );
     }
@@ -192,7 +199,7 @@ makeRelayPage( GtkConnsState* state )
     gtk_widget_set_sensitive( state->invite, !state->readOnly );
 
     hbox = makeLabeledField( "Relay address", &state->hostName, NULL );
-    if ( COMMS_CONN_RELAY == addr_getType( state->addr ) ) {
+    if ( hasRelay ) {
         gtk_entry_set_text( GTK_ENTRY(state->hostName), 
                             state->addr->u.ip_relay.hostName );
     }
@@ -200,7 +207,7 @@ makeRelayPage( GtkConnsState* state )
     gtk_widget_set_sensitive( state->hostName, !state->readOnly );
 
     hbox = makeLabeledField( "Relay port", &state->port, NULL );
-    if ( COMMS_CONN_RELAY == addr_getType( state->addr ) ) {
+    if ( hasRelay ) {
         char buf[16];
         snprintf( buf, sizeof(buf), "%d", state->addr->u.ip_relay.port );
         gtk_entry_set_text( GTK_ENTRY(state->port), buf );
@@ -219,7 +226,7 @@ makeBTPage( GtkConnsState* state )
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
     GtkWidget* hbox = makeLabeledField( "Host device", &state->bthost, NULL );
-    if ( COMMS_CONN_BT == addr_getType( state->addr ) ) {
+    if ( addr_hasType( state->addr, COMMS_CONN_BT ) ) {
         gtk_entry_set_text( GTK_ENTRY(state->bthost), state->addr->u.bt.hostName );
     }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -243,13 +250,14 @@ makeIPDirPage( GtkConnsState* state )
     /* XP_UCHAR hostName_ip[MAX_HOSTNAME_LEN + 1]; */
     /* XP_U16 port_ip; */
 
-    const gchar* name = COMMS_CONN_IP_DIRECT == addr_getType( state->addr ) ?
+    XP_Bool hasIP = addr_hasType( state->addr, COMMS_CONN_IP_DIRECT );
+    const gchar* name = hasIP ?
         state->addr->u.ip.hostName_ip : state->globals->cGlobals.params->connInfo.ip.hostName;
     GtkWidget* hbox = makeLabeledField( "Hostname", &state->iphost, name );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     
     hbox = makeLabeledField( "Relay port", &state->ipport, NULL );
-    if ( COMMS_CONN_IP_DIRECT == addr_getType( state->addr ) ) {
+    if ( hasIP ) {
         char buf[16];
         snprintf( buf, sizeof(buf), "%d", state->addr->u.ip.port_ip );
         gtk_entry_set_text( GTK_ENTRY(state->ipport), buf );
@@ -265,14 +273,14 @@ makeSMSPage( GtkConnsState* state )
 {
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
-    const gchar* phone = COMMS_CONN_SMS == addr_getType( state->addr ) ?
+    XP_Bool hasSMS = addr_hasType( state->addr, COMMS_CONN_SMS );
+    const gchar* phone = hasSMS ?
         state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.phone;
     GtkWidget* hbox = makeLabeledField( "Host phone", &state->smsphone, phone );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->smsphone, !state->readOnly );
 
-    int portVal = COMMS_CONN_SMS == addr_getType( state->addr )
-        ? state->addr->u.sms.port
+    int portVal = hasSMS ? state->addr->u.sms.port
         : state->globals->cGlobals.params->connInfo.sms.port;
     gchar port[32];
     snprintf( port, sizeof(port), "%d", portVal );
@@ -331,8 +339,13 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     gtk_box_pack_start( GTK_BOX(vbox), state.notebook, FALSE, TRUE, 0 );
     state.pageTypes[nTypes++] = COMMS_CONN_NONE; /* mark end of list */
 
-    gint pageNo = conTypeToPageNum( &state, addr_getType( addr ) );
-    gtk_notebook_set_current_page( GTK_NOTEBOOK(state.notebook), pageNo );
+    /* Set page to the first we actually have */
+    XP_U32 st = 0;
+    CommsConnType firstType;
+    if ( addr_iter( addr, &firstType, &st ) ) {
+        gint pageNo = conTypeToPageNum( &state, firstType );
+        gtk_notebook_set_current_page( GTK_NOTEBOOK(state.notebook), pageNo );
+    }
 
     gtk_widget_show( state.notebook );
 
