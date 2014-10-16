@@ -379,8 +379,16 @@ static void
 informMissing( const ServerCtxt* server )
 {
     XP_Bool isServer = amServer( server );
-    util_informMissing( server->vol.util, isServer, 
-                        comms_getConTypes( server->vol.comms ),
+    const CommsCtxt* comms = server->vol.comms;
+    CommsAddrRec addr;
+    CommsAddrRec* addrP;
+    if ( !comms ) {
+        addrP = NULL;
+    } else {
+        addrP = &addr;
+        comms_getAddr( comms, addrP );
+    }
+    util_informMissing( server->vol.util, isServer, addrP,
                         isServer ? server->nv.pendingRegistrations : 0 );
 }
 

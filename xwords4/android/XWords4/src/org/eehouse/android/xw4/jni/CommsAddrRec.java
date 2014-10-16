@@ -22,12 +22,16 @@ package org.eehouse.android.xw4.jni;
 
 import java.net.InetAddress;
 
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.DbgUtils;
 
 public class CommsAddrRec {
 
-    public enum CommsConnType { COMMS_CONN_NONE,
+    public enum CommsConnType { _COMMS_CONN_NONE,
             COMMS_CONN_IR,
             COMMS_CONN_IP_DIRECT,
             COMMS_CONN_RELAY,
@@ -35,10 +39,24 @@ public class CommsAddrRec {
             COMMS_CONN_SMS,
     };
 
+    public static class CommsConnTypeSet extends HashSet<CommsConnType> {
+
+        public CommsConnType[] getTypes()
+        {
+            CommsConnType[] result = new CommsConnType[ size() ];
+            Iterator<CommsConnType> iter = iterator();
+            int indx = 0;
+            while ( iter.hasNext() ) {
+                result[indx++] = iter.next();
+            }
+            return result;
+        }
+    }
+
     // The C equivalent of this struct uses a union for the various
     // data sets below.  So don't assume that any fields will be valid
     // except those for the current conType.
-    public CommsConnType conType;
+    public CommsConnTypeSet conTypes;
 
     // relay case
     public String ip_relay_invite;
@@ -58,12 +76,13 @@ public class CommsAddrRec {
 
     public CommsAddrRec( CommsConnType cTyp ) 
     {
-        conType = cTyp;
+        this();
+        conTypes.add( cTyp );
     }
 
     public CommsAddrRec() 
     {
-        this( CommsConnType.COMMS_CONN_NONE );
+        conTypes = new CommsConnTypeSet();
     }
 
     public CommsAddrRec( String host, int port ) 
@@ -95,8 +114,10 @@ public class CommsAddrRec {
 
     public boolean changesMatter( final CommsAddrRec other )
     {
-        boolean matter = conType != other.conType;
-        if ( !matter ) {
+        boolean matter = ! conTypes.equals( other.conTypes );
+        Iterator<CommsConnType> iter = conTypes.iterator();
+        while ( !matter && iter.hasNext() ) {
+            CommsConnType conType = iter.next();
             switch( conType ) {
             case COMMS_CONN_RELAY:
                 matter = ! ip_relay_invite.equals( other.ip_relay_invite )
@@ -114,7 +135,7 @@ public class CommsAddrRec {
 
     private void copyFrom( CommsAddrRec src )
     {
-        conType = src.conType;
+        conTypes = src.conTypes;
         ip_relay_invite = src.ip_relay_invite;
         ip_relay_hostName = src.ip_relay_hostName;
         ip_relay_port = src.ip_relay_port;

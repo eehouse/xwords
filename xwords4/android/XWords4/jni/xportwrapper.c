@@ -67,7 +67,7 @@ and_xport_getFlags( void* closure )
 
 static XP_S16
 and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-                XP_U32 gameID, void* closure )
+                CommsConnType conType, XP_U32 gameID, void* closure )
 {
     jint result = -1;
     LOG_FUNC();

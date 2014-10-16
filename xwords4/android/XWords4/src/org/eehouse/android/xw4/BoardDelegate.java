@@ -53,6 +53,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.JNIThread.*;
 
@@ -103,7 +104,7 @@ public class BoardDelegate extends DelegateBase
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
-    private CommsConnType m_connType = CommsConnType.COMMS_CONN_NONE;
+    private CommsConnTypeSet m_connTypes = null;
     private String[] m_missingDevs;
     private boolean m_progressShown = false;
     private String m_curTiles;
@@ -261,7 +262,7 @@ public class BoardDelegate extends DelegateBase
                         };
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
                 } else if ( DlgID.DLG_CONNSTAT == dlgID &&
-                            CommsConnType.COMMS_CONN_RELAY == m_connType ) {
+                            m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
@@ -1166,27 +1167,31 @@ public class BoardDelegate extends DelegateBase
     public String makeNFCMessage()
     {
         String data = null;
-        switch ( m_connType ) {
-        case COMMS_CONN_RELAY:
-            if ( 0 < m_nMissing ) {  // Isn't there a better test??
-                String room = m_summary.roomName;
-                String inviteID = String.format( "%X", m_gi.gameID );
-                Assert.assertNotNull( room );
-                data = NetLaunchInfo.makeLaunchJSON( room, inviteID, m_gi.dictLang, 
-                                                     m_gi.dictName, m_gi.nPlayers );
-                removeDialog( DlgID.DLG_INVITE );
+        for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
+              iter.hasNext(); ) {
+            CommsConnType typ = iter.next();
+            switch ( typ ) {
+            case COMMS_CONN_RELAY:
+                if ( 0 < m_nMissing ) {  // Isn't there a better test??
+                    String room = m_summary.roomName;
+                    String inviteID = String.format( "%X", m_gi.gameID );
+                    Assert.assertNotNull( room );
+                    data = NetLaunchInfo.makeLaunchJSON( data, room, inviteID, m_gi.dictLang, 
+                                                         m_gi.dictName, m_gi.nPlayers );
+                    removeDialog( DlgID.DLG_INVITE );
+                }
+                break;
+            case COMMS_CONN_BT:
+                if ( 0 < m_nMissing ) {
+                    data = BTLaunchInfo.makeLaunchJSON( data, m_gi.gameID, m_gi.dictLang, 
+                                                        m_gi.dictName, m_gi.nPlayers );
+                    removeDialog( DlgID.CONFIRM_THEN );
+                }
+                break;
+            default:
+                DbgUtils.logf( "Not doing NFC join for conn type %s",
+                               typ.toString() );
             }
-            break;
-        case COMMS_CONN_BT:
-            if ( 0 < m_nMissing ) {
-                data = BTLaunchInfo.makeLaunchJSON( m_gi.gameID, m_gi.dictLang, 
-                                                    m_gi.dictName, m_gi.nPlayers );
-                removeDialog( DlgID.CONFIRM_THEN );
-            }
-            break;
-        default:
-            DbgUtils.logf( "Not doing NFC join for conn type %s",
-                           m_connType.toString() );
         }
         return data;
     }
@@ -1205,7 +1210,7 @@ public class BoardDelegate extends DelegateBase
 
     public void onStatusClicked()
     {
-        final String msg = ConnStatusHandler.getStatusText( m_activity, m_connType );
+        final String msg = ConnStatusHandler.getStatusText( m_activity, m_connTypes );
         post( new Runnable() {
                 public void run() {
                     m_dlgBytes = msg;
@@ -1642,22 +1647,26 @@ public class BoardDelegate extends DelegateBase
         // Called from server_makeFromStream, whether there's something
         // missing or not.
         @Override
-        public void informMissing( boolean isServer, CommsConnType connType,
+        public void informMissing( boolean isServer, CommsConnTypeSet connTypes,
                                    final int nMissing )
         {
-            m_connType = connType;
+            m_connTypes = connTypes;
             Assert.assertTrue( isServer || 0 == nMissing );
             m_nMissing = nMissing; // will be 0 unless isServer is true
 
             Action action = null;
             if ( 0 < nMissing && isServer && !m_haveInvited ) {
-                switch( connType ) {
-                case COMMS_CONN_BT:
-                    action = Action.BT_PICK_ACTION;
-                    break;
-                case COMMS_CONN_SMS:
-                    action = Action.SMS_PICK_ACTION;
-                    break;
+                for ( Iterator<CommsConnType> iter = connTypes.iterator();
+                      null == action && iter.hasNext(); ) {
+                    CommsConnType connType = iter.next();
+                    switch( connType ) {
+                    case COMMS_CONN_BT:
+                        action = Action.BT_PICK_ACTION;
+                        break;
+                    case COMMS_CONN_SMS:
+                        action = Action.SMS_PICK_ACTION;
+                        break;
+                    }
                 }
             }
             if ( null != action ) {
@@ -1770,16 +1779,20 @@ public class BoardDelegate extends DelegateBase
     } // class BoardUtilCtxt 
 
     private void inviteForMissing() {
-        switch( m_connType ) {
-        case COMMS_CONN_BT:
-            nonRelayInvite( Action.BT_PICK_ACTION );
-            break;
-        case COMMS_CONN_SMS:
-            nonRelayInvite( Action.SMS_PICK_ACTION );
-            break;
-        case COMMS_CONN_RELAY:
-            showDialog( DlgID.DLG_INVITE );
-            break;
+        outer:
+        for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
+              iter.hasNext(); ) {
+            switch( iter.next() ) {
+            case COMMS_CONN_BT:
+                nonRelayInvite( Action.BT_PICK_ACTION );
+                break outer;
+            case COMMS_CONN_SMS:
+                nonRelayInvite( Action.SMS_PICK_ACTION );
+                break outer;
+            case COMMS_CONN_RELAY:
+                showDialog( DlgID.DLG_INVITE );
+                break outer;
+            }
         }
     }
 
@@ -1895,7 +1908,7 @@ public class BoardDelegate extends DelegateBase
                     m_jniThread.start();
 
                     m_view.startHandling( m_activity, m_jniThread, m_jniGamePtr, m_gi,
-                                          m_connType );
+                                          m_connTypes );
                     if ( null != m_xport ) {
                         m_xport.setReceiver( m_jniThread, m_handler );
                     }
@@ -1954,28 +1967,32 @@ public class BoardDelegate extends DelegateBase
     @SuppressWarnings("fallthrough")
     private void tickle()
     {
-        switch( m_connType ) {
-        case COMMS_CONN_BT:
-            pingBTRemotes();
-            // fallthrough
-        case COMMS_CONN_RELAY:
-            // break;     // Try skipping the resend -- later
-            // fallthrough
-        case COMMS_CONN_SMS:
-            // Let other know I'm here
-            // DbgUtils.logf( "tickle calling comms_resendAll" );
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
-            break;
-        default:
-            DbgUtils.logf( "tickle: unexpected type %s", 
-                           m_connType.toString() );
-            Assert.fail();
+        for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
+              iter.hasNext(); ) {
+            CommsConnType typ = iter.next();
+            switch( typ ) {
+            case COMMS_CONN_BT:
+                pingBTRemotes();
+                // fallthrough
+            case COMMS_CONN_RELAY:
+                // break;     // Try skipping the resend -- later
+                // fallthrough
+            case COMMS_CONN_SMS:
+                // Let other know I'm here
+                // DbgUtils.logf( "tickle calling comms_resendAll" );
+                m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
+                break;
+            default:
+                DbgUtils.logf( "tickle: unexpected type %s", 
+                               typ.toString() );
+                Assert.fail();
+            }
         }
     }
 
     private void pingBTRemotes()
     {
-        if ( CommsConnType.COMMS_CONN_BT == m_connType ) {
+        if ( m_connTypes.contains( CommsConnType.COMMS_CONN_BT ) ) {
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
                 BTService.pingHost( m_activity, addr.bt_btAddr, m_gi.gameID );
@@ -2166,14 +2183,12 @@ public class BoardDelegate extends DelegateBase
 
     private void warnIfNoTransport()
     {
-        switch( m_connType ) {
-        case COMMS_CONN_SMS:
+        if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( m_activity ) ) {
                 showConfirmThen( R.string.warn_sms_disabled, 
                                  R.string.button_go_settings,
                                  Action.SMS_CONFIG_ACTION );
             }
-            break;
         }
     }
     
@@ -2195,8 +2210,7 @@ public class BoardDelegate extends DelegateBase
                 String gameName = GameUtils.getName( m_activity, m_rowid );
                 m_invitesPending = m_missingDevs.length;
                 for ( String dev : m_missingDevs ) {
-                    switch( m_connType ) {
-                    case COMMS_CONN_BT:
+                    if ( m_connTypes.contains( CommsConnType.COMMS_CONN_BT ) ) {
                         String progMsg = BTService.nameForAddr( dev );
                         progMsg = getString( R.string.invite_progress_fmt, progMsg );
                         m_progressShown = true;
@@ -2213,13 +2227,11 @@ public class BoardDelegate extends DelegateBase
                                                 gameName, m_gi.dictLang, 
                                                 m_gi.dictName, m_gi.nPlayers,
                                                 1 );
-                        break;
-                    case COMMS_CONN_SMS:
+                    } else if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
                         SMSService.inviteRemote( m_activity, dev, m_gi.gameID, 
                                                  gameName, m_gi.dictLang, 
                                                  m_gi.dictName, m_gi.nPlayers,
                                                  1 );
-                        break;
                     }
                 }
                 m_missingDevs = null;

@@ -40,6 +40,7 @@ import java.util.HashMap;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -167,14 +168,15 @@ public class ConnStatusHandler {
         return s_downOnMe && s_rect.contains( xx, yy );
     }
 
-    public static String getStatusText( Context context, CommsConnType connType )
+    public static String getStatusText( Context context, CommsConnTypeSet connTypes )
     {
         String msg;
-        if ( CommsConnType.COMMS_CONN_NONE == connType ) {
+        if ( 0 == connTypes.size() ) {
             msg = LocUtils.getString( context, R.string.connstat_nonet );
         } else {
             StringBuffer sb = new StringBuffer();
             synchronized( s_lockObj ) {
+                CommsConnType connType = connTypes.iterator().next();
                 String tmp = LocUtils.getString( context, connType2StrID( connType ) );
                 sb.append( LocUtils.getString( context, 
                                                R.string.connstat_net_fmt,
@@ -285,32 +287,33 @@ public class ConnStatusHandler {
     }
 
     public static void draw( Context context, Canvas canvas, Resources res, 
-                             int offsetX, int offsetY, CommsConnType connType )
+                             int offsetX, int offsetY, CommsConnTypeSet connTypes )
     {
+        boolean isSolo = null == connTypes || 0 == connTypes.size();
         synchronized( s_lockObj ) {
             if ( null != s_rect ) {
-                int iconID;
-                switch( connType ) {
-                case COMMS_CONN_RELAY:
-                    iconID = R.drawable.relaygame;
-                    break;
-                case COMMS_CONN_SMS:
-                    iconID = android.R.drawable.sym_action_chat;
-                    break;
-                case COMMS_CONN_BT:
-                    iconID = android.R.drawable.stat_sys_data_bluetooth;
-                    break;
-                case COMMS_CONN_NONE:
-                default:
-                    iconID = R.drawable.sologame;
-                    break;
+                int iconID = R.drawable.sologame;
+                CommsConnType connType = null;
+                if ( !isSolo ) {
+                    connType = connTypes.iterator().next();
+                    switch( connType ) {
+                    case COMMS_CONN_RELAY:
+                        iconID = R.drawable.relaygame;
+                        break;
+                    case COMMS_CONN_SMS:
+                        iconID = android.R.drawable.sym_action_chat;
+                        break;
+                    case COMMS_CONN_BT:
+                        iconID = android.R.drawable.stat_sys_data_bluetooth;
+                        break;
+                    }
                 }
 
                 Rect rect = new Rect( s_rect );
                 int quarterHeight = rect.height() / 4;
                 rect.offset( offsetX, offsetY );
 
-                if ( CommsConnType.COMMS_CONN_NONE != connType ) {
+                if ( ! isSolo ) {
                     int saveTop = rect.top;
                     SuccessRecord record;
                     boolean enabled = connTypeEnabled( context, connType );

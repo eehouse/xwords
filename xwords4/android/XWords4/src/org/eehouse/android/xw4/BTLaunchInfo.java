@@ -27,6 +27,8 @@ import android.content.Intent;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 
 public class BTLaunchInfo extends AbsLaunchInfo {
@@ -48,9 +50,10 @@ public class BTLaunchInfo extends AbsLaunchInfo {
         }
     }
 
-    public static String makeLaunchJSON( int gameID, int lang, 
+    public static String makeLaunchJSON( String curJson, int gameID, int lang, 
                                          String dict, int nPlayersT )
     {
+        Assert.assertNull( curJson );
         String result = null;
         BluetoothAdapter adapter = XWApp.BTSUPPORTED
             ? BluetoothAdapter.getDefaultAdapter() : null;

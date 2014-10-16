@@ -1,6 +1,6 @@
-/* -*-mode: C; compile-command: "cd ../; ../scripts/ndkbuild.sh -j3"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright © 2009 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright © 2009 - 2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1273,7 +1273,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1setAddr
 {
     XWJNI_START();
     if ( state->game.comms ) {
-        CommsAddrRec addr;
+        CommsAddrRec addr = {0};
         getJAddrRec( env, &addr, jaddr );
         comms_setAddr( state->game.comms, &addr );
     } else {
@@ -1294,7 +1294,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, globals->vtMgr,
                                               jstream );
     CommsAddrRec* addrp = NULL;
-    CommsAddrRec addr;
+    CommsAddrRec addr = {0};
     if ( NULL != jaddr ) {
         getJAddrRec( env, &addr, jaddr );
         addrp = &addr;
@@ -1340,41 +1340,50 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         CommsAddrRec addr;
         CommsCtxt* comms = state->game.comms;
         comms_getAddr( comms, &addr );
-        intToJenumField( env, jsummary, addr.conType, "conType",
-                         PKG_PATH("jni/CommsAddrRec$CommsConnType") );
         setInt( env, jsummary, "seed", comms_getChannelSeed( comms ) );
         setInt( env, jsummary, "missingPlayers", 
                 server_getMissingPlayers( state->game.server ) );
         setInt( env, jsummary, "nPacketsPending", 
                 comms_countPendingPackets( state->game.comms ) );
-        if ( COMMS_CONN_RELAY == addr.conType ) {
-            XP_UCHAR buf[128];
-            XP_U16 len = VSIZE(buf);
-            if ( comms_getRelayID( comms, buf, &len ) ) {
-                XP_ASSERT( '\0' == buf[len-1] ); /* failed! */
-                setString( env, jsummary, "relayID", buf );
+
+        CommsConnType typ;
+        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+            switch( typ ) {
+            case COMMS_CONN_RELAY: {
+                XP_UCHAR buf[128];
+                XP_U16 len = VSIZE(buf);
+                if ( comms_getRelayID( comms, buf, &len ) ) {
+                    XP_ASSERT( '\0' == buf[len-1] ); /* failed! */
+                    setString( env, jsummary, "relayID", buf );
+                }
+                setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
             }
-            setString( env, jsummary, "roomName", addr.u.ip_relay.invite );
+                break;
 #if defined XWFEATURE_BLUETOOTH || defined XWFEATURE_SMS
-        } else if ( COMMS_CONN_BT == addr.conType 
-                    || COMMS_CONN_SMS == addr.conType ) {
-            XP_Bool isBT = COMMS_CONN_BT == addr.conType;
-            CommsAddrRec addrs[MAX_NUM_PLAYERS];
-            XP_U16 count = VSIZE(addrs);
-            comms_getAddrs( comms, addrs, &count );
+            case COMMS_CONN_BT:
+            case COMMS_CONN_SMS: {
+                XP_Bool isBT = COMMS_CONN_BT == typ;
+                CommsAddrRec addrs[MAX_NUM_PLAYERS];
+                XP_U16 count = VSIZE(addrs);
+                comms_getAddrs( comms, addrs, &count );
             
-            int ii;
-            const XP_UCHAR* addrps[count];
-            for ( ii = 0; ii < count; ++ii ) {
-                addrps[ii] = isBT ? (XP_UCHAR*)&addrs[ii].u.bt.btAddr : 
-                    (XP_UCHAR*)&addrs[ii].u.sms.phone;
-                XP_LOGF( "%s: adding btaddr/phone %s", __func__, addrps[ii] );
+                int ii;
+                const XP_UCHAR* addrps[count];
+                for ( ii = 0; ii < count; ++ii ) {
+                    addrps[ii] = isBT ? (XP_UCHAR*)&addrs[ii].u.bt.btAddr : 
+                        (XP_UCHAR*)&addrs[ii].u.sms.phone;
+                    XP_LOGF( "%s: adding btaddr/phone %s", __func__, addrps[ii] );
+                }
+                jobjectArray jaddrs = makeStringArray( env, count, addrps );
+                setObject( env, jsummary, "remoteDevs", "[Ljava/lang/String;", 
+                           jaddrs );
+                deleteLocalRef( env, jaddrs );
             }
-            jobjectArray jaddrs = makeStringArray( env, count, addrps );
-            setObject( env, jsummary, "remoteDevs", "[Ljava/lang/String;", 
-                       jaddrs );
-            deleteLocalRef( env, jaddrs );
+                break;
 #endif
+            default:
+                XP_ASSERT(0);
+            }
         }
     }
 

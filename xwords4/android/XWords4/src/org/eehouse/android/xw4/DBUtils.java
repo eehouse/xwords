@@ -54,6 +54,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -211,7 +212,7 @@ public class DBUtils {
                 int col = cursor.getColumnIndex( DBHelper.CONTYPE );
                 if ( 0 <= col ) {
                     tmp = cursor.getInt( col );
-                    summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
+                    summary.conTypes = intToConnTypeSet( tmp );
                     col = cursor.getColumnIndex( DBHelper.SEED );
                     if ( 0 < col ) {
                         summary.seed = cursor.getInt( col );
@@ -221,25 +222,28 @@ public class DBUtils {
                         summary.nPacketsPending = cursor.getInt( col );
                     }
 
-                    switch ( summary.conType ) {
-                    case COMMS_CONN_RELAY:
-                        col = cursor.getColumnIndex( DBHelper.ROOMNAME );
-                        if ( col >= 0 ) {
-                            summary.roomName = cursor.getString( col );
+                    for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
+                          iter.hasNext(); ) {
+                        switch ( iter.next() ) {
+                        case COMMS_CONN_RELAY:
+                            col = cursor.getColumnIndex( DBHelper.ROOMNAME );
+                            if ( col >= 0 ) {
+                                summary.roomName = cursor.getString( col );
+                            }
+                            col = cursor.getColumnIndex( DBHelper.RELAYID );
+                            if ( col >= 0 ) {
+                                summary.relayID = cursor.getString( col );
+                            }
+                            break;
+                        case COMMS_CONN_BT:
+                        case COMMS_CONN_SMS:
+                            col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
+                            if ( col >= 0 ) {
+                                summary.setRemoteDevs( context, 
+                                                       cursor.getString( col ) );
+                            }
+                            break;
                         }
-                        col = cursor.getColumnIndex( DBHelper.RELAYID );
-                        if ( col >= 0 ) {
-                            summary.relayID = cursor.getString( col );
-                        }
-                        break;
-                    case COMMS_CONN_BT:
-                    case COMMS_CONN_SMS:
-                        col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
-                        if ( col >= 0 ) {
-                            summary.setRemoteDevs( context, 
-                                                   cursor.getString( col ) );
-                        }
-                        break;
                     }
                 }
 
@@ -309,20 +313,23 @@ public class DBUtils {
                 values.put( DBHelper.SCORES, sb.toString() );
             }
 
-            if ( null != summary.conType ) {
-                values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
+            if ( null != summary.conTypes ) {
+                values.put( DBHelper.CONTYPE, connTypeSetToInt(summary.conTypes) );
                 values.put( DBHelper.SEED, summary.seed );
                 values.put( DBHelper.NPACKETSPENDING, summary.nPacketsPending );
-                switch( summary.conType ) {
-                case COMMS_CONN_RELAY:
-                    values.put( DBHelper.ROOMNAME, summary.roomName );
-                    values.put( DBHelper.RELAYID, summary.relayID );
-                    break;
-                case COMMS_CONN_BT:
-                case COMMS_CONN_SMS:
-                    values.put( DBHelper.REMOTEDEVS, 
-                                summary.summarizeDevs() );
-                    break;
+                for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
+                      iter.hasNext(); ) {
+                    switch ( iter.next() ) {
+                    case COMMS_CONN_RELAY:
+                        values.put( DBHelper.ROOMNAME, summary.roomName );
+                        values.put( DBHelper.RELAYID, summary.relayID );
+                        break;
+                    case COMMS_CONN_BT:
+                    case COMMS_CONN_SMS:
+                        values.put( DBHelper.REMOTEDEVS, 
+                                    summary.summarizeDevs() );
+                        break;
+                    }
                 }
             }
 
@@ -2122,6 +2129,36 @@ public class DBUtils {
     {
         s_cachedRowID = rowid;
         s_cachedBytes = bytes;
+    }
+
+    private static final int BIT_VECTOR_MASK = 0x8000;
+    private static CommsConnTypeSet intToConnTypeSet( int asInt )
+    {
+        CommsConnTypeSet result = new CommsConnTypeSet();
+        boolean isVector = 0 != (BIT_VECTOR_MASK & asInt);
+        asInt &= ~BIT_VECTOR_MASK;
+        CommsConnType[] values = CommsConnType.values();
+        if ( isVector ) {
+            for ( CommsConnType value : values ) {
+                int ord = value.ordinal();
+                if ( 0 != (asInt & (1 << (ord - 1)))) {
+                    result.add( value );
+                }
+            }
+        } else {
+            result.add( values[asInt] );
+        }
+        return result;
+    }
+
+    private static int connTypeSetToInt( CommsConnTypeSet set )
+    {
+        int result = BIT_VECTOR_MASK;
+        for ( Iterator<CommsConnType> iter = set.iterator(); iter.hasNext(); ) {
+            CommsConnType typ = iter.next();
+            result |= 1 << (typ.ordinal() - 1);
+        }
+        return result;
     }
 
 }

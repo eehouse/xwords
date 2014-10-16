@@ -370,8 +370,8 @@ public class CommsTransport implements TransportProcs,
             m_relayAddr = new CommsAddrRec( addr );
         }
 
-        if ( !XWApp.UDP_ENABLED
-             && CommsConnType.COMMS_CONN_RELAY == addr.conType ) {
+        if ( !XWApp.UDP_ENABLED 
+             && addr.conTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
             if ( NetStateCache.netAvail( m_context ) ) {
                 putOut( buf );      // add to queue
                 if ( null == m_thread ) {
@@ -437,24 +437,32 @@ public class CommsTransport implements TransportProcs,
     public static int sendForAddr( Context context, CommsAddrRec addr, 
                                    long rowID, int gameID, byte[] buf )
     {
-        int nSent = -1;
-        switch ( addr.conType ) {
-        case COMMS_CONN_RELAY:
-            Assert.assertTrue( XWApp.UDP_ENABLED );
-            nSent = RelayService.sendPacket( context, rowID, buf );
-            break;
-        case COMMS_CONN_SMS:
-            nSent = SMSService.sendPacket( context, addr.sms_phone, 
-                                           gameID, buf );
-            break;
-        case COMMS_CONN_BT:
-            nSent = BTService.enqueueFor( context, buf, addr.bt_btAddr, gameID );
-            break;
-        default:
-            Assert.fail();
-            break;
+        int mostSent = -1;
+        for ( Iterator<CommsConnType> iter = addr.conTypes.iterator(); 
+              iter.hasNext(); ) {
+            CommsConnType conType = iter.next();
+            int nSent = -1;
+            switch ( conType ) {
+            case COMMS_CONN_RELAY:
+                Assert.assertTrue( XWApp.UDP_ENABLED );
+                nSent = RelayService.sendPacket( context, rowID, buf );
+                break;
+            case COMMS_CONN_SMS:
+                nSent = SMSService.sendPacket( context, addr.sms_phone, 
+                                               gameID, buf );
+                break;
+            case COMMS_CONN_BT:
+                nSent = BTService.enqueueFor( context, buf, addr.bt_btAddr, gameID );
+                break;
+            default:
+                Assert.fail();
+                break;
+            }
+            if ( nSent < mostSent ) {
+                nSent = mostSent;
+            }
         }
-        return nSent;
+        return mostSent;
     }
 
     /* NPEs in m_selector calls: sometimes my Moment gets into a state

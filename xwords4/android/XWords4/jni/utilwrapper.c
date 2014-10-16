@@ -1,6 +1,6 @@
-/* -*-mode: C; compile-command: "cd ..; ../scripts/ndkbuild.sh -j3"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /* 
- * Copyright 2001-2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -522,15 +522,17 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #ifndef XWFEATURE_STANDALONE_ONLY
 
 static void
-and_util_informMissing(XW_UtilCtxt* uc, XP_Bool isServer, 
-                       CommsConnType connType, XP_U16 nMissing )
+and_util_informMissing( XW_UtilCtxt* uc, XP_Bool isServer, 
+                        const CommsAddrRec* addr, XP_U16 nMissing )
 {
-    UTIL_CBK_HEADER( "informMissing",
-                     "(ZL" PKG_PATH("jni/CommsAddrRec$CommsConnType") ";I)V" );
-    jobject jtyp = intToJEnum( env, connType,
-                               PKG_PATH("jni/CommsAddrRec$CommsConnType") );
-    (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtyp, nMissing );
-    deleteLocalRef( env, jtyp );
+    UTIL_CBK_HEADER( "informMissing", 
+                     "(ZL" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";I)V" );
+    jobject jtypset = NULL;
+    if ( !!addr ) {
+        jtypset = addrTypesToJ( env, addr );
+    }
+    (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtypset, nMissing );
+    deleteLocalRef( env, jtypset );
     UTIL_CBK_TAIL();
 }
 

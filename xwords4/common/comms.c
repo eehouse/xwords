@@ -1729,6 +1729,7 @@ static AddressRecord*
 getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr, 
               const XP_PlayerAddr channelNo, XP_Bool maskChannel )
 {
+    LOG_FUNC();
     CommsConnType conType;
     AddressRecord* rec;
     XP_Bool matched = XP_FALSE;
@@ -2318,6 +2319,7 @@ void
 addr_addType( CommsAddrRec* addr, CommsConnType type )
 {
     XP_ASSERT( COMMS_CONN_NONE != type );
+    XP_LOGF( "%s(%s)", __func__, ConnType2Str(type) );
     addr->_conTypes |= 1 << (type - 1);
 }
 

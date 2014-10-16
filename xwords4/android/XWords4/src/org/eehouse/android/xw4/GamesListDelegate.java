@@ -1876,7 +1876,7 @@ public class GamesListDelegate extends ListDelegateBase
         GameSummary summary = (GameSummary)params[1];
         long rowid = (Long)params[0];
 
-        if ( summary.conType == CommsAddrRec.CommsConnType.COMMS_CONN_RELAY
+        if ( summary.conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {
             // If it's unconfigured and of the type RelayGameActivity
             // can handle send it there, otherwise use the full-on

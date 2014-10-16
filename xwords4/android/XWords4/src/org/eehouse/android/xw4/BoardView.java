@@ -21,22 +21,25 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.view.View;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint.FontMetricsInt;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.content.Context;
-import android.util.AttributeSet;
-import org.eehouse.android.xw4.jni.*;
-import android.view.MotionEvent;
 import android.graphics.drawable.Drawable;
-import android.content.res.Resources;
-import android.graphics.Paint.FontMetricsInt;
 import android.os.Build;
-import java.nio.IntBuffer;
+import android.util.AttributeSet;
 import android.util.FloatMath;
+import android.view.MotionEvent;
+import android.view.View;
+import java.nio.IntBuffer;
+import java.util.Set;
+
+import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 import junit.framework.Assert;
 
@@ -64,8 +67,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private Activity m_parent;
     private boolean m_measuredFromDims = false;
     private BoardDims m_dims;
-    private CommsAddrRec.CommsConnType m_connType = 
-        CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
+    private CommsConnTypeSet m_connTypes = null;
 
     private int m_lastSpacing = MULTI_INACTIVE;
 
@@ -196,7 +198,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( layoutBoardOnce() && m_measuredFromDims ) {
                 canvas.drawBitmap( s_bitmap, 0, 0, new Paint() );
                 ConnStatusHandler.draw( m_context, canvas, getResources(), 
-                                        0, 0, m_connType );
+                                        0, 0, m_connTypes );
             } else {
                 DbgUtils.logf( "board not laid out yet" );
             }
@@ -268,13 +270,13 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     // BoardHandler interface implementation
     public void startHandling( Activity parent, JNIThread thread, 
                                int gamePtr, CurGameInfo gi, 
-                               CommsAddrRec.CommsConnType connType ) 
+                               CommsConnTypeSet connTypes ) 
     {
         m_parent = parent;
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
         m_gi = gi;
-        m_connType = connType;
+        m_connTypes = connTypes;
         m_layoutWidth = 0;
         m_layoutHeight = 0;
 

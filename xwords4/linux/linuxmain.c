@@ -1452,11 +1452,11 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 static void
 linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), 
                           XP_Bool XP_UNUSED_DBG(isServer), 
-                          CommsConnType XP_UNUSED_DBG(conType),
+                          const CommsAddrRec* XP_UNUSED_DBG(addr),
                           XP_U16 XP_UNUSED_DBG(nMissing) )
 {
-    XP_LOGF( "%s(isServer=%d, conType=%d, nMissing=%d)", 
-             __func__, isServer, conType, nMissing );
+    XP_LOGF( "%s(isServer=%d, addr=%p, nMissing=%d)", 
+             __func__, isServer, addr, nMissing );
 }
 
 static void

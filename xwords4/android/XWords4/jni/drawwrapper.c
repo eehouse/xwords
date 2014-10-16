@@ -549,7 +549,7 @@ and_draw_getMiniWText( DrawCtx* dctx, XWMiniTextType textHint )
 {
     DRAW_CBK_HEADER( "getMiniWText", "(I)Ljava/lang/String;" );
     jstring jstr = (*env)->CallObjectMethod( env, draw->jdraw, mid,
-                                            textHint );
+                                             textHint );
     const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
     snprintf( draw->miniTextBuf, VSIZE(draw->miniTextBuf), "%s", str );
     (*env)->ReleaseStringUTFChars( env, jstr, str );

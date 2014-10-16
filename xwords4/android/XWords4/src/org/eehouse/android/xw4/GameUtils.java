@@ -107,7 +107,7 @@ public class GameUtils {
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             addr = new CommsAddrRec();
             XwJNI.comms_getAddr( gamePtr, addr );
-            if ( CommsConnType.COMMS_CONN_NONE == addr.conType ) {
+            if ( 0 == addr.conTypes.size() ) {
                 String relayName = XWPrefs.getDefaultRelayHost( context );
                 int relayPort = XWPrefs.getDefaultRelayPort( context );
                 XwJNI.comms_getInitialAddr( addr, relayName, relayPort );
@@ -1016,20 +1016,23 @@ public class GameUtils {
                                   boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, lock );
-        switch( summary.conType ) {
-        case COMMS_CONN_RELAY:
-            tellRelayDied( context, summary, informNow );
-            break;
-        case COMMS_CONN_BT:
-            BTService.gameDied( context, summary.gameID );
-            break;
-        case COMMS_CONN_SMS:
-            if ( null != summary.remoteDevs ) {
-                for ( String dev : summary.remoteDevs ) {
-                    SMSService.gameDied( context, summary.gameID, dev );
+        for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
+              iter.hasNext(); ) {
+            switch( iter.next() ) {
+            case COMMS_CONN_RELAY:
+                tellRelayDied( context, summary, informNow );
+                break;
+            case COMMS_CONN_BT:
+                BTService.gameDied( context, summary.gameID );
+                break;
+            case COMMS_CONN_SMS:
+                if ( null != summary.remoteDevs ) {
+                    for ( String dev : summary.remoteDevs ) {
+                        SMSService.gameDied( context, summary.gameID, dev );
+                    }
                 }
+                break;
             }
-            break;
         }
     }
 

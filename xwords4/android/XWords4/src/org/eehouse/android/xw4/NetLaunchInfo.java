@@ -127,9 +127,10 @@ public class NetLaunchInfo extends AbsLaunchInfo {
         return ub.build();
     }
 
-    public static String makeLaunchJSON( String room, String inviteID, int lang, 
-                                         String dict, int nPlayersT )
+    public static String makeLaunchJSON( String curJson, String room, String inviteID, 
+                                         int lang, String dict, int nPlayersT )
     {
+        Assert.assertNull( curJson );
         String result = null;
         try {
             result = makeLaunchJSONObject( lang, dict, nPlayersT )

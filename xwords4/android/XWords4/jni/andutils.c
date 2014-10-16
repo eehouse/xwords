@@ -418,75 +418,138 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     return mid;
 }
 
+/* Copy C object data into Java object */
 void
 setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 {
     XP_ASSERT( !!addr );
-    intToJenumField( env, jaddr, addr->conType, "conType",
-                     PKG_PATH("jni/CommsAddrRec$CommsConnType") );
+    jobject jtypset = addrTypesToJ( env, addr );
+    XP_ASSERT( !!jtypset );
+    jclass cls = (*env)->GetObjectClass( env, jaddr );
+    XP_ASSERT( !!cls );
+    jfieldID fid = (*env)->GetFieldID( env, cls, "conTypes", 
+                                       "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
+    XP_ASSERT( !!fid );
+    (*env)->SetObjectField( env, jaddr, fid, jtypset );
+    deleteLocalRefs( env, cls, jtypset, DELETE_NO_REF );
 
-    switch ( addr->conType ) {
-    case COMMS_CONN_NONE:
-        break;
-    case COMMS_CONN_RELAY:
-        setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
-        setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
-        setString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite );
-        setBool( env, jaddr, "ip_relay_seeksPublicRoom",
-                 addr->u.ip_relay.seeksPublicRoom );
-        setBool( env, jaddr, "ip_relay_advertiseRoom",
-                 addr->u.ip_relay.advertiseRoom );
-        break;
-    case COMMS_CONN_SMS:
-        setString( env, jaddr, "sms_phone", addr->u.sms.phone );
-        setInt( env, jaddr, "sms_port", addr->u.sms.port );
-        break;
-    case COMMS_CONN_BT:
-        setString( env, jaddr, "bt_hostName", addr->u.bt.hostName );
-        setString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars );
-        break;
-    default:
-        XP_ASSERT(0);
+    CommsConnType typ;
+    for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
+        switch ( typ ) {
+        case COMMS_CONN_NONE:
+            break;
+        case COMMS_CONN_RELAY:
+            setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
+            setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
+            setString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite );
+            setBool( env, jaddr, "ip_relay_seeksPublicRoom",
+                     addr->u.ip_relay.seeksPublicRoom );
+            setBool( env, jaddr, "ip_relay_advertiseRoom",
+                     addr->u.ip_relay.advertiseRoom );
+            break;
+        case COMMS_CONN_SMS:
+            setString( env, jaddr, "sms_phone", addr->u.sms.phone );
+            setInt( env, jaddr, "sms_port", addr->u.sms.port );
+            break;
+        case COMMS_CONN_BT:
+            setString( env, jaddr, "bt_hostName", addr->u.bt.hostName );
+            setString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars );
+            break;
+        default:
+            XP_ASSERT(0);
+        }
     }
+    LOG_RETURN_VOID();
 }
 
+jobject
+addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
+{
+    LOG_FUNC();
+    XP_ASSERT( !!addr );
+    jclass cls = 
+        (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") );
+    XP_ASSERT( !!cls );
+    jmethodID initId = (*env)->GetMethodID( env, cls, "<init>", "()V" );
+    XP_ASSERT( !!initId );
+    jobject result = (*env)->NewObject( env, cls, initId );
+    XP_ASSERT( !!result );
+
+    jmethodID mid2 = getMethodID( env, result, "add", 
+                                  "(Ljava/lang/Object;)Z" );
+    XP_ASSERT( !!mid2 );
+    CommsConnType typ;
+    /* far as it gets */
+    for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
+        jobject jtyp = intToJEnum( env, typ, 
+                                   PKG_PATH("jni/CommsAddrRec$CommsConnType") );
+        XP_ASSERT( !!jtyp );
+        (*env)->CallBooleanMethod( env, result, mid2, jtyp );
+        deleteLocalRef( env, jtyp );
+    }
+    deleteLocalRef( env, cls );
+    LOG_RETURNF( "%p", result );
+    return result;
+}
+
+/* Writes a java version of CommsAddrRec into a C one */
 void
 getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
 {
-    addr->conType =
-        jenumFieldToInt( env, jaddr, "conType",
-                         PKG_PATH("jni/CommsAddrRec$CommsConnType") );
+    /* Iterate over types in the set in jaddr, and for each call
+       addr_addType() and then copy in the types. */
+    LOG_FUNC();
+    jclass cls = (*env)->GetObjectClass( env, jaddr );
+    XP_ASSERT( !!cls );
+    jfieldID fid = (*env)->GetFieldID( env, cls, "conTypes", 
+                                       "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
+    XP_ASSERT( !!fid );         /* failed */
+    jobject jtypeset = (*env)->GetObjectField( env, jaddr, fid );
+    XP_ASSERT( !!jtypeset );
+    jmethodID mid = getMethodID( env, jtypeset, "getTypes", 
+                                 "()[L" PKG_PATH("jni/CommsAddrRec$CommsConnType;") );
+    XP_ASSERT( !!mid );
+    jobject jtypesarr = (*env)->CallObjectMethod( env, jtypeset, mid );
+    XP_ASSERT( !!jtypesarr );
+    jsize len = (*env)->GetArrayLength( env, jtypesarr );
+    for ( int ii = 0; ii < len; ++ii ) {
+        jobject jtype = (*env)->GetObjectArrayElement( env, jtypesarr, ii );
+        jint asInt = jEnumToInt( env, jtype );
+        deleteLocalRef( env, jtype );
+        CommsConnType typ = (CommsConnType)asInt;
 
-    switch ( addr->conType ) {
-    case COMMS_CONN_NONE:
-        break;
-    case COMMS_CONN_RELAY:
-        addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
-        getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
-                   VSIZE(addr->u.ip_relay.hostName) );
-        getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
-                   VSIZE(addr->u.ip_relay.invite) );
-        addr->u.ip_relay.seeksPublicRoom =
-            getBool( env, jaddr, "ip_relay_seeksPublicRoom" );
-        addr->u.ip_relay.advertiseRoom =
-            getBool( env, jaddr, "ip_relay_advertiseRoom" );
+        addr_addType( addr, typ );
 
-        break;
-    case COMMS_CONN_SMS:
-        getString( env, jaddr, "sms_phone", addr->u.sms.phone,
-                   VSIZE(addr->u.sms.phone) );
-        XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
-        addr->u.sms.port = getInt( env, jaddr, "sms_port" );
-        break;
-    case COMMS_CONN_BT:
-        getString( env, jaddr, "bt_hostName", addr->u.bt.hostName,
-                   VSIZE(addr->u.bt.hostName) );
-        getString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars,
-                   VSIZE(addr->u.bt.btAddr.chars) );
-        break;
-    default:
-        XP_ASSERT(0);
+        switch ( typ ) {
+        case COMMS_CONN_RELAY:
+            addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
+            getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
+                       VSIZE(addr->u.ip_relay.hostName) );
+            getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
+                       VSIZE(addr->u.ip_relay.invite) );
+            addr->u.ip_relay.seeksPublicRoom =
+                getBool( env, jaddr, "ip_relay_seeksPublicRoom" );
+            addr->u.ip_relay.advertiseRoom =
+                getBool( env, jaddr, "ip_relay_advertiseRoom" );
+
+            break;
+        case COMMS_CONN_SMS:
+            getString( env, jaddr, "sms_phone", addr->u.sms.phone,
+                       VSIZE(addr->u.sms.phone) );
+            XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
+            addr->u.sms.port = getInt( env, jaddr, "sms_port" );
+            break;
+        case COMMS_CONN_BT:
+            getString( env, jaddr, "bt_hostName", addr->u.bt.hostName,
+                       VSIZE(addr->u.bt.hostName) );
+            getString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars,
+                       VSIZE(addr->u.bt.btAddr.chars) );
+            break;
+        default:
+            XP_ASSERT(0);
+        }
     }
+    deleteLocalRefs( env, cls, jtypeset, jtypesarr, DELETE_NO_REF );
 }
 
 jint

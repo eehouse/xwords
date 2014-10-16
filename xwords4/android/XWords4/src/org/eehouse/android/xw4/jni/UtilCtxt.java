@@ -20,6 +20,8 @@
 
 package org.eehouse.android.xw4.jni;
 
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+
 public interface UtilCtxt {
     static final int BONUS_NONE = 0;
     static final int BONUS_DOUBLE_LETTER = 1;
@@ -129,7 +131,7 @@ public interface UtilCtxt {
     void informNetDict( int lang, String oldName, String newName, 
                         String newSum, CurGameInfo.XWPhoniesChoice phonies );
 
-    void informMissing( boolean isServer, CommsAddrRec.CommsConnType connType,
+    void informMissing( boolean isServer, CommsConnTypeSet connTypes,
                         int nMissingPlayers );
 
     void notifyGameOver();

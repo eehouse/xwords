@@ -27,6 +27,7 @@ import android.net.Uri;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -54,6 +55,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public class GameConfigDelegate extends DelegateBase
     implements View.OnClickListener
@@ -73,7 +75,7 @@ public class GameConfigDelegate extends DelegateBase
     private LinearLayout m_publicRoomsSet;
     private LinearLayout m_privateRoomsSet;
 
-    private CommsConnType m_conType;
+    private CommsConnTypeSet m_conTypes;
     private Button m_addPlayerButton;
     private Button m_jugglePlayersButton;
     private Button m_playButton;
@@ -513,7 +515,7 @@ public class GameConfigDelegate extends DelegateBase
                     int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
                     XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
                 }
-                m_conType = m_carOrig.conType;
+                m_conTypes = m_carOrig.conTypes;
                 XwJNI.game_dispose( gamePtr );
 
                 m_car = new CommsAddrRec( m_carOrig );
@@ -530,7 +532,7 @@ public class GameConfigDelegate extends DelegateBase
                     m_dictSpinner = null;
                 }
 
-                if ( m_conType.equals( CommsConnType.COMMS_CONN_RELAY ) ) {
+                if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                     m_joinPublicCheck = 
                         (CheckBox)findViewById(R.id.join_public_room_check);
                     m_joinPublicCheck.setOnClickListener( this );
@@ -730,11 +732,11 @@ public class GameConfigDelegate extends DelegateBase
                             View.GONE : View.VISIBLE );
         
         m_connectSetRelay.
-            setVisibility( m_conType == CommsConnType.COMMS_CONN_RELAY ?
+            setVisibility( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ?
                            View.VISIBLE : View.GONE );
         if ( XWApp.SMSSUPPORTED ) {
             m_connectSetSMS.
-                setVisibility( m_conType == CommsConnType.COMMS_CONN_SMS ?
+                setVisibility( m_conTypes.contains( CommsConnType.COMMS_CONN_SMS )?
                                View.VISIBLE : View.GONE );
         }
 
@@ -1082,27 +1084,30 @@ public class GameConfigDelegate extends DelegateBase
         position = m_boardsizeSpinner.getSelectedItemPosition();
         m_gi.boardSize = positionToSize( position );
 
-        switch( m_conType ) {
-        case COMMS_CONN_RELAY:
-            m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
-            m_car.ip_relay_advertiseRoom = 
-                getChecked( R.id.advertise_new_room_check );
-            if ( m_car.ip_relay_seeksPublicRoom ) {
-                SpinnerAdapter adapter = m_roomChoose.getAdapter();
-                if ( null != adapter ) {
-                    int pos = m_roomChoose.getSelectedItemPosition();
-                    if ( pos >= 0 && pos < adapter.getCount() ) {
-                        m_car.ip_relay_invite = (String)adapter.getItem(pos);
+        for ( Iterator<CommsConnType> iter = m_conTypes.iterator();
+              iter.hasNext(); ) {
+            switch( iter.next() ) {
+            case COMMS_CONN_RELAY:
+                m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
+                m_car.ip_relay_advertiseRoom = 
+                    getChecked( R.id.advertise_new_room_check );
+                if ( m_car.ip_relay_seeksPublicRoom ) {
+                    SpinnerAdapter adapter = m_roomChoose.getAdapter();
+                    if ( null != adapter ) {
+                        int pos = m_roomChoose.getSelectedItemPosition();
+                        if ( pos >= 0 && pos < adapter.getCount() ) {
+                            m_car.ip_relay_invite = (String)adapter.getItem(pos);
+                        }
                     }
+                } else {
+                    m_car.ip_relay_invite = getText( R.id.room_edit ).trim();
                 }
-            } else {
-                m_car.ip_relay_invite = getText( R.id.room_edit ).trim();
+                break;
+                // nothing to save for BT yet
             }
-            break;
-            // nothing to save for BT yet
         }
 
-        m_car.conType = m_conType;
+        m_car.conTypes = m_conTypes;
     } // saveChanges
 
     private void applyChanges( boolean forceNew )
@@ -1115,7 +1120,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private void launchGame()
     {
-        if ( m_conType == CommsConnType.COMMS_CONN_RELAY 
+        if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && 0 == m_car.ip_relay_invite.length() ) {
             showOKOnlyDialog( R.string.no_empty_rooms );            
         } else {
@@ -1135,24 +1140,31 @@ public class GameConfigDelegate extends DelegateBase
 
     private void setTitle()
     {
-        int strID;
-        switch( m_conType ) {
-        case COMMS_CONN_RELAY:
-            strID = R.string.title_gamenet_config_fmt;
-            break;
-        case COMMS_CONN_BT:
-            strID = R.string.title_gamebt_config_fmt;
-            break;
-        default:
-            strID = R.string.title_game_config_fmt;
-            break;
+        int strID = 0;
+        for ( Iterator<CommsConnType> iter = m_conTypes.iterator();
+              0 == strID && iter.hasNext(); ) {
+            switch( iter.next() ) {
+            case COMMS_CONN_RELAY:
+                strID = R.string.title_gamenet_config_fmt;
+                break;
+            case COMMS_CONN_BT:
+                strID = R.string.title_gamebt_config_fmt;
+                break;
+            default:
+                break;
+            }
         }
+
+        if ( 0 == strID ) {
+            strID = R.string.title_game_config_fmt;
+        }
+
         setTitle( getString( strID, GameUtils.getName( m_activity, m_rowid ) ) );
     }
 
     private boolean localOnlyGame()
     {
-        return m_conType == CommsConnType.COMMS_CONN_NONE;
+        return 0 == m_conTypes.size();
     }
 
     public static void editForResult( Activity parent, int requestCode, 

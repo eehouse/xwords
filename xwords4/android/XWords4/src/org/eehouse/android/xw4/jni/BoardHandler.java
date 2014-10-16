@@ -21,12 +21,12 @@
 package org.eehouse.android.xw4.jni;
 
 import android.app.Activity;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public interface BoardHandler {
 
     void startHandling( Activity parent, JNIThread thread, 
                         int gamePtr, CurGameInfo gi,
-                        CommsConnType connType );
+                        CommsConnTypeSet connTypes );
 
 }
