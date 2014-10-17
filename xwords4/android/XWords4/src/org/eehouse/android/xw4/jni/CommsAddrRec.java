@@ -54,7 +54,7 @@ public class CommsAddrRec {
         public boolean add( CommsConnType typ )
         {
             DbgUtils.logf( "CommsConnTypeSet.add(%s)", typ.toString() );
-            Assert.assertFalse( CommsConnType._COMMS_CONN_NONE == typ );
+            // Assert.assertFalse( CommsConnType._COMMS_CONN_NONE == typ );
             boolean result = CommsConnType._COMMS_CONN_NONE == typ ? true
                 : super.add( typ );
             return result;
