@@ -50,6 +50,16 @@ public class CommsAddrRec {
             return toArray( s_hint );
         }
 
+        @Override
+        public boolean add( CommsConnType typ )
+        {
+            DbgUtils.logf( "CommsConnTypeSet.add(%s)", typ.toString() );
+            Assert.assertFalse( CommsConnType._COMMS_CONN_NONE == typ );
+            boolean result = CommsConnType._COMMS_CONN_NONE == typ ? true
+                : super.add( typ );
+            return result;
+        }
+
         private static final CommsConnType[] s_hint = new CommsConnType[0];
     }
 
