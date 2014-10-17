@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "cd ..; ../scripts/ndkbuild.sh -j3"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright © 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -418,20 +418,27 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     return mid;
 }
 
+void
+setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget, 
+                   const char* fieldName )
+{
+    jobject jtypset = addrTypesToJ( env, addr );
+    XP_ASSERT( !!jtypset );
+    jclass cls = (*env)->GetObjectClass( env, jTarget );
+    XP_ASSERT( !!cls );
+    jfieldID fid = (*env)->GetFieldID( env, cls, fieldName, //"conTypes", 
+                                       "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
+    XP_ASSERT( !!fid );
+    (*env)->SetObjectField( env, jTarget, fid, jtypset );
+    deleteLocalRef( env, jtypset );
+}
+
 /* Copy C object data into Java object */
 void
 setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 {
     XP_ASSERT( !!addr );
-    jobject jtypset = addrTypesToJ( env, addr );
-    XP_ASSERT( !!jtypset );
-    jclass cls = (*env)->GetObjectClass( env, jaddr );
-    XP_ASSERT( !!cls );
-    jfieldID fid = (*env)->GetFieldID( env, cls, "conTypes", 
-                                       "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
-    XP_ASSERT( !!fid );
-    (*env)->SetObjectField( env, jaddr, fid, jtypset );
-    deleteLocalRefs( env, cls, jtypset, DELETE_NO_REF );
+    setTypeSetFieldIn( env, addr, jaddr, "conTypes" );
 
     CommsConnType typ;
     for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {

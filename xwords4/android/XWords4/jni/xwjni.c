@@ -1346,6 +1346,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
         setInt( env, jsummary, "nPacketsPending", 
                 comms_countPendingPackets( state->game.comms ) );
 
+        setTypeSetFieldIn( env, &addr, jsummary, "conTypes" );
+
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
             switch( typ ) {
