@@ -522,10 +522,10 @@ public class DBUtils {
         return result;
     }
 
-    public static HashMap<Long,CommsConnType> 
+    public static HashMap<Long,CommsConnTypeSet> 
         getGamesWithSendsPending( Context context )
     {
-        HashMap<Long, CommsConnType> result = new HashMap<Long,CommsConnType>();
+        HashMap<Long, CommsConnTypeSet> result = new HashMap<Long,CommsConnTypeSet>();
         String[] columns = { ROW_ID, DBHelper.CONTYPE };
         String selection = String.format( "%s > 0", DBHelper.NPACKETSPENDING );
         initDB( context );
@@ -537,8 +537,10 @@ public class DBUtils {
             int indx2 = cursor.getColumnIndex( DBHelper.CONTYPE );
             for ( int ii = 0; cursor.moveToNext(); ++ii ) {
                 long rowid = cursor.getLong( indx1 );
-                CommsConnType typ = CommsConnType.values()[cursor.getInt(indx2)];
-                result.put( rowid, typ );
+                CommsConnTypeSet typs = intToConnTypeSet( cursor.getInt(indx2) );
+                // Better have an address if has pending sends
+                Assert.assertTrue( 0 < typs.size() );
+                result.put( rowid, typs );
             }
             cursor.close();
             db.close();
@@ -2134,6 +2136,7 @@ public class DBUtils {
     private static final int BIT_VECTOR_MASK = 0x8000;
     private static CommsConnTypeSet intToConnTypeSet( int asInt )
     {
+        DbgUtils.logf( "intToConnTypeSet(in: %s)", asInt );
         CommsConnTypeSet result = new CommsConnTypeSet();
         boolean isVector = 0 != (BIT_VECTOR_MASK & asInt);
         asInt &= ~BIT_VECTOR_MASK;
@@ -2142,6 +2145,7 @@ public class DBUtils {
             for ( CommsConnType value : values ) {
                 int ord = value.ordinal();
                 if ( 0 != (asInt & (1 << (ord - 1)))) {
+                    DbgUtils.logf( "intToConnTypeSet: adding %s", value.toString() );
                     result.add( value );
                 }
             }
@@ -2153,9 +2157,11 @@ public class DBUtils {
 
     private static int connTypeSetToInt( CommsConnTypeSet set )
     {
+        DbgUtils.logf( "connTypeSetToInt(setSize: %d)", set.size() );
         int result = BIT_VECTOR_MASK;
         for ( Iterator<CommsConnType> iter = set.iterator(); iter.hasNext(); ) {
             CommsConnType typ = iter.next();
+            DbgUtils.logf( "connTypeSetToInt: adding %s", typ.toString() );
             result |= 1 << (typ.ordinal() - 1);
         }
         return result;

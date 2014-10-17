@@ -46,6 +46,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 
@@ -391,7 +392,8 @@ public class GameUtils {
         }
 
         if ( force ) {
-            HashMap<Long,CommsConnType> games = DBUtils.getGamesWithSendsPending( context );
+            HashMap<Long,CommsConnTypeSet> games = 
+                DBUtils.getGamesWithSendsPending( context );
             if ( 0 < games.size() ) {
                 new ResendTask( context, games, filter, showUI ).execute();
             }
@@ -1076,12 +1078,12 @@ public class GameUtils {
 
     private static class ResendTask extends AsyncTask<Void, Void, Void> {
         private Context m_context;
-        private HashMap<Long,CommsConnType> m_games;
+        private HashMap<Long,CommsConnTypeSet> m_games;
         private boolean m_showUI;
         private CommsConnType m_filter;
         private int m_nSent = 0;
 
-        public ResendTask( Context context, HashMap<Long,CommsConnType> games,
+        public ResendTask( Context context, HashMap<Long,CommsConnTypeSet> games,
                            CommsConnType filter, boolean showUI )
         {
             m_context = context;
@@ -1096,8 +1098,11 @@ public class GameUtils {
             Iterator<Long> iter = m_games.keySet().iterator();
             while ( iter.hasNext() ) {
                 long rowid = iter.next();
-                if ( null != m_filter && m_filter != m_games.get( rowid ) ) {
-                    continue;
+                if ( null != m_filter ) {
+                    CommsConnTypeSet gameSet = m_games.get( rowid );
+                    if ( gameSet != null && ! gameSet.contains( m_filter ) ) {
+                        continue;
+                    }
                 }
 
                 GameLock lock = new GameLock( rowid, false );
