@@ -22,12 +22,14 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.text.TextUtils;
+import java.util.Iterator;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -177,55 +179,63 @@ public class GameSummary {
 
     public String summarizeRole()
     {
-        return "foo";
-        // String result = null;
-        // if ( isMultiGame() ) {
-        //     int fmtID = 0;
-        //     switch ( conType ) {
-        //     case COMMS_CONN_RELAY:
-        //         if ( null == relayID || 0 == relayID.length() ) {
-        //             fmtID = R.string.summary_relay_conf_fmt;
-        //         } else if ( anyMissing() ) {
-        //             fmtID = R.string.summary_relay_wait_fmt;
-        //         } else if ( gameOver ) {
-        //             fmtID = R.string.summary_relay_gameover_fmt;
-        //         } else {
-        //             fmtID = R.string.summary_relay_conn_fmt;
-        //         }
-        //         result = LocUtils.getString( m_context, fmtID, roomName );
-        //         break;
-        //     case COMMS_CONN_BT:
-        //     case COMMS_CONN_SMS:
-        //         if ( anyMissing() ) {
-        //             if ( DeviceRole.SERVER_ISSERVER == serverRole ) {
-        //                 fmtID = R.string.summary_wait_host;
-        //             } else {
-        //                 fmtID = R.string.summary_wait_guest;
-        //             }
-        //         } else if ( gameOver ) {
-        //             fmtID = R.string.summary_gameover;
-        //         } else if ( null != remoteDevs 
-        //                     && CommsConnType.COMMS_CONN_SMS == conType ) {
-        //             result = 
-        //                 LocUtils.getString( m_context, R.string.summary_conn_sms_fmt,
-        //                                     TextUtils.join(", ", m_remotePhones) );
-        //         } else {
-        //             fmtID = R.string.summary_conn;
-        //         }
-        //         if ( null == result ) {
-        //             result = LocUtils.getString( m_context, fmtID );
-        //         }
-        //         break;
-        //     }
-        // }
-        // return result;
+        String result = null;
+        if ( isMultiGame() ) {
+            int fmtID = 0;
+            for ( Iterator<CommsConnType> iter = conTypes.iterator();
+                  null == result && iter.hasNext(); ) {
+                CommsConnType conType = iter.next();
+                DbgUtils.logf( "summarizeRole: got type %s", conType.toString() );
+                switch ( conType ) {
+                case COMMS_CONN_RELAY:
+                    if ( null == relayID || 0 == relayID.length() ) {
+                        fmtID = R.string.summary_relay_conf_fmt;
+                    } else if ( anyMissing() ) {
+                        fmtID = R.string.summary_relay_wait_fmt;
+                    } else if ( gameOver ) {
+                        fmtID = R.string.summary_relay_gameover_fmt;
+                    } else {
+                        fmtID = R.string.summary_relay_conn_fmt;
+                    }
+                    result = LocUtils.getString( m_context, fmtID, roomName );
+                    break;
+                case COMMS_CONN_BT:
+                case COMMS_CONN_SMS:
+                    if ( anyMissing() ) {
+                        if ( DeviceRole.SERVER_ISSERVER == serverRole ) {
+                            fmtID = R.string.summary_wait_host;
+                        } else {
+                            fmtID = R.string.summary_wait_guest;
+                        }
+                    } else if ( gameOver ) {
+                        fmtID = R.string.summary_gameover;
+                    } else if ( null != remoteDevs 
+                                && CommsConnType.COMMS_CONN_SMS == conType ) {
+                        result = 
+                            LocUtils.getString( m_context, R.string.summary_conn_sms_fmt,
+                                                TextUtils.join(", ", m_remotePhones) );
+                    } else {
+                        fmtID = R.string.summary_conn;
+                    }
+                    if ( null == result ) {
+                        result = LocUtils.getString( m_context, fmtID );
+                    }
+                    break;
+                default:
+                    // result = conType.toString();
+                    DbgUtils.logf( "unexpected type: %s", conType.toString() );
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     public boolean isMultiGame()
     {
         // This definition will expand as other transports are added
-        return ( /*null != conType 
-                   && */ serverRole != DeviceRole.SERVER_STANDALONE );
+        return ( null != conTypes && 0 < conTypes.size()
+                 && serverRole != DeviceRole.SERVER_STANDALONE );
     }
 
     private boolean isLocal( int indx )
