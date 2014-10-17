@@ -26,6 +26,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.DbgUtils;
 
@@ -41,16 +43,14 @@ public class CommsAddrRec {
 
     public static class CommsConnTypeSet extends HashSet<CommsConnType> {
 
+        // Called from jni world, where making and using an iterator is too
+        // much trouble.
         public CommsConnType[] getTypes()
         {
-            CommsConnType[] result = new CommsConnType[ size() ];
-            Iterator<CommsConnType> iter = iterator();
-            int indx = 0;
-            while ( iter.hasNext() ) {
-                result[indx++] = iter.next();
-            }
-            return result;
+            return toArray( s_hint );
         }
+
+        private static final CommsConnType[] s_hint = new CommsConnType[0];
     }
 
     // The C equivalent of this struct uses a union for the various
