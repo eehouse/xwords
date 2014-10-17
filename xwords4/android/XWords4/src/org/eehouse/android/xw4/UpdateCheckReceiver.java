@@ -64,6 +64,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_NAME = "name";
     private static final String k_AVERS = "avers";
     private static final String k_GVERS = "gvers";
+    private static final String k_GHASH = "ghash";
     private static final String k_INSTALLER = "installer";
     private static final String k_DEVOK = "devOK";
     private static final String k_APP = "app";
@@ -143,6 +144,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
                 appParams.put( k_AVERS, versionCode );
                 appParams.put( k_GVERS, BuildConstants.GIT_REV );
+                appParams.put( k_GHASH, BuildConstants.GIT_HASH );
                 appParams.put( k_INSTALLER, installer );
                 if ( devOK( context ) ) {
                     appParams.put( k_DEVOK, true );

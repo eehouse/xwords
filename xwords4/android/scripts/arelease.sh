@@ -80,7 +80,7 @@ for PACK_UNSIGNED in $FILES; do
     rm -f $PACK_SIGNED
     zipalign -v 4 $PACK_UNSIGNED $PACK_SIGNED
     [ -n "$XW_WWW_PATH" ] && cp $PACK_SIGNED $XW_WWW_PATH
-    TARGET="${PACK_SIGNED%.apk}_$(git describe).apk"
+    TARGET="${PACK_SIGNED%.apk}_$(git rev-parse --verify HEAD)_$(git describe).apk"
     cp $PACK_SIGNED "${TARGET}"
     echo "created ${TARGET}" >&2
 	[ -n "$LIST_FILE" ] && echo ${TARGET} >> $LIST_FILE
