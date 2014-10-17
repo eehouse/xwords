@@ -144,7 +144,7 @@ def getDictSums():
 def getOrderedApks( path ):
     apks = []
 
-    pattern = path + "/XWords4-release_android_beta_*.apk"
+    pattern = path + "/XWords4-release_*android_beta_*.apk"
 
     files = ((os.stat(apk).st_mtime, apk) for apk in glob.glob(pattern))
     for mtime, file in sorted(files, reverse=True):
