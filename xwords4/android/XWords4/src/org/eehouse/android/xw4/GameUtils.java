@@ -495,10 +495,10 @@ public class GameUtils {
         return rowid;
     }
 
-    public static long makeNewNetGame( Context context, long groupID,
-                                       String room, String inviteID, int[] lang,
-                                       String[] dict, int nPlayersT, 
-                                       int nPlayersH )
+    public static long makeNewRelayGame( Context context, long groupID,
+                                         String room, String inviteID, int[] lang,
+                                         String[] dict, int nPlayersT, 
+                                         int nPlayersH )
     {
         long rowid = -1;
         String relayName = XWPrefs.getDefaultRelayHost( context );
@@ -510,21 +510,21 @@ public class GameUtils {
                                  nPlayersT, nPlayersH, inviteID, 0, false );
     }
 
-    public static long makeNewNetGame( Context context, long groupID, 
+    public static long makeNewRelayGame( Context context, long groupID, 
                                        String room, String inviteID, int lang, 
                                        String dict, int nPlayers )
     {
         int[] langarr = { lang };
         String[] dictArr = { dict };
-        return makeNewNetGame( context, groupID, room, inviteID, langarr, 
-                               dictArr, nPlayers, 1 );
+        return makeNewRelayGame( context, groupID, room, inviteID, langarr, 
+                                 dictArr, nPlayers, 1 );
     }
 
-    public static long makeNewNetGame( Context context, NetLaunchInfo info )
+    public static long makeNewRelayGame( Context context, NetLaunchInfo info )
     {
-        return makeNewNetGame( context, DBUtils.GROUPID_UNSPEC, info.room, 
-                               info.inviteID, info.lang, info.dict, 
-                               info.nPlayersT );
+        return makeNewRelayGame( context, DBUtils.GROUPID_UNSPEC, info.room, 
+                                 info.inviteID, info.lang, info.dict, 
+                                 info.nPlayersT );
     }
 
     public static long makeNewBTGame( Context context, MultiMsgSink sink,

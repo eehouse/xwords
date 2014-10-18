@@ -1846,7 +1846,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         long rowid = DBUtils.ROWID_NOTFOUND;
         if ( ali instanceof NetLaunchInfo ) {
-            rowid = GameUtils.makeNewNetGame( m_activity, (NetLaunchInfo)ali );
+            rowid = GameUtils.makeNewRelayGame( m_activity, (NetLaunchInfo)ali );
         } else if ( ali instanceof BTLaunchInfo ) {
             rowid = GameUtils.makeNewBTGame( m_activity, (BTLaunchInfo)ali );
         } else {
