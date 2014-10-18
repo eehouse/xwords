@@ -317,9 +317,9 @@ public class NewGameDelegate extends DelegateBase {
             if ( networked ) {
                 room = GameUtils.makeRandomID();
                 inviteID = GameUtils.makeRandomID();
-                m_newRowID = GameUtils.makeNewNetGame( m_activity, m_groupID, 
-                                                       room, inviteID, lang, 
-                                                       dict, nPlayers, 1 );
+                m_newRowID = GameUtils.makeNewRelayGame( m_activity, m_groupID, 
+                                                         room, inviteID, lang, 
+                                                         dict, nPlayers, 1 );
             } else {
                 m_newRowID = GameUtils.saveNew( m_activity, 
                                                 new CurGameInfo( m_activity ), 
