@@ -19,6 +19,7 @@
  */
 #include <string.h>
 #include <sys/time.h>
+#include <pthread.h>
 
 #include <jni.h>
 #include <android/log.h>
@@ -37,15 +38,96 @@
 #include "xportwrapper.h"
 #include "anddict.h"
 #include "andutils.h"
+#include "andglobals.h"
 #include "jniutlswrapper.h"
 #include "paths.h"
 
+typedef struct _EnvThreadEntry {
+    JNIEnv* env;
+    pthread_t owner;
+} EnvThreadEntry;
+
+#define MAX_ENV_THREADS 10
+
+struct _EnvThreadInfo {
+    pthread_mutex_t mtxThreads;
+    EnvThreadEntry entries[MAX_ENV_THREADS];
+    XP_U16 nMaps;
+};
+
 /* Globals for the whole game */
 typedef struct _JNIGlobalState {
-    JNIEnv* env;
+    EnvThreadInfo ti;
     DictMgrCtxt* dictMgr;
     MPSLOT
 } JNIGlobalState;
+
+static void
+map_init( EnvThreadInfo* ti )
+{
+    pthread_mutex_init( &ti->mtxThreads, NULL );
+}
+
+static void
+map_destroy( EnvThreadInfo* ti )
+{
+    // XP_ASSERT( 0 == ti->nMaps );
+    XP_LOGF( "%s: had %d threads max", __func__, ti->nMaps );
+    pthread_mutex_destroy( &ti->mtxThreads );
+}
+
+static void
+map_thread( EnvThreadInfo* ti, JNIEnv* env, const char* proc )
+{
+    pthread_t self = pthread_self();
+
+    pthread_mutex_lock( &ti->mtxThreads );
+
+    XP_Bool found = false;
+    for ( int ii = 0; !found && ii < ti->nMaps; ++ii ) {
+        EnvThreadEntry* entry = &ti->entries[ii];
+        found = self == entry->owner;
+        if ( found ) {
+            if ( env != entry->env ) {
+                /* this DOES happen!!! */
+                XP_LOGF( "%s: replacing env %p with env %p for thread %x",
+                         __func__, entry->env, env, (int)self );
+                entry->env = env;
+            }
+        }
+    }
+
+    if ( !found ) {
+        EnvThreadEntry* entry = &ti->entries[ti->nMaps++];
+        entry->owner = self;
+        entry->env = env;
+        XP_LOGF( "%s: mapped env %p to thread %x", __func__, env, (int)self );
+        XP_ASSERT( ti->nMaps < MAX_ENV_THREADS );
+    }
+
+    pthread_mutex_unlock( &ti->mtxThreads );
+}
+
+JNIEnv*
+envForMe( EnvThreadInfo* ti, const char* caller )
+{
+    JNIEnv* result = NULL;
+    pthread_t self = pthread_self();
+    pthread_mutex_lock( &ti->mtxThreads );
+    for ( int ii = 0; ii < ti->nMaps; ++ii ) {
+        if ( self == ti->entries[ii].owner ) {
+            result = ti->entries[ii].env;
+            break;
+        }
+    }
+    pthread_mutex_unlock( &ti->mtxThreads );
+    if( !result ) {
+        XP_LOGF( "no env for %s (thread %x in %d entries)", caller, 
+                 (int)self, ti->nMaps );
+        XP_ASSERT(0);
+    }
+    return result;
+}
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
@@ -55,7 +137,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
     MemPoolCtx* mpool = mpool_make();
 #endif
     JNIGlobalState* state = (JNIGlobalState*)XP_CALLOC( mpool, sizeof(*state) );
-    state->env = env;
+    map_init( &state->ti );
     state->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
     MPASSIGN( state->mpool, mpool );
     LOG_RETURNF( "%p", state );
@@ -69,11 +151,12 @@ Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
     LOG_FUNC();
     if ( 0 != ptr ) {
         JNIGlobalState* state = (JNIGlobalState*)ptr;
-        XP_ASSERT( state->env == env );
+        XP_ASSERT( ENVFORME(&state->ti) == env );
         dmgr_destroy( state->dictMgr );
 #ifdef MEM_DEBUG
         MemPoolCtx* mpool = state->mpool;
 #endif
+        map_destroy( &state->ti );
         XP_FREE( mpool, state );
         mpool_destroy( mpool );
     }
@@ -386,9 +469,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 {
     jboolean result = false;
     JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
-    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) &env, jniu );
+    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) &state->ti, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(state->mpool) env, state->dictMgr, 
-                                     jniutil, jname, jDictBytes, jpath, NULL, check );
+                                     jniutil, jname, jDictBytes, jpath, 
+                                     NULL, check );
     if ( NULL != dict ) {
         if ( NULL != jinfo ) {
             XP_LangCode code = dict_getLangCode( dict );
@@ -435,9 +519,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getTileValue
     return dict_getTileValue( (DictionaryCtxt*)dictPtr, tile );
 }
 
-typedef struct _JNIState {
+struct _JNIState {
     XWGame game;
-    JNIEnv* env;
     JNIGlobalState* globalJNI;
     AndGlobals globals;
     XP_U16 curSaveCount;
@@ -446,38 +529,22 @@ typedef struct _JNIState {
     const char* envSetterFunc;
 #endif
     MPSLOT
-} JNIState;
-
-#ifdef DEBUG
-# define CHECK_ENV()                                                    \
-    if ( state->env != 0 && state->env != env ) {                       \
-        XP_LOGF( "ERROR: %s trying to set env when %s still has it",    \
-                 __func__, state->envSetterFunc );                      \
-        XP_ASSERT( state->env == 0 || state->env == env );              \
-    }                                                                   \
-    state->envSetterFunc = __func__;                                    \
-
-#else
-# define CHECK_ENV()
-#endif
+};
 
 #define XWJNI_START() {                                 \
     XP_ASSERT( 0 != gamePtr );                          \
     JNIState* state = (JNIState*)gamePtr;               \
     MPSLOT;                                             \
     MPASSIGN( mpool, state->mpool);                     \
-    /* if reentrant must be from same thread */         \
-    CHECK_ENV();                                        \
-    JNIEnv* _oldEnv = state->env;                       \
-    state->env = env;
+    XP_ASSERT( !!state->globalJNI );                    \
+    map_thread( &state->globalJNI->ti, env, __func__ ); \
 
 #define XWJNI_START_GLOBALS()                           \
     XWJNI_START()                                       \
     AndGlobals* globals = &state->globals;              \
 
-#define XWJNI_END()                             \
-    state->env = _oldEnv;                       \
-    }
+#define XWJNI_END()                                   \
+    }                                                 \
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
@@ -493,7 +560,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
     JNIState* state = (JNIState*)XP_CALLOC( mpool, sizeof(*state) );
     state->globalJNI = (JNIGlobalState*)jniGlobalPtr;
     AndGlobals* globals = &state->globals;
-    globals->state = (struct JNIState*)state;
+    globals->state = (JNIState*)state;
     MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
 
@@ -511,17 +578,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
   jstring j_lang )
 {
     XWJNI_START_GLOBALS();
+    EnvThreadInfo* ti = &state->globalJNI->ti;
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, j_gi );
     globals->gi = gi;
-    globals->util = makeUtil( MPPARM(mpool) &state->env, j_util, gi, 
+    globals->util = makeUtil( MPPARM(mpool) ti, j_util, gi, 
                               globals );
-    globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
+    globals->jniutil = makeJNIUtil( MPPARM(mpool) ti, jniu );
     DrawCtx* dctx = NULL;
     if ( !!j_draw ) {
-        dctx = makeDraw( MPPARM(mpool) &state->env, j_draw );
+        dctx = makeDraw( MPPARM(mpool) ti, j_draw );
     }
     globals->dctx = dctx;
-    globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, j_procs );
+    globals->xportProcs = makeXportProcs( MPPARM(mpool) ti, j_procs );
     CommonPrefs cp;
     loadCommonPrefs( env, &cp, j_cp );
 
@@ -559,8 +627,6 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
 
     destroyGI( MPPARM(mpool) &globals->gi );
 
-    JNIEnv* oldEnv = state->env;
-    state->env = env;
     game_dispose( &state->game );
 
     destroyDraw( &globals->dctx );
@@ -569,7 +635,6 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     destroyJNIUtil( &globals->jniutil );
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
-    state->env = oldEnv;
     XP_FREE( mpool, state );
     mpool_destroy( mpool );
 } /* game_dispose */
@@ -585,18 +650,18 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeFromStream
     DictionaryCtxt* dict;
     PlayerDicts dicts;
     XWJNI_START_GLOBALS();
+    EnvThreadInfo* ti = &state->globalJNI->ti;
 
     globals->gi = (CurGameInfo*)XP_CALLOC( mpool, sizeof(*globals->gi) );
-    globals->util = makeUtil( MPPARM(mpool) &state->env, 
-                              jutil, globals->gi, globals );
-    globals->jniutil = makeJNIUtil( MPPARM(mpool) &state->env, jniu );
+    globals->util = makeUtil( MPPARM(mpool) ti, jutil, globals->gi, globals);
+    globals->jniutil = makeJNIUtil( MPPARM(mpool) ti, jniu );
     makeDicts( MPPARM(state->globalJNI->mpool) env, state->globalJNI->dictMgr, 
                globals->jniutil, &dict, &dicts, jdictNames, jdicts, jpaths, 
                jlang );
     if ( !!jdraw ) {
-        globals->dctx = makeDraw( MPPARM(mpool) &state->env, jdraw );
+        globals->dctx = makeDraw( MPPARM(mpool) ti, jdraw );
     }
-    globals->xportProcs = makeXportProcs( MPPARM(mpool) &state->env, jprocs );
+    globals->xportProcs = makeXportProcs( MPPARM(mpool) ti, jprocs );
 
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, 
                                               globals->vtMgr, jstream );
@@ -673,7 +738,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1setDraw
 {
     XWJNI_START_GLOBALS();
 
-    DrawCtx* newDraw = makeDraw( MPPARM(mpool) &state->env, jdraw );
+    DrawCtx* newDraw = makeDraw( MPPARM(mpool) &state->globalJNI->ti, jdraw );
     board_setDraw( state->game.board, newDraw );
 
     destroyDraw( &globals->dctx );
@@ -1664,7 +1729,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
     JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
     DictIterData* data = XP_CALLOC( state->mpool, sizeof(*data) );
     data->env = env;
-    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) &data->env, jniu );
+    JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) &state->ti, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(state->mpool) env, state->dictMgr, 
                                      jniutil, jname, jDictBytes, jpath, NULL, 
                                      false );

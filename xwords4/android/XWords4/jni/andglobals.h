@@ -24,6 +24,8 @@
 #include "dictnry.h"
 #include "game.h"
 
+typedef struct _JNIState JNIState;
+
 typedef struct _AndGlobals {
     VTableMgr* vtMgr;
     CurGameInfo* gi;
@@ -31,7 +33,12 @@ typedef struct _AndGlobals {
     XW_UtilCtxt* util;
     struct JNIUtilCtxt* jniutil;
     TransportProcs* xportProcs;
-    struct JNIState* state;
+    JNIState* state;
 } AndGlobals;
+
+typedef struct _EnvThreadInfo EnvThreadInfo;
+
+JNIEnv* envForMe( EnvThreadInfo* ti, const char* caller );
+#define ENVFORME( ti ) envForMe( (ti), __func__ )
 
 #endif

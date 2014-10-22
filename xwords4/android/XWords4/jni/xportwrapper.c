@@ -24,7 +24,7 @@
 
 typedef struct _AndTransportProcs {
     TransportProcs tp;
-    JNIEnv** envp;
+    EnvThreadInfo* ti;
     jobject jxport;
     MPSLOT
 } AndTransportProcs;
@@ -56,7 +56,7 @@ and_xport_getFlags( void* closure )
     jint result = 0;
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
-        JNIEnv* env = *aprocs->envp;
+        JNIEnv* env = ENVFORME( aprocs->ti );
         const char* sig = "()I";
         jmethodID mid = getMethodID( env, aprocs->jxport, "getFlags", sig );
 
@@ -73,7 +73,7 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     LOG_FUNC();
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
-        JNIEnv* env = *aprocs->envp;
+        JNIEnv* env = ENVFORME( aprocs->ti );
         const char* sig = "([BL" PKG_PATH("jni/CommsAddrRec") ";I)I";
         jmethodID mid = getMethodID( env, aprocs->jxport, "transportSend", sig );
 
@@ -94,7 +94,7 @@ and_xport_relayStatus( void* closure, CommsRelayState newState )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
-        JNIEnv* env = *aprocs->envp;
+        JNIEnv* env = ENVFORME( aprocs->ti );
         const char* sig = "(L" PKG_PATH("jni/TransportProcs$CommsRelayState") ";)V";
         jmethodID mid = getMethodID( env, aprocs->jxport, "relayStatus", sig );
 
@@ -111,7 +111,7 @@ and_xport_relayConnd( void* closure, XP_UCHAR* const room, XP_Bool reconnect,
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
-        JNIEnv* env = *aprocs->envp;
+        JNIEnv* env = ENVFORME( aprocs->ti );
         const char* sig = "(Ljava/lang/String;IZI)V";
         jmethodID mid = getMethodID( env, aprocs->jxport, "relayConnd", sig );
 
@@ -129,7 +129,7 @@ and_xport_sendNoConn( const XP_U8* buf, XP_U16 len,
     jboolean result = false;
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs && NULL != aprocs->jxport ) {
-        JNIEnv* env = *aprocs->envp;
+        JNIEnv* env = ENVFORME( aprocs->ti );
 
         const char* sig = "([BLjava/lang/String;)Z";
         jmethodID mid = getMethodID( env, aprocs->jxport, 
@@ -148,7 +148,7 @@ and_xport_relayError( void* closure, XWREASON relayErr )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
-        JNIEnv* env = *aprocs->envp;
+        JNIEnv* env = ENVFORME( aprocs->ti );
         jmethodID mid;
         const char* sig = 
             "(L" PKG_PATH("jni/TransportProcs$XWRELAY_ERROR") ";)V";
@@ -163,16 +163,16 @@ and_xport_relayError( void* closure, XWREASON relayErr )
 }
 
 TransportProcs*
-makeXportProcs( MPFORMAL JNIEnv** envp, jobject jxport )
+makeXportProcs( MPFORMAL EnvThreadInfo* ti, jobject jxport )
 {
     AndTransportProcs* aprocs = NULL;
 
-    JNIEnv* env = *envp;
+    JNIEnv* env = ENVFORME( ti );
     aprocs = (AndTransportProcs*)XP_CALLOC( mpool, sizeof(*aprocs) );
     if ( NULL != jxport ) {
         aprocs->jxport = (*env)->NewGlobalRef( env, jxport );
     }
-    aprocs->envp = envp;
+    aprocs->ti = ti;
     MPASSIGN( aprocs->mpool, mpool );
 
 #ifdef COMMS_XPORT_FLAGSPROC
@@ -192,7 +192,7 @@ void
 destroyXportProcs( TransportProcs** xport )
 {
     AndTransportProcs* aprocs = (AndTransportProcs*)*xport;
-    JNIEnv* env = *aprocs->envp;
+    JNIEnv* env = ENVFORME( aprocs->ti );
     if ( NULL != aprocs->jxport ) {
         (*env)->DeleteGlobalRef( env, aprocs->jxport );
     }

@@ -37,7 +37,7 @@ enum {
 
 typedef struct _AndDraw {
     DrawCtxVTable* vtable;
-    JNIEnv** env;
+    EnvThreadInfo* ti;
     jobject jdraw;             /* global ref; free it! */
     XP_LangCode curLang;
     jobject jCache[JCACHE_COUNT];
@@ -48,7 +48,7 @@ typedef struct _AndDraw {
 static jobject
 makeJRect( AndDraw* draw, int indx, const XP_Rect* rect )
 {
-    JNIEnv* env = *draw->env;
+    JNIEnv* env = ENVFORME( draw->ti );
     jobject robj = draw->jCache[indx];
     int right = rect->left + rect->width;
     int bottom = rect->top + rect->height;
@@ -87,7 +87,7 @@ static jobject
 makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
 {
     XP_U16 ii;
-    JNIEnv* env = *draw->env;
+    JNIEnv* env = ENVFORME( draw->ti );
     jobject jrects = draw->jCache[indx];
     if ( !jrects ) {
         jclass rclass = (*env)->FindClass( env, "android/graphics/Rect");
@@ -122,7 +122,7 @@ static jobject
 makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
 {
     XP_U16 ii;
-    JNIEnv* env = *draw->env;
+    JNIEnv* env = ENVFORME( draw->ti );
     jobject dsiobjs = draw->jCache[indx];
 
     if ( !dsiobjs ) {
@@ -164,7 +164,7 @@ makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
 static jobject
 makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
 {
-    JNIEnv* env = *draw->env;
+    JNIEnv* env = ENVFORME( draw->ti );
     jobject dsiobj = draw->jCache[indx];
 
     if ( !dsiobj ) {
@@ -193,7 +193,7 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
 
 #define DRAW_CBK_HEADER(nam,sig)                                \
     AndDraw* draw = (AndDraw*)dctx;                             \
-    JNIEnv* env = *draw->env;                                   \
+    JNIEnv* env = ENVFORME( draw->ti );                         \
     XP_ASSERT( !!draw->jdraw );                                 \
     jmethodID mid = getMethodID( env, draw->jdraw, nam, sig );
 
@@ -600,15 +600,15 @@ draw_doNothing( DrawCtx* dctx, ... )
 } /* draw_doNothing */
 
 DrawCtx* 
-makeDraw( MPFORMAL JNIEnv** envp, jobject jdraw )
+makeDraw( MPFORMAL EnvThreadInfo* ti, jobject jdraw )
 {
     AndDraw* draw = (AndDraw*)XP_CALLOC( mpool, sizeof(*draw) );
-    JNIEnv* env = *envp;
+    JNIEnv* env = ENVFORME( ti );
     draw->vtable = XP_MALLOC( mpool, sizeof(*draw->vtable) );
     if ( NULL != jdraw ) {
         draw->jdraw = (*env)->NewGlobalRef( env, jdraw );
     }
-    draw->env = envp;
+    draw->ti = ti;
     MPASSIGN( draw->mpool, mpool );
 
     int ii;
@@ -659,7 +659,7 @@ destroyDraw( DrawCtx** dctx )
 {
     if ( !!*dctx ) {
         AndDraw* draw = (AndDraw*)*dctx;
-        JNIEnv* env = *draw->env;
+        JNIEnv* env = ENVFORME( draw->ti );
         if ( NULL != draw->jdraw ) {
             (*env)->DeleteGlobalRef( env, draw->jdraw );
         }

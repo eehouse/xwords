@@ -28,7 +28,7 @@
 
 typedef struct JNIUtilCtxt JNIUtilCtxt;
 
-JNIUtilCtxt* makeJNIUtil( MPFORMAL JNIEnv** env, jobject jniutls );
+JNIUtilCtxt* makeJNIUtil( MPFORMAL EnvThreadInfo* ti, jobject jniutls );
 void destroyJNIUtil( JNIUtilCtxt** jniu );
 
 jobject and_util_makeJBitmap( JNIUtilCtxt* jniu, int nCols, int nRows, 

@@ -35,7 +35,7 @@ typedef struct _TimerStorage {
 
 typedef struct _AndUtil {
     XW_UtilCtxt util;
-    JNIEnv** env;
+    EnvThreadInfo* ti;
     jobject jutil;  /* global ref to object implementing XW_UtilCtxt */
     TimerStorage timerStorage[NUM_TIMERS_PLUS_ONE];
     XP_UCHAR* userStrings[N_AND_USER_STRINGS];
@@ -70,7 +70,7 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #define UTIL_CBK_HEADER(nam,sig)                                        \
     AndUtil* util = (AndUtil*)uc;                                       \
-    JNIEnv* env = *util->env;                                           \
+    JNIEnv* env = ENVFORME( util->ti );                                 \
     if ( NULL != util->jutil ) {                                        \
         jmethodID mid = getMethodID( env, util->jutil, nam, sig )
 
@@ -376,7 +376,7 @@ XP_U32
 and_util_getCurSeconds( XW_UtilCtxt* uc )
 {
     AndUtil* andutil = (AndUtil*)uc;
-    XP_U32 curSeconds = getCurSeconds( *andutil->env );
+    XP_U32 curSeconds = getCurSeconds( ENVFORME( andutil->ti ) );
     /* struct timeval tv; */
     /* gettimeofday( &tv, NULL ); */
     /* XP_LOGF( "%s: %d vs %d", __func__, (int)tv.tv_sec, (int)curSeconds ); */
@@ -394,7 +394,7 @@ and_util_makeEmptyDict( XW_UtilCtxt* uc )
     AndUtil* andutil = (AndUtil*)uc;
     DictionaryCtxt* result =  
         and_dictionary_make_empty( MPPARM( ((AndUtil*)uc)->util.mpool )
-                                   *andutil->env, globals->jniutil );
+                                   ENVFORME( andutil->ti ), globals->jniutil );
     return dict_ref( result );
 #endif
 }
@@ -637,7 +637,7 @@ static XP_UCHAR*
 and_util_md5sum( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len )
 {
     AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
+    JNIEnv* env = ENVFORME( util->ti );
     AndGlobals* globals = (AndGlobals*)uc->closure;
     struct JNIUtilCtxt* jniutil = globals->jniutil;
     jstring jsum = and_util_getMD5SumForBytes( jniutil, ptr, len );
@@ -649,13 +649,13 @@ and_util_md5sum( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len )
 
 
 XW_UtilCtxt*
-makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi, 
+makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi, 
           AndGlobals* closure )
 {
     AndUtil* util = (AndUtil*)XP_CALLOC( mpool, sizeof(*util) );
     UtilVtable* vtable = (UtilVtable*)XP_CALLOC( mpool, sizeof(*vtable) );
-    util->env = envp;
-    JNIEnv* env = *envp;
+    util->ti = ti;
+    JNIEnv* env = ENVFORME( util->ti );
     if ( NULL != jutil ) {
         util->jutil = (*env)->NewGlobalRef( env, jutil );
     }
@@ -743,7 +743,7 @@ void
 destroyUtil( XW_UtilCtxt** utilc )
 {
     AndUtil* util = (AndUtil*)*utilc;
-    JNIEnv *env = *util->env;
+    JNIEnv* env = ENVFORME( util->ti );
 
     int ii;
     for ( ii = 0; ii < VSIZE(util->userStrings); ++ii ) {

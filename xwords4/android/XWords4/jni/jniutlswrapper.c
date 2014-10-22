@@ -24,17 +24,17 @@
 
 
 struct JNIUtilCtxt {
-    JNIEnv** envp;
+    EnvThreadInfo* ti;
     jobject jjniutil;
     MPSLOT;
 };
 
 JNIUtilCtxt* 
-makeJNIUtil( MPFORMAL JNIEnv** envp, jobject jniutls )
+makeJNIUtil( MPFORMAL EnvThreadInfo* ti, jobject jniutls )
 {
     JNIUtilCtxt* ctxt = (JNIUtilCtxt*)XP_CALLOC( mpool, sizeof( *ctxt ) );
-    JNIEnv* env = *envp;
-    ctxt->envp = envp;
+    ctxt->ti = ti;
+    JNIEnv* env = ENVFORME( ti );
     ctxt->jjniutil = (*env)->NewGlobalRef( env, jniutls );
     MPASSIGN( ctxt->mpool, mpool );
     return ctxt;
@@ -45,7 +45,7 @@ destroyJNIUtil( JNIUtilCtxt** ctxtp )
 {
     JNIUtilCtxt* ctxt = *ctxtp;
     if ( !!ctxt ) {
-        JNIEnv* env = *ctxt->envp;
+        JNIEnv* env = ENVFORME( ctxt->ti );
         (*env)->DeleteGlobalRef( env, ctxt->jjniutil );
         XP_FREE( ctxt->mpool, ctxt );
         *ctxtp = NULL;
@@ -59,7 +59,7 @@ and_util_makeJBitmap( JNIUtilCtxt* jniutil, int nCols, int nRows,
                       const jboolean* colors )
 {
     jobject bitmap;
-    JNIEnv* env = *jniutil->envp;
+    JNIEnv* env = ENVFORME( jniutil->ti );
     jmethodID mid
         = getMethodID( env, jniutil->jjniutil, "makeBitmap", 
                        "(II[Z)Landroid/graphics/drawable/BitmapDrawable;" );
@@ -79,7 +79,7 @@ and_util_splitFaces( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len,
                      XP_Bool isUTF8 )
 {
     jobject strarray = NULL;
-    JNIEnv* env = *jniutil->envp;
+    JNIEnv* env = ENVFORME( jniutil->ti );
     jmethodID mid
         = getMethodID( env, jniutil->jjniutil, "splitFaces",
                        "([BZ)[[Ljava/lang/String;" );
@@ -96,7 +96,7 @@ jstring
 and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
                            const XP_U8* bytes, jsize len )
 {
-    JNIEnv* env = *jniutil->envp;
+    JNIEnv* env = ENVFORME( jniutil->ti );
     jmethodID mid = getMethodID( env, jniutil->jjniutil, "getMD5SumFor",
                                  "(Ljava/lang/String;[B)Ljava/lang/String;" );
     jstring jname = (*env)->NewStringUTF( env, name );
@@ -112,7 +112,7 @@ and_util_getMD5SumForDict( JNIUtilCtxt* jniutil, const XP_UCHAR* name,
 jstring
 and_util_getMD5SumForBytes( JNIUtilCtxt* jniutil, const XP_U8* bytes, jsize len )
 {
-    JNIEnv* env = *jniutil->envp;
+    JNIEnv* env = ENVFORME( jniutil->ti );
     jmethodID mid = getMethodID( env, jniutil->jjniutil, "getMD5SumFor",
                                  "([B)Ljava/lang/String;" );
 
