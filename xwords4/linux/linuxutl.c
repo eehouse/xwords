@@ -310,7 +310,7 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     case STRD_ROBOT_TRADED:
         return (XP_UCHAR*)"%d tiles traded this turn.";
     case STR_ROBOT_MOVED:
-        return (XP_UCHAR*)"The robot moved:\n";
+        return (XP_UCHAR*)"The robot \"%s\" moved:\n";
     case STRS_REMOTE_MOVED:
         return (XP_UCHAR*)"Remote player \"%s\" moved:\n";
 

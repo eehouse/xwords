@@ -150,7 +150,7 @@ public class UtilCtxtImpl implements UtilCtxt {
             id = R.string.strd_robot_traded_fmt;
             break;
         case UtilCtxt.STR_ROBOT_MOVED:
-            id = R.string.str_robot_moved;
+            id = R.string.str_robot_moved_fmt;
             break;
         case UtilCtxt.STRS_VALUES_HEADER:
             id = R.string.strs_values_header_fmt;

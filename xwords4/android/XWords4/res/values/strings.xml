@@ -679,7 +679,7 @@
       -->
 
     <!-- Notifies user of a normal robot move -->
-    <string name="str_robot_moved">The robot made this move:\u0020</string>
+    <string name="str_robot_moved_fmt">The robot %1$s made this move:\u0020</string>
     <!-- Notifies user of a robot trade move -->
     <string name="strd_robot_traded_fmt">exchanged %1$d tiles.</string>
     <!-- title for window you get when you select menu with text
@@ -795,14 +795,17 @@
     <!-- clarification of the above -->
     <string name="prefs_names_summary">Default player names</string>
 
-    <!-- Label for the first "player name" preference -->
+    <!-- Label for the first player color preference -->
     <string name="pref_player1_name">First player</string>
-    <!-- Label for the second "player name" preference (unused)-->
+    <!-- Label for the second player color preference -->
     <string name="pref_player2_name">Second player</string>
-    <!-- Label for the third "player name" preference (unused) -->
+    <!-- Label for the third player color preference -->
     <string name="pref_player3_name">Third player</string>
-    <!-- Label for the fourth "player name" preference (unused)-->
+    <!-- Label for the fourth player color preference -->
     <string name="pref_player4_name">Fourth player</string>
+
+    <!-- Label for the first "human player" name preference -->
+    <string name="pref_human_name">Human player</string>
 
     <!-- Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. -->

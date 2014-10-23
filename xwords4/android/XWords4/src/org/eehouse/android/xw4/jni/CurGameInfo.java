@@ -103,8 +103,9 @@ public class CurGameInfo {
         int count = 0;
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             LocalPlayer lp = players[ii];
-            if ( lp.isLocal && !lp.isRobot() ) {
-                lp.name = CommonPrefs.getDefaultPlayerName( context, count++ );
+            if ( lp.isLocal ) {
+                lp.name = lp.isRobot() ? CommonPrefs.getDefaultRobotName( context )
+                    : CommonPrefs.getDefaultPlayerName( context, count++ );
             }
         }
 

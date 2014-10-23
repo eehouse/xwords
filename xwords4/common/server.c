@@ -1005,14 +1005,12 @@ showPrevScore( ServerCtxt* server )
         lp = &gi->players[prevTurn];
 
         if ( LP_IS_LOCAL(lp) ) {
-            /* Why can't a local non-robot have postponed score? */
-            // XP_ASSERT( LP_IS_ROBOT(lp) );
             str = util_getUserString( util, STR_ROBOT_MOVED );
         } else {
             str = util_getUserString( util, STRS_REMOTE_MOVED );
-            XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
-            str = buf;
         }
+        XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
+        str = buf;
 
         stream = mkServerStream( server );
         stream_catString( stream, str );
