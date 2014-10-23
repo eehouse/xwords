@@ -63,21 +63,7 @@ typedef struct _JNIGlobalState {
 } JNIGlobalState;
 
 static void
-map_init( EnvThreadInfo* ti )
-{
-    pthread_mutex_init( &ti->mtxThreads, NULL );
-}
-
-static void
-map_destroy( EnvThreadInfo* ti )
-{
-    // XP_ASSERT( 0 == ti->nMaps );
-    XP_LOGF( "%s: had %d threads max", __func__, ti->nMaps );
-    pthread_mutex_destroy( &ti->mtxThreads );
-}
-
-static void
-map_thread( EnvThreadInfo* ti, JNIEnv* env, const char* proc )
+map_thread( EnvThreadInfo* ti, JNIEnv* env )
 {
     pthread_t self = pthread_self();
 
@@ -106,6 +92,21 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env, const char* proc )
     }
 
     pthread_mutex_unlock( &ti->mtxThreads );
+}
+
+static void
+map_init( EnvThreadInfo* ti, JNIEnv* env )
+{
+    pthread_mutex_init( &ti->mtxThreads, NULL );
+    map_thread( ti, env );
+}
+
+static void
+map_destroy( EnvThreadInfo* ti )
+{
+    // XP_ASSERT( 0 == ti->nMaps );
+    XP_LOGF( "%s: had %d threads max", __func__, ti->nMaps );
+    pthread_mutex_destroy( &ti->mtxThreads );
 }
 
 JNIEnv*
@@ -137,7 +138,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
     MemPoolCtx* mpool = mpool_make();
 #endif
     JNIGlobalState* state = (JNIGlobalState*)XP_CALLOC( mpool, sizeof(*state) );
-    map_init( &state->ti );
+    map_init( &state->ti, env );
     state->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
     MPASSIGN( state->mpool, mpool );
     LOG_RETURNF( "%p", state );
@@ -537,7 +538,7 @@ struct _JNIState {
     MPSLOT;                                             \
     MPASSIGN( mpool, state->mpool);                     \
     XP_ASSERT( !!state->globalJNI );                    \
-    map_thread( &state->globalJNI->ti, env, __func__ ); \
+    map_thread( &state->globalJNI->ti, env );           \
 
 #define XWJNI_START_GLOBALS()                           \
     XWJNI_START()                                       \
