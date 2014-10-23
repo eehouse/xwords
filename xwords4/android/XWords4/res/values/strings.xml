@@ -679,7 +679,7 @@
       -->
 
     <!-- Notifies user of a normal robot move -->
-    <string name="str_robot_moved">The robot made this move:\u0020</string>
+    <string name="str_robot_moved_fmt">The robot %1$s made this move:\u0020</string>
     <!-- Notifies user of a robot trade move -->
     <string name="strd_robot_traded_fmt">exchanged %1$d tiles.</string>
     <!-- title for window you get when you select menu with text

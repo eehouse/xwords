@@ -2391,7 +2391,7 @@ public final class R {
       
  Notifies user of a normal robot move 
          */
-        public static final int str_robot_moved=0x7f050110;
+        public static final int str_robot_moved_fmt=0x7f050110;
         /**  Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. 

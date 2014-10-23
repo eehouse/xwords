@@ -571,7 +571,7 @@
        ############################################################
       -->
   <!-- Notifies user of a normal robot move -->
-  <string name="str_robot_moved">Eht tobor edam siht evom:\u0020</string>
+  <string name="str_robot_moved_fmt">Eht tobor %1$s edam siht evom:\u0020</string>
   <!-- Notifies user of a robot trade move -->
   <string name="strd_robot_traded_fmt">degnahcxe %1$d selit.</string>
   <!-- title for window you get when you select menu with text

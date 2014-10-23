@@ -574,7 +574,7 @@
        ############################################################
       -->
   <!-- Notifies user of a normal robot move -->
-  <string name="str_robot_moved">O robô fez esta jogada:\u0020</string>
+  <!--string name="str_robot_moved">O robô fez esta jogada:\u0020</string-->
   <!-- Notifies user of a robot trade move -->
   <string name="strd_robot_traded_fmt">trocou %1$d pedras.</string>
   <!-- title for window you get when you select menu with text
