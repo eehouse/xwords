@@ -678,14 +678,16 @@
   <string name="prefs_names">Reyalp seman</string>
   <!-- clarification of the above -->
   <string name="prefs_names_summary">Tluafed reyalp seman</string>
-  <!-- Label for the first "player name" preference -->
+  <!-- Label for the first player color preference -->
   <string name="pref_player1_name">Tsrif reyalp</string>
-  <!-- Label for the second "player name" preference (unused)-->
+  <!-- Label for the second player color preference -->
   <string name="pref_player2_name">Dnoces reyalp</string>
-  <!-- Label for the third "player name" preference (unused) -->
+  <!-- Label for the third player color preference -->
   <string name="pref_player3_name">Driht reyalp</string>
-  <!-- Label for the fourth "player name" preference (unused)-->
+  <!-- Label for the fourth player color preference -->
   <string name="pref_player4_name">Htruof reyalp</string>
+  <!-- Label for the first "human player" name preference -->
+  <string name="pref_human_name">Namuh reyalp</string>
   <!-- Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. -->
   <string name="tell_unused">Ton desu tey…</string>

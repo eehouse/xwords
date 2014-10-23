@@ -174,14 +174,7 @@ public class CommonPrefs extends XWPrefs {
     public static String getDefaultPlayerName( Context context, int num,
                                                boolean force )
     {
-        int id = 0;
-        switch( num ) {
-        case 0: id = R.string.key_player1_name; break;
-        case 1: id = R.string.key_player2_name; break;
-        case 2: id = R.string.key_player3_name; break;
-        case 3: id = R.string.key_player4_name; break;
-        }
-        String result = getPrefsString( context, id );
+        String result = getPrefsString( context, R.string.key_player1_name );
         if ( null != result && 0 == result.length() ) {
             result = null;      // be consistent
         }
@@ -195,6 +188,11 @@ public class CommonPrefs extends XWPrefs {
     public static String getDefaultPlayerName( Context context, int num )
     {
         return getDefaultPlayerName( context, num, true );
+    }
+
+    public static String getDefaultRobotName( Context context )
+    {
+        return getPrefsString( context, R.string.key_robot_name );
     }
 
     public static void setDefaultPlayerName( Context context, String value )
