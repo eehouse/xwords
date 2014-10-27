@@ -49,6 +49,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 
 public class GameUtils {
 
@@ -451,6 +452,17 @@ public class GameUtils {
         return rowid;
     }
 
+    public static long makeNewMultiGame( Context context, NetLaunchInfo nli )
+    {
+        DbgUtils.logf( "makeNewMultiGame(nli=%s)", nli.toString() );
+        CommsAddrRec addr = nli.makeAddrRec( context );
+
+        return makeNewMultiGame( context, null, DBUtils.GROUPID_UNSPEC, addr, 
+                                 new int[] {nli.lang}, new String[] { nli.dict }, 
+                                 nli.nPlayersT, 1, nli.inviteID, 
+                                 nli.gameID, false );
+    }
+
     private static long makeNewMultiGame( Context context, long groupID, 
                                           CommsAddrRec addr,
                                           int[] lang, String[] dict,
@@ -507,9 +519,10 @@ public class GameUtils {
         int relayPort = XWPrefs.getDefaultRelayPort( context );
         CommsAddrRec addr = new CommsAddrRec( relayName, relayPort );
         addr.ip_relay_invite = room;
+        addr.conTypes.add( CommsConnType.COMMS_CONN_BT );
 
         return makeNewMultiGame( context, groupID, addr, lang, dict, 
-                                 nPlayersT, nPlayersH, inviteID, 0, false );
+                                 nPlayersT, nPlayersH, inviteID, 0, true );
     }
 
     public static long makeNewRelayGame( Context context, long groupID, 
@@ -555,11 +568,13 @@ public class GameUtils {
                               lang,  dict, nPlayersT, nPlayersH );
     }
 
-    public static long makeNewBTGame( Context context, BTLaunchInfo bli )
+    public static long makeNewBTGame( Context context, NetLaunchInfo nli )
     {
-        return makeNewBTGame( context, null, DBUtils.GROUPID_UNSPEC, bli.gameID, 
-                              bli.getAddrRec(), bli.lang, bli.dict, 
-                              bli.nPlayersT, 1 );
+        Assert.fail();
+        return -1;
+        // return makeNewBTGame( context, null, DBUtils.GROUPID_UNSPEC, nli.gameID, 
+        //                       nli.btAddress, nli.lang, nli.dict, 
+        //                       nli.nPlayersT, 1 );
     }
 
     public static long makeNewBTGame( Context context, MultiMsgSink sink, 
@@ -567,17 +582,19 @@ public class GameUtils {
                                       int lang, String dict,
                                       int nPlayersT, int nPlayersH )
     {
-        long rowid = -1;
-        int[] langa = { lang };
-        String[] dicta = { dict };
-        boolean isHost = null == addr;
-        if ( isHost ) { 
-            addr = new CommsAddrRec( null, null );
-        }
-        String inviteID = GameUtils.formatGameID( gameID );
-        return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
-                                 nPlayersT, nPlayersH, inviteID, gameID, 
-                                 isHost );
+        Assert.fail();
+        return -1;
+        // long rowid = -1;
+        // int[] langa = { lang };
+        // String[] dicta = { dict };
+        // boolean isHost = null == addr;
+        // if ( isHost ) { 
+        //     addr = new CommsAddrRec( null, null );
+        // }
+        // String inviteID = GameUtils.formatGameID( gameID );
+        // return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
+        //                          nPlayersT, nPlayersH, inviteID, gameID, 
+        //                          isHost );
     }
 
     public static long makeNewSMSGame( Context context, int gameID, 
@@ -607,69 +624,115 @@ public class GameUtils {
                                  isHost );
     }
 
-    public static void launchInviteActivity( Activity activity, int chosen,
-                                             String room, String inviteID,
-                                             int lang, String dict, 
-                                             int nPlayers )
+    public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
     {
-        Assert.assertNotNull( inviteID );
+        DbgUtils.logf( "launchEmailInviteActivity: nli=%s", nli.makeLaunchJSON() );
+        Uri gameUri = nli.makeLaunchUri( activity );
+        DbgUtils.logf( "launchEmailInviteActivity: uri=%s", gameUri );
 
-        if ( DlgDelegate.NFC_BTN == chosen ) {
-            Utils.showToast( activity, R.string.sms_ready_text );
-        } else {
-            Uri gameUri = NetLaunchInfo.makeLaunchUri( activity, room, inviteID,
-                                                       lang, dict, nPlayers );
-            String msgString = null == gameUri ? null : gameUri.toString();
+        String msgString = null == gameUri ? null : gameUri.toString();
+        if ( null != msgString ) {
+            int choiceID;
+            String message = LocUtils.getString( activity, R.string.invite_htm_fmt, msgString );
 
-            if ( null != msgString ) {
-                boolean choseEmail = DlgDelegate.EMAIL_BTN == chosen;
+            Intent intent = new Intent();
+            intent.setAction( Intent.ACTION_SEND );
+            String subject =
+                LocUtils.getString( activity, R.string.invite_subject_fmt, 
+                                    nli.room );
+            intent.putExtra( Intent.EXTRA_SUBJECT, subject );
+            intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
-                int fmtId = choseEmail? R.string.invite_htm_fmt : R.string.invite_txt_fmt;
-                int choiceID;
-                String message = LocUtils.getString( activity, fmtId, msgString );
-
-                Intent intent = new Intent();
-                if ( choseEmail ) {
-                    intent.setAction( Intent.ACTION_SEND );
-                    String subject =
-                        LocUtils.getString( activity, R.string.invite_subject_fmt, 
-                                            room );
-                    intent.putExtra( Intent.EXTRA_SUBJECT, subject );
-                    intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
-
-                    File attach = null;
-                    File tmpdir = XWApp.ATTACH_SUPPORTED ? 
-                        DictUtils.getDownloadDir( activity ) : null;
-                    if ( null != tmpdir ) { // no attachment
-                        attach = makeJsonFor( tmpdir, room, inviteID, lang, 
-                                              dict, nPlayers );
-                    }
-
-                    if ( null == attach ) { // no attachment
-                        intent.setType( "message/rfc822");
-                    } else {
-                        String mime = LocUtils.getString( activity, R.string.invite_mime );
-                        intent.setType( mime );
-                        Uri uri = Uri.fromFile( attach );
-                        intent.putExtra( Intent.EXTRA_STREAM, uri );
-                    }
-
-                    choiceID = R.string.invite_chooser_email;
-                } else {
-                    intent.setAction( Intent.ACTION_VIEW );
-                    intent.setType( "vnd.android-dir/mms-sms" );
-                    intent.putExtra( "sms_body", message );
-                    choiceID = R.string.invite_chooser_sms;
-                }
-
-                String choiceType = LocUtils.getString( activity, choiceID );
-                String chooserMsg = 
-                    LocUtils.getString( activity, R.string.invite_chooser_fmt, 
-                                        choiceType );
-                activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
+            File attach = null;
+            File tmpdir = XWApp.ATTACH_SUPPORTED ? 
+                DictUtils.getDownloadDir( activity ) : null;
+            if ( null != tmpdir ) { // no attachment
+                attach = makeJsonFor( tmpdir, nli );
             }
+
+            if ( null == attach ) { // no attachment
+                intent.setType( "message/rfc822");
+            } else {
+                String mime = LocUtils.getString( activity, R.string.invite_mime );
+                intent.setType( mime );
+                Uri uri = Uri.fromFile( attach );
+                intent.putExtra( Intent.EXTRA_STREAM, uri );
+            }
+
+            String choiceType = LocUtils.getString( activity, R.string.invite_chooser_email );
+            String chooserMsg = 
+                LocUtils.getString( activity, R.string.invite_chooser_fmt, 
+                                    choiceType );
+            activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
         }
     }
+
+    // public static void launchInviteActivity( Activity activity, 
+    //                                          InviteMeans means, 
+    //                                          String room, String inviteID,
+    //                                          int lang, String dict, 
+    //                                          int nPlayers )
+    // {
+    //     Assert.assertNotNull( inviteID );
+
+    //     if ( InviteMeans.NFC == means ) {
+    //         Utils.showToast( activity, R.string.sms_ready_text );
+    //     } else {
+    //         // NetLaunchInfo nli = new NetLaunchInfo( 0, lang, dict, nPlayers );
+
+    //         Uri gameUri = NetLaunchInfo.makeLaunchUri( activity, room, inviteID,
+    //                                                    lang, dict, nPlayers );
+    //         String msgString = null == gameUri ? null : gameUri.toString();
+
+    //         if ( null != msgString ) {
+    //             boolean choseEmail = InviteMeans.EMAIL == means;
+
+    //             int fmtId = choseEmail? R.string.invite_htm_fmt : R.string.invite_txt_fmt;
+    //             int choiceID;
+    //             String message = LocUtils.getString( activity, fmtId, msgString );
+
+    //             Intent intent = new Intent();
+    //             if ( choseEmail ) {
+    //                 intent.setAction( Intent.ACTION_SEND );
+    //                 String subject =
+    //                     LocUtils.getString( activity, R.string.invite_subject_fmt, 
+    //                                         room );
+    //                 intent.putExtra( Intent.EXTRA_SUBJECT, subject );
+    //                 intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+
+    //                 File attach = null;
+    //                 File tmpdir = XWApp.ATTACH_SUPPORTED ? 
+    //                     DictUtils.getDownloadDir( activity ) : null;
+    //                 if ( null != tmpdir ) { // no attachment
+    //                     attach = makeJsonFor( tmpdir, room, inviteID, lang, 
+    //                                           dict, nPlayers );
+    //                 }
+
+    //                 if ( null == attach ) { // no attachment
+    //                     intent.setType( "message/rfc822");
+    //                 } else {
+    //                     String mime = LocUtils.getString( activity, R.string.invite_mime );
+    //                     intent.setType( mime );
+    //                     Uri uri = Uri.fromFile( attach );
+    //                     intent.putExtra( Intent.EXTRA_STREAM, uri );
+    //                 }
+
+    //                 choiceID = R.string.invite_chooser_email;
+    //             } else {
+    //                 intent.setAction( Intent.ACTION_VIEW );
+    //                 intent.setType( "vnd.android-dir/mms-sms" );
+    //                 intent.putExtra( "sms_body", message );
+    //                 choiceID = R.string.invite_chooser_sms;
+    //             }
+
+    //             String choiceType = LocUtils.getString( activity, choiceID );
+    //             String chooserMsg = 
+    //                 LocUtils.getString( activity, R.string.invite_chooser_fmt, 
+    //                                     choiceType );
+    //             activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
+    //         }
+    //     }
+    // }
 
     public static String[] dictNames( Context context, long rowid,
                                       int[] missingLang ) 
@@ -822,6 +885,7 @@ public class GameUtils {
                     XwJNI.comms_resendAll( gamePtr, false, false );
 
                     for ( byte[] msg : msgs ) {
+                        Assert.assertNotNull( ret );
                         draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
                             || draw;
                     }
@@ -1049,22 +1113,14 @@ public class GameUtils {
         }
     }
 
-    private static File makeJsonFor( File dir, String room, String inviteID,
-                                     int lang, String dict, int nPlayers )
+    private static File makeJsonFor( File dir, NetLaunchInfo nli )
     {
         File result = null;
         if ( XWApp.ATTACH_SUPPORTED ) {
-            JSONObject json = new JSONObject();
-            try {
-                json.put( MultiService.ROOM, room );
-                json.put( MultiService.INVITEID, inviteID );
-                json.put( MultiService.LANG, lang );
-                json.put( MultiService.DICT, dict );
-                json.put( MultiService.NPLAYERST, nPlayers );
-                byte[] data = json.toString().getBytes();
+            byte[] data = nli.makeLaunchJSON().getBytes();
 
-                File file = new File( dir, 
-                                      String.format("invite_%s", room ) );
+            File file = new File( dir, String.format("invite_%d", nli.gameID ));
+            try {
                 FileOutputStream fos = new FileOutputStream( file );
                 fos.write( data, 0, data.length );
                 fos.close();

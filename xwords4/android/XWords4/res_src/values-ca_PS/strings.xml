@@ -981,18 +981,23 @@
   <!-- The invitation process begins with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
-  <string name="sms_or_email">SEND INVITATION USING SMS (TEXTING) OR
-       VIA EMAIL?</string>
-  <string name="nfc_or_email">SEND INVITATION USING NFC (ANDROID
-    BEAMING – NEW) OR VIA EMAIL?</string>
-  <string name="nfc_or_sms_or_email">SEND INVITATION USING SMS
-    (TEXTING) OR NFC (\"ANDROID BEAMING\" – NEW) OR VIA EMAIL?</string>
+  <string name="invite_choice_sms">SMS (TEXTING)</string>
+  <string name="invite_choice_email">EMAIL</string>
+  <string name="invite_choice_bt">BLUETOOTH</string>
+  <string name="invite_choice_nfc">NFC (\"ANDROID BEAMING\")</string>
+  <string name="invite_choice_title">HOW WOULD YOU LIKE TO SEND THIS INVITATION?</string>
+  <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
+  <!--    via email?</string> -->
+  <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
+  <!-- beaming – NEW) or via email?</string> -->
+  <!-- <string name="nfc_or_sms_or_email">Send invitation using SMS -->
+  <!-- (texting) or NFC (\"Android beaming\" – NEW) or via email?</string> -->
   <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
-  <string name="button_text">SMS/TEXT</string>
-  <string name="button_html">EMAIL</string>
-  <string name="button_nfc">NFC</string>
+  <!-- <string name="button_text">SMS/Text</string>   -->
+  <!-- <string name="button_html">Email</string>   -->
+  <!-- <string name="button_nfc">NFC</string> -->
   <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
   <string name="invite_subject_fmt">LET\'S PLAY CROSSWORDS (ROOM %1$s)</string>
@@ -1845,10 +1850,10 @@
   <string name="no_hide_titlebar">THIS SETTING IS IGNORED ON DEVICES
     LIKE YOURS THAT DEPEND ON THE \"ACTION BAR.\"</string>
   <string name="sms_ready_text">TAP THE RECEIVING DEVICE NOW</string>
-  <string name="not_again_sms_ready">YOU HAVE NFC ENABLED. THAT
-    MEANS THAT ANY TIME A BOARD THAT\'S MISSING A PLAYER IS OPEN, YOU
-    CAN TAP A NEARBY PERSON\'S DEVICE TO INVITE HIM/HER TO
-    PLAY – IF HE/SHE IS ALSO USING NFC.</string>
+  <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->
+  <!-- means that any time a board that\'s missing a player is open, you -->
+  <!-- can tap a nearby person\'s device to invite him/her to -->
+  <!-- play – if he/she is also using NFC.</string> -->
   <string name="pct_suffix">\u0020PCT.</string>
   <string name="menu_rateme">RATE CROSSWORDS</string>
   <string name="no_market">GOOGLE PLAY APP NOT FOUND</string>

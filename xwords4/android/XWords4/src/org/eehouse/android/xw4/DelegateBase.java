@@ -38,10 +38,11 @@ import android.widget.TextView;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
 
 import junit.framework.Assert;
 
-public class DelegateBase implements DlgDelegate.DlgClickNotify,
+public class DelegateBase implements DlgClickNotify,
                                      DlgDelegate.HasDlgDelegate,
                                      MultiService.MultiEventListener {
 
@@ -484,4 +485,10 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     {
         Assert.fail();
     }
+
+    public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object[] params )
+    {
+        Assert.fail();
+    }
+
 }

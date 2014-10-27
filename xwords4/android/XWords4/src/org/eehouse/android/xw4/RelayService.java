@@ -1263,7 +1263,7 @@ public class RelayService extends XWService
             try {
                 m_packetID = nextPacketID( m_cmd );
                 DataOutputStream out = new DataOutputStream( bas );
-                DbgUtils.logf( "Building packet with cmd %s", 
+                DbgUtils.logf( "RelayService.makeHeader(): building packet with cmd %s", 
                                m_cmd.toString() );
                 out.writeByte( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() );
                 un2vli( m_packetID, out );

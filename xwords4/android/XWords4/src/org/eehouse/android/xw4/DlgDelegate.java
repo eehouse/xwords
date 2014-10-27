@@ -33,6 +33,7 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -112,7 +113,11 @@ public class DlgDelegate {
     private static final String STATE_KEYF = "STATE_%d";
 
     public interface DlgClickNotify {
+        public static enum InviteMeans {
+            SMS, EMAIL, NFC, BLUETOOTH,
+        };
         void dlgButtonClicked( Action action, int button, Object[] params );
+        void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
     }
     public interface HasDlgDelegate {
         void showOKOnlyDialog( int msgID );
@@ -313,7 +318,8 @@ public class DlgDelegate {
     public void showInviteChoicesThen( final Action action )
     {
         if ( Utils.deviceSupportsSMS( m_activity )
-             || NFCUtils.nfcAvail( m_activity )[0] ) {
+             || NFCUtils.nfcAvail( m_activity )[0]
+             || BTService.BTAvailable() ) {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN, action );
             addState( state );
             showDialog( DlgID.INVITE_CHOICES_THEN );
@@ -516,32 +522,50 @@ public class DlgDelegate {
         return setCallbackDismissListener( dialog, state, dlgID );
     }
 
-    private Dialog createInviteChoicesDialog( DlgState state, DlgID dlgID )
+    private Dialog createInviteChoicesDialog( final DlgState state, DlgID dlgID )
     {
-        OnClickListener lstnr = mkCallbackClickListener( state );
+        final ArrayList<DlgClickNotify.InviteMeans> means = 
+            new ArrayList<DlgClickNotify.InviteMeans>();
+        ArrayList<String> items = new ArrayList<String>();
+        if ( Utils.deviceSupportsSMS( m_activity ) ) {
+            items.add( getString( R.string.invite_choice_sms ) );
+            means.add( DlgClickNotify.InviteMeans.SMS );
+        }
+        items.add( getString( R.string.invite_choice_email ) );
+        means.add( DlgClickNotify.InviteMeans.EMAIL );
+        if ( BTService.BTAvailable() ) {
+            items.add( getString( R.string.invite_choice_bt ) );
+            means.add( DlgClickNotify.InviteMeans.BLUETOOTH );
+        }
+        if ( NFCUtils.nfcAvail( m_activity )[0] ) {
+            items.add( getString( R.string.invite_choice_nfc ) );
+            means.add( DlgClickNotify.InviteMeans.NFC );
+        }
 
-        boolean haveSMS = Utils.deviceSupportsSMS( m_activity );
-        boolean haveNFC = NFCUtils.nfcAvail( m_activity )[0];
-        int msgID;
-        if ( haveSMS && haveNFC ) {
-            msgID = R.string.nfc_or_sms_or_email;
-        } else if ( haveSMS ) {
-            msgID = R.string.sms_or_email; 
-        } else {
-            msgID = R.string.nfc_or_email;
-        }
-        
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
-        builder.setTitle( R.string.query_title );
-        builder.setMessage( msgID );
-        builder.setNegativeButton( R.string.button_html, lstnr );
+        final int[] sel = { -1 };
+        OnClickListener selChanged = new OnClickListener() {
+                public void onClick( DialogInterface dlg, int view ) {
+                    sel[0] = view;
+                }
+            };
+        OnClickListener okClicked = new OnClickListener() {
+                public void onClick( DialogInterface dlg, int view ) {
+                    Assert.assertTrue( Action.SKIP_CALLBACK != state.m_action );
+                    int indx = sel[0];
+                    if ( 0 <= indx ) {
+                        m_clickCallback.inviteChoiceMade( state.m_action, 
+                                                          means.get(indx), 
+                                                          state.m_params );
+                    }
+                }
+            };
 
-        if ( haveSMS ) {
-            builder.setPositiveButton( R.string.button_text, lstnr );
-        }
-        if ( haveNFC ) {
-            builder.setNeutralButton( R.string.button_nfc, lstnr );
-        }
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
+            .setTitle( R.string.invite_choice_title )
+            .setSingleChoiceItems( items.toArray( new String[items.size()] ), 
+                                   sel[0], selChanged )
+            .setPositiveButton( R.string.button_ok, okClicked )
+            .setNegativeButton( R.string.button_cancel, null );
 
         return setCallbackDismissListener( builder.create(), state, dlgID );
     }

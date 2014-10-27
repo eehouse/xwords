@@ -981,18 +981,23 @@
   <!-- The invitation process begins with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
-  <string name="sms_or_email">Dnes noitativni gnisu SMS )gnitxet( ro
-       aiv ?liame</string>
-  <string name="nfc_or_email">Dnes noitativni gnisu CFN dIordna(
-    gnimaeb – )WEn ro aiv ?liame</string>
-  <string name="nfc_or_sms_or_email">Dnes noitativni gnisu SMS
-    )gnitxet( ro CFN (\"Diordna gnimaeb\" – )WEn ro aiv ?liame</string>
+  <string name="invite_choice_sms">SMS )gnitxet(</string>
+  <string name="invite_choice_email">Liame</string>
+  <string name="invite_choice_bt">Htooteulb</string>
+  <string name="invite_choice_nfc">CFN (\"Diordna gnimaeb\")</string>
+  <string name="invite_choice_title">Woh dluow uoy ekil ot dnes siht ?noitativni</string>
+  <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
+  <!--    via email?</string> -->
+  <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
+  <!-- beaming – NEW) or via email?</string> -->
+  <!-- <string name="nfc_or_sms_or_email">Send invitation using SMS -->
+  <!-- (texting) or NFC (\"Android beaming\" – NEW) or via email?</string> -->
   <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
-  <string name="button_text">TXEt/sms</string>
-  <string name="button_html">Liame</string>
-  <string name="button_nfc">CFN</string>
+  <!-- <string name="button_text">SMS/Text</string>   -->
+  <!-- <string name="button_html">Email</string>   -->
+  <!-- <string name="button_nfc">NFC</string> -->
   <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
   <string name="invite_subject_fmt">Tel\'s yalp Sdrowssorc mOor( %1$s)</string>
@@ -1845,10 +1850,10 @@
   <string name="no_hide_titlebar">Siht gnittes si derongi no secived
     ekil sruoy taht dneped no eht \"Noitca rab.\"</string>
   <string name="sms_ready_text">Pat eht gniviecer ecived won</string>
-  <string name="not_again_sms_ready">Uoy evah CFN delbane. Taht
-    snaem taht yna emit a draob taht\'s gnissim a reyalp si ,nepo uoy
-    nac pat a ybraen nosrep\'s ecived ot etivni reh/mih ot
-    yalp – fi ehs/eh si osla gnisu CFN.</string>
+  <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->
+  <!-- means that any time a board that\'s missing a player is open, you -->
+  <!-- can tap a nearby person\'s device to invite him/her to -->
+  <!-- play – if he/she is also using NFC.</string> -->
   <string name="pct_suffix">\u0020tcp.</string>
   <string name="menu_rateme">Etar Sdrowssorc</string>
   <string name="no_market">Elgoog Yalp ppa ton dnuof</string>

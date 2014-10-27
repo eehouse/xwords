@@ -24,7 +24,6 @@ import java.net.InetAddress;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -98,10 +97,7 @@ public class CommsAddrRec {
     public CommsAddrRec( String host, int port ) 
     {
         this( CommsConnType.COMMS_CONN_RELAY );
-        ip_relay_hostName = host;
-        ip_relay_port = port;
-        ip_relay_seeksPublicRoom = false;
-        ip_relay_advertiseRoom = false;
+        setRelayParams( host, port );
     }
 
     public CommsAddrRec( String btHost, String btAddr ) 
@@ -120,6 +116,20 @@ public class CommsAddrRec {
     public CommsAddrRec( final CommsAddrRec src ) 
     {
         this.copyFrom( src );
+    }
+
+    public void setRelayParams( String host, int port, String room )
+    {
+        setRelayParams( host, port );
+        ip_relay_invite = room;
+    }
+
+    public void setRelayParams( String host, int port )
+    {
+        ip_relay_hostName = host;
+        ip_relay_port = port;
+        ip_relay_seeksPublicRoom = false;
+        ip_relay_advertiseRoom = false;
     }
 
     public boolean changesMatter( final CommsAddrRec other )

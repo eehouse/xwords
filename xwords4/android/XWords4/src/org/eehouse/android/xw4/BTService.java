@@ -125,11 +125,13 @@ public class BTService extends XWService {
         }
         public BTQueueElem( BTCmd cmd, byte[] buf, String btAddr, int gameID ) {
             this( cmd );
+            Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
             m_msg = buf; m_btAddr = btAddr; 
             m_gameID = gameID;
         }
         public BTQueueElem( BTCmd cmd, String btAddr, int gameID ) {
             this( cmd );
+            Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
             m_btAddr = btAddr;
             m_gameID = gameID;
         }
@@ -155,6 +157,13 @@ public class BTService extends XWService {
     {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
         return null != adapter && adapter.isEnabled();
+    }
+
+    public static String[] getBTNameAndAddress()
+    {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        return null == adapter ? null 
+            : new String[] { adapter.getName(), adapter.getAddress() };
     }
 
     public static int getPairedCount( Activity activity )
@@ -242,7 +251,7 @@ public class BTService extends XWService {
         context.startService( intent );
     }
 
-    public static void gotGameViaNFC( Context context, BTLaunchInfo bli )
+    public static void gotGameViaNFC( Context context, NetLaunchInfo bli )
     {
         Intent intent = getIntentTo( context, NFCINVITE );
         intent.putExtra( GAMEID_STR, bli.gameID );
@@ -258,12 +267,18 @@ public class BTService extends XWService {
     public static int enqueueFor( Context context, byte[] buf, 
                                   String targetAddr, int gameID )
     {
-        Intent intent = getIntentTo( context, SEND );
-        intent.putExtra( MSG_STR, buf );
-        intent.putExtra( ADDR_STR, targetAddr );
-        intent.putExtra( GAMEID_STR, gameID );
-        context.startService( intent );
-        return buf.length;
+        int nSent = -1;
+        if ( null != targetAddr && 0 < targetAddr.length() ) {
+            Intent intent = getIntentTo( context, SEND );
+            intent.putExtra( MSG_STR, buf );
+            intent.putExtra( ADDR_STR, targetAddr );
+            intent.putExtra( GAMEID_STR, gameID );
+            context.startService( intent );
+            nSent = buf.length;
+        } else {
+            DbgUtils.logf( "BTService.enqueueFor(): targetAddr is null" );
+        }
+        return nSent;
     }
     
     public static void gameDied( Context context, int gameID )
@@ -1015,7 +1030,8 @@ public class BTService extends XWService {
             Intent intent = MultiService
                 .makeMissingDictIntent( context, gameName, lang, dict, 
                                         nPlayersT, nPlayersH );
-            BTLaunchInfo.putExtras( intent, gameID, btName, btAddr );
+            Assert.fail();
+            // NetLaunchInfo.putExtras( intent, gameID, btName, btAddr );
             MultiService.postMissingDictNotification( context, intent, 
                                                       gameID );
             result = BTCmd.INVITE_ACCPT; // ???

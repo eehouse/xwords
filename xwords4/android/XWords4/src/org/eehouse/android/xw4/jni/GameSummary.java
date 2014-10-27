@@ -61,7 +61,7 @@ public class GameSummary {
     public int pendingMsgLevel;
     public long modtime;
     public int gameID;
-    public String[] remoteDevs; // BTAddr or phone number
+    public String[] remoteDevs; // BTAddrs and phone numbers
 
     public int dictLang;
     public DeviceRole serverRole;

@@ -42,6 +42,8 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
+import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class NewGameDelegate extends DelegateBase {
 
@@ -151,13 +153,12 @@ public class NewGameDelegate extends DelegateBase {
 
     // DlgDelegate.DlgClickNotify interface
     @Override
-    public void dlgButtonClicked( DlgDelegate.Action action, int which, Object[] params )
+    public void inviteChoiceMade( Action action, InviteMeans means, 
+                                  Object[] params )
     {
         switch( action ) {
         case NEW_GAME_ACTION:
-            if ( DlgDelegate.DISMISS_BUTTON != which ) {
-                makeNewGame( true, true, which );
-            }
+            makeNewGame( true, true, means );
             break;
         default:
             Assert.fail();
@@ -297,14 +298,14 @@ public class NewGameDelegate extends DelegateBase {
             // Let 'em cancel before we make the game
             showInviteChoicesThen( DlgDelegate.Action.NEW_GAME_ACTION );
         } else {
-            makeNewGame( networked, launch, DlgDelegate.SMS_BTN );
+            makeNewGame( networked, launch, InviteMeans.SMS );
         }
     }
 
     private void makeNewGame( boolean networked, boolean launch,
-                              int inviteHow )
+                              InviteMeans inviteHow )
     {
-        boolean viaNFC = DlgDelegate.NFC_BTN == inviteHow;
+        boolean viaNFC = InviteMeans.NFC == inviteHow;
         if ( viaNFC && !NFCUtils.nfcAvail( m_activity )[1] ) {
             showDialog( DlgID.ENABLE_NFC );
         } else {
@@ -329,9 +330,10 @@ public class NewGameDelegate extends DelegateBase {
             if ( launch ) {
                 GameUtils.launchGame( m_activity, m_newRowID, networked );
                 if ( networked ) {
-                    GameUtils.launchInviteActivity( m_activity, inviteHow, room, 
-                                                    inviteID, lang[0], dict[0],
-                                                    nPlayers );
+                    Assert.fail();
+                    // GameUtils.launchInviteActivity( m_activity, inviteHow, room, 
+                    //                                 inviteID, lang[0], dict[0],
+                    //                                 nPlayers );
                 }
                 finish();
             } else {

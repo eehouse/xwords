@@ -27,46 +27,95 @@ import android.net.Uri;
 import android.os.Bundle;
 import java.net.URLEncoder;
 import java.io.InputStream;
+import java.util.Iterator;
 import org.json.JSONObject;
 import org.json.JSONException;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.jni.CurGameInfo;
 
-public class NetLaunchInfo extends AbsLaunchInfo {
-    protected String room;
-    protected String inviteID;
+public class NetLaunchInfo {
+    private static final String ADDRS_KEY = "ADDRS";
+
+    protected String dict;
+    protected int lang;
+    protected int nPlayersT;
+    protected String room;      // relay
+    protected String inviteID;  // relay
+    protected String btName;
+    protected String btAddress;
+    protected String phone;     // SMS
+    protected boolean isGSM;    // SMS
+    protected String osVers;    // SMS
+
+    protected int gameID;
+
+    private CommsConnTypeSet m_addrs;
+    private JSONObject m_json;
+    private boolean m_valid;
+
+    public NetLaunchInfo()
+    {
+        m_addrs = new CommsConnTypeSet();
+    }
 
     public NetLaunchInfo( String data )
     {
         try { 
-            JSONObject json = init( data );
-            room = json.getString( MultiService.ROOM );
-            inviteID = json.getString( MultiService.INVITEID );
-            setValid( true );
-        } catch ( JSONException jse ) {
-            // Don't bother logging; it's just not a valid object of this type
-        }
-    }
+            m_json = new JSONObject( data );
 
-    public void putSelf( Bundle bundle )
-    {
-        super.putSelf( bundle );
-        bundle.putString( MultiService.ROOM, room );
-        bundle.putString( MultiService.INVITEID, inviteID );
+            int flags = m_json.getInt(ADDRS_KEY);
+            m_addrs = DBUtils.intToConnTypeSet( flags );
+
+            lang = m_json.optInt( MultiService.LANG, -1 );
+            dict = m_json.optString( MultiService.DICT );
+            nPlayersT = m_json.optInt( MultiService.NPLAYERST, -1 );
+            gameID = m_json.optInt( MultiService.GAMEID, -1 );
+
+            for ( CommsConnType typ : m_addrs.getTypes() ) {
+                switch ( typ ) {
+                case COMMS_CONN_BT:
+                    btAddress = m_json.optString( MultiService.BT_ADDRESS );
+                    btName = m_json.optString( MultiService.BT_NAME );
+                    break;
+                case COMMS_CONN_RELAY:
+                    room = m_json.optString( MultiService.ROOM );
+                    inviteID = m_json.optString( MultiService.INVITEID );
+                    break;
+                case COMMS_CONN_SMS:
+                    phone = m_json.optString( "phn" );
+                    isGSM = m_json.optBoolean( "gsm", false );
+                    osVers = m_json.optString( "os" );
+                    break;
+                default:
+                    DbgUtils.logf( "Unexpected typ %s", typ.toString() );
+                    break;
+                }
+            }
+
+            calcValid();
+        } catch ( JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
     }
 
     public NetLaunchInfo( Bundle bundle )
     {
-        init( bundle );
         room = bundle.getString( MultiService.ROOM );
         inviteID = bundle.getString( MultiService.INVITEID );
+        Assert.fail();
     }
 
     public NetLaunchInfo( Context context, Uri data )
     {
-        setValid( false );
+        this();
+        m_valid = false;
         if ( null != data ) {
             String scheme = data.getScheme();
             try {
@@ -78,7 +127,7 @@ public class NetLaunchInfo extends AbsLaunchInfo {
                     byte[] buf = new byte[len];
                     is.read( buf );
 
-                    JSONObject json = init( new String( buf ) );
+                    JSONObject json = new JSONObject( new String( buf ) );
                     room = json.getString( MultiService.ROOM );
                     inviteID = json.getString( MultiService.INVITEID );
                 } else {
@@ -90,22 +139,139 @@ public class NetLaunchInfo extends AbsLaunchInfo {
                     String np = data.getQueryParameter( "np" );
                     nPlayersT = Integer.decode( np );
                 }
-                setValid( true );
+                calcValid();
             } catch ( Exception e ) {
                 DbgUtils.logf( "unable to parse \"%s\"", data.toString() );
             }
         }
+        calcValid();
     }
 
     public NetLaunchInfo( Intent intent )
     {
-        init( intent );
         room = intent.getStringExtra( MultiService.ROOM );
         inviteID = intent.getStringExtra( MultiService.INVITEID );
-        boolean valid = null != room
-            && -1 != lang
-            && -1 != nPlayersT;
-        setValid( valid );
+        lang = intent.getIntExtra( MultiService.LANG, -1 );
+        dict = intent.getStringExtra( MultiService.DICT );
+        nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
+        gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+        btName = intent.getStringExtra( MultiService.BT_NAME );
+        btAddress = intent.getStringExtra( MultiService.BT_ADDRESS );
+        m_addrs = DBUtils.intToConnTypeSet( intent.getIntExtra( ADDRS_KEY, -1 ) );
+
+        calcValid();
+    }
+
+    public NetLaunchInfo( int gamID, int dictLang, String dictName, int nPlayers )
+    {
+        this();
+        dict = dictName;
+        lang = dictLang;
+        nPlayersT = nPlayers;
+        gameID = gamID;
+    }
+
+    public NetLaunchInfo( GameSummary summary, CurGameInfo gi )
+    {
+        this( gi.gameID, gi.dictLang, gi.dictName, gi.nPlayers );
+
+        for ( CommsConnType typ : summary.conTypes.getTypes() ) {
+            DbgUtils.logf( "NetLaunchInfo(): got type %s", typ.toString() );
+            switch( typ ) {
+            case COMMS_CONN_BT:
+                addBTInfo();
+                break;
+            case COMMS_CONN_RELAY:
+                addRelayInfo( summary.roomName, summary.relayID );
+                break;
+            case COMMS_CONN_SMS:
+                addSMSInfo();
+                break;
+            default:
+                Assert.fail();
+                break;
+            }
+        }
+    }
+
+    public void putSelf( Bundle bundle )
+    {
+        bundle.putString( MultiService.ROOM, room );
+        bundle.putString( MultiService.INVITEID, inviteID );
+        bundle.putInt( MultiService.LANG, lang );
+        bundle.putString( MultiService.DICT, dict );
+        bundle.putInt( MultiService.NPLAYERST, nPlayersT );
+        bundle.putInt( MultiService.GAMEID, gameID );
+        bundle.putString( MultiService.BT_NAME, btName );
+        bundle.putString( MultiService.BT_ADDRESS, btAddress );
+
+        int flags = DBUtils.connTypeSetToInt( m_addrs );
+        bundle.putInt( ADDRS_KEY, flags );
+    }
+
+    public String makeLaunchJSON()
+    {
+        String result = null;
+        try {
+            result = new JSONObject()
+                .put( MultiService.LANG, lang )
+                .put( MultiService.DICT, dict )
+                .put( MultiService.NPLAYERST, nPlayersT )
+                .put( MultiService.ROOM, room )
+                .put( MultiService.INVITEID, inviteID )
+                .put( MultiService.GAMEID, gameID )
+                .put( MultiService.BT_NAME, btName )
+                .put( MultiService.BT_ADDRESS, btAddress )
+                .put( ADDRS_KEY, DBUtils.connTypeSetToInt( m_addrs ) )
+                .toString();
+        } catch ( org.json.JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
+        DbgUtils.logf( "makeLaunchJSON() => %s", result );
+        return result;
+    }
+
+    public CommsAddrRec makeAddrRec( Context context )
+    {
+        CommsAddrRec result = new CommsAddrRec();
+        for ( CommsConnType typ : m_addrs.getTypes() ) {
+            result.conTypes.add( typ );
+            if ( CommsConnType.COMMS_CONN_RELAY == typ ) {
+                String relayName = XWPrefs.getDefaultRelayHost( context );
+                int relayPort = XWPrefs.getDefaultRelayPort( context );
+                result.setRelayParams( relayName, relayPort, room );
+            }
+        }
+
+        return result;
+    }
+
+    public Uri makeLaunchUri( Context context )
+    {
+        Uri.Builder ub = new Uri.Builder()
+            .scheme( "http" )
+            .path( String.format( "//%s%s", 
+                                  LocUtils.getString(context, R.string.invite_host),
+                                  LocUtils.getString(context, R.string.invite_prefix) ) )
+            .appendQueryParameter( "lang", String.format("%d", lang ) )
+            .appendQueryParameter( "np", String.format( "%d", nPlayersT ) )
+            .appendQueryParameter( "gid", String.format( "%d", nPlayersT ) );
+        if ( null != dict ) {
+            ub.appendQueryParameter( "wl", dict );
+        }
+
+        if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+            ub.appendQueryParameter( "room", room );
+            ub.appendQueryParameter( "id", inviteID );
+        }
+        if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
+            ub.appendQueryParameter( "bta", btAddress );
+            ub.appendQueryParameter( "btn", btName );
+        }
+        if ( m_addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+            ub.appendQueryParameter( "phn", phone );
+        }
+        return ub.build();
     }
 
     public static Uri makeLaunchUri( Context context, String room,
@@ -127,19 +293,100 @@ public class NetLaunchInfo extends AbsLaunchInfo {
         return ub.build();
     }
 
-    public static String makeLaunchJSON( String curJson, String room, String inviteID, 
-                                         int lang, String dict, int nPlayersT )
+    // public static String makeLaunchJSON( String curJson, String room, String inviteID, 
+    //                                      int lang, String dict, int nPlayersT )
+    // {
+    //     Assert.assertNull( curJson );
+    //     String result = null;
+    //     try {
+    //         result = new JSONObject()
+    //             .put( MultiService.LANG, lang )
+    //             .put( MultiService.DICT, dict )
+    //             .put( MultiService.NPLAYERST, nPlayersT )
+    //             .put( MultiService.ROOM, room )
+    //             .put( MultiService.INVITEID, inviteID )
+    //             .put( MultiService.GAMEID, gameID )
+    //             .put( MultiService.BT_NAME, name )
+    //             .put( MultiService.BT_ADDRESS, address )
+    //             .put( ADDRS_KEY, DBUtils.connTypeSetToInt( m_addrs ) )
+    //             .toString();
+    //     } catch ( org.json.JSONException jse ) {
+    //         DbgUtils.loge( jse );
+    //     }
+    //     DbgUtils.logf( "makeLaunchJSON() => %s", result );
+    //     return result;
+    // }
+    
+    public void addRelayInfo( String aRoom, String anInviteID )
     {
-        Assert.assertNull( curJson );
-        String result = null;
-        try {
-            result = makeLaunchJSONObject( lang, dict, nPlayersT )
-                .put( MultiService.ROOM, room )
-                .put( MultiService.INVITEID, inviteID )
-                .toString();
-        } catch ( org.json.JSONException jse ) {
-            DbgUtils.loge( jse );
+        room = aRoom;
+        inviteID = anInviteID;
+        m_addrs.add( CommsConnType.COMMS_CONN_RELAY );
+    }
+
+    public void addBTInfo()
+    {
+        String[] got = BTService.getBTNameAndAddress();
+        if ( null != got ) {
+            btName = got[0];
+            btAddress = got[1];
+            m_addrs.add( CommsConnType.COMMS_CONN_BT );
+        } else {
+            DbgUtils.logf( "addBTInfo(): no BT info available" );
         }
-        return result;
+    }
+
+    public void addSMSInfo()
+    {
+        // look up own phone number, which will require new permission
+        Assert.fail();
+        phone = "123-456-7890";
+        m_addrs.add( CommsConnType.COMMS_CONN_SMS );
+    }
+
+    public boolean isValid()
+    {
+        DbgUtils.logf( "NetLaunchInfo(%s).isValid() => %b", toString(), m_valid );
+        return m_valid;
+    }
+
+    @Override
+    public String toString()
+    {
+        return makeLaunchJSON();
+    }
+
+    public static void putExtras( Intent intent, int gameID, String btAddr )
+    {
+        Assert.fail();
+    }
+
+    private boolean hasCommon()
+    {
+        return null != dict
+            && 0 < lang
+            && 0 < nPlayersT
+            && 0 != gameID;
+    }
+
+    private void calcValid()
+    {
+        boolean valid = hasCommon();
+        for ( Iterator<CommsConnType> iter = m_addrs.iterator();
+              valid && iter.hasNext(); ) {
+            switch ( iter.next() ) {
+            case COMMS_CONN_RELAY:
+                valid = null != room && null != inviteID;
+                break;
+            case COMMS_CONN_BT:
+                valid = null != btAddress && 0 != gameID;
+                break;
+            case COMMS_CONN_SMS:
+                Assert.fail();
+                valid = false;
+                break;
+            }
+        }
+        m_valid = valid;
     }
 }

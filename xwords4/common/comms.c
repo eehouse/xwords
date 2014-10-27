@@ -1707,7 +1707,7 @@ preProcess( CommsCtxt* comms, XWStreamCtxt* stream,
         case COMMS_CONN_RELAY:
             consumed = relayPreProcess( comms, stream, senderID );
             if ( !consumed ) {
-                *usingRelay = addr_hasType( &comms->addr, COMMS_CONN_RELAY );
+                *usingRelay = XP_TRUE;
             }
             break;
 #endif
@@ -1919,7 +1919,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XWHostID senderID = 0;      /* unset; default for non-relay cases */
     XP_Bool usingRelay = XP_FALSE;
 
-    XP_ASSERT( retAddr == NULL || addr_getType( &comms->addr ) == addr_getType( retAddr ) );
+    XP_ASSERT( retAddr == NULL || 
+               (0 != (comms->addr._conTypes & retAddr->_conTypes)) );
 #ifdef COMMS_CHECKSUM
     XP_U16 initialLen = stream_getSize( stream );
 #endif
@@ -2024,15 +2025,18 @@ XP_Bool
 comms_isConnected( const CommsCtxt* const comms )
 {
     XP_Bool result = XP_FALSE;
-    switch ( addr_getType( &comms->addr ) ) {
-    case COMMS_CONN_RELAY:
-        result = 0 != comms->rr.connName[0];
-        break;
-    case COMMS_CONN_SMS:
-    case COMMS_CONN_BT:
-        result = comms->connID != 0;
-    default:
-        break;
+    CommsConnType typ;
+    for ( XP_U32 st = 0; !result && addr_iter( &comms->addr, &typ, &st ); ) {
+        switch ( typ ) {
+        case COMMS_CONN_RELAY:
+            result = 0 != comms->rr.connName[0];
+            break;
+        case COMMS_CONN_SMS:
+        case COMMS_CONN_BT:
+            result = comms->connID != 0;
+        default:
+            break;
+        }
     }
     return result;
 }

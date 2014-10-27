@@ -667,7 +667,7 @@ public class DBUtils {
 
     // Return creation time of newest game matching this nli, or null
     // if none found.
-    public static Date getMostRecentCreate( Context context, BTLaunchInfo bli )
+    public static Date getMostRecentCreate( Context context, NetLaunchInfo bli )
     {
         Date result = null;
         String[] selectionArgs = new String[] {
@@ -686,37 +686,38 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
+        DbgUtils.logf( "getMostRecentCreate() => %H", result );
         return result;
     }
 
     // Return creation time of newest game matching this nli, or null
     // if none found.
-    public static Date getMostRecentCreate( Context context, NetLaunchInfo nli )
-    {
-        Date result = null;
-        String[] selectionArgs = new String[] {
-            DBHelper.ROOMNAME, nli.room, 
-            DBHelper.INVITEID, nli.inviteID, 
-            DBHelper.DICTLANG, String.format( "%d", nli.lang ), 
-            DBHelper.NUM_PLAYERS, String.format( "%d", nli.nPlayersT )
-        };
+    // public static Date getMostRecentCreate( Context context, NetLaunchInfo nli )
+    // {
+    //     Date result = null;
+    //     String[] selectionArgs = new String[] {
+    //         DBHelper.ROOMNAME, nli.room, 
+    //         DBHelper.INVITEID, nli.inviteID, 
+    //         DBHelper.DICTLANG, String.format( "%d", nli.lang ), 
+    //         DBHelper.NUM_PLAYERS, String.format( "%d", nli.nPlayersT )
+    //     };
 
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            Cursor cursor = db.rawQuery( "SELECT " + DBHelper.CREATE_TIME +
-                                         " FROM " + DBHelper.TABLE_NAME_SUM +
-                                         " WHERE ?=? AND ?=? AND ?=? AND ?=?",
-                                         selectionArgs );
-            if ( cursor.moveToNext() ) {
-                int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
-                result = new Date( cursor.getLong( indx ) );
-            }
-            cursor.close();
-            db.close();
-        }
-        return result;
-    }
+    //     initDB( context );
+    //     synchronized( s_dbHelper ) {
+    //         SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+    //         Cursor cursor = db.rawQuery( "SELECT " + DBHelper.CREATE_TIME +
+    //                                      " FROM " + DBHelper.TABLE_NAME_SUM +
+    //                                      " WHERE ?=? AND ?=? AND ?=? AND ?=?",
+    //                                      selectionArgs );
+    //         if ( cursor.moveToNext() ) {
+    //             int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
+    //             result = new Date( cursor.getLong( indx ) );
+    //         }
+    //         cursor.close();
+    //         db.close();
+    //     }
+    //     return result;
+    // }
 
     public static Date getMostRecentCreate( Context context, Uri data )
     {
@@ -2134,7 +2135,7 @@ public class DBUtils {
     }
 
     private static final int BIT_VECTOR_MASK = 0x8000;
-    private static CommsConnTypeSet intToConnTypeSet( int asInt )
+    public static CommsConnTypeSet intToConnTypeSet( int asInt )
     {
         DbgUtils.logf( "intToConnTypeSet(in: %s)", asInt );
         CommsConnTypeSet result = new CommsConnTypeSet();
@@ -2155,7 +2156,7 @@ public class DBUtils {
         return result;
     }
 
-    private static int connTypeSetToInt( CommsConnTypeSet set )
+    public static int connTypeSetToInt( CommsConnTypeSet set )
     {
         DbgUtils.logf( "connTypeSetToInt(setSize: %d)", set.size() );
         int result = BIT_VECTOR_MASK;
