@@ -1134,17 +1134,9 @@
     <string name="newgame_bt_header">New Bluetooth game</string>
 
     <!-- EXPLAIN ME -->
-    <string name="bt_disabled">Bluetooth is not available.  This may
-      mean that your device doesn\'t support it, or that it\'s been
-      turned off.</string>
-
-    <!-- EXPLAIN ME -->
-    <string name="bt_networked_desc">Create a game that will be played
-      via Bluetooth with devices that are nearby and paired with
-      yours.  Both buttons will initiate a game with other devices
-      (one or more) that you choose (from paired devices that already
-      have Crosswords installed.)  The first uses defaults; the second
-      lets you change them before beginning the game.</string>
+    <!-- <string name="bt_disabled">Bluetooth is not available.  This may -->
+    <!--   mean that your device doesn\'t support it, or that it\'s been -->
+    <!--   turned off.</string> -->
 
     <!-- The invitation process begins with this query.  The choice is
          between html and plaintext formatting but I also provide some
@@ -1839,7 +1831,7 @@
       version: \"%1$s\"; and make/model of your phone or
       tablet.)</string>
 
-    <string name="newgame_enable_bt">Turn Bluetooth on</string>
+    <!-- <string name="newgame_enable_bt">Turn Bluetooth on</string> -->
 
       <!-- In the Bluetooth invite device dialog -->
     <string name="bt_pick_addall_button">Add all Paired</string>
@@ -1902,15 +1894,8 @@
     <!--  -->
     <string name="newgame_sms_header">New SMS Game</string>
     <!--  -->
-    <string name="sms_networked_desc">Create a game that will be
-    played via invisible text messages.  The \"Invite now\" button
-    starts a two-device game and helps you invite a friend to join it.
-    Or press \"Configure first\" to change some of the defaults before
-    you start your SMS game. (You\'ll have a chance to send
-    invites later.)</string>
-    <!--  -->
-    <string name="sms_disabled">Playing via SMS is currently disabled.
-    You can enable it in Settings->Network game settings.</string>
+    <!-- <string name="sms_disabled">Playing via SMS is currently disabled. -->
+    <!-- You can enable it in Settings->Network game settings.</string> -->
     <!--  -->
     <string name="dft_sms_name_fmt">SMS Game %1$X</string>    
     <!--  -->

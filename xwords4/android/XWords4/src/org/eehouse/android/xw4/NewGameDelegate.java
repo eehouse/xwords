@@ -122,9 +122,6 @@ public class NewGameDelegate extends DelegateBase {
                     makeNewGame( true, false );
                 }
             } );
-
-        checkEnableBT( true );
-        checkEnableSMS();
     }
 
     protected void onSaveInstanceState( Bundle outState ) 
@@ -143,14 +140,6 @@ public class NewGameDelegate extends DelegateBase {
         }
     }
 
-    protected void onWindowFocusChanged( boolean hasFocus )
-    {
-        if ( hasFocus && m_firingPrefs ) {
-            m_firingPrefs = false;
-            checkEnableSMS();
-        }
-    }
-
     // DlgDelegate.DlgClickNotify interface
     @Override
     public void inviteChoiceMade( Action action, InviteMeans means, 
@@ -165,12 +154,6 @@ public class NewGameDelegate extends DelegateBase {
         }
     }
     
-    @Override
-    protected void onResume() {
-        super.onResume();
-        checkEnableBT( false );
-    }
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -272,26 +255,6 @@ public class NewGameDelegate extends DelegateBase {
         return dialog;
     }
 
-    // MultiService.MultiEventListener interface
-    @Override
-    public void eventOccurred( MultiService.MultiEvent event, 
-                               final Object ... args )
-    {
-        switch( event ) {
-        case BT_ENABLED:
-        case BT_DISABLED:
-            post( new Runnable() {
-                    public void run() {
-                        checkEnableBT( false );
-                    }
-                });
-            break;
-        default:
-            super.eventOccurred( event, args );
-            break;
-        }
-    } // MultiService.MultiEventListener.eventOccurred
-
     private void makeNewGame( boolean networked, boolean launch )
     {
         if ( launch && networked ) {
@@ -374,106 +337,8 @@ public class NewGameDelegate extends DelegateBase {
         }
     }
 
-    private void checkEnableBT( boolean force )
-    {
-        boolean available = XWApp.BTSUPPORTED && BTService.BTAvailable();
-        setVisibility( R.id.newgame_bt_header, 
-                       available? View.VISIBLE : View.GONE );
-
-        if ( available ) {
-            boolean enabled = BTService.BTEnabled();
-
-            if ( force || enabled != m_showsOn ) {
-                m_showsOn = enabled;
-
-                findViewById( R.id.newgame_bt_header ).setVisibility( View.VISIBLE );
-
-                findViewById( R.id.bt_disabled ).
-                    setVisibility( enabled ? View.GONE : View.VISIBLE  );
-                findViewById( R.id.bt_stuff ).
-                    setVisibility( enabled ? View.VISIBLE : View.GONE  );
-
-                Button button;
-                if ( enabled ) {
-                    button = (Button)findViewById( R.id.newgame_bt_invite );
-                    button.setOnClickListener( new View.OnClickListener() {
-                            @Override
-                                public void onClick( View v ) {
-                                makeNewBTGame( true );
-                            }
-                        } );
-                    button = (Button)findViewById( R.id.newgame_bt_config );
-                    button.setOnClickListener( new View.OnClickListener() {
-                            @Override
-                                public void onClick( View v ) {
-                                makeNewBTGame( false );
-                            }
-                        } );
-                } else {
-                    button = (Button)findViewById( R.id.newgame_enable_bt );
-                    button.setOnClickListener( new View.OnClickListener() {
-                            @Override
-                                public void onClick( View v ) {
-                                Intent enableBtIntent = 
-                                    new Intent(BluetoothAdapter.
-                                               ACTION_REQUEST_ENABLE);
-                                startActivityForResult( enableBtIntent, 0 );
-                            }
-                        } );
-                }
-            }
-        }
-    }
-
-    private void checkEnableSMS()
-    {
-        boolean available = XWApp.SMSSUPPORTED
-            && Utils.deviceSupportsSMS(m_activity);
-        setVisibility( R.id.newgame_sms_header, 
-                       available? View.VISIBLE : View.GONE );
-
-        if ( available ) {
-            boolean enabled = XWPrefs.getSMSEnabled( m_activity );
-            setVisibility( R.id.newgame_sms_header, View.VISIBLE );
-
-            setVisibility( R.id.sms_disabled, 
-                           enabled ? View.GONE : View.VISIBLE  );
-            setVisibility( R.id.sms_stuff, 
-                           enabled ? View.VISIBLE : View.GONE  );
-
-            Button button;
-            if ( enabled ) {
-                button = (Button)findViewById( R.id.newgame_sms_invite );
-                button.setOnClickListener( new View.OnClickListener() {
-                        @Override
-                            public void onClick( View v ) {
-                            makeNewSMSGame( true );
-                        }
-                    } );
-                button = (Button)findViewById( R.id.newgame_sms_config );
-                button.setOnClickListener( new View.OnClickListener() {
-                        @Override
-                            public void onClick( View v ) {
-                            makeNewSMSGame( false );
-                        }
-                    } );
-            } else {
-                button = (Button)findViewById( R.id.newgame_enable_sms );
-                button.setOnClickListener( new View.OnClickListener() {
-                        @Override
-                        public void onClick( View v ) {
-                            m_firingPrefs = true;
-                            Utils.launchSettings( m_activity );
-                        }
-                    } );
-            }
-        }
-    }
-
     private static final int HIDE_MASK_LOCAL = 1;
     private static final int HIDE_MASK_NET = 2;
-    private static final int HIDE_MASK_BT = 4;
-    private static final int HIDE_MASK_SMS = 8;
     private static final String NGD_HIDDEN = "NGD_HIDDEN";
 
     private static final int[][] SHOW_HIDE_PAIRS = {
@@ -486,16 +351,6 @@ public class NewGameDelegate extends DelegateBase {
           R.string.newgame_networked_header,
           R.id.newgame_networked_hideable,
           HIDE_MASK_NET,
-        },
-        { R.id.newgame_sms_header, 
-          R.string.newgame_sms_header,
-          R.id.newgame_sms_hideable,
-          HIDE_MASK_SMS,
-        },
-        { R.id.newgame_bt_header, 
-          R.string.newgame_bt_header,
-          R.id.newgame_bt_hideable,
-          HIDE_MASK_BT,
         },
     };
 

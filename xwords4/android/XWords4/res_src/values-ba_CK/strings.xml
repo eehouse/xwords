@@ -968,16 +968,9 @@
          bluetooth games -->
   <string name="newgame_bt_header">Wen Htooteulb emag</string>
   <!-- EXPLAIN ME -->
-  <string name="bt_disabled">Htooteulb si ton elbaliava.  Siht yam
-      naem taht ruoy ecived nseod\'t troppus ,ti ro taht ti\'s neeb
-      denrut ffo.</string>
-  <!-- EXPLAIN ME -->
-  <string name="bt_networked_desc">Etaerc a emag taht lliw eb deyalp
-      aiv Htooteulb htiw secived taht era ybraen dna deriap htiw
-      sruoy.  Htob snottub lliw etaitini a emag htiw rehto secived
-      eno( ro )erom taht uoy esoohc morf( deriap secived taht ydaerla
-      evah Sdrowssorc dellatsni.)  Eht tsrif sesu stluafed; eht dnoces
-      stel uoy egnahc meht erofeb gninnigeb eht emag.</string>
+  <!-- <string name="bt_disabled">Bluetooth is not available.  This may -->
+  <!--   mean that your device doesn\'t support it, or that it\'s been -->
+  <!--   turned off.</string> -->
   <!-- The invitation process begins with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
@@ -1577,7 +1570,7 @@
   <string name="email_body_rev_fmt">fI( ,tnaveler esaelp edulcni eht
       noisrev: \"%1$s\"; dna ledom/ekam fo ruoy enohp ro
       telbat.)</string>
-  <string name="newgame_enable_bt">Nrut Htooteulb no</string>
+  <!-- <string name="newgame_enable_bt">Turn Bluetooth on</string> -->
   <!-- In the Bluetooth invite device dialog -->
   <string name="bt_pick_addall_button">Dda lla Deriap</string>
   <!--  -->
@@ -1635,15 +1628,8 @@
   <!--  -->
   <string name="newgame_sms_header">Wen SMS Emag</string>
   <!--  -->
-  <string name="sms_networked_desc">Etaerc a emag taht lliw eb
-    deyalp aiv elbisivni txet segassem.  Eht \"Etivni won\" nottub
-    strats a ecived-owt emag dna spleh uoy etivni a dneirf ot nioj ti.
-    Ro sserp \"Erugifnoc tsrif\" ot egnahc emos fo eht stluafed erofeb
-    uoy trats ruoy SMS emag. uOy(\'ll evah a ecnahc ot dnes
-    setivni retal.)</string>
-  <!--  -->
-  <string name="sms_disabled">Gniyalp aiv SMS si yltnerruc delbasid.
-    Uoy nac elbane ti ni Krowten&gt;-sGnittes emag sgnittes.</string>
+  <!-- <string name="sms_disabled">Playing via SMS is currently disabled. -->
+  <!-- You can enable it in Settings->Network game settings.</string> -->
   <!--  -->
   <string name="dft_sms_name_fmt">SMS Emag %1$X</string>
   <!--  -->
