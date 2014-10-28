@@ -24,6 +24,12 @@
 #include "gtkutils.h"
 #include "linuxbt.h"
 
+typedef struct _PageData {
+    CommsConnType pageType;
+    gboolean doUse;
+    const char* label;
+} PageData;
+
 typedef struct _GtkConnsState {
     GtkGameGlobals* globals;
     CommsAddrRec* addr;
@@ -41,7 +47,7 @@ typedef struct _GtkConnsState {
 
     GtkWidget* notebook;
 
-    CommsConnType pageTypes[COMMS_CONN_NTYPES];
+    PageData pageData[COMMS_CONN_NTYPES];
 
     gboolean cancelled;
     gboolean readOnly;
@@ -53,21 +59,15 @@ conTypeToPageNum( const GtkConnsState* state, CommsConnType conType )
     gint pageNum = 0;           /* default */
     int ii;
     for ( ii = 0; ; ++ii ) {
-        CommsConnType thisType = state->pageTypes[ii];
+        const PageData* pageData = &state->pageData[ii];
+        CommsConnType thisType = pageData->pageType;
         if ( thisType == COMMS_CONN_NONE || thisType == conType ) {
             pageNum = ii;
             break;
         }
-        XP_ASSERT( ii < VSIZE(state->pageTypes) );
+        XP_ASSERT( ii < VSIZE(state->pageData) );
     }
     return pageNum;
-}
-
-static CommsConnType
-pageNoToConnType( const GtkConnsState* state, gint page )
-{
-    XP_ASSERT( page < VSIZE(state->pageTypes) );
-    return state->pageTypes[page];
 }
 
 static void
@@ -78,11 +78,17 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
         const gchar* txt;
 
         for ( gint page = 0; ; ++page ) {
-            CommsConnType conType = pageNoToConnType( state, page );
-            if ( COMMS_CONN_NONE == conType ) {
+            PageData* data = &state->pageData[page];
+            CommsConnType conType = data->pageType;
+            if ( COMMS_CONN_NONE == conType ) { /* signals end */
                 break;
             }
+            if ( ! data->doUse ) {
+                addr_rmType( state->addr, conType );
+                continue;
+            }
 
+            addr_addType( state->addr, conType );
             switch ( conType ) {
 #ifdef XWFEATURE_DIRECTIP
             case COMMS_CONN_IP_DIRECT:
@@ -124,11 +130,6 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
                 XP_ASSERT( 0 );     /* keep compiler happy */
                 break;
             }
-
-            /* PENDING: This will add them all, when what's needed is an
-               interface to let user choose which will be used to attempt to
-               connect. */
-            addr_addType( state->addr, conType );
         }
     }
         
@@ -165,6 +166,31 @@ handle_cancel( GtkWidget* XP_UNUSED(widget), void* closure )
     gtk_main_quit();
 }
 
+static void
+useCheckToggled( GtkWidget* item, PageData* data )
+{
+    gboolean checked = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) );
+    data->doUse = checked;
+}
+
+static GtkWidget*
+boxWithUseCheck( GtkConnsState* state, PageData* data )
+{
+    XP_Bool set = addr_hasType( state->addr, data->pageType );
+    data->doUse = set;
+
+    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+
+    GtkWidget* check = gtk_check_button_new_with_label( data->label );
+    g_signal_connect( GTK_OBJECT(check),
+                      "toggled", G_CALLBACK(useCheckToggled), data );
+    gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(check), set );
+    gtk_box_pack_start( GTK_BOX(vbox), check, FALSE, TRUE, 0);
+
+    return vbox;
+}
+
+
 /*
  * Invite: _____
  * Relay:  _____
@@ -173,9 +199,9 @@ handle_cancel( GtkWidget* XP_UNUSED(widget), void* closure )
  */
 
 static GtkWidget*
-makeRelayPage( GtkConnsState* state )
+makeRelayPage( GtkConnsState* state, PageData* data )
 {
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = boxWithUseCheck( state, data );
     const gchar* hint = NULL;
 
     if ( SERVER_ISSERVER == state->role ) {
@@ -221,12 +247,12 @@ makeRelayPage( GtkConnsState* state )
 } /* makeRelayPage */
 
 static GtkWidget*
-makeBTPage( GtkConnsState* state )
+makeBTPage( GtkConnsState* state, PageData* data )
 {
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = boxWithUseCheck( state, data );
 
     GtkWidget* hbox = makeLabeledField( "Host device", &state->bthost, NULL );
-    if ( addr_hasType( state->addr, COMMS_CONN_BT ) ) {
+    if ( addr_hasType( state->addr, data->pageType ) ) {
         gtk_entry_set_text( GTK_ENTRY(state->bthost), state->addr->u.bt.hostName );
     }
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
@@ -243,14 +269,14 @@ makeBTPage( GtkConnsState* state )
 
 #ifdef XWFEATURE_DIRECTIP
 static GtkWidget*
-makeIPDirPage( GtkConnsState* state )
+makeIPDirPage( GtkConnsState* state, PageData* data )
 {
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
+    GtkWidget* vbox = boxWithUseCheck( state, data );
 
     /* XP_UCHAR hostName_ip[MAX_HOSTNAME_LEN + 1]; */
     /* XP_U16 port_ip; */
 
-    XP_Bool hasIP = addr_hasType( state->addr, COMMS_CONN_IP_DIRECT );
+    XP_Bool hasIP = addr_hasType( state->addr, data->pageType );
     const gchar* name = hasIP ?
         state->addr->u.ip.hostName_ip : state->globals->cGlobals.params->connInfo.ip.hostName;
     GtkWidget* hbox = makeLabeledField( "Hostname", &state->iphost, name );
@@ -269,11 +295,10 @@ makeIPDirPage( GtkConnsState* state )
 #endif
 
 static GtkWidget*
-makeSMSPage( GtkConnsState* state )
+makeSMSPage( GtkConnsState* state, PageData* data )
 {
-    GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
-
-    XP_Bool hasSMS = addr_hasType( state->addr, COMMS_CONN_SMS );
+    GtkWidget* vbox = boxWithUseCheck( state, data );
+    XP_Bool hasSMS = addr_hasType( state->addr, data->pageType );
     const gchar* phone = hasSMS ?
         state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.phone;
     GtkWidget* hbox = makeLabeledField( "Host phone", &state->smsphone, phone );
@@ -311,33 +336,42 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     GtkWidget* hbox;
 
     state.notebook = gtk_notebook_new();
+    PageData* data;
 
 #ifdef XWFEATURE_RELAY
-    state.pageTypes[nTypes++] = COMMS_CONN_RELAY;
+    data = &state.pageData[nTypes++];
+    data->pageType = COMMS_CONN_RELAY;
+    data->label = "Relay";
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook), 
-                                    makeRelayPage(&state),
-                                    gtk_label_new( "Relay" ) );
+                                    makeRelayPage( &state, data ),
+                                    gtk_label_new( data->label ) );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-    state.pageTypes[nTypes++] = COMMS_CONN_BT;
+    data = &state.pageData[nTypes++];
+    data->pageType = COMMS_CONN_BT;
+    data->label = "Bluetooth";
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
-                                    makeBTPage(&state),
-                                    gtk_label_new( "Bluetooth" ) );
+                                    makeBTPage( &state, data ),
+                                    gtk_label_new( data->label ) );
 #endif
 #ifdef XWFEATURE_DIRECTIP
-    state.pageTypes[nTypes++] = COMMS_CONN_IP_DIRECT;
+    data = &state.pageData[nTypes++];
+    data->pageType = COMMS_CONN_IP_DIRECT;
+    data->label = "Direct";
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
-                                    makeIPDirPage(&state),
-                                    gtk_label_new( "Direct" ) );
+                                    makeIPDirPage(&state, data),
+                                    gtk_label_new( data->label ) );
 #endif
-    state.pageTypes[nTypes++] = COMMS_CONN_SMS;
+    data = &state.pageData[nTypes++];
+    data->pageType = COMMS_CONN_SMS;
+    data->label = "SMS";
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
-                                    makeSMSPage(&state),
-                                    gtk_label_new( "SMS" ) );
+                                    makeSMSPage( &state, data ),
+                                    gtk_label_new( data->label ) );
 
     vbox = gtk_vbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), state.notebook, FALSE, TRUE, 0 );
-    state.pageTypes[nTypes++] = COMMS_CONN_NONE; /* mark end of list */
+    state.pageData[nTypes++].pageType = COMMS_CONN_NONE; /* mark end of list */
 
     /* Set page to the first we actually have */
     XP_U32 st = 0;
