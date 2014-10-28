@@ -421,7 +421,8 @@ handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
     if ( rectNum == CURSOR_LOC_REM ) {
         util_remSelected( board->util );
     } else if ( --rectNum >= 0 ) {
-        board_selectPlayer( board, rectNum, board->allowPeek );
+        XP_Bool canSwitch = board->gameOver || board->allowPeek;
+        board_selectPlayer( board, rectNum, canSwitch );
     } else {
         result = XP_FALSE;
     }
