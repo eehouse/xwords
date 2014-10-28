@@ -227,6 +227,7 @@ XP_Bool comms_isConnected( const CommsCtxt* const comms );
 CommsConnType addr_getType( const CommsAddrRec* addr );
 void addr_setType( CommsAddrRec* addr, CommsConnType type );
 void addr_addType( CommsAddrRec* addr, CommsConnType type );
+void addr_rmType( CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_hasType( const CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp, 
                    XP_U32* state );

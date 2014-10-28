@@ -2327,6 +2327,14 @@ addr_addType( CommsAddrRec* addr, CommsConnType type )
     addr->_conTypes |= 1 << (type - 1);
 }
 
+void
+addr_rmType( CommsAddrRec* addr, CommsConnType type )
+{
+    XP_ASSERT( COMMS_CONN_NONE != type );
+    XP_LOGF( "%s(%s)", __func__, ConnType2Str(type) );
+    addr->_conTypes &= ~(1 << (type - 1));
+}
+
 /* Set of NONE is ok, but for anything else it's illegal to be adding a second
    bit.  Use addr_addType() for that. */
 void
