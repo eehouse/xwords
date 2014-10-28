@@ -510,45 +510,48 @@ createOrLoadObjects( GtkGameGlobals* globals )
                           &cGlobals->cp, &procs, params->gameSeed );
 
         // addr.conType = params->conType;
-        switch( addr_getType( &addr ) ) {
+        CommsConnType typ;
+        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+            switch( typ ) {
 #ifdef XWFEATURE_RELAY
-        case COMMS_CONN_RELAY:
-            /* addr.u.ip_relay.ipAddr = 0; */
-            /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
-            /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
-            /* addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom; */
-            /* XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName, */
-            /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
-            /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
-            /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
-            break;
+            case COMMS_CONN_RELAY:
+                /* addr.u.ip_relay.ipAddr = 0; */
+                /* addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort; */
+                /* addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom; */
+                /* addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom; */
+                /* XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName, */
+                /*             sizeof(addr.u.ip_relay.hostName) - 1 ); */
+                /* XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite, */
+                /*             sizeof(addr.u.ip_relay.invite) - 1 ); */
+                break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-        case COMMS_CONN_BT:
-            XP_ASSERT( sizeof(addr.u.bt.btAddr) 
-                       >= sizeof(params->connInfo.bt.hostAddr));
-            XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                       sizeof(params->connInfo.bt.hostAddr) );
-            break;
+            case COMMS_CONN_BT:
+                XP_ASSERT( sizeof(addr.u.bt.btAddr) 
+                           >= sizeof(params->connInfo.bt.hostAddr));
+                XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                           sizeof(params->connInfo.bt.hostAddr) );
+                break;
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-        case COMMS_CONN_IP_DIRECT:
-            XP_STRNCPY( addr.u.ip.hostName_ip, params->connInfo.ip.hostName,
-                        sizeof(addr.u.ip.hostName_ip) - 1 );
-            addr.u.ip.port_ip = params->connInfo.ip.port;
-            break;
+            case COMMS_CONN_IP_DIRECT:
+                XP_STRNCPY( addr.u.ip.hostName_ip, params->connInfo.ip.hostName,
+                            sizeof(addr.u.ip.hostName_ip) - 1 );
+                addr.u.ip.port_ip = params->connInfo.ip.port;
+                break;
 #endif
 #ifdef XWFEATURE_SMS
-        case COMMS_CONN_SMS:
-            /* No! Don't overwrite what may be a return address with local
-               stuff */
-            /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
-            /*             sizeof(addr.u.sms.phone) - 1 ); */
-            /* addr.u.sms.port = params->connInfo.sms.port; */
-            break;
+            case COMMS_CONN_SMS:
+                /* No! Don't overwrite what may be a return address with local
+                   stuff */
+                /* XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone, */
+                /*             sizeof(addr.u.sms.phone) - 1 ); */
+                /* addr.u.sms.port = params->connInfo.sms.port; */
+                break;
 #endif
-        default:
-            break;
+            default:
+                break;
+            }
         }
 
         /* Need to save in order to have a valid selRow for the first send */
