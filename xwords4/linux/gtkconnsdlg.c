@@ -47,6 +47,7 @@ typedef struct _GtkConnsState {
 
     GtkWidget* notebook;
 
+    XP_U16 nTypes;
     PageData pageData[COMMS_CONN_NTYPES];
 
     gboolean cancelled;
@@ -77,12 +78,9 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
     if ( !state->readOnly ) {
         const gchar* txt;
 
-        for ( gint page = 0; ; ++page ) {
-            PageData* data = &state->pageData[page];
+        for ( XP_U16 indx = 0; indx < state->nTypes; ++indx ) {
+            PageData* data = &state->pageData[indx];
             CommsConnType conType = data->pageType;
-            if ( COMMS_CONN_NONE == conType ) { /* signals end */
-                break;
-            }
             if ( ! data->doUse ) {
                 addr_rmType( state->addr, conType );
                 continue;
@@ -181,7 +179,9 @@ boxWithUseCheck( GtkConnsState* state, PageData* data )
 
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
-    GtkWidget* check = gtk_check_button_new_with_label( data->label );
+    gchar buf[32];
+    snprintf( buf, sizeof(buf), "Connect via %s", data->label );
+    GtkWidget* check = gtk_check_button_new_with_label( buf );
     g_signal_connect( GTK_OBJECT(check),
                       "toggled", G_CALLBACK(useCheckToggled), data );
     gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(check), set );
@@ -318,13 +318,21 @@ makeSMSPage( GtkConnsState* state, PageData* data )
     return vbox;
 } /* makeBTPage */
 
+static PageData*
+getNextData( GtkConnsState* state, CommsConnType typ, gchar* label )
+{
+    PageData* result = &state->pageData[state->nTypes++];
+    result->pageType = typ;
+    result->label = label;
+    return result;
+}
+
 gboolean
 gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
              XP_Bool readOnly )
 {
     GtkConnsState state;
     XP_MEMSET( &state, 0, sizeof(state) );
-    XP_U16 nTypes = 0;
 
     state.readOnly = readOnly;
     state.globals = globals;
@@ -339,39 +347,32 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     PageData* data;
 
 #ifdef XWFEATURE_RELAY
-    data = &state.pageData[nTypes++];
-    data->pageType = COMMS_CONN_RELAY;
-    data->label = "Relay";
+    data = getNextData( &state, COMMS_CONN_RELAY, "Relay" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook), 
                                     makeRelayPage( &state, data ),
                                     gtk_label_new( data->label ) );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-    data = &state.pageData[nTypes++];
-    data->pageType = COMMS_CONN_BT;
-    data->label = "Bluetooth";
+    data = getNextData( &state, COMMS_CONN_BT, "Bluetooth" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
                                     makeBTPage( &state, data ),
                                     gtk_label_new( data->label ) );
 #endif
 #ifdef XWFEATURE_DIRECTIP
-    data = &state.pageData[nTypes++];
-    data->pageType = COMMS_CONN_IP_DIRECT;
-    data->label = "Direct";
+    data = getNextData( &state, COMMS_CONN_IP_DIRECT, "Direct" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
                                     makeIPDirPage(&state, data),
                                     gtk_label_new( data->label ) );
 #endif
-    data = &state.pageData[nTypes++];
-    data->pageType = COMMS_CONN_SMS;
-    data->label = "SMS";
+#ifdef XWFEATURE_SMS
+    data = getNextData( &state, COMMS_CONN_SMS, "SMS" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
                                     makeSMSPage( &state, data ),
                                     gtk_label_new( data->label ) );
+#endif
 
     vbox = gtk_vbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), state.notebook, FALSE, TRUE, 0 );
-    state.pageData[nTypes++].pageType = COMMS_CONN_NONE; /* mark end of list */
 
     /* Set page to the first we actually have */
     XP_U32 st = 0;
