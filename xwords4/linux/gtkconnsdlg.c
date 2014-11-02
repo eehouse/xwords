@@ -27,7 +27,8 @@
 typedef struct _PageData {
     CommsConnType pageType;
     gboolean doUse;
-    const char* label;
+    const char* labelText;
+    GtkWidget* label;
 } PageData;
 
 typedef struct _GtkConnsState {
@@ -169,6 +170,11 @@ useCheckToggled( GtkWidget* item, PageData* data )
 {
     gboolean checked = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(item) );
     data->doUse = checked;
+
+    gchar buf[64];
+    gchar* fmt = checked ? "✓ %s" : "%s";
+    snprintf( buf, sizeof(buf), fmt, data->labelText );
+    gtk_label_set_text( GTK_LABEL(data->label), buf );
 }
 
 static GtkWidget*
@@ -180,7 +186,7 @@ boxWithUseCheck( GtkConnsState* state, PageData* data )
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
 
     gchar buf[32];
-    snprintf( buf, sizeof(buf), "Connect via %s", data->label );
+    snprintf( buf, sizeof(buf), "Connect via %s", data->labelText );
     GtkWidget* check = gtk_check_button_new_with_label( buf );
     g_signal_connect( GTK_OBJECT(check),
                       "toggled", G_CALLBACK(useCheckToggled), data );
@@ -323,7 +329,8 @@ getNextData( GtkConnsState* state, CommsConnType typ, gchar* label )
 {
     PageData* result = &state->pageData[state->nTypes++];
     result->pageType = typ;
-    result->label = label;
+    result->label = gtk_label_new( label );
+    result->labelText = label;
     return result;
 }
 
@@ -350,25 +357,25 @@ gtkConnsDlg( GtkGameGlobals* globals, CommsAddrRec* addr, DeviceRole role,
     data = getNextData( &state, COMMS_CONN_RELAY, "Relay" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook), 
                                     makeRelayPage( &state, data ),
-                                    gtk_label_new( data->label ) );
+                                    data->label );
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     data = getNextData( &state, COMMS_CONN_BT, "Bluetooth" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
                                     makeBTPage( &state, data ),
-                                    gtk_label_new( data->label ) );
+                                    data->label );
 #endif
 #ifdef XWFEATURE_DIRECTIP
     data = getNextData( &state, COMMS_CONN_IP_DIRECT, "Direct" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
                                     makeIPDirPage(&state, data),
-                                    gtk_label_new( data->label ) );
+                                    data->label );
 #endif
 #ifdef XWFEATURE_SMS
     data = getNextData( &state, COMMS_CONN_SMS, "SMS" );
     (void)gtk_notebook_append_page( GTK_NOTEBOOK(state.notebook),
                                     makeSMSPage( &state, data ),
-                                    gtk_label_new( data->label ) );
+                                    data->label );
 #endif
 
     vbox = gtk_vbox_new( FALSE, 0 );
