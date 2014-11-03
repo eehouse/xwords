@@ -208,6 +208,9 @@ void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
                           XP_U16 saveToken );
 void comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken );
 
+void addrFromStream( CommsAddrRec* addr, XWStreamCtxt* stream );
+void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
+
 XP_S16 comms_send( CommsCtxt* comms, XWStreamCtxt* stream );
 XP_Bool comms_resendAll( CommsCtxt* comms, XP_Bool force );
 XP_U16 comms_getChannelSeed( CommsCtxt* comms );

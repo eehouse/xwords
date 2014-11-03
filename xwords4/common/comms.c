@@ -537,7 +537,7 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
     }
 } /* addrFromStreamOne */
 
-static void
+void
 addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 {
     XP_U8 tmp = stream_getU8( stream );
@@ -756,7 +756,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* ad
     }
 } /* addrToStreamOne */
 
-static void
+void
 addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 {
     stream_putU8( stream, addrP->_conTypes );
@@ -1693,13 +1693,15 @@ btIpPreProcess( CommsCtxt* comms, XWStreamCtxt* stream )
 #endif
 
 static XP_Bool
-preProcess( CommsCtxt* comms, XWStreamCtxt* stream, 
+preProcess( CommsCtxt* comms, const CommsAddrRec* useAddr, 
+            XWStreamCtxt* stream, 
             XP_Bool* XP_UNUSED_RELAY(usingRelay), 
             XWHostID* XP_UNUSED_RELAY(senderID) )
 {
     XP_Bool consumed = XP_FALSE;
     CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( &comms->addr, &typ, &st ); ) {
+    for ( XP_U32 st = 0; addr_iter( useAddr, &typ, &st ); ) {
+        XP_LOGF( "%s(typ=%s)", __func__, ConnType2Str(typ) );
         switch ( typ ) {
 #ifdef XWFEATURE_RELAY
             /* relayPreProcess returns true if consumes the message.  May just eat the
@@ -1925,7 +1927,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     XP_U16 initialLen = stream_getSize( stream );
 #endif
 
-    if ( !preProcess( comms, stream, &usingRelay, &senderID ) ) {
+    const CommsAddrRec* useAddr = !!retAddr ? retAddr : &comms->addr;
+    if ( !preProcess( comms, useAddr, stream, &usingRelay, &senderID ) ) {
         XP_U32 connID;
         XP_PlayerAddr channelNo;
         MsgID msgID;
