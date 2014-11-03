@@ -138,19 +138,22 @@ summarize( CommonGlobals* cGlobals )
         comms_getAddr( cGlobals->game.comms, &addr );
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+            if ( !!connvia[0] ) {
+                strcat( connvia, "+" );
+            }
             switch( typ) {
             case COMMS_CONN_RELAY:
                 room = addr.u.ip_relay.invite;
-                strcat( connvia, ", Relay" );
+                strcat( connvia, "Relay" );
                 break;
             case COMMS_CONN_SMS:
-                strcat( connvia, ", SMS" );
+                strcat( connvia, "SMS" );
                 break;
             case COMMS_CONN_BT:
-                strcat( connvia, ", Bluetooth" );
+                strcat( connvia, "BT" );
                 break;
             case COMMS_CONN_IP_DIRECT:
-                strcat( connvia, ", IP" );
+                strcat( connvia, "IP" );
                 break;
             default:
                 XP_ASSERT(0);
