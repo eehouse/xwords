@@ -972,7 +972,7 @@ SIGINTTERM_handler( int XP_UNUSED(signal) )
 }
 
 static void
-cursesListenOnSocket( CursesAppGlobals* globals, int newSock
+cursesListenOnSocket( void* closure, int newSock
 #ifdef USE_GLIBLOOP
                       , GIOFunc func 
 #endif
@@ -982,15 +982,9 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock
     GIOChannel* channel = g_io_channel_unix_new( newSock );
     XP_LOGF( "%s: created channel %p for socket %d", __func__, channel, newSock );
     XP_ASSERT( !!func );
-    guint watch = g_io_add_watch( channel, 
-                                  G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
-                                  func, globals );
-
-    SourceData* data = g_malloc( sizeof(*data) );
-    data->channel = channel;
-    data->watch = watch;
-    globals->sources = g_list_append( globals->sources, data );
-
+    (void)g_io_add_watch( channel, 
+                          G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
+                          func, closure );
 #else
     XP_ASSERT( globals->fdCount+1 < FD_MAX );
 
@@ -1003,42 +997,6 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock
              __func__, globals->fdCount );
 #endif
 } /* cursesListenOnSocket */
-
-static void
-curses_stop_listening( CursesAppGlobals* globals, int sock )
-{
-#ifdef USE_GLIBLOOP
-    GList* sources = globals->sources;
-    while ( !!sources ) {
-        SourceData* data = sources->data;
-        gint fd = g_io_channel_unix_get_fd( data->channel );
-        if ( fd == sock ) {
-            g_io_channel_unref( data->channel );
-            XP_LOGF( "%s: unreffing channel %p", __func__, data->channel );
-            g_free( data );
-            globals->sources = g_list_remove_link( globals->sources, sources );
-            break;
-        }
-        sources = sources->next;
-    }
-    
-#else
-    int count = globals->fdCount;
-    int i;
-    bool found = false;
-
-    for ( i = 0; i < count; ++i ) {
-        if ( globals->fdArray[i].fd == sock ) {
-            found = true;
-        } else if ( found ) {
-            globals->fdArray[i-1].fd = globals->fdArray[i].fd;
-        }
-    }
-
-    assert( found );
-    --globals->fdCount;
-#endif
-} /* curses_stop_listening */
 
 #ifdef USE_GLIBLOOP
 #if 0
@@ -1124,15 +1082,11 @@ data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
 #endif
 
 static void
-curses_socket_changed( void* closure, int oldSock, int newSock,
-                       GIOFunc func, void** XP_UNUSED(storage) )
+curses_socket_added( void* closure, int newSock, GIOFunc func )
 {
-    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
-    if ( oldSock != -1 ) {
-        curses_stop_listening( globals, oldSock );
-    }
+    // CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     if ( newSock != -1 ) {
-        cursesListenOnSocket( globals, newSock
+        cursesListenOnSocket( closure, newSock
 #ifdef USE_GLIBLOOP
                               , func
 #endif
@@ -1140,7 +1094,8 @@ curses_socket_changed( void* closure, int oldSock, int newSock,
     }
 
 #ifdef XWFEATURE_RELAY
-    globals->cGlobals.relaySocket = newSock;
+    /* XP_ASSERT( !globals->cGlobals.relaySocket ); */
+    /* globals->cGlobals.relaySocket = newSock; */
 #endif
 } /* curses_socket_changed */
 
@@ -1780,7 +1735,8 @@ curses_getFlags( void* XP_UNUSED(closure) )
 #endif
 
 static void
-cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
+cursesGotBuf( void* closure, const CommsAddrRec* addr, 
+              const XP_U8* buf, XP_U16 len )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     XP_U32 clientToken;
@@ -1794,7 +1750,7 @@ cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
     rowidFromToken( XP_NTOHL( clientToken ), &ignore, &seed );
     XP_ASSERT( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) );
     if ( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) ) {
-        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, NULL );
+        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, addr );
     } else {
         XP_LOGF( "%s: dropping packet; meant for a different device",
                  __func__ );
@@ -1875,44 +1831,6 @@ cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
     }
 }
 
-
-static gboolean
-curses_app_socket_proc( GIOChannel* source, GIOCondition condition, 
-                        gpointer data )
-{
-    if ( 0 != (G_IO_IN & condition) ) {
-        CursesAppGlobals* globals = (CursesAppGlobals*)data;
-        int socket = g_io_channel_unix_get_fd( source );
-        GList* iter;
-        for ( iter = globals->sources; !!iter; iter = iter->next ) {
-            SourceData* sd = (SourceData*)iter->data;
-            if ( sd->channel == source ) {
-                (*sd->proc)( sd->procClosure, socket );
-                break;
-            }
-        }
-        XP_ASSERT( !!iter );    /* didn't fail to find it */
-    }
-    return TRUE;
-}
-
-static void
-cursesUDPSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), 
-                        SockReceiver proc, void* procClosure )
-{
-    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
-
-    SourceData* sd = g_malloc( sizeof(*sd) );
-    sd->channel = g_io_channel_unix_new( newSock );
-    XP_LOGF( "%s: created channel %p for socket %d", __func__, sd->channel, newSock );
-    sd->watch = g_io_add_watch( sd->channel, 
-                                G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
-                                curses_app_socket_proc, globals );
-    sd->proc = proc;
-    sd->procClosure = procClosure;
-    globals->sources = g_list_append( globals->sources, sd );
-}
-
 static gboolean
 chatsTimerFired( gpointer data )
 {
@@ -1942,6 +1860,49 @@ chatsTimerFired( gpointer data )
     return TRUE;
 }
 
+/* static XP_U16 */
+/* feedBufferCurses( CommonGlobals* cGlobals, sqlite3_int64 rowid,  */
+/*                   const XP_U8* buf, XP_U16 len, const CommsAddrRec* from ) */
+/* { */
+/*     gameGotBuf( cGlobals, XP_TRUE, buf, len, from ); */
+
+/*     /\* GtkGameGlobals* globals = findOpenGame( apg, rowid ); *\/ */
+
+/*     /\* if ( !!globals ) { *\/ */
+/*     /\*     gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, from ); *\/ */
+/*     /\*     seed = comms_getChannelSeed( globals->cGlobals.game.comms ); *\/ */
+/*     /\* } else { *\/ */
+/*     /\*     GtkGameGlobals tmpGlobals; *\/ */
+/*     /\*     if ( loadGameNoDraw( &tmpGlobals, apg->params, rowid ) ) { *\/ */
+/*     /\*         gameGotBuf( &tmpGlobals.cGlobals, XP_FALSE, buf, len, from ); *\/ */
+/*     /\*         seed = comms_getChannelSeed( tmpGlobals.cGlobals.game.comms ); *\/ */
+/*     /\*         saveGame( &tmpGlobals.cGlobals ); *\/ */
+/*     /\*     } *\/ */
+/*     /\*     freeGlobals( &tmpGlobals ); *\/ */
+/*     /\* } *\/ */
+/*     /\* return seed; *\/ */
+/* } */
+
+static void
+smsMsgReceivedCurses( void* closure, const CommsAddrRec* from, 
+                      XP_U32 XP_UNUSED(gameID),
+                      const XP_U8* buf, XP_U16 len )
+{
+    LOG_FUNC();
+    CommonGlobals* cGlobals = (CommonGlobals*)closure;
+    gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
+    LOG_RETURN_VOID();
+    /* LaunchParams* params =  cGlobals->params; */
+
+    /* sqlite3_int64 rowids[4]; */
+    /* int nRowIDs = VSIZE(rowids); */
+    /* getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs ); */
+    /* for ( int ii = 0; ii < nRowIDs; ++ii ) { */
+    /*     gameGotBuf( cGlobals, XP_TRUE, buf, len, from ); */
+    /*     // feedBufferCurses( cGlobals, rowids[ii], buf, len, from ); */
+    /* } */
+}
+
 void
 cursesmain( XP_Bool isServer, LaunchParams* params )
 {
@@ -1960,8 +1921,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.relaySocket = -1;
 #endif
 
-    g_globals.cGlobals.socketChanged = curses_socket_changed;
-    g_globals.cGlobals.socketChangedClosure = &g_globals;
+    g_globals.cGlobals.socketAdded = curses_socket_added;
+    g_globals.cGlobals.socketAddedClosure = &g_globals;
     g_globals.cGlobals.onSave = curses_onGameSaved;
     g_globals.cGlobals.onSaveClosure = &g_globals;
 
@@ -2071,7 +2032,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                 .msgNoticeReceived = cursesNoticeRcvd,
                 .devIDReceived = cursesDevIDReceived,
                 .msgErrorMsg = cursesErrorMsgRcvd,
-                .socketChanged = cursesUDPSocketChanged,
+                .socketAdded = curses_socket_added,
             };
 
             relaycon_init( params, &procs, &g_globals,
@@ -2080,6 +2041,33 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
             linux_doInitialReg( params, idIsNew );
         }
+
+#ifdef XWFEATURE_SMS
+        gchar buf[32];
+        const gchar* myPhone = params->connInfo.sms.phone;
+        if ( !!myPhone ) {
+            db_store( params->pDb, KEY_SMSPHONE, myPhone );
+        } else if ( !myPhone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+            params->connInfo.sms.phone = myPhone = buf;
+        }
+        XP_U16 myPort = params->connInfo.sms.port;
+        gchar portbuf[8];
+        if ( 0 < myPort ) {
+            sprintf( portbuf, "%d", myPort );
+            db_store( params->pDb, KEY_SMSPORT, portbuf );
+        } else if ( db_fetch( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
+            params->connInfo.sms.port = myPort = atoi( portbuf );
+        }
+
+        if ( !!myPhone && myPhone[0] && myPort ) {
+            SMSProcs smsProcs = {
+                .socketAdded = curses_socket_added,
+                .inviteReceived = NULL,
+                .msgReceived = smsMsgReceivedCurses,
+            };
+            linux_sms_init( params, myPhone, myPort, &smsProcs, &g_globals.cGlobals );
+        }
+#endif
 
         XWStreamCtxt* stream = NULL;
         if ( !!params->dbName ) {
@@ -2263,6 +2251,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         closeGamesDB( g_globals.cGlobals.pDb );
     }
     relaycon_cleanup( params );
+
+    linux_sms_cleanup( params );
 
     linux_util_vt_destroy( g_globals.cGlobals.util );
 } /* cursesmain */

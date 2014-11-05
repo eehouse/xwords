@@ -40,7 +40,8 @@ typedef struct _MsgHeader {
 
 static RelayConStorage* getStorage( LaunchParams* params );
 static XP_U32 hostNameToIP( const XP_UCHAR* name );
-static void relaycon_receive( void* closure, int socket );
+static gboolean relaycon_receive( GIOChannel *source, GIOCondition condition, 
+                                  gpointer data );
 static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len );
 static size_t addVLIStr( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
@@ -67,8 +68,7 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     storage->procsClosure = procsClosure;
 
     storage->socket = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
-    (*procs->socketChanged)( procsClosure, storage->socket, -1,
-                             relaycon_receive, params );
+    (*procs->socketAdded)( storage, storage->socket, relaycon_receive );
 
     XP_MEMSET( &storage->saddr, 0, sizeof(storage->saddr) );
     storage->saddr.sin_family = PF_INET;
@@ -203,16 +203,16 @@ sendAckIf( RelayConStorage* storage, const MsgHeader* header )
     }
 }
 
-static void 
-relaycon_receive( void* closure, int socket )
+static gboolean 
+relaycon_receive( GIOChannel* source, GIOCondition condition, gpointer data )
 {
-    LaunchParams* params = (LaunchParams*)closure;
-    XP_ASSERT( !!params->relayConStorage );
-    RelayConStorage* storage = getStorage( params );
+    XP_ASSERT( 0 != (G_IO_IN & condition) ); /* FIX ME */
+    RelayConStorage* storage = (RelayConStorage*)data;
     XP_U8 buf[512];
     struct sockaddr_in from;
     socklen_t fromlen = sizeof(from);
 
+    int socket = g_io_channel_unix_get_fd( source );
     XP_LOGF( "%s: calling recvfrom on socket %d", __func__, socket );
 
     ssize_t nRead = recvfrom( socket, buf, sizeof(buf), 0, /* flags */
@@ -242,9 +242,12 @@ relaycon_receive( void* closure, int socket )
                                                  maxInterval );
             }
                 break;
-            case XWPDEV_MSG:
-                (*storage->procs.msgReceived)( storage->procsClosure, 
+            case XWPDEV_MSG: {
+                CommsAddrRec addr = {0};
+                addr_addType( &addr, COMMS_CONN_RELAY );
+                (*storage->procs.msgReceived)( storage->procsClosure, &addr,
                                                ptr, end - ptr );
+            }
                 break;
             case XWPDEV_BADREG:
                 (*storage->procs.devIDReceived)( storage->procsClosure, NULL, 0 );
@@ -296,6 +299,7 @@ relaycon_receive( void* closure, int socket )
         XP_LOGF( "%s: error reading udp socket: %d (%s)", __func__, 
                  errno, strerror(errno) );
     }
+    return TRUE;
 }
 
 void

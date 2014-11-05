@@ -645,6 +645,7 @@ typedef enum {
 #endif
 #ifdef XWFEATURE_SMS
     ,CMD_SMSNUMBER		/* SMS phone number */
+    ,CMD_SMSPORT
 #endif
 #ifdef XWFEATURE_RELAY
     ,CMD_ROOMNAME
@@ -756,7 +757,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_HINTRECT, false, "hintrect", "enable draggable hint-limits rect" }
 #endif
 #ifdef XWFEATURE_SMS
-    ,{ CMD_SMSNUMBER, true, "sms-number", "phone number of host for sms game" }
+    ,{ CMD_SMSNUMBER, true, "sms-number", "this devices's sms phone number" }
+    ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
 #endif
 #ifdef XWFEATURE_RELAY
     ,{ CMD_ROOMNAME, true, "room", "name of room on relay" }
@@ -1006,9 +1008,6 @@ send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
     bool success = len == nSent;
     if ( !success ) {
         close( cGlobals->relaySocket );
-        (*cGlobals->socketChanged)( cGlobals->socketChangedClosure,
-                                    cGlobals->relaySocket, -1, 
-                                    NULL, &cGlobals->storage );
         cGlobals->relaySocket = -1;
 
         /* delete all pending packets since the socket's bad */
@@ -1137,12 +1136,7 @@ linux_relay_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
         if ( sock == -1 ) {
             XP_LOGF( "%s: socket uninitialized", __func__ );
             sock = linux_init_relay_socket( cGlobals, addrRec );
-            if ( sock != -1 ) {
-                assert( cGlobals->relaySocket == sock );
-                (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
-                                            -1, sock, linux_relay_ioproc,
-                                            (void*)cGlobals );
-            }
+            (*cGlobals->socketAdded)( cGlobals, sock, linux_relay_ioproc );
         }
 
         if ( sock != -1 ) {
@@ -1267,14 +1261,8 @@ void
 linux_close_socket( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
-    int socket = cGlobals->relaySocket;
-
-    (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
-                                socket, -1, NULL, &cGlobals->storage );
-
-    XP_ASSERT( -1 == cGlobals->relaySocket );
-
-    close( socket );
+    close( cGlobals->relaySocket );
+    cGlobals->relaySocket = -1;
 }
 
 static int
@@ -2225,6 +2213,10 @@ main( int argc, char** argv )
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
             mainParams.connInfo.sms.phone = optarg;
+            addr_addType( &mainParams.addr, COMMS_CONN_SMS );
+            break;
+        case CMD_SMSPORT:
+            mainParams.connInfo.sms.port = atoi(optarg);
             addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
 #endif

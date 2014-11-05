@@ -55,7 +55,6 @@
 
 typedef struct LinBtStuff {
     CommonGlobals* globals;
-    void* sockStorage;
     union {
         struct {
             int listener;               /* socket */
@@ -187,8 +186,7 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
              // connect to server
              && (0 == connect( sock, (struct sockaddr *)&saddr, sizeof(saddr) )) ) {
             CommonGlobals* globals = btStuff->globals;
-            (*globals->socketChanged)( globals->socketChangedClosure, -1, sock,
-                                       bt_socket_proc, &btStuff->sockStorage );
+            (*globals->socketAdded)( globals->socketAddedClosure, sock, bt_socket_proc );
             btStuff->socket = sock;
         } else {
             XP_LOGF( "%s: connect->%s; closing socket %d", __func__, strerror(errno), sock );
@@ -217,8 +215,7 @@ lbt_accept( int listener, void* ctxt )
     
     success = sock >= 0;
     if ( success ) {
-        (*globals->socketChanged)( globals->socketChangedClosure, -1, sock,
-                                   bt_socket_proc, &btStuff->sockStorage );
+        (*globals->socketAdded)( globals->socketAddedClosure, sock, bt_socket_proc );
         XP_ASSERT( btStuff->socket == -1 );
         btStuff->socket = sock;
     } else {
@@ -410,13 +407,6 @@ linux_bt_close( CommonGlobals* globals )
             sdp_close( btStuff->u.master.session );
             XP_LOGF( "sleeping for Palm's sake..." );
             sleep( 2 );         /* see if this gives palm a chance to not hang */
-        }
-
-        if ( btStuff->socket != -1 ) {
-            (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       btStuff->socket, -1, NULL,
-                                       &btStuff->sockStorage );
-            (void)close( btStuff->socket );
         }
 
         XP_FREE( globals->util->mpool, btStuff );

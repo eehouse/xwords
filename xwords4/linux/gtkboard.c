@@ -1475,43 +1475,31 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    CommsAddrRec addr;
-    CommsCtxt* comms = globals->cGlobals.game.comms;
-    XP_ASSERT( comms );
-    comms_getAddr( comms, &addr );
+    gchar* phone = NULL;
+    gchar* portstr = NULL;
+    AskMInfo infos[] = {
+        { "Remote phone#", &phone },
+        { "Remote port", &portstr },
+    };
+    if ( gtkaskm( "Invite whom?", infos, VSIZE(infos) ) ) { 
+        int port = atoi( portstr );
+        XP_LOGF( "need to invite using number %s and port %d", phone, port );
+        XP_ASSERT( 0 != port );
+        const CurGameInfo* gi = globals->cGlobals.gi;
+        gchar gameName[64];
+        snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
 
-    CommsConnType typ;
-    for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
-        switch ( typ ) {
-#ifdef XWFEATURE_SMS
-        case COMMS_CONN_SMS: {
-            gchar* phone = NULL;
-            gchar* portstr = NULL;
-            AskMInfo infos[] = {
-                { "Remote phone#", &phone },
-                { "Remote port", &portstr },
-            };
-            if ( gtkaskm( "Invite whom?", infos, VSIZE(infos) ) ) { 
-                int port = atoi( portstr );
-                XP_LOGF( "need to invite using number %s and port %d", phone, port );
-                XP_ASSERT( 0 != port );
-                const CurGameInfo* gi = globals->cGlobals.gi;
-                gchar gameName[64];
-                snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
-                linux_sms_invite( globals->cGlobals.params, gi, gameName, 1,
-                                  phone, port );
-            }
-            g_free( phone );
-            g_free( portstr );
-        }
-            break;
-#endif
-        default:
-            XP_ASSERT( 0 );
-            break;
-        }
+        CommsAddrRec addr;
+        CommsCtxt* comms = globals->cGlobals.game.comms;
+        XP_ASSERT( comms );
+        comms_getAddr( comms, &addr );
+
+        linux_sms_invite( globals->cGlobals.params, gi, &addr, gameName,
+                          1, phone, port );
     }
-} /* handle_commit_button */
+    g_free( phone );
+    g_free( portstr );
+} /* handle_invite_button */
 
 static void
 gtkUserError( GtkGameGlobals* globals, const char* format, ... )
@@ -2291,117 +2279,6 @@ setupGtkUtilCallbacks( GtkGameGlobals* globals, XW_UtilCtxt* util )
 } /* setupGtkUtilCallbacks */
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-#if 0
-static gboolean
-newConnectionInput( GIOChannel *source,
-                    GIOCondition condition,
-                    gpointer data )
-{
-    gboolean keepSource = TRUE;
-    int sock = g_io_channel_unix_get_fd( source );
-    GtkGameGlobals* globals = (GtkGameGlobals*)data;
-
-    XP_LOGF( "%s(%p):condition = 0x%x", __func__, source, (int)condition );
-
-/*     XP_ASSERT( sock == globals->cGlobals.socket ); */
-
-    if ( (condition & G_IO_IN) != 0 ) {
-        ssize_t nRead;
-        unsigned char buf[1024];
-        CommsAddrRec* addrp = NULL;
-#if defined XWFEATURE_IP_DIRECT
-        CommsAddrRec addr;
-#endif
-
-        switch ( comms_getConType( globals->cGlobals.game.comms ) ) {
-#ifdef XWFEATURE_RELAY
-        case COMMS_CONN_RELAY:
-            XP_ASSERT( globals->cGlobals.relaySocket == sock );
-            nRead = linux_relay_receive( &globals->cGlobals, buf, sizeof(buf) );
-            break;
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-        case COMMS_CONN_BT:
-            nRead = linux_bt_receive( sock, buf, sizeof(buf) );
-            break;
-#endif
-#ifdef XWFEATURE_SMS
-        case COMMS_CONN_SMS:
-            XP_ASSERT(0);
-            /* addrp = &addr; */
-            /* nRead = linux_sms_receive( &globals->cGlobals, sock,  */
-            /*                            buf, sizeof(buf), addrp ); */
-            break;
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-        case COMMS_CONN_IP_DIRECT:
-            addrp = &addr;
-            nRead = linux_udp_receive( sock, buf, sizeof(buf), addrp, &globals->cGlobals );
-            break;
-#endif
-        default:
-            XP_ASSERT( 0 );
-        }
-
-        if ( !globals->dropIncommingMsgs && nRead > 0 ) {
-            XWStreamCtxt* inboundS;
-            XP_Bool redraw = XP_FALSE;
-
-            inboundS = stream_from_msgbuf( &globals->cGlobals, buf, nRead );
-            if ( !!inboundS ) {
-                XP_LOGF( "%s: got %zd bytes", __func__, nRead );
-                if ( comms_checkIncomingStream( globals->cGlobals.game.comms, 
-                                                inboundS, addrp ) ) {
-                    redraw =
-                        server_receiveMessage(globals->cGlobals.game.server,
-                                              inboundS );
-                    if ( redraw ) {
-                        saveGame( &globals->cGlobals );
-                    }
-                }
-                stream_destroy( inboundS );
-            }
-
-            /* if there's something to draw resulting from the message, we
-               need to give the main loop time to reflect that on the screen
-               before giving the server another shot.  So just call the idle
-               proc. */
-            if ( redraw ) {
-                gtk_util_requestTime( globals->cGlobals.util );
-            } else {
-                redraw = server_do( globals->cGlobals.game.server );
-            }
-            if ( redraw ) {
-                board_draw( globals->cGlobals.game.board );
-            }
-        } else {
-            XP_LOGF( "errno from read: %d/%s", errno, strerror(errno) );
-        }
-    }
-
-    if ( (condition & (G_IO_HUP | G_IO_ERR)) != 0 ) {
-        XP_LOGF( "dropping socket %d", sock );
-        close( sock );
-#ifdef XWFEATURE_RELAY
-        globals->cGlobals.relaySocket = -1;
-#endif
-        if ( 0 ) {
-#ifdef XWFEATURE_BLUETOOTH
-        } else if ( COMMS_CONN_BT == addr_getType( &globals->cGlobals.params->addr ) ) {
-            linux_bt_socketclosed( &globals->cGlobals, sock );
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-        } else if ( COMMS_CONN_IP_DIRECT == globals->cGlobals.params->conType ) {
-            linux_udp_socketclosed( &globals->cGlobals, sock );
-#endif
-        }
-        keepSource = FALSE;           /* remove the event source */
-    }
-
-    return keepSource;                /* FALSE means to remove event source */
-} /* newConnectionInput */
-#endif 
-
 typedef struct _SockInfo {
     GIOChannel* channel;
     guint watch;
@@ -2409,39 +2286,19 @@ typedef struct _SockInfo {
 } SockInfo;
 
 static void
-gtk_socket_changed( void* closure, int oldSock, int newSock, GIOFunc proc, 
-                    void** storage )
+gtk_socket_added( void* closure, int newSock, GIOFunc proc )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
-    SockInfo* info = (SockInfo*)*storage;
-    XP_LOGF( "%s(old:%d; new:%d)", __func__, oldSock, newSock );
 
-    if ( oldSock != -1 ) {
-        XP_ASSERT( info != NULL );
-        g_source_remove( info->watch );
-        g_io_channel_unref( info->channel );
-        XP_FREE( globals->cGlobals.util->mpool, info );
-        *storage = NULL;
-        XP_LOGF( "Removed socket %d from gtk's list of listened-to sockets", 
-                 oldSock );
-    }
     if ( newSock != -1 ) {
         XP_ASSERT( !!proc );
-        info = (SockInfo*)XP_MALLOC( globals->cGlobals.util->mpool,
-                                     sizeof(*info) );
         GIOChannel* channel = g_io_channel_unix_new( newSock );
         g_io_channel_set_close_on_unref( channel, TRUE );
         guint result = g_io_add_watch( channel,
                                        G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
                                        proc, globals );
-        info->channel = channel;
-        info->watch = result;
-        *storage = info;
         XP_LOGF( "g_io_add_watch(%d) => %d", newSock, result );
     }
-#ifdef XWFEATURE_RELAY
-    globals->cGlobals.relaySocket = newSock;
-#endif
     /* A hack for the bluetooth case. */
     CommsCtxt* comms = globals->cGlobals.game.comms;
     
@@ -2520,7 +2377,7 @@ drop_msg_toggle( GtkWidget* toggle, GtkGameGlobals* globals )
     globals->dropIncommingMsgs = gtk_toggle_button_get_active( 
         GTK_TOGGLE_BUTTON(toggle) );
 } /* drop_msg_toggle */
-#endif
+#endif  /* #ifndef XWFEATURE_STANDALONE_ONLY */
 
 /* int */
 /* board_main( LaunchParams* params ) */
@@ -2561,8 +2418,8 @@ initGlobalsNoDraw( GtkGameGlobals* globals, LaunchParams* params,
     globals->cGlobals.relaySocket = -1;
 # endif
 
-    globals->cGlobals.socketChanged = gtk_socket_changed;
-    globals->cGlobals.socketChangedClosure = globals;
+    globals->cGlobals.socketAdded = gtk_socket_added;
+    globals->cGlobals.socketAddedClosure = globals;
     globals->cGlobals.onSave = onGameSaved;
     globals->cGlobals.onSaveClosure = globals;
     globals->cGlobals.addAcceptor = gtk_socket_acceptor;

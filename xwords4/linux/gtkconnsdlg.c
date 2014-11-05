@@ -307,7 +307,7 @@ makeSMSPage( GtkConnsState* state, PageData* data )
     XP_Bool hasSMS = addr_hasType( state->addr, data->pageType );
     const gchar* phone = hasSMS ?
         state->addr->u.sms.phone : state->globals->cGlobals.params->connInfo.sms.phone;
-    GtkWidget* hbox = makeLabeledField( "Host phone", &state->smsphone, phone );
+    GtkWidget* hbox = makeLabeledField( "My phone", &state->smsphone, phone );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->smsphone, !state->readOnly );
 
@@ -315,7 +315,7 @@ makeSMSPage( GtkConnsState* state, PageData* data )
         : state->globals->cGlobals.params->connInfo.sms.port;
     gchar port[32];
     snprintf( port, sizeof(port), "%d", portVal );
-    hbox = makeLabeledField( "Host port", &state->smsport, port );
+    hbox = makeLabeledField( "My port", &state->smsport, port );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
     gtk_widget_set_sensitive( state->smsport, !state->readOnly );
 

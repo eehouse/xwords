@@ -161,8 +161,7 @@ typedef struct LaunchParams {
 
 typedef struct CommonGlobals CommonGlobals;
 
-typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock,
-                                  GIOFunc func, void** storage );
+typedef void (*SocketAddedFunc)( void* closure, int newsock, GIOFunc func );
 typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
                                 CommonGlobals* globals, void** storage );
@@ -197,8 +196,8 @@ struct CommonGlobals {
     sqlite3* pDb;
     sqlite3_int64 selRow;
 
-    SocketChangedFunc socketChanged;
-    void* socketChangedClosure;
+    SocketAddedFunc socketAdded;
+    void* socketAddedClosure;
     OnSaveFunc onSave;
     void* onSaveClosure;
     GSList* packetQueue;

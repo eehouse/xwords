@@ -352,7 +352,8 @@ makeGamesWindow( GtkAppGlobals* apg )
     }
 #ifdef XWFEATURE_SMS
     int len = strlen( title );
-    snprintf( &title[len], VSIZE(title) - len, " (phone: %s)", params->connInfo.sms.phone );
+    snprintf( &title[len], VSIZE(title) - len, " (phone: %s, port: %d)", 
+              params->connInfo.sms.phone, params->connInfo.sms.port );
 #endif
     gtk_window_set_title( GTK_WINDOW(window), title );
     
@@ -416,8 +417,8 @@ onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, XP_Bool isNew )
 }
 
 static XP_U16
-feedBuffer( GtkAppGlobals* apg, sqlite3_int64 rowid, 
-            const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
+feedBufferGTK( GtkAppGlobals* apg, sqlite3_int64 rowid, 
+               const XP_U8* buf, XP_U16 len, const CommsAddrRec* from )
 {
     XP_U16 seed = 0;
     GtkGameGlobals* globals = findOpenGame( apg, rowid );
@@ -437,38 +438,31 @@ feedBuffer( GtkAppGlobals* apg, sqlite3_int64 rowid,
     return seed;
 }
 
-static gboolean
-gtk_app_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
-{
-    if ( 0 != (G_IO_IN & condition) ) {
-        GtkAppGlobals* apg = (GtkAppGlobals*)data;
-        int socket = g_io_channel_unix_get_fd( source );
-        GList* iter;
-        for ( iter = apg->sources; !!iter; iter = iter->next ) {
-            SourceData* sd = (SourceData*)iter->data;
-            if ( sd->channel == source ) {
-                (*sd->proc)( sd->procClosure, socket );
-                break;
-            }
-        }
-        XP_ASSERT( !!iter );    /* didn't fail to find it */
-    }
-    return TRUE;
-}
+/* static gboolean */
+/* gtk_app_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data ) */
+/* { */
+/*     if ( 0 != (G_IO_IN & condition) ) { */
+/*         GtkAppGlobals* apg = (GtkAppGlobals*)data; */
+/*         int socket = g_io_channel_unix_get_fd( source ); */
+/*         GList* iter; */
+/*         for ( iter = apg->sources; !!iter; iter = iter->next ) { */
+/*             SourceData* sd = (SourceData*)iter->data; */
+/*             if ( sd->channel == source ) { */
+/*                 (*sd->proc)( sd->procClosure, socket ); */
+/*                 break; */
+/*             } */
+/*         } */
+/*         XP_ASSERT( !!iter );    /\* didn't fail to find it *\/ */
+/*     } */
+/*     return TRUE; */
+/* } */
 
 static void
-gtkSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), 
-                  SockReceiver proc, void* procClosure )
+gtkSocketAdded( void* closure, int newSock, GIOFunc proc )
 {
 #if 1
-    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    SourceData* sd = g_malloc( sizeof(*sd) );
-    sd->channel = g_io_channel_unix_new( newSock );
-    sd->watch = g_io_add_watch( sd->channel, G_IO_IN | G_IO_ERR,
-                                gtk_app_socket_proc, apg );
-    sd->proc = proc;
-    sd->procClosure = procClosure;
-    apg->sources = g_list_append( apg->sources, sd );
+    GIOChannel* channel = g_io_channel_unix_new( newSock );
+    (void)g_io_add_watch( channel, G_IO_IN | G_IO_ERR, proc, closure );
 #else
     GtkAppGlobals* globals = (GtkAppGlobals*)closure;
     SockInfo* info = (SockInfo*)*storage;
@@ -513,7 +507,8 @@ gtkSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock),
 } /* gtk_socket_changed */
 
 static void
-gtkGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
+gtkGotBuf( void* closure, const CommsAddrRec* from, 
+           const XP_U8* buf, XP_U16 len )
 {
     LOG_FUNC();
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
@@ -527,7 +522,7 @@ gtkGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
     XP_U16 gotSeed;
     rowidFromToken( ntohl( clientToken ), &rowid, &gotSeed );
 
-    XP_U16 seed = feedBuffer( apg, rowid, buf, len, NULL );
+    XP_U16 seed = feedBufferGTK( apg, rowid, buf, len, from );
     XP_ASSERT( seed == 0 || gotSeed == seed );
     XP_USE( seed );
 }
@@ -587,8 +582,8 @@ smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName),
 }
 
 static void
-smsMsgReceived( void* closure, XP_U32 gameID, const XP_U8* buf, XP_U16 len,
-                const CommsAddrRec* from )
+smsMsgReceivedGTK( void* closure, const CommsAddrRec* from, XP_U32 gameID, 
+                   const XP_U8* buf, XP_U16 len )
 {
     LOG_FUNC();
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
@@ -597,9 +592,9 @@ smsMsgReceived( void* closure, XP_U32 gameID, const XP_U8* buf, XP_U16 len,
     sqlite3_int64 rowids[4];
     int nRowIDs = VSIZE(rowids);
     getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs );
-    int ii;
-    for ( ii = 0; ii < nRowIDs; ++ii ) {
-        feedBuffer( apg, rowids[ii], buf, len, from );
+    XP_LOGF( "%s: found %d rows for gameID %d", __func__, nRowIDs, gameID );
+    for ( int ii = 0; ii < nRowIDs; ++ii ) {
+        feedBufferGTK( apg, rowids[ii], buf, len, from );
     }
 }
 
@@ -695,7 +690,7 @@ gtkmain( LaunchParams* params )
             .msgNoticeReceived = gtkNoticeRcvd,
             .devIDReceived = gtkDevIDReceived,
             .msgErrorMsg = gtkErrorMsgRcvd,
-            .socketChanged = gtkSocketChanged,
+            .socketAdded = gtkSocketAdded,
         };
 
         relaycon_init( params, &procs, &apg, 
@@ -707,27 +702,27 @@ gtkmain( LaunchParams* params )
 
 #ifdef XWFEATURE_SMS
     gchar buf[32];
-    const gchar* phone = params->connInfo.sms.phone;
-    if ( !!phone ) {
-        db_store( params->pDb, KEY_SMSPHONE, phone );
-    } else if ( !phone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
-        params->connInfo.sms.phone = phone = buf;
+    const gchar* myPhone = params->connInfo.sms.phone;
+    if ( !!myPhone ) {
+        db_store( params->pDb, KEY_SMSPHONE, myPhone );
+    } else if ( !myPhone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+        params->connInfo.sms.phone = myPhone = buf;
     }
-    XP_U16 port = params->connInfo.sms.port;
+    XP_U16 myPort = params->connInfo.sms.port;
     gchar portbuf[8];
-    if ( 0 < port ) {
-        sprintf( portbuf, "%d", port );
+    if ( 0 < myPort ) {
+        sprintf( portbuf, "%d", myPort );
         db_store( params->pDb, KEY_SMSPORT, portbuf );
     } else if ( db_fetch( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
-        params->connInfo.sms.port = port = atoi( portbuf );
+        params->connInfo.sms.port = myPort = atoi( portbuf );
     }
-    if ( !!phone && 0 < port ) {
+    if ( !!myPhone && 0 < myPort ) {
         SMSProcs smsProcs = {
-            .socketChanged = gtkSocketChanged,
+            .socketAdded = gtkSocketAdded,
             .inviteReceived = smsInviteReceived,
-            .msgReceived = smsMsgReceived,
+            .msgReceived = smsMsgReceivedGTK,
         };
-        linux_sms_init( params, phone, port, &smsProcs, &apg );
+        linux_sms_init( params, myPhone, myPort, &smsProcs, &apg );
     } else {
         XP_LOGF( "not activating SMS: I don't have a phone" );
     }

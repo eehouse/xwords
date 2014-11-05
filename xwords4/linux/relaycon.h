@@ -23,14 +23,13 @@
 #include "main.h"
 
 typedef struct _Procs {
-    void (*msgReceived)( void* closure, const XP_U8* buf, XP_U16 len );
+    void (*msgReceived)( void* closure, const CommsAddrRec* from, 
+                         const XP_U8* buf, XP_U16 len );
     void (*msgNoticeReceived)( void* closure );
     void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
                            XP_U16 maxInterval );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
-    void (*socketChanged)( void* closure, int newSock, int oldSock, 
-                           SockReceiver proc, void* procClosure );
-
+    SocketAddedFunc socketAdded;
 } RelayConnProcs;
 
 void relaycon_init( LaunchParams* params, const RelayConnProcs* procs, 
