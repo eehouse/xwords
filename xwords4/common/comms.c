@@ -561,7 +561,6 @@ CommsCtxt*
 comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
                       const TransportProcs* procs )
 {
-    CommsCtxt* comms;
     XP_Bool isServer;
     XP_U16 nAddrRecs, nPlayersHere, nPlayersTotal;
     AddressRecord** prevsAddrNext;
@@ -572,7 +571,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
 
     isServer = stream_getU8( stream );
     addrFromStream( &addr, stream );
-    logAddr( comms, &addr, __func__ );
 
     if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
         nPlayersHere = (XP_U16)stream_getBits( stream, 4 );
@@ -581,13 +579,14 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         nPlayersHere = 0;
         nPlayersTotal = 0;
     }
-    comms = comms_make( MPPARM(mpool) util, isServer, 
-                        nPlayersHere, nPlayersTotal, procs
+    CommsCtxt* comms = comms_make( MPPARM(mpool) util, isServer, 
+                                   nPlayersHere, nPlayersTotal, procs
 #ifdef SET_GAMESEED
-                        , 0
+                                   , 0
 #endif
-                        );
+                                   );
     XP_MEMCPY( &comms->addr, &addr, sizeof(comms->addr) );
+    logAddr( comms, &addr, __func__ );
 
     comms->connID = stream_getU32( stream );
     comms->nextChannelNo = stream_getU16( stream );
