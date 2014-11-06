@@ -591,6 +591,14 @@ send_packet_via_udp_impl( vector<uint8_t>& packet,
     if ( 0 > nSent ) {
         logf( XW_LOGERROR, "%s: sendmsg->errno %d (%s)", __func__, errno, 
               strerror(errno) );
+    } else {
+#ifdef LOG_PACKET_MD5SUMS
+        gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, packet.data(), 
+                                                  packet.size() );
+        logf( XW_LOGINFO, "%s() sent %d bytes (sum=%s)", __func__, 
+              packet.size(), sum );
+        g_free( sum );
+#endif
     }
     return nSent;
 }
@@ -1021,7 +1029,10 @@ forwardMessage( const uint8_t* buf, int buflen, const AddrInfo* addr )
             SafeCref scr( cookieID, true );
             success = scr.Forward( src, addr, dest, buf, buflen );
         }
+    } else {
+        logf( XW_LOGINFO, "%s(): malformed packet", __func__ );
     }
+    logf( XW_LOGINFO, "%s() => %d", __func__, success );
     return success;
 } /* forwardMessage */
 
@@ -1783,8 +1794,11 @@ read_udp_packet( int udpsock )
         gchar* b64 = g_base64_encode( (uint8_t*)&saddr, sizeof(saddr) );
         logf( XW_LOGINFO, "%s: recvfrom=>%d (saddr='%s')", __func__, nRead, b64 );
         g_free( b64 );
-#else
-        logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
+#endif
+#ifdef LOG_PACKET_MD5SUMS
+        gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nRead );
+        logf( XW_LOGINFO, "%s: recvfrom=>%d (sum=%s)", __func__, nRead, sum );
+        g_free( sum );
 #endif
 
         AddrInfo addr( udpsock, &saddr, false );
