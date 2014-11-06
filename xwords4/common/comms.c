@@ -170,8 +170,7 @@ static AddressRecord* rememberChannelAddress( CommsCtxt* comms,
                                               XWHostID id, 
                                               const CommsAddrRec* addr );
 static void augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, 
-                                const CommsAddrRec* addr );
-static void updateChannelAddress( AddressRecord* rec, const CommsAddrRec* addr );
+                                const CommsAddrRec* addr, XWHostID hostID );
 static XP_Bool channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
                                  const CommsAddrRec** addr );
 static AddressRecord* getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
@@ -1287,7 +1286,9 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 #ifdef XWFEATURE_RELAY
         case COMMS_CONN_RELAY: {
             XWHostID destID = getDestID( comms, channelNo );
-            if ( haveRelayID( comms ) && sendNoConn( comms, elem, destID ) ) {
+            if ( HOST_ID_NONE == destID ) {
+                XP_LOGF( "%s: skipping message via relay: no destID yet", __func__ );
+            } else if ( haveRelayID( comms ) && sendNoConn( comms, elem, destID ) ) {
                 /* do nothing */
                 nSent = elem->len;
             } else if ( comms->rr.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
@@ -1330,7 +1331,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
             break;
         }
         } /* switch */
-        XP_LOGF( "%s: send %d bytes using typ %s", __func__, nSent, 
+        XP_LOGF( "%s: sent %d bytes using typ %s", __func__, nSent, 
                  ConnType2Str(typ) );
         if ( nSent > result ) {
             result = nSent;
@@ -1767,7 +1768,6 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
 
         if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) {
             XP_LOGF( "%s: match based on channels!!!", __func__ );
-            augmentChannelAddr( comms, rec, addr );
             matched = XP_TRUE;
         } else {
             CommsConnType conType = !!addr ?
@@ -1888,11 +1888,9 @@ validateInitialMessage( CommsCtxt* comms,
         XP_LOGF( "%s: looking at channelNo: %X", __func__, *channelNo );
         rec = getRecordFor( comms, addr, *channelNo, XP_TRUE );
         if ( !!rec ) {
+            augmentChannelAddr( comms, rec, addr, senderID );
             /* reject: we've already seen init message on channel */
             XP_LOGF( "%s: rejecting duplicate INIT message", __func__ );
-            /*  if ( !!addr && (addr->_conTypes != rec->addr._conTypes) ) { */
-            /*     augmentChannelAddr( comms, rec, addr ); */
-            /* } */
             rec = NULL;
         } else {
             if ( comms->isServer ) {
@@ -1935,7 +1933,7 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
     if ( !!rec ) {
         removeFromQueue( comms, channelNo, lastMsgRcd );
         if ( msgID == rec->lastMsgRcd + 1 ) {
-            updateChannelAddress( rec, addr );
+            augmentChannelAddr( comms, rec, addr, 0 );
         } else {
             XP_LOGF( "%s: expected %d, got %d", __func__, 
                      rec->lastMsgRcd + 1, msgID );
@@ -2273,8 +2271,8 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
         rec->rr.hostID = hostID;
         rec->next = comms->recs;
         comms->recs = rec;
-        XP_LOGF( "%s() creating rec %p for channelNo=%X", __func__, 
-                 rec, channelNo );
+        XP_LOGF( "%s() creating rec %p for channelNo=%X, hostID = %d", __func__, 
+                 rec, channelNo, hostID );
     }
 
     /* overwrite existing address with new one.  I assume that's the right
@@ -2347,7 +2345,8 @@ logAddr( CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
 #endif
 
 static void
-augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, const CommsAddrRec* addr )
+augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, const CommsAddrRec* addr,
+                    XWHostID hostID )
 {
     logAddr( comms, &rec->addr, __func__ );
     logAddr( comms, addr, __func__ );
@@ -2372,6 +2371,10 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, const CommsAddrRec* ad
                 } else {
                     src = &comms->addr.u.ip_relay;
                 }
+                if ( 0 != hostID ) {
+                    rec->rr.hostID = hostID;
+                    XP_LOGF( "%s: set hostID for rec %p to %d", __func__, rec, hostID );
+                }
                 break;
             case COMMS_CONN_SMS:
                 dest = &rec->addr.u.sms;
@@ -2389,15 +2392,6 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, const CommsAddrRec* ad
     }
     logAddr( comms, &rec->addr, __func__ );
 }
-
-static void
-updateChannelAddress( AddressRecord* rec, const CommsAddrRec* addr )
-{
-    XP_ASSERT( !!rec );
-    if ( !!addr ) {
-        XP_MEMCPY( &rec->addr, addr, sizeof(rec->addr) );
-    }
-} /* updateChannelAddress */
 
 static XP_Bool
 channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo, 
@@ -2505,10 +2499,14 @@ getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
     if ( (channelNo & CHANNEL_MASK) == CHANNEL_NONE ) {
         id = HOST_ID_SERVER;
     } else {
-        AddressRecord* recs;
-        for ( recs = comms->recs; !!recs; recs = recs->next ) {
-            if ( recs->channelNo == channelNo ) {
+        for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
+            XP_LOGF( "%s: rec %p has hostID %d", __func__, recs, 
+                     recs->rr.hostID );
+            if ( recs->channelNo == channelNo 
+                 && addr_hasType( &recs->addr, COMMS_CONN_RELAY ) ) {
                 id = recs->rr.hostID;
+            } else {
+                XP_LOGF( "%s: rejected record %p", __func__, recs );
             }
         }
     }
@@ -2540,7 +2538,9 @@ msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             }
             stream_putU16( stream, comms->rr.cookieID );
         case XWRELAY_MSG_TORELAY_NOCONN:
+            XP_ASSERT( 0 < comms->rr.myHostID );
             stream_putU8( stream, comms->rr.myHostID );
+            XP_ASSERT( 0 < destID );
             stream_putU8( stream, destID );
             XP_LOGF( "%s: wrote ids src %d, dest %d", __func__, 
                      comms->rr.myHostID, destID );
