@@ -222,6 +222,11 @@ relaycon_receive( GIOChannel* source, GIOCondition condition, gpointer data )
                                   ((0 <= nRead)? nRead : 0) );
     XP_LOGF( "%s: read %zd bytes ('%s')", __func__, nRead, b64 );
     g_free( b64 );
+#ifdef LOG_PACKET_MD5SUMS
+    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nRead );
+    XP_LOGF( "%s: read %zd bytes ('%s')(sum=%s)", __func__, nRead, b64, sum );
+    g_free( sum );
+#endif
     if ( 0 <= nRead ) {
         const XP_U8* ptr = buf;
         const XP_U8* end = buf + nRead;
@@ -344,7 +349,13 @@ sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len )
     ssize_t nSent = sendto( storage->socket, msgbuf, len, 0, /* flags */
                             (struct sockaddr*)&storage->saddr, 
                             sizeof(storage->saddr) );
+#ifdef LOG_PACKET_MD5SUMS
+    gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, msgbuf, len );
+    XP_LOGF( "%s: sent %d bytes with sum %s", __func__, len, sum );
+    g_free( sum );
+#else
     XP_LOGF( "%s()=>%zd", __func__, nSent );
+#endif
     return nSent;
 }
 
