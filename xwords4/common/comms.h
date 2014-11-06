@@ -241,6 +241,13 @@ void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
 const char* ConnType2Str( CommsConnType typ );
 const char* CommsRelayState2Str( CommsRelayState state );
 const char* XWREASON2Str( XWREASON reason );
+
+void comms_setAddrDisabled( CommsCtxt* comms, CommsConnType typ, 
+                            XP_Bool send, XP_Bool enabled );
+XP_Bool comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ, 
+                               XP_Bool send );
+# else
+#  define comms_getAddrDisabled( comms, typ, send ) XP_FALSE
 # endif
 
 EXTERN_C_END

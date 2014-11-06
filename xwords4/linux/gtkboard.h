@@ -84,6 +84,11 @@ typedef struct ClientStreamRec {
     int sock;
 } ClientStreamRec;
 
+typedef struct _DropTypeData {
+    CommsCtxt* comms;
+    CommsConnType typ;
+} DropTypeData;
+
 typedef struct GtkGameGlobals {
     CommonGlobals cGlobals;
     CurGameInfo gi;
@@ -127,8 +132,9 @@ typedef struct GtkGameGlobals {
     XP_UCHAR stateChar;
 #endif
 
+    DropTypeData dropData[COMMS_CONN_NTYPES];
+
     XP_Bool gridOn;
-    XP_Bool dropMsgs[COMMS_CONN_NTYPES][2];
     XP_Bool mouseDown;
     XP_Bool altKeyDown;
 #ifdef KEYBOARD_NAV

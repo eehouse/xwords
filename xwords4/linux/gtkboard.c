@@ -450,8 +450,12 @@ setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals )
 static void 
 drop_msg_toggle( GtkWidget* toggle, void* data )
 {
-    XP_Bool* bp = (XP_Bool*)data;
-    *bp = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
+    XP_Bool disabled = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
+    long asInt = (long)data;
+    XP_Bool send = 0 != (asInt & 1);
+    asInt &= ~1;
+    DropTypeData* datum = (DropTypeData*)asInt;
+    comms_setAddrDisabled( datum->comms, datum->typ, send, disabled );
 } /* drop_msg_toggle */
 
 static void
@@ -463,6 +467,10 @@ addDropChecks( GtkGameGlobals* globals )
         comms_getAddr( comms, &addr );
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+            DropTypeData* datum = &globals->dropData[typ];
+            datum->typ = typ;
+            datum->comms = comms;
+
             GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
             gchar buf[32];
             snprintf( buf, sizeof(buf), "Drop %s messages", 
@@ -473,13 +481,13 @@ addDropChecks( GtkGameGlobals* globals )
 
             widget = gtk_check_button_new_with_label( "Incoming" );
             g_signal_connect( GTK_OBJECT(widget), "toggled", G_CALLBACK(drop_msg_toggle), 
-                              &globals->dropMsgs[typ][0] );
+                              datum );
             gtk_box_pack_start( GTK_BOX(hbox), widget, FALSE, TRUE, 0);
             gtk_widget_show( widget );
 
             widget = gtk_check_button_new_with_label( "Outgoing" );
             g_signal_connect( GTK_OBJECT(widget), "toggled", G_CALLBACK(drop_msg_toggle), 
-                              &globals->dropMsgs[typ][1] );
+                              (void*)(((long)datum) | 1) );
             gtk_box_pack_start( GTK_BOX(hbox), widget, FALSE, TRUE, 0);
             gtk_widget_show( widget );
 
@@ -492,7 +500,7 @@ addDropChecks( GtkGameGlobals* globals )
 }
 # else
 #  define addDropChecks( globals )
-# endif
+# endif  /* DEBUG */
 #endif
 
 static void
