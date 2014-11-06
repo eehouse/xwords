@@ -445,6 +445,52 @@ setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals )
 #endif
 }
 
+#ifndef XWFEATURE_STANDALONE_ONLY
+static void 
+drop_msg_toggle( GtkWidget* toggle, void* data )
+{
+    XP_Bool* bp = (XP_Bool*)data;
+    *bp = gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(toggle) );
+} /* drop_msg_toggle */
+
+static void
+addDropChecks( GtkGameGlobals* globals )
+{
+    CommsCtxt* comms = globals->cGlobals.game.comms;
+    if ( !!comms ) {
+        CommsAddrRec addr;
+        comms_getAddr( comms, &addr );
+        CommsConnType typ;
+        for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+            GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+            gchar buf[32];
+            snprintf( buf, sizeof(buf), "Drop %s messages", 
+                      ConnType2Str( typ ) );
+            GtkWidget* widget = gtk_label_new( buf );
+            gtk_box_pack_start( GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+            gtk_widget_show( widget );
+
+            widget = gtk_check_button_new_with_label( "Incoming" );
+            g_signal_connect( GTK_OBJECT(widget), "toggled", G_CALLBACK(drop_msg_toggle), 
+                              &globals->dropMsgs[typ][0] );
+            gtk_box_pack_start( GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+            gtk_widget_show( widget );
+
+            widget = gtk_check_button_new_with_label( "Outgoing" );
+            g_signal_connect( GTK_OBJECT(widget), "toggled", G_CALLBACK(drop_msg_toggle), 
+                              &globals->dropMsgs[typ][1] );
+            gtk_box_pack_start( GTK_BOX(hbox), widget, FALSE, TRUE, 0);
+            gtk_widget_show( widget );
+
+            gtk_widget_show( hbox );
+
+            gtk_box_pack_start( GTK_BOX(globals->drop_checks_vbox), hbox, FALSE, TRUE, 0);
+        }
+        gtk_widget_show(globals->drop_checks_vbox);
+    }
+}
+#endif
+
 static void
 createOrLoadObjects( GtkGameGlobals* globals )
 {
@@ -603,6 +649,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
     server_do( globals->cGlobals.game.server );
     saveGame( cGlobals );   /* again, to include address etc. */
 
+    addDropChecks( globals );
     disenable_buttons( globals );
 } /* createOrLoadObjects */
 
@@ -2370,13 +2417,6 @@ gtk_socket_acceptor( int listener, Acceptor func, CommonGlobals* globals,
         *storage = info;
     }
 } /* gtk_socket_acceptor */
-
-static void 
-drop_msg_toggle( GtkWidget* toggle, GtkGameGlobals* globals )
-{
-    globals->dropIncommingMsgs = gtk_toggle_button_get_active( 
-        GTK_TOGGLE_BUTTON(toggle) );
-} /* drop_msg_toggle */
 #endif  /* #ifndef XWFEATURE_STANDALONE_ONLY */
 
 /* int */
@@ -2456,9 +2496,6 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     GtkWidget* buttonbar;
     GtkWidget* vbox;
     GtkWidget* hbox;
-#ifndef XWFEATURE_STANDALONE_ONLY
-    GtkWidget* dropCheck;
-#endif
 
     initGlobalsNoDraw( globals, params, gi );
     if ( !!gi ) {
@@ -2484,11 +2521,9 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-    dropCheck = gtk_check_button_new_with_label( "drop incoming messages" );
-    g_signal_connect( GTK_OBJECT(dropCheck),
-                      "toggled", G_CALLBACK(drop_msg_toggle), globals );
-    gtk_box_pack_start( GTK_BOX(vbox), dropCheck, FALSE, TRUE, 0);
-    gtk_widget_show( dropCheck );
+    globals->drop_checks_vbox = gtk_vbox_new( FALSE, 0 );
+    gtk_box_pack_start( GTK_BOX(vbox), globals->drop_checks_vbox, 
+                        FALSE, TRUE, 0 );
 #endif
 
     buttonbar = makeButtons( globals );

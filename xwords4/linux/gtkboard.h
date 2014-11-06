@@ -103,7 +103,7 @@ typedef struct GtkGameGlobals {
     GtkWidget* commit_button;
     GtkWidget* invite_button;
 
-
+    GtkWidget* drop_checks_vbox;
 #ifdef XWFEATURE_CHAT
     GtkWidget* chat_button;
 #endif
@@ -127,7 +127,7 @@ typedef struct GtkGameGlobals {
 #endif
 
     XP_Bool gridOn;
-    XP_Bool dropIncommingMsgs;
+    XP_Bool dropMsgs[COMMS_CONN_NTYPES][2];
     XP_Bool mouseDown;
     XP_Bool altKeyDown;
 #ifdef KEYBOARD_NAV
