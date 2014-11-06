@@ -274,7 +274,7 @@ parseAndDispatch( LaunchParams* params, uint8_t* buf, int len,
 }
 
 static gboolean
-sms_receive( GIOChannel *source, GIOCondition condition, gpointer data )
+sms_receive( GIOChannel *source, GIOCondition XP_UNUSED_DBG(condition), gpointer data )
 {
     LOG_FUNC();
     XP_ASSERT( 0 != (G_IO_IN & condition) );

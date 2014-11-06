@@ -204,7 +204,7 @@ sendAckIf( RelayConStorage* storage, const MsgHeader* header )
 }
 
 static gboolean 
-relaycon_receive( GIOChannel* source, GIOCondition condition, gpointer data )
+relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpointer data )
 {
     XP_ASSERT( 0 != (G_IO_IN & condition) ); /* FIX ME */
     RelayConStorage* storage = (RelayConStorage*)data;

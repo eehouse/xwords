@@ -604,7 +604,10 @@ bt_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
     int fd = g_io_channel_unix_get_fd( source );
     if ( 0 != (G_IO_IN & condition) ) {
         unsigned char buf[1024];
-        XP_S16 nBytes = linux_bt_receive( fd, buf, sizeof(buf) );
+#ifdef DEBUG
+        XP_S16 nBytes = 
+#endif
+            linux_bt_receive( fd, buf, sizeof(buf) );
         XP_ASSERT(nBytes==2 || XP_TRUE);
 
         XP_ASSERT(0);           /* not implemented beyond this point */

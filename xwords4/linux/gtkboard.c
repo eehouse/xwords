@@ -446,6 +446,7 @@ setTransportProcs( TransportProcs* procs, GtkGameGlobals* globals )
 }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
+# ifdef DEBUG
 static void 
 drop_msg_toggle( GtkWidget* toggle, void* data )
 {
@@ -489,6 +490,9 @@ addDropChecks( GtkGameGlobals* globals )
         gtk_widget_show(globals->drop_checks_vbox);
     }
 }
+# else
+#  define addDropChecks( globals )
+# endif
 #endif
 
 static void
@@ -2341,9 +2345,11 @@ gtk_socket_added( void* closure, int newSock, GIOFunc proc )
         XP_ASSERT( !!proc );
         GIOChannel* channel = g_io_channel_unix_new( newSock );
         g_io_channel_set_close_on_unref( channel, TRUE );
-        guint result = g_io_add_watch( channel,
-                                       G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
-                                       proc, globals );
+#ifdef DEBUG
+        guint result = 
+#endif
+            g_io_add_watch( channel, G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
+                            proc, globals );
         XP_LOGF( "g_io_add_watch(%d) => %d", newSock, result );
     }
     /* A hack for the bluetooth case. */
@@ -2520,7 +2526,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     menubar = makeMenus( globals );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
 
-#ifndef XWFEATURE_STANDALONE_ONLY
+#if ! defined XWFEATURE_STANDALONE_ONLY && defined DEBUG
     globals->drop_checks_vbox = gtk_vbox_new( FALSE, 0 );
     gtk_box_pack_start( GTK_BOX(vbox), globals->drop_checks_vbox, 
                         FALSE, TRUE, 0 );

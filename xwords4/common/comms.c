@@ -204,6 +204,7 @@ static void logAddr( CommsCtxt* comms, const CommsAddrRec* addr,
                      const char* caller );
 # else
 # define printQueue( comms )
+# define logAddr( comms, addr, caller )
 # endif
 #endif
 #if defined RELAY_HEARTBEAT || defined COMMS_HEARTBEAT
@@ -1845,8 +1846,7 @@ validateInitialMessage( CommsCtxt* comms,
 {
     AddressRecord* rec = NULL;
     LOG_FUNC();
-    XP_U32 clientID = *channelNo & CHANNEL_MASK;
-    XP_LOGF( "%s(): clientID = 0x%x", __func__, clientID );
+    XP_LOGF( "%s(): clientID = 0x%x", __func__, *channelNo & CHANNEL_MASK );
     if ( 0 ) {
 #ifdef COMMS_HEARTBEAT
     } else if ( comms->doHeartbeat ) {
