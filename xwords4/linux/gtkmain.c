@@ -438,71 +438,11 @@ feedBufferGTK( GtkAppGlobals* apg, sqlite3_int64 rowid,
     return seed;
 }
 
-/* static gboolean */
-/* gtk_app_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data ) */
-/* { */
-/*     if ( 0 != (G_IO_IN & condition) ) { */
-/*         GtkAppGlobals* apg = (GtkAppGlobals*)data; */
-/*         int socket = g_io_channel_unix_get_fd( source ); */
-/*         GList* iter; */
-/*         for ( iter = apg->sources; !!iter; iter = iter->next ) { */
-/*             SourceData* sd = (SourceData*)iter->data; */
-/*             if ( sd->channel == source ) { */
-/*                 (*sd->proc)( sd->procClosure, socket ); */
-/*                 break; */
-/*             } */
-/*         } */
-/*         XP_ASSERT( !!iter );    /\* didn't fail to find it *\/ */
-/*     } */
-/*     return TRUE; */
-/* } */
-
 static void
 gtkSocketAdded( void* closure, int newSock, GIOFunc proc )
 {
-#if 1
     GIOChannel* channel = g_io_channel_unix_new( newSock );
     (void)g_io_add_watch( channel, G_IO_IN | G_IO_ERR, proc, closure );
-#else
-    GtkAppGlobals* globals = (GtkAppGlobals*)closure;
-    SockInfo* info = (SockInfo*)*storage;
-    XP_LOGF( "%s(old:%d; new:%d)", __func__, oldSock, newSock );
-
-    if ( oldSock != -1 ) {
-        XP_ASSERT( info != NULL );
-        g_source_remove( info->watch );
-        g_io_channel_unref( info->channel );
-        XP_FREE( globals->cGlobals.params->util->mpool, info );
-        *storage = NULL;
-        XP_LOGF( "Removed socket %d from gtk's list of listened-to sockets", 
-                 oldSock );
-    }
-    if ( newSock != -1 ) {
-        info = (SockInfo*)XP_MALLOC( globals->cGlobals.params->util->mpool,
-                                     sizeof(*info) );
-        GIOChannel* channel = g_io_channel_unix_new( newSock );
-        g_io_channel_set_close_on_unref( channel, TRUE );
-        guint result = g_io_add_watch( channel,
-                                       G_IO_IN | G_IO_HUP | G_IO_ERR | G_IO_PRI,
-                                       newConnectionInput,
-                                       globals );
-        info->channel = channel;
-        info->watch = result;
-        if ( !!*storage ) {
-            XP_FREE( globals->cGlobals.params->util->mpool, *storage );
-        }
-        *storage = info;
-        XP_LOGF( "g_io_add_watch(%d) => %d", newSock, result );
-    }
-#ifdef XWFEATURE_RELAY
-    globals->cGlobals.socket = newSock;
-#endif
-    /* A hack for the bluetooth case. */
-    CommsCtxt* comms = globals->cGlobals.game.comms;
-    if ( (comms != NULL) && (comms_getConType(comms) == COMMS_CONN_BT) ) {
-        comms_resendAll( comms, XP_FALSE );
-    }
-#endif
     LOG_RETURN_VOID();
 } /* gtk_socket_changed */
 
