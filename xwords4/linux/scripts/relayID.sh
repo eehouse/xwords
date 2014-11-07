@@ -29,8 +29,8 @@ while [ $# -ge 1 ]; do
             *got_connect_cmd:\ set\ hostid* )
                 HOSTID=$(echo $LINE | sed 's,^.*set hostid: \(.\)$,\1,')
                 ;;
-            *getChannelSeed:\ channelSeed:*)
-                SEED=$(echo $LINE | sed 's,^.*getChannelSeed: channelSeed: \(.*\)$,\1,')
+            *getChannelSeed:\ made\ seed:\ cno:\ *)
+                SEED=$(echo $LINE | sed 's,^.*getChannelSeed: made seed: cno: \(.*\)|.*$,\1,')
                 ;;
         esac
     done < $LOG
