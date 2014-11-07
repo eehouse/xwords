@@ -607,7 +607,8 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         comms->channelSeed = 0;
     } else {
         comms->channelSeed = stream_getU16( stream );
-        XP_LOGF( "%s: loaded seed: %.4X", __func__, comms->channelSeed );
+        CNO_FMT( cbuf, comms->channelSeed );
+        XP_LOGF( "%s: loaded seed: %s", __func__, cbuf );
     }
     if ( STREAM_VERS_COMMSBACKOFF <= version ) {
         comms->resendBackoff = stream_getU16( stream );
@@ -1094,8 +1095,7 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
             channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
         }
 
-        XP_DEBUGF( "%s: assigning msgID=" XP_LD " on chnl %X", __func__, 
-                   msgID, channelNo );
+        XP_DEBUGF( "%s: assigning msgID=" XP_LD " on %s", __func__, msgID, cbuf );
 
         elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
         if ( NULL != elem ) {
@@ -1786,11 +1786,11 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
     XP_U16 mask = maskChannel? ~CHANNEL_MASK : ~0;
 
     /* Use addr if we have it.  Otherwise use channelNo if non-0 */
-
+    CNO_FMT( cbuf, channelNo );
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
-
-        XP_LOGF( "%s: comparing rec channel %X with addr channel %X", __func__,
-                 (rec->channelNo & ~CHANNEL_MASK), (channelNo & ~CHANNEL_MASK) );
+        CNO_FMT( cbuf1, rec->channelNo );
+        XP_LOGF( "%s: comparing rec channel %s with addr channel %s", __func__,
+                 cbuf1, cbuf );
 
         if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) {
             XP_LOGF( "%s: match based on channels!!!", __func__ );
@@ -1841,7 +1841,7 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
             break;
         }
     }
-    CNO_FMT( cbuf, channelNo );
+
     XP_LOGF( "%s(%s, maskChannel=%s) => %p", __func__, 
              cbuf, maskChannel? "true":"false", rec );
     return rec;
@@ -1870,9 +1870,10 @@ validateInitialMessage( CommsCtxt* comms,
                         const CommsAddrRec* addr, XWHostID senderID, 
                         XP_PlayerAddr* channelNo )
 {
+    CNO_FMT( cbuf, *channelNo );
+    XP_LOGF( "%s(*%s)", __func__, cbuf );
+
     AddressRecord* rec = NULL;
-    LOG_FUNC();
-    XP_LOGF( "%s(): clientID = 0x%x", __func__, *channelNo & CHANNEL_MASK );
     if ( 0 ) {
 #ifdef COMMS_HEARTBEAT
     } else if ( comms->doHeartbeat ) {
@@ -1901,6 +1902,8 @@ validateInitialMessage( CommsCtxt* comms,
                 XP_LOGF( "%s: looking at %s", __func__, cbuf );
                 XP_ASSERT( (*channelNo & CHANNEL_MASK) == 0 );
                 *channelNo |= ++comms->nextChannelNo;
+                CNO_FMT( cbuf1, *channelNo );
+                XP_LOGF( "%s: ORd channel onto channelNo: now %s", __func__, cbuf1 );
                 XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
             }
             rec = rememberChannelAddress( comms, *channelNo, senderID, addr );
@@ -1922,7 +1925,7 @@ validateInitialMessage( CommsCtxt* comms,
             rec = NULL;
         } else {
             if ( comms->isServer ) {
-                XP_ASSERT( (*channelNo & CHANNEL_MASK) == 0 );
+                XP_ASSERT( 0 == (*channelNo & CHANNEL_MASK) );
                 if ( 0 == (*channelNo & CHANNEL_MASK) ) {
                     *channelNo |= ++comms->nextChannelNo;
                     CNO_FMT( cbuf, *channelNo );
@@ -2047,7 +2050,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                     && (0 == rec->lastMsgRcd || rec->lastMsgRcd <= msgID);
                 if ( messageValid ) {
                     CNO_FMT( cbuf, channelNo );
-                    XP_LOGF( "%s: got %s;msgID=%d;len=%d", __func__, cbuf, 
+                    XP_LOGF( "%s: got %s; msgID=%d; len=%d", __func__, cbuf, 
                              msgID, payloadSize );
                     rec->lastMsgRcd = msgID;
                     comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
@@ -2267,14 +2270,14 @@ comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream )
 
     for ( elem = comms->msgQueueHead; !!elem; elem = elem->next ) {
         XP_SNPRINTF( buf, sizeof(buf), 
-                     " - channelNo=%X; msgID=" XP_LD "; len=%d\n", 
+                     " - channelNo=%.4X; msgID=" XP_LD "; len=%d\n", 
                      elem->channelNo, elem->msgID, elem->len );
         stream_catString( stream, buf );
     }
 
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
         XP_SNPRINTF( (XP_UCHAR*)buf, sizeof(buf), 
-                     (XP_UCHAR*)"  Stats for channel: %X\n", 
+                     (XP_UCHAR*)"  Stats for channel: %.4X\n", 
                      rec->channelNo );
         stream_catString( stream, buf );
 
@@ -2316,6 +2319,8 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
 {
     CNO_FMT( cbuf, channelNo );
     XP_LOGF( "%s(%s)", __func__, cbuf );
+
+    logAddr( comms, addr, __func__ );
     AddressRecord* rec = NULL;
     rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
     if ( !rec ) {
@@ -2326,7 +2331,6 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
         rec->rr.hostID = hostID;
         rec->next = comms->recs;
         comms->recs = rec;
-        CNO_FMT( cbuf, channelNo );
         XP_LOGF( "%s() creating rec %p for %s, hostID = %d", __func__, 
                  rec, cbuf, hostID );
     }
@@ -2556,8 +2560,9 @@ getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
         id = HOST_ID_SERVER;
     } else {
         for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
-            XP_LOGF( "%s: rec %p has hostID %d", __func__, recs, 
-                     recs->rr.hostID );
+            CNO_FMT( cbuf, recs->channelNo );
+            XP_LOGF( "%s: rec %p has %s, hostID %d", __func__, recs, 
+                     cbuf, recs->rr.hostID );
             if ( recs->channelNo == channelNo 
                  && addr_hasType( &recs->addr, COMMS_CONN_RELAY ) ) {
                 id = recs->rr.hostID;
