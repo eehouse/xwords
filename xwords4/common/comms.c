@@ -1792,10 +1792,14 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
         XP_LOGF( "%s: comparing rec channel %s with addr channel %s", __func__,
                  cbuf1, cbuf );
 
-        if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) {
+        if ( (rec->channelNo & mask) == (channelNo & mask) ) {
             XP_LOGF( "%s: match based on channels!!!", __func__ );
             matched = XP_TRUE;
         } else {
+            if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) {
+                // XP_ASSERT(0);   /* figure out why this would make sense */
+                XP_LOGF( "%s: figure out why this would make sense ", __func__ );
+            }
             CommsConnType conType = !!addr ?
                 addr_getType( addr ) : COMMS_CONN_NONE;
             switch( conType ) {
