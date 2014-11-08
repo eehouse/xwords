@@ -1098,9 +1098,10 @@ linux_relay_ioproc( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
             
             inboundS = stream_from_msgbuf( cGlobals, buf, nBytes );
             if ( !!inboundS ) {
-                CommsAddrRec* addrp = NULL;
+                CommsAddrRec addr = {0};
+                addr_addType( &addr, COMMS_CONN_RELAY );
                 if ( comms_checkIncomingStream( cGlobals->game.comms,
-                                                inboundS, addrp ) ) {
+                                                inboundS, &addr ) ) {
                     redraw = server_receiveMessage( cGlobals->game.server, 
                                                     inboundS );
                 }
