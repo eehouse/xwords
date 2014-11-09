@@ -28,7 +28,7 @@ QueryBuilder::appendQueryf( const char* fmt, ... )
     do {
         va_list ap;
         va_start( ap, fmt );
-        done = m_query.catf( fmt, ap );
+        done = m_query.catfap( fmt, ap );
         va_end( ap );
     } while ( !done );
     return *this;
