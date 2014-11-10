@@ -223,7 +223,7 @@ build_cmds() {
             if [ -n "$SEND_CHAT" ]; then
                    PARAMS="$PARAMS --send-chat $SEND_CHAT"
             fi
-			PARAMS="$PARAMS --my-port 1024"
+			# PARAMS="$PARAMS --my-port 1024"
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
@@ -507,7 +507,7 @@ run_cmds() {
     # kill any remaining games
     if [ $COUNT -gt 0 ]; then
         mkdir -p ${LOGDIR}/not_done
-        echo "processing unfinished games...."
+        echo "$(date): processing unfinished games...."
         for KEY in ${!ARGS[*]}; do
             close_device $KEY ${LOGDIR}/not_done "unfinished game"
         done
