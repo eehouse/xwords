@@ -1534,16 +1534,27 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
+    gchar* countStr = "1";
     gchar* phone = NULL;
     gchar* portstr = NULL;
     AskMInfo infos[] = {
+        { "Number of players", &countStr },
         { "Remote phone#", &phone },
         { "Remote port", &portstr },
     };
-    if ( gtkaskm( "Invite whom?", infos, VSIZE(infos) ) ) { 
+    while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) { 
+        int nPlayers = atoi( countStr );
+        if ( 0 >= nPlayers ) {
+            gtktell( globals->window, "Illegal number of players" );
+            break;
+        }
+
         int port = atoi( portstr );
-        XP_LOGF( "need to invite using number %s and port %d", phone, port );
-        XP_ASSERT( 0 != port );
+        // XP_LOGF( "need to invite using number %s and port %d", phone, port );
+        if ( 0 == port ) {
+            gtktell( globals->window, "Port must not be 0" );
+            break;
+        }
         const CurGameInfo* gi = globals->cGlobals.gi;
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
@@ -1554,10 +1565,12 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         comms_getAddr( comms, &addr );
 
         linux_sms_invite( globals->cGlobals.params, gi, &addr, gameName,
-                          1, phone, port );
+                          nPlayers, phone, port );
+        break;
     }
-    g_free( phone );
-    g_free( portstr );
+    for ( int ii = 0; ii < VSIZE(infos); ++ii ) {
+        g_free( *infos[ii].result );
+    }
 } /* handle_invite_button */
 
 static void
