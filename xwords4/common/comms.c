@@ -1216,8 +1216,7 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
     XP_LOGF( "%s: remove msgs <= " XP_LD " for %s (queueLen: %d)",
              __func__, msgID, cbuf, comms->queueLen );
 
-    if ( (channelNo == 0) || !!getRecordFor( comms, NULL, channelNo, 
-                                             XP_FALSE ) ) {
+    if ((channelNo == 0) || !!getRecordFor( comms, NULL, channelNo, XP_FALSE)) {
 
         MsgQueueElem* elem = comms->msgQueueHead;
         MsgQueueElem* next;
@@ -1284,16 +1283,12 @@ static XP_S16
 sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 {
     XP_S16 result = -1;
-    XP_PlayerAddr channelNo;
-#if defined XWFEATURE_RELAY || defined XWFEATURE_BLUETOOTH
-    // CommsConnType conType = comms_getConType( comms );
-#endif
-
-    channelNo = elem->channelNo;
+    XP_PlayerAddr channelNo = elem->channelNo;
+    CNO_FMT( cbuf, channelNo );
 
 #ifdef COMMS_CHECKSUM
-    XP_LOGF( "%s: sending message of len %d with sum %s", __func__, elem->len, 
-             elem->checksum );
+    XP_LOGF( "%s: sending message of len %d on %s with sum %s", __func__, elem->len, 
+             cbuf, elem->checksum );
 #endif
 
     CommsConnType typ;
@@ -1370,9 +1365,9 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
         XP_LOGF( "%s: elem's sendCount since load: %d", __func__, 
                  elem->sendCount );
     }
-    CNO_FMT( cbuf, elem->channelNo );
+    CNO_FMT( cbuf1, elem->channelNo );
     XP_LOGF( "%s(%s; msgID=" XP_LD ")=>%d", __func__, 
-             cbuf, elem->msgID, result );
+             cbuf1, elem->msgID, result );
     return result;
 } /* sendMsg */
 
@@ -1739,38 +1734,35 @@ preProcess( CommsCtxt* comms, const CommsAddrRec* useAddr,
             XWHostID* XP_UNUSED_RELAY(senderID) )
 {
     XP_Bool consumed = XP_FALSE;
-    // XWStreamPos pos = stream_getPos( stream, POS_READ);
 
-    CommsConnType typ;
-    for ( XP_U32 st = 0; !consumed && addr_iter( useAddr, &typ, &st ); ) {
-        XP_LOGF( "%s(typ=%s)", __func__, ConnType2Str(typ) );
+    /* There should be exactly one type associated with an incoming message */
+    CommsConnType typ = addr_getType( useAddr );
+    XP_LOGF( "%s(typ=%s)", __func__, ConnType2Str(typ) );
 
-        // stream_setPos( stream, POS_READ, pos );
-        switch ( typ ) {
+    switch ( typ ) {
 #ifdef XWFEATURE_RELAY
-            /* relayPreProcess returns true if consumes the message.  May just eat the
-               header and leave a regular message to be processed below. */
-        case COMMS_CONN_RELAY:
-            consumed = relayPreProcess( comms, stream, senderID );
-            if ( !consumed ) {
-                *usingRelay = XP_TRUE;
-            }
-            break;
+        /* relayPreProcess returns true if consumes the message.  May just eat the
+           header and leave a regular message to be processed below. */
+    case COMMS_CONN_RELAY:
+        consumed = relayPreProcess( comms, stream, senderID );
+        if ( !consumed ) {
+            *usingRelay = XP_TRUE;
+        }
+        break;
 #endif
 #if defined XWFEATURE_IP_DIRECT
-        case COMMS_CONN_BT:
-        case COMMS_CONN_IP_DIRECT:
-            consumed = btIpPreProcess( comms, stream );
-            break;
+    case COMMS_CONN_BT:
+    case COMMS_CONN_IP_DIRECT:
+        consumed = btIpPreProcess( comms, stream );
+        break;
 #endif
 #if defined XWFEATURE_SMS
-        case COMMS_CONN_SMS:
-            break;    /* nothing to grab */
+    case COMMS_CONN_SMS:
+        break;    /* nothing to grab */
 #endif
-        default:
-            XP_ASSERT(0);
-            break;
-        }
+    default:
+        XP_ASSERT(0);
+        break;
     }
     LOG_RETURNF( "%d", consumed );
     return consumed;
@@ -1788,6 +1780,10 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
     /* Use addr if we have it.  Otherwise use channelNo if non-0 */
     CNO_FMT( cbuf, channelNo );
     for ( rec = comms->recs; !!rec; rec = rec->next ) {
+        /* server should have only one rec max -- but relay has bugs right now
+           that send to the wrong device randomly. */
+        // XP_ASSERT( comms->isServer || !rec->next );
+
         CNO_FMT( cbuf1, rec->channelNo );
         XP_LOGF( "%s: comparing rec channel %s with addr channel %s", __func__,
                  cbuf1, cbuf );
@@ -1796,15 +1792,14 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
             XP_LOGF( "%s: match based on channels!!!", __func__ );
             matched = XP_TRUE;
         } else {
-            if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) {
-                // XP_ASSERT(0);   /* figure out why this would make sense */
-                XP_LOGF( "%s: figure out why this would make sense ", __func__ );
-            }
+            /* if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) { */
+            /*     XP_ASSERT(0);   /\* figure out why this would make sense *\/ */
+            /*     XP_LOGF( "%s: figure out why this would make sense ", __func__ ); */
+            /* } */
             CommsConnType conType = !!addr ?
                 addr_getType( addr ) : COMMS_CONN_NONE;
             switch( conType ) {
             case COMMS_CONN_RELAY:
-                XP_ASSERT(0);       /* is this being used? */
                 if ( (addr->u.ip_relay.ipAddr == rec->addr.u.ip_relay.ipAddr)
                      && (addr->u.ip_relay.port == rec->addr.u.ip_relay.port ) ) {
                     matched = XP_TRUE;
@@ -1960,7 +1955,8 @@ validateInitialMessage( CommsCtxt* comms,
  */
 static AddressRecord* 
 validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
-                        XP_PlayerAddr channelNo, MsgID msgID, MsgID lastMsgRcd )
+                        XP_PlayerAddr channelNo, XWHostID senderID,
+                        MsgID msgID, MsgID lastMsgRcd )
 
 {
     AddressRecord* rec;
@@ -1969,9 +1965,10 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
     rec = getRecordFor( comms, NULL, channelNo, XP_FALSE );
     if ( !!rec ) {
         removeFromQueue( comms, channelNo, lastMsgRcd );
-        if ( msgID == rec->lastMsgRcd + 1 ) {
-            augmentChannelAddr( comms, rec, addr, 0 );
-        } else {
+
+        augmentChannelAddr( comms, rec, addr, senderID );
+
+        if ( msgID != rec->lastMsgRcd + 1 ) {
             XP_LOGF( "%s: expected %d, got %d", __func__, 
                      rec->lastMsgRcd + 1, msgID );
             rec = NULL;
@@ -1989,8 +1986,10 @@ XP_Bool
 comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
                            const CommsAddrRec* retAddr )
 {
+    XP_ASSERT( !!retAddr );     /* for now */
     XP_Bool messageValid = XP_FALSE;
-    LOG_FUNC();
+    XP_LOGF( "%s(retAddr.typ = %s)", __func__, 
+             ConnType2Str(addr_getType( retAddr ) ) );
     if ( comms_getAddrDisabled( comms, addr_getType(retAddr), XP_FALSE ) ) {
         XP_LOGF( "%s: dropping message because %s disabled", __func__,
                  ConnType2Str( addr_getType( retAddr ) ) );
@@ -2044,8 +2043,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                     rec = validateInitialMessage( comms, payloadSize > 0, retAddr, 
                                                   senderID, &channelNo );
                 } else if ( comms->connID == connID ) {
-                    rec = validateChannelMessage( comms, retAddr, channelNo, msgID,
-                                                  lastMsgRcd );
+                    rec = validateChannelMessage( comms, retAddr, channelNo, senderID,
+                                                  msgID, lastMsgRcd );
                 } else {
                     XP_LOGF( "%s: unexpected connID; dropping message", __func__ );
                 }
@@ -2418,6 +2417,12 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, const CommsAddrRec* ad
     if ( !!addr ) {
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
+            if ( ! addr_hasType( &rec->addr, typ ) ) {
+                CNO_FMT( cbuf, rec->channelNo );
+                XP_LOGF( "%s: adding type %s to rec %p with %s", __func__, 
+                         ConnType2Str(typ), rec, cbuf );
+            }
+
             addr_addType( &rec->addr, typ );
 
             const void* src = NULL;
@@ -2450,7 +2455,11 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, const CommsAddrRec* ad
                 break;
             }
             if ( !!dest ) {
-                XP_MEMCPY( dest, src, siz );
+                if ( 0 != XP_MEMCMP( dest, src, siz ) ) {
+                    XP_LOGF( "%s: actually changing addr info for typ %s",
+                             __func__, ConnType2Str(typ) );
+                    XP_MEMCPY( dest, src, siz );
+                }
             }
         }
     }
@@ -2563,15 +2572,17 @@ getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
     if ( (channelNo & CHANNEL_MASK) == CHANNEL_NONE ) {
         id = HOST_ID_SERVER;
     } else {
+        channelNo = channelNo & ~CHANNEL_MASK;
         for ( AddressRecord* recs = comms->recs; !!recs; recs = recs->next ) {
             CNO_FMT( cbuf, recs->channelNo );
             XP_LOGF( "%s: rec %p has %s, hostID %d", __func__, recs, 
                      cbuf, recs->rr.hostID );
-            if ( recs->channelNo == channelNo 
+            if ( (recs->channelNo & ~CHANNEL_MASK) == channelNo 
                  && addr_hasType( &recs->addr, COMMS_CONN_RELAY ) ) {
                 id = recs->rr.hostID;
             } else {
                 XP_LOGF( "%s: rejected record %p", __func__, recs );
+                logAddr( comms, &recs->addr, __func__ );
             }
         }
     }
