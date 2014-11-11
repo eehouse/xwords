@@ -31,6 +31,12 @@ timer_func( gpointer data )
     return 0;
 }
 
+void
+gtktell( GtkWidget* parent, const gchar *message )
+{
+    (void)gtkask( parent, message, GTK_BUTTONS_OK, NULL );
+}
+
 gint
 gtkask( GtkWidget* parent, const gchar *message, GtkButtonsType buttons,
         const AskPair* buttxts )
