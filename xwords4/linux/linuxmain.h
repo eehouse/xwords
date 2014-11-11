@@ -48,8 +48,8 @@ XP_S16 linux_send( const XP_U8* buf, XP_U16 buflen,
 #ifdef COMMS_HEARTBEAT
 void linux_reset( void* closure );
 #endif
-int linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, 
-                         int bufSize );
+int linux_relay_receive( CommonGlobals* cGlobals, int sock,
+                         unsigned char* buf, int bufSize );
 
 XP_Bool linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why );
 

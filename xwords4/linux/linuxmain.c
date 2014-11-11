@@ -1088,9 +1088,12 @@ linux_relay_ioproc( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition,
     } else if ( 0 != (G_IO_IN & condition) ) {
         CommonGlobals* cGlobals = (CommonGlobals*)data;
         unsigned char buf[1024];
-        XP_ASSERT( cGlobals->relaySocket == g_io_channel_unix_get_fd( source ) );
-
-        int nBytes = linux_relay_receive( cGlobals, buf, sizeof(buf) );
+        int sock = g_io_channel_unix_get_fd( source );
+        if ( cGlobals->relaySocket != sock ) {
+            XP_LOGF( "%s: changing relaySocket from %d to %d", __func__, cGlobals->relaySocket, sock );
+            cGlobals->relaySocket = sock;
+        }
+        int nBytes = linux_relay_receive( cGlobals, sock, buf, sizeof(buf) );
 
         if ( nBytes != -1 ) {
             XWStreamCtxt* inboundS;
@@ -1301,10 +1304,9 @@ blocking_read( int fd, unsigned char* buf, const int len )
 }
 
 int
-linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
+linux_relay_receive( CommonGlobals* cGlobals, int sock, unsigned char* buf, int bufSize )
 {
     LOG_FUNC();
-    int sock = cGlobals->relaySocket;
     ssize_t nRead = -1;
     if ( 0 <= sock ) {
         unsigned short tmp;
