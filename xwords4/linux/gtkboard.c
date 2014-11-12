@@ -76,7 +76,9 @@ static void new_game( GtkWidget* widget, GtkGameGlobals* globals );
 static XP_Bool new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg );
 static void setZoomButtons( GtkGameGlobals* globals, XP_Bool* inOut );
 static void disenable_buttons( GtkGameGlobals* globals );
-
+static GtkWidget* addButton( GtkWidget* hbox, gchar* label, GCallback func, 
+                             GtkGameGlobals* globals );
+static void handle_invite_button( GtkWidget* widget, GtkGameGlobals* globals );
 
 #define GTK_TRAY_HT_ROWS 3
 
@@ -1292,6 +1294,13 @@ makeMenus( GtkGameGlobals* globals )
 static void
 disenable_buttons( GtkGameGlobals* globals )
 {
+    XP_U16 nPending = server_getPendingRegs( globals->cGlobals.game.server );
+    if ( !globals->invite_button && 0 < nPending ) {
+        globals->invite_button = 
+            addButton( globals->buttons_hbox, "Invite",
+                       G_CALLBACK(handle_invite_button), globals );
+    }
+
     GameStateInfo gsi;
     game_getState( &globals->cGlobals.game, &gsi );
 
@@ -1304,8 +1313,9 @@ disenable_buttons( GtkGameGlobals* globals )
     gtk_widget_set_sensitive( globals->prevhint_button, gsi.canHint );
     gtk_widget_set_sensitive( globals->nexthint_button, gsi.canHint );
 
-    XP_U16 nMissing = server_getMissingPlayers( globals->cGlobals.game.server );
-    gtk_widget_set_sensitive( globals->invite_button, 0 < nMissing );
+    if ( !!globals->invite_button ) {
+        gtk_widget_set_sensitive( globals->invite_button, 0 < nPending );
+    }
     gtk_widget_set_sensitive( globals->commit_button, gsi.curTurnSelected );
 
 #ifdef XWFEATURE_CHAT
@@ -1534,7 +1544,9 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    gchar* countStr = "1";
+    const CurGameInfo* gi = globals->cGlobals.gi;
+
+    gchar* countStr;
     gchar* phone = NULL;
     gchar* portstr = NULL;
     AskMInfo infos[] = {
@@ -1542,20 +1554,27 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         { "Remote phone#", &phone },
         { "Remote port", &portstr },
     };
+
+    XP_U16 nMissing = server_getPendingRegs( globals->cGlobals.game.server );
+    gchar buf[64];
+    sprintf( buf, "%d", nMissing );
+    countStr = buf;
+
     while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) { 
         int nPlayers = atoi( countStr );
-        if ( 0 >= nPlayers ) {
-            gtktell( globals->window, "Illegal number of players" );
+        if ( 0 >= nPlayers || nPlayers > nMissing ) {
+            gchar buf[128];
+            sprintf( buf, "Please invite between 1 and %d players (inclusive).", 
+                     nMissing );
+            gtktell( globals->window, buf );
             break;
         }
 
         int port = atoi( portstr );
-        // XP_LOGF( "need to invite using number %s and port %d", phone, port );
         if ( 0 == port ) {
-            gtktell( globals->window, "Port must not be 0" );
+            gtktell( globals->window, "Port must be a number and not 0." );
             break;
         }
-        const CurGameInfo* gi = globals->cGlobals.gi;
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
 
@@ -2264,38 +2283,27 @@ makeVerticalBar( GtkGameGlobals* globals, GtkWidget* XP_UNUSED(window) )
     return vbox;
 } /* makeVerticalBar */
 
+static GtkWidget*
+addButton( GtkWidget* hbox, gchar* label, GCallback func, GtkGameGlobals* globals )
+
+{
+    GtkWidget* button = gtk_button_new_with_label( label );
+    gtk_widget_show( button );
+    g_signal_connect( GTK_OBJECT(button), "clicked", G_CALLBACK(func), globals );
+    gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0);
+    return button;
+ }
+
 static GtkWidget* 
 makeButtons( GtkGameGlobals* globals )
 {
-    int ii;
-    GtkWidget* hbox;
-    GtkWidget* button;
+    GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
+    globals->buttons_hbox = hbox;
 
-    struct {
-        char* name;
-        GCallback func;
-        GtkWidget** widget;
-    } buttons[] = {
-        /* 	{ "Flip", handle_flip_button }, */
-        { "Grid", G_CALLBACK(handle_grid_button), NULL },
-        { "Hide", G_CALLBACK(handle_hide_button), NULL },
-        { "Commit", G_CALLBACK(handle_commit_button), &globals->commit_button },
-        { "Invite", G_CALLBACK(handle_invite_button), &globals->invite_button },
-    };
-    
-    hbox = gtk_hbox_new( FALSE, 0 );
-
-    for ( ii = 0; ii < sizeof(buttons)/sizeof(*buttons); ++ii ) {
-        button = gtk_button_new_with_label( buttons[ii].name );
-        gtk_widget_show( button );
-        g_signal_connect( GTK_OBJECT(button), "clicked",
-                          G_CALLBACK(buttons[ii].func), globals );
-
-        gtk_box_pack_start( GTK_BOX(hbox), button, FALSE, TRUE, 0);
-        if ( !!buttons[ii].widget ) {
-            *buttons[ii].widget = button;
-        }
-    }
+    (void)addButton( hbox, "Grid", G_CALLBACK(handle_grid_button), globals );
+    (void)addButton( hbox, "Hide", G_CALLBACK(handle_hide_button), globals );
+    globals->commit_button =
+        addButton( hbox, "Commit", G_CALLBACK(handle_commit_button), globals );
 
     gtk_widget_show( hbox );
     return hbox;
@@ -2520,7 +2528,6 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
     GtkWidget* window;
     GtkWidget* drawing_area;
     GtkWidget* menubar;
-    GtkWidget* buttonbar;
     GtkWidget* vbox;
     GtkWidget* hbox;
 
@@ -2553,8 +2560,7 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
                         FALSE, TRUE, 0 );
 #endif
 
-    buttonbar = makeButtons( globals );
-    gtk_box_pack_start( GTK_BOX(vbox), buttonbar, FALSE, TRUE, 0);
+    gtk_box_pack_start( GTK_BOX(vbox), makeButtons( globals ), FALSE, TRUE, 0);
 
     drawing_area = gtk_drawing_area_new();
     globals->drawing_area = drawing_area;

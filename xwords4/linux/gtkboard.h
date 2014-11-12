@@ -107,6 +107,7 @@ typedef struct GtkGameGlobals {
 
     GtkWidget* commit_button;
     GtkWidget* invite_button;
+    GtkWidget* buttons_hbox;
 #if ! defined XWFEATURE_STANDALONE_ONLY && defined DEBUG
     GtkWidget* drop_checks_vbox;
 #endif

@@ -392,6 +392,13 @@ informMissing( const ServerCtxt* server )
                         isServer ? server->nv.pendingRegistrations : 0 );
 }
 
+XP_U16
+server_getPendingRegs( const ServerCtxt* server )
+{
+    XP_U16 nPending = amServer( server ) ? server->nv.pendingRegistrations : 0;
+    return nPending;
+}
+
 ServerCtxt*
 server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model, 
                        CommsCtxt* comms, XW_UtilCtxt* util, XP_U16 nPlayers )
