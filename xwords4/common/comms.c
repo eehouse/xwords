@@ -1345,6 +1345,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
 
                 XP_U32 gameid = gameID( comms );
                 XP_ASSERT( !!comms->procs.send );
+                XP_ASSERT( addr_hasType( &addr, typ ) );
                 nSent = (*comms->procs.send)( elem->msg, elem->len, &addr, typ, 
                                               gameid, comms->procs.closure );
                 break;
@@ -2446,6 +2447,8 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, const CommsAddrRec* ad
                 }
                 break;
             case COMMS_CONN_SMS:
+                XP_ASSERT( 0 != addr->u.sms.port );
+                XP_ASSERT( '\0' != addr->u.sms.phone[0] );
                 dest = &rec->addr.u.sms;
                 src = &addr->u.sms;
                 siz = sizeof(rec->addr.u.sms);
