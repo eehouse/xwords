@@ -2396,6 +2396,12 @@ logAddr( CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
                 snprintf( buf, sizeof(buf), "%d", addr->u.sms.port );
                 stream_catString( stream, buf );
                 break;
+            case COMMS_CONN_BT:
+                stream_catString( stream, "host: " );
+                stream_catString( stream, addr->u.bt.hostName );
+                stream_catString( stream, "addr: " );
+                stream_catString( stream, addr->u.bt.btAddr.chars );
+                break;
             default:
                 XP_ASSERT(0);
             }
