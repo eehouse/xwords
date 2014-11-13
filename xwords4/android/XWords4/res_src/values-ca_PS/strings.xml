@@ -1948,4 +1948,7 @@
 	AND THAT CROSSWORDS IS INSTALLED ON IT.</string>
   <!-- label within default wordlists in app preferences -->
   <string name="default_language">DEFAULT LANGUAGE</string>
+  <!-- Title of preference in which you select which addressing
+	     modes network games will use to communicate -->
+  <string name="title_addrs_pref">COMMUNICATE VIA</string>
 </resources>

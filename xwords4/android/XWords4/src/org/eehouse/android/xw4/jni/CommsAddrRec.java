@@ -32,12 +32,15 @@ import org.eehouse.android.xw4.DbgUtils;
 
 public class CommsAddrRec {
 
-    public enum CommsConnType { _COMMS_CONN_NONE,
-            COMMS_CONN_IR,
-            COMMS_CONN_IP_DIRECT,
-            COMMS_CONN_RELAY,
-            COMMS_CONN_BT,
-            COMMS_CONN_SMS,
+    public enum CommsConnType {
+        _COMMS_CONN_NONE,
+        COMMS_CONN_IR,
+        COMMS_CONN_IP_DIRECT,
+        COMMS_CONN_RELAY,
+        COMMS_CONN_BT,
+        COMMS_CONN_SMS;
+
+        public String longName() { return toString(); }
     };
 
     public static class CommsConnTypeSet extends HashSet<CommsConnType> {

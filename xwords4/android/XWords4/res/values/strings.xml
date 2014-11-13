@@ -2284,4 +2284,8 @@
 
 	<!-- label within default wordlists in app preferences -->
 	<string name="default_language">Default language</string>
+
+	<!-- Title of preference in which you select which addressing
+	     modes network games will use to communicate -->
+	<string name="title_addrs_pref">Communicate via</string>
 </resources>
