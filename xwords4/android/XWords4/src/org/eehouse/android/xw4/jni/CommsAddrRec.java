@@ -20,8 +20,8 @@
 
 package org.eehouse.android.xw4.jni;
 
+import android.text.TextUtils;
 import java.net.InetAddress;
-
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -60,6 +60,17 @@ public class CommsAddrRec {
             boolean result = CommsConnType._COMMS_CONN_NONE == typ ? true
                 : super.add( typ );
             return result;
+        }
+
+        @Override
+        public String toString()
+        {
+            CommsConnType[] types = getTypes();
+            String[] strs = new String[types.length];
+            for ( int ii = 0; ii < types.length; ++ii ) {
+                strs[ii] = types[ii].longName();
+            }
+            return TextUtils.join( " + ", strs );
         }
 
         private static final CommsConnType[] s_hint = new CommsConnType[0];
