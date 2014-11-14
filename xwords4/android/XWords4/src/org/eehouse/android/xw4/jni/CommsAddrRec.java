@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4.jni;
 
+import android.content.Context;
 import android.text.TextUtils;
 import java.net.InetAddress;
 import java.util.HashSet;
@@ -28,6 +29,8 @@ import java.util.Iterator;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DbgUtils;
 
 public class CommsAddrRec {
@@ -40,7 +43,20 @@ public class CommsAddrRec {
         COMMS_CONN_BT,
         COMMS_CONN_SMS;
 
-        public String longName() { return toString(); }
+        public String longName( Context context ) 
+        {
+            int id = 0;
+            switch( this ) {
+            case COMMS_CONN_RELAY:
+                id = R.string.connstat_relay; break;
+            case COMMS_CONN_BT:
+                id = R.string.connstat_bt; break;
+            case COMMS_CONN_SMS:
+                id = R.string.connstat_sms; break;
+            }
+
+            return ( 0 == id ) ? toString() : LocUtils.getString( context, id );
+        }
     };
 
     public static class CommsConnTypeSet extends HashSet<CommsConnType> {
@@ -55,20 +71,19 @@ public class CommsAddrRec {
         @Override
         public boolean add( CommsConnType typ )
         {
-            DbgUtils.logf( "CommsConnTypeSet.add(%s)", typ.toString() );
+            // DbgUtils.logf( "CommsConnTypeSet.add(%s)", typ.toString() );
             // Assert.assertFalse( CommsConnType._COMMS_CONN_NONE == typ );
             boolean result = CommsConnType._COMMS_CONN_NONE == typ ? true
                 : super.add( typ );
             return result;
         }
 
-        @Override
-        public String toString()
+        public String toString( Context context )
         {
             CommsConnType[] types = getTypes();
             String[] strs = new String[types.length];
             for ( int ii = 0; ii < types.length; ++ii ) {
-                strs[ii] = types[ii].longName();
+                strs[ii] = types[ii].longName( context );
             }
             return TextUtils.join( " + ", strs );
         }

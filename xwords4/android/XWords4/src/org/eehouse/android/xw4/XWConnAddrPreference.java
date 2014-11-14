@@ -58,8 +58,8 @@ public class XWConnAddrPreference extends DialogPreference {
 
         setNegativeButtonText( LocUtils.getString( context, R.string.button_cancel ) );
 
-        m_curSet = XWPrefs.getAddrTypes( m_context );
-        setSummary( m_curSet.toString() );
+        m_curSet = XWPrefs.getAddrTypes( context );
+        setSummary( m_curSet.toString( context ) );
     }
 
     @Override
@@ -70,7 +70,7 @@ public class XWConnAddrPreference extends DialogPreference {
         LinearLayout list = (LinearLayout)view.findViewById( R.id.conn_types );
         for ( CommsConnType typ : s_supported.getTypes() ) {
             CheckBox box = (CheckBox)LocUtils.inflate( m_context, R.layout.btinviter_item );
-            box.setText( typ.longName() );
+            box.setText( typ.longName( m_context ) );
             box.setChecked( m_curSet.contains( typ ) );
             list.addView( box );
             
@@ -84,7 +84,7 @@ public class XWConnAddrPreference extends DialogPreference {
                         } else {
                             m_curSet.remove( typf );
                         }
-                        setSummary( m_curSet.toString() );
+                        setSummary( m_curSet.toString( m_context ) );
                     }
                 } );
         }
