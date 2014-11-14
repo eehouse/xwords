@@ -1761,6 +1761,10 @@ preProcess( CommsCtxt* comms, const CommsAddrRec* useAddr,
     case COMMS_CONN_SMS:
         break;    /* nothing to grab */
 #endif
+#ifdef XWFEATURE_BLUETOOTH
+    case COMMS_CONN_BT:
+        break;    /* nothing to grab */
+#endif
     default:
         XP_ASSERT(0);
         break;
@@ -2459,6 +2463,13 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord* rec, const CommsAddrRec* ad
                 src = &addr->u.sms;
                 siz = sizeof(rec->addr.u.sms);
                 break;
+#ifdef XWFEATURE_BLUETOOTH
+            case COMMS_CONN_BT:
+                dest = &rec->addr.u.bt;
+                src = &addr->u.bt;
+                siz = sizeof(rec->addr.u.bt);
+                break;
+#endif
             default:
                 XP_ASSERT(0);
                 break;
