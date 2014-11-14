@@ -30,6 +30,8 @@ import java.util.ArrayList;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+
 public class XWPrefs {
 
     // No reason to put this in xml if they're private to this file!
@@ -460,6 +462,18 @@ public class XWPrefs {
     {
         return isTablet( context ) ||
             getPrefsBoolean( context, R.string.key_force_tablet, false );
+    }
+
+    public static CommsConnTypeSet getAddrTypes( Context context )
+    {
+        int flags = getPrefsInt( context, R.string.key_addrs_pref, 0 );
+        return DBUtils.intToConnTypeSet( flags );
+    }
+
+    public static void setAddrTypes( Context context, CommsConnTypeSet set )
+    {
+        int flags = DBUtils.connTypeSetToInt( set );
+        setPrefsInt( context, R.string.key_addrs_pref, flags );
     }
 
     private static Boolean s_isTablet = null;

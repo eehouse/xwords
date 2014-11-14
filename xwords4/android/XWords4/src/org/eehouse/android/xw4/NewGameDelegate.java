@@ -213,21 +213,18 @@ public class NewGameDelegate extends DelegateBase {
                         long rowid;
                         CommsAddrRec addr = null;
 
+                        rowid = GameUtils
+                            .makeNewGame( m_activity, m_groupID, m_gameID,
+                                          addr, m_lang, m_dict, 2, 1 );
+                        Assert.fail();
                         if ( m_nameForBT ) {
-                            rowid = GameUtils
-                                .makeNewBTGame( m_activity, m_groupID, m_gameID,
-                                                addr, m_lang, m_dict, 2, 1 );
-
-                            BTService.inviteRemote( m_activity, m_remoteDev,
-                                                    m_gameID, m_gameName, 
-                                                    m_lang, m_dict, 2, 1 );
+                            // BTService.inviteRemote( m_activity, m_remoteDev,
+                            //                         m_gameID, m_gameName, 
+                            //                         m_lang, m_dict, 2, 1 );
                         } else {
-                            SMSService.inviteRemote( m_activity, m_remoteDev,
-                                                     m_gameID, m_gameName, 
-                                                     m_lang, m_dict, 2, 1 );
-                            rowid = GameUtils.
-                                makeNewSMSGame( m_activity, m_groupID, m_gameID, 
-                                                addr, m_lang, m_dict, 2, 1 );
+                            // SMSService.inviteRemote( m_activity, m_remoteDev,
+                            //                          m_gameID, m_gameName, 
+                            //                          m_lang, m_dict, 2, 1 );
                         }
                         DBUtils.setName( m_activity, rowid, m_gameName );
                         GameUtils.launchGame( m_activity, rowid, true );
@@ -306,36 +303,36 @@ public class NewGameDelegate extends DelegateBase {
         }
     }
 
-    private void makeNewBTGame( boolean useDefaults )
-    {
-        if ( XWApp.BTSUPPORTED ) {
-            int gameID = GameUtils.newGameID();
-            if ( !useDefaults ) {
-                m_newRowID = GameUtils.makeNewBTGame( m_activity, 
-                                                      m_groupID, gameID, null, 
-                                                      m_lang, m_dict, 2, 1 );
-                GameConfigDelegate.editForResult( m_activity, CONFIG_FOR_BT, m_newRowID );
-            } else {
-                BTInviteDelegate.launchForResult( m_activity, 1, INVITE_FOR_BT );
-            }
-        }
-    }
+    // private void makeNewBTGame( boolean useDefaults )
+    // {
+    //     if ( XWApp.BTSUPPORTED ) {
+    //         int gameID = GameUtils.newGameID();
+    //         if ( !useDefaults ) {
+    //             m_newRowID = GameUtils.makeNewBTGame( m_activity, 
+    //                                                   m_groupID, gameID, null, 
+    //                                                   m_lang, m_dict, 2, 1 );
+    //             GameConfigDelegate.editForResult( m_activity, CONFIG_FOR_BT, m_newRowID );
+    //         } else {
+    //             BTInviteDelegate.launchForResult( m_activity, 1, INVITE_FOR_BT );
+    //         }
+    //     }
+    // }
 
-    private void makeNewSMSGame( boolean useDefaults )
-    {
-        int gameID = GameUtils.newGameID();
-        if ( !useDefaults ) {
-            m_newRowID = GameUtils.makeNewSMSGame( m_activity, 
-                                                   m_groupID, gameID, null, 
-                                                   m_lang, m_dict, 2, 1 );
-            String name = getString( R.string.dft_sms_name_fmt, gameID & 0xFFFF );
-            DBUtils.setName( m_activity, m_newRowID, name );
+    // private void makeNewSMSGame( boolean useDefaults )
+    // {
+    //     int gameID = GameUtils.newGameID();
+    //     if ( !useDefaults ) {
+    //         m_newRowID = GameUtils.makeNewSMSGame( m_activity, 
+    //                                                m_groupID, gameID, null, 
+    //                                                m_lang, m_dict, 2, 1 );
+    //         String name = getString( R.string.dft_sms_name_fmt, gameID & 0xFFFF );
+    //         DBUtils.setName( m_activity, m_newRowID, name );
 
-            GameConfigDelegate.editForResult( m_activity, CONFIG_FOR_SMS, m_newRowID );
-        } else {
-            SMSInviteDelegate.launchForResult( m_activity, 1, INVITE_FOR_SMS );
-        }
-    }
+    //         GameConfigDelegate.editForResult( m_activity, CONFIG_FOR_SMS, m_newRowID );
+    //     } else {
+    //         SMSInviteDelegate.launchForResult( m_activity, 1, INVITE_FOR_SMS );
+    //     }
+    // }
 
     private static final int HIDE_MASK_LOCAL = 1;
     private static final int HIDE_MASK_NET = 2;

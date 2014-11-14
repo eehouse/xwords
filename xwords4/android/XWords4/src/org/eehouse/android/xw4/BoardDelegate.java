@@ -2245,6 +2245,7 @@ public class BoardDelegate extends DelegateBase
                 Assert.assertNotNull( m_missingMeans );
                 String gameName = GameUtils.getName( m_activity, m_rowid );
                 m_invitesPending = m_missingDevs.length;
+                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1 );
                 for ( String dev : m_missingDevs ) {
                     switch ( m_missingMeans ) {
                     case BLUETOOTH:
@@ -2259,16 +2260,11 @@ public class BoardDelegate extends DelegateBase
                                            }
                                        });
 
-                        BTService.inviteRemote( m_activity, dev, m_gi.gameID, 
-                                                gameName, m_gi.dictLang, 
-                                                m_gi.dictName, m_gi.nPlayers,
-                                                1 );
+                        BTService.inviteRemote( m_activity, dev, nli );
                         break;
                     case SMS:
-                        SMSService.inviteRemote( m_activity, dev, m_gi.gameID, 
-                                                 gameName, m_gi.dictLang, 
-                                                 m_gi.dictName, m_gi.nPlayers,
-                                                 1 );
+                        Assert.fail();
+                        // SMSService.inviteRemote( m_activity, dev, nli );
                         break;
                     }
                 }

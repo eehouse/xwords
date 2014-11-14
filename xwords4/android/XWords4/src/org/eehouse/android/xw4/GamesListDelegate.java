@@ -1829,11 +1829,11 @@ public class GamesListDelegate extends ListDelegateBase
         launchGame( rowid, true );
     }
 
-    private void makeNewBTGame( NetLaunchInfo nli )
-    {
-        long rowid = GameUtils.makeNewBTGame( m_activity, nli );
-        launchGame( rowid, true );
-    }
+    // private void makeNewBTGame( NetLaunchInfo nli )
+    // {
+    //     long rowid = GameUtils.makeNewBTGame( m_activity, nli );
+    //     launchGame( rowid, true );
+    // }
 
     private void tryStartsFromIntent( Intent intent )
     {

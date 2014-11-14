@@ -37,7 +37,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public class XWConnAddrPreference extends DialogPreference {
 
-    private int m_flags;
     private CommsConnTypeSet m_curSet;
     private Context m_context;
     // This stuff probably belongs in CommsConnType
@@ -58,8 +57,6 @@ public class XWConnAddrPreference extends DialogPreference {
         setDialogLayoutResource( R.layout.conn_types_display );
 
         setNegativeButtonText( LocUtils.getString( context, R.string.button_cancel ) );
-
-        m_flags = XWPrefs.getPrefsInt( context, R.string.key_addrs_pref, 0 );
     }
 
     @Override
@@ -68,7 +65,7 @@ public class XWConnAddrPreference extends DialogPreference {
         LocUtils.xlateView( m_context, view );
 
         LinearLayout list = (LinearLayout)view.findViewById( R.id.conn_types );
-        m_curSet = DBUtils.intToConnTypeSet( m_flags );
+        m_curSet = XWPrefs.getAddrTypes( m_context );
         for ( CommsConnType typ : s_supported.getTypes() ) {
             CheckBox box = (CheckBox)LocUtils.inflate( m_context, R.layout.btinviter_item );
             box.setText( typ.longName() );
@@ -95,8 +92,7 @@ public class XWConnAddrPreference extends DialogPreference {
     {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
             DbgUtils.logf( "ok pressed" );
-            m_flags = DBUtils.connTypeSetToInt( m_curSet );
-            XWPrefs.setPrefsInt( m_context, R.string.key_addrs_pref, m_flags );
+            XWPrefs.setAddrTypes( m_context, m_curSet );
         }
         super.onClick( dialog, which );
     }

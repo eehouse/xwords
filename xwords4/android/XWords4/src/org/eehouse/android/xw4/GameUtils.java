@@ -515,11 +515,26 @@ public class GameUtils {
                                          int nPlayersH )
     {
         long rowid = -1;
-        String relayName = XWPrefs.getDefaultRelayHost( context );
-        int relayPort = XWPrefs.getDefaultRelayPort( context );
-        CommsAddrRec addr = new CommsAddrRec( relayName, relayPort );
-        addr.ip_relay_invite = room;
-        addr.conTypes.add( CommsConnType.COMMS_CONN_BT );
+
+        CommsAddrRec addr = new CommsAddrRec();
+        for ( CommsConnType typ : XWPrefs.getAddrTypes( context ).getTypes() ) {
+            addr.conTypes.add( typ );
+            switch( typ ) {
+            case COMMS_CONN_RELAY:
+                String name = XWPrefs.getDefaultRelayHost( context );
+                int port = XWPrefs.getDefaultRelayPort( context );
+                addr.setRelayParams( name, port, room );
+                break;
+            case COMMS_CONN_BT:
+                // String[] strs = BTService.getBTNameAndAddress();
+                // addr.bt_hostName = strs[0];
+                // addr.bt_btAddr = strs[1];
+                break;
+            default:
+                // Assert.fail();
+                break;
+            }
+        }
 
         return makeNewMultiGame( context, groupID, addr, lang, dict, 
                                  nPlayersT, nPlayersH, inviteID, 0, true );
@@ -542,87 +557,85 @@ public class GameUtils {
                                  info.nPlayersT );
     }
 
-    public static long makeNewBTGame( Context context, MultiMsgSink sink,
-                                      int gameID, CommsAddrRec addr, int lang, 
-                                      String dict, int nPlayersT, 
-                                      int nPlayersH )
+    public static long makeNewGame( Context context, MultiMsgSink sink,
+                                    int gameID, CommsAddrRec addr, int lang, 
+                                    String dict, int nPlayersT, 
+                                    int nPlayersH )
     {
-        return makeNewBTGame( context, sink, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                              lang, dict, nPlayersT, nPlayersH );
+        return makeNewGame( context, sink, DBUtils.GROUPID_UNSPEC, gameID, addr, 
+                            lang, dict, nPlayersT, nPlayersH );
     }
 
-    public static long makeNewBTGame( Context context, int gameID, 
-                                      CommsAddrRec addr, int lang, 
-                                      String dict, int nPlayersT, 
-                                      int nPlayersH )
+    public static long makeNewGame( Context context, int gameID, 
+                                    CommsAddrRec addr, int lang, 
+                                    String dict, int nPlayersT, 
+                                    int nPlayersH )
     {
-        return makeNewBTGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                              lang, dict, nPlayersT, nPlayersH );
+        return makeNewGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
+                            lang, dict, nPlayersT, nPlayersH );
     }
     
-    public static long makeNewBTGame( Context context, long groupID,  int gameID, 
-                                      CommsAddrRec addr, int lang, String dict,
-                                      int nPlayersT, int nPlayersH )
+    public static long makeNewGame( Context context, long groupID,  int gameID, 
+                                    CommsAddrRec addr, int lang, String dict,
+                                    int nPlayersT, int nPlayersH )
     {
-        return makeNewBTGame( context, null, groupID, gameID, addr, 
-                              lang,  dict, nPlayersT, nPlayersH );
+        return makeNewGame( context, null, groupID, gameID, addr, 
+                            lang,  dict, nPlayersT, nPlayersH );
     }
 
-    public static long makeNewBTGame( Context context, NetLaunchInfo nli )
-    {
-        Assert.fail();
-        return -1;
-        // return makeNewBTGame( context, null, DBUtils.GROUPID_UNSPEC, nli.gameID, 
-        //                       nli.btAddress, nli.lang, nli.dict, 
-        //                       nli.nPlayersT, 1 );
-    }
+    // public static long makeNewBTGame( Context context, NetLaunchInfo nli )
+    // {
+    //     Assert.fail();
+    //     return -1;
+    //     // return makeNewBTGame( context, null, DBUtils.GROUPID_UNSPEC, nli.gameID, 
+    //     //                       nli.btAddress, nli.lang, nli.dict, 
+    //     //                       nli.nPlayersT, 1 );
+    // }
 
-    public static long makeNewBTGame( Context context, MultiMsgSink sink, 
-                                      long groupID,  int gameID, CommsAddrRec addr, 
-                                      int lang, String dict,
-                                      int nPlayersT, int nPlayersH )
-    {
-        Assert.fail();
-        return -1;
-        // long rowid = -1;
-        // int[] langa = { lang };
-        // String[] dicta = { dict };
-        // boolean isHost = null == addr;
-        // if ( isHost ) { 
-        //     addr = new CommsAddrRec( null, null );
-        // }
-        // String inviteID = GameUtils.formatGameID( gameID );
-        // return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
-        //                          nPlayersT, nPlayersH, inviteID, gameID, 
-        //                          isHost );
-    }
-
-    public static long makeNewSMSGame( Context context, int gameID, 
-                                       CommsAddrRec addr, 
-                                       int lang, String dict, int nPlayersT, 
-                                       int nPlayersH )
-    {
-        return makeNewSMSGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                               lang, dict, nPlayersT, nPlayersH );
-    }
-
-    public static long makeNewSMSGame( Context context, long groupID,
-                                       int gameID, CommsAddrRec addr, 
-                                       int lang, String dict, int nPlayersT, 
-                                       int nPlayersH )
+    public static long makeNewGame( Context context, MultiMsgSink sink, 
+                                    long groupID,  int gameID, CommsAddrRec addr, 
+                                    int lang, String dict,
+                                    int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
         int[] langa = { lang };
         String[] dicta = { dict };
         boolean isHost = null == addr;
         if ( isHost ) { 
-            addr = new CommsAddrRec( CommsConnType.COMMS_CONN_SMS );
+            addr = new CommsAddrRec( null, null );
         }
         String inviteID = GameUtils.formatGameID( gameID );
-        return makeNewMultiGame( context, groupID, addr, langa, dicta, 
+        return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
                                  nPlayersT, nPlayersH, inviteID, gameID, 
                                  isHost );
     }
+
+    // public static long makeNewSMSGame( Context context, int gameID, 
+    //                                    CommsAddrRec addr, 
+    //                                    int lang, String dict, int nPlayersT, 
+    //                                    int nPlayersH )
+    // {
+    //     return makeNewSMSGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
+    //                            lang, dict, nPlayersT, nPlayersH );
+    // }
+
+    // public static long makeNewSMSGame( Context context, long groupID,
+    //                                    int gameID, CommsAddrRec addr, 
+    //                                    int lang, String dict, int nPlayersT, 
+    //                                    int nPlayersH )
+    // {
+    //     long rowid = -1;
+    //     int[] langa = { lang };
+    //     String[] dicta = { dict };
+    //     boolean isHost = null == addr;
+    //     if ( isHost ) { 
+    //         addr = new CommsAddrRec( CommsConnType.COMMS_CONN_SMS );
+    //     }
+    //     String inviteID = GameUtils.formatGameID( gameID );
+    //     return makeNewMultiGame( context, groupID, addr, langa, dicta, 
+    //                              nPlayersT, nPlayersH, inviteID, gameID, 
+    //                              isHost );
+    // }
 
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
     {

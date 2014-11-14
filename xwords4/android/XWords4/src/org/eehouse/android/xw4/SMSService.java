@@ -673,9 +673,9 @@ public class SMSService extends XWService {
                                 int nPlayersH )
     {
         long rowid = 
-            GameUtils.makeNewSMSGame( this, gameID, 
-                                      new CommsAddrRec( phone ),
-                                      lang, dict, nPlayersT, nPlayersH );
+            GameUtils.makeNewGame( this, gameID, 
+                                   new CommsAddrRec( phone ),
+                                   lang, dict, nPlayersT, nPlayersH );
 
         if ( null != gameName && 0 < gameName.length() ) {
             DBUtils.setName( this, rowid, gameName );

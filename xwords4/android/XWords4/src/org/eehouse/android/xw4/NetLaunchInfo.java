@@ -25,11 +25,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import java.net.URLEncoder;
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.Iterator;
-import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import junit.framework.Assert;
 
@@ -43,9 +43,11 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 public class NetLaunchInfo {
     private static final String ADDRS_KEY = "ADDRS";
 
+    protected String gameName;
     protected String dict;
     protected int lang;
     protected int nPlayersT;
+    protected int nPlayersH;
     protected String room;      // relay
     protected String inviteID;  // relay
     protected String btName;
@@ -75,7 +77,9 @@ public class NetLaunchInfo {
 
             lang = m_json.optInt( MultiService.LANG, -1 );
             dict = m_json.optString( MultiService.DICT );
+            gameName = m_json.optString( MultiService.GAMENAME );
             nPlayersT = m_json.optInt( MultiService.NPLAYERST, -1 );
+            nPlayersH = m_json.optInt( MultiService.NPLAYERSH, -1 );
             gameID = m_json.optInt( MultiService.GAMEID, -1 );
 
             for ( CommsConnType typ : m_addrs.getTypes() ) {
@@ -109,7 +113,16 @@ public class NetLaunchInfo {
     {
         room = bundle.getString( MultiService.ROOM );
         inviteID = bundle.getString( MultiService.INVITEID );
-        Assert.fail();
+        lang = bundle.getInt( MultiService.LANG );
+        dict = bundle.getString( MultiService.DICT );
+        gameName= bundle.getString( MultiService.GAMENAME );
+        nPlayersT = bundle.getInt( MultiService.NPLAYERST );
+        nPlayersH = bundle.getInt( MultiService.NPLAYERSH );
+        gameID = bundle.getInt( MultiService.GAMEID );
+        btName = bundle.getString( MultiService.BT_NAME );
+        btAddress = bundle.getString( MultiService.BT_ADDRESS );
+
+        m_addrs = DBUtils.intToConnTypeSet( bundle.getInt( ADDRS_KEY ) );
     }
 
     public NetLaunchInfo( Context context, Uri data )
@@ -153,7 +166,9 @@ public class NetLaunchInfo {
         inviteID = intent.getStringExtra( MultiService.INVITEID );
         lang = intent.getIntExtra( MultiService.LANG, -1 );
         dict = intent.getStringExtra( MultiService.DICT );
+        gameName = intent.getStringExtra( MultiService.GAMENAME );
         nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
+        nPlayersH = intent.getIntExtra( MultiService.NPLAYERSH, -1 );
         gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
         btName = intent.getStringExtra( MultiService.BT_NAME );
         btAddress = intent.getStringExtra( MultiService.BT_ADDRESS );
@@ -168,7 +183,14 @@ public class NetLaunchInfo {
         dict = dictName;
         lang = dictLang;
         nPlayersT = nPlayers;
+        nPlayersH = 1;
         gameID = gamID;
+    }
+
+    public NetLaunchInfo( GameSummary summary, CurGameInfo gi, int numHere )
+    {
+        this( summary, gi );
+        nPlayersH = numHere;
     }
 
     public NetLaunchInfo( GameSummary summary, CurGameInfo gi )
@@ -200,7 +222,9 @@ public class NetLaunchInfo {
         bundle.putString( MultiService.INVITEID, inviteID );
         bundle.putInt( MultiService.LANG, lang );
         bundle.putString( MultiService.DICT, dict );
+        bundle.putString( MultiService.GAMENAME, gameName );
         bundle.putInt( MultiService.NPLAYERST, nPlayersT );
+        bundle.putInt( MultiService.NPLAYERSH, nPlayersH );
         bundle.putInt( MultiService.GAMEID, gameID );
         bundle.putString( MultiService.BT_NAME, btName );
         bundle.putString( MultiService.BT_ADDRESS, btAddress );
@@ -216,7 +240,9 @@ public class NetLaunchInfo {
             result = new JSONObject()
                 .put( MultiService.LANG, lang )
                 .put( MultiService.DICT, dict )
+                .put( MultiService.GAMENAME, gameName )
                 .put( MultiService.NPLAYERST, nPlayersT )
+                .put( MultiService.NPLAYERSH, nPlayersH )
                 .put( MultiService.ROOM, room )
                 .put( MultiService.INVITEID, inviteID )
                 .put( MultiService.GAMEID, gameID )
@@ -227,7 +253,7 @@ public class NetLaunchInfo {
         } catch ( org.json.JSONException jse ) {
             DbgUtils.loge( jse );
         }
-        DbgUtils.logf( "makeLaunchJSON() => %s", result );
+        // DbgUtils.logf( "makeLaunchJSON() => %s", result );
         return result;
     }
 
@@ -255,6 +281,7 @@ public class NetLaunchInfo {
                                   LocUtils.getString(context, R.string.invite_prefix) ) )
             .appendQueryParameter( "lang", String.format("%d", lang ) )
             .appendQueryParameter( "np", String.format( "%d", nPlayersT ) )
+            .appendQueryParameter( "nh", String.format( "%d", nPlayersH ) )
             .appendQueryParameter( "gid", String.format( "%d", nPlayersT ) );
         if ( null != dict ) {
             ub.appendQueryParameter( "wl", dict );
@@ -292,30 +319,6 @@ public class NetLaunchInfo {
         }
         return ub.build();
     }
-
-    // public static String makeLaunchJSON( String curJson, String room, String inviteID, 
-    //                                      int lang, String dict, int nPlayersT )
-    // {
-    //     Assert.assertNull( curJson );
-    //     String result = null;
-    //     try {
-    //         result = new JSONObject()
-    //             .put( MultiService.LANG, lang )
-    //             .put( MultiService.DICT, dict )
-    //             .put( MultiService.NPLAYERST, nPlayersT )
-    //             .put( MultiService.ROOM, room )
-    //             .put( MultiService.INVITEID, inviteID )
-    //             .put( MultiService.GAMEID, gameID )
-    //             .put( MultiService.BT_NAME, name )
-    //             .put( MultiService.BT_ADDRESS, address )
-    //             .put( ADDRS_KEY, DBUtils.connTypeSetToInt( m_addrs ) )
-    //             .toString();
-    //     } catch ( org.json.JSONException jse ) {
-    //         DbgUtils.loge( jse );
-    //     }
-    //     DbgUtils.logf( "makeLaunchJSON() => %s", result );
-    //     return result;
-    // }
     
     public void addRelayInfo( String aRoom, String anInviteID )
     {

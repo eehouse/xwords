@@ -2137,7 +2137,7 @@ public class DBUtils {
     private static final int BIT_VECTOR_MASK = 0x8000;
     public static CommsConnTypeSet intToConnTypeSet( int asInt )
     {
-        DbgUtils.logf( "intToConnTypeSet(in: %s)", asInt );
+        // DbgUtils.logf( "intToConnTypeSet(in: %s)", asInt );
         CommsConnTypeSet result = new CommsConnTypeSet();
         boolean isVector = 0 != (BIT_VECTOR_MASK & asInt);
         asInt &= ~BIT_VECTOR_MASK;
@@ -2146,7 +2146,7 @@ public class DBUtils {
             for ( CommsConnType value : values ) {
                 int ord = value.ordinal();
                 if ( 0 != (asInt & (1 << (ord - 1)))) {
-                    DbgUtils.logf( "intToConnTypeSet: adding %s", value.toString() );
+                    // DbgUtils.logf( "intToConnTypeSet: adding %s", value.toString() );
                     result.add( value );
                 }
             }
@@ -2162,7 +2162,7 @@ public class DBUtils {
         int result = BIT_VECTOR_MASK;
         for ( Iterator<CommsConnType> iter = set.iterator(); iter.hasNext(); ) {
             CommsConnType typ = iter.next();
-            DbgUtils.logf( "connTypeSetToInt: adding %s", typ.toString() );
+            // DbgUtils.logf( "connTypeSetToInt: adding %s", typ.toString() );
             result |= 1 << (typ.ordinal() - 1);
         }
         return result;

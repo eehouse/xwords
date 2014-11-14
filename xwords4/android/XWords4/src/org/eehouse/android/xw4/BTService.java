@@ -77,6 +77,7 @@ public class BTService extends XWService {
     private static final String CLEAR_STR = "CLR";
 
     private static final String GAMEID_STR = "GMI";
+    private static final String GAMEDATA_STR = "GD";
 
     private static final String LANG_STR = "LNG";
     private static final String DICT_STR = "DCT";
@@ -114,15 +115,16 @@ public class BTService extends XWService {
         String m_dict;
         int m_nPlayersT;
         int m_nPlayersH;
+        NetLaunchInfo m_nli;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; m_failCount = 0; }
-        public BTQueueElem( BTCmd cmd, String btAddr, 
-                            int gameID, String gameName, int lang, 
-                            String dict, int nPlayersT, int nPlayersH ) {
-            this( cmd, null, btAddr, gameID );
-            m_lang = lang; m_dict = dict; m_nPlayersT = nPlayersT; 
-            m_nPlayersH = nPlayersH; m_gameName = gameName;
-        }
+        // public BTQueueElem( BTCmd cmd, String btAddr, 
+        //                     int gameID, String gameName, int lang, 
+        //                     String dict, int nPlayersT, int nPlayersH ) {
+        //     this( cmd, null, btAddr, gameID );
+        //     m_lang = lang; m_dict = dict; m_nPlayersT = nPlayersT; 
+        //     m_nPlayersH = nPlayersH; m_gameName = gameName;
+        // }
         public BTQueueElem( BTCmd cmd, byte[] buf, String btAddr, int gameID ) {
             this( cmd );
             Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
@@ -134,6 +136,12 @@ public class BTService extends XWService {
             Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
             m_btAddr = btAddr;
             m_gameID = gameID;
+        }
+
+        public BTQueueElem( BTCmd cmd, NetLaunchInfo nli, String btAddr ) {
+            this( cmd );
+            m_nli = nli;
+            m_btAddr = btAddr;
         }
 
         public int incrFailCount() { return ++m_failCount; }
@@ -234,19 +242,30 @@ public class BTService extends XWService {
         context.startService( intent );
     } 
 
+    // public static void inviteRemote( Context context, String btAddr, 
+    //                                  int gameID, String initialName, int lang, 
+    //                                  String dict, int nPlayersT, int nPlayersH )
+    // {
+    //     Intent intent = getIntentTo( context, INVITE );
+    //     intent.putExtra( GAMEID_STR, gameID );
+    //     intent.putExtra( ADDR_STR, btAddr );
+    //     Assert.assertNotNull( initialName );
+    //     intent.putExtra( GAMENAME_STR, initialName );
+    //     intent.putExtra( LANG_STR, lang );
+    //     intent.putExtra( DICT_STR, dict );
+    //     intent.putExtra( NTO_STR, nPlayersT );
+    //     intent.putExtra( NHE_STR, nPlayersH );
+
+    //     context.startService( intent );
+    // }
+
     public static void inviteRemote( Context context, String btAddr, 
-                                     int gameID, String initialName, int lang, 
-                                     String dict, int nPlayersT, int nPlayersH )
+                                     NetLaunchInfo nli )
     {
         Intent intent = getIntentTo( context, INVITE );
-        intent.putExtra( GAMEID_STR, gameID );
+        String nliData = nli.toString();
+        intent.putExtra( GAMEDATA_STR, nliData );
         intent.putExtra( ADDR_STR, btAddr );
-        Assert.assertNotNull( initialName );
-        intent.putExtra( GAMENAME_STR, initialName );
-        intent.putExtra( LANG_STR, lang );
-        intent.putExtra( DICT_STR, dict );
-        intent.putExtra( NTO_STR, nPlayersT );
-        intent.putExtra( NHE_STR, nPlayersH );
 
         context.startService( intent );
     }
@@ -337,33 +356,35 @@ public class BTService extends XWService {
                     m_sender.add( new BTQueueElem( BTCmd.SCAN ) );
                     break;
                 case INVITE:
-                    int gameID = intent.getIntExtra( GAMEID_STR, -1 );
+                    String jsonData = intent.getStringExtra( GAMEDATA_STR );
+                    NetLaunchInfo nli = new NetLaunchInfo( jsonData );
+                    DbgUtils.logf( "onStartCommand: nli: %s", nli.toString() );
+                    // int gameID = intent.getIntExtra( GAMEID_STR, -1 );
+                    // String btAddr = intent.getStringExtra( ADDR_STR );
+                    // String gameName = intent.getStringExtra( GAMENAME_STR );
+                    // int lang = intent.getIntExtra( LANG_STR, -1 );
+                    // String dict = intent.getStringExtra( DICT_STR );
+                    // int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
                     String btAddr = intent.getStringExtra( ADDR_STR );
-                    String gameName = intent.getStringExtra( GAMENAME_STR );
-                    int lang = intent.getIntExtra( LANG_STR, -1 );
-                    String dict = intent.getStringExtra( DICT_STR );
-                    int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
-                    int nPlayersH = intent.getIntExtra( NHE_STR, -1 );
-                    m_sender.add( new BTQueueElem( BTCmd.INVITE, btAddr, 
-                                                   gameID, gameName, lang, 
-                                                   dict, nPlayersT, nPlayersH ) );
+                    m_sender.add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
                     break;
 
                 case PINGHOST:
                     btAddr = intent.getStringExtra( ADDR_STR );
-                    gameID = intent.getIntExtra( GAMEID_STR, 0 );
+                    int gameID = intent.getIntExtra( GAMEID_STR, 0 );
                     m_sender.add( new BTQueueElem( BTCmd.PING, btAddr, gameID ) );
                     break;
 
                 case NFCINVITE:
                     gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                    lang = intent.getIntExtra( LANG_STR, -1 );
-                    dict = intent.getStringExtra( DICT_STR );
-                    nPlayersT = intent.getIntExtra( NTO_STR, -1 );
+                    int lang = intent.getIntExtra( LANG_STR, -1 );
+                    String dict = intent.getStringExtra( DICT_STR );
+                    int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
                     String btName = intent.getStringExtra( BT_NAME_STR );
                     btAddr = intent.getStringExtra( BT_ADDRESS_STR );
-                    /*(void)*/makeOrNotify( this, gameID, null, lang, dict, 
-                                            nPlayersT, 1, btName, btAddr );
+                    // /*(void)*/makeOrNotify( this, gameID, null, lang, dict, 
+                    //                         nPlayersT, 1, btName, btAddr );
+                    Assert.fail();
                     break;
 
                 case SEND:
@@ -510,19 +531,20 @@ public class BTService extends XWService {
             throws IOException
         {
             BTCmd result;
-            int gameID = is.readInt();
-            String gameName = is.readUTF();
-            int lang = is.readInt();
-            String dict = is.readUTF();
-            int nPlayersT = is.readInt();
-            int nPlayersH = is.readInt();
+            String asJson = is.readUTF();
+            NetLaunchInfo nli = new NetLaunchInfo( asJson );
+            DbgUtils.logf( "receiveInvitation: nli: %s", nli.toString() );
+            // int gameID = is.readInt();
+            // String gameName = is.readUTF();
+            // int lang = is.readInt();
+            // String dict = is.readUTF();
+            // int nPlayersT = is.readInt();
+            // int nPlayersH = is.readInt();
 
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
 
-            result = makeOrNotify( context, gameID, gameName, lang, dict, 
-                                   nPlayersT, nPlayersH, host.getName(), 
-                                   host.getAddress() );
+            result = makeOrNotify( context, nli, host.getName(), host.getAddress() );
 
             DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
             os.writeByte( result.ordinal() );
@@ -773,12 +795,13 @@ public class BTService extends XWService {
                     BTCmd reply = null;
                     DataOutputStream outStream = connect( socket, BTCmd.INVITE );
                     if ( null != outStream ) {
-                        outStream.writeInt( elem.m_gameID );
-                        outStream.writeUTF( elem.m_gameName );
-                        outStream.writeInt( elem.m_lang );
-                        outStream.writeUTF( elem.m_dict );
-                        outStream.writeInt( elem.m_nPlayersT );
-                        outStream.writeInt( elem.m_nPlayersH );
+                        outStream.writeUTF( elem.m_nli.toString() );
+                        // outStream.writeInt( elem.m_gameID );
+                        // outStream.writeUTF( elem.m_gameName );
+                        // outStream.writeInt( elem.m_lang );
+                        // outStream.writeUTF( elem.m_dict );
+                        // outStream.writeInt( elem.m_nPlayersT );
+                        DbgUtils.logf( "<eeh>sending invite for %d players", elem.m_nPlayersH );
                         outStream.flush();
 
                         DataInputStream inStream = 
@@ -1018,49 +1041,44 @@ public class BTService extends XWService {
         m_sender = null;
     }
 
-    private BTCmd makeOrNotify( Context context, int gameID, String gameName, 
-                                int lang, String dict, int nPlayersT, 
-                                int nPlayersH, String btName, String btAddr )
+    private BTCmd makeOrNotify( Context context, NetLaunchInfo nli, 
+                                String btName, String btAddr )
     {
         BTCmd result;
-        if ( DictLangCache.haveDict( context, lang, dict ) ) {
-            result = makeGame( context, gameID, gameName, lang, dict, 
-                               nPlayersT, nPlayersH, btName, btAddr );
+        if ( DictLangCache.haveDict( context, nli.lang, nli.dict ) ) {
+            result = makeGame( context, nli, btName, btAddr );
         } else {
-            Intent intent = MultiService
-                .makeMissingDictIntent( context, gameName, lang, dict, 
-                                        nPlayersT, nPlayersH );
+            Intent intent = MultiService.makeMissingDictIntent( context, nli );
             Assert.fail();
             // NetLaunchInfo.putExtras( intent, gameID, btName, btAddr );
             MultiService.postMissingDictNotification( context, intent, 
-                                                      gameID );
+                                                      nli.gameID );
             result = BTCmd.INVITE_ACCPT; // ???
         }
         return result;
     }
 
-    private BTCmd makeGame( Context context, int gameID, String gameName, 
-                            int lang, String dict, int nPlayersT, int nPlayersH,
+    private BTCmd makeGame( Context context, NetLaunchInfo nli, 
                             String sender, String senderAddress )
     {
         BTCmd result;
-        long[] rowids = DBUtils.getRowIDsFor( BTService.this, gameID );
+        long[] rowids = DBUtils.getRowIDsFor( BTService.this, nli.gameID );
         if ( null == rowids || 0 == rowids.length ) {
             CommsAddrRec addr = new CommsAddrRec( sender, senderAddress );
-            long rowid = GameUtils.makeNewBTGame( context, m_btMsgSink, gameID, 
-                                                  addr, lang, dict, nPlayersT, 
-                                                  nPlayersH );
+            long rowid = GameUtils.makeNewGame( context, m_btMsgSink, nli.gameID, 
+                                                addr, nli.lang, nli.dict, nli.nPlayersT, 
+                                                nli.nPlayersH );
             if ( DBUtils.ROWID_NOTFOUND == rowid ) {
                 result = BTCmd.INVITE_FAILED;
             } else {
-                if ( null != gameName && 0 < gameName.length() ) {
-                    DBUtils.setName( context, rowid, gameName );
+                if ( null != nli.gameName && 0 < nli.gameName.length() ) {
+                    DBUtils.setName( context, rowid, nli.gameName );
                 }
                 result = BTCmd.INVITE_ACCPT;
                 String body = LocUtils.getString( BTService.this, 
                                                   R.string.new_bt_body_fmt, 
                                                   sender );
-                postNotification( gameID, R.string.new_bt_title, body, rowid );
+                postNotification( nli.gameID, R.string.new_bt_title, body, rowid );
                 sendResult( MultiEvent.BT_GAME_CREATED, rowid );
             }
         } else {
