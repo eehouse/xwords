@@ -30,6 +30,7 @@ import java.util.ArrayList;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public class XWPrefs {
@@ -466,8 +467,18 @@ public class XWPrefs {
 
     public static CommsConnTypeSet getAddrTypes( Context context )
     {
-        int flags = getPrefsInt( context, R.string.key_addrs_pref, 0 );
-        return DBUtils.intToConnTypeSet( flags );
+        CommsConnTypeSet result;
+        int flags = getPrefsInt( context, R.string.key_addrs_pref, -1 );
+        if ( -1 == flags ) {
+            result = new CommsConnTypeSet();
+            result.add( CommsConnType.COMMS_CONN_RELAY );
+            if ( BTService.BTEnabled() ) {
+                result.add( CommsConnType.COMMS_CONN_BT );
+            }
+        } else {
+            result = DBUtils.intToConnTypeSet( flags );
+        }
+        return result;
     }
 
     public static void setAddrTypes( Context context, CommsConnTypeSet set )
