@@ -73,6 +73,7 @@ for LOC in $LOCS; do
     done
 done
 
+echo "searching for ${#ENG_IDS[*]} unique string ids"
 if [ -n "$SEARCH_SOURCE" ]; then
     IDS="${!ENG_IDS[*]}"
     for ID in $IDS; do
