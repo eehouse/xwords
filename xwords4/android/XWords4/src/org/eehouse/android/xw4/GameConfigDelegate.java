@@ -650,7 +650,9 @@ public class GameConfigDelegate extends DelegateBase
             saveChanges();
             if ( m_forResult ) {
                 applyChanges( true );
-                setResult( Activity.RESULT_OK, null );
+                Intent intent = new Intent();
+                intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
+                setResult( Activity.RESULT_OK, intent );
                 finish();
             } else if ( !m_gameStarted ) { // no confirm needed 
                 applyChanges( true );

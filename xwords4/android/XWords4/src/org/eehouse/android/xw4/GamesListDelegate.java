@@ -71,6 +71,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
 
     private static final int REQUEST_LANG = 1;
+    private static final int CONFIG_GAME = 2;
 
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -563,6 +564,7 @@ public class GamesListDelegate extends ListDelegateBase
     private Set<Long> m_selGames;
     private Set<Long> m_selGroupIDs;
     private String m_origTitle;
+    private boolean m_nextIsSolo;
 
     public GamesListDelegate( ListDelegator delegator, Bundle sis )
     {
@@ -788,6 +790,26 @@ public class GamesListDelegate extends ListDelegateBase
                 });
             break;
 
+        case GAMES_LIST_NEWGAME:
+            lstnr = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        makeThenLaunchOrConfigure( true );
+                    }
+                };
+            lstnr2 = new DialogInterface.OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        makeThenLaunchOrConfigure( false );
+                    }
+                };
+
+            dialog = makeAlertBuilder()
+                .setTitle( R.string.new_game )
+                .setMessage( "" ) // must have a message to change it later
+                .setPositiveButton( R.string.newgame_configure_first, lstnr )
+                .setNegativeButton( R.string.use_defaults, lstnr2 )
+                .create();
+            break;
+
         default:
             dialog = super.onCreateDialog( id );
             break;
@@ -795,11 +817,22 @@ public class GamesListDelegate extends ListDelegateBase
         return dialog;
     } // onCreateDialog
 
+    @Override
     protected void prepareDialog( DlgID dlgID, Dialog dialog )
     {
-        if ( DlgID.CHANGE_GROUP == dlgID ) {
+        DbgUtils.logf( "GamesListDelegate.prepareDialog() called" );
+        switch( dlgID ) {
+        case CHANGE_GROUP:
             ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
                 .setEnabled( false );
+            break;
+        case GAMES_LIST_NEWGAME:
+            String msg = getString( R.string.new_game_message );
+            if ( !m_nextIsSolo ) {
+                msg += "\n\n" + getString( R.string.new_game_message_net );
+            }
+            ((AlertDialog)dialog).setMessage( msg );
+            break;
         }
     }
 
@@ -825,6 +858,21 @@ public class GamesListDelegate extends ListDelegateBase
 
         mkListAdapter();
         getListView().setOnItemLongClickListener( this );
+
+        Button button = (Button)findViewById( R.id.button_newgame_solo );
+        button.setOnClickListener( new View.OnClickListener() {
+                public void onClick( View view ) { 
+                    m_nextIsSolo = true;
+                    showDialog( DlgID.GAMES_LIST_NEWGAME );
+                }
+            } );
+        button = (Button)findViewById( R.id.button_newgame_multi );
+        button.setOnClickListener( new View.OnClickListener() {
+                public void onClick( View view ) { 
+                    m_nextIsSolo = false;
+                    showDialog( DlgID.GAMES_LIST_NEWGAME );
+                }
+            } );
 
         NetUtils.informOfDeaths( m_activity );
 
@@ -1103,11 +1151,18 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected void onActivityResult( int requestCode, int resultCode, Intent data )
     {
-        if ( Activity.RESULT_CANCELED != resultCode
-             && REQUEST_LANG == requestCode ) {
-            DbgUtils.logf( "lang need met" );
-            if ( checkWarnNoDict( m_missingDictRowId ) ) {
-                launchGameIf();
+        if ( Activity.RESULT_CANCELED != resultCode ) {
+            switch ( requestCode ) {
+            case REQUEST_LANG:
+                DbgUtils.logf( "lang need met" );
+                if ( checkWarnNoDict( m_missingDictRowId ) ) {
+                    launchGameIf();
+                }
+                break;
+            case CONFIG_GAME:
+                long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+                GameUtils.launchGame( m_activity, rowID );
+                break;
             }
         }
     }
@@ -1931,6 +1986,29 @@ public class GamesListDelegate extends ListDelegateBase
         // setListAdapter( adapter );
         // adapter.expandGroups( listview );
         // return adapter;
+    }
+
+    private void makeThenLaunchOrConfigure( boolean doConfigure )
+    {
+        long rowID;
+        long groupID = DBUtils.GROUPID_UNSPEC;
+        if ( m_nextIsSolo ) {
+            rowID = GameUtils.saveNew( m_activity, 
+                                       new CurGameInfo( m_activity ), 
+                                       groupID );
+        } else {
+            String room = GameUtils.makeRandomID();
+            String inviteID = GameUtils.makeRandomID();
+            rowID = GameUtils.makeNewMultiGame( m_activity, room, inviteID );
+        }
+
+        if ( doConfigure ) {
+            // configure it
+            GameConfigDelegate.editForResult( m_activity, CONFIG_GAME, rowID );
+        } else {
+            // launch it
+            GameUtils.launchGame( m_activity, rowID, !m_nextIsSolo );
+        }
     }
 
     public static void boardDestroyed( long rowid )

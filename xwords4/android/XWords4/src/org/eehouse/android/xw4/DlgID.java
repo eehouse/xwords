@@ -68,4 +68,5 @@ public enum DlgID {
     , PICK_TILE_REQUESTTRAY_BLK
     , DLG_USEDICT
     , DLG_GETDICT
+    , GAMES_LIST_NEWGAME
 }

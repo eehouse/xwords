@@ -463,6 +463,15 @@ public class GameUtils {
                                  nli.gameID, false );
     }
 
+    public static long makeNewMultiGame( Context context, String room, String inviteID )
+    {
+        int[] lang = {0};
+        String[] dict = {null};
+        CommsAddrRec addr = new CommsAddrRec( XWPrefs.getAddrTypes( context ) );
+        return makeNewMultiGame( context, null, DBUtils.GROUPID_UNSPEC, addr,
+                                 lang, dict, 2, 1, inviteID, 0, true );
+    }
+
     private static long makeNewMultiGame( Context context, long groupID, 
                                           CommsAddrRec addr,
                                           int[] lang, String[] dict,

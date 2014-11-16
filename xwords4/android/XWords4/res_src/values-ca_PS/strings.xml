@@ -1712,8 +1712,6 @@
   <!--  -->
   <string name="connstat_sms">SMS/TEXTING</string>
   <!--  -->
-  <string name="connstat_bt">BLUETOOTH</string>
-  <!--  -->
   <string name="enable_sms">ALLOW GAMES VIA SMS</string>
   <!--  -->
   <string name="enable_sms_summary">ONLY IF YOU HAVE UNLIMITED TEXTING!</string>
@@ -1951,4 +1949,12 @@
   <!-- Title of preference in which you select which addressing
 	     modes network games will use to communicate -->
   <string name="title_addrs_pref">COMMUNICATE VIA</string>
+  <string name="new_game">NEW GAME</string>
+  <string name="new_game_networked">NEW NETWORKED GAME </string>
+  <string name="new_game_message">WOULD YOU LIKE TO CREATE THIS GAME
+    USING DEFAULT SETTINGS?\n\nOR WOULD YOU LIKE TO CONFIGURE IT
+    FIRST?</string>
+  <string name="new_game_message_net">(YOU WILL HAVE A CHANCE TO
+    INVITE OTHER PLAYERS AFTER IT IS CREATED.)</string>
+  <string name="use_defaults">USE DEFAULTS</string>
 </resources>

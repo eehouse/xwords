@@ -1708,11 +1708,9 @@
   <!--  -->
   <string name="connstat_noreceipt">On segassem evah neeb deviecer.</string>
   <!--  -->
-  <string name="connstat_relay">yaler/tenretni</string>
+  <string name="connstat_relay">Yaler/tenretni</string>
   <!--  -->
-  <string name="connstat_sms">gnitxet/sms</string>
-  <!--  -->
-  <string name="connstat_bt">htooteulb</string>
+  <string name="connstat_sms">GNItxet/sms</string>
   <!--  -->
   <string name="enable_sms">Wolla semag aiv SMS</string>
   <!--  -->
@@ -1951,4 +1949,12 @@
   <!-- Title of preference in which you select which addressing
 	     modes network games will use to communicate -->
   <string name="title_addrs_pref">Etacinummoc aiv</string>
+  <string name="new_game">Wen Emag</string>
+  <string name="new_game_networked">Wen Dekrowten Emag </string>
+  <string name="new_game_message">Dluow uoy ekil ot etaerc siht emag
+    gnisu tluafed ?sgnittes\n\nRo dluow uoy ekil ot erugifnoc ti
+    ?tsrif</string>
+  <string name="new_game_message_net">uOy( lliw evah a ecnahc ot
+    etivni rehto sreyalp retfa ti si detaerc.)</string>
+  <string name="use_defaults">Esu stluafed</string>
 </resources>

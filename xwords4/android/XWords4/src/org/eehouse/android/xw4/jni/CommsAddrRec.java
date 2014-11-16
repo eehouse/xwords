@@ -50,7 +50,7 @@ public class CommsAddrRec {
             case COMMS_CONN_RELAY:
                 id = R.string.connstat_relay; break;
             case COMMS_CONN_BT:
-                id = R.string.connstat_bt; break;
+                id = R.string.invite_choice_bt; break;
             case COMMS_CONN_SMS:
                 id = R.string.connstat_sms; break;
             }
@@ -121,6 +121,11 @@ public class CommsAddrRec {
     public CommsAddrRec() 
     {
         conTypes = new CommsConnTypeSet();
+    }
+
+    public CommsAddrRec( CommsConnTypeSet types ) 
+    {
+        conTypes = types;
     }
 
     public CommsAddrRec( String host, int port ) 

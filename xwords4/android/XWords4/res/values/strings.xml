@@ -1983,11 +1983,9 @@
     <!--  -->
     <string name="connstat_noreceipt">No messages have been received.</string>
     <!--  -->
-    <string name="connstat_relay">internet/relay</string>
+    <string name="connstat_relay">Internet/relay</string>
     <!--  -->
-    <string name="connstat_sms">sms/texting</string>
-    <!--  -->
-    <string name="connstat_bt">bluetooth</string>
+    <string name="connstat_sms">SMS/texting</string>
     <!--  -->
     <string name="enable_sms">Allow games via SMS</string>
     <!--  -->
@@ -2288,4 +2286,16 @@
 	<!-- Title of preference in which you select which addressing
 	     modes network games will use to communicate -->
 	<string name="title_addrs_pref">Communicate via</string>
+
+    <string name="new_game">New Game</string>
+    <string name="new_game_networked">New Networked Game </string>
+
+    <string name="new_game_message">Would you like to create this game
+    using default settings?\n\nOr would you like to configure it
+    first?</string>
+    <string name="new_game_message_net">(You will have a chance to
+    invite other players after it is created.)</string>
+
+    <string name="use_defaults">Use defaults</string>
+
 </resources>

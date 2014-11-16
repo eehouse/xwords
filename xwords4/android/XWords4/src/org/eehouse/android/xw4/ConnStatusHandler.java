@@ -460,7 +460,7 @@ public class ConnStatusHandler {
             resID = R.string.connstat_sms;
             break;
         case COMMS_CONN_BT:
-            resID = R.string.connstat_bt;
+            resID = R.string.invite_choice_bt;
             break;
         default:
             Assert.fail();
