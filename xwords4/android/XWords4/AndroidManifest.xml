@@ -92,9 +92,6 @@
               android:configChanges="keyboardHidden|orientation|screenSize"
           />
     
-    <activity android:name="NewGameActivity"
-              android:theme="@android:style/Theme.NoTitleBar"
-              />
     <activity android:name="BTInviteActivity"
 			  android:label="@string/bt_invite_title"
               android:theme="@android:style/Theme.Dialog"
@@ -192,9 +189,6 @@
       </intent-filter> 
     </activity>
 
-    <activity android:name="RelayGameActivity"
-              android:configChanges="keyboardHidden|orientation|screenSize"
-              />
     <activity android:name="DictBrowseActivity"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />

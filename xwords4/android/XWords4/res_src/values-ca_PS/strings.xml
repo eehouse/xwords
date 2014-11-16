@@ -1058,38 +1058,6 @@
          other devices in the game: no "clear chat" message is
          transmitted. -->
   <string name="chat_menu_clear">CLEAR HISTORY</string>
-  <!-- ############################################################
-         # :Screens:
-         # RelayGameActivity screen
-         #
-         # This screen is a simple alternative to the Game Configure
-         # screen.  You'll get it when you choose the list_item_config
-         # on certain unconfigured simple relay games (currently simple
-         # means they have 2 players.  These days about the only way to
-         # get this screen is to create a relay game manually and to
-         # abort after making the room name empty.  That is, this is
-         # left over from an older way of helping people connect, from
-         # before invitations.
-
-         # The dialog has a list of instructions, two text fields for
-         # room name and local player name, and two buttons.
-         ############################################################
-         -->
-  <!-- This is the heading above the list of steps.  The default
-         language is substituted for %1$s. -->
-  <string name="relay_game_explain_fmt">TO START A BASIC NETWORKED TWO-PLAYER
-        GAME IN %1$s:</string>
-  <!-- These four strings are displayed as step-by-step
-         instructions-->
-  <string name="explain_b1">• AGREE ON A ROOM NAME WITH THE OTHER
-      PLAYER.</string>
-  <string name="explain_b2">• ENTER THE ROOM NAME IN THE FIRST BOX
-      BELOW. THE ROOM NAMES ON YOUR TWO PHONES MUST BE
-      IDENTICAL.</string>
-  <string name="explain_b3">• OPTIONALLY, ENTER PLAYER NAMES IN THE
-      SECOND BOX (ONE PER PHONE)</string>
-  <string name="explain_b4">• PRESS THE \"PLAY GAME\" BUTTON ON BOTH
-      PHONES TO START THE GAME.</string>
   <!-- This is the "hint" printed in light text in the empty player
          name field -->
   <string name="local_name_hint">PLAYER NAME</string>

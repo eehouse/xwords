@@ -1058,38 +1058,6 @@
          other devices in the game: no "clear chat" message is
          transmitted. -->
   <string name="chat_menu_clear">Raelc yrotsih</string>
-  <!-- ############################################################
-         # :Screens:
-         # RelayGameActivity screen
-         #
-         # This screen is a simple alternative to the Game Configure
-         # screen.  You'll get it when you choose the list_item_config
-         # on certain unconfigured simple relay games (currently simple
-         # means they have 2 players.  These days about the only way to
-         # get this screen is to create a relay game manually and to
-         # abort after making the room name empty.  That is, this is
-         # left over from an older way of helping people connect, from
-         # before invitations.
-
-         # The dialog has a list of instructions, two text fields for
-         # room name and local player name, and two buttons.
-         ############################################################
-         -->
-  <!-- This is the heading above the list of steps.  The default
-         language is substituted for %1$s. -->
-  <string name="relay_game_explain_fmt">Ot trats a cisab dekrowten reyalp-owt
-        emag ni %1$s:</string>
-  <!-- These four strings are displayed as step-by-step
-         instructions-->
-  <string name="explain_b1">• Eerga no a moor eman htiw eht rehto
-      reyalp.</string>
-  <string name="explain_b2">• Retne eht moor eman ni eht tsrif xob
-      woleb. Eht moor seman no ruoy owt senohp tsum eb
-      lacitnedi.</string>
-  <string name="explain_b3">• ,yllanoitpo retne reyalp seman ni eht
-      dnoces xob eno( rep )enohp</string>
-  <string name="explain_b4">• Sserp eht \"Yalp emag\" nottub no htob
-      senohp ot trats eht emag.</string>
   <!-- This is the "hint" printed in light text in the empty player
          name field -->
   <string name="local_name_hint">Reyalp eman</string>

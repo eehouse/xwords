@@ -32,6 +32,9 @@ import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.GameUtils;
+import org.eehouse.android.xw4.XWPrefs;
+import org.eehouse.android.xw4.BTService;
 
 public class CommsAddrRec {
 
@@ -164,6 +167,31 @@ public class CommsAddrRec {
         ip_relay_port = port;
         ip_relay_seeksPublicRoom = false;
         ip_relay_advertiseRoom = false;
+    }
+
+    public void populate( Context context )
+    {
+        for ( CommsConnType typ : conTypes.getTypes() ) {
+            switch ( typ ) {
+            case COMMS_CONN_RELAY:
+                String room = GameUtils.makeRandomID();
+                String host = XWPrefs.getDefaultRelayHost( context );
+                int port = XWPrefs.getDefaultRelayPort( context );
+                setRelayParams( host, port, room );
+                break;
+            case COMMS_CONN_BT:
+                String[] strs = BTService.getBTNameAndAddress();
+                if ( null != strs ) {
+                    bt_hostName = strs[0];
+                    bt_btAddr = strs[1];
+                }
+                break;
+            case COMMS_CONN_SMS:
+                // FIXME
+            default:
+                Assert.fail();
+            }
+        }
     }
 
     public boolean changesMatter( final CommsAddrRec other )

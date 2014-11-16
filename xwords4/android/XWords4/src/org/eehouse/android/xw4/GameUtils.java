@@ -463,26 +463,27 @@ public class GameUtils {
                                  nli.gameID, false );
     }
 
-    public static long makeNewMultiGame( Context context, String room, String inviteID )
+    public static long makeNewMultiGame( Context context, String inviteID )
     {
         int[] lang = {0};
         String[] dict = {null};
         CommsAddrRec addr = new CommsAddrRec( XWPrefs.getAddrTypes( context ) );
+        addr.populate( context );
         return makeNewMultiGame( context, null, DBUtils.GROUPID_UNSPEC, addr,
                                  lang, dict, 2, 1, inviteID, 0, true );
     }
 
-    private static long makeNewMultiGame( Context context, long groupID, 
-                                          CommsAddrRec addr,
-                                          int[] lang, String[] dict,
-                                          int nPlayersT, int nPlayersH, 
-                                          String inviteID, int gameID,
-                                          boolean isHost )
-    {
-        return makeNewMultiGame( context, null, groupID, addr, lang, dict,
-                                 nPlayersT, nPlayersH, inviteID, gameID, 
-                                 isHost );
-    }
+    // private static long makeNewMultiGame( Context context, long groupID, 
+    //                                       CommsAddrRec addr,
+    //                                       int[] lang, String[] dict,
+    //                                       int nPlayersT, int nPlayersH, 
+    //                                       String inviteID, int gameID,
+    //                                       boolean isHost )
+    // {
+    //     return makeNewMultiGame( context, null, groupID, addr, lang, dict,
+    //                              nPlayersT, nPlayersH, inviteID, gameID, 
+    //                              isHost );
+    // }
 
     private static long makeNewMultiGame( Context context, MultiMsgSink sink, long groupID, 
                                           CommsAddrRec addr, int[] lang, String[] dict,
@@ -518,54 +519,6 @@ public class GameUtils {
         return rowid;
     }
 
-    public static long makeNewRelayGame( Context context, long groupID,
-                                         String room, String inviteID, int[] lang,
-                                         String[] dict, int nPlayersT, 
-                                         int nPlayersH )
-    {
-        long rowid = -1;
-
-        CommsAddrRec addr = new CommsAddrRec();
-        for ( CommsConnType typ : XWPrefs.getAddrTypes( context ).getTypes() ) {
-            addr.conTypes.add( typ );
-            switch( typ ) {
-            case COMMS_CONN_RELAY:
-                String name = XWPrefs.getDefaultRelayHost( context );
-                int port = XWPrefs.getDefaultRelayPort( context );
-                addr.setRelayParams( name, port, room );
-                break;
-            case COMMS_CONN_BT:
-                // String[] strs = BTService.getBTNameAndAddress();
-                // addr.bt_hostName = strs[0];
-                // addr.bt_btAddr = strs[1];
-                break;
-            default:
-                // Assert.fail();
-                break;
-            }
-        }
-
-        return makeNewMultiGame( context, groupID, addr, lang, dict, 
-                                 nPlayersT, nPlayersH, inviteID, 0, true );
-    }
-
-    public static long makeNewRelayGame( Context context, long groupID, 
-                                       String room, String inviteID, int lang, 
-                                       String dict, int nPlayers )
-    {
-        int[] langarr = { lang };
-        String[] dictArr = { dict };
-        return makeNewRelayGame( context, groupID, room, inviteID, langarr, 
-                                 dictArr, nPlayers, 1 );
-    }
-
-    public static long makeNewRelayGame( Context context, NetLaunchInfo info )
-    {
-        return makeNewRelayGame( context, DBUtils.GROUPID_UNSPEC, info.room, 
-                                 info.inviteID, info.lang, info.dict, 
-                                 info.nPlayersT );
-    }
-
     public static long makeNewGame( Context context, MultiMsgSink sink,
                                     int gameID, CommsAddrRec addr, int lang, 
                                     String dict, int nPlayersT, 
@@ -592,18 +545,9 @@ public class GameUtils {
                             lang,  dict, nPlayersT, nPlayersH );
     }
 
-    // public static long makeNewBTGame( Context context, NetLaunchInfo nli )
-    // {
-    //     Assert.fail();
-    //     return -1;
-    //     // return makeNewBTGame( context, null, DBUtils.GROUPID_UNSPEC, nli.gameID, 
-    //     //                       nli.btAddress, nli.lang, nli.dict, 
-    //     //                       nli.nPlayersT, 1 );
-    // }
-
     public static long makeNewGame( Context context, MultiMsgSink sink, 
                                     long groupID,  int gameID, CommsAddrRec addr, 
-                                    int lang, String dict,
+                                    int lang, String dict, 
                                     int nPlayersT, int nPlayersH )
     {
         long rowid = -1;
@@ -618,33 +562,6 @@ public class GameUtils {
                                  nPlayersT, nPlayersH, inviteID, gameID, 
                                  isHost );
     }
-
-    // public static long makeNewSMSGame( Context context, int gameID, 
-    //                                    CommsAddrRec addr, 
-    //                                    int lang, String dict, int nPlayersT, 
-    //                                    int nPlayersH )
-    // {
-    //     return makeNewSMSGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-    //                            lang, dict, nPlayersT, nPlayersH );
-    // }
-
-    // public static long makeNewSMSGame( Context context, long groupID,
-    //                                    int gameID, CommsAddrRec addr, 
-    //                                    int lang, String dict, int nPlayersT, 
-    //                                    int nPlayersH )
-    // {
-    //     long rowid = -1;
-    //     int[] langa = { lang };
-    //     String[] dicta = { dict };
-    //     boolean isHost = null == addr;
-    //     if ( isHost ) { 
-    //         addr = new CommsAddrRec( CommsConnType.COMMS_CONN_SMS );
-    //     }
-    //     String inviteID = GameUtils.formatGameID( gameID );
-    //     return makeNewMultiGame( context, groupID, addr, langa, dicta, 
-    //                              nPlayersT, nPlayersH, inviteID, gameID, 
-    //                              isHost );
-    // }
 
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
     {

@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/games_menu_newgame"
-          android:title="@string/button_new_game"
+    <item android:id="@+id/games_menu_newgame_solo"
+          android:title="@string/new_game"
+          android:icon="@drawable/content_new__gen"
+          android:showAsAction="ifRoom"
+          />
+    <item android:id="@+id/games_menu_newgame_net"
+          android:title="@string/new_game_networked"
           android:icon="@drawable/content_new__gen"
           android:showAsAction="ifRoom"
           />

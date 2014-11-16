@@ -69,6 +69,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_ROWIDS = "SAVE_ROWIDS";
     private static final String SAVE_GROUPID = "SAVE_GROUPID";
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
+    private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
 
     private static final int REQUEST_LANG = 1;
     private static final int CONFIG_GAME = 2;
@@ -919,6 +920,7 @@ public class GamesListDelegate extends ListDelegateBase
         outState.putLongArray( SAVE_ROWIDS, m_rowids );
         outState.putLong( SAVE_GROUPID, m_groupid );
         outState.putString( SAVE_DICTNAMES, m_missingDictName );
+        outState.putBoolean( SAVE_NEXTSOLO, m_nextIsSolo );
         if ( null != m_netLaunchInfo ) {
             m_netLaunchInfo.putSelf( outState );
         }
@@ -932,6 +934,7 @@ public class GamesListDelegate extends ListDelegateBase
             m_groupid = bundle.getLong( SAVE_GROUPID );
             m_netLaunchInfo = new NetLaunchInfo( bundle );
             m_missingDictName = bundle.getString( SAVE_DICTNAMES );
+            m_nextIsSolo = bundle.getBoolean( SAVE_NEXTSOLO );
         }
     }
 
@@ -1226,7 +1229,9 @@ public class GamesListDelegate extends ListDelegateBase
                                   && (selGroupPos + 1) < groupCount );
 
             // New game available when nothing selected or one group
-            Utils.setItemVisible( menu, R.id.games_menu_newgame,
+            Utils.setItemVisible( menu, R.id.games_menu_newgame_solo,
+                                  nothingSelected || 1 == nGroupsSelected );
+            Utils.setItemVisible( menu, R.id.games_menu_newgame_net,
                                   nothingSelected || 1 == nGroupsSelected );
                 
             // Multiples can be deleted
@@ -1285,8 +1290,13 @@ public class GamesListDelegate extends ListDelegateBase
         case R.id.games_menu_resend:
             GameUtils.resendAllIf( m_activity, null, true );
             break;
-        case R.id.games_menu_newgame:
-            startNewGameActivity( groupID );
+        case R.id.games_menu_newgame_solo:
+            m_nextIsSolo = true;
+            showDialog( DlgID.GAMES_LIST_NEWGAME );
+            break;
+        case R.id.games_menu_newgame_net:
+            m_nextIsSolo = false;
+            showDialog( DlgID.GAMES_LIST_NEWGAME );
             break;
 
         case R.id.games_menu_newgroup:
@@ -1640,11 +1650,6 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void startNewGameActivity( long groupID )
-    {
-        NewGameDelegate.startActivity( m_activity, groupID );
-    }
-
     private void startNewNetGame( NetLaunchInfo nli )
     {
         Assert.assertTrue( nli.isValid() );
@@ -1907,17 +1912,18 @@ public class GamesListDelegate extends ListDelegateBase
 
         if ( summary.conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {
+            Assert.fail();
             // If it's unconfigured and of the type RelayGameActivity
             // can handle send it there, otherwise use the full-on
             // config.
-            Class clazz;
+            // Class clazz;
             
-            if ( RelayGameDelegate.isSimpleGame( summary ) ) {
-                clazz = RelayGameActivity.class;
-            } else {
-                clazz = GameConfigActivity.class;
-            }
-            GameUtils.doConfig( m_activity, rowid, clazz );
+            // if ( RelayGameDelegate.isSimpleGame( summary ) ) {
+            //     clazz = RelayGameActivity.class;
+            // } else {
+            //     clazz = GameConfigActivity.class;
+            // }
+            // GameUtils.doConfig( m_activity, rowid, clazz );
         } else {
             if ( checkWarnNoDict( rowid ) ) {
                 launchGame( rowid );
@@ -1997,9 +2003,8 @@ public class GamesListDelegate extends ListDelegateBase
                                        new CurGameInfo( m_activity ), 
                                        groupID );
         } else {
-            String room = GameUtils.makeRandomID();
             String inviteID = GameUtils.makeRandomID();
-            rowID = GameUtils.makeNewMultiGame( m_activity, room, inviteID );
+            rowID = GameUtils.makeNewMultiGame( m_activity, inviteID );
         }
 
         if ( doConfigure ) {
