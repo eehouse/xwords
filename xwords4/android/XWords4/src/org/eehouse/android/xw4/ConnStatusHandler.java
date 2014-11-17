@@ -175,45 +175,47 @@ public class ConnStatusHandler {
             msg = LocUtils.getString( context, R.string.connstat_nonet );
         } else {
             StringBuffer sb = new StringBuffer();
+            String tmp;
             synchronized( s_lockObj ) {
-                CommsConnType connType = connTypes.iterator().next();
-                String tmp = LocUtils.getString( context, connType2StrID( connType ) );
                 sb.append( LocUtils.getString( context, 
                                                R.string.connstat_net_fmt,
-                                               tmp ) );
-                sb.append("\n\n");
+                                               connTypes.toString( context )));
+                for ( CommsConnType typ : connTypes.getTypes() ) {
+                    sb.append( String.format( "\n\n*** %s ***\n", 
+                                              typ.longName( context ) ) );
+                    SuccessRecord record = recordFor( typ, false );
+                    tmp = LocUtils.getString( context, record.successNewer? 
+                                              R.string.connstat_succ :
+                                              R.string.connstat_unsucc );
+                    sb.append( LocUtils
+                               .getString( context, R.string.connstat_lastsend_fmt,
+                                           tmp, record.newerStr( context ) ) );
+                    sb.append("\n");
 
-                SuccessRecord record = recordFor( connType, false );
-                tmp = LocUtils.getString( context, record.successNewer? 
-                                          R.string.connstat_succ :
-                                          R.string.connstat_unsucc );
-                sb.append( LocUtils.getString( context, R.string.connstat_lastsend_fmt,
-                                               tmp, record.newerStr( context ) ) );
-                sb.append("\n");
-
-                int fmtId = 0;
-                if ( record.successNewer ) {
-                    if ( record.haveFailure() ) {
-                        fmtId = R.string.connstat_lastother_succ_fmt;
+                    int fmtId = 0;
+                    if ( record.successNewer ) {
+                        if ( record.haveFailure() ) {
+                            fmtId = R.string.connstat_lastother_succ_fmt;
+                        }
+                    } else {
+                        if ( record.haveSuccess() ) {
+                            fmtId = R.string.connstat_lastother_unsucc_fmt;
+                        }
                     }
-                } else {
+                    if ( 0 != fmtId ) {
+                        sb.append( LocUtils.getString( context, fmtId, 
+                                                       record.olderStr( context )));
+                    }
+                    sb.append( "\n\n" );
+
+                    record = recordFor( typ, true );
                     if ( record.haveSuccess() ) {
-                        fmtId = R.string.connstat_lastother_unsucc_fmt;
+                        sb.append( LocUtils.getString( context, 
+                                                       R.string.connstat_lastreceipt_fmt,
+                                                       record.newerStr( context ) ) );
+                    } else {
+                        sb.append( LocUtils.getString( context, R.string.connstat_noreceipt) );
                     }
-                }
-                if ( 0 != fmtId ) {
-                    sb.append( LocUtils.getString( context, fmtId, 
-                                                   record.olderStr( context ) ) );
-                }
-                sb.append( "\n\n" );
-
-                record = recordFor( connType, true );
-                if ( record.haveSuccess() ) {
-                    sb.append( LocUtils.getString( context, 
-                                                   R.string.connstat_lastreceipt_fmt,
-                                                   record.newerStr( context ) ) );
-                } else {
-                    sb.append( LocUtils.getString( context, R.string.connstat_noreceipt) );
                 }
             }
             msg = sb.toString();
@@ -447,25 +449,6 @@ public class ConnStatusHandler {
         Drawable icon = res.getDrawable( id );
         icon.setBounds( rect );
         icon.draw( canvas );
-    }
-
-    private static int connType2StrID( CommsConnType connType )
-    {
-        int resID = 0;
-        switch( connType ) {
-        case COMMS_CONN_RELAY:
-            resID = R.string.connstat_relay;
-            break;
-        case COMMS_CONN_SMS:
-            resID = R.string.connstat_sms;
-            break;
-        case COMMS_CONN_BT:
-            resID = R.string.invite_choice_bt;
-            break;
-        default:
-            Assert.fail();
-        }
-        return resID;
     }
 
     private static SuccessRecord recordFor( CommsConnType connType, boolean isIn )
