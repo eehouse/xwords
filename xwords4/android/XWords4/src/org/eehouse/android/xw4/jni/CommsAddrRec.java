@@ -137,11 +137,10 @@ public class CommsAddrRec {
         setRelayParams( host, port );
     }
 
-    public CommsAddrRec( String btHost, String btAddr ) 
+    public CommsAddrRec( String btName, String btAddr ) 
     {
         this( CommsConnType.COMMS_CONN_BT );
-        bt_hostName = btHost;
-        bt_btAddr = btAddr;
+        setBTParams( btAddr, btName );
     }
 
     public CommsAddrRec( String phone ) 
@@ -172,6 +171,12 @@ public class CommsAddrRec {
         ip_relay_port = port;
         ip_relay_seeksPublicRoom = false;
         ip_relay_advertiseRoom = false;
+    }
+
+    public void setBTParams( String btAddr, String btName )
+    {
+        bt_hostName = btName;
+        bt_btAddr = btAddr;
     }
 
     public void populate( Context context )
