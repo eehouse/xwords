@@ -92,6 +92,12 @@ public class XwJNI {
         return initJNI( getJNI().m_ptr, seed );
     }
 
+    // hack to allow cleanup of env owned by thread that doesn't open game
+    public static void threadDone()
+    {
+        envDone( getJNI().m_ptr );
+    }
+
     public static native void game_makeNewGame( int gamePtr,
                                                 CurGameInfo gi, 
                                                 UtilCtxt util,
@@ -386,8 +392,9 @@ public class XwJNI {
 
     // Private methods -- called only here
     private static native int initGlobals();
-    private static native void cleanGlobals( int ptr );
+    private static native void cleanGlobals( int globals );
     private static native int initJNI( int jniState, int seed );
+    private static native void envDone( int globals );
     private static native void dict_ref( int dictPtr );
     private static native void dict_unref( int dictPtr );
     private static native boolean dict_getInfo( int jniState, byte[] dict, 

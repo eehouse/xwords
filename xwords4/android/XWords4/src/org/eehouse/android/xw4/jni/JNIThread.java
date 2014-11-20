@@ -594,6 +594,7 @@ public class JNIThread extends Thread {
         } else {
             DbgUtils.logf( "JNIThread.run(): exiting without saving" );
         }
+        XwJNI.threadDone();
     } // run
 
     public void handleBkgrnd( JNICmd cmd, Object... args )

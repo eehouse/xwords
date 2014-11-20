@@ -52,7 +52,6 @@ typedef struct _EnvThreadEntry {
 struct _EnvThreadInfo {
     pthread_mutex_t mtxThreads;
     EnvThreadEntry entries[MAX_ENV_THREADS];
-    XP_U16 nMaps;
 };
 
 /* Globals for the whole game */
@@ -70,25 +69,31 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
     pthread_mutex_lock( &ti->mtxThreads );
 
     XP_Bool found = false;
-    for ( int ii = 0; !found && ii < ti->nMaps; ++ii ) {
+    EnvThreadEntry* firstEmpty = NULL;
+    for ( int ii = 0; !found && ii < VSIZE(ti->entries); ++ii ) {
         EnvThreadEntry* entry = &ti->entries[ii];
-        found = self == entry->owner;
-        if ( found ) {
+        if ( 0 == entry->owner ) {
+            if ( NULL == firstEmpty ) {
+                firstEmpty = entry;
+            }
+        } else if ( self == entry->owner ) {
+            found = true;
             if ( env != entry->env ) {
                 /* this DOES happen!!! */
-                XP_LOGF( "%s: replacing env %p with env %p for thread %x",
-                         __func__, entry->env, env, (int)self );
+                XP_LOGF( "%s (ti=%p): replacing env %p with env %p for thread %x",
+                         __func__, ti, entry->env, env, (int)self );
                 entry->env = env;
             }
         }
     }
 
     if ( !found ) {
-        EnvThreadEntry* entry = &ti->entries[ti->nMaps++];
-        entry->owner = self;
-        entry->env = env;
-        XP_LOGF( "%s: mapped env %p to thread %x", __func__, env, (int)self );
-        XP_ASSERT( ti->nMaps < MAX_ENV_THREADS );
+        XP_ASSERT( !!firstEmpty );
+        firstEmpty->owner = self;
+        firstEmpty->env = env;
+        int indx = firstEmpty - ti->entries;
+        XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__, indx,
+                 env, (int)self );
     }
 
     pthread_mutex_unlock( &ti->mtxThreads );
@@ -102,10 +107,26 @@ map_init( EnvThreadInfo* ti, JNIEnv* env )
 }
 
 static void
+map_remove( EnvThreadInfo* ti, JNIEnv* env )
+{
+    pthread_t self = pthread_self();
+    XP_Bool found = false;
+    for ( int ii = 0; !found && ii < VSIZE(ti->entries); ++ii ) {
+        found = env == ti->entries[ii].env;
+        if ( found ) {
+            XP_LOGF( "%s: clearing out %dth entry (thread %x)", __func__, ii, 
+                     (int)self );
+            ti->entries[ii].env = NULL;
+            XP_ASSERT( ti->entries[ii].owner = self );
+            ti->entries[ii].owner = 0;
+        }
+    }
+    XP_ASSERT( found );
+}
+
+static void
 map_destroy( EnvThreadInfo* ti )
 {
-    // XP_ASSERT( 0 == ti->nMaps );
-    XP_LOGF( "%s: had %d threads max", __func__, ti->nMaps );
     pthread_mutex_destroy( &ti->mtxThreads );
 }
 
@@ -115,7 +136,7 @@ envForMe( EnvThreadInfo* ti, const char* caller )
     JNIEnv* result = NULL;
     pthread_t self = pthread_self();
     pthread_mutex_lock( &ti->mtxThreads );
-    for ( int ii = 0; ii < ti->nMaps; ++ii ) {
+    for ( int ii = 0; ii < VSIZE(ti->entries); ++ii ) {
         if ( self == ti->entries[ii].owner ) {
             result = ti->entries[ii].env;
             break;
@@ -123,8 +144,7 @@ envForMe( EnvThreadInfo* ti, const char* caller )
     }
     pthread_mutex_unlock( &ti->mtxThreads );
     if( !result ) {
-        XP_LOGF( "no env for %s (thread %x in %d entries)", caller, 
-                 (int)self, ti->nMaps );
+        XP_LOGF( "no env for %s (thread %x)", caller, (int)self );
         XP_ASSERT(0);
     }
     return result;
@@ -470,6 +490,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1getInfo
 {
     jboolean result = false;
     JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    map_thread( &state->ti, env );
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) &state->ti, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(state->mpool) env, state->dictMgr, 
                                      jniutil, jname, jDictBytes, jpath, 
@@ -572,6 +593,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
 }
 
 JNIEXPORT void JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_envDone
+( JNIEnv* env, jclass C, int jniGlobalPtr )
+{
+    JNIGlobalState* globalJNI = (JNIGlobalState*)jniGlobalPtr;
+    map_remove( &globalJNI->ti, env );
+}
+
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 ( JNIEnv* env, jclass C, jint gamePtr, jobject j_gi, jobject j_util, 
   jobject jniu, jobject j_draw, jobject j_cp, jobject j_procs, 
@@ -618,7 +647,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
 } /* makeNewGame */
 
 JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
-( JNIEnv * env, jclass claz, jint gamePtr )
+( JNIEnv* env, jclass claz, jint gamePtr )
 {
     JNIState* state = (JNIState*)gamePtr;
 #ifdef MEM_DEBUG
@@ -635,6 +664,8 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     destroyUtil( &globals->util );
     destroyJNIUtil( &globals->jniutil );
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
+
+    map_remove( &state->globalJNI->ti, env );
 
     XP_FREE( mpool, state );
     mpool_destroy( mpool );
@@ -1710,6 +1741,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_server_1sendChat
 ////////////////////////////////////////////////////////////
 
 typedef struct _DictIterData {
+    JNIGlobalState* state;
     JNIEnv* env;
     JNIUtilCtxt* jniutil;
     VTableMgr* vtMgr;
@@ -1729,7 +1761,9 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1init
 {
     jint closure = 0;
     JNIGlobalState* state = (JNIGlobalState*)jniGlobalPtr;
+    map_thread( &state->ti, env );
     DictIterData* data = XP_CALLOC( state->mpool, sizeof(*data) );
+    data->state = state;
     data->env = env;
     JNIUtilCtxt* jniutil = makeJNIUtil( MPPARM(state->mpool) &state->ti, jniu );
     DictionaryCtxt* dict = makeDict( MPPARM(state->mpool) env, state->dictMgr, 
@@ -1821,6 +1855,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1destroy
         destroyJNIUtil( &data->jniutil );
         freeIndices( data );
         vtmgr_destroy( MPPARM(mpool) data->vtMgr );
+        map_remove( &data->state->ti, env );
         XP_FREE( mpool, data );
     }
 }
