@@ -1677,11 +1677,13 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1ackAny
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1transportFailed
-( JNIEnv* env, jclass C, jint gamePtr )
+( JNIEnv* env, jclass C, jint gamePtr, jobject failedTyp )
 {
     XWJNI_START();
     XP_ASSERT( !!state->game.comms );
-    (void)comms_transportFailed( state->game.comms );
+
+    CommsConnType typ = jEnumToInt( env, failedTyp );
+    (void)comms_transportFailed( state->game.comms, typ );
     XWJNI_END();
 }
 

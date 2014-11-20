@@ -469,11 +469,11 @@ set_reset_timer( CommsCtxt* comms )
 } /* set_reset_timer */
 
 void
-comms_transportFailed( CommsCtxt* comms  )
+comms_transportFailed( CommsCtxt* comms, CommsConnType failed )
 {
-    LOG_FUNC();
+    XP_LOGF( "%s(%s)", __func__, ConnType2Str(failed) );
     XP_ASSERT( !!comms );
-    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY )
+    if ( COMMS_CONN_RELAY == failed && addr_hasType( &comms->addr, COMMS_CONN_RELAY )
          && comms->rr.relayState != COMMS_RELAYSTATE_DENIED ) {
         relayDisconnect( comms );
 
@@ -2548,7 +2548,7 @@ addr_getType( const CommsAddrRec* addr )
         typ = COMMS_CONN_NONE;
     }
     XP_ASSERT( !addr_iter( addr, &typ, &st ) ); /* shouldn't be a second */
-    XP_LOGF( "%s(%p) => %s", __func__, addr, ConnType2Str( typ ) );
+    // XP_LOGF( "%s(%p) => %s", __func__, addr, ConnType2Str( typ ) );
     return typ;
 }
 
@@ -2556,7 +2556,7 @@ void
 addr_addType( CommsAddrRec* addr, CommsConnType type )
 {
     XP_ASSERT( COMMS_CONN_NONE != type );
-    XP_LOGF( "%s(%s)", __func__, ConnType2Str(type) );
+    // XP_LOGF( "%s(%s)", __func__, ConnType2Str(type) );
     addr->_conTypes |= 1 << (type - 1);
 }
 
@@ -2564,7 +2564,7 @@ void
 addr_rmType( CommsAddrRec* addr, CommsConnType type )
 {
     XP_ASSERT( COMMS_CONN_NONE != type );
-    XP_LOGF( "%s(%s)", __func__, ConnType2Str(type) );
+    // XP_LOGF( "%s(%s)", __func__, ConnType2Str(type) );
     addr->_conTypes &= ~(1 << (type - 1));
 }
 

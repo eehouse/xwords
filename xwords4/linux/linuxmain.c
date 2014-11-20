@@ -1313,7 +1313,8 @@ linux_relay_receive( CommonGlobals* cGlobals, int sock, unsigned char* buf, int 
         nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
         if ( nRead != 2 ) {
             linux_close_socket( cGlobals );
-            comms_transportFailed( cGlobals->game.comms );
+
+            comms_transportFailed( cGlobals->game.comms, COMMS_CONN_RELAY );
             nRead = -1;
         } else {
             unsigned short packetSize = ntohs( tmp );
@@ -1366,7 +1367,7 @@ linux_relay_receive( CommonGlobals* cGlobals, int sock, unsigned char* buf, int 
 
             if ( -1 == nRead ) {
                 linux_close_socket( cGlobals );
-                comms_transportFailed( cGlobals->game.comms );
+                comms_transportFailed( cGlobals->game.comms, COMMS_CONN_RELAY );
             }
         }
     }

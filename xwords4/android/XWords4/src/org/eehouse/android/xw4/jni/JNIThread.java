@@ -40,8 +40,10 @@ import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Toolbar;
 import org.eehouse.android.xw4.XWPrefs;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.DrawCtx;
+
 import junit.framework.Assert;
 
 public class JNIThread extends Thread {
@@ -401,7 +403,8 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_TRANSFAIL:
-                XwJNI.comms_transportFailed( m_jniGamePtr );
+                CommsConnType typ = (CommsConnType)args[0];
+                XwJNI.comms_transportFailed( m_jniGamePtr, typ );
                 break;
 
             case CMD_PREFS_CHANGE:

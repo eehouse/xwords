@@ -106,7 +106,8 @@ public class CommsTransport implements TransportProcs,
 
                 m_thread = null;
                 if ( failed ) {
-                    m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+                    m_jniThread.handle( JNICmd.CMD_TRANSFAIL, 
+                                        CommsConnType.COMMS_CONN_RELAY );
                 }
             }
         }
@@ -235,7 +236,8 @@ public class CommsTransport implements TransportProcs,
     {
         if ( !nowAvailable ) {
             waitToStopImpl();
-            m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
+            m_jniThread.handle( JNICmd.CMD_TRANSFAIL, 
+                                CommsConnType.COMMS_CONN_RELAY );
         }
     }
 

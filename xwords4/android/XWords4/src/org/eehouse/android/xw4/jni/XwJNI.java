@@ -20,10 +20,11 @@
 
 package org.eehouse.android.xw4.jni;
 
+import android.graphics.Rect;
+
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.Utils;
-
-import android.graphics.Rect;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 // Collection of native methods and a bit of state
 public class XwJNI {
@@ -313,7 +314,8 @@ public class XwJNI {
     public static native void comms_resendAll( int gamePtr, boolean force,
                                                boolean andAck );
     public static native void comms_ackAny( int gamePtr );
-    public static native void comms_transportFailed( int gamePtr );
+    public static native void comms_transportFailed( int gamePtr, 
+                                                     CommsConnType failed );
     public static native boolean comms_isConnected( int gamePtr );
     public static native String comms_getStats( int gamePtr );
 
