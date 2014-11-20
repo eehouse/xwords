@@ -1078,8 +1078,7 @@ send_per_params( const XP_U8* buf, const XP_U16 buflen,
 }
 
 static gboolean
-linux_relay_ioproc( GIOChannel* XP_UNUSED_DBG(source), GIOCondition condition, 
-                    gpointer data )
+linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
 {
     gboolean keep = TRUE;
     if ( 0 != ((G_IO_HUP|G_IO_ERR|G_IO_NVAL) & condition) ) {
