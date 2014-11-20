@@ -47,7 +47,7 @@ typedef struct _EnvThreadEntry {
     pthread_t owner;
 } EnvThreadEntry;
 
-#define MAX_ENV_THREADS 10
+#define MAX_ENV_THREADS 5
 
 struct _EnvThreadInfo {
     pthread_mutex_t mtxThreads;
@@ -111,6 +111,8 @@ map_remove( EnvThreadInfo* ti, JNIEnv* env )
 {
     pthread_t self = pthread_self();
     XP_Bool found = false;
+
+    pthread_mutex_lock( &ti->mtxThreads );
     for ( int ii = 0; !found && ii < VSIZE(ti->entries); ++ii ) {
         found = env == ti->entries[ii].env;
         if ( found ) {
@@ -121,6 +123,8 @@ map_remove( EnvThreadInfo* ti, JNIEnv* env )
             ti->entries[ii].owner = 0;
         }
     }
+    pthread_mutex_unlock( &ti->mtxThreads );
+
     XP_ASSERT( found );
 }
 
