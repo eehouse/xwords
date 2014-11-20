@@ -27,8 +27,51 @@ import java.util.ArrayList;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 public class MultiMsgSink implements TransportProcs {
+    private long m_rowid;
+    private Context m_context;
+    private int m_nSent = 0;
+
+    public MultiMsgSink( Context context, long rowid )
+    {
+        m_context = context;
+        m_rowid = rowid;
+    }
+
+    public MultiMsgSink( Context context )
+    {
+        this( context, 0 );
+    }
+
+    // rowID is used as token to identify game on relay.  Anything that
+    // uniquely identifies a game on a device would work
+    public long getRowID() { return m_rowid; };
+    public void setRowID( long rowID ) { m_rowid = rowID; };
+
+    // These will be overridden by e.g. BTService which for sendViaBluetooth()
+    // can just insert a message into its queue
+    public int sendViaRelay( byte[] buf, int gameID )
+    {
+        Assert.assertTrue( XWApp.UDP_ENABLED );
+        return RelayService.sendPacket( m_context, getRowID(), buf );
+    }
+
+    public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
+    {
+        return BTService.enqueueFor( m_context, buf, addr.bt_btAddr, gameID );
+    }
+
+    public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
+    {
+        return SMSService.sendPacket( m_context, addr.sms_phone, gameID, buf );
+    }
+
+    public int numSent()
+    {
+        return m_nSent;
+    }
 
     /***** TransportProcs interface *****/
 
@@ -36,8 +79,35 @@ public class MultiMsgSink implements TransportProcs {
 
     public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
     {
-        Assert.fail();          // implement if this is getting called!!!
-        return -1;
+        int maxSent = -1;
+        for ( CommsConnType typ : addr.conTypes.getTypes() ) {
+            int nSent = -1;
+            switch ( typ ) {
+            case COMMS_CONN_RELAY:
+                nSent = sendViaRelay( buf, gameID );
+                break;
+            case COMMS_CONN_BT:
+                nSent = sendViaBluetooth( buf, gameID, addr );
+                break;
+            case COMMS_CONN_SMS:
+                nSent = sendViaSMS( buf, gameID, addr );
+                break;
+            default:
+                Assert.fail();
+                break;
+            }
+            DbgUtils.logf( "MultiMsgSink.transportSend(): sent %d via %s", 
+                           nSent, typ.toString() );
+            if ( nSent > maxSent ) {
+                maxSent = nSent;
+            }
+        }
+
+        if ( 0 < maxSent ) {
+            ++m_nSent;
+        }
+
+        return maxSent;
     }
 
     public void relayStatus( CommsRelayState newState )
@@ -55,7 +125,9 @@ public class MultiMsgSink implements TransportProcs {
 
     public boolean relayNoConnProc( byte[] buf, String relayID )
     {
-        Assert.fail();          // implement if this is getting called!!!
-        return false; 
+        Assert.fail();
+        int nSent = RelayService.sendNoConnPacket( m_context, getRowID(), 
+                                                   relayID, buf );
+        return buf.length == nSent;
     }
 }

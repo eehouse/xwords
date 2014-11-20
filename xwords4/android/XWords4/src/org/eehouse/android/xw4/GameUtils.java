@@ -454,10 +454,16 @@ public class GameUtils {
 
     public static long makeNewMultiGame( Context context, NetLaunchInfo nli )
     {
+        return makeNewMultiGame( context, nli, null );
+    }
+
+    public static long makeNewMultiGame( Context context, NetLaunchInfo nli,
+                                         MultiMsgSink sink )
+    {
         DbgUtils.logf( "makeNewMultiGame(nli=%s)", nli.toString() );
         CommsAddrRec addr = nli.makeAddrRec( context );
 
-        return makeNewMultiGame( context, null, DBUtils.GROUPID_UNSPEC, addr, 
+        return makeNewMultiGame( context, sink, DBUtils.GROUPID_UNSPEC, addr, 
                                  new int[] {nli.lang}, new String[] { nli.dict }, 
                                  nli.nPlayersT, 1, nli.inviteID, 
                                  nli.gameID, false );
@@ -509,6 +515,9 @@ public class GameUtils {
         // work
         Assert.assertTrue( gi.nPlayers == nPlayersT );
         rowid = saveNew( context, gi, groupID );
+        if ( null != sink ) {
+            sink.setRowID( rowid );
+        }
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             GameLock lock = new GameLock( rowid, true ).lock();
@@ -1076,7 +1085,7 @@ public class GameUtils {
         private HashMap<Long,CommsConnTypeSet> m_games;
         private boolean m_showUI;
         private CommsConnType m_filter;
-        private int m_nSent = 0;
+        private MultiMsgSink m_sink;
 
         public ResendTask( Context context, HashMap<Long,CommsConnTypeSet> games,
                            CommsConnType filter, boolean showUI )
@@ -1103,8 +1112,8 @@ public class GameUtils {
                 GameLock lock = new GameLock( rowid, false );
                 if ( lock.tryLock() ) {
                     CurGameInfo gi = new CurGameInfo( m_context );
-                    MsgSink sink = new MsgSink( m_context, rowid );
-                    int gamePtr = loadMakeGame( m_context, gi, sink, lock );
+                    m_sink = new MultiMsgSink( m_context, rowid );
+                    int gamePtr = loadMakeGame( m_context, gi, m_sink, lock );
                     if ( 0 != gamePtr ) {
                         XwJNI.comms_resendAll( gamePtr, true, false );
                     }
@@ -1121,36 +1130,8 @@ public class GameUtils {
         protected void onPostExecute( Void unused )
         {
             if ( m_showUI ) {
-                DbgUtils.showf( m_context, R.string.resend_finished_fmt, m_nSent );
-            }
-        }
-
-        private class MsgSink extends MultiMsgSink {
-            private Context m_context;
-            private long m_rowid;
-
-            public MsgSink( Context context, long rowid )
-            {
-                m_context = context;
-                m_rowid = rowid;
-            }
-
-            @Override
-            public boolean relayNoConnProc( byte[] buf, String relayID )
-            {
-                int len = buf.length;
-                if ( len == RelayService.sendNoConnPacket( m_context, m_rowid, 
-                                                           relayID, buf ) ) {
-                    ++m_nSent;
-                }
-                return true;
-            }
-
-            public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
-            {
-                return null == addr ? -1
-                    : CommsTransport.sendForAddr( m_context, addr, m_rowid, 
-                                                  gameID, buf );
+                int nSent = null == m_sink ? 0 : m_sink.numSent();
+                DbgUtils.showf( m_context, R.string.resend_finished_fmt, nSent );
             }
         }
     }

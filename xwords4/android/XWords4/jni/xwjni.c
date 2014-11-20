@@ -1361,6 +1361,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
                                               jstream );
     CommsAddrRec* addrp = NULL;
     CommsAddrRec addr = {0};
+    XP_ASSERT( !!jaddr );
     if ( NULL != jaddr ) {
         getJAddrRec( env, &addr, jaddr );
         addrp = &addr;

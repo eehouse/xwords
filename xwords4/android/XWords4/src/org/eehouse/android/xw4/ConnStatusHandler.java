@@ -499,6 +499,9 @@ public class ConnStatusHandler {
             result = XWApp.BTSUPPORTED && BTService.BTEnabled()
                 && !getAirplaneModeOn( context );
             break;
+        case COMMS_CONN_RELAY:
+            result = NetStateCache.netAvail( context );
+            break;
         default:
             DbgUtils.logf( "ConnStatusHandler:connTypeEnabled: %s not handled",
                            connType.toString() );

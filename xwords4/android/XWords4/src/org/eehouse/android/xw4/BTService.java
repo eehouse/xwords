@@ -150,7 +150,7 @@ public class BTService extends XWService {
 
     private BluetoothAdapter m_adapter;
     private Set<String> m_addrs;
-    private MultiMsgSink m_btMsgSink;
+    private BTMsgSink m_btMsgSink;
     private BTListenerThread m_listener;
     private BTSenderThread m_sender;
     private static int s_errCount = 0;
@@ -1064,10 +1064,8 @@ public class BTService extends XWService {
         BTCmd result;
         long[] rowids = DBUtils.getRowIDsFor( BTService.this, nli.gameID );
         if ( null == rowids || 0 == rowids.length ) {
-            CommsAddrRec addr = new CommsAddrRec( sender, senderAddress );
-            long rowid = GameUtils.makeNewGame( context, m_btMsgSink, nli.gameID, 
-                                                addr, nli.lang, nli.dict, nli.nPlayersT, 
-                                                nli.nPlayersH );
+            CommsAddrRec addr = nli.makeAddrRec( context );
+            long rowid = GameUtils.makeNewMultiGame( context, nli, m_btMsgSink );
             if ( DBUtils.ROWID_NOTFOUND == rowid ) {
                 result = BTCmd.INVITE_FAILED;
             } else {
@@ -1171,20 +1169,15 @@ public class BTService extends XWService {
 
     private class BTMsgSink extends MultiMsgSink {
 
-        /***** TransportProcs interface *****/
+        public BTMsgSink() { super( BTService.this ); }
 
-        public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
+        @Override
+        public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
         {
-            int sent = -1;
-            if ( null != addr ) {
-                m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
-                                               addr.bt_btAddr, gameID ) );
-                sent = buf.length;
-            } else {
-                DbgUtils.logf( "BTMsgSink.transportSend: "
-                               + "addr null so not sending" );
-            }
-            return sent;
+            Assert.assertTrue( addr.contains( CommsConnType.COMMS_CONN_BT ) );
+            m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
+                                           addr.bt_btAddr, gameID ) );
+            return buf.length;
         }
     }
 

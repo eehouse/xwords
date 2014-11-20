@@ -391,6 +391,7 @@ public class JNIThread extends Thread {
 
             case CMD_RECEIVE:
                 CommsAddrRec ret = (CommsAddrRec)args[1];
+                Assert.assertNotNull( ret );
                 draw = XwJNI.game_receiveMessage( m_jniGamePtr, 
                                                   (byte[])args[0], ret );
                 handle( JNICmd.CMD_DO );

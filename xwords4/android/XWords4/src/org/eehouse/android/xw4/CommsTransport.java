@@ -371,7 +371,7 @@ public class CommsTransport implements TransportProcs,
         }
 
         if ( !XWApp.UDP_ENABLED 
-             && addr.conTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
+             && addr.contains(CommsConnType.COMMS_CONN_RELAY) ) {
             if ( NetStateCache.netAvail( m_context ) ) {
                 putOut( buf );      // add to queue
                 if ( null == m_thread ) {
@@ -434,9 +434,10 @@ public class CommsTransport implements TransportProcs,
         return false;
     }
 
-    public static int sendForAddr( Context context, CommsAddrRec addr, 
-                                   long rowID, int gameID, byte[] buf )
+    private static int sendForAddr( Context context, CommsAddrRec addr, 
+                                    long rowID, int gameID, byte[] buf )
     {
+        DbgUtils.logf( "sendForAddr(addr=%s)", addr.conTypes.toString() );
         int mostSent = -1;
         for ( Iterator<CommsConnType> iter = addr.conTypes.iterator(); 
               iter.hasNext(); ) {
@@ -458,10 +459,12 @@ public class CommsTransport implements TransportProcs,
                 Assert.fail();
                 break;
             }
-            if ( nSent < mostSent ) {
-                nSent = mostSent;
+            if ( mostSent < nSent ) {
+                mostSent = nSent;
             }
         }
+        DbgUtils.logf( "sendForAddr(addr=%s)=>%d", addr.conTypes.toString(), 
+                       mostSent );
         return mostSent;
     }
 

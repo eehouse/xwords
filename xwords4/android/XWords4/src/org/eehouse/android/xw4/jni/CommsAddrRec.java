@@ -155,6 +155,11 @@ public class CommsAddrRec {
         this.copyFrom( src );
     }
 
+    public boolean contains( CommsConnType typ ) 
+    {
+        return null != conTypes && conTypes.contains( typ );
+    }
+
     public void setRelayParams( String host, int port, String room )
     {
         setRelayParams( host, port );

@@ -883,29 +883,14 @@ public class SMSService extends XWService {
     }
 
     private class SMSMsgSink extends MultiMsgSink {
-        private Context m_context;
         public SMSMsgSink( Context context ) {
-            super();
-            m_context = context;
+            super( context );
         }
 
-        /***** TransportProcs interface *****/
-        public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
+        @Override
+        public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
         {
-            int nSent = -1;
-            if ( null != addr ) {
-                nSent = sendPacket( addr.sms_phone, gameID, buf );
-            } else {
-                DbgUtils.logf( "SMSMsgSink.transportSend: "
-                               + "addr null so not sending" );
-            }
-            return nSent;
-        }
-
-        public boolean relayNoConnProc( byte[] buf, String relayID )
-        {
-            Assert.fail();
-            return false;
+            return sendPacket( addr.sms_phone, gameID, buf );
         }
     }
 

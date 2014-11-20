@@ -165,12 +165,14 @@ public class BoardDelegate extends DelegateBase
         return delivered;
     }
 
-    public static boolean feedMessage( long rowid, byte[] msg )
+    public static boolean feedMessage( long rowid, byte[] msg,
+                                       CommsAddrRec ret )
     {
-        return feedMessages( rowid, new byte[][]{msg} );
+        return feedMessages( rowid, new byte[][]{msg}, ret );
     }
 
-    public static boolean feedMessages( long rowid, byte[][] msgs )
+    public static boolean feedMessages( long rowid, byte[][] msgs, 
+                                        CommsAddrRec ret )
     {
         boolean delivered = false;
         Assert.assertNotNull( msgs );
@@ -185,8 +187,7 @@ public class BoardDelegate extends DelegateBase
                 if ( rowid == self.m_rowid ) {
                     delivered = true; // even if no messages!
                     for ( byte[] msg : msgs ) {
-                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, 
-                                                 null );
+                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, ret );
                     }
                 }
             }

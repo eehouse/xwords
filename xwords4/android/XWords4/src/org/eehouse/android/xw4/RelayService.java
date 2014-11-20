@@ -47,6 +47,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
@@ -86,6 +87,8 @@ public class RelayService extends XWService
     private static int s_nextPacketID = 1;
     private static boolean s_gcmWorking = false;
     private static boolean s_registered = false;
+    private static CommsAddrRec s_addr = 
+        new CommsAddrRec( CommsConnType.COMMS_CONN_RELAY );
 
     private Thread m_fetchThread = null;
     private Thread m_UDPReadThread = null;
@@ -849,14 +852,14 @@ public class RelayService extends XWService
     {
         DbgUtils.logf( "RelayService::feedMessage: %d bytes for rowid %d", 
                        msg.length, rowid );
-        if ( BoardDelegate.feedMessage( rowid, msg ) ) {
+        if ( BoardDelegate.feedMessage( rowid, msg, s_addr ) ) {
             DbgUtils.logf( "feedMessage: board ate it" );
             // do nothing
         } else {
             RelayMsgSink sink = new RelayMsgSink();
             sink.setRowID( rowid );
             LastMoveInfo lmi = new LastMoveInfo();
-            if ( GameUtils.feedMessage( this, rowid, msg, null, 
+            if ( GameUtils.feedMessage( this, rowid, msg, s_addr, 
                                         sink, lmi ) ) {
                 GameUtils.postMoveNotification( this, rowid, lmi );
             } else {
@@ -892,9 +895,9 @@ public class RelayService extends XWService
                 if ( null != forOne ) {
                     LastMoveInfo lmi = new LastMoveInfo();
                     sink.setRowID( rowIDs[ii] );
-                    if ( BoardDelegate.feedMessages( rowIDs[ii], forOne )
+                    if ( BoardDelegate.feedMessages( rowIDs[ii], forOne, s_addr )
                          || GameUtils.feedMessages( this, rowIDs[ii],
-                                                    forOne, null,
+                                                    forOne, s_addr,
                                                     sink, lmi ) ) {
                         idsWMsgs.add( relayIDs[ii] );
                         lmis.add( lmi );
@@ -1004,35 +1007,32 @@ public class RelayService extends XWService
     } // sendToRelay
 
     private class RelayMsgSink extends MultiMsgSink {
-
         private HashMap<String,ArrayList<byte[]>> m_msgLists = null;
-        private long m_rowid = -1;
 
-        public void setRowID( long rowid ) { m_rowid = rowid; }
+        public RelayMsgSink() { super( RelayService.this ); }
 
         public void send( Context context )
         {
-            if ( -1 == m_rowid ) {
+            if ( -1 == getRowID() ) {
                 sendToRelay( context, m_msgLists );
             } else {
                 Assert.assertNull( m_msgLists );
             }
         }
-
-        /***** TransportProcs interface *****/
-
-        public int transportSend( byte[] buf, final CommsAddrRec addr, 
-                                  int gameID )
+        
+        @Override
+        public int sendViaRelay( byte[] buf, int gameID )
         {
-            Assert.assertTrue( -1 != m_rowid );
-            sendPacket( RelayService.this, m_rowid, buf );
+            Assert.assertTrue( -1 != getRowID() );
+            sendPacket( RelayService.this, getRowID(), buf );
             return buf.length;
         }
 
         public boolean relayNoConnProc( byte[] buf, String relayID )
         {
-            if ( -1 != m_rowid ) {
-                sendNoConnMessage( m_rowid, relayID, buf );
+            long rowID = getRowID();
+            if ( -1 != rowID ) {
+                sendNoConnMessage( rowID, relayID, buf );
             } else {
                 if ( null == m_msgLists ) {
                     m_msgLists = new HashMap<String,ArrayList<byte[]>>();
