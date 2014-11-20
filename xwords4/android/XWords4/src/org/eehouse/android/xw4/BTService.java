@@ -796,11 +796,6 @@ public class BTService extends XWService {
                     DataOutputStream outStream = connect( socket, BTCmd.INVITE );
                     if ( null != outStream ) {
                         outStream.writeUTF( elem.m_nli.toString() );
-                        // outStream.writeInt( elem.m_gameID );
-                        // outStream.writeUTF( elem.m_gameName );
-                        // outStream.writeInt( elem.m_lang );
-                        // outStream.writeUTF( elem.m_dict );
-                        // outStream.writeInt( elem.m_nPlayersT );
                         DbgUtils.logf( "<eeh>sending invite for %d players", elem.m_nPlayersH );
                         outStream.flush();
 
