@@ -479,18 +479,6 @@ public class GameUtils {
                                  lang, dict, 2, 1, inviteID, 0, true );
     }
 
-    // private static long makeNewMultiGame( Context context, long groupID, 
-    //                                       CommsAddrRec addr,
-    //                                       int[] lang, String[] dict,
-    //                                       int nPlayersT, int nPlayersH, 
-    //                                       String inviteID, int gameID,
-    //                                       boolean isHost )
-    // {
-    //     return makeNewMultiGame( context, null, groupID, addr, lang, dict,
-    //                              nPlayersT, nPlayersH, inviteID, gameID, 
-    //                              isHost );
-    // }
-
     private static long makeNewMultiGame( Context context, MultiMsgSink sink, long groupID, 
                                           CommsAddrRec addr, int[] lang, String[] dict,
                                           int nPlayersT, int nPlayersH, 
