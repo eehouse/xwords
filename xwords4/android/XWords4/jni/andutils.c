@@ -472,7 +472,6 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 jobject
 addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
 {
-    LOG_FUNC();
     XP_ASSERT( !!addr );
     jclass cls = 
         (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") );
@@ -495,7 +494,6 @@ addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
         deleteLocalRef( env, jtyp );
     }
     deleteLocalRef( env, cls );
-    LOG_RETURNF( "%p", result );
     return result;
 }
 
