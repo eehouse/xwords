@@ -2612,6 +2612,7 @@ public final class R {
         public static final int expander_button=0x7f070009;
         public static final int expander_label=0x7f07000a;
         public static final int group_items=0x7f070006;
+        public static final int new_game_buttons=0x7f07000c;
         public static final int newgame_connicon=0x7f07000b;
         public static final int relay_explain=0x7f070007;
         public static final int role_config_hint=0x7f070001;
