@@ -49,7 +49,6 @@ public class NetLaunchInfo {
     protected int nPlayersT;
     protected int nPlayersH;
     protected String room;      // relay
-    protected String inviteID;  // relay
     protected String btName;
     protected String btAddress;
     protected String phone;     // SMS
@@ -61,6 +60,7 @@ public class NetLaunchInfo {
     private CommsConnTypeSet m_addrs;
     private JSONObject m_json;
     private boolean m_valid;
+    private String m_inviteID;
 
     public NetLaunchInfo()
     {
@@ -90,7 +90,7 @@ public class NetLaunchInfo {
                     break;
                 case COMMS_CONN_RELAY:
                     room = m_json.optString( MultiService.ROOM );
-                    inviteID = m_json.optString( MultiService.INVITEID );
+                    m_inviteID = m_json.optString( MultiService.INVITEID );
                     break;
                 case COMMS_CONN_SMS:
                     phone = m_json.optString( "phn" );
@@ -112,7 +112,7 @@ public class NetLaunchInfo {
     public NetLaunchInfo( Bundle bundle )
     {
         room = bundle.getString( MultiService.ROOM );
-        inviteID = bundle.getString( MultiService.INVITEID );
+        m_inviteID = bundle.getString( MultiService.INVITEID );
         lang = bundle.getInt( MultiService.LANG );
         dict = bundle.getString( MultiService.DICT );
         gameName= bundle.getString( MultiService.GAMENAME );
@@ -142,10 +142,10 @@ public class NetLaunchInfo {
 
                     JSONObject json = new JSONObject( new String( buf ) );
                     room = json.getString( MultiService.ROOM );
-                    inviteID = json.getString( MultiService.INVITEID );
+                    m_inviteID = json.getString( MultiService.INVITEID );
                 } else {
                     room = data.getQueryParameter( "room" );
-                    inviteID = data.getQueryParameter( "id" );
+                    m_inviteID = data.getQueryParameter( "id" );
                     dict = data.getQueryParameter( "wl" );
                     String langStr = data.getQueryParameter( "lang" );
                     lang = Integer.decode( langStr );
@@ -163,7 +163,7 @@ public class NetLaunchInfo {
     public NetLaunchInfo( Intent intent )
     {
         room = intent.getStringExtra( MultiService.ROOM );
-        inviteID = intent.getStringExtra( MultiService.INVITEID );
+        m_inviteID = intent.getStringExtra( MultiService.INVITEID );
         lang = intent.getIntExtra( MultiService.LANG, -1 );
         dict = intent.getStringExtra( MultiService.DICT );
         gameName = intent.getStringExtra( MultiService.GAMENAME );
@@ -216,10 +216,20 @@ public class NetLaunchInfo {
         }
     }
 
+    public String inviteID()
+    { 
+        String result = m_inviteID;
+        if ( null == result ) {
+            result = GameUtils.formatGameID( gameID );
+            DbgUtils.logf( "inviteID(): m_inviteID null so substituting %s", result );
+        }
+        return result;
+    }
+
     public void putSelf( Bundle bundle )
     {
         bundle.putString( MultiService.ROOM, room );
-        bundle.putString( MultiService.INVITEID, inviteID );
+        bundle.putString( MultiService.INVITEID, m_inviteID );
         bundle.putInt( MultiService.LANG, lang );
         bundle.putString( MultiService.DICT, dict );
         bundle.putString( MultiService.GAMENAME, gameName );
@@ -244,7 +254,7 @@ public class NetLaunchInfo {
                 .put( MultiService.NPLAYERST, nPlayersT )
                 .put( MultiService.NPLAYERSH, nPlayersH )
                 .put( MultiService.ROOM, room )
-                .put( MultiService.INVITEID, inviteID )
+                .put( MultiService.INVITEID, m_inviteID )
                 .put( MultiService.GAMEID, gameID )
                 .put( MultiService.BT_NAME, btName )
                 .put( MultiService.BT_ADDRESS, btAddress )
@@ -298,7 +308,7 @@ public class NetLaunchInfo {
 
         if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
             ub.appendQueryParameter( "room", room );
-            ub.appendQueryParameter( "id", inviteID );
+            ub.appendQueryParameter( "id", m_inviteID );
         }
         if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
             ub.appendQueryParameter( "bta", btAddress );
@@ -329,10 +339,10 @@ public class NetLaunchInfo {
         return ub.build();
     }
     
-    public void addRelayInfo( String aRoom, String anInviteID )
+    public void addRelayInfo( String aRoom, String inviteID )
     {
         room = aRoom;
-        inviteID = anInviteID;
+        m_inviteID = inviteID;
         m_addrs.add( CommsConnType.COMMS_CONN_RELAY );
     }
 
@@ -388,7 +398,7 @@ public class NetLaunchInfo {
               valid && iter.hasNext(); ) {
             switch ( iter.next() ) {
             case COMMS_CONN_RELAY:
-                valid = null != room && null != inviteID;
+                valid = null != room && null != m_inviteID;
                 break;
             case COMMS_CONN_BT:
                 valid = null != btAddress && 0 != gameID;
