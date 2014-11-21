@@ -2,26 +2,26 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:orientation="vertical"
-              android:layout_width="fill_parent" 
+              android:layout_width="fill_parent"
               android:layout_height="fill_parent"
               >
 
-    <ListView android:id="@id/android:list"
-              android:layout_width="fill_parent" 
-              android:layout_height="fill_parent"
-              android:layout_weight="1"
-              android:drawSelectorOnTop="false"
-              />
+  <ListView android:id="@id/android:list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1"
+            android:drawSelectorOnTop="false"
+            />
 
+  <!-- These are hidden once the list is large enough that scrolling
+       is required -->
   <Button android:id="@+id/button_newgame_solo"
-          android:layout_width="fill_parent" 
-          android:layout_height="wrap_content"
-          android:text="@string/new_game" 
+          android:text="@string/new_game"
+		  style="@style/new_game_buttons"
           />
   <Button android:id="@+id/button_newgame_multi"
-          android:layout_width="fill_parent" 
-          android:layout_height="wrap_content"
-          android:text="@string/new_game_networked" 
+          android:text="@string/new_game_networked"
+          style="@style/new_game_buttons"
           />
 
 </LinearLayout>
