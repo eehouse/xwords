@@ -267,7 +267,7 @@
   <string name="lang_label">GAME LANGUAGE</string>
   <string name="langdict_label">GAME LANGUAGE/WORDLIST</string>
   <!-- text of separator marking out the connection area of the dialog -->
-  <string name="connect_label_relay">CONNECTION (VIA INTERNET)</string>
+  <string name="connect_label_fmt">CONNECTION (VIA %1$s)</string>
   <!-- text of checkbox asking if user wants to search for open
     public rooms -->
   <string name="join_room">JOIN PUBLIC ROOM</string>

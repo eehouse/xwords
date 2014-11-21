@@ -267,7 +267,7 @@
   <string name="lang_label">Emag egaugnal</string>
   <string name="langdict_label">Emag tsildrow/egaugnal</string>
   <!-- text of separator marking out the connection area of the dialog -->
-  <string name="connect_label_relay">Noitcennoc aiv( )tenretni</string>
+  <string name="connect_label_fmt">Noitcennoc aiv( %1$s)</string>
   <!-- text of checkbox asking if user wants to search for open
     public rooms -->
   <string name="join_room">Nioj cilbup moor</string>

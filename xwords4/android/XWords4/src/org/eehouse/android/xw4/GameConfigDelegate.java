@@ -98,6 +98,7 @@ public class GameConfigDelegate extends DelegateBase
     private Spinner m_boardsizeSpinner;
     private Spinner m_langSpinner;
     private Spinner m_smartnessSpinner;
+    private TextView m_connLabel;
     private String m_browseText;
     private LinearLayout m_playerLayout;
     private CommsAddrRec m_carOrig;
@@ -431,6 +432,8 @@ public class GameConfigDelegate extends DelegateBase
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
         m_boardsizeSpinner = (Spinner)findViewById( R.id.boardsize_spinner );
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
+
+        m_connLabel = (TextView)findViewById( R.id.conns_label );
     } // init
 
     @Override
@@ -531,6 +534,9 @@ public class GameConfigDelegate extends DelegateBase
                     m_dictSpinner.setVisibility( View.GONE );
                     m_dictSpinner = null;
                 }
+                
+                String connString = m_conTypes.toString( m_activity );
+                m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
 
                 if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                     m_joinPublicCheck = 

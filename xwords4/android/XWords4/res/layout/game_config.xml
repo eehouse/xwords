@@ -100,8 +100,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     >
-        <TextView style="@style/config_separator"
-                  android:text="@string/connect_label_relay"
+        <!-- text added via code -->
+        <TextView android:id="@+id/conns_label"
+                  style="@style/config_separator" 
                   />
 
         <!-- We'll use either the spinner or simple edit text
