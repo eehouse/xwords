@@ -151,10 +151,14 @@ public class BoardDelegate extends DelegateBase
                 BoardDelegate self = s_this.iterator().next();
                 Assert.assertNotNull( self.m_gi );
                 Assert.assertNotNull( self.m_gameLock );
-                Assert.assertNotNull( self.m_jniThread );
                 if ( gameID == self.m_gi.gameID ) {
-                    self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, retAddr );
-                    delivered = true;
+                    if ( null != self.m_jniThread ) {
+                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, retAddr );
+                        delivered = true;
+                    } else {
+                        DbgUtils.logf( "BoardDelegate.feedMessage(): race condition lost; "
+                                       + "dropping message" );
+                    }
                 }
             }
         }
