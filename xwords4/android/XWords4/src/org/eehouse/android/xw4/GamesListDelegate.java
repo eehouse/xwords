@@ -33,6 +33,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -858,22 +859,45 @@ public class GamesListDelegate extends ListDelegateBase
         }
 
         mkListAdapter();
-        getListView().setOnItemLongClickListener( this );
+        ListView listView = getListView();
+        listView.setOnItemLongClickListener( this );
 
-        Button button = (Button)findViewById( R.id.button_newgame_solo );
-        button.setOnClickListener( new View.OnClickListener() {
+        final Button soloButton =
+            (Button)findViewById( R.id.button_newgame_solo );
+        soloButton.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View view ) { 
                     m_nextIsSolo = true;
                     showDialog( DlgID.GAMES_LIST_NEWGAME );
                 }
             } );
-        button = (Button)findViewById( R.id.button_newgame_multi );
-        button.setOnClickListener( new View.OnClickListener() {
+        final Button netButton = (Button)findViewById( R.id.button_newgame_multi );
+        netButton.setOnClickListener( new View.OnClickListener() {
                 public void onClick( View view ) { 
                     m_nextIsSolo = false;
                     showDialog( DlgID.GAMES_LIST_NEWGAME );
                 }
             } );
+
+        // This doesn't work: test isn't sensitive enough, and doesn't notice
+        // scrolling's possible until the user actually does it, then winds up
+        // flashing the screen.
+        // 
+        // listView.setOnScrollListener( new AbsListView.OnScrollListener() {
+        //         @Override
+        //         public void onScroll( AbsListView lw, int firstVisItem,
+        //                               int nVisItems, int nTotalItems ) {
+        //             DbgUtils.logf( "onScroll(nVis=%d, nTotal=%d)", nVisItems, 
+        //                            nTotalItems );
+        //             if ( 0 < nVisItems && nVisItems < nTotalItems ) {
+        //                 DbgUtils.logf( "scroll list too big; hiding buttons" );
+        //                 soloButton.setVisibility( View.GONE );
+        //                 netButton.setVisibility( View.GONE );
+        //                 getListView().setOnScrollListener( null );
+        //             }
+        //         }
+        //         @Override
+        //         public void onScrollStateChanged (AbsListView view, int scrollState) {}
+        //     });
 
         NetUtils.informOfDeaths( m_activity );
 
@@ -1979,7 +2003,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void mkListAdapter()
     {
-        DbgUtils.logf( "GamesListDelegate.mkListAdapter()" );
+        // DbgUtils.logf( "GamesListDelegate.mkListAdapter()" );
         m_adapter = new GameListAdapter();
         setListAdapterKeepScroll( m_adapter );
 
