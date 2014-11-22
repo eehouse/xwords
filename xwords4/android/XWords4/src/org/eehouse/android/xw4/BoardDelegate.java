@@ -2004,7 +2004,6 @@ public class BoardDelegate extends DelegateBase
         }
     } // loadGame
 
-    @SuppressWarnings("fallthrough")
     private void tickle()
     {
         for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
@@ -2013,20 +2012,19 @@ public class BoardDelegate extends DelegateBase
             switch( typ ) {
             case COMMS_CONN_BT:
                 pingBTRemotes();
-                // fallthrough
+                break;
             case COMMS_CONN_RELAY:
-                // break;     // Try skipping the resend -- later
-                // fallthrough
             case COMMS_CONN_SMS:
-                // Let other know I'm here
-                // DbgUtils.logf( "tickle calling comms_resendAll" );
-                m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
                 break;
             default:
                 DbgUtils.logf( "tickle: unexpected type %s", 
                                typ.toString() );
                 Assert.fail();
             }
+        }
+
+        if ( 0 < m_connTypes.size() ) {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
         }
     }
 
@@ -2035,7 +2033,10 @@ public class BoardDelegate extends DelegateBase
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_BT ) ) {
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
-                BTService.pingHost( m_activity, addr.bt_btAddr, m_gi.gameID );
+                if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                    BTService.pingHost( m_activity, addr.bt_btAddr,
+                                        m_gi.gameID );
+                }
             }
         }
     }
