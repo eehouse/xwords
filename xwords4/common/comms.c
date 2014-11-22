@@ -1343,11 +1343,15 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
                     addr = *addrP;
                 }
 
-                XP_U32 gameid = gameID( comms );
                 XP_ASSERT( !!comms->procs.send );
-                XP_ASSERT( addr_hasType( &addr, typ ) );
-                nSent = (*comms->procs.send)( elem->msg, elem->len, &addr, typ, 
-                                              gameid, comms->procs.closure );
+                if ( addr_hasType( &addr, typ ) ) {
+                    XP_U32 gameid = gameID( comms );
+                    nSent = (*comms->procs.send)( elem->msg, elem->len, &addr, typ, 
+                                                  gameid, comms->procs.closure );
+                } else {
+                    XP_LOGF( "%s: not sending b/c type %s missing from addr", 
+                             __func__, ConnType2Str(typ) );
+                }
                 break;
             }
             } /* switch */
