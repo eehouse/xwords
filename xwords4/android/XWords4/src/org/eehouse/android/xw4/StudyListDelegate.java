@@ -19,8 +19,8 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -36,54 +36,55 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.loc.LocUtils;
 
-public class StudyListDelegate extends DelegateBase 
+public class StudyListDelegate extends ListDelegateBase
     implements OnItemSelectedListener, SelectableItem,
                View.OnLongClickListener, View.OnClickListener {
 
-    public static final int NO_LANG = -1;
+    protected static final int NO_LANG = -1;
 
     protected static final String START_LANG = "START_LANG";
     
-    private ListActivity m_activity;
+    private Activity m_activity;
     private Spinner m_spinner;
     private View m_pickView;    // LinearLayout, actually
     private int[] m_langCodes;
     private String[] m_words;
-    private HashSet<Integer> m_checkeds;
+    private Set<Integer> m_checkeds;
     private int m_langPosition;
     private SLWordsAdapter m_adapter;
     private ListView m_list;
-    private CharSequence m_origTitle;
+    private String m_origTitle;
 
-    protected StudyListDelegate( ListActivity activity, Bundle savedInstanceState )
+    protected StudyListDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
-        init( savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.studylist, R.menu.studylist );
+        m_activity = delegator.getActivity();
     }
 
-    private void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState ) 
     {
+        m_list = (ListView)findViewById( android.R.id.list );
 
-        m_activity.setContentView( R.layout.studylist );
-        m_list = (ListView)m_activity.findViewById( android.R.id.list );
+        m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
+        m_pickView = findViewById( R.id.pick_lang );
+        m_checkeds = new HashSet<Integer>();
+        m_words = new String[0];
 
-        m_spinner = (Spinner)m_activity.findViewById( R.id.pick_lang_spinner );
-        m_pickView = m_activity.findViewById( R.id.pick_lang );
-
-        initOrFinish( m_activity.getIntent() );
+        initOrFinish( getIntent() );
     }
 
-    protected boolean backPressed() 
+    @Override
+    protected boolean onBackPressed() 
     {
         boolean handled = 0 < m_checkeds.size();
         if ( handled ) {
@@ -92,7 +93,8 @@ public class StudyListDelegate extends DelegateBase
         return handled;
     }
 
-    protected boolean onPrepareOptionsMenu( Menu menu ) 
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
     {
         int nSel = m_checkeds.size();
         Utils.setItemVisible( menu, R.id.slmenu_copy_sel, 0 < nSel );
@@ -102,15 +104,16 @@ public class StudyListDelegate extends DelegateBase
         Utils.setItemVisible( menu, R.id.slmenu_deselect_all, 0 < nSel );
         boolean enable = 1 == nSel;
         if ( enable ) {
-            String title = 
-                m_activity.getString( R.string.button_lookupf, getSelWords()[0] );
+            String title = getString( R.string.button_lookup_fmt, 
+                                      getSelWords()[0] );
             menu.findItem( R.id.slmenu_lookup_sel ).setTitle( title );
         }
         Utils.setItemVisible( menu, R.id.slmenu_lookup_sel, enable );
         return true;
     }
 
-    protected boolean onOptionsItemSelected( MenuItem item )
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item )
     {
         boolean handled = true;
         switch ( item.getItemId() ) {
@@ -120,8 +123,8 @@ public class StudyListDelegate extends DelegateBase
                                  Action.SL_COPY_ACTION );
             break;
         case R.id.slmenu_clear_sel:
-            String msg = m_activity.getString( R.string.confirm_studylist_clearf, 
-                                               m_checkeds.size() );
+            String msg = getString( R.string.confirm_studylist_clear_fmt, 
+                                    m_checkeds.size() );
             showConfirmThen( msg, Action.SL_CLEAR_ACTION );
             break;
 
@@ -165,12 +168,12 @@ public class StudyListDelegate extends DelegateBase
             case SL_COPY_ACTION:
                 selWords = getSelWords();
                 ClipboardManager clipboard = (ClipboardManager)
-                    m_activity.getSystemService( Context.CLIPBOARD_SERVICE );
+                    getSystemService( Context.CLIPBOARD_SERVICE );
                 clipboard.setText( TextUtils.join( "\n", selWords ) );
 
-                String msg  = m_activity.getString( R.string.paste_donef, 
-                                                    selWords.length );
-                Utils.showToast( m_activity, msg );
+                String msg = getString( R.string.paste_done_fmt, 
+                                        selWords.length );
+                showToast( msg );
                 break;
             default:
                 Assert.fail();
@@ -245,26 +248,27 @@ public class StudyListDelegate extends DelegateBase
     {
         int lang = m_langCodes[m_langPosition];
         m_words = DBUtils.studyListWords( m_activity, lang );
-        m_checkeds = new HashSet<Integer>();
+
+        m_checkeds.clear();
 
         makeAdapter();
 
         String langName = DictLangCache.getLangNames( m_activity )[lang];
-        m_origTitle = m_activity.getString( R.string.studylist_titlef, langName );
+        m_origTitle = getString( R.string.studylist_title_fmt, langName );
         setTitleBar();
     }
 
     private void makeAdapter()
     {
         m_adapter = new SLWordsAdapter();
-        m_activity.setListAdapter( m_adapter );
+        setListAdapter( m_adapter );
     }
 
     private void initOrFinish( Intent startIntent )
     {
         m_langCodes = DBUtils.studyListLangs( m_activity );
         if ( 0 == m_langCodes.length ) {
-            m_activity.finish();
+            finish();
         } else if ( 1 == m_langCodes.length ) {
             m_pickView.setVisibility( View.GONE );
             m_langPosition = 0;
@@ -302,16 +306,16 @@ public class StudyListDelegate extends DelegateBase
 
     private void setTitleBar()
     {
-        CharSequence newTitle;
+        String newTitle;
         int nSels = m_checkeds.size();
         if ( 0 == nSels ) {
             newTitle = m_origTitle;
         } else {
-            newTitle = m_activity.getString( R.string.sel_itemsf, nSels );
+            newTitle = getString( R.string.sel_items_fmt, nSels );
         }
-        m_activity.setTitle( newTitle );
+        setTitle( newTitle );
 
-        ABUtils.invalidateOptionsMenuIf( m_activity );
+        invalidateOptionsMenuIf();
     }
 
     private String[] getSelWords()
@@ -337,22 +341,26 @@ public class StudyListDelegate extends DelegateBase
         setTitleBar();
     }
 
-    public static void launchOrAlert( Context context, int lang, 
+    public static void launchOrAlert( Activity activity, int lang, 
                                       DlgDelegate.HasDlgDelegate dlg )
     {
         String msg = null;
-        if ( 0 == DBUtils.studyListLangs( context ).length ) {
-            msg = context.getString( R.string.study_no_lists );
+        if ( 0 == DBUtils.studyListLangs( activity ).length ) {
+            msg = LocUtils.getString( activity, R.string.study_no_lists );
         } else if ( NO_LANG != lang && 
-                    0 == DBUtils.studyListWords( context, lang ).length ) {
-            String langname = DictLangCache.getLangName( context, lang );
-            msg = context.getString( R.string.study_no_langf, langname );
+                    0 == DBUtils.studyListWords( activity, lang ).length ) {
+            String langname = DictLangCache.getLangName( activity, lang );
+            msg = LocUtils.getString( activity, R.string.study_no_lang_fmt, 
+                                      langname );
         } else {
-            Intent intent = new Intent( context, StudyListActivity.class );
+            Bundle bundle = new Bundle();
             if ( NO_LANG != lang ) {
-                intent.putExtra( START_LANG, lang );
+                bundle.putInt( START_LANG, lang );
             }
-            context.startActivity( intent );
+
+            Intent intent = new Intent( activity, StudyListActivity.class );
+            intent.putExtras( bundle );
+            activity.startActivity( intent );
         }
 
         if ( null != msg ) {

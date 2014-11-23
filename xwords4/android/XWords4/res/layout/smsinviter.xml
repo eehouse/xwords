@@ -41,7 +41,7 @@
                 >
       <Button android:id="@+id/button_add"
               android:text="@string/button_sms_add"
-              style="@style/spaced_buttons"
+              style="@style/evenly_spaced_horizontal"
               />
       <ImageButton android:id="@+id/manual_add_button"
                    android:layout_height="fill_parent"
@@ -51,7 +51,7 @@
                    />
       <Button android:id="@+id/button_clear"
               android:text="@string/bt_pick_clear_button"
-              style="@style/spaced_buttons"
+              style="@style/evenly_spaced_horizontal"
               />
   </LinearLayout>
 

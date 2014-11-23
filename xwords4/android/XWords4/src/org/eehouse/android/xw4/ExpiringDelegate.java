@@ -167,7 +167,6 @@ public class ExpiringDelegate {
     private void setBackground()
     {
         Assert.assertTrue( m_active );
-        Drawable back;
         if ( -1 != m_pct && m_backPct != m_pct ) {
             m_back = mkBackground( m_pct );
             m_backPct = m_pct;

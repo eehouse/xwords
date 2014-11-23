@@ -79,12 +79,16 @@ typedef struct _BoardDims {
     /* The whole board */
     XP_U16 left, top;
     XP_U16 width, height;
-    /* scoreboard (full width) */
-    XP_U16 scoreWidth, scoreHt;
+
     /* board */
     XP_U16 boardWidth, boardHt;
-    /* tray (full width) */
-    XP_U16 trayTop, trayHt;
+
+    /* scoreboard */
+    XP_U16 scoreLeft, scoreWidth, scoreHt;
+
+    /* tray */
+    XP_U16 trayLeft, trayTop, trayWidth, trayHt;
+
     /* other */
     XP_U16 cellSize, maxCellSize;
     XP_U16 timerWidth;
@@ -111,8 +115,7 @@ void board_setTimerLoc( BoardCtxt* board,
                         XP_U16 timerLeft, XP_U16 timerTop,
                         XP_U16 timerWidth, XP_U16 timerHeight );
 void board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
-                       XP_U16 trayWidth, XP_U16 trayHeight,
-                       XP_U16 minDividerWidth );
+                       XP_U16 trayWidth, XP_U16 trayHeight );
 
 
 /* Vertical scroll support; offset is in rows, not pixels */

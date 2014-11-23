@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,49 +20,20 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ExpandableListActivity;
 import android.content.Context;
-import android.content.DialogInterface.OnClickListener;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.database.DataSetObserver;
-import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ExpandableListAdapter;
-import android.widget.ExpandableListView;
 import android.widget.PopupMenu;
-import android.widget.TextView;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
-import org.eehouse.android.xw4.jni.XwJNI;
-import org.eehouse.android.xw4.jni.JNIUtilsImpl;
-import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.loc.LocUtils;
 
-public class DictsActivity extends ExpandableListActivity {
+public class DictsActivity extends XWListActivity {
 
     private static interface SafePopup {
         public void doPopup( Context context, View button, String curDict );
@@ -75,107 +46,17 @@ public class DictsActivity extends ExpandableListActivity {
     private DictsDelegate m_dlgt;
 
     @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            dialog = m_dlgt.createDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
-
-    @Override
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( id, dialog );
-    }
-
-    @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
         m_dlgt = new DictsDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
-
-    @Override
-    protected void onResume()
-    {
-        super.onResume();
-        m_dlgt.onResume();
-    }
-
-    @Override
-    protected void onStop() {
-        m_dlgt.onStop();
-        super.onStop();
-    }
 
     @Override
     public void onBackPressed() {
         if ( !m_dlgt.onBackPressed() ) {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu )
-    {
-        return m_dlgt.onCreateOptionsMenu( menu );
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onPrepareOptionsMenu( menu ) 
-            || super.onPrepareOptionsMenu( menu );
-    }
-
-    public boolean onOptionsItemSelected( MenuItem item )
-    {
-        return m_dlgt.onOptionsItemSelected( item )
-            || super.onOptionsItemSelected( item );
-    }
-
-    private static Intent mkDownloadIntent( Context context, String dict_url )
-    {
-        Uri uri = Uri.parse( dict_url );
-        Intent intent = new Intent( Intent.ACTION_VIEW, uri );
-        intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-        return intent;
-    }
-
-    private static Intent mkDownloadIntent( Context context,
-                                            int lang, String dict )
-    {
-        String dict_url = Utils.makeDictUrl( context, lang, dict );
-        return mkDownloadIntent( context, dict_url );
-    }
-
-    public static void launchAndDownload( Activity activity, int lang, 
-                                          String name )
-    {
-        Intent intent = new Intent( activity, DictsActivity.class );
-        intent.putExtra( DictsDelegate.DICT_DOLAUNCH, true );
-        if ( lang > 0 ) {
-            intent.putExtra( DictsDelegate.DICT_LANG_EXTRA, lang );
-        }
-        if ( null != name ) {
-            Assert.assertTrue( lang != 0 );
-            intent.putExtra( DictsDelegate.DICT_NAME_EXTRA, name );
-        }
-
-        activity.startActivity( intent );
-    }
-
-    public static void launchAndDownload( Activity activity, int lang )
-    {
-        launchAndDownload( activity, lang, null );
-    }
-
-    public static void launchAndDownload( Activity activity )
-    {
-        launchAndDownload( activity, 0, null );
     }
 
     private static class SafePopupImpl implements SafePopup {
@@ -192,7 +73,7 @@ public class DictsActivity extends ExpandableListActivity {
                         if ( null == dal ) {
                             DictsActivity.start( context );
                         } else {
-                            DictBrowseActivity.launch( context, dal.name, 
+                            DictBrowseDelegate.launch( context, dal.name, 
                                                        dal.loc );
                         }
                         return true;
@@ -206,9 +87,10 @@ public class DictsActivity extends ExpandableListActivity {
                 .setOnMenuItemClickListener( listener );
 
             // Add at top but save until have dal info
-            MenuItem curItem = 
-                menu.add( context.getString( R.string.cur_menu_markerf, 
-                                             curDict ) );
+            MenuItem curItem =
+                menu.add( LocUtils.getString( context, 
+                                              R.string.cur_menu_marker_fmt, 
+                                              curDict ) );
 
             DictAndLoc[] dals = DictUtils.dictList( context );
             for ( DictAndLoc dal : dals ) {

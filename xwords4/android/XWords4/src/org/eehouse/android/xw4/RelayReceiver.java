@@ -33,25 +33,15 @@ public class RelayReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        if ( null != intent && null != intent.getAction() 
-             && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
-            DbgUtils.logf("RelayReceiver.onReceive: launching timer on boot");
-            RestartTimer( context );
-        } else {
-            // DbgUtils.logf( "RelayReceiver::onReceive()" );
-            // Toast.makeText( context, "RelayReceiver: timer fired", 
-            //                 Toast.LENGTH_SHORT).show();
-            RelayService.timerFired( context );
-        }
+        RelayService.timerFired( context );
     }
 
-    public static void RestartTimer( Context context )
+    public static void restartTimer( Context context )
     {
-        RestartTimer( context, 
-                      1000 * XWPrefs.getProxyInterval( context ) );
+        restartTimer( context, 1000 * XWPrefs.getProxyInterval( context ) );
     }
 
-    public static void RestartTimer( Context context, long interval_millis )
+    public static void restartTimer( Context context, long interval_millis )
     {
         AlarmManager am =
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );

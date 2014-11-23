@@ -10,6 +10,7 @@
             android:layout_width="fill_parent" 
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
+			android:padding="8dp"
             />
 
   <ListView android:id="@id/android:list"
@@ -25,8 +26,8 @@
                 android:layout_height="wrap_content"
                 >
       <Button android:id="@+id/button_rescan"
-              android:text="@string/bt_pick_rescan_button"
-              style="@style/spaced_buttons"
+              android:text="@string/bt_pick_addall_button"
+              style="@style/evenly_spaced_horizontal"
               />
       <!-- <Button android:id="@+id/button_reconfigure" -->
       <!--         android:text="@string/bt_pick_reconfig_button" -->
@@ -36,7 +37,7 @@
       <!--         /> -->
       <Button android:id="@+id/button_clear"
               android:text="@string/bt_pick_clear_button"
-              style="@style/spaced_buttons"
+              style="@style/evenly_spaced_horizontal"
               />
   </LinearLayout>
 

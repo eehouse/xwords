@@ -20,204 +20,83 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.AlertDialog;
+import android.app.Activity;
 import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
-import android.view.View;
-import android.widget.Button;
-import java.io.File;
 
-public class PrefsActivity extends PreferenceActivity 
-    implements SharedPreferences.OnSharedPreferenceChangeListener {
+import org.eehouse.android.xw4.loc.LocUtils;
 
-    private String m_keyLogging;
-    private String m_smsToasting;
-    private String m_smsEnable;
-    private String m_downloadPath;
-    private String m_thumbSize;
-    private String m_hideTitle;
+public class PrefsActivity extends PreferenceActivity implements Delegator {
 
+    private PrefsDelegate m_dlgt;
 
     @Override
     protected Dialog onCreateDialog( int id )
     {
-        Dialog dialog = null;
-        DialogInterface.OnClickListener lstnr = null;
-        int confirmID = 0;
-
-        DlgID dlgID = DlgID.values()[id];
-        switch( dlgID ) {
-        case REVERT_COLORS:
-            confirmID = R.string.confirm_revert_colors;
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        SharedPreferences sp =
-                            getPreferenceScreen().getSharedPreferences();
-                        SharedPreferences.Editor editor = sp.edit();
-                        int[] colorKeys = {
-                            R.string.key_player0,
-                            R.string.key_player1,
-                            R.string.key_player2,
-                            R.string.key_player3,
-                            R.string.key_bonus_l2x,
-                            R.string.key_bonus_l3x,
-                            R.string.key_bonus_w2x,
-                            R.string.key_bonus_w3x,
-                            R.string.key_tile_back,
-                            R.string.key_clr_crosshairs,
-                            R.string.key_empty,
-                            R.string.key_background,
-                            R.string.key_clr_bonushint,
-                        };
-                        for ( int colorKey : colorKeys ) {
-                            editor.remove( getString(colorKey) );
-                        }
-                        editor.commit();
-                        relaunch();
-                    }
-                };
-            break;
-        case REVERT_ALL:
-            confirmID = R.string.confirm_revert_all;
-            lstnr = new DialogInterface.OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        SharedPreferences sp =
-                            getPreferenceScreen().getSharedPreferences();
-                        SharedPreferences.Editor editor = sp.edit();
-                        editor.clear();
-                        editor.commit();
-                        relaunch();
-                    }
-                };
-            break;
-        case CONFIRM_SMS:
-            dialog = SMSCheckBoxPreference.onCreateDialog( this, id );
-            break;
-        case EXPLAIN_TITLE:
-            dialog = new AlertDialog.Builder( this )
-                .setMessage( R.string.no_hide_titlebar )
-                .setTitle( R.string.info_title )
-                .setPositiveButton( R.string.button_ok, null )
-                .create();
-            break;
-        }
-
-        if ( null == dialog && null != lstnr ) {
-            dialog = new AlertDialog.Builder( this )
-                .setTitle( R.string.query_title )
-                .setMessage( confirmID )
-                .setPositiveButton( R.string.button_ok, lstnr )
-                .setNegativeButton( R.string.button_cancel, null )
-                .create();
-        }
-        return dialog;
+        return m_dlgt.onCreateDialog( id );
     }
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate(savedInstanceState);
+        super.onCreate( savedInstanceState );
+        m_dlgt = new PrefsDelegate( this, this, savedInstanceState );
 
-        // Load the preferences from an XML resource
-        addPreferencesFromResource( R.xml.xwprefs );
-        setContentView( R.layout.prefs_w_buttons );
+        int layoutID = m_dlgt.getLayoutID();
+        if ( 0 < layoutID ) {
+            m_dlgt.setContentView( layoutID );
+        }
 
-        m_keyLogging = getString( R.string.key_logging_on );
-        m_smsToasting = getString( R.string.key_show_sms );
-        m_smsEnable = getString( R.string.key_enable_sms );
-        m_downloadPath = getString( R.string.key_download_path );
-        m_thumbSize = getString( R.string.key_thumbsize );
-        m_hideTitle = getString( R.string.key_hide_title );
-
-        Button button = (Button)findViewById( R.id.revert_colors );
-        button.setOnClickListener( new View.OnClickListener() {
-                public void onClick( View v ) {
-                    showDialog( DlgID.REVERT_COLORS.ordinal() );
-                }
-            } );
-        button = (Button)findViewById( R.id.revert_all );
-        button.setOnClickListener(new View.OnClickListener() {
-                public void onClick( View v ) {
-                    showDialog( DlgID.REVERT_ALL.ordinal() );
-                }
-            } );
+        m_dlgt.init( savedInstanceState );
     }
     
+    @Override
+    protected void onStart() 
+    {
+        LocUtils.xlatePreferences( this );
+        super.onStart();
+    }
+
     @Override
     protected void onResume() 
     {
         super.onResume();
-        getPreferenceScreen().getSharedPreferences().
-            registerOnSharedPreferenceChangeListener(this);   
+        m_dlgt.onResume();
    }
 
     @Override
     protected void onPause() 
     {
         super.onPause();
-        getPreferenceScreen().getSharedPreferences().
-            unregisterOnSharedPreferenceChangeListener(this);
+        m_dlgt.onPause();
     }
 
     @Override
-    public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
+    protected void onStop()
     {
-        if ( key.equals( m_keyLogging ) ) {
-            DbgUtils.logEnable( sp.getBoolean( key, false ) );
-        } else if ( key.equals( m_smsToasting ) ) {
-            SMSService.smsToastEnable( sp.getBoolean( key, false ) );
-        } else if ( key.equals( m_smsEnable ) ) {
-            if ( sp.getBoolean( key, true ) ) {
-                SMSService.checkForInvites( this );
-            } else {
-                SMSService.stopService( this );
-                XWPrefs.setHaveCheckedSMS( this, false );
-            }
-        } else if ( key.equals( m_downloadPath ) ) {
-            String value = sp.getString( key, null );
-            if ( null != value ) {
-                File dir = new File( value );
-                String msg = null;
-                if ( !dir.exists() ) {
-                    msg = String.format( "%s does not exist", value );
-                } else if ( !dir.isDirectory() ) {
-                    msg = String.format( "%s is not a directory", value );
-                } else if ( !dir.canWrite() ) {
-                    msg = String.format( "Cannot write to %s", value );
-                }
-                if ( null != msg ) {
-                    Utils.showToast( this, msg );
-                }
-            }
-            DictUtils.invalDictList();
-        } else if ( key.equals( m_thumbSize ) ) {
-            DBUtils.clearThumbnails( this );
-        } else if ( key.equals( m_hideTitle ) ) {
-            if ( sp.getBoolean( key, false ) && ABUtils.haveActionBar() ) {
-                CheckBoxPreference pref
-                    = (CheckBoxPreference)findPreference(key);
-                pref.setChecked( false );
-                pref.setEnabled( false );
-                showDialog( DlgID.EXPLAIN_TITLE.ordinal() );
-            }
-        } 
+        m_dlgt.onStop();
+        super.onStop();
     }
 
-    private void relaunch()
+    @Override
+    protected void onDestroy()
     {
-        PreferenceManager.setDefaultValues( this, R.xml.xwprefs,
-                                            false );
-
-        // Now replace this activity with a new copy
-        // so the new values get loaded.
-        Utils.launchSettings( this );
-        finish();
+        m_dlgt.onDestroy();
+        super.onDestroy();
     }
 
+    //////////////////////////////////////////////////////////////////////
+    // Delegator interface
+    //////////////////////////////////////////////////////////////////////
+    public Activity getActivity()
+    {
+        return this;
+    }
+
+    public Bundle getArguments()
+    {
+        return getIntent().getExtras();
+    }
 }

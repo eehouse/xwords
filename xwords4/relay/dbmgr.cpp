@@ -43,11 +43,8 @@
 
 static DBMgr* s_instance = NULL;
 
-#define DELIM "\1"
 #define MAX_NUM_PLAYERS 4
 
-static void formatParams( char* paramValues[], int nParams, const char* fmt, 
-                          char* buf, int bufLen, ... );
 static int here_less_seed( const char* seeds, int perDeviceSum, 
                            unsigned short seed );
 static void destr_function( void* conn );
@@ -105,20 +102,21 @@ DBMgr::AddNew( const char* cookie, const char* connName, CookieID cid,
     if ( !cookie ) cookie = "";
     if ( !connName ) connName = "";
  
-    const char* command = "INSERT INTO " GAMES_TABLE
-        " (cid, room, connName, nTotal, lang, pub)"
-        " VALUES( $1, $2, $3, $4, $5, $6 )";
-    int nParams = 6;
-    char* paramValues[nParams];
-    char buf[512];
-    formatParams( paramValues, nParams,
-                  "%d"DELIM"%s"DELIM"%s"DELIM"%d"DELIM"%d"DELIM"%s", 
-                  buf, sizeof(buf), cid, cookie, connName, nPlayersT, 
-                  langCode, isPublic?"TRUE":"FALSE" );
+    QueryBuilder qb;
+    qb.appendQueryf( "INSERT INTO " GAMES_TABLE
+                    " (cid, room, connName, nTotal, lang, pub)"
+                     " VALUES( $$, $$, $$, $$, $$, $$ )" )
+        .appendParam(cid) 
+        .appendParam(cookie)
+        .appendParam(connName)
+        .appendParam(nPlayersT)
+        .appendParam(langCode)
+        .appendParam(isPublic?"TRUE":"FALSE" )
+        .finish();
 
-    PGresult* result = PQexecParams( getThreadConn(), command,
-                                     nParams, NULL,
-                                     paramValues, 
+    PGresult* result = PQexecParams( getThreadConn(), qb.c_str(),
+                                     qb.paramCount(), NULL,
+                                     qb.paramValues(),
                                      NULL, NULL, 0 );
     if ( PGRES_COMMAND_OK != PQresultStatus(result) ) {
         logf( XW_LOGERROR, "PQexec=>%s;%s", PQresStatus(PQresultStatus(result)), 
@@ -271,28 +269,27 @@ DBMgr::SeenSeed( const char* cookie, unsigned short seed,
                  char* connNameBuf, int bufLen, int* nPlayersHP, 
                  CookieID* cid )
 {
-    int nParams = 5;
-    char* paramValues[nParams];
-    char buf[512];
-    formatParams( paramValues, nParams,
-                  "%s"DELIM"%d"DELIM"%d"DELIM"%d"DELIM"%s", buf, sizeof(buf),
-                  cookie, langCode, nPlayersT, seed, 
-                  wantsPublic?"TRUE":"FALSE" );
+    QueryBuilder qb;
+    qb.appendQueryf( "SELECT cid, connName, seeds, sum_array(nPerDevice) FROM "
+                     GAMES_TABLE
+                     " WHERE NOT dead"
+                     " AND room ILIKE $$"
+                     " AND lang = $$"
+                     " AND nTotal = $$"
+                     " AND $$ = ANY(seeds)"
+                     " AND $$ = pub"
+                     " ORDER BY ctime DESC"
+                     " LIMIT 1")
+        .appendParam(cookie)
+        .appendParam(langCode)
+        .appendParam(nPlayersT)
+        .appendParam(seed)
+        .appendParam(wantsPublic?"TRUE":"FALSE" )
+        .finish();
 
-    const char* cmd = "SELECT cid, connName, seeds, sum_array(nPerDevice) FROM "
-        GAMES_TABLE
-        " WHERE NOT dead"
-        " AND room ILIKE $1"
-        " AND lang = $2"
-        " AND nTotal = $3"
-        " AND $4 = ANY(seeds)"
-        " AND $5 = pub"
-        " ORDER BY ctime DESC"
-        " LIMIT 1";
-
-    PGresult* result = PQexecParams( getThreadConn(), cmd,
-                                     nParams, NULL,
-                                     paramValues, 
+    PGresult* result = PQexecParams( getThreadConn(), qb.c_str(),
+                                     qb.paramCount(), NULL,
+                                     qb.paramValues(),
                                      NULL, NULL, 0 );
     bool found = 1 == PQntuples( result );
     if ( found ) {
@@ -312,31 +309,28 @@ DBMgr::FindOpen( const char* cookie, int lang, int nPlayersT, int nPlayersH,
                  bool wantsPublic, char* connNameBuf, int bufLen,
                  int* nPlayersHP )
 {
-    CookieID cid = 0;
+    QueryBuilder qb;
+    qb.appendQueryf("SELECT cid, connName, sum_array(nPerDevice) FROM "
+                    GAMES_TABLE
+                    " WHERE NOT dead"
+                    " AND room ILIKE $$"
+                    " AND lang = $$"
+                    " AND nTotal = $$"
+                    " AND $$ <= nTotal-sum_array(nPerDevice)"
+                    " AND $$ = pub"
+                    " LIMIT 1")
+        .appendParam(cookie)
+        .appendParam(lang)
+        .appendParam(nPlayersT)
+        .appendParam(nPlayersH)
+        .appendParam(wantsPublic?"TRUE":"FALSE" )
+        .finish();
 
-    int nParams = 5;
-    char* paramValues[nParams];
-    char buf[512];
-    formatParams( paramValues, nParams,
-                  "%s"DELIM"%d"DELIM"%d"DELIM"%d"DELIM"%s", buf, sizeof(buf),
-                  cookie, lang, nPlayersT, nPlayersH, wantsPublic?"TRUE":"FALSE" );
-
-    /* NOTE: ILIKE, for case-insensitive comparison, is a postgres extension
-       to SQL. */
-    const char* cmd = "SELECT cid, connName, sum_array(nPerDevice) FROM "
-        GAMES_TABLE
-        " WHERE NOT dead"
-        " AND room ILIKE $1"
-        " AND lang = $2"
-        " AND nTotal = $3"
-        " AND $4 <= nTotal-sum_array(nPerDevice)"
-        " AND $5 = pub"
-        " LIMIT 1";
-
-    PGresult* result = PQexecParams( getThreadConn(), cmd,
-                                     nParams, NULL,
-                                     paramValues, 
+    PGresult* result = PQexecParams( getThreadConn(), qb.c_str(),
+                                     qb.paramCount(), NULL,
+                                     qb.paramValues(), 
                                      NULL, NULL, 0 );
+    CookieID cid = 0;
     if ( 1 == PQntuples( result ) ) {
         cid = atoi( PQgetvalue( result, 0, 0 ) );
         snprintf( connNameBuf, bufLen, "%s", PQgetvalue( result, 0, 1 ) );
@@ -363,18 +357,6 @@ DBMgr::AllDevsAckd( const char* const connName )
     bool full = nTuples == 1 && 't' == PQgetvalue( result, 0, 0 )[0];
     PQclear( result );
     return full;
-}
-
-static void
-getPtrs( vector<const char*>& paramValues, const char* base, vector<size_t>& offsets )
-{
-    size_t ii;
-    for ( ii = 0; ii < offsets.size(); ++ii ) {
-        const char* ptr = offsets[ii] + base;
-        paramValues.push_back( ptr );
-        logf( XW_LOGINFO, "%s: str[%d] points at: %s", __func__, ii, 
-              paramValues[ii] );
-    }
 }
 
 // Return DevIDRelay for device, adding it to devices table IFF it's not
@@ -408,32 +390,21 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
                 devID = (DevIDRelay)random();
             } while ( DEVID_NONE == devID );
 
-            StrWPF query;
-            StrWPF paramBuf;
-            vector<size_t> paramIndices;
-            query.catf( "INSERT INTO " DEVICES_TABLE " (id, devTypes[1],"
-                        " devids[1], clntVers, versdesc, model, osvers)"
-                        " VALUES( $1, $2, $3, $4, $5, $6, $7 )" );
+            QueryBuilder qb;
+            qb.appendQueryf( "INSERT INTO " DEVICES_TABLE " (id, devTypes[1],"
+                             " devids[1], clntVers, versdesc, model, osvers)"
+                             " VALUES($$, $$, $$, $$, $$, $$, $$)" );
 
-            paramIndices.push_back( paramBuf.size() );
-            paramBuf.catf( "%d%c", devID, '\0' );
-            paramIndices.push_back( paramBuf.size() );
-            paramBuf.catf( "%d%c", host->m_devIDType, '\0' );
-            paramIndices.push_back( paramBuf.size() );
-            paramBuf.catf( "%s%c", devidStr, '\0' );
-            paramIndices.push_back( paramBuf.size() );
-            paramBuf.catf( "%d%c", clientVersion, '\0' );
-            paramIndices.push_back( paramBuf.size() );
-            paramBuf.catf( "%s%c", desc, '\0' );
-            paramIndices.push_back( paramBuf.size() );
-            paramBuf.catf( "%s%c", model, '\0' );
-            paramIndices.push_back( paramBuf.size() );
-            paramBuf.catf( "%s%c", osVers, '\0' );
+            qb.appendParam( devID )
+                .appendParam( host->m_devIDType )
+                .appendParam( devidStr )
+                .appendParam( clientVersion )
+                .appendParam( desc )
+                .appendParam( model )
+                .appendParam( osVers )
+                .finish();
 
-            vector<const char*> paramValues;
-            getPtrs( paramValues, paramBuf.c_str(), paramIndices );
-
-            success = execParams( query, paramValues );
+            success = execParams( qb );
         }
     }
     return devID;
@@ -450,24 +421,17 @@ DBMgr::ReregisterDevice( DevIDRelay relayID, const DevID* host,
                          const char* const desc, int clientVersion, 
                          const char* const model, const char* const osVers )
 {
-    StrWPF query;
-    StrWPF paramBuf;
-    vector<size_t> paramIndices;
+    QueryBuilder qb;
+    qb.appendQueryf( "UPDATE " DEVICES_TABLE " SET "
+                     "devTypes = array_prepend($$, devTypes), "
+                     "devids = array_prepend($$, devids), " )
 
-    query.catf( "UPDATE " DEVICES_TABLE " SET "
-                "devTypes = array_prepend( $1, devTypes), "
-                "devids = array_prepend($2, devids), " );
-    paramIndices.push_back( paramBuf.size() );
-    paramBuf.catf( "%d%c", host->m_devIDType, '\0' );
-    paramIndices.push_back( paramBuf.size() );
-    paramBuf.catf( "%s%c", host->m_devIDString.c_str(), '\0' );
+        .appendParam( host->m_devIDType )
+        .appendParam( host->m_devIDString.c_str() );
 
-    formatUpdate( query, paramBuf, paramIndices, true, desc, clientVersion, 
-                  model, osVers, relayID );
-
-    vector<const char*> paramValues;
-    getPtrs( paramValues, paramBuf.c_str(), paramIndices );
-    execParams( query, paramValues );
+    formatUpdate( qb, true, desc, clientVersion, model, osVers, relayID );
+    qb.finish();
+    execParams( qb );
 }
 
 // Return true if the relayID exists in the DB already
@@ -484,17 +448,11 @@ DBMgr::UpdateDevice( DevIDRelay relayID, const char* const desc,
     }
 
     if ( exists ) {
-        StrWPF query;
-        query.catf( "UPDATE " DEVICES_TABLE " SET " );
-
-        StrWPF paramBuf;
-        vector<size_t> paramIndices;
-
-        formatUpdate( query, paramBuf, paramIndices, false, desc, 
-                      clientVersion, model, osVers, relayID );
-        vector<const char*> paramValues;
-        getPtrs( paramValues, paramBuf.c_str(), paramIndices );
-        execParams( query, paramValues );
+        QueryBuilder qb;
+        qb.appendQueryf( "UPDATE " DEVICES_TABLE " SET " );
+        formatUpdate( qb, false, desc, clientVersion, model, osVers, relayID );
+        qb.finish();
+        execParams( qb );
     }
     return exists;
 }
@@ -506,40 +464,33 @@ DBMgr::UpdateDevice( DevIDRelay relayID )
 }
 
 void
-DBMgr::formatUpdate( StrWPF& query, StrWPF& paramBuf, vector<size_t>& paramIndices,
+DBMgr::formatUpdate( QueryBuilder& qb,
                      bool append, const char* const desc, 
                      int clientVersion, const char* const model, 
                      const char* const osVers, DevIDRelay relayID )
 {
     if ( append ) {
-        query.catf( "mtimes=array_prepend('now', mtimes)" ); // FIXME: too many
+        qb.appendQueryf( "mtimes=array_prepend('now', mtimes)" ); // FIXME: too many
     } else {
-        query.catf( "mtimes[1]='now'" );
+        qb.appendQueryf( "mtimes[1]='now'" );
     }
 
-    int count = paramIndices.size();
     if ( NULL != desc && '\0' != desc[0] ) {
-        query.catf( ", clntVers=$%d, versDesc=$%d", 1 + count, 2 + count );
-        count += 2;
-
-        paramIndices.push_back( paramBuf.size() );
-        paramBuf.catf( "%d%c", clientVersion, '\0' );
-        paramIndices.push_back( paramBuf.size() );
-        paramBuf.catf( "%s%c", desc, '\0' );
+        qb.appendQueryf( ", clntVers=$$" )
+            .appendParam( clientVersion )
+            .appendQueryf( ", versDesc=$$" )
+            .appendParam( desc );
     }
     if ( NULL != model && '\0' != model[0] ) {
-        paramIndices.push_back( paramBuf.size() );
-        paramBuf.catf( "%s%c", model, '\0' );
-        query.catf( ", model=$%d", ++count );
+        qb.appendQueryf( ", model=$$" )
+            .appendParam( model );
     }
     if ( NULL != osVers && '\0' != osVers[0] ) {
-        paramIndices.push_back( paramBuf.size() );
-        paramBuf.catf( "%s%c", osVers, '\0' );
-        query.catf( ", osvers=$%d", ++count );
+        qb.appendQueryf( ", osvers=$$" )
+            .appendParam( osVers );
     }
-    paramIndices.push_back( paramBuf.size() );
-    paramBuf.catf( "%d%c", relayID, '\0' );
-    query.catf( " WHERE id = $%d", ++count );
+    qb.appendQueryf( " WHERE id = $$" )
+        .appendParam( relayID );
 }
 
 HostID
@@ -892,15 +843,15 @@ DBMgr::execSql( const char* const query )
 }
 
 bool
-DBMgr::execParams( const string& query, vector<const char*> paramValues )
+DBMgr::execParams( QueryBuilder& qb )
 {
-    PGresult* result = PQexecParams( getThreadConn(), query.c_str(),
-                                     paramValues.size(), NULL,
-                                     &paramValues[0], 
+    PGresult* result = PQexecParams( getThreadConn(), qb.c_str(),
+                                     qb.paramCount(), NULL,
+                                     qb.paramValues(), 
                                      NULL, NULL, 0 );
     bool success = PGRES_COMMAND_OK == PQresultStatus( result );
     if ( !success ) {
-        logf( XW_LOGERROR, "PQexecParams(%s)=>%s;%s", query.c_str(),
+        logf( XW_LOGERROR, "PQexecParams(%s)=>%s;%s", qb.c_str(),
               PQresStatus(PQresultStatus(result)), 
               PQresultErrorMessage(result) );
     }
@@ -1329,31 +1280,6 @@ void DBMgr::clearHasNoMessages( DevIDRelay devid )
         m_haveNoMessagesDevID.erase( devid );
     }
     assert( !hasNoMessages( devid ) );
-}
-
-static void
-formatParams( char* paramValues[], int nParams, const char* fmt, char* buf, 
-              int bufLen, ... )
-{
-    va_list ap;
-    va_start( ap, bufLen );
-
-    int len = vsnprintf( buf, bufLen, fmt, ap );
-    assert( buf[len] == '\0' );
-
-    int pnum;
-    char* ptr = buf;
-    for ( pnum = 0; pnum < nParams; ++pnum ) {
-        paramValues[pnum] = ptr;
-        for ( ; *ptr != '\0' && *ptr != DELIM[0]; ++ptr ) {
-            // do nothing
-            assert( ptr < &buf[bufLen] );
-        }
-        // we've found an end
-        *ptr = '\0';
-        ++ptr;
-    }
-    va_end(ap);
 }
 
 static int

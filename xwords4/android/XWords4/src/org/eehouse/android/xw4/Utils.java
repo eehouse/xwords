@@ -38,12 +38,13 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
 import android.telephony.TelephonyManager;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
@@ -51,18 +52,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class Utils {
     public static final int TURN_COLOR = 0x7F00FF00;
 
     private static final String DB_PATH = "XW_GAMES";
     private static final String HIDDEN_PREFS = "xwprefs_hidden";
+    private static final String FIRST_VERSION_KEY = "FIRST_VERSION_KEY";
     private static final String SHOWN_VERSION_KEY = "SHOWN_VERSION_KEY";
 
     private static Boolean s_isFirstBootThisVersion = null;
+    private static Boolean s_firstVersion = null;
     private static Boolean s_deviceSupportSMS = null;
     private static Boolean s_isFirstBootEver = null;
     private static Integer s_appVersion = null;
@@ -78,40 +83,67 @@ public class Utils {
         return s_random.nextInt();
     }
 
+    public static boolean onFirstVersion( Context context )
+    {
+        setFirstBootStatics( context );
+        return s_firstVersion;
+    }
+
     public static boolean firstBootEver( Context context )
     {
-        if ( null == s_isFirstBootEver ) {
-            setFirstBootStatics( context );
-        }
+        setFirstBootStatics( context );
         return s_isFirstBootEver;
     }
 
     public static boolean firstBootThisVersion( Context context )
     {
-        if ( null == s_isFirstBootThisVersion ) {
-            setFirstBootStatics( context );
-        }
+        setFirstBootStatics( context );
         return s_isFirstBootThisVersion;
     }
 
-    // Does the device have ability to send SMS -- e.g. is it a phone
-    // and not a Kindle Fire.  Not related to XWApp.SMSSUPPORTED
+    public static boolean isGSMPhone( Context context )
+    {
+        boolean result = false;
+        TelephonyManager tm = (TelephonyManager)
+            context.getSystemService( Context.TELEPHONY_SERVICE );
+        if ( null != tm ) {
+            result = TelephonyManager.PHONE_TYPE_GSM == tm.getPhoneType();
+        }
+        return result;
+    }
+
+    // Does the device have ability to send SMS -- e.g. is it a phone and not
+    // a Kindle Fire.  Not related to XWApp.SMSSUPPORTED.  Note that as a
+    // temporary workaround for KitKat having broken use of non-data messages,
+    // we only support SMS on kitkat if data messages have been turned on (and
+    // that's not allowed except on GSM phones.)
     public static boolean deviceSupportsSMS( Context context )
     {
         if ( null == s_deviceSupportSMS ) {
             boolean doesSMS = false;
-            // TEMPORARY: disable SMS on KITKAT
-            if ( 19 > Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
+            // TEMPORARY: disable SMS on KITKAT UNLESS use-text turned on
+            boolean preKitkat = 19 > Integer.valueOf( android.os.Build.VERSION.SDK);
+            boolean usingData =
+                XWPrefs.getPrefsBoolean( context, R.string.key_send_data_sms,
+                                         false );
+            if ( preKitkat || usingData ) {
                 TelephonyManager tm = (TelephonyManager)
                     context.getSystemService(Context.TELEPHONY_SERVICE);
                 if ( null != tm ) {
                     int type = tm.getPhoneType();
-                    doesSMS = TelephonyManager.PHONE_TYPE_NONE != type;
+                    doesSMS = (usingData && !preKitkat) 
+                        ? TelephonyManager.PHONE_TYPE_GSM == type
+                        : TelephonyManager.PHONE_TYPE_NONE != type;
                 }
             }
             s_deviceSupportSMS = new Boolean( doesSMS );
         }
         return s_deviceSupportSMS;
+    }
+
+    public static void smsSupportChanged()
+    {
+        s_deviceSupportSMS = null; // force to check again
     }
 
     public static void notImpl( Context context ) 
@@ -127,7 +159,7 @@ public class Utils {
 
     public static void showToast( Context context, int id )
     {
-        String msg = context.getString( id );
+        String msg = LocUtils.getString( context, id );
         showToast( context, msg );
     }
 
@@ -153,13 +185,16 @@ public class Utils {
         Intent intent = new Intent( Intent.ACTION_SEND );
         intent.setType( "message/rfc822" ); // force email
         intent.putExtra( Intent.EXTRA_SUBJECT,
-                         context.getString( R.string.email_author_subject ) );
-        String[] addrs = { context.getString( R.string.email_author_email ) };
+                         LocUtils.getString( context, 
+                                             R.string.email_author_subject ) );
+        String[] addrs = { LocUtils.getString( context, 
+                                               R.string.email_author_email ) };
         intent.putExtra( Intent.EXTRA_EMAIL, addrs );
-        String body = format( context, R.string.email_body_revf,
-                              BuildConstants.GIT_REV );
+        String body = LocUtils.getString( context, R.string.email_body_rev_fmt,
+                                          BuildConstants.GIT_REV );
         intent.putExtra( Intent.EXTRA_TEXT, body );
-        String chooserMsg = context.getString( R.string.email_author_chooser );
+        String chooserMsg = LocUtils.getString( context,
+                                                R.string.email_author_chooser );
         context.startActivity( Intent.createChooser( intent, chooserMsg ) );
     }
 
@@ -167,13 +202,13 @@ public class Utils {
                                          int titleID, int bodyID, int id )
     {
         postNotification( context, intent, titleID, 
-                          context.getString( bodyID ), id );
+                          LocUtils.getString( context, bodyID ), id );
     }
 
     public static void postNotification( Context context, Intent intent, 
                                          int titleID, String body, int id )
     {
-        String title = context.getString( titleID );
+        String title = LocUtils.getString( context, titleID );
         postNotification( context, intent, title, body, id );
     }
 
@@ -253,18 +288,6 @@ public class Utils {
         return name;
     }
 
-    public static View inflate( Context context, int layoutId )
-    {
-        LayoutInflater factory = LayoutInflater.from( context );
-        return factory.inflate( layoutId, null );
-    }
-
-    public static void setChecked( Activity activity, int id, boolean value )
-    {
-        CheckBox cbx = (CheckBox)activity.findViewById( id );
-        cbx.setChecked( value );
-    }
-
     public static void setChecked( Dialog dialog, int id, boolean value )
     {
         CheckBox cbx = (CheckBox)dialog.findViewById( id );
@@ -279,36 +302,16 @@ public class Utils {
         }
     }
 
-    public static void setText( Activity activity, int id, String value )
-    {
-        EditText editText = (EditText)activity.findViewById( id );
-        if ( null != editText ) {
-            editText.setText( value, TextView.BufferType.EDITABLE   );
-        }
-    }
-
     public static void setInt( Dialog dialog, int id, int value )
     {
         String str = Integer.toString(value);
         setText( dialog, id, str );
     }
 
-    public static void setInt( Activity activity, int id, int value )
-    {
-        String str = Integer.toString(value);
-        setText( activity, id, str );
-    }
-
     public static void setEnabled( Dialog dialog, int id, boolean enabled )
     {
         View view = dialog.findViewById( id );
         view.setEnabled( enabled );
-    }
-
-    public static boolean getChecked( Activity activity, int id )
-    {
-        CheckBox cbx = (CheckBox)activity.findViewById( id );
-        return cbx.isChecked();
     }
 
     public static boolean getChecked( Dialog dialog, int id )
@@ -323,25 +326,9 @@ public class Utils {
         return editText.getText().toString();
     }
 
-    public static String getText( Activity activity, int id )
-    {
-        EditText editText = (EditText)activity.findViewById( id );
-        return editText.getText().toString();
-    }
-
     public static int getInt( Dialog dialog, int id )
     {
         String str = getText( dialog, id );
-        try {
-            return Integer.parseInt( str );
-        } catch ( NumberFormatException nfe ) {
-            return 0;
-        }
-    }
-
-    public static int getInt( Activity activity, int id )
-    {
-        String str = getText( activity, id );
         try {
             return Integer.parseInt( str );
         } catch ( NumberFormatException nfe ) {
@@ -376,11 +363,6 @@ public class Utils {
         return s_hasSmallScreen;
     }
 
-    public static String format( Context context, int id, Object... args )
-    {
-        return context.getString( id, args );
-    }
-
     public static String digestToString( byte[] digest )
     {
         String result = null;
@@ -400,31 +382,34 @@ public class Utils {
 
     public static long getCurSeconds()
     {
+        // Note: an int is big enough for *seconds* (not milliseconds) since 1970
+        // until 2038
         long millis = new Date().getTime();
         int result = (int)(millis / 1000);
         return result;
     }
 
-    public static String dictFromURL( Context context, String url )
+    public static Uri makeDictUri( Context context, String langName, String name )
     {
-        String result = null;
-        int indx = url.lastIndexOf( "/" );
-        if ( 0 <= indx ) {
-            result = url.substring( indx + 1 );
-        }
-        return result;
-    }
-
-    public static String makeDictUrl( Context context, int lang, String name )
-    {
-        String dict_url = CommonPrefs.getDefaultDictURL( context );
-        if ( 0 != lang ) {
-            dict_url += "/" + DictLangCache.getLangName( context, lang );
+        String dictUrl = CommonPrefs.getDefaultDictURL( context );
+        Uri.Builder builder = Uri.parse( dictUrl ).buildUpon();
+        if ( null != langName ) {
+            builder.appendPath( langName );
         }
         if ( null != name ) {
-            dict_url += "/" + name + XWConstants.DICT_EXTN;
+            Assert.assertNotNull( langName );
+            builder.appendPath( DictUtils.addDictExtn( name ) );
         }
-        return dict_url;
+        return builder.build();
+    }
+
+    public static Uri makeDictUri( Context context, int lang, String name )
+    {
+        String langName = null;
+        if ( 0 < lang ) {
+            langName = DictLangCache.getLangName( context, lang );
+        }
+        return makeDictUri( context, langName, name );
     }
 
     public static int getAppVersion( Context context )
@@ -465,6 +450,11 @@ public class Utils {
         return result;
     }
 
+    public static View getContentView( Activity activity )
+    {
+        return activity.findViewById( android.R.id.content );
+    }
+
     public static boolean isGooglePlayApp( Context context )
     {
         PackageManager pm = context.getPackageManager();
@@ -477,24 +467,36 @@ public class Utils {
 
     private static void setFirstBootStatics( Context context )
     {
-        int thisVersion = getAppVersion( context );
-        int prevVersion = 0;
+        if ( null == s_isFirstBootThisVersion ) {
+            final int thisVersion = getAppVersion( context );
+            int prevVersion = 0;
+            SharedPreferences prefs = 
+                context.getSharedPreferences( HIDDEN_PREFS, 
+                                              Context.MODE_PRIVATE );
 
-        SharedPreferences prefs = null;
-        if ( 0 < thisVersion ) {
-            prefs = context.getSharedPreferences( HIDDEN_PREFS, 
-                                                  Context.MODE_PRIVATE );
-            prevVersion = prefs.getInt( SHOWN_VERSION_KEY, -1 );
-        }
-        boolean newVersion = prevVersion != thisVersion;
+
+            if ( 0 < thisVersion ) {
+                prefs = context.getSharedPreferences( HIDDEN_PREFS, 
+                                                      Context.MODE_PRIVATE );
+                prevVersion = prefs.getInt( SHOWN_VERSION_KEY, -1 );
+            }
+            boolean newVersion = prevVersion != thisVersion;
         
-        s_isFirstBootThisVersion = new Boolean( newVersion );
-        s_isFirstBootEver = new Boolean( -1 == prevVersion );
+            s_isFirstBootThisVersion = new Boolean( newVersion );
+            s_isFirstBootEver = new Boolean( -1 == prevVersion );
 
-        if ( newVersion ) {
-            Editor editor = prefs.edit();
-            editor.putInt( SHOWN_VERSION_KEY, thisVersion );
-            editor.commit();
+            int firstVersion = prefs.getInt( FIRST_VERSION_KEY, Integer.MAX_VALUE );
+            s_firstVersion = new Boolean( firstVersion >= thisVersion );
+            if ( newVersion || Integer.MAX_VALUE == firstVersion ) {
+                SharedPreferences.Editor editor = prefs.edit();
+                if ( newVersion ) {
+                    editor.putInt( SHOWN_VERSION_KEY, thisVersion );
+                }
+                if ( Integer.MAX_VALUE == firstVersion ) {
+                    editor.putInt( FIRST_VERSION_KEY, thisVersion );
+                }
+                editor.commit();
+            }
         }
     }
 

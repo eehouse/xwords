@@ -52,6 +52,12 @@
       <item name="android:textColor">#FFFFFFFF</item>
     </style>
 
+    <style name="group_items">
+        <item name="android:background">#FF7F7F7F</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+    </style>
+
     <style name="relay_explain">
       <item name="android:layout_width">fill_parent</item>
       <item name="android:layout_height">wrap_content</item>
@@ -60,7 +66,7 @@
       <item name="android:layout_marginBottom">3sp</item>
     </style>
 
-    <style name="spaced_buttons">
+    <style name="evenly_spaced_horizontal">
       <item name="android:layout_width">fill_parent</item>
       <item name="android:layout_height">wrap_content</item>
       <item name="android:layout_weight">1</item>
@@ -70,6 +76,25 @@
         <item name="android:layout_width">32dp</item>
         <item name="android:layout_height">32dp</item>
         <item name="android:src">@drawable/expander_ic_maximized</item>
+    </style>
+
+    <style name="expander_label">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">left</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceMedium</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:textStyle">italic</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="newgame_connicon">
+	  <item name="android:layout_width">wrap_content</item>
+	  <item name="android:layout_height">wrap_content</item>
+	  <item name="android:layout_weight">0</item>
+	  <item name="android:layout_gravity">center_vertical|center_horizontal</item>
     </style>
 
 </resources>

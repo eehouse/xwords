@@ -208,11 +208,14 @@ static const SetInfo bd_ints[] = {
     ,ARR_MEMBER( BoardDims, top )
     ,ARR_MEMBER( BoardDims, width )
     ,ARR_MEMBER( BoardDims, height )
+    ,ARR_MEMBER( BoardDims, scoreLeft )
     ,ARR_MEMBER( BoardDims, scoreHt )
     ,ARR_MEMBER( BoardDims, scoreWidth )
     ,ARR_MEMBER( BoardDims, boardWidth )
     ,ARR_MEMBER( BoardDims, boardHt )
+    ,ARR_MEMBER( BoardDims, trayLeft )
     ,ARR_MEMBER( BoardDims, trayTop )
+    ,ARR_MEMBER( BoardDims, trayWidth )
     ,ARR_MEMBER( BoardDims, trayHt )
     ,ARR_MEMBER( BoardDims, cellSize )
     ,ARR_MEMBER( BoardDims, maxCellSize )
@@ -478,7 +481,7 @@ typedef struct _JNIState {
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
-( JNIEnv* env, jclass C, int jniGlobalPtr )
+( JNIEnv* env, jclass C, int jniGlobalPtr, jint seed )
 {
     /* Why am I doing this twice? */
     /* struct timeval tv; */
@@ -494,9 +497,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
     MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
 
-    XP_U32 secs = getCurSeconds( env );
-    XP_LOGF( "initing srand with %d", secs );
-    srandom( secs );
+    XP_LOGF( "%s: initing srand with %d", __func__, seed );
+    srandom( seed );
 
     return (jint) state;
 }
@@ -1131,22 +1133,24 @@ Java_org_eehouse_android_xw4_jni_XwJNI_model_1getNumTilesInTray
     return result;
 }
 
-JNIEXPORT jstring JNICALL
+JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_model_1getPlayersLastScore
-(JNIEnv* env, jclass C, jint gamePtr, jint player )
+( JNIEnv* env, jclass C, jint gamePtr, jint player, jobject jlmi )
 {
-    jstring result = NULL;
     XWJNI_START();
     XP_ASSERT( !!state->game.model );
-    XP_UCHAR buf[64] = {0};
-    XP_U16 buflen = sizeof(buf);
-    if ( !model_getPlayersLastScore( state->game.model, player, buf, 
-                                     &buflen ) ) {
-        buf[0] = '\0';
+    LastMoveInfo lmi;
+    XP_Bool valid = model_getPlayersLastScore( state->game.model, 
+                                               player, &lmi );
+    setBool( env, jlmi, "isValid", valid );
+    if ( valid ) {
+        setInt( env, jlmi, "score", lmi.score );
+        setInt( env, jlmi, "nTiles", lmi.nTiles );
+        setInt( env, jlmi, "moveType", lmi.moveType );
+        setString( env, jlmi, "name", lmi.name );
+        setString( env, jlmi, "word", lmi.word );
     }
-    result = (*env)->NewStringUTF( env, buf );
     XWJNI_END();
-    return result;
 }
 
 JNIEXPORT jstring JNICALL
@@ -1173,17 +1177,19 @@ and_send_on_close( XWStreamCtxt* stream, void* closure )
     comms_send( state->game.comms, stream );
 }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_server_1initClientConnection
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
+    jboolean result;
     LOG_FUNC();
     XWJNI_START_GLOBALS();
     XWStreamCtxt* stream = and_empty_stream( MPPARM(mpool) globals );
     stream_setOnCloseProc( stream, and_send_on_close );
-    server_initClientConnection( state->game.server, stream );
+    result = server_initClientConnection( state->game.server, stream );
     XWJNI_END();
-    LOG_RETURN_VOID();
+    LOG_RETURNF( "%d", result );
+    return result;
 }
 
 JNIEXPORT void JNICALL

@@ -19,87 +19,16 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Dialog;
-import android.app.ListActivity;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
-import junit.framework.Assert;
-
-public class StudyListActivity extends ListActivity {
-
-    private StudyListDelegate m_dlgt;
+public class StudyListActivity extends XWListActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 
     {
-        super.onCreate( savedInstanceState );
-
-        m_dlgt = new StudyListDelegate( this, savedInstanceState );
+        StudyListDelegate dlgt = 
+            new StudyListDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, dlgt );
     }
 
-    @Override
-    public void onBackPressed() {
-        if ( !m_dlgt.backPressed() ) {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu )
-    {
-        getMenuInflater().inflate( R.menu.studylist, menu );
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onPrepareOptionsMenu( menu )
-            || super.onPrepareOptionsMenu( menu );
-    }
-
-    @Override
-    public boolean onOptionsItemSelected( MenuItem item )
-    {
-        return m_dlgt.onOptionsItemSelected( item )
-            || super.onOptionsItemSelected( item );
-    }
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = m_dlgt.createDialog( id );
-        if ( null == dialog ) {
-            dialog = super.onCreateDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
-
-    public static void launchOrAlert( Context context, int lang, 
-                                      DlgDelegate.HasDlgDelegate dlg )
-    {
-        String msg = null;
-        if ( 0 == DBUtils.studyListLangs( context ).length ) {
-            msg = context.getString( R.string.study_no_lists );
-        } else if ( StudyListDelegate.NO_LANG != lang && 
-                    0 == DBUtils.studyListWords( context, lang ).length ) {
-            String langname = DictLangCache.getLangName( context, lang );
-            msg = context.getString( R.string.study_no_langf, langname );
-        } else {
-            Intent intent = new Intent( context, StudyListActivity.class );
-            if ( StudyListDelegate.NO_LANG != lang ) {
-                intent.putExtra( StudyListDelegate.START_LANG, lang );
-            }
-            context.startActivity( intent );
-        }
-
-        if ( null != msg ) {
-            dlg.showOKOnlyDialog( msg );
-        }
-    }
 }

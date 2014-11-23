@@ -228,31 +228,14 @@ public class CommsTransport implements TransportProcs,
         NetStateCache.unregister( m_context, this );
     }
 
+    //////////////////////////////////////////////////////////////////////
     // NetStateCache.StateChangedIf interface
+    //////////////////////////////////////////////////////////////////////
     public void netAvail( boolean nowAvailable )
     {
         if ( !nowAvailable ) {
             waitToStopImpl();
             m_jniThread.handle( JNICmd.CMD_TRANSFAIL );
-        }
-    }
-
-    public void tickle( CommsConnType connType )
-    {
-        switch( connType ) {
-        case COMMS_CONN_RELAY:
-            // do nothing
-            // break;     // Try skipping the resend -- later
-        case COMMS_CONN_BT:
-        case COMMS_CONN_SMS:
-            // Let other know I'm here
-            DbgUtils.logf( "tickle calling comms_resendAll" );
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
-            break;
-        default:
-            DbgUtils.logf( "tickle: unexpected type %s", 
-                           connType.toString() );
-            Assert.fail();
         }
     }
 
@@ -416,12 +399,9 @@ public class CommsTransport implements TransportProcs,
         case COMMS_RELAYSTATE_UNCONNECTED:
         case COMMS_RELAYSTATE_DENIED:
         case COMMS_RELAYSTATE_CONNECT_PENDING:
-            ConnStatusHandler.updateStatusOut( m_context, null,
-                                               CommsConnType.COMMS_CONN_RELAY, 
-                                               false );
-            ConnStatusHandler.updateStatusIn( m_context, null,
-                                              CommsConnType.COMMS_CONN_RELAY, 
-                                              false );
+            ConnStatusHandler.updateStatus( m_context, null,
+                                            CommsConnType.COMMS_CONN_RELAY, 
+                                            false );
             break;
         case COMMS_RELAYSTATE_CONNECTED: 
         case COMMS_RELAYSTATE_RECONNECTED: 
@@ -468,8 +448,7 @@ public class CommsTransport implements TransportProcs,
                                            gameID, buf );
             break;
         case COMMS_CONN_BT:
-            nSent = BTService.enqueueFor( context, buf, addr.bt_hostName, 
-                                          addr.bt_btAddr, gameID );
+            nSent = BTService.enqueueFor( context, buf, addr.bt_btAddr, gameID );
             break;
         default:
             Assert.fail();

@@ -1,7 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2010 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,181 +20,160 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.TextView;
+import android.view.Menu;
+import android.view.MenuItem;
+
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.DlgDelegate.Action;
+public class XWActivity extends Activity implements Delegator {
 
-public class XWActivity extends Activity
-    implements DlgDelegate.DlgClickNotify, DlgDelegate.HasDlgDelegate,
-               MultiService.MultiEventListener {
+    private DelegateBase m_dlgt;
 
-    private DlgDelegate m_delegate;
-
-    @Override
-    protected void onCreate( Bundle savedInstanceState ) 
+    protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
-        DbgUtils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onCreate()", getClass().getName() );
+        }
         super.onCreate( savedInstanceState );
-        m_delegate = new DlgDelegate( this, this, savedInstanceState );
-    }
+        m_dlgt = dlgt;
 
-    @Override
-    protected void onStart()
-    {
-        DbgUtils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
-        super.onStart();
-    }
+        int layoutID = m_dlgt.getLayoutID();
+        if ( 0 < layoutID ) {
+            m_dlgt.setContentView( layoutID );
+        }
 
-    @Override
-    protected void onResume()
-    {
-        DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
-        XWService.setListener( this );
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause()
-    {
-        DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
-        XWService.setListener( null );
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop()
-    {
-        DbgUtils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        DbgUtils.logf( "%s.onDestroy(this=%H); isFinishing=%b",
-                       getClass().getName(), this, isFinishing() );
-        super.onDestroy();
+        dlgt.init( savedInstanceState );
     }
 
     @Override
     protected void onSaveInstanceState( Bundle outState ) 
     {
         super.onSaveInstanceState( outState );
-        m_delegate.onSaveInstanceState( outState );
+        m_dlgt.onSaveInstanceState( outState );
+    }
+
+    @Override
+    protected void onPause()
+    {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onPause()", getClass().getName() );
+        }
+        m_dlgt.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume()
+    {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onResume()", getClass().getName() );
+        }
+        super.onResume();
+        m_dlgt.onResume();
+    }
+
+    @Override
+    protected void onStart()
+    {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onStart()", getClass().getName() );
+        }
+        super.onStart();
+        m_dlgt.onStart();
+    }
+
+    @Override
+    protected void onStop()
+    {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onStop()", getClass().getName() );
+        }
+        m_dlgt.onStop();
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onDestroy()", getClass().getName() );
+        }
+        m_dlgt.onDestroy();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onWindowFocusChanged( boolean hasFocus )
+    {
+        super.onWindowFocusChanged( hasFocus );
+        m_dlgt.onWindowFocusChanged( hasFocus );
+    }
+
+    @Override
+    public void onBackPressed() {
+        if ( !m_dlgt.onBackPressed() ) {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu( Menu menu ) 
+    {
+        return m_dlgt.onCreateOptionsMenu( menu );
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu( Menu menu ) 
+    {
+        return m_dlgt.onPrepareOptionsMenu( menu )
+            || super.onPrepareOptionsMenu( menu );
+    } // onPrepareOptionsMenu
+
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) 
+    {
+        return m_dlgt.onOptionsItemSelected( item )
+            || super.onOptionsItemSelected( item );
     }
 
     @Override
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
+        Assert.assertNull( dialog );
         if ( null == dialog ) {
-            DbgUtils.logf( "%s.onCreateDialog() called", getClass().getName() );
-            dialog = m_delegate.createDialog( id );
+            dialog = m_dlgt.onCreateDialog( id );
         }
         return dialog;
-    }
+    } // onCreateDialog
 
-    // these are duplicated in XWListActivity -- sometimes multiple
-    // inheritance would be nice to have...
-    protected void showAboutDialog()
+    @Override
+    public void onPrepareDialog( int id, Dialog dialog )
     {
-        m_delegate.showAboutDialog();
+        super.onPrepareDialog( id, dialog );
+        m_dlgt.prepareDialog( DlgID.values()[id], dialog );
     }
 
-    protected void showNotAgainDlgThen( String msg, int prefsKey,
-                                        Action action )
+    @Override
+    protected void onActivityResult( int requestCode, int resultCode, 
+                                     Intent data )
     {
-        m_delegate.showNotAgainDlgThen( msg, prefsKey, action, null );
+        m_dlgt.onActivityResult( requestCode, resultCode, data );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
+    //////////////////////////////////////////////////////////////////////
+    // Delegator interface
+    //////////////////////////////////////////////////////////////////////
+    public Activity getActivity()
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
+        return this;
     }
 
-    protected void showNotAgainDlgThen( int msgID, int prefsKey )
+    public Bundle getArguments()
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey );
+        return getIntent().getExtras();
     }
-
-    public void showOKOnlyDialog( int msgID )
-    {
-        m_delegate.showOKOnlyDialog( msgID );
-    }
-
-    public void showOKOnlyDialog( String msg )
-    {
-        m_delegate.showOKOnlyDialog( msg );
-    }
-
-    protected void showDictGoneFinish()
-    {
-        m_delegate.showDictGoneFinish();
-    }
-
-    protected void showConfirmThen( int msgID, Action action )
-    {
-        m_delegate.showConfirmThen( getString(msgID), action );
-    }
-
-    protected void showConfirmThen( String msg, Action action )
-    {
-        m_delegate.showConfirmThen( msg, action );
-    }
-
-    protected void showConfirmThen( int msg, int posButton, Action action )
-    {
-        m_delegate.showConfirmThen( getString(msg), posButton, action );
-    }
-
-    public void showInviteChoicesThen( Action action )
-    {
-        m_delegate.showInviteChoicesThen( action );
-    }
-
-    protected void doSyncMenuitem()
-    {
-        m_delegate.doSyncMenuitem();
-    }
-
-    protected void launchLookup( String[] words, int lang )
-    {
-        m_delegate.launchLookup( words, lang, false );
-    }
-
-    protected void startProgress( int id )
-    {
-        m_delegate.startProgress( id );
-    }
-
-    protected void stopProgress()
-    {
-        m_delegate.stopProgress();
-    }
-
-    protected boolean post( Runnable runnable )
-    {
-        return m_delegate.post( runnable );
-    }
-
-    // DlgDelegate.DlgClickNotify interface
-    public void dlgButtonClicked( Action action, int which, Object[] params )
-    {
-        Assert.fail();
-    }
-
-    // BTService.MultiEventListener interface
-    public void eventOccurred( MultiService.MultiEvent event, 
-                               final Object ... args )
-    {
-        m_delegate.eventOccurred( event, args );
-    }
-
 }

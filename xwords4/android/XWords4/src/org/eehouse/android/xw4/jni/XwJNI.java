@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4.jni;
 
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.Utils;
 
 import android.graphics.Rect;
 
@@ -87,8 +88,10 @@ public class XwJNI {
     // Game methods
     public static int initJNI()
     {
-        return initJNI( getJNI().m_ptr );
+        int seed = Utils.nextRandomInt();
+        return initJNI( getJNI().m_ptr, seed );
     }
+
     public static native void game_makeNewGame( int gamePtr,
                                                 CurGameInfo gi, 
                                                 UtilCtxt util,
@@ -122,6 +125,15 @@ public class XwJNI {
         game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu,
                           (DrawCtx)null, cp, (TransportProcs)null, 
                           dictNames, dictBytes, dictPaths, langName );
+    }
+
+    public static void game_makeNewGame( int gamePtr, CurGameInfo gi,
+                                         JNIUtils jniu, CommonPrefs cp, 
+                                         TransportProcs procs,
+                                         String[] dictNames, byte[][] dictBytes, 
+                                         String[] dictPaths, String langName ) {
+        game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu, (DrawCtx)null, 
+                          cp, procs, dictNames, dictBytes, dictPaths, langName );
     }
 
     public static boolean game_makeFromStream( int gamePtr,
@@ -267,8 +279,9 @@ public class XwJNI {
                                                         boolean gameOver );
     public static native int model_getNMoves( int gamePtr );
     public static native int model_getNumTilesInTray( int gamePtr, int player );
-    public static native String model_getPlayersLastScore( int gamePtr, 
-                                                           int player );
+    public static native void model_getPlayersLastScore( int gamePtr, 
+                                                         int player, 
+                                                         LastMoveInfo lmi );
     // Server
     public static native void server_reset( int gamePtr );
     public static native void server_handleUndo( int gamePtr );
@@ -276,7 +289,7 @@ public class XwJNI {
     public static native String server_formatDictCounts( int gamePtr, int nCols );
     public static native boolean server_getGameIsOver( int gamePtr );
     public static native String server_writeFinalScores( int gamePtr );
-    public static native void server_initClientConnection( int gamePtr );
+    public static native boolean server_initClientConnection( int gamePtr );
     public static native void server_endGame( int gamePtr );
     public static native void server_sendChat( int gamePtr, String msg );
 
@@ -374,7 +387,7 @@ public class XwJNI {
     // Private methods -- called only here
     private static native int initGlobals();
     private static native void cleanGlobals( int ptr );
-    private static native int initJNI( int jniState );
+    private static native int initJNI( int jniState, int seed );
     private static native void dict_ref( int dictPtr );
     private static native void dict_unref( int dictPtr );
     private static native boolean dict_getInfo( int jniState, byte[] dict, 

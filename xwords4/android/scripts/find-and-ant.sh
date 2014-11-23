@@ -3,27 +3,32 @@
 set -e -u
 
 MANIFEST=AndroidManifest.xml
+INSTALL=''
+CMDS=''
 
 usage() {
     [ $# -ge 1 ] && echo "ERROR: $1"
     echo "usage: $0 <cmds to ant>"
-	echo "   default commands: $CMDS"
     exit 1
 }
 
-CMDS="clean debug install"
-if [ $# -gt 0 ]; then
+while [ $# -gt 0 ]; do
     case $1 in
-	--help|-h|-help|-?)
-	    usage
-	    ;;
-	*)
-	    CMDS="$*"
-	    break;
-	    ;;
+		--help|-h|-help|-?)
+			usage
+			;;
+		clean|debug|release)
+			CMDS="$CMDS $1"
+			;;
+		install)
+			INSTALL=1
+			;;
+		*)
+			usage "Unexpected param $1"
+			;;
     esac
     shift
-fi
+done
 
 while [ ! -e $MANIFEST -o $(basename $(pwd)) = 'bin' ]; do
     [ '/' = $(pwd) ] && usage "reached root without finding $MANIFEST"
@@ -48,6 +53,10 @@ esac
 
 ant $CMDS
 
-if [ "$CMDS" != "${CMDS%%install}" ]; then
-	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
+if [ -n "$INSTALL" ]; then
+	adb-install.sh -e -d
 fi
+
+# if [ "$CMDS" != "${CMDS%%install}" ]; then
+# 	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
+# fi

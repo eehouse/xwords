@@ -25,7 +25,6 @@ import android.view.View;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.content.Context;
@@ -43,10 +42,13 @@ import junit.framework.Assert;
 
 public class BoardView extends View implements BoardHandler, SyncedDraw {
 
-    private static final float MIN_FONT_DIPS = 14.0f;
+    private static final float MIN_FONT_DIPS = 10.0f;
     private static final int MULTI_INACTIVE = -1;
 
+    private static boolean s_isFirstDraw;
+    private static int s_curGameID;
     private static Bitmap s_bitmap;    // the board
+
     private static final int PINCH_THRESHOLD = 40;
 
     private Context m_context;
@@ -218,9 +220,11 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             Paint paint = new Paint();
             paint.setTextSize( m_mediumFontHt );
             Rect scratch = new Rect();
-            paint.getTextBounds( "-00:00", 0, 6, scratch );
+            String timerTxt = "-00:00";
+            paint.getTextBounds( timerTxt, 0, timerTxt.length(), scratch );
             int timerWidth = scratch.width();
-            int fontWidth = timerWidth / 6;
+            int fontWidth = 
+                Math.min(m_defaultFontHt, timerWidth / timerTxt.length());
             m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, width, height, 
                                 fontWidth, m_defaultFontHt );
             // We'll be back....
@@ -239,6 +243,10 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( null == s_bitmap ) {
                 s_bitmap = Bitmap.createBitmap( bmWidth, bmHeight,
                                                 Bitmap.Config.ARGB_8888 );
+            } else if ( s_isFirstDraw ) {
+                // clear so prev game doesn't seem to appear briefly.  Color
+                // doesn't seem to matter....
+                s_bitmap.eraseColor( 0 );
             }
             if ( null == m_canvas ) {
                 m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread, 
@@ -269,6 +277,9 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         m_connType = connType;
         m_layoutWidth = 0;
         m_layoutHeight = 0;
+
+        s_isFirstDraw = s_curGameID != gi.gameID;
+        s_curGameID = gi.gameID;
 
         // Set the jni layout if we already have one
         if ( null != m_dims ) {

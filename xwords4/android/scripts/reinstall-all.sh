@@ -3,4 +3,4 @@
 WD=$(dirname $0)
 
 $WD/uninstall.sh $*
-$WD/install-all.sh $*
+$WD/adb-install.sh $*

@@ -41,6 +41,7 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class ConnStatusHandler {
 
@@ -73,9 +74,6 @@ public class ConnStatusHandler {
         public SuccessRecord()
         {
             m_time = new Time();
-            lastSuccess = 0;
-            lastFailure = 0;
-            successNewer = false;
         }
 
         public boolean haveFailure()
@@ -131,6 +129,8 @@ public class ConnStatusHandler {
         }
     }
 
+    private ConnStatusHandler() {}
+
     private static HashMap<CommsConnType,SuccessRecord[]> s_records = 
         new HashMap<CommsConnType,SuccessRecord[]>();
     private static Class s_lockObj = ConnStatusHandler.class;
@@ -171,46 +171,47 @@ public class ConnStatusHandler {
     {
         String msg;
         if ( CommsConnType.COMMS_CONN_NONE == connType ) {
-            msg = context.getString( R.string.connstat_nonet );
+            msg = LocUtils.getString( context, R.string.connstat_nonet );
         } else {
             StringBuffer sb = new StringBuffer();
             synchronized( s_lockObj ) {
-                String tmp = context.getString( connType2StrID( connType ) );
-                sb.append( Utils.format( context, R.string.connstat_net, 
-                                         tmp ) );
+                String tmp = LocUtils.getString( context, connType2StrID( connType ) );
+                sb.append( LocUtils.getString( context, 
+                                               R.string.connstat_net_fmt,
+                                               tmp ) );
                 sb.append("\n\n");
 
                 SuccessRecord record = recordFor( connType, false );
-                tmp = context.getString( record.successNewer? 
-                                         R.string.connstat_succ :
-                                         R.string.connstat_unsucc );
-                sb.append( Utils.format( context, R.string.connstat_lastsend,
-                                         tmp, record.newerStr( context ) ) );
+                tmp = LocUtils.getString( context, record.successNewer? 
+                                          R.string.connstat_succ :
+                                          R.string.connstat_unsucc );
+                sb.append( LocUtils.getString( context, R.string.connstat_lastsend_fmt,
+                                               tmp, record.newerStr( context ) ) );
                 sb.append("\n");
 
                 int fmtId = 0;
                 if ( record.successNewer ) {
                     if ( record.haveFailure() ) {
-                        fmtId = R.string.connstat_lastother_succ;
+                        fmtId = R.string.connstat_lastother_succ_fmt;
                     }
                 } else {
                     if ( record.haveSuccess() ) {
-                        fmtId = R.string.connstat_lastother_unsucc;
+                        fmtId = R.string.connstat_lastother_unsucc_fmt;
                     }
                 }
                 if ( 0 != fmtId ) {
-                    sb.append( Utils.format( context, fmtId, 
-                                            record.olderStr( context ) ) );
+                    sb.append( LocUtils.getString( context, fmtId, 
+                                                   record.olderStr( context ) ) );
                 }
                 sb.append( "\n\n" );
 
                 record = recordFor( connType, true );
                 if ( record.haveSuccess() ) {
-                    sb.append( Utils.format( context, 
-                                             R.string.connstat_lastreceipt,
-                                             record.newerStr( context ) ) );
+                    sb.append( LocUtils.getString( context, 
+                                                   R.string.connstat_lastreceipt_fmt,
+                                                   record.newerStr( context ) ) );
                 } else {
-                    sb.append( context.getString(R.string.connstat_noreceipt) );
+                    sb.append( LocUtils.getString( context, R.string.connstat_noreceipt) );
                 }
             }
             msg = sb.toString();
@@ -223,6 +224,13 @@ public class ConnStatusHandler {
         if ( null != s_cbacks ) {
             s_cbacks.invalidateParent();
         }
+    }
+
+    public static void updateStatus( Context context, ConnStatusCBacks cbacks,
+                                     CommsConnType connType, boolean success )
+    {
+        updateStatusImpl( context, cbacks, connType, success, true );
+        updateStatusImpl( context, cbacks, connType, success, false );
     }
 
     public static void updateStatusIn( Context context, ConnStatusCBacks cbacks,
@@ -501,6 +509,14 @@ public class ConnStatusHandler {
             result = XWApp.SMSSUPPORTED && XWPrefs.getSMSEnabled( context )
                 && !getAirplaneModeOn( context );
             break;
+        case COMMS_CONN_BT:
+            result = XWApp.BTSUPPORTED && BTService.BTEnabled()
+                && !getAirplaneModeOn( context );
+            break;
+        default:
+            DbgUtils.logf( "ConnStatusHandler:connTypeEnabled: %s not handled",
+                           connType.toString() );
+            break;
         }
         return result;
     }
@@ -512,5 +528,4 @@ public class ConnStatusHandler {
                                          Settings.System.AIRPLANE_MODE_ON, 0 );
         return result;
     }
-
 }

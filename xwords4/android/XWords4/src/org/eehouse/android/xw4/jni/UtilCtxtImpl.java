@@ -28,6 +28,7 @@ import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class UtilCtxtImpl implements UtilCtxt {
     private Context m_context;
@@ -144,61 +145,49 @@ public class UtilCtxtImpl implements UtilCtxt {
         int id = 0;
         switch( stringCode ) {
         case UtilCtxt.STRD_ROBOT_TRADED:
-            id = R.string.strd_robot_traded;
+            id = R.string.strd_robot_traded_fmt;
             break;
         case UtilCtxt.STR_ROBOT_MOVED:
-            id = R.string.str_robot_moved;
+            id = R.string.str_robot_moved_fmt;
             break;
         case UtilCtxt.STRS_VALUES_HEADER:
-            id = R.string.strs_values_header;
+            id = R.string.strs_values_header_fmt;
             break;
         case UtilCtxt.STRD_REMAINING_TILES_ADD:
-            id = R.string.strd_remaining_tiles_add;
+            id = R.string.strd_remaining_tiles_add_fmt;
             break;
         case UtilCtxt.STRD_UNUSED_TILES_SUB:
-            id = R.string.strd_unused_tiles_sub;
+            id = R.string.strd_unused_tiles_sub_fmt;
             break;
         case UtilCtxt.STRS_REMOTE_MOVED:
-            id = R.string.str_remote_movedf;
+            id = R.string.str_remote_moved_fmt;
             break;
         case UtilCtxt.STRD_TIME_PENALTY_SUB:
-            id = R.string.strd_time_penalty_sub;
+            id = R.string.strd_time_penalty_sub_fmt;
             break;
         case UtilCtxt.STR_PASS:
             id = R.string.str_pass;
             break;
         case UtilCtxt.STRS_MOVE_ACROSS:
-            id = R.string.strs_move_across;
+            id = R.string.strs_move_across_fmt;
             break;
         case UtilCtxt.STRS_MOVE_DOWN:
-            id = R.string.strs_move_down;
+            id = R.string.strs_move_down_fmt;
             break;
         case UtilCtxt.STRS_TRAY_AT_START:
-            id = R.string.strs_tray_at_start;
+            id = R.string.strs_tray_at_start_fmt;
             break;
         case UtilCtxt.STRSS_TRADED_FOR:
-            id = R.string.strss_traded_for;
+            id = R.string.strss_traded_for_fmt;
             break;
         case UtilCtxt.STR_PHONY_REJECTED:
             id = R.string.str_phony_rejected;
             break;
         case UtilCtxt.STRD_CUMULATIVE_SCORE:
-            id = R.string.strd_cumulative_score;
+            id = R.string.strd_cumulative_score_fmt;
             break;
         case UtilCtxt.STRS_NEW_TILES:
-            id = R.string.strs_new_tiles;
-            break;
-        case UtilCtxt.STR_PASSED:
-            id = R.string.str_passed;
-            break;
-        case UtilCtxt.STRSD_SUMMARYSCORED:
-            id = R.string.strsd_summaryscored;
-            break;
-        case UtilCtxt.STRD_TRADED:
-            id = R.string.strd_traded;
-            break;
-        case UtilCtxt.STR_LOSTTURN:
-            id = R.string.str_lostturn;
+            id = R.string.strs_new_tiles_fmt;
             break;
         case UtilCtxt.STR_COMMIT_CONFIRM:
             id = R.string.str_commit_confirm;
@@ -207,13 +196,13 @@ public class UtilCtxtImpl implements UtilCtxt {
             id = R.string.str_bonus_all;
             break;
         case UtilCtxt.STRD_TURN_SCORE:
-            id = R.string.strd_turn_score;
+            id = R.string.strd_turn_score_fmt;
             break;
         case UtilCtxt.STRD_REMAINS_HEADER:
-            id = R.string.strd_remains_header;
+            id = R.string.strd_remains_header_fmt;
             break;
         case UtilCtxt.STRD_REMAINS_EXPL:
-            id = R.string.strd_remains_expl;
+            id = R.string.strd_remains_expl_fmt;
             break;
         case UtilCtxt.STR_RESIGNED:
             id = R.string.str_resigned;
@@ -230,7 +219,7 @@ public class UtilCtxtImpl implements UtilCtxt {
         if ( 0 == id ) {
             result = "";
         } else {
-            result = m_context.getString( id );
+            result = LocUtils.getString( m_context, id );
         }
         return result;
     }

@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import com.google.android.gcm.GCMRegistrar;
@@ -30,6 +31,9 @@ import java.util.ArrayList;
 import junit.framework.Assert;
 
 public class XWPrefs {
+
+    // No reason to put this in xml if they're private to this file!
+    private static final String key_checked_upgrades = "key_checked_upgrades";
 
     public static boolean getSMSEnabled( Context context )
     {
@@ -141,6 +145,12 @@ public class XWPrefs {
                                            boolean defaultValue )
     {
         String key = context.getString( keyID );
+        return getPrefsBoolean( context, key, defaultValue );
+    }
+
+    private static boolean getPrefsBoolean( Context context, String key,
+                                            boolean defaultValue )
+    {
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
         return sp.getBoolean( key, defaultValue );
@@ -149,10 +159,16 @@ public class XWPrefs {
     public static void setPrefsBoolean( Context context, int keyID, 
                                         boolean newValue )
     {
+        String key = context.getString( keyID );
+        setPrefsBoolean( context, key, newValue );
+    }
+
+    private static void setPrefsBoolean( Context context, String key, 
+                                         boolean newValue )
+    {
         SharedPreferences sp = PreferenceManager
             .getDefaultSharedPreferences( context );
         SharedPreferences.Editor editor = sp.edit();
-        String key = context.getString( keyID );
         editor.putBoolean( key, newValue );
         editor.commit();
     }
@@ -187,19 +203,9 @@ public class XWPrefs {
         return getPrefsStringArray( context, R.string.key_closed_langs );
     }
 
-    public static void setBTNames( Context context, String[] names )
-    {
-        setPrefsStringArray( context, R.string.key_bt_names, names );
-    }
-
     public static void setSMSPhones( Context context, String[] names )
     {
         setPrefsStringArray( context, R.string.key_sms_phones, names );
-    }
-
-    public static String[] getBTNames( Context context )
-    {
-        return getPrefsStringArray( context, R.string.key_bt_names );
     }
 
     public static String[] getSMSPhones( Context context )
@@ -429,4 +435,43 @@ public class XWPrefs {
     {
         setPrefsString( context, keyID, TextUtils.join( "\n", value ) );
     }
+
+    public static String getFakeLocale( Context context )
+    {
+        return getPrefsString( context, R.string.key_xlations_locale );
+    }
+
+    public static boolean getXlationEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_xlations_enabled, false );
+    }
+
+    public static void setHaveCheckedUpgrades( Context context, boolean haveChecked )
+    {
+        setPrefsBoolean( context, key_checked_upgrades, haveChecked );
+    }
+
+    public static boolean getHaveCheckedUpgrades( Context context )
+    {
+        return getPrefsBoolean( context, key_checked_upgrades, false );
+    }
+
+    public static boolean getIsTablet( Context context )
+    {
+        return isTablet( context ) ||
+            getPrefsBoolean( context, R.string.key_force_tablet, false );
+    }
+
+    private static Boolean s_isTablet = null;
+    private static boolean isTablet( Context context )
+    {
+        if ( null == s_isTablet ) {
+            int screenLayout = 
+                context.getResources().getConfiguration().screenLayout;
+            int size = screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+            s_isTablet = 
+                new Boolean(Configuration.SCREENLAYOUT_SIZE_LARGE <= size);
+        }
+        return s_isTablet;
+    }        
 }

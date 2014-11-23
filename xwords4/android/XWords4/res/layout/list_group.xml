@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<org.eehouse.android.xw4.ListGroup
+     xmlns:android="http://schemas.android.com/apk/res/android"
+     android:layout_width="fill_parent"
+     android:layout_height="fill_parent"
+     android:orientation="horizontal"
+     style="@style/group_items"
+     >
+
+    <TextView android:id="@+id/game_name"
+              style="@style/expander_label"
+              />
+
+    <ImageButton android:id="@+id/expander"
+                 style="@style/expander_button"
+                 />
+
+</org.eehouse.android.xw4.ListGroup>

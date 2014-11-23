@@ -3,7 +3,7 @@
 *~
 /gitignored
 TAGS
-core
+core*
 *.apk
 xwords_4.4.0.0*
 gcm_loop.shelf

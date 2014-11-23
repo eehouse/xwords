@@ -20,10 +20,24 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.MultiService.MultiEvent;
 
 import junit.framework.Assert;
 
@@ -32,10 +46,240 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
                                      MultiService.MultiEventListener {
 
     private DlgDelegate m_delegate;
+    private Delegator m_delegator;
+    private Activity m_activity;
+    private int m_optionsMenuID;
+    private int m_layoutID;
+    private View m_rootView;
 
-    public DelegateBase( Activity activity, Bundle bundle )
+    public DelegateBase( Delegator delegator, Bundle bundle, int layoutID )
     {
-        m_delegate = new DlgDelegate( activity, this, bundle );
+        this( delegator, bundle, layoutID, R.menu.empty );
+    }
+
+    public DelegateBase( Delegator delegator, Bundle bundle, 
+                         int layoutID, int menuID )
+    {
+        Assert.assertTrue( 0 < menuID );
+        m_delegator = delegator;
+        m_activity = delegator.getActivity();
+        m_delegate = new DlgDelegate( m_activity, this, this, bundle );
+        m_layoutID = layoutID;
+        m_optionsMenuID = menuID;
+        LocUtils.xlateTitle( m_activity );
+    }
+
+    // Does nothing unless overridden. These belong in an interface.
+    protected void init( Bundle savedInstanceState ) { Assert.fail(); }
+    protected void onSaveInstanceState( Bundle outState ) {}
+    public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
+    public boolean onOptionsItemSelected( MenuItem item ) { return false; }
+    protected void onStart() {}
+    protected void onStop() {}
+    protected void onDestroy() {}
+    protected void onWindowFocusChanged( boolean hasFocus ) {}
+    protected boolean onBackPressed() { return false; }
+    protected void prepareDialog( DlgID dlgID, Dialog dialog ) {}
+    protected void onActivityResult( int requestCode, int resultCode, 
+                                     Intent data ) 
+    {
+        DbgUtils.logf( "DelegateBase.onActivityResult(): subclass responsibility!!!" );
+    }
+
+    protected void onResume() 
+    {
+        XWService.setListener( this );
+    }
+
+    protected void onPause()
+    {
+        XWService.setListener( null );
+    }
+
+    public boolean onCreateOptionsMenu( Menu menu, MenuInflater inflater )
+    {
+        boolean handled = 0 < m_optionsMenuID;
+        if ( handled ) {
+            inflater.inflate( m_optionsMenuID, menu );
+            LocUtils.xlateMenu( m_activity, menu );
+        } else {
+            Assert.fail();
+        }
+
+        return handled;
+    }
+
+    public boolean onCreateOptionsMenu( Menu menu )
+    {
+        MenuInflater inflater = m_activity.getMenuInflater();
+        return onCreateOptionsMenu( menu, inflater );
+    }
+
+    protected Intent getIntent()
+    {
+        return m_activity.getIntent();
+    }
+
+    protected int getLayoutID()
+    {
+        return m_layoutID;
+    }
+
+    protected Bundle getArguments()
+    {
+        return m_delegator.getArguments();
+    }
+
+    protected View getContentView()
+    {
+        return m_rootView;
+    }
+
+    protected void setContentView( View view )
+    {
+        LocUtils.xlateView( m_activity, view );
+        m_rootView = view;
+    }
+
+    protected void setContentView( int resID )
+    {
+        m_activity.setContentView( resID );
+        m_rootView = Utils.getContentView( m_activity );
+        LocUtils.xlateView( m_activity, m_rootView );
+    }
+
+    protected View findViewById( int resID )
+    {
+        return m_rootView.findViewById( resID );
+    }
+
+    protected void setVisibility( int id, int visibility )
+    {
+        findViewById( id ).setVisibility( visibility );
+    }
+
+    protected void setTitle( String title )
+    {
+        m_activity.setTitle( title );
+    }
+
+    protected String getTitle()
+    {
+        return m_activity.getTitle().toString();
+    }
+
+    protected void startActivityForResult( Intent intent, int requestCode )
+    {
+        m_activity.startActivityForResult( intent, requestCode );
+    }
+
+    protected void setResult( int result, Intent intent )
+    {
+        m_activity.setResult( result, intent );
+    }
+
+    protected void setResult( int result )
+    {
+        m_activity.setResult( result );
+    }
+
+    protected void onContentChanged()
+    {
+        m_activity.onContentChanged();
+    }
+
+    protected void startActivity( Intent intent )
+    {
+        m_activity.startActivity( intent );
+    }
+
+    protected void finish()
+    {
+        m_activity.finish();
+    }
+
+    protected String getString( int resID, Object... params )
+    {
+        return LocUtils.getString( m_activity, resID, params );
+    }
+
+    protected String[] getStringArray( int resID )
+    {
+        return LocUtils.getStringArray( m_activity, resID );
+    }
+
+    protected View inflate( int resID )
+    {
+        return LocUtils.inflate( m_activity, resID );
+    }
+
+    public void invalidateOptionsMenuIf()
+    {
+        ABUtils.invalidateOptionsMenuIf( m_activity );
+    }
+
+    public void showToast( int msg )
+    {
+        Utils.showToast( m_activity, msg );
+    }
+
+    public void showToast( String msg )
+    {
+        Utils.showToast( m_activity, msg );
+    }
+
+    public Object getSystemService( String name )
+    {
+        return m_activity.getSystemService( name );
+    }
+
+    public void runOnUiThread( Runnable runnable )
+    {
+        m_activity.runOnUiThread( runnable );
+    }
+
+    public void setText( int id, String value )
+    {
+        EditText editText = (EditText)findViewById( id );
+        if ( null != editText ) {
+            editText.setText( value, TextView.BufferType.EDITABLE );
+        }
+    }
+
+    public String getText( int id )
+    {
+        EditText editText = (EditText)findViewById( id );
+        return editText.getText().toString();
+    }
+
+    public void setInt( int id, int value )
+    {
+        String str = Integer.toString( value );
+        setText( id, str );
+    }
+
+    public int getInt( int id )
+    {
+        int result = 0;
+        String str = getText( id );
+        try {
+            result = Integer.parseInt( str );
+        } catch ( NumberFormatException nfe ) {
+        }
+        return result;
+    }
+
+
+    public void setChecked( int id, boolean value )
+    {
+        CheckBox cbx = (CheckBox)findViewById( id );
+        cbx.setChecked( value );
+    }
+
+    public boolean getChecked( int id )
+    {
+        CheckBox cbx = (CheckBox)findViewById( id );
+        return cbx.isChecked();
     }
 
     protected void showDialog( DlgID dlgID )
@@ -43,9 +287,34 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         m_delegate.showDialog( dlgID );
     }
 
-    protected Dialog createDialog( int id )
+    protected void removeDialog( DlgID dlgID )
+    {
+        removeDialog( dlgID.ordinal() );
+    }
+
+    protected void dismissDialog( DlgID dlgID )
+    {
+        m_activity.dismissDialog( dlgID.ordinal() );
+    }
+
+    protected void removeDialog( int id )
+    {
+        m_activity.removeDialog( id );
+    }
+
+    protected Dialog onCreateDialog( int id )
     {
         return m_delegate.createDialog( id );
+    }
+
+    protected AlertDialog.Builder makeAlertBuilder()
+    {
+        return LocUtils.makeAlertBuilder( m_activity );
+    }
+
+    protected void setRemoveOnDismiss( Dialog dialog, DlgID dlgID )
+    {
+        Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
@@ -130,7 +399,8 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
 
     protected void launchLookup( String[] words, int lang )
     {
-        m_delegate.launchLookup( words, lang, false );
+        boolean studyOn = XWPrefs.getStudyEnabled( m_activity );
+        m_delegate.launchLookup( words, lang, !studyOn );
     }
 
     protected void showInviteChoicesThen( Action action )
@@ -138,9 +408,36 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
         m_delegate.showInviteChoicesThen( action );
     }
 
-    protected void startProgress( int id )
+    protected void showOKOnlyDialogThen( String msg, Action action )
     {
-        m_delegate.startProgress( id );
+        m_delegate.showOKOnlyDialog( msg, action );
+    }
+
+    protected void startProgress( int titleID, int msgID )
+    {
+        m_delegate.startProgress( titleID, msgID, null );
+    }
+
+    protected void startProgress( int titleID, String msg )
+    {
+        m_delegate.startProgress( titleID, msg, null );
+    }
+
+    protected void startProgress( int titleID, int msgID, 
+                                  OnCancelListener lstnr )
+    {
+        m_delegate.startProgress( titleID, msgID, lstnr );
+    }
+
+    protected void startProgress( int titleID, String msg, 
+                                  OnCancelListener lstnr )
+    {
+        m_delegate.startProgress( titleID, msg, lstnr );
+    }
+
+    protected void setProgressMsg( int id )
+    {
+        m_delegate.setProgressMsg( id );
     }
 
     protected void stopProgress()
@@ -156,9 +453,28 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     //////////////////////////////////////////////////
     // MultiService.MultiEventListener interface
     //////////////////////////////////////////////////
-    public void eventOccurred( MultiService.MultiEvent event, final Object ... args )
+    public void eventOccurred( MultiEvent event, final Object ... args )
     {
-        Assert.fail();
+        switch( event ) {
+        case BT_ERR_COUNT:
+            int count = (Integer)args[0];
+            DbgUtils.logf( "Bluetooth error count: %d", count );
+            break;
+        case BAD_PROTO:
+        case APP_NOT_FOUND:
+            final String msg = MultiEvent.BAD_PROTO == event
+                ? getString( R.string.bt_bad_proto_fmt, (String)args[0] )
+                : getString( R.string.app_not_found_fmt, (String)args[0] );
+            runOnUiThread( new Runnable() {
+                    public void run() {
+                        showOKOnlyDialog( msg );
+                    }
+                });
+            break;
+        default:
+            DbgUtils.logf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", event.toString() );
+        }
+        // Assert.fail();
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -168,5 +484,4 @@ public class DelegateBase implements DlgDelegate.DlgClickNotify,
     {
         Assert.fail();
     }
-
 }

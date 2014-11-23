@@ -375,6 +375,15 @@ writeStreamIf( XWStreamCtxt* dest, XWStreamCtxt* src )
     }
 }
 
+static void
+informMissing( const ServerCtxt* server )
+{
+    XP_Bool isServer = amServer( server );
+    util_informMissing( server->vol.util, isServer, 
+                        comms_getConType( server->vol.comms ),
+                        isServer ? server->nv.pendingRegistrations : 0 );
+}
+
 ServerCtxt*
 server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model, 
                        CommsCtxt* comms, XW_UtilCtxt* util, XP_U16 nPlayers )
@@ -416,9 +425,7 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         server->nv.prevWordsStream = readStreamIf( server, stream );
     }
 
-    util_informMissing( util, server->vol.gi->serverRole == SERVER_ISSERVER,
-                        comms_getConType( comms ),
-                        server->nv.pendingRegistrations );
+    informMissing( server );
     return server;
 } /* server_makeFromStream */
 
@@ -551,9 +558,10 @@ server_countTilesInPool( ServerCtxt* server )
 #define NAME_LEN_NBITS 6
 #define MAX_NAME_LEN ((1<<(NAME_LEN_NBITS-1))-1)
 #ifndef XWFEATURE_STANDALONE_ONLY
-void
+XP_Bool
 server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 {
+    XP_Bool result;
     LOG_FUNC();
     CurGameInfo* gi = server->vol.gi;
     XP_U16 nPlayers;
@@ -564,7 +572,8 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
     XP_ASSERT( gi->serverRole == SERVER_ISCLIENT );
     XP_ASSERT( stream != NULL );
-    if ( server->nv.gameState == XWSTATE_NONE ) {
+    result = server->nv.gameState == XWSTATE_NONE;
+    if ( result ) {
         stream_open( stream );
 
         writeProto( server, stream, XWPROTO_DEVICE_REGISTRATION );
@@ -604,6 +613,7 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
                  getStateStr(server->nv.gameState) );
     }
     stream_destroy( stream );
+    return result;
 } /* server_initClientConnection */
 #endif
 
@@ -698,6 +708,8 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
     XP_ASSERT( playersInMsg > 0 );
 
     if ( server->nv.pendingRegistrations < playersInMsg ) {
+        XP_LOGF( "%s: got %d players but missing only %d", __func__, 
+                 playersInMsg, server->nv.pendingRegistrations );
         util_userError( server->vol.util, ERR_REG_UNEXPECTED_USER );
         success = XP_FALSE;
     } else {
@@ -742,6 +754,8 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
             checkResizeBoard( server );
             assignTilesToAll( server );
             SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
+
+            informMissing( server );
         }
     }
 
@@ -983,14 +997,12 @@ showPrevScore( ServerCtxt* server )
         lp = &gi->players[prevTurn];
 
         if ( LP_IS_LOCAL(lp) ) {
-            /* Why can't a local non-robot have postponed score? */
-            // XP_ASSERT( LP_IS_ROBOT(lp) );
             str = util_getUserString( util, STR_ROBOT_MOVED );
         } else {
             str = util_getUserString( util, STRS_REMOTE_MOVED );
-            XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
-            str = buf;
         }
+        XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
+        str = buf;
 
         stream = mkServerStream( server );
         stream_catString( stream, str );
@@ -2548,6 +2560,8 @@ tileCountsOk( const ServerCtxt* server )
 static void
 setTurn( ServerCtxt* server, XP_S16 turn )
 {
+    XP_ASSERT( -1 == turn
+               || (!amServer(server) || (0 == server->nv.pendingRegistrations)));
     if ( server->nv.currentTurn != turn ) {
         server->nv.currentTurn = turn;
         server->nv.lastMoveTime = util_getCurSeconds( server->vol.util );

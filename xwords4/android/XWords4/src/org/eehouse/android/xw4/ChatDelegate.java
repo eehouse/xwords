@@ -26,7 +26,6 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -39,56 +38,53 @@ public class ChatDelegate extends DelegateBase
     private long m_rowid;
     private Activity m_activity;
 
-    public ChatDelegate( Activity activity, Bundle savedInstanceState )
+    public ChatDelegate( Delegator delegator, Bundle savedInstanceState )
     {
-        super( activity, savedInstanceState );
-        m_activity = activity;
-        init( savedInstanceState );
+        super( delegator, savedInstanceState, R.layout.chat, R.menu.chat_menu );
+        m_activity = delegator.getActivity();
     }
 
-    private void init( Bundle savedInstanceState ) 
+    @Override
+    protected void init( Bundle savedInstanceState ) 
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
-    
-            m_rowid = m_activity.getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+            m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
      
             DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( m_activity, m_rowid );
             if ( null != pairs ) {
                 LinearLayout layout = (LinearLayout)
-                    m_activity.findViewById( R.id.chat_history );
-                LayoutInflater factory = LayoutInflater.from( m_activity );
+                    findViewById( R.id.chat_history );
 
                 for ( DBUtils.HistoryPair pair : pairs ) {
-                    TextView view = (TextView)factory
-                        .inflate( pair.sourceLocal
-                                  ? R.layout.chat_history_local
-                                  : R.layout.chat_history_remote, 
-                                  null );
+                    TextView view = (TextView)
+                        inflate( pair.sourceLocal
+                                 ? R.layout.chat_history_local
+                                 : R.layout.chat_history_remote );
                     view.setText( pair.msg );
                     layout.addView( view );
                 }
             }
 
-            ((Button)m_activity.findViewById( R.id.send_button ))
+            ((Button)findViewById( R.id.send_button ))
                 .setOnClickListener( this );
 
-            String title = 
-                m_activity.getString( R.string.chat_titlef, 
+            String title = getString( R.string.chat_title_fmt, 
                                       GameUtils.getName( m_activity, m_rowid ) );
-            m_activity.setTitle( title );
+            setTitle( title );
         } else {
             // Should really assert....
-            m_activity.finish();
+            finish();
         }
     }
 
-    protected boolean onOptionsItemSelected( MenuItem item ) 
+    @Override
+    public boolean onOptionsItemSelected( MenuItem item ) 
     {
         boolean handled = R.id.chat_menu_clear == item.getItemId();
         if ( handled ) {
             DBUtils.clearChatHistory( m_activity, m_rowid );
             LinearLayout layout = 
-                (LinearLayout)m_activity.findViewById( R.id.chat_history );
+                (LinearLayout)findViewById( R.id.chat_history );
             layout.removeAllViews();
         }
         return handled;
@@ -96,17 +92,17 @@ public class ChatDelegate extends DelegateBase
 
     public void onClick( View view ) 
     {
-        EditText edit = (EditText)m_activity.findViewById( R.id.chat_edit );
+        EditText edit = (EditText)findViewById( R.id.chat_edit );
         String text = edit.getText().toString();
         if ( null == text || text.length() == 0 ) {
-            m_activity.setResult( Activity.RESULT_CANCELED );
+            setResult( Activity.RESULT_CANCELED );
         } else {
             DBUtils.appendChatHistory( m_activity, m_rowid, text, true );
 
             Intent result = new Intent();
             result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
-            m_activity.setResult( Activity.RESULT_OK, result );
+            setResult( Activity.RESULT_OK, result );
         }
-        m_activity.finish();
+        finish();
     }
 }

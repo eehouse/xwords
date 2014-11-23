@@ -20,6 +20,8 @@ XWLANG = Hex
 LANGCODE = hex
 ENC = UTF-8
 
+DICTNOTE = "Toy/debugging wordlist comprising words from a large English list using only the letters A-F"
+
 TARGET_TYPE = WINCE
 
 include ../Makefile.langcommon

@@ -30,6 +30,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Spinner;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class SMSCheckBoxPreference extends CheckBoxPreference {
 
     private Context m_context;
@@ -72,7 +74,7 @@ public class SMSCheckBoxPreference extends CheckBoxPreference {
 
     public static Dialog onCreateDialog( final Activity activity, final int id )
     {
-        final View layout = Utils.inflate( activity, R.layout.confirm_sms );
+        final View layout = LocUtils.inflate( activity, R.layout.confirm_sms );
 
         DialogInterface.OnClickListener lstnr = 
             new DialogInterface.OnClickListener() {
@@ -85,7 +87,7 @@ public class SMSCheckBoxPreference extends CheckBoxPreference {
                 }
             };
 
-        AlertDialog.Builder ab = new AlertDialog.Builder( activity )
+        AlertDialog.Builder ab = LocUtils.makeAlertBuilder( activity )
             .setTitle( R.string.confirm_sms_title )
             .setView( layout )
             .setNegativeButton( R.string.button_ok, lstnr );

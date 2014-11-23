@@ -34,7 +34,7 @@ XP_U16 bitsForMax( XP_U32 n );
 
 void traySetToStream( XWStreamCtxt* stream, const TrayTileSet* ts );
 void traySetFromStream( XWStreamCtxt* stream, TrayTileSet* ts );
-void sortTiles( TrayTileSet* dest, const TrayTileSet* src );
+void sortTiles( TrayTileSet* dest, const TrayTileSet* src, XP_U16 skip );
 void removeTile( TrayTileSet* tiles, XP_U16 index );
 
 XP_S32 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits );

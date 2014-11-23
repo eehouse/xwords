@@ -29,7 +29,7 @@
 
 
 typedef XP_Bool (*LastScoreCallback)( void* closure, XP_S16 player,
-                                      XP_UCHAR* expl, XP_U16* explLen );
+                                      LastMoveInfo* lmi );
 
 typedef enum {
     CELL_NONE = 0x00

@@ -20,22 +20,16 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.app.ListActivity;
-
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class GamesListActivity extends ListActivity {
+public class GamesListActivity extends XWListActivity {
 
     // private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
@@ -46,28 +40,10 @@ public class GamesListActivity extends ListActivity {
     private GamesListDelegate m_dlgt;
 
     @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog && null != m_dlgt ) {
-            dialog = m_dlgt.createDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
-
-    @Override 
-    protected void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( id, dialog );
-    }
-
-    @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate( savedInstanceState );
         m_dlgt = new GamesListDelegate( this, savedInstanceState );
-        m_dlgt.init( savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
     // called when we're brought to the front (probably as a result of
@@ -77,128 +53,5 @@ public class GamesListActivity extends ListActivity {
     {
         super.onNewIntent( intent );
         m_dlgt.onNewIntent( intent );
-    }
-
-    @Override
-    protected void onStop()
-    {
-        m_dlgt.onStop();
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        m_dlgt.onDestroy();
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-        m_dlgt.onSaveInstanceState( outState );
-    }
-
-    @Override
-    public void onWindowFocusChanged( boolean hasFocus )
-    {
-        super.onWindowFocusChanged( hasFocus );
-        m_dlgt.onWindowFocusChanged( hasFocus );
-    }
-
-    @Override
-    public void onContentChanged()
-    {
-        super.onContentChanged();
-        if ( null != m_dlgt ) {
-            m_dlgt.contentChanged();
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        if ( !m_dlgt.onBackPressed() ) {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu )
-    {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate( R.menu.games_list_menu, menu );
-
-        return true;
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onPrepareOptionsMenu( menu )
-            || super.onPrepareOptionsMenu( menu );
-    }
-
-    public boolean onOptionsItemSelected( MenuItem item )
-    {
-        return m_dlgt.onOptionsItemSelected( item )
-            || super.onOptionsItemSelected( item );
-    }
-
-    public static void onGameDictDownload( Context context, Intent intent )
-    {
-        intent.setClass( context, GamesListActivity.class );
-        context.startActivity( intent );
-    }
-
-    private static Intent makeSelfIntent( Context context )
-    {
-        Intent intent = new Intent( context, GamesListActivity.class );
-        intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
-                         | Intent.FLAG_ACTIVITY_NEW_TASK );
-        return intent;
-    }
-
-    public static Intent makeRowidIntent( Context context, long rowid )
-    {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( ROWID_EXTRA, rowid );
-        return intent;
-    }
-
-    public static Intent makeGameIDIntent( Context context, int gameID )
-    {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( GAMEID_EXTRA, gameID );
-        return intent;
-    }
-
-    public static Intent makeRematchIntent( Context context, CurGameInfo gi,
-                                            long rowid )
-    {
-        Intent intent = null;
-        
-        if ( CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
-            intent = makeSelfIntent( context )
-                .putExtra( REMATCH_ROWID_EXTRA, rowid );
-        } else {
-            Utils.notImpl( context );
-        }
-
-        return intent;
-    }
-
-    public static Intent makeAlertIntent( Context context, String msg )
-    {
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( ALERT_MSG, msg );
-        return intent;
-    }
-
-    public static void openGame( Context context, Uri data )
-    {
-        Intent intent = makeSelfIntent( context );
-        intent.setData( data );
-        context.startActivity( intent );
     }
 }

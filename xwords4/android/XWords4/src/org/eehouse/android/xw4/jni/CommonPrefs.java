@@ -33,6 +33,7 @@ import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CommonPrefs extends XWPrefs {
     public static final int COLOR_TILE_BACK = 0;
@@ -119,13 +120,13 @@ public class CommonPrefs extends XWPrefs {
     private boolean getBoolean( Context context, SharedPreferences sp, 
                                 int id, boolean dflt )
     {
-        String key = context.getString( id );
+        String key = LocUtils.getString( context, id );
         return sp.getBoolean( key, dflt );
     }
 
     private int prefToColor( Context context, SharedPreferences sp, int id )
     {
-        String key = context.getString( id );
+        String key = LocUtils.getString( context, id );
         return 0xFF000000 | sp.getInt( key, 0 );
     }
 
@@ -173,19 +174,12 @@ public class CommonPrefs extends XWPrefs {
     public static String getDefaultPlayerName( Context context, int num,
                                                boolean force )
     {
-        int id = 0;
-        switch( num ) {
-        case 0: id = R.string.key_player1_name; break;
-        case 1: id = R.string.key_player2_name; break;
-        case 2: id = R.string.key_player3_name; break;
-        case 3: id = R.string.key_player4_name; break;
-        }
-        String result = getPrefsString( context, id );
+        String result = getPrefsString( context, R.string.key_player1_name );
         if ( null != result && 0 == result.length() ) {
             result = null;      // be consistent
         }
         if ( force && null == result ) {
-            String fmt = context.getString( R.string.playerf );
+            String fmt = LocUtils.getString( context, R.string.player_fmt );
             result = String.format( fmt, num + 1 );
         }
         return result;
@@ -194,6 +188,11 @@ public class CommonPrefs extends XWPrefs {
     public static String getDefaultPlayerName( Context context, int num )
     {
         return getDefaultPlayerName( context, num, true );
+    }
+
+    public static String getDefaultRobotName( Context context )
+    {
+        return getPrefsString( context, R.string.key_robot_name );
     }
 
     public static void setDefaultPlayerName( Context context, String value )

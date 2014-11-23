@@ -29,6 +29,7 @@
 # include <execinfo.h>          /* for backtrace */
 #endif
 
+#include "movestak.h"
 #include "linuxutl.h"
 #include "main.h"
 #include "linuxdict.h"
@@ -309,18 +310,9 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     case STRD_ROBOT_TRADED:
         return (XP_UCHAR*)"%d tiles traded this turn.";
     case STR_ROBOT_MOVED:
-        return (XP_UCHAR*)"The robot moved:\n";
+        return (XP_UCHAR*)"The robot \"%s\" moved:\n";
     case STRS_REMOTE_MOVED:
         return (XP_UCHAR*)"Remote player \"%s\" moved:\n";
-
-    case STR_PASSED: 
-        return (XP_UCHAR*)"Passed";
-    case STRSD_SUMMARYSCORED: 
-        return (XP_UCHAR*)"%s:%d";
-    case STRD_TRADED: 
-        return (XP_UCHAR*)"Traded %d";
-    case STR_LOSTTURN:
-        return (XP_UCHAR*)"Lost turn";
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     case STR_LOCALPLAYERS:
@@ -569,6 +561,32 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 
     return (XP_UCHAR*)message;
 } /* linux_getErrString */
+
+void
+formatLMI( const LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16 len )
+{
+    const XP_UCHAR* name = lmi->name;
+    switch( lmi->moveType ) {
+    case MOVE_TYPE:
+        if ( 0 == lmi->nTiles ) {
+            XP_SNPRINTF( buf, len, "%s passed", name );
+        } else {
+            XP_SNPRINTF( buf, len, "%s played %s for %d points", name,
+                         lmi->word, lmi->score );
+        }
+        break;
+    case TRADE_TYPE:
+        XP_SNPRINTF( buf, len, "%s traded %d tiles", 
+                     name, lmi->nTiles );
+        break;
+    case PHONY_TYPE:
+        XP_SNPRINTF( buf, len, "%s lost a turn", name );
+        break;
+    default:
+        XP_ASSERT(0);
+        break;
+    }
+}
 
 void
 formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles, 

@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009-2014 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,79 +20,17 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.app.ListActivity;
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-import android.widget.TextView;
 
-import junit.framework.Assert;
+public abstract class InviteActivity extends XWListActivity {
 
-abstract class InviteActivity extends XWListActivity 
-    implements View.OnClickListener {
-
-    public static final String DEVS = "DEVS";
-    protected static final String INTENT_KEY_NMISSING = "NMISSING";
-
-    protected int m_nMissing;
-    protected Button m_okButton;
-    protected Button m_rescanButton;
-    protected Button m_clearButton;
-
-    protected void onCreate( Bundle savedInstanceState, int view_id,
-                             int button_invite, int button_rescan, 
-                             int button_clear, int desc_id, int desc_strf )
+    @Override
+    protected void onCreate( Bundle savedInstanceState )
     {
         super.onCreate( savedInstanceState );
-        
         requestWindowFeature( Window.FEATURE_NO_TITLE );
-
-        setContentView( view_id );
-
-        Intent intent = getIntent();
-        m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
-
-        m_okButton = (Button)findViewById( button_invite );
-        m_okButton.setOnClickListener( this );
-        m_rescanButton = (Button)findViewById( button_rescan );
-        m_rescanButton.setOnClickListener( this );
-        m_clearButton = (Button)findViewById( button_clear );
-        m_clearButton.setOnClickListener( this );
-
-        TextView desc = (TextView)findViewById( desc_id );
-        desc.setText( Utils.format( this, desc_strf, m_nMissing ) );
-
-        tryEnable();
     }
 
-    public void onClick( View view ) 
-    {
-        if ( m_okButton == view ) {
-            Intent intent = new Intent();
-            String[] devs = listSelected();
-            intent.putExtra( DEVS, devs );
-            setResult( Activity.RESULT_OK, intent );
-            finish();
-        } else if ( m_rescanButton == view ) {
-            scan();
-        } else if ( m_clearButton == view ) {
-            clearSelected();
-        }
-    }
-
-    abstract void tryEnable() ;
-    abstract String[] listSelected();
-    abstract void scan();
-    abstract void clearSelected();
 }

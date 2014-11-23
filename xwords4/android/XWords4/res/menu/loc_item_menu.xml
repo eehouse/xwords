@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/loc_item_clear"
+          android:title="@string/loc_item_clear"
+          android:icon="@drawable/content_discard__gen"
+          android:showAsAction="ifRoom"
+          />
+    <item android:id="@+id/loc_item_check"
+          android:title="@string/loc_item_check"
+          />
+    <item android:id="@+id/loc_item_copy_eng"
+          android:title="@string/loc_item_copy_eng"
+          />
+    <item android:id="@+id/loc_item_copy_bless"
+          android:title="@string/loc_item_copy_bless"
+          />
+
+</menu>

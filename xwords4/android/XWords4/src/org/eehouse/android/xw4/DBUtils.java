@@ -23,8 +23,10 @@ package org.eehouse.android.xw4;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -45,6 +47,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import junit.framework.Assert;
@@ -52,10 +55,11 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
-
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DBUtils {
     public static final int ROWID_NOTFOUND = -1;
+    public static final int ROWIDS_ALL = -2;
     public static final int GROUPID_UNSPEC = -1;
 
     private static final String DICTS_SEP = ",";
@@ -68,8 +72,10 @@ public class DBUtils {
     private static long s_cachedRowID = ROWID_NOTFOUND;
     private static byte[] s_cachedBytes = null;
 
+    public static enum GameChangeType { GAME_CHANGED, GAME_CREATED, GAME_DELETED };
+
     public static interface DBChangeListener {
-        public void gameSaved( long rowid, boolean countChanged );
+        public void gameSaved( long rowid, GameChangeType change );
     }
     private static HashSet<DBChangeListener> s_listeners = 
         new HashSet<DBChangeListener>();
@@ -283,6 +289,11 @@ public class DBUtils {
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
+            long nextNag = summary.nextTurnIsLocal() ?
+                NagTurnReceiver.figureNextNag( context, 
+                                               1000*(long)summary.lastMoveTime )
+                : 0;
+            values.put( DBHelper.NEXTNAG, nextNag );
                 
             values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
             values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
@@ -330,8 +341,12 @@ public class DBUtils {
                 Assert.assertTrue( result >= 0 );
             }
             db.close();
-            notifyListeners( rowid, false );
+            notifyListeners( rowid, GameChangeType.GAME_CHANGED );
             invalGroupsCache();
+        }
+
+        if ( null != summary ) { // nag time may have changed
+            NagTurnReceiver.setNagTimer( context );
         }
     } // saveSummary
 
@@ -387,7 +402,7 @@ public class DBUtils {
     public static void setMsgFlags( long rowid, int flags )
     {
         setInt( rowid, DBHelper.HASMSGS, flags );
-        notifyListeners( rowid, false );
+        notifyListeners( rowid, GameChangeType.GAME_CHANGED );
     }
 
     public static void setExpanded( long rowid, boolean expanded )
@@ -458,7 +473,7 @@ public class DBUtils {
 
                 db.close();
 
-                notifyListeners( rowid, false );
+                notifyListeners( rowid, GameChangeType.GAME_CHANGED );
             }
         }
     }
@@ -475,7 +490,7 @@ public class DBUtils {
                                          values, null, null );
                 db.close();
 
-                notifyListeners( ROWID_NOTFOUND, false );
+                notifyListeners( ROWIDS_ALL, GameChangeType.GAME_CHANGED );
             }
         }
     }
@@ -568,6 +583,12 @@ public class DBUtils {
         return result;
     }
 
+    public static boolean haveGame( Context context, int gameID ) 
+    {
+        long[] rows = getRowIDsFor( context, gameID );
+        return rows != null && 0 < rows.length;
+    }
+
     public static boolean haveGame( Context context, long rowid ) 
     {
         boolean result = false;
@@ -637,8 +658,31 @@ public class DBUtils {
 
     // Return creation time of newest game matching this nli, or null
     // if none found.
-    public static Date getMostRecentCreate( Context context, 
-                                            NetLaunchInfo nli )
+    public static Date getMostRecentCreate( Context context, BTLaunchInfo bli )
+    {
+        Date result = null;
+        String[] selectionArgs = new String[] {
+            DBHelper.GAMEID, String.format( "%d", bli.gameID ),
+        };
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.rawQuery( "SELECT " + DBHelper.CREATE_TIME +
+                                         " FROM " + DBHelper.TABLE_NAME_SUM +
+                                         " WHERE ?=? ", selectionArgs );
+            if ( cursor.moveToNext() ) {
+                int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
+                result = new Date( cursor.getLong( indx ) );
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    // Return creation time of newest game matching this nli, or null
+    // if none found.
+    public static Date getMostRecentCreate( Context context, NetLaunchInfo nli )
     {
         Date result = null;
         String[] selectionArgs = new String[] {
@@ -795,6 +839,8 @@ public class DBUtils {
         values.put( DBHelper.LASTPLAY_TIME, timestamp );
         values.put( DBHelper.GROUPID, groupID );
 
+        invalGroupsCache();  // do first in case any listener has cached data
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
@@ -806,9 +852,10 @@ public class DBUtils {
             setCached( rowid, null ); // force reread
 
             lock = new GameLock( rowid, true ).lock();
-            notifyListeners( rowid, true );
+            notifyListeners( rowid, GameChangeType.GAME_CREATED );
         }
 
+        invalGroupsCache();     // then again after
         return lock;
     } // saveNewGame
 
@@ -831,7 +878,7 @@ public class DBUtils {
 
         setCached( rowid, null ); // force reread
         if ( ROWID_NOTFOUND != rowid ) {      // Means new game?
-            notifyListeners( rowid, false );
+            notifyListeners( rowid, GameChangeType.GAME_CHANGED );
         }
         invalGroupsCache();
         return rowid;
@@ -887,7 +934,8 @@ public class DBUtils {
             db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
             db.close();
         }
-        notifyListeners( lock.getRowid(), true );
+        notifyListeners( lock.getRowid(), GameChangeType.GAME_DELETED );
+        invalGroupsCache();
     }
 
     public static int getVisID( Context context, long rowid )
@@ -946,7 +994,8 @@ public class DBUtils {
     {
         HistoryPair[] result = null;
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            final String localPrefix = context.getString( R.string.chat_local_id );
+            final String localPrefix =
+                LocUtils.getString( context, R.string.chat_local_id );
             String history = getChatHistoryStr( context, rowid );
             if ( null != history ) {
                 String[] msgs = history.split( "\n" );
@@ -959,6 +1008,91 @@ public class DBUtils {
             }
         }
         return result;
+    }
+
+    public static class NeedsNagInfo {
+        public long m_rowid;
+        public long m_nextNag;
+        public long m_lastMoveMillis;
+        public NeedsNagInfo( long rowid, long nextNag, long lastMove ) {
+            m_rowid = rowid;
+            m_nextNag = nextNag;
+            m_lastMoveMillis = 1000 * lastMove;
+        }
+    }
+
+    public static NeedsNagInfo[] getNeedNagging( Context context )
+    {
+        NeedsNagInfo[] result = null;
+        long now = new Date().getTime(); // in milliseconds
+        String[] columns = { ROW_ID, DBHelper.NEXTNAG, DBHelper.LASTMOVE };
+        // where nextnag > 0 AND nextnag < now
+        String selection = 
+            String.format( "%s > 0 AND %s < %s", DBHelper.NEXTNAG, 
+                           DBHelper.NEXTNAG, now );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            int count = cursor.getCount();
+            if ( 0 < count ) {
+                result = new NeedsNagInfo[count];
+                int rowIndex = cursor.getColumnIndex(ROW_ID);
+                int nagIndex = cursor.getColumnIndex( DBHelper.NEXTNAG );
+                int lastMoveIndex = cursor.getColumnIndex( DBHelper.LASTMOVE );
+                for ( int ii = 0; ii < result.length && cursor.moveToNext(); ++ii ) {
+                    long rowid = cursor.getLong( rowIndex );
+                    long nextNag = cursor.getLong( nagIndex );
+                    long lastMove = cursor.getLong( lastMoveIndex );
+                    result[ii] = new NeedsNagInfo( rowid, nextNag, lastMove );
+                }
+            }
+
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static long getNextNag( Context context )
+    {
+        long result = 0;
+        String[] columns = { "MIN(" + DBHelper.NEXTNAG + ") as min" };
+        String selection = "NOT " + DBHelper.NEXTNAG + "= 0";
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( cursor.moveToNext() ) {
+                result = cursor.getLong( cursor.getColumnIndex( "min" ) );
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static void updateNeedNagging( Context context, NeedsNagInfo[] needNagging )
+    {
+        String updateQuery = "update %s set %s = ? "
+            + " WHERE %s = ? ";
+        updateQuery = String.format( updateQuery, DBHelper.TABLE_NAME_SUM,
+                                     DBHelper.NEXTNAG, ROW_ID );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            SQLiteStatement updateStmt = db.compileStatement( updateQuery );
+
+            for ( NeedsNagInfo info : needNagging ) {
+                updateStmt.bindLong( 1, info.m_nextNag );
+                updateStmt.bindLong( 2, info.m_rowid );
+                updateStmt.execute();
+            }
+            db.close();
+        }
     }
 
     // Groups stuff
@@ -1044,7 +1178,6 @@ public class DBUtils {
 
             String query = "SELECT rowid, groupname as groups_groupname, "
                 + " groups.expanded as groups_expanded FROM groups";
-            DbgUtils.logf( "query: %s", query );
 
             initDB( context );
             synchronized( s_dbHelper ) {
@@ -1170,7 +1303,6 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "DBUtils.countGames()=>%d", result );
         return result;
     }
 
@@ -1350,7 +1482,7 @@ public class DBUtils {
         if ( BuildConstants.CHAT_SUPPORTED ) {
             Assert.assertNotNull( msg );
             int id = local ? R.string.chat_local_id : R.string.chat_other_id;
-            msg = context.getString( id ) + msg;
+            msg = LocUtils.getString( context, id ) + msg;
 
             String cur = getChatHistoryStr( context, rowid );
             if ( null != cur ) {
@@ -1724,6 +1856,167 @@ public class DBUtils {
         studyListClear( context, lang, null );
     }
 
+    public static void saveXlations( Context context, String locale,
+                                     Map<String, String> data, boolean blessed )
+    {
+        if ( null != data && 0 < data.size() ) {
+            long blessedLong = blessed ? 1 : 0;
+            Iterator<String> iter = data.keySet().iterator();
+
+            String insertQuery = "insert into %s (%s, %s, %s, %s) "
+                + " VALUES (?, ?, ?, ?)";
+            insertQuery = String.format( insertQuery, DBHelper.TABLE_NAME_LOC,
+                                         DBHelper.KEY, DBHelper.LOCALE,
+                                         DBHelper.BLESSED, DBHelper.XLATION );
+                                         
+            String updateQuery = "update %s set %s = ? "
+                + " WHERE %s = ? and %s = ? and %s = ?";
+            updateQuery = String.format( updateQuery, DBHelper.TABLE_NAME_LOC,
+                                         DBHelper.XLATION, DBHelper.KEY, 
+                                         DBHelper.LOCALE, DBHelper.BLESSED );
+
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+                SQLiteStatement insertStmt = db.compileStatement( insertQuery );
+                SQLiteStatement updateStmt = db.compileStatement( updateQuery );
+
+                while ( iter.hasNext() ) {
+                    String key = iter.next();
+                    String xlation = data.get( key );
+                    // DbgUtils.logf( "adding key %s, xlation %s, locale %s, blessed: %d",
+                    //                key, xlation, locale, blessedLong );
+
+                    insertStmt.bindString( 1, key );
+                    insertStmt.bindString( 2, locale );
+                    insertStmt.bindLong( 3, blessedLong );
+                    insertStmt.bindString( 4, xlation );
+                    
+                    try {
+                        insertStmt.execute();
+                    } catch ( SQLiteConstraintException sce ) {
+
+                        updateStmt.bindString( 1, xlation );
+                        updateStmt.bindString( 2, key );
+                        updateStmt.bindString( 3, locale );
+                        updateStmt.bindLong( 4, blessedLong );
+
+                        try {
+                            updateStmt.execute();
+                        } catch ( Exception ex ) {
+                            DbgUtils.loge( ex );
+                            Assert.fail();
+                        }
+                    }
+                }
+                db.close();
+            }
+        }
+    }
+
+    // You can't have an array of paramterized types in java, so we'll let the
+    // caller cast.
+    public static Object[] getXlations( Context context, String locale )
+    {
+        HashMap<String, String> local = new HashMap<String, String>();
+        HashMap<String, String> blessed = new HashMap<String, String>();
+
+        String selection = String.format( "%s = '%s'", DBHelper.LOCALE, 
+                                          locale );
+        String[] columns = { DBHelper.KEY, DBHelper.XLATION, DBHelper.BLESSED };
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_LOC, columns, 
+                                      selection, null, null, null, null );
+            int keyIndex = cursor.getColumnIndex( DBHelper.KEY );
+            int valueIndex = cursor.getColumnIndex( DBHelper.XLATION );
+            int blessedIndex = cursor.getColumnIndex( DBHelper.BLESSED );
+            while ( cursor.moveToNext() ) {
+                String key = cursor.getString( keyIndex );
+                String value = cursor.getString( valueIndex );
+                HashMap<String, String> map =
+                    (0 == cursor.getInt( blessedIndex )) ? local : blessed;
+                map.put( key, value );
+            }
+            cursor.close();
+            db.close();
+        }
+
+        Object result[] = new Object[] { local, blessed };
+        return result;
+    }
+
+    public static void dropXLations( Context context, String locale )
+    {
+        String selection = String.format( "%s = '%s'", DBHelper.LOCALE, 
+                                          locale );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.delete( DBHelper.TABLE_NAME_LOC, selection, null );
+            db.close();
+        }
+    }
+
+    public static void setStringFor( Context context, String key, String value )
+    {
+        String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.VALUE, value );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            long result = db.update( DBHelper.TABLE_NAME_PAIRS,
+                                     values, selection, null );
+            if ( 0 == result ) {
+                values.put( DBHelper.KEY, key );
+                db.insert( DBHelper.TABLE_NAME_PAIRS, null, values );
+            }
+
+            db.close();
+        }
+    }
+
+    public static String getStringFor( Context context, String key, String dflt )
+    {
+        String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
+        String[] columns = { DBHelper.VALUE };
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_PAIRS, columns, 
+                                      selection, null, null, null, null );
+            Assert.assertTrue( 1 >= cursor.getCount() );
+            int indx = cursor.getColumnIndex( DBHelper.VALUE );
+            if ( cursor.moveToNext() ) {
+                dflt = cursor.getString( indx );
+            }
+            cursor.close();
+            db.close();
+        }
+        return dflt;
+    }
+
+    public static void setIntFor( Context context, String key, int value )
+    {
+        String asStr = String.format( "%d", value );
+        setStringFor( context, key, asStr );
+    }
+
+    public static int getIntFor( Context context, String key, int dflt )
+    {
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            dflt = Integer.parseInt( asStr );
+        }
+        return dflt;
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
@@ -1805,12 +2098,12 @@ public class DBUtils {
         return result;
     }
     
-    private static void notifyListeners( long rowid, boolean countChanged )
+    private static void notifyListeners( long rowid, GameChangeType change )
     {
         synchronized( s_listeners ) {
             Iterator<DBChangeListener> iter = s_listeners.iterator();
             while ( iter.hasNext() ) {
-                iter.next().gameSaved( rowid, countChanged );
+                iter.next().gameSaved( rowid, change );
             }
         }
     }

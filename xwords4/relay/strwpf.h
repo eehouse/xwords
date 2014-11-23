@@ -21,10 +21,18 @@
 #define _STRWPF_H_
 
 #include <string>
+#include <stdarg.h>
 
-class StrWPF : public std::string  {
+class StrWPF : public std::string {
  public:
+    StrWPF() : m_addsiz(100){}
+
     void catf( const char* fmt, ... );
+    /* Don't overload catf: some compilers use the wrong one, maybe on
+       32-bit? */
+    bool catfap( const char* fmt, va_list ap );
+ private:
+    int m_addsiz;
 };
 
 #endif

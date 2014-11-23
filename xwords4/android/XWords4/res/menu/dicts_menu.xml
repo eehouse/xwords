@@ -3,13 +3,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item android:id="@+id/dicts_download"
-          android:title="@string/download_dicts"
+          android:title="@string/button_download"
           android:icon="@drawable/download__gen"
           android:showAsAction="ifRoom"
           />
 
+    <item android:id="@+id/dicts_deselect_all"
+          android:title="@string/slmenu_deselect_all"
+          android:icon="@drawable/clear_all__gen"
+          android:showAsAction="ifRoom"
+          />
+
     <item android:id="@+id/dicts_delete"
-          android:title="@string/list_item_delete"
+          android:title="@string/delete_dicts"
           android:icon="@drawable/content_discard__gen"
           android:showAsAction="ifRoom"
           />

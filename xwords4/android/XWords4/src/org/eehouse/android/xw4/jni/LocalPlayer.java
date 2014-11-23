@@ -36,7 +36,7 @@ public class LocalPlayer {
     {
         isLocal = true;
         robotIQ = 0;            // human
-        String fmt = context.getString( R.string.playerf );
+        String fmt = context.getString( R.string.player_fmt);
         name = String.format( fmt, num + 1 );
         password = "";
     }

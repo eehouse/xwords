@@ -1,0 +1,62 @@
+<html>
+  <head>
+	<script>
+      showSurvey = function() {
+	  var div = document.getElementById('survey');
+	  div.style.display = 'inline';
+      };
+	</script>
+	<style type="text/css">
+	  body {font-size: smaller;}
+      #survey { display: none; }
+	  h2,h3 { text-align: center; }
+	</style>
+  </head>
+<body>
+  <h2>Crosswords 4.4 beta 91 release</h2>
+
+  <p>The last release was big (added Bluetooth support) and the next
+  will be too (rethinking how game invitations work).  This one just
+  cleans up some stuff that was bugging me.</p>
+
+  <div id="survey">
+	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
+	this survey</a> to help determine what gets done next in
+	Crosswords.</p>
+  </div>
+
+  <h3>New with this release</h3>
+  <ul>
+      <li>Add &quot;New group&quot; button to move-game-to-group
+      alert</li>
+      <li>Make selection of default language for new games
+          explicit</li>
+      <li>When issuing new tiles into tray, sort only the ones to the
+          right of the divider; leave those to the left alone</li>
+      <li>When you choose to download a new wordlist while configuring
+          a new game, assume you want to use it for the game</li>
+      <li>Fix a few more little bugs and annoyances</li>
+  </ul>
+
+  <p>(The full changelog 
+  is <a href="http://xwords.sf.net/and_changes.php">here</a>.)</p>
+
+  <h3>Next up</h3>
+  <ul>
+	  <li>Fix things so you don&apos;t have to specify how two devices will
+	      communicate: Bluetooth, Relay, SMS - shouldn&apos;t be something you
+	      have to pick. I should just use what works at the time.  That&apos;s
+	      the goal anyway.</li>
+	  <li>Offer &quot;Rematch&quot; when game&apos;s over (easy if I get
+	      the above right)</li>
+  </ul>
+
+  <p>This is beta software.  Please let me know (email
+      eehouse@eehouse.org) what&apos;s broken and what features you&apos;d
+      most like to see. And if you do get a crash, please let your phone
+      report it to Google so I can see it!</p>
+
+  <p>Thanks!<br>--Eric</p>
+
+</body>
+</html>

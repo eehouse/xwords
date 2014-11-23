@@ -1822,6 +1822,23 @@ model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
     notifyTrayListeners( model, turn, indexCur, indexNew );
 } /* model_moveTileOnTray */
 
+XP_U16
+model_getDividerLoc( const ModelCtxt* model, XP_S16 turn )
+{
+    XP_ASSERT( turn >= 0 );
+    const PlayerCtxt* player = &model->players[turn];
+    return player->dividerLoc;
+}
+
+void
+model_setDividerLoc( ModelCtxt* model, XP_S16 turn, XP_U16 loc )
+{
+    XP_ASSERT( turn >= 0 );
+    PlayerCtxt* player = &model->players[turn];
+    XP_ASSERT( loc < 0xFF );
+    player->dividerLoc = (XP_U8)loc;
+}
+
 static void
 assignPlayerTiles( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles )
 {
@@ -1838,7 +1855,7 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 {
     XP_ASSERT( turn >= 0 );
     TrayTileSet sorted;
-    sortTiles( &sorted, tiles );
+    sortTiles( &sorted, tiles, 0 );
     stack_addAssign( model->vol.stack, turn, &sorted );
 
     assignPlayerTiles( model, turn, tiles );
@@ -1850,7 +1867,9 @@ model_sortTiles( ModelCtxt* model, XP_S16 turn )
     XP_S16 nTiles;
 
     TrayTileSet sorted;
-    sortTiles( &sorted, model_getPlayerTiles( model, turn ) );
+    const TrayTileSet* curTiles = model_getPlayerTiles( model, turn );
+    XP_U16 dividerLoc = model_getDividerLoc( model, turn );
+    sortTiles( &sorted, curTiles, dividerLoc );
 
     nTiles = sorted.nTiles;
     while ( nTiles > 0 ) {
@@ -2189,42 +2208,33 @@ getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
 
 static void
 scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany, 
-               XP_UCHAR* buf, XP_U16* bufLen )
+               LastMoveInfo* lmi )
 {
+    XP_U16 score;
+    WordNotifierInfo notifyInfo;
+    FirstWordData data;
 
-    if ( moveInfo->nTiles == 0 ) {
-        const XP_UCHAR* str = util_getUserString( model->vol.util, STR_PASSED );
-        XP_U16 len = XP_STRLEN( str );
-        *bufLen = len;
-        XP_STRNCPY( buf, str, len + 1 );
-    } else {
-        XP_U16 score;
-        const XP_UCHAR* format;
-        WordNotifierInfo notifyInfo;
-        FirstWordData data;
+    ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
+    XP_U16 turn;
+    XP_S16 moveNum = -1;
 
-        ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
-        XP_U16 turn;
-        XP_S16 moveNum = -1;
+    copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
-        copyStack( model, tmpModel->vol.stack, model->vol.stack );
-
-        if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn,
-                                     &moveNum ) ) {
-            XP_ASSERT( 0 );
-        }
-
-        data.word[0] = '\0';
-        notifyInfo.proc = getFirstWord;
-        notifyInfo.closure = &data;
-        score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL,
-                                 (XWStreamCtxt*)NULL, &notifyInfo );
-
-        model_destroy( tmpModel );
-
-        format = util_getUserString( model->vol.util, STRSD_SUMMARYSCORED );
-        *bufLen = XP_SNPRINTF( buf, *bufLen, format, data.word, score );
+    if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn,
+                                 &moveNum ) ) {
+        XP_ASSERT( 0 );
     }
+
+    data.word[0] = '\0';
+    notifyInfo.proc = getFirstWord;
+    notifyInfo.closure = &data;
+    score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL,
+                             (XWStreamCtxt*)NULL, &notifyInfo );
+
+    model_destroy( tmpModel );
+
+    lmi->score = score;
+    XP_SNPRINTF( lmi->word, VSIZE(lmi->word), "%s", data.word );
 } /* scoreLastMove */
 
 static XP_U16
@@ -2373,48 +2383,50 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
 #endif
 
 XP_Bool
-model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
-                           XP_UCHAR* expl, XP_U16* explLen )
+model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
 {
     StackCtxt* stack = model->vol.stack;
     XP_S16 nEntries, which;
     StackEntry entry;
     XP_Bool found = XP_FALSE;
+    XP_MEMSET( lmi, 0, sizeof(*lmi) );
 
     XP_ASSERT( !!stack );
-    XP_ASSERT( player >= 0 );
 
     nEntries = stack_getNEntries( stack );
 
     for ( which = nEntries; which >= 0; ) {
         if ( stack_getNthEntry( stack, --which, &entry ) ) {
-            if ( entry.playerNum == player ) {
+            if ( -1 == player || entry.playerNum == player ) {
                 found = XP_TRUE;
                 break;
             }
         }
     }
 
+
     if ( found ) { /* success? */
-        const XP_UCHAR* format;
-        XP_U16 nTiles;
+        XP_ASSERT( -1 == player || player == entry.playerNum );
+
+        XP_LOGF( "%s: found move %d", __func__, which );
+        lmi->name = model->vol.gi->players[entry.playerNum].name;
+        lmi->moveType = entry.moveType;
+
         switch ( entry.moveType ) {
         case MOVE_TYPE:
-            scoreLastMove( model, &entry.u.move.moveInfo, 
-                           nEntries - which, expl, explLen );
+            lmi->nTiles = entry.u.move.moveInfo.nTiles;
+            if ( 0 < entry.u.move.moveInfo.nTiles ) {
+                scoreLastMove( model, &entry.u.move.moveInfo, nEntries - which,
+                               lmi );
+            }
             break;
         case TRADE_TYPE:
-            nTiles = entry.u.trade.oldTiles.nTiles;
-            format = util_getUserString( model->vol.util, STRD_TRADED );
-            *explLen = XP_SNPRINTF( expl, *explLen, format, nTiles );
+            lmi->nTiles = entry.u.trade.oldTiles.nTiles;
             break;
         case PHONY_TYPE:
-            format = util_getUserString( model->vol.util, STR_LOSTTURN );
-            *explLen = XP_STRLEN( format );
-            XP_STRCAT( expl, format );
             break;
         case ASSIGN_TYPE:
-            found = XP_FALSE;
+            // found = XP_FALSE;
             break;
         }
     }
@@ -2446,6 +2458,10 @@ loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, XP_U16 version,
         pc->nUndone = (XP_U8)stream_getBits( stream, NTILES_NBITS );
     } else {
         XP_ASSERT( 0 == pc->nUndone );
+    }
+    XP_ASSERT( 0 == pc->dividerLoc );
+    if ( STREAM_VERS_MODELDIVIDER <= version ) {
+        pc->dividerLoc = stream_getBits( stream, NTILES_NBITS );
     }
 
     nTiles = pc->nPending + pc->nUndone;
@@ -2481,6 +2497,7 @@ writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
     
     stream_putBits( stream, NTILES_NBITS, pc->nPending );
     stream_putBits( stream, NTILES_NBITS, pc->nUndone );
+    stream_putBits( stream, NTILES_NBITS, pc->dividerLoc );
 
     nTiles = pc->nPending + pc->nUndone;
     for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {

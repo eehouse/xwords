@@ -49,6 +49,7 @@ public class DictUtils {
 
     public interface DownProgListener {
         void progressMade( int nBytes );
+        boolean isCancelled();
     }
 
     // Standard hack for using APIs from an SDK in code to ship on
@@ -104,7 +105,7 @@ public class DictUtils {
         }
     } // DictPairs
 
-    public static class DictAndLoc {
+    public static class DictAndLoc implements Comparable {
         public DictAndLoc( String pname, DictLoc ploc ) {
             name = removeDictExtn(pname); loc = ploc;
         }
@@ -122,6 +123,11 @@ public class DictUtils {
                     && loc.equals( other.loc );
             }
             return result;
+        }
+
+        public int compareTo( Object obj ) {
+            DictAndLoc other = (DictAndLoc)obj;
+            return name.compareTo( other.name );
         }
     }
  
@@ -323,7 +329,7 @@ public class DictUtils {
                 // check that with len bytes we've read the whole file
                 Assert.assertTrue( -1 == dict.read() );
             } catch ( java.io.IOException ee ){
-                DbgUtils.logf( "%s failed to open; likely not built-in", name );
+                // DbgUtils.logf( "%s failed to open; likely not built-in", name );
             }
         }
 
@@ -359,7 +365,7 @@ public class DictUtils {
                 fis.close();
                 DbgUtils.logf( "Successfully loaded %s", name );
             } catch ( java.io.FileNotFoundException fnf ) {
-                DbgUtils.loge( fnf );
+                // DbgUtils.loge( fnf );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
             }
@@ -439,38 +445,53 @@ public class DictUtils {
                                     DownProgListener dpl )
     {
         boolean success = false;
-        File sdFile = null;
+        File tmpFile;
         boolean useSD = DictLoc.EXTERNAL == loc;
 
         name = addDictExtn( name );
+        String tmpName = name + "_tmp";
         if ( useSD ) {
-            sdFile = getSDPathFor( context, name );
+            tmpFile = getSDPathFor( context, tmpName );
+        } else {
+            tmpFile = new File( context.getFilesDir(), tmpName );
         }
 
-        if ( null != sdFile || !useSD ) {
+        if ( null != tmpFile ) {
             try {
-                FileOutputStream fos;
-                if ( null != sdFile ) {
-                    fos = new FileOutputStream( sdFile );
-                } else {
-                    fos = context.openFileOutput( name, Context.MODE_PRIVATE );
-                }
-                byte[] buf = new byte[1024];
-                int nRead;
-                while( 0 <= (nRead = in.read( buf, 0, buf.length )) ) {
+                FileOutputStream fos = new FileOutputStream( tmpFile );
+                byte[] buf = new byte[1024 * 4];
+                boolean cancelled = false;
+                for ( ; ; ) {
+                    cancelled = dpl.isCancelled();
+                    if ( cancelled ) {
+                        tmpFile.delete();
+                        break;
+                    }
+                    int nRead = in.read( buf, 0, buf.length );
+                    if ( 0 > nRead ) {
+                        break;
+                    }
                     fos.write( buf, 0, nRead );
                     dpl.progressMade( nRead );
                 }
                 fos.close();
-                invalDictList();
-                success = true;
+                success = !cancelled;
+                if ( success ) {
+                    invalDictList();
+                }
             } catch ( java.io.FileNotFoundException fnf ) {
                 DbgUtils.loge( fnf );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
-                deleteDict( context, name );
+                tmpFile.delete();
             }
         }
+
+        if ( success ) {
+            File file = new File( tmpFile.getParent(), name );
+            tmpFile.renameTo( file );
+        }
+
         return success;
     }
 
@@ -532,7 +553,7 @@ public class DictUtils {
         return str;
     }
 
-    private static String addDictExtn( String str ) 
+    public static String addDictExtn( String str ) 
     {
         if ( ! str.endsWith( XWConstants.DICT_EXTN ) ) {
             str += XWConstants.DICT_EXTN;

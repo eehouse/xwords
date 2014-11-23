@@ -36,6 +36,8 @@ import android.os.Parcelable;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class NFCUtils {
 
     public interface NFCActor {
@@ -133,7 +135,7 @@ public class NFCUtils {
                                                       + ".NFC_SETTINGS" ) );
                     }
                 };
-        return new AlertDialog.Builder( activity )
+        return LocUtils.makeAlertBuilder( activity )
             .setTitle( R.string.info_title )
             .setMessage( R.string.enable_nfc )
             .setPositiveButton( R.string.button_cancel, null )
@@ -143,7 +145,7 @@ public class NFCUtils {
 
     private static NdefMessage makeMessage( Activity activity, String data )
     {
-        String mimeType = activity.getString( R.string.xwords_nfc_mime );
+        String mimeType = LocUtils.getString( activity, R.string.xwords_nfc_mime );
         NdefMessage msg = new NdefMessage( new NdefRecord[] {
                 new NdefRecord(NdefRecord.TNF_MIME_MEDIA, 
                                mimeType.getBytes(), new byte[0], 

@@ -2,6 +2,8 @@
 
 <!-- Resources in this file do not require localization -->
 <resources>
+  <!-- The name of the app.  Not localized! -->
+  <string name="app_name">Crosswords</string>  
 
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
@@ -39,16 +41,16 @@
   <string name="key_dict_host">key_dict_host3</string>
   <string name="key_logging_on">key_logging_on</string>
   <string name="key_show_sms">key_show_sms</string>
+  <string name="key_send_data_sms">key_send_data_sms</string>
   <string name="key_init_hintsallowed">key_init_hintsallowed</string>
   <string name="key_init_nethintsallowed">key_init_nethintsallowed</string>
   <string name="key_init_autojuggle">key_init_autojuggle</string>
   <string name="key_board_size">key_board_size</string>
   <string name="key_initial_player_minutes">key_initial_player_minutes</string>
+  <string name="key_default_language">key_default_language</string>
   <string name="key_default_dict">key_default_dict</string>
   <string name="key_player1_name">key_player1_name</string>
-  <string name="key_player2_name">key_player2_name</string>
-  <string name="key_player3_name">key_player3_name</string>
-  <string name="key_player4_name">key_player4_name</string>
+  <string name="key_robot_name">key_robot_name</string>
   <string name="key_default_robodict">key_default_robodict</string>
   <string name="key_default_phonies">key_default_phonies2</string>
   <string name="key_default_timerenabled">key_default_timerenabled</string>
@@ -62,10 +64,10 @@
 
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>
+  <string name="key_force_tablet">key_force_tablet</string>
 
   <!-- database keys whose entries aren't visible prefs -->
   <string name="key_closed_langs">key_closed_langs</string>
-  <string name="key_bt_names">key_bt_names</string>
   <string name="key_bt_addrs">key_bt_addrs</string>
   <string name="key_sms_phones">key_sms_phones</string>
   <string name="key_connstat_data">key_connstat_data</string>
@@ -103,14 +105,18 @@
   <string name="key_notagain_newfrom">key_notagain_newfrom</string>
   <string name="key_notagain_trading">key_notagain_trading</string>
   <string name="key_na_lookup">key_na_lookup</string>
-  <string name="key_na_firefox">key_na_firefox</string>
   <string name="key_na_browse">key_na_browse</string>
   <string name="key_na_browseall">key_na_browseall</string>
   <string name="key_na_values">key_na_values</string>
   <string name="key_na_studycopy">key_na_studycopy</string>
+  <string name="key_na_fmt_expl">key_na_fmt_expl</string>
+  <string name="key_na_dicts">key_na_dicts</string>
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_enable_dup_invite">key_enable_dup_invite</string>
+  <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
+  <string name="key_xlations_locale">key_xlations_locale</string>
+  <string name="key_xlations_enabled">key_xlations_enabled</string>
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>
@@ -141,6 +147,8 @@
   <string name="debug_features">Enable debug features</string>
   <string name="debug_features_summary">Menuitems etc. (release builds
   only)</string>
+  <string name="title_send_data_sms">Send SMS as data</string>
+  <string name="summary_send_data_sms">(GSM phones only)</string>
   <string name="board_menu_game_netstats">Network stats</string>
   <string name="netstats_title">Game network stats</string>
 
@@ -151,8 +159,9 @@
   <string name="gamel_menu_storedb">Write DB to SD card</string>
   <string name="gamel_menu_loaddb">Load DB from SD card</string>
   <string name="enable_dupes_title">Accept duplicate invites</string>
+  <string name="xlations_locale">Fake locale for translation</string>
   <string name="enable_dupes_summary">Accept invitations more than once</string>
-
+  <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
   <string-array name="board_sizes">
@@ -205,7 +214,7 @@
   </string-array>
 
   <string-array name="language_names">
-    <item></item> <!-- Unknown -->
+    <item>@string/lang_unknown</item> <!-- Unknown -->
     <item>English</item> <!-- 1 -->
     <item>French</item>  <!-- 2 -->
     <item>German</item>  <!-- 3 -->
@@ -297,6 +306,14 @@
     <item>@string/confirm_sms_leave</item>
     <item>@string/confirm_sms_unlimited</item>
     <item>@string/confirm_sms_willpay</item>
+  </string-array>
+
+  <!-- Keep in sync with LocSearcher SHOW_BYS enum -->
+  <string-array name="loc_filters">
+      <item>@string/loc_filters_all</item>
+      <item>@string/loc_filters_screen</item>
+      <item>@string/loc_filters_menu</item>
+      <item>@string/loc_filters_modified</item>
   </string-array>
 
 </resources>

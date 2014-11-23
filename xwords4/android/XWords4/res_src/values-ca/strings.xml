@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Copyright (C) 2007 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+  
+          http://www.apache.org/licenses/LICENSE-2.0
+  
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+  <string name="button_new_game">Afegeix una partida</string>
+  <string name="list_item_config">Configura</string>
+  <string name="list_item_delete">Suprimeix</string>
+  <string name="list_item_copy">Copia</string>
+  <string name="list_item_reset">Reinicialitza</string>
+  <string name="list_item_new_from">Nova</string>
+  <string name="play">Partida</string>
+  <string name="title_dicts_list">Diccionaris del Crosswords</string>
+  <string name="title_game_config_fmt">Configura el %1$s</string>
+  <string name="title_prefs">Configuració del Crosswords</string>
+  <string name="button_ok">D\'acord</string>
+  <string name="button_cancel">Cancel·la</string>
+  <string name="button_yes">Sí</string>
+  <string name="button_no">No</string>
+  <string name="button_save">Desa</string>
+  <string name="button_discard">Descarta</string>
+  <string name="button_retry">Reintenta</string>
+  <string name="player_label">Nom:</string>
+  <string name="info_title">Per a la vostra informació...</string>
+  <string name="query_title">Una pregunta...</string>
+  <string name="title_tile_picker">Seleccioneu una fitxa</string>
+  <string name="tiles_left_title">Fitxes romanents</string>
+  <string name="counts_values_title">Quantitat i valor de les fitxes</string>
+  <string name="history_title">Historial de la partida</string>
+  <string name="finalscores_title">Puntuacions finals</string>
+  <!-- system menu for main board view -->
+  <string name="board_menu_done">Fet</string>
+  <string name="board_menu_trade">Canvia</string>
+  <string name="board_submenu_game">Partida</string>
+  <string name="board_menu_game_counts">Quantitat i valors</string>
+  <string name="board_menu_game_left">Fitxes romanents</string>
+  <string name="board_menu_game_history">Historial de la partida</string>
+  <string name="board_menu_game_final">Puntuacions finals</string>
+  <string name="board_menu_game_resend">Reenvia els missatges</string>
+  <string name="board_menu_file_about">Quant al Crosswords</string>
+  <!-- returned by util_getUserString -->
+  <string name="strd_robot_traded_fmt">El robot ha canviat %1$d fitxes en aquest torn.</string>
+  <!--string name="str_robot_moved">El robot ha fet aquesta jugada:</string-->
+  <string name="strs_values_header_fmt">%1$s quantitat/valors:\n</string>
+  <string name="strd_remaining_tiles_add_fmt">+ %1$d [fitxes romanents]</string>
+  <string name="strd_unused_tiles_sub_fmt"> - %1$d [fitxes al faristol]</string>
+  <string name="strd_time_penalty_sub_fmt"> - %1$d [temps]</string>
+  <string name="strs_move_across_fmt">mou (des de %1$s horitzontal)</string>
+  <string name="strs_move_down_fmt">mou (des de %1$s avall)</string>
+  <string name="strs_tray_at_start_fmt">Faristol a l\'inici: %1$s</string>
+  <string name="strss_traded_for_fmt">Ha canviat %1$s per %2$s.</string>
+  <string name="str_phony_rejected">Hi ha una o més paraules no vàlides a la jugada; torn perdut!</string>
+  <string name="strd_cumulative_score_fmt">Puntuació acumulada: %1$d</string>
+  <string name="strs_new_tiles_fmt">Fitxes noves: %1$s</string>
+  <string name="str_passed">Ha passat</string>
+  <string name="str_lostturn">Torn perdut</string>
+  <string name="str_commit_confirm">Voleu fer la jugada?\n</string>
+  <string name="str_bonus_all">Bonificació per usar totes les fitxes: 50\n</string>
+  <string name="strd_turn_score_fmt">Puntuació del torn: %1$d\n</string>
+  <!-- error messages -->
+  <string name="str_tiles_not_in_line">Heu de jugar les fitxes en una mateixa línia.</string>
+  <string name="str_no_empties_in_turn">No podeu deixar caselles buides entre les fitxes jugades.</string>
+  <string name="str_two_tiles_first_move">Heu de jugar dues o més fitxes en la primera jugada.</string>
+  <string name="str_tiles_must_contact">Les fitxes noves han de tocar alguna de les que ja estan jugades al tauler (o la casella central en la primera jugada).</string>
+  <string name="str_not_your_turn">No podeu fer això, no és el vostre torn!</string>
+  <string name="str_no_peek_robot_tiles">No podeu mirar les fitxes del robot!</string>
+  <string name="str_too_few_tiles_left_to_trade">Hi ha poques fitxes al saquet i ja no podeu canviar-les.</string>
+  <string name="str_cant_undo_tileassign">L\'assignació de fitxers no es pot desfer.</string>
+  <string name="str_cant_hint_while_disabled">Les pistes es troben inhabilitades per a aquesta partida. Habiliteu-les per a una partida nova al menú Preferències.</string>
+  <string name="str_no_peek_remote_tiles">No podeu mirar a les fitxes dels jugadors remots!</string>
+  <string name="str_reg_unexpected_user">S\'ha refusat l\'intent de registre d\'usuaris inesperats.</string>
+  <string name="str_server_dict_wins">Hi ha un conflicte entre els diccionaris de l\'amfitrió i dels visitants; l\'amfitrió guanya.</string>
+  <string name="str_reg_server_sans_remote">Com a mínim un jugador ha de ser visitant per a una partida iniciada com a amfitrió.</string>
+  <string name="remote_label">Jugador remot (s\'ignora)</string>
+  <string name="robot_label">Jugador robot</string>
+  <string name="password_label">Contrasenya (s\'ignora)</string>
+  <string name="robot_name_fmt">%1$s (robot)</string>
+  <string name="guest_name">(jugador visitant)</string>
+  <string name="player_edit_title">Jugador</string>
+  <string name="players_label_standalone">Jugadors</string>
+  <string name="players_label_host_fmt">Jugadors</string>
+  <string name="button_add_player">Afegeix un jugador</string>
+  <string name="button_juggle_players">Remena els jugadors</string>
+  <string name="dicts_item_select">Estableix com a predeterminat</string>
+  <string name="settings_label">Paràmetres de la partida</string>
+  <string name="minutes_label">Minuts a la partida</string>
+  <string name="download_dicts">Baixa\'n més...</string>
+  <string name="confirm_save_title">Confirmeu els canvis</string>
+  <string name="confirm_save">Aquesta partida es troba en joc. Si deseu els canvis haureu de tornar a començar. Voleu desar o descartar els canvis?</string>
+  <string name="hints_allowed">Permet pistes</string>
+  <string name="use_timer">Habilita el temps</string>
+  <string name="show_arrow">Mostra la fletxa al tauler</string>
+  <string name="show_arrow_summary">Les fitxes del faristol es col·locaran sobre la fletxa</string>
+  <string name="explain_robot">Explica les jugades del robot</string>
+  <string name="explain_robot_summary">Mostra el resum de la jugada dels jugadors robot</string>
+  <string name="skip_confirm_turn">Omet la confirmació de la jugada</string>
+  <string name="skip_confirm_turn_summary">No mostra el resum de la jugada dels jugadors humans</string>
+  <string name="title_sort_tiles">Ordena les fitxes noves</string>
+  <string name="summary_sort_tiles">Ordena el faristol en agafar noves fitxes</string>
+  <string name="ringer_zoom">Zoom amb els botons de volum</string>
+  <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum.</string>
+  <string name="hide_title">Amaga la capçalera</string>
+  <string name="hide_title_summary">Permet que el tauler sigui una mica més gran</string>
+  <string name="phonies_ignore">Ignora-les</string>
+  <string name="phonies_warn">Avisa\'m</string>
+  <string name="phonies_disallow">No es poden jugar</string>
+  <string name="menu_prefs">Preferències</string>
+  <string name="gamel_menu_dicts">Diccionaris</string>
+  <string name="confirm_revert_colors">Esteu segur de voler reestablir tots tots els paràmetres de colors als seus valors predeterminats?</string>
+  <string name="confirm_revert_all">Esteu segur de voler reestablir totes les preferències als seus valors predeterminats?</string>
+  <string name="prefs_defaults">Valors predeterminats per a partides noves</string>
+  <string name="prefs_defaults_summary">Paràmetres predeterminats per a partides noves</string>
+  <string name="prefs_appearance">Aspecte</string>
+  <string name="prefs_appearance_summary">Paràmetres que controlen l\'aspecte</string>
+  <string name="prefs_behavior">Comportament</string>
+  <string name="prefs_behavior_summary">Paràmetres que controlen el comportament de l\'aplicació</string>
+  <string name="default_dict">Diccionari arbitral</string>
+  <string name="default_phonies">Paraules fora del dicc.</string>
+  <string name="board_size">Mida del tauler</string>
+  <string name="prefs_colors">Colors</string>
+  <string name="prefs_colors_summary">Canvieu els colors emprats al tauler</string>
+  <string name="pref_player1_name">Primer jugador</string>
+  <string name="pref_player2_name">Segon jugador</string>
+  <string name="pref_player3_name">Tercer jugador</string>
+  <string name="pref_player4_name">Quart jugador</string>
+  <string name="bonus_l2x">Doble de lletra</string>
+  <string name="bonus_l3x">Triple de lletra</string>
+  <string name="bonus_w2x">Doble de paraula</string>
+  <string name="bonus_w3x">Triple de paraula</string>
+  <string name="bonus_l2x_summary">2L</string>
+  <string name="bonus_w2x_summary">2P</string>
+  <string name="bonus_l3x_summary">3L</string>
+  <string name="bonus_w3x_summary">3P</string>
+  <string name="pts">pts</string>
+  <string name="tile_back">Fons de la fitxa</string>
+  <string name="empty">Cel·la buida/fons</string>
+  <string name="clr_crosshairs">Creu d\'ubicació</string>
+  <string name="msg_relay_waiting_fmt">Esteu connectat al repetidor. S\'està esperant a %1$d jugador/s.</string>
+  <string name="relay_alert">Error en la connexió</string>
+  <string name="msg_too_many">Esteu proveint més jugadors dels que espera l\'amfitrió.</string>
+  <string name="msg_no_room">Cap amfitrió no ha registrat una sala amb aquest nom.</string>
+  <string name="msg_dup_room">Un altre amfitrió ha registrat una sala amb aquest nom. Canvieu el nom a la vostra o intentenu més tard.</string>
+  <string name="msg_lost_other">El repetidor ha perdut el contacte amb algun altre dispositiu durant aquesta partida.</string>
+  <string name="ids_badwords_fmt">Les paraules %1$s no es troben al diccionari.</string>
+  <string name="badwords_accept">  Voleu acceptar aquesta jugada?</string>
+  <string name="badwords_lost">  Torn perdut.</string>
+  <string name="badwords_title">Les paraules no són vàlides</string>
+  <string name="ids_endnow">Esteu segur de voler abandonar ara la partida?</string>
+  <string name="force_title">Jugador/s remot/s</string>
+  <string name="force_expl">Un amfitrió ha de tenir com a mínim un jugador remot.</string>
+  <string name="gameOver">Final de partida</string>
+  <string name="moves_fmt">%1$d torns jugats</string>
+  <!-- about dialog stuff -->
+  <string name="about_copyright">Copyright (C) 1998-2012 d\'Eric
+    House. Aquest programari es troba sota la Llicència Pública General GNU.</string>
+  <string name="about_web">Per a l\'ajuda o el codi font visiteu:
+    http://xwords.sf.net.  Per informar d\'errors, suggerir noves funcionalitats, oferir ajuda, etc., envieu un correu a: eehouse@eehouse.org.</string>
+  <!-- fill this in other than in English -->
+  <string name="xlator">Traducció: Joan Montané --- Softcatalà</string>
+  <string name="downloading_dict_fmt">S\'està baixant el diccionari %1$s per al Crosswords...</string>
+  <string name="no_dict_title">No s\'ha trobat el diccionari</string>
+  <string name="button_download">Baixa</string>
+  <string name="msg_ask_password_fmt">Contrasenya per \"%1$s\":</string>
+  <string name="red">Roig</string>
+  <string name="green">Verd</string>
+  <string name="blue">Blau</string>
+  <string name="game_fmt">Partida %1$d</string>
+  <string name="player_fmt">Jugador %1$d</string>
+  <string name="initial_player_minutes">Minuts de partida</string>
+</resources>

@@ -29,18 +29,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameListGroup extends ExpiringLinearLayout 
     implements SelectableItem.LongClickHandler,
                View.OnClickListener,
                View.OnLongClickListener
 {
-    // Find me a home....
-    interface GroupStateListener {
-        void onGroupExpandedChanged( int groupPosition, boolean expanded );
-    }
 
-    private int m_groupPosition;
     private long m_groupID;
     private boolean m_expanded;
     private SelectableItem m_cb;
@@ -52,18 +48,30 @@ public class GameListGroup extends ExpiringLinearLayout
     private ImageButton m_expandButton;
 
     public static GameListGroup makeForPosition( Context context,
-                                                 int groupPosition, 
+                                                 View convertView,
                                                  long groupID,
                                                  int nGames,
                                                  boolean expanded,
                                                  SelectableItem cb,
                                                  GroupStateListener gcb )
     {
-        GameListGroup result = 
-            (GameListGroup)Utils.inflate( context, R.layout.game_list_group );
+        GameListGroup result = null;
+        if ( null != convertView && convertView instanceof GameListGroup ) {
+            result = (GameListGroup)convertView;
+
+            // Hack: once an ExpiringLinearLayout has a background it's not
+            // set up to be reused without one.  Until that's fixed, don't
+            // reuse in that case.
+            if ( result.hasDelegate() ) {
+                result = null;
+            }
+        }
+        if ( null == result ) {
+            result = (GameListGroup)
+                LocUtils.inflate( context, R.layout.game_list_group );
+        }
         result.m_cb = cb;
         result.m_gcb = gcb;
-        result.m_groupPosition = groupPosition;
         result.m_groupID = groupID;
         result.m_nGames = nGames;
         result.m_expanded = expanded;
@@ -93,16 +101,6 @@ public class GameListGroup extends ExpiringLinearLayout
         setOnLongClickListener( this );
 
         setButton();
-    }
-
-    public void setGroupPosition( int groupPosition )
-    {
-        m_groupPosition = groupPosition;
-    }
-
-    public int getGroupPosition()
-    {
-        return m_groupPosition;
     }
 
     public long getGroupID()
@@ -152,7 +150,7 @@ public class GameListGroup extends ExpiringLinearLayout
     {
         if ( 0 < m_nGames ) {
             m_expanded = !m_expanded;
-            m_gcb.onGroupExpandedChanged( m_groupPosition, m_expanded );
+            m_gcb.onGroupExpandedChanged( this, m_expanded );
             setButton();
         }
     }

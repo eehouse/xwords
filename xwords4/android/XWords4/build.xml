@@ -39,6 +39,9 @@
          application and should be checked into Version Control Systems. -->
     <loadproperties srcFile="project.properties" />
 
+    <!-- An attempt to define stuff to be included from multiple build.xml files -->
+    <import file="../scripts/common_targets.xml" />
+
     <!-- quick check on sdk.dir -->
     <fail
             message="sdk.dir is missing. Make sure to generate local.properties using 'android update project'"
@@ -46,62 +49,28 @@
     />
 
 
-<!-- extension targets. Uncomment the ones where you want to do custom work
-     in between standard targets -->
+    <!-- extension targets. Uncomment the ones where you want to do custom work
+         in between standard targets -->
 
     <property name="INITIAL_CLIENT_VERS" value="4"/>
-    <target name="-pre-clean">
-        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null" 
-	      failonerror="true" >
-            <arg value="${build.target}"/>
-        </exec>
-        <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true" >
-            <arg value="clean"/>
-        </exec>
+    <property name="VARIANT_NAME" value="xw4"/>
+    <property name="APP_NAME" value="Crosswords"/>
 
-        <exec dir="." executable="../scripts/mkimages.sh" 
-              failonerror="true" output="/dev/null" >
-            <arg value="--clean"/>
-        </exec>
-      </target>
+    <target name="-pre-clean">
+        <antcall target="my-pre-clean" />
+    </target>
 
     <target name="-pre-build">
-        <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null">
-            <arg value="${build.target}"/>
-        </exec>
-
-        <property name="CHAT_ENABLED" value="true" />
-        <property name="THUMBNAIL_ENABLED" value="true" />
-        <exec dir="." executable="../scripts/ndkbuild.sh" failonerror="true">
-            <arg value="BUILD_TARGET=${build.target}" />
-            <arg value="-j3"/>
-            <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
-            <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
-            <arg value="THUMBNAIL_ENABLED=${THUMBNAIL_ENABLED}" />
-        </exec>
-
-        <exec dir="." executable="../scripts/mkimages.sh" 
-              failonerror="true" output="/dev/null" 
-              />
-
-        <exec dir="." executable="../scripts/gen_gcmid.sh"
-              output="src/org/eehouse/android/xw4/GCMConsts.java"
-              logError="true" failonerror="true"
-              >
-          <arg value="xw4"/>
-          </exec>
-        <exec dir=".." executable="./scripts/genvers.sh" output="ant_out.txt">
-          <arg value="XWords4"/>
-          <arg value="xw4"/>
-          <arg value="${INITIAL_CLIENT_VERS}" />
-          <arg value="${CHAT_ENABLED}" />
-          <arg value="${THUMBNAIL_ENABLED}" />
-        </exec>
+        <antcall target="my-pre-build" />
     </target>
+
+    <target name="-pre-compile">
+        <antcall target="my-pre-compile" />
+    </target>
+
 <!--
     <target name="-pre-compile">
     </target>
-
     /* This is typically used for code obfuscation.
        Compiled code location: ${out.classes.absolute.dir}
        If this is not done in place, override ${out.dex.input.absolute.dir} */

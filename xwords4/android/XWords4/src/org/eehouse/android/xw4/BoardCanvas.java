@@ -39,6 +39,7 @@ import org.eehouse.android.xw4.jni.DrawScoreInfo;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.XwJNI.DictWrapper;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
 
@@ -175,9 +176,6 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         for ( int ii = 0; ii < ids.length; ++ii ) {
             m_bonusSummaries[ ii+1 ] = res.getString( ids[ii] );
         }
-
-        m_boundsScratch.set( 0, 0, bitmap.getWidth(), bitmap.getHeight() );
-        fillRect( m_boundsScratch, WHITE );
     }
 
     public void setJNIThread( JNIThread jniThread )
@@ -526,7 +524,7 @@ public class BoardCanvas extends Canvas implements DrawCtx {
         drawCentered( text, rect, null );
 
         rect.offset( 0, rect.height() );
-        drawCentered( m_context.getResources().getString( R.string.pts ), 
+        drawCentered( LocUtils.getString( m_context, R.string.pts ), 
                       rect, null );
     }
 

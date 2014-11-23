@@ -53,6 +53,7 @@
 
 #include "draw.h"
 #include "game.h"
+#include "movestak.h"
 #include "gtkask.h"
 #include "gtkaskm.h"
 #include "gtkchat.h"
@@ -577,8 +578,8 @@ createOrLoadObjects( GtkGameGlobals* globals )
                     mem_stream_make( MEMPOOL params->vtMgr, 
                                      cGlobals, CHANNEL_NONE,
                                      sendOnClose );
-                server_initClientConnection( cGlobals->game.server, 
-                                             stream );
+                (void)server_initClientConnection( cGlobals->game.server, 
+                                                   stream );
             }
 #endif
         }
@@ -944,8 +945,8 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
                 mem_stream_make( MEMPOOL globals->cGlobals.params->vtMgr,
                                  &globals->cGlobals, CHANNEL_NONE, 
                                  sendOnClose );
-            server_initClientConnection( globals->cGlobals.game.server, 
-                                         stream );
+            (void)server_initClientConnection( globals->cGlobals.game.server, 
+                                               stream );
         }
 #endif
         (void)server_do( globals->cGlobals.game.server ); /* assign tiles, etc. */
@@ -2014,12 +2015,12 @@ gtk_util_playerScoreHeld( XW_UtilCtxt* uc, XP_U16 player )
 
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
 
-    XP_UCHAR scoreExpl[48] = {0};
-    XP_U16 explLen = sizeof(scoreExpl);
-    
+    LastMoveInfo lmi;
     if ( model_getPlayersLastScore( globals->cGlobals.game.model,
-                                    player, scoreExpl, &explLen ) ) {
-        XP_LOGF( "got: %s", scoreExpl );
+                                    player, &lmi ) ) {
+        XP_UCHAR buf[128];
+        formatLMI( &lmi, buf, VSIZE(buf) );
+        (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
     }
 }
 #endif
@@ -2041,11 +2042,8 @@ gtk_util_userError( XW_UtilCtxt* uc, UtilErrID id )
     XP_Bool silent;
     const XP_UCHAR* message = linux_getErrString( id, &silent );
 
-    XP_LOGF( "%s(%d)", __func__, id );
-
-    if ( silent ) {
-        XP_LOGF( "%s", message );
-    } else {
+    XP_LOGF( "%s: %s", __func__, message );
+    if ( !silent ) {
         gtkUserError( globals, message );
     }
 } /* gtk_util_userError */

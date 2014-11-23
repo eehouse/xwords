@@ -31,6 +31,8 @@ import android.widget.CheckBox;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class XWListItem extends LinearLayout 
     implements SelectableItem.LongClickHandler, View.OnClickListener {
     private int m_position;
@@ -42,8 +44,16 @@ public class XWListItem extends LinearLayout
     private CheckBox m_checkbox;
     private DrawSelDelegate m_dsdel;
 
+    private ExpandedListener m_expListener;
+    private boolean m_expanded = false;
+    private View m_expandedView;
+
     public interface DeleteCallback {
         void deleteCalled( XWListItem item );
+    }
+
+    public interface ExpandedListener {
+        void expanded( XWListItem me, boolean expanded );
     }
 
     public XWListItem( Context cx, AttributeSet as ) {
@@ -62,6 +72,37 @@ public class XWListItem extends LinearLayout
 
     public int getPosition() { return m_position; }
     public void setPosition( int indx ) { m_position = indx; }
+
+    protected void setExpandedListener( ExpandedListener lstnr )
+    {
+        m_expListener = lstnr;
+        if ( null != lstnr ) {
+            setOnClickListener( this );
+        }
+    }
+
+    protected void setExpanded( boolean expanded )
+    {
+        m_expanded = expanded;
+        if ( null != m_expListener ) {
+            m_expListener.expanded( this, m_expanded );
+        }
+    }
+
+    protected void addExpandedView( View view )
+    {
+        if ( null != m_expandedView ) {
+            removeExpandedView();
+        }
+        m_expandedView = view;
+        addView( view );
+    }
+
+    protected void removeExpandedView()
+    {
+        removeView( m_expandedView );
+        m_expandedView = null;
+    }
 
     public void setText( String text )
     {
@@ -125,7 +166,7 @@ public class XWListItem extends LinearLayout
     // cast exception when inflating it and casting to the subclass.
     // So rather than create a subclass that knows about its purpose
     // I'll extend this with a general mechanism.  Hackery but ok.
-    public void cache( Object obj )
+    public void setCached( Object obj )
     {
         m_cached = obj;
     }
@@ -146,6 +187,8 @@ public class XWListItem extends LinearLayout
     {
         if ( m_checkbox == view ) {
             setSelected( m_checkbox.isChecked() );
+        } else {
+            setExpanded( !m_expanded ); // toggle
         }
     }
 
@@ -162,7 +205,8 @@ public class XWListItem extends LinearLayout
 
     public static XWListItem inflate( Context context, SelectableItem selCB )
     {
-        XWListItem item = (XWListItem)Utils.inflate( context,  R.layout.list_item );
+        XWListItem item = (XWListItem)
+            LocUtils.inflate( context, R.layout.list_item );
         item.setSelCB( selCB );
         return item;
     }

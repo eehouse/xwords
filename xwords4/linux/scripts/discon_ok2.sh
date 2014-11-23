@@ -41,8 +41,8 @@ declare -A FILES
 declare -A LOGS
 declare -A MINEND
 declare -A ROOM_PIDS
-declare -a APPS_OLD
-declare -a DICTS
+declare -a APPS_OLD=()
+declare -a DICTS=				# wants to be =() too?
 declare -A CHECKED_ROOMS
 
 function cleanup() {
@@ -202,7 +202,7 @@ build_cmds() {
             APPS[$COUNTER]="$APP_NEW"
             NEW_ARGS[$COUNTER]="$APP_NEW_PARAMS"
             BOARD_SIZE="--board-size ${BOARD_SIZES_NEW[$((RANDOM%${#BOARD_SIZES_NEW[*]}))]}"
-            if [ xx = "${APPS_OLD+xx}" ]; then
+            if [ 0 -lt ${#APPS_OLD[@]} ]; then
                 # 50% chance of starting out with old app
                 NAPPS=$((1+${#APPS_OLD[*]}))
                 if [ 0 -lt $((RANDOM%$NAPPS)) ]; then
@@ -276,6 +276,10 @@ launch() {
     KEY=$1
     LOG=${LOGS[$KEY]}
     APP="${APPS[$KEY]}"
+	if [ -z "$APP" ]; then
+		echo "error: no app set"
+		exit 1
+	fi
     PARAMS="${NEW_ARGS[$KEY]} ${ARGS[$KEY]} ${ARGS_DEVID[$KEY]}"
     exec $APP $PARAMS >/dev/null 2>>$LOG
 }
@@ -315,6 +319,9 @@ close_device() {
     unset ROOMS[$ID]
     unset APPS[$ID]
     unset ARGS_DEVID[$ID]
+
+    COUNT=${#ARGS[*]}
+    echo "$COUNT devices left playing..."
 }
 
 OBITS=""
@@ -349,8 +356,8 @@ maybe_resign() {
 
 try_upgrade() {
     KEY=$1
-    if [ xx = "${APPS_OLD+xx}" ]; then
-        if [ $APP_NEW != ${APPS[$KEY]} ]; then
+    if [ 0 -lt ${#APPS_OLD[@]} ]; then
+        if [ $APP_NEW != "${APPS[$KEY]}" ]; then
             # one in five chance of upgrading
             if [ 0 -eq $((RANDOM % UPGRADE_ODDS)) ]; then
                 APPS[$KEY]=$APP_NEW
@@ -456,7 +463,7 @@ run_cmds() {
         [ 0 -ge $COUNT ] && break
         NOW=$(date '+%s')
         [ $NOW -ge $ENDTIME ] && break
-        if [ $CORE_COUNT -ne "$(ls core.* 2>/dev/null | wc -l)" ]; then
+        if [ $CORE_COUNT -lt "$(ls core.* 2>/dev/null | wc -l)" ]; then
             echo "number of core files changed; exiting..."
             killall "$(basename $APP_NEW)"
             break
@@ -662,7 +669,7 @@ done
 
 # Assign defaults
 #[ 0 -eq ${#DICTS[@]} ] && DICTS=(dict.xwd)
-[ xx = "${DICTS+xx}" ] || DICTS=(dict.xwd)
+[ 0 -eq ${#DICTS} ] && DICTS=(dict.xwd)
 [ -z "$APP_NEW" ] && APP_NEW=./obj_linux_memdbg/xwords
 [ -z "$MINDEVS" ] && MINDEVS=2
 [ -z "$MAXDEVS" ] && MAXDEVS=4

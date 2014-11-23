@@ -2168,17 +2168,12 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* send any events that need to get off before the event loop begins */
         if ( !isServer ) {
-            if ( 1 /* stream_open( params->info.clientInfo.stream )  */) {
-                server_initClientConnection( cGlobals->game.server, 
-                                             mem_stream_make( MEMPOOL
-                                                              params->vtMgr,
-                                                              cGlobals,
-                                                              (XP_PlayerAddr)0,
-                                                              sendOnClose ) );
-            } else {
-                cursesUserError( &g_globals, "Unable to open connection to server");
-                exit( 0 );
-            }
+            (void)server_initClientConnection( cGlobals->game.server, 
+                                               mem_stream_make( MEMPOOL
+                                                                params->vtMgr,
+                                                                cGlobals,
+                                                                (XP_PlayerAddr)0,
+                                                                sendOnClose ) );
         }
 #endif
 

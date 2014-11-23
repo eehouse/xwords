@@ -29,6 +29,8 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class DBHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_NAME_SUM = "summaries";
@@ -37,8 +39,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_DICTINFO = "dictinfo";
     public static final String TABLE_NAME_GROUPS = "groups";
     public static final String TABLE_NAME_STUDYLIST = "study";
+    public static final String TABLE_NAME_LOC = "loc";
+    public static final String TABLE_NAME_PAIRS = "pairs";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 20;
+    private static final int DB_VERSION = 23;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -69,6 +73,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE"; // unused -- so far
     public static final String LASTMOVE = "LASTMOVE";
+    public static final String NEXTNAG = "NEXTNAG";
     public static final String GROUPID = "GROUPID";
     public static final String NPACKETSPENDING = "NPACKETSPENDING";
 
@@ -91,6 +96,13 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String WORD = "WORD";
     public static final String LANGUAGE = "LANGUAGE";
+
+    public static final String KEY = "KEY";
+    public static final String VALUE = "VALUE";
+    public static final String LOCALE = "LOCALE";
+    public static final String BLESSED = "BLESSED";
+    public static final String XLATION = "XLATION";
+
 
     private Context m_context;
 
@@ -119,6 +131,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ GAMEID,       "INTEGER" }
         ,{ REMOTEDEVS,   "TEXT" }
         ,{ LASTMOVE,     "INTEGER DEFAULT 0" }
+        ,{ NEXTNAG,      "INTEGER DEFAULT 0" }
         ,{ GROUPID,      "INTEGER" }
         // HASMSGS: sqlite doesn't have bool; use 0 and 1
         ,{ HASMSGS,      "INTEGER DEFAULT 0" }
@@ -165,6 +178,20 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ "UNIQUE", "(" + WORD + ", " + LANGUAGE + ")" }
     };
 
+    private static final String[][] s_locSchema = {
+        { KEY,  "TEXT" }
+        ,{ LOCALE,  "TEXT(5)" }
+        ,{ BLESSED,  "INTEGER(1)" }
+        ,{ XLATION,  "TEXT" }
+        ,{ "UNIQUE", "(" + KEY + ", " + LOCALE + "," + BLESSED + ")" }
+    };
+
+    private static final String[][] s_pairsSchema = {
+        { KEY,  "TEXT" }
+        ,{ VALUE,  "TEXT" }
+        ,{ "UNIQUE", "(" + KEY + ")" }
+    };
+
     public DBHelper( Context context )
     {
         super( context, DB_NAME, null, DB_VERSION );
@@ -186,6 +213,8 @@ public class DBHelper extends SQLiteOpenHelper {
         forceRowidHigh( db, TABLE_NAME_SUM );
         createGroupsTable( db, false );
         createStudyTable( db );
+        createLocTable( db );
+        createPairsTable( db );
     }
 
     @Override
@@ -240,11 +269,31 @@ public class DBHelper extends SQLiteOpenHelper {
                 // NPACKETSPENDING also added by makeAutoincrement above
                 addSumColumn( db, NPACKETSPENDING );
             }
+        case 20:
+            createLocTable( db );
+        case 21:
+            createPairsTable( db );
+        case 22:
+            if ( !madeSumTable ) {
+                addSumColumn( db, NEXTNAG );
+            }
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
-            if ( oldVersion >= 6 ) {
-                db.execSQL( "DROP TABLE " + TABLE_NAME_OBITS + ";" );
+
+            TableAndVersion[] tav = new TableAndVersion[] {
+                new TableAndVersion( TABLE_NAME_OBITS, 5 ),
+                new TableAndVersion( TABLE_NAME_DICTINFO, 12 ),
+                new TableAndVersion( TABLE_NAME_DICTBROWSE, 12 ),
+                new TableAndVersion( TABLE_NAME_GROUPS, 14 ),
+                new TableAndVersion( TABLE_NAME_STUDYLIST, 18 ),
+                new TableAndVersion( TABLE_NAME_LOC, 20 ),
+                new TableAndVersion( TABLE_NAME_PAIRS, 21 ),
+            };
+            for ( TableAndVersion entry : tav ) {
+                if ( oldVersion >= 1 + entry.addedVersion ) {
+                    db.execSQL( "DROP TABLE " + entry.name + ";" );
+                }
             }
             onCreate( db );
         }
@@ -292,7 +341,8 @@ public class DBHelper extends SQLiteOpenHelper {
         // Create an empty group name
         ContentValues values = new ContentValues();
         if ( isUpgrade ) {
-            values.put( GROUPNAME, m_context.getString(R.string.group_cur_games) );
+            values.put( GROUPNAME, LocUtils.getString( m_context, false,
+                                                       R.string.group_cur_games) );
             values.put( EXPANDED, 1 );
             long curGroup = db.insert( TABLE_NAME_GROUPS, null, values );
 
@@ -303,7 +353,8 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         values = new ContentValues();
-        values.put( GROUPNAME, m_context.getString(R.string.group_new_games) );
+        values.put( GROUPNAME, LocUtils.getString( m_context, false,
+                                                   R.string.group_new_games) );
         values.put( EXPANDED, 1 );
         long newGroup = db.insert( TABLE_NAME_GROUPS, null, values );
         XWPrefs.setDefaultNewGameGroup( m_context, newGroup );
@@ -314,10 +365,21 @@ public class DBHelper extends SQLiteOpenHelper {
         createTable( db, TABLE_NAME_STUDYLIST, s_studySchema );
     }
 
+    private void createLocTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_LOC, s_locSchema );
+    }
+
+    private void createPairsTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_PAIRS, s_pairsSchema );
+    }
+
     // Move all existing games to the row previously named "cur games'
     private void moveToCurGames( SQLiteDatabase db )
     {
-        String name = m_context.getString( R.string.group_cur_games );
+        String name = LocUtils.getString( m_context, false, 
+                                          R.string.group_cur_games );
         String[] columns = { "rowid" };
         String selection = String.format( "%s = '%s'", GROUPNAME, name );
         Cursor cursor = db.query( DBHelper.TABLE_NAME_GROUPS, columns, 
@@ -408,6 +470,14 @@ public class DBHelper extends SQLiteOpenHelper {
         int result = cursor.getInt(0);
         cursor.close();
         return result;
+    }
+
+    private class TableAndVersion {
+        public String name;
+        public int addedVersion;
+        public TableAndVersion( String nn, int vers ) {
+            name = nn; addedVersion = vers;
+        }
     }
 
 }

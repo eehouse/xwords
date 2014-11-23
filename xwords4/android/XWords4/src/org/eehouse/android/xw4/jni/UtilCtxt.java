@@ -87,17 +87,13 @@ public interface UtilCtxt {
     static final int STR_PHONY_REJECTED =                13;
     static final int STRD_CUMULATIVE_SCORE =             14;
     static final int STRS_NEW_TILES =                    15;
-    static final int STR_PASSED =                        16;
-    static final int STRSD_SUMMARYSCORED =               17;
-    static final int STRD_TRADED =                       18;
-    static final int STR_LOSTTURN =                      19;
-    static final int STR_COMMIT_CONFIRM =                20;
-    static final int STR_BONUS_ALL =                     21;
-    static final int STRD_TURN_SCORE =                   22;
-    static final int STRD_REMAINS_HEADER =               23;
-    static final int STRD_REMAINS_EXPL =                 24;
-    static final int STR_RESIGNED =                      25;
-    static final int STR_WINNER =                        26;
+    static final int STR_COMMIT_CONFIRM =                16;
+    static final int STR_BONUS_ALL =                     17;
+    static final int STRD_TURN_SCORE =                   18;
+    static final int STRD_REMAINS_HEADER =               19;
+    static final int STRD_REMAINS_EXPL =                 20;
+    static final int STR_RESIGNED =                      21;
+    static final int STR_WINNER =                        22;
 
     String getUserString( int stringCode );
 

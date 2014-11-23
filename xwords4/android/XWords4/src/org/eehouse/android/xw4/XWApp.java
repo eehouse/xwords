@@ -24,18 +24,21 @@ import android.app.Application;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Build;
+import android.preference.PreferenceManager;
 
 import java.util.UUID;
 
 import org.eehouse.android.xw4.jni.XwJNI;
 
 public class XWApp extends Application {
-    public static final boolean BTSUPPORTED = false;
+
+    public static final boolean BTSUPPORTED = true;
     public static final boolean SMSSUPPORTED = true;
     public static final boolean GCMSUPPORTED = true;
     public static final boolean ATTACH_SUPPORTED = true;
     public static final boolean REMATCH_SUPPORTED = false;
     public static final boolean DEBUG_LOCKS = false;
+    public static final boolean LOG_LIFECYLE = false;
     public static final boolean DEBUG_EXP_TIMERS = false;
     public static final boolean GCM_IGNORED = false;
     public static final boolean UDP_ENABLED = true;
@@ -61,7 +64,18 @@ public class XWApp extends Application {
 
         ConnStatusHandler.loadState( this );
 
-        RelayReceiver.RestartTimer( this );
+        OnBootReceiver.startTimers( this );
+
+        boolean mustCheck = Utils.firstBootThisVersion( this );
+        PreferenceManager.setDefaultValues( this, R.xml.xwprefs, mustCheck );
+        if ( mustCheck ) {
+            XWPrefs.setHaveCheckedUpgrades( this, false );
+        } else {
+            mustCheck = ! XWPrefs.getHaveCheckedUpgrades( this );
+        }
+        if ( mustCheck ) {
+            UpdateCheckReceiver.checkVersions( this, false );
+        }
         UpdateCheckReceiver.restartTimer( this );
 
         BTService.startService( this );

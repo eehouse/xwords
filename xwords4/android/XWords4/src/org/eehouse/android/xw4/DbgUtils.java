@@ -40,6 +40,8 @@ import java.util.Iterator;
 import java.util.Set;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class DbgUtils {
     private static final String TAG = "XW4";
     private static boolean s_doLog = BuildConfig.DEBUG;
@@ -85,7 +87,7 @@ public class DbgUtils {
 
     public static void showf( Context context, int formatid, Object... args )
     {
-        showf( context, context.getString( formatid ), args );
+        showf( context, LocUtils.getString( context, formatid ), args );
     } // showf
 
     public static void loge( Exception exception )
@@ -142,6 +144,36 @@ public class DbgUtils {
             logf( "cursor: %s", dump );
         }
     }
+
+    // public static String secondsToDateStr( long seconds )
+    // {
+    //     return millisToDateStr( seconds * 1000 );
+    // }
+
+    // public static String millisToDateStr( long millis )
+    // {
+    //     Time tim = new Time();
+    //     tim.set( millis );
+    //     return tim.format2445();
+    // }
+
+    // public static String toString( long[] longs )
+    // {
+    //     String[] asStrs = new String[longs.length];
+    //     for ( int ii = 0; ii < longs.length; ++ii ) {
+    //         asStrs[ii] = String.format("%d", longs[ii] );
+    //     }
+    //     return TextUtils.join( ", ", asStrs );
+    // }
+
+    // public static String toString( Object[] objs )
+    // {
+    //     String[] asStrs = new String[objs.length];
+    //     for ( int ii = 0; ii < objs.length; ++ii ) {
+    //         asStrs[ii] = objs[ii].toString();
+    //     }
+    //     return TextUtils.join( ", ", asStrs );
+    // }
 
     // public static String hexDump( byte[] bytes )
     // {

@@ -47,10 +47,14 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class UpdateCheckReceiver extends BroadcastReceiver {
 
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
+    public static final String NEW_DICT_NAME = "NEW_DICT_NAME";
+    public static final String NEW_XLATION_CBK = "NEW_XLATION_CBK";
 
     // weekly
     private static final long INTERVAL_ONEDAY = 1000 * 60 * 60 * 24;
@@ -60,6 +64,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_NAME = "name";
     private static final String k_AVERS = "avers";
     private static final String k_GVERS = "gvers";
+    private static final String k_GHASH = "ghash";
     private static final String k_INSTALLER = "installer";
     private static final String k_DEVOK = "devOK";
     private static final String k_APP = "app";
@@ -70,6 +75,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_URL = "url";
     private static final String k_PARAMS = "params";
     private static final String k_DEVID = "did";
+    private static final String k_XLATEINFO = "xlatinfo";
+    private static final String k_STRINGSHASH = "strings";
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -118,32 +125,38 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         JSONObject params = new JSONObject();
         PackageManager pm = context.getPackageManager();
         String packageName = context.getPackageName();
+        int versionCode;
+        try { 
+            versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
+        } catch ( PackageManager.NameNotFoundException nnfe ) {
+            DbgUtils.loge( nnfe );
+            versionCode = 0;
+        }
 
+        // App update
         if ( Utils.isGooglePlayApp( context ) ) {
             // Do nothing
         } else {
             String installer = pm.getInstallerPackageName( packageName );
 
             try { 
-                int versionCode = pm.getPackageInfo( packageName, 0 ).versionCode;
-
                 JSONObject appParams = new JSONObject();
 
-                appParams.put( k_NAME, packageName );
                 appParams.put( k_AVERS, versionCode );
                 appParams.put( k_GVERS, BuildConstants.GIT_REV );
+                appParams.put( k_GHASH, BuildConstants.GIT_HASH );
                 appParams.put( k_INSTALLER, installer );
                 if ( devOK( context ) ) {
                     appParams.put( k_DEVOK, true );
                 }
                 params.put( k_APP, appParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
-            } catch ( PackageManager.NameNotFoundException nnfe ) {
-                DbgUtils.loge( nnfe );
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
             }
         }
+
+        // Dict update
         DictUtils.DictAndLoc[] dals = getDownloadedDicts( context );
         if ( null != dals ) {
             JSONArray dictParams = new JSONArray();
@@ -158,9 +171,27 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             }
         }
 
+        // Xlations update
+        JSONArray xlationUpdate = LocUtils.makeForXlationUpdate( context );
+        if ( null != xlationUpdate ) {
+            try {
+                params.put( k_XLATEINFO, xlationUpdate );
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
+        }
+
         if ( 0 < params.length() ) {
-            new UpdateQueryTask( context, params, fromUI, pm, 
-                                 packageName, dals ).execute();
+            try {
+                params.put( k_STRINGSHASH, BuildConstants.STRINGS_HASH );
+                params.put( k_NAME, packageName );
+                params.put( k_AVERS, versionCode );
+                DbgUtils.logf( "current update: %s", params.toString() );
+                new UpdateQueryTask( context, params, fromUI, pm, 
+                                     packageName, dals ).execute();
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
         }
     }
 
@@ -188,7 +219,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         return result;
     }
 
-    private static HttpPost makePost( Context context, String proc )
+    protected static HttpPost makePost( Context context, String proc )
     {
         String url = String.format( "%s/%s", 
                                     XWPrefs.getDefaultUpdateUrl( context ),
@@ -203,7 +234,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         return result;
     }
 
-    private static String runPost( HttpPost post, JSONObject params )
+    protected static String runPost( HttpPost post, JSONObject params )
     {
         String result = null;
         try {
@@ -290,6 +321,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         {
             if ( null != json ) {
                 makeNotificationsIf( json );
+                XWPrefs.setHaveCheckedUpgrades( m_context, true );
             }
         }
 
@@ -299,6 +331,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             try {
                 JSONObject jobj = new JSONObject( jstr );
                 if ( null != jobj ) {
+
+                    // Add upgrade
                     if ( jobj.has( k_APP ) ) {
                         JSONObject app = jobj.getJSONObject( k_APP );
                         if ( app.has( k_URL ) ) {
@@ -325,20 +359,23 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 intent = new Intent( Intent.ACTION_VIEW, 
                                                      Uri.parse(url) );
                             } else {
-                                intent = DictImportActivity
+                                intent = DwnldDelegate
                                     .makeAppDownloadIntent( m_context, url );
                             }
 
                             String title = 
-                                Utils.format( m_context, R.string.new_app_availf,
-                                              label );
+                                LocUtils.getString( m_context, R.string.new_app_avail_fmt,
+                                                    label );
                             String body = 
-                                m_context.getString( R.string.new_app_avail );
+                                LocUtils.getString( m_context, 
+                                                    R.string.new_app_avail );
                             Utils.postNotification( m_context, intent, title, 
                                                     body, url.hashCode() );
                             gotOne = true;
                         }
                     }
+                    
+                    // dictionaries upgrade
                     if ( jobj.has( k_DICTS ) ) {
                         JSONArray dicts = jobj.getJSONArray( k_DICTS );
                         for ( int ii = 0; ii < dicts.length(); ++ii ) {
@@ -350,16 +387,30 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 Intent intent = 
                                     new Intent( m_context, DictsActivity.class );
                                 intent.putExtra( NEW_DICT_URL, url );
+                                intent.putExtra( NEW_DICT_NAME, dal.name );
                                 intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
                                 String body = 
-                                    Utils.format( m_context, 
-                                                  R.string.new_dict_availf,
-                                                  dal.name );
+                                    LocUtils.getString( m_context, 
+                                                        R.string.new_dict_avail_fmt,
+                                                        dal.name );
                                 Utils.postNotification( m_context, intent, 
                                                         R.string.new_dict_avail, 
                                                         body, url.hashCode() );
                                 gotOne = true;
                             }
+                        }
+                    }
+
+                    // translations info
+                    if ( jobj.has( k_XLATEINFO ) ) {
+                        JSONArray data = jobj.getJSONArray( k_XLATEINFO );
+                        int nAdded = LocUtils.addXlations( m_context, data );
+                        if ( 0 < nAdded ) {
+                            gotOne = true;
+                            String msg = LocUtils.getString( m_context, R.string
+                                                             .new_xlations_fmt, 
+                                                             nAdded );
+                            Utils.showToast( m_context, msg );
                         }
                     }
                 }
@@ -374,5 +425,4 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
             }
         }
     }
-
 }

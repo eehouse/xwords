@@ -1,4 +1,4 @@
-/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make -j5 MEMDEBUG=TRUE"; -*- */
 /* 
  * Copyright 1997 - 2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -69,6 +69,12 @@
 /* too big looks bad */
 # define MAX_BOARD_ZOOM 4
 #endif
+
+#ifndef DIVIDER_RATIO
+# define DIVIDER_RATIO 3        /* 1/3 tray tile width */
+#endif
+#define DIVIDER_WIDTH(trayWidth) \
+    ((trayWidth) / (1 + (MAX_TRAY_TILES*DIVIDER_RATIO)))
 
 #ifdef CPLUS
 extern "C" {
@@ -250,7 +256,9 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         arrow->vert = (XP_Bool)stream_getBits( stream, 1 );
         arrow->visible = (XP_Bool)stream_getBits( stream, 1 );
 
-        pti->dividerLoc = (XP_U8)stream_getBits( stream, NTILES_NBITS );
+        if ( STREAM_VERS_MODELDIVIDER > version ) {
+            (void)stream_getBits( stream, NTILES_NBITS );
+        }
         pti->traySelBits = (TileBit)stream_getBits( stream, 
                                                     MAX_TRAY_TILES );
         pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
@@ -337,7 +345,6 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
         stream_putBits( stream, 1, arrow->vert );
         stream_putBits( stream, 1, arrow->visible );
 
-        stream_putBits( stream, NTILES_NBITS, pti->dividerLoc );
         stream_putBits( stream, MAX_TRAY_TILES, pti->traySelBits );
         stream_putBits( stream, 1, pti->tradeInProgress );
 
@@ -377,7 +384,6 @@ board_reset( BoardCtxt* board )
         PerTurnInfo* pti = &board->pti[ii];
         pti->traySelBits = 0;
         pti->tradeInProgress = XP_FALSE;
-        pti->dividerLoc = 0;
         XP_MEMSET( &pti->boardArrow, 0, sizeof(pti->boardArrow) );
     }
     board->gameOver = XP_FALSE;
@@ -394,6 +400,34 @@ board_reset( BoardCtxt* board )
 } /* board_reset */
 
 #ifdef COMMON_LAYOUT
+# if 0
+static void
+printDims( const BoardDims* dimsp )
+{
+    XP_LOGF( "dims.left: %d", dimsp->left );
+    XP_LOGF( "dims.top: %d", dimsp->top );
+    XP_LOGF( "dims.width: %d", dimsp->width );
+    XP_LOGF( "dims.height: %d", dimsp->height );
+
+
+    XP_LOGF( "dims.scoreWidth: %d", dimsp->scoreWidth );
+    XP_LOGF( "dims.scoreHt: %d", dimsp->scoreHt );
+
+    XP_LOGF( "dims.boardWidth: %d", dimsp->boardWidth );
+    XP_LOGF( "dims.boardHt: %d", dimsp->boardHt );
+
+    XP_LOGF( "dims.trayLeft: %d", dimsp->trayLeft );
+    XP_LOGF( "dims.trayTop: %d", dimsp->trayTop );
+    XP_LOGF( "dims.trayWidth: %d", dimsp->trayWidth );
+    XP_LOGF( "dims.trayHt: %d", dimsp->trayHt );
+
+    /* XP_U16 cellSize, maxCellSize; */
+    /* XP_U16 timerWidth; */
+}
+# else
+#  define printDims( ldims )
+# endif
+
 void
 board_figureLayout( BoardCtxt* board, const CurGameInfo* gi, 
                     XP_U16 bLeft, XP_U16 bTop, XP_U16 bWidth, XP_U16 bHeight,
@@ -405,7 +439,7 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
     XP_MEMSET( &ldims, 0, sizeof(ldims) );
 
     XP_U16 nCells = gi->boardSize;
-    XP_U16 maxCellSize = 4 * fontHt;
+    XP_U16 maxCellSize = 8 * fontHt;
     XP_U16 trayHt;
     XP_U16 scoreHt;
     XP_U16 wantHt;
@@ -472,9 +506,30 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
             heightUsed = trayHt + scoreHt + ((nCells - nToScroll) * cellSize);
         }
 
+        /* Figure tray width.  Tray tiles can be taller than wide, but not
+           vice-versa. */
+        XP_U16 tileWidth = DIVIDER_RATIO * DIVIDER_WIDTH(ldims.width);
+        if ( tileWidth > trayHt ) {
+            tileWidth = trayHt;
+        }
+
         ldims.trayHt = trayHt;
-        ldims.scoreHt = scoreHt;
+        ldims.trayWidth = (tileWidth * MAX_TRAY_TILES) + (tileWidth / DIVIDER_RATIO);
+        /* But: tray is never narrower than board */
+        if ( ldims.trayWidth < ldims.boardWidth ) {
+            ldims.trayWidth = ldims.boardWidth;
+        }
+        ldims.trayLeft = ldims.left + ((ldims.width - ldims.trayWidth) / 2);
+        
+        // totally arbitrary: don't let the scoreboard be more than 20% wider
+        // than the board
+        XP_U16 maxScoreWidth = (ldims.boardWidth * 5) / 4;
+        if ( scoreWidth > maxScoreWidth ) {
+            scoreWidth = maxScoreWidth;
+        }
         ldims.scoreWidth = scoreWidth;
+        ldims.scoreLeft = ldims.left + ((ldims.width - scoreWidth) / 2);
+        ldims.scoreHt = scoreHt;
 
         ldims.boardHt = cellSize * nCells;
         ldims.trayTop = ldims.top + scoreHt + (cellSize * (nCells-nToScroll));
@@ -488,12 +543,14 @@ board_figureLayout( BoardCtxt* board, const CurGameInfo* gi,
         break;
     }
 
+    printDims( &ldims );
+
     if ( !!dimsp ) {
         XP_MEMCPY( dimsp, &ldims, sizeof(ldims) );
     } else {
         board_applyLayout( board, &ldims );
     }
-}
+} /* board_figureLayout */
 
 void
 board_applyLayout( BoardCtxt* board, const BoardDims* dims )
@@ -503,15 +560,14 @@ board_applyLayout( BoardCtxt* board, const BoardDims* dims )
                   dims->boardWidth, dims->boardHt,
                   dims->maxCellSize, XP_FALSE );
 
-    board_setScoreboardLoc( board, dims->left, dims->top,
-                            dims->scoreWidth, 
-                            dims->scoreHt, XP_TRUE );
+    board_setScoreboardLoc( board, dims->scoreLeft, dims->top,
+                            dims->scoreWidth, dims->scoreHt, XP_TRUE );
 
-    board_setTimerLoc( board, dims->left + dims->scoreWidth,
+    board_setTimerLoc( board, dims->scoreLeft + dims->scoreWidth,
                        dims->top, dims->timerWidth, dims->scoreHt );
 
-    board_setTrayLoc( board, dims->left, dims->trayTop, 
-                      dims->width, dims->trayHt, dims->width / 20 );
+    board_setTrayLoc( board, dims->trayLeft, dims->trayTop, 
+                      dims->trayWidth, dims->trayHt );
 }
 #endif
 
@@ -1523,13 +1579,12 @@ onBorderCanScroll( const BoardCtxt* board, SDIndex indx,
 
 void
 board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
-                  XP_U16 trayWidth, XP_U16 trayHeight,
-                  XP_U16 minDividerWidth )
+                  XP_U16 trayWidth, XP_U16 trayHeight )
 {
     /* XP_LOGF( "%s(%d,%d,%d,%d)", __func__, trayLeft, trayTop,  */
              /* trayWidth, trayHeight ); */
 
-    XP_U16 dividerWidth;
+    XP_U16 dividerWidth = DIVIDER_WIDTH( trayWidth );
     /* XP_U16 boardBottom, boardRight; */
     /* XP_Bool boardHidesTray; */
 
@@ -1538,8 +1593,8 @@ board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop,
     board->trayBounds.width = trayWidth;
     board->trayBounds.height = trayHeight;
 
-    dividerWidth = minDividerWidth + 
-        ((trayWidth - minDividerWidth) % MAX_TRAY_TILES);
+    dividerWidth = dividerWidth + 
+        ((trayWidth - dividerWidth) % MAX_TRAY_TILES);
 
     board->trayScaleH = (trayWidth - dividerWidth) / MAX_TRAY_TILES;
     board->trayScaleV = trayHeight;
@@ -1967,10 +2022,13 @@ board_requestHint( BoardCtxt* board,
         const Tile* tiles;
         XP_Bool searchComplete = XP_TRUE;
         const XP_U16 selPlayer = board->selPlayer;
+#ifdef XWFEATURE_SEARCHLIMIT
         PerTurnInfo* pti = board->selInfo;
+#endif
         EngineCtxt* engine = server_getEngineFor( board->server, selPlayer );
         const TrayTileSet* tileSet;
         ModelCtxt* model = board->model;
+        XP_U16 dividerLoc = model_getDividerLoc( model, selPlayer );
 
         if ( !!engine && preflight( board, XP_TRUE ) ) {
 
@@ -1992,7 +2050,7 @@ board_requestHint( BoardCtxt* board,
             }
 
             tileSet = model_getPlayerTiles( model, selPlayer );
-            nTiles = tileSet->nTiles - pti->dividerLoc;
+            nTiles = tileSet->nTiles - dividerLoc;
             result = nTiles > 0;
         }
 
@@ -2008,7 +2066,7 @@ board_requestHint( BoardCtxt* board,
 
             (void)board_replaceTiles( board );
 
-            tiles = tileSet->tiles + pti->dividerLoc;
+            tiles = tileSet->tiles + dividerLoc;
 
             board_pushTimerSave( board );
 
@@ -2025,7 +2083,7 @@ board_requestHint( BoardCtxt* board,
 #ifdef XWFEATURE_BONUSALL
             XP_U16 allTilesBonus = 0;
 # ifdef XWFEATURE_BONUSALLHINT
-            if ( 0 == pti->dividerLoc ) {
+            if ( 0 == dividerLoc ) {
                 allTilesBonus = server_figureFinishBonus( board->server, 
                                                           selPlayer );
             }
@@ -3164,7 +3222,7 @@ invalFocusOwner( BoardCtxt* board )
     case OBJ_TRAY:
         if ( board->focusHasDived ) {
             XP_S16 loc = pti->trayCursorLoc;
-            if ( loc == pti->dividerLoc ) {
+            if ( loc == model_getDividerLoc(board->model, board->selPlayer)) {
                 board->dividerInvalid = XP_TRUE;
             } else {
                 adjustForDivider( board, &loc );

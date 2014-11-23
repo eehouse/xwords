@@ -41,10 +41,11 @@ import org.eehouse.android.xw4.jni.CommonPrefs;
 
 public class DictLangCache {
     private static String[] s_langNames;
+    private static HashMap<String, Integer> s_langCodes;
 
-    private static int m_adaptedLang = -1;
-    private static ArrayAdapter<String> m_langsAdapter;
-    private static ArrayAdapter<String> m_dictsAdapter;
+    private static int s_adaptedLang = -1;
+    private static ArrayAdapter<String> s_langsAdapter;
+    private static ArrayAdapter<String> s_dictsAdapter;
     private static String s_last;
     private static Handler s_handler;
     private static Comparator<String> KeepLast = 
@@ -122,6 +123,17 @@ public class DictLangCache {
         return result;
     }
 
+    public static boolean haveDict( Context context, String lang, String name )
+    {
+        boolean result = false;
+        getLangNames( context ); /* inits s_langCodes */
+        Integer code = s_langCodes.get( lang );
+        if ( null != code ) {
+            result = haveDict( context, code, name );
+        }
+        return result;
+    }
+
     public static boolean haveDict( Context context, int code, String name )
     {
         boolean found = false;
@@ -172,7 +184,11 @@ public class DictLangCache {
         DictAndLoc[] dals = DictUtils.dictList( context );
         for ( DictAndLoc dal : dals ) {
             DictInfo info = getInfo( context, dal );
-            if ( null != info && code == info.langCode ) {
+            int langCode = info.langCode;
+            if ( langCode >= s_langNames.length ) {
+                langCode = 0;
+            }
+            if ( null != info && code == langCode ) {
                 al.add( dal );
             }
         }
@@ -257,14 +273,14 @@ public class DictLangCache {
         if ( null != s_handler ) {
             s_handler.post( new Runnable() {
                     public void run() {
-                        if ( null != m_dictsAdapter ) {
-                            rebuildAdapter( m_dictsAdapter, 
+                        if ( null != s_dictsAdapter ) {
+                            rebuildAdapter( s_dictsAdapter, 
                                             DictLangCache.
                                             getHaveLang( context, 
-                                                         m_adaptedLang ) );
+                                                         s_adaptedLang ) );
                         }
-                        if ( null != m_langsAdapter ) {
-                            rebuildAdapter( m_langsAdapter, 
+                        if ( null != s_langsAdapter ) {
+                            rebuildAdapter( s_langsAdapter, 
                                             DictLangCache.listLangs( context ) );
                         }
                     }
@@ -279,9 +295,14 @@ public class DictLangCache {
 
     public static String[] listLangs( Context context, DictAndLoc[] dals )
     {
-        HashSet<String> langs = new HashSet<String>();
+        Set<String> langs = new HashSet<String>();
         for ( DictAndLoc dal : dals ) {
-            langs.add( getLangName( context, dal.name ) );
+            String name = getLangName( context, dal.name );
+            if ( null == name || 0 == name.length() ) {
+                DbgUtils.logf( "bad lang name for dal name %s", dal.name );
+                // Assert.fail();
+            }
+            langs.add( name );
         }
         String[] result = new String[langs.size()];
         return langs.toArray( result );
@@ -326,26 +347,26 @@ public class DictLangCache {
 
     public static ArrayAdapter<String> getLangsAdapter( Context context )
     {
-        if ( null == m_langsAdapter ) {
-            m_langsAdapter = 
+        if ( null == s_langsAdapter ) {
+            s_langsAdapter = 
                 new ArrayAdapter<String>( context,
                                           android.R.layout.simple_spinner_item );
-            rebuildAdapter( m_langsAdapter, listLangs( context ) );
+            rebuildAdapter( s_langsAdapter, listLangs( context ) );
         }
-        return m_langsAdapter;
+        return s_langsAdapter;
     }
 
     public static ArrayAdapter<String> getDictsAdapter( Context context, 
                                                         int lang )
     {
-        if ( lang != m_adaptedLang ) {
-            m_dictsAdapter = 
+        if ( lang != s_adaptedLang ) {
+            s_dictsAdapter = 
                 new ArrayAdapter<String>( context,
                                           android.R.layout.simple_spinner_item );
-            rebuildAdapter( m_dictsAdapter, getHaveLang( context, lang ) );
-            m_adaptedLang = lang;
+            rebuildAdapter( s_dictsAdapter, getHaveLang( context, lang ) );
+            s_adaptedLang = lang;
         }
-        return m_dictsAdapter;
+        return s_dictsAdapter;
     }
 
     public static String[] getLangNames( Context context )
@@ -353,6 +374,11 @@ public class DictLangCache {
         if ( null == s_langNames ) {
             Resources res = context.getResources();
             s_langNames = res.getStringArray( R.array.language_names );
+
+            s_langCodes = new HashMap<String, Integer>();
+            for ( int ii = 0; ii < s_langNames.length; ++ii ) {
+                s_langCodes.put( s_langNames[ii], ii );
+            }
         }
         return s_langNames;
     }

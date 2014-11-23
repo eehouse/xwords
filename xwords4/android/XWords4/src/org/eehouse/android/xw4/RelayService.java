@@ -51,6 +51,8 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RelayService extends XWService 
     implements NetStateCache.StateChangedIf {
@@ -352,7 +354,7 @@ public class RelayService extends XWService
 
         if ( shouldMaintainConnection() ) {
             long interval_millis = getMaxIntervalSeconds() * 1000;
-            RelayReceiver.RestartTimer( this, interval_millis );
+            RelayReceiver.restartTimer( this, interval_millis );
         }
         stopThreads();
         super.onDestroy();
@@ -364,27 +366,20 @@ public class RelayService extends XWService
         startService( this ); // bad name: will *stop* threads too
     }
 
-    private void setupNotification( String[] relayIDs )
+    private void setupNotifications( String[] relayIDs, LastMoveInfo[] lmis )
     {
-        for ( String relayID : relayIDs ) {
+        for ( int ii = 0; ii < relayIDs.length; ++ii ) {
+            String relayID = relayIDs[ii];
+            LastMoveInfo lmi = lmis[ii];
             long[] rowids = DBUtils.getRowIDsFor( this, relayID );
             if ( null != rowids ) {
                 for ( long rowid : rowids ) {
-                    setupNotification( rowid );
+                    GameUtils.postMoveNotification( this, rowid, lmi );
                 }
             }
         }
     }
 
-    private void setupNotification( long rowid )
-    {
-        Intent intent = GamesListActivity.makeRowidIntent( this, rowid );
-        String msg = Utils.format( this, R.string.notify_bodyf, 
-                                   GameUtils.getName( this, rowid ) );
-        Utils.postNotification( this, intent, R.string.notify_title,
-                                msg, (int)rowid );
-    }
-    
     private boolean startFetchThreadIf()
     {
         // DbgUtils.logf( "startFetchThreadIf()" );
@@ -579,7 +574,7 @@ public class RelayService extends XWService
                     break;
                 case XWPDEV_ALERT:
                     str = getVLIString( dis );
-                    Intent intent = GamesListActivity.makeAlertIntent( this, str );
+                    Intent intent = GamesListDelegate.makeAlertIntent( this, str );
                     Utils.postNotification( this, intent, 
                                             R.string.relay_alert_title,
                                             str, str.hashCode() );
@@ -860,9 +855,10 @@ public class RelayService extends XWService
         } else {
             RelayMsgSink sink = new RelayMsgSink();
             sink.setRowID( rowid );
+            LastMoveInfo lmi = new LastMoveInfo();
             if ( GameUtils.feedMessage( this, rowid, msg, null, 
-                                        sink ) ) {
-                setupNotification( rowid );
+                                        sink, lmi ) ) {
+                GameUtils.postMoveNotification( this, rowid, lmi );
             } else {
                 DbgUtils.logf( "feedMessage(): background dropped it" );
             }
@@ -887,18 +883,21 @@ public class RelayService extends XWService
             int nameCount = relayIDs.length;
             DbgUtils.logf( "RelayService.process(): nameCount: %d", nameCount );
             ArrayList<String> idsWMsgs = new ArrayList<String>( nameCount );
+            ArrayList<LastMoveInfo> lmis = new ArrayList<LastMoveInfo>( nameCount );
 
             for ( int ii = 0; ii < nameCount; ++ii ) {
                 byte[][] forOne = msgs[ii];
 
                 // if game has messages, open it and feed 'em to it.
                 if ( null != forOne ) {
+                    LastMoveInfo lmi = new LastMoveInfo();
                     sink.setRowID( rowIDs[ii] );
                     if ( BoardDelegate.feedMessages( rowIDs[ii], forOne )
                          || GameUtils.feedMessages( this, rowIDs[ii],
                                                     forOne, null,
-                                                    sink ) ) {
+                                                    sink, lmi ) ) {
                         idsWMsgs.add( relayIDs[ii] );
+                        lmis.add( lmi );
                     } else {
                         DbgUtils.logf( "message for %s (rowid %d) not consumed",
                                        relayIDs[ii], rowIDs[ii] );
@@ -908,7 +907,9 @@ public class RelayService extends XWService
             if ( 0 < idsWMsgs.size() ) {
                 String[] tmp = new String[idsWMsgs.size()];
                 idsWMsgs.toArray( tmp );
-                setupNotification( tmp );
+                LastMoveInfo[] lmisa = new LastMoveInfo[lmis.size()];
+                lmis.toArray( lmisa );
+                setupNotifications( tmp, lmisa );
             }
             sink.send( this );
         }

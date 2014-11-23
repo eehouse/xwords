@@ -50,7 +50,7 @@ struct DictMgrCtxt {
 
 static void moveToFront( DictMgrCtxt* dmgr, XP_U16 indx );
 static XP_S16 findFor( DictMgrCtxt* dmgr, const XP_UCHAR* key );
-#ifdef DEBUG
+#if defined DEBUG && defined PRINT_LOTS
     static void printInOrder( const DictMgrCtxt* dmgr );
 #else
 # define printInOrder( dmgr )
@@ -146,7 +146,7 @@ moveToFront( DictMgrCtxt* dmgr, XP_U16 indx )
     }
 }
 
-#ifdef DEBUG
+#if defined DEBUG && defined PRINT_LOTS
 static void
 printInOrder( const DictMgrCtxt* dmgr )
 {

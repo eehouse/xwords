@@ -1439,7 +1439,7 @@ linuxChangeRoles( CommonGlobals* cGlobals )
         XWStreamCtxt* stream =
             mem_stream_make( MPPARM(cGlobals->util->mpool) cGlobals->params->vtMgr,
                              cGlobals, CHANNEL_NONE, sendOnClose );
-        server_initClientConnection( server, stream );
+        (void)server_initClientConnection( server, stream );
     }
     (void)server_do( server );
 }
@@ -2335,6 +2335,11 @@ main( int argc, char** argv )
     } else {
         XP_ASSERT( mainParams.pgi.nPlayers == mainParams.nLocalPlayers
                    + mainParams.info.serverInfo.nRemotePlayers );
+
+        /* add cur dir if dict search dir path is empty */
+        if ( !mainParams.dictDirs ) {
+            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, "./" );
+        }
 
         if ( isServer ) {
             if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {

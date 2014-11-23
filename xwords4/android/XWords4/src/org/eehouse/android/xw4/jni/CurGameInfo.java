@@ -30,6 +30,7 @@ import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.DictLangCache;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CurGameInfo {
 
@@ -102,8 +103,9 @@ public class CurGameInfo {
         int count = 0;
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             LocalPlayer lp = players[ii];
-            if ( lp.isLocal && !lp.isRobot() ) {
-                lp.name = CommonPrefs.getDefaultPlayerName( context, count++ );
+            if ( lp.isLocal ) {
+                lp.name = lp.isRobot() ? CommonPrefs.getDefaultRobotName( context )
+                    : CommonPrefs.getDefaultPlayerName( context, count++ );
             }
         }
 
@@ -249,7 +251,8 @@ public class CurGameInfo {
 
     public String[] visibleNames( boolean withDicts )
     {
-        String nameFmt = withDicts? m_context.getString( R.string.name_dict_fmt )
+        String nameFmt = withDicts?
+            LocUtils.getString( m_context, R.string.name_dict_fmt )
             : "%s";
         String[] names = new String[nPlayers];
         for ( int ii = 0; ii < nPlayers; ++ii ) {
@@ -257,14 +260,14 @@ public class CurGameInfo {
             if ( lp.isLocal || serverRole == DeviceRole.SERVER_STANDALONE ) {
                 String name;
                 if ( lp.isRobot() ) {
-                    String format = m_context.getString( R.string.robot_namef );
+                    String format = LocUtils.getString( m_context, R.string.robot_name_fmt );
                     name = String.format( format, lp.name );
                 } else {
                     name = lp.name;
                 }
                 names[ii] = String.format( nameFmt, name, dictName(lp) );
             } else {
-                names[ii] = m_context.getString( R.string.guest_name );
+                names[ii] = LocUtils.getString( m_context, R.string.guest_name );
             }
         }
         return names;

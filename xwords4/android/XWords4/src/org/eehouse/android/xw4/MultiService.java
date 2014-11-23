@@ -26,6 +26,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 
+import org.eehouse.android.xw4.loc.LocUtils;
+
 public class MultiService {
 
     public static final String LANG = "LANG";
@@ -38,33 +40,42 @@ public class MultiService {
     public static final String NPLAYERSH = "NPLAYERSH";
     public static final String INVITER = "INVITER";
     public static final String OWNER = "OWNER";
+    public static final String BT_NAME = "BT_NAME";
+    public static final String BT_ADDRESS = "BT_ADDRESS";
 
     public static final int OWNER_SMS = 1;
     public static final int OWNER_RELAY = 2;
+    public static final int OWNER_BT = 3;
 
     private MultiEventListener m_li;
 
-    public enum MultiEvent { BAD_PROTO
-                          , BT_ENABLED
-                          , BT_DISABLED
-                          , SCAN_DONE
-                          , HOST_PONGED
-                          , NEWGAME_SUCCESS
-                          , NEWGAME_FAILURE
-                          , MESSAGE_ACCEPTED
-                          , MESSAGE_REFUSED
-                          , MESSAGE_NOGAME
-                          , MESSAGE_RESEND
-                          , MESSAGE_FAILOUT
-                          , MESSAGE_DROPPED
+    // these do not currently pass between devices so they can change.
+    public enum MultiEvent { _INVALID,
+                             BAD_PROTO,
+                             APP_NOT_FOUND,
+                             BT_ENABLED,
+                             BT_DISABLED,
+                             SCAN_DONE,
+                             HOST_PONGED,
+                             NEWGAME_SUCCESS,
+                             NEWGAME_FAILURE,
+                             MESSAGE_ACCEPTED,
+                             MESSAGE_REFUSED,
+                             MESSAGE_NOGAME,
+                             MESSAGE_RESEND,
+                             MESSAGE_FAILOUT,
+                             MESSAGE_DROPPED,
 
-                          , SMS_RECEIVE_OK
-                          , SMS_SEND_OK
-                          , SMS_SEND_FAILED
-                          , SMS_SEND_FAILED_NORADIO
+                             SMS_RECEIVE_OK,
+                             SMS_SEND_OK,
+                             SMS_SEND_FAILED,
+                             SMS_SEND_FAILED_NORADIO,
 
-                          , RELAY_ALERT
-            };
+                             BT_GAME_CREATED,
+                             BT_ERR_COUNT,
+
+                             RELAY_ALERT,
+    };
 
     public interface MultiEventListener {
         public void eventOccurred( MultiEvent event, Object ... args );
@@ -119,12 +130,13 @@ public class MultiService {
 
     public static boolean isMissingDictIntent( Intent intent )
     {
-        return intent.hasExtra( LANG )
+        boolean result = intent.hasExtra( LANG )
             // && intent.hasExtra( DICT )
             && (intent.hasExtra( GAMEID ) || intent.hasExtra( ROOM ))
             && intent.hasExtra( GAMENAME )
             && intent.hasExtra( NPLAYERST )
             && intent.hasExtra( NPLAYERSH );
+        return result;
     }
 
     public static Dialog missingDictDialog( Context context, Intent intent,
@@ -135,11 +147,11 @@ public class MultiService {
         String langStr = DictLangCache.getLangName( context, lang );
         String dict = intent.getStringExtra( DICT );
         String inviter = intent.getStringExtra( INVITER );
-        int msgID = (null == inviter) ? R.string.invite_dict_missing_body_nonamef
-            : R.string.invite_dict_missing_bodyf;
-        String msg = context.getString( msgID, inviter, dict, langStr );
+        int msgID = (null == inviter) ? R.string.invite_dict_missing_body_noname_fmt
+            : R.string.invite_dict_missing_body_fmt;
+        String msg = LocUtils.getString( context, msgID, inviter, dict, langStr );
 
-        return new AlertDialog.Builder( context )
+        return LocUtils.makeAlertBuilder( context )
             .setTitle( R.string.invite_dict_missing_title )
             .setMessage( msg)
             .setPositiveButton( R.string.button_download, onDownload )
@@ -170,7 +182,8 @@ public class MultiService {
                     SMSService.onGameDictDownload( context, intent );
                     break;
                 case OWNER_RELAY:
-                    GamesListActivity.onGameDictDownload( context, intent );
+                case OWNER_BT:
+                    GamesListDelegate.onGameDictDownload( context, intent );
                     break;
                 default:
                     DbgUtils.logf( "unexpected OWNER" );

@@ -236,14 +236,14 @@ public class JNIThread extends Thread {
         BoardDims dims = new BoardDims();
 
         boolean squareTiles = XWPrefs.getSquareTiles( m_context );
-        int statusWidth = width / 15;
-        int scoreWidth = width - statusWidth;
         XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, width, height,
-                                  150, 200, scoreWidth, fontWidth, 
-                                  fontHeight, squareTiles, dims );
-
-        ConnStatusHandler.setRect( dims.left + scoreWidth, dims.top, 
-                                   dims.left + scoreWidth + statusWidth, 
+                                  150 /*scorePct*/, 200 /*trayPct*/, 
+                                  width, fontWidth, fontHeight, squareTiles, 
+                                  dims /* out param */ );
+        int statusWidth = dims.boardWidth / 15;
+        dims.scoreWidth -= statusWidth;
+        int left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth;
+        ConnStatusHandler.setRect( left, dims.top, left + statusWidth, 
                                    dims.top + dims.scoreHt );
 
         XwJNI.board_applyLayout( m_jniGamePtr, dims );
@@ -373,11 +373,7 @@ public class JNIThread extends Thread {
                 XwJNI.comms_resetSame( m_jniGamePtr );
                 // FALLTHRU
             case CMD_START:
-                XwJNI.comms_start( m_jniGamePtr );
-                if ( m_gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {
-                    XwJNI.server_initClientConnection( m_jniGamePtr );
-                }
-                draw = XwJNI.server_do( m_jniGamePtr );
+                draw = tryConnectClient( m_jniGamePtr, m_gi );
                 break;
 
             case CMD_SWITCHCLIENT:
@@ -615,6 +611,15 @@ public class JNIThread extends Thread {
                            cmd.toString() );
             DbgUtils.printStack();
         }
+    }
+
+    public static boolean tryConnectClient( int gamePtr, CurGameInfo gi )
+    {
+        XwJNI.comms_start( gamePtr );
+        if ( gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {
+            XwJNI.server_initClientConnection( gamePtr );
+        }
+        return XwJNI.server_do( gamePtr );
     }
 
     // public void run( boolean isUI, Runnable runnable )
