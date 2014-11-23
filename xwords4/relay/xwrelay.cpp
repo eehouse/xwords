@@ -1701,7 +1701,8 @@ handle_udp_packet( UdpThreadClosure* utc )
                 AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
                 (void)processMessage( ptr, end - ptr, &addr );
             } else {
-                logf( XW_LOGERROR, "%s: dropping packet with token of 0" );
+                logf( XW_LOGERROR, "%s: dropping packet with token of 0",
+                      __func__ );
             }
             break;
         }
