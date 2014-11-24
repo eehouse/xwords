@@ -204,7 +204,7 @@ static void putDevID( const CommsCtxt* comms, XWStreamCtxt* stream );
 # ifdef DEBUG
 static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 static void printQueue( const CommsCtxt* comms );
-static void logAddr( CommsCtxt* comms, const CommsAddrRec* addr, 
+static void logAddr( const CommsCtxt* comms, const CommsAddrRec* addr, 
                      const char* caller );
 # else
 # define printQueue( comms )
@@ -696,6 +696,7 @@ comms_start( CommsCtxt* comms )
 void
 comms_stop( CommsCtxt* comms )
 {
+    LOG_FUNC();
     if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
         relayDisconnect( comms );
     }
@@ -901,6 +902,7 @@ comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], XP_U16* nRecs )
           count < *nRecs && !!recs;
           ++count, recs = recs->next ) {
         XP_MEMCPY( &addr[count], &recs->addr, sizeof(addr[count]) );
+        logAddr( comms, &addr[count], __func__ );
     }
     *nRecs = count;
 }
@@ -2368,7 +2370,7 @@ rememberChannelAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
 
 #ifdef DEBUG
 static void 
-logAddr( CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
+logAddr( const CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
 {
     if ( !!addr ) {
         char buf[128];
