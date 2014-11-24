@@ -236,6 +236,7 @@ public class BTService extends XWService {
 
     public static void pingHost( Context context, String hostAddr, int gameID )
     {
+        Assert.assertTrue( null != hostAddr && 0 < hostAddr.length() );
         Intent intent = getIntentTo( context, PINGHOST );
         intent.putExtra( ADDR_STR, hostAddr );
         intent.putExtra( GAMEID_STR, gameID );
