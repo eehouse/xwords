@@ -855,7 +855,7 @@ public class BoardDelegate extends DelegateBase
             showConfirmThen( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION );
             break;
         case R.id.board_menu_invite:
-            inviteForMissing();
+            showDialog( DlgID.DLG_INVITE );
             break;
             // small devices only
         case R.id.board_menu_dict:
@@ -1807,54 +1807,6 @@ public class BoardDelegate extends DelegateBase
             }
         }
     } // class BoardUtilCtxt 
-
-    private void inviteForMissing() {
-        DbgUtils.logf( "BoardDelegate.inviteForMissing()" );
-        boolean done = false;
-        for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
-              !done && iter.hasNext(); ) {
-            CommsConnType typ = iter.next();
-            DbgUtils.logf( "BoardDelegate.inviteForMissing(): got %s", typ.toString() );
-            switch( typ ) {
-            case COMMS_CONN_BT:
-                nonRelayInvite( Action.BT_PICK_ACTION );
-                done = true;
-                break;
-            case COMMS_CONN_SMS:
-                nonRelayInvite( Action.SMS_PICK_ACTION );
-                done = true;
-                break;
-            case COMMS_CONN_RELAY:
-                showDialog( DlgID.DLG_INVITE );
-                done = true;
-                break;
-            }
-        }
-    }
-
-    private void nonRelayInvite( final Action action )
-    {
-        DbgUtils.logf( "BoardDelegate.nonRelayInvite()" );
-        m_haveInvited = true;
-        post( new Runnable() {
-                public void run() {
-                    DbgUtils.showf( m_activity,
-                                    getString( R.string.players_miss_fmt,
-                                               m_nMissing ) );
-                    String msg = getString( R.string.invite_msg_fmt,
-                                            m_nMissing );
-
-                    if ( Action.BT_PICK_ACTION == action ) {
-                        boolean[] avail = NFCUtils.nfcAvail( m_activity );
-                        if ( avail[1] ) {
-                            msg += "\n\n" + getString( R.string.invite_if_nfc );
-                        }
-                    }
-
-                    showConfirmThen( msg, R.string.newgame_invite, action );
-                }
-            } );
-    }
 
     private void loadGame()
     {
