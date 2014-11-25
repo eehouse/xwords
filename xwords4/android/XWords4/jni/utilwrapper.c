@@ -745,8 +745,7 @@ destroyUtil( XW_UtilCtxt** utilc )
     AndUtil* util = (AndUtil*)*utilc;
     JNIEnv* env = ENVFORME( util->ti );
 
-    int ii;
-    for ( ii = 0; ii < VSIZE(util->userStrings); ++ii ) {
+    for ( int ii = 0; ii < VSIZE(util->userStrings); ++ii ) {
         XP_UCHAR* ptr = util->userStrings[ii];
         if ( NULL != ptr ) {
             XP_FREE( util->util.mpool, ptr );

@@ -92,9 +92,8 @@ static XP_U16
 andCountSpecials( AndDictionaryCtxt* ctxt )
 {
     XP_U16 result = 0;
-    XP_U16 ii;
 
-    for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
+    for ( int ii = 0; ii < ctxt->super.nFaces; ++ii ) {
         if ( IS_SPECIAL( ctxt->super.facePtrs[ii][0] ) ) {
             ++result;
         }
@@ -121,14 +120,13 @@ andMakeBitmap( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
 #else
         XP_U8 srcByte = 0;
         XP_U8 nBits;
-        XP_U16 ii;
 
         jboolean* colors = (jboolean*)XP_CALLOC( ctxt->super.mpool, 
                                                  nCols * nRows * sizeof(*colors) );
         jboolean* next = colors;
 
         nBits = nRows * nCols;
-        for ( ii = 0; ii < nBits; ++ii ) {
+        for ( int ii = 0; ii < nBits; ++ii ) {
             XP_U8 srcBitIndex = ii % 8;
             XP_U8 srcMask;
 
@@ -164,7 +162,6 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
     XP_Bool success = XP_TRUE;
     XP_U16 nSpecials = andCountSpecials( ctxt );
     XP_U8 const* ptr = *ptrp;
-    Tile ii;
     XP_UCHAR** texts;
     XP_UCHAR** textEnds;
     SpecialBitmaps* bitmaps;
@@ -177,7 +174,7 @@ andLoadSpecialData( AndDictionaryCtxt* ctxt, XP_U8 const** ptrp,
     bitmaps = (SpecialBitmaps*)
         XP_CALLOC( ctxt->super.mpool, nSpecials * sizeof(*bitmaps) );
 
-    for ( ii = 0; ii < ctxt->super.nFaces; ++ii ) {
+    for ( Tile ii = 0; ii < ctxt->super.nFaces; ++ii ) {
 	
         const XP_UCHAR* facep = ctxt->super.facePtrs[(short)ii];
         if ( IS_SPECIAL(*facep) ) {
@@ -239,17 +236,16 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
     int indx = 0;
     int offsets[nFaces];
     int nBytes;
-    int ii, jj;
 
     jobject jstrarr = and_util_splitFaces( ctxt->jniutil, ptr, nFaceBytes,
                                            isUTF8 );
     XP_ASSERT( (*env)->GetArrayLength( env, jstrarr ) == nFaces );
 
-    for ( ii = 0; ii < nFaces; ++ii ) {
+    for ( int ii = 0; ii < nFaces; ++ii ) {
         jobject jstrs = (*env)->GetObjectArrayElement( env, jstrarr, ii );
         offsets[ii] = indx;
         int nAlternates = (*env)->GetArrayLength( env, jstrs );
-        for ( jj = 0; jj < nAlternates; ++jj ) {
+        for ( int jj = 0; jj < nAlternates; ++jj ) {
             jobject jstr = (*env)->GetObjectArrayElement( env, jstrs, jj );
             nBytes = (*env)->GetStringUTFLength( env, jstr );
 
@@ -280,7 +276,7 @@ splitFaces_via_java( JNIEnv* env, AndDictionaryCtxt* ctxt, const XP_U8* ptr,
         XP_CALLOC( ctxt->super.mpool, nFaces * sizeof(ptrs[0]));
 
     XP_MEMCPY( faces, facesBuf, indx );
-    for ( ii = 0; ii < nFaces; ++ii ) {
+    for ( int ii = 0; ii < nFaces; ++ii ) {
         ptrs[ii] = &faces[offsets[ii]];
     }
 
@@ -312,7 +308,6 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
     const XP_U8 const* end = ptr + dictLength;
     XP_U32 offset;
     XP_U16 nFaces, numFaceBytes = 0;
-    XP_U16 i;
     XP_U16 flags;
     void* mappedBase = (void*)ptr;
     XP_U8 nodeSize;
@@ -420,10 +415,9 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
     } else {
         XP_U8 tmp[nFaces*4]; /* should be enough... */
         XP_U16 nBytes = 0;
-        XP_U16 ii;
         /* Need to translate from iso-8859-n to utf8 */
         CHECK_PTR( ptr, 2 * nFaces, end );
-        for ( ii = 0; ii < nFaces; ++ii ) {
+        for ( int ii = 0; ii < nFaces; ++ii ) {
             XP_UCHAR ch = ptr[1];
 
             ptr += 2;
@@ -445,9 +439,9 @@ parseDict( AndDictionaryCtxt* ctxt, XP_U8 const* ptr, XP_U32 dictLength,
     ctxt->super.langCode = ptr[0] & 0x7F;
     ptr += 2;		/* skip xloc header */
     CHECK_PTR( ptr, 2 * nFaces, end );
-    for ( i = 0; i < nFaces*2; i += 2 ) {
-        ctxt->super.countsAndValues[i] = *ptr++;
-        ctxt->super.countsAndValues[i+1] = *ptr++;
+    for ( int ii = 0; ii < nFaces*2; ii += 2 ) {
+        ctxt->super.countsAndValues[ii] = *ptr++;
+        ctxt->super.countsAndValues[ii+1] = *ptr++;
     }
 
     if ( !andLoadSpecialData( ctxt, &ptr, end ) ) {
@@ -492,11 +486,10 @@ and_dictionary_destroy( DictionaryCtxt* dict )
     AndDictionaryCtxt* ctxt = (AndDictionaryCtxt*)dict;
     XP_LOGF( "%s(dict=%p); code=%x", __func__, ctxt, ctxt->dbgid );
     XP_U16 nSpecials = andCountSpecials( ctxt );
-    XP_U16 ii;
     JNIEnv* env = ctxt->env;
 
     if ( !!ctxt->super.chars ) {
-        for ( ii = 0; ii < nSpecials; ++ii ) {
+        for ( int ii = 0; ii < nSpecials; ++ii ) {
             XP_UCHAR* text = ctxt->super.chars[ii];
             if ( !!text ) {
                 XP_FREE( ctxt->super.mpool, text );
@@ -507,7 +500,7 @@ and_dictionary_destroy( DictionaryCtxt* dict )
     XP_FREEP( ctxt->super.mpool, &ctxt->super.charEnds );
 
     if ( !!ctxt->super.bitmaps ) {
-        for ( ii = 0; ii < nSpecials; ++ii ) {
+        for ( int ii = 0; ii < nSpecials; ++ii ) {
             jobject bitmap = ctxt->super.bitmaps[ii].largeBM;
             if ( !!bitmap ) {
                 (*env)->DeleteGlobalRef( env, bitmap );
@@ -576,11 +569,10 @@ makeDicts( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil,
            jobjectArray jnames, jobjectArray jdicts, jobjectArray jpaths,
            jstring jlang )
 {
-    int ii;
     jsize len = (*env)->GetArrayLength( env, jdicts );
     XP_ASSERT( len == (*env)->GetArrayLength( env, jnames ) );
 
-    for ( ii = 0; ii <= VSIZE(dicts->dicts); ++ii ) {
+    for ( int ii = 0; ii <= VSIZE(dicts->dicts); ++ii ) {
         DictionaryCtxt* dict = NULL;
         if ( ii < len ) {
             jobject jdict = (*env)->GetObjectArrayElement( env, jdicts, ii );

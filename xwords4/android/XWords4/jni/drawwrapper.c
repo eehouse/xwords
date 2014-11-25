@@ -86,7 +86,6 @@ readJRect( JNIEnv* env, XP_Rect* rect, jobject jrect )
 static jobject
 makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
 {
-    XP_U16 ii;
     JNIEnv* env = ENVFORME( draw->ti );
     jobject jrects = draw->jCache[indx];
     if ( !jrects ) {
@@ -98,7 +97,7 @@ makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
         jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", 
                                                 "()V" );
 
-        for ( ii = 0; ii < nPlayers; ++ii ) {
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
             jobject jrect = (*env)->NewObject( env, rclass, initId );
             (*env)->SetObjectArrayElement( env, jrects, ii, jrect );
             deleteLocalRef( env, jrect );
@@ -121,7 +120,6 @@ makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
 static jobject
 makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
 {
-    XP_U16 ii;
     JNIEnv* env = ENVFORME( draw->ti );
     jobject dsiobjs = draw->jCache[indx];
 
@@ -133,7 +131,7 @@ makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
         dsiobjs = draw->jCache[indx];
 
         jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
-        for ( ii = 0; ii < nPlayers; ++ii ) {
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
             jobject dsiobj = (*env)->NewObject( env, clas, initId );
             (*env)->SetObjectArrayElement( env, dsiobjs, ii, dsiobj );
             deleteLocalRef( env, dsiobj );
@@ -142,7 +140,7 @@ makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
         deleteLocalRef( env, clas );
     }
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         jobject dsiobj = (*env)->GetObjectArrayElement( env, dsiobjs, ii );
         const DrawScoreInfo* dsi = &dsis[ii];
 
@@ -206,8 +204,8 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
     DRAW_CBK_HEADER("scoreBegin", "(Landroid/graphics/Rect;I[II)Z" );
 
     jint jarr[numPlayers];
-    int ii;
-    for ( ii = 0; ii < numPlayers; ++ii ) {
+
+    for ( int ii = 0; ii < numPlayers; ++ii ) {
         jarr[ii] = scores[ii];
     }
     jintArray jscores = makeIntArray( env, numPlayers, jarr );
@@ -241,7 +239,6 @@ and_draw_score_drawPlayers( DrawCtx* dctx, const XP_Rect* scoreRect,
                             XP_U16 nPlayers, DrawScoreInfo playerData[], 
                             XP_Rect playerRects[] )
 {
-    XP_U16 ii;
     DRAW_CBK_HEADER("score_drawPlayers", "(Landroid/graphics/Rect;"
                     "[L" PKG_PATH("jni/DrawScoreInfo;")
                     "[Landroid/graphics/Rect;)V" );
@@ -251,7 +248,7 @@ and_draw_score_drawPlayers( DrawCtx* dctx, const XP_Rect* scoreRect,
     jobject jrects = makeJRects( draw, JCACHE_RECTS, nPlayers, NULL );
     (*env)->CallVoidMethod( env, draw->jdraw, mid, jrect, jdsis, jrects );
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         jobject jrect = (*env)->GetObjectArrayElement( env, jrects, ii );
         readJRect( env, &playerRects[ii], jrect );
     }
@@ -611,8 +608,7 @@ makeDraw( MPFORMAL EnvThreadInfo* ti, jobject jdraw )
     draw->ti = ti;
     MPASSIGN( draw->mpool, mpool );
 
-    int ii;
-    for ( ii = 0; ii < sizeof(*draw->vtable)/4; ++ii ) {
+    for ( int ii = 0; ii < sizeof(*draw->vtable)/4; ++ii ) {
         ((void**)(draw->vtable))[ii] = draw_doNothing;
     }
 
@@ -664,8 +660,7 @@ destroyDraw( DrawCtx** dctx )
             (*env)->DeleteGlobalRef( env, draw->jdraw );
         }
 
-        int ii;
-        for ( ii = 0; ii < JCACHE_COUNT; ++ii ) {
+        for ( int ii = 0; ii < JCACHE_COUNT; ++ii ) {
             jobject jobj = draw->jCache[ii];
             if ( !!jobj ) {
                 (*env)->DeleteGlobalRef( env, jobj );

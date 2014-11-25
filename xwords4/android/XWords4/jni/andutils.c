@@ -41,8 +41,7 @@ XP_U32
 and_ntohl(XP_U32 ll)
 {
     XP_U32 result = 0L;
-    int ii;
-    for ( ii = 0; ii < 4; ++ii ) {
+    for ( int ii = 0; ii < 4; ++ii ) {
         result <<= 8;
         result |= ll & 0x000000FF;
         ll >>= 8;
@@ -91,8 +90,7 @@ getInt( JNIEnv* env, jobject obj, const char* name )
 void
 getInts( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis )
 {
-    int ii;
-    for ( ii = 0; ii < nSis; ++ii ) {
+    for ( int ii = 0; ii < nSis; ++ii ) {
         const SetInfo* si = &sis[ii];
         uint8_t* ptr = ((uint8_t*)cobj) + si->offset;
         int val = getInt( env, jobj, si->name );
@@ -126,8 +124,7 @@ setInt( JNIEnv* env, jobject obj, const char* name, int value )
 void
 setInts( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis )
 {
-    int ii;
-    for ( ii = 0; ii < nSis; ++ii ) {
+    for ( int ii = 0; ii < nSis; ++ii ) {
         const SetInfo* si = &sis[ii];
         uint8_t* ptr = ((uint8_t*)cobj) + si->offset;
         int val;
@@ -169,8 +166,7 @@ setBool( JNIEnv* env, jobject obj, const char* name, bool value )
 void
 setBools( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis )
 {
-    int ii;
-    for ( ii = 0; ii < nSis; ++ii ) {
+    for ( int ii = 0; ii < nSis; ++ii ) {
         const SetInfo* si = &sis[ii];
         XP_Bool val = *(XP_Bool*)(((uint8_t*)cobj)+si->offset);
         setBool( env, jobj, si->name, val );
@@ -278,8 +274,7 @@ getBool( JNIEnv* env, jobject obj, const char* name )
 void
 getBools( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis )
 {
-    int ii;
-    for ( ii = 0; ii < nSis; ++ii ) {
+    for ( int ii = 0; ii < nSis; ++ii ) {
         const SetInfo* si = &sis[ii];
         XP_Bool val = getBool( env, jobj, si->name );
         *(XP_Bool*)(((uint8_t*)cobj)+si->offset) = val;
@@ -380,8 +375,7 @@ makeStringArray( JNIEnv *env, int siz, const XP_UCHAR** vals )
     jobjectArray jarray = (*env)->NewObjectArray( env, siz, clas, empty );
     deleteLocalRefs( env, clas, empty, DELETE_NO_REF );
 
-    int ii;
-    for ( ii = 0; !!vals && ii < siz; ++ii ) {    
+    for ( int ii = 0; !!vals && ii < siz; ++ii ) {    
         jstring jstr = (*env)->NewStringUTF( env, vals[ii] );
         (*env)->SetObjectArrayElement( env, jarray, ii, jstr );
         deleteLocalRef( env, jstr );

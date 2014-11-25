@@ -241,8 +241,7 @@ makeGI( MPFORMAL JNIEnv* env, jobject jgi )
     jobject jplayers;
     if ( getObject( env, jgi, "players", "[L" PKG_PATH("jni/LocalPlayer") ";",
                     &jplayers ) ) {
-        int ii;
-        for ( ii = 0; ii < gi->nPlayers; ++ii ) {
+        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
             LocalPlayer* lp = &gi->players[ii];
 
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
@@ -288,8 +287,7 @@ setJGI( JNIEnv* env, jobject jgi, const CurGameInfo* gi )
     if ( getObject( env, jgi, "players", 
                     "[L" PKG_PATH("jni/LocalPlayer") ";",
                     &jplayers ) ) {
-        int ii;
-        for ( ii = 0; ii < gi->nPlayers; ++ii ) {
+        for ( int ii = 0; ii < gi->nPlayers; ++ii ) {
             const LocalPlayer* lp = &gi->players[ii];
 
             jobject jlp = (*env)->GetObjectArrayElement( env, jplayers, ii );
@@ -1345,7 +1343,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
 ( JNIEnv* env, jclass C, jint gamePtr )
 {
     jobjectArray result = NULL;
-    XP_U16 ii;
     XWJNI_START();
     XP_ASSERT( state->game.comms );
     CommsAddrRec addrs[MAX_NUM_PLAYERS];
@@ -1356,7 +1353,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getAddrs
     result = (*env)->NewObjectArray( env, count, clas, NULL );
 
     jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
-    for ( ii = 0; ii < count; ++ii ) {
+    for ( int ii = 0; ii < count; ++ii ) {
         jobject jaddr = (*env)->NewObject( env, clas, initId );
         setJAddrRec( env, jaddr, &addrs[ii] );
         (*env)->SetObjectArrayElement( env, result, ii, jaddr );
@@ -1411,8 +1408,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
            I'm a robot.  Only one server_do and I'll never make that first
            robot move.  That's because comms can't detect a duplicate initial
            packet (in validateInitialMessage()). */
-        int ii;
-        for ( ii = 0; ii < 5; ++ii ) {
+        for ( int ii = 0; ii < 5; ++ii ) {
             (void)server_do( server );
         }
     }
@@ -1471,9 +1467,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
                 XP_U16 count = VSIZE(addrs);
                 comms_getAddrs( comms, addrs, &count );
             
-                int ii;
                 const XP_UCHAR* addrps[count];
-                for ( ii = 0; ii < count; ++ii ) {
+                for ( int ii = 0; ii < count; ++ii ) {
                     addrps[ii] = isBT ? (XP_UCHAR*)&addrs[ii].u.bt.btAddr : 
                         (XP_UCHAR*)&addrs[ii].u.sms.phone;
                     XP_LOGF( "%s: adding btaddr/phone %s", __func__, addrps[ii] );
@@ -1493,15 +1488,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1summarize
 
     XP_U16 nPlayers = model_getNPlayers( model );
     jint jvals[nPlayers];
-    int ii;
     if ( gameOver ) {
         ScoresArray scores;
         model_figureFinalScores( model, &scores, NULL );
-        for ( ii = 0; ii < nPlayers; ++ii ) {
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
             jvals[ii] = scores.arr[ii];
         }
     } else {
-        for ( ii = 0; ii < nPlayers; ++ii ) {
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
             jvals[ii] = model_getPlayerScore( model, ii );
         }
     }
@@ -1906,9 +1900,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_dict_1iter_1getPrefixes
     if ( NULL != data && NULL != data->idata.prefixes ) {
         result = makeStringArray( env, data->idata.count, NULL );
 
-        int ii;
         XP_U16 depth = data->depth;
-        for ( ii = 0; ii < data->idata.count; ++ii ) {
+        for ( int ii = 0; ii < data->idata.count; ++ii ) {
             XP_UCHAR buf[16];
             (void)dict_tilesToString( data->dict, 
                                       &data->idata.prefixes[depth*ii], 
