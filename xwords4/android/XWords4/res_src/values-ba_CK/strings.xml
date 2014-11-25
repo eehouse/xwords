@@ -240,8 +240,6 @@
   <string name="title_game_config_fmt">Sgnittes rof %1$s</string>
   <!-- alternate window title used when game is networked -->
   <string name="title_gamenet_config_fmt">%1$s sgnittes )dekrowten(</string>
-  <!--  -->
-  <string name="title_gamebt_config_fmt">%1$s sgnittes aiv( )htooteulb</string>
   <!-- title for popup list of langugages from which user picks -->
   <string name="title_langs_list">Segaugnal desab( no dellatsni
       )stsildrow</string>

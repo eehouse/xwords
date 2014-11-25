@@ -277,8 +277,6 @@
 
     <!-- alternate window title used when game is networked -->
     <string name="title_gamenet_config_fmt">%1$s settings (networked)</string>  
-    <!--  -->
-    <string name="title_gamebt_config_fmt">%1$s settings (via Bluetooth)</string>
 
     <!-- title for popup list of langugages from which user picks -->
     <string name="title_langs_list">Languages (based on installed
