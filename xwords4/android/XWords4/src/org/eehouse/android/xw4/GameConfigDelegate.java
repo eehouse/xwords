@@ -1148,26 +1148,14 @@ public class GameConfigDelegate extends DelegateBase
 
     private void setTitle()
     {
-        int strID = 0;
-        for ( Iterator<CommsConnType> iter = m_conTypes.iterator();
-              0 == strID && iter.hasNext(); ) {
-            switch( iter.next() ) {
-            case COMMS_CONN_RELAY:
-                strID = R.string.title_gamenet_config_fmt;
-                break;
-            case COMMS_CONN_BT:
-                strID = R.string.title_gamebt_config_fmt;
-                break;
-            default:
-                break;
-            }
-        }
-
-        if ( 0 == strID ) {
+        int strID;
+        if ( null != m_conTypes && 0 < m_conTypes.size() ) {
+            strID = R.string.title_gamenet_config_fmt;
+        } else {
             strID = R.string.title_game_config_fmt;
         }
-
-        setTitle( getString( strID, GameUtils.getName( m_activity, m_rowid ) ) );
+        String name = GameUtils.getName( m_activity, m_rowid );
+        setTitle( getString( strID, name ) );
     }
 
     private boolean localOnlyGame()
