@@ -460,7 +460,6 @@ setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
             XP_ASSERT(0);
         }
     }
-    LOG_RETURN_VOID();
 }
 
 jobject
