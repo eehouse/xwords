@@ -74,15 +74,18 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = ENVFORME( aprocs->ti );
-        const char* sig = "([BL" PKG_PATH("jni/CommsAddrRec") ";I)I";
+        const char* sig = "([BL" PKG_PATH("jni/CommsAddrRec")
+            ";L" PKG_PATH("jni/CommsAddrRec$CommsConnType") ";I)I";
+
         jmethodID mid = getMethodID( env, aprocs->jxport, "transportSend", sig );
 
         jbyteArray jbytes = makeByteArray( env, len, (jbyte*)buf );
         jobject jaddr = makeJAddr( env, addr );
-
+        jobject jConType = 
+            intToJEnum(env, conType, PKG_PATH("jni/CommsAddrRec$CommsConnType"));
         result = (*env)->CallIntMethod( env, aprocs->jxport, mid, 
-                                        jbytes, jaddr, gameID );
-        deleteLocalRefs( env, jaddr, jbytes, DELETE_NO_REF );
+                                        jbytes, jaddr, jConType, gameID );
+        deleteLocalRefs( env, jaddr, jbytes, jConType, DELETE_NO_REF );
     }
     LOG_RETURNF( "%d", result );
     return result;

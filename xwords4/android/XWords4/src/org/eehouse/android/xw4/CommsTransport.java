@@ -356,24 +356,19 @@ public class CommsTransport implements TransportProcs,
 
     public int getFlags() { return COMMS_XPORT_FLAGS_NONE; }
 
-    public int transportSend( byte[] buf, final CommsAddrRec faddr, int gameID )
+    public int transportSend( byte[] buf, CommsAddrRec addr, 
+                              CommsConnType conType, int gameID )
     {
         int nSent = -1;
-        CommsAddrRec addr;
-        if ( null == faddr ) {
-            DbgUtils.logf( "Do this in the JNI!!" );
-            addr = new CommsAddrRec();
-            XwJNI.comms_getAddr( m_jniGamePtr, addr );
-        } else {
-            addr = faddr;
-        }
+        Assert.assertNotNull( addr );
+        Assert.assertTrue( addr.contains( conType ) );
 
-        if ( !XWApp.UDP_ENABLED && null == m_relayAddr ) {
+        if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY 
+             && null == m_relayAddr ) {
             m_relayAddr = new CommsAddrRec( addr );
         }
 
-        if ( !XWApp.UDP_ENABLED 
-             && addr.contains(CommsConnType.COMMS_CONN_RELAY) ) {
+        if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY ) {
             if ( NetStateCache.netAvail( m_context ) ) {
                 putOut( buf );      // add to queue
                 if ( null == m_thread ) {
@@ -383,7 +378,8 @@ public class CommsTransport implements TransportProcs,
                 nSent = buf.length;
             }
         } else {
-            nSent = sendForAddr( m_context, addr, m_rowid, gameID, buf );
+            nSent = sendForAddr( m_context, addr, conType, m_rowid, 
+                                 gameID, buf );
         }
 
         // Keep this while debugging why the resend_all that gets
@@ -437,37 +433,29 @@ public class CommsTransport implements TransportProcs,
     }
 
     private static int sendForAddr( Context context, CommsAddrRec addr, 
-                                    long rowID, int gameID, byte[] buf )
+                                    CommsConnType conType, long rowID, 
+                                    int gameID, byte[] buf )
     {
-        DbgUtils.logf( "sendForAddr(addr=%s)", addr.conTypes.toString() );
-        int mostSent = -1;
-        for ( Iterator<CommsConnType> iter = addr.conTypes.iterator(); 
-              iter.hasNext(); ) {
-            CommsConnType conType = iter.next();
-            int nSent = -1;
-            switch ( conType ) {
-            case COMMS_CONN_RELAY:
-                Assert.assertTrue( XWApp.UDP_ENABLED );
-                nSent = RelayService.sendPacket( context, rowID, buf );
-                break;
-            case COMMS_CONN_SMS:
-                nSent = SMSService.sendPacket( context, addr.sms_phone, 
-                                               gameID, buf );
-                break;
-            case COMMS_CONN_BT:
-                nSent = BTService.enqueueFor( context, buf, addr.bt_btAddr, gameID );
-                break;
-            default:
-                Assert.fail();
-                break;
-            }
-            if ( mostSent < nSent ) {
-                mostSent = nSent;
-            }
+        int nSent = -1;
+        switch ( conType ) {
+        case COMMS_CONN_RELAY:
+            Assert.assertTrue( XWApp.UDP_ENABLED );
+            nSent = RelayService.sendPacket( context, rowID, buf );
+            break;
+        case COMMS_CONN_SMS:
+            nSent = SMSService.sendPacket( context, addr.sms_phone, 
+                                           gameID, buf );
+            break;
+        case COMMS_CONN_BT:
+            nSent = BTService.enqueueFor( context, buf, addr.bt_btAddr, gameID );
+            break;
+        default:
+            Assert.fail();
+            break;
         }
-        DbgUtils.logf( "sendForAddr(addr=%s)=>%d", addr.conTypes.toString(), 
-                       mostSent );
-        return mostSent;
+        DbgUtils.logf( "sendForAddr(addr=%s)=>%d", conType.toString(), 
+                       nSent );
+        return nSent;
     }
 
     /* NPEs in m_selector calls: sometimes my Moment gets into a state

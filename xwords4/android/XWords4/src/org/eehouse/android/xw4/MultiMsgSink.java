@@ -77,37 +77,28 @@ public class MultiMsgSink implements TransportProcs {
 
     public int getFlags() { return COMMS_XPORT_FLAGS_HASNOCONN; }
 
-    public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
+    public int transportSend( byte[] buf, CommsAddrRec addr, CommsConnType typ, 
+                              int gameID )
     {
-        int maxSent = -1;
-        for ( CommsConnType typ : addr.conTypes.getTypes() ) {
-            int nSent = -1;
-            switch ( typ ) {
-            case COMMS_CONN_RELAY:
-                nSent = sendViaRelay( buf, gameID );
-                break;
-            case COMMS_CONN_BT:
-                nSent = sendViaBluetooth( buf, gameID, addr );
-                break;
-            case COMMS_CONN_SMS:
-                nSent = sendViaSMS( buf, gameID, addr );
-                break;
-            default:
-                Assert.fail();
-                break;
-            }
-            DbgUtils.logf( "MultiMsgSink.transportSend(): sent %d via %s", 
-                           nSent, typ.toString() );
-            if ( nSent > maxSent ) {
-                maxSent = nSent;
-            }
+        int nSent = -1;
+        switch ( typ ) {
+        case COMMS_CONN_RELAY:
+            nSent = sendViaRelay( buf, gameID );
+            break;
+        case COMMS_CONN_BT:
+            nSent = sendViaBluetooth( buf, gameID, addr );
+            break;
+        case COMMS_CONN_SMS:
+            nSent = sendViaSMS( buf, gameID, addr );
+            break;
+        default:
+            Assert.fail();
+            break;
         }
+        DbgUtils.logf( "MultiMsgSink.transportSend(): sent %d via %s", 
+                       nSent, typ.toString() );
 
-        if ( 0 < maxSent ) {
-            ++m_nSent;
-        }
-
-        return maxSent;
+        return nSent;
     }
 
     public void relayStatus( CommsRelayState newState )
