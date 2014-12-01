@@ -171,7 +171,7 @@ public class ConnStatusHandler {
     public static String getStatusText( Context context, CommsConnTypeSet connTypes )
     {
         String msg;
-        if ( 0 == connTypes.size() ) {
+        if ( null == connTypes || 0 == connTypes.size() ) {
             msg = LocUtils.getString( context, R.string.connstat_nonet );
         } else {
             StringBuffer sb = new StringBuffer();

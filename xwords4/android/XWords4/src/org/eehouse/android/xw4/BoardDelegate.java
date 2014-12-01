@@ -269,6 +269,7 @@ public class BoardDelegate extends DelegateBase
                         };
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
                 } else if ( DlgID.DLG_CONNSTAT == dlgID &&
+                            null != m_connTypes &&
                             m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                     lstnr = new DialogInterface.OnClickListener() {
                             public void onClick( DialogInterface dlg, 
