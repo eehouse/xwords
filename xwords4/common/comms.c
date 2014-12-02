@@ -1318,7 +1318,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
                         nSent = elem->len;
                     }
                 } else {
-                    XP_LOGF( "%s: skipping message: not connected", __func__ );
+                    XP_LOGF( "%s: skipping message: not connected to relay", __func__ );
                 }
                 break;
             }
@@ -1581,7 +1581,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         }
         comms->rr.myHostID = srcID;
 
-        XP_LOGF( "%s: set hostid: %x", __func__, comms->rr.myHostID );
+        XP_LOGF( "%s: set hostID: %x", __func__, comms->rr.myHostID );
 
 #ifdef DEBUG
         {
@@ -2722,27 +2722,33 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
                 void* data, int dlen )
 {
     XP_Bool success = XP_FALSE;
-    XWStreamCtxt* tmpStream = msg_to_stream( comms, cmd, destID, data, dlen );
+    if ( comms_getAddrDisabled( comms, COMMS_CONN_RELAY, XP_TRUE ) ) {
+        XP_LOGF( "%s: dropping message because %s disabled", __func__,
+                 ConnType2Str( COMMS_CONN_RELAY ) );
+    } else {
 
-    if ( tmpStream != NULL ) {
-        XP_U16 len = 0;
+        XWStreamCtxt* tmpStream = msg_to_stream( comms, cmd, destID, data, dlen );
 
-        len = stream_getSize( tmpStream );
-        if ( 0 < len ) {
-            XP_U16 result;
-            CommsAddrRec addr;
+        if ( tmpStream != NULL ) {
+            XP_U16 len = 0;
 
-            comms_getAddr( comms, &addr );
-            XP_LOGF( "%s: passing %d bytes to sendproc", __func__, len );
-            result = (*comms->procs.send)( stream_getPtr(tmpStream), len, &addr,
-                                           COMMS_CONN_RELAY, gameID(comms), 
-                                           comms->procs.closure );
-            success = result == len;
-            if ( success ) {
-                setHeartbeatTimer( comms );
+            len = stream_getSize( tmpStream );
+            if ( 0 < len ) {
+                XP_U16 result;
+                CommsAddrRec addr;
+
+                comms_getAddr( comms, &addr );
+                XP_LOGF( "%s: passing %d bytes to sendproc", __func__, len );
+                result = (*comms->procs.send)( stream_getPtr(tmpStream), len, &addr,
+                                               COMMS_CONN_RELAY, gameID(comms), 
+                                               comms->procs.closure );
+                success = result == len;
+                if ( success ) {
+                    setHeartbeatTimer( comms );
+                }
             }
+            stream_destroy( tmpStream );
         }
-        stream_destroy( tmpStream );
     }
     return success;
 } /* send_via_relay */
