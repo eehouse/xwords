@@ -177,30 +177,32 @@ public class GameSummary {
         return result;
     }
 
+    // FIXME: should report based on whatever conType is giving us a
+    // successful connection.
     public String summarizeRole()
     {
         String result = null;
         if ( isMultiGame() ) {
             int fmtID = 0;
-            for ( Iterator<CommsConnType> iter = conTypes.iterator();
-                  null == result && iter.hasNext(); ) {
-                CommsConnType conType = iter.next();
-                DbgUtils.logf( "summarizeRole: got type %s", conType.toString() );
-                switch ( conType ) {
-                case COMMS_CONN_RELAY:
-                    if ( null == relayID || 0 == relayID.length() ) {
-                        fmtID = R.string.summary_relay_conf_fmt;
-                    } else if ( anyMissing() ) {
-                        fmtID = R.string.summary_relay_wait_fmt;
-                    } else if ( gameOver ) {
-                        fmtID = R.string.summary_relay_gameover_fmt;
-                    } else {
-                        fmtID = R.string.summary_relay_conn_fmt;
-                    }
-                    result = LocUtils.getString( m_context, fmtID, roomName );
-                    break;
-                case COMMS_CONN_BT:
-                case COMMS_CONN_SMS:
+
+            // If we're using relay to connect, get status from that
+            if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                if ( null == relayID || 0 == relayID.length() ) {
+                    fmtID = R.string.summary_relay_conf_fmt;
+                } else if ( anyMissing() ) {
+                    fmtID = R.string.summary_relay_wait_fmt;
+                } else if ( gameOver ) {
+                    fmtID = R.string.summary_relay_gameover_fmt;
+                } else {
+                    fmtID = R.string.summary_relay_conn_fmt;
+                }
+                result = LocUtils.getString( m_context, fmtID, roomName );
+            }
+                
+            // Otherwise, use BT or SMS
+            if ( null == result ) {
+                if ( conTypes.contains( CommsConnType.COMMS_CONN_BT )
+                     || ( conTypes.contains( CommsConnType.COMMS_CONN_SMS))){
                     if ( anyMissing() ) {
                         if ( DeviceRole.SERVER_ISSERVER == serverRole ) {
                             fmtID = R.string.summary_wait_host;
@@ -210,7 +212,7 @@ public class GameSummary {
                     } else if ( gameOver ) {
                         fmtID = R.string.summary_gameover;
                     } else if ( null != remoteDevs 
-                                && CommsConnType.COMMS_CONN_SMS == conType ) {
+                                && conTypes.contains( CommsConnType.COMMS_CONN_SMS)){
                         result = 
                             LocUtils.getString( m_context, R.string.summary_conn_sms_fmt,
                                                 TextUtils.join(", ", m_remotePhones) );
@@ -220,11 +222,6 @@ public class GameSummary {
                     if ( null == result ) {
                         result = LocUtils.getString( m_context, fmtID );
                     }
-                    break;
-                default:
-                    // result = conType.toString();
-                    DbgUtils.logf( "unexpected type: %s", conType.toString() );
-                    break;
                 }
             }
         }
@@ -233,7 +230,6 @@ public class GameSummary {
 
     public boolean isMultiGame()
     {
-        // This definition will expand as other transports are added
         return ( null != conTypes && 0 < conTypes.size()
                  && serverRole != DeviceRole.SERVER_STANDALONE );
     }
