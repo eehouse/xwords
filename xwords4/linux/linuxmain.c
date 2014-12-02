@@ -635,6 +635,11 @@ typedef enum {
     ,CMD_SPLITPACKETS
     ,CMD_CHAT
     ,CMD_USEUDP
+    ,CMD_DROPSENDRELAY
+    ,CMD_DROPRCVRELAY
+    ,CMD_DROPSENDSMS
+    ,CMD_DROPRCVSMS
+
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
 #endif
@@ -746,6 +751,12 @@ static CmdInfoRec CmdInfoRecs[] = {
        "sections every random MOD <n> seconds to test relay reassembly" }
     ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
     ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp" }
+
+    ,{ CMD_DROPSENDRELAY, false, "drop-send-relay", "start new games with relay send disabled" }
+    ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
+    ,{ CMD_DROPSENDSMS, false, "drop-send-sms", "start new games with sms send disabled" }
+    ,{ CMD_DROPRCVSMS, false, "drop-receive-sms", "start new games with sms receive disabled" }
+
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
        "don't show crosshairs on board" }
@@ -2349,6 +2360,20 @@ main( int argc, char** argv )
         case CMD_USEUDP:
             mainParams.useUdp = true;
             break;
+
+        case CMD_DROPSENDRELAY:
+            mainParams.commsDisableds[COMMS_CONN_RELAY][1] = XP_TRUE;
+            break;
+        case CMD_DROPRCVRELAY:
+            mainParams.commsDisableds[COMMS_CONN_RELAY][0] = XP_TRUE;
+            break;
+        case CMD_DROPSENDSMS:
+            mainParams.commsDisableds[COMMS_CONN_SMS][1] = XP_TRUE;
+            break;
+        case CMD_DROPRCVSMS:
+            mainParams.commsDisableds[COMMS_CONN_SMS][0] = XP_TRUE;
+            break;
+
 #ifdef XWFEATURE_CROSSHAIRS
         case CMD_NOCROSSHAIRS:
             mainParams.hideCrosshairs = XP_TRUE;

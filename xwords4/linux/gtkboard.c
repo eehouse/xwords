@@ -482,12 +482,18 @@ addDropChecks( GtkGameGlobals* globals )
             gtk_widget_show( widget );
 
             widget = gtk_check_button_new_with_label( "Incoming" );
+            if ( comms_getAddrDisabled( comms, typ, XP_FALSE ) ) {
+                gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(widget), TRUE );
+            }
             g_signal_connect( GTK_OBJECT(widget), "toggled", G_CALLBACK(drop_msg_toggle), 
                               datum );
             gtk_box_pack_start( GTK_BOX(hbox), widget, FALSE, TRUE, 0);
             gtk_widget_show( widget );
 
             widget = gtk_check_button_new_with_label( "Outgoing" );
+            if ( comms_getAddrDisabled( comms, typ, XP_TRUE ) ) {
+                gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(widget), TRUE );
+            }
             g_signal_connect( GTK_OBJECT(widget), "toggled", G_CALLBACK(drop_msg_toggle), 
                               (void*)(((long)datum) | 1) );
             gtk_box_pack_start( GTK_BOX(hbox), widget, FALSE, TRUE, 0);
@@ -572,6 +578,12 @@ createOrLoadObjects( GtkGameGlobals* globals )
         // addr.conType = params->conType;
         CommsConnType typ;
         for ( XP_U32 st = 0; addr_iter( &addr, &typ, &st ); ) {
+            if ( params->commsDisableds[typ][0] ) {
+                comms_setAddrDisabled( cGlobals->game.comms, typ, XP_FALSE, XP_TRUE );
+            }
+            if ( params->commsDisableds[typ][1] ) {
+                comms_setAddrDisabled( cGlobals->game.comms, typ, XP_TRUE, XP_TRUE );
+            }
             switch( typ ) {
 #ifdef XWFEATURE_RELAY
             case COMMS_CONN_RELAY:
