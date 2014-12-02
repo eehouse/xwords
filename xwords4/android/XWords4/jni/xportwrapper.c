@@ -53,7 +53,7 @@ makeJAddr( JNIEnv* env, const CommsAddrRec* addr )
 static XP_U32
 and_xport_getFlags( void* closure )
 {
-    jint result = 0;
+    jint result = COMMS_XPORT_FLAGS_NONE;
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = ENVFORME( aprocs->ti );
@@ -143,6 +143,7 @@ and_xport_sendNoConn( const XP_U8* buf, XP_U16 len,
                                             jbytes, str );
         deleteLocalRefs( env, jbytes, str, DELETE_NO_REF );
     }
+    LOG_RETURNF( "%d", result );
     return result;
 }
 
