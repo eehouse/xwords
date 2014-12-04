@@ -217,8 +217,8 @@ CRefMgr::getFromFreeList( void )
 /* connect case */
 CidInfo*
 CRefMgr::getMakeCookieRef( const char* cookie, int nPlayersH, int nPlayersT, 
-                           int langCode, int seed, bool wantsPublic, 
-                           bool makePublic, bool* seenSeed )
+                           int langCode, int seed, int clientIndx, 
+                           bool wantsPublic, bool makePublic, bool* seenSeed )
 {
     CidInfo* cinfo;
 
@@ -597,8 +597,8 @@ CookieMapIterator::Next()
 /* connect case */
 SafeCref::SafeCref( const char* cookie, const AddrInfo* addr, int clientVers,
                     DevID* devID, int nPlayersH, int nPlayersS, 
-                    unsigned short gameSeed, int langCode, bool wantsPublic, 
-                    bool makePublic )
+                    unsigned short gameSeed, int clientIndx, int langCode,
+                    bool wantsPublic, bool makePublic )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_addr( *addr )
@@ -607,12 +607,11 @@ SafeCref::SafeCref( const char* cookie, const AddrInfo* addr, int clientVers,
     , m_isValid( false )
     , m_seenSeed( false )
 {
-
     if ( playerCountsOk( nPlayersH, nPlayersS ) ) {
         CidInfo* cinfo;
         cinfo = m_mgr->getMakeCookieRef( cookie, nPlayersH, nPlayersS, 
-                                         langCode, gameSeed, wantsPublic, makePublic,
-                                         &m_seenSeed );
+                                         langCode, gameSeed, clientIndx, 
+                                         wantsPublic, makePublic, &m_seenSeed );
         if ( cinfo != NULL ) {
             CookieRef* cref = cinfo->GetRef();
             m_locked = cref->Lock();
@@ -632,7 +631,8 @@ SafeCref::SafeCref( const char* cookie, const AddrInfo* addr, int clientVers,
 SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid, 
                     const AddrInfo* addr, int clientVers, DevID* devID, 
                     int nPlayersH, int nPlayersS, unsigned short gameSeed, 
-                    int langCode, bool wantsPublic, bool makePublic )
+                    int clientIndx, int langCode, bool wantsPublic,
+                    bool makePublic )
     : m_cinfo( NULL )
     , m_mgr( CRefMgr::Get() )
     , m_addr( *addr )
@@ -654,7 +654,7 @@ SafeCref::SafeCref( const char* connName, const char* cookie, HostID hid,
             logf( XW_LOGINFO, "%s: taking a second crack", __func__ );
             m_hid = HOST_ID_NONE;
             cinfo = m_mgr->getMakeCookieRef( cookie, nPlayersH, nPlayersS, 
-                                             langCode, gameSeed, 
+                                             langCode, gameSeed, clientIndx,
                                              wantsPublic, makePublic, &m_seenSeed );
         }
         if ( cinfo != NULL ) {

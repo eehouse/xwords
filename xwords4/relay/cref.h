@@ -133,8 +133,8 @@ class CookieRef {
     static void Delete( const char* name );
 
     bool _Connect( int clientVersion, DevID* devID,
-                   int nPlayersH, int nPlayersS, int seed, bool seenSeed, 
-                   const AddrInfo* addr );
+                   int nPlayersH, int nPlayersS, int seed, HostID srcID,
+                   bool seenSeed, const AddrInfo* addr );
     bool _Reconnect( int clientVersion, DevID* devID,
                      HostID srcID, int nPlayersH, int nPlayersS,
                      int seed, const AddrInfo* addr, bool gameDead );
@@ -214,7 +214,7 @@ class CookieRef {
                    XWRelayMsg msg, XWREASON why, bool cascade );
     void pushConnectEvent( int clientVersion, DevID* devID,
                            int nPlayersH, int nPlayersS,
-                           int seed, const AddrInfo* addr );
+                           int seed, HostID srcID, const AddrInfo* addr );
     void pushReconnectEvent( int clientVersion, DevID* devID,
                              HostID srcID, int nPlayersH, int nPlayersS,
                              int seed, const AddrInfo* addr );
