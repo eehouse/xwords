@@ -190,7 +190,7 @@ CookieRef::Unlock() {
 
 bool
 CookieRef::_Connect( int clientVersion, DevID* devID, 
-                     int nPlayersH, int nPlayersS, int seed, 
+                     int nPlayersH, int nPlayersS, int seed, HostID srcID,
                      bool seenSeed, const AddrInfo* addr )
 {
     bool connected = false;
@@ -222,7 +222,7 @@ CookieRef::_Connect( int clientVersion, DevID* devID,
         }
         if ( socketOK ) {
             pushConnectEvent( clientVersion, devID, nPlayersH, nPlayersS, 
-                              seed, addr );
+                              seed, srcID, addr );
             handleEvents();
             connected = HasSocket_locked( addr );
         } else {
@@ -566,12 +566,12 @@ CookieRef::_Remove( const AddrInfo* addr )
 void 
 CookieRef::pushConnectEvent( int clientVersion, DevID* devID,
                              int nPlayersH, int nPlayersS,
-                             int seed, const AddrInfo* addr )
+                             int seed, HostID srcID, const AddrInfo* addr )
 {
     CRefEvent evt( XWE_DEVCONNECT, addr );
     evt.u.con.clientVersion = clientVersion;
     evt.u.con.devID = devID;
-    evt.u.con.srcID = HOST_ID_NONE;
+    evt.u.con.srcID = srcID;
     evt.u.con.nPlayersH = nPlayersH;
     evt.u.con.nPlayersS = nPlayersS;
     evt.u.con.seed = seed;

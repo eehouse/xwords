@@ -407,6 +407,24 @@ getDevID( const uint8_t** bufpp, const uint8_t* end,
     }
 }
 
+static uint8_t
+getClientIndex( const uint8_t** bufpp, const uint8_t* end, 
+                const int nPlayersT )
+{
+    uint8_t result = 0;
+    uint8_t clientIndx;
+    if ( getNetByte( bufpp, end, &clientIndx ) ) {
+        if ( clientIndx < nPlayersT ) {
+            result = 1 + clientIndx;   // postgres arrays are 1-based
+        } else {
+            logf( XW_LOGERROR, "%s: bogus clientIndx %d > nPlayersT %d", 
+                  __func__, clientIndx, nPlayersT );
+        }
+    }
+    // logf( XW_LOGINFO, "%s() => %d", __func__, result );
+    return result;
+}
+
 static size_t
 un2vli( int nn, uint8_t* buf )
 {
@@ -853,9 +871,11 @@ processConnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
             DevID devID;
             getDevID( &bufp, end, flags, &devID );
 
+            uint8_t clientIndx = getClientIndex( &bufp, end, nPlayersT );
+            
             logf( XW_LOGINFO, "%s(): langCode=%d; nPlayersT=%d; "
-                  "wantsPublic=%d; seed=%.4X",
-                  __func__, langCode, nPlayersT, wantsPublic, seed );
+                  "wantsPublic=%d; seed=%.4X; indx=%d",
+                  __func__, langCode, nPlayersT, wantsPublic, seed, clientIndx );
 
             /* Make sure second thread can't create new cref for same cookie
                this one just handled.*/
@@ -863,11 +883,11 @@ processConnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
             MutexLock ml( &s_newCookieLock );
 
             SafeCref scr( cookie, addr, clientVersion, &devID, 
-                          nPlayersH, nPlayersT, seed, langCode, 
+                          nPlayersH, nPlayersT, seed, clientIndx, langCode, 
                           wantsPublic, makePublic );
             /* nPlayersT etc could be slots in SafeCref to avoid passing
                here */
-            success = scr.Connect( nPlayersH, nPlayersT, seed );
+            success = scr.Connect( nPlayersH, nPlayersT, seed, clientIndx );
         } else {
             err = XWRELAY_ERROR_BADPROTO;
         }
@@ -913,9 +933,11 @@ processReconnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
             DevID devID;
             getDevID( &bufp, end, flags, &devID );
 
+            uint8_t clientIndx = getClientIndex( &bufp, end, nPlayersT );
+
             SafeCref scr( connName[0]? connName : NULL, 
                           cookie, srcID, addr, clientVersion, &devID,
-                          nPlayersH, nPlayersT, gameSeed, langCode,
+                          nPlayersH, nPlayersT, gameSeed, clientIndx, langCode,
                           wantsPublic, makePublic );
             success = scr.Reconnect( nPlayersH, nPlayersT, gameSeed, 
                                      &err );
