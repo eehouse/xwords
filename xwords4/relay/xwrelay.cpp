@@ -147,19 +147,21 @@ logf( XW_LogLevel level, const char* format, ... )
             struct tm result;
             timp = localtime_r( &tv.tv_sec, &result );
 
+            char timeBuf[64];
+            sprintf( timeBuf, "%.2d:%.2d:%.2d", timp->tm_hour, 
+                     timp->tm_min, timp->tm_sec );
+
             /* log the date once/day.  This isn't threadsafe so may be
                repeated but that's harmless. */
             if ( tm_yday != timp->tm_yday ) {
                 tm_yday = timp->tm_yday;
-                fprintf( where, "It's a new day: %.2d/%.2d/%d\n", timp->tm_mday,
+                fprintf( where, "It's a new day: %.2d/%.2d/%d %s\n", timp->tm_mday,
                          1 + timp->tm_mon, /* 0-based */
-                         1900 + timp->tm_year ); /* 1900-based */
+                         1900 + timp->tm_year, /* 1900-based */
+                         timeBuf );
             }
 
-            pthread_t me = pthread_self();
-
-            fprintf( where, "<%p>%.2d:%.2d:%.2d: ", (void*)me, timp->tm_hour, 
-                     timp->tm_min, timp->tm_sec );
+            fprintf( where, "<%p>%s: ", (void*)pthread_self(), timeBuf );
 
             va_list ap;
             va_start( ap, format );
