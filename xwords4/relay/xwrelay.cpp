@@ -414,7 +414,7 @@ getClientIndex( const uint8_t** bufpp, const uint8_t* end,
     uint8_t result = 0;
     uint8_t clientIndx;
     if ( getNetByte( bufpp, end, &clientIndx ) ) {
-        if ( clientIndx < nPlayersT ) {
+        if ( 0 < clientIndx && clientIndx < nPlayersT ) {
             result = 1 + clientIndx;   // postgres arrays are 1-based
         } else {
             logf( XW_LOGERROR, "%s: bogus clientIndx %d > nPlayersT %d", 
