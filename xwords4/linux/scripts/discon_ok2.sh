@@ -375,6 +375,7 @@ try_upgrade_upd() {
     if [ "${CMD/--use-udp/}" = "${CMD}" ]; then
         if [ $((RANDOM % 100)) -lt $UDP_PCT_INCR ]; then
             ARGS[$KEY]="$CMD --use-udp"
+            echo -n "$(date): "
             echo "upgrading key $KEY to use UDP"
         fi
     fi
