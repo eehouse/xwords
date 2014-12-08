@@ -26,8 +26,8 @@ while [ $# -ge 1 ]; do
             *got_connect_cmd:\ connName* )
                 CONNNAME="$(echo $LINE | sed 's,^.*connName: "\(.*\)" .*$,\1,')"
                 ;;
-            *got_connect_cmd:\ set\ hostid* )
-                HOSTID=$(echo $LINE | sed 's,^.*set hostid: \(.\)$,\1,')
+            *got_connect_cmd:\ changing\ rr.myHostID\ from* )
+                HOSTID=$(echo $LINE | sed 's,^.* to \(.\)$,\1,')
                 ;;
             *getChannelSeed:\ made\ seed:\ cno:\ *)
                 SEED=$(echo $LINE | sed 's,^.*getChannelSeed: made seed: cno: \(.*\)|.*$,\1,')
