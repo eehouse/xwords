@@ -47,11 +47,11 @@ typedef struct _EnvThreadEntry {
     pthread_t owner;
 } EnvThreadEntry;
 
-#define MAX_ENV_THREADS 5
-
 struct _EnvThreadInfo {
     pthread_mutex_t mtxThreads;
-    EnvThreadEntry entries[MAX_ENV_THREADS];
+    int nEntries;
+    EnvThreadEntry* entries;
+    MPSLOT
 };
 
 /* Globals for the whole game */
@@ -69,8 +69,9 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
     pthread_mutex_lock( &ti->mtxThreads );
 
     XP_Bool found = false;
+    int nEntries = ti->nEntries;
     EnvThreadEntry* firstEmpty = NULL;
-    for ( int ii = 0; !found && ii < VSIZE(ti->entries); ++ii ) {
+    for ( int ii = 0; !found && ii < nEntries; ++ii ) {
         EnvThreadEntry* entry = &ti->entries[ii];
         if ( 0 == entry->owner ) {
             if ( NULL == firstEmpty ) {
@@ -88,32 +89,50 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
     }
 
     if ( !found ) {
+        if ( !firstEmpty ) {    /* out of slots */
+            if ( 0 == nEntries ) { /* first time */
+                nEntries = 2;
+                ti->entries = 
+                    XP_MALLOC( ti->mpool, nEntries * sizeof(*ti->entries) );
+            } else {
+                nEntries *= 2;
+                ti->entries = XP_REALLOC( ti->mpool, ti->entries, 
+                                          nEntries * sizeof(*ti->entries) );
+            }
+            XP_LOGF( "%s: num env entries now %d", __func__, nEntries );
+            firstEmpty = &ti->entries[ti->nEntries]; /* first new entry */
+            XP_MEMSET( firstEmpty, 0, nEntries - ti->nEntries );
+            ti->nEntries = nEntries;
+        }
+
         XP_ASSERT( !!firstEmpty );
         firstEmpty->owner = self;
         firstEmpty->env = env;
-        int indx = firstEmpty - ti->entries;
-        XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__, indx,
-                 env, (int)self );
+        XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__,
+                 firstEmpty - ti->entries, env, (int)self );
     }
 
     pthread_mutex_unlock( &ti->mtxThreads );
 }
 
 static void
-map_init( EnvThreadInfo* ti, JNIEnv* env )
+map_init( MPFORMAL EnvThreadInfo* ti, JNIEnv* env )
 {
     pthread_mutex_init( &ti->mtxThreads, NULL );
+    MPASSIGN(ti->mpool, mpool);
     map_thread( ti, env );
 }
 
 static void
 map_remove( EnvThreadInfo* ti, JNIEnv* env )
 {
+#ifdef DEBUG
     pthread_t self = pthread_self();
+#endif
     XP_Bool found = false;
 
     pthread_mutex_lock( &ti->mtxThreads );
-    for ( int ii = 0; !found && ii < VSIZE(ti->entries); ++ii ) {
+    for ( int ii = 0; !found && ii < ti->nEntries; ++ii ) {
         found = env == ti->entries[ii].env;
         if ( found ) {
             XP_LOGF( "%s: clearing out %dth entry (thread %x)", __func__, ii, 
@@ -140,7 +159,7 @@ envForMe( EnvThreadInfo* ti, const char* caller )
     JNIEnv* result = NULL;
     pthread_t self = pthread_self();
     pthread_mutex_lock( &ti->mtxThreads );
-    for ( int ii = 0; ii < VSIZE(ti->entries); ++ii ) {
+    for ( int ii = 0; ii < ti->nEntries; ++ii ) {
         if ( self == ti->entries[ii].owner ) {
             result = ti->entries[ii].env;
             break;
@@ -162,7 +181,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
     MemPoolCtx* mpool = mpool_make();
 #endif
     JNIGlobalState* state = (JNIGlobalState*)XP_CALLOC( mpool, sizeof(*state) );
-    map_init( &state->ti, env );
+    map_init( MPPARM(mpool) &state->ti, env );
     state->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
     MPASSIGN( state->mpool, mpool );
     LOG_RETURNF( "%p", state );
