@@ -1137,137 +1137,137 @@ fireCursesTimer( CursesAppGlobals* globals )
  * Ok, so this doesn't block yet.... 
  */
 #ifndef USE_GLIBLOOP
-static XP_Bool
-blocking_gotEvent( CursesAppGlobals* globals, int* ch )
-{
-    XP_Bool result = XP_FALSE;
-    int numEvents, ii;
-    short fdIndex;
-    XP_Bool redraw = XP_FALSE;
+/* static XP_Bool */
+/* blocking_gotEvent( CursesAppGlobals* globals, int* ch ) */
+/* { */
+/*     XP_Bool result = XP_FALSE; */
+/*     int numEvents, ii; */
+/*     short fdIndex; */
+/*     XP_Bool redraw = XP_FALSE; */
 
-    int timeout = figureTimeout( globals );
-    numEvents = poll( globals->fdArray, globals->fdCount, timeout );
+/*     int timeout = figureTimeout( globals ); */
+/*     numEvents = poll( globals->fdArray, globals->fdCount, timeout ); */
 
-    if ( timeout != INFINITE_TIMEOUT && numEvents == 0 ) {
-#ifdef XWFEATURE_RELAY
-        fireCursesTimer( globals );
-#endif
-    } else if ( numEvents > 0 ) {
+/*     if ( timeout != INFINITE_TIMEOUT && numEvents == 0 ) { */
+/* #ifdef XWFEATURE_RELAY */
+/*         fireCursesTimer( globals ); */
+/* #endif */
+/*     } else if ( numEvents > 0 ) { */
 	
-        /* stdin first */
-        if ( (globals->fdArray[FD_STDIN].revents & POLLIN) != 0 ) {
-            int evtCh = wgetch(globals->mainWin);
-            XP_LOGF( "%s: got key: %x", __func__, evtCh );
-            *ch = evtCh;
-            result = XP_TRUE;
-            --numEvents;
-        }
-        if ( (globals->fdArray[FD_STDIN].revents & ~POLLIN ) ) {
-            XP_LOGF( "some other events set on stdin" );
-        }
+/*         /\* stdin first *\/ */
+/*         if ( (globals->fdArray[FD_STDIN].revents & POLLIN) != 0 ) { */
+/*             int evtCh = wgetch(globals->mainWin); */
+/*             XP_LOGF( "%s: got key: %x", __func__, evtCh ); */
+/*             *ch = evtCh; */
+/*             result = XP_TRUE; */
+/*             --numEvents; */
+/*         } */
+/*         if ( (globals->fdArray[FD_STDIN].revents & ~POLLIN ) ) { */
+/*             XP_LOGF( "some other events set on stdin" ); */
+/*         } */
 
-        if ( (globals->fdArray[FD_TIMEEVT].revents & POLLIN) != 0 ) {
-            char ch;
-            if ( 1 != read(globals->fdArray[FD_TIMEEVT].fd, &ch, 1 ) ) {
-                XP_ASSERT(0);
-            }
-        }
+/*         if ( (globals->fdArray[FD_TIMEEVT].revents & POLLIN) != 0 ) { */
+/*             char ch; */
+/*             if ( 1 != read(globals->fdArray[FD_TIMEEVT].fd, &ch, 1 ) ) { */
+/*                 XP_ASSERT(0); */
+/*             } */
+/*         } */
 
-        fdIndex = FD_FIRSTSOCKET;
+/*         fdIndex = FD_FIRSTSOCKET; */
 
-        if ( numEvents > 0 ) {
-            if ( (globals->fdArray[fdIndex].revents & ~POLLIN ) ) {
-                XP_LOGF( "some other events set on socket %d", 
-                         globals->fdArray[fdIndex].fd  );
-            }
+/*         if ( numEvents > 0 ) { */
+/*             if ( (globals->fdArray[fdIndex].revents & ~POLLIN ) ) { */
+/*                 XP_LOGF( "some other events set on socket %d",  */
+/*                          globals->fdArray[fdIndex].fd  ); */
+/*             } */
 
-            if ( (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) {
+/*             if ( (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) { */
 
-                --numEvents;
+/*                 --numEvents; */
 
-                if ( globals->fdArray[fdIndex].fd 
-                     == globals->csInfo.server.serverSocket ) {
-                    /* It's the listening socket: call platform's accept()
-                       wrapper */
-                    (*globals->cGlobals.acceptor)( globals->fdArray[fdIndex].fd, 
-                                                   globals );
-                } else {
-#ifndef XWFEATURE_STANDALONE_ONLY
-                    unsigned char buf[1024];
-                    int nBytes;
-                    CommsAddrRec addrRec;
-                    CommsAddrRec* addrp = NULL;
+/*                 if ( globals->fdArray[fdIndex].fd  */
+/*                      == globals->csInfo.server.serverSocket ) { */
+/*                     /\* It's the listening socket: call platform's accept() */
+/*                        wrapper *\/ */
+/*                     (*globals->cGlobals.acceptor)( globals->fdArray[fdIndex].fd,  */
+/*                                                    globals ); */
+/*                 } else { */
+/* #ifndef XWFEATURE_STANDALONE_ONLY */
+/*                     unsigned char buf[1024]; */
+/*                     int nBytes; */
+/*                     CommsAddrRec addrRec; */
+/*                     CommsAddrRec* addrp = NULL; */
 
-                    /* It's a normal data socket */
-                    switch ( globals->cGlobals.params->conType ) {
-#ifdef XWFEATURE_RELAY
-                    case COMMS_CONN_RELAY:
-                        nBytes = linux_relay_receive( &globals->cGlobals, buf, 
-                                                      sizeof(buf) );
-                        break;
-#endif
-#ifdef XWFEATURE_SMS
-                    case COMMS_CONN_SMS:
-                        addrp = &addrRec;
-                        nBytes = linux_sms_receive( &globals->cGlobals, 
-                                                    globals->fdArray[fdIndex].fd,
-                                                    buf, sizeof(buf), addrp );
-                        break;
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-                    case COMMS_CONN_BT:
-                        nBytes = linux_bt_receive( globals->fdArray[fdIndex].fd, 
-                                                   buf, sizeof(buf) );
-                        break;
-#endif
-                    default:
-                        XP_ASSERT( 0 ); /* fired */
-                    }
+/*                     /\* It's a normal data socket *\/ */
+/*                     switch ( globals->cGlobals.params->conType ) { */
+/* #ifdef XWFEATURE_RELAY */
+/*                     case COMMS_CONN_RELAY: */
+/*                         nBytes = linux_relay_receive( &globals->cGlobals, buf,  */
+/*                                                       sizeof(buf) ); */
+/*                         break; */
+/* #endif */
+/* #ifdef XWFEATURE_SMS */
+/*                     case COMMS_CONN_SMS: */
+/*                         addrp = &addrRec; */
+/*                         nBytes = linux_sms_receive( &globals->cGlobals,  */
+/*                                                     globals->fdArray[fdIndex].fd, */
+/*                                                     buf, sizeof(buf), addrp ); */
+/*                         break; */
+/* #endif */
+/* #ifdef XWFEATURE_BLUETOOTH */
+/*                     case COMMS_CONN_BT: */
+/*                         nBytes = linux_bt_receive( globals->fdArray[fdIndex].fd,  */
+/*                                                    buf, sizeof(buf) ); */
+/*                         break; */
+/* #endif */
+/*                     default: */
+/*                         XP_ASSERT( 0 ); /\* fired *\/ */
+/*                     } */
 
-                    if ( nBytes != -1 ) {
-                        XWStreamCtxt* inboundS;
-                        redraw = XP_FALSE;
+/*                     if ( nBytes != -1 ) { */
+/*                         XWStreamCtxt* inboundS; */
+/*                         redraw = XP_FALSE; */
 
-                        inboundS = stream_from_msgbuf( &globals->cGlobals, 
-                                                       buf, nBytes );
-                        if ( !!inboundS ) {
-                            if ( comms_checkIncomingStream(
-                                                           globals->cGlobals.game.comms,
-                                                           inboundS, addrp ) ) {
-                                redraw = server_receiveMessage( 
-                                                               globals->cGlobals.game.server, inboundS );
-                            }
-                            stream_destroy( inboundS );
-                        }
+/*                         inboundS = stream_from_msgbuf( &globals->cGlobals,  */
+/*                                                        buf, nBytes ); */
+/*                         if ( !!inboundS ) { */
+/*                             if ( comms_checkIncomingStream( */
+/*                                                            globals->cGlobals.game.comms, */
+/*                                                            inboundS, addrp ) ) { */
+/*                                 redraw = server_receiveMessage(  */
+/*                                                                globals->cGlobals.game.server, inboundS ); */
+/*                             } */
+/*                             stream_destroy( inboundS ); */
+/*                         } */
                 
-                        /* if there's something to draw resulting from the
-                           message, we need to give the main loop time to reflect
-                           that on the screen before giving the server another
-                           shot.  So just call the idle proc. */
-                        if ( redraw ) {
-                            curses_util_requestTime(globals->cGlobals.params->util);
-                        }
-                    }
-#else
-                    XP_ASSERT(0);   /* no socket activity in standalone game! */
-#endif                          /* #ifndef XWFEATURE_STANDALONE_ONLY */
-                }
-                ++fdIndex;
-            }
-        }
+/*                         /\* if there's something to draw resulting from the */
+/*                            message, we need to give the main loop time to reflect */
+/*                            that on the screen before giving the server another */
+/*                            shot.  So just call the idle proc. *\/ */
+/*                         if ( redraw ) { */
+/*                             curses_util_requestTime(globals->cGlobals.params->util); */
+/*                         } */
+/*                     } */
+/* #else */
+/*                     XP_ASSERT(0);   /\* no socket activity in standalone game! *\/ */
+/* #endif                          /\* #ifndef XWFEATURE_STANDALONE_ONLY *\/ */
+/*                 } */
+/*                 ++fdIndex; */
+/*             } */
+/*         } */
 
-        for ( ii = 0; ii < 5; ++ii ) {
-            redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw;
-        }
-        if ( redraw ) {
-            /* messages change a lot */
-            board_invalAll( globals->cGlobals.game.board );
-            board_draw( globals->cGlobals.game.board );
-        }
-        saveGame( globals->cGlobals );
-    }
-    return result;
-} /* blocking_gotEvent */
+/*         for ( ii = 0; ii < 5; ++ii ) { */
+/*             redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw; */
+/*         } */
+/*         if ( redraw ) { */
+/*             /\* messages change a lot *\/ */
+/*             board_invalAll( globals->cGlobals.game.board ); */
+/*             board_draw( globals->cGlobals.game.board ); */
+/*         } */
+/*         saveGame( globals->cGlobals ); */
+/*     } */
+/*     return result; */
+/* } /\* blocking_gotEvent *\/ */
 #endif
 
 static void
