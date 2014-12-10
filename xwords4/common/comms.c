@@ -409,7 +409,8 @@ reset_internal( CommsCtxt* comms, XP_Bool isServer,
 
     cleanupAddrRecs( comms );
 
-    comms->nextChannelNo = 0;
+    XP_ASSERT( 0 == comms->nextChannelNo ); /* testing... */
+    // comms->nextChannelNo = 0;
     if ( resetRelay ) {
         comms->channelSeed = 0;
     }
@@ -1158,11 +1159,11 @@ printQueue( const CommsCtxt* comms )
     for ( elem = comms->msgQueueHead, ii = 0; ii < comms->queueLen; 
           elem = elem->next, ++ii ) {
         CNO_FMT( cbuf, elem->channelNo );
-        XP_LOGF( "\t%d: %s; msgID=" XP_LD 
+        XP_LOGF( "\t%s(): %d: %s; msgID=" XP_LD 
 #ifdef COMMS_CHECKSUM
                     "; check=%s"
 #endif
-                    ,ii+1, cbuf, elem->msgID
+                 ,__func__, ii+1, cbuf, elem->msgID
 #ifdef COMMS_CHECKSUM
                     , elem->checksum 
 #endif
@@ -1496,8 +1497,11 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
     set_relay_state( comms, reconnected ? COMMS_RELAYSTATE_RECONNECTED
                      : COMMS_RELAYSTATE_CONNECTED );
     XWHostID myHostID = stream_getU8( stream );
-    XP_LOGF( "%s: changing rr.myHostID from %x to %x", __func__, comms->rr.myHostID, myHostID );
-    comms->rr.myHostID = myHostID;
+    if ( comms->rr.myHostID != myHostID ) {
+        XP_LOGF( "%s: changing rr.myHostID from %x to %x", __func__, comms->rr.myHostID, myHostID );
+        comms->rr.myHostID = myHostID;
+    }
+
     isServer = HOST_ID_SERVER == comms->rr.myHostID;
 
     if ( isServer != comms->isServer ) {
@@ -1818,6 +1822,7 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
             XP_LOGF( "%s: match based on channels!!!", __func__ );
             matched = XP_TRUE;
         } else {
+            continue;
             /* if ( (rec->channelNo & ~CHANNEL_MASK) == (channelNo & ~CHANNEL_MASK) ) { */
             /*     XP_ASSERT(0);   /\* figure out why this would make sense *\/ */
             /*     XP_LOGF( "%s: figure out why this would make sense ", __func__ ); */
@@ -2012,6 +2017,8 @@ static void
 saveChannel( CommsCtxt* comms, XP_PlayerAddr channelNo )
 {
     if ( !comms->isServer ) {
+        XP_ASSERT( comms->channelSeed == (channelNo & ~CHANNEL_MASK) );
+
         XP_U16 myIndex = channelNo & CHANNEL_MASK;
         if ( comms->myIndex == myIndex ) {
             // XP_LOGF( "<eeh> %s: myIndex already set: %d", __func__, myIndex );
@@ -2019,6 +2026,8 @@ saveChannel( CommsCtxt* comms, XP_PlayerAddr channelNo )
             // XP_LOGF( "<eeh> %s: setting myIndex: %d", __func__, myIndex );
             comms->myIndex = myIndex;
         } else {
+            XP_LOGF( "%s: unexpected channel change attempted, from %d to %d; ignoring",
+                     __func__, comms->myIndex, myIndex );
             XP_ASSERT(0);       /* setting a second time! */
         }
     }
@@ -2653,7 +2662,9 @@ getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo )
                 logAddr( comms, &recs->addr, __func__ );
                 missingRelay = XP_TRUE;
             } else {
+                XP_ASSERT( HOST_ID_NONE == id ); /* no duplicates */
                 id = recs->rr.hostID;
+                // break;
             }
         }
     }
