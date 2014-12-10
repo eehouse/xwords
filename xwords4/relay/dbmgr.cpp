@@ -897,6 +897,8 @@ DBMgr::getDevID( const DevID* devID )
 {
     DevIDRelay rDevID = DEVID_NONE;
     DevIDType devIDType = devID->m_devIDType;
+    const string& devIDString = devID->m_devIDString;
+
     StrWPF query;
     assert( ID_TYPE_NONE < devIDType );
     if ( ID_TYPE_RELAY == devIDType ) {
@@ -906,11 +908,11 @@ DBMgr::getDevID( const DevID* devID )
             const char* fmt = "SELECT id FROM " DEVICES_TABLE " WHERE id=%d";
             query.catf( fmt, cur );
         }
-    } else if ( 0 < devID->m_devIDString.size() ) {
+    } else if ( 0 < devIDString.size() ) {
         query.catf( "SELECT id FROM " DEVICES_TABLE 
                     " WHERE devtypes[1]=%d and devids[1] = '%s'"
                     " ORDER BY ctime DESC LIMIT 1", 
-                    devIDType, devID->m_devIDString.c_str() );
+                    devIDType, devIDString.c_str() );
     }
 
     if ( 0 < query.size() ) {
@@ -923,8 +925,8 @@ DBMgr::getDevID( const DevID* devID )
         }
         PQclear( result );
     }
-    logf( XW_LOGINFO, "%s(in=%s)=>%d (0x%.8X)", __func__, 
-          devID->m_devIDString.c_str(), rDevID, rDevID );
+    logf( XW_LOGINFO, "%s(in='%s')=>%d (0x%.8X)", __func__, 
+          devIDString.c_str(), rDevID, rDevID );
     return rDevID;
 }
 
