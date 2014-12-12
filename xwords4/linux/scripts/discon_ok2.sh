@@ -30,6 +30,7 @@ BOARD_SIZES_NEW=(15)
 NAMES=(UNUSED Brynn Ariela Kati Eric)
 SEND_CHAT=''
 CORE_COUNT=$(ls core.* 2>/dev/null | wc -l)
+DUP_PACKETS=''
 
 declare -A PIDS
 declare -A APPS
@@ -223,6 +224,9 @@ build_cmds() {
             if [ -n "$SEND_CHAT" ]; then
                    PARAMS="$PARAMS --send-chat $SEND_CHAT"
             fi
+			if [ -n "$DUP_PACKETS" ]; then
+                   PARAMS="$PARAMS --dup-packets"
+			fi
 			# PARAMS="$PARAMS --my-port 1024"
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
@@ -560,25 +564,26 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
-    echo "    [--udp-start <pct>]                                     \\" >&2
-    echo "    [--udp-incr <pct>]                                      \\" >&2
+	echo "    [--dup-packets]          # send all packets twice       \\" >&2
     echo "    [--clean-start]                                         \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
-    echo "    [--old-app <path/to/app]*                               \\" >&2
+    echo "    [--help]                                                \\" >&2
+    echo "    [--host <hostname>]                                     \\" >&2
+    echo "    [--max-devs <int>]                                      \\" >&2
+    echo "    [--min-devs <int>]                                      \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
     echo "    [--new-app-args [arg*]]  # passed only to new app       \\" >&2
-    echo "    [--min-devs <int>]                                      \\" >&2
-    echo "    [--max-devs <int>]                                      \\" >&2
-    echo "    [--one-per]              # force one player per device  \\" >&2
     echo "    [--num-games <int>]                                     \\" >&2
     echo "    [--num-rooms <int>]                                     \\" >&2
-    echo "    [--host <hostname>]                                     \\" >&2
+    echo "    [--old-app <path/to/app]*                               \\" >&2
+    echo "    [--one-per]              # force one player per device  \\" >&2
     echo "    [--port <int>]                                          \\" >&2
-    echo "    [--seed <int>]                                          \\" >&2
-    echo "    [--undo-pct <int>]                                      \\" >&2
-    echo "    [--send-chat <interval-in-seconds>                      \\" >&2
     echo "    [--resign-ratio <0 <= n <=1000 >                        \\" >&2
-    echo "    [--help]                                                \\" >&2
+    echo "    [--seed <int>]                                          \\" >&2
+    echo "    [--send-chat <interval-in-seconds>                      \\" >&2
+    echo "    [--udp-incr <pct>]                                      \\" >&2
+    echo "    [--udp-start <pct>]                                     \\" >&2
+    echo "    [--undo-pct <int>]                                      \\" >&2
 
     exit 1
 }
@@ -612,6 +617,9 @@ while [ "$#" -gt 0 ]; do
             APPS_OLD[${#APPS_OLD[@]}]=$(getArg $*)
             shift
             ;;
+		--dup-packets)
+			DUP_PACKETS=1
+			;;
         --new-app)
             APP_NEW=$(getArg $*)
             shift
