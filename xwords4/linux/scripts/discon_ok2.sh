@@ -226,6 +226,7 @@ build_cmds() {
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
+
             ARGS[$COUNTER]=$PARAMS
             ROOMS[$COUNTER]=$ROOM
             FILES[$COUNTER]=$FILE
@@ -457,12 +458,10 @@ update_ldevid() {
     fi
 }
 
-summarizeLogs() {
-    local COUNT=${#ARGS[*]}
+summarizeTileCounts() {
 	local STR=''
-	local INDX=0
-	while [ $INDX -lt $COUNT ]; do
-		local KEY=${KEYS[$INDX]}
+    local KEYS=( ${!ARGS[*]} )
+	for KEY in ${KEYS[@]}; do
 		local LOG=${LOGS[$KEY]}
 
 		local LINE=$(grep pool_removeTiles $LOG | tail -n 1)
@@ -470,13 +469,10 @@ summarizeLogs() {
 			local NUM=$(echo $LINE | sed 's,^.*removeTiles: \(.*\) tiles.*$,\1,')
 			STR="${STR}${KEY}:${NUM};"
 		fi
-
-		INDX=$((1 + INDX))
 	done
 
 	if [ -n "${STR}" ]; then 
-		echo -n "$(date +%r) tiles left: "
-		echo $STR;
+		echo "$(date +%r) tiles left: $STR"
 	fi
 }
 
@@ -496,11 +492,11 @@ run_cmds() {
 
 		LOOPCOUNT=$((1 + LOOPCOUNT))
 		if [ 0 -eq $((LOOPCOUNT % 20)) ]; then
-			summarizeLogs
+			summarizeTileCounts
 		fi
 
         INDX=$(($RANDOM%COUNT))
-        KEYS=( ${!ARGS[*]} )
+        local KEYS=( ${!ARGS[*]} )
         KEY=${KEYS[$INDX]}
         ROOM=${ROOMS[$KEY]}
         if [ 0 -eq ${PIDS[$KEY]} ]; then
