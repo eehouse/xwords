@@ -680,11 +680,10 @@ CookieRef::handleEvents()
             case XWA_SEND_CONNRSP: 
                 {
                     HostID hid;
-                    if ( increasePlayerCounts( &evt, false, &hid, &devID ) ) {
-                        setAllConnectedTimer();
-                        sendResponse( &evt, true, &devID );
-                        setAckTimer( hid );
-                    }
+                    increasePlayerCounts( &evt, false, &hid, &devID );
+                    setAllConnectedTimer();
+                    sendResponse( &evt, true, &devID );
+                    setAckTimer( hid );
                 }
                 break;
 
@@ -911,7 +910,7 @@ CookieRef::send_stored_messages( HostID dest, const AddrInfo* addr )
     }
 } /* send_stored_messages */
 
-bool
+void
 CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp, 
                                  DevIDRelay* devIDp )
 {
@@ -996,8 +995,6 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
 
     logf( XW_LOGVERBOSE1, "%s: here=%d; total=%d", __func__,
           m_nPlayersHere, m_nPlayersSought );
-
-    return true;
 } /* increasePlayerCounts */
 
 void
