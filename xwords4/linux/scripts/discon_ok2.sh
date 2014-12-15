@@ -374,6 +374,7 @@ try_upgrade_upd() {
     if [ "${CMD/--use-udp/}" = "${CMD}" ]; then
         if [ $((RANDOM % 100)) -lt $UDP_PCT_INCR ]; then
             ARGS[$KEY]="$CMD --use-udp"
+            echo -n "$(date +%r): "
             echo "upgrading key $KEY to use UDP"
         fi
     fi
@@ -456,8 +457,32 @@ update_ldevid() {
     fi
 }
 
+summarizeLogs() {
+    local COUNT=${#ARGS[*]}
+	local STR=''
+	local INDX=0
+	while [ $INDX -lt $COUNT ]; do
+		local KEY=${KEYS[$INDX]}
+		local LOG=${LOGS[$KEY]}
+
+		local LINE=$(grep pool_removeTiles $LOG | tail -n 1)
+		if [ -n "$LINE" ]; then
+			local NUM=$(echo $LINE | sed 's,^.*removeTiles: \(.*\) tiles.*$,\1,')
+			STR="${STR}${KEY}:${NUM};"
+		fi
+
+		INDX=$((1 + INDX))
+	done
+
+	if [ -n "${STR}" ]; then 
+		echo -n "$(date +%r) tiles left: "
+		echo $STR;
+	fi
+}
+
 run_cmds() {
     ENDTIME=$(($(date +%s) + TIMEOUT))
+	LOOPCOUNT=0
     while :; do
         COUNT=${#ARGS[*]}
         [ 0 -ge $COUNT ] && break
@@ -468,6 +493,12 @@ run_cmds() {
             killall "$(basename $APP_NEW)"
             break
         fi
+
+		LOOPCOUNT=$((1 + LOOPCOUNT))
+		if [ 0 -eq $((LOOPCOUNT % 20)) ]; then
+			summarizeLogs
+		fi
+
         INDX=$(($RANDOM%COUNT))
         KEYS=( ${!ARGS[*]} )
         KEY=${KEYS[$INDX]}
@@ -506,7 +537,7 @@ run_cmds() {
     # kill any remaining games
     if [ $COUNT -gt 0 ]; then
         mkdir -p ${LOGDIR}/not_done
-        echo "processing unfinished games...."
+        echo "$(date): processing unfinished games...."
         for KEY in ${!ARGS[*]}; do
             close_device $KEY ${LOGDIR}/not_done "unfinished game"
         done
