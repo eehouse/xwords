@@ -212,10 +212,13 @@ class SafeCref {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            assert( srcID <= nPlayersS );
-            result = cref->_Connect( m_clientVersion, m_devID,
-                                     nPlayersH, nPlayersS, seed, srcID, 
-                                     m_seenSeed, &m_addr );
+            if ( srcID <= nPlayersS ) {
+                result = cref->_Connect( m_clientVersion, m_devID,
+                                         nPlayersH, nPlayersS, seed, srcID, 
+                                         m_seenSeed, &m_addr );
+            } else {
+                logf( XW_LOGERROR, "%s: bad srcID: %d", __func__, srcID );
+            }
         }
         return result;
     }
