@@ -200,8 +200,13 @@ CookieRef::_Connect( int clientVersion, DevID* devID,
     if ( alreadyHere ) {
         if ( seenSeed ) {   /* we need to get rid of the current entry, then
                                proceed as if this were a new connection */
-            assert( HOST_ID_NONE != prevHostID );
-            postDropDevice( prevHostID );
+            if ( HOST_ID_NONE == prevHostID ) {
+                // probably a duplicate packet.  Drop it, but don't return
+                // failure if the original did its job
+                connected = HasSocket_locked( addr );
+            } else {
+                postDropDevice( prevHostID );
+            }
         } else {
             connected = true;   /* but drop the packet */
         }
@@ -226,11 +231,11 @@ CookieRef::_Connect( int clientVersion, DevID* devID,
             handleEvents();
             connected = HasSocket_locked( addr );
         } else {
-            logf( XW_LOGINFO, "dropping connect event; already connected" );
+            logf( XW_LOGINFO, "%s: dropping connect event; already connected", __func__ );
         }
     }
     return connected;
-}
+} // _Connect
 
 bool
 CookieRef::_Reconnect( int clientVersion, DevID* devID, HostID hid, 
@@ -987,8 +992,8 @@ CookieRef::increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp,
         } else {
             hr->update( addr, nPlayersH, seed, !reconn );
         }
-        logf( XW_LOGINFO, "%s: adding socket rec with ts %lx", __func__, 
-              addr->created() );
+        logf( XW_LOGINFO, "%s: adding socket rec with ts %lx for hid %d", __func__, 
+              addr->created(), hostid );
     }
 
     printSeeds(__func__);
@@ -1015,6 +1020,7 @@ CookieRef::updateAck( HostID hostID, bool keep )
                 DBMgr::Get()->NoteAckd( ConnName(), hostID );
             } else {
                 nonKeeper = &hr->m_addr;
+                m_nPlayersHere -= hr->m_nPlayersH;
             }
         }
     }
