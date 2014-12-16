@@ -35,7 +35,7 @@ DUP_PACKETS=''
 declare -A PIDS
 declare -A APPS
 declare -A NEW_ARGS
-declare -A ARGS
+declare -a ARGS
 declare -A ARGS_DEVID
 declare -A ROOMS
 declare -A FILES
@@ -471,7 +471,7 @@ summarizeTileCounts() {
 		local LINE=$(grep pool_removeTiles $LOG | tail -n 1)
 		if [ -n "$LINE" ]; then
 			local NUM=$(echo $LINE | sed 's,^.*removeTiles: \(.*\) tiles.*$,\1,')
-			STR="${STR}${KEY}:${NUM};"
+			STR="${STR} ${KEY}:${NUM}"
 		fi
 	done
 
