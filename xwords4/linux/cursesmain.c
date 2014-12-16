@@ -1665,7 +1665,7 @@ cursesGotBuf( void* closure, const CommsAddrRec* addr,
     sqlite3_int64 ignore;
     XP_U16 seed;
     rowidFromToken( XP_NTOHL( clientToken ), &ignore, &seed );
-    XP_ASSERT( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) );
+    // XP_ASSERT( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) );
     if ( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) ) {
         gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, addr );
     } else {

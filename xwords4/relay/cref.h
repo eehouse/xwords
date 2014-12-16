@@ -59,7 +59,7 @@ public:
         m_seed = seed;
         m_lastHeartbeat = uptime();
         m_ackPending = ackPending;
-        }
+    }
 
     AddrInfo m_addr;
     int m_nPlayersH;
@@ -236,7 +236,7 @@ class CookieRef {
                        const DevIDRelay* devID );
     void sendAnyStored( const CRefEvent* evt );
     void initPlayerCounts( const CRefEvent* evt );
-    bool increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp, 
+    void increasePlayerCounts( CRefEvent* evt, bool reconn, HostID* hidp, 
                                DevIDRelay* devID );
     void updateAck( HostID hostID, bool keep );
     void dropPending( int seed );

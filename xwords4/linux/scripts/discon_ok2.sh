@@ -35,7 +35,7 @@ DUP_PACKETS=''
 declare -A PIDS
 declare -A APPS
 declare -A NEW_ARGS
-declare -A ARGS
+declare -a ARGS
 declare -A ARGS_DEVID
 declare -A ROOMS
 declare -A FILES
@@ -231,6 +231,7 @@ build_cmds() {
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
+
             ARGS[$COUNTER]=$PARAMS
             ROOMS[$COUNTER]=$ROOM
             FILES[$COUNTER]=$FILE
@@ -379,7 +380,7 @@ try_upgrade_upd() {
     if [ "${CMD/--use-udp/}" = "${CMD}" ]; then
         if [ $((RANDOM % 100)) -lt $UDP_PCT_INCR ]; then
             ARGS[$KEY]="$CMD --use-udp"
-            echo -n "$(date): "
+            echo -n "$(date +%r): "
             echo "upgrading key $KEY to use UDP"
         fi
     fi
@@ -462,8 +463,27 @@ update_ldevid() {
     fi
 }
 
+summarizeTileCounts() {
+	local STR=''
+    local KEYS=( ${!ARGS[*]} )
+	for KEY in ${KEYS[@]}; do
+		local LOG=${LOGS[$KEY]}
+
+		local LINE=$(grep pool_removeTiles $LOG | tail -n 1)
+		if [ -n "$LINE" ]; then
+			local NUM=$(echo $LINE | sed 's,^.*removeTiles: \(.*\) tiles.*$,\1,')
+			STR="${STR} ${KEY}:${NUM}"
+		fi
+	done
+
+	if [ -n "${STR}" ]; then 
+		echo "$(date +%r) tiles left: $STR"
+	fi
+}
+
 run_cmds() {
     ENDTIME=$(($(date +%s) + TIMEOUT))
+	LOOPCOUNT=0
     while :; do
         COUNT=${#ARGS[*]}
         [ 0 -ge $COUNT ] && break
@@ -474,8 +494,14 @@ run_cmds() {
             killall "$(basename $APP_NEW)"
             break
         fi
+
+		LOOPCOUNT=$((1 + LOOPCOUNT))
+		if [ 0 -eq $((LOOPCOUNT % 20)) ]; then
+			summarizeTileCounts
+		fi
+
         INDX=$(($RANDOM%COUNT))
-        KEYS=( ${!ARGS[*]} )
+        local KEYS=( ${!ARGS[*]} )
         KEY=${KEYS[$INDX]}
         ROOM=${ROOMS[$KEY]}
         if [ 0 -eq ${PIDS[$KEY]} ]; then
@@ -564,7 +590,7 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
-	echo "    [--dup-packets]          # send all packets twice       \\" >&2
+    echo "    [--dup-packets]          # send all packets twice       \\" >&2
     echo "    [--clean-start]                                         \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
     echo "    [--help]                                                \\" >&2
@@ -617,9 +643,9 @@ while [ "$#" -gt 0 ]; do
             APPS_OLD[${#APPS_OLD[@]}]=$(getArg $*)
             shift
             ;;
-		--dup-packets)
-			DUP_PACKETS=1
-			;;
+        --dup-packets)
+            DUP_PACKETS=1
+            ;;
         --new-app)
             APP_NEW=$(getArg $*)
             shift
