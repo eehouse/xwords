@@ -87,7 +87,8 @@ makeGameID( XW_UtilCtxt* util )
 void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
-                  CommonPrefs* cp, const TransportProcs* procs
+                  CommonPrefs* cp, const TransportProcs* procs,
+                  XP_U16 forceChannel
 #ifdef SET_GAMESEED
                   ,XP_U16 gameSeed 
 #endif
@@ -112,7 +113,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
                                   nPlayersHere, nPlayersTotal, 
-                                  procs
+                                  procs, forceChannel
 #ifdef SET_GAMESEED
                                   , gameSeed
 #endif
@@ -139,7 +140,8 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
 XP_Bool
 game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, 
             XW_UtilCtxt* XP_UNUSED_STANDALONE(util), 
-            CommonPrefs* cp, const TransportProcs* procs )
+            CommonPrefs* cp, const TransportProcs* procs,
+            XP_U16 forceChannel )
 {
     XP_Bool result = XP_FALSE;
     XP_U16 ii;
@@ -166,7 +168,8 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
         } else if ( gi->serverRole != SERVER_STANDALONE ) {
             game->comms = comms_make( MPPARM(mpool) util,
                                       gi->serverRole != SERVER_ISCLIENT, 
-                                      nPlayersHere, nPlayersTotal, procs
+                                      nPlayersHere, nPlayersTotal, procs,
+                                      forceChannel
 #ifdef SET_GAMESEED
                                       , 0
 #endif

@@ -639,6 +639,7 @@ typedef enum {
     ,CMD_DROPRCVRELAY
     ,CMD_DROPSENDSMS
     ,CMD_DROPRCVSMS
+    ,CMD_FORCECHANNEL
 
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
@@ -756,6 +757,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
     ,{ CMD_DROPSENDSMS, false, "drop-send-sms", "start new games with sms send disabled" }
     ,{ CMD_DROPRCVSMS, false, "drop-receive-sms", "start new games with sms receive disabled" }
+    ,{ CMD_FORCECHANNEL, true, "force-channel", "force (clients) to use this hostid/channel" }
 
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
@@ -2384,6 +2386,9 @@ main( int argc, char** argv )
         case CMD_DROPRCVSMS:
             mainParams.commsDisableds[COMMS_CONN_SMS][0] = XP_TRUE;
             break;
+        case CMD_FORCECHANNEL:
+            mainParams.forceChannel = atoi( optarg );
+            break;
 
 #ifdef XWFEATURE_CROSSHAIRS
         case CMD_NOCROSSHAIRS:
@@ -2392,7 +2397,7 @@ main( int argc, char** argv )
 #endif
         case CMD_ADDPIPE:
             mainParams.pipe = optarg;
-            break;
+            break;   
         case CMD_ADDNBS:
             mainParams.nbs = optarg;
             break;

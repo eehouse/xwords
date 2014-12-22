@@ -59,13 +59,15 @@ typedef struct XWGame {
 
 void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi, 
                        XW_UtilCtxt* util, DrawCtx* draw, 
-                       CommonPrefs* cp, const TransportProcs* procs
+                       CommonPrefs* cp, const TransportProcs* procs,
+                       XP_U16 forceChannel
 #ifdef SET_GAMESEED
                        ,XP_U16 gameSeed
 #endif
                        );
 XP_Bool game_reset( MPFORMAL XWGame* game, CurGameInfo* gi, XW_UtilCtxt* util, 
-                    CommonPrefs* cp, const TransportProcs* procs );
+                    CommonPrefs* cp, const TransportProcs* procs,
+                    XP_U16 forceChannel );
 void game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, 
                       DictionaryCtxt* dict );
 

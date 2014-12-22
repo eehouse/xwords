@@ -122,7 +122,7 @@ struct CommsCtxt {
     XP_Bool reconTimerPending;
 #endif
     XP_U16 lastSaveToken;
-    XP_U16 myIndex;
+    XP_U16 forceChannel;
 
     /* The following fields, down to isServer, are only used if
        XWFEATURE_RELAY is defined, but I'm leaving them in here so apps built
@@ -325,7 +325,7 @@ CommsCtxt*
 comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer, 
             XP_U16 XP_UNUSED_RELAY(nPlayersHere), 
             XP_U16 XP_UNUSED_RELAY(nPlayersTotal),
-            const TransportProcs* procs
+            const TransportProcs* procs, XP_U16 forceChannel
 #ifdef SET_GAMESEED
             , XP_U16 gameSeed
 #endif
@@ -336,7 +336,9 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
 
     MPASSIGN(result->mpool, mpool);
 
+    XP_ASSERT( 0 == (forceChannel & ~CHANNEL_MASK) );
     result->isServer = isServer;
+    result->forceChannel = forceChannel;
     if ( !!procs ) {
         XP_MEMCPY( &result->procs, procs, sizeof(result->procs) );
 #ifdef COMMS_XPORT_FLAGSPROC
@@ -595,7 +597,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         nPlayersTotal = 0;
     }
     CommsCtxt* comms = comms_make( MPPARM(mpool) util, isServer, 
-                                   nPlayersHere, nPlayersTotal, procs
+                                   nPlayersHere, nPlayersTotal, procs, 0
 #ifdef SET_GAMESEED
                                    , 0
 #endif
@@ -623,7 +625,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     }
 
     if ( STREAM_VERS_MULTIADDR <= version ) {
-        comms->myIndex = stream_getU8( stream );
+        comms->forceChannel = stream_getU8( stream );
     }
 
     comms->queueLen = stream_getU8( stream );
@@ -818,7 +820,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
         stream_putU8( stream, comms->rr.myHostID );
         stringToStream( stream, comms->rr.connName );
     }
-    stream_putU8( stream, (XP_U8)comms->myIndex );
+    stream_putU8( stream, (XP_U8)comms->forceChannel );
 
     XP_ASSERT( comms->queueLen <= 255 );
     stream_putU8( stream, (XP_U8)comms->queueLen );
@@ -1078,6 +1080,7 @@ comms_getChannelSeed( CommsCtxt* comms )
 {
     while ( 0 == (comms->channelSeed & ~CHANNEL_MASK) ) {
         comms->channelSeed = XP_RANDOM() & ~CHANNEL_MASK;
+        comms->channelSeed |= comms->forceChannel;
         CNO_FMT( cbuf, comms->channelSeed );
         XP_LOGF( "%s: made seed: %s", __func__, cbuf );
     }
@@ -1877,6 +1880,21 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
     return rec;
 } /* getRecordFor */
 
+static XP_Bool
+checkChannelNo( CommsCtxt* comms, XP_PlayerAddr* channelNoP )
+{
+    XP_PlayerAddr channelNo = *channelNoP;
+    if ( 0 == (channelNo & CHANNEL_MASK) ) {
+        channelNo |= ++comms->nextChannelNo;
+        XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
+    } else {
+        /* Let's make sure we don't assign it later */
+        comms->nextChannelNo = channelNo;
+    }
+    *channelNoP = channelNo;
+    return XP_TRUE;             /* for now */
+}
+
 /* An initial message comes only from a client to a server, and from the
  * server in response to that initial message.  Once the inital messages are
  * exchanged there's a connID associated.  The greatest danger is that it's a
@@ -1955,12 +1973,9 @@ validateInitialMessage( CommsCtxt* comms,
             rec = NULL;
         } else {
             if ( comms->isServer ) {
-                XP_ASSERT( 0 == (*channelNo & CHANNEL_MASK) );
-                if ( 0 == (*channelNo & CHANNEL_MASK) ) {
-                    *channelNo |= ++comms->nextChannelNo;
+                if ( checkChannelNo( comms, channelNo ) ) {
                     CNO_FMT( cbuf, *channelNo );
                     XP_LOGF( "%s: augmented channel: %s", __func__, cbuf );
-                    XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
                 } else {
                     /* Why do I sometimes see these in the middle of a game
                        with lots of messages already sent?  connID of 0 should
@@ -2012,26 +2027,6 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
     LOG_RETURNF( XP_P, rec );
     return rec;
 } /* validateChannelMessage */
-
-static void 
-saveChannel( CommsCtxt* comms, XP_PlayerAddr channelNo )
-{
-    if ( !comms->isServer ) {
-        XP_ASSERT( comms->channelSeed == (channelNo & ~CHANNEL_MASK) );
-
-        XP_U16 myIndex = channelNo & CHANNEL_MASK;
-        if ( comms->myIndex == myIndex ) {
-            // XP_LOGF( "<eeh> %s: myIndex already set: %d", __func__, myIndex );
-        } else if ( CHANNEL_NONE == comms->myIndex ) {
-            // XP_LOGF( "<eeh> %s: setting myIndex: %d", __func__, myIndex );
-            comms->myIndex = myIndex;
-        } else {
-            XP_LOGF( "%s: unexpected channel change attempted, from %d to %d; ignoring",
-                     __func__, comms->myIndex, myIndex );
-            XP_ASSERT(0);       /* setting a second time! */
-        }
-    }
-}
 
 XP_Bool
 comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
@@ -2087,7 +2082,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 CNO_FMT( cbuf, channelNo );
                 XP_LOGF( "%s: rcd on %s: msgID=%d,lastMsgRcd=%d ", 
                          __func__, cbuf, msgID, lastMsgRcd );
-                saveChannel( comms, channelNo );
                 payloadSize = stream_getSize( stream ); /* anything left? */
 
                 if ( connID == CONN_ID_NONE ) {
@@ -2734,7 +2728,7 @@ relay_msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU16( stream, comms_getChannelSeed(comms) );
             stream_putU8( stream, comms->util->gameInfo->dictLang );
             putDevID( comms, stream );
-            stream_putU8( stream, comms->myIndex );
+            stream_putU8( stream, comms->forceChannel );
 
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;

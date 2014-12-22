@@ -573,7 +573,8 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #endif
         game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
                           cGlobals->util, (DrawCtx*)globals->draw,
-                          &cGlobals->cp, &procs, params->gameSeed );
+                          &cGlobals->cp, &procs, params->forceChannel,
+                          params->gameSeed );
 
         // addr.conType = params->conType;
         CommsConnType typ;
@@ -990,7 +991,8 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
 
         if ( !game_reset( MEMPOOL &globals->cGlobals.game, gi,
                           globals->cGlobals.util,
-                          &globals->cGlobals.cp, &procs ) ) {
+                          &globals->cGlobals.cp, &procs,
+                          globals->cGlobals.params->forceChannel ) ) {
             /* if ( NULL == globals->draw ) { */
             /*     globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area, */
             /*                                                   globals ); */

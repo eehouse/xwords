@@ -231,6 +231,9 @@ build_cmds() {
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
+            if [ $DEV -gt 1 ]; then
+                PARAMS="$PARAMS --force-channel $((DEV - 1))"
+            fi
 
             ARGS[$COUNTER]=$PARAMS
             ROOMS[$COUNTER]=$ROOM

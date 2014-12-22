@@ -160,7 +160,7 @@ typedef struct _TransportProcs {
 CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
                        XP_Bool isServer, 
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-                       const TransportProcs* procs
+                       const TransportProcs* procs, XP_U16 forceChannel
 #ifdef SET_GAMESEED
                        ,XP_U16 gameSeed
 #endif
