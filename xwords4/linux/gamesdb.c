@@ -23,7 +23,7 @@
 
 static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
                            int len );
-
+static char* sqliteErr2str( int err );
 
 sqlite3* 
 openGamesDB( const char* dbName )
@@ -92,7 +92,10 @@ writeToDB( XWStreamCtxt* stream, void* closure )
     result = sqlite3_bind_zeroblob( stmt, 1 /*col 0 ??*/, len );
     XP_ASSERT( SQLITE_OK == result );
     result = sqlite3_step( stmt );
-    XP_ASSERT( SQLITE_DONE == result );
+    if ( SQLITE_DONE != result ) {
+        XP_LOGF( "%s: sqlite3_step => %s", __func__, sqliteErr2str( result ) );
+        XP_ASSERT(0);
+    }
     XP_USE( result );
 
     if ( newGame ) {         /* new row; need to insert blob first */
@@ -176,7 +179,10 @@ summarize( CommonGlobals* cGlobals )
     int result = sqlite3_prepare_v2( cGlobals->pDb, buf, -1, &stmt, NULL );        
     XP_ASSERT( SQLITE_OK == result );
     result = sqlite3_step( stmt );
-    XP_ASSERT( SQLITE_DONE == result );
+    if ( SQLITE_DONE != result ) {
+        XP_LOGF( "sqlite3_step=>%s", sqliteErr2str( result ) );
+        XP_ASSERT( 0 );
+    }
     sqlite3_finalize( stmt );
     XP_USE( result );
 }
@@ -363,4 +369,44 @@ getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
     XP_ASSERT( needLen < len );
     XP_MEMCPY( buf, txt, needLen );
     buf[needLen] = '\0';
+}
+
+# define CASESTR(c) case c: return #c
+static char*
+sqliteErr2str( int err )
+{
+    switch( err ) {
+        CASESTR( SQLITE_OK );
+        CASESTR( SQLITE_ERROR );
+        CASESTR( SQLITE_INTERNAL );
+        CASESTR( SQLITE_PERM );
+        CASESTR( SQLITE_ABORT );
+        CASESTR( SQLITE_BUSY );
+        CASESTR( SQLITE_LOCKED );
+        CASESTR( SQLITE_NOMEM );
+        CASESTR( SQLITE_READONLY );
+        CASESTR( SQLITE_INTERRUPT );
+        CASESTR( SQLITE_IOERR );
+        CASESTR( SQLITE_CORRUPT );
+        CASESTR( SQLITE_NOTFOUND );
+        CASESTR( SQLITE_FULL );
+        CASESTR( SQLITE_CANTOPEN );
+        CASESTR( SQLITE_PROTOCOL );
+        CASESTR( SQLITE_EMPTY );
+        CASESTR( SQLITE_SCHEMA );
+        CASESTR( SQLITE_TOOBIG );
+        CASESTR( SQLITE_CONSTRAINT );
+        CASESTR( SQLITE_MISMATCH );
+        CASESTR( SQLITE_MISUSE );
+        CASESTR( SQLITE_NOLFS );
+        CASESTR( SQLITE_AUTH );
+        CASESTR( SQLITE_FORMAT );
+        CASESTR( SQLITE_RANGE );
+        CASESTR( SQLITE_NOTADB );
+        CASESTR( SQLITE_NOTICE );
+        CASESTR( SQLITE_WARNING );
+        CASESTR( SQLITE_ROW );
+        CASESTR( SQLITE_DONE );
+    }
+        return "<unknown>";
 }
