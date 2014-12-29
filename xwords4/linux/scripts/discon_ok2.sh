@@ -233,6 +233,8 @@ build_cmds() {
             PARAMS="$PARAMS $PUBLIC"
             if [ $DEV -gt 1 ]; then
                 PARAMS="$PARAMS --force-channel $((DEV - 1))"
+            else
+                PARAMS="$PARAMS --server"
             fi
 
             ARGS[$COUNTER]=$PARAMS
