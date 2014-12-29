@@ -753,6 +753,12 @@
   <!-- clarification of above -->
   <string name="hide_title_summary">HIDING THE GAME NAME LETS THE
         BOARD BE SLIGHTLY LARGER</string>
+  <!-- Checkbox that when set prevents showing the newgame buttons
+         on the main screen to save space -->
+  <string name="hide_newgames_title">HIDE NEWGAME BUTTONS</string>
+  <!-- clarification of above -->
+  <string name="hide_newgames_summary">HIDING THE NEWGAME BUTTONS IN
+        THE MAIN SCREEN MAKES MORE GAMES VISIBLE</string>
   <!-- Checkbox that when set makes taps on the board manipulate an
          arrow that then directs where tiles go when tapped in the
          tray. -->

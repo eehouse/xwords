@@ -120,6 +120,11 @@
                         android:summary="@string/hide_title_summary"
                         android:defaultValue="false"
                         />
+    <CheckBoxPreference android:key="@string/key_hide_newgames"
+                        android:title="@string/hide_newgames_title"
+                        android:summary="@string/hide_newgames_summary"
+                        android:defaultValue="false"
+                        />
     <CheckBoxPreference android:key="@string/key_show_arrow"
                         android:title="@string/show_arrow"
                         android:summary="@string/show_arrow_summary"

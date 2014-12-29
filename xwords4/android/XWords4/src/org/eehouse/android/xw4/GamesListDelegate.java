@@ -551,6 +551,7 @@ public class GamesListDelegate extends ListDelegateBase
     private String m_missingDict;
     private String m_missingDictName;
     private long m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
+    private long m_configRowID = DBUtils.ROWID_NOTFOUND;
     private int m_missingDictMenuId;
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
@@ -862,22 +863,6 @@ public class GamesListDelegate extends ListDelegateBase
         ListView listView = getListView();
         listView.setOnItemLongClickListener( this );
 
-        final Button soloButton =
-            (Button)findViewById( R.id.button_newgame_solo );
-        soloButton.setOnClickListener( new View.OnClickListener() {
-                public void onClick( View view ) { 
-                    m_nextIsSolo = true;
-                    showDialog( DlgID.GAMES_LIST_NEWGAME );
-                }
-            } );
-        final Button netButton = (Button)findViewById( R.id.button_newgame_multi );
-        netButton.setOnClickListener( new View.OnClickListener() {
-                public void onClick( View view ) { 
-                    m_nextIsSolo = false;
-                    showDialog( DlgID.GAMES_LIST_NEWGAME );
-                }
-            } );
-
         // This doesn't work: test isn't sensitive enough, and doesn't notice
         // scrolling's possible until the user actually does it, then winds up
         // flashing the screen.
@@ -1176,22 +1161,40 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    protected void onActivityResult( int requestCode, int resultCode, 
+                                     Intent data )
     {
-        if ( Activity.RESULT_CANCELED != resultCode ) {
-            switch ( requestCode ) {
-            case REQUEST_LANG:
+        boolean cancelled = Activity.RESULT_CANCELED == resultCode;
+        switch ( requestCode ) {
+        case REQUEST_LANG:
+            if ( !cancelled ) {
                 DbgUtils.logf( "lang need met" );
                 if ( checkWarnNoDict( m_missingDictRowId ) ) {
                     launchGameIf();
                 }
-                break;
-            case CONFIG_GAME:
-                long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
-                GameUtils.launchGame( m_activity, rowID );
-                break;
             }
+            break;
+        case CONFIG_GAME:
+            if ( cancelled ) {
+                if ( DBUtils.ROWID_NOTFOUND != m_configRowID ) {
+                    long[] rowids = { m_configRowID };
+                    deleteGames( rowids );
+                }
+            } else {
+                long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID,
+                                                DBUtils.ROWID_NOTFOUND );
+                GameUtils.launchGame( m_activity, rowID );
+            }
+            m_configRowID = DBUtils.ROWID_NOTFOUND;
+            break;
         }
+    }
+
+    @Override
+    protected void onResume() 
+    {
+        super.onResume();
+        setupButtons();
     }
 
     @Override
@@ -1526,6 +1529,37 @@ public class GamesListDelegate extends ListDelegateBase
                 m_selGames.remove( row );
             }
             setTitleBar();
+        }
+    }
+
+    private void setupButtons()
+    {
+        boolean hidden = XWPrefs.getHideNewgameButtons( m_activity );
+        final Button soloButton =
+            (Button)findViewById( R.id.button_newgame_solo );
+        if ( hidden ) {
+            soloButton.setVisibility( View.GONE );
+        } else {
+            soloButton.setVisibility( View.VISIBLE );
+            soloButton.setOnClickListener( new View.OnClickListener() {
+                    public void onClick( View view ) { 
+                        m_nextIsSolo = true;
+                        showDialog( DlgID.GAMES_LIST_NEWGAME );
+                    }
+                } );
+        }
+        final Button netButton = 
+            (Button)findViewById( R.id.button_newgame_multi );
+        if ( hidden ) {
+            netButton.setVisibility( View.GONE );
+        } else {
+            netButton.setVisibility( View.VISIBLE );
+            netButton.setOnClickListener( new View.OnClickListener() {
+                    public void onClick( View view ) { 
+                        m_nextIsSolo = false;
+                        showDialog( DlgID.GAMES_LIST_NEWGAME );
+                    }
+                } );
         }
     }
 
@@ -2033,6 +2067,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         if ( doConfigure ) {
             // configure it
+            m_configRowID = rowID;
             GameConfigDelegate.editForResult( m_activity, CONFIG_GAME, rowID );
         } else {
             // launch it

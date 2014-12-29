@@ -753,6 +753,12 @@
   <!-- clarification of above -->
   <string name="hide_title_summary">Gnidih eht emag eman stel eht
         draob eb ylthgils regral</string>
+  <!-- Checkbox that when set prevents showing the newgame buttons
+         on the main screen to save space -->
+  <string name="hide_newgames_title">Edih emagwen snottub</string>
+  <!-- clarification of above -->
+  <string name="hide_newgames_summary">Gnidih eht emagwen snottub ni
+        eht niam neercs sekam erom semag elbisiv</string>
   <!-- Checkbox that when set makes taps on the board manipulate an
          arrow that then directs where tiles go when tapped in the
          tray. -->
