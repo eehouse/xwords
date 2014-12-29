@@ -46,6 +46,7 @@ public class NetLaunchInfo {
     protected String gameName;
     protected String dict;
     protected int lang;
+    protected int forceChannel;
     protected int nPlayersT;
     protected int nPlayersH;
     protected String room;      // relay
@@ -76,6 +77,7 @@ public class NetLaunchInfo {
             m_addrs = DBUtils.intToConnTypeSet( flags );
 
             lang = m_json.optInt( MultiService.LANG, -1 );
+            forceChannel = m_json.optInt( MultiService.FORCECHANNEL, 0 );
             dict = m_json.optString( MultiService.DICT );
             gameName = m_json.optString( MultiService.GAMENAME );
             nPlayersT = m_json.optInt( MultiService.NPLAYERST, -1 );
@@ -114,6 +116,7 @@ public class NetLaunchInfo {
         room = bundle.getString( MultiService.ROOM );
         m_inviteID = bundle.getString( MultiService.INVITEID );
         lang = bundle.getInt( MultiService.LANG );
+        forceChannel = bundle.getInt( MultiService.FORCECHANNEL );
         dict = bundle.getString( MultiService.DICT );
         gameName= bundle.getString( MultiService.GAMENAME );
         nPlayersT = bundle.getInt( MultiService.NPLAYERST );
@@ -165,6 +168,7 @@ public class NetLaunchInfo {
         room = intent.getStringExtra( MultiService.ROOM );
         m_inviteID = intent.getStringExtra( MultiService.INVITEID );
         lang = intent.getIntExtra( MultiService.LANG, -1 );
+        forceChannel = intent.getIntExtra( MultiService.FORCECHANNEL, -1 );
         dict = intent.getStringExtra( MultiService.DICT );
         gameName = intent.getStringExtra( MultiService.GAMENAME );
         nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );

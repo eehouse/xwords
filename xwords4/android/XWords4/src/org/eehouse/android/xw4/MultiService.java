@@ -30,6 +30,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class MultiService {
 
+    public static final String FORCECHANNEL = "FC";
     public static final String LANG = "LANG";
     public static final String DICT = "DICT";
     public static final String GAMEID = "GAMEID";

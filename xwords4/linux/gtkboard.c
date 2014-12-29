@@ -573,8 +573,7 @@ createOrLoadObjects( GtkGameGlobals* globals )
 #endif
         game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
                           cGlobals->util, (DrawCtx*)globals->draw,
-                          &cGlobals->cp, &procs, params->forceChannel,
-                          params->gameSeed );
+                          &cGlobals->cp, &procs, params->gameSeed );
 
         // addr.conType = params->conType;
         CommsConnType typ;
@@ -991,8 +990,7 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
 
         if ( !game_reset( MEMPOOL &globals->cGlobals.game, gi,
                           globals->cGlobals.util,
-                          &globals->cGlobals.cp, &procs,
-                          globals->cGlobals.params->forceChannel ) ) {
+                          &globals->cGlobals.cp, &procs ) ) {
             /* if ( NULL == globals->draw ) { */
             /*     globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area, */
             /*                                                   globals ); */
@@ -1563,16 +1561,21 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     gchar* countStr;
     gchar* phone = NULL;
     gchar* portstr = NULL;
+    gchar* forceChannelStr;
     AskMInfo infos[] = {
         { "Number of players", &countStr },
         { "Remote phone#", &phone },
         { "Remote port", &portstr },
+        { "Force channel", &forceChannelStr },
     };
 
     XP_U16 nMissing = server_getPendingRegs( globals->cGlobals.game.server );
     gchar buf[64];
     sprintf( buf, "%d", nMissing );
     countStr = buf;
+    gchar forceChannelBuf[64];
+    sprintf( forceChannelBuf, "%d", 1 );
+    forceChannelStr = forceChannelBuf;
 
     while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) { 
         int nPlayers = atoi( countStr );
@@ -1589,6 +1592,12 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
             gtktell( globals->window, "Port must be a number and not 0." );
             break;
         }
+        int forceChannel = atoi( forceChannelStr );
+        if ( 1 > forceChannel || 4 <= forceChannel ) {
+            gtktell( globals->window, "Channel must be between 1 and the number of client devices." );
+            break;
+        }
+
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
 
@@ -1598,7 +1607,7 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
         comms_getAddr( comms, &addr );
 
         linux_sms_invite( globals->cGlobals.params, gi, &addr, gameName,
-                          nPlayers, phone, port );
+                          nPlayers, forceChannel, phone, port );
         break;
     }
     for ( int ii = 0; ii < VSIZE(infos); ++ii ) {

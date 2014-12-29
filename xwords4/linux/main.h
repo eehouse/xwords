@@ -107,7 +107,6 @@ typedef struct LaunchParams {
     XP_U16 splitPackets;
     XP_U16 chatsInterval;       /* 0 means disabled */
     XP_U16 askTimeout;
-    XP_U16 forceChannel;
 #ifdef XWFEATURE_SEARCHLIMIT
     XP_Bool allowHintRect;
 #endif

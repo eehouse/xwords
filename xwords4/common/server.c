@@ -1142,6 +1142,7 @@ getIndexForDevice( ServerCtxt* server, XP_PlayerAddr channelNo )
         }
     }
 
+    XP_LOGF( "%s(%x)=>%d", __func__, channelNo, result );
     return result;
 } /* getIndexForDevice */
 
@@ -1261,6 +1262,7 @@ sortTilesIf( ServerCtxt* server, XP_S16 turn )
 static XP_Bool
 client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 {
+    LOG_FUNC();
     XP_Bool accepted = 0 == server->nv.addresses[0].channelNo;
 
     /* We should never get this message a second time, but very rarely we do.
@@ -1415,6 +1417,10 @@ makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy,
         /* adjust isLocal to client's perspective */
         clientPl->isLocal = server->players[ii].deviceIndex == deviceIndex;
     }
+
+    giCopy->forceChannel = deviceIndex;
+    XP_LOGF( "%s: assigning forceChannel from deviceIndex: %d", __func__, 
+             giCopy->forceChannel );
 
     giCopy->dictName = (XP_UCHAR*)NULL; /* so we don't sent the bytes */
 } /* makeSendableGICopy */

@@ -201,7 +201,8 @@ XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
                                  XW_UtilCtxt* util, 
-                                 const TransportProcs* procs );
+                                 const TransportProcs* procs,
+                                 XP_U16 forceChannel );
 void comms_start( CommsCtxt* comms );
 void comms_stop( CommsCtxt* comms );
 void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,

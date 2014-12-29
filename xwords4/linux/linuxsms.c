@@ -221,12 +221,13 @@ dispatch_invite( LinSMSData* storage, XP_U16 XP_UNUSED(proto),
     stringFromStreamHere( stream, dictName, VSIZE(dictName) );
     XP_U8 nMissing = stream_getU8( stream );
     XP_U8 nPlayers = stream_getU8( stream );
+    XP_U16 forceChannel = stream_getU8( stream );
 
     addrFromStream( addr, stream );
 
     (*storage->procs->inviteReceived)( storage->procClosure, gameName, 
                                        gameID, dictLang, dictName, nPlayers, 
-                                       nMissing, addr );
+                                       nMissing, forceChannel, addr );
 }
 
 static void
@@ -362,7 +363,8 @@ linux_sms_init( LaunchParams* params, const gchar* myPhone, XP_U16 myPort,
 void
 linux_sms_invite( LaunchParams* params, const CurGameInfo* gi, 
                   const CommsAddrRec* addr, const gchar* gameName, 
-                  XP_U16 nMissing, const gchar* toPhone, int toPort )
+                  XP_U16 nMissing, int forceChannel,
+                  const gchar* toPhone, int toPort )
 {
     LOG_FUNC();
     XWStreamCtxt* stream;
@@ -375,6 +377,7 @@ linux_sms_invite( LaunchParams* params, const CurGameInfo* gi,
     stringToStream( stream, gi->dictName );
     stream_putU8( stream, nMissing );
     stream_putU8( stream, gi->nPlayers );
+    stream_putU8( stream, forceChannel );
 
     addrToStream( stream, addr );
 

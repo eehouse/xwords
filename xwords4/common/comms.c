@@ -337,6 +337,7 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
     MPASSIGN(result->mpool, mpool);
 
     XP_ASSERT( 0 == (forceChannel & ~CHANNEL_MASK) );
+    XP_ASSERT( isServer || (0 < forceChannel) );
     result->isServer = isServer;
     result->forceChannel = forceChannel;
     if ( !!procs ) {
@@ -576,7 +577,7 @@ addrFromStream( CommsAddrRec* addrP, XWStreamCtxt* stream )
 
 CommsCtxt* 
 comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
-                      const TransportProcs* procs )
+                      const TransportProcs* procs, XP_U16 forceChannel )
 {
     XP_Bool isServer;
     XP_U16 nAddrRecs, nPlayersHere, nPlayersTotal;
@@ -597,7 +598,8 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         nPlayersTotal = 0;
     }
     CommsCtxt* comms = comms_make( MPPARM(mpool) util, isServer, 
-                                   nPlayersHere, nPlayersTotal, procs, 0
+                                   nPlayersHere, nPlayersTotal, procs, 
+                                   forceChannel
 #ifdef SET_GAMESEED
                                    , 0
 #endif
@@ -622,10 +624,6 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         comms->rr.myHostID = stream_getU8( stream );
         stringFromStreamHere( stream, comms->rr.connName, 
                               sizeof(comms->rr.connName) );
-    }
-
-    if ( STREAM_VERS_MULTIADDR <= version ) {
-        comms->forceChannel = stream_getU8( stream );
     }
 
     comms->queueLen = stream_getU8( stream );
@@ -820,7 +818,6 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
         stream_putU8( stream, comms->rr.myHostID );
         stringToStream( stream, comms->rr.connName );
     }
-    stream_putU8( stream, (XP_U8)comms->forceChannel );
 
     XP_ASSERT( comms->queueLen <= 255 );
     stream_putU8( stream, (XP_U8)comms->queueLen );
@@ -1500,8 +1497,9 @@ got_connect_cmd( CommsCtxt* comms, XWStreamCtxt* stream,
     set_relay_state( comms, reconnected ? COMMS_RELAYSTATE_RECONNECTED
                      : COMMS_RELAYSTATE_CONNECTED );
     XWHostID myHostID = stream_getU8( stream );
+    XP_LOGF( "%s: changing rr.myHostID from %x to %x", __func__, 
+             comms->rr.myHostID, myHostID );
     if ( comms->rr.myHostID != myHostID ) {
-        XP_LOGF( "%s: changing rr.myHostID from %x to %x", __func__, comms->rr.myHostID, myHostID );
         comms->rr.myHostID = myHostID;
     }
 

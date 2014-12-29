@@ -46,6 +46,7 @@ public class CurGameInfo {
     public int gameSeconds;
     public int nPlayers;
     public int boardSize;
+    public int forceChannel;
     public DeviceRole serverRole;
 
     public boolean hintsNotAllowed;

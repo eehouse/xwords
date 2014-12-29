@@ -308,7 +308,7 @@ public class SMSService extends XWService {
                                   nPlayersT, nPlayersH );
                 } else if ( ADDED_MISSING == cmd ) {
                     makeForInvite( phone, gameID, gameName, lang, dict, 
-                                   nPlayersT, nPlayersH );
+                                   nPlayersT, nPlayersH, 1 );
                 }
                 break;
             case SEND:
@@ -498,7 +498,7 @@ public class SMSService extends XWService {
                 
                 if ( DictLangCache.haveDict( this, lang, dict ) ) {
                     makeForInvite( phone, gameID, gameName, lang, dict, 
-                                   nPlayersT, nPlayersH );
+                                   nPlayersT, nPlayersH, 1 );
                 } else {
                     Intent intent = MultiService
                         .makeMissingDictIntent( this, gameName, lang, dict, 
@@ -670,12 +670,12 @@ public class SMSService extends XWService {
 
     private void makeForInvite( String phone, int gameID, String gameName, 
                                 int lang, String dict, int nPlayersT, 
-                                int nPlayersH )
+                                int nPlayersH, int forceChannel )
     {
         long rowid = 
             GameUtils.makeNewGame( this, gameID, 
-                                   new CommsAddrRec( phone ),
-                                   lang, dict, nPlayersT, nPlayersH );
+                                   new CommsAddrRec( phone ), lang, dict, 
+                                   nPlayersT, nPlayersH, forceChannel );
 
         if ( null != gameName && 0 < gameName.length() ) {
             DBUtils.setName( this, rowid, gameName );

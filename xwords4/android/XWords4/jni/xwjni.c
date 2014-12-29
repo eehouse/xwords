@@ -212,6 +212,7 @@ static const SetInfo gi_ints[] = {
     ,ARR_MEMBER( CurGameInfo, boardSize )
     ,ARR_MEMBER( CurGameInfo, gameID )
     ,ARR_MEMBER( CurGameInfo, dictLang )
+    ,ARR_MEMBER( CurGameInfo, forceChannel )
 };
 
 static const SetInfo gi_bools[] = {

@@ -2041,7 +2041,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
                               cGlobals->util, (DrawCtx*)g_globals.draw,
                               &g_globals.cGlobals.cp, &procs, 
-                              params->forceChannel, params->gameSeed );
+                              params->gameSeed );
             g_globals.cGlobals.selRow = -1;
             saveGame( &g_globals.cGlobals );
         }

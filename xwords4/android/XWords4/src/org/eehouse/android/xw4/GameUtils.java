@@ -464,9 +464,9 @@ public class GameUtils {
         CommsAddrRec addr = nli.makeAddrRec( context );
 
         return makeNewMultiGame( context, sink, DBUtils.GROUPID_UNSPEC, addr, 
-                                 new int[] {nli.lang}, new String[] { nli.dict }, 
-                                 nli.nPlayersT, 1, nli.inviteID(), 
-                                 nli.gameID, false );
+                                 new int[] {nli.lang}, new String[] { nli.dict },
+                                 nli.nPlayersT, 1, nli.forceChannel,
+                                 nli.inviteID(), nli.gameID, false );
     }
 
     public static long makeNewMultiGame( Context context, String inviteID )
@@ -475,20 +475,25 @@ public class GameUtils {
         String[] dict = {null};
         CommsAddrRec addr = new CommsAddrRec( XWPrefs.getAddrTypes( context ) );
         addr.populate( context );
+        int forceChannel = 0;
         return makeNewMultiGame( context, null, DBUtils.GROUPID_UNSPEC, addr,
-                                 lang, dict, 2, 1, inviteID, 0, true );
+                                 lang, dict, 2, 1, forceChannel, inviteID, 0,
+                                 true );
     }
 
-    private static long makeNewMultiGame( Context context, MultiMsgSink sink, long groupID, 
-                                          CommsAddrRec addr, int[] lang, String[] dict,
+    private static long makeNewMultiGame( Context context, MultiMsgSink sink, 
+                                          long groupID, CommsAddrRec addr, 
+                                          int[] lang, String[] dict, 
                                           int nPlayersT, int nPlayersH, 
-                                          String inviteID, int gameID, boolean isHost )
+                                          int forceChannel, String inviteID,
+                                          int gameID, boolean isHost )
     {
         long rowid = -1;
 
         Assert.assertNotNull( inviteID );
         CurGameInfo gi = new CurGameInfo( context, inviteID );
         gi.setLang( lang[0], dict[0] );
+        gi.forceChannel = forceChannel;
         lang[0] = gi.dictLang;
         dict[0] = gi.dictName;
         gi.setNPlayers( nPlayersT, nPlayersH );
@@ -519,33 +524,35 @@ public class GameUtils {
     public static long makeNewGame( Context context, MultiMsgSink sink,
                                     int gameID, CommsAddrRec addr, int lang, 
                                     String dict, int nPlayersT, 
-                                    int nPlayersH )
+                                    int nPlayersH, int forceChannel )
     {
         return makeNewGame( context, sink, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                            lang, dict, nPlayersT, nPlayersH );
+                            lang, dict, nPlayersT, nPlayersH, forceChannel );
     }
 
     public static long makeNewGame( Context context, int gameID, 
                                     CommsAddrRec addr, int lang, 
                                     String dict, int nPlayersT, 
-                                    int nPlayersH )
+                                    int nPlayersH, int forceChannel )
     {
         return makeNewGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                            lang, dict, nPlayersT, nPlayersH );
+                            lang, dict, nPlayersT, nPlayersH, forceChannel );
     }
     
     public static long makeNewGame( Context context, long groupID,  int gameID, 
                                     CommsAddrRec addr, int lang, String dict,
-                                    int nPlayersT, int nPlayersH )
+                                    int nPlayersT, int nPlayersH, 
+                                    int forceChannel )
     {
         return makeNewGame( context, null, groupID, gameID, addr, 
-                            lang,  dict, nPlayersT, nPlayersH );
+                            lang,  dict, nPlayersT, nPlayersH, forceChannel );
     }
 
     public static long makeNewGame( Context context, MultiMsgSink sink, 
-                                    long groupID,  int gameID, CommsAddrRec addr, 
+                                    long groupID,  int gameID, CommsAddrRec addr,
                                     int lang, String dict, 
-                                    int nPlayersT, int nPlayersH )
+                                    int nPlayersT, int nPlayersH, 
+                                    int forceChannel )
     {
         long rowid = -1;
         int[] langa = { lang };
@@ -556,8 +563,8 @@ public class GameUtils {
         }
         String inviteID = GameUtils.formatGameID( gameID );
         return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
-                                 nPlayersT, nPlayersH, inviteID, gameID, 
-                                 isHost );
+                                 nPlayersT, nPlayersH, forceChannel, 
+                                 inviteID, gameID, isHost );
     }
 
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )

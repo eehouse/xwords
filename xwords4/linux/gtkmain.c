@@ -492,7 +492,8 @@ gtkNoticeRcvd( void* closure )
 static void
 smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName), 
                    XP_U32 gameID, XP_U16 dictLang, const XP_UCHAR* dictName,
-                   XP_U16 nPlayers, XP_U16 nHere, const CommsAddrRec* returnAddr )
+                   XP_U16 nPlayers, XP_U16 nHere, XP_U16 forceChannel,
+                   const CommsAddrRec* returnAddr )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;
@@ -505,6 +506,7 @@ smsInviteReceived( void* closure, const XP_UCHAR* XP_UNUSED_DBG(gameName),
     gi_setNPlayers( &gi, nPlayers, nHere );
     gi.gameID = gameID;
     gi.dictLang = dictLang;
+    gi.forceChannel = forceChannel;
     replaceStringIfDifferent( params->mpool, &gi.dictName, dictName );
 
     GtkGameGlobals* globals = malloc( sizeof(*globals) );

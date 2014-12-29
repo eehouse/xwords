@@ -2387,7 +2387,7 @@ main( int argc, char** argv )
             mainParams.commsDisableds[COMMS_CONN_SMS][0] = XP_TRUE;
             break;
         case CMD_FORCECHANNEL:
-            mainParams.forceChannel = atoi( optarg );
+            mainParams.pgi.forceChannel = atoi( optarg );
             break;
 
 #ifdef XWFEATURE_CROSSHAIRS
