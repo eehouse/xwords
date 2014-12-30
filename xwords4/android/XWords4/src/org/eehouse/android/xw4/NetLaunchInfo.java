@@ -191,10 +191,11 @@ public class NetLaunchInfo {
         gameID = gamID;
     }
 
-    public NetLaunchInfo( GameSummary summary, CurGameInfo gi, int numHere )
+    public NetLaunchInfo( GameSummary summary, CurGameInfo gi, int numHere, int fc )
     {
         this( summary, gi );
         nPlayersH = numHere;
+        forceChannel = fc;
     }
 
     public NetLaunchInfo( GameSummary summary, CurGameInfo gi )
@@ -242,6 +243,7 @@ public class NetLaunchInfo {
         bundle.putInt( MultiService.GAMEID, gameID );
         bundle.putString( MultiService.BT_NAME, btName );
         bundle.putString( MultiService.BT_ADDRESS, btAddress );
+        bundle.putInt( MultiService.FORCECHANNEL, forceChannel );
 
         int flags = DBUtils.connTypeSetToInt( m_addrs );
         bundle.putInt( ADDRS_KEY, flags );
@@ -262,6 +264,7 @@ public class NetLaunchInfo {
                 .put( MultiService.GAMEID, gameID )
                 .put( MultiService.BT_NAME, btName )
                 .put( MultiService.BT_ADDRESS, btAddress )
+                .put( MultiService.FORCECHANNEL, forceChannel )
                 .put( ADDRS_KEY, DBUtils.connTypeSetToInt( m_addrs ) )
                 .toString();
         } catch ( org.json.JSONException jse ) {
@@ -305,7 +308,8 @@ public class NetLaunchInfo {
             .appendQueryParameter( "lang", String.format("%d", lang ) )
             .appendQueryParameter( "np", String.format( "%d", nPlayersT ) )
             .appendQueryParameter( "nh", String.format( "%d", nPlayersH ) )
-            .appendQueryParameter( "gid", String.format( "%d", nPlayersT ) );
+            .appendQueryParameter( "gid", String.format( "%d", nPlayersT ) )
+            .appendQueryParameter( "fc", String.format( "%d", forceChannel ) );
         if ( null != dict ) {
             ub.appendQueryParameter( "wl", dict );
         }
