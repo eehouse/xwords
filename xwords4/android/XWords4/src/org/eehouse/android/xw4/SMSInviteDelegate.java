@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class SMSInviteDelegate extends InviteDelegate {
@@ -167,7 +169,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         showConfirmThen( R.string.confirm_clear, Action.CLEAR_ACTION );
     }
 
-    protected String[] listSelected()
+    protected void listSelected( String[][] devsP, int[][] countsP )
     {
         int count = m_adapter.getCount();
         String[] result = new String[countChecks()];
@@ -179,7 +181,8 @@ public class SMSInviteDelegate extends InviteDelegate {
                     ((SMSListItem)m_adapter.getItem(ii)).getNumber();
             }
         }
-        return result;
+        Assert.fail();          // not setting countsP
+        devsP[0] = result;
     }
 
     @Override

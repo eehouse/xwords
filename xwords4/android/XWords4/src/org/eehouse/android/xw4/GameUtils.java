@@ -465,7 +465,7 @@ public class GameUtils {
 
         return makeNewMultiGame( context, sink, DBUtils.GROUPID_UNSPEC, addr, 
                                  new int[] {nli.lang}, new String[] { nli.dict },
-                                 nli.nPlayersT, 1, nli.forceChannel,
+                                 nli.nPlayersT, nli.nPlayersH, nli.forceChannel,
                                  nli.inviteID(), nli.gameID, false );
     }
 

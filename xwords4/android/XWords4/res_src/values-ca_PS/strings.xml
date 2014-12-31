@@ -1929,4 +1929,6 @@
   <string name="new_game_message_net">(YOU WILL HAVE A CHANCE TO
     INVITE OTHER PLAYERS AFTER IT IS CREATED.)</string>
   <string name="use_defaults">USE DEFAULTS</string>
+  <string name="nplayers_prompt">NUMBER OF PLAYERS</string>
+  <string name="nplayers_fmt">%1$d PLAYER[S]</string>
 </resources>

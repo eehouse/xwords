@@ -1929,4 +1929,6 @@
   <string name="new_game_message_net">uOy( lliw evah a ecnahc ot
     etivni rehto sreyalp retfa ti si detaerc.)</string>
   <string name="use_defaults">Esu stluafed</string>
+  <string name="nplayers_prompt">Rebmun fo sreyalp</string>
+  <string name="nplayers_fmt">%1$d ]s[reyalp</string>
 </resources>

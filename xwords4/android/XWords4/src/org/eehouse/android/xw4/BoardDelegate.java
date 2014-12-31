@@ -107,6 +107,7 @@ public class BoardDelegate extends DelegateBase
     private String[] m_texts;
     private CommsConnTypeSet m_connTypes = null;
     private String[] m_missingDevs;
+    private int[] m_missingCounts;
     private InviteMeans m_missingMeans = null;
     private boolean m_progressShown = false;
     private String m_curTiles;
@@ -628,16 +629,16 @@ public class BoardDelegate extends DelegateBase
                 }
                 break;
             case BT_INVITE_RESULT:
-                // onActivityResult is called immediately *before*
-                // onResume -- meaning m_gi etc are still null.
-                m_missingDevs = data.getStringArrayExtra( BTInviteDelegate.DEVS );
-                m_missingMeans = InviteMeans.BLUETOOTH;
-                break;
             case SMS_INVITE_RESULT:
                 // onActivityResult is called immediately *before*
                 // onResume -- meaning m_gi etc are still null.
-                m_missingDevs = data.getStringArrayExtra( SMSInviteDelegate.DEVS );
-                m_missingMeans = InviteMeans.SMS;
+                m_missingDevs = data.getStringArrayExtra( InviteDelegate.DEVS );
+                m_missingCounts = data.getIntArrayExtra( InviteDelegate.COUNTS );
+                if ( BT_INVITE_RESULT == requestCode ) {
+                    m_missingMeans = InviteMeans.BLUETOOTH;
+                } else {
+                    m_missingMeans = InviteMeans.SMS;
+                }
                 break;
             }
         }
@@ -2206,8 +2207,9 @@ public class BoardDelegate extends DelegateBase
                 m_invitesPending = m_missingDevs.length;
                 for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
                     String dev =  m_missingDevs[ii];
-                    NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1, 
-                                                           1 + ii );
+                    int nPlayers = m_missingCounts[ii];
+                    NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 
+                                                           nPlayers, 1 + ii );
                     switch ( m_missingMeans ) {
                     case BLUETOOTH:
                         String progMsg = BTService.nameForAddr( dev );
@@ -2230,6 +2232,7 @@ public class BoardDelegate extends DelegateBase
                     }
                 }
                 m_missingDevs = null;
+                m_missingCounts = null;
                 m_missingMeans = null;
             }
         }

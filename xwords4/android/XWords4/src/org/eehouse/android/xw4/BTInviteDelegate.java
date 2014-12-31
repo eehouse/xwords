@@ -31,18 +31,22 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Iterator;
 
 import junit.framework.Assert;
 
@@ -52,6 +56,7 @@ public class BTInviteDelegate extends InviteDelegate {
 
     private Activity m_activity;
     private Set<Integer> m_checked;
+    private Map<Integer, Integer> m_counts;
     private boolean m_setChecked;
     private BTDevsAdapter m_adapter;
 
@@ -73,6 +78,7 @@ public class BTInviteDelegate extends InviteDelegate {
     protected void init( Bundle savedInstanceState )
     {
         m_checked = new HashSet<Integer>();
+        m_counts = new HashMap<Integer, Integer>();
 
         String msg = getString( R.string.bt_pick_addall_button );
         msg = getString( R.string.invite_bt_desc_fmt, m_nMissing, msg );
@@ -131,32 +137,49 @@ public class BTInviteDelegate extends InviteDelegate {
 
     protected void clearSelected()
     {
-        BTService.clearDevices( m_activity, listSelected() );
+        String[][] selected = new String[1][];
+        listSelected( selected, null );
+        BTService.clearDevices( m_activity, selected[0] );
     }
 
-    protected String[] listSelected()
+    protected void listSelected( String[][] devsP, int[][] countsP )
     {
         ListView list = (ListView)findViewById( android.R.id.list );
-        String[] result = new String[m_checked.size()];
-        int count = list.getChildCount();
+        int size = m_checked.size();
+        String[] devs = new String[size];
+        int[] counts = new int[size];
         int index = 0;
-        for ( int ii = 0; ii < count; ++ii ) {
-            CheckBox box = (CheckBox)list.getChildAt( ii );
-            if ( box.isChecked() ) {
-                String btAddr = m_adapter.getBTAddr( box );
-                String btName = m_adapter.getBTName( box );
-                Assert.assertTrue( box.getText().toString().equals( btName ) );
-                result[index++] = btAddr;
-            }
+
+        for ( Iterator<Integer> iter = m_checked.iterator();
+              iter.hasNext(); ) {
+            int position = iter.next();
+            LinearLayout layout = (LinearLayout)list.getChildAt( position );
+            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
+            Assert.assertTrue( box.isChecked() );
+            String btAddr = m_adapter.getBTAddr( box );
+            String btName = m_adapter.getBTName( box );
+            Assert.assertTrue( box.getText().toString().equals( btName ) );
+            devs[index] = btAddr;
+            counts[index] = m_counts.get( position );
+            ++index;
         }
-        return result;
+        devsP[0] = devs;
+        if ( null != countsP ) {
+            countsP[0] = counts;
+        }
     }
 
     protected void tryEnable() 
     {
-        int size = m_checked.size();
-        m_okButton.setEnabled( size == m_nMissing );
-        m_clearButton.setEnabled( 0 < size );
+        m_clearButton.setEnabled( 0 < m_checked.size() );
+
+        int count = 0;
+        for ( Iterator<Integer> iter = m_checked.iterator();
+              iter.hasNext(); ) {
+            int position = iter.next();
+            count += m_counts.get( position );
+        }
+        m_okButton.setEnabled( 0 < count && count <= m_nMissing );
     }
 
     private class BTDevsAdapter extends XWListAdapter {
@@ -174,9 +197,37 @@ public class BTInviteDelegate extends InviteDelegate {
         public Object getItem( int position) { return m_devNames[position]; }
         public View getView( final int position, View convertView, 
                              ViewGroup parent ) {
-            CheckBox box = (CheckBox)inflate( R.layout.btinviter_item );
+            LinearLayout layout = (LinearLayout)inflate( R.layout.btinviter_item );
+            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
             box.setText( m_devNames[position] );
             m_boxAddrs.put( box, m_devAddrs[position] );
+
+            if ( 1 < m_nMissing ) {
+                Spinner spinner = (Spinner)
+                    layout.findViewById(R.id.nperdev_spinner);
+                ArrayAdapter<String> adapter = 
+                    new ArrayAdapter<String>( m_activity, android.R.layout
+                                              .simple_spinner_item );
+                for ( int ii = 1; ii <= m_nMissing; ++ii ) {
+                    String str = getString( R.string.nplayers_fmt, ii );
+                    adapter.add( str );
+                }
+                spinner.setAdapter( adapter );
+                spinner.setVisibility( View.VISIBLE );
+                spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
+                        public void onItemSelected( AdapterView<?> parent, 
+                                                    View view, int pos, 
+                                                    long id )
+                        {
+                            DbgUtils.logf( "setting count for %d to %d", position, 1 + pos );
+                            m_counts.put( position, 1 + pos );
+                            tryEnable();
+                        }
+
+                        public void onNothingSelected( AdapterView<?> parent ) {}
+                    } );
+                m_counts.put( position, 1 );
+            }
 
             CompoundButton.OnCheckedChangeListener listener = 
                 new CompoundButton.OnCheckedChangeListener() {
@@ -198,7 +249,7 @@ public class BTInviteDelegate extends InviteDelegate {
             if ( m_setChecked ) {
                 box.setChecked( true );
             }
-            return box;
+            return layout;
         }
 
         public String getBTAddr( CheckBox box ) { return m_boxAddrs.get(box); }

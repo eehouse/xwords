@@ -36,6 +36,7 @@ abstract class InviteDelegate extends ListDelegateBase
     implements View.OnClickListener {
 
     public static final String DEVS = "DEVS";
+    public static final String COUNTS = "COUNTS";
     protected static final String INTENT_KEY_NMISSING = "NMISSING";
 
     protected int m_nMissing;
@@ -73,8 +74,11 @@ abstract class InviteDelegate extends ListDelegateBase
     {
         if ( m_okButton == view ) {
             Intent intent = new Intent();
-            String[] devs = listSelected();
-            intent.putExtra( DEVS, devs );
+            String[][] devs = new String[1][];
+            int[][] counts = new int[1][];
+            listSelected( devs, counts );
+            intent.putExtra( DEVS, devs[0] );
+            intent.putExtra( COUNTS, counts[0] );
             setResult( Activity.RESULT_OK, intent );
             finish();
         } else if ( m_rescanButton == view ) {
@@ -85,7 +89,7 @@ abstract class InviteDelegate extends ListDelegateBase
     }
 
     abstract void tryEnable() ;
-    abstract String[] listSelected();
+    abstract void listSelected( String[][] devsP, int[][] countsP );
     abstract void scan();
     abstract void clearSelected();
 }

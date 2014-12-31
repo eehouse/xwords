@@ -69,7 +69,9 @@ public class XWConnAddrPreference extends DialogPreference {
 
         LinearLayout list = (LinearLayout)view.findViewById( R.id.conn_types );
         for ( CommsConnType typ : s_supported.getTypes() ) {
-            CheckBox box = (CheckBox)LocUtils.inflate( m_context, R.layout.btinviter_item );
+            LinearLayout layout = (LinearLayout)LocUtils
+                .inflate( m_context, R.layout.btinviter_item );
+            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
             box.setText( typ.longName( m_context ) );
             box.setChecked( m_curSet.contains( typ ) );
             list.addView( box );
