@@ -523,15 +523,16 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 
 static void
 and_util_informMissing( XW_UtilCtxt* uc, XP_Bool isServer, 
-                        const CommsAddrRec* addr, XP_U16 nMissing )
+                        const CommsAddrRec* addr, XP_U16 nDevs, XP_U16 nMissing)
 {
     UTIL_CBK_HEADER( "informMissing", 
-                     "(ZL" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";I)V" );
+                     "(ZL" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";II)V" );
     jobject jtypset = NULL;
     if ( !!addr ) {
         jtypset = addrTypesToJ( env, addr );
     }
-    (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtypset, nMissing );
+    (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtypset, nDevs,
+                            nMissing );
     deleteLocalRef( env, jtypset );
     UTIL_CBK_TAIL();
 }

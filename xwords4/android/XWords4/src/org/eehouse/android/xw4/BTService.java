@@ -804,17 +804,27 @@ public class BTService extends XWService {
                             new DataInputStream( socket.getInputStream() );
                         reply = BTCmd.values()[inStream.readByte()];
                     }
-                    socket.close();
 
                     if ( null == reply ) {
                         sendResult( MultiEvent.APP_NOT_FOUND, dev.getName() );
-                    } else if ( BTCmd.BAD_PROTO == reply ) {
-                        sendBadProto( socket );
-                    } else if ( BTCmd.INVITE_ACCPT == reply ) {
-                        sendResult( MultiEvent.NEWGAME_SUCCESS, elem.m_gameID );
-                    } else {                        
-                        sendResult( MultiEvent.NEWGAME_FAILURE, elem.m_gameID );
+                    } else {
+                        switch ( reply ) {
+                        case BAD_PROTO:
+                            sendBadProto( socket );
+                            break;
+                        case INVITE_ACCPT:
+                            sendResult( MultiEvent.NEWGAME_SUCCESS, elem.m_gameID );
+                            break;
+                        case INVITE_DUPID:
+                            sendResult( MultiEvent.NEWGAME_DUP_REJECTED, dev.getName() );
+                            break;
+                        default:
+                            sendResult( MultiEvent.NEWGAME_FAILURE, elem.m_gameID );
+                            break;
+                        }
                     }
+
+                    socket.close();
                 }
             } catch ( IOException ioe ) {
                 logIOE( ioe );

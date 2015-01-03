@@ -388,8 +388,10 @@ informMissing( const ServerCtxt* server )
         addrP = &addr;
         comms_getAddr( comms, addrP );
     }
-    util_informMissing( server->vol.util, isServer, addrP,
-                        isServer ? server->nv.pendingRegistrations : 0 );
+
+    XP_U16 nDevs = isServer ? server->nv.nDevices - 1 : 0;
+    XP_U16 nPending = isServer ? server->nv.pendingRegistrations : 0;
+    util_informMissing( server->vol.util, isServer, addrP, nDevs, nPending );
 }
 
 XP_U16

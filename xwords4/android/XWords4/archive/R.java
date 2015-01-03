@@ -1007,6 +1007,7 @@ public final class R {
          */
         public static final int enable_sms_summary=0x7f05023c;
         public static final int entering_trade=0x7f0500ec;
+        public static final int err_dup_invite_fmt=0x7f0502cf;
         public static final int expl_update_url=0x7f050074;
         /**  if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote

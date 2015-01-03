@@ -136,6 +136,7 @@ public class BoardDelegate extends DelegateBase
     private String m_getDict;
 
     private int m_nMissing = -1;
+    private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
 
@@ -1072,6 +1073,19 @@ public class BoardDelegate extends DelegateBase
         case NEWGAME_FAILURE:
             DbgUtils.logf( "failed to create game" );
             break;
+        case NEWGAME_DUP_REJECTED:
+            if ( m_progressShown ) {
+                m_progressShown = false;
+                stopProgress();     // in case it's a BT invite
+            }
+            final String msg = 
+                getString( R.string.err_dup_invite_fmt, (String)args[0] );
+            post( new Runnable() {
+                    public void run() {
+                        showOKOnlyDialog( msg );
+                    }
+                } );
+            break;
 
         case SMS_SEND_OK:
             ConnStatusHandler.showSuccessOut( this );
@@ -1194,6 +1208,8 @@ public class BoardDelegate extends DelegateBase
         if ( 0 < m_nMissing ) {  // Isn't there a better test??
             NetLaunchInfo nli = new NetLaunchInfo( m_gi.gameID, m_gi.dictLang, 
                                                    m_gi.dictName, m_gi.nPlayers );
+            Assert.assertTrue( 0 <= m_nGuestDevs );
+            nli.forceChannel = m_nGuestDevs;
             for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
                   iter.hasNext(); ) {
                 CommsConnType typ = iter.next();
@@ -1676,12 +1692,13 @@ public class BoardDelegate extends DelegateBase
         // missing or not.
         @Override
         public void informMissing( boolean isServer, CommsConnTypeSet connTypes,
-                                   final int nMissing )
+                                   int nDevs, final int nMissing )
         {
             m_connTypes = connTypes;
             Assert.assertTrue( isServer || 0 == nMissing );
-            DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nMissing = %d)", 
-                isServer, nMissing );
+            DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nDevs=%d, nMissing=%d)", 
+                           isServer, nDevs, nMissing );
+            m_nGuestDevs = nDevs;
             m_nMissing = nMissing; // will be 0 unless isServer is true
 
             Action action = null;
@@ -2208,8 +2225,10 @@ public class BoardDelegate extends DelegateBase
                 for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
                     String dev =  m_missingDevs[ii];
                     int nPlayers = m_missingCounts[ii];
+                    Assert.assertTrue( 0 <= m_nGuestDevs );
+                    int forceChannel = ii + m_nGuestDevs + 1;
                     NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 
-                                                           nPlayers, 1 + ii );
+                                                           nPlayers, forceChannel );
                     switch ( m_missingMeans ) {
                     case BLUETOOTH:
                         String progMsg = BTService.nameForAddr( dev );

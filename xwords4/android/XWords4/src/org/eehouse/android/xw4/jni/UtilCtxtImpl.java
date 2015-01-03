@@ -262,7 +262,7 @@ public class UtilCtxtImpl implements UtilCtxt {
 
     public void informMissing( boolean isServer, 
                                CommsConnTypeSet connTypes,
-                               int nMissingPlayers )
+                               int nDevices, int nMissingPlayers )
     {
         subclassOverride( "informMissing" );
     }

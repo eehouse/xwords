@@ -132,7 +132,7 @@ public interface UtilCtxt {
                         String newSum, CurGameInfo.XWPhoniesChoice phonies );
 
     void informMissing( boolean isServer, CommsConnTypeSet connTypes,
-                        int nMissingPlayers );
+                        int nDevs, int nMissingPlayers );
 
     void notifyGameOver();
     // Don't need this unless we have a scroll thumb to indicate position

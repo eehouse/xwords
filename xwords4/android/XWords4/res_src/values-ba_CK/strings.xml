@@ -1931,4 +1931,7 @@
   <string name="use_defaults">Esu stluafed</string>
   <string name="nplayers_prompt">Rebmun fo sreyalp</string>
   <string name="nplayers_fmt">%1$d ]s[reyalp</string>
+  <string name="err_dup_invite_fmt">Etacilpud noitativni detcejer:
+    ecived \"%1$s\" sah ydaerla detpecca na noitativni ot siht
+    emag.</string>
 </resources>

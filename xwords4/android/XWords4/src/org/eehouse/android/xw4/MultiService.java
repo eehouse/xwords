@@ -60,6 +60,7 @@ public class MultiService {
                              HOST_PONGED,
                              NEWGAME_SUCCESS,
                              NEWGAME_FAILURE,
+                             NEWGAME_DUP_REJECTED,
                              MESSAGE_ACCEPTED,
                              MESSAGE_REFUSED,
                              MESSAGE_NOGAME,

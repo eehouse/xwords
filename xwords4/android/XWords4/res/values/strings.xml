@@ -2271,5 +2271,8 @@
 
     <string name="nplayers_prompt">Number of players</string>
     <string name="nplayers_fmt">%1$d player[s]</string>
+    <string name="err_dup_invite_fmt">Duplicate invitation rejected:
+    device \"%1$s\" has already accepted an invitation to this
+    game.</string>
 
 </resources>
