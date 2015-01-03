@@ -202,6 +202,7 @@ public class BTInviteDelegate extends InviteDelegate {
             box.setText( m_devNames[position] );
             m_boxAddrs.put( box, m_devAddrs[position] );
 
+            m_counts.put( position, 1 );
             if ( 1 < m_nMissing ) {
                 Spinner spinner = (Spinner)
                     layout.findViewById(R.id.nperdev_spinner);
@@ -226,7 +227,6 @@ public class BTInviteDelegate extends InviteDelegate {
 
                         public void onNothingSelected( AdapterView<?> parent ) {}
                     } );
-                m_counts.put( position, 1 );
             }
 
             CompoundButton.OnCheckedChangeListener listener = 
