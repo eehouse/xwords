@@ -301,21 +301,12 @@ public class GameListItem extends LinearLayout
                                                             DateFormat.SHORT );
             m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
 
-            int iconID = R.drawable.sologame;
+            int iconID;
             if ( null != summary.conTypes && 0 < summary.conTypes.size() ) {
-                switch( summary.conTypes.iterator().next() ) {
-                    case COMMS_CONN_RELAY:
-                        iconID = R.drawable.relaygame;
-                        break;
-                case COMMS_CONN_BT:
-                    iconID = android.R.drawable.stat_sys_data_bluetooth;
-                    break;
-                case COMMS_CONN_SMS:
-                    iconID = android.R.drawable.sym_action_chat;
-                    break;
-                }
+                iconID = R.drawable.multigame__gen;
+            } else {
+                iconID = R.drawable.sologame__gen;
             }
-
             m_marker.setImageResource( iconID );
             m_marker.setOnClickListener( new View.OnClickListener() {
                     @Override

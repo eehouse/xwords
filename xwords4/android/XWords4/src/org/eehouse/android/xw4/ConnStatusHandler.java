@@ -37,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -56,6 +57,7 @@ public class ConnStatusHandler {
     // private static final int RED = 0x7FFF0000;
     private static final int GREEN = 0xFF00FF00;
     private static final int RED = 0xFFFF0000;
+    private static final int BLACK = 0xFF000000;
     private static final int SUCCESS_IN = 0;
     private static final int SUCCESS_OUT = 1;
     private static final int SHOW_SUCCESS_INTERVAL = 1000;
@@ -294,28 +296,24 @@ public class ConnStatusHandler {
         boolean isSolo = null == connTypes || 0 == connTypes.size();
         synchronized( s_lockObj ) {
             if ( null != s_rect ) {
-                int iconID = R.drawable.sologame;
+                int iconID;
                 CommsConnType connType = null;
-                if ( !isSolo ) {
+                if ( isSolo ) {
+                    iconID = R.drawable.sologame__gen;
+                } else {
                     connType = connTypes.iterator().next();
-                    switch( connType ) {
-                    case COMMS_CONN_RELAY:
-                        iconID = R.drawable.relaygame;
-                        break;
-                    case COMMS_CONN_SMS:
-                        iconID = android.R.drawable.sym_action_chat;
-                        break;
-                    case COMMS_CONN_BT:
-                        iconID = android.R.drawable.stat_sys_data_bluetooth;
-                        break;
-                    }
+                    iconID = R.drawable.multigame__gen;
                 }
 
                 Rect rect = new Rect( s_rect );
                 int quarterHeight = rect.height() / 4;
                 rect.offset( offsetX, offsetY );
 
-                if ( ! isSolo ) {
+                if ( isSolo ) {
+                    // paint a black background for the icon
+                    s_fillPaint.setColor( BLACK );
+                    canvas.drawRect( rect, s_fillPaint );
+                } else {
                     int saveTop = rect.top;
                     SuccessRecord record;
                     boolean enabled = connTypeEnabled( context, connType );
@@ -349,8 +347,16 @@ public class ConnStatusHandler {
                     rect.top = saveTop;
                 }
 
+                // Center the icon in the remaining (vertically middle) rect
                 rect.top += quarterHeight;
                 rect.bottom = rect.top + (2 * quarterHeight);
+                int halfMin = Math.min( rect.width(), rect.height() ) / 2;
+                int center = rect.centerX();
+                rect.left = center - halfMin;
+                rect.right = center + halfMin;
+                center = rect.centerY();
+                rect.top = center - halfMin;
+                rect.bottom = center + halfMin;
                 drawIn( canvas, res, iconID, rect );
             }
         }
@@ -447,6 +453,7 @@ public class ConnStatusHandler {
     private static void drawIn( Canvas canvas, Resources res, int id, Rect rect )
     {
         Drawable icon = res.getDrawable( id );
+        Assert.assertTrue( icon.getBounds().width() == icon.getBounds().height() );
         icon.setBounds( rect );
         icon.draw( canvas );
     }
