@@ -318,28 +318,30 @@ public class ConnStatusHandler {
                     SuccessRecord record;
                     boolean enabled = connTypeEnabled( context, connType );
 
-                    // Do the background coloring
-                    rect.bottom = rect.top + quarterHeight * 2;
+                    // Do the background coloring. Top quarter first
+                    rect.bottom = rect.top + quarterHeight;
                     record = recordFor( connType, false );
                     s_fillPaint.setColor( enabled && record.successNewer
                                           ? GREEN : RED );
                     canvas.drawRect( rect, s_fillPaint );
-                    rect.top = rect.bottom;
-                    rect.bottom = rect.top + quarterHeight * 2;
-                    record = recordFor( connType, true );
-                    s_fillPaint.setColor( enabled && record.successNewer
-                                          ? GREEN : RED );
-                    canvas.drawRect( rect, s_fillPaint );
-
-                    // now the icons
-                    rect.top = saveTop;
-                    rect.bottom = rect.top + quarterHeight;
                     int arrowID = s_showSuccesses[SUCCESS_OUT]? 
                         R.drawable.out_arrow_active : R.drawable.out_arrow;
                     drawIn( canvas, res, arrowID, rect );
 
-                    rect.top += 3 * quarterHeight;
+                    // paint the middle two quarters black to give the icon a
+                    // clear background
+                    rect.top = rect.bottom;
+                    rect.bottom += quarterHeight * 2;
+                    s_fillPaint.setColor( BLACK );
+                    canvas.drawRect( rect, s_fillPaint );
+
+                    // bottom quarter
+                    rect.top = rect.bottom;
                     rect.bottom = rect.top + quarterHeight;
+                    record = recordFor( connType, true );
+                    s_fillPaint.setColor( enabled && record.successNewer
+                                          ? GREEN : RED );
+                    canvas.drawRect( rect, s_fillPaint );
                     arrowID = s_showSuccesses[SUCCESS_IN]? 
                         R.drawable.in_arrow_active : R.drawable.in_arrow;
                     drawIn( canvas, res, arrowID, rect );
