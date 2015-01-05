@@ -453,8 +453,9 @@
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
   <string name="invite_multiple">\u0020uOy( era gnitcepxe elpitlum
-      etomer sreyalp.  Eb erus ot sserdda ruoy noitativni ot
-      taht ynam elpoep.)</string>
+    etomer sreyalp. Uoy nod\'t evah ot etivni meht lla ta ,ecno tub
+    eht emag lliw ton trats litnu ydobyreve sah neeb detivni dna lla
+    snoitativni evah neeb detpecca.)</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
