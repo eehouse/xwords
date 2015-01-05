@@ -460,21 +460,17 @@ public class BoardDelegate extends DelegateBase
                     .create();
                 break;
             case DLG_INVITE:
-                if ( true || null != m_room ) {
-                    lstnr = new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dialog, 
-                                                 int item ) {
-                                showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
-                            }
-                        };
-                    dialog = ab.setTitle( R.string.query_title )
-                        .setMessage( "" )
-                        .setPositiveButton( R.string.button_yes, lstnr )
-                        .setNegativeButton( R.string.button_no, null )
-                        .create();
-                } else {
-                    DbgUtils.showf( m_activity, "can't invite for relay: room name not set" );
-                }
+                lstnr = new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
+                        }
+                    };
+                dialog = ab.setTitle( R.string.query_title )
+                    .setMessage( "" )
+                    .setPositiveButton( R.string.button_yes, lstnr )
+                    .setNegativeButton( R.string.button_no, null )
+                    .create();
                 break;
 
             case ENABLE_NFC:
