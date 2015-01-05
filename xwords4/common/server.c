@@ -771,9 +771,8 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
             checkResizeBoard( server );
             assignTilesToAll( server );
             SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
-
-            informMissing( server );
         }
+        informMissing( server );
     }
 
     return success;

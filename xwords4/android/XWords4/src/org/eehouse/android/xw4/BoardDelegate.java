@@ -736,7 +736,10 @@ public class BoardDelegate extends DelegateBase
                                   m_gsi.canUndo );
         }
 
-        Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_nMissing );
+        boolean isServer = null != m_gi
+            && DeviceRole.SERVER_ISSERVER == m_gi.serverRole;
+        Utils.setItemVisible( menu, R.id.board_menu_invite, 
+                              isServer && 0 < m_nMissing );
 
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
@@ -1371,7 +1374,7 @@ public class BoardDelegate extends DelegateBase
                     naKey = R.string.key_notagain_conndall;
                 }
             }
-        } else if ( nMissing > 0 ) {
+        } else if ( false && nMissing > 0 ) {
             if ( !m_haveInvited ) {
                 m_haveInvited = true;
                 m_room = room;
@@ -1695,28 +1698,28 @@ public class BoardDelegate extends DelegateBase
             DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nDevs=%d, nMissing=%d)", 
                            isServer, nDevs, nMissing );
             m_nGuestDevs = nDevs;
+
+            // If we might have put up an alert earlier, take it down
+            if ( 0 < m_nMissing && m_nMissing != nMissing ) {
+                post( new Runnable() {
+                        public void run() {
+                            try {
+                                dismissDialog( DlgID.DLG_INVITE );
+                            } catch ( Exception ex ) {}
+                        }
+                    } );
+            }
+
             m_nMissing = nMissing; // will be 0 unless isServer is true
 
             Action action = null;
             if ( 0 < nMissing && isServer && !m_haveInvited ) {
-                // showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
-                showDialog( DlgID.DLG_INVITE );
-            //     for ( Iterator<CommsConnType> iter = connTypes.iterator();
-            //           null == action && iter.hasNext(); ) {
-            //         CommsConnType connType = iter.next();
-            //         switch( connType ) {
-            //         case COMMS_CONN_BT:
-            //             action = Action.BT_PICK_ACTION;
-            //             break;
-            //         case COMMS_CONN_SMS:
-            //             action = Action.SMS_PICK_ACTION;
-            //             break;
-            //         }
-            //     }
+                post( new Runnable() {
+                        public void run() {
+                            showDialog( DlgID.DLG_INVITE );
+                        }
+                    } );
             }
-            // if ( null != action ) {
-            //     nonRelayInvite( action );
-            // }
         }
 
         @Override
