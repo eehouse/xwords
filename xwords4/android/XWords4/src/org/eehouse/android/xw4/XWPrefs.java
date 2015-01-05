@@ -465,6 +465,11 @@ public class XWPrefs {
         return getPrefsBoolean( context, key_checked_upgrades, false );
     }
 
+    public static boolean getCanInviteMulti( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_invite_multi, false );
+    }
+
     public static boolean getIsTablet( Context context )
     {
         return isTablet( context ) ||

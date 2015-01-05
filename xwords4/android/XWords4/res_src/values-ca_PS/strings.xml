@@ -1572,7 +1572,7 @@
   <!--  -->
   <string name="new_move_body">ONE OR MORE MOVES HAS ARRIVED</string>
   <!--  -->
-  <string name="invite_bt_desc_fmt">PLEASE SELECT THE %1$d DEVICE[S]
+  <string name="invite_bt_desc_fmt">PLEASE SELECT UP TO %1$d DEVICE[S]
     YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
     BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</string>
   <!--  -->
@@ -1921,17 +1921,19 @@
   <!-- Title of preference in which you select which addressing
 	     modes network games will use to communicate -->
   <string name="title_addrs_pref">COMMUNICATE VIA</string>
-  <string name="new_game">NEW GAME</string>
-  <string name="new_game_networked">NEW NETWORKED GAME </string>
+  <string name="new_game">NEW ONE-DEVICE GAME</string>
+  <string name="new_game_networked">NEW NETWORKED GAME</string>
   <string name="new_game_message">WOULD YOU LIKE TO CREATE THIS GAME
     USING DEFAULT SETTINGS?\n\nOR WOULD YOU LIKE TO CONFIGURE IT
     FIRST?</string>
   <string name="new_game_message_net">(YOU WILL HAVE A CHANCE TO
     INVITE OTHER PLAYERS AFTER IT IS CREATED.)</string>
   <string name="use_defaults">USE DEFAULTS</string>
-  <string name="nplayers_prompt">NUMBER OF PLAYERS</string>
+  <string name="nplayers_prompt">NUMBER ON THIS DEVICE</string>
   <string name="nplayers_fmt">%1$d PLAYER[S]</string>
   <string name="err_dup_invite_fmt">DUPLICATE INVITATION REJECTED:
     DEVICE \"%1$s\" HAS ALREADY ACCEPTED AN INVITATION TO THIS
     GAME.</string>
+  <string name="invite_multi_title">INVITE MULTIPLE (ADVANCED)</string>
+  <string name="invite_multi_summary">INVITE MORE THAN ONE PLAYER PER REMOTE DEVICE</string>
 </resources>

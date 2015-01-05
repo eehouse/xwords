@@ -1572,7 +1572,7 @@
   <!--  -->
   <string name="new_move_body">Eno ro erom sevom sah devirra</string>
   <!--  -->
-  <string name="invite_bt_desc_fmt">Esaelp tceles eht %1$d ]s[ecived
+  <string name="invite_bt_desc_fmt">Esaelp tceles pu ot %1$d ]s[ecived
     uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
     nottub fi uoy nod\'t ees a ecived uoy tcepxe.</string>
   <!--  -->
@@ -1921,17 +1921,19 @@
   <!-- Title of preference in which you select which addressing
 	     modes network games will use to communicate -->
   <string name="title_addrs_pref">Etacinummoc aiv</string>
-  <string name="new_game">Wen Emag</string>
-  <string name="new_game_networked">Wen Dekrowten Emag </string>
+  <string name="new_game">Wen ecived-eno emag</string>
+  <string name="new_game_networked">Wen dekrowten emag</string>
   <string name="new_game_message">Dluow uoy ekil ot etaerc siht emag
     gnisu tluafed ?sgnittes\n\nRo dluow uoy ekil ot erugifnoc ti
     ?tsrif</string>
   <string name="new_game_message_net">uOy( lliw evah a ecnahc ot
     etivni rehto sreyalp retfa ti si detaerc.)</string>
   <string name="use_defaults">Esu stluafed</string>
-  <string name="nplayers_prompt">Rebmun fo sreyalp</string>
+  <string name="nplayers_prompt">Rebmun no siht ecived</string>
   <string name="nplayers_fmt">%1$d ]s[reyalp</string>
   <string name="err_dup_invite_fmt">Etacilpud noitativni detcejer:
     ecived \"%1$s\" sah ydaerla detpecca na noitativni ot siht
     emag.</string>
+  <string name="invite_multi_title">Etivni elpitlum )Decnavda(</string>
+  <string name="invite_multi_summary">Etivni erom naht eno reyalp rep etomer ecived</string>
 </resources>

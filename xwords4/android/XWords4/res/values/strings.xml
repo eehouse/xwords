@@ -1835,7 +1835,7 @@
     <!--  -->
     <string name="new_move_body">One or more moves has arrived</string>
     <!--  -->
-    <string name="invite_bt_desc_fmt">Please select the %1$d device[s]
+    <string name="invite_bt_desc_fmt">Please select up to %1$d device[s]
     you want to include in this game.  Use the \"%2$s\"
     button if you don\'t see a device you expect.</string>
         <!--  -->
@@ -2258,8 +2258,8 @@
 	     modes network games will use to communicate -->
 	<string name="title_addrs_pref">Communicate via</string>
 
-    <string name="new_game">New Game</string>
-    <string name="new_game_networked">New Networked Game </string>
+    <string name="new_game">New one-device game</string>
+    <string name="new_game_networked">New networked game</string>
 
     <string name="new_game_message">Would you like to create this game
     using default settings?\n\nOr would you like to configure it
@@ -2269,10 +2269,13 @@
 
     <string name="use_defaults">Use defaults</string>
 
-    <string name="nplayers_prompt">Number of players</string>
+    <string name="nplayers_prompt">Number on this device</string>
     <string name="nplayers_fmt">%1$d player[s]</string>
     <string name="err_dup_invite_fmt">Duplicate invitation rejected:
     device \"%1$s\" has already accepted an invitation to this
     game.</string>
+
+    <string name="invite_multi_title">Invite multiple (Advanced)</string>
+    <string name="invite_multi_summary">Invite more than one player per remote device</string>
 
 </resources>

@@ -203,7 +203,7 @@ public class BTInviteDelegate extends InviteDelegate {
             m_boxAddrs.put( box, m_devAddrs[position] );
 
             m_counts.put( position, 1 );
-            if ( 1 < m_nMissing ) {
+            if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
                 Spinner spinner = (Spinner)
                     layout.findViewById(R.id.nperdev_spinner);
                 ArrayAdapter<String> adapter = 
