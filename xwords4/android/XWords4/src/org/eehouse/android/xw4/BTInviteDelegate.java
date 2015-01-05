@@ -63,6 +63,7 @@ public class BTInviteDelegate extends InviteDelegate {
     public static void launchForResult( Activity activity, int nMissing, 
                                         int requestCode )
     {
+        Assert.assertTrue( 0 < nMissing ); // don't call if nMissing == 0
         Intent intent = new Intent( activity, BTInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
         activity.startActivityForResult( intent, requestCode );
