@@ -764,8 +764,9 @@ ctrl_thread_main( void* arg )
         ssize_t nGot = recv( sock, buf, sizeof(buf)-1, 0 );
         if ( 0 >= nGot ) {
             break;
-        } else if ( 1 == nGot ) {
-            assert( 0 );        /* not happening, as getting \r\n terminator */
+        } else if ( 1 == nGot ) { /* ctrl-d */
+            logf( XW_LOGINFO, "%s: exiting; got ctrl-d?", __func__ );
+            break;
         } else if ( 2 == nGot ) {
             /* user hit return; repeat prev command */
         } else {
