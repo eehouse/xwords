@@ -1208,7 +1208,7 @@ public class BoardDelegate extends DelegateBase
             NetLaunchInfo nli = new NetLaunchInfo( m_gi.gameID, m_gi.dictLang, 
                                                    m_gi.dictName, m_gi.nPlayers );
             Assert.assertTrue( 0 <= m_nGuestDevs );
-            nli.forceChannel = m_nGuestDevs;
+            nli.forceChannel = 1 + m_nGuestDevs;
             for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
                   iter.hasNext(); ) {
                 CommsConnType typ = iter.next();
