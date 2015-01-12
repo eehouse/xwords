@@ -265,21 +265,24 @@ public class Utils {
             if ( s_phonesHash.containsKey( phone ) ) {
                 name = s_phonesHash.get( phone );
             } else {
-                name = null;
-                ContentResolver contentResolver = context.getContentResolver();
-                Cursor cursor =
-                    contentResolver
-                    .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI, 
-                                                  Uri.encode( phone )), 
-                            new String[] { PhoneLookup.DISPLAY_NAME }, 
-                            null, null, null );
-                if ( cursor.moveToNext() ) {
-                    int indx = cursor.getColumnIndex( PhoneLookup.DISPLAY_NAME );
-                    name = cursor.getString( indx );
+                try {
+                    name = null;
+                    ContentResolver contentResolver = context.getContentResolver();
+                    Cursor cursor =
+                        contentResolver
+                        .query( Uri.withAppendedPath( PhoneLookup.CONTENT_FILTER_URI, 
+                                                      Uri.encode( phone )), 
+                                new String[] { PhoneLookup.DISPLAY_NAME }, 
+                                null, null, null );
+                    if ( cursor.moveToNext() ) {
+                        int indx = cursor.getColumnIndex( PhoneLookup.DISPLAY_NAME );
+                        name = cursor.getString( indx );
+                    }
+                    cursor.close();
+                    s_phonesHash.put( phone, name );
+                } catch ( Exception ex ) {
+                    name = "not found";
                 }
-                cursor.close();
-
-                s_phonesHash.put( phone, name );
             }
         }
         if ( null == name && phoneStandsIn ) {
