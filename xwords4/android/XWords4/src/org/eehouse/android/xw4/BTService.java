@@ -1107,7 +1107,7 @@ public class BTService extends XWService {
             DbgUtils.logf( "connect successful" );
         } catch ( IOException ioe ) {
             dos = null;
-            logIOE( ioe );
+            // logIOE( ioe );
         }
         return dos;
     }
