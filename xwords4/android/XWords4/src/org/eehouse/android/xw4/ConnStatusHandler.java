@@ -37,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 
 import junit.framework.Assert;
 
@@ -297,11 +298,9 @@ public class ConnStatusHandler {
         synchronized( s_lockObj ) {
             if ( null != s_rect ) {
                 int iconID;
-                CommsConnType connType = null;
                 if ( isSolo ) {
                     iconID = R.drawable.sologame__gen;
                 } else {
-                    connType = connTypes.iterator().next();
                     iconID = R.drawable.multigame__gen;
                 }
 
@@ -316,11 +315,11 @@ public class ConnStatusHandler {
                 } else {
                     int saveTop = rect.top;
                     SuccessRecord record;
-                    boolean enabled = connTypeEnabled( context, connType );
+                    boolean enabled = anyTypeEnabled( context, connTypes );
 
                     // Do the background coloring. Top quarter first
                     rect.bottom = rect.top + quarterHeight;
-                    record = recordFor( connType, false );
+                    record = newestSuccess( connTypes, false );
                     s_fillPaint.setColor( enabled && record.successNewer
                                           ? GREEN : RED );
                     canvas.drawRect( rect, s_fillPaint );
@@ -338,7 +337,7 @@ public class ConnStatusHandler {
                     // bottom quarter
                     rect.top = rect.bottom;
                     rect.bottom = rect.top + quarterHeight;
-                    record = recordFor( connType, true );
+                    record = newestSuccess( connTypes, true );
                     s_fillPaint.setColor( enabled && record.successNewer
                                           ? GREEN : RED );
                     canvas.drawRect( rect, s_fillPaint );
@@ -460,15 +459,29 @@ public class ConnStatusHandler {
         icon.draw( canvas );
     }
 
+    private static SuccessRecord newestSuccess( CommsConnTypeSet connTypes, 
+                                                boolean isIn )
+    {
+        SuccessRecord result = null;
+        Iterator<CommsConnType> iter = connTypes.iterator();
+        while ( iter.hasNext() ) {
+            CommsConnType connType = iter.next();
+            SuccessRecord record = recordFor( connType, isIn );
+            if ( null == result || result.lastSuccess < record.lastSuccess ) {
+                result = record;
+            }
+        }
+        return result;
+    }
+
     private static SuccessRecord recordFor( CommsConnType connType, boolean isIn )
     {
-        SuccessRecord[] records = s_records.get(connType);
+        SuccessRecord[] records = s_records.get( connType );
         if ( null == records ) {
-            records = new SuccessRecord[2];
+            records = new SuccessRecord[] { new SuccessRecord(), 
+                                            new SuccessRecord(),
+            };
             s_records.put( connType, records );
-            for ( int ii = 0; ii < 2; ++ii ) {
-                records[ii] = new SuccessRecord();
-            }
         }
         return records[isIn?0:1];
     }
@@ -495,6 +508,16 @@ public class ConnStatusHandler {
         }
     }
     
+    private static boolean anyTypeEnabled( Context context, CommsConnTypeSet connTypes )
+    {
+        boolean enabled = false;
+        Iterator<CommsConnType> iter = connTypes.iterator();
+        while ( !enabled && iter.hasNext() ) {
+            enabled = connTypeEnabled( context, iter.next() );
+        }
+        return enabled;
+    }
+
     private static boolean connTypeEnabled( Context context,
                                             CommsConnType connType )
     {
