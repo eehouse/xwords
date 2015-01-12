@@ -331,13 +331,14 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
 #endif
             )
 {
+    XP_LOGF( "%s(isServer=%d; forceChannel=%d)", __func__, isServer, 
+             forceChannel );
     CommsCtxt* result = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
 
     MPASSIGN(result->mpool, mpool);
 
     XP_ASSERT( 0 == (forceChannel & ~CHANNEL_MASK) );
-    XP_ASSERT( isServer || (0 < forceChannel) );
     result->isServer = isServer;
     result->forceChannel = forceChannel;
     if ( !!procs ) {
