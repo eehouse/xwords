@@ -385,7 +385,7 @@ public class GamesListDelegate extends ListDelegateBase
             for ( long row : rows ) {
                 alist.add( new GameRec( row ) );
             }
-            DbgUtils.logf( "GamesListDelegate.makeChildren(%d) => %d kids", groupID, alist.size() );
+            // DbgUtils.logf( "GamesListDelegate.makeChildren(%d) => %d kids", groupID, alist.size() );
             return alist;
         }
 
@@ -806,8 +806,8 @@ public class GamesListDelegate extends ListDelegateBase
                 };
 
             dialog = makeAlertBuilder()
-                .setTitle( R.string.new_game )
                 .setMessage( "" ) // must have a message to change it later
+                .setTitle( "foo" )// ditto, but can't be empty (!)
                 .setPositiveButton( R.string.newgame_configure_first, lstnr )
                 .setNegativeButton( R.string.use_defaults, lstnr2 )
                 .create();
@@ -831,7 +831,10 @@ public class GamesListDelegate extends ListDelegateBase
             break;
         case GAMES_LIST_NEWGAME:
             String msg = getString( R.string.new_game_message );
-            if ( !m_nextIsSolo ) {
+            if ( m_nextIsSolo ) {
+                dialog.setTitle( R.string.new_game );
+            } else {
+                dialog.setTitle( R.string.new_game_networked );
                 msg += "\n\n" + getString( R.string.new_game_message_net );
             }
             ((AlertDialog)dialog).setMessage( msg );
