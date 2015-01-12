@@ -99,7 +99,7 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
                 ti->entries = XP_REALLOC( ti->mpool, ti->entries, 
                                           nEntries * sizeof(*ti->entries) );
             }
-            XP_LOGF( "%s: num env entries now %d", __func__, nEntries );
+            // XP_LOGF( "%s: num env entries now %d", __func__, nEntries );
             firstEmpty = &ti->entries[ti->nEntries]; /* first new entry */
             XP_MEMSET( firstEmpty, 0, nEntries - ti->nEntries );
             ti->nEntries = nEntries;
@@ -108,8 +108,8 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
         XP_ASSERT( !!firstEmpty );
         firstEmpty->owner = self;
         firstEmpty->env = env;
-        XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__,
-                 firstEmpty - ti->entries, env, (int)self );
+        /* XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__, */
+        /*          firstEmpty - ti->entries, env, (int)self ); */
     }
 
     pthread_mutex_unlock( &ti->mtxThreads );
@@ -135,8 +135,8 @@ map_remove( EnvThreadInfo* ti, JNIEnv* env )
     for ( int ii = 0; !found && ii < ti->nEntries; ++ii ) {
         found = env == ti->entries[ii].env;
         if ( found ) {
-            XP_LOGF( "%s: clearing out %dth entry (thread %x)", __func__, ii, 
-                     (int)self );
+            /* XP_LOGF( "%s: clearing out %dth entry (thread %x)", __func__, ii,  */
+            /*          (int)self ); */
             ti->entries[ii].env = NULL;
             XP_ASSERT( ti->entries[ii].owner = self );
             ti->entries[ii].owner = 0;
@@ -184,7 +184,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
     map_init( MPPARM(mpool) &state->ti, env );
     state->dictMgr = dmgr_make( MPPARM_NOCOMMA( mpool ) );
     MPASSIGN( state->mpool, mpool );
-    LOG_RETURNF( "%p", state );
+    // LOG_RETURNF( "%p", state );
     return (jint)state;
 }
 
@@ -192,7 +192,7 @@ JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_cleanGlobals
 ( JNIEnv* env, jclass C, jint ptr )
 {
-    LOG_FUNC();
+    // LOG_FUNC();
     if ( 0 != ptr ) {
         JNIGlobalState* state = (JNIGlobalState*)ptr;
         XP_ASSERT( ENVFORME(&state->ti) == env );
@@ -407,7 +407,6 @@ JNIEXPORT jbyteArray JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
 (JNIEnv* env, jclass C, jobject jgi )
 {
-    LOG_FUNC();
     jbyteArray result;
 #ifdef MEM_DEBUG
     MemPoolCtx* mpool = mpool_make();
@@ -427,7 +426,6 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
 #ifdef MEM_DEBUG
     mpool_destroy( mpool );
 #endif
-    LOG_RETURN_VOID();
     return result;
 }
 
