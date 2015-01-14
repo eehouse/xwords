@@ -287,6 +287,7 @@ public class GameConfigDelegate extends DelegateBase
                         public void onClick( DialogInterface dlg, int button ) {
                             m_conTypes = curSet;
                             setConnLabel();
+                            showHideRelayStuff();
                         }
                     };
                         
@@ -437,11 +438,7 @@ public class GameConfigDelegate extends DelegateBase
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
         m_forResult = intent.getBooleanExtra( INTENT_FORRESULT_ROWID, false );
 
-        m_connectSetRelay = findViewById(R.id.connect_set_relay);
-        m_connectSetSMS = findViewById(R.id.connect_set_sms);
-        if ( !XWApp.SMSSUPPORTED ) {
-            m_connectSetSMS.setVisibility( View.GONE );
-        }
+        m_connectSetRelay = findViewById( R.id.connect_set_relay );
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
@@ -586,8 +583,6 @@ public class GameConfigDelegate extends DelegateBase
 
                 loadPlayersList();
                 configLangSpinner();
-
-                loadPhones();
 
                 m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
@@ -763,15 +758,8 @@ public class GameConfigDelegate extends DelegateBase
         m_jugglePlayersButton
             .setVisibility( names.length <= 1 ?
                             View.GONE : View.VISIBLE );
-        
-        m_connectSetRelay.
-            setVisibility( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ?
-                           View.VISIBLE : View.GONE );
-        if ( XWApp.SMSSUPPORTED ) {
-            m_connectSetSMS.
-                setVisibility( m_conTypes.contains( CommsConnType.COMMS_CONN_SMS )?
-                               View.VISIBLE : View.GONE );
-        }
+
+        showHideRelayStuff();
 
         if ( ! localOnlyGame()
              && ((0 == m_gi.remoteCount() )
@@ -875,23 +863,6 @@ public class GameConfigDelegate extends DelegateBase
                     spinner.setSelection( ii, true );
                     break;
                 }
-            }
-        }
-    }
-
-    private void loadPhones()
-    {
-        if ( XWApp.SMSSUPPORTED && null != m_remoteAddrs ) {
-            LinearLayout phoneList = 
-                (LinearLayout)findViewById(R.id.sms_phones);
-            for ( CommsAddrRec addr : m_remoteAddrs ) {
-                XWListItem item = XWListItem.inflate( m_activity, null );
-                item.setText( addr.sms_phone );
-                String name = Utils.phoneToContact( m_activity, addr.sms_phone, 
-                                                    false );
-                item.setComment( name );
-                item.setEnabled( false );
-                phoneList.addView( item );
             }
         }
     }
@@ -1202,5 +1173,11 @@ public class GameConfigDelegate extends DelegateBase
     {
         String connString = m_conTypes.toString( m_activity );
         m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
+    }
+
+    private void showHideRelayStuff()
+    {
+        boolean show = m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY );
+        m_connectSetRelay.setVisibility( show ? View.VISIBLE : View.GONE );
     }
 }
