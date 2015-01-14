@@ -53,7 +53,6 @@ public class XWConnAddrPreference extends DialogPreference {
         super( context, attrs );
         m_context = context;
 
-        // setWidgetLayoutResource( R.layout.conn_types_display );
         setDialogLayoutResource( R.layout.conn_types_display );
 
         setNegativeButtonText( LocUtils.getString( context, R.string.button_cancel ) );
@@ -74,7 +73,7 @@ public class XWConnAddrPreference extends DialogPreference {
             CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
             box.setText( typ.longName( m_context ) );
             box.setChecked( m_curSet.contains( typ ) );
-            list.addView( box );
+            list.addView( layout ); // failed!!!
             
             final CommsConnType typf = typ;
             box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
