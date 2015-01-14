@@ -1937,4 +1937,5 @@
     GAME.</string>
   <string name="invite_multi_title">INVITE MULTIPLE (ADVANCED)</string>
   <string name="invite_multi_summary">INVITE MORE THAN ONE PLAYER PER REMOTE DEVICE</string>
+  <string name="connection_via_label">CHANGE CONNECTION</string>
 </resources>

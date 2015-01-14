@@ -39,6 +39,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.view.KeyEvent;
 import android.widget.Spinner;
@@ -77,6 +78,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private CommsConnTypeSet m_conTypes;
     private Button m_addPlayerButton;
+    private Button m_changeConnButton;
     private Button m_jugglePlayersButton;
     private Button m_playButton;
     private ImageButton m_refreshRoomsButton;
@@ -141,8 +143,8 @@ public class GameConfigDelegate extends DelegateBase
         public Object getItem( int position) { return m_gi.players[position]; }
         public View getView( final int position, View convertView, 
                              ViewGroup parent ) {
-            CompoundButton.OnCheckedChangeListener lstnr;
-            lstnr = new CompoundButton.OnCheckedChangeListener() {
+            OnCheckedChangeListener lstnr;
+            lstnr = new OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                  boolean isChecked )
@@ -275,6 +277,25 @@ public class GameConfigDelegate extends DelegateBase
                     .setMessage( msg )
                     .create();
                 break;
+            case CHANGE_CONN:
+                LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
+                final CommsConnTypeSet curSet = addConnections( layout, m_conTypes );
+
+                final DialogInterface.OnClickListener lstnr = 
+                    new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int button ) {
+                            m_conTypes = curSet;
+                            setConnLabel();
+                        }
+                    };
+                        
+                dialog = makeAlertBuilder()
+                    .setTitle( R.string.title_addrs_pref )
+                    .setView( layout )
+                    .setPositiveButton( R.string.button_ok, lstnr )
+                    .setNegativeButton( R.string.button_cancel, null )
+                    .create();
+                break;
             }
         }
         return dialog;
@@ -338,8 +359,8 @@ public class GameConfigDelegate extends DelegateBase
         CheckBox check = (CheckBox)
             dialog.findViewById( R.id.remote_check );
         if ( isServer ) {
-            CompoundButton.OnCheckedChangeListener lstnr =
-                new CompoundButton.OnCheckedChangeListener() {
+            OnCheckedChangeListener lstnr =
+                new OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                   boolean checked ) {
                         localSet.setVisibility( checked ? 
@@ -354,8 +375,8 @@ public class GameConfigDelegate extends DelegateBase
         }
 
         check = (CheckBox)dialog.findViewById( R.id.robot_check );
-        CompoundButton.OnCheckedChangeListener lstnr =
-            new CompoundButton.OnCheckedChangeListener() {
+        OnCheckedChangeListener lstnr =
+            new OnCheckedChangeListener() {
                 public void onCheckedChanged( CompoundButton buttonView, 
                                               boolean checked ) {
                     View view = dialog.findViewById( R.id.password_set );
@@ -423,6 +444,8 @@ public class GameConfigDelegate extends DelegateBase
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
+        m_changeConnButton = (Button)findViewById( R.id.change_connection );
+        m_changeConnButton.setOnClickListener( this );
         m_jugglePlayersButton = (Button)findViewById(R.id.juggle_players);
         m_jugglePlayersButton.setOnClickListener( this );
         m_playButton = (Button)findViewById( R.id.play_button );
@@ -534,9 +557,8 @@ public class GameConfigDelegate extends DelegateBase
                     m_dictSpinner.setVisibility( View.GONE );
                     m_dictSpinner = null;
                 }
-                
-                String connString = m_conTypes.toString( m_activity );
-                m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
+
+                setConnLabel();
 
                 if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                     m_joinPublicCheck = 
@@ -576,8 +598,8 @@ public class GameConfigDelegate extends DelegateBase
                         m_gi.gameSeconds/60/m_gi.nPlayers );
 
                 CheckBox check = (CheckBox)findViewById( R.id.use_timer );
-                CompoundButton.OnCheckedChangeListener lstnr =
-                    new CompoundButton.OnCheckedChangeListener() {
+                OnCheckedChangeListener lstnr =
+                    new OnCheckedChangeListener() {
                         public void onCheckedChanged( CompoundButton buttonView, 
                                                       boolean checked ) {
                             View view = findViewById( R.id.timer_set );
@@ -648,6 +670,8 @@ public class GameConfigDelegate extends DelegateBase
                                  Action.LOCKED_CHANGE_ACTION );
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
+        } else if ( m_changeConnButton == view ) {
+            showDialog( DlgID.CHANGE_CONN );
         } else if ( m_playButton == view ) {
             // Launch BoardActivity for m_name, but ONLY IF user
             // confirms any changes required.  So we either launch
@@ -1163,6 +1187,34 @@ public class GameConfigDelegate extends DelegateBase
         return 0 == m_conTypes.size();
     }
 
+    private CommsConnTypeSet addConnections( LinearLayout view, CommsConnTypeSet curTypes )
+    {
+        LinearLayout list = (LinearLayout)view.findViewById( R.id.conn_types );
+        CommsConnTypeSet supported = XWConnAddrPreference.getSupported();
+        final CommsConnTypeSet tmpTypes = (CommsConnTypeSet)curTypes.clone();
+
+        for ( CommsConnType typ : supported.getTypes() ) {
+            LinearLayout layout = (LinearLayout)inflate( R.layout.btinviter_item );
+            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
+            box.setText( typ.longName( m_activity ) );
+            box.setChecked( curTypes.contains( typ ) );
+            list.addView( layout ); // failed!!!
+            
+            final CommsConnType typf = typ;
+            box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+                    public void onCheckedChanged( CompoundButton buttonView, 
+                                                  boolean isChecked ) {
+                        if ( isChecked ) {
+                            tmpTypes.add( typf );
+                        } else {
+                            tmpTypes.remove( typf );
+                        }
+                    }
+                } );
+        }
+        return tmpTypes;
+    }
+
     public static void editForResult( Activity parent, int requestCode, 
                                       long rowID )
     {
@@ -1173,4 +1225,9 @@ public class GameConfigDelegate extends DelegateBase
         parent.startActivityForResult( intent, requestCode );
     }
 
+    private void setConnLabel()
+    {
+        String connString = m_conTypes.toString( m_activity );
+        m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
+    }
 }

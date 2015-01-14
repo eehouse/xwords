@@ -162,6 +162,13 @@
                        android:layout_weight="0"
                        />
         </LinearLayout>
+
+        <Button android:id="@+id/change_connection"
+                android:layout_width="wrap_content" 
+                android:layout_height="wrap_content"
+                android:text="@string/connection_via_label"
+                android:layout_gravity="bottom|center"
+                />
       </LinearLayout>           <!--connect_set_relay-->
 
       <LinearLayout android:id="@+id/connect_set_sms"

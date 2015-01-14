@@ -48,6 +48,8 @@ public class XWConnAddrPreference extends DialogPreference {
         s_supported.add( CommsConnType.COMMS_CONN_SMS );
     }
 
+    public static CommsConnTypeSet getSupported() { return s_supported; }
+
     public XWConnAddrPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
