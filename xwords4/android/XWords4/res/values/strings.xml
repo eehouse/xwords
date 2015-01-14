@@ -2279,6 +2279,6 @@
     <string name="invite_multi_title">Invite multiple (Advanced)</string>
     <string name="invite_multi_summary">Invite more than one player per remote device</string>
 
-    <string name="connection_via_label">Change connection</string>
+    <string name="connection_via_label">Change Communicate via</string>
 
 </resources>
