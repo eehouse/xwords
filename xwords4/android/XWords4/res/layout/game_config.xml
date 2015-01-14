@@ -67,8 +67,9 @@
                />
 
       <!-- players -->
-      <TextView style="@style/config_separator"
-                android:id="@+id/players_label"
+      <TextView android:id="@+id/players_label"
+                style="@style/config_separator"
+                android:layout_marginTop="15dp"
                 />
       <LinearLayout android:id="@+id/player_list"
                     android:layout_width="fill_parent"
@@ -103,6 +104,7 @@
         <!-- text added via code -->
         <TextView android:id="@+id/conns_label"
                   style="@style/config_separator" 
+                  android:layout_marginTop="15dp"
                   />
 
         <!-- We'll use either the spinner or simple edit text
@@ -169,6 +171,7 @@
                     >
         <TextView style="@style/config_separator"
                   android:text="@string/connect_label_sms"
+                  android:layout_marginTop="15dp"
                   />
         <TextView android:layout_height="wrap_content"
                   android:layout_width="wrap_content"
@@ -187,6 +190,7 @@
 
       <TextView style="@style/config_separator"
                 android:text="@string/settings_label"
+                android:layout_marginTop="15dp"
                 />
 
       <CheckBox android:id="@+id/hints_allowed"
