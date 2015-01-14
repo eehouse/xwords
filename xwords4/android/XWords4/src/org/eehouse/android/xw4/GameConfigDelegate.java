@@ -279,7 +279,8 @@ public class GameConfigDelegate extends DelegateBase
                 break;
             case CHANGE_CONN:
                 LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
-                final CommsConnTypeSet curSet = addConnections( layout, m_conTypes );
+                final CommsConnTypeSet curSet = XWConnAddrPreference
+                    .addConnections( m_activity, layout, m_conTypes );
 
                 final DialogInterface.OnClickListener lstnr = 
                     new DialogInterface.OnClickListener() {
@@ -1185,34 +1186,6 @@ public class GameConfigDelegate extends DelegateBase
     private boolean localOnlyGame()
     {
         return 0 == m_conTypes.size();
-    }
-
-    private CommsConnTypeSet addConnections( LinearLayout view, CommsConnTypeSet curTypes )
-    {
-        LinearLayout list = (LinearLayout)view.findViewById( R.id.conn_types );
-        CommsConnTypeSet supported = XWConnAddrPreference.getSupported();
-        final CommsConnTypeSet tmpTypes = (CommsConnTypeSet)curTypes.clone();
-
-        for ( CommsConnType typ : supported.getTypes() ) {
-            LinearLayout layout = (LinearLayout)inflate( R.layout.btinviter_item );
-            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-            box.setText( typ.longName( m_activity ) );
-            box.setChecked( curTypes.contains( typ ) );
-            list.addView( layout ); // failed!!!
-            
-            final CommsConnType typf = typ;
-            box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton buttonView, 
-                                                  boolean isChecked ) {
-                        if ( isChecked ) {
-                            tmpTypes.add( typf );
-                        } else {
-                            tmpTypes.remove( typf );
-                        }
-                    }
-                } );
-        }
-        return tmpTypes;
     }
 
     public static void editForResult( Activity parent, int requestCode, 

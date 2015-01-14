@@ -48,7 +48,35 @@ public class XWConnAddrPreference extends DialogPreference {
         s_supported.add( CommsConnType.COMMS_CONN_SMS );
     }
 
-    public static CommsConnTypeSet getSupported() { return s_supported; }
+    public static CommsConnTypeSet addConnections( Context context, 
+                                                   LinearLayout view, 
+                                                   CommsConnTypeSet curTypes )
+    {
+        LinearLayout list = (LinearLayout)view.findViewById( R.id.conn_types );
+        final CommsConnTypeSet tmpTypes = (CommsConnTypeSet)curTypes.clone();
+
+        for ( CommsConnType typ : s_supported.getTypes() ) {
+            LinearLayout layout = (LinearLayout)
+                LocUtils.inflate( context, R.layout.btinviter_item );
+            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
+            box.setText( typ.longName( context ) );
+            box.setChecked( curTypes.contains( typ ) );
+            list.addView( layout ); // failed!!!
+            
+            final CommsConnType typf = typ;
+            box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
+                    public void onCheckedChanged( CompoundButton buttonView, 
+                                                  boolean isChecked ) {
+                        if ( isChecked ) {
+                            tmpTypes.add( typf );
+                        } else {
+                            tmpTypes.remove( typf );
+                        }
+                    }
+                } );
+        }
+        return tmpTypes;
+    }
 
     public XWConnAddrPreference( Context context, AttributeSet attrs )
     {
@@ -68,29 +96,7 @@ public class XWConnAddrPreference extends DialogPreference {
     {
         LocUtils.xlateView( m_context, view );
 
-        LinearLayout list = (LinearLayout)view.findViewById( R.id.conn_types );
-        for ( CommsConnType typ : s_supported.getTypes() ) {
-            LinearLayout layout = (LinearLayout)LocUtils
-                .inflate( m_context, R.layout.btinviter_item );
-            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-            box.setText( typ.longName( m_context ) );
-            box.setChecked( m_curSet.contains( typ ) );
-            list.addView( layout ); // failed!!!
-            
-            final CommsConnType typf = typ;
-            box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton buttonView, 
-                                                  boolean isChecked )
-                    {
-                        if ( isChecked ) {
-                            m_curSet.add( typf );
-                        } else {
-                            m_curSet.remove( typf );
-                        }
-                        setSummary( m_curSet.toString( m_context ) );
-                    }
-                } );
-        }
+        m_curSet = addConnections( m_context, (LinearLayout)view, m_curSet );
     }
     
     @Override
@@ -99,6 +105,7 @@ public class XWConnAddrPreference extends DialogPreference {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
             DbgUtils.logf( "ok pressed" );
             XWPrefs.setAddrTypes( m_context, m_curSet );
+            setSummary( m_curSet.toString( m_context ) );
         }
         super.onClick( dialog, which );
     }
