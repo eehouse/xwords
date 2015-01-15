@@ -1016,7 +1016,8 @@ public class BoardDelegate extends DelegateBase
                                                    SMS_INVITE_RESULT );
                 break;
             case EMAIL:
-                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi );
+                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1,
+                                                       1 + m_nGuestDevs );
                 GameUtils.launchEmailInviteActivity( m_activity, nli );
                 break;
             default:
