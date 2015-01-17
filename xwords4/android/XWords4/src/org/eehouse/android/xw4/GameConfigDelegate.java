@@ -129,6 +129,7 @@ public class GameConfigDelegate extends DelegateBase
             ,R.id.timer_minutes_edit
             ,R.id.smart_robot
             ,R.id.phonies_spinner
+            ,R.id.change_connection
     };
 
     public GameConfigDelegate( Delegator delegator, Bundle savedInstanceState )
