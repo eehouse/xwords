@@ -147,13 +147,30 @@ public class NetLaunchInfo {
                     room = json.getString( MultiService.ROOM );
                     m_inviteID = json.getString( MultiService.INVITEID );
                 } else {
-                    room = data.getQueryParameter( "room" );
-                    m_inviteID = data.getQueryParameter( "id" );
+                    int addrs = Integer.decode( data.getQueryParameter( "ad" ) );
+                    m_addrs = DBUtils.intToConnTypeSet( addrs );
+
+                    if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                        room = data.getQueryParameter( "room" );
+                        m_inviteID = data.getQueryParameter( "id" );
+                    }
+                    if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                        btAddress = data.getQueryParameter( "bta" );
+                        btName = data.getQueryParameter( "btn" );
+                    }
+                    if ( m_addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+                        phone = data.getQueryParameter( "phn" );
+                    }
+
                     dict = data.getQueryParameter( "wl" );
                     String langStr = data.getQueryParameter( "lang" );
                     lang = Integer.decode( langStr );
                     String np = data.getQueryParameter( "np" );
                     nPlayersT = Integer.decode( np );
+                    String nh = data.getQueryParameter( "nh" );
+                    nPlayersH = Integer.decode( nh );
+                    gameID = Integer.decode( data.getQueryParameter( "gid" ) );
+                    forceChannel = Integer.decode( data.getQueryParameter( "fc" ) );
                 }
                 calcValid();
             } catch ( Exception e ) {
@@ -300,6 +317,7 @@ public class NetLaunchInfo {
 
     public Uri makeLaunchUri( Context context )
     {
+        int addrs = DBUtils.connTypeSetToInt( m_addrs );
         Uri.Builder ub = new Uri.Builder()
             .scheme( "http" )
             .path( String.format( "//%s%s", 
@@ -308,8 +326,9 @@ public class NetLaunchInfo {
             .appendQueryParameter( "lang", String.format("%d", lang ) )
             .appendQueryParameter( "np", String.format( "%d", nPlayersT ) )
             .appendQueryParameter( "nh", String.format( "%d", nPlayersH ) )
-            .appendQueryParameter( "gid", String.format( "%d", nPlayersT ) )
-            .appendQueryParameter( "fc", String.format( "%d", forceChannel ) );
+            .appendQueryParameter( "gid", String.format( "%d", gameID ) )
+            .appendQueryParameter( "fc", String.format( "%d", forceChannel ) )
+            .appendQueryParameter( "ad", String.format( "%d", addrs ) );
         if ( null != dict ) {
             ub.appendQueryParameter( "wl", dict );
         }
@@ -325,26 +344,14 @@ public class NetLaunchInfo {
         if ( m_addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
             ub.appendQueryParameter( "phn", phone );
         }
-        return ub.build();
-    }
+        Uri result = ub.build();
 
-    public static Uri makeLaunchUri( Context context, String room,
-                                     String inviteID, int lang, 
-                                     String dict, int nPlayersT )
-    {
-        Uri.Builder ub = new Uri.Builder()
-            .scheme( "http" )
-            .path( String.format( "//%s%s", 
-                                  LocUtils.getString(context, R.string.invite_host),
-                                  LocUtils.getString(context, R.string.invite_prefix) ) )
-            .appendQueryParameter( "lang", String.format("%d", lang ) )
-            .appendQueryParameter( "np", String.format( "%d", nPlayersT ) )
-            .appendQueryParameter( "room", room )
-            .appendQueryParameter( "id", inviteID );
-        if ( null != dict ) {
-            ub.appendQueryParameter( "wl", dict );
-        }
-        return ub.build();
+        // Now test
+        DbgUtils.logf( "testing %s...", result.toString() );
+        NetLaunchInfo instance = new NetLaunchInfo( context, result );
+        Assert.assertTrue( instance.isValid() );
+
+        return result;
     }
     
     public void addRelayInfo( String aRoom, String inviteID )
@@ -406,7 +413,7 @@ public class NetLaunchInfo {
               valid && iter.hasNext(); ) {
             switch ( iter.next() ) {
             case COMMS_CONN_RELAY:
-                valid = null != room && null != m_inviteID;
+                valid = null != room && null != inviteID();
                 break;
             case COMMS_CONN_BT:
                 valid = null != btAddress && 0 != gameID;
