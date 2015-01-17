@@ -26,7 +26,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import java.io.InputStream;
-import java.net.URLEncoder;
 import java.util.Iterator;
 import org.json.JSONException;
 import org.json.JSONObject;
