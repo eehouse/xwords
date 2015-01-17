@@ -2171,7 +2171,7 @@
     <string name="loc_filters_menu">Latest menu</string>
     <string name="loc_filters_modified">Modified by me</string>
     
-    <string name="loc_main_english">English</string>
+    <string name="lang_name_english">English</string>
 
     <!-- for loc item edit menu -->
     <string name="loc_item_clear">Clear</string>

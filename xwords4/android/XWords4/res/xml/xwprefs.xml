@@ -33,6 +33,7 @@
       <org.eehouse.android.xw4.XWListPreference
 		  android:key="@string/key_default_language"
 		  android:title="@string/default_language"
+		  android:defaultValue="@string/lang_name_english"
 		  />
 
       <org.eehouse.android.xw4.DictListPreference 
