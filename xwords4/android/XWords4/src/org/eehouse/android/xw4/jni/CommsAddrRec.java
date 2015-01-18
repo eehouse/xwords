@@ -147,6 +147,7 @@ public class CommsAddrRec {
     {
         this( CommsConnType.COMMS_CONN_SMS );
         sms_phone = phone;
+        sms_port = 2;           // something other that 0 (need to fix comms)
     }
 
     public CommsAddrRec( final CommsAddrRec src ) 
@@ -177,6 +178,12 @@ public class CommsAddrRec {
     {
         bt_hostName = btName;
         bt_btAddr = btAddr;
+    }
+
+    public void setSMSParams( String phone )
+    {
+        sms_phone = phone;
+        sms_port = 1;           // so don't assert in comms....
     }
 
     public void populate( Context context )

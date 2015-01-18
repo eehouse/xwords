@@ -1224,7 +1224,7 @@ public class BoardDelegate extends DelegateBase
                     nli.addBTInfo();
                     break;
                 case COMMS_CONN_SMS:
-                    nli.addSMSInfo();
+                    nli.addSMSInfo( m_activity );
                     break;
                 default:
                     DbgUtils.logf( "Not doing NFC join for conn type %s",
@@ -2223,7 +2223,7 @@ public class BoardDelegate extends DelegateBase
                 String gameName = GameUtils.getName( m_activity, m_rowid );
                 m_invitesPending = m_missingDevs.length;
                 for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
-                    String dev =  m_missingDevs[ii];
+                    String dev = m_missingDevs[ii];
                     int nPlayers = m_missingCounts[ii];
                     Assert.assertTrue( 0 <= m_nGuestDevs );
                     int forceChannel = ii + m_nGuestDevs + 1;
@@ -2245,8 +2245,7 @@ public class BoardDelegate extends DelegateBase
                         BTService.inviteRemote( m_activity, dev, nli );
                         break;
                     case SMS:
-                        Assert.fail();
-                        // SMSService.inviteRemote( m_activity, dev, nli );
+                        SMSService.inviteRemote( m_activity, dev, nli );
                         break;
                     }
                 }

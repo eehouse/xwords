@@ -1714,6 +1714,9 @@ public class GamesListDelegate extends ListDelegateBase
     private void startNewNetGame( NetLaunchInfo nli )
     {
         Assert.assertTrue( nli.isValid() );
+
+        SMSService.registerPhone( nli );
+
         Date create = null;
         create = DBUtils.getMostRecentCreate( m_activity, nli );
 

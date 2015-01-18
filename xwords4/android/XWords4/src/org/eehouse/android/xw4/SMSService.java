@@ -45,6 +45,8 @@ import java.lang.System;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.MultiService.MultiEvent;
@@ -79,9 +81,11 @@ public class SMSService extends XWService {
     private static final String BUFFER = "BUFFER";
     private static final String BINBUFFER = "BINBUFFER";
     private static final String PHONE = "PHONE";
+    private static final String GAMEDATA_STR = "GD";
 
     private static Boolean s_showToasts = null;
-    private static Boolean s_asData = null;
+    private static Map<String,Boolean> s_phoneRecs 
+        = new HashMap<String,Boolean>();
     
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
@@ -93,13 +97,31 @@ public class SMSService extends XWService {
 
     private int m_nReceived = 0;
     private static int s_nSent = 0;
-    private static HashMap<String, HashMap <Integer, MsgStore>> s_partialMsgs
+    private static Map<String, HashMap <Integer, MsgStore>> s_partialMsgs
         = new HashMap<String, HashMap <Integer, MsgStore>>();
-    private static HashSet<Integer> s_sentDied = new HashSet<Integer>();
+    private static Set<Integer> s_sentDied = new HashSet<Integer>();
 
     public static void smsToastEnable( boolean newVal ) 
     {
         s_showToasts = newVal;
+    }
+
+    public static void registerPhone( String phone, boolean isGSM )
+    {
+        Boolean val = s_phoneRecs.get( phone );
+        if ( null == val || val != isGSM ) {
+            DbgUtils.logf( "SMSService.registerPhone: making rec for %s", phone );
+            val = new Boolean( isGSM );
+            s_phoneRecs.put( phone, val );
+            saveRecs();
+        }
+    }
+
+    public static void registerPhone( NetLaunchInfo nli )
+    {
+        if ( nli.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+            registerPhone( nli.phone, nli.isGSM );
+        }
     }
 
     public static void checkForInvites( Context context )
@@ -116,6 +138,7 @@ public class SMSService extends XWService {
         context.startService( intent );
     }
 
+    // Regular text message case
     public static void handleFrom( Context context, String buffer, 
                                    String phone )
     {
@@ -123,8 +146,11 @@ public class SMSService extends XWService {
         intent.putExtra( BUFFER, buffer );
         intent.putExtra( PHONE, phone );
         context.startService( intent );
+
+        registerPhone( phone, false );
     }
 
+    // NBS case
     public static void handleFrom( Context context, byte[] buffer, 
                                    String phone )
     {
@@ -132,16 +158,18 @@ public class SMSService extends XWService {
         intent.putExtra( BUFFER, buffer );
         intent.putExtra( PHONE, phone );
         context.startService( intent );
+
+        registerPhone( phone, true );
     }
 
     public static void inviteRemote( Context context, String phone,
-                                     int gameID, String gameName, 
-                                     int lang, String dict, 
-                                     int nPlayersT, int nPlayersH )
+                                     NetLaunchInfo nli )
     {
         Intent intent = getIntentTo( context, INVITE );
-        fillInviteIntent( intent, phone, gameID, gameName, lang, dict,
-                          nPlayersT, nPlayersH );
+        intent.putExtra( PHONE, phone );
+        String asString = nli.toString();
+        DbgUtils.logf( "SMSService.inviteRemote(%s, '%s')", phone, asString );
+        intent.putExtra( GAMEDATA_STR, asString );
         context.startService( intent );
     }
 
@@ -295,6 +323,9 @@ public class SMSService extends XWService {
                 }
                 break;
             case INVITE:
+                phone = intent.getStringExtra( PHONE );
+                inviteRemote( phone, intent.getStringExtra( GAMEDATA_STR ) );
+                break;
             case ADDED_MISSING:
                 phone = intent.getStringExtra( PHONE );
                 int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
@@ -303,13 +334,8 @@ public class SMSService extends XWService {
                 String dict = intent.getStringExtra( MultiService.DICT );
                 int nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
                 int nPlayersH = intent.getIntExtra( MultiService.NPLAYERSH, -1 );
-                if ( INVITE == cmd ) {
-                    inviteRemote( phone, gameID, gameName, lang, dict,
-                                  nPlayersT, nPlayersH );
-                } else if ( ADDED_MISSING == cmd ) {
-                    makeForInvite( phone, gameID, gameName, lang, dict, 
-                                   nPlayersT, nPlayersH, 1 );
-                }
+                makeForInvite( phone, gameID, gameName, lang, dict, 
+                               nPlayersT, nPlayersH, 1 );
                 break;
             case SEND:
                 phone = intent.getStringExtra( PHONE );
@@ -335,24 +361,30 @@ public class SMSService extends XWService {
         return result;
     } // onStartCommand
 
-    private void inviteRemote( String phone, int gameID, String gameName, 
-                               int lang, String dict, 
-                               int nPlayersT, int nPlayersH )
+    // Send as a regular (visible) SMS unless the phone is known
+    private void inviteRemote( String phone, String nliData )
     {
-        ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream das = new DataOutputStream( bas );
-        try {
-            das.writeInt( gameID );
-            das.writeUTF( gameName );
-            das.writeInt( lang );
-            das.writeUTF( dict );
-            das.writeByte( nPlayersT );
-            das.writeByte( nPlayersH );
-            das.flush();
+        DbgUtils.logf( "inviteRemote()" );
+        Boolean useData = getPhoneDoesData( phone );
+        if ( null == useData ) { // unknown; send a text
+            sendVisibleInvite( phone, nliData );
+        } else {
+            NetLaunchInfo nli = new NetLaunchInfo( nliData );
+            ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
+            DataOutputStream das = new DataOutputStream( bas );
+            try {
+                das.writeInt( nli.gameID );
+                das.writeUTF( nli.gameName );
+                das.writeInt( nli.lang );
+                das.writeUTF( nli.dict );
+                das.writeByte( nli.nPlayersT );
+                das.writeByte( nli.nPlayersH );
+                das.flush();
 
-            send( SMS_CMD.INVITE, bas.toByteArray(), phone );
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+                send( SMS_CMD.INVITE, bas.toByteArray(), phone );
+            } catch ( java.io.IOException ioe ) {
+                DbgUtils.loge( ioe );
+            }
         }
     }
 
@@ -415,19 +447,28 @@ public class SMSService extends XWService {
         das.flush();
 
         byte[] data = bas.toByteArray();
-        boolean result;
-        if ( null == s_asData ) {
-            boolean asData = 
-                XWPrefs.getPrefsBoolean( this, R.string.key_send_data_sms,
-                                         true );
-            s_asData = new Boolean( asData );
+        boolean result = false;
+        Boolean asData = getPhoneDoesData( phone );
+        if ( null != asData ) {
+            if ( asData ) {
+                byte[][] msgs = breakAndEncode( data );
+                result = sendBuffers( msgs, phone, data );
+            } else {
+                result = sendAsText( data, phone );
+            }
         }
-        if ( s_asData ) {
-            byte[][] msgs = breakAndEncode( data );
-            result = sendBuffers( msgs, phone, data );
-        } else {
-            result = sendAsText( data, phone );
+        return result;
+    }
+
+    // Eventually this should read from a DB we keep of known phone
+    // capabilities
+    private Boolean getPhoneDoesData( String phone )
+    {
+        Boolean result = null == s_phoneRecs ? null : s_phoneRecs.get( phone );
+        if ( null == result ) {
+            DbgUtils.logf( "getPhoneDoesData: no record for phone %s", phone );
         }
+        DbgUtils.logf( "getPhoneDoesData(%s) => %b", phone, result );
         return result;
     }
 
@@ -697,6 +738,18 @@ public class SMSService extends XWService {
         return PendingIntent.getBroadcast( this, 0, intent, 0 );
     }
 
+    private void sendVisibleInvite( String phone, String nliData )
+    {
+        DbgUtils.logf("sendVisibleInvite(%s) to %s", nliData, phone );
+        NetLaunchInfo nli = new NetLaunchInfo( nliData );
+        Uri uri = nli.makeLaunchUri( this );
+        String msg = "Click to launch: " + uri.toString();
+        SmsManager mgr = SmsManager.getDefault();
+        PendingIntent sent = makeStatusIntent( MSG_SENT );
+        PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
+        mgr.sendTextMessage( phone, null, msg, sent, delivery );
+    }
+
     private boolean sendBuffers( String[] fragments, String phone )
     {
         boolean success = false;
@@ -727,13 +780,14 @@ public class SMSService extends XWService {
     private boolean sendBuffers( byte[][] fragments, String phone, byte[] data )
     {
         boolean success = false;
+        short nbsPort = (short)Integer.parseInt( getString( R.string.nbs_port ) );
         try {
             SmsManager mgr = SmsManager.getDefault();
             PendingIntent sent = makeStatusIntent( MSG_SENT );
             PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
             for ( byte[] fragment : fragments ) {
-                mgr.sendDataMessage( phone, null, (short)3344, fragment, 
-                                     sent, delivery );
+                mgr.sendDataMessage( phone, null, nbsPort, fragment, sent, 
+                                     delivery );
             }
             if ( s_showToasts ) {
                 DbgUtils.showf( this, "sent %dth msg", s_nSent );
@@ -743,10 +797,11 @@ public class SMSService extends XWService {
             DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
         } catch ( NullPointerException npe ) {
             DbgUtils.showf( this, "Switching to regular SMS" );
-            s_asData = new Boolean( false );
-            XWPrefs.setPrefsBoolean( this, R.string.key_send_data_sms,
-                                     false );
-            success = sendAsText( data, phone );
+            Assert.fail();
+            // s_asData = new Boolean( false );
+            // XWPrefs.setPrefsBoolean( this, R.string.key_send_data_sms,
+            //                          false );
+            // success = sendAsText( data, phone );
         } catch ( Exception ee ) {
             DbgUtils.loge( ee );
         }
@@ -757,15 +812,9 @@ public class SMSService extends XWService {
         return success;
     }
 
-    private static void fillInviteIntent( Intent intent, String phone,
-                                          int gameID, String gameName, 
-                                          int lang, String dict, 
-                                          int nPlayersT, int nPlayersH )
+    private static void saveRecs()
     {
-        intent.putExtra( PHONE, phone );
-        intent.putExtra( MultiService.GAMEID, gameID );
-        MultiService.fillInviteIntent( intent, gameName, lang, dict, 
-                                       nPlayersT, nPlayersH );
+        DbgUtils.logf( "need to write s_phoneRecs out somehow" );
     }
 
     private void feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
@@ -853,21 +902,6 @@ public class SMSService extends XWService {
                 }
             };
         registerReceiver( m_receiveReceiver, new IntentFilter(MSG_DELIVERED) );
-
-        m_prefsListener = new OnSharedPreferenceChangeListener() {
-                public void onSharedPreferenceChanged( SharedPreferences sp,
-                                                       String key ) {
-                    if ( key.equals( getString( R.string.key_show_sms ) ) ) {
-                        s_showToasts = null;
-                    } else if ( key.equals( getString( R.string
-                                                       .key_send_data_sms ))) {
-                        s_asData = null;
-                    }
-                }
-            };
-        SharedPreferences sp
-            = PreferenceManager.getDefaultSharedPreferences( this );
-        sp.registerOnSharedPreferenceChangeListener( m_prefsListener );
     }
 
     private boolean sendAsText( byte[] data, String phone ) 

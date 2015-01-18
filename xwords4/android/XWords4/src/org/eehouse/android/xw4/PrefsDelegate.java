@@ -43,7 +43,6 @@ public class PrefsDelegate extends DelegateBase
     private String m_keyLogging;
     private String m_smsToasting;
     private String m_smsEnable;
-    private String m_smsData;
     private String m_downloadPath;
     private String m_thumbSize;
     private String m_hideTitle;
@@ -138,7 +137,6 @@ public class PrefsDelegate extends DelegateBase
         m_keyLogging = getString( R.string.key_logging_on );
         m_smsToasting = getString( R.string.key_show_sms );
         m_smsEnable = getString( R.string.key_enable_sms );
-        m_smsData = getString( R.string.key_send_data_sms );
         m_downloadPath = getString( R.string.key_download_path );
         m_thumbSize = getString( R.string.key_thumbsize );
         m_hideTitle = getString( R.string.key_hide_title );
@@ -189,14 +187,6 @@ public class PrefsDelegate extends DelegateBase
                 SMSService.stopService( m_activity );
                 XWPrefs.setHaveCheckedSMS( m_activity, false );
             }
-        } else if ( key.equals( m_smsData ) ) {
-            boolean turningOn = sp.getBoolean( key, true );
-            if ( turningOn && !Utils.isGSMPhone( m_activity ) ) {
-                showOKOnlyDialog( R.string.data_gsm_only );
-                ((CheckBoxPreference)(m_activity.findPreference( key )))
-                    .setChecked( false );
-            }
-            Utils.smsSupportChanged();
         } else if ( key.equals( m_downloadPath ) ) {
             String value = sp.getString( key, null );
             if ( null != value ) {

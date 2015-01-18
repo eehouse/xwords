@@ -181,8 +181,11 @@ public class SMSInviteDelegate extends InviteDelegate {
                     ((SMSListItem)m_adapter.getItem(ii)).getNumber();
             }
         }
-        Assert.fail();          // not setting countsP
         devsP[0] = result;
+        if ( null != countsP ) {
+            DbgUtils.logf( "FIXME: SMSInviteDelegate: assuming 1 player per device" );
+            countsP[0] = new int[] {1};
+        }
     }
 
     @Override

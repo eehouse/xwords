@@ -91,6 +91,12 @@ public class GameSummary {
         m_gi = gi;
     }
 
+    public Context getContext()
+    {
+        Assert.assertNotNull( m_context );
+        return m_context; 
+    }
+
     public boolean inNetworkGame()
     {
         return null != relayID;

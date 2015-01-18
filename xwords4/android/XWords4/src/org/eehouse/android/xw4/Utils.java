@@ -120,22 +120,9 @@ public class Utils {
     public static boolean deviceSupportsSMS( Context context )
     {
         if ( null == s_deviceSupportSMS ) {
-            boolean doesSMS = false;
-            // TEMPORARY: disable SMS on KITKAT UNLESS use-text turned on
-            boolean preKitkat = 19 > Integer.valueOf( android.os.Build.VERSION.SDK);
-            boolean usingData =
-                XWPrefs.getPrefsBoolean( context, R.string.key_send_data_sms,
-                                         false );
-            if ( preKitkat || usingData ) {
-                TelephonyManager tm = (TelephonyManager)
-                    context.getSystemService(Context.TELEPHONY_SERVICE);
-                if ( null != tm ) {
-                    int type = tm.getPhoneType();
-                    doesSMS = (usingData && !preKitkat) 
-                        ? TelephonyManager.PHONE_TYPE_GSM == type
-                        : TelephonyManager.PHONE_TYPE_NONE != type;
-                }
-            }
+            TelephonyManager tm = (TelephonyManager)
+                context.getSystemService( Context.TELEPHONY_SERVICE );
+            boolean doesSMS = null != tm;
             s_deviceSupportSMS = new Boolean( doesSMS );
         }
         return s_deviceSupportSMS;
