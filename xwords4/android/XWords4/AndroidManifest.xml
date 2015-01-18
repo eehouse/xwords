@@ -37,7 +37,6 @@
                     android:largeScreens="true"
                     android:xlargeScreens="true"
                     />
-
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -49,6 +48,7 @@
   <uses-permission android:name="android.permission.BLUETOOTH" />
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
   <uses-permission android:name="android.permission.READ_CONTACTS" />
+  <uses-permission android:name="android.permission.READ_PHONE_STATE"/> 
 
   <uses-feature android:name="android.hardware.telephony"
                 android:required = "false"
