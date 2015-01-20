@@ -2027,6 +2027,24 @@ public class DBUtils {
         return dflt;
     }
 
+    public static void setBytesFor( Context context, String key, byte[] bytes )
+    {
+        // DbgUtils.logf( "setBytesFor: writing %d bytes", bytes.length );
+        String asStr = XwJNI.base64Encode( bytes );
+        setStringFor( context, key, asStr );
+    }
+
+    public static byte[] getBytesFor( Context context, String key )
+    {
+        byte[] bytes = null;
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            bytes = XwJNI.base64Decode( asStr );
+            // DbgUtils.logf( "getBytesFor: loaded %d bytes", bytes.length );
+        }
+        return bytes;
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
