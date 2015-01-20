@@ -1715,7 +1715,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         Assert.assertTrue( nli.isValid() );
 
-        SMSService.registerPhone( nli );
+        SMSService.registerPhone( m_activity, nli );
 
         Date create = null;
         create = DBUtils.getMostRecentCreate( m_activity, nli );
