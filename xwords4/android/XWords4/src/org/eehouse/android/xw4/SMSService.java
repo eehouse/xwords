@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.telephony.TelephonyManager;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -65,6 +66,7 @@ public class SMSService extends XWService {
 
     private static final String INSTALL_URL = "http://eehouse.org/_/a.py/a ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
+    private static final int KITKAT = 19;
 
     private static final String MSG_SENT = "MSG_SENT";
     private static final String MSG_DELIVERED = "MSG_DELIVERED";
@@ -108,18 +110,42 @@ public class SMSService extends XWService {
         = new HashMap<String, HashMap <Integer, MsgStore>>();
     private static Set<Integer> s_sentDied = new HashSet<Integer>();
 
+    public static class SMSPhoneInfo {
+        public SMSPhoneInfo( String num, boolean gsm ) {
+            number = num;
+            isGSM = gsm;
+        }
+        public String number;
+        public boolean isGSM;
+    }
+
+    public static SMSPhoneInfo getPhoneInfo( Context context )
+    {
+        TelephonyManager mgr = (TelephonyManager)
+            context.getSystemService(Context.TELEPHONY_SERVICE);
+        String number = mgr.getLine1Number();
+
+        int type = mgr.getPhoneType();
+        boolean isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
+        return new SMSPhoneInfo( number, isGSM );
+    }
+
     public static void smsToastEnable( boolean newVal ) 
     {
         s_showToasts = newVal;
     }
 
-    public static void registerPhone( Context context, String phone, boolean isGSM )
+    public static void registerPhone( Context context, String phone, 
+                                      boolean isGSM )
     {
+        DbgUtils.logf( "SMSService.registerPhone(%s, isGSM=%b)", phone, isGSM );
+        Assert.assertTrue( isGSM );
         Map<String,Boolean> phoneRecs = getPhoneRecs( context );
         phone = matchKeyIf( phoneRecs, phone );
         Boolean val = phoneRecs.get( phone );
         if ( null == val || val != isGSM ) {
-            DbgUtils.logf( "SMSService.registerPhone: making rec for %s", phone );
+            DbgUtils.logf( "SMSService.registerPhone: making rec for %s (isGSM=%b)", 
+                           phone, isGSM );
             val = new Boolean( isGSM );
             phoneRecs.put( phone, val );
             saveRecs( context, phoneRecs );
@@ -135,7 +161,9 @@ public class SMSService extends XWService {
 
     public static void checkForInvites( Context context )
     {
-        if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS( context ) ) {
+        if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS( context )
+             // Earlier than kitkat...
+             && KITKAT > Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
             Intent intent = getIntentTo( context, CHECK_MSGDB );
             context.startService( intent );
         }
@@ -473,7 +501,7 @@ public class SMSService extends XWService {
         if ( null == result ) {
             DbgUtils.logf( "getPhoneDoesData: no record for phone %s", phone );
         }
-        DbgUtils.logf( "getPhoneDoesData(%s) => %b", phone, result );
+        DbgUtils.logf( "getPhoneDoesData(%s) => %H/%b", phone, result, result );
         return result;
     }
 
@@ -862,7 +890,6 @@ public class SMSService extends XWService {
 
     private static void saveRecs( Context context, Map<String,Boolean> recs )
     {
-        DbgUtils.logf( "SMSService.saveRecs()" );
         Assert.assertNotNull( recs );
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
@@ -977,16 +1004,21 @@ public class SMSService extends XWService {
         return success;
     }
 
-    private static String matchKeyIf( Map<String, Boolean> map, String phone )
+    private static String matchKeyIf( Map<String, ?> map, final String phone )
     {
-        for ( Iterator<String> iter = map.keySet().iterator(); iter.hasNext(); ) {
-            String key = iter.next();
-            if ( PhoneNumberUtils.compare( key, phone ) ) {
-                phone = key;
-                break;
+        String result = phone;
+        Set<String> keys = map.keySet();
+        if ( ! keys.contains( result ) ) {
+            for ( Iterator<String> iter = keys.iterator(); iter.hasNext(); ) {
+                String key = iter.next();
+                if ( PhoneNumberUtils.compare( key, phone ) ) {
+                    result = key;
+                    break;
+                }
             }
         }
-        return phone;
+        DbgUtils.logf( "matchKeyIf(%s) => %s", phone, result );
+        return result;
     }
 
     private class SMSMsgSink extends MultiMsgSink {

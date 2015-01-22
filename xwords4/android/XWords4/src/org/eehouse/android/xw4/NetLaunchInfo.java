@@ -25,7 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
 import java.io.InputStream;
 import java.util.Iterator;
 import org.json.JSONException;
@@ -100,17 +99,17 @@ public class NetLaunchInfo {
             for ( CommsConnType typ : m_addrs.getTypes() ) {
                 switch ( typ ) {
                 case COMMS_CONN_BT:
-                    btAddress = json.optString( MultiService.BT_ADDRESS );
-                    btName = json.optString( MultiService.BT_NAME );
+                    btAddress = json.getString( MultiService.BT_ADDRESS );
+                    btName = json.getString( MultiService.BT_NAME );
                     break;
                 case COMMS_CONN_RELAY:
-                    room = json.optString( MultiService.ROOM );
-                    m_inviteID = json.optString( MultiService.INVITEID );
+                    room = json.getString( MultiService.ROOM );
+                    m_inviteID = json.getString( MultiService.INVITEID );
                     break;
                 case COMMS_CONN_SMS:
-                    phone = json.optString( PHONE_KEY );
-                    isGSM = json.optBoolean( GSM_KEY, false );
-                    osVers = json.optInt( OSVERS_KEY );
+                    phone = json.getString( PHONE_KEY );
+                    isGSM = json.getBoolean( GSM_KEY );
+                    osVers = json.getInt( OSVERS_KEY );
                     break;
                 default:
                     DbgUtils.logf( "Unexpected typ %s", typ.toString() );
@@ -418,14 +417,10 @@ public class NetLaunchInfo {
 
     public void addSMSInfo( Context context )
     {
-        // look up own phone number, which will require new permission
-        TelephonyManager mgr = (TelephonyManager)
-            context.getSystemService(Context.TELEPHONY_SERVICE);
-        phone = mgr.getLine1Number();
-        DbgUtils.logf( "addSMSInfo(): got phone: %s", phone );
+        SMSService.SMSPhoneInfo pi = SMSService.getPhoneInfo( context );
+        phone = pi.number;
+        isGSM = pi.isGSM;
 
-        int type = mgr.getPhoneType();
-        isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
         osVers = Integer.valueOf( android.os.Build.VERSION.SDK );
 
         m_addrs.add( CommsConnType.COMMS_CONN_SMS );

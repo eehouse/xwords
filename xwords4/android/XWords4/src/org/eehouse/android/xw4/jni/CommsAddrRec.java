@@ -28,13 +28,14 @@ import java.util.Iterator;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.Utils;
-import org.eehouse.android.xw4.R;
-import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.BTService;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.GameUtils;
+import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.SMSService;
+import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.XWPrefs;
-import org.eehouse.android.xw4.BTService;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class CommsAddrRec {
 
@@ -204,7 +205,10 @@ public class CommsAddrRec {
                 }
                 break;
             case COMMS_CONN_SMS:
-                // FIXME
+                SMSService.SMSPhoneInfo pi = SMSService.getPhoneInfo( context );
+                sms_phone = pi.number;
+                sms_port = 3;   // fix comms already...
+                break;
             default:
                 Assert.fail();
             }
