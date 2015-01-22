@@ -266,17 +266,18 @@
   <PreferenceScreen android:title="@string/network_behavior"
                     android:summary="@string/network_behavior_summary"
                     >
-	<org.eehouse.android.xw4.XWConnAddrPreference
-       android:key="@string/key_addrs_pref"
-       android:title="@string/title_addrs_pref"
-	   />
-
     <org.eehouse.android.xw4.SMSCheckBoxPreference 
         android:key="@string/key_enable_sms"
         android:title="@string/enable_sms"
         android:summary="@string/enable_sms_summary"
         android:defaultValue="false"
         />
+
+	<org.eehouse.android.xw4.XWConnAddrPreference
+       android:key="@string/key_addrs_pref"
+       android:title="@string/title_addrs_pref"
+	   />
+
     <org.eehouse.android.xw4.PollListPreference
        android:key="@string/key_connect_frequency"
        android:title="@string/connect_frequency"
