@@ -57,7 +57,7 @@
                 android:layout_height="wrap_content"
                 >
     <TextView style="@style/evenly_spaced_horizontal"
-              android:text="@string/loc_main_english"
+              android:text="@string/lang_name_english"
               android:gravity="center"
               />
 

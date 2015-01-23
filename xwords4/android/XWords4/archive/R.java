@@ -1434,6 +1434,7 @@ public final class R {
          different wordlists.) 
          */
         public static final int lang_label=0x7f0500c5;
+        public static final int lang_name_english=0x7f0502ab;
         public static final int lang_name_fmt=0x7f0502bd;
         public static final int lang_unknown=0x7f0502be;
         public static final int langdict_label=0x7f0500c6;
@@ -1511,7 +1512,6 @@ public final class R {
         public static final int loc_item_copy_eng=0x7f0502ae;
         public static final int loc_lang_blessed=0x7f05029f;
         public static final int loc_lang_local=0x7f0502a0;
-        public static final int loc_main_english=0x7f0502ab;
         public static final int loc_menu_xlate=0x7f05029e;
         public static final int loc_search_prompt=0x7f0502a6;
         /**  This is the "hint" printed in light text in the empty player
