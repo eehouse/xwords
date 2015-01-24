@@ -667,65 +667,27 @@ public class DBUtils {
 
     // Return creation time of newest game matching this nli, or null
     // if none found.
-    public static Date getMostRecentCreate( Context context, NetLaunchInfo bli )
+    public static Date getMostRecentCreate( Context context, NetLaunchInfo nli )
     {
         Date result = null;
-        String[] selectionArgs = new String[] {
-            DBHelper.GAMEID, String.format( "%d", bli.gameID ),
-        };
+
+        String selection = String.format("%s=%d", DBHelper.GAMEID, nli.gameID );
+        String[] columns = { DBHelper.CREATE_TIME };
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            Cursor cursor = db.rawQuery( "SELECT " + DBHelper.CREATE_TIME +
-                                         " FROM " + DBHelper.TABLE_NAME_SUM +
-                                         " WHERE ?=? ", selectionArgs );
+
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
             if ( cursor.moveToNext() ) {
-                int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
+                int indx = cursor.getColumnIndex( columns[0] );
                 result = new Date( cursor.getLong( indx ) );
             }
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "getMostRecentCreate() => %H", result );
-        return result;
-    }
-
-    // Return creation time of newest game matching this nli, or null
-    // if none found.
-    // public static Date getMostRecentCreate( Context context, NetLaunchInfo nli )
-    // {
-    //     Date result = null;
-    //     String[] selectionArgs = new String[] {
-    //         DBHelper.ROOMNAME, nli.room, 
-    //         DBHelper.INVITEID, nli.inviteID, 
-    //         DBHelper.DICTLANG, String.format( "%d", nli.lang ), 
-    //         DBHelper.NUM_PLAYERS, String.format( "%d", nli.nPlayersT )
-    //     };
-
-    //     initDB( context );
-    //     synchronized( s_dbHelper ) {
-    //         SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-    //         Cursor cursor = db.rawQuery( "SELECT " + DBHelper.CREATE_TIME +
-    //                                      " FROM " + DBHelper.TABLE_NAME_SUM +
-    //                                      " WHERE ?=? AND ?=? AND ?=? AND ?=?",
-    //                                      selectionArgs );
-    //         if ( cursor.moveToNext() ) {
-    //             int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
-    //             result = new Date( cursor.getLong( indx ) );
-    //         }
-    //         cursor.close();
-    //         db.close();
-    //     }
-    //     return result;
-    // }
-
-    public static Date getMostRecentCreate( Context context, Uri data )
-    {
-        Date result = null;
-        NetLaunchInfo nli = new NetLaunchInfo( context, data );
-        if ( null != nli && nli.isValid() ) {
-            result = getMostRecentCreate( context, nli );
-        }
+        DbgUtils.logf( "getMostRecentCreate(%d) => %H", nli.gameID, result );
         return result;
     }
 
