@@ -2091,7 +2091,7 @@ public class GamesListDelegate extends ListDelegateBase
             GameConfigDelegate.editForResult( m_activity, CONFIG_GAME, rowID );
         } else {
             // launch it
-            GameUtils.launchGame( m_activity, rowID, !m_nextIsSolo );
+            GameUtils.launchGame( m_activity, rowID );
         }
     }
 
