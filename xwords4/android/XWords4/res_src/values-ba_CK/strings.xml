@@ -454,8 +454,8 @@
          greater than one this text is appended to the above. -->
   <string name="invite_multiple">\u0020uOy( era gnitcepxe elpitlum
     etomer sreyalp. Uoy nod\'t evah ot etivni meht lla ta ,ecno tub
-    eht emag lliw ton trats litnu ydobyreve sah neeb detivni dna lla
-    snoitativni evah neeb detpecca.)</string>
+    siht trela lliw ton eb dessimsid litnu ydobyreve sah neeb detivni
+    dna lla snoitativni evah neeb detpecca.)</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -1946,4 +1946,6 @@
     od eht emas gniht.\n\nfI( uoy edih eht snottub dna tnaw meht kcab
     uoy nac elbane meht ni eht Ecnaraeppa noitces fo Ppa sgnittes.)
     </string>
+  <string name="invite_stays">sIht( golaid lliw yats pu litnu lla
+    detivni sreyalp evah detcennoc.)</string>
 </resources>

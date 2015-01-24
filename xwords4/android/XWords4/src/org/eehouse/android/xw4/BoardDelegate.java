@@ -465,10 +465,16 @@ public class BoardDelegate extends DelegateBase
                             showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
                         }
                     };
+                OnClickListener lstnr2 = new OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            finish();
+                        }
+                    };
                 dialog = ab.setTitle( R.string.query_title )
                     .setMessage( "" )
-                    .setPositiveButton( R.string.button_yes, lstnr )
-                    .setNegativeButton( R.string.button_no, null )
+                    .setPositiveButton( R.string.newgame_invite, lstnr )
+                    .setNegativeButton( R.string.button_close_game, lstnr2 )
                     .create();
                 break;
 
@@ -502,9 +508,8 @@ public class BoardDelegate extends DelegateBase
                     ps = getString( R.string.invite_if_nfc );
                 }
             }
-            if ( null != ps ) {
-                message += "\n\n" + ps;
-            }
+            message += "\n\n" + 
+                (null == ps ? getString( R.string.invite_stays ) : ps);
 
             ad.setMessage( message );
             break;
@@ -652,6 +657,8 @@ public class BoardDelegate extends DelegateBase
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
+            } else if ( 0 < m_nMissing ) {
+                showDialog( DlgID.DLG_INVITE );
             }
         }
     }

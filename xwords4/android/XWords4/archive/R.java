@@ -1282,6 +1282,7 @@ public final class R {
         /**   
          */
         public static final int invite_sms_desc_fmt=0x7f05021d;
+        public static final int invite_stays=0x7f0502d7;
         /**  <string name="sms_or_email">Send invitation using SMS (texting) or 
     via email?</string> 
  <string name="nfc_or_email">Send invitation using NFC (Android 

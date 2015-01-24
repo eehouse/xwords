@@ -454,8 +454,8 @@
          greater than one this text is appended to the above. -->
   <string name="invite_multiple">\u0020(YOU ARE EXPECTING MULTIPLE
     REMOTE PLAYERS. YOU DON\'T HAVE TO INVITE THEM ALL AT ONCE, BUT
-    THE GAME WILL NOT START UNTIL EVERYBODY HAS BEEN INVITED AND ALL
-    INVITATIONS HAVE BEEN ACCEPTED.)</string>
+    THIS ALERT WILL NOT BE DISMISSED UNTIL EVERYBODY HAS BEEN INVITED
+    AND ALL INVITATIONS HAVE BEEN ACCEPTED.)</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -1946,4 +1946,6 @@
     DO THE SAME THING.\n\n(IF YOU HIDE THE BUTTONS AND WANT THEM BACK
     YOU CAN ENABLE THEM IN THE APPEARANCE SECTION OF APP SETTINGS.)
     </string>
+  <string name="invite_stays">(THIS DIALOG WILL STAY UP UNTIL ALL
+    INVITED PLAYERS HAVE CONNECTED.)</string>
 </resources>

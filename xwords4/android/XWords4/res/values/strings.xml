@@ -539,8 +539,8 @@
          greater than one this text is appended to the above. -->
     <string name="invite_multiple">\u0020(You are expecting multiple
     remote players. You don\'t have to invite them all at once, but
-    the game will not start until everybody has been invited and all
-    invitations have been accepted.)</string>
+    this alert will not be dismissed until everybody has been invited
+    and all invitations have been accepted.)</string>
 
     <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
@@ -2290,4 +2290,7 @@
     do the same thing.\n\n(If you hide the buttons and want them back
     you can enable them in the Appearance section of App settings.)
     </string>
+
+    <string name="invite_stays">(This dialog will stay up until all
+    invited players have connected.)</string>
 </resources>
