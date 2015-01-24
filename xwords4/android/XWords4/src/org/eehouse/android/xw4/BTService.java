@@ -60,31 +60,33 @@ public class BTService extends XWService {
 
     private static final int BT_PROTO = 0;
 
-    private static final int SCAN = 1;
-    private static final int INVITE = 2;
-    private static final int SEND = 3;
-    private static final int RADIO = 4;
-    private static final int CLEAR = 5;
-    private static final int REMOVE = 6;
-    private static final int NFCINVITE = 7;
-    private static final int PINGHOST = 8;
+    private enum BTAction { _NONE,
+                            SCAN,
+                            INVITE,
+                            SEND,
+                            RADIO,
+                            CLEAR,
+                            REMOVE,
+                            NFCINVITE,
+                            PINGHOST,
+    };
 
-    private static final String CMD_STR = "CMD";
-    private static final String MSG_STR = "MSG";
-    private static final String GAMENAME_STR = "NAM";
-    private static final String ADDR_STR = "ADR";
-    private static final String RADIO_STR = "RDO";
-    private static final String CLEAR_STR = "CLR";
+    private static final String CMD_KEY = "CMD";
+    private static final String MSG_KEY = "MSG";
+    private static final String GAMENAME_KEY = "NAM";
+    private static final String ADDR_KEY = "ADR";
+    private static final String RADIO_KEY = "RDO";
+    private static final String CLEAR_KEY = "CLR";
 
-    private static final String GAMEID_STR = "GMI";
-    private static final String GAMEDATA_STR = "GD";
+    private static final String GAMEID_KEY = "GMI";
+    private static final String GAMEDATA_KEY = "GD";
 
-    private static final String LANG_STR = "LNG";
-    private static final String DICT_STR = "DCT";
-    private static final String NTO_STR = "TOT";
-    private static final String NHE_STR = "HER";
-    private static final String BT_NAME_STR = "BT_NAME_STR";
-    private static final String BT_ADDRESS_STR = "BT_ADDRESS_STR";
+    private static final String LANG_KEY = "LNG";
+    private static final String DICT_KEY = "DCT";
+    private static final String NTO_KEY = "TOT";
+    private static final String NHE_KEY = "HER";
+    private static final String BT_NAME_KEY = "BT_NAME";
+    private static final String BT_ADDRESS_KEY = "BT_ADDRESS";
 
     private enum BTCmd { 
         BAD_PROTO,
@@ -216,30 +218,30 @@ public class BTService extends XWService {
 
     public static void radioChanged( Context context, boolean cameOn )
     {
-        Intent intent = getIntentTo( context, RADIO );
-        intent.putExtra( RADIO_STR, cameOn );
+        Intent intent = getIntentTo( context, BTAction.RADIO );
+        intent.putExtra( RADIO_KEY, cameOn );
         context.startService( intent );
     }
 
     public static void clearDevices( Context context, String[] btAddrs )
     {
-        Intent intent = getIntentTo( context, CLEAR );
-        intent.putExtra( CLEAR_STR, btAddrs );
+        Intent intent = getIntentTo( context, BTAction.CLEAR );
+        intent.putExtra( CLEAR_KEY, btAddrs );
         context.startService( intent );
     }
 
     public static void scan( Context context )
     {
-        Intent intent = getIntentTo( context, SCAN );
+        Intent intent = getIntentTo( context, BTAction.SCAN );
         context.startService( intent );
     }
 
     public static void pingHost( Context context, String hostAddr, int gameID )
     {
         Assert.assertTrue( null != hostAddr && 0 < hostAddr.length() );
-        Intent intent = getIntentTo( context, PINGHOST );
-        intent.putExtra( ADDR_STR, hostAddr );
-        intent.putExtra( GAMEID_STR, gameID );
+        Intent intent = getIntentTo( context, BTAction.PINGHOST );
+        intent.putExtra( ADDR_KEY, hostAddr );
+        intent.putExtra( GAMEID_KEY, gameID );
         context.startService( intent );
     } 
 
@@ -248,14 +250,14 @@ public class BTService extends XWService {
     //                                  String dict, int nPlayersT, int nPlayersH )
     // {
     //     Intent intent = getIntentTo( context, INVITE );
-    //     intent.putExtra( GAMEID_STR, gameID );
-    //     intent.putExtra( ADDR_STR, btAddr );
+    //     intent.putExtra( GAMEID_KEY, gameID );
+    //     intent.putExtra( ADDR_KEY, btAddr );
     //     Assert.assertNotNull( initialName );
-    //     intent.putExtra( GAMENAME_STR, initialName );
-    //     intent.putExtra( LANG_STR, lang );
-    //     intent.putExtra( DICT_STR, dict );
-    //     intent.putExtra( NTO_STR, nPlayersT );
-    //     intent.putExtra( NHE_STR, nPlayersH );
+    //     intent.putExtra( GAMENAME_KEY, initialName );
+    //     intent.putExtra( LANG_KEY, lang );
+    //     intent.putExtra( DICT_KEY, dict );
+    //     intent.putExtra( NTO_KEY, nPlayersT );
+    //     intent.putExtra( NHE_KEY, nPlayersH );
 
     //     context.startService( intent );
     // }
@@ -263,23 +265,23 @@ public class BTService extends XWService {
     public static void inviteRemote( Context context, String btAddr, 
                                      NetLaunchInfo nli )
     {
-        Intent intent = getIntentTo( context, INVITE );
+        Intent intent = getIntentTo( context, BTAction.INVITE );
         String nliData = nli.toString();
-        intent.putExtra( GAMEDATA_STR, nliData );
-        intent.putExtra( ADDR_STR, btAddr );
+        intent.putExtra( GAMEDATA_KEY, nliData );
+        intent.putExtra( ADDR_KEY, btAddr );
 
         context.startService( intent );
     }
 
     public static void gotGameViaNFC( Context context, NetLaunchInfo bli )
     {
-        Intent intent = getIntentTo( context, NFCINVITE );
-        intent.putExtra( GAMEID_STR, bli.gameID );
-        intent.putExtra( DICT_STR, bli.dict );
-        intent.putExtra( LANG_STR, bli.lang );
-        intent.putExtra( NTO_STR, bli.nPlayersT );
-        intent.putExtra( BT_NAME_STR, bli.btName );
-        intent.putExtra( BT_ADDRESS_STR, bli.btAddress );
+        Intent intent = getIntentTo( context, BTAction.NFCINVITE );
+        intent.putExtra( GAMEID_KEY, bli.gameID );
+        intent.putExtra( DICT_KEY, bli.dict );
+        intent.putExtra( LANG_KEY, bli.lang );
+        intent.putExtra( NTO_KEY, bli.nPlayersT );
+        intent.putExtra( BT_NAME_KEY, bli.btName );
+        intent.putExtra( BT_ADDRESS_KEY, bli.btAddress );
 
         context.startService( intent );
     }
@@ -289,10 +291,10 @@ public class BTService extends XWService {
     {
         int nSent = -1;
         if ( null != targetAddr && 0 < targetAddr.length() ) {
-            Intent intent = getIntentTo( context, SEND );
-            intent.putExtra( MSG_STR, buf );
-            intent.putExtra( ADDR_STR, targetAddr );
-            intent.putExtra( GAMEID_STR, gameID );
+            Intent intent = getIntentTo( context, BTAction.SEND );
+            intent.putExtra( MSG_KEY, buf );
+            intent.putExtra( ADDR_KEY, targetAddr );
+            intent.putExtra( GAMEID_KEY, gameID );
             context.startService( intent );
             nSent = buf.length;
         } else {
@@ -303,15 +305,15 @@ public class BTService extends XWService {
     
     public static void gameDied( Context context, int gameID )
     {
-        Intent intent = getIntentTo( context, REMOVE );
-        intent.putExtra( GAMEID_STR, gameID );
+        Intent intent = getIntentTo( context, BTAction.REMOVE );
+        intent.putExtra( GAMEID_KEY, gameID );
         context.startService( intent );
     }
 
-    private static Intent getIntentTo( Context context, int cmd )
+    private static Intent getIntentTo( Context context, BTAction cmd )
     {
         Intent intent = new Intent( context, BTService.class );
-        intent.putExtra( CMD_STR, cmd );
+        intent.putExtra( CMD_KEY, cmd.ordinal() );
         return intent;
     }
 
@@ -338,18 +340,18 @@ public class BTService extends XWService {
     {
         int result;
         if ( XWApp.BTSUPPORTED && null != intent ) {
-            int cmd = intent.getIntExtra( CMD_STR, -1 );
-            DbgUtils.logf( "BTService.onStartCommand; cmd=%d", cmd );
-            if ( -1 == cmd ) {
+            int ordinal = intent.getIntExtra( CMD_KEY, -1 );
+            if ( -1 == ordinal ) {
+                // Drop it
             } else if ( null == m_sender ) {
                 DbgUtils.logf( "exiting: m_queue is null" );
                 stopSelf();
             } else {
+                BTAction cmd = BTAction.values()[ordinal];
+                DbgUtils.logf( "BTService.onStartCommand; cmd=%s", cmd.toString() );
                 switch( cmd ) {
-                case -1:
-                    break;
                 case CLEAR:
-                    String[] btAddrs = intent.getStringArrayExtra( CLEAR_STR );
+                    String[] btAddrs = intent.getStringArrayExtra( CLEAR_KEY );
                     clearDevs( btAddrs );
                     sendNames();
                     break;
@@ -357,48 +359,48 @@ public class BTService extends XWService {
                     m_sender.add( new BTQueueElem( BTCmd.SCAN ) );
                     break;
                 case INVITE:
-                    String jsonData = intent.getStringExtra( GAMEDATA_STR );
+                    String jsonData = intent.getStringExtra( GAMEDATA_KEY );
                     NetLaunchInfo nli = new NetLaunchInfo( jsonData );
                     DbgUtils.logf( "onStartCommand: nli: %s", nli.toString() );
-                    // int gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                    // String btAddr = intent.getStringExtra( ADDR_STR );
-                    // String gameName = intent.getStringExtra( GAMENAME_STR );
-                    // int lang = intent.getIntExtra( LANG_STR, -1 );
-                    // String dict = intent.getStringExtra( DICT_STR );
-                    // int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
-                    String btAddr = intent.getStringExtra( ADDR_STR );
+                    // int gameID = intent.getIntExtra( GAMEID_KEY, -1 );
+                    // String btAddr = intent.getStringExtra( ADDR_KEY );
+                    // String gameName = intent.getStringExtra( GAMENAME_KEY );
+                    // int lang = intent.getIntExtra( LANG_KEY, -1 );
+                    // String dict = intent.getStringExtra( DICT_KEY );
+                    // int nPlayersT = intent.getIntExtra( NTO_KEY, -1 );
+                    String btAddr = intent.getStringExtra( ADDR_KEY );
                     m_sender.add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
                     break;
 
                 case PINGHOST:
-                    btAddr = intent.getStringExtra( ADDR_STR );
-                    int gameID = intent.getIntExtra( GAMEID_STR, 0 );
+                    btAddr = intent.getStringExtra( ADDR_KEY );
+                    int gameID = intent.getIntExtra( GAMEID_KEY, 0 );
                     m_sender.add( new BTQueueElem( BTCmd.PING, btAddr, gameID ) );
                     break;
 
                 case NFCINVITE:
-                    gameID = intent.getIntExtra( GAMEID_STR, -1 );
-                    int lang = intent.getIntExtra( LANG_STR, -1 );
-                    String dict = intent.getStringExtra( DICT_STR );
-                    int nPlayersT = intent.getIntExtra( NTO_STR, -1 );
-                    String btName = intent.getStringExtra( BT_NAME_STR );
-                    btAddr = intent.getStringExtra( BT_ADDRESS_STR );
+                    gameID = intent.getIntExtra( GAMEID_KEY, -1 );
+                    int lang = intent.getIntExtra( LANG_KEY, -1 );
+                    String dict = intent.getStringExtra( DICT_KEY );
+                    int nPlayersT = intent.getIntExtra( NTO_KEY, -1 );
+                    String btName = intent.getStringExtra( BT_NAME_KEY );
+                    btAddr = intent.getStringExtra( BT_ADDRESS_KEY );
                     // /*(void)*/makeOrNotify( this, gameID, null, lang, dict, 
                     //                         nPlayersT, 1, btName, btAddr );
                     Assert.fail();
                     break;
 
                 case SEND:
-                    byte[] buf = intent.getByteArrayExtra( MSG_STR );
-                    btAddr = intent.getStringExtra( ADDR_STR );
-                    gameID = intent.getIntExtra( GAMEID_STR, -1 );
+                    byte[] buf = intent.getByteArrayExtra( MSG_KEY );
+                    btAddr = intent.getStringExtra( ADDR_KEY );
+                    gameID = intent.getIntExtra( GAMEID_KEY, -1 );
                     if ( -1 != gameID ) {
                         m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
                                                        btAddr, gameID ) );
                     }
                     break;
                 case RADIO:
-                    boolean cameOn = intent.getBooleanExtra( RADIO_STR, false );
+                    boolean cameOn = intent.getBooleanExtra( RADIO_KEY, false );
                     MultiEvent evt = cameOn? MultiEvent.BT_ENABLED
                         : MultiEvent.BT_DISABLED;
                     sendResult( evt );
@@ -415,7 +417,7 @@ public class BTService extends XWService {
                     }
                     break;
                 case REMOVE:
-                    gameID = intent.getIntExtra( GAMEID_STR, -1 );
+                    gameID = intent.getIntExtra( GAMEID_KEY, -1 );
                     break;
                 default:
                     Assert.fail();
@@ -1093,8 +1095,8 @@ public class BTService extends XWService {
 
     private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd )
     {
-        DbgUtils.logf( "connecting to %s to send %s", 
-                       socket.getRemoteDevice().getName(), cmd.toString() );
+        String name = socket.getRemoteDevice().getName();
+        DbgUtils.logf( "connecting to %s to send %s", name, cmd.toString() );
         // Docs say always call cancelDiscovery before trying to connect
         m_adapter.cancelDiscovery();
         
@@ -1104,9 +1106,10 @@ public class BTService extends XWService {
             dos = new DataOutputStream( socket.getOutputStream() );
             dos.writeByte( BT_PROTO );
             dos.writeByte( cmd.ordinal() );
-            DbgUtils.logf( "connect successful" );
+            DbgUtils.logf( "connect() to %s successful", name );
         } catch ( IOException ioe ) {
             dos = null;
+            DbgUtils.logf( "connect() to %s failed", name );
             // logIOE( ioe );
         }
         return dos;
