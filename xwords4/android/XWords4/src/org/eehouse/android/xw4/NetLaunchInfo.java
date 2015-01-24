@@ -104,7 +104,7 @@ public class NetLaunchInfo {
                     break;
                 case COMMS_CONN_RELAY:
                     room = json.getString( MultiService.ROOM );
-                    m_inviteID = json.getString( MultiService.INVITEID );
+                    m_inviteID = json.optString( MultiService.INVITEID );
                     break;
                 case COMMS_CONN_SMS:
                     phone = json.getString( PHONE_KEY );

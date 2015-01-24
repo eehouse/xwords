@@ -1096,7 +1096,7 @@ public class BTService extends XWService {
     private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd )
     {
         String name = socket.getRemoteDevice().getName();
-        DbgUtils.logf( "connecting to %s to send %s", name, cmd.toString() );
+        DbgUtils.logf( "connecting to %s to send cmd %s", name, cmd.toString() );
         // Docs say always call cancelDiscovery before trying to connect
         m_adapter.cancelDiscovery();
         
