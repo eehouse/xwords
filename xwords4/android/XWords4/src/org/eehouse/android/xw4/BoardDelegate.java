@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -242,7 +243,7 @@ public class BoardDelegate extends DelegateBase
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
-            DialogInterface.OnClickListener lstnr;
+            OnClickListener lstnr;
             AlertDialog.Builder ab = makeAlertBuilder();
 
             final DlgID dlgID = DlgID.values()[id];
@@ -255,7 +256,7 @@ public class BoardDelegate extends DelegateBase
                     .setMessage( m_dlgBytes )
                     .setPositiveButton( R.string.button_ok, null );
                 if ( DlgID.DLG_RETRY == dlgID ) {
-                    lstnr = new DialogInterface.OnClickListener() {
+                    lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
                                 m_jniThread.handle( JNICmd.CMD_RESET );
@@ -263,7 +264,7 @@ public class BoardDelegate extends DelegateBase
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
                 } else if ( XWApp.REMATCH_SUPPORTED && DlgID.GAME_OVER == dlgID ) {
-                    lstnr = new DialogInterface.OnClickListener() {
+                    lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
                                 doRematch();
@@ -273,7 +274,7 @@ public class BoardDelegate extends DelegateBase
                 } else if ( DlgID.DLG_CONNSTAT == dlgID &&
                             null != m_connTypes &&
                             m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                    lstnr = new DialogInterface.OnClickListener() {
+                    lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
                                 RelayService.reset( m_activity );
@@ -287,7 +288,7 @@ public class BoardDelegate extends DelegateBase
 
             case DLG_USEDICT:
             case DLG_GETDICT:
-                lstnr = new DialogInterface.OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
                             if ( DlgID.DLG_USEDICT == dlgID ) {
@@ -313,7 +314,7 @@ public class BoardDelegate extends DelegateBase
                 ab = ab.setTitle( R.string.query_title )
                     .setMessage( R.string.msg_dev_deleted )
                     .setPositiveButton( R.string.button_ok, null );
-                lstnr = new DialogInterface.OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
 
@@ -334,7 +335,7 @@ public class BoardDelegate extends DelegateBase
                 if ( 0 != m_dlgTitle ) {
                     ab.setTitle( m_dlgTitle );
                 }
-                lstnr = new DialogInterface.OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int whichButton ) {
                             m_resultCode = 1;
@@ -344,7 +345,7 @@ public class BoardDelegate extends DelegateBase
                                       R.string.button_yes : R.string.button_ok,
                                       lstnr );
                 if ( DlgID.QUERY_REQUEST_BLK == dlgID ) {
-                    lstnr = new DialogInterface.OnClickListener() {
+                    lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int whichButton ) {
                                 m_resultCode = 0;
@@ -365,7 +366,7 @@ public class BoardDelegate extends DelegateBase
                                 : R.string.button_lookup;
                             buttonTxt = getString( resID );
                         }
-                        lstnr = new DialogInterface.OnClickListener() {
+                        lstnr = new OnClickListener() {
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
                                     showNotAgainDlgThen( R.string.
@@ -385,7 +386,7 @@ public class BoardDelegate extends DelegateBase
 
             case PICK_TILE_REQUESTBLANK_BLK:
             case PICK_TILE_REQUESTTRAY_BLK:
-                lstnr = new DialogInterface.OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
                             m_resultCode = item;
@@ -398,8 +399,7 @@ public class BoardDelegate extends DelegateBase
                 } else {
                     ab.setTitle( getString( R.string.cur_tiles_fmt, m_curTiles ) );
                     if ( m_canUndoTiles ) {
-                        DialogInterface.OnClickListener undoClicked =
-                            new DialogInterface.OnClickListener() {
+                        OnClickListener undoClicked = new OnClickListener() {
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
                                     m_resultCode = UtilCtxt.PICKER_BACKUP;
@@ -409,8 +409,7 @@ public class BoardDelegate extends DelegateBase
                         ab.setPositiveButton( R.string.tilepick_undo, 
                                               undoClicked );
                     }
-                    DialogInterface.OnClickListener doAllClicked =
-                        new DialogInterface.OnClickListener() {
+                    OnClickListener doAllClicked = new OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int whichButton ) {
                                 m_resultCode = UtilCtxt.PICKER_PICKALL;
@@ -433,7 +432,7 @@ public class BoardDelegate extends DelegateBase
                 ab.setTitle( m_dlgTitleStr )
                     .setView( pwdLayout )
                     .setPositiveButton( R.string.button_ok,
-                                        new DialogInterface.OnClickListener() {
+                                        new OnClickListener() {
                                             public void 
                                                 onClick( DialogInterface dlg,
                                                          int whichButton ) {
@@ -448,7 +447,7 @@ public class BoardDelegate extends DelegateBase
                 dialog = ab.setTitle( R.string.query_title )
                     .setMessage( R.string.ids_endnow )
                     .setPositiveButton( R.string.button_yes,
-                                        new DialogInterface.OnClickListener() {
+                                        new OnClickListener() {
                                             public void 
                                                 onClick( DialogInterface dlg, 
                                                          int item ) {
@@ -460,7 +459,7 @@ public class BoardDelegate extends DelegateBase
                     .create();
                 break;
             case DLG_INVITE:
-                lstnr = new DialogInterface.OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
                             showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
