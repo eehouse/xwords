@@ -39,6 +39,7 @@ public class GameLock {
 
     public GameLock( long rowid, boolean isForWrite ) 
     {
+        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         m_rowid = rowid;
         m_isForWrite = isForWrite;
         m_lockCount = 0;

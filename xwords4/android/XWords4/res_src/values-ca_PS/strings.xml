@@ -1450,7 +1450,7 @@
   <string name="about_vers_fmt">CROSSWORDS FOR ANDROID, VERSION %1$s,
         REV %2$s, BUILT ON %3$s.</string>
   <!-- copyright info -->
-  <string name="about_copyright">COPYRIGHT (C) 1998-2014 BY ERIC
+  <string name="about_copyright">COPYRIGHT (C) 1998-2015 BY ERIC
         HOUSE. THIS FREE/OPEN SOURCE SOFTWARE IS RELEASED UNDER THE GNU PUBLIC
         LICENSE.</string>
   <!-- Another paragraph in the about dialog -->
