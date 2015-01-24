@@ -1773,6 +1773,7 @@ public final class R {
          */
         public static final int newgame_sms_header=0x7f050218;
         public static final int newgroup_label=0x7f05025e;
+        public static final int nfc_just_tap=0x7f0502d8;
         /**  Title of dialog for renaming game (triggered by selecting
          list_item_rename) 
  If you try to copy a networked game you get this error

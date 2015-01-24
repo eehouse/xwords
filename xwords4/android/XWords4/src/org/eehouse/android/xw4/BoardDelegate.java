@@ -1011,6 +1011,8 @@ public class BoardDelegate extends DelegateBase
             case NFC:
                 if ( ! NFCUtils.nfcAvail( m_activity )[1] ) {
                     showDialog( DlgID.ENABLE_NFC );
+                } else {
+                    showOKOnlyDialog( R.string.nfc_just_tap );
                 }
                 break;
             case BLUETOOTH:

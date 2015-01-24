@@ -1948,4 +1948,6 @@
     </string>
   <string name="invite_stays">(THIS DIALOG WILL STAY UP UNTIL ALL
     INVITED PLAYERS HAVE CONNECTED.)</string>
+  <string name="nfc_just_tap">TO INVITE VIA NFC JUST TOUCH THE BACK
+    OF THIS DEVICE AGAINST THE ONE YOU WANT TO INVITE.</string>
 </resources>

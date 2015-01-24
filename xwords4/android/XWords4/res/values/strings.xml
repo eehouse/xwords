@@ -2293,4 +2293,7 @@
 
     <string name="invite_stays">(This dialog will stay up until all
     invited players have connected.)</string>
+
+    <string name="nfc_just_tap">To invite via NFC just touch the back
+    of this device against the one you want to invite.</string>
 </resources>
