@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -1056,8 +1057,9 @@ public class BTService extends XWService {
         if ( DictLangCache.haveDict( context, nli.lang, nli.dict ) ) {
             result = makeGame( context, nli, btName, btAddr );
         } else {
-            Intent intent = MultiService.makeMissingDictIntent( context, nli );
-            Assert.fail();
+            Intent intent = MultiService
+                .makeMissingDictIntent( context, nli, 
+                                        DictFetchOwner.OWNER_BT );
             // NetLaunchInfo.putExtras( intent, gameID, btName, btAddr );
             MultiService.postMissingDictNotification( context, intent, 
                                                       nli.gameID );

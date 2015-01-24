@@ -82,45 +82,14 @@ public class NetLaunchInfo {
 
     public NetLaunchInfo( String data )
     {
-        try { 
-            JSONObject json = new JSONObject( data );
+        init( data );
+    }
 
-            int flags = json.getInt(ADDRS_KEY);
-            m_addrs = DBUtils.intToConnTypeSet( flags );
-
-            lang = json.optInt( MultiService.LANG, -1 );
-            forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
-            dict = json.optString( MultiService.DICT );
-            gameName = json.optString( MultiService.GAMENAME );
-            nPlayersT = json.optInt( MultiService.NPLAYERST, -1 );
-            nPlayersH = json.optInt( MultiService.NPLAYERSH, -1 );
-            gameID = json.optInt( MultiService.GAMEID, -1 );
-
-            for ( CommsConnType typ : m_addrs.getTypes() ) {
-                switch ( typ ) {
-                case COMMS_CONN_BT:
-                    btAddress = json.getString( MultiService.BT_ADDRESS );
-                    btName = json.getString( MultiService.BT_NAME );
-                    break;
-                case COMMS_CONN_RELAY:
-                    room = json.getString( MultiService.ROOM );
-                    m_inviteID = json.optString( MultiService.INVITEID );
-                    break;
-                case COMMS_CONN_SMS:
-                    phone = json.getString( PHONE_KEY );
-                    isGSM = json.getBoolean( GSM_KEY );
-                    osVers = json.getInt( OSVERS_KEY );
-                    break;
-                default:
-                    DbgUtils.logf( "Unexpected typ %s", typ.toString() );
-                    break;
-                }
-            }
-
-            calcValid();
-        } catch ( JSONException jse ) {
-            DbgUtils.loge( jse );
-        }
+    public NetLaunchInfo( Intent intent )
+    {
+        String data = intent.getStringExtra( MultiService.NLI_DATA );
+        Assert.assertNotNull( data );
+        init( data );
     }
 
     public NetLaunchInfo( Bundle bundle )
@@ -192,24 +161,6 @@ public class NetLaunchInfo {
                 DbgUtils.logf( "unable to parse \"%s\"", data.toString() );
             }
         }
-        calcValid();
-    }
-
-    public NetLaunchInfo( Intent intent )
-    {
-        room = intent.getStringExtra( MultiService.ROOM );
-        m_inviteID = intent.getStringExtra( MultiService.INVITEID );
-        lang = intent.getIntExtra( MultiService.LANG, -1 );
-        forceChannel = intent.getIntExtra( MultiService.FORCECHANNEL, -1 );
-        dict = intent.getStringExtra( MultiService.DICT );
-        gameName = intent.getStringExtra( MultiService.GAMENAME );
-        nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
-        nPlayersH = intent.getIntExtra( MultiService.NPLAYERSH, -1 );
-        gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-        btName = intent.getStringExtra( MultiService.BT_NAME );
-        btAddress = intent.getStringExtra( MultiService.BT_ADDRESS );
-        m_addrs = DBUtils.intToConnTypeSet( intent.getIntExtra( ADDRS_KEY, -1 ) );
-
         calcValid();
     }
 
@@ -347,6 +298,51 @@ public class NetLaunchInfo {
         }
 
         return result;
+    }
+
+    private void init( String data )
+    {
+        try { 
+            JSONObject json = new JSONObject( data );
+
+            int flags = json.getInt(ADDRS_KEY);
+            m_addrs = DBUtils.intToConnTypeSet( flags );
+
+            lang = json.optInt( MultiService.LANG, -1 );
+            forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
+            dict = json.optString( MultiService.DICT );
+            gameName = json.optString( MultiService.GAMENAME );
+            nPlayersT = json.optInt( MultiService.NPLAYERST, -1 );
+            nPlayersH = json.optInt( MultiService.NPLAYERSH, -1 );
+            gameID = json.optInt( MultiService.GAMEID, -1 );
+
+            for ( CommsConnType typ : m_addrs.getTypes() ) {
+                switch ( typ ) {
+                case COMMS_CONN_BT:
+                    btAddress = json.getString( MultiService.BT_ADDRESS );
+                    btName = json.getString( MultiService.BT_NAME );
+                    break;
+                case COMMS_CONN_RELAY:
+                    room = json.getString( MultiService.ROOM );
+                    m_inviteID = json.optString( MultiService.INVITEID );
+                    break;
+                case COMMS_CONN_SMS:
+                    phone = json.getString( PHONE_KEY );
+                    isGSM = json.getBoolean( GSM_KEY );
+                    osVers = json.getInt( OSVERS_KEY );
+                    break;
+                default:
+                    DbgUtils.logf( "Unexpected typ %s", typ.toString() );
+                    break;
+                }
+            }
+
+            calcValid();
+        } catch ( JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
+
+        calcValid();
     }
 
     private void appendInt( Uri.Builder ub, String key, int value )

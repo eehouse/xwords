@@ -43,10 +43,15 @@ public class MultiService {
     public static final String OWNER = "OWNER";
     public static final String BT_NAME = "BT_NAME";
     public static final String BT_ADDRESS = "BT_ADDRESS";
+    public static final String NLI_DATA = "nli";
 
-    public static final int OWNER_SMS = 1;
-    public static final int OWNER_RELAY = 2;
-    public static final int OWNER_BT = 3;
+    public enum DictFetchOwner { _NONE,
+                                 OWNER_SMS,
+                                 OWNER_RELAY,
+                                 OWNER_BT,
+    };
+
+    private static final String ACTION_FETCH_DICT = "_afd";
 
     private MultiEventListener m_li;
 
@@ -102,42 +107,23 @@ public class MultiService {
         }
     }
 
-    public static void fillInviteIntent( Intent intent, String gameName, 
-                                         int lang, String dict, 
-                                         int nPlayersT, int nPlayersH )
-    {
-        intent.putExtra( GAMENAME, gameName );
-        intent.putExtra( LANG, lang );
-        intent.putExtra( DICT, dict );
-        intent.putExtra( NPLAYERST, nPlayersT ); // both of these used
-        intent.putExtra( NPLAYERSH, nPlayersH );
-    }
-
-    public static Intent makeMissingDictIntent( Context context, String gameName, 
-                                                int lang, String dict, 
-                                                int nPlayersT, int nPlayersH )
+    public static Intent makeMissingDictIntent( Context context, NetLaunchInfo nli,
+                                                DictFetchOwner owner )
     {
         Intent intent = new Intent( context, DictsActivity.class );
-        fillInviteIntent( intent, gameName, lang, dict, nPlayersT, nPlayersH );
-        return intent;
-    }
-
-    public static Intent makeMissingDictIntent( Context context, NetLaunchInfo nli )
-    {
-        Intent intent = makeMissingDictIntent( context, null, nli.lang, nli.dict, 
-                                               nli.nPlayersT, 1 );
-        intent.putExtra( ROOM, nli.room );
+        intent.setAction( ACTION_FETCH_DICT );
+        intent.putExtra( LANG, nli.lang );
+        intent.putExtra( DICT, nli.dict );
+        intent.putExtra( OWNER, owner.ordinal() );
+        intent.putExtra( NLI_DATA, nli.toString() );
         return intent;
     }
 
     public static boolean isMissingDictIntent( Intent intent )
     {
-        boolean result = intent.hasExtra( LANG )
-            // && intent.hasExtra( DICT )
-            && (intent.hasExtra( GAMEID ) || intent.hasExtra( ROOM ))
-            && intent.hasExtra( GAMENAME )
-            && intent.hasExtra( NPLAYERST )
-            && intent.hasExtra( NPLAYERSH );
+        String action = intent.getAction();
+        boolean result = null != action && action.equals( ACTION_FETCH_DICT );
+        // DbgUtils.logf( "isMissingDictIntent() => %b", result );
         return result;
     }
 
@@ -179,16 +165,20 @@ public class MultiService {
             String dict = intent.getStringExtra( DICT );
             downloaded = DictLangCache.haveDict( context, lang, dict );
             if ( downloaded ) {
-                switch ( intent.getIntExtra( OWNER, -1 ) ) {
-                case OWNER_SMS:
-                    SMSService.onGameDictDownload( context, intent );
-                    break;
-                case OWNER_RELAY:
-                case OWNER_BT:
-                    GamesListDelegate.onGameDictDownload( context, intent );
-                    break;
-                default:
+                int ordinal = intent.getIntExtra( OWNER, -1 );
+                if ( -1 == ordinal ) {
                     DbgUtils.logf( "unexpected OWNER" );
+                } else {
+                    DictFetchOwner owner = DictFetchOwner.values()[ordinal];
+                    switch ( owner ) {
+                    case OWNER_SMS:
+                        SMSService.onGameDictDownload( context, intent );
+                        break;
+                    case OWNER_RELAY:
+                    case OWNER_BT:
+                        GamesListDelegate.onGameDictDownload( context, intent );
+                        break;
+                    }
                 }
             }
         }
