@@ -1939,9 +1939,11 @@
   <string name="invite_multi_summary">Etivni erom naht eno reyalp rep etomer ecived</string>
   <string name="connection_via_label">Egnahc Etacinummoc aiv</string>
   <string name="set_pref">Edih snottub</string>
-  <string name="not_again_hidenewgamebuttons">Uoy nac edih eht wen
-    emag snottub woleb ot teg erom ecaps rof semag. Yeht era
-    detacilpud yb eht tsrif owt smeti ni siht wodniw\'s unem.\n\nfI(
-    uoy edih meht dna tnaw meht ,kcab uoy nac wohser meht aiv eht
-    Secnereferp wodniw ebaliava hguorht eht unem.) </string>
+  <string name="not_again_hidenewgamebuttons">Won taht uoy evah a
+    wef semag devas uoy thgim tnaw ot edih eht Wen Emag snottub woleb
+    ot teg erom ecaps. Yeht era tneinevnoc rof wen ,sreyalp tub uoy
+    nod\'t deen meht esuaceb eht tsrif owt smeti ni siht wodniw\'s unem
+    od eht emas gniht.\n\nfI( uoy edih eht snottub dna tnaw meht kcab
+    uoy nac elbane meht ni eht Ecnaraeppa noitces fo Ppa sgnittes.)
+    </string>
 </resources>
