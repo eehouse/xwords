@@ -2231,17 +2231,18 @@ public class BoardDelegate extends DelegateBase
                                                            nPlayers, forceChannel );
                     switch ( m_missingMeans ) {
                     case BLUETOOTH:
-                        String progMsg = BTService.nameForAddr( dev );
-                        progMsg = getString( R.string.invite_progress_fmt, progMsg );
-                        m_progressShown = true;
-                        startProgress( R.string.invite_progress_title, progMsg,
-                                       new DialogInterface.OnCancelListener() {
-                                           public void onCancel( DialogInterface dlg )
-                                           {
-                                               m_progressShown = false;
-                                           }
-                                       });
-
+                        if ( ! m_progressShown ) {
+                            m_progressShown = true;
+                            String progMsg = BTService.nameForAddr( dev );
+                            progMsg = getString( R.string.invite_progress_fmt, progMsg );
+                            startProgress( R.string.invite_progress_title, progMsg,
+                                           new DialogInterface.OnCancelListener() {
+                                               public void onCancel( DialogInterface dlg )
+                                               {
+                                                   m_progressShown = false;
+                                               }
+                                           });
+                        }
                         BTService.inviteRemote( m_activity, dev, nli );
                         break;
                     case SMS:
