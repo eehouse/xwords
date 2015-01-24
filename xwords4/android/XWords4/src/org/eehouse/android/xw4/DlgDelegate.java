@@ -55,6 +55,7 @@ public class DlgDelegate {
         OPEN_GAME,
         CLEAR_SELS,
         NEW_NET_GAME,
+        SET_HIDE_NEWGAME_BUTTONS,
 
         // BoardDelegate
         UNDO_LAST_ACTION,
@@ -102,6 +103,15 @@ public class DlgDelegate {
         SL_COPY_ACTION,
 
         __LAST
+    }
+
+    public static class ActionPair {
+        public ActionPair( Action act, int str ) { 
+            buttonStr = str; action = act;
+        }
+        public int buttonStr;
+        public Action action;
+        public Object[] params; // null for now
     }
 
     public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
@@ -236,15 +246,8 @@ public class DlgDelegate {
         showDialog( DlgID.DIALOG_ABOUT );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     final Action action,
-                                     final Object[] params )
-    {
-        showNotAgainDlgThen( getString( msgID ), prefsKey, action, params );
-    }
-
     public void showNotAgainDlgThen( String msg, int prefsKey,
-                                     final Action action,
+                                     ActionPair pair, final Action action,
                                      final Object[] params )
     {
         if ( XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
@@ -262,17 +265,28 @@ public class DlgDelegate {
             }
         } else {
             DlgState state = 
-                new DlgState( DlgID.DIALOG_NOTAGAIN, msg, action, prefsKey, 
+                new DlgState( DlgID.DIALOG_NOTAGAIN, msg, prefsKey, pair, action, 
                               params );
             addState( state );
             showDialog( DlgID.DIALOG_NOTAGAIN );
         }
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey,
-                                     Action action)
+    public void showNotAgainDlgThen( int msgID, int prefsKey, ActionPair pair,
+                                     Action action, Object[] params )
     {
-        showNotAgainDlgThen( msgID, prefsKey, action, null );
+        showNotAgainDlgThen( getString( msgID ), prefsKey, pair, action, 
+                             params );
+    }
+
+    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
+    {
+        showNotAgainDlgThen( msgID, prefsKey, null, action, null );
+    }
+
+    public void showNotAgainDlgThen( int msgID, int prefsKey, ActionPair pair )
+    {
+        showNotAgainDlgThen( msgID, prefsKey, pair, Action.SKIP_CALLBACK, null );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey )
@@ -498,11 +512,23 @@ public class DlgDelegate {
                 }
             };
 
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
-        builder.setTitle( R.string.newbie_title );
-        builder.setMessage( state.m_msg );
-        builder.setPositiveButton( R.string.button_ok, lstnr_p );
-        builder.setNegativeButton( R.string.button_notagain, lstnr_n );
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
+            .setTitle( R.string.newbie_title )
+            .setMessage( state.m_msg )
+            .setPositiveButton( R.string.button_ok, lstnr_p )
+            .setNegativeButton( R.string.button_notagain, lstnr_n );
+        if ( null != state.m_pair ) {
+            final ActionPair pair = state.m_pair;
+            OnClickListener lstnr = new OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        m_clickCallback.
+                            dlgButtonClicked( pair.action, 
+                                              AlertDialog.BUTTON_POSITIVE,
+                                              pair.params );
+                    }
+                };
+            builder.setNeutralButton( pair.buttonStr, lstnr );
+        }
         Dialog dialog = builder.create();
 
         return setCallbackDismissListener( dialog, state, dlgID );

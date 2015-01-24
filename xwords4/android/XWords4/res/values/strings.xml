@@ -2281,4 +2281,12 @@
 
     <string name="connection_via_label">Change Communicate via</string>
 
+    <string name="set_pref">Hide buttons</string>
+
+    <string name="not_again_hidenewgamebuttons">You can hide the new
+    game buttons below to get more space for games. They are
+    duplicated by the first two items in this window\'s menu.\n\n(If
+    you hide them and want them back, you can reshow them via the
+    Preferences window availabe through the menu.) </string>
+
 </resources>

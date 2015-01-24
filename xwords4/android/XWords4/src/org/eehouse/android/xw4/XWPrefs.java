@@ -59,6 +59,11 @@ public class XWPrefs {
                                 false );
     }
 
+    public static void setHideNewgameButtons( Context context, boolean set )
+    {
+        setPrefsBoolean( context, R.string.key_hide_newgames, set );
+    }
+
     public static String getDefaultRelayHost( Context context )
     {
         return getPrefsString( context, R.string.key_relay_host );

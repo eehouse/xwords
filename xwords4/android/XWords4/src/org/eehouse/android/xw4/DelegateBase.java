@@ -36,6 +36,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify;
@@ -321,7 +322,7 @@ public class DelegateBase implements DlgClickNotify,
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         Action action, Object... params )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action, params );
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, null, action, params );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
@@ -329,10 +330,15 @@ public class DelegateBase implements DlgClickNotify,
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
     }
 
+    public void showNotAgainDlgThen( int msgID, int prefsKey, ActionPair pair )
+    {
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, pair );
+    }
+
     protected void showNotAgainDlgThen( String msg, int prefsKey,
                                         Action action )
     {
-        m_delegate.showNotAgainDlgThen( msg, prefsKey, action, null );
+        m_delegate.showNotAgainDlgThen( msg, prefsKey, null, action, null );
     }
 
     protected void showNotAgainDlg( int msgID, int prefsKey )

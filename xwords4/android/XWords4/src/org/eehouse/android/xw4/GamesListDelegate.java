@@ -54,6 +54,7 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
@@ -125,7 +126,16 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             }
 
-            return alist.toArray( new Object[alist.size()] );
+            int size = alist.size();
+            if ( 5 <= size && !XWPrefs.getHideNewgameButtons( m_activity ) ) {
+                ActionPair pair = 
+                    new ActionPair( Action.SET_HIDE_NEWGAME_BUTTONS, 
+                                    R.string.set_pref );
+                showNotAgainDlgThen( R.string.not_again_hidenewgamebuttons,
+                                     R.string.key_notagain_hidenewgamebuttons,
+                                     pair );
+            }
+            return alist.toArray( new Object[size] );
         }
         
         @Override
@@ -1156,6 +1166,10 @@ public class GamesListDelegate extends ListDelegateBase
                 break;
             case CLEAR_SELS:
                 clearSelections();
+                break;
+            case SET_HIDE_NEWGAME_BUTTONS:
+                XWPrefs.setHideNewgameButtons( m_activity, true );
+                setupButtons();
                 break;
             default:
                 Assert.fail();

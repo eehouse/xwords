@@ -21,6 +21,7 @@
 package org.eehouse.android.xw4;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 
 import android.os.Parcelable;
 import android.os.Parcel;
@@ -30,6 +31,7 @@ public class DlgState implements Parcelable {
     public String m_msg;
     public int m_posButton;
     public Action m_action = null;
+    public ActionPair m_pair = null;
     public int m_prefsKey;
     public Object[] m_params;
 
@@ -43,11 +45,12 @@ public class DlgState implements Parcelable {
         this( dlgID, msg, R.string.button_ok, action, prefsKey );
     }
 
-    public DlgState( DlgID dlgID, String msg, Action action, int prefsKey, 
-                     Object[] params )
+    public DlgState( DlgID dlgID, String msg, int prefsKey, ActionPair pair, 
+                     Action action, Object[] params )
     {
         this( dlgID, msg, R.string.button_ok, action, prefsKey );
         m_params = params;
+        m_pair = pair;
     }
 
     public DlgState( DlgID dlgID, String msg, int posButton, 
@@ -57,7 +60,8 @@ public class DlgState implements Parcelable {
     }
 
     public DlgState( DlgID dlgID, String msg, int posButton, 
-                     Action action, int prefsKey, Object[] params )
+                     Action action, int prefsKey, 
+                     Object[] params )
     {
         m_id = dlgID;
         m_msg = msg;

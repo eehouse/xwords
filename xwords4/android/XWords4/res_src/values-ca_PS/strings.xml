@@ -1938,4 +1938,10 @@
   <string name="invite_multi_title">INVITE MULTIPLE (ADVANCED)</string>
   <string name="invite_multi_summary">INVITE MORE THAN ONE PLAYER PER REMOTE DEVICE</string>
   <string name="connection_via_label">CHANGE COMMUNICATE VIA</string>
+  <string name="set_pref">HIDE BUTTONS</string>
+  <string name="not_again_hidenewgamebuttons">YOU CAN HIDE THE NEW
+    GAME BUTTONS BELOW TO GET MORE SPACE FOR GAMES. THEY ARE
+    DUPLICATED BY THE FIRST TWO ITEMS IN THIS WINDOW\'S MENU.\n\n(IF
+    YOU HIDE THEM AND WANT THEM BACK, YOU CAN RESHOW THEM VIA THE
+    PREFERENCES WINDOW AVAILABE THROUGH THE MENU.) </string>
 </resources>
