@@ -186,7 +186,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         for ( int ii = 0; iter.hasNext(); ++ii ) {
             PhoneRec rec = iter.next();
             if ( rec.m_isChecked ) {
-                counts[index] = rec.nPlayers;
+                counts[index] = rec.m_nPlayers;
                 result[index] = ((SMSListItem)m_adapter.getItem(ii)).getNumber();
                 index++;
             }
@@ -208,7 +208,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                 PhoneRec rec = iter.next();
                 if ( rec.m_isChecked ) {
                     ++nDevs;
-                    nPlayers += rec.nPlayers;
+                    nPlayers += rec.m_nPlayers;
                 }
             }
             m_okButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
@@ -370,7 +370,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         public String m_phone;
         public String m_name;
         public boolean m_isChecked;
-        public int nPlayers;
+        public int m_nPlayers;
         public PhoneRec( String name, String phone )
         {
             this( name, phone, false );
@@ -384,6 +384,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         {
             m_phone = phone;
             m_isChecked = checked;
+            m_nPlayers = 1;
 
             if ( null == name ) {
                 name = Utils.phoneToContact( m_activity, phone, false );
@@ -430,8 +431,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             m_items[position] = item;
 
             // Set up spinner
-            // m_counts.put( position, 1 );
-            rec.nPlayers = 1;
+            Assert.assertTrue( 1 == rec.m_nPlayers );
             if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
                 Spinner spinner = (Spinner)
                     item.findViewById(R.id.nperdev_spinner);
@@ -449,7 +449,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                                                     View view, int pos, 
                                                     long id )
                         {
-                            rec.nPlayers = 1 + pos;
+                            rec.m_nPlayers = 1 + pos;
                             tryEnable();
                         }
 
