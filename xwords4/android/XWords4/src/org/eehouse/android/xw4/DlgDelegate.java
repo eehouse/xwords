@@ -331,7 +331,7 @@ public class DlgDelegate {
 
     public void showInviteChoicesThen( final Action action )
     {
-        if ( Utils.deviceSupportsSMS( m_activity )
+        if ( (XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS( m_activity ))
              || NFCUtils.nfcAvail( m_activity )[0]
              || BTService.BTAvailable() ) {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN, action );
