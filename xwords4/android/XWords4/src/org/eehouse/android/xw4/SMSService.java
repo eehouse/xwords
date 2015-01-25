@@ -74,15 +74,16 @@ public class SMSService extends XWService {
     private static final int SMS_PROTO_VERSION = 0;
     private static final int MAX_LEN_TEXT = 100;
     private static final int MAX_LEN_BINARY = 100;
-    private static final int HANDLE = 1;
-    private static final int INVITE = 2;
-    private static final int SEND = 3;
-    private static final int REMOVE = 4;
-    // private static final int MESG_GAMEGONE = 5;
-    private static final int CHECK_MSGDB = 6;
-    private static final int ADDED_MISSING = 7;
-    private static final int STOP_SELF = 8;
-    private static final int HANDLEDATA = 9;
+    private enum SMSAction { _NONE,
+                             HANDLE,
+                             INVITE,
+                             SEND,
+                             REMOVE,
+                             CHECK_MSGDB,
+                             ADDED_MISSING,
+                             STOP_SELF,
+                             HANDLEDATA,
+    };
 
     private static final String CMD_STR = "CMD";
     private static final String BUFFER = "BUFFER";
@@ -164,14 +165,14 @@ public class SMSService extends XWService {
         if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS( context )
              // Earlier than kitkat...
              && KITKAT > Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
-            Intent intent = getIntentTo( context, CHECK_MSGDB );
+            Intent intent = getIntentTo( context, SMSAction.CHECK_MSGDB );
             context.startService( intent );
         }
     }
 
     public static void stopService( Context context )
     {
-        Intent intent = getIntentTo( context, STOP_SELF );
+        Intent intent = getIntentTo( context, SMSAction.STOP_SELF );
         context.startService( intent );
     }
 
@@ -179,7 +180,7 @@ public class SMSService extends XWService {
     public static void handleFrom( Context context, String buffer, 
                                    String phone )
     {
-        Intent intent = getIntentTo( context, HANDLE );
+        Intent intent = getIntentTo( context, SMSAction.HANDLE );
         intent.putExtra( BUFFER, buffer );
         intent.putExtra( PHONE, phone );
         context.startService( intent );
@@ -191,7 +192,7 @@ public class SMSService extends XWService {
     public static void handleFrom( Context context, byte[] buffer, 
                                    String phone )
     {
-        Intent intent = getIntentTo( context, HANDLEDATA );
+        Intent intent = getIntentTo( context, SMSAction.HANDLEDATA );
         intent.putExtra( BUFFER, buffer );
         intent.putExtra( PHONE, phone );
         context.startService( intent );
@@ -202,7 +203,7 @@ public class SMSService extends XWService {
     public static void inviteRemote( Context context, String phone,
                                      NetLaunchInfo nli )
     {
-        Intent intent = getIntentTo( context, INVITE );
+        Intent intent = getIntentTo( context, SMSAction.INVITE );
         intent.putExtra( PHONE, phone );
         String asString = nli.toString();
         DbgUtils.logf( "SMSService.inviteRemote(%s, '%s')", phone, asString );
@@ -215,7 +216,7 @@ public class SMSService extends XWService {
     {
         int nSent = -1;
         if ( XWPrefs.getSMSEnabled( context ) ) {
-            Intent intent = getIntentTo( context, SEND );
+            Intent intent = getIntentTo( context, SMSAction.SEND );
             intent.putExtra( PHONE, phone );
             intent.putExtra( MultiService.GAMEID, gameID );
             intent.putExtra( BINBUFFER, binmsg );
@@ -229,7 +230,7 @@ public class SMSService extends XWService {
 
     public static void gameDied( Context context, int gameID, String phone )
     {
-        Intent intent = getIntentTo( context, REMOVE );
+        Intent intent = getIntentTo( context, SMSAction.REMOVE );
         intent.putExtra( PHONE, phone );
         intent.putExtra( MultiService.GAMEID, gameID );
         context.startService( intent );
@@ -237,7 +238,7 @@ public class SMSService extends XWService {
 
     public static void onGameDictDownload( Context context, Intent intentOld )
     {
-        Intent intent = getIntentTo( context, ADDED_MISSING );
+        Intent intent = getIntentTo( context, SMSAction.ADDED_MISSING );
         intent.fillIn( intentOld, 0 );
         context.startService( intent );
     }
@@ -278,7 +279,7 @@ public class SMSService extends XWService {
         return result;
     }
 
-    private static Intent getIntentTo( Context context, int cmd )
+    private static Intent getIntentTo( Context context, SMSAction cmd )
     {
         if ( null == s_showToasts ) {
             s_showToasts = 
@@ -286,7 +287,7 @@ public class SMSService extends XWService {
         }
 
         Intent intent = new Intent( context, SMSService.class );
-        intent.putExtra( CMD_STR, cmd );
+        intent.putExtra( CMD_STR, cmd.ordinal() );
         return intent;
     }
 
@@ -326,65 +327,70 @@ public class SMSService extends XWService {
     {
         int result = Service.START_NOT_STICKY;
         if ( XWApp.SMSSUPPORTED && null != intent ) {
-            int cmd = intent.getIntExtra( CMD_STR, -1 );
-            switch( cmd ) {
-            case STOP_SELF:
-                stopSelf();
-                break;
-            case CHECK_MSGDB:
-                if ( ! XWPrefs.getHaveCheckedSMS( this ) ) {
-                    XWPrefs.setHaveCheckedSMS( this, true );
-                    new Thread( new Runnable() {
-                            public void run() {
-                                checkMsgDB();
-                            } 
-                        } ).start();
+            int ordinal = intent.getIntExtra( CMD_STR, -1 );
+            if ( -1 == ordinal ) {
+                // ???
+            } else {
+                SMSAction cmd = SMSAction.values()[ordinal];
+                switch( cmd ) {
+                case STOP_SELF:
+                    stopSelf();
+                    break;
+                case CHECK_MSGDB:
+                    if ( ! XWPrefs.getHaveCheckedSMS( this ) ) {
+                        XWPrefs.setHaveCheckedSMS( this, true );
+                        new Thread( new Runnable() {
+                                public void run() {
+                                    checkMsgDB();
+                                } 
+                            } ).start();
+                    }
+                    break;
+                case HANDLE:
+                case HANDLEDATA:
+                    ++m_nReceived;
+                    ConnStatusHandler.
+                        updateStatusIn( this, null,
+                                        CommsConnType.COMMS_CONN_SMS, true );
+                    if ( s_showToasts ) {
+                        DbgUtils.showf( this, "got %dth msg", m_nReceived );
+                    }
+                    String phone = intent.getStringExtra( PHONE );
+                    if ( SMSAction.HANDLE == cmd ) {
+                        String buffer = intent.getStringExtra( BUFFER );
+                        receiveBuffer( buffer, phone );
+                    } else {
+                        byte[] buffer = intent.getByteArrayExtra( BUFFER );
+                        receiveBuffer( buffer, phone );
+                    }
+                    break;
+                case INVITE:
+                    phone = intent.getStringExtra( PHONE );
+                    inviteRemote( phone, intent.getStringExtra( GAMEDATA_STR ) );
+                    break;
+                case ADDED_MISSING:
+                    phone = intent.getStringExtra( PHONE );
+                    int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+                    String gameName = intent.getStringExtra( MultiService.GAMENAME );
+                    int lang = intent.getIntExtra( MultiService.LANG, -1 );
+                    String dict = intent.getStringExtra( MultiService.DICT );
+                    int nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
+                    int nPlayersH = intent.getIntExtra( MultiService.NPLAYERSH, -1 );
+                    makeForInvite( phone, gameID, gameName, lang, dict, 
+                                   nPlayersT, nPlayersH, 1 );
+                    break;
+                case SEND:
+                    phone = intent.getStringExtra( PHONE );
+                    byte[] bytes = intent.getByteArrayExtra( BINBUFFER );
+                    gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+                    sendPacket( phone, gameID, bytes );
+                    break;
+                case REMOVE:
+                    gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+                    phone = intent.getStringExtra( PHONE );
+                    sendDiedPacket( phone, gameID );
+                    break;
                 }
-                break;
-            case HANDLE:
-            case HANDLEDATA:
-                ++m_nReceived;
-                ConnStatusHandler.
-                    updateStatusIn( this, null,
-                                    CommsConnType.COMMS_CONN_SMS, true );
-                if ( s_showToasts ) {
-                    DbgUtils.showf( this, "got %dth msg", m_nReceived );
-                }
-                String phone = intent.getStringExtra( PHONE );
-                if ( HANDLE == cmd ) {
-                    String buffer = intent.getStringExtra( BUFFER );
-                    receiveBuffer( buffer, phone );
-                } else {
-                    byte[] buffer = intent.getByteArrayExtra( BUFFER );
-                    receiveBuffer( buffer, phone );
-                }
-                break;
-            case INVITE:
-                phone = intent.getStringExtra( PHONE );
-                inviteRemote( phone, intent.getStringExtra( GAMEDATA_STR ) );
-                break;
-            case ADDED_MISSING:
-                phone = intent.getStringExtra( PHONE );
-                int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-                String gameName = intent.getStringExtra( MultiService.GAMENAME );
-                int lang = intent.getIntExtra( MultiService.LANG, -1 );
-                String dict = intent.getStringExtra( MultiService.DICT );
-                int nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
-                int nPlayersH = intent.getIntExtra( MultiService.NPLAYERSH, -1 );
-                makeForInvite( phone, gameID, gameName, lang, dict, 
-                               nPlayersT, nPlayersH, 1 );
-                break;
-            case SEND:
-                phone = intent.getStringExtra( PHONE );
-                byte[] bytes = intent.getByteArrayExtra( BINBUFFER );
-                gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-                sendPacket( phone, gameID, bytes );
-                break;
-            case REMOVE:
-                gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-                phone = intent.getStringExtra( PHONE );
-                sendDiedPacket( phone, gameID );
-                break;
             }
 
             result = Service.START_STICKY;
