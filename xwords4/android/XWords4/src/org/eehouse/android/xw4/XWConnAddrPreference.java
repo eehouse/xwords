@@ -41,12 +41,6 @@ public class XWConnAddrPreference extends DialogPreference {
     private Context m_context;
     // This stuff probably belongs in CommsConnType
     private static CommsConnTypeSet s_supported;
-    static {
-        s_supported = new CommsConnTypeSet();
-        s_supported.add( CommsConnType.COMMS_CONN_RELAY );
-        s_supported.add( CommsConnType.COMMS_CONN_BT );
-        s_supported.add( CommsConnType.COMMS_CONN_SMS );
-    }
 
     public static CommsConnTypeSet addConnections( Context context, 
                                                    LinearLayout view, 
@@ -55,7 +49,7 @@ public class XWConnAddrPreference extends DialogPreference {
         LinearLayout list = (LinearLayout)view.findViewById( R.id.conn_types );
         final CommsConnTypeSet tmpTypes = (CommsConnTypeSet)curTypes.clone();
 
-        for ( CommsConnType typ : s_supported.getTypes() ) {
+        for ( CommsConnType typ : getSupported(context).getTypes() ) {
             LinearLayout layout = (LinearLayout)
                 LocUtils.inflate( context, R.layout.btinviter_item );
             CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
@@ -108,5 +102,21 @@ public class XWConnAddrPreference extends DialogPreference {
             setSummary( m_curSet.toString( m_context ) );
         }
         super.onClick( dialog, which );
+    }
+
+    private static CommsConnTypeSet getSupported( Context context )
+    {
+        if ( null == s_supported ) {
+            CommsConnTypeSet supported = new CommsConnTypeSet();
+            supported.add( CommsConnType.COMMS_CONN_RELAY );
+            if ( BTService.BTAvailable() ) {
+                supported.add( CommsConnType.COMMS_CONN_BT );
+            }
+            if ( Utils.isGSMPhone( context ) ) {
+                supported.add( CommsConnType.COMMS_CONN_SMS );
+            }
+            s_supported = supported;
+        }
+        return s_supported;
     }
 }
