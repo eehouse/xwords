@@ -79,7 +79,6 @@ public class XWApp extends Application {
         UpdateCheckReceiver.restartTimer( this );
 
         BTService.startService( this );
-        SMSService.checkForInvites( this );
         RelayService.startService( this );
         GCMIntentService.init( this );
     }

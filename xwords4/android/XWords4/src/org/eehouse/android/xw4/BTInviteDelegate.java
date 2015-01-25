@@ -156,7 +156,7 @@ public class BTInviteDelegate extends InviteDelegate {
             int position = iter.next();
             LinearLayout layout = (LinearLayout)list.getChildAt( position );
             CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-            Assert.assertTrue( box.isChecked() );
+            Assert.assertTrue( box.isChecked() ); // fired after doing add-all-paired
             String btAddr = m_adapter.getBTAddr( box );
             String btName = m_adapter.getBTName( box );
             Assert.assertTrue( box.getText().toString().equals( btName ) );

@@ -293,16 +293,6 @@ public class XWPrefs {
         clearPrefsKey( context, R.string.key_relay_regid );
     }
 
-    public static boolean getHaveCheckedSMS( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_checked_sms, false );
-    }
-
-    public static void setHaveCheckedSMS( Context context, boolean newValue )
-    {
-        setPrefsBoolean( context, R.string.key_checked_sms, newValue );
-    }
-
     public static DictUtils.DictLoc getDefaultLoc( Context context )
     {
         boolean internal = getDefaultLocInternal( context );

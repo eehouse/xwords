@@ -181,11 +181,8 @@ public class PrefsDelegate extends DelegateBase
         } else if ( key.equals( m_smsToasting ) ) {
             SMSService.smsToastEnable( sp.getBoolean( key, false ) );
         } else if ( key.equals( m_smsEnable ) ) {
-            if ( sp.getBoolean( key, true ) ) {
-                SMSService.checkForInvites( m_activity );
-            } else {
+            if ( ! sp.getBoolean( key, true ) ) {
                 SMSService.stopService( m_activity );
-                XWPrefs.setHaveCheckedSMS( m_activity, false );
             }
         } else if ( key.equals( m_downloadPath ) ) {
             String value = sp.getString( key, null );
