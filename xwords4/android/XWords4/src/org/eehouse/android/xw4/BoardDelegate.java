@@ -742,11 +742,6 @@ public class BoardDelegate extends DelegateBase
                                   m_gsi.canUndo );
         }
 
-        boolean isServer = null != m_gi
-            && DeviceRole.SERVER_ISSERVER == m_gi.serverRole;
-        Utils.setItemVisible( menu, R.id.board_menu_invite, 
-                              isServer && 0 < m_nMissing );
-
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
                               inTrade && m_gsi.tradeTilesSelected
@@ -862,9 +857,7 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_undo_last:
             showConfirmThen( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION );
             break;
-        case R.id.board_menu_invite:
-            showDialog( DlgID.DLG_INVITE );
-            break;
+
             // small devices only
         case R.id.board_menu_dict:
             String dictName = m_gi.dictName( m_view.getCurPlayer() );
