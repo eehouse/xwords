@@ -553,7 +553,7 @@ public class DlgDelegate {
         final ArrayList<DlgClickNotify.InviteMeans> means = 
             new ArrayList<DlgClickNotify.InviteMeans>();
         ArrayList<String> items = new ArrayList<String>();
-        if ( Utils.deviceSupportsSMS( m_activity ) ) {
+        if ( XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS(m_activity) ) {
             items.add( getString( R.string.invite_choice_sms ) );
             means.add( DlgClickNotify.InviteMeans.SMS );
         }
