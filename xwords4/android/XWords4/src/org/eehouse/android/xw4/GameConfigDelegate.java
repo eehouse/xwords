@@ -283,6 +283,20 @@ public class GameConfigDelegate extends DelegateBase
                 final ConnViaViewLayout items = (ConnViaViewLayout)
                     layout.findViewById( R.id.conn_types );
                 items.setTypes( m_conTypes );
+                items.setWarner( new ConnViaViewLayout.CheckEnabledWarner() {
+                        public void warnDisabled( CommsConnType typ ) {
+                            switch( typ ) {
+                            case COMMS_CONN_SMS:
+                                showConfirmThen( R.string.warn_sms_disabled, 
+                                                 R.string.button_go_settings,
+                                                 Action.SMS_CONFIG_ACTION );
+                                break;
+                            case COMMS_CONN_BT:
+                                showOKOnlyDialog( R.string.enable_bt_first );
+                                break;
+                            }
+                        }
+                    });
 
                 final DialogInterface.OnClickListener lstnr = 
                     new DialogInterface.OnClickListener() {
@@ -636,10 +650,16 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
+        boolean positive = AlertDialog.BUTTON_POSITIVE == button;
         switch( action ) {
         case LOCKED_CHANGE_ACTION:
-            if ( AlertDialog.BUTTON_POSITIVE == button ) {
+            if ( positive ) {
                 handleLockedChange();
+            }
+            break;
+        case SMS_CONFIG_ACTION:
+            if ( positive ) {
+                Utils.launchSettings( m_activity );
             }
             break;
         default:

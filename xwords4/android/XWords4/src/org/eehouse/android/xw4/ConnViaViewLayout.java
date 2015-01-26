@@ -22,11 +22,13 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.CheckBox;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.HasDlgDelegate;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -35,8 +37,18 @@ public class ConnViaViewLayout extends LinearLayout {
     private static CommsConnTypeSet s_supported;
     private CommsConnTypeSet m_curSet;
 
+    public interface CheckEnabledWarner {
+        public void warnDisabled( CommsConnType typ );
+    }
+    private CheckEnabledWarner m_warner;
+
     public ConnViaViewLayout( Context context, AttributeSet as ) {
         super( context, as );
+    }
+
+    protected void setWarner( CheckEnabledWarner warner )
+    {
+        m_warner = warner;
     }
 
     protected void setTypes( CommsConnTypeSet types )
@@ -69,13 +81,36 @@ public class ConnViaViewLayout extends LinearLayout {
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                   boolean isChecked ) {
                         if ( isChecked ) {
-                            m_curSet.add( typf );
+                            if ( enabledElseWarn( typf ) ) {
+                                m_curSet.add( typf );
+                            } else {
+                                buttonView.setChecked( false );
+                            }
                         } else {
                             m_curSet.remove( typf );
                         }
                     }
                 } );
         }
+    }
+
+    private boolean enabledElseWarn( CommsConnType typ )
+    {
+        boolean result = true;
+        Context context = getContext();
+        switch( typ ) {
+        case COMMS_CONN_SMS:
+            result = XWPrefs.getSMSEnabled( context );
+            break;
+        case COMMS_CONN_BT:
+            result = BTService.BTEnabled();
+        }
+
+        if ( !result && null != m_warner ) {
+            m_warner.warnDisabled( typ );
+        }
+
+        return result;
     }
 
     private static CommsConnTypeSet getSupported( Context context )

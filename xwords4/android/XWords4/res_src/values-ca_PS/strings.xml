@@ -1707,8 +1707,8 @@
   <string name="confirm_sms_willpay">YES: I\'LL PAY ALL CARRIER CHARGES</string>
   <!--  -->
   <string name="warn_sms_disabled">PLAY VIA SMS IS CURRENTLY
-    DISABLED, SO NO MOVES WILL BE SENT FOR THIS GAME.  (IF YOU WANT TO
-    ENABLE PLAY VIA SMS, GO TO SETTINGS-&gt;NETWORK GAME SETTINGS.)
+    DISABLED, SO NO MOVES WILL BE SENT FOR THIS GAME.\n\nIF YOU WANT TO
+    ENABLE PLAY VIA SMS, GO TO SETTINGS-&gt;NETWORK GAME SETTINGS.
     </string>
   <!--  -->
   <string name="gamel_menu_checkupdates">CHECK FOR UPDATES</string>
@@ -1951,4 +1951,6 @@
   <string name="nfc_just_tap">TO INVITE VIA NFC JUST TOUCH THE BACK
     OF THIS DEVICE AGAINST THE ONE YOU WANT TO INVITE—ANY TIME THE
     GAME IS OPEN.</string>
+  <string name="enable_bt_first">PLEASE TURN BLUETOOTH ON BEFORE ENABLING.</string>
+  <string name="enable_sms_first">PLEASE CHECK \"ALLOW GAMES VIA SMS\" BEFORE ENABLING.</string>
 </resources>

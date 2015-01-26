@@ -28,6 +28,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public class XWConnAddrPreference extends DialogPreference {
@@ -54,6 +55,25 @@ public class XWConnAddrPreference extends DialogPreference {
         LocUtils.xlateView( m_context, view );
         m_view = (ConnViaViewLayout)view.findViewById( R.id.conn_types );
         m_view.setTypes( XWPrefs.getAddrTypes( m_context ) );
+        m_view.setWarner( new ConnViaViewLayout.CheckEnabledWarner() {
+                public void warnDisabled( CommsConnType typ ) {
+                    int id;
+                    switch( typ ) {
+                    case COMMS_CONN_SMS:
+                        id = R.string.enable_sms_first;
+                        break;
+                    case COMMS_CONN_BT:
+                        id = R.string.enable_bt_first;
+                        break;
+                    default:
+                        id = 0;
+                    }
+                    if ( 0 != id ) {
+                        PrefsActivity activity = (PrefsActivity)m_context;
+                        activity.showOKOnlyDialog( id );
+                    }
+                }
+            } );
     }
     
     @Override

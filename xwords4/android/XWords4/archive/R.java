@@ -997,12 +997,14 @@ public final class R {
         /**  Shows in SMS Invite dialog when no phone numbers have been saved previously 
          */
         public static final int empty_sms_inviter=0x7f05021f;
+        public static final int enable_bt_first=0x7f0502d8;
         public static final int enable_dupes_summary=0x7f05008c;
         public static final int enable_dupes_title=0x7f05008a;
         public static final int enable_nfc=0x7f05027b;
         /**   
          */
         public static final int enable_sms=0x7f05023c;
+        public static final int enable_sms_first=0x7f0502d9;
         /**   
          */
         public static final int enable_sms_summary=0x7f05023d;

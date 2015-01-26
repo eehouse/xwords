@@ -87,6 +87,11 @@ public class PrefsActivity extends PreferenceActivity implements Delegator {
         super.onDestroy();
     }
 
+    protected void showOKOnlyDialog( int msgID )
+    {
+        m_dlgt.showOKOnlyDialog( msgID );
+    }
+
     //////////////////////////////////////////////////////////////////////
     // Delegator interface
     //////////////////////////////////////////////////////////////////////
