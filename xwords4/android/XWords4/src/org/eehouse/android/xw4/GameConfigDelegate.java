@@ -280,13 +280,14 @@ public class GameConfigDelegate extends DelegateBase
                 break;
             case CHANGE_CONN:
                 LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
-                final CommsConnTypeSet curSet = XWConnAddrPreference
-                    .addConnections( m_activity, layout, m_conTypes );
+                final ConnViaViewLayout items = (ConnViaViewLayout)
+                    layout.findViewById( R.id.conn_types );
+                items.setTypes( m_conTypes );
 
                 final DialogInterface.OnClickListener lstnr = 
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int button ) {
-                            m_conTypes = curSet;
+                            m_conTypes = items.getTypes();
                             setConnLabel();
                             showHideRelayStuff();
                         }

@@ -7,9 +7,11 @@
               android:paddingLeft="8dp"
               android:paddingRight="8dp"
               >
-  <LinearLayout android:id="@+id/conn_types"
-				android:orientation="vertical"
-				android:layout_width="match_parent" 
-				android:layout_height="wrap_content"
-				/>
+  <org.eehouse.android.xw4.ConnViaViewLayout 
+      android:id="@+id/conn_types"
+	  android:orientation="vertical"
+	  android:layout_width="match_parent" 
+	  android:layout_height="wrap_content"
+	  />
+
 </LinearLayout>

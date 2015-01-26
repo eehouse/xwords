@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2010 - 2014 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2015 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -26,51 +26,14 @@ import android.content.DialogInterface;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public class XWConnAddrPreference extends DialogPreference {
 
-    private CommsConnTypeSet m_curSet;
     private Context m_context;
-    // This stuff probably belongs in CommsConnType
-    private static CommsConnTypeSet s_supported;
-
-    public static CommsConnTypeSet addConnections( Context context, 
-                                                   LinearLayout view, 
-                                                   CommsConnTypeSet curTypes )
-    {
-        LinearLayout list = (LinearLayout)view.findViewById( R.id.conn_types );
-        final CommsConnTypeSet tmpTypes = (CommsConnTypeSet)curTypes.clone();
-
-        for ( CommsConnType typ : getSupported(context).getTypes() ) {
-            LinearLayout layout = (LinearLayout)
-                LocUtils.inflate( context, R.layout.btinviter_item );
-            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-            box.setText( typ.longName( context ) );
-            box.setChecked( curTypes.contains( typ ) );
-            list.addView( layout ); // failed!!!
-            
-            final CommsConnType typf = typ;
-            box.setOnCheckedChangeListener( new OnCheckedChangeListener() {
-                    public void onCheckedChanged( CompoundButton buttonView, 
-                                                  boolean isChecked ) {
-                        if ( isChecked ) {
-                            tmpTypes.add( typf );
-                        } else {
-                            tmpTypes.remove( typf );
-                        }
-                    }
-                } );
-        }
-        return tmpTypes;
-    }
+    private ConnViaViewLayout m_view;
 
     public XWConnAddrPreference( Context context, AttributeSet attrs )
     {
@@ -81,16 +44,16 @@ public class XWConnAddrPreference extends DialogPreference {
 
         setNegativeButtonText( LocUtils.getString( context, R.string.button_cancel ) );
 
-        m_curSet = XWPrefs.getAddrTypes( context );
-        setSummary( m_curSet.toString( context ) );
+        CommsConnTypeSet curSet = XWPrefs.getAddrTypes( context );
+        setSummary( curSet.toString( context ) );
     }
 
     @Override
     protected void onBindDialogView( View view )
     {
         LocUtils.xlateView( m_context, view );
-
-        m_curSet = addConnections( m_context, (LinearLayout)view, m_curSet );
+        m_view = (ConnViaViewLayout)view.findViewById( R.id.conn_types );
+        m_view.setTypes( XWPrefs.getAddrTypes( m_context ) );
     }
     
     @Override
@@ -98,25 +61,10 @@ public class XWConnAddrPreference extends DialogPreference {
     {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
             DbgUtils.logf( "ok pressed" );
-            XWPrefs.setAddrTypes( m_context, m_curSet );
-            setSummary( m_curSet.toString( m_context ) );
+            CommsConnTypeSet curSet = m_view.getTypes();
+            XWPrefs.setAddrTypes( m_context, curSet );
+            setSummary( curSet.toString( m_context ) );
         }
         super.onClick( dialog, which );
-    }
-
-    private static CommsConnTypeSet getSupported( Context context )
-    {
-        if ( null == s_supported ) {
-            CommsConnTypeSet supported = new CommsConnTypeSet();
-            supported.add( CommsConnType.COMMS_CONN_RELAY );
-            if ( BTService.BTAvailable() ) {
-                supported.add( CommsConnType.COMMS_CONN_BT );
-            }
-            if ( Utils.isGSMPhone( context ) ) {
-                supported.add( CommsConnType.COMMS_CONN_SMS );
-            }
-            s_supported = supported;
-        }
-        return s_supported;
     }
 }
