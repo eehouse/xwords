@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -475,6 +476,11 @@ public class BoardDelegate extends DelegateBase
                     .setMessage( "" )
                     .setPositiveButton( R.string.newgame_invite, lstnr )
                     .setNegativeButton( R.string.button_close_game, lstnr2 )
+                    .setOnCancelListener( new OnCancelListener() {
+                            public void onCancel( DialogInterface dialog ) {
+                                finish();
+                            }
+                        } )
                     .create();
                 break;
 
@@ -657,7 +663,7 @@ public class BoardDelegate extends DelegateBase
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
-            } else if ( 0 < m_nMissing ) {
+            } else if ( 0 < m_nMissing && ! m_activity.isFinishing() ) {
                 showDialog( DlgID.DLG_INVITE );
             }
         }
@@ -2237,7 +2243,7 @@ public class BoardDelegate extends DelegateBase
                             String progMsg = BTService.nameForAddr( dev );
                             progMsg = getString( R.string.invite_progress_fmt, progMsg );
                             startProgress( R.string.invite_progress_title, progMsg,
-                                           new DialogInterface.OnCancelListener() {
+                                           new OnCancelListener() {
                                                public void onCancel( DialogInterface dlg )
                                                {
                                                    m_progressShown = false;
