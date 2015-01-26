@@ -27,8 +27,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.preference.PreferenceScreen;
 import android.view.View;
 import android.widget.Button;
 import java.io.File;
@@ -157,6 +159,8 @@ public class PrefsDelegate extends DelegateBase
             } );
 
         setupLangPref();
+
+        hideStuff();
     }
     
     @Override
@@ -260,4 +264,17 @@ public class PrefsDelegate extends DelegateBase
             }
         }
     }
+
+    private void hideStuff()
+    {
+        if ( !XWApp.SMSSUPPORTED || !Utils.isGSMPhone( m_activity ) ) {
+            String key = getString( R.string.key_enable_sms );
+            Preference pref = m_activity.findPreference( key );
+            key = getString( R.string.key_network_behavior );
+            PreferenceScreen screen = (PreferenceScreen)
+                m_activity.findPreference( key );
+            screen.removePreference( pref );
+        }
+    }
+
 }

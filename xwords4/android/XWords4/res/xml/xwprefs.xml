@@ -265,6 +265,7 @@
 
   <PreferenceScreen android:title="@string/network_behavior"
                     android:summary="@string/network_behavior_summary"
+                    android:key="@string/key_network_behavior"
                     >
     <org.eehouse.android.xw4.SMSCheckBoxPreference 
         android:key="@string/key_enable_sms"
