@@ -126,16 +126,7 @@ public class GamesListDelegate extends ListDelegateBase
                 }
             }
 
-            int size = alist.size();
-            if ( 5 <= size && !XWPrefs.getHideNewgameButtons( m_activity ) ) {
-                ActionPair pair = 
-                    new ActionPair( Action.SET_HIDE_NEWGAME_BUTTONS, 
-                                    R.string.set_pref );
-                showNotAgainDlgThen( R.string.not_again_hidenewgamebuttons,
-                                     R.string.key_notagain_hidenewgamebuttons,
-                                     pair );
-            }
-            return alist.toArray( new Object[size] );
+            return alist.toArray( new Object[alist.size()] );
         }
         
         @Override
@@ -1150,6 +1141,10 @@ public class GamesListDelegate extends ListDelegateBase
                 }
                 break;
 
+            case NEW_GAME_PRESSED:
+                showDialog( DlgID.GAMES_LIST_NEWGAME );
+                break;
+
             case DELETE_GROUPS:
                 long[] groupIDs = (long[])params[0];
                 for ( long groupID : groupIDs ) {
@@ -1552,31 +1547,38 @@ public class GamesListDelegate extends ListDelegateBase
     private void setupButtons()
     {
         boolean hidden = XWPrefs.getHideNewgameButtons( m_activity );
-        final Button soloButton =
-            (Button)findViewById( R.id.button_newgame_solo );
-        if ( hidden ) {
-            soloButton.setVisibility( View.GONE );
-        } else {
-            soloButton.setVisibility( View.VISIBLE );
-            soloButton.setOnClickListener( new View.OnClickListener() {
-                    public void onClick( View view ) { 
-                        m_nextIsSolo = true;
-                        showDialog( DlgID.GAMES_LIST_NEWGAME );
-                    }
-                } );
+        int[] ids = { R.id.button_newgame_solo, R.id.button_newgame_multi };
+        boolean[] isSolos = { true, false };
+        for ( int ii = 0; ii < ids.length; ++ii ) {
+            Button button = (Button)findViewById( ids[ii] );
+            if ( hidden ) {
+                button.setVisibility( View.GONE );
+            } else {
+                button.setVisibility( View.VISIBLE );
+                final boolean solo = isSolos[ii];
+                button.setOnClickListener( new View.OnClickListener() {
+                        public void onClick( View view ) { 
+                            handleNewGameButton( solo );
+                        }
+                    } );
+            }
         }
-        final Button netButton = 
-            (Button)findViewById( R.id.button_newgame_multi );
-        if ( hidden ) {
-            netButton.setVisibility( View.GONE );
+    }
+
+    private void handleNewGameButton( boolean solo )
+    {
+        m_nextIsSolo = solo;
+
+        int count = m_adapter.getCount();
+        boolean skipOffer = 6 > count || XWPrefs.getHideNewgameButtons( m_activity );
+        if ( skipOffer ) {
+            showDialog( DlgID.GAMES_LIST_NEWGAME );
         } else {
-            netButton.setVisibility( View.VISIBLE );
-            netButton.setOnClickListener( new View.OnClickListener() {
-                    public void onClick( View view ) { 
-                        m_nextIsSolo = false;
-                        showDialog( DlgID.GAMES_LIST_NEWGAME );
-                    }
-                } );
+            ActionPair pair = new ActionPair( Action.SET_HIDE_NEWGAME_BUTTONS, 
+                                              R.string.set_pref );
+            showNotAgainDlgThen( R.string.not_again_hidenewgamebuttons,
+                                 R.string.key_notagain_hidenewgamebuttons,
+                                 Action.NEW_GAME_PRESSED, pair );
         }
     }
 

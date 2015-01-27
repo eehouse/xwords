@@ -322,7 +322,7 @@ public class DelegateBase implements DlgClickNotify,
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         Action action, Object... params )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, null, action, params );
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action, null, params );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
@@ -330,15 +330,16 @@ public class DelegateBase implements DlgClickNotify,
         m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, ActionPair pair )
+    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action,
+                                     ActionPair more )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, pair );
+        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action, more );
     }
 
     protected void showNotAgainDlgThen( String msg, int prefsKey,
                                         Action action )
     {
-        m_delegate.showNotAgainDlgThen( msg, prefsKey, null, action, null );
+        m_delegate.showNotAgainDlgThen( msg, prefsKey, action, null, null );
     }
 
     protected void showNotAgainDlg( int msgID, int prefsKey )

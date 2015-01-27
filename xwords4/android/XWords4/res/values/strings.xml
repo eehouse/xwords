@@ -2284,11 +2284,11 @@
     <string name="set_pref">Hide buttons</string>
 
     <string name="not_again_hidenewgamebuttons">Now that you have a
-    few games saved you might want to hide the New Game buttons below
-    to get more space. They are convenient for new players, but you
-    don\'t need them because the first two items in this window\'s menu
-    do the same thing.\n\n(If you hide the buttons and want them back
-    you can enable them in the Appearance section of App settings.)
+    few games saved you might want to hide these New Game buttons to
+    get more space. They are convenient for new players, but you
+    don\'t need them because the first two items in the Games List
+    window\'s menu do the same thing.\n\nHide them in the Appearance
+    section of App settings.
     </string>
 
     <string name="invite_stays">(This dialog will stay up until all

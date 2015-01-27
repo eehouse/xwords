@@ -55,6 +55,7 @@ public class DlgDelegate {
         OPEN_GAME,
         CLEAR_SELS,
         NEW_NET_GAME,
+        NEW_GAME_PRESSED,
         SET_HIDE_NEWGAME_BUTTONS,
 
         // BoardDelegate
@@ -246,8 +247,8 @@ public class DlgDelegate {
         showDialog( DlgID.DIALOG_ABOUT );
     }
 
-    public void showNotAgainDlgThen( String msg, int prefsKey,
-                                     ActionPair pair, final Action action,
+    public void showNotAgainDlgThen( String msg, int prefsKey, 
+                                     final Action action, ActionPair more, 
                                      final Object[] params )
     {
         if ( XWPrefs.getPrefsBoolean( m_activity, prefsKey, false ) ) {
@@ -265,28 +266,29 @@ public class DlgDelegate {
             }
         } else {
             DlgState state = 
-                new DlgState( DlgID.DIALOG_NOTAGAIN, msg, prefsKey, pair, action, 
+                new DlgState( DlgID.DIALOG_NOTAGAIN, msg, prefsKey, action, more, 
                               params );
             addState( state );
             showDialog( DlgID.DIALOG_NOTAGAIN );
         }
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, ActionPair pair,
-                                     Action action, Object[] params )
+    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action, 
+                                     ActionPair more, Object[] params )
     {
-        showNotAgainDlgThen( getString( msgID ), prefsKey, pair, action, 
+        showNotAgainDlgThen( getString( msgID ), prefsKey, action, more, 
                              params );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
     {
-        showNotAgainDlgThen( msgID, prefsKey, null, action, null );
+        showNotAgainDlgThen( msgID, prefsKey, action, null, null );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, ActionPair pair )
+    public void showNotAgainDlgThen( int msgID, int prefsKey, Action action, 
+                                     ActionPair more )
     {
-        showNotAgainDlgThen( msgID, prefsKey, pair, Action.SKIP_CALLBACK, null );
+        showNotAgainDlgThen( msgID, prefsKey, action, more, null );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey )
@@ -517,17 +519,21 @@ public class DlgDelegate {
             .setMessage( state.m_msg )
             .setPositiveButton( R.string.button_ok, lstnr_p )
             .setNegativeButton( R.string.button_notagain, lstnr_n );
-        if ( null != state.m_pair ) {
-            final ActionPair pair = state.m_pair;
+
+        // Adding third button doesn't work for some reason. Either this
+        // feature goes away or the "do not show again" becomes a checkbox as
+        // many apps do it.
+        if ( false && null != state.m_pair ) {
+            final ActionPair more = state.m_pair;
             OnClickListener lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         m_clickCallback.
-                            dlgButtonClicked( pair.action, 
+                            dlgButtonClicked( more.action, 
                                               AlertDialog.BUTTON_POSITIVE,
-                                              pair.params );
+                                              more.params );
                     }
                 };
-            builder.setNeutralButton( pair.buttonStr, lstnr );
+            builder.setNeutralButton( more.buttonStr, lstnr );
         }
         Dialog dialog = builder.create();
 
