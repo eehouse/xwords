@@ -476,27 +476,15 @@ public class DlgDelegate {
 
     private Dialog createNotAgainDialog( final DlgState state, DlgID dlgID )
     {
-        OnClickListener lstnr_p = mkCallbackClickListener( state );
+        NotAgainView naView = (NotAgainView)
+            LocUtils.inflate( m_activity, R.layout.not_again_view );
+        naView.setMessage( state.m_msg );
+        OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
 
-        OnClickListener lstnr_n = 
-            new OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
-                                             true );
-                    if ( Action.SKIP_CALLBACK != state.m_action ) {
-                        m_clickCallback.
-                            dlgButtonClicked( state.m_action, 
-                                              AlertDialog.BUTTON_POSITIVE, 
-                                              state.m_params );
-                    }
-                }
-            };
-
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
-        builder.setTitle( R.string.newbie_title );
-        builder.setMessage( state.m_msg );
-        builder.setPositiveButton( R.string.button_ok, lstnr_p );
-        builder.setNegativeButton( R.string.button_notagain, lstnr_n );
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
+            .setTitle( R.string.newbie_title )
+            .setView( naView )
+            .setPositiveButton( R.string.button_ok, lstnr_p );
         Dialog dialog = builder.create();
 
         return setCallbackDismissListener( dialog, state, dlgID );
@@ -504,7 +492,7 @@ public class DlgDelegate {
 
     private Dialog createConfirmThenDialog( DlgState state, DlgID dlgID )
     {
-        OnClickListener lstnr = mkCallbackClickListener( state );
+        OnClickListener lstnr = mkCallbackClickListener( state, null );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
         builder.setTitle( R.string.query_title );
@@ -518,7 +506,7 @@ public class DlgDelegate {
 
     private Dialog createInviteChoicesDialog( DlgState state, DlgID dlgID )
     {
-        OnClickListener lstnr = mkCallbackClickListener( state );
+        OnClickListener lstnr = mkCallbackClickListener( state, null );
 
         boolean haveSMS = Utils.deviceSupportsSMS( m_activity );
         boolean haveNFC = NFCUtils.nfcAvail( m_activity )[0];
@@ -563,11 +551,17 @@ public class DlgDelegate {
         return dialog;
     }
 
-    private OnClickListener mkCallbackClickListener( final DlgState state )
+    private OnClickListener mkCallbackClickListener( final DlgState state,
+                                                     final NotAgainView naView )
     {
         OnClickListener cbkOnClickLstnr;
         cbkOnClickLstnr = new OnClickListener() {
                 public void onClick( DialogInterface dlg, int button ) {
+                    if ( null != naView && naView.getChecked() ) {
+                        XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
+                                                 true );
+                    }
+
                     if ( Action.SKIP_CALLBACK != state.m_action ) {
                         m_clickCallback.dlgButtonClicked( state.m_action, 
                                                           button, 
