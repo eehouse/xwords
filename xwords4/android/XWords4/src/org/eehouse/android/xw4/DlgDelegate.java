@@ -501,7 +501,7 @@ public class DlgDelegate {
         NotAgainView naView = (NotAgainView)
             LocUtils.inflate( m_activity, R.layout.not_again_view );
         naView.setMessage( state.m_msg );
-        OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
+        final OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.newbie_title )
@@ -511,7 +511,7 @@ public class DlgDelegate {
         // Adding third button doesn't work for some reason. Either this
         // feature goes away or the "do not show again" becomes a checkbox as
         // many apps do it.
-        if ( false && null != state.m_pair ) {
+        if ( null != state.m_pair ) {
             final ActionPair more = state.m_pair;
             OnClickListener lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
@@ -519,9 +519,10 @@ public class DlgDelegate {
                             dlgButtonClicked( more.action, 
                                               AlertDialog.BUTTON_POSITIVE,
                                               more.params );
+                        lstnr_p.onClick( dlg, AlertDialog.BUTTON_POSITIVE );
                     }
                 };
-            builder.setNeutralButton( more.buttonStr, lstnr );
+            builder.setNegativeButton( more.buttonStr, lstnr );
         }
 
         Dialog dialog = builder.create();

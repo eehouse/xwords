@@ -2287,8 +2287,8 @@
     few games saved you might want to hide these New Game buttons to
     get more space. They are convenient for new players, but you
     don\'t need them because the first two items in the Games List
-    window\'s menu do the same thing.\n\nHide them in the Appearance
-    section of App settings.
+    window\'s Action Bar do the same thing.\n\n(If you later want to
+    unhide them go to the Appearance section of App settings).
     </string>
 
     <string name="invite_stays">(This dialog will stay up until all
