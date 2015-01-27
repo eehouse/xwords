@@ -498,27 +498,15 @@ public class DlgDelegate {
 
     private Dialog createNotAgainDialog( final DlgState state, DlgID dlgID )
     {
-        OnClickListener lstnr_p = mkCallbackClickListener( state );
-
-        OnClickListener lstnr_n = 
-            new OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
-                                             true );
-                    if ( Action.SKIP_CALLBACK != state.m_action ) {
-                        m_clickCallback.
-                            dlgButtonClicked( state.m_action, 
-                                              AlertDialog.BUTTON_POSITIVE, 
-                                              state.m_params );
-                    }
-                }
-            };
+        NotAgainView naView = (NotAgainView)
+            LocUtils.inflate( m_activity, R.layout.not_again_view );
+        naView.setMessage( state.m_msg );
+        OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.newbie_title )
-            .setMessage( state.m_msg )
-            .setPositiveButton( R.string.button_ok, lstnr_p )
-            .setNegativeButton( R.string.button_notagain, lstnr_n );
+            .setView( naView )
+            .setPositiveButton( R.string.button_ok, lstnr_p );
 
         // Adding third button doesn't work for some reason. Either this
         // feature goes away or the "do not show again" becomes a checkbox as
@@ -535,6 +523,7 @@ public class DlgDelegate {
                 };
             builder.setNeutralButton( more.buttonStr, lstnr );
         }
+
         Dialog dialog = builder.create();
 
         return setCallbackDismissListener( dialog, state, dlgID );
@@ -542,7 +531,7 @@ public class DlgDelegate {
 
     private Dialog createConfirmThenDialog( DlgState state, DlgID dlgID )
     {
-        OnClickListener lstnr = mkCallbackClickListener( state );
+        OnClickListener lstnr = mkCallbackClickListener( state, null );
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
         builder.setTitle( R.string.query_title );
@@ -619,11 +608,17 @@ public class DlgDelegate {
         return dialog;
     }
 
-    private OnClickListener mkCallbackClickListener( final DlgState state )
+    private OnClickListener mkCallbackClickListener( final DlgState state,
+                                                     final NotAgainView naView )
     {
         OnClickListener cbkOnClickLstnr;
         cbkOnClickLstnr = new OnClickListener() {
                 public void onClick( DialogInterface dlg, int button ) {
+                    if ( null != naView && naView.getChecked() ) {
+                        XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
+                                                 true );
+                    }
+
                     if ( Action.SKIP_CALLBACK != state.m_action ) {
                         m_clickCallback.dlgButtonClicked( state.m_action, 
                                                           button, 
