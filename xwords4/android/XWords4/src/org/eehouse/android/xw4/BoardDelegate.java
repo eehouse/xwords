@@ -1365,6 +1365,11 @@ public class BoardDelegate extends DelegateBase
                                      boolean allHere, int nMissing )
     {
         DbgUtils.logf( "BoardDelegate.handleConndMessage(): nMissing = %d", nMissing );
+
+        if ( 0 == nMissing ) {
+            dismissInviteAlert();
+        }
+
         int naMsg = 0;
         int naKey = 0;
         String toastStr = null;
@@ -1709,13 +1714,7 @@ public class BoardDelegate extends DelegateBase
 
             // If we might have put up an alert earlier, take it down
             if ( 0 < m_nMissing && m_nMissing != nMissing ) {
-                post( new Runnable() {
-                        public void run() {
-                            try {
-                                dismissDialog( DlgID.DLG_INVITE );
-                            } catch ( Exception ex ) {}
-                        }
-                    } );
+                dismissInviteAlert();
             }
 
             m_nMissing = nMissing; // will be 0 unless isServer is true
@@ -2004,6 +2003,18 @@ public class BoardDelegate extends DelegateBase
         if ( 0 < m_connTypes.size() ) {
             m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
         }
+    }
+
+    private void dismissInviteAlert()
+    {
+        post( new Runnable() {
+                public void run() {
+                    try {
+                        dismissDialog( DlgID.DLG_INVITE );
+                    } catch ( Exception ex ) {
+                    }
+                }
+            } );
     }
 
     private void pingBTRemotes()
