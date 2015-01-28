@@ -2107,9 +2107,6 @@
 
     <string name="button_go_settings">Launch Settings</string>
 
-    <string name="no_hide_titlebar">This setting is ignored on devices
-    like yours that depend on the \"Action bar.\"</string>
-
     <string name="sms_ready_text">Tap the receiving device now</string>
 
     <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->

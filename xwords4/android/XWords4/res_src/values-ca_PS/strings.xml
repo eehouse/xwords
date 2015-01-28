@@ -1804,8 +1804,6 @@
   <string name="enable_nfc">NFC IS TURNED OFF ON THIS DEVICE. YOU
     CAN USE THE ANDROID SETTINGS APP TO TURN IT ON .</string>
   <string name="button_go_settings">LAUNCH SETTINGS</string>
-  <string name="no_hide_titlebar">THIS SETTING IS IGNORED ON DEVICES
-    LIKE YOURS THAT DEPEND ON THE \"ACTION BAR.\"</string>
   <string name="sms_ready_text">TAP THE RECEIVING DEVICE NOW</string>
   <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->
   <!-- means that any time a board that\'s missing a player is open, you -->

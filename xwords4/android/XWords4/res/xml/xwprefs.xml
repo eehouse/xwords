@@ -99,6 +99,7 @@
 
   <PreferenceScreen android:title="@string/prefs_appearance"
                     android:summary="@string/prefs_appearance_summary"
+                    android:key="@string/prefs_appearance"
                     >
 
     <!-- " pct." below must match R.string.pct_suffix -->

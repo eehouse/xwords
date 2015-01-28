@@ -36,7 +36,6 @@ public enum DlgID {
     , DLG_INVITE
     , DLG_OKONLY
     , ENABLE_NFC
-    , EXPLAIN_TITLE
     , FORCE_REMOTE
     , GAME_OVER
     , GET_NAME

@@ -47,7 +47,6 @@ public class PrefsDelegate extends DelegateBase
     private String m_smsEnable;
     private String m_downloadPath;
     private String m_thumbSize;
-    private String m_hideTitle;
     private String m_keyLocale;
     private String m_keyLangs;
 
@@ -110,13 +109,6 @@ public class PrefsDelegate extends DelegateBase
             case CONFIRM_SMS:
                 dialog = SMSCheckBoxPreference.onCreateDialog( m_activity, id );
                 break;
-            case EXPLAIN_TITLE:
-                dialog = makeAlertBuilder()
-                    .setMessage( R.string.no_hide_titlebar )
-                    .setTitle( R.string.info_title )
-                    .setPositiveButton( R.string.button_ok, null )
-                    .create();
-                break;
             }
 
             if ( null == dialog && null != lstnr ) {
@@ -141,7 +133,6 @@ public class PrefsDelegate extends DelegateBase
         m_smsEnable = getString( R.string.key_enable_sms );
         m_downloadPath = getString( R.string.key_download_path );
         m_thumbSize = getString( R.string.key_thumbsize );
-        m_hideTitle = getString( R.string.key_hide_title );
         m_keyLocale = getString( R.string.key_xlations_locale );
         m_keyLangs = getString( R.string.key_default_language );
 
@@ -207,14 +198,6 @@ public class PrefsDelegate extends DelegateBase
             DictUtils.invalDictList();
         } else if ( key.equals( m_thumbSize ) ) {
             DBUtils.clearThumbnails( m_activity );
-        } else if ( key.equals( m_hideTitle ) ) {
-            if ( sp.getBoolean( key, false ) && ABUtils.haveActionBar() ) {
-                CheckBoxPreference pref
-                    = (CheckBoxPreference)m_activity.findPreference(key);
-                pref.setChecked( false );
-                pref.setEnabled( false );
-                showDialog( DlgID.EXPLAIN_TITLE );
-            }
         } else if ( key.equals( m_keyLocale ) ) {
             LocUtils.localeChanged( m_activity, sp.getString( key, null ) );
         } else if ( key.equals( m_keyLangs ) ) {
@@ -265,15 +248,22 @@ public class PrefsDelegate extends DelegateBase
         }
     }
 
+    private void hideOne( int prefID, int screenID )
+    {
+        Preference pref = m_activity.findPreference( getString( prefID ) );
+        String key = getString( screenID );
+        ((PreferenceScreen)m_activity.findPreference( key ))
+            .removePreference( pref );
+    }
+
     private void hideStuff()
     {
         if ( !XWApp.SMSSUPPORTED || !Utils.isGSMPhone( m_activity ) ) {
-            String key = getString( R.string.key_enable_sms );
-            Preference pref = m_activity.findPreference( key );
-            key = getString( R.string.key_network_behavior );
-            PreferenceScreen screen = (PreferenceScreen)
-                m_activity.findPreference( key );
-            screen.removePreference( pref );
+            hideOne( R.string.key_enable_sms, R.string.key_network_behavior );
+        }
+
+        if ( ABUtils.haveActionBar() ) {
+            hideOne( R.string.key_hide_title, R.string.prefs_appearance );
         }
     }
 

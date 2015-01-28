@@ -1804,8 +1804,6 @@
   <string name="enable_nfc">CFN si denrut ffo no siht ecived. Uoy
     nac esu eht Diordna Sgnittes ppa ot nrut ti no .</string>
   <string name="button_go_settings">Hcnual Sgnittes</string>
-  <string name="no_hide_titlebar">Siht gnittes si derongi no secived
-    ekil sruoy taht dneped no eht \"Noitca rab.\"</string>
   <string name="sms_ready_text">Pat eht gniviecer ecived won</string>
   <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->
   <!-- means that any time a board that\'s missing a player is open, you -->
