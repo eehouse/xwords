@@ -1951,4 +1951,7 @@
     emag si nepo.</string>
   <string name="enable_bt_first">Esaelp nrut Htooteulb no erofeb gnilbane.</string>
   <string name="enable_sms_first">Esaelp kcehc \"Wolla semag aiv SMS\" erofeb gnilbane.</string>
+  <string name="warn_no_comms">Fi uoy evah on tluafed noitcennoc
+    snoitpo yreve wen dekrowten emag lliw evah ot eb derugifnoc
+    yllaunam.</string>
 </resources>

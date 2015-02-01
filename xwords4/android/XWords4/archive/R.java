@@ -2604,6 +2604,7 @@ public final class R {
     line in a game summary.  The \u0020 is a space in xml. 
          */
         public static final int vs_join=0x7f050123;
+        public static final int warn_no_comms=0x7f0502da;
         /**   
          */
         public static final int warn_nomobile_fmt=0x7f05021f;

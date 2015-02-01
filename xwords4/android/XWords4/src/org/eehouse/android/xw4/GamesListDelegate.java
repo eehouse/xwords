@@ -1142,7 +1142,7 @@ public class GamesListDelegate extends ListDelegateBase
                 break;
 
             case NEW_GAME_PRESSED:
-                showDialog( DlgID.GAMES_LIST_NEWGAME );
+                handleNewGame( m_nextIsSolo );
                 break;
 
             case DELETE_GROUPS:
@@ -1330,12 +1330,10 @@ public class GamesListDelegate extends ListDelegateBase
             GameUtils.resendAllIf( m_activity, null, true );
             break;
         case R.id.games_menu_newgame_solo:
-            m_nextIsSolo = true;
-            showDialog( DlgID.GAMES_LIST_NEWGAME );
+            handleNewGame( true );
             break;
         case R.id.games_menu_newgame_net:
-            m_nextIsSolo = false;
-            showDialog( DlgID.GAMES_LIST_NEWGAME );
+            handleNewGame( false );
             break;
 
         case R.id.games_menu_newgroup:
@@ -1565,6 +1563,22 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
+    private void handleNewGame( boolean solo )
+    {
+        m_nextIsSolo = solo;
+        // force config if we don't have at least one way to communicate
+        boolean skipDefaults = !solo;
+        if ( skipDefaults ) {
+            skipDefaults = 0 == XWPrefs.getAddrTypes( m_activity ).size();
+        }
+
+        if ( skipDefaults ) {
+            makeThenLaunchOrConfigure( true );
+        } else {
+            showDialog( DlgID.GAMES_LIST_NEWGAME );
+        }
+    }
+
     private void handleNewGameButton( boolean solo )
     {
         m_nextIsSolo = solo;
@@ -1572,7 +1586,7 @@ public class GamesListDelegate extends ListDelegateBase
         int count = m_adapter.getCount();
         boolean skipOffer = 6 > count || XWPrefs.getHideNewgameButtons( m_activity );
         if ( skipOffer ) {
-            showDialog( DlgID.GAMES_LIST_NEWGAME );
+            handleNewGame( solo );
         } else {
             ActionPair pair = new ActionPair( Action.SET_HIDE_NEWGAME_BUTTONS, 
                                               R.string.set_pref );

@@ -40,21 +40,26 @@ public class ConnViaViewLayout extends LinearLayout {
     public interface CheckEnabledWarner {
         public void warnDisabled( CommsConnType typ );
     }
-    private CheckEnabledWarner m_warner;
+    public interface SetEmptyWarner {
+        public void typeSetEmpty();
+    }
+
+    private CheckEnabledWarner m_disabledWarner;
+    private SetEmptyWarner m_emptyWarner;
 
     public ConnViaViewLayout( Context context, AttributeSet as ) {
         super( context, as );
     }
 
-    protected void setWarner( CheckEnabledWarner warner )
-    {
-        m_warner = warner;
-    }
-
-    protected void setTypes( CommsConnTypeSet types )
+    protected void configure( CommsConnTypeSet types,
+                              CheckEnabledWarner cew, 
+                              SetEmptyWarner sew )
     {
         m_curSet = (CommsConnTypeSet)types.clone();
         addConnections();
+
+        m_disabledWarner = cew;
+        m_emptyWarner = sew;
     }
 
     protected CommsConnTypeSet getTypes()
@@ -88,6 +93,9 @@ public class ConnViaViewLayout extends LinearLayout {
                             }
                         } else {
                             m_curSet.remove( typf );
+                            if ( null != m_emptyWarner && 0 == m_curSet.size()) {
+                                m_emptyWarner.typeSetEmpty();
+                            }
                         }
                     }
                 } );
@@ -106,8 +114,8 @@ public class ConnViaViewLayout extends LinearLayout {
             result = BTService.BTEnabled();
         }
 
-        if ( !result && null != m_warner ) {
-            m_warner.warnDisabled( typ );
+        if ( !result && null != m_disabledWarner ) {
+            m_disabledWarner.warnDisabled( typ );
         }
 
         return result;

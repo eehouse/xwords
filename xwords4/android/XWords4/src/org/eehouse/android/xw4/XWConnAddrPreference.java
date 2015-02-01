@@ -54,26 +54,32 @@ public class XWConnAddrPreference extends DialogPreference {
     {
         LocUtils.xlateView( m_context, view );
         m_view = (ConnViaViewLayout)view.findViewById( R.id.conn_types );
-        m_view.setTypes( XWPrefs.getAddrTypes( m_context ) );
-        m_view.setWarner( new ConnViaViewLayout.CheckEnabledWarner() {
-                public void warnDisabled( CommsConnType typ ) {
-                    int id;
-                    switch( typ ) {
-                    case COMMS_CONN_SMS:
-                        id = R.string.enable_sms_first;
-                        break;
-                    case COMMS_CONN_BT:
-                        id = R.string.enable_bt_first;
-                        break;
-                    default:
-                        id = 0;
-                    }
-                    if ( 0 != id ) {
-                        PrefsActivity activity = (PrefsActivity)m_context;
-                        activity.showOKOnlyDialog( id );
-                    }
-                }
-            } );
+        m_view.configure( XWPrefs.getAddrTypes( m_context ),
+                          new ConnViaViewLayout.CheckEnabledWarner() {
+                              public void warnDisabled( CommsConnType typ ) {
+                                  int id;
+                                  switch( typ ) {
+                                  case COMMS_CONN_SMS:
+                                      id = R.string.enable_sms_first;
+                                      break;
+                                  case COMMS_CONN_BT:
+                                      id = R.string.enable_bt_first;
+                                      break;
+                                  default:
+                                      id = 0;
+                                  }
+                                  if ( 0 != id ) {
+                                      PrefsActivity activity = (PrefsActivity)m_context;
+                                      activity.showOKOnlyDialog( id );
+                                  }
+                              }
+                          },
+                          new ConnViaViewLayout.SetEmptyWarner() {
+                              public void typeSetEmpty() {
+                                  PrefsActivity activity = (PrefsActivity)m_context;
+                                  activity.showOKOnlyDialog( R.string.warn_no_comms );
+                              }
+                          } );
     }
     
     @Override

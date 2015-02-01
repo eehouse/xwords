@@ -1951,4 +1951,7 @@
     GAME IS OPEN.</string>
   <string name="enable_bt_first">PLEASE TURN BLUETOOTH ON BEFORE ENABLING.</string>
   <string name="enable_sms_first">PLEASE CHECK \"ALLOW GAMES VIA SMS\" BEFORE ENABLING.</string>
+  <string name="warn_no_comms">IF YOU HAVE NO DEFAULT CONNECTION
+    OPTIONS EVERY NEW NETWORKED GAME WILL HAVE TO BE CONFIGURED
+    MANUALLY.</string>
 </resources>

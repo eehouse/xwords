@@ -282,21 +282,22 @@ public class GameConfigDelegate extends DelegateBase
                 LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
                 final ConnViaViewLayout items = (ConnViaViewLayout)
                     layout.findViewById( R.id.conn_types );
-                items.setTypes( m_conTypes );
-                items.setWarner( new ConnViaViewLayout.CheckEnabledWarner() {
-                        public void warnDisabled( CommsConnType typ ) {
-                            switch( typ ) {
-                            case COMMS_CONN_SMS:
-                                showConfirmThen( R.string.warn_sms_disabled, 
-                                                 R.string.button_go_settings,
-                                                 Action.SMS_CONFIG_ACTION );
-                                break;
-                            case COMMS_CONN_BT:
-                                showOKOnlyDialog( R.string.enable_bt_first );
-                                break;
-                            }
-                        }
-                    });
+                items.configure( m_conTypes,
+                                 new ConnViaViewLayout.CheckEnabledWarner() {
+                                     public void warnDisabled( CommsConnType typ ) {
+                                         switch( typ ) {
+                                         case COMMS_CONN_SMS:
+                                             showConfirmThen( R.string.warn_sms_disabled, 
+                                                              R.string.button_go_settings,
+                                                              Action.SMS_CONFIG_ACTION );
+                                             break;
+                                         case COMMS_CONN_BT:
+                                             showOKOnlyDialog( R.string.enable_bt_first );
+                                             break;
+                                         }
+                                     }
+                                     public void typeSetEmpty() {}
+                                 }, null );
 
                 final DialogInterface.OnClickListener lstnr = 
                     new DialogInterface.OnClickListener() {

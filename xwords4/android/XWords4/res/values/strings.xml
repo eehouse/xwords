@@ -2297,4 +2297,8 @@
 
     <string name="enable_bt_first">Please turn Bluetooth on before enabling.</string>
     <string name="enable_sms_first">Please check \"Allow games via SMS\" before enabling.</string>
+
+    <string name="warn_no_comms">If you have no default connection
+    options every new networked game will have to be configured
+    manually.</string>
 </resources>
