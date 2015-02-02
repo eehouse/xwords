@@ -1951,7 +1951,12 @@
     GAME IS OPEN.</string>
   <string name="enable_bt_first">PLEASE TURN BLUETOOTH ON BEFORE ENABLING.</string>
   <string name="enable_sms_first">PLEASE CHECK \"ALLOW GAMES VIA SMS\" BEFORE ENABLING.</string>
-  <string name="warn_no_comms">IF YOU HAVE NO DEFAULT CONNECTION
+  <string name="warn_no_comms">EVERY NETWORKED GAME MUST HAVE AT
+    LEAST ONE WAY OF COMMUNICATING. IF YOU HAVE NO DEFAULT CONNECTION
     OPTIONS EVERY NEW NETWORKED GAME WILL HAVE TO BE CONFIGURED
     MANUALLY.</string>
+  <string name="config_no_connvia">THIS GAME HAS NO WAY TO CONNECT
+    AND CANNOT BE SAVED. WOULD YOU LIKE TO DISCARD IT, OR EDIT TO GIVE
+    IT A WAY TO CONNECT?</string>
+  <string name="button_edit">EDIT</string>
 </resources>

@@ -384,6 +384,11 @@ public class DelegateBase implements DlgClickNotify,
         m_delegate.showConfirmThen( msg, posButton, action, params );
     }
 
+    protected void showConfirmThen( int msg, int posButton, int negButton, Action action )
+    {
+        m_delegate.showConfirmThen( msg, posButton, negButton, action );
+    }
+
     protected void showConfirmThen( int msg, int posButton, Action action, 
                                     Object... params )
     {
@@ -495,7 +500,28 @@ public class DelegateBase implements DlgClickNotify,
     //////////////////////////////////////////////////////////////////////
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
-        Assert.fail();
+        if ( BuildConfig.DEBUG ) {
+            String buttonName = null;
+            switch( button ) {
+            case AlertDialog.BUTTON_POSITIVE:
+                buttonName = "positive";
+                break;
+            case AlertDialog.BUTTON_NEGATIVE:
+                buttonName = "negative";
+                break;
+            case AlertDialog.BUTTON_NEUTRAL:
+                buttonName = "neutral";
+                break;
+            case DlgDelegate.DISMISS_BUTTON:
+                buttonName = "dismiss";
+                break;
+            default:
+                Assert.fail();
+                break;
+            }
+            DbgUtils.logf( "DelegateBase.dlgButtonClicked(action=%s button=%s): UNHANDLED",
+                           action.toString(), buttonName );
+        }
     }
 
     public void inviteChoiceMade( Action action, DlgClickNotify.InviteMeans means, Object[] params )

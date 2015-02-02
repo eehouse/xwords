@@ -30,6 +30,7 @@ public class DlgState implements Parcelable {
     public DlgID m_id;
     public String m_msg;
     public int m_posButton;
+    public int m_negButton;
     public Action m_action = null;
     public ActionPair m_pair = null;
     public int m_prefsKey;
@@ -60,12 +61,19 @@ public class DlgState implements Parcelable {
     }
 
     public DlgState( DlgID dlgID, String msg, int posButton, 
-                     Action action, int prefsKey, 
-                     Object[] params )
+                     Action action, int prefsKey, Object[] params )
+    {
+        this( dlgID, msg, posButton, R.string.button_cancel, 
+              action, prefsKey, params );
+    }
+    
+    public DlgState( DlgID dlgID, String msg, int posButton, int negButton, 
+                     Action action, int prefsKey, Object[] params )
     {
         m_id = dlgID;
         m_msg = msg;
         m_posButton = posButton;
+        m_negButton = negButton;
         m_action = action;
         m_prefsKey = prefsKey;
         m_params = params;
@@ -88,6 +96,7 @@ public class DlgState implements Parcelable {
     public void writeToParcel( Parcel out, int flags ) {
         out.writeInt( m_id.ordinal() );
         out.writeInt( m_posButton );
+        out.writeInt( m_negButton );
         out.writeInt( null == m_action ? -1 : m_action.ordinal() );
         out.writeInt( m_prefsKey );
         out.writeString( m_msg );
@@ -98,11 +107,12 @@ public class DlgState implements Parcelable {
         public DlgState createFromParcel(Parcel in) {
             DlgID id = DlgID.values()[in.readInt()];
             int posButton = in.readInt();
+            int negButton = in.readInt();
             int tmp = in.readInt();
             Action action = 0 > tmp ? null : Action.values()[tmp];
             int prefsKey = in.readInt();
             String msg = in.readString();
-            return new DlgState( id, msg, posButton, action, prefsKey );
+            return new DlgState( id, msg, posButton, negButton, action, prefsKey, null );
         }
 
         public DlgState[] newArray(int size) {

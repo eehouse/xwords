@@ -563,6 +563,7 @@ public final class R {
         /**  Text of button displayed when downloading is an option 
          */
         public static final int button_download=0x7f0501a9;
+        public static final int button_edit=0x7f0502dc;
         public static final int button_go_settings=0x7f05027d;
         /**   
          */
@@ -733,6 +734,7 @@ public final class R {
          on the board.
          */
         public static final int clr_crosshairs=0x7f050158;
+        public static final int config_no_connvia=0x7f0502db;
         /**   
          */
         public static final int confirm_clear=0x7f050222;

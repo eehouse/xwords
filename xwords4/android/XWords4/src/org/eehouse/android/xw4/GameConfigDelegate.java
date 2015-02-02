@@ -296,14 +296,16 @@ public class GameConfigDelegate extends DelegateBase
                                              break;
                                          }
                                      }
-                                     public void typeSetEmpty() {}
                                  }, null );
 
                 final DialogInterface.OnClickListener lstnr = 
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int button ) {
                             m_conTypes = items.getTypes();
+                            m_car.populate( m_activity, m_conTypes );
+
                             setConnLabel();
+                            setupRelayStuffIf();
                             showHideRelayStuff();
                         }
                     };
@@ -556,7 +558,7 @@ public class GameConfigDelegate extends DelegateBase
                     int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
                     XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
                 }
-                m_conTypes = m_carOrig.conTypes;
+                m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
                 XwJNI.game_dispose( gamePtr );
 
                 m_car = new CommsAddrRec( m_carOrig );
@@ -574,30 +576,7 @@ public class GameConfigDelegate extends DelegateBase
                 }
 
                 setConnLabel();
-
-                if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                    m_joinPublicCheck = 
-                        (CheckBox)findViewById(R.id.join_public_room_check);
-                    m_joinPublicCheck.setOnClickListener( this );
-                    m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
-                    setChecked( R.id.advertise_new_room_check, 
-                                m_car.ip_relay_advertiseRoom );
-                    m_publicRoomsSet = 
-                        (LinearLayout)findViewById(R.id.public_rooms_set );
-                    m_privateRoomsSet = 
-                        (LinearLayout)findViewById(R.id.private_rooms_set );
-
-                    setText( R.id.room_edit, m_car.ip_relay_invite );
-        
-                    m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
-
-                    m_refreshRoomsButton = 
-                        (ImageButton)findViewById( R.id.refresh_button );
-                    m_refreshRoomsButton.setOnClickListener( this );
-
-                    adjustConnectStuff();
-                }
-
+                setupRelayStuffIf();
                 loadPlayersList();
                 configLangSpinner();
 
@@ -651,20 +630,36 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
-        boolean positive = AlertDialog.BUTTON_POSITIVE == button;
-        switch( action ) {
-        case LOCKED_CHANGE_ACTION:
-            if ( positive ) {
+        boolean callSuper = false;
+        if ( AlertDialog.BUTTON_POSITIVE == button ) {
+            switch( action ) {
+            case LOCKED_CHANGE_ACTION:
                 handleLockedChange();
-            }
-            break;
-        case SMS_CONFIG_ACTION:
-            if ( positive ) {
+                break;
+            case SMS_CONFIG_ACTION:
                 Utils.launchSettings( m_activity );
+                break;
+            case EXIT_NO_SAVE:
+                finish();
+                break;
+            default:
+                callSuper = true;
             }
-            break;
-        default:
-            Assert.fail();
+        } else if ( AlertDialog.BUTTON_NEGATIVE == button ) {
+            switch ( action ) {
+            case EXIT_NO_SAVE:
+                showDialog( DlgID.CHANGE_CONN );
+                break;
+            default:
+                callSuper = true;
+                break;
+            }
+        } else { 
+            callSuper = true;
+        }
+
+        if ( callSuper ) {
+            super.dlgButtonClicked( action, button, params );
         }
     }
 
@@ -697,7 +692,12 @@ public class GameConfigDelegate extends DelegateBase
             // from here if there's no confirmation needed, or launch
             // a new dialog whose OK button does the same thing.
             saveChanges();
-            if ( m_forResult ) {
+            if ( 0 == m_conTypes.size() ) {
+                showConfirmThen( R.string.config_no_connvia,
+                                 R.string.button_discard, 
+                                 R.string.button_edit,
+                                 Action.EXIT_NO_SAVE );
+            } else if ( m_forResult ) {
                 applyChanges( true );
                 Intent intent = new Intent();
                 intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
@@ -1111,26 +1111,20 @@ public class GameConfigDelegate extends DelegateBase
         position = m_boardsizeSpinner.getSelectedItemPosition();
         m_gi.boardSize = positionToSize( position );
 
-        for ( Iterator<CommsConnType> iter = m_conTypes.iterator();
-              iter.hasNext(); ) {
-            switch( iter.next() ) {
-            case COMMS_CONN_RELAY:
-                m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
-                m_car.ip_relay_advertiseRoom = 
-                    getChecked( R.id.advertise_new_room_check );
-                if ( m_car.ip_relay_seeksPublicRoom ) {
-                    SpinnerAdapter adapter = m_roomChoose.getAdapter();
-                    if ( null != adapter ) {
-                        int pos = m_roomChoose.getSelectedItemPosition();
-                        if ( pos >= 0 && pos < adapter.getCount() ) {
-                            m_car.ip_relay_invite = (String)adapter.getItem(pos);
-                        }
+        if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+            m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
+            m_car.ip_relay_advertiseRoom = 
+                getChecked( R.id.advertise_new_room_check );
+            if ( m_car.ip_relay_seeksPublicRoom ) {
+                SpinnerAdapter adapter = m_roomChoose.getAdapter();
+                if ( null != adapter ) {
+                    int pos = m_roomChoose.getSelectedItemPosition();
+                    if ( pos >= 0 && pos < adapter.getCount() ) {
+                        m_car.ip_relay_invite = (String)adapter.getItem(pos);
                     }
-                } else {
-                    m_car.ip_relay_invite = getText( R.id.room_edit ).trim();
                 }
-                break;
-                // nothing to save for BT yet
+            } else {
+                m_car.ip_relay_invite = getText( R.id.room_edit ).trim();
             }
         }
 
@@ -1196,6 +1190,34 @@ public class GameConfigDelegate extends DelegateBase
     {
         String connString = m_conTypes.toString( m_activity );
         m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
+    }
+
+    private void setupRelayStuffIf()
+    {
+        if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+            if ( null == m_joinPublicCheck ) {
+                m_joinPublicCheck = 
+                    (CheckBox)findViewById(R.id.join_public_room_check);
+                m_joinPublicCheck.setOnClickListener( this );
+                m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
+                setChecked( R.id.advertise_new_room_check, 
+                            m_car.ip_relay_advertiseRoom );
+                m_publicRoomsSet = 
+                    (LinearLayout)findViewById(R.id.public_rooms_set );
+                m_privateRoomsSet = 
+                    (LinearLayout)findViewById(R.id.private_rooms_set );
+
+                setText( R.id.room_edit, m_car.ip_relay_invite );
+        
+                m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
+
+                m_refreshRoomsButton = 
+                    (ImageButton)findViewById( R.id.refresh_button );
+                m_refreshRoomsButton.setOnClickListener( this );
+
+                adjustConnectStuff();
+            }
+        }
     }
 
     private void showHideRelayStuff()

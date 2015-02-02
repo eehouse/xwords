@@ -2298,7 +2298,13 @@
     <string name="enable_bt_first">Please turn Bluetooth on before enabling.</string>
     <string name="enable_sms_first">Please check \"Allow games via SMS\" before enabling.</string>
 
-    <string name="warn_no_comms">If you have no default connection
+    <string name="warn_no_comms">Every networked game must have at
+    least one way of communicating. If you have no default connection
     options every new networked game will have to be configured
     manually.</string>
+
+    <string name="config_no_connvia">This game has no way to connect
+    and cannot be saved. Would you like to discard it, or edit to give
+    it a way to connect?</string>
+    <string name="button_edit">Edit</string>
 </resources>

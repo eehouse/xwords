@@ -87,6 +87,7 @@ public class DlgDelegate {
 
         // Game configs
         LOCKED_CHANGE_ACTION,
+        EXIT_NO_SAVE,
 
         // New Game
         NEW_GAME_ACTION,
@@ -316,17 +317,30 @@ public class DlgDelegate {
         showConfirmThen( msg, posButton, action, null );
     }
 
+    public void showConfirmThen( int msg, int posButton, int negButton, Action action )
+    {
+        showConfirmThen( getString(msg), posButton, negButton, action, null );
+    }
+
     public void showConfirmThen( int msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( getString( msg ), posButton, action, params );
+        showConfirmThen( getString(msg), posButton, R.string.button_cancel, 
+                         action, params );
     }
 
     public void showConfirmThen( String msg, int posButton, Action action,
                                  Object[] params )
     {
+        showConfirmThen( msg, posButton, R.string.button_cancel, action, 
+                         params );
+    }
+
+    public void showConfirmThen( String msg, int posButton, int negButton, 
+                                 Action action, Object[] params )
+    {
         DlgState state = new DlgState( DlgID.CONFIRM_THEN, msg, posButton, 
-                                       action, 0, params );
+                                       negButton, action, 0, params );
         addState( state );
         showDialog( DlgID.CONFIRM_THEN );
     }
@@ -538,7 +552,7 @@ public class DlgDelegate {
         builder.setTitle( R.string.query_title );
         builder.setMessage( state.m_msg );
         builder.setPositiveButton( state.m_posButton, lstnr );
-        builder.setNegativeButton( R.string.button_cancel, lstnr );
+        builder.setNegativeButton( state.m_negButton, lstnr );
         Dialog dialog = builder.create();
         
         return setCallbackDismissListener( dialog, state, dlgID );
