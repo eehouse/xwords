@@ -187,31 +187,20 @@ public class CommsAddrRec {
         sms_port = 1;           // so don't assert in comms....
     }
 
+    public void populate( Context context, CommsConnTypeSet newTypes )
+    {
+        for ( CommsConnType typ : newTypes.getTypes() ) {
+            if ( ! conTypes.contains( typ ) ) {
+                conTypes.add( typ );
+                addTypeDefaults( context, typ );
+            }
+        }
+    }
+
     public void populate( Context context )
     {
         for ( CommsConnType typ : conTypes.getTypes() ) {
-            switch ( typ ) {
-            case COMMS_CONN_RELAY:
-                String room = GameUtils.makeRandomID();
-                String host = XWPrefs.getDefaultRelayHost( context );
-                int port = XWPrefs.getDefaultRelayPort( context );
-                setRelayParams( host, port, room );
-                break;
-            case COMMS_CONN_BT:
-                String[] strs = BTService.getBTNameAndAddress();
-                if ( null != strs ) {
-                    bt_hostName = strs[0];
-                    bt_btAddr = strs[1];
-                }
-                break;
-            case COMMS_CONN_SMS:
-                SMSService.SMSPhoneInfo pi = SMSService.getPhoneInfo( context );
-                sms_phone = pi.number;
-                sms_port = 3;   // fix comms already...
-                break;
-            default:
-                Assert.fail();
-            }
+            addTypeDefaults( context, typ );
         }
     }
 
@@ -250,5 +239,31 @@ public class CommsAddrRec {
 
         sms_phone = src.sms_phone;
         sms_port = src.sms_port;
+    }
+
+    private void addTypeDefaults( Context context, CommsConnType typ )
+    {
+        switch ( typ ) {
+        case COMMS_CONN_RELAY:
+            String room = GameUtils.makeRandomID();
+            String host = XWPrefs.getDefaultRelayHost( context );
+            int port = XWPrefs.getDefaultRelayPort( context );
+            setRelayParams( host, port, room );
+            break;
+        case COMMS_CONN_BT:
+            String[] strs = BTService.getBTNameAndAddress();
+            if ( null != strs ) {
+                bt_hostName = strs[0];
+                bt_btAddr = strs[1];
+            }
+            break;
+        case COMMS_CONN_SMS:
+            SMSService.SMSPhoneInfo pi = SMSService.getPhoneInfo( context );
+            sms_phone = pi.number;
+            sms_port = 3;   // fix comms already...
+            break;
+        default:
+            Assert.fail();
+        }
     }
 }
