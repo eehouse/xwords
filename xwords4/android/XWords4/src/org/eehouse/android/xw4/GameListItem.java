@@ -42,7 +42,6 @@ import java.util.HashSet;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
@@ -302,12 +301,8 @@ public class GameListItem extends LinearLayout
                                                             DateFormat.SHORT );
             m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
 
-            int iconID;
-            if ( DeviceRole.SERVER_STANDALONE == summary.serverRole ) {
-                iconID = R.drawable.sologame__gen;
-            } else {
-                iconID = R.drawable.multigame__gen;
-            }
+            int iconID = summary.isMultiGame() ?
+                R.drawable.multigame__gen : R.drawable.sologame__gen;
             m_marker.setImageResource( iconID );
             m_marker.setOnClickListener( new View.OnClickListener() {
                     @Override

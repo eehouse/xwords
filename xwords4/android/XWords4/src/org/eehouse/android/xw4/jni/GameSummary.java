@@ -236,8 +236,7 @@ public class GameSummary {
 
     public boolean isMultiGame()
     {
-        return ( null != conTypes && 0 < conTypes.size()
-                 && serverRole != DeviceRole.SERVER_STANDALONE );
+        return ( serverRole != DeviceRole.SERVER_STANDALONE );
     }
 
     private boolean isLocal( int indx )
