@@ -663,7 +663,7 @@ public class BoardDelegate extends DelegateBase
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
-            } else if ( 0 < m_nMissing && ! m_activity.isFinishing() ) {
+            } else if ( 0 < m_nMissing && ! isFinishing() ) {
                 showDialog( DlgID.DLG_INVITE );
             }
         }

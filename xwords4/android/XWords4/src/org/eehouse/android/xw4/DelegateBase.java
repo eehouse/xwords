@@ -117,6 +117,11 @@ public class DelegateBase implements DlgClickNotify,
         return onCreateOptionsMenu( menu, inflater );
     }
 
+    protected boolean isFinishing()
+    {
+        return m_activity.isFinishing();
+    }
+
     protected Intent getIntent()
     {
         return m_activity.getIntent();
