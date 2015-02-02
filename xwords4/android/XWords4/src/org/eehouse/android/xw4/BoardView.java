@@ -60,6 +60,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private Runnable m_invalidator;
     private int m_jniGamePtr;
     private CurGameInfo m_gi;
+    private boolean m_isSolo;
     private int m_layoutWidth;
     private int m_layoutHeight;
     private BoardCanvas m_canvas;    // owns the bitmap
@@ -198,7 +199,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( layoutBoardOnce() && m_measuredFromDims ) {
                 canvas.drawBitmap( s_bitmap, 0, 0, new Paint() );
                 ConnStatusHandler.draw( m_context, canvas, getResources(), 
-                                        0, 0, m_connTypes );
+                                        m_connTypes, m_isSolo );
             } else {
                 DbgUtils.logf( "board not laid out yet" );
             }
@@ -276,6 +277,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
         m_gi = gi;
+        m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole;
         m_connTypes = connTypes;
         m_layoutWidth = 0;
         m_layoutHeight = 0;

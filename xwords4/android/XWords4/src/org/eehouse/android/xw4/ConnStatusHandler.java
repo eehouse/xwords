@@ -292,9 +292,8 @@ public class ConnStatusHandler {
     }
 
     public static void draw( Context context, Canvas canvas, Resources res, 
-                             int offsetX, int offsetY, CommsConnTypeSet connTypes )
+                             CommsConnTypeSet connTypes, boolean isSolo )
     {
-        boolean isSolo = null == connTypes || 0 == connTypes.size();
         synchronized( s_lockObj ) {
             if ( null != s_rect ) {
                 int iconID;
@@ -306,7 +305,6 @@ public class ConnStatusHandler {
 
                 Rect rect = new Rect( s_rect );
                 int quarterHeight = rect.height() / 4;
-                rect.offset( offsetX, offsetY );
 
                 if ( isSolo ) {
                     // paint a black background for the icon

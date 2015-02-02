@@ -45,6 +45,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameListItem extends LinearLayout 
     implements View.OnClickListener, SelectableItem.LongClickHandler {
@@ -302,10 +303,10 @@ public class GameListItem extends LinearLayout
             m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
 
             int iconID;
-            if ( null != summary.conTypes && 0 < summary.conTypes.size() ) {
-                iconID = R.drawable.multigame__gen;
-            } else {
+            if ( DeviceRole.SERVER_STANDALONE == summary.serverRole ) {
                 iconID = R.drawable.sologame__gen;
+            } else {
+                iconID = R.drawable.multigame__gen;
             }
             m_marker.setImageResource( iconID );
             m_marker.setOnClickListener( new View.OnClickListener() {
