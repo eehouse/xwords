@@ -70,6 +70,8 @@ public class ConnViaViewLayout extends LinearLayout {
     private void addConnections()
     {
         LinearLayout list = (LinearLayout)findViewById( R.id.conn_types );
+        list.removeAllViews();  // in case being reused
+
         Context context = getContext();
         CommsConnTypeSet supported = getSupported( context );
 
