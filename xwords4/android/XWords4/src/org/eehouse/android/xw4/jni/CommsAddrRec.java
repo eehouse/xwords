@@ -84,12 +84,18 @@ public class CommsAddrRec {
 
         public String toString( Context context )
         {
+            String result;
             CommsConnType[] types = getTypes();
-            String[] strs = new String[types.length];
-            for ( int ii = 0; ii < types.length; ++ii ) {
-                strs[ii] = types[ii].longName( context );
+            if ( 0 == types.length ) {
+                result = LocUtils.getString( context, R.string.note_none );
+            } else {
+                String[] strs = new String[types.length];
+                for ( int ii = 0; ii < types.length; ++ii ) {
+                    strs[ii] = types[ii].longName( context );
+                }
+                result = TextUtils.join( " + ", strs );
             }
-            return TextUtils.join( " + ", strs );
+            return result;
         }
 
         private static final CommsConnType[] s_hint = new CommsConnType[0];
