@@ -1956,7 +1956,8 @@
     OPTIONS EVERY NEW NETWORKED GAME WILL HAVE TO BE CONFIGURED
     MANUALLY.</string>
   <string name="config_no_connvia">THIS GAME HAS NO WAY TO CONNECT
-    AND CANNOT BE SAVED. WOULD YOU LIKE TO DISCARD IT, OR EDIT TO GIVE
-    IT A WAY TO CONNECT?</string>
+    AND CANNOT BE SAVED. WOULD YOU LIKE TO DISCARD YOUR CHANGES, OR
+    EDIT TO GIVE IT A WAY TO CONNECT?</string>
   <string name="button_edit">EDIT</string>
+  <string name="button_discard_changes">DISCARD CHANGES</string>
 </resources>

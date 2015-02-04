@@ -554,6 +554,7 @@ public final class R {
          reset a game. 
          */
         public static final int button_discard=0x7f0501b5;
+        public static final int button_discard_changes=0x7f0502dd;
         /**   
          */
         public static final int button_done=0x7f0501e5;

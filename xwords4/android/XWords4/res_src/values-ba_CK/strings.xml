@@ -1956,7 +1956,8 @@
     snoitpo yreve wen dekrowten emag lliw evah ot eb derugifnoc
     yllaunam.</string>
   <string name="config_no_connvia">Siht emag sah on yaw ot tcennoc
-    dna tonnac eb devas. Dluow uoy ekil ot dracsid ,ti ro tide ot evig
-    ti a yaw ot ?tcennoc</string>
+    dna tonnac eb devas. Dluow uoy ekil ot dracsid ruoy ,segnahc ro
+    tide ot evig ti a yaw ot ?tcennoc</string>
   <string name="button_edit">Tide</string>
+  <string name="button_discard_changes">Dracsid segnahc</string>
 </resources>

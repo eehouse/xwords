@@ -258,7 +258,7 @@ public class GameConfigDelegate extends DelegateBase
                 } else {
                     dlpos = null;
                 }
-                ab.setNegativeButton( R.string.button_discard, dlpos );
+                ab.setNegativeButton( R.string.button_discard_changes, dlpos );
                 dialog = ab.create();
 
                 dialog.setOnDismissListener( new DialogInterface.
@@ -645,7 +645,9 @@ public class GameConfigDelegate extends DelegateBase
                 Utils.launchSettings( m_activity );
                 break;
             case DELETE_AND_EXIT:
-                deleteGame();
+                if ( m_forResult ) {
+                    deleteGame();
+                }
                 finish();
                 break;
             default:
@@ -751,7 +753,6 @@ public class GameConfigDelegate extends DelegateBase
 
     private void deleteGame()
     {
-        Assert.assertTrue( m_forResult );
         if ( null != m_gameLock ) {
             DBUtils.deleteGame( m_activity, m_gameLock );
             m_gameLock.unlock();

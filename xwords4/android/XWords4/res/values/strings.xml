@@ -2304,7 +2304,9 @@
     manually.</string>
 
     <string name="config_no_connvia">This game has no way to connect
-    and cannot be saved. Would you like to discard it, or edit to give
-    it a way to connect?</string>
+    and cannot be saved. Would you like to discard your changes, or
+    edit to give it a way to connect?</string>
     <string name="button_edit">Edit</string>
+    <string name="button_discard_changes">Discard changes</string>
+
 </resources>
