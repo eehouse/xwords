@@ -809,6 +809,7 @@ public class GamesListDelegate extends ListDelegateBase
             dialog = makeAlertBuilder()
                 .setMessage( "" ) // must have a message to change it later
                 .setTitle( "foo" )// ditto, but can't be empty (!)
+                .setIcon( R.drawable.sologame__gen ) // same for icon
                 .setPositiveButton( R.string.newgame_configure_first, lstnr )
                 .setNegativeButton( R.string.use_defaults, lstnr2 )
                 .create();
@@ -824,21 +825,24 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected void prepareDialog( DlgID dlgID, Dialog dialog )
     {
-        DbgUtils.logf( "GamesListDelegate.prepareDialog() called" );
+        AlertDialog ad = (AlertDialog)dialog;
         switch( dlgID ) {
         case CHANGE_GROUP:
-            ((AlertDialog)dialog).getButton( AlertDialog.BUTTON_POSITIVE )
-                .setEnabled( false );
+            ad.getButton( AlertDialog.BUTTON_POSITIVE ).setEnabled( false );
             break;
         case GAMES_LIST_NEWGAME:
+            DbgUtils.logf( "setting icon in GAMES_LIST_NEWGAME" );
             String msg = getString( R.string.new_game_message );
             if ( m_nextIsSolo ) {
-                dialog.setTitle( R.string.new_game );
+                ad.setTitle( R.string.new_game );
+                ad.setIcon( R.drawable.sologame__gen );
             } else {
-                dialog.setTitle( R.string.new_game_networked );
+                ad.setTitle( R.string.new_game_networked );
+                ad.setIcon( R.drawable.multigame__gen );
+
                 msg += "\n\n" + getString( R.string.new_game_message_net );
             }
-            ((AlertDialog)dialog).setMessage( msg );
+            ad.setMessage( msg );
             break;
         }
     }
