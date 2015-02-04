@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009-2015 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,25 +22,18 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ListActivity;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -221,7 +214,6 @@ public class BTInviteDelegate extends InviteDelegate {
                                                     View view, int pos, 
                                                     long id )
                         {
-                            DbgUtils.logf( "setting count for %d to %d", position, 1 + pos );
                             m_counts.put( position, 1 + pos );
                             tryEnable();
                         }
