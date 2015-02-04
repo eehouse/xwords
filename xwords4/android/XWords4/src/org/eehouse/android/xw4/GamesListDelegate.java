@@ -552,7 +552,6 @@ public class GamesListDelegate extends ListDelegateBase
     private String m_missingDict;
     private String m_missingDictName;
     private long m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
-    private long m_configRowID = DBUtils.ROWID_NOTFOUND;
     private int m_missingDictMenuId;
     private String[] m_sameLangDicts;
     private int m_missingDictLang;
@@ -1191,17 +1190,11 @@ public class GamesListDelegate extends ListDelegateBase
             }
             break;
         case CONFIG_GAME:
-            if ( cancelled ) {
-                if ( DBUtils.ROWID_NOTFOUND != m_configRowID ) {
-                    long[] rowids = { m_configRowID };
-                    deleteGames( rowids );
-                }
-            } else {
+            if ( !cancelled ) {
                 long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID,
                                                 DBUtils.ROWID_NOTFOUND );
                 GameUtils.launchGame( m_activity, rowID );
             }
-            m_configRowID = DBUtils.ROWID_NOTFOUND;
             break;
         }
     }
@@ -2105,7 +2098,6 @@ public class GamesListDelegate extends ListDelegateBase
 
         if ( doConfigure ) {
             // configure it
-            m_configRowID = rowID;
             GameConfigDelegate.editForResult( m_activity, CONFIG_GAME, rowID );
         } else {
             // launch it

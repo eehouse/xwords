@@ -558,7 +558,7 @@ public class GameConfigDelegate extends DelegateBase
                 if ( XwJNI.game_hasComms( gamePtr ) ) {
                     XwJNI.comms_getAddr( gamePtr, m_carOrig );
                     m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
-                } else if (DeviceRole.SERVER_STANDALONE != m_giOrig.serverRole){
+                } else if ( !localOnlyGame() ) {
                     String relayName = XWPrefs.getDefaultRelayHost( m_activity );
                     int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
                     XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
@@ -644,7 +644,8 @@ public class GameConfigDelegate extends DelegateBase
             case SMS_CONFIG_ACTION:
                 Utils.launchSettings( m_activity );
                 break;
-            case EXIT_NO_SAVE:
+            case DELETE_AND_EXIT:
+                deleteGame();
                 finish();
                 break;
             default:
@@ -652,7 +653,7 @@ public class GameConfigDelegate extends DelegateBase
             }
         } else if ( AlertDialog.BUTTON_NEGATIVE == button ) {
             switch ( action ) {
-            case EXIT_NO_SAVE:
+            case DELETE_AND_EXIT:
                 showDialog( DlgID.CHANGE_CONN );
                 break;
             default:
@@ -697,11 +698,11 @@ public class GameConfigDelegate extends DelegateBase
             // from here if there's no confirmation needed, or launch
             // a new dialog whose OK button does the same thing.
             saveChanges();
-            if ( 0 == m_conTypes.size() ) {
+            if ( !localOnlyGame() && 0 == m_conTypes.size() ) {
                 showConfirmThen( R.string.config_no_connvia,
                                  R.string.button_discard, 
                                  R.string.button_edit,
-                                 Action.EXIT_NO_SAVE );
+                                 Action.DELETE_AND_EXIT );
             } else if ( m_forResult ) {
                 applyChanges( true );
                 Intent intent = new Intent();
@@ -730,19 +731,33 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == m_gameLock ) {
             // Do nothing; we're on our way out
         } else if ( keyCode == KeyEvent.KEYCODE_BACK ) {
-            saveChanges();
-            if ( !m_gameStarted ) { // no confirm needed 
-                applyChanges( true );
-            } else if ( m_giOrig.changesMatter(m_gi) 
-                        || m_carOrig.changesMatter(m_car) ) {
-                showDialog( DlgID.CONFIRM_CHANGE );
-                consumed = true; // don't dismiss activity yet!
+            if ( m_forResult ) {
+                deleteGame();
             } else {
-                applyChanges( false );
+                saveChanges();
+                if ( !m_gameStarted ) { // no confirm needed 
+                    applyChanges( true );
+                } else if ( m_giOrig.changesMatter(m_gi) 
+                            || m_carOrig.changesMatter(m_car) ) {
+                    showDialog( DlgID.CONFIRM_CHANGE );
+                    consumed = true; // don't dismiss activity yet!
+                } else {
+                    applyChanges( false );
+                }
             }
         }
 
         return consumed;
+    }
+
+    private void deleteGame()
+    {
+        Assert.assertTrue( m_forResult );
+        if ( null != m_gameLock ) {
+            DBUtils.deleteGame( m_activity, m_gameLock );
+            m_gameLock.unlock();
+            m_gameLock = null;
+        }
     }
 
     private void loadPlayersList()
@@ -1178,7 +1193,7 @@ public class GameConfigDelegate extends DelegateBase
 
     private boolean localOnlyGame()
     {
-        return 0 == m_conTypes.size();
+        return DeviceRole.SERVER_STANDALONE == m_giOrig.serverRole;
     }
 
     public static void editForResult( Activity parent, int requestCode, 
