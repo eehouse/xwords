@@ -75,8 +75,6 @@ public class DlgDelegate {
         LOOKUP_ACTION,
         BUTTON_BROWSE_ACTION,
         VALUES_ACTION,
-        BT_PICK_ACTION,
-        SMS_PICK_ACTION,
         SMS_CONFIG_ACTION,
         BUTTON_BROWSEALL_ACTION,
 

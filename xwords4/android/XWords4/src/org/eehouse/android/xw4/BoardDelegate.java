@@ -932,14 +932,6 @@ public class BoardDelegate extends DelegateBase
             case SYNC_ACTION:
                 doSyncMenuitem();
                 break;
-            case BT_PICK_ACTION:
-                BTInviteDelegate.launchForResult( m_activity, m_nMissing, 
-                                                  BT_INVITE_RESULT );
-                break;
-            case SMS_PICK_ACTION:
-                SMSInviteDelegate.launchForResult( m_activity, m_nMissing, 
-                                                   SMS_INVITE_RESULT );
-                break;
             case SMS_CONFIG_ACTION:
                 Utils.launchSettings( m_activity );
                 break;
