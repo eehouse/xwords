@@ -20,9 +20,7 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.view.KeyEvent;
 
 public class GameConfigActivity extends XWActivity {
 
@@ -34,11 +32,4 @@ public class GameConfigActivity extends XWActivity {
         m_dlgt = new GameConfigDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
-
-    @Override
-    public boolean onKeyDown( int keyCode, KeyEvent event )
-    {
-        boolean consumed = m_dlgt.onKeyDown( keyCode, event );
-        return consumed || super.onKeyDown( keyCode, event );
-    }
 }

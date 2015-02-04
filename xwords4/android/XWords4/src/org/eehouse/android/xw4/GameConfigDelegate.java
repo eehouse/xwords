@@ -725,12 +725,11 @@ public class GameConfigDelegate extends DelegateBase
         }
     } // onClick
 
-    protected boolean onKeyDown( int keyCode, KeyEvent event )
+    @Override
+    protected boolean onBackPressed()
     {
         boolean consumed = false;
-        if ( null == m_gameLock ) {
-            // Do nothing; we're on our way out
-        } else if ( keyCode == KeyEvent.KEYCODE_BACK ) {
+        if ( null != m_gameLock ) {
             if ( m_forResult ) {
                 deleteGame();
             } else {

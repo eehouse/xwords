@@ -1207,7 +1207,8 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     @Override
-    protected boolean onBackPressed() {
+    protected boolean onBackPressed()
+    {
         boolean handled = 0 < m_selGames.size() || 0 < m_selGroupIDs.size();
         if ( handled ) {
             showNotAgainDlgThen( R.string.not_again_backclears, 
