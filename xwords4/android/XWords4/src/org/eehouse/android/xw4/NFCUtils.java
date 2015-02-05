@@ -40,6 +40,9 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NFCUtils {
 
+    private static final String NFC_TO_SELF_ACTION = "nfc_tsa";
+    private static final String NFC_TO_SELF_DATA = "nfc_data";
+
     public interface NFCActor {
         String makeNFCMessage();
     }
@@ -105,16 +108,25 @@ public class NFCUtils {
     {
         String result = null;
 
-        if ( NfcAdapter.ACTION_NDEF_DISCOVERED.equals( intent.getAction() ) ) {
+        String action = intent.getAction();
+        if ( NfcAdapter.ACTION_NDEF_DISCOVERED.equals( action ) ) {
             Parcelable[] rawMsgs = 
                 intent.getParcelableArrayExtra( NfcAdapter.EXTRA_NDEF_MESSAGES );
             // only one message sent during the beam
             NdefMessage msg = (NdefMessage)rawMsgs[0];
             // record 0 contains the MIME type, record 1 is the AAR, if present
             result = new String( msg.getRecords()[0].getPayload() );
+        } else if ( BuildConfig.DEBUG && NFC_TO_SELF_ACTION.equals( action ) ) {
+            result = intent.getStringExtra( NFC_TO_SELF_DATA );
         }
 
         return result;
+    }
+
+    public static void populateIntent( Intent intent, String data )
+    {
+        intent.setAction( NFC_TO_SELF_ACTION );
+        intent.putExtra( NFC_TO_SELF_DATA, data );
     }
 
     public static void register( Activity activity, NFCActor actor )

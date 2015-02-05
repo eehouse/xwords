@@ -167,6 +167,8 @@
   <string name="xlations_locale">Fake locale for translation</string>
   <string name="enable_dupes_summary">Accept invitations more than once</string>
   <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
+
+  <string name="nfc_to_self">Send via NFC to self?</string>
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
   <string-array name="board_sizes">

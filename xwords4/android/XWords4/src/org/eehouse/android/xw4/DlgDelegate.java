@@ -77,6 +77,7 @@ public class DlgDelegate {
         VALUES_ACTION,
         SMS_CONFIG_ACTION,
         BUTTON_BROWSEALL_ACTION,
+        NFC_TO_SELF,
 
         // Dict Browser
         FINISH_ACTION,
@@ -345,7 +346,7 @@ public class DlgDelegate {
     public void showInviteChoicesThen( final Action action )
     {
         if ( (XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS( m_activity ))
-             || NFCUtils.nfcAvail( m_activity )[0]
+             || (BuildConfig.DEBUG || NFCUtils.nfcAvail( m_activity )[0])
              || BTService.BTAvailable() ) {
             DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN, action );
             addState( state );
@@ -571,7 +572,7 @@ public class DlgDelegate {
             items.add( getString( R.string.invite_choice_bt ) );
             means.add( DlgClickNotify.InviteMeans.BLUETOOTH );
         }
-        if ( NFCUtils.nfcAvail( m_activity )[0] ) {
+        if ( BuildConfig.DEBUG || NFCUtils.nfcAvail( m_activity )[0] ) {
             items.add( getString( R.string.invite_choice_nfc ) );
             means.add( DlgClickNotify.InviteMeans.NFC );
         }

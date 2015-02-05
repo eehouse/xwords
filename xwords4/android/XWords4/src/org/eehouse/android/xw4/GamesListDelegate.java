@@ -2163,6 +2163,13 @@ public class GamesListDelegate extends ListDelegateBase
         return intent;
     }
 
+    public static void sendNFCToSelf( Context context, String data )
+    {
+        Intent intent = makeSelfIntent( context );
+        NFCUtils.populateIntent( intent, data );
+        context.startActivity( intent );
+    }
+
     public static void openGame( Context context, Uri data )
     {
         Intent intent = makeSelfIntent( context );

@@ -984,6 +984,9 @@ public class BoardDelegate extends DelegateBase
             case LOOKUP_ACTION:
                 launchLookup( m_words, m_gi.dictLang );
                 break;
+            case NFC_TO_SELF:
+                GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
+                break;
             default:
                 Assert.fail();
             }
@@ -1000,7 +1003,9 @@ public class BoardDelegate extends DelegateBase
         if ( action == Action.LAUNCH_INVITE_ACTION ) {
             switch( means ) {
             case NFC:
-                if ( ! NFCUtils.nfcAvail( m_activity )[1] ) {
+                if ( BuildConfig.DEBUG ) {
+                    showConfirmThen( R.string.nfc_to_self, Action.NFC_TO_SELF );
+                } else if ( ! NFCUtils.nfcAvail( m_activity )[1] ) {
                     showDialog( DlgID.ENABLE_NFC );
                 } else {
                     showOKOnlyDialog( R.string.nfc_just_tap );
