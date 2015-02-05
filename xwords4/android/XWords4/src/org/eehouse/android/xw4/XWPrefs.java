@@ -53,6 +53,11 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_dup_invite, false );
     }
 
+    public static boolean getNFCToSelfEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_sms_toself, false );
+    }
+
     public static boolean getHideNewgameButtons( Context context )
     {
         return getPrefsBoolean( context, R.string.key_hide_newgames, 

@@ -1003,7 +1003,7 @@ public class BoardDelegate extends DelegateBase
         if ( action == Action.LAUNCH_INVITE_ACTION ) {
             switch( means ) {
             case NFC:
-                if ( BuildConfig.DEBUG ) {
+                if ( XWPrefs.getNFCToSelfEnabled( m_activity ) ) {
                     showConfirmThen( R.string.nfc_to_self, Action.NFC_TO_SELF );
                 } else if ( ! NFCUtils.nfcAvail( m_activity )[1] ) {
                     showDialog( DlgID.ENABLE_NFC );

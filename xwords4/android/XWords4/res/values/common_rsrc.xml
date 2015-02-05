@@ -115,6 +115,7 @@
   <string name="key_na_dicts">key_na_dicts</string>
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_enable_dup_invite">key_enable_dup_invite</string>
+  <string name="key_enable_sms_toself">key_enable_sms_toself</string>
   <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
   <string name="key_xlations_locale">key_xlations_locale</string>
@@ -167,6 +168,8 @@
   <string name="xlations_locale">Fake locale for translation</string>
   <string name="enable_dupes_summary">Accept invitations more than once</string>
   <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
+  <string name="enable_sms_toself_title">Enable NFC to self</string>
+  <string name="enable_sms_toself_summary">Fake invitation to aid debugging</string>
 
   <string name="nfc_to_self">Send via NFC to self?</string>
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->

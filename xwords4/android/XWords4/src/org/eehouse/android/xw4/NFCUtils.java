@@ -40,7 +40,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 
 public class NFCUtils {
 
-    private static final String NFC_TO_SELF_ACTION = "nfc_tsa";
+    private static final String NFC_TO_SELF_ACTION = "org.eehouse.nfc_to_self";
     private static final String NFC_TO_SELF_DATA = "nfc_data";
 
     public interface NFCActor {
@@ -116,7 +116,7 @@ public class NFCUtils {
             NdefMessage msg = (NdefMessage)rawMsgs[0];
             // record 0 contains the MIME type, record 1 is the AAR, if present
             result = new String( msg.getRecords()[0].getPayload() );
-        } else if ( BuildConfig.DEBUG && NFC_TO_SELF_ACTION.equals( action ) ) {
+        } else if ( NFC_TO_SELF_ACTION.equals( action ) ) {
             result = intent.getStringExtra( NFC_TO_SELF_DATA );
         }
 
@@ -125,8 +125,8 @@ public class NFCUtils {
 
     public static void populateIntent( Intent intent, String data )
     {
-        intent.setAction( NFC_TO_SELF_ACTION );
-        intent.putExtra( NFC_TO_SELF_DATA, data );
+        intent.setAction( NFC_TO_SELF_ACTION )
+            .putExtra( NFC_TO_SELF_DATA, data );
     }
 
     public static void register( Activity activity, NFCActor actor )

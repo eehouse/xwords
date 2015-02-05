@@ -331,6 +331,12 @@
                         android:defaultValue="false"
                         />
 
+    <CheckBoxPreference android:key="@string/key_enable_sms_toself"
+                        android:title="@string/enable_sms_toself_title"
+                        android:summary="@string/enable_sms_toself_summary"
+                        android:defaultValue="false"
+                        />
+
     <org.eehouse.android.xw4.XWEditTextPreference 
 	   android:key="@string/key_xlations_locale"
 	   android:title="@string/xlations_locale"
