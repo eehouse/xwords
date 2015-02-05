@@ -115,7 +115,6 @@ public class DlgDelegate {
     }
 
     public static final int SMS_BTN = AlertDialog.BUTTON_POSITIVE;
-    public static final int EMAIL_BTN = AlertDialog.BUTTON_NEGATIVE;
     public static final int NFC_BTN = AlertDialog.BUTTON_NEUTRAL;
     public static final int DISMISS_BUTTON = 0;
 
@@ -354,8 +353,9 @@ public class DlgDelegate {
         } else {
             post( new Runnable() {
                     public void run() {
-                        m_clickCallback.dlgButtonClicked( action, EMAIL_BTN,
-                                                          null );
+                        DlgClickNotify.InviteMeans means
+                            = DlgClickNotify.InviteMeans.EMAIL;
+                        m_clickCallback.inviteChoiceMade( action, means, null );
                     } 
                 });
         }
