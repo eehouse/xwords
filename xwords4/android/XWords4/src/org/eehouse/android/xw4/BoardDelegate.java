@@ -272,9 +272,9 @@ public class BoardDelegate extends DelegateBase
                             }
                         };
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
-                } else if ( DlgID.DLG_CONNSTAT == dlgID &&
-                            null != m_connTypes &&
-                            m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                } else if ( DlgID.DLG_CONNSTAT == dlgID
+                            && BuildConfig.DEBUG && null != m_connTypes
+                            && m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
