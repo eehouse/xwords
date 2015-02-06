@@ -519,6 +519,9 @@ public class BoardDelegate extends DelegateBase
 
             ad.setMessage( message );
             break;
+        default:
+            super.prepareDialog( dlgID, dialog );
+            break;
         }
     }
 

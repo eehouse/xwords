@@ -81,7 +81,6 @@ public class DelegateBase implements DlgClickNotify,
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean onBackPressed() { return false; }
-    protected void prepareDialog( DlgID dlgID, Dialog dialog ) {}
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data ) 
     {
@@ -312,6 +311,11 @@ public class DelegateBase implements DlgClickNotify,
     protected Dialog onCreateDialog( int id )
     {
         return m_dlgDelegate.createDialog( id );
+    }
+
+    protected void prepareDialog( DlgID dlgId, Dialog dialog )
+    {
+        m_dlgDelegate.prepareDialog( dlgId, dialog );
     }
 
     protected AlertDialog.Builder makeAlertBuilder()

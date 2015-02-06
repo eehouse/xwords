@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
@@ -216,6 +217,15 @@ public class DlgDelegate {
             break;
         }
         return dialog;
+    }
+
+    public void prepareDialog( DlgID dlgId, Dialog dialog )
+    {
+        switch( dlgId ) {
+        case INVITE_CHOICES_THEN:
+            prepareInviteChoicesDialog( dialog );
+            break;
+        }
     }
 
     public void showOKOnlyDialog( String msg )
@@ -582,6 +592,12 @@ public class DlgDelegate {
         final int[] sel = { -1 };
         OnClickListener selChanged = new OnClickListener() {
                 public void onClick( DialogInterface dlg, int view ) {
+                    // First time through, enable the button
+                    if ( -1 == sel[0] ) {
+                        ((AlertDialog)dlg)
+                            .getButton( AlertDialog.BUTTON_POSITIVE )
+                            .setEnabled( true );
+                    }
                     sel[0] = view;
                 }
             };
@@ -605,6 +621,15 @@ public class DlgDelegate {
             .setNegativeButton( R.string.button_cancel, null );
 
         return setCallbackDismissListener( builder.create(), state, dlgID );
+    }
+
+    private void prepareInviteChoicesDialog( Dialog dialog )
+    {
+        AlertDialog ad = (AlertDialog)dialog;
+        Button button = ad.getButton( AlertDialog.BUTTON_POSITIVE );
+        if ( null != button ) {
+            button.setEnabled( false );
+        }
     }
 
     private Dialog createDictGoneDialog()
