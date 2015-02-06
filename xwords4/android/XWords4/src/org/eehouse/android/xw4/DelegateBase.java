@@ -47,7 +47,7 @@ public class DelegateBase implements DlgClickNotify,
                                      DlgDelegate.HasDlgDelegate,
                                      MultiService.MultiEventListener {
 
-    private DlgDelegate m_delegate;
+    private DlgDelegate m_dlgDelegate;
     private Delegator m_delegator;
     private Activity m_activity;
     private int m_optionsMenuID;
@@ -65,7 +65,7 @@ public class DelegateBase implements DlgClickNotify,
         Assert.assertTrue( 0 < menuID );
         m_delegator = delegator;
         m_activity = delegator.getActivity();
-        m_delegate = new DlgDelegate( m_activity, this, this, bundle );
+        m_dlgDelegate = new DlgDelegate( m_activity, this, this, bundle );
         m_layoutID = layoutID;
         m_optionsMenuID = menuID;
         LocUtils.xlateTitle( m_activity );
@@ -291,7 +291,7 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void showDialog( DlgID dlgID )
     {
-        m_delegate.showDialog( dlgID );
+        m_dlgDelegate.showDialog( dlgID );
     }
 
     protected void removeDialog( DlgID dlgID )
@@ -311,7 +311,7 @@ public class DelegateBase implements DlgClickNotify,
 
     protected Dialog onCreateDialog( int id )
     {
-        return m_delegate.createDialog( id );
+        return m_dlgDelegate.createDialog( id );
     }
 
     protected AlertDialog.Builder makeAlertBuilder()
@@ -327,145 +327,145 @@ public class DelegateBase implements DlgClickNotify,
     protected void showNotAgainDlgThen( int msgID, int prefsKey,
                                         Action action, Object... params )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action, null, params );
+        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey, action, null, params );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey, Action action )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action );
+        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey, action );
     }
 
     public void showNotAgainDlgThen( int msgID, int prefsKey, Action action,
                                      ActionPair more )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey, action, more );
+        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey, action, more );
     }
 
     protected void showNotAgainDlgThen( String msg, int prefsKey,
                                         Action action )
     {
-        m_delegate.showNotAgainDlgThen( msg, prefsKey, action, null, null );
+        m_dlgDelegate.showNotAgainDlgThen( msg, prefsKey, action, null, null );
     }
 
     protected void showNotAgainDlg( int msgID, int prefsKey )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey );
+        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey );
     }
 
     protected void showNotAgainDlgThen( int msgID, int prefsKey )
     {
-        m_delegate.showNotAgainDlgThen( msgID, prefsKey );
+        m_dlgDelegate.showNotAgainDlgThen( msgID, prefsKey );
     }
 
     // It sucks that these must be duplicated here and XWActivity
     protected void showAboutDialog()
     {
-        m_delegate.showAboutDialog();
+        m_dlgDelegate.showAboutDialog();
     }
 
     public void showOKOnlyDialog( int msgID )
     {
-        m_delegate.showOKOnlyDialog( msgID );
+        m_dlgDelegate.showOKOnlyDialog( msgID );
     }
 
     public void showOKOnlyDialog( String msg )
     {
-        m_delegate.showOKOnlyDialog( msg );
+        m_dlgDelegate.showOKOnlyDialog( msg );
     }
 
     protected void showConfirmThen( String msg, Action action, Object... params )
     {
-        m_delegate.showConfirmThen( msg, action, params );
+        m_dlgDelegate.showConfirmThen( msg, action, params );
     }
 
     protected void showConfirmThen( String msg, int posButton, Action action,
                                     Object... params )
     {
-        m_delegate.showConfirmThen( msg, posButton, action, params );
+        m_dlgDelegate.showConfirmThen( msg, posButton, action, params );
     }
 
     protected void showConfirmThen( int msg, int posButton, int negButton, Action action )
     {
-        m_delegate.showConfirmThen( msg, posButton, negButton, action );
+        m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action );
     }
 
     protected void showConfirmThen( int msg, int posButton, Action action, 
                                     Object... params )
     {
-        m_delegate.showConfirmThen( msg, posButton, action, params );
+        m_dlgDelegate.showConfirmThen( msg, posButton, action, params );
     }
 
     protected void showConfirmThen( int msgID, Action action )
     {
-        m_delegate.showConfirmThen( msgID, action );
+        m_dlgDelegate.showConfirmThen( msgID, action );
     }
 
     protected boolean post( Runnable runnable )
     {
-        return m_delegate.post( runnable );
+        return m_dlgDelegate.post( runnable );
     }
 
     protected void doSyncMenuitem()
     {
-        m_delegate.doSyncMenuitem();
+        m_dlgDelegate.doSyncMenuitem();
     }
 
     protected void launchLookup( String[] words, int lang, boolean noStudy )
     {
-        m_delegate.launchLookup( words, lang, noStudy );
+        m_dlgDelegate.launchLookup( words, lang, noStudy );
     }
 
     protected void launchLookup( String[] words, int lang )
     {
         boolean studyOn = XWPrefs.getStudyEnabled( m_activity );
-        m_delegate.launchLookup( words, lang, !studyOn );
+        m_dlgDelegate.launchLookup( words, lang, !studyOn );
     }
 
     protected void showInviteChoicesThen( Action action )
     {
-        m_delegate.showInviteChoicesThen( action );
+        m_dlgDelegate.showInviteChoicesThen( action );
     }
 
     protected void showOKOnlyDialogThen( String msg, Action action )
     {
-        m_delegate.showOKOnlyDialog( msg, action );
+        m_dlgDelegate.showOKOnlyDialog( msg, action );
     }
 
     protected void startProgress( int titleID, int msgID )
     {
-        m_delegate.startProgress( titleID, msgID, null );
+        m_dlgDelegate.startProgress( titleID, msgID, null );
     }
 
     protected void startProgress( int titleID, String msg )
     {
-        m_delegate.startProgress( titleID, msg, null );
+        m_dlgDelegate.startProgress( titleID, msg, null );
     }
 
     protected void startProgress( int titleID, int msgID, 
                                   OnCancelListener lstnr )
     {
-        m_delegate.startProgress( titleID, msgID, lstnr );
+        m_dlgDelegate.startProgress( titleID, msgID, lstnr );
     }
 
     protected void startProgress( int titleID, String msg, 
                                   OnCancelListener lstnr )
     {
-        m_delegate.startProgress( titleID, msg, lstnr );
+        m_dlgDelegate.startProgress( titleID, msg, lstnr );
     }
 
     protected void setProgressMsg( int id )
     {
-        m_delegate.setProgressMsg( id );
+        m_dlgDelegate.setProgressMsg( id );
     }
 
     protected void stopProgress()
     {
-        m_delegate.stopProgress();
+        m_dlgDelegate.stopProgress();
     }
 
     protected void showDictGoneFinish()
     {
-        m_delegate.showDictGoneFinish();
+        m_dlgDelegate.showDictGoneFinish();
     }
 
     //////////////////////////////////////////////////
