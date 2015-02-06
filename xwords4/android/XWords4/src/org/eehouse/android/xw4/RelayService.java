@@ -255,7 +255,7 @@ public class RelayService extends XWService
         m_handler = new Handler();
         m_onInactivity = new Runnable() {
                 public void run() {
-                    DbgUtils.logf( "RelayService: m_onInactivity fired" );
+                    // DbgUtils.logf( "RelayService: m_onInactivity fired" );
                     if ( !shouldMaintainConnection() ) {
                         NetStateCache.unregister( RelayService.this, 
                                                   RelayService.this );
@@ -353,8 +353,6 @@ public class RelayService extends XWService
     @Override
     public void onDestroy()
     {
-        DbgUtils.logf( "RelayService.onDestroy() called" );
-
         if ( shouldMaintainConnection() ) {
             long interval_millis = getMaxIntervalSeconds() * 1000;
             RelayReceiver.restartTimer( this, interval_millis );
@@ -526,7 +524,6 @@ public class RelayService extends XWService
 
     private void stopUDPThreadsIf()
     {
-        DbgUtils.logf( "stopUDPThreadsIf" );
         if ( null != m_UDPWriteThread ) {
             // can't add null
             m_queue.add( new PacketData() );
@@ -552,7 +549,6 @@ public class RelayService extends XWService
             m_UDPReadThread = null;
             m_UDPSocket = null;
         }
-        DbgUtils.logf( "stopUDPThreadsIf DONE" );
     }
 
     // MIGHT BE Running on reader thread
@@ -566,7 +562,7 @@ public class RelayService extends XWService
                 if ( !skipAck ) {
                     sendAckIf( header );
                 }
-                DbgUtils.logf( "gotPacket: cmd=%s", header.m_cmd.toString() );
+                DbgUtils.logf( "RelayService.gotPacket: cmd=%s", header.m_cmd.toString() );
                 switch ( header.m_cmd ) { 
                 case XWPDEV_UNAVAIL:
                     int unavail = dis.readInt();
@@ -639,7 +635,7 @@ public class RelayService extends XWService
         int packetLen = packet.getLength();
         byte[] data = new byte[packetLen];
         System.arraycopy( packet.getData(), 0, data, 0, packetLen );
-        DbgUtils.logf( "RelayService::gotPacket: %d bytes of data", packetLen );
+        // DbgUtils.logf( "RelayService::gotPacket: %d bytes of data", packetLen );
         gotPacket( data, false );
     } // gotPacket
 
@@ -651,7 +647,7 @@ public class RelayService extends XWService
             registered = XWPrefs
                 .getPrefsBoolean( this, R.string.key_relay_regid_ackd, false );
         }
-        DbgUtils.logf( "shouldRegister()=>%b", !registered );
+        // DbgUtils.logf( "shouldRegister()=>%b", !registered );
         return !registered;
     }
 
@@ -792,7 +788,7 @@ public class RelayService extends XWService
         if ( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() == proto ) {
             int packetID = vli2un( dis );
             if ( 0 != packetID ) {
-                DbgUtils.logf( "readHeader: got packetID %d", packetID );
+                DbgUtils.logf( "RelayService.readHeader: got packetID %d", packetID );
             }
             byte ordinal = dis.readByte();
             XWRelayReg cmd = XWRelayReg.values()[ordinal];

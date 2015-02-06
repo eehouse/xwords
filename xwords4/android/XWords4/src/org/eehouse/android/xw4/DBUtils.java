@@ -2117,7 +2117,6 @@ public class DBUtils {
     private static final int BIT_VECTOR_MASK = 0x8000;
     public static CommsConnTypeSet intToConnTypeSet( int asInt )
     {
-        // DbgUtils.logf( "intToConnTypeSet(in: %s)", asInt );
         CommsConnTypeSet result = new CommsConnTypeSet();
         boolean isVector = 0 != (BIT_VECTOR_MASK & asInt);
         asInt &= ~BIT_VECTOR_MASK;
@@ -2137,7 +2136,6 @@ public class DBUtils {
 
     public static int connTypeSetToInt( CommsConnTypeSet set )
     {
-        DbgUtils.logf( "connTypeSetToInt(setSize: %d)", set.size() );
         int result = BIT_VECTOR_MASK;
         for ( Iterator<CommsConnType> iter = set.iterator(); iter.hasNext(); ) {
             CommsConnType typ = iter.next();
