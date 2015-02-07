@@ -248,6 +248,7 @@ void comms_setAddrDisabled( CommsCtxt* comms, CommsConnType typ,
 XP_Bool comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ, 
                                XP_Bool send );
 # else
+#  define comms_setAddrDisabled( comms, typ, send, enabled )
 #  define comms_getAddrDisabled( comms, typ, send ) XP_FALSE
 # endif
 

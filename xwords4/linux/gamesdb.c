@@ -23,7 +23,9 @@
 
 static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf, 
                            int len );
+#ifdef DEBUG
 static char* sqliteErr2str( int err );
+#endif
 
 sqlite3* 
 openGamesDB( const char* dbName )
@@ -371,6 +373,7 @@ getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
     buf[needLen] = '\0';
 }
 
+#ifdef DEBUG
 # define CASESTR(c) case c: return #c
 static char*
 sqliteErr2str( int err )
@@ -410,3 +413,4 @@ sqliteErr2str( int err )
     }
         return "<unknown>";
 }
+#endif
