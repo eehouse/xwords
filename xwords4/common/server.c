@@ -2787,12 +2787,13 @@ XP_Bool
 server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 {
     XP_Bool accepted = XP_FALSE;
+    XP_Bool isServer = amServer( server );
     XW_Proto code = readProto( server, incoming );
 
     printCode( "Receiving", code );
 
     if ( code == XWPROTO_DEVICE_REGISTRATION ) {
-        accepted = amServer( server );
+        accepted = isServer;
         if ( accepted ) {
         /* This message is special: doesn't have the header that's possible
            once the game's in progress and communication's been
@@ -2801,16 +2802,15 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             accepted = handleRegistrationMsg( server, incoming );
         }
     } else if ( code == XWPROTO_CLIENT_SETUP ) {
-        accepted = !amServer( server );
+        accepted = !isServer;
         if ( accepted ) {
             XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
-            XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
             accepted = client_readInitialMessage( server, incoming );
         }
 #ifdef XWFEATURE_CHAT
     } else if ( code == XWPROTO_CHAT ) {
         XP_UCHAR* msg = stringFromStream( server->mpool, incoming );
-        if ( server->vol.gi->serverRole == SERVER_ISSERVER ) {
+        if ( isServer ) {
             XP_U16 sourceClientIndex = 
                 getIndexForDevice( server, stream_getAddress( incoming ) );
             sendChatToClientsExcept( server, sourceClientIndex, msg );
@@ -2846,8 +2846,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             break;
 
         case XWPROTO_MOVEMADE_INFO_SERVER: /* server telling me about a move */
-            XP_ASSERT( SERVER_ISCLIENT == server->vol.gi->serverRole );
-            accepted = reflectMove( server, incoming );
+            accepted = !isServer && reflectMove( server, incoming );
             if ( accepted ) {
                 nextTurn( server, PICK_NEXT );
             }
@@ -2887,6 +2886,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         } /* switch */
     }
 
+    XP_ASSERT( isServer == amServer( server ) ); /* caching value is ok? */
     stream_close( incoming );
     return accepted;
 } /* server_receiveMessage */
