@@ -38,7 +38,6 @@ public class SMSReceiver extends BroadcastReceiver {
         if ( action.equals("android.intent.action.DATA_SMS_RECEIVED") ) {
             Bundle bundle = intent.getExtras();
             if ( null != bundle ) {
-                boolean isMine = false;
                 Object[] pdus = (Object[])bundle.get( "pdus" );
                 SmsMessage[] smses = new SmsMessage[pdus.length];
 
