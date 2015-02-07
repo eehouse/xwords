@@ -586,7 +586,7 @@ public class BTService extends XWService {
 
                     for ( long rowid : rowids ) {
                         boolean consumed = 
-                            BoardDelegate.feedMessage( gameID, buffer, addr );
+                            BoardDelegate.feedMessage( rowid, buffer, addr );
                         if ( !consumed && haveGame ) {
                             LastMoveInfo lmi = new LastMoveInfo();
                             if ( GameUtils.feedMessage( BTService.this, rowid, 

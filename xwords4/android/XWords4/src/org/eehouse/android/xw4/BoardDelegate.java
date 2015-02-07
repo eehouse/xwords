@@ -144,35 +144,6 @@ public class BoardDelegate extends DelegateBase
 
     private static Set<BoardDelegate> s_this = new HashSet<BoardDelegate>();
 
-    public static boolean feedMessage( int gameID, byte[] msg, 
-                                       CommsAddrRec retAddr )
-    {
-        boolean delivered = false;
-        int size;
-        synchronized( s_this ) {
-            size = s_this.size();
-            if ( 1 == size ) {
-                BoardDelegate self = s_this.iterator().next();
-                Assert.assertNotNull( self.m_gi );
-                Assert.assertNotNull( self.m_gameLock );
-                if ( gameID == self.m_gi.gameID ) {
-                    if ( null != self.m_jniThread ) {
-                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, retAddr );
-                        delivered = true;
-                    } else {
-                        DbgUtils.logf( "BoardDelegate.feedMessage(): race condition lost; "
-                                       + "dropping message" );
-                    }
-                }
-            }
-        }
-
-        if ( 1 < s_this.size() ) {
-            noteSkip();
-        }
-        return delivered;
-    }
-
     public static boolean feedMessage( long rowid, byte[] msg,
                                        CommsAddrRec ret )
     {
