@@ -620,25 +620,31 @@ public class SMSService extends XWService {
     private boolean sendBuffers( byte[][] fragments, String phone, byte[] data )
     {
         boolean success = false;
-        short nbsPort = (short)Integer.parseInt( getString( R.string.nbs_port ) );
-        try {
-            SmsManager mgr = SmsManager.getDefault();
-            PendingIntent sent = makeStatusIntent( MSG_SENT );
-            PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
-            for ( byte[] fragment : fragments ) {
-                mgr.sendDataMessage( phone, null, nbsPort, fragment, sent, 
-                                     delivery );
+        if ( XWPrefs.getSMSEnabled( this ) ) {
+            short nbsPort = (short)Integer.parseInt( getString( R.string.nbs_port ) );
+            try {
+                SmsManager mgr = SmsManager.getDefault();
+                PendingIntent sent = makeStatusIntent( MSG_SENT );
+                PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
+                for ( byte[] fragment : fragments ) {
+                    mgr.sendDataMessage( phone, null, nbsPort, fragment, sent, 
+                                         delivery );
+                    DbgUtils.logf( "SMSService.sendBuffers(): sent %d byte fragment",
+                                   fragment.length );
+                }
+                if ( s_showToasts ) {
+                    DbgUtils.showf( this, "sent %dth msg", s_nSent );
+                }
+                success = true;
+            } catch ( IllegalArgumentException iae ) {
+                DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
+            } catch ( NullPointerException npe ) {
+                Assert.fail();      // shouldn't be trying to do this!!!
+            } catch ( Exception ee ) {
+                DbgUtils.loge( ee );
             }
-            if ( s_showToasts ) {
-                DbgUtils.showf( this, "sent %dth msg", s_nSent );
-            }
-            success = true;
-        } catch ( IllegalArgumentException iae ) {
-            DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
-        } catch ( NullPointerException npe ) {
-            Assert.fail();      // shouldn't be trying to do this!!!
-        } catch ( Exception ee ) {
-            DbgUtils.loge( ee );
+        } else {
+            DbgUtils.logf( "sendBuffers(): dropping because SMS disabled" );
         }
 
         ConnStatusHandler.updateStatusOut( this, null, 
@@ -697,9 +703,9 @@ public class SMSService extends XWService {
                 @Override
                 public void onReceive(Context arg0, Intent arg1) 
                 {
-                    DbgUtils.logf( "SMS delivery result: %s",
-                                   Activity.RESULT_OK == getResultCode()
-                                   ? "SUCCESS" : "FAILURE" );
+                    if ( Activity.RESULT_OK != getResultCode() ) {
+                        DbgUtils.logf( "SMS delivery result: FAILURE" );
+                    }
                 }
             };
         registerReceiver( m_receiveReceiver, new IntentFilter(MSG_DELIVERED) );
