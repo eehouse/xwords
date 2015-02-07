@@ -387,6 +387,26 @@ cleanupAddrRecs( CommsCtxt* comms )
     comms->recs = (AddressRecord*)NULL;
 } /* cleanupAddrRecs */
 
+static void
+removeAddrRec( CommsCtxt* comms, AddressRecord* rec )
+{
+#ifdef DEBUG
+    XP_U16 nBefore = countAddrRecs( comms );
+#endif
+    AddressRecord** curp = &comms->recs;
+    while ( NULL != *curp ) {
+        if ( rec == *curp ) {
+            *curp = rec->next;
+            XP_FREE( comms->mpool, rec );
+            break;
+        }
+        curp = &(*curp)->next;
+    }
+#ifdef DEBUG
+    XP_U16 nAfter = countAddrRecs( comms );
+    XP_ASSERT( (nAfter + 1) == nBefore );
+#endif
+}
 
 void
 comms_resetSame( CommsCtxt* comms )
@@ -1162,7 +1182,7 @@ printQueue( const CommsCtxt* comms )
         CNO_FMT( cbuf, elem->channelNo );
         XP_LOGF( "\t%s(): %d: %s; msgID=" XP_LD 
 #ifdef COMMS_CHECKSUM
-                    "; check=%s"
+                    "; sum=%s"
 #endif
                  ,__func__, ii+1, cbuf, elem->msgID
 #ifdef COMMS_CHECKSUM
@@ -2029,7 +2049,7 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
 
 XP_Bool
 comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
-                           const CommsAddrRec* retAddr )
+                           const CommsAddrRec* retAddr, CommsMsgState* state )
 {
     XP_ASSERT( !!retAddr );     /* for now */
     XP_Bool messageValid = XP_FALSE;
@@ -2083,10 +2103,12 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                          __func__, cbuf, msgID, lastMsgRcd );
                 payloadSize = stream_getSize( stream ); /* anything left? */
 
+                state->rec = NULL;
                 if ( connID == CONN_ID_NONE ) {
                     /* special case: initial message from client or server */
                     rec = validateInitialMessage( comms, payloadSize > 0, retAddr, 
                                                   senderID, &channelNo );
+                    state->rec = rec;
                 } else if ( comms->connID == connID ) {
                     rec = validateChannelMessage( comms, retAddr, channelNo, senderID,
                                                   msgID, lastMsgRcd );
@@ -2119,6 +2141,14 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     LOG_RETURNF( "%s", messageValid?"valid":"invalid" );
     return messageValid;
 } /* comms_checkIncomingStream */
+
+void
+comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, XP_Bool rejected )
+{
+    if ( rejected && !!state->rec ) {
+        removeAddrRec( comms, state->rec );
+    }
+}
 
 XP_Bool
 comms_checkComplete( const CommsAddrRec* addr )

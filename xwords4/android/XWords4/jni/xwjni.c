@@ -1416,18 +1416,25 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
         getJAddrRec( env, &addr, jaddr );
         addrp = &addr;
     }
-    result = comms_checkIncomingStream( state->game.comms, stream, addrp );
+    CommsMsgState commsState;
+    result = comms_checkIncomingStream( state->game.comms, stream, addrp, 
+                                        &commsState );
     if ( result ) {
         ServerCtxt* server = state->game.server;
         (void)server_do( server );
-        (void)server_receiveMessage( server, stream );
-        /* in case MORE work's pending.  Multiple calls are required in at
-           least one case, where I'm a host handling client registration *AND*
-           I'm a robot.  Only one server_do and I'll never make that first
-           robot move.  That's because comms can't detect a duplicate initial
-           packet (in validateInitialMessage()). */
-        for ( int ii = 0; ii < 5; ++ii ) {
-            (void)server_do( server );
+
+        result = server_receiveMessage( server, stream );
+        comms_msgProcessed( state->game.comms, &commsState, !result );
+
+        if ( result ) {
+            /* in case MORE work's pending.  Multiple calls are required in at
+               least one case, where I'm a host handling client registration *AND*
+               I'm a robot.  Only one server_do and I'll never make that first
+               robot move.  That's because comms can't detect a duplicate initial
+               packet (in validateInitialMessage()). */
+            for ( int ii = 0; ii < 5; ++ii ) {
+                (void)server_do( server );
+            }
         }
     }
 

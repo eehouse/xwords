@@ -220,9 +220,15 @@ XP_U16 comms_getChannelSeed( CommsCtxt* comms );
 void comms_ackAny( CommsCtxt* comms );
 #endif
 
-XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
-                                   const CommsAddrRec* addr );
+typedef struct _CommsMsgState {
+    struct AddressRecord* rec;
+} CommsMsgState;
 
+XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
+                                   const CommsAddrRec* addr, 
+                                   CommsMsgState* state );
+void comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, 
+                         XP_Bool rejected );
 XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
 
 XP_Bool comms_canChat( const CommsCtxt* comms );

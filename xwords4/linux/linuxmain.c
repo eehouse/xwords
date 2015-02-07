@@ -181,8 +181,11 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
     XWGame* game = &cGlobals->game;
     XWStreamCtxt* stream = stream_from_msgbuf( cGlobals, buf, len );
     if ( !!stream ) {
-        if ( comms_checkIncomingStream( game->comms, stream, from ) ) {
+        CommsMsgState state;
+        if ( comms_checkIncomingStream( game->comms, stream, from, &state ) ) {
             redraw = server_receiveMessage( game->server, stream );
+            comms_msgProcessed( game->comms, &state, !redraw );
+
             if ( redraw ) {
                 saveGame( cGlobals );
             }
@@ -411,11 +414,14 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
                                   NULL );
         stream_putBytes( stream, buf, len );
 
+        CommsMsgState state;
         if ( comms_checkIncomingStream( cGlobals->game.comms, 
-                                        stream, NULL ) ) {
+                                        stream, NULL, &state ) ) {
             ServerCtxt* server = cGlobals->game.server;
             (void)server_do( server );
-            handled = server_receiveMessage( server, stream ) || handled;
+            XP_Bool accepted = server_receiveMessage( server, stream );
+            comms_msgProcessed( cGlobals->game.comms, &state, !accepted );
+            handled = accepted || handled;
 
             XP_U16 ii;
             for ( ii = 0; ii < 5; ++ii ) {
@@ -475,12 +481,14 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
                                       NULL );
             stream_putBytes( stream, buf, len );
 
+            CommsMsgState state;
             if ( comms_checkIncomingStream( cGlobals->game.comms, 
-                                            stream, NULL ) ) {
+                                            stream, NULL, &state ) ) {
                 ServerCtxt* server = cGlobals->game.server;
                 (void)server_do( server );
-                handled = server_receiveMessage( server, stream ) || handled;
-
+                XP_Bool accepted = server_receiveMessage( server, stream );
+                handled = accepted || handled;
+                comms_msgProcessed( cGlobals->game.comms, &state, !accepted );
                 XP_U16 ii;
                 for ( ii = 0; ii < 5; ++ii ) {
                     (void)server_do( server );
@@ -1127,10 +1135,12 @@ linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
             if ( !!inboundS ) {
                 CommsAddrRec addr = {0};
                 addr_addType( &addr, COMMS_CONN_RELAY );
+                CommsMsgState state;
                 if ( comms_checkIncomingStream( cGlobals->game.comms,
-                                                inboundS, &addr ) ) {
+                                                inboundS, &addr, &state ) ) {
                     redraw = server_receiveMessage( cGlobals->game.server, 
                                                     inboundS );
+                    comms_msgProcessed( cGlobals->game.comms, &state, !redraw );
                 }
                 stream_destroy( inboundS );
             }
