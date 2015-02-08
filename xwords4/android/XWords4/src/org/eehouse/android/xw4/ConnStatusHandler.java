@@ -193,7 +193,6 @@ public class ConnStatusHandler {
                     sb.append( LocUtils
                                .getString( context, R.string.connstat_lastsend_fmt,
                                            tmp, record.newerStr( context ) ) );
-                    sb.append("\n");
 
                     int fmtId = 0;
                     if ( record.successNewer ) {
