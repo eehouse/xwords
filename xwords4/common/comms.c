@@ -153,6 +153,7 @@ struct CommsCtxt {
     XP_Bool isServer;
 #ifdef DEBUG
     XP_Bool disableds[COMMS_CONN_NTYPES][2];
+    XP_Bool processingMsg;
 #endif
 
     MPSLOT
@@ -2103,6 +2104,10 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                          __func__, cbuf, msgID, lastMsgRcd );
                 payloadSize = stream_getSize( stream ); /* anything left? */
 
+#ifdef DEBUG
+                XP_ASSERT( !comms->processingMsg );
+                comms->processingMsg = XP_TRUE;
+#endif
                 state->rec = NULL;
                 if ( connID == CONN_ID_NONE ) {
                     /* special case: initial message from client or server */
@@ -2145,9 +2150,15 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 void
 comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, XP_Bool rejected )
 {
+    XP_ASSERT( comms->processingMsg );
+
     if ( rejected && !!state->rec ) {
         removeAddrRec( comms, state->rec );
     }
+
+#ifdef DEBUG
+    comms->processingMsg = XP_FALSE;
+#endif
 }
 
 XP_Bool
