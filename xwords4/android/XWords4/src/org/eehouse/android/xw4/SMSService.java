@@ -116,16 +116,20 @@ public class SMSService extends XWService {
         public String number;
         public boolean isGSM;
     }
+    private static SMSPhoneInfo s_phoneInfo;
 
     public static SMSPhoneInfo getPhoneInfo( Context context )
     {
-        TelephonyManager mgr = (TelephonyManager)
-            context.getSystemService(Context.TELEPHONY_SERVICE);
-        String number = mgr.getLine1Number();
+        if ( null == s_phoneInfo ) {
+            TelephonyManager mgr = (TelephonyManager)
+                context.getSystemService(Context.TELEPHONY_SERVICE);
+            String number = mgr.getLine1Number();
 
-        int type = mgr.getPhoneType();
-        boolean isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
-        return new SMSPhoneInfo( number, isGSM );
+            int type = mgr.getPhoneType();
+            boolean isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
+            s_phoneInfo = new SMSPhoneInfo( number, isGSM );
+        }
+        return s_phoneInfo;
     }
 
     public static void smsToastEnable( boolean newVal ) 
@@ -406,30 +410,6 @@ public class SMSService extends XWService {
         return result;
     }
 
-    private String[] breakAndEncode( String msg ) throws java.io.IOException 
-    {
-        // TODO: as optimization, truncate header when only one packet
-        // required
-        Assert.assertFalse( msg.contains(":") );
-        int count = (msg.length() + (MAX_LEN_TEXT-1)) / MAX_LEN_TEXT;
-        String[] result = new String[count];
-        int msgID = ++s_nSent % 0x000000FF;
-
-        int start = 0;
-        int end = 0;
-        for ( int ii = 0; ii < count; ++ii ) {
-            int len = msg.length() - end;
-            if ( len > MAX_LEN_TEXT ) {
-                len = MAX_LEN_TEXT;
-            }
-            end += len;
-            result[ii] = String.format( "0:%X:%X:%X:%s", msgID, ii, count, 
-                                        msg.substring( start, end ) );
-            start = end;
-        }
-        return result;
-    }
-
     private byte[][] breakAndEncode( byte msg[] ) throws java.io.IOException 
     {
         int count = (msg.length + (MAX_LEN_BINARY-1)) / MAX_LEN_BINARY;
@@ -621,30 +601,39 @@ public class SMSService extends XWService {
     {
         boolean success = false;
         if ( XWPrefs.getSMSEnabled( this ) ) {
-            short nbsPort = (short)Integer.parseInt( getString( R.string.nbs_port ) );
-            try {
-                SmsManager mgr = SmsManager.getDefault();
-                PendingIntent sent = makeStatusIntent( MSG_SENT );
-                PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
+            String myPhone = getPhoneInfo( this ).number;
+            if ( PhoneNumberUtils.compare( phone, myPhone ) ) {
                 for ( byte[] fragment : fragments ) {
-                    mgr.sendDataMessage( phone, null, nbsPort, fragment, sent, 
-                                         delivery );
-                    DbgUtils.logf( "SMSService.sendBuffers(): sent %d byte fragment",
-                                   fragment.length );
-                }
-                if ( s_showToasts ) {
-                    DbgUtils.showf( this, "sent %dth msg", s_nSent );
+                    handleFrom( this, fragment, phone );
                 }
                 success = true;
-            } catch ( IllegalArgumentException iae ) {
-                DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
-            } catch ( NullPointerException npe ) {
-                Assert.fail();      // shouldn't be trying to do this!!!
-            } catch ( Exception ee ) {
-                DbgUtils.loge( ee );
+            } else {
+                short nbsPort = (short)Integer.parseInt( getString( R.string.nbs_port ) );
+                try {
+                    SmsManager mgr = SmsManager.getDefault();
+                    PendingIntent sent = makeStatusIntent( MSG_SENT );
+                    PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
+                    for ( byte[] fragment : fragments ) {
+                        mgr.sendDataMessage( phone, null, nbsPort, fragment, sent, 
+                                             delivery );
+                        DbgUtils.logf( "SMSService.sendBuffers(): sent %d byte fragment",
+                                       fragment.length );
+                    }
+                    success = true;
+                } catch ( IllegalArgumentException iae ) {
+                    DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
+                } catch ( NullPointerException npe ) {
+                    Assert.fail();      // shouldn't be trying to do this!!!
+                } catch ( Exception ee ) {
+                    DbgUtils.loge( ee );
+                }
             }
         } else {
             DbgUtils.logf( "sendBuffers(): dropping because SMS disabled" );
+        }
+
+        if ( s_showToasts && success ) {
+            DbgUtils.showf( this, "sent %dth msg", s_nSent );
         }
 
         ConnStatusHandler.updateStatusOut( this, null, 
