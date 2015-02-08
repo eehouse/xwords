@@ -143,9 +143,10 @@ typedef struct TrayContext TrayContext;
 typedef struct PoolContext PoolContext;
 typedef struct XW_UtilCtxt XW_UtilCtxt;
 
-/* Low two bits treated as channel; rest can be random to aid detection of
- * duplicate packets. */
-#define CHANNEL_MASK 0x0003
+/* Low two bits treated as channel, third as short-term flag indicating
+ * sender's role; rest can be random to aid detection of duplicate packets. */
+#define CHANNEL_MASK 0x0007
+#define SERVER_OFFSET 2
 typedef XP_U16 XP_PlayerAddr;
 
 typedef enum {

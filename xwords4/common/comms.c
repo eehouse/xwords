@@ -238,7 +238,7 @@ static void sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec );
 #ifdef DEBUG
 # define CNO_FMT(buf, cno)                                         \
     XP_UCHAR (buf)[64];                                            \
-    XP_SNPRINTF( (buf), sizeof(buf), "cno: %.4X|%d",               \
+    XP_SNPRINTF( (buf), sizeof(buf), "cno: %.4X|%x",               \
                  (cno) & ~CHANNEL_MASK, (cno) & CHANNEL_MASK )
 #else
 # define CNO_FMT(buf, cno)
@@ -1044,6 +1044,10 @@ static MsgQueueElem*
 makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec, 
                 XP_PlayerAddr channelNo, XWStreamCtxt* stream )
 {
+    XP_ASSERT( 0 == (channelNo & (1 << SERVER_OFFSET)) );
+    if ( comms->isServer ) {
+        channelNo |= 1 << SERVER_OFFSET;
+    }
     CNO_FMT( cbuf, channelNo );
     XP_LOGF( "%s(%s)", __func__, cbuf );
     XP_U16 headerLen;
@@ -2053,6 +2057,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                            const CommsAddrRec* retAddr, CommsMsgState* state )
 {
     XP_ASSERT( !!retAddr );     /* for now */
+    XP_MEMSET( state, 0, sizeof(*state) );
     XP_Bool messageValid = XP_FALSE;
     XP_LOGF( "%s(retAddr.typ = %s)", __func__, 
              ConnType2Str(addr_getType( retAddr ) ) );
@@ -2073,8 +2078,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
         if ( !preProcess( comms, useAddr, stream, &usingRelay, &senderID ) ) {
             XP_U32 connID;
             XP_PlayerAddr channelNo;
-            MsgID msgID;
-            MsgID lastMsgRcd;
+            MsgID msgID = 0;    /* shut up compiler */
+            MsgID lastMsgRcd = 0;
 
 #ifdef COMMS_CHECKSUM
             {
@@ -2087,42 +2092,56 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
             }
 #endif
 
+#ifdef DEBUG
+            XP_ASSERT( !comms->processingMsg );
+            comms->processingMsg = XP_TRUE;
+#endif
+
             /* reject too-small message */
-            if ( stream_getSize( stream ) >=
-                 (sizeof(connID) + sizeof(channelNo) 
-                  + sizeof(msgID) + sizeof(lastMsgRcd)) ) {
-                XP_U16 payloadSize;
+            messageValid = stream_getSize( stream ) 
+                >= (sizeof(connID) + sizeof(channelNo) 
+                    + sizeof(msgID) + sizeof(lastMsgRcd));
+            if ( messageValid ) {
+                XP_U16 payloadSize = 0;
                 AddressRecord* rec = NULL;
 
                 connID = stream_getU32( stream );
                 XP_LOGF( "%s: read connID (gameID) of %x", __func__, connID );
                 channelNo = stream_getU16( stream );
-                msgID = stream_getU32( stream );
-                lastMsgRcd = stream_getU32( stream );
-                CNO_FMT( cbuf, channelNo );
-                XP_LOGF( "%s: rcd on %s: msgID=%d,lastMsgRcd=%d ", 
-                         __func__, cbuf, msgID, lastMsgRcd );
-                payloadSize = stream_getSize( stream ); /* anything left? */
-
-#ifdef DEBUG
-                XP_ASSERT( !comms->processingMsg );
-                comms->processingMsg = XP_TRUE;
-#endif
-                state->rec = NULL;
-                if ( connID == CONN_ID_NONE ) {
-                    /* special case: initial message from client or server */
-                    rec = validateInitialMessage( comms, payloadSize > 0, retAddr, 
-                                                  senderID, &channelNo );
-                    state->rec = rec;
-                } else if ( comms->connID == connID ) {
-                    rec = validateChannelMessage( comms, retAddr, channelNo, senderID,
-                                                  msgID, lastMsgRcd );
+                XP_Bool fromServer = 0 != (channelNo & (1 << SERVER_OFFSET));
+                messageValid = comms->isServer != fromServer;
+                if ( messageValid ) {
+                    if ( fromServer ) {
+                        /* clear bit; other code not expecting it */
+                        channelNo &= ~(1 << SERVER_OFFSET);
+                        XP_LOGF( "%s: clearing server bit", __func__ );
+                    }
+                    msgID = stream_getU32( stream );
+                    lastMsgRcd = stream_getU32( stream );
+                    CNO_FMT( cbuf, channelNo );
+                    XP_LOGF( "%s: rcd on %s: msgID=%d,lastMsgRcd=%d ", 
+                             __func__, cbuf, msgID, lastMsgRcd );
+                    payloadSize = stream_getSize( stream ); /* anything left? */
                 } else {
-                    XP_LOGF( "%s: unexpected connID (%x vs %x) ; dropping message",
-                             __func__, comms->connID, connID );
+                    XP_LOGF( "%s: got message to self?", __func__ );
                 }
 
-                messageValid = (NULL != rec)
+                if ( messageValid ) {
+                    if ( connID == CONN_ID_NONE ) {
+                        /* special case: initial message from client or server */
+                        rec = validateInitialMessage( comms, payloadSize > 0, retAddr, 
+                                                      senderID, &channelNo );
+                        state->rec = rec;
+                    } else if ( comms->connID == connID ) {
+                        rec = validateChannelMessage( comms, retAddr, channelNo, senderID,
+                                                      msgID, lastMsgRcd );
+                    } else {
+                        XP_LOGF( "%s: unexpected connID (%x vs %x) ; dropping message",
+                                 __func__, comms->connID, connID );
+                    }
+                }
+
+                messageValid = messageValid && (NULL != rec)
                     && (0 == rec->lastMsgRcd || rec->lastMsgRcd <= msgID);
                 if ( messageValid ) {
                     CNO_FMT( cbuf, channelNo );
