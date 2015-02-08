@@ -507,6 +507,7 @@ public class GameConfigDelegate extends DelegateBase
     protected void onActivityResult( int requestCode, int resultCode, Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
+            loadGame();
             switch( requestCode ) {
             case REQUEST_DICT:
                 String dictName = data.getStringExtra( DictsDelegate.RESULT_LAST_DICT );
