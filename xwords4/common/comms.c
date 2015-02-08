@@ -1260,6 +1260,7 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
         comms->msgQueueHead = comms->msgQueueTail = NULL;
         comms->queueLen = 0;
 
+        XP_PlayerAddr maskedChannelNo = ~CHANNEL_MASK & channelNo;
         for ( ; !!elem; elem = next ) {
             XP_Bool knownGood = XP_FALSE;
             next = elem->next;
@@ -1269,10 +1270,11 @@ removeFromQueue( CommsCtxt* comms, XP_PlayerAddr channelNo, MsgID msgID )
                queue, and receiving something from the server is an implicit
                ACK -- IFF it isn't left over from the last game. */
 
-            if ( ((CHANNEL_MASK & elem->channelNo) == 0) && (channelNo!= 0) ) {
+            XP_PlayerAddr maskedElemChannelNo = ~CHANNEL_MASK & elem->channelNo;
+            if ( (maskedElemChannelNo == 0) && (channelNo != 0) ) {
                 XP_ASSERT( !comms->isServer );
                 XP_ASSERT( elem->msgID == 0 );
-            } else if ( elem->channelNo != channelNo ) {
+            } else if ( maskedElemChannelNo != maskedChannelNo ) {
                 knownGood = XP_TRUE;
             }
 
