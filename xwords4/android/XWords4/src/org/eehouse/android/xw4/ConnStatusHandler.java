@@ -118,7 +118,7 @@ public class ConnStatusHandler {
             CharSequence seq = 
                 DateUtils.getRelativeDateTimeString( context, 
                                                      time.toMillis(true),
-                                                     DateUtils.MINUTE_IN_MILLIS, 
+                                                     DateUtils.SECOND_IN_MILLIS,
                                                      DateUtils.WEEK_IN_MILLIS, 
                                                      0 );
             return seq.toString();
