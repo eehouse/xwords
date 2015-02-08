@@ -284,7 +284,7 @@ public class SMSService extends XWService {
                         updateStatusIn( this, null,
                                         CommsConnType.COMMS_CONN_SMS, true );
                     if ( s_showToasts ) {
-                        DbgUtils.showf( this, "got %dth msg", m_nReceived );
+                        DbgUtils.showf( this, "Got msg %d", m_nReceived );
                     }
                     String phone = intent.getStringExtra( PHONE );
                     byte[] buffer = intent.getByteArrayExtra( BUFFER );
@@ -633,7 +633,7 @@ public class SMSService extends XWService {
         }
 
         if ( s_showToasts && success ) {
-            DbgUtils.showf( this, "sent %dth msg", s_nSent );
+            DbgUtils.showf( this, "Sent msg %d", s_nSent );
         }
 
         ConnStatusHandler.updateStatusOut( this, null, 
