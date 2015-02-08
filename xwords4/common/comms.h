@@ -222,6 +222,9 @@ void comms_ackAny( CommsCtxt* comms );
 
 typedef struct _CommsMsgState {
     struct AddressRecord* rec;
+#ifdef DEBUG
+    const CommsCtxt* comms;
+#endif
 } CommsMsgState;
 
 XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 

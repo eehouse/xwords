@@ -2058,6 +2058,12 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 {
     XP_ASSERT( !!retAddr );     /* for now */
     XP_MEMSET( state, 0, sizeof(*state) );
+#ifdef DEBUG
+    state->comms = comms;
+    XP_ASSERT( !comms->processingMsg );
+    comms->processingMsg = XP_TRUE;
+#endif
+
     XP_Bool messageValid = XP_FALSE;
     XP_LOGF( "%s(retAddr.typ = %s)", __func__, 
              ConnType2Str(addr_getType( retAddr ) ) );
@@ -2091,12 +2097,6 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 XP_FREE( comms->mpool, sum );
             }
 #endif
-
-#ifdef DEBUG
-            XP_ASSERT( !comms->processingMsg );
-            comms->processingMsg = XP_TRUE;
-#endif
-
             /* reject too-small message */
             messageValid = stream_getSize( stream ) 
                 >= (sizeof(connID) + sizeof(channelNo) 
@@ -2169,6 +2169,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 void
 comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, XP_Bool rejected )
 {
+    XP_ASSERT( comms == state->comms );
     XP_ASSERT( comms->processingMsg );
 
     if ( rejected && !!state->rec ) {
