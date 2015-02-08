@@ -565,6 +565,7 @@ struct _JNIState {
     XWGame game;
     JNIGlobalState* globalJNI;
     AndGlobals globals;
+    // pthread_mutex_t msgMutex;
     XP_U16 curSaveCount;
     XP_U16 lastSavedSize;
 #ifdef DEBUG
@@ -606,6 +607,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
     MPASSIGN( state->mpool, mpool );
     globals->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(mpool));
 
+    /* pthread_mutex_init( &state->msgMutex, NULL ); */
+    
     XP_LOGF( "%s: initing srand with %d", __func__, seed );
     srandom( seed );
 
@@ -686,6 +689,7 @@ JNIEXPORT void JNICALL Java_org_eehouse_android_xw4_jni_XwJNI_game_1dispose
     vtmgr_destroy( MPPARM(mpool) globals->vtMgr );
 
     map_remove( &state->globalJNI->ti, env );
+    /* pthread_mutex_destroy( &state->msgMutex ); */
 
     XP_FREE( mpool, state );
     mpool_destroy( mpool );
@@ -1417,6 +1421,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
         addrp = &addr;
     }
 
+    /* pthread_mutex_lock( &state->msgMutex ); */
+
     ServerCtxt* server = state->game.server;
     CommsMsgState commsState;
     result = comms_checkIncomingStream( state->game.comms, stream, addrp, 
@@ -1427,6 +1433,8 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1receiveMessage
         result = server_receiveMessage( server, stream );
     }
     comms_msgProcessed( state->game.comms, &commsState, !result );
+
+    /* pthread_mutex_unlock( &state->msgMutex ); */
 
     if ( result ) {
         /* in case MORE work's pending.  Multiple calls are required in at
