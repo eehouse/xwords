@@ -834,7 +834,7 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
     stream_putU32( stream, comms->connID );
     stream_putU16( stream, comms->nextChannelNo );
-    stream_putU16( stream, comms->channelSeed );
+    stream_putU16( stream, comms_getChannelSeed( comms ) ); /* force creation */
     stream_putU16( stream, comms->resendBackoff );
     stream_putU32( stream, comms->nextResend );
     if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
