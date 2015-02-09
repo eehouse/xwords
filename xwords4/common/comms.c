@@ -1045,9 +1045,6 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
                 XP_PlayerAddr channelNo, XWStreamCtxt* stream )
 {
     XP_ASSERT( 0 == (channelNo & (1 << SERVER_OFFSET)) );
-    if ( comms->isServer ) {
-        channelNo |= 1 << SERVER_OFFSET;
-    }
     CNO_FMT( cbuf, channelNo );
     XP_LOGF( "%s(%s)", __func__, cbuf );
     XP_U16 headerLen;
@@ -1063,6 +1060,12 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 #ifdef DEBUG
     newMsgElem->sendCount = 0;
 #endif
+
+    /* Set the bit here, when the local won't be used again. We want it in the
+       header below but not in newMsgElem above or anywhere else */
+    if ( comms->isServer ) {
+        channelNo |= 1 << SERVER_OFFSET;
+    }
 
     hdrStream = mem_stream_make( MPPARM(comms->mpool) 
                                  util_getVTManager(comms->util),
