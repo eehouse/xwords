@@ -283,7 +283,7 @@ public class SMSService extends XWService {
                     ConnStatusHandler.
                         updateStatusIn( this, null,
                                         CommsConnType.COMMS_CONN_SMS, true );
-                    if ( s_showToasts ) {
+                    if ( s_showToasts && (0 == (m_nReceived % 5)) ) {
                         DbgUtils.showf( this, "Got msg %d", m_nReceived );
                     }
                     String phone = intent.getStringExtra( PHONE );
@@ -632,7 +632,7 @@ public class SMSService extends XWService {
             DbgUtils.logf( "sendBuffers(): dropping because SMS disabled" );
         }
 
-        if ( s_showToasts && success ) {
+        if ( s_showToasts && success && (0 == (s_nSent % 5)) ) {
             DbgUtils.showf( this, "Sent msg %d", s_nSent );
         }
 
