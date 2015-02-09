@@ -496,7 +496,7 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
 {
     /* Iterate over types in the set in jaddr, and for each call
        addr_addType() and then copy in the types. */
-    LOG_FUNC();
+    // LOG_FUNC();
     jclass cls = (*env)->GetObjectClass( env, jaddr );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, "conTypes", 
@@ -534,7 +534,7 @@ getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
         case COMMS_CONN_SMS:
             getString( env, jaddr, "sms_phone", addr->u.sms.phone,
                        VSIZE(addr->u.sms.phone) );
-            XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
+            // XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
             addr->u.sms.port = getInt( env, jaddr, "sms_port" );
             break;
         case COMMS_CONN_BT:

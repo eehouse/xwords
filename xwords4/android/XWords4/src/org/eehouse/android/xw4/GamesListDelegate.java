@@ -830,7 +830,6 @@ public class GamesListDelegate extends ListDelegateBase
             ad.getButton( AlertDialog.BUTTON_POSITIVE ).setEnabled( false );
             break;
         case GAMES_LIST_NEWGAME:
-            DbgUtils.logf( "setting icon in GAMES_LIST_NEWGAME" );
             String msg = getString( R.string.new_game_message );
             if ( m_nextIsSolo ) {
                 ad.setTitle( R.string.new_game );
