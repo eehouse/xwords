@@ -231,7 +231,6 @@ public class CurGameInfo {
                 ++count;
             }
         }
-        DbgUtils.logf( "remoteCount()=>%d", count );
         return count;
     }
 
