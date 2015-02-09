@@ -237,6 +237,7 @@ static void sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec );
 
 #ifdef DEBUG
 # define CNO_FMT(buf, cno)                                         \
+    XP_ASSERT( 0 == ((cno) & (1 << SERVER_OFFSET)));               \
     XP_UCHAR (buf)[64];                                            \
     XP_SNPRINTF( (buf), sizeof(buf), "cno: %.4X|%x",               \
                  (cno) & ~CHANNEL_MASK, (cno) & CHANNEL_MASK )
