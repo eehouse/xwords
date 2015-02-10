@@ -178,7 +178,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_initGlobals
 ( JNIEnv* env, jclass C )
 {
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = mpool_make();
+    MemPoolCtx* mpool = mpool_make( NULL );
 #endif
     JNIGlobalState* state = (JNIGlobalState*)XP_CALLOC( mpool, sizeof(*state) );
     map_init( MPPARM(mpool) &state->ti, env );
@@ -409,7 +409,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1to_1stream
 {
     jbyteArray result;
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = mpool_make();
+    MemPoolCtx* mpool = mpool_make( NULL );
 #endif
     CurGameInfo* gi = makeGI( MPPARM(mpool) env, jgi );
     VTableMgr* vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
@@ -434,7 +434,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_gi_1from_1stream
 ( JNIEnv* env, jclass C, jobject jgi, jbyteArray jstream )
 {
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = mpool_make();
+    MemPoolCtx* mpool = mpool_make( NULL );
 #endif
     VTableMgr* vtMgr = make_vtablemgr( MPPARM_NOCOMMA(mpool) );
 
@@ -591,14 +591,16 @@ struct _JNIState {
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_initJNI
-( JNIEnv* env, jclass C, int jniGlobalPtr, jint seed )
+( JNIEnv* env, jclass C, int jniGlobalPtr, jint seed, jstring jtag )
 {
     /* Why am I doing this twice? */
     /* struct timeval tv; */
     /* gettimeofday( &tv, NULL ); */
     /* srandom( tv.tv_sec ); */
 #ifdef MEM_DEBUG
-    MemPoolCtx* mpool = mpool_make();
+    const char* tag = (*env)->GetStringUTFChars( env, jtag, NULL );
+    MemPoolCtx* mpool = mpool_make( tag );
+    (*env)->ReleaseStringUTFChars( env, jtag, tag );
 #endif
     JNIState* state = (JNIState*)XP_CALLOC( mpool, sizeof(*state) );
     state->globalJNI = (JNIGlobalState*)jniGlobalPtr;

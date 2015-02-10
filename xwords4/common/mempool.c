@@ -47,17 +47,42 @@ struct MemPoolCtx {
     XP_U16 nFree;
     XP_U16 nUsed;
     XP_U16 nAllocs;
+
+    XP_UCHAR tag[64];
 };
 
 /*--------------------------------------------------------------------------*/
 
 MemPoolCtx*
-mpool_make( void )
+mpool_make( const XP_UCHAR* tag )
 {
     MemPoolCtx* result = (MemPoolCtx*)XP_PLATMALLOC( sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
+    mpool_setTag( result, tag );
     return result;
 } /* mpool_make */
+
+
+void 
+mpool_setTag( MemPoolCtx* mpool, const XP_UCHAR* tag )
+{
+    if ( !!tag ) {
+        if( !!mpool->tag[0] ) {
+            XP_LOGF( "%s: tag changing from %s to %s", __func__,
+                     mpool->tag, tag );
+        }
+        XP_ASSERT( XP_STRLEN(tag) < sizeof(mpool->tag) + 1 );
+        XP_MEMCPY( &mpool->tag, tag, XP_STRLEN(tag) + 1 );
+    } else {
+        mpool->tag[0] = '\0';
+    }
+}
+
+const XP_UCHAR* 
+mpool_getTag( const MemPoolCtx* mpool )
+{
+    return mpool->tag;
+}
 
 static void
 freeList( MemPoolEntry* entry )

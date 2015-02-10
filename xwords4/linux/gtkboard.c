@@ -532,6 +532,9 @@ createOrLoadObjects( GtkGameGlobals* globals )
         stream = streamFromFile( cGlobals, params->fileName, globals );
 #ifdef USE_SQLITE
     } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
+        XP_UCHAR buf[32];
+        XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID );
+        mpool_setTag( MEMPOOL buf );
         stream = streamFromDB( cGlobals, globals );
 #endif
     } else if ( !!cGlobals->pDb && 0 <= cGlobals->selRow ) {

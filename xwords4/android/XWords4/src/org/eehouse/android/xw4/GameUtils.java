@@ -296,7 +296,7 @@ public class GameUtils {
                 DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable", 
                                TextUtils.join( ",", dictNames ) );
             } else {
-                gamePtr = XwJNI.initJNI();
+                gamePtr = XwJNI.initJNI( lock.getRowid() );
 
                 String langName = gi.langName();
                 boolean madeGame = 
@@ -891,7 +891,7 @@ public class GameUtils {
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, 
                                                              dictNames );
         
-            int gamePtr = XwJNI.initJNI();
+            int gamePtr = XwJNI.initJNI( rowid );
             XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
                                        pairs.m_bytes, pairs.m_paths,
                                        gi.langName(), 
@@ -937,7 +937,7 @@ public class GameUtils {
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         String langName = gi.langName();
-        int gamePtr = XwJNI.initJNI();
+        int gamePtr = XwJNI.initJNI( lock.getRowid() );
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );
 

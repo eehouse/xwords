@@ -1825,7 +1825,7 @@ public class BoardDelegate extends DelegateBase
 
                     setThis( this );
 
-                    m_jniGamePtr = XwJNI.initJNI();
+                    m_jniGamePtr = XwJNI.initJNI( m_rowid );
 
                     if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                         m_xport = new CommsTransport( m_jniGamePtr, m_activity, this, 

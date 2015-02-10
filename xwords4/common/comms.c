@@ -154,6 +154,7 @@ struct CommsCtxt {
 #ifdef DEBUG
     XP_Bool disableds[COMMS_CONN_NTYPES][2];
     XP_Bool processingMsg;
+    const XP_UCHAR* tag;
 #endif
 
     MPSLOT
@@ -167,6 +168,9 @@ typedef enum {
     ,BTIPMSG_HB
 } BTIPMsgType;
 #endif
+
+#define TAGFMT(...) "<%s> %s(" #__VA_ARGS__ "): "
+#define TAGPRMS comms->tag, __func__
 
 /****************************************************************************
  *                               prototypes 
@@ -208,6 +212,8 @@ static const char* relayCmdToStr( XWRELAY_Cmd cmd );
 static void printQueue( const CommsCtxt* comms );
 static void logAddr( const CommsCtxt* comms, const CommsAddrRec* addr, 
                      const char* caller );
+static void logAddrs( const CommsCtxt* comms, const char* caller );
+
 # else
 # define printQueue( comms )
 # define logAddr( comms, addr, caller )
@@ -298,7 +304,7 @@ static void
 set_relay_state( CommsCtxt* comms, CommsRelayState state )
 {
     if ( comms->rr.relayState != state ) {
-        XP_LOGF( "%s: %s => %s", __func__,
+        XP_LOGF( TAGFMT() "%s => %s", TAGPRMS, 
                  CommsRelayState2Str(comms->rr.relayState), 
                  CommsRelayState2Str(state) );
         comms->rr.relayState = state;
@@ -333,33 +339,34 @@ comms_make( MPFORMAL XW_UtilCtxt* util, XP_Bool isServer,
 #endif
             )
 {
-    XP_LOGF( "%s(isServer=%d; forceChannel=%d)", __func__, isServer, 
-             forceChannel );
-    CommsCtxt* result = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*result) );
-    XP_MEMSET( result, 0, sizeof(*result) );
-
-    MPASSIGN(result->mpool, mpool);
+    CommsCtxt* comms = (CommsCtxt*)XP_MALLOC( mpool, sizeof(*comms) );
+    XP_MEMSET( comms, 0, sizeof(*comms) );
+#ifdef DEBUG
+    comms->tag = mpool_getTag(mpool);
+    XP_LOGF( TAGFMT(isServer=%d; forceChannel=%d), TAGPRMS, isServer, forceChannel );
+#endif
+    MPASSIGN(comms->mpool, mpool);
 
     XP_ASSERT( 0 == (forceChannel & ~CHANNEL_MASK) );
-    result->isServer = isServer;
-    result->forceChannel = forceChannel;
+    comms->isServer = isServer;
+    comms->forceChannel = forceChannel;
     if ( !!procs ) {
-        XP_MEMCPY( &result->procs, procs, sizeof(result->procs) );
+        XP_MEMCPY( &comms->procs, procs, sizeof(comms->procs) );
 #ifdef COMMS_XPORT_FLAGSPROC
-        result->xportFlags = (*result->procs.getFlags)(result->procs.closure);
+        comms->xportFlags = (*comms->procs.getFlags)(comms->procs.closure);
 #else
-        result->xportFlags = result->procs.flags;
+        comms->xportFlags = comms->procs.flags;
 #endif
     }
-    result->util = util;
+    comms->util = util;
 
 #ifdef XWFEATURE_RELAY
-    init_relay( result, nPlayersHere, nPlayersTotal );
+    init_relay( comms, nPlayersHere, nPlayersTotal );
 # ifdef SET_GAMESEED
-    result->channelSeed = gameSeed;
+    comms->channelSeed = gameSeed;
 # endif
 #endif
-    return result;
+    return comms;
 } /* comms_make */
 
 static void
@@ -392,7 +399,9 @@ cleanupAddrRecs( CommsCtxt* comms )
 static void
 removeAddrRec( CommsCtxt* comms, AddressRecord* rec )
 {
+    XP_LOGF( TAGFMT(%p), TAGPRMS, rec );
 #ifdef DEBUG
+    logAddrs( comms, "BEFORE" );
     XP_U16 nBefore = countAddrRecs( comms );
 #endif
     AddressRecord** curp = &comms->recs;
@@ -407,6 +416,7 @@ removeAddrRec( CommsCtxt* comms, AddressRecord* rec )
 #ifdef DEBUG
     XP_U16 nAfter = countAddrRecs( comms );
     XP_ASSERT( (nAfter + 1) == nBefore );
+    logAddrs( comms, "AFTER" );
 #endif
 }
 
@@ -1328,8 +1338,8 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
     CNO_FMT( cbuf, channelNo );
 
 #ifdef COMMS_CHECKSUM
-    XP_LOGF( "%s: sending message of len %d on %s with sum %s", __func__, elem->len, 
-             cbuf, elem->checksum );
+    XP_LOGF( TAGFMT() "sending message of len %d on %s with sum %s", TAGPRMS,
+             elem->len, cbuf, elem->checksum );
 #endif
 
     CommsConnType typ;
@@ -1346,7 +1356,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
             case COMMS_CONN_RELAY: {
                 XWHostID destID = getDestID( comms, channelNo );
                 if ( HOST_ID_NONE == destID ) {
-                    XP_LOGF( "%s: skipping message via relay: no destID yet", __func__ );
+                    XP_LOGF( TAGFMT() "skipping message via relay: no destID yet", TAGPRMS );
                 } else if ( haveRelayID( comms ) && sendNoConn( comms, elem, destID ) ) {
                     /* do nothing */
                     nSent = elem->len;
@@ -1377,7 +1387,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
                 (void)channelToAddress( comms, channelNo, &addrP );
 
                 if ( NULL == addrP ) {
-                    XP_LOGF( "%s: no addr for channel so using comms'", __func__ );
+                    XP_LOGF( TAGFMT() "no addr for channel so using comms'", TAGPRMS );
                     comms_getAddr( comms, &addr );
                 } else {
                     addr = *addrP;
@@ -1390,14 +1400,14 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
                     nSent = (*comms->procs.send)( elem->msg, elem->len, &addr, typ, 
                                                   gameid, comms->procs.closure );
                 } else {
-                    XP_LOGF( "%s: not sending b/c type %s missing from addr", 
-                             __func__, ConnType2Str(typ) );
+                    XP_LOGF( TAGFMT() "not sending b/c type %s missing from addr", 
+                             TAGPRMS, ConnType2Str(typ) );
                 }
                 break;
             }
             } /* switch */
         }
-        XP_LOGF( "%s: sent %d bytes using typ %s", __func__, nSent, 
+        XP_LOGF( TAGFMT() "sent %d bytes using typ %s", TAGPRMS, nSent, 
                  ConnType2Str(typ) );
         if ( nSent > result ) {
             result = nSent;
@@ -1889,6 +1899,7 @@ getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
                                             rec->addr.u.sms.phone )
                      && addr->u.sms.port == rec->addr.u.sms.port ) {
                     matched = XP_TRUE;
+                    XP_ASSERT( 0 );
                 }
 #endif
                 break;
@@ -1949,7 +1960,7 @@ validateInitialMessage( CommsCtxt* comms,
                         XP_PlayerAddr* channelNo )
 {
     CNO_FMT( cbuf, *channelNo );
-    XP_LOGF( "%s(*%s)", __func__, cbuf );
+    XP_LOGF( TAGFMT(%s), TAGPRMS, cbuf );
 
     AddressRecord* rec = NULL;
     if ( 0 ) {
@@ -1977,11 +1988,11 @@ validateInitialMessage( CommsCtxt* comms,
         if ( addRec ) {
             if ( comms->isServer ) {
                 CNO_FMT( cbuf, *channelNo );
-                XP_LOGF( "%s: looking at %s", __func__, cbuf );
+                XP_LOGF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
                 XP_ASSERT( (*channelNo & CHANNEL_MASK) == 0 );
                 *channelNo |= ++comms->nextChannelNo;
                 CNO_FMT( cbuf1, *channelNo );
-                XP_LOGF( "%s: ORd channel onto channelNo: now %s", __func__, cbuf1 );
+                XP_LOGF( TAGFMT() "ORd channel onto channelNo: now %s", TAGPRMS, cbuf1 );
                 XP_ASSERT( comms->nextChannelNo <= CHANNEL_MASK );
             }
             rec = rememberChannelAddress( comms, *channelNo, senderID, addr );
@@ -1994,24 +2005,24 @@ validateInitialMessage( CommsCtxt* comms,
 #endif
     } else {
         CNO_FMT( cbuf, *channelNo );
-        XP_LOGF( "%s: looking at %s", __func__, cbuf );
+        XP_LOGF( TAGFMT() "looking at %s", TAGPRMS, cbuf );
         rec = getRecordFor( comms, addr, *channelNo, XP_TRUE );
         if ( !!rec ) {
             augmentChannelAddr( comms, rec, addr, senderID );
             /* reject: we've already seen init message on channel */
-            XP_LOGF( "%s: rejecting duplicate INIT message", __func__ );
+            XP_LOGF( TAGFMT() "rejecting duplicate INIT message", TAGPRMS );
             rec = NULL;
         } else {
             if ( comms->isServer ) {
                 if ( checkChannelNo( comms, channelNo ) ) {
                     CNO_FMT( cbuf, *channelNo );
-                    XP_LOGF( "%s: augmented channel: %s", __func__, cbuf );
+                    XP_LOGF( TAGFMT() "augmented channel: %s", TAGPRMS, cbuf );
                 } else {
                     /* Why do I sometimes see these in the middle of a game
                        with lots of messages already sent?  connID of 0 should
                        only happen at the start! */
-                    XP_LOGF( "%s: dropping msg because channel already set",
-                             __func__ );
+                    XP_LOGF( TAGFMT() "dropping msg because channel already set",
+                             TAGPRMS );
                     goto errExit;
                 }
             }
@@ -2045,13 +2056,13 @@ validateChannelMessage( CommsCtxt* comms, const CommsAddrRec* addr,
         augmentChannelAddr( comms, rec, addr, senderID );
 
         if ( msgID != rec->lastMsgRcd + 1 ) {
-            XP_LOGF( "%s: expected %d, got %d", __func__, 
+            XP_LOGF( TAGFMT() "expected %d, got %d", TAGPRMS,
                      rec->lastMsgRcd + 1, msgID );
             rec = NULL;
         }
     } else {
         CNO_FMT( cbuf, channelNo );
-        XP_LOGF( "%s: no rec for %s", __func__, cbuf );
+        XP_LOGF( TAGFMT() "no rec for %s", TAGPRMS, cbuf );
     }
 
     LOG_RETURNF( XP_P, rec );
@@ -2071,7 +2082,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 #endif
 
     XP_Bool messageValid = XP_FALSE;
-    XP_LOGF( "%s(retAddr.typ = %s)", __func__, 
+    XP_LOGF( TAGFMT(retAddr.typ=%s), TAGPRMS, 
              ConnType2Str(addr_getType( retAddr ) ) );
     if ( comms_getAddrDisabled( comms, addr_getType(retAddr), XP_FALSE ) ) {
         XP_LOGF( "%s: dropping message because %s disabled", __func__,
@@ -2099,7 +2110,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 // stream_getPtr pts at base, but sum excludes relay header
                 const XP_U8* ptr = initialLen - len + stream_getPtr( stream );
                 XP_UCHAR* sum = util_md5sum( comms->util, ptr, len );
-                XP_LOGF( "%s: got message of len %d with sum %s", __func__, len, sum );
+                XP_LOGF( TAGFMT() "got message of len %d with sum %s",
+                         TAGPRMS, len, sum );
                 XP_FREE( comms->mpool, sum );
             }
 #endif
@@ -2112,7 +2124,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 AddressRecord* rec = NULL;
 
                 connID = stream_getU32( stream );
-                XP_LOGF( "%s: read connID (gameID) of %x", __func__, connID );
+                XP_LOGF( TAGFMT() "read connID (gameID) of %x", TAGPRMS, connID );
                 channelNo = stream_getU16( stream );
                 XP_Bool fromServer = 0 != (channelNo & (1 << SERVER_OFFSET));
                 messageValid = comms->isServer != fromServer;
@@ -2120,13 +2132,13 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                     if ( fromServer ) {
                         /* clear bit; other code not expecting it */
                         channelNo &= ~(1 << SERVER_OFFSET);
-                        XP_LOGF( "%s: clearing server bit", __func__ );
+                        XP_LOGF( TAGFMT() "clearing server bit", TAGPRMS );
                     }
                     msgID = stream_getU32( stream );
                     lastMsgRcd = stream_getU32( stream );
                     CNO_FMT( cbuf, channelNo );
-                    XP_LOGF( "%s: rcd on %s: msgID=%d,lastMsgRcd=%d ", 
-                             __func__, cbuf, msgID, lastMsgRcd );
+                    XP_LOGF( TAGFMT() "rcd on %s: msgID=%d,lastMsgRcd=%d ", 
+                             TAGPRMS, cbuf, msgID, lastMsgRcd );
                     payloadSize = stream_getSize( stream ); /* anything left? */
                 } else {
                     XP_LOGF( "%s: got message to self?", __func__ );
@@ -2142,8 +2154,8 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                         rec = validateChannelMessage( comms, retAddr, channelNo, senderID,
                                                       msgID, lastMsgRcd );
                     } else {
-                        XP_LOGF( "%s: unexpected connID (%x vs %x) ; dropping message",
-                                 __func__, comms->connID, connID );
+                        XP_LOGF( TAGFMT() "unexpected connID (%x vs %x) ; "
+                                 "dropping message", TAGPRMS, comms->connID, connID );
                     }
                 }
 
@@ -2151,7 +2163,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                     && (0 == rec->lastMsgRcd || rec->lastMsgRcd <= msgID);
                 if ( messageValid ) {
                     CNO_FMT( cbuf, channelNo );
-                    XP_LOGF( "%s: got %s; msgID=%d; len=%d", __func__, cbuf, 
+                    XP_LOGF( TAGFMT() "got %s; msgID=%d; len=%d", TAGPRMS, cbuf, 
                              msgID, payloadSize );
                     rec->lastMsgRcd = msgID;
                     comms->lastSaveToken = 0; /* lastMsgRcd no longer valid */
@@ -2480,7 +2492,7 @@ logAddr( const CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
                                                 util_getVTManager(comms->util),
                                                 NULL, 0, 
                                                 (MemStreamCloseCallback)NULL );
-        snprintf( buf, sizeof(buf), "%s called on %p from %s:\n", __func__, 
+        snprintf( buf, sizeof(buf), TAGFMT() "called on %p from %s:\n", TAGPRMS,
                   addr, caller );
         stream_catString( stream, buf );
 
@@ -2522,6 +2534,18 @@ logAddr( const CommsCtxt* comms, const CommsAddrRec* addr, const char* caller )
         stream_putU8( stream, '\0' );
         XP_LOGF( "%s: %s", __func__, stream_getPtr( stream ) );
         stream_destroy( stream );
+    }
+}
+
+static void 
+logAddrs( const CommsCtxt* comms, const char* caller )
+{
+    const AddressRecord* rec = comms->recs;
+    while ( !!rec ) {
+        CNO_FMT( cbuf, rec->channelNo );
+        XP_LOGF( TAGFMT() "%s", TAGPRMS, cbuf );
+        logAddr( comms, &rec->addr, caller );
+        rec = rec->next;
     }
 }
 #endif

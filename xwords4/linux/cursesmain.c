@@ -1995,6 +1995,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                                           &g_globals.cGlobals, CHANNEL_NONE,
                                           NULL );
                 sqlite3_int64 selRow = *(sqlite3_int64*)games->data;
+                /* XP_UCHAR buf[32]; */
+                /* XP_SNPRINTF( buf, sizeof(buf), "%lld", selRow ); */
+                mpool_setTag( MEMPOOL params->dbName );
                 if ( loadGame( stream, params->pDb, selRow ) ) {
                     g_globals.cGlobals.selRow = selRow;
                 } else {
@@ -2005,10 +2008,14 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             }
                 
         } else if ( !!params->fileName && file_exists( params->fileName ) ) {
+            mpool_setTag( MEMPOOL "file" );
             stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
                                      &g_globals );
 #ifdef USE_SQLITE
         } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
+            XP_UCHAR buf[32];
+            XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID );
+            mpool_setTag( MEMPOOL buf );
             stream = streamFromDB( &g_globals.cGlobals, &g_globals );
 #endif
         }

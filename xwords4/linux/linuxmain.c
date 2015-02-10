@@ -118,6 +118,7 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
 XWStreamCtxt*
 streamFromDB( CommonGlobals* cGlobals, void* closure )
 {
+    LOG_FUNC();
     XWStreamCtxt* stream = NULL;
     const LaunchParams* params = cGlobals->params;
     const char* name = params->dbFileName;
@@ -1955,7 +1956,7 @@ initParams( LaunchParams* params )
     /* XP_MEMSET( params->util, 0, sizeof(params->util) ); */
 
 #ifdef MEM_DEBUG
-    params->mpool = mpool_make();
+    params->mpool = mpool_make(NULL);
 #endif
 
     params->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(params->mpool));

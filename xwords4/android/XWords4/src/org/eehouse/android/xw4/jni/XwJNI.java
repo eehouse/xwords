@@ -87,10 +87,16 @@ public class XwJNI {
     public static native String comms_getUUID();
 
     // Game methods
-    public static int initJNI()
+    public static int initJNI( long rowid )
     {
         int seed = Utils.nextRandomInt();
-        return initJNI( getJNI().m_ptr, seed );
+        String tag = String.format( "%d", rowid );
+        return initJNI( getJNI().m_ptr, seed, tag );
+    }
+
+    public static int initJNI()
+    {
+        return initJNI( 0 );
     }
 
     // hack to allow cleanup of env owned by thread that doesn't open game
@@ -395,7 +401,7 @@ public class XwJNI {
     // Private methods -- called only here
     private static native int initGlobals();
     private static native void cleanGlobals( int globals );
-    private static native int initJNI( int jniState, int seed );
+    private static native int initJNI( int jniState, int seed, String tag );
     private static native void envDone( int globals );
     private static native void dict_ref( int dictPtr );
     private static native void dict_unref( int dictPtr );
