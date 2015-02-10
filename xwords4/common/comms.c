@@ -645,7 +645,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     if ( version < STREAM_VERS_CHANNELSEED ) {
         comms->channelSeed = 0;
     } else {
-        comms->channelSeed = stream_getU16( stream );
+        comms->channelSeed = stream_getU16( stream ) & ~(1 << SERVER_OFFSET);
         CNO_FMT( cbuf, comms->channelSeed );
         XP_LOGF( "%s: loaded seed: %s", __func__, cbuf );
     }
@@ -674,7 +674,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         if ( version >= STREAM_VERS_BLUETOOTH2 ) {
             rec->lastMsgAckd = stream_getU16( stream );
         }
-        rec->channelNo = stream_getU16( stream );
+        rec->channelNo = stream_getU16( stream ) & ~(1 << SERVER_OFFSET);
         if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
             rec->rr.hostID = stream_getU8( stream );
         }
@@ -2141,6 +2141,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                     /* channelNo comparison invalid */
                 } else if ( 0 == channelNo || 0 == channelSeed ) {
                     XP_LOGF( TAGFMT() "one of channelNos still 0", TAGPRMS );
+                    XP_ASSERT(0);
                 } else if ( channelNo != channelSeed ) {
                     XP_LOGF( TAGFMT() "channelNos test fails", TAGPRMS );
                     messageValid = XP_FALSE;
