@@ -1057,7 +1057,7 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 {
     XP_ASSERT( 0 == (channelNo & (1 << SERVER_OFFSET)) );
     CNO_FMT( cbuf, channelNo );
-    XP_LOGF( "%s(%s)", __func__, cbuf );
+    XP_LOGF( TAGFMT(%s), TAGPRMS, cbuf );
     XP_U16 headerLen;
     XP_U16 streamSize = NULL == stream? 0 : stream_getSize( stream );
     MsgID lastMsgSaved = (!!rec)? rec->lastMsgSaved : 0;
@@ -1083,12 +1083,12 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
                                  NULL, 0, 
                                  (MemStreamCloseCallback)NULL );
     stream_open( hdrStream );
-    XP_LOGF( "%s: putting connID %x", __func__, comms->connID );
+    XP_LOGF( TAGFMT() "putting connID %x", TAGPRMS, comms->connID );
     stream_putU32( hdrStream, comms->connID );
 
     stream_putU16( hdrStream, channelNo );
     stream_putU32( hdrStream, msgID );
-    XP_LOGF( "put lastMsgSaved: %d", lastMsgSaved );
+    XP_LOGF( TAGFMT() "put lastMsgSaved: %d", TAGPRMS, lastMsgSaved );
     stream_putU32( hdrStream, lastMsgSaved );
     if ( !!rec ) {
         rec->lastMsgAckd = lastMsgSaved;
@@ -1144,7 +1144,7 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
             channelNo = comms_getChannelSeed(comms) & ~CHANNEL_MASK;
         }
 
-        XP_DEBUGF( "%s: assigning msgID=" XP_LD " on %s", __func__, msgID, cbuf );
+        XP_DEBUGF( TAGFMT() "assigning msgID=" XP_LD " on %s", TAGPRMS, msgID, cbuf );
 
         elem = makeElemWithID( comms, msgID, rec, channelNo, stream );
         if ( NULL != elem ) {
@@ -1349,7 +1349,7 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
             XP_LOGF( "%s: dropping message because %s disabled", __func__, 
                      ConnType2Str( typ ) );
         } else {
-            XP_LOGF( "%s: sending msg with sum %s using typ %s", __func__, 
+            XP_LOGF( TAGFMT() "sending msg with sum %s using typ %s", TAGPRMS,
                      elem->checksum, ConnType2Str(typ) );
             switch ( typ ) {
 #ifdef XWFEATURE_RELAY
@@ -2127,13 +2127,26 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 XP_LOGF( TAGFMT() "read connID (gameID) of %x", TAGPRMS, connID );
                 channelNo = stream_getU16( stream );
                 XP_Bool fromServer = 0 != (channelNo & (1 << SERVER_OFFSET));
-                messageValid = comms->isServer != fromServer;
+                /* clear bit; other code not expecting it */
+                channelNo &= ~(1 << SERVER_OFFSET);
+
+                XP_U16 channelSeed = comms_getChannelSeed( comms );
+                CNO_FMT( cbufX, channelSeed );
+                CNO_FMT( cbufY, channelNo );
+                XP_LOGF( TAGFMT() "my seed %s vs %s!!!", TAGPRMS, cbufX, cbufY );
+
+                if ( comms->isServer == fromServer ) {
+                    messageValid = XP_FALSE;
+                } else if ( comms->isServer ) {
+                    /* channelNo comparison invalid */
+                } else if ( 0 == channelNo || 0 == channelSeed ) {
+                    XP_LOGF( TAGFMT() "one of channelNos still 0", TAGPRMS );
+                } else if ( channelNo != channelSeed ) {
+                    XP_LOGF( TAGFMT() "channelNos test fails", TAGPRMS );
+                    messageValid = XP_FALSE;
+                }
+
                 if ( messageValid ) {
-                    if ( fromServer ) {
-                        /* clear bit; other code not expecting it */
-                        channelNo &= ~(1 << SERVER_OFFSET);
-                        XP_LOGF( TAGFMT() "clearing server bit", TAGPRMS );
-                    }
                     msgID = stream_getU32( stream );
                     lastMsgRcd = stream_getU32( stream );
                     CNO_FMT( cbuf, channelNo );
