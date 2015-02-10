@@ -2142,7 +2142,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                 } else if ( 0 == channelNo || 0 == channelSeed ) {
                     XP_LOGF( TAGFMT() "one of channelNos still 0", TAGPRMS );
                     XP_ASSERT(0);
-                } else if ( channelNo != channelSeed ) {
+                } else if ( (channelNo & ~CHANNEL_MASK) != (channelSeed & ~CHANNEL_MASK) ) {
                     XP_LOGF( TAGFMT() "channelNos test fails", TAGPRMS );
                     messageValid = XP_FALSE;
                 }
@@ -2155,7 +2155,7 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
                              TAGPRMS, cbuf, msgID, lastMsgRcd );
                     payloadSize = stream_getSize( stream ); /* anything left? */
                 } else {
-                    XP_LOGF( "%s: got message to self?", __func__ );
+                    XP_LOGF( TAGFMT() "got message to self?", TAGPRMS );
                 }
 
                 if ( messageValid ) {
