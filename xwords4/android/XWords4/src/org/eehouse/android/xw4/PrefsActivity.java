@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class PrefsActivity extends PreferenceActivity implements Delegator {
 
@@ -90,6 +91,11 @@ public class PrefsActivity extends PreferenceActivity implements Delegator {
     protected void showOKOnlyDialog( int msgID )
     {
         m_dlgt.showOKOnlyDialog( msgID );
+    }
+
+    protected void showSMSEnableDialog( Action action )
+    {
+        m_dlgt.showSMSEnableDialog( action );
     }
 
     //////////////////////////////////////////////////////////////////////

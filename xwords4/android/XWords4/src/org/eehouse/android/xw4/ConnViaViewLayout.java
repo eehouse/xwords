@@ -88,11 +88,8 @@ public class ConnViaViewLayout extends LinearLayout {
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                   boolean isChecked ) {
                         if ( isChecked ) {
-                            if ( enabledElseWarn( typf ) ) {
-                                m_curSet.add( typf );
-                            } else {
-                                buttonView.setChecked( false );
-                            }
+                            enabledElseWarn( typf );
+                            m_curSet.add( typf );
                         } else {
                             m_curSet.remove( typf );
                             if ( null != m_emptyWarner && 0 == m_curSet.size()) {
@@ -104,23 +101,21 @@ public class ConnViaViewLayout extends LinearLayout {
         }
     }
 
-    private boolean enabledElseWarn( CommsConnType typ )
+    private void enabledElseWarn( CommsConnType typ )
     {
-        boolean result = true;
+        boolean enabled = true;
         Context context = getContext();
         switch( typ ) {
         case COMMS_CONN_SMS:
-            result = XWPrefs.getSMSEnabled( context );
+            enabled = XWPrefs.getSMSEnabled( context );
             break;
         case COMMS_CONN_BT:
-            result = BTService.BTEnabled();
+            enabled = BTService.BTEnabled();
         }
 
-        if ( !result && null != m_disabledWarner ) {
+        if ( !enabled && null != m_disabledWarner ) {
             m_disabledWarner.warnDisabled( typ );
         }
-
-        return result;
     }
 
     private static CommsConnTypeSet getSupported( Context context )

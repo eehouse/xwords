@@ -334,8 +334,9 @@ public class GameConfigDelegate extends DelegateBase
                                      switch( typ ) {
                                      case COMMS_CONN_SMS:
                                          showConfirmThen( R.string.warn_sms_disabled, 
-                                                          R.string.button_go_settings,
-                                                          Action.SMS_CONFIG_ACTION );
+                                                          R.string.button_enable_sms,
+                                                          R.string.button_later,
+                                                          Action.ENABLE_SMS_ASK );
                                          break;
                                      case COMMS_CONN_BT:
                                          showOKOnlyDialog( R.string.enable_bt_first );
@@ -650,6 +651,15 @@ public class GameConfigDelegate extends DelegateBase
                     deleteGame();
                 }
                 finish();
+                break;
+            case ENABLE_SMS_ASK:
+                showSMSEnableDialog( Action.ENABLE_SMS_DO );
+                break;
+            case ENABLE_SMS_DO:
+                boolean enabled = (Boolean)params[0];
+                if ( enabled ) {
+                    XWPrefs.setSMSEnabled( m_activity, true );
+                }
                 break;
             default:
                 callSuper = true;

@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,6 +36,7 @@ import android.view.View;
 import android.widget.Button;
 import java.io.File;
 
+import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class PrefsDelegate extends DelegateBase
@@ -105,9 +107,6 @@ public class PrefsDelegate extends DelegateBase
                             relaunch();
                         }
                     };
-                break;
-            case CONFIRM_SMS:
-                dialog = SMSCheckBoxPreference.onCreateDialog( m_activity, id );
                 break;
             }
 
@@ -202,6 +201,21 @@ public class PrefsDelegate extends DelegateBase
             LocUtils.localeChanged( m_activity, sp.getString( key, null ) );
         } else if ( key.equals( m_keyLangs ) ) {
             forceDictsMatch( sp.getString( key, null ) );
+        }
+    }
+
+    @Override
+    public void dlgButtonClicked( Action action, int button, Object[] params )
+    {
+        if ( AlertDialog.BUTTON_POSITIVE == button
+             && action == Action.ENABLE_SMS_DO ) {
+            boolean enabled = (Boolean)params[0];
+            if ( enabled ) {
+                XWPrefs.setSMSEnabled( m_activity, true );
+                SMSCheckBoxPreference.setChecked();
+            }
+        } else { 
+            super.dlgButtonClicked( action, button, params );
         }
     }
 

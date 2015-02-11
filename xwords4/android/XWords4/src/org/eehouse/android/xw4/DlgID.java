@@ -29,6 +29,7 @@ public enum DlgID {
     , DIALOG_ABOUT
     , DIALOG_NOTAGAIN
     , DIALOG_OKONLY
+    , DIALOG_ENABLESMS
     , DICT_OR_DECLINE
     , DLG_CONNSTAT
     , DLG_DELETED
@@ -46,7 +47,7 @@ public enum DlgID {
     , NEW_GROUP
     , NO_NAME_FOUND
     , PLAYER_EDIT
-    , CONFIRM_SMS
+    , ENABLE_SMS
     , QUERY_ENDGAME
     , RENAME_GAME
     , RENAME_GROUP

@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.util.ArrayList;
@@ -104,6 +105,9 @@ public class DlgDelegate {
         SL_CLEAR_ACTION,
         SL_COPY_ACTION,
 
+        // clasify me
+        ENABLE_SMS_ASK,
+        ENABLE_SMS_DO,
         __LAST
     }
 
@@ -215,6 +219,9 @@ public class DlgDelegate {
         case DLG_DICTGONE:
             dialog = createDictGoneDialog();
             break;
+        case DIALOG_ENABLESMS:
+            dialog = createEnableSMSDialog( state, dlgID );
+            break;
         }
         return dialog;
     }
@@ -254,6 +261,16 @@ public class DlgDelegate {
     public void showAboutDialog()
     {
         showDialog( DlgID.DIALOG_ABOUT );
+    }
+
+    // Puts up alert asking to choose a reason to enable SMS, and on dismiss
+    // calls dlgButtonClicked with the action and in params a Boolean
+    // indicating whether enabling is now ok.
+    public void showSMSEnableDialog( Action action )
+    {
+        DlgState state = new DlgState( DlgID.DIALOG_ENABLESMS, action );
+        addState( state );
+        showDialog( DlgID.DIALOG_ENABLESMS );
     }
 
     public void showNotAgainDlgThen( String msg, int prefsKey, 
@@ -646,6 +663,32 @@ public class DlgDelegate {
                 }
             } );
 
+        return dialog;
+    }
+
+    private Dialog createEnableSMSDialog( final DlgState state, DlgID dlgID )
+    {
+        final View layout = LocUtils.inflate( m_activity, R.layout.confirm_sms );
+
+        DialogInterface.OnClickListener lstnr = 
+            new DialogInterface.OnClickListener() {
+                public void onClick( DialogInterface dlg, int item ) {
+                    Spinner reasons = (Spinner)
+                        layout.findViewById( R.id.confirm_sms_reasons );
+                    boolean enabled = 0 < reasons.getSelectedItemPosition();
+                    Object[] params = { new Boolean(enabled), };
+                    m_clickCallback.dlgButtonClicked( state.m_action, 
+                                                      AlertDialog.BUTTON_POSITIVE,
+                                                      params );
+                }
+            };
+
+        Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
+            .setTitle( R.string.confirm_sms_title )
+            .setView( layout )
+            .setPositiveButton( R.string.button_ok, lstnr )
+            .create();
+        Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
         return dialog;
     }
 

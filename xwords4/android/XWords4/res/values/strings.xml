@@ -1983,9 +1983,12 @@
 
     <!--  -->
     <string name="warn_sms_disabled">Play via SMS is currently
-    disabled, so no moves will be sent for this game.\n\nIf you want to
-    enable play via SMS, go to Settings->Network game settings.
+    disabled. No moves will be sent via SMS for this game.\n\nYou can
+    enable play via SMS now, or later.
     </string>
+
+    <string name="button_enable_sms">Enable SMS</string>
+    <string name="button_later">Later</string>
 
     <!--  -->
     <string name="gamel_menu_checkupdates">Check for updates</string>

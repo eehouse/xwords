@@ -472,6 +472,11 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showDictGoneFinish();
     }
 
+    protected void showSMSEnableDialog( Action action )
+    {
+        m_dlgDelegate.showSMSEnableDialog( action );
+    }
+    
     //////////////////////////////////////////////////
     // MultiService.MultiEventListener interface
     //////////////////////////////////////////////////

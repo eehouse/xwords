@@ -1707,9 +1707,11 @@
   <string name="confirm_sms_willpay">Sey: I\'ll yap lla reirrac segrahc</string>
   <!--  -->
   <string name="warn_sms_disabled">Yalp aiv SMS si yltnerruc
-    ,delbasid os on sevom lliw eb tnes rof siht emag.\n\nFi uoy tnaw ot
-    elbane yalp aiv ,SMs og ot Krowten&gt;-sGnittes emag sgnittes.
+    delbasid. On sevom lliw eb tnes aiv SMS rof siht emag.\n\nUoy nac
+    elbane yalp aiv SMS ,won ro retal.
     </string>
+  <string name="button_enable_sms">Elbane SMS</string>
+  <string name="button_later">Retal</string>
   <!--  -->
   <string name="gamel_menu_checkupdates">Kcehc rof setadpu</string>
   <string name="checkupdates_none_found">Gnihtyreve si etad-ot-pu.</string>

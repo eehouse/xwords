@@ -43,6 +43,11 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_sms, false );
     }
 
+    public static void setSMSEnabled( Context context, boolean enabled )
+    {
+        setPrefsBoolean( context, R.string.key_enable_sms, enabled );
+    }
+
     public static boolean getDebugEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_debug, false );
