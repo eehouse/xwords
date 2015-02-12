@@ -58,6 +58,7 @@ public class CurGameInfo {
     // private int[] m_visiblePlayers;
     // private int m_nVisiblePlayers;
     private int m_smartness;
+    private String m_name;      // not shared across the jni boundary
     private Context m_context;
 
     public CurGameInfo( Context context )
@@ -120,6 +121,7 @@ public class CurGameInfo {
     public CurGameInfo( Context context, CurGameInfo src )
     {
         m_context = context;
+        m_name = src.m_name;
         gameID = src.gameID;
         nPlayers = src.nPlayers;
         gameSeconds = src.gameSeconds;
@@ -325,6 +327,17 @@ public class CurGameInfo {
             dname = dictName( players[indx] );
         }
         return dname;
+    }
+
+    public String getName() 
+    {
+        Assert.assertNotNull( m_name );
+        return m_name;
+    }
+
+    public void setName( String name ) 
+    {
+        m_name = name;
     }
 
     public boolean addPlayer() 
