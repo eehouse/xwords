@@ -99,7 +99,7 @@ public class NetLaunchInfo {
         lang = bundle.getInt( MultiService.LANG );
         forceChannel = bundle.getInt( MultiService.FORCECHANNEL );
         dict = bundle.getString( MultiService.DICT );
-        gameName= bundle.getString( MultiService.GAMENAME );
+        gameName = bundle.getString( MultiService.GAMENAME );
         nPlayersT = bundle.getInt( MultiService.NPLAYERST );
         nPlayersH = bundle.getInt( MultiService.NPLAYERSH );
         gameID = bundle.getInt( MultiService.GAMEID );
@@ -164,9 +164,11 @@ public class NetLaunchInfo {
         calcValid();
     }
 
-    public NetLaunchInfo( int gamID, int dictLang, String dictName, int nPlayers )
+    public NetLaunchInfo( int gamID, String gamNam, int dictLang, 
+                          String dictName, int nPlayers )
     {
         this();
+        gameName = gamNam;
         dict = dictName;
         lang = dictLang;
         nPlayersT = nPlayers;
@@ -181,9 +183,14 @@ public class NetLaunchInfo {
         forceChannel = fc;
     }
 
+    public NetLaunchInfo( CurGameInfo gi )
+    {
+        this( gi.gameID, gi.getName(), gi.dictLang, gi.dictName, gi.nPlayers );
+    }
+
     public NetLaunchInfo( GameSummary summary, CurGameInfo gi )
     {
-        this( gi.gameID, gi.dictLang, gi.dictName, gi.nPlayers );
+        this( gi );
 
         for ( CommsConnType typ : summary.conTypes.getTypes() ) {
             DbgUtils.logf( "NetLaunchInfo(): got type %s", typ.toString() );

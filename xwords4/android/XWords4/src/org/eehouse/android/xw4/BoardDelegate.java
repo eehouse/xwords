@@ -1184,8 +1184,7 @@ public class BoardDelegate extends DelegateBase
     {
         String data = null;
         if ( 0 < m_nMissing ) {  // Isn't there a better test??
-            NetLaunchInfo nli = new NetLaunchInfo( m_gi.gameID, m_gi.dictLang, 
-                                                   m_gi.dictName, m_gi.nPlayers );
+            NetLaunchInfo nli = new NetLaunchInfo( m_gi );
             Assert.assertTrue( 0 <= m_nGuestDevs );
             nli.forceChannel = 1 + m_nGuestDevs;
             for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
@@ -1808,6 +1807,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( 0 == m_jniGamePtr ) {
             try {
+                String gameName = DBUtils.getName( m_activity, m_rowid );
                 String[] dictNames = GameUtils.dictNames( m_activity, m_rowid );
                 DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, dictNames );
 
@@ -1819,6 +1819,7 @@ public class BoardDelegate extends DelegateBase
 
                     byte[] stream = GameUtils.savedGame( m_activity, m_gameLock );
                     m_gi = new CurGameInfo( m_activity );
+                    m_gi.setName( gameName );
                     XwJNI.gi_from_stream( m_gi, stream );
                     DbgUtils.logf( "BoardDelegate:after loadGame: gi.nPlayers: %d", m_gi.nPlayers );
                     String langName = m_gi.langName();
