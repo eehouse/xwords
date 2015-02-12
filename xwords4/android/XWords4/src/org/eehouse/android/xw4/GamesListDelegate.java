@@ -25,6 +25,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -581,8 +582,8 @@ public class GamesListDelegate extends ListDelegateBase
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = null;
-        DialogInterface.OnClickListener lstnr;
-        DialogInterface.OnClickListener lstnr2;
+        OnClickListener lstnr;
+        OnClickListener lstnr2;
         LinearLayout layout;
 
         AlertDialog.Builder ab;
@@ -591,7 +592,7 @@ public class GamesListDelegate extends ListDelegateBase
         case WARN_NODICT:
         case WARN_NODICT_NEW:
         case WARN_NODICT_SUBST:
-            lstnr = new DialogInterface.OnClickListener() {
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
@@ -628,7 +629,7 @@ public class GamesListDelegate extends ListDelegateBase
                 .setNegativeButton( R.string.button_download, lstnr )
                 ;
             if ( DlgID.WARN_NODICT_SUBST == dlgID ) {
-                lstnr = new DialogInterface.OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
                             showDialog( DlgID.SHOW_SUBST );
                         }
@@ -641,7 +642,7 @@ public class GamesListDelegate extends ListDelegateBase
         case SHOW_SUBST:
             m_sameLangDicts = 
                 DictLangCache.getHaveLangCounts( m_activity, m_missingDictLang );
-            lstnr = new DialogInterface.OnClickListener() {
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg,
                                          int which ) {
                         int pos = ((AlertDialog)dlg).getListView().
@@ -670,7 +671,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case RENAME_GAME:
-            lstnr = new DialogInterface.OnClickListener() {
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = m_namer.getName();
                         DBUtils.setName( m_activity, m_rowid,
@@ -685,7 +686,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case RENAME_GROUP:
-            lstnr = new DialogInterface.OnClickListener() {
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = m_namer.getName();
                         DBUtils.setGroupName( m_activity,
@@ -701,7 +702,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case NEW_GROUP:
-            lstnr = new DialogInterface.OnClickListener() {
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         String name = m_namer.getName();
                         DBUtils.addGroup( m_activity, name );
@@ -709,7 +710,7 @@ public class GamesListDelegate extends ListDelegateBase
                         showNewGroupIf();
                     }
                 };
-            lstnr2 = new DialogInterface.OnClickListener() {
+            lstnr2 = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         showNewGroupIf();
                     }
@@ -724,7 +725,7 @@ public class GamesListDelegate extends ListDelegateBase
             final long startGroup = ( 1 == m_rowids.length )
                 ? DBUtils.getGroupForGame( m_activity, m_rowids[0] ) : -1;
             final int[] selItem = {-1}; // hack!!!!
-            lstnr = new DialogInterface.OnClickListener() {
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlgi, int item ) {
                         selItem[0] = item;
                         AlertDialog dlg = (AlertDialog)dlgi;
@@ -738,7 +739,7 @@ public class GamesListDelegate extends ListDelegateBase
                         btn.setEnabled( enabled );
                     }
                 };
-            lstnr2 = new DialogInterface.OnClickListener() {
+            lstnr2 = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         Assert.assertTrue( -1 != selItem[0] );
                         long gid = m_adapter.getGroupIDFor( selItem[0] );
@@ -749,8 +750,8 @@ public class GamesListDelegate extends ListDelegateBase
                         mkListAdapter();
                     }
                 };
-            DialogInterface.OnClickListener lstnr3 = 
-                new DialogInterface.OnClickListener() {
+            OnClickListener lstnr3 = 
+                new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         m_moveAfterNewGroup = true;
                         showDialog( DlgID.NEW_GROUP );
@@ -794,12 +795,12 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case GAMES_LIST_NEWGAME:
-            lstnr = new DialogInterface.OnClickListener() {
+            lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         makeThenLaunchOrConfigure( true );
                     }
                 };
-            lstnr2 = new DialogInterface.OnClickListener() {
+            lstnr2 = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
                         makeThenLaunchOrConfigure( false );
                     }
@@ -1840,8 +1841,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     private Dialog buildNamerDlg( String curname, int labelID, int titleID,
-                                  DialogInterface.OnClickListener lstnr1, 
-                                  DialogInterface.OnClickListener lstnr2, 
+                                  OnClickListener lstnr1, OnClickListener lstnr2, 
                                   DlgID dlgID )
     {
         m_namer = (GameNamer)inflate( R.layout.rename_game );
