@@ -1589,15 +1589,13 @@
   <!-- Title of phone number picker during invitation to a game via SMS -->
   <string name="sms_invite_title">SMS Noitativni</string>
   <!--  -->
-  <string name="btname_label">Wen Htooteulb emag eman</string>
-  <!--  -->
-  <string name="smsname_label">Wen SMS emag eman</string>
-  <!--  -->
   <string name="game_btname_title">Htooteulb emag eman</string>
   <!--  -->
-  <string name="game_smsname_title">Eman ruoy emag</string>
+  <string name="game_name_title">Eman ruoy emag</string>
   <!--  -->
-  <string name="dft_name_fmt">Emag %1$X</string>
+  <string name="game_name_label">Wen emag eman:</string>
+  <string name="name_copy_fmt">%1$s ypoc</string>
+  <string name="default_game_name">Wen Emag</string>
   <!--  -->
   <string name="newgame_sms_header">Wen SMS Emag</string>
   <!--  -->

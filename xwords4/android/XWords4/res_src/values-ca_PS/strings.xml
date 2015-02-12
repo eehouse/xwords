@@ -1589,15 +1589,13 @@
   <!-- Title of phone number picker during invitation to a game via SMS -->
   <string name="sms_invite_title">SMS INVITATION</string>
   <!--  -->
-  <string name="btname_label">NEW BLUETOOTH GAME NAME</string>
-  <!--  -->
-  <string name="smsname_label">NEW SMS GAME NAME</string>
-  <!--  -->
   <string name="game_btname_title">BLUETOOTH GAME NAME</string>
   <!--  -->
-  <string name="game_smsname_title">NAME YOUR GAME</string>
+  <string name="game_name_title">NAME YOUR GAME</string>
   <!--  -->
-  <string name="dft_name_fmt">GAME %1$X</string>
+  <string name="game_name_label">NEW GAME NAME:</string>
+  <string name="name_copy_fmt">%1$s COPY</string>
+  <string name="default_game_name">NEW GAME</string>
   <!--  -->
   <string name="newgame_sms_header">NEW SMS GAME</string>
   <!--  -->

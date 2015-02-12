@@ -144,7 +144,7 @@ public final class R {
         public static final int divider=0x7f090023;
         public static final int download_button=0x7f090071;
         public static final int dwnld_message=0x7f09004e;
-        public static final int edit=0x7f090064;
+        public static final int edit=0x7f090062;
         public static final int edit_blue=0x7f090019;
         public static final int edit_green=0x7f090017;
         public static final int edit_red=0x7f090015;
@@ -209,13 +209,13 @@ public final class R {
         public static final int local_player_set=0x7f090066;
         public static final int manual_add_button=0x7f090074;
         public static final int modtime=0x7f09004b;
-        public static final int msg=0x7f090062;
+        public static final int msg=0x7f090063;
         public static final int msg_marker=0x7f090048;
         public static final int name=0x7f090075;
         public static final int name_edit=0x7f09001c;
         public static final int name_label=0x7f090072;
         public static final int nexthint_button=0x7f09007b;
-        public static final int not_again_check=0x7f090063;
+        public static final int not_again_check=0x7f090064;
         public static final int nperdev_spinner=0x7f09000e;
         public static final int number=0x7f090076;
         public static final int other_lang=0x7f09005e;
@@ -310,17 +310,18 @@ public final class R {
         public static final int loc_list_item=0x7f03001a;
         public static final int loc_main=0x7f03001b;
         public static final int lookup=0x7f03001c;
-        public static final int not_again_view=0x7f03001d;
-        public static final int passwd_view=0x7f03001e;
-        public static final int player_edit=0x7f03001f;
-        public static final int player_list_elem=0x7f030020;
-        public static final int prefs_w_buttons=0x7f030021;
-        public static final int remote_dict_details=0x7f030022;
-        public static final int rename_game=0x7f030023;
-        public static final int smsinviter=0x7f030024;
-        public static final int smsinviter_item=0x7f030025;
-        public static final int studylist=0x7f030026;
-        public static final int toolbar=0x7f030027;
+        public static final int msg_label_and_edit=0x7f03001d;
+        public static final int not_again_view=0x7f03001e;
+        public static final int passwd_view=0x7f03001f;
+        public static final int player_edit=0x7f030020;
+        public static final int player_list_elem=0x7f030021;
+        public static final int prefs_w_buttons=0x7f030022;
+        public static final int remote_dict_details=0x7f030023;
+        public static final int rename_game=0x7f030024;
+        public static final int smsinviter=0x7f030025;
+        public static final int smsinviter_item=0x7f030026;
+        public static final int studylist=0x7f030027;
+        public static final int toolbar=0x7f030028;
     }
     public static final class menu {
         public static final int board_menu=0x7f080000;
@@ -518,9 +519,6 @@ public final class R {
         /**   
          */
         public static final int bt_resend_fmt=0x7f050212;
-        /**   
-         */
-        public static final int btname_label=0x7f050217;
         /**  text of button for adding new player to game 
          */
         public static final int button_add_player=0x7f0500c9;
@@ -875,6 +873,7 @@ public final class R {
          new game 
          */
         public static final int default_dict=0x7f05013e;
+        public static final int default_game_name=0x7f05021b;
         /**  other 
          */
         public static final int default_host=0x7f05006d;
@@ -911,9 +910,6 @@ public final class R {
         public static final int default_robodict=0x7f05013f;
         public static final int default_update_url=0x7f050077;
         public static final int delete_dicts=0x7f0502b2;
-        /**   
-         */
-        public static final int dft_name_fmt=0x7f05021b;
         /**   
  <string name="sms_disabled">Playing via SMS is currently disabled. 
  You can enable it in Settings->Network game settings.</string> 
@@ -1066,7 +1062,7 @@ public final class R {
         public static final int gameOver=0x7f05009d;
         /**   
          */
-        public static final int game_btname_title=0x7f050219;
+        public static final int game_btname_title=0x7f050217;
         /**  used to create default names of games (when user has not
          named them.) 
          */
@@ -1091,10 +1087,13 @@ public final class R {
         public static final int game_name_group_title=0x7f05026f;
         /**   
          */
-        public static final int game_rename_title=0x7f0500b0;
+        public static final int game_name_label=0x7f050219;
         /**   
          */
-        public static final int game_smsname_title=0x7f05021a;
+        public static final int game_name_title=0x7f050218;
+        /**   
+         */
+        public static final int game_rename_title=0x7f0500b0;
         /**  Put nothing in the summary space, so it just reads "Game 2" 
          */
         public static final int game_summary_field_empty=0x7f05014a;
@@ -1665,6 +1664,7 @@ public final class R {
         /**  above is inserted in this the last time I warn 
          */
         public static final int nag_warn_last_fmt=0x7f0502c3;
+        public static final int name_copy_fmt=0x7f05021a;
         public static final int name_dict_fmt=0x7f050089;
         public static final int nbs_port=0x7f050078;
         /**  text of checkbox.  If this checkbox is checked, games created
@@ -2293,9 +2293,6 @@ public final class R {
          */
         public static final int sms_invite_title=0x7f050216;
         public static final int sms_ready_text=0x7f050284;
-        /**   
-         */
-        public static final int smsname_label=0x7f050218;
         public static final int square_tiles=0x7f050274;
         public static final int square_tiles_summary=0x7f050275;
         /**  Used in formatting moves and history 

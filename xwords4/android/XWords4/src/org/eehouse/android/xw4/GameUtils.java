@@ -267,6 +267,11 @@ public class GameUtils {
         return result;
     }
 
+    public static String makeDefaultName( Context context )
+    {
+        return LocUtils.getString( context, R.string.default_game_name );
+    }
+
     public static int loadMakeGame( Context context, CurGameInfo gi, 
                                     TransportProcs tp, GameLock lock )
     {

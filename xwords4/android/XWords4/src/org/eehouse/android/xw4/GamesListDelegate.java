@@ -41,6 +41,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -795,24 +796,30 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case GAMES_LIST_NEWGAME:
+            LinearLayout view = (LinearLayout)
+                LocUtils.inflate( m_activity, R.layout.msg_label_and_edit );
+            final EditText edit = (EditText)view.findViewById( R.id.edit );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        makeThenLaunchOrConfigure( true );
-                    }
-                };
-            lstnr2 = new OnClickListener() {
-                    public void onClick( DialogInterface dlg, int item ) {
-                        makeThenLaunchOrConfigure( false );
+                        makeThenLaunchOrConfigure( edit, true );
                     }
                 };
 
-            dialog = makeAlertBuilder()
-                .setMessage( "" ) // must have a message to change it later
+            ab = makeAlertBuilder()
+                .setView( view )
                 .setTitle( "foo" )// ditto, but can't be empty (!)
                 .setIcon( R.drawable.sologame__gen ) // same for icon
-                .setPositiveButton( R.string.newgame_configure_first, lstnr )
-                .setNegativeButton( R.string.use_defaults, lstnr2 )
-                .create();
+                .setPositiveButton( R.string.newgame_configure_first, lstnr );
+            if ( m_nextIsSolo || 0 < XWPrefs.getAddrTypes( m_activity ).size() ) {
+                lstnr2 = new OnClickListener() {
+                        public void onClick( DialogInterface dlg, int item ) {
+                            makeThenLaunchOrConfigure( edit, false );
+                        }
+                    };
+                ab.setNegativeButton( R.string.use_defaults, lstnr2 );
+            }
+            dialog = ab.create();
+
             break;
 
         default:
@@ -841,7 +848,10 @@ public class GamesListDelegate extends ListDelegateBase
 
                 msg += "\n\n" + getString( R.string.new_game_message_net );
             }
-            ad.setMessage( msg );
+            TextView edit = (TextView)dialog.findViewById( R.id.msg );
+            edit.setText( msg );
+            edit = (TextView)dialog.findViewById( R.id.edit );
+            edit.setText( GameUtils.makeDefaultName( m_activity ) );
             break;
         }
     }
@@ -1564,17 +1574,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void handleNewGame( boolean solo )
     {
         m_nextIsSolo = solo;
-        // force config if we don't have at least one way to communicate
-        boolean skipDefaults = !solo;
-        if ( skipDefaults ) {
-            skipDefaults = 0 == XWPrefs.getAddrTypes( m_activity ).size();
-        }
-
-        if ( skipDefaults ) {
-            makeThenLaunchOrConfigure( true );
-        } else {
-            showDialog( DlgID.GAMES_LIST_NEWGAME );
-        }
+        showDialog( DlgID.GAMES_LIST_NEWGAME );
     }
 
     private void handleNewGameButton( boolean solo )
@@ -2083,8 +2083,9 @@ public class GamesListDelegate extends ListDelegateBase
         // return adapter;
     }
 
-    private void makeThenLaunchOrConfigure( boolean doConfigure )
+    private void makeThenLaunchOrConfigure( EditText edit, boolean doConfigure )
     {
+        String name = edit.getText().toString();
         long rowID;
         long groupID = DBUtils.GROUPID_UNSPEC;
         if ( m_nextIsSolo ) {
@@ -2095,6 +2096,8 @@ public class GamesListDelegate extends ListDelegateBase
             String inviteID = GameUtils.makeRandomID();
             rowID = GameUtils.makeNewMultiGame( m_activity, inviteID );
         }
+
+        DBUtils.setName( m_activity, rowID, name );
 
         if ( doConfigure ) {
             // configure it

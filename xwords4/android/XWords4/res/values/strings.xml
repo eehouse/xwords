@@ -1854,15 +1854,13 @@
 	<string name="sms_invite_title">SMS Invitation</string>
 
     <!--  -->
-    <string name="btname_label">New Bluetooth game name</string>
-    <!--  -->
-    <string name="smsname_label">New SMS game name</string>
-    <!--  -->
     <string name="game_btname_title">Bluetooth game name</string>
     <!--  -->
-    <string name="game_smsname_title">Name your game</string>
+    <string name="game_name_title">Name your game</string>
     <!--  -->
-    <string name="dft_name_fmt">Game %1$X</string>
+    <string name="game_name_label">New game name:</string>
+    <string name="name_copy_fmt">%1$s copy</string>
+    <string name="default_game_name">New Game</string>
     <!--  -->
     <string name="newgame_sms_header">New SMS Game</string>
     <!--  -->
