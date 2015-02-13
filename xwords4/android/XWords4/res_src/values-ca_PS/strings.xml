@@ -1925,8 +1925,10 @@
   <string name="new_game_message">WOULD YOU LIKE TO CREATE THIS GAME
     USING DEFAULT SETTINGS?\n\nOR WOULD YOU LIKE TO CONFIGURE IT
     FIRST?</string>
+  <string name="new_game_message_nodflt">THIS GAME MUST BE
+    CONFIGURED BEFORE IT CAN BE OPENED.</string>
   <string name="new_game_message_net">(YOU WILL HAVE A CHANCE TO
-    INVITE OTHER PLAYERS AFTER IT IS CREATED.)</string>
+    INVITE OTHER PLAYERS WHEN IT IS OPEN.)</string>
   <string name="use_defaults">USE DEFAULTS</string>
   <string name="nplayers_prompt">NUMBER ON THIS DEVICE</string>
   <string name="nplayers_fmt">%1$d PLAYER[S]</string>

@@ -1925,8 +1925,10 @@
   <string name="new_game_message">Dluow uoy ekil ot etaerc siht emag
     gnisu tluafed ?sgnittes\n\nRo dluow uoy ekil ot erugifnoc ti
     ?tsrif</string>
+  <string name="new_game_message_nodflt">Siht emag tsum eb
+    derugifnoc erofeb ti nac eb denepo.</string>
   <string name="new_game_message_net">uOy( lliw evah a ecnahc ot
-    etivni rehto sreyalp retfa ti si detaerc.)</string>
+    etivni rehto sreyalp nehw ti si nepo.)</string>
   <string name="use_defaults">Esu stluafed</string>
   <string name="nplayers_prompt">Rebmun no siht ecived</string>
   <string name="nplayers_fmt">%1$d ]s[reyalp</string>

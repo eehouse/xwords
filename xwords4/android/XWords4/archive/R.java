@@ -552,7 +552,7 @@ public final class R {
          reset a game. 
          */
         public static final int button_discard=0x7f0501b9;
-        public static final int button_discard_changes=0x7f0502e3;
+        public static final int button_discard_changes=0x7f0502e4;
         /**   
          */
         public static final int button_done=0x7f0501e9;
@@ -562,7 +562,7 @@ public final class R {
         /**  Text of button displayed when downloading is an option 
          */
         public static final int button_download=0x7f0501ad;
-        public static final int button_edit=0x7f0502e2;
+        public static final int button_edit=0x7f0502e3;
         public static final int button_enable_sms=0x7f05024a;
         public static final int button_go_settings=0x7f050283;
         /**   
@@ -735,7 +735,7 @@ public final class R {
          on the board.
          */
         public static final int clr_crosshairs=0x7f05015c;
-        public static final int config_no_connvia=0x7f0502e1;
+        public static final int config_no_connvia=0x7f0502e2;
         /**   
          */
         public static final int confirm_clear=0x7f050226;
@@ -822,7 +822,7 @@ public final class R {
         public static final int connect_one_hour=0x7f050179;
         public static final int connect_six_hours=0x7f05017a;
         public static final int connect_thirty_mins=0x7f050178;
-        public static final int connection_via_label=0x7f0502d9;
+        public static final int connection_via_label=0x7f0502da;
         /**   
          */
         public static final int connstat_lastother_succ_fmt=0x7f05023b;
@@ -1001,21 +1001,21 @@ public final class R {
         /**  Shows in SMS Invite dialog when no phone numbers have been saved previously 
          */
         public static final int empty_sms_inviter=0x7f050224;
-        public static final int enable_bt_first=0x7f0502de;
+        public static final int enable_bt_first=0x7f0502df;
         public static final int enable_dupes_summary=0x7f05008e;
         public static final int enable_dupes_title=0x7f05008c;
         public static final int enable_nfc=0x7f050282;
         /**   
          */
         public static final int enable_sms=0x7f050241;
-        public static final int enable_sms_first=0x7f0502df;
+        public static final int enable_sms_first=0x7f0502e0;
         /**   
          */
         public static final int enable_sms_summary=0x7f050242;
         public static final int enable_sms_toself_summary=0x7f050091;
         public static final int enable_sms_toself_title=0x7f050090;
         public static final int entering_trade=0x7f0500f2;
-        public static final int err_dup_invite_fmt=0x7f0502d6;
+        public static final int err_dup_invite_fmt=0x7f0502d7;
         public static final int expl_update_url=0x7f050076;
         /**  if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
@@ -1275,8 +1275,8 @@ public final class R {
          The number of players missing is substituted for "%1$d". 
          */
         public static final int invite_msg_fmt=0x7f0500f8;
-        public static final int invite_multi_summary=0x7f0502d8;
-        public static final int invite_multi_title=0x7f0502d7;
+        public static final int invite_multi_summary=0x7f0502d9;
+        public static final int invite_multi_title=0x7f0502d8;
         /**  Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
@@ -1292,7 +1292,7 @@ public final class R {
         /**   
          */
         public static final int invite_sms_desc_fmt=0x7f050221;
-        public static final int invite_stays=0x7f0502dc;
+        public static final int invite_stays=0x7f0502dd;
         /**  <string name="sms_or_email">Send invitation using SMS (texting) or 
     via email?</string> 
  <string name="nfc_or_email">Send invitation using NFC (Android 
@@ -1705,7 +1705,8 @@ public final class R {
         public static final int new_dict_avail_fmt=0x7f05024f;
         public static final int new_game=0x7f0502cf;
         public static final int new_game_message=0x7f0502d1;
-        public static final int new_game_message_net=0x7f0502d2;
+        public static final int new_game_message_net=0x7f0502d3;
+        public static final int new_game_message_nodflt=0x7f0502d2;
         public static final int new_game_networked=0x7f0502d0;
         /**   
          */
@@ -1785,7 +1786,7 @@ public final class R {
          */
         public static final int newgame_sms_header=0x7f05021c;
         public static final int newgroup_label=0x7f050264;
-        public static final int nfc_just_tap=0x7f0502dd;
+        public static final int nfc_just_tap=0x7f0502de;
         public static final int nfc_to_self=0x7f050092;
         /**  Title of dialog for renaming game (triggered by selecting
          list_item_rename) 
@@ -1894,7 +1895,7 @@ public final class R {
          */
         public static final int not_again_flip=0x7f0501cd;
         public static final int not_again_fmt_expl=0x7f0502ad;
-        public static final int not_again_hidenewgamebuttons=0x7f0502db;
+        public static final int not_again_hidenewgamebuttons=0x7f0502dc;
         /**  Shown when you tap the next hint button on the toolbar of the
          main Board screen 
          */
@@ -1975,8 +1976,8 @@ public final class R {
          device 
          */
         public static final int notify_vibrate=0x7f05017d;
-        public static final int nplayers_fmt=0x7f0502d5;
-        public static final int nplayers_prompt=0x7f0502d4;
+        public static final int nplayers_fmt=0x7f0502d6;
+        public static final int nplayers_prompt=0x7f0502d5;
         /**  text of label identifying the field where human players can
          enter an option password.  The label and field disappear when
          the robot player checkbox is checked because it makes no
@@ -2263,7 +2264,7 @@ public final class R {
          possible answers are the three button text strings below. 
          */
         public static final int set_default_message_fmt=0x7f0500bc;
-        public static final int set_pref=0x7f0502da;
+        public static final int set_pref=0x7f0502db;
         /**  text of separator marking out other-setting area of the dialog 
          */
         public static final int settings_label=0x7f0500d4;
@@ -2602,7 +2603,7 @@ public final class R {
          */
         public static final int title_tile_picker=0x7f0501bd;
         public static final int update_dicts_fmt=0x7f0502b4;
-        public static final int use_defaults=0x7f0502d3;
+        public static final int use_defaults=0x7f0502d4;
         /**  text of checkbox controlling whether there's a game timer 
          */
         public static final int use_timer=0x7f0500d7;
@@ -2610,7 +2611,7 @@ public final class R {
     line in a game summary.  The \u0020 is a space in xml. 
          */
         public static final int vs_join=0x7f050127;
-        public static final int warn_no_comms=0x7f0502e0;
+        public static final int warn_no_comms=0x7f0502e1;
         /**   
          */
         public static final int warn_nomobile_fmt=0x7f050223;

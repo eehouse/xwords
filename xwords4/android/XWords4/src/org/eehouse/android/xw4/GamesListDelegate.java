@@ -804,22 +804,19 @@ public class GamesListDelegate extends ListDelegateBase
                         makeThenLaunchOrConfigure( edit, true );
                     }
                 };
+            lstnr2 = new OnClickListener() {
+                    public void onClick( DialogInterface dlg, int item ) {
+                        makeThenLaunchOrConfigure( edit, false );
+                    }
+                };
 
-            ab = makeAlertBuilder()
+            dialog = makeAlertBuilder()
                 .setView( view )
                 .setTitle( "foo" )// ditto, but can't be empty (!)
                 .setIcon( R.drawable.sologame__gen ) // same for icon
-                .setPositiveButton( R.string.newgame_configure_first, lstnr );
-            if ( m_nextIsSolo || 0 < XWPrefs.getAddrTypes( m_activity ).size() ) {
-                lstnr2 = new OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            makeThenLaunchOrConfigure( edit, false );
-                        }
-                    };
-                ab.setNegativeButton( R.string.use_defaults, lstnr2 );
-            }
-            dialog = ab.create();
-
+                .setPositiveButton( R.string.newgame_configure_first, lstnr )
+                .setNegativeButton( R.string.use_defaults, lstnr2 )
+                .create();
             break;
 
         default:
@@ -838,7 +835,13 @@ public class GamesListDelegate extends ListDelegateBase
             ad.getButton( AlertDialog.BUTTON_POSITIVE ).setEnabled( false );
             break;
         case GAMES_LIST_NEWGAME:
-            String msg = getString( R.string.new_game_message );
+            boolean canDoDefaults = m_nextIsSolo 
+                || 0 < XWPrefs.getAddrTypes( m_activity ).size();
+            ad.getButton( AlertDialog.BUTTON_NEGATIVE )
+                .setVisibility( canDoDefaults ? View.VISIBLE : View.GONE );
+
+            String msg = getString( canDoDefaults ? R.string.new_game_message
+                                    : R.string.new_game_message_nodflt );
             if ( m_nextIsSolo ) {
                 ad.setTitle( R.string.new_game );
                 ad.setIcon( R.drawable.sologame__gen );
