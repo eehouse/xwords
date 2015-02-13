@@ -4,7 +4,7 @@
               android:orientation="vertical"
               android:layout_width="wrap_content" 
               android:layout_height="wrap_content"
-              android:layout_margin="20dp"
+              android:padding="10dp"
               >
 
     <!-- label -->
@@ -27,6 +27,7 @@
     <TextView android:id="@+id/msg"
               android:layout_height="wrap_content"
               android:layout_width="fill_parent"
+              android:paddingTop="20dp"
               android:textAppearance="?android:attr/textAppearanceMedium"
               />
 
