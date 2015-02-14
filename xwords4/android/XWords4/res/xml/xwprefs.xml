@@ -354,6 +354,14 @@
                         android:defaultValue="false"
 	                    />
 
+      <org.eehouse.android.xw4.XWListPreference
+		  android:key="@string/key_force_radio"
+          android:title="@string/force_radio_title"
+	      android:entries="@array/force_radio_names"
+	      android:entryValues="@array/force_radio_names"
+		  android:defaultValue="@string/radio_name_real"
+		  />
+
     <!-- For broken devices like my Blaze 4G that report a download
          directory that doesn't exist, allow users to set it.  Mine:
          /sdcard/external_sd/download     

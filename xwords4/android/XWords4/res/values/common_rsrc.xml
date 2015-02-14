@@ -66,6 +66,7 @@
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>
   <string name="key_force_tablet">key_force_tablet</string>
+  <string name="key_force_radio">key_force_radio</string>
   <string name="key_addrs_pref">key_addrs_pref</string>
 
   <!-- database keys whose entries aren't visible prefs -->
@@ -170,6 +171,12 @@
   <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
   <string name="enable_sms_toself_title">Enable NFC to self</string>
   <string name="enable_sms_toself_summary">Fake invitation to aid debugging</string>
+
+  <string name="force_radio_title">Pretend to have radio</string>
+  <string name="radio_name_real">Don\'t pretend</string>
+  <string name="radio_name_tablet">Tablet/no radio</string>
+  <string name="radio_name_gsm">GSM</string>
+  <string name="radio_name_cdma">CDMA</string>
 
   <string name="nfc_to_self">Send via NFC to self?</string>
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
@@ -316,6 +323,13 @@
     <item>@string/confirm_sms_leave</item>
     <item>@string/confirm_sms_unlimited</item>
     <item>@string/confirm_sms_willpay</item>
+  </string-array>
+
+  <string-array name="force_radio_names">
+    <item>@string/radio_name_real</item>
+    <item>@string/radio_name_tablet</item>
+    <item>@string/radio_name_gsm</item>
+    <item>@string/radio_name_cdma</item>
   </string-array>
 
   <!-- Keep in sync with LocSearcher SHOW_BYS enum -->
