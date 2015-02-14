@@ -1708,7 +1708,12 @@
     DISABLED. NO MOVES WILL BE SENT VIA SMS.\n\nYOU CAN ENABLE PLAY
     VIA SMS NOW, OR LATER.
     </string>
+  <string name="warn_bt_disabled">BLUETOOTH IS CURRENTLY OFF ON THIS
+    DEVICE. NO MOVES WILL BE SENT VIA BLUETOOTH.\n\nYOU CAN ENABLE
+    BLUETOOTH NOW, OR LATER.
+    </string>
   <string name="button_enable_sms">ENABLE SMS</string>
+  <string name="button_enable_bt">ENABLE BLUETOOTH</string>
   <string name="button_later">LATER</string>
   <!--  -->
   <string name="gamel_menu_checkupdates">CHECK FOR UPDATES</string>
@@ -1951,7 +1956,6 @@
   <string name="nfc_just_tap">TO INVITE VIA NFC JUST TOUCH THE BACK
     OF THIS DEVICE AGAINST THE ONE YOU WANT TO INVITE—ANY TIME THE
     GAME IS OPEN.</string>
-  <string name="enable_bt_first">PLEASE TURN BLUETOOTH ON BEFORE ENABLING.</string>
   <string name="warn_no_comms">EVERY NETWORKED GAME MUST HAVE AT
     LEAST ONE WAY OF COMMUNICATING. IF YOU HAVE NO DEFAULT CONNECTION
     OPTIONS EVERY NEW NETWORKED GAME WILL HAVE TO BE CONFIGURED

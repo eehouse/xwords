@@ -67,7 +67,10 @@ public class XWConnAddrPreference extends DialogPreference {
                                                                 Action.ENABLE_SMS_ASK );
                                       break;
                                   case COMMS_CONN_BT:
-                                      activity.showOKOnlyDialog( R.string.enable_bt_first );
+                                      activity.showConfirmThen( R.string.warn_bt_disabled, 
+                                                                R.string.button_enable_bt,
+                                                                R.string.button_later,
+                                                                Action.ENABLE_BT_DO );
                                       break;
                                   }
                               }

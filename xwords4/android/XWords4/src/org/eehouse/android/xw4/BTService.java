@@ -170,6 +170,15 @@ public class BTService extends XWService {
         return null != adapter && adapter.isEnabled();
     }
 
+    public static void enable()
+    {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        if ( null != adapter ) {
+            // Only do this after explicit action from user -- Android guidelines
+            adapter.enable();
+        }
+    }
+
     public static String[] getBTNameAndAddress()
     {
         BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();

@@ -1985,7 +1985,13 @@
     via SMS now, or later.
     </string>
 
+    <string name="warn_bt_disabled">Bluetooth is currently off on this
+    device. No moves will be sent via Bluetooth.\n\nYou can enable
+    Bluetooth now, or later.
+    </string>
+
     <string name="button_enable_sms">Enable SMS</string>
+    <string name="button_enable_bt">Enable Bluetooth</string>
     <string name="button_later">Later</string>
 
     <!--  -->
@@ -2298,8 +2304,6 @@
     <string name="nfc_just_tap">To invite via NFC just touch the back
     of this device against the one you want to invite—any time the
     game is open.</string>
-
-    <string name="enable_bt_first">Please turn Bluetooth on before enabling.</string>
 
     <string name="warn_no_comms">Every networked game must have at
     least one way of communicating. If you have no default connection

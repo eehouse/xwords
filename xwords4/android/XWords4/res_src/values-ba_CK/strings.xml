@@ -1708,7 +1708,12 @@
     delbasid. On sevom lliw eb tnes aiv SMS.\n\nUoy nac elbane yalp
     aiv SMS ,won ro retal.
     </string>
+  <string name="warn_bt_disabled">Htooteulb si yltnerruc ffo no siht
+    ecived. On sevom lliw eb tnes aiv Htooteulb.\n\nUoy nac elbane
+    Htooteulb ,won ro retal.
+    </string>
   <string name="button_enable_sms">Elbane SMS</string>
+  <string name="button_enable_bt">Elbane Htooteulb</string>
   <string name="button_later">Retal</string>
   <!--  -->
   <string name="gamel_menu_checkupdates">Kcehc rof setadpu</string>
@@ -1951,7 +1956,6 @@
   <string name="nfc_just_tap">Ot etivni aiv CFN tsuj hcuot eht kcab
     fo siht ecived tsniaga eht eno uoy tnaw ot yna—etivni emit eht
     emag si nepo.</string>
-  <string name="enable_bt_first">Esaelp nrut Htooteulb no erofeb gnilbane.</string>
   <string name="warn_no_comms">Yreve dekrowten emag tsum evah ta
     tsael eno yaw fo gnitacinummoc. Fi uoy evah on tluafed noitcennoc
     snoitpo yreve wen dekrowten emag lliw evah ot eb derugifnoc

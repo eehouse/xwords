@@ -516,6 +516,9 @@ public class DelegateBase implements DlgClickNotify,
                 showSMSEnableDialog( Action.ENABLE_SMS_DO );
                 handled = true;
                 break;
+            case ENABLE_BT_DO:
+                BTService.enable();
+                break;
             }
         }
 

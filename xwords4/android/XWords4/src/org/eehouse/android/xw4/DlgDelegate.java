@@ -108,6 +108,7 @@ public class DlgDelegate {
         // clasify me
         ENABLE_SMS_ASK,
         ENABLE_SMS_DO,
+        ENABLE_BT_DO,
         __LAST
     }
 

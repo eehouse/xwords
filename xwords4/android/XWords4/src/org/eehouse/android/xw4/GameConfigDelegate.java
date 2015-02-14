@@ -339,7 +339,10 @@ public class GameConfigDelegate extends DelegateBase
                                                           Action.ENABLE_SMS_ASK );
                                          break;
                                      case COMMS_CONN_BT:
-                                         showOKOnlyDialog( R.string.enable_bt_first );
+                                         showConfirmThen( R.string.warn_bt_disabled, 
+                                                          R.string.button_enable_bt,
+                                                          R.string.button_later,
+                                                          Action.ENABLE_BT_DO );
                                          break;
                                      }
                                  }
