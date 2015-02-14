@@ -93,6 +93,12 @@ public class PrefsActivity extends PreferenceActivity implements Delegator {
         m_dlgt.showOKOnlyDialog( msgID );
     }
 
+    protected void showConfirmThen( int msg, int posButton, int negButton, 
+                                    Action action )
+    {
+        m_dlgt.showConfirmThen( msg, posButton, negButton, action );
+    }
+
     protected void showSMSEnableDialog( Action action )
     {
         m_dlgt.showSMSEnableDialog( action );

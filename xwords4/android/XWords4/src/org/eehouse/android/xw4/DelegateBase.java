@@ -509,7 +509,17 @@ public class DelegateBase implements DlgClickNotify,
     //////////////////////////////////////////////////////////////////////
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
-        if ( BuildConfig.DEBUG ) {
+        boolean handled = false;
+        if ( AlertDialog.BUTTON_POSITIVE == button ) {
+            switch( action ) {
+            case ENABLE_SMS_ASK:
+                showSMSEnableDialog( Action.ENABLE_SMS_DO );
+                handled = true;
+                break;
+            }
+        }
+
+        if ( !handled && BuildConfig.DEBUG ) {
             String buttonName = null;
             switch( button ) {
             case AlertDialog.BUTTON_POSITIVE:

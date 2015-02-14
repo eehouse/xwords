@@ -27,9 +27,10 @@ import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.View;
 
-import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class XWConnAddrPreference extends DialogPreference {
 
@@ -57,20 +58,17 @@ public class XWConnAddrPreference extends DialogPreference {
         m_view.configure( XWPrefs.getAddrTypes( m_context ),
                           new ConnViaViewLayout.CheckEnabledWarner() {
                               public void warnDisabled( CommsConnType typ ) {
-                                  int id;
+                                  PrefsActivity activity = (PrefsActivity)m_context;
                                   switch( typ ) {
                                   case COMMS_CONN_SMS:
-                                      id = R.string.enable_sms_first;
+                                      activity.showConfirmThen( R.string.warn_sms_disabled, 
+                                                                R.string.button_enable_sms,
+                                                                R.string.button_later,
+                                                                Action.ENABLE_SMS_ASK );
                                       break;
                                   case COMMS_CONN_BT:
-                                      id = R.string.enable_bt_first;
+                                      activity.showOKOnlyDialog( R.string.enable_bt_first );
                                       break;
-                                  default:
-                                      id = 0;
-                                  }
-                                  if ( 0 != id ) {
-                                      PrefsActivity activity = (PrefsActivity)m_context;
-                                      activity.showOKOnlyDialog( id );
                                   }
                               }
                           },

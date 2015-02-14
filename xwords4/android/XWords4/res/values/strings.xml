@@ -1981,8 +1981,8 @@
 
     <!--  -->
     <string name="warn_sms_disabled">Play via SMS is currently
-    disabled. No moves will be sent via SMS for this game.\n\nYou can
-    enable play via SMS now, or later.
+    disabled. No moves will be sent via SMS.\n\nYou can enable play
+    via SMS now, or later.
     </string>
 
     <string name="button_enable_sms">Enable SMS</string>
@@ -2300,7 +2300,6 @@
     game is open.</string>
 
     <string name="enable_bt_first">Please turn Bluetooth on before enabling.</string>
-    <string name="enable_sms_first">Please check \"Allow games via SMS\" before enabling.</string>
 
     <string name="warn_no_comms">Every networked game must have at
     least one way of communicating. If you have no default connection

@@ -54,21 +54,21 @@ public final class R {
         public static final int in_arrow=0x7f020012;
         public static final int in_arrow_active=0x7f020013;
         public static final int multigame__gen=0x7f020014;
-        public static final int multigame_new__gen=0x7f020015;
-        public static final int new_group__gen=0x7f020016;
-        public static final int next_hint=0x7f020017;
-        public static final int origin=0x7f020018;
-        public static final int out_arrow=0x7f020019;
-        public static final int out_arrow_active=0x7f02001a;
-        public static final int prefs__gen=0x7f02001b;
-        public static final int prev_hint=0x7f02001c;
-        public static final int refresh=0x7f02001d;
-        public static final int relabel__gen=0x7f02001e;
-        public static final int reset__gen=0x7f02001f;
-        public static final int rightarrow=0x7f020020;
-        public static final int save__gen=0x7f020021;
-        public static final int search__gen=0x7f020022;
-        public static final int select_all__gen=0x7f020023;
+        public static final int new_group__gen=0x7f020015;
+        public static final int next_hint=0x7f020016;
+        public static final int origin=0x7f020017;
+        public static final int out_arrow=0x7f020018;
+        public static final int out_arrow_active=0x7f020019;
+        public static final int prefs__gen=0x7f02001a;
+        public static final int prev_hint=0x7f02001b;
+        public static final int refresh=0x7f02001c;
+        public static final int relabel__gen=0x7f02001d;
+        public static final int reset__gen=0x7f02001e;
+        public static final int rightarrow=0x7f02001f;
+        public static final int save__gen=0x7f020020;
+        public static final int search__gen=0x7f020021;
+        public static final int select_all__gen=0x7f020022;
+        public static final int send__gen=0x7f020023;
         public static final int shuffle=0x7f020024;
         public static final int sologame__gen=0x7f020025;
         public static final int stat_notify_chat=0x7f020026;
@@ -552,7 +552,7 @@ public final class R {
          reset a game. 
          */
         public static final int button_discard=0x7f0501b9;
-        public static final int button_discard_changes=0x7f0502e4;
+        public static final int button_discard_changes=0x7f0502e3;
         /**   
          */
         public static final int button_done=0x7f0501e9;
@@ -562,7 +562,7 @@ public final class R {
         /**  Text of button displayed when downloading is an option 
          */
         public static final int button_download=0x7f0501ad;
-        public static final int button_edit=0x7f0502e3;
+        public static final int button_edit=0x7f0502e2;
         public static final int button_enable_sms=0x7f05024a;
         public static final int button_go_settings=0x7f050283;
         /**   
@@ -735,7 +735,7 @@ public final class R {
          on the board.
          */
         public static final int clr_crosshairs=0x7f05015c;
-        public static final int config_no_connvia=0x7f0502e2;
+        public static final int config_no_connvia=0x7f0502e1;
         /**   
          */
         public static final int confirm_clear=0x7f050226;
@@ -1008,7 +1008,6 @@ public final class R {
         /**   
          */
         public static final int enable_sms=0x7f050241;
-        public static final int enable_sms_first=0x7f0502e0;
         /**   
          */
         public static final int enable_sms_summary=0x7f050242;
@@ -2611,7 +2610,7 @@ public final class R {
     line in a game summary.  The \u0020 is a space in xml. 
          */
         public static final int vs_join=0x7f050127;
-        public static final int warn_no_comms=0x7f0502e1;
+        public static final int warn_no_comms=0x7f0502e0;
         /**   
          */
         public static final int warn_nomobile_fmt=0x7f050223;

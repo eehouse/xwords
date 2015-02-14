@@ -652,9 +652,6 @@ public class GameConfigDelegate extends DelegateBase
                 }
                 finish();
                 break;
-            case ENABLE_SMS_ASK:
-                showSMSEnableDialog( Action.ENABLE_SMS_DO );
-                break;
             case ENABLE_SMS_DO:
                 boolean enabled = (Boolean)params[0];
                 if ( enabled ) {
