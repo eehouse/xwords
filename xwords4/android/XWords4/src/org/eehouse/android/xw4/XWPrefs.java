@@ -431,19 +431,6 @@ public class XWPrefs {
         return result;
     }
 
-    protected static ArrayList<String> getPrefsStringArrayList( Context context, 
-                                                                int keyID )
-    {
-        ArrayList<String> list = new ArrayList<String>();
-        String[] strs = getPrefsStringArray( context, keyID );
-        if ( null != strs ) {
-            for ( int ii = 0; ii < strs.length; ++ii ) {
-                list.add( strs[ii] );
-            }
-        }
-        return list;
-    }
-
     protected static void setPrefsStringArray( Context context, int keyID, 
                                                String[] value )
     {
