@@ -142,13 +142,14 @@ public class SMSService extends XWService {
                           R.string.radio_name_cdma,
             };
 
-            int ii;
-            for ( ii = 0; 
-                  ii < ids.length && !radio.equals(context.getString(ids[ii]));
-                  ++ii ) {
-                // do nothing; we're just setting ii here
+            int id = R.string.radio_name_real; // default so don't crash before set
+            for ( int ii = 0; ii < ids.length; ++ii ) {
+                if ( radio.equals(context.getString(ids[ii])) ) {
+                    id = ids[ii];
+                    break;
+                }
             }
-            int id = ids[ii];
+
             switch( id ) {
             case R.string.radio_name_real:
                 break;          // go with above
