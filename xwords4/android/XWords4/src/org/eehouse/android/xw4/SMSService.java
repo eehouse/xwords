@@ -109,10 +109,12 @@ public class SMSService extends XWService {
     private static Set<Integer> s_sentDied = new HashSet<Integer>();
 
     public static class SMSPhoneInfo {
-        public SMSPhoneInfo( String num, boolean gsm ) {
+        public SMSPhoneInfo( boolean isAPhone, String num, boolean gsm ) {
+            isPhone = isAPhone;
             number = num;
             isGSM = gsm;
         }
+        public boolean isPhone;
         public String number;
         public boolean isGSM;
     }
@@ -121,15 +123,57 @@ public class SMSService extends XWService {
     public static SMSPhoneInfo getPhoneInfo( Context context )
     {
         if ( null == s_phoneInfo ) {
+            String number = null;
+            boolean isGSM = false;
+            boolean isPhone = false;
             TelephonyManager mgr = (TelephonyManager)
                 context.getSystemService(Context.TELEPHONY_SERVICE);
-            String number = mgr.getLine1Number();
+            if ( null != mgr ) {
+                number = mgr.getLine1Number();
+                int type = mgr.getPhoneType();
+                isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
+                isPhone = true;
+            }
 
-            int type = mgr.getPhoneType();
-            boolean isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
-            s_phoneInfo = new SMSPhoneInfo( number, isGSM );
+            String radio = XWPrefs.getPrefsString( context, R.string.key_force_radio );
+            int[] ids = { R.string.radio_name_real,
+                          R.string.radio_name_tablet,
+                          R.string.radio_name_gsm,
+                          R.string.radio_name_cdma,
+            };
+
+            int ii;
+            for ( ii = 0; 
+                  ii < ids.length && !radio.equals(context.getString(ids[ii]));
+                  ++ii ) {
+                // do nothing; we're just setting ii here
+            }
+            int id = ids[ii];
+            switch( id ) {
+            case R.string.radio_name_real:
+                break;          // go with above
+            case R.string.radio_name_tablet:
+                number = null;
+                isPhone = false;
+                break;
+            case R.string.radio_name_gsm:
+            case R.string.radio_name_cdma:
+                isGSM = id == R.string.radio_name_gsm;
+                if ( null == number ) {
+                    number = "000-000-0000";
+                }
+                isPhone = true;
+                break;
+            }
+
+            s_phoneInfo = new SMSPhoneInfo( isPhone, number, isGSM );
         }
         return s_phoneInfo;
+    }
+
+    public static void resetPhoneInfo()
+    {
+        s_phoneInfo = null;
     }
 
     public static void smsToastEnable( boolean newVal ) 

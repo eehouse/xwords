@@ -103,13 +103,8 @@ public class Utils {
 
     public static boolean isGSMPhone( Context context )
     {
-        boolean result = false;
-        TelephonyManager tm = (TelephonyManager)
-            context.getSystemService( Context.TELEPHONY_SERVICE );
-        if ( null != tm ) {
-            result = TelephonyManager.PHONE_TYPE_GSM == tm.getPhoneType();
-        }
-        return result;
+        SMSService.SMSPhoneInfo info = SMSService.getPhoneInfo( context );
+        return info.isPhone && info.isGSM;
     }
 
     // Does the device have ability to send SMS -- e.g. is it a phone and not

@@ -51,6 +51,7 @@ public class PrefsDelegate extends DelegateBase
     private String m_thumbSize;
     private String m_keyLocale;
     private String m_keyLangs;
+    private String m_keyFakeRadio;
 
     public PrefsDelegate( PreferenceActivity activity, Delegator delegator,
                           Bundle savedInstanceState )
@@ -134,6 +135,7 @@ public class PrefsDelegate extends DelegateBase
         m_thumbSize = getString( R.string.key_thumbsize );
         m_keyLocale = getString( R.string.key_xlations_locale );
         m_keyLangs = getString( R.string.key_default_language );
+        m_keyFakeRadio = getString( R.string.key_force_radio );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -201,6 +203,8 @@ public class PrefsDelegate extends DelegateBase
             LocUtils.localeChanged( m_activity, sp.getString( key, null ) );
         } else if ( key.equals( m_keyLangs ) ) {
             forceDictsMatch( sp.getString( key, null ) );
+        } else if ( key.equals( m_keyFakeRadio ) ) {
+            SMSService.resetPhoneInfo();
         }
     }
 
