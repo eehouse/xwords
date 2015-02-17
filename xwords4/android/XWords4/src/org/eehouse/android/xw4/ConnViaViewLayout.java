@@ -34,7 +34,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class ConnViaViewLayout extends LinearLayout {
-    private static CommsConnTypeSet s_supported;
     private CommsConnTypeSet m_curSet;
 
     public interface CheckEnabledWarner {
@@ -56,6 +55,7 @@ public class ConnViaViewLayout extends LinearLayout {
                               SetEmptyWarner sew )
     {
         m_curSet = (CommsConnTypeSet)types.clone();
+
         addConnections();
 
         m_disabledWarner = cew;
@@ -73,7 +73,7 @@ public class ConnViaViewLayout extends LinearLayout {
         list.removeAllViews();  // in case being reused
 
         Context context = getContext();
-        CommsConnTypeSet supported = getSupported( context );
+        CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
 
         for ( CommsConnType typ : supported.getTypes() ) {
             LinearLayout item = (LinearLayout)
@@ -116,21 +116,5 @@ public class ConnViaViewLayout extends LinearLayout {
         if ( !enabled && null != m_disabledWarner ) {
             m_disabledWarner.warnDisabled( typ );
         }
-    }
-
-    private static CommsConnTypeSet getSupported( Context context )
-    {
-        if ( null == s_supported ) {
-            CommsConnTypeSet supported = new CommsConnTypeSet();
-            supported.add( CommsConnType.COMMS_CONN_RELAY );
-            if ( BTService.BTAvailable() ) {
-                supported.add( CommsConnType.COMMS_CONN_BT );
-            }
-            if ( Utils.isGSMPhone( context ) ) {
-                supported.add( CommsConnType.COMMS_CONN_SMS );
-            }
-            s_supported = supported;
-        }
-        return s_supported;
     }
 }

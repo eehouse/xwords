@@ -64,6 +64,36 @@ public class CommsAddrRec {
     };
 
     public static class CommsConnTypeSet extends HashSet<CommsConnType> {
+        private static CommsConnTypeSet s_supported;
+
+        public static CommsConnTypeSet getSupported( Context context )
+        {
+            if ( null == s_supported ) {
+                CommsConnTypeSet supported = new CommsConnTypeSet();
+                supported.add( CommsConnType.COMMS_CONN_RELAY );
+                if ( BTService.BTAvailable() ) {
+                    supported.add( CommsConnType.COMMS_CONN_BT );
+                }
+                if ( Utils.isGSMPhone( context ) ) {
+                    supported.add( CommsConnType.COMMS_CONN_SMS );
+                }
+                s_supported = supported;
+            }
+            return s_supported;
+        }
+
+        public static void removeUnsupported( Context context, 
+                                              CommsConnTypeSet set )
+        {
+            // Remove anything no longer supported. This probably only
+            // happens when key_force_radio is being messed with
+            CommsConnTypeSet supported = getSupported( context );
+            for ( CommsConnType typ : set.getTypes() ) {
+                if ( ! supported.contains( typ ) ) {
+                    set.remove( typ );
+                }
+            }
+        }
 
         // Called from jni world, where making and using an iterator is too
         // much trouble.

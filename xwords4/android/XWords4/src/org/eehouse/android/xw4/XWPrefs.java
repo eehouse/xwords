@@ -481,6 +481,14 @@ public class XWPrefs {
         } else {
             result = DBUtils.intToConnTypeSet( flags );
         }
+
+        // Save it if changed
+        int siz = result.size();
+        CommsConnTypeSet.removeUnsupported( context, result );
+        if ( result.size() != siz ) {
+            setAddrTypes( context, result );
+        }
+
         return result;
     }
 
