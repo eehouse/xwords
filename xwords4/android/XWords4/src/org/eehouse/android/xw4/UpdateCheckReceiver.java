@@ -92,22 +92,27 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
     public static void restartTimer( Context context )
     {
-        AlarmManager am =
-            (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
+        if ( BuildConfig.DEBUG ) {
+            DbgUtils.logf( "UpdateCheckReceiver.restartTimer(): dropping because"
+                           + " debug builds can't be updated" );
+        } else {
+            AlarmManager am =
+                (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
 
-        Intent intent = new Intent( context, UpdateCheckReceiver.class );
-        PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
-        am.cancel( pi );
+            Intent intent = new Intent( context, UpdateCheckReceiver.class );
+            PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
+            am.cancel( pi );
 
-        long interval_millis = INTERVAL_ONEDAY;
-        if ( !devOK( context ) ) {
-            interval_millis *= INTERVAL_NDAYS;
+            long interval_millis = INTERVAL_ONEDAY;
+            if ( !devOK( context ) ) {
+                interval_millis *= INTERVAL_NDAYS;
+            }
+            interval_millis = (interval_millis / 2)
+                + Math.abs(Utils.nextRandomInt() % interval_millis);
+            am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
+                                    SystemClock.elapsedRealtime() + interval_millis,
+                                    interval_millis, pi );
         }
-        interval_millis = (interval_millis / 2)
-            + Math.abs(Utils.nextRandomInt() % interval_millis);
-        am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
-                                SystemClock.elapsedRealtime() + interval_millis,
-                                interval_millis, pi );
     }
 
     // Is app upgradeable OR have we installed any dicts?
