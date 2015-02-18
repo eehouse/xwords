@@ -1463,6 +1463,7 @@ comms_resendAll( CommsCtxt* comms, XP_Bool force )
             comms->nextResend = now + comms->resendBackoff;
         }
     }
+    XP_LOGF( TAGFMT() "=>%d", TAGPRMS, success );
     return success;
 } /* comms_resend */
 
