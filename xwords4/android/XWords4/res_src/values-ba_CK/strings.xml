@@ -1568,6 +1568,10 @@
     \"%1$s\" si elbitapmocni htiw siht eno rof yalp gnisu
     Htooteulb. Eno fo uoy yam deen ot edargpu erofeb uoy nac
     eunitnoc.</string>
+  <string name="sms_bad_proto_fmt">Eht noisrev fo Sdrowssorc no eht
+    enohp htiw rebmun \"%1$s\" si elbitapmocni htiw siht eno rof yalp
+    gnisu SMS. Eno fo uoy yam deen ot edargpu erofeb uoy nac
+    eunitnoc.</string>
   <!--  -->
   <string name="new_btmove_title">Noitativni aiv Htooteulb</string>
   <!--  -->

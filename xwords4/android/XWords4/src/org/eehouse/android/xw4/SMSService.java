@@ -470,7 +470,7 @@ public class SMSService extends XWService {
             }
             end += len;
             byte[] part = new byte[4 + len]; 
-            part[0] = (byte)0;  // proto
+            part[0] = (byte)SMS_PROTO_VERSION;
             part[1] = (byte)msgID;
             part[2] = (byte)ii;
             part[3] = (byte)count;
@@ -585,8 +585,9 @@ public class SMSService extends XWService {
         try {
             byte proto = dis.readByte();
             if ( SMS_PROTO_VERSION != proto ) {
-                DbgUtils.logf( "SMSService.disAssemble: bad proto %d; dropping", 
-                               proto );
+                DbgUtils.logf( "SMSService.disAssemble: bad proto %d from %s;"
+                               + " dropping", proto, senderPhone );
+                sendResult( MultiEvent.BAD_PROTO_SMS, senderPhone );
             } else {
                 SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
                 byte[] rest = new byte[dis.available()];

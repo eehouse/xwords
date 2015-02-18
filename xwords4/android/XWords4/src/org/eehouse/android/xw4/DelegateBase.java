@@ -482,26 +482,33 @@ public class DelegateBase implements DlgClickNotify,
     //////////////////////////////////////////////////
     public void eventOccurred( MultiEvent event, final Object ... args )
     {
+        int fmtId = 0;
         switch( event ) {
         case BT_ERR_COUNT:
             int count = (Integer)args[0];
             DbgUtils.logf( "Bluetooth error count: %d", count );
             break;
-        case BAD_PROTO:
+        case BAD_PROTO_BT:
+            fmtId = R.string.bt_bad_proto_fmt;
+            break;
+        case BAD_PROTO_SMS:
+            fmtId = R.string.sms_bad_proto_fmt;
+            break;
         case APP_NOT_FOUND:
-            final String msg = MultiEvent.BAD_PROTO == event
-                ? getString( R.string.bt_bad_proto_fmt, (String)args[0] )
-                : getString( R.string.app_not_found_fmt, (String)args[0] );
+            fmtId = R.string.app_not_found_fmt;
+            break;
+        default:
+            DbgUtils.logf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", event.toString() );
+        }
+
+        if ( 0 != fmtId ) {
+            final String msg = getString( fmtId, (String)args[0] );
             runOnUiThread( new Runnable() {
                     public void run() {
                         showOKOnlyDialog( msg );
                     }
                 });
-            break;
-        default:
-            DbgUtils.logf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", event.toString() );
         }
-        // Assert.fail();
     }
 
     //////////////////////////////////////////////////////////////////////

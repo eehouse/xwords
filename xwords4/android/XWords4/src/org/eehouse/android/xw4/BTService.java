@@ -1137,7 +1137,7 @@ public class BTService extends XWService {
 
     private void sendBadProto( BluetoothSocket socket )
     {
-        sendResult( MultiEvent.BAD_PROTO, socket.getRemoteDevice().getName() );
+        sendResult( MultiEvent.BAD_PROTO_BT, socket.getRemoteDevice().getName() );
     }
 
     private void postNotification( int gameID, int title, String body, 

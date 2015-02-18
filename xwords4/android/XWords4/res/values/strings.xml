@@ -1831,6 +1831,11 @@
     Bluetooth. One of you may need to upgrade before you can
     continue.</string>
 
+    <string name="sms_bad_proto_fmt">The version of Crosswords on the
+    phone with number \"%1$s\" is incompatible with this one for play
+    using SMS. One of you may need to upgrade before you can
+    continue.</string>
+
       <!--  -->
     <string name="new_btmove_title">Invitation via Bluetooth</string>
     <!--  -->
