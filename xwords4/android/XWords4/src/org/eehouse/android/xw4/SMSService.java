@@ -451,7 +451,7 @@ public class SMSService extends XWService {
         byte[] data = bas.toByteArray();
         boolean result = false;
         byte[][] msgs = breakAndEncode( data );
-        result = sendBuffers( msgs, phone, data );
+        result = sendBuffers( msgs, phone );
         return result;
     }
 
@@ -642,7 +642,7 @@ public class SMSService extends XWService {
         return PendingIntent.getBroadcast( this, 0, intent, 0 );
     }
 
-    private boolean sendBuffers( byte[][] fragments, String phone, byte[] data )
+    private boolean sendBuffers( byte[][] fragments, String phone )
     {
         boolean success = false;
         if ( XWPrefs.getSMSEnabled( this ) ) {
@@ -735,7 +735,7 @@ public class SMSService extends XWService {
 
         m_receiveReceiver = new BroadcastReceiver() {
                 @Override
-                public void onReceive(Context arg0, Intent arg1) 
+                public void onReceive( Context context, Intent intent )
                 {
                     if ( Activity.RESULT_OK != getResultCode() ) {
                         DbgUtils.logf( "SMS delivery result: FAILURE" );
