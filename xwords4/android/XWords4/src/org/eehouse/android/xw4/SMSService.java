@@ -646,13 +646,19 @@ public class SMSService extends XWService {
     {
         boolean success = false;
         if ( XWPrefs.getSMSEnabled( this ) ) {
-            String myPhone = getPhoneInfo( this ).number;
-            if ( PhoneNumberUtils.compare( phone, myPhone ) ) {
-                for ( byte[] fragment : fragments ) {
-                    handleFrom( this, fragment, phone );
+
+            // Try send-to-self
+            if ( XWPrefs.getSMSToSelfEnabled( this ) ) {
+                String myPhone = getPhoneInfo( this ).number;
+                if ( PhoneNumberUtils.compare( phone, myPhone ) ) {
+                    for ( byte[] fragment : fragments ) {
+                        handleFrom( this, fragment, phone );
+                    }
+                    success = true;
                 }
-                success = true;
-            } else {
+            }
+
+            if ( !success ) {
                 short nbsPort = (short)Integer.parseInt( getString( R.string.nbs_port ) );
                 try {
                     SmsManager mgr = SmsManager.getDefault();

@@ -60,6 +60,11 @@ public class XWPrefs {
 
     public static boolean getNFCToSelfEnabled( Context context )
     {
+        return getPrefsBoolean( context, R.string.key_enable_nfc_toself, false );
+    }
+
+    public static boolean getSMSToSelfEnabled( Context context )
+    {
         return getPrefsBoolean( context, R.string.key_enable_sms_toself, false );
     }
 

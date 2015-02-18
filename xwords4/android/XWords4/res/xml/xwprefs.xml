@@ -331,9 +331,31 @@
                         android:defaultValue="false"
                         />
 
-    <CheckBoxPreference android:key="@string/key_enable_sms_toself"
-                        android:title="@string/enable_sms_toself_title"
-                        android:summary="@string/enable_sms_toself_summary"
+    <PreferenceScreen android:title="SMS Stuff"
+                      android:summary="Prefs related to play-via-sms"
+                      >
+      <CheckBoxPreference android:key="@string/key_enable_sms_toself"
+                          android:title="@string/enable_sms_toself_title"
+                          android:summary="@string/enable_sms_toself_summary"
+                          android:defaultValue="false"
+                          />
+      <org.eehouse.android.xw4.XWListPreference
+		  android:key="@string/key_force_radio"
+          android:title="@string/force_radio_title"
+	      android:entries="@array/force_radio_names"
+	      android:entryValues="@array/force_radio_names"
+		  android:defaultValue="@string/radio_name_real"
+		  />
+
+      <CheckBoxPreference android:key="@string/key_show_sms"
+			              android:title="Show SMS sends, receives"
+			              android:defaultValue="false"
+			              />
+    </PreferenceScreen>
+
+    <CheckBoxPreference android:key="@string/key_enable_nfc_toself"
+                        android:title="@string/enable_nfc_toself_title"
+                        android:summary="@string/enable_nfc_toself_summary"
                         android:defaultValue="false"
                         />
 
@@ -354,14 +376,6 @@
                         android:defaultValue="false"
 	                    />
 
-      <org.eehouse.android.xw4.XWListPreference
-		  android:key="@string/key_force_radio"
-          android:title="@string/force_radio_title"
-	      android:entries="@array/force_radio_names"
-	      android:entryValues="@array/force_radio_names"
-		  android:defaultValue="@string/radio_name_real"
-		  />
-
     <!-- For broken devices like my Blaze 4G that report a download
          directory that doesn't exist, allow users to set it.  Mine:
          /sdcard/external_sd/download     
@@ -370,10 +384,6 @@
         android:key="@string/key_download_path"
         android:title="@string/download_path_title"
         />
-    <CheckBoxPreference android:key="@string/key_show_sms"
-			            android:title="Show SMS sends, receives"
-			            android:defaultValue="false"
-			            />
     <org.eehouse.android.xw4.XWEditTextPreference 
 	   android:key="@string/key_relay_host"
 	   android:title="@string/relay_host"
