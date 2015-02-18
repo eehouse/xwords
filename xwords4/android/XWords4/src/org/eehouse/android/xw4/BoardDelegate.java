@@ -550,19 +550,19 @@ public class BoardDelegate extends DelegateBase
     }
 
     @Override
+    protected void onStart()
+    {
+        super.onStart();
+        doResume( true );
+    }
+
+    @Override
     protected void onResume()
     {
         super.onResume();
-        m_handler = new Handler();
-        m_blockingDlgID = DlgID.NONE;
-
-        setKeepScreenOn();
-
-        loadGame();
-
-        ConnStatusHandler.setHandler( this );
+        doResume( false );
     }
-
+    
     @Override
     protected void onDestroy()
     {
@@ -1803,7 +1803,23 @@ public class BoardDelegate extends DelegateBase
         }
     } // class BoardUtilCtxt 
 
-    private void loadGame()
+    private void doResume( boolean isStart )
+    {
+        boolean firstStart = null == m_handler;
+        if ( firstStart ) {
+            m_handler = new Handler();
+            m_blockingDlgID = DlgID.NONE;
+        }
+
+        loadGame( isStart );
+
+        if ( !isStart ) {
+            setKeepScreenOn();
+            ConnStatusHandler.setHandler( this );
+        }
+    }
+
+    private void loadGame( boolean isStart )
     {
         if ( 0 == m_jniGamePtr ) {
             try {
@@ -1942,7 +1958,7 @@ public class BoardDelegate extends DelegateBase
                     if ( null != m_xport ) {
                         warnIfNoTransport();
                         trySendChats();
-                        tickle();
+                        tickle( isStart );
                         tryInvites();
                     }
                 }
@@ -1953,7 +1969,7 @@ public class BoardDelegate extends DelegateBase
         }
     } // loadGame
 
-    private void tickle()
+    private void tickle( boolean force )
     {
         for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
               iter.hasNext(); ) {
@@ -1973,7 +1989,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( 0 < m_connTypes.size() ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, false, true );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, force, true );
         }
     }
 
