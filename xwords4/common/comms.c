@@ -33,6 +33,11 @@
 
 #define HEARTBEAT_NONE 0
 
+#define HAS_VERSION_FLAG 0xBEEF
+#ifndef COMMS_VERSION
+# define COMMS_VERSION 0
+#endif
+
 #ifndef XWFEATURE_STANDALONE_ONLY
 
 #ifndef INITIAL_CLIENT_VERS
@@ -181,7 +186,9 @@ static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
 
 static XP_U16 countAddrRecs( const CommsCtxt* comms );
 static void sendConnect( CommsCtxt* comms, XP_Bool breakExisting );
-
+#if 0 < COMMS_VERSION
+static XP_U16 makeFlags( const CommsCtxt* comms );
+#endif
 #ifdef XWFEATURE_RELAY
 static XP_Bool relayConnect( CommsCtxt* comms );
 static void relayDisconnect( CommsCtxt* comms );
@@ -1006,6 +1013,10 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
                                  NULL, 0, 
                                  (MemStreamCloseCallback)NULL );
     stream_open( hdrStream );
+#if 0 < COMMS_VERSION
+    stream_putU16( hdrStream, HAS_VERSION_FLAG );
+    stream_putU16( hdrStream, makeFlags( comms ) );
+#endif
     XP_LOGF( "%s: putting connID %x", __func__, comms->connID );
     stream_putU32( hdrStream, comms->connID );
 
@@ -1861,6 +1872,33 @@ validateInitialMessage( CommsCtxt* comms,
     return rec;
 } /* validateInitialMessage */
 
+#if 0 < COMMS_VERSION
+static XP_U16
+makeFlags( const CommsCtxt* comms )
+{
+    XP_USE( comms );
+    XP_U16 flags = COMMS_VERSION;
+    return flags;
+}
+#endif
+
+static XP_Bool
+getFlags( XWStreamCtxt* stream, XP_U32* connIDP, XP_U16* flagsP )
+{
+    XP_U16 flags = 0;
+    XWStreamPos pos = stream_getPos( stream, POS_READ );
+    XP_U16 marker = stream_getU16( stream );
+    if ( HAS_VERSION_FLAG == marker ) {
+        XP_LOGF( "%s: found marker", __func__ );
+        flags = stream_getU16( stream );
+    } else {
+        stream_setPos( stream, POS_READ, pos );
+    }
+    *connIDP = stream_getU32( stream );
+    *flagsP = flags;
+    return XP_TRUE;
+}
+
 /* Messages with established connIDs are valid only if they have the msgID
  * that's expected on that channel.  Their addresses need to match what we
  * have for that channel, and in fact we'll overwrite what we have in case a
@@ -1930,9 +1968,11 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
               + sizeof(msgID) + sizeof(lastMsgRcd)) ) {
             XP_U16 payloadSize;
             AddressRecord* rec = NULL;
+            
+            XP_U16 flags;
+            (void)getFlags( stream, &connID, &flags );
 
-            connID = stream_getU32( stream );
-            XP_LOGF( "%s: read connID (gameID) of %x", __func__, connID );
+            XP_LOGF( "%s: read connID (gameID) of %x, flags %x", __func__, connID, flags );
             channelNo = stream_getU16( stream );
             msgID = stream_getU32( stream );
             lastMsgRcd = stream_getU32( stream );
