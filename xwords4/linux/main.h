@@ -73,7 +73,7 @@ typedef struct LaunchParams {
 #ifdef XWFEATURE_DEVID
     char* lDevID;
     XP_Bool noAnonDevid;
-    XP_UCHAR devIDStore[16];
+    XP_UCHAR devIDStore[32];
 #endif
     VTableMgr* vtMgr;
     DictMgrCtxt* dictMgr;
