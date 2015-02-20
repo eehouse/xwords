@@ -414,14 +414,15 @@ getClientIndex( const uint8_t** bufpp, const uint8_t* end,
     uint8_t result = 0;
     uint8_t clientIndx;
     if ( getNetByte( bufpp, end, &clientIndx ) ) {
-        if ( 0 < clientIndx && clientIndx < nPlayersT ) {
-            result = 1 + clientIndx;   // postgres arrays are 1-based
-        } else {
+        if ( 0 == clientIndx ) {
+            // unset on device: leave it alone
+        } else if ( clientIndx >= nPlayersT ) {
             logf( XW_LOGERROR, "%s: bogus clientIndx %d > nPlayersT %d", 
                   __func__, clientIndx, nPlayersT );
+        } else {
+            result = 1 + clientIndx;   // postgres arrays are 1-based
         }
     }
-    // logf( XW_LOGINFO, "%s() => %d", __func__, result );
     return result;
 }
 
