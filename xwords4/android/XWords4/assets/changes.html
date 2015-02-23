@@ -15,10 +15,10 @@
 <body>
   <h2>Crosswords 4.4 beta 93 release</h2>
 
-  <p>This is an interim release mostly to set up a larger release
-  that's nearly done and with which everything before would otherwise
-  be incompatible. Once this version's been adopted I can release the
-  next.</p>
+  <p>This is an interim release making low-level network changes that
+  need to be out there before the next, more ambitious set of changes
+  can go out. Once this version&apos;s been adopted I can release the
+  next without breaking networked games that are in progress.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -28,11 +28,11 @@
 
   <h3>New with this release</h3>
   <ul>
+      <li>Change &quot;protocol&quot; of messages passed between games
+          to include more information.</li>
       <li>Replace "Do not show again" button in new-player hint
           dialogs with a checkbox</li>
-
-      <li>Change some networking details that are incompatible with
-          new stuff in a way that doesn't break the old.</li>
+      <li>Resend pending messages every time game is opened</li>
   </ul>
 
   <p>(The full changelog 
@@ -40,10 +40,11 @@
 
   <h3>Next up</h3>
   <ul>
-	  <li>Fix things so you don&apos;t have to specify how two devices
-	      will communicate: Bluetooth, Relay, SMS - shouldn&apos;t be
-	      something you have to pick. I should just use what works at
-	      the time.  (This is coming along, but still weeks out.)</li>
+	  <li>Finish fixing things so you don&apos;t have to specify how
+	      two devices will communicate: Bluetooth, Relay, SMS -
+	      shouldn&apos;t be something you have to pick. I should just
+	      use what works at the time.  (This is coming along, but
+	      still weeks out.)</li>
 
 	  <li>Offer &quot;Rematch&quot; when game&apos;s over (easy if I get
 	      the above right)</li>
