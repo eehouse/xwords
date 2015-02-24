@@ -37,6 +37,9 @@
 #ifndef COMMS_VERSION
 # define COMMS_VERSION 0
 #endif
+#define VERSION_BITS 0x000F
+#define IS_SERVER_BIT 0x0010
+
 
 #ifndef XWFEATURE_STANDALONE_ONLY
 
@@ -250,7 +253,6 @@ static void sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec );
 
 #ifdef DEBUG
 # define CNO_FMT(buf, cno)                                         \
-    XP_ASSERT( 0 == ((cno) & (1 << SERVER_OFFSET)));               \
     XP_UCHAR (buf)[64];                                            \
     XP_SNPRINTF( (buf), sizeof(buf), "cno: %.4X|%x",               \
                  (cno) & ~CHANNEL_MASK, (cno) & CHANNEL_MASK )
@@ -652,7 +654,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     if ( version < STREAM_VERS_CHANNELSEED ) {
         comms->channelSeed = 0;
     } else {
-        comms->channelSeed = stream_getU16( stream ) & ~(1 << SERVER_OFFSET);
+        comms->channelSeed = stream_getU16( stream );
         CNO_FMT( cbuf, comms->channelSeed );
         XP_LOGF( "%s: loaded seed: %s", __func__, cbuf );
     }
@@ -681,7 +683,7 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
         if ( version >= STREAM_VERS_BLUETOOTH2 ) {
             rec->lastMsgAckd = stream_getU16( stream );
         }
-        rec->channelNo = stream_getU16( stream ) & ~(1 << SERVER_OFFSET);
+        rec->channelNo = stream_getU16( stream );
         if ( addr_hasType( &rec->addr, COMMS_CONN_RELAY ) ) {
             rec->rr.hostID = stream_getU8( stream );
         }
@@ -1062,7 +1064,6 @@ static MsgQueueElem*
 makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec, 
                 XP_PlayerAddr channelNo, XWStreamCtxt* stream )
 {
-    XP_ASSERT( 0 == (channelNo & (1 << SERVER_OFFSET)) );
     CNO_FMT( cbuf, channelNo );
     XP_LOGF( TAGFMT(%s), TAGPRMS, cbuf );
     XP_U16 headerLen;
@@ -1078,12 +1079,6 @@ makeElemWithID( CommsCtxt* comms, MsgID msgID, AddressRecord* rec,
 #ifdef DEBUG
     newMsgElem->sendCount = 0;
 #endif
-
-    /* Set the bit here, when the local won't be used again. We want it in the
-       header below but not in newMsgElem above or anywhere else */
-    if ( comms->isServer ) {
-        channelNo |= 1 << SERVER_OFFSET;
-    }
 
     hdrStream = mem_stream_make( MPPARM(comms->mpool) 
                                  util_getVTManager(comms->util),
@@ -2050,8 +2045,11 @@ validateInitialMessage( CommsCtxt* comms,
 static XP_U16
 makeFlags( const CommsCtxt* comms )
 {
-    XP_USE( comms );
     XP_U16 flags = COMMS_VERSION;
+    if ( comms->isServer ) {
+        flags |= IS_SERVER_BIT;
+    }
+    XP_LOGF( TAGFMT() "=>%x", TAGPRMS, flags );
     return flags;
 }
 #endif
@@ -2063,8 +2061,8 @@ getFlags( XWStreamCtxt* stream, XP_U32* connIDP, XP_U16* flagsP )
     XWStreamPos pos = stream_getPos( stream, POS_READ );
     XP_U16 marker = stream_getU16( stream );
     if ( HAS_VERSION_FLAG == marker ) {
-        XP_LOGF( "%s: found marker", __func__ );
         flags = stream_getU16( stream );
+        XP_LOGF( "%s: found marker; read flags %x", __func__, flags );
     } else {
         stream_setPos( stream, POS_READ, pos );
     }
@@ -2167,16 +2165,16 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
 
                 XP_LOGF( TAGFMT() "read connID (gameID) of %x", TAGPRMS, connID );
                 channelNo = stream_getU16( stream );
-                XP_Bool fromServer = 0 != (channelNo & (1 << SERVER_OFFSET));
-                /* clear bit; other code not expecting it */
-                channelNo &= ~(1 << SERVER_OFFSET);
 
                 XP_U16 channelSeed = comms_getChannelSeed( comms );
                 CNO_FMT( cbufX, channelSeed );
                 CNO_FMT( cbufY, channelNo );
                 XP_LOGF( TAGFMT() "my seed %s vs %s!!!", TAGPRMS, cbufX, cbufY );
 
-                if ( comms->isServer == fromServer ) {
+                /* First test isn't valid if we haven't passed the bit explicitly */
+                if ( 0 != flags && (comms->isServer == (0 != (flags & IS_SERVER_BIT))) ) {
+                    XP_LOGF( TAGFMT() "server bits mismatch; isServer: %d; flags: %x", 
+                             TAGPRMS, comms->isServer, flags );
                     messageValid = XP_FALSE;
                 } else if ( comms->isServer ) {
                     /* channelNo comparison invalid */
@@ -2873,7 +2871,7 @@ relay_msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
             stream_putU16( stream, comms_getChannelSeed(comms) );
             stream_putU8( stream, comms->util->gameInfo->dictLang );
             putDevID( comms, stream );
-            stream_putU8( stream, comms->forceChannel );
+            stream_putU8( stream, comms->forceChannel ); /* "clientIndx" on relay */
 
             set_relay_state( comms, COMMS_RELAYSTATE_CONNECT_PENDING );
             break;
