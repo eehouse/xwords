@@ -59,7 +59,7 @@ public class BTService extends XWService {
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
 
-    private static final int BT_PROTO = 0;
+    private static final int BT_PROTO = 1; // using jsons instead of lots of fields
 
     private enum BTAction { _NONE,
                             SCAN,
@@ -546,13 +546,6 @@ public class BTService extends XWService {
             BTCmd result;
             String asJson = is.readUTF();
             NetLaunchInfo nli = new NetLaunchInfo( asJson );
-            DbgUtils.logf( "receiveInvitation: nli: %s", nli.toString() );
-            // int gameID = is.readInt();
-            // String gameName = is.readUTF();
-            // int lang = is.readInt();
-            // String dict = is.readUTF();
-            // int nPlayersT = is.readInt();
-            // int nPlayersH = is.readInt();
 
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
