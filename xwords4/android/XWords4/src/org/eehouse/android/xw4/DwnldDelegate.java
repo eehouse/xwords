@@ -273,6 +273,7 @@ public class DwnldDelegate extends ListDelegateBase {
                     || uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
             item = (LinearLayout)inflate( R.layout.import_dict_item );
             dft = new DownloadFilesTask( uri, item, false );
+            uris = new Uri[] { uri };
         }
 
         if ( null != dft ) {
