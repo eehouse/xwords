@@ -2137,9 +2137,11 @@ public class DBUtils {
     public static int connTypeSetToInt( CommsConnTypeSet set )
     {
         int result = BIT_VECTOR_MASK;
-        for ( Iterator<CommsConnType> iter = set.iterator(); iter.hasNext(); ) {
-            CommsConnType typ = iter.next();
-            result |= 1 << (typ.ordinal() - 1);
+        if ( null != set ) {
+            for ( Iterator<CommsConnType> iter = set.iterator(); iter.hasNext(); ) {
+                CommsConnType typ = iter.next();
+                result |= 1 << (typ.ordinal() - 1);
+            }
         }
         return result;
     }
