@@ -268,14 +268,18 @@ public class SMSService extends XWService {
 
     private static Intent getIntentTo( Context context, SMSAction cmd )
     {
+        Intent intent = new Intent( context, SMSService.class );
+        intent.putExtra( CMD_STR, cmd.ordinal() );
+        return intent;
+    }
+
+    private static boolean showToasts( Context context )
+    {
         if ( null == s_showToasts ) {
             s_showToasts = 
                 XWPrefs.getPrefsBoolean( context, R.string.key_show_sms, false );
         }
-
-        Intent intent = new Intent( context, SMSService.class );
-        intent.putExtra( CMD_STR, cmd.ordinal() );
-        return intent;
+        return s_showToasts;
     }
 
     @Override
@@ -328,7 +332,7 @@ public class SMSService extends XWService {
                     ConnStatusHandler.
                         updateStatusIn( this, null,
                                         CommsConnType.COMMS_CONN_SMS, true );
-                    if ( s_showToasts && (0 == (m_nReceived % 5)) ) {
+                    if ( showToasts( this ) && (0 == (m_nReceived % 5)) ) {
                         DbgUtils.showf( this, "Got msg %d", m_nReceived );
                     }
                     String phone = intent.getStringExtra( PHONE );
@@ -377,7 +381,7 @@ public class SMSService extends XWService {
 
     private void inviteRemote( String phone, String nliData )
     {
-        DbgUtils.logf( "inviteRemote()" );
+        DbgUtils.logf( "SMSService.inviteRemote()" );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
         try {
@@ -684,7 +688,7 @@ public class SMSService extends XWService {
             DbgUtils.logf( "sendBuffers(): dropping because SMS disabled" );
         }
 
-        if ( s_showToasts && success && (0 == (s_nSent % 5)) ) {
+        if ( showToasts( this ) && success && (0 == (s_nSent % 5)) ) {
             DbgUtils.showf( this, "Sent msg %d", s_nSent );
         }
 
