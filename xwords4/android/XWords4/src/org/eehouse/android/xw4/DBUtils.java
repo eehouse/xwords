@@ -143,7 +143,8 @@ public class DBUtils {
                              DBHelper.DICTLANG, DBHelper.GAMEID,
                              DBHelper.SCORES, DBHelper.HASMSGS,
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
-                             DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING
+                             DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING,
+                             DBHelper.EXTRAS,
         };
         String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -191,6 +192,9 @@ public class DBUtils {
                 summary.gameOver = tmp != 0;
                 summary.lastMoveTime = 
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
+                String str = cursor
+                    .getString(cursor.getColumnIndex(DBHelper.EXTRAS));
+                summary.setExtras( str );
 
                 String scoresStr = 
                     cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
@@ -293,6 +297,7 @@ public class DBUtils {
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
+            values.put( DBHelper.EXTRAS, summary.getExtras() );
             long nextNag = summary.nextTurnIsLocal() ?
                 NagTurnReceiver.figureNextNag( context, 
                                                1000*(long)summary.lastMoveTime )
@@ -356,6 +361,24 @@ public class DBUtils {
             NagTurnReceiver.setNagTimer( context );
         }
     } // saveSummary
+
+    public static void addRematchInfo( Context context, long rowid, String btAddr, 
+                                       String phone, String relayID )
+    {
+        GameLock lock = new GameLock( rowid, true ).lock();
+        GameSummary summary = getSummary( context, lock );
+        if ( null != btAddr ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
+        }
+        if ( null != phone ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
+        }
+        if ( null != relayID ) {
+            summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
+        }
+        saveSummary( context, lock, summary );
+        lock.unlock();
+    }
 
     public static int countGamesUsingLang( Context context, int lang )
     {
