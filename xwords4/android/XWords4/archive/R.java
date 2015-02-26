@@ -2211,6 +2211,7 @@ public final class R {
         /**  Shown in toast when relaunching after switching dicts 
          */
         public static final int reload_new_dict_fmt=0x7f050264;
+        public static final int rematch_msg=0x7f0502ef;
         public static final int remote_digesting=0x7f0502bb;
         public static final int remote_empty=0x7f0502ba;
         /**  checkbox determining of this player is on this device or

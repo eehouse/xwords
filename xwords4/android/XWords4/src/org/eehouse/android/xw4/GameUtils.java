@@ -474,11 +474,26 @@ public class GameUtils {
                                  nli.inviteID(), nli.gameID, false );
     }
 
-    public static long makeNewMultiGame( Context context, String inviteID )
+    public static long makeNewMultiGame( Context context )
+    {
+        return makeNewMultiGame( context, (CommsConnTypeSet)null );
+    }
+
+    public static long makeNewMultiGame( Context context, CommsConnTypeSet addrSet )
+    {
+        String inviteID = makeRandomID();
+        return makeNewMultiGame( context, inviteID, addrSet );
+    }
+
+    private static long makeNewMultiGame( Context context, String inviteID,
+                                          CommsConnTypeSet addrSet )
     {
         int[] lang = {0};
         String[] dict = {null};
-        CommsAddrRec addr = new CommsAddrRec( XWPrefs.getAddrTypes( context ) );
+        if ( null == addrSet ) {
+            addrSet = XWPrefs.getAddrTypes( context );
+        }
+        CommsAddrRec addr = new CommsAddrRec( addrSet );
         addr.populate( context );
         int forceChannel = 0;
         return makeNewMultiGame( context, null, DBUtils.GROUPID_UNSPEC, addr,

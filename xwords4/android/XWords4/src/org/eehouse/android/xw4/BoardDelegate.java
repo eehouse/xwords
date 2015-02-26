@@ -141,6 +141,7 @@ public class BoardDelegate extends DelegateBase
     private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
+    private boolean m_rematchInvitesSent = false;
 
     private static Set<BoardDelegate> s_this = new HashSet<BoardDelegate>();
 
@@ -235,7 +236,7 @@ public class BoardDelegate extends DelegateBase
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
-                } else if ( XWApp.REMATCH_SUPPORTED && DlgID.GAME_OVER == dlgID ) {
+                } else if ( DlgID.GAME_OVER == dlgID && rematchSupported() ) {
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
@@ -443,7 +444,7 @@ public class BoardDelegate extends DelegateBase
                             finish();
                         }
                     };
-                dialog = ab.setTitle( R.string.query_title )
+                dialog = ab.setTitle( "foo" )
                     .setMessage( "" )
                     .setPositiveButton( R.string.newgame_invite, lstnr )
                     .setNegativeButton( R.string.button_close_game, lstnr2 )
@@ -473,22 +474,31 @@ public class BoardDelegate extends DelegateBase
         switch( dlgID ) {
         case DLG_INVITE:        // here
             AlertDialog ad = (AlertDialog)dialog;
-            String message = 
-                getString( R.string.invite_msg_fmt, m_nMissing );
-
-            String ps = null;
-            if ( m_nMissing > 1 ) {
-                ps = getString( R.string.invite_multiple );
+            String message;
+            int titleID;
+            boolean rematch = m_summary.hasRematchInfo();
+            if ( rematch ) {
+                titleID = R.string.info_title;
+                message = getString( R.string.rematch_msg );
+                ad.getButton( AlertDialog.BUTTON_POSITIVE ).setVisibility( View.GONE );
             } else {
-                boolean[] avail = NFCUtils.nfcAvail( m_activity );
-                if ( avail[1] ) {
-                    ps = getString( R.string.invite_if_nfc );
-                }
-            }
-            message += "\n\n" + 
-                (null == ps ? getString( R.string.invite_stays ) : ps);
+                titleID = R.string.query_title;
+                message = getString( R.string.invite_msg_fmt, m_nMissing );
 
+                String ps = null;
+                if ( m_nMissing > 1 ) {
+                    ps = getString( R.string.invite_multiple );
+                } else {
+                    boolean[] avail = NFCUtils.nfcAvail( m_activity );
+                    if ( avail[1] ) {
+                        ps = getString( R.string.invite_if_nfc );
+                    }
+                }
+                message += "\n\n" + 
+                    (null == ps ? getString( R.string.invite_stays ) : ps);
+            }
             ad.setMessage( message );
+            ad.setTitle( titleID );
             break;
         default:
             super.prepareDialog( dlgID, dialog );
@@ -1357,21 +1367,25 @@ public class BoardDelegate extends DelegateBase
                     naKey = R.string.key_notagain_conndall;
                 }
             }
-        } else if ( false && nMissing > 0 ) {
-            if ( !m_haveInvited ) {
-                m_haveInvited = true;
-                m_room = room;
-                showDialog( DlgID.DLG_INVITE );
-                invalidateOptionsMenuIf();
+        } else if ( nMissing > 0 ) {
+            if ( m_summary.hasRematchInfo() ) {
+                tryRematchInvites();
             } else {
-                toastStr = getString( R.string.msg_relay_waiting_fmt, devOrder, 
-                                      room, nMissing );
-                if ( devOrder == 1 ) {
-                    naMsg = R.string.not_again_conndfirst;
-                    naKey = R.string.key_notagain_conndfirst;
+                if ( !m_haveInvited ) {
+                    m_haveInvited = true;
+                    m_room = room;
+                    showDialog( DlgID.DLG_INVITE );
+                    invalidateOptionsMenuIf();
                 } else {
-                    naMsg = R.string.not_again_conndmid;
-                    naKey = R.string.key_notagain_conndmid;
+                    toastStr = getString( R.string.msg_relay_waiting_fmt, devOrder, 
+                                          room, nMissing );
+                    if ( devOrder == 1 ) {
+                        naMsg = R.string.not_again_conndfirst;
+                        naKey = R.string.key_notagain_conndfirst;
+                    } else {
+                        naMsg = R.string.not_again_conndmid;
+                        naKey = R.string.key_notagain_conndmid;
+                    }
                 }
             }
         }
@@ -1840,6 +1854,8 @@ public class BoardDelegate extends DelegateBase
                     DbgUtils.logf( "BoardDelegate:after loadGame: gi.nPlayers: %d", m_gi.nPlayers );
                     String langName = m_gi.langName();
 
+                    m_summary = DBUtils.getSummary( m_activity, m_gameLock );
+
                     setThis( this );
 
                     m_jniGamePtr = XwJNI.initJNI( m_rowid );
@@ -1857,13 +1873,12 @@ public class BoardDelegate extends DelegateBase
                                                       pairs.m_paths, langName, 
                                                       m_utils, m_jniu, 
                                                       null, cp, m_xport ) ) {
+                        Assert.fail(); // does this ever happen?
                         XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
                                                 m_jniu, null, cp, m_xport, 
                                                 dictNames, pairs.m_bytes, 
                                                 pairs.m_paths, langName );
                     }
-                    m_summary = new GameSummary( m_activity, m_gi );
-                    XwJNI.game_summarize( m_jniGamePtr, m_summary );
 
                     DbgUtils.logf( "BoardDelegate:after makeFromStream: room name: %s", 
                                    m_summary.roomName );
@@ -2224,7 +2239,10 @@ public class BoardDelegate extends DelegateBase
     private void tryInvites()
     {
         if ( XWApp.BTSUPPORTED || XWApp.SMSSUPPORTED ) {
-            if ( null != m_missingDevs ) {
+            // test if summary knows of rematch pending first
+            if ( 0 < m_nMissing && m_summary.hasRematchInfo() ) {
+                tryRematchInvites();
+            } else if ( null != m_missingDevs ) {
                 Assert.assertNotNull( m_missingMeans );
                 String gameName = GameUtils.getName( m_activity, m_rowid );
                 m_invitesPending = m_missingDevs.length;
@@ -2364,15 +2382,71 @@ public class BoardDelegate extends DelegateBase
         return wordsArray;
     }
 
+    // For now, supported if standalone or either BT or SMS used for transport
+    private boolean rematchSupported()
+    {
+        boolean supported = false;
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            supported = m_gi.serverRole == DeviceRole.SERVER_STANDALONE;
+            if ( !supported && 2 == m_gi.nPlayers ) {
+                supported = m_connTypes.contains( CommsConnType.COMMS_CONN_BT )
+                    || m_connTypes.contains( CommsConnType.COMMS_CONN_SMS );
+            }
+        }
+        return supported;
+    }
+
     private void doRematch()
     {
-        Intent intent = GamesListDelegate.makeRematchIntent( m_activity, m_gi, m_rowid );
+        String phone = null;
+        String btAddr = null;
+        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
+            for ( CommsAddrRec addr : addrs ) {
+                if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                    Assert.assertNull( btAddr );
+                    btAddr = addr.bt_btAddr;
+                } 
+                if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+                    Assert.assertNull( phone );
+                    phone = addr.sms_phone;
+                }
+            }
+        }
+        Intent intent = GamesListDelegate
+            .makeRematchIntent( m_activity, m_rowid, btAddr, phone );
         if ( null != intent ) {
             startActivity( intent );
             m_delegator.finish();
         }
     }
-    
+
+    private void tryRematchInvites()
+    {
+        if ( !m_rematchInvitesSent ) {
+            m_rematchInvitesSent = true;
+            DbgUtils.logf( "tryRematchInvites()" );
+            DbgUtils.printStack();
+            Assert.assertNotNull( m_summary );
+            Assert.assertNotNull( m_gi );
+            // only supports a single invite for now!
+            int numHere = 1;
+            int forceChannel = 1;
+            NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere, 
+                                                   forceChannel );
+
+            String value;
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
+            if ( null != value ) {
+                SMSService.inviteRemote( m_activity, value, nli );
+            }
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
+            if ( null != value ) {
+                BTService.inviteRemote( m_activity, value, nli );
+            }
+        }
+    }
+
     private static void noteSkip()
     {
         String msg = "BoardActivity.feedMessage[s](): skipped because "

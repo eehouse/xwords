@@ -1969,4 +1969,8 @@
     EDIT TO GIVE IT A WAY TO CONNECT?</string>
   <string name="button_edit">EDIT</string>
   <string name="button_discard_changes">DISCARD CHANGES</string>
+  <string name="rematch_msg">ISSUING REMATCH INVITATION. YOU WILL
+    SEE THIS MESSAGE UNTIL IT HAS BEEN ACCEPTED.\n\nYOU DO NOT NEED TO
+    KEEP THIS GAME OPEN WHILE WAITING. YOU WILL BE NOTIFIED WHEN THE
+    GAME IS READY TO PLAY.</string>
 </resources>

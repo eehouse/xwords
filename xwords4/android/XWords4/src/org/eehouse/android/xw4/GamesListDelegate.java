@@ -55,12 +55,14 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DBUtils.GameChangeType;
+import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
-import org.eehouse.android.xw4.DBUtils.GameChangeType;
 
 public class GamesListDelegate extends ListDelegateBase
     implements OnItemLongClickListener,
@@ -81,7 +83,10 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
-    private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
+    private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
+    private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
+    private static final String REMATCH_PHONE_EXTRA = "rm_phone";
+
     private static final String ALERT_MSG = "alert_msg";
 
     private class GameListAdapter extends XWExpListAdapter {
@@ -1797,12 +1802,30 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void startHasRowID( Intent intent )
+    // Create a new game that's a copy, sending invitations via the means it
+    // used to connect.
+    private void startRematch( Intent intent )
     {
         long rowid = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
         if ( -1 != rowid ) {
-            // this will juggle if the preference is set
-            long newid = GameUtils.dupeGame( m_activity, rowid );
+            String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
+            String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
+            long newid;
+            if ( null == btAddr && null == phone ) {
+                // this will juggle if the preference is set
+                newid = GameUtils.dupeGame( m_activity, rowid );
+            } else {
+                CommsConnTypeSet addrs = new CommsConnTypeSet();
+                if ( null != btAddr ) {
+                    addrs.add( CommsConnType.COMMS_CONN_BT );
+                }
+                if ( null != phone ) {
+                    addrs.add( CommsConnType.COMMS_CONN_SMS );
+                }
+                newid = GameUtils.makeNewMultiGame( m_activity, addrs );
+
+                DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, null );
+            }
             launchGame( newid );
         }
     }
@@ -1994,7 +2017,7 @@ public class GamesListDelegate extends ListDelegateBase
         startFirstHasDict( intent );
         startNewNetGame( intent );
         startHasGameID( intent );
-        startHasRowID( intent );
+        startRematch( intent );
         tryAlert( intent );
         tryNFCIntent( intent );
     }
@@ -2098,8 +2121,7 @@ public class GamesListDelegate extends ListDelegateBase
                                        new CurGameInfo( m_activity ), 
                                        groupID );
         } else {
-            String inviteID = GameUtils.makeRandomID();
-            rowID = GameUtils.makeNewMultiGame( m_activity, inviteID );
+            rowID = GameUtils.makeNewMultiGame( m_activity );
         }
 
         DBUtils.setName( m_activity, rowID, name );
@@ -2148,18 +2170,18 @@ public class GamesListDelegate extends ListDelegateBase
         return intent;
     }
 
-    public static Intent makeRematchIntent( Context context, CurGameInfo gi,
-                                            long rowid )
+    public static Intent makeRematchIntent( Context context, long rowid,
+                                            String btAddr, String phone )
     {
-        Intent intent = null;
-        
-        if ( CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
-            intent = makeSelfIntent( context )
-                .putExtra( REMATCH_ROWID_EXTRA, rowid );
-        } else {
-            Utils.notImpl( context );
+        DbgUtils.logf( "makeRematchIntent(btAddr=%s; phone=%s)", btAddr, phone );
+        Intent intent = makeSelfIntent( context );
+        intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
+        if ( null != btAddr ) {
+            intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
         }
-
+        if ( null != phone ) {
+            intent.putExtra( REMATCH_PHONE_EXTRA, phone );
+        }
         return intent;
     }
 

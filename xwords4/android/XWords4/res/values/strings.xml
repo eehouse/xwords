@@ -2321,4 +2321,9 @@
     <string name="button_edit">Edit</string>
     <string name="button_discard_changes">Discard changes</string>
 
+    <string name="rematch_msg">Issuing rematch invitation. You will
+    see this message until it has been accepted.\n\nYou do not need to
+    keep this game open while waiting. You will be notified when the
+    game is ready to play.</string>
+
 </resources>
