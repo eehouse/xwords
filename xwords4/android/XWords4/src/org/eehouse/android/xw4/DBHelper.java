@@ -42,7 +42,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_LOC = "loc";
     public static final String TABLE_NAME_PAIRS = "pairs";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 23;
+    private static final int DB_VERSION = 24;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -59,6 +59,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CHAT_HISTORY = "CHAT_HISTORY";
     public static final String GAMEID = "GAMEID";
     public static final String REMOTEDEVS = "REMOTEDEVS";
+    public static final String EXTRAS = "EXTRAS";
+    public static final String JSON_EXTRAS = "JSON_EXTRAS";
     public static final String DICTLANG = "DICTLANG";
     public static final String DICTLIST = "DICTLIST";
     public static final String HASMSGS = "HASMSGS";
@@ -130,6 +132,7 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ CHAT_HISTORY, "TEXT" }
         ,{ GAMEID,       "INTEGER" }
         ,{ REMOTEDEVS,   "TEXT" }
+        ,{ EXTRAS,       "TEXT" } // json data, most likely
         ,{ LASTMOVE,     "INTEGER DEFAULT 0" }
         ,{ NEXTNAG,      "INTEGER DEFAULT 0" }
         ,{ GROUPID,      "INTEGER" }
@@ -276,6 +279,10 @@ public class DBHelper extends SQLiteOpenHelper {
         case 22:
             if ( !madeSumTable ) {
                 addSumColumn( db, NEXTNAG );
+            }
+        case 23:
+            if ( !madeSumTable ) {
+                addSumColumn( db, EXTRAS );
             }
             break;
         default:
