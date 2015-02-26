@@ -2413,8 +2413,10 @@ public class BoardDelegate extends DelegateBase
                 }
             }
         }
+
         Intent intent = GamesListDelegate
-            .makeRematchIntent( m_activity, m_rowid, btAddr, phone );
+            .makeRematchIntent( m_activity, m_rowid, m_connTypes, btAddr, 
+                                phone );
         if ( null != intent ) {
             startActivity( intent );
             m_delegator.finish();
@@ -2425,8 +2427,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( !m_rematchInvitesSent ) {
             m_rematchInvitesSent = true;
-            DbgUtils.logf( "tryRematchInvites()" );
-            DbgUtils.printStack();
+
             Assert.assertNotNull( m_summary );
             Assert.assertNotNull( m_gi );
             // only supports a single invite for now!
