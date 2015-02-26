@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import java.util.Iterator;
 
 import junit.framework.Assert;
+import org.json.JSONObject;
 
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.R;
@@ -38,6 +39,9 @@ import org.eehouse.android.xw4.loc.LocUtils;
  * in CurGameInfo
  */
 public class GameSummary {
+    public static final String EXTRA_REMATCH_BTADDR = "rm_btaddr";
+    public static final String EXTRA_REMATCH_PHONE = "rm_phone";
+    public static final String EXTRA_REMATCH_RELAY = "rm_relay";
 
     public static final int MSG_FLAGS_NONE = 0;
     public static final int MSG_FLAGS_TURN = 1;
@@ -72,6 +76,7 @@ public class GameSummary {
     private CurGameInfo m_gi;
     private Context m_context;
     private String[] m_remotePhones;
+    private String m_extras;
 
     private GameSummary() {}
 
@@ -358,6 +363,68 @@ public class GameSummary {
             list = TextUtils.join( separator, names );
         }
         return String.format( "%s%s%s", separator, list, separator );
+    }
+
+    public String getExtras()
+    {
+        return m_extras;
+    }
+
+    public void setExtras( String data )
+    {
+        m_extras = data;
+    }
+
+    public void putStringExtra( String key, String value )
+    {
+        String extras = (null == m_extras) ? "{}" : m_extras;
+        try {
+            JSONObject asObj = new JSONObject( extras );
+            if ( null == value ) {
+                asObj.remove( key );
+            } else {
+                asObj.put( key, value );
+            }
+            m_extras = asObj.toString();
+        } catch( org.json.JSONException ex ) {
+            DbgUtils.loge( ex );
+        }
+        DbgUtils.logf( "putStringExtra(%s,%s) => %s", key, value, m_extras );
+    }
+
+    public String getStringExtra( String key )
+    {
+        String result = null;
+        if ( null != m_extras ) {
+            try {
+                JSONObject asObj = new JSONObject( m_extras );
+                result = asObj.optString( key );
+                if ( 0 == result.length() ) {
+                    result = null;
+                }
+            } catch( org.json.JSONException ex ) {
+                DbgUtils.loge( ex );
+            }
+        }
+        DbgUtils.logf( "getStringExtra(%s) => %s", key, result );
+        return result;
+    }
+
+    public boolean hasRematchInfo()
+    {
+        boolean found = false;
+        String[] keys = { EXTRA_REMATCH_BTADDR,
+                          EXTRA_REMATCH_PHONE,
+                          EXTRA_REMATCH_RELAY,
+        };
+        for ( String key : keys ) {
+            found = null != getStringExtra( key );
+            if ( found ) {
+                break;
+            }
+        }
+        DbgUtils.logf( "hasRematchInfo() => %b", found );
+        return found;
     }
 
     private static boolean localTurnNextImpl( int flags, int turn )
