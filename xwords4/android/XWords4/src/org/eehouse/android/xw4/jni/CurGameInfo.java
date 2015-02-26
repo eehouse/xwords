@@ -331,7 +331,7 @@ public class CurGameInfo {
 
     public String getName() 
     {
-        Assert.assertNotNull( m_name );
+        // Assert.assertNotNull( m_name );
         return m_name;
     }
 
