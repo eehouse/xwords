@@ -106,7 +106,7 @@ public class NetLaunchInfo {
         btName = bundle.getString( MultiService.BT_NAME );
         btAddress = bundle.getString( MultiService.BT_ADDRESS );
 
-        m_addrs = DBUtils.intToConnTypeSet( bundle.getInt( ADDRS_KEY ) );
+        m_addrs = new CommsConnTypeSet( bundle.getInt( ADDRS_KEY ) );
     }
 
     public NetLaunchInfo( Context context, Uri data )
@@ -129,7 +129,7 @@ public class NetLaunchInfo {
                     m_inviteID = json.getString( MultiService.INVITEID );
                 } else {
                     int addrs = Integer.decode( data.getQueryParameter( ADDRS_KEY ) );
-                    m_addrs = DBUtils.intToConnTypeSet( addrs );
+                    m_addrs = new CommsConnTypeSet( addrs );
 
                     if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                         room = data.getQueryParameter( ROOM_KEY );
@@ -240,7 +240,7 @@ public class NetLaunchInfo {
         bundle.putString( MultiService.BT_ADDRESS, btAddress );
         bundle.putInt( MultiService.FORCECHANNEL, forceChannel );
 
-        int flags = DBUtils.connTypeSetToInt( m_addrs );
+        int flags = m_addrs.toInt();
         bundle.putInt( ADDRS_KEY, flags );
     }
 
@@ -249,7 +249,7 @@ public class NetLaunchInfo {
         String result = null;
         try {
             JSONObject obj = new JSONObject()
-                .put( ADDRS_KEY, DBUtils.connTypeSetToInt( m_addrs ) )
+                .put( ADDRS_KEY, m_addrs.toInt() )
                 .put( MultiService.LANG, lang )
                 .put( MultiService.DICT, dict )
                 .put( MultiService.GAMENAME, gameName )
@@ -313,7 +313,7 @@ public class NetLaunchInfo {
             JSONObject json = new JSONObject( data );
 
             int flags = json.getInt(ADDRS_KEY);
-            m_addrs = DBUtils.intToConnTypeSet( flags );
+            m_addrs = new CommsConnTypeSet( flags );
 
             lang = json.optInt( MultiService.LANG, -1 );
             forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
@@ -359,7 +359,7 @@ public class NetLaunchInfo {
 
     public Uri makeLaunchUri( Context context )
     {
-        int addrs = DBUtils.connTypeSetToInt( m_addrs );
+        int addrs = m_addrs.toInt();
         Uri.Builder ub = new Uri.Builder()
             .scheme( "http" )
             .path( String.format( "//%s%s", 

@@ -216,7 +216,7 @@ public class DBUtils {
                 int col = cursor.getColumnIndex( DBHelper.CONTYPE );
                 if ( 0 <= col ) {
                     tmp = cursor.getInt( col );
-                    summary.conTypes = intToConnTypeSet( tmp );
+                    summary.conTypes = new CommsConnTypeSet( tmp );
                     col = cursor.getColumnIndex( DBHelper.SEED );
                     if ( 0 < col ) {
                         summary.seed = cursor.getInt( col );
@@ -319,7 +319,7 @@ public class DBUtils {
             }
 
             if ( null != summary.conTypes ) {
-                values.put( DBHelper.CONTYPE, connTypeSetToInt(summary.conTypes) );
+                values.put( DBHelper.CONTYPE, summary.conTypes.toInt() );
                 values.put( DBHelper.SEED, summary.seed );
                 values.put( DBHelper.NPACKETSPENDING, summary.nPacketsPending );
                 for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
@@ -560,7 +560,7 @@ public class DBUtils {
             int indx2 = cursor.getColumnIndex( DBHelper.CONTYPE );
             for ( int ii = 0; cursor.moveToNext(); ++ii ) {
                 long rowid = cursor.getLong( indx1 );
-                CommsConnTypeSet typs = intToConnTypeSet( cursor.getInt(indx2) );
+                CommsConnTypeSet typs = new CommsConnTypeSet( cursor.getInt(indx2) );
                 // Better have an address if has pending sends
                 Assert.assertTrue( 0 < typs.size() );
                 result.put( rowid, typs );
@@ -2136,37 +2136,4 @@ public class DBUtils {
         s_cachedRowID = rowid;
         s_cachedBytes = bytes;
     }
-
-    private static final int BIT_VECTOR_MASK = 0x8000;
-    public static CommsConnTypeSet intToConnTypeSet( int asInt )
-    {
-        CommsConnTypeSet result = new CommsConnTypeSet();
-        boolean isVector = 0 != (BIT_VECTOR_MASK & asInt);
-        asInt &= ~BIT_VECTOR_MASK;
-        CommsConnType[] values = CommsConnType.values();
-        if ( isVector ) {
-            for ( CommsConnType value : values ) {
-                int ord = value.ordinal();
-                if ( 0 != (asInt & (1 << (ord - 1)))) {
-                    result.add( value );
-                }
-            }
-        } else {
-            result.add( values[asInt] );
-        }
-        return result;
-    }
-
-    public static int connTypeSetToInt( CommsConnTypeSet set )
-    {
-        int result = BIT_VECTOR_MASK;
-        if ( null != set ) {
-            for ( Iterator<CommsConnType> iter = set.iterator(); iter.hasNext(); ) {
-                CommsConnType typ = iter.next();
-                result |= 1 << (typ.ordinal() - 1);
-            }
-        }
-        return result;
-    }
-
 }

@@ -484,7 +484,7 @@ public class XWPrefs {
                 result.add( CommsConnType.COMMS_CONN_BT );
             }
         } else {
-            result = DBUtils.intToConnTypeSet( flags );
+            result = new CommsConnTypeSet( flags );
         }
 
         // Save it if changed
@@ -499,7 +499,7 @@ public class XWPrefs {
 
     public static void setAddrTypes( Context context, CommsConnTypeSet set )
     {
-        int flags = DBUtils.connTypeSetToInt( set );
+        int flags = set.toInt();
         setPrefsInt( context, R.string.key_addrs_pref, flags );
     }
 

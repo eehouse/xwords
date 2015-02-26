@@ -64,7 +64,37 @@ public class CommsAddrRec {
     };
 
     public static class CommsConnTypeSet extends HashSet<CommsConnType> {
+        private static final int BIT_VECTOR_MASK = 0x8000;
         private static CommsConnTypeSet s_supported;
+
+        public CommsConnTypeSet() { this(BIT_VECTOR_MASK); }
+
+        public CommsConnTypeSet( int bits ) 
+        {
+            boolean isVector = 0 != (BIT_VECTOR_MASK & bits);
+            bits &= ~BIT_VECTOR_MASK;
+            CommsConnType[] values = CommsConnType.values();
+            if ( isVector ) {
+                for ( CommsConnType value : values ) {
+                    int ord = value.ordinal();
+                    if ( 0 != (bits & (1 << (ord - 1)))) {
+                        add( value );
+                    }
+                }
+            } else {
+                add( values[bits] );
+            }
+        }
+
+        public int toInt()
+        {
+            int result = BIT_VECTOR_MASK;
+            for ( Iterator<CommsConnType> iter = iterator(); iter.hasNext(); ) {
+                CommsConnType typ = iter.next();
+                result |= 1 << (typ.ordinal() - 1);
+            }
+            return result;
+        }
 
         public static CommsConnTypeSet getSupported( Context context )
         {
