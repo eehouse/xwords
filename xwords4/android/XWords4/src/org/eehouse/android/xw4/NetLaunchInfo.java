@@ -69,8 +69,7 @@ public class NetLaunchInfo {
     protected boolean isGSM;
     protected int osVers;
 
-    protected int gameID;
-
+    private int m_gameID = 0;
     private CommsConnTypeSet m_addrs;
     private boolean m_valid;
     private String m_inviteID;
@@ -80,16 +79,16 @@ public class NetLaunchInfo {
         m_addrs = new CommsConnTypeSet();
     }
 
-    public NetLaunchInfo( String data )
+    public NetLaunchInfo( Context context, String data )
     {
-        init( data );
+        init( context, data );
     }
 
-    public NetLaunchInfo( Intent intent )
+    public NetLaunchInfo( Context context, Intent intent )
     {
         String data = intent.getStringExtra( MultiService.NLI_DATA );
         Assert.assertNotNull( data );
-        init( data );
+        init( context, data );
     }
 
     public NetLaunchInfo( Bundle bundle )
@@ -102,7 +101,7 @@ public class NetLaunchInfo {
         gameName = bundle.getString( MultiService.GAMENAME );
         nPlayersT = bundle.getInt( MultiService.NPLAYERST );
         nPlayersH = bundle.getInt( MultiService.NPLAYERSH );
-        gameID = bundle.getInt( MultiService.GAMEID );
+        m_gameID = bundle.getInt( MultiService.GAMEID );
         btName = bundle.getString( MultiService.BT_NAME );
         btAddress = bundle.getString( MultiService.BT_ADDRESS );
 
@@ -128,22 +127,48 @@ public class NetLaunchInfo {
                     room = json.getString( MultiService.ROOM );
                     m_inviteID = json.getString( MultiService.INVITEID );
                 } else {
-                    int addrs = Integer.decode( data.getQueryParameter( ADDRS_KEY ) );
-                    m_addrs = new CommsConnTypeSet( addrs );
+                    String val = data.getQueryParameter( ADDRS_KEY );
+                    boolean hasAddrs = null != val;
+                    if ( hasAddrs ) {
+                        m_addrs = new CommsConnTypeSet( Integer.decode( val ) );
+                    } else {
+                        m_addrs = new CommsConnTypeSet();
+                    }
 
-                    if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                        room = data.getQueryParameter( ROOM_KEY );
-                        m_inviteID = data.getQueryParameter( ID_KEY );
-                    }
-                    if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
-                        btAddress = data.getQueryParameter( BTADDR_KEY );
-                        btName = data.getQueryParameter( BTNAME_KEY );
-                    }
-                    if ( m_addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-                        phone = data.getQueryParameter( PHONE_KEY );
-                        isGSM = 1 == Integer
-                            .decode(data.getQueryParameter( GSM_KEY ) );
-                        osVers = Integer.decode(data.getQueryParameter(OSVERS_KEY));
+                    CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
+                    for ( CommsConnType typ : supported.getTypes() ) {
+                        if ( hasAddrs && !m_addrs.contains( typ ) ) {
+                            continue;
+                        }
+                        boolean doAdd;
+                        switch ( typ ) {
+                        case COMMS_CONN_BT:
+                            btAddress = data.getQueryParameter( BTADDR_KEY );
+                            btName = data.getQueryParameter( BTNAME_KEY );
+                            doAdd = !hasAddrs && null != btAddress;
+                            break;
+                        case COMMS_CONN_RELAY:
+                            room = data.getQueryParameter( ROOM_KEY );
+                            m_inviteID = data.getQueryParameter( ID_KEY );
+                            doAdd = !hasAddrs && null != room;
+                            break;
+                        case COMMS_CONN_SMS:
+                            phone = data.getQueryParameter( PHONE_KEY );
+                            val = data.getQueryParameter( GSM_KEY );
+                            isGSM = null != val && 1 == Integer.decode( val );
+                            val = data.getQueryParameter( OSVERS_KEY );
+                            if ( null != val ) {
+                                osVers = Integer.decode( val );
+                            }
+                            doAdd = !hasAddrs && null != phone;
+                            break;
+                        default:
+                            doAdd = false;
+                            Assert.fail();
+                        }
+                        if ( doAdd ) {
+                            m_addrs.add( typ );
+                        }
                     }
 
                     dict = data.getQueryParameter( WORDLIST_KEY );
@@ -152,9 +177,11 @@ public class NetLaunchInfo {
                     String np = data.getQueryParameter( TOTPLAYERS_KEY );
                     nPlayersT = Integer.decode( np );
                     String nh = data.getQueryParameter( HEREPLAYERS_KEY );
-                    nPlayersH = Integer.decode( nh );
-                    gameID = Integer.decode( data.getQueryParameter( GID_KEY ) );
-                    forceChannel = Integer.decode( data.getQueryParameter( FORCECHANNEL_KEY ) );
+                    nPlayersH = nh == null ? 1 : Integer.decode( nh );
+                    val = data.getQueryParameter( GID_KEY );
+                    m_gameID = null == val ? 0 : Integer.decode( val );
+                    val = data.getQueryParameter( FORCECHANNEL_KEY );
+                    forceChannel = null == val ? 0 : Integer.decode( val );
                 }
                 calcValid();
             } catch ( Exception e ) {
@@ -173,7 +200,7 @@ public class NetLaunchInfo {
         lang = dictLang;
         nPlayersT = nPlayers;
         nPlayersH = 1;
-        gameID = gamID;
+        m_gameID = gamID;
     }
 
     public NetLaunchInfo( GameSummary summary, CurGameInfo gi, int numHere, int fc )
@@ -220,9 +247,22 @@ public class NetLaunchInfo {
     { 
         String result = m_inviteID;
         if ( null == result ) {
-            result = GameUtils.formatGameID( gameID );
+            result = GameUtils.formatGameID( m_gameID );
             DbgUtils.logf( "inviteID(): m_inviteID null so substituting %s", result );
         }
+        return result;
+    }
+
+    public int gameID()
+    { 
+        int result = m_gameID;
+        if ( 0 == result ) {
+            Assert.assertNotNull( m_inviteID );
+            result = Integer.parseInt( m_inviteID, 16 );
+            DbgUtils.logf( "gameID(): m_gameID -1 so substituting %d", result );
+            m_gameID = result;
+        }
+        Assert.assertTrue( 0 != result );
         return result;
     }
 
@@ -235,7 +275,7 @@ public class NetLaunchInfo {
         bundle.putString( MultiService.GAMENAME, gameName );
         bundle.putInt( MultiService.NPLAYERST, nPlayersT );
         bundle.putInt( MultiService.NPLAYERSH, nPlayersH );
-        bundle.putInt( MultiService.GAMEID, gameID );
+        bundle.putInt( MultiService.GAMEID, gameID() );
         bundle.putString( MultiService.BT_NAME, btName );
         bundle.putString( MultiService.BT_ADDRESS, btAddress );
         bundle.putInt( MultiService.FORCECHANNEL, forceChannel );
@@ -255,7 +295,7 @@ public class NetLaunchInfo {
                 .put( MultiService.GAMENAME, gameName )
                 .put( MultiService.NPLAYERST, nPlayersT )
                 .put( MultiService.NPLAYERSH, nPlayersH )
-                .put( MultiService.GAMEID, gameID )
+                .put( MultiService.GAMEID, gameID() )
                 .put( MultiService.FORCECHANNEL, forceChannel );
 
             if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
@@ -307,44 +347,57 @@ public class NetLaunchInfo {
         return result;
     }
 
-    private void init( String data )
+    private void init( Context context, String data )
     {
         try { 
             JSONObject json = new JSONObject( data );
 
-            int flags = json.getInt(ADDRS_KEY);
-            m_addrs = new CommsConnTypeSet( flags );
+            int flags = json.optInt(ADDRS_KEY, -1);
+            boolean hasAddrs = -1 != flags;
+            m_addrs = hasAddrs ? 
+                new CommsConnTypeSet( flags ) : new CommsConnTypeSet();
 
             lang = json.optInt( MultiService.LANG, -1 );
             forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
             dict = json.optString( MultiService.DICT );
             gameName = json.optString( MultiService.GAMENAME );
             nPlayersT = json.optInt( MultiService.NPLAYERST, -1 );
-            nPlayersH = json.optInt( MultiService.NPLAYERSH, -1 );
-            gameID = json.optInt( MultiService.GAMEID, -1 );
+            nPlayersH = json.optInt( MultiService.NPLAYERSH, 1 ); // absent ok
+            m_gameID = json.optInt( MultiService.GAMEID, 0 );
 
-            for ( CommsConnType typ : m_addrs.getTypes() ) {
+            // Try each type
+            CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
+            for ( CommsConnType typ : supported.getTypes() ) {
+                if ( hasAddrs && !m_addrs.contains( typ ) ) {
+                    continue;
+                }
+                boolean doAdd;
                 switch ( typ ) {
                 case COMMS_CONN_BT:
-                    btAddress = json.getString( MultiService.BT_ADDRESS );
-                    btName = json.getString( MultiService.BT_NAME );
+                    btAddress = json.optString( MultiService.BT_ADDRESS );
+                    btName = json.optString( MultiService.BT_NAME );
+                    doAdd = !hasAddrs && !btAddress.isEmpty();
                     break;
                 case COMMS_CONN_RELAY:
                     room = json.getString( MultiService.ROOM );
                     m_inviteID = json.optString( MultiService.INVITEID );
+                    doAdd = !hasAddrs && !room.isEmpty();
                     break;
                 case COMMS_CONN_SMS:
-                    phone = json.getString( PHONE_KEY );
-                    isGSM = json.getBoolean( GSM_KEY );
-                    osVers = json.getInt( OSVERS_KEY );
+                    phone = json.optString( PHONE_KEY );
+                    isGSM = json.optBoolean( GSM_KEY, false );
+                    osVers = json.optInt( OSVERS_KEY, 0 );
+                    doAdd = !hasAddrs && !phone.isEmpty();
                     break;
                 default:
-                    DbgUtils.logf( "Unexpected typ %s", typ.toString() );
-                    break;
+                    doAdd = false;
+                    Assert.fail();
+                }
+                if ( doAdd ) {
+                    m_addrs.add( typ );
                 }
             }
 
-            calcValid();
         } catch ( JSONException jse ) {
             DbgUtils.loge( jse );
         }
@@ -368,7 +421,7 @@ public class NetLaunchInfo {
         appendInt( ub, LANG_KEY, lang );
         appendInt( ub, TOTPLAYERS_KEY, nPlayersT );
         appendInt( ub, HEREPLAYERS_KEY, nPlayersH );
-        appendInt( ub, GID_KEY, gameID );
+        appendInt( ub, GID_KEY, gameID() );
         appendInt( ub, FORCECHANNEL_KEY, forceChannel );
         appendInt( ub, ADDRS_KEY, addrs );
 
@@ -451,24 +504,28 @@ public class NetLaunchInfo {
         return null != dict
             && 0 < lang
             && 0 < nPlayersT
-            && 0 != gameID;
+            && 0 != gameID();
     }
 
     private void calcValid()
     {
-        boolean valid = hasCommon();
-        for ( Iterator<CommsConnType> iter = m_addrs.iterator();
-              valid && iter.hasNext(); ) {
-            switch ( iter.next() ) {
-            case COMMS_CONN_RELAY:
-                valid = null != room && null != inviteID();
-                break;
-            case COMMS_CONN_BT:
-                valid = null != btAddress && 0 != gameID;
-                break;
-            case COMMS_CONN_SMS:
-                valid = null != phone && 0 < osVers;
-                break;
+        boolean valid = hasCommon() && null != m_addrs;
+        DbgUtils.logf( "calcValid(%s)", toString() );
+        if ( valid ) {
+            for ( Iterator<CommsConnType> iter = m_addrs.iterator();
+                  valid && iter.hasNext(); ) {
+                CommsConnType typ = iter.next();
+                switch ( typ ) {
+                case COMMS_CONN_RELAY:
+                    valid = null != room && null != inviteID();
+                    break;
+                case COMMS_CONN_BT:
+                    valid = null != btAddress;
+                    break;
+                case COMMS_CONN_SMS:
+                    valid = null != phone && 0 < osVers;
+                    break;
+                }
             }
         }
         m_valid = valid;

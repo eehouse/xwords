@@ -1880,6 +1880,7 @@ public class BoardDelegate extends DelegateBase
                                                 pairs.m_paths, langName );
                     }
 
+                    // XwJNI.game_summarize( m_jniGamePtr, m_summary );
                     DbgUtils.logf( "BoardDelegate:after makeFromStream: room name: %s", 
                                    m_summary.roomName );
 

@@ -495,7 +495,7 @@ public class SMSService extends XWService {
             switch( cmd ) {
             case INVITE:
                 String nliData = dis.readUTF();
-                NetLaunchInfo nli = new NetLaunchInfo( nliData );
+                NetLaunchInfo nli = new NetLaunchInfo( this, nliData );
                 if ( nli.isValid() ) {
                     if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
                         makeForInvite( phone, nli );
@@ -621,8 +621,8 @@ public class SMSService extends XWService {
     {
         SMSMsgSink sink = new SMSMsgSink( this );
         long rowid = GameUtils.makeNewMultiGame( this, nli, sink );
-        postNotification( phone, nli.gameID, rowid );
-        ackInvite( phone, nli.gameID );
+        postNotification( phone, nli.gameID(), rowid );
+        ackInvite( phone, nli.gameID() );
     }
 
     private void makeForInvite( String phone, int gameID, String gameName, 

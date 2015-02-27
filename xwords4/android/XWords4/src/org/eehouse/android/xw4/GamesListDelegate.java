@@ -1775,7 +1775,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         NetLaunchInfo nli = null;
         if ( MultiService.isMissingDictIntent( intent ) ) {
-            nli = new NetLaunchInfo( intent );
+            nli = new NetLaunchInfo( m_activity, intent );
         } else {
             Uri data = intent.getData();
             if ( null != data ) {
@@ -1839,7 +1839,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String data = NFCUtils.getFromIntent( intent );
         if ( null != data ) {
-            NetLaunchInfo nli = new NetLaunchInfo( data );
+            NetLaunchInfo nli = new NetLaunchInfo( m_activity, data );
             if ( nli.isValid() ) {
                 startNewNetGame( nli );
             }

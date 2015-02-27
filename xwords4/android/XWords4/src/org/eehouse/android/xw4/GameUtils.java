@@ -471,7 +471,7 @@ public class GameUtils {
         return makeNewMultiGame( context, sink, DBUtils.GROUPID_UNSPEC, addr, 
                                  new int[] {nli.lang}, new String[] { nli.dict },
                                  nli.nPlayersT, nli.nPlayersH, nli.forceChannel,
-                                 nli.inviteID(), nli.gameID, false );
+                                 nli.inviteID(), nli.gameID(), false );
     }
 
     public static long makeNewMultiGame( Context context )
@@ -1082,7 +1082,7 @@ public class GameUtils {
         if ( XWApp.ATTACH_SUPPORTED ) {
             byte[] data = nli.makeLaunchJSON().getBytes();
 
-            File file = new File( dir, String.format("invite_%d", nli.gameID ));
+            File file = new File( dir, String.format("invite_%d", nli.gameID() ));
             try {
                 FileOutputStream fos = new FileOutputStream( file );
                 fos.write( data, 0, data.length );

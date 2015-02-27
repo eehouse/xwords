@@ -286,7 +286,7 @@ public class BTService extends XWService {
     public static void gotGameViaNFC( Context context, NetLaunchInfo bli )
     {
         Intent intent = getIntentTo( context, BTAction.NFCINVITE );
-        intent.putExtra( GAMEID_KEY, bli.gameID );
+        intent.putExtra( GAMEID_KEY, bli.gameID() );
         intent.putExtra( DICT_KEY, bli.dict );
         intent.putExtra( LANG_KEY, bli.lang );
         intent.putExtra( NTO_KEY, bli.nPlayersT );
@@ -370,7 +370,7 @@ public class BTService extends XWService {
                     break;
                 case INVITE:
                     String jsonData = intent.getStringExtra( GAMEDATA_KEY );
-                    NetLaunchInfo nli = new NetLaunchInfo( jsonData );
+                    NetLaunchInfo nli = new NetLaunchInfo( this, jsonData );
                     DbgUtils.logf( "onStartCommand: nli: %s", nli.toString() );
                     // int gameID = intent.getIntExtra( GAMEID_KEY, -1 );
                     // String btAddr = intent.getStringExtra( ADDR_KEY );
@@ -545,7 +545,7 @@ public class BTService extends XWService {
         {
             BTCmd result;
             String asJson = is.readUTF();
-            NetLaunchInfo nli = new NetLaunchInfo( asJson );
+            NetLaunchInfo nli = new NetLaunchInfo( context, asJson );
 
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
@@ -1064,7 +1064,7 @@ public class BTService extends XWService {
                                         DictFetchOwner.OWNER_BT );
             // NetLaunchInfo.putExtras( intent, gameID, btName, btAddr );
             MultiService.postMissingDictNotification( context, intent, 
-                                                      nli.gameID );
+                                                      nli.gameID() );
             result = BTCmd.INVITE_ACCPT; // ???
         }
         return result;
@@ -1074,7 +1074,7 @@ public class BTService extends XWService {
                             String sender, String senderAddress )
     {
         BTCmd result;
-        long[] rowids = DBUtils.getRowIDsFor( BTService.this, nli.gameID );
+        long[] rowids = DBUtils.getRowIDsFor( BTService.this, nli.gameID() );
         if ( null == rowids || 0 == rowids.length ) {
             CommsAddrRec addr = nli.makeAddrRec( context );
             long rowid = GameUtils.makeNewMultiGame( context, nli, m_btMsgSink );
@@ -1088,7 +1088,7 @@ public class BTService extends XWService {
                 String body = LocUtils.getString( BTService.this, 
                                                   R.string.new_bt_body_fmt, 
                                                   sender );
-                postNotification( nli.gameID, R.string.new_bt_title, body, rowid );
+                postNotification( nli.gameID(), R.string.new_bt_title, body, rowid );
                 sendResult( MultiEvent.BT_GAME_CREATED, rowid );
             }
         } else {

@@ -694,7 +694,7 @@ public class DBUtils {
     {
         Date result = null;
 
-        String selection = String.format("%s=%d", DBHelper.GAMEID, nli.gameID );
+        String selection = String.format("%s=%d", DBHelper.GAMEID, nli.gameID() );
         String[] columns = { DBHelper.CREATE_TIME };
 
         initDB( context );
@@ -710,7 +710,7 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "getMostRecentCreate(%d) => %H", nli.gameID, result );
+        DbgUtils.logf( "getMostRecentCreate(%d) => %H", nli.gameID(), result );
         return result;
     }
 
