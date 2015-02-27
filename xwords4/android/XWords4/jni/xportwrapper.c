@@ -138,10 +138,10 @@ and_xport_sendNoConn( const XP_U8* buf, XP_U16 len,
         jmethodID mid = getMethodID( env, aprocs->jxport, 
                                      "relayNoConnProc", sig );
         jbyteArray jbytes = makeByteArray( env, len, (jbyte*)buf );
-        jstring str = (*env)->NewStringUTF( env, relayID );
+        jstring jRelayID = (*env)->NewStringUTF( env, relayID );
         result = (*env)->CallBooleanMethod( env, aprocs->jxport, mid, 
-                                            jbytes, str );
-        deleteLocalRefs( env, jbytes, str, DELETE_NO_REF );
+                                            jbytes, jRelayID );
+        deleteLocalRefs( env, jbytes, jRelayID, DELETE_NO_REF );
     }
     LOG_RETURNF( "%d", result );
     return result;
