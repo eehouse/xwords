@@ -690,11 +690,11 @@ public class DBUtils {
 
     // Return creation time of newest game matching this nli, or null
     // if none found.
-    public static Date getMostRecentCreate( Context context, NetLaunchInfo nli )
+    public static Date getMostRecentCreate( Context context, int gameID )
     {
         Date result = null;
 
-        String selection = String.format("%s=%d", DBHelper.GAMEID, nli.gameID() );
+        String selection = String.format("%s=%d", DBHelper.GAMEID, gameID );
         String[] columns = { DBHelper.CREATE_TIME };
 
         initDB( context );
@@ -710,7 +710,7 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "getMostRecentCreate(%d) => %H", nli.gameID(), result );
+        DbgUtils.logf( "getMostRecentCreate(%d) => %H", gameID, result );
         return result;
     }
 

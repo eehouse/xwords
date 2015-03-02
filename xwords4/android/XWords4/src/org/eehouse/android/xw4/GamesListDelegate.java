@@ -1755,7 +1755,7 @@ public class GamesListDelegate extends ListDelegateBase
         Assert.assertTrue( nli.isValid() );
 
         Date create = null;
-        create = DBUtils.getMostRecentCreate( m_activity, nli );
+        create = DBUtils.getMostRecentCreate( m_activity, nli.gameID() );
 
         if ( null == create ) {
             if ( checkWarnNoDict( nli ) ) {
