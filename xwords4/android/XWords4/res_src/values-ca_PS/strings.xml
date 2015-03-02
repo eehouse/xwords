@@ -1562,7 +1562,7 @@
   <!--  -->
   <string name="new_bt_title">NEW GAME VIA BLUETOOTH</string>
   <!--  -->
-  <string name="new_bt_body_fmt">FROM A PLAYER ON THE DEVICE %1$s WANTS TO START A GAME</string>
+  <string name="new_bt_body_fmt">A PLAYER ON THE DEVICE %1$s WANTS TO START A GAME</string>
   <!--  -->
   <string name="bt_bad_proto_fmt">THE VERSION OF CROSSWORDS ON
     \"%1$s\" IS INCOMPATIBLE WITH THIS ONE FOR PLAY USING

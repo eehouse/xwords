@@ -1562,7 +1562,7 @@
   <!--  -->
   <string name="new_bt_title">Wen emag aiv Htooteulb</string>
   <!--  -->
-  <string name="new_bt_body_fmt">Morf a reyalp no eht ecived %1$s stnaw ot trats a emag</string>
+  <string name="new_bt_body_fmt">A reyalp no eht ecived %1$s stnaw ot trats a emag</string>
   <!--  -->
   <string name="bt_bad_proto_fmt">Eht noisrev fo Sdrowssorc no
     \"%1$s\" si elbitapmocni htiw siht eno rof yalp gnisu

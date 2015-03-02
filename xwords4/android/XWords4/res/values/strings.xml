@@ -1824,7 +1824,7 @@
       <!--  -->
     <string name="new_bt_title">New game via Bluetooth</string>
       <!--  -->
-    <string name="new_bt_body_fmt">From a player on the device %1$s wants to start a game</string>
+    <string name="new_bt_body_fmt">A player on the device %1$s wants to start a game</string>
       <!--  -->
     <string name="bt_bad_proto_fmt">The version of Crosswords on
     \"%1$s\" is incompatible with this one for play using
