@@ -142,7 +142,7 @@ public class JNIThread extends Thread {
     private int m_connsIconID = 0;
     private String m_newDict = null;
 
-    LinkedBlockingQueue<QueueElem> m_queue;
+    private LinkedBlockingQueue<QueueElem> m_queue;
 
     private class QueueElem {
         protected QueueElem( JNICmd cmd, boolean isUI, Object[] args )
