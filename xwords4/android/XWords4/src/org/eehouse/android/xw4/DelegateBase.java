@@ -523,6 +523,12 @@ public class DelegateBase implements DlgClickNotify,
                 showSMSEnableDialog( Action.ENABLE_SMS_DO );
                 handled = true;
                 break;
+            case ENABLE_SMS_DO:
+                boolean enabled = (Boolean)params[0];
+                if ( enabled ) {
+                    XWPrefs.setSMSEnabled( m_activity, true );
+                }
+                break;
             case ENABLE_BT_DO:
                 BTService.enable();
                 break;

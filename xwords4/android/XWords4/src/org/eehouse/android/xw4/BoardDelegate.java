@@ -907,7 +907,9 @@ public class BoardDelegate extends DelegateBase
     @Override
     public void dlgButtonClicked( Action action, int which, Object[] params )
     {
+        boolean handled = false;
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
+            handled = true;
             JNICmd cmd = JNICmd.CMD_NONE;
             switch ( action ) {
             case UNDO_LAST_ACTION:
@@ -919,7 +921,6 @@ public class BoardDelegate extends DelegateBase
             case SMS_CONFIG_ACTION:
                 Utils.launchSettings( m_activity );
                 break;
-
             case COMMIT_ACTION:
                 cmd = JNICmd.CMD_COMMIT;
                 break;
@@ -972,12 +973,16 @@ public class BoardDelegate extends DelegateBase
                 GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
                 break;
             default:
-                Assert.fail();
+                handled = false;
             }
 
             if ( JNICmd.CMD_NONE != cmd ) {
                 checkAndHandle( cmd );
             }
+        }
+
+        if ( !handled ) {
+            super.dlgButtonClicked( action, which, params );
         }
     } // dlgButtonClicked
 
@@ -2220,8 +2225,9 @@ public class BoardDelegate extends DelegateBase
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( m_activity ) ) {
                 showConfirmThen( R.string.warn_sms_disabled, 
-                                 R.string.button_go_settings,
-                                 Action.SMS_CONFIG_ACTION );
+                                 R.string.button_enable_sms,
+                                 R.string.button_later,
+                                 Action.ENABLE_SMS_ASK );
             }
         }
     }
