@@ -87,6 +87,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
     private static final String REMATCH_PHONE_EXTRA = "rm_phone";
+    private static final String REMATCH_RELAYID_EXTRA = "rm_relayid";
 
     private static final String ALERT_MSG = "alert_msg";
 
@@ -1140,6 +1141,7 @@ public class GamesListDelegate extends ListDelegateBase
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
             switch( action ) {
             case NEW_NET_GAME:
+                m_netLaunchInfo = (NetLaunchInfo)params[0];
                 if ( checkWarnNoDict( m_netLaunchInfo ) ) {
                     makeNewNetGameIf();
                 }
@@ -1811,8 +1813,9 @@ public class GamesListDelegate extends ListDelegateBase
         if ( -1 != rowid ) {
             String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
             String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
+            String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
             long newid;
-            if ( null == btAddr && null == phone ) {
+            if ( null == btAddr && null == phone && null == relayID ) {
                 // this will juggle if the preference is set
                 newid = GameUtils.dupeGame( m_activity, rowid );
             } else {
@@ -1821,7 +1824,7 @@ public class GamesListDelegate extends ListDelegateBase
                 newid = GameUtils.makeNewMultiGame( m_activity, addrs );
 
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
-                                        null );
+                                        relayID );
             }
             launchGame( newid );
         }
@@ -2169,7 +2172,8 @@ public class GamesListDelegate extends ListDelegateBase
 
     public static Intent makeRematchIntent( Context context, long rowid,
                                             CommsConnTypeSet addrTypes, 
-                                            String btAddr, String phone )
+                                            String btAddr, String phone,
+                                            String relayID )
     {
         DbgUtils.logf( "makeRematchIntent(btAddr=%s; phone=%s)", btAddr, phone );
         Intent intent = makeSelfIntent( context );
@@ -2180,6 +2184,9 @@ public class GamesListDelegate extends ListDelegateBase
         }
         if ( null != phone ) {
             intent.putExtra( REMATCH_PHONE_EXTRA, phone );
+        }
+        if ( null != relayID ) {
+            intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
         }
         return intent;
     }

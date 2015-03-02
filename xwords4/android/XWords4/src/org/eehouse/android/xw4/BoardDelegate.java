@@ -2391,7 +2391,8 @@ public class BoardDelegate extends DelegateBase
             supported = m_gi.serverRole == DeviceRole.SERVER_STANDALONE;
             if ( !supported && 2 == m_gi.nPlayers ) {
                 supported = m_connTypes.contains( CommsConnType.COMMS_CONN_BT )
-                    || m_connTypes.contains( CommsConnType.COMMS_CONN_SMS );
+                    || m_connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
+                    || m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
             }
         }
         return supported;
@@ -2401,6 +2402,7 @@ public class BoardDelegate extends DelegateBase
     {
         String phone = null;
         String btAddr = null;
+        String relayID = null;
         if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
@@ -2412,12 +2414,16 @@ public class BoardDelegate extends DelegateBase
                     Assert.assertNull( phone );
                     phone = addr.sms_phone;
                 }
+                if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                    Assert.assertNull( relayID );
+                    relayID = m_summary.relayID;
+                }
             }
         }
 
         Intent intent = GamesListDelegate
             .makeRematchIntent( m_activity, m_rowid, m_connTypes, btAddr, 
-                                phone );
+                                phone, relayID );
         if ( null != intent ) {
             startActivity( intent );
             m_delegator.finish();
@@ -2445,6 +2451,11 @@ public class BoardDelegate extends DelegateBase
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
             if ( null != value ) {
                 BTService.inviteRemote( m_activity, value, nli );
+            }
+
+            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
+            if ( null != value ) {
+                RelayService.inviteRemote( m_activity, value, nli );
             }
         }
     }

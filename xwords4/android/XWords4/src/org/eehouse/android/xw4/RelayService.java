@@ -66,20 +66,22 @@ public class RelayService extends XWService
 
     private static final String CMD_STR = "CMD";
 
-    private static enum MsgCmds { INVALID
-            , PROCESS_GAME_MSGS
-            , PROCESS_DEV_MSGS
-            , UDP_CHANGED
-            , SEND
-            , SENDNOCONN
-            , RECEIVE
-            , TIMER_FIRED
-            , RESET
-            , UPGRADE
+    private static enum MsgCmds { INVALID,
+                                  PROCESS_GAME_MSGS,
+                                  PROCESS_DEV_MSGS,
+                                  UDP_CHANGED,
+                                  SEND,
+                                  SENDNOCONN,
+                                  RECEIVE,
+                                  TIMER_FIRED,
+                                  RESET,
+                                  UPGRADE,
+                                  INVITE,
     }
 
     private static final String MSGS_ARR = "MSGS_ARR";
     private static final String RELAY_ID = "RELAY_ID";
+    private static final String NLI_DATA = "NLI_DATA";
     private static final String ROWID = "ROWID";
     private static final String BINBUFFER = "BINBUFFER";
 
@@ -111,23 +113,23 @@ public class RelayService extends XWService
     // private static final int XWPDEV_NONE = 0;
 
     // Must be kept in sync with eponymous enum in xwrelay.h
-    private enum XWRelayReg {
-             XWPDEV_NONE
-            ,XWPDEV_UNAVAIL
-            ,XWPDEV_REG
-            ,XWPDEV_REGRSP
-            ,XWPDEV_KEEPALIVE
-            ,XWPDEV_HAVEMSGS
-            ,XWPDEV_RQSTMSGS
-            ,XWPDEV_MSG
-            ,XWPDEV_MSGNOCONN
-            ,XWPDEV_MSGRSP
-            ,XWPDEV_BADREG
-            ,XWPDEV_ACK
-            ,XWPDEV_DELGAME
-            ,XWPDEV_ALERT
-            ,XWPDEV_UPGRADE
-            };
+    private enum XWRelayReg { XWPDEV_NONE,
+                              XWPDEV_UNAVAIL,
+                              XWPDEV_REG,
+                              XWPDEV_REGRSP,
+                              XWPDEV_KEEPALIVE,
+                              XWPDEV_HAVEMSGS,
+                              XWPDEV_RQSTMSGS,
+                              XWPDEV_MSG,
+                              XWPDEV_MSGNOCONN,
+                              XWPDEV_MSGRSP,
+                              XWPDEV_BADREG,
+                              XWPDEV_ACK,
+                              XWPDEV_DELGAME,
+                              XWPDEV_ALERT,
+                              XWPDEV_UPGRADE,
+                              XWPDEV_MSGFWDOTHERS,
+    };
 
     public static void gcmConfirmed( Context context, boolean confirmed )
     {
@@ -150,6 +152,14 @@ public class RelayService extends XWService
         DbgUtils.logf( "RelayService.startService()" );
         Intent intent = getIntentTo( context, MsgCmds.UDP_CHANGED );
         context.startService( intent );
+    }
+
+    public static void inviteRemote( Context context, String relayID, 
+                                     NetLaunchInfo nli )
+    {
+        context.startService( getIntentTo( context, MsgCmds.INVITE )
+                              .putExtra( RELAY_ID, relayID )
+                              .putExtra( NLI_DATA, nli.toString() ) );
     }
 
     public static void reset( Context context )
@@ -315,14 +325,20 @@ public class RelayService extends XWService
                     startUDPThreadsIfNot();
                     long rowid = intent.getLongExtra( ROWID, -1 );
                     byte[] msg = intent.getByteArrayExtra( BINBUFFER );
-                    if ( MsgCmds.SEND.equals( cmd ) ) {
+                    if ( MsgCmds.SEND == cmd ) {
                         sendMessage( rowid, msg );
-                    } else if ( MsgCmds.SENDNOCONN.equals( cmd ) ) {
+                    } else if ( MsgCmds.SENDNOCONN == cmd ) {
                         String relayID = intent.getStringExtra( RELAY_ID );
                         sendNoConnMessage( rowid, relayID, msg );
                     } else {
                         feedMessage( rowid, msg );
                     }
+                    break;
+                case INVITE:
+                    startUDPThreadsIfNot();
+                    String relayID = intent.getStringExtra( RELAY_ID );
+                    String nliData = intent.getStringExtra( NLI_DATA );
+                    sendForwardOthersMessage( relayID, nliData );
                     break;
                 case TIMER_FIRED:
                     if ( !NetStateCache.netAvail( this ) ) {
@@ -618,6 +634,11 @@ public class RelayService extends XWService
                 case XWPDEV_ACK:
                     noteAck( vli2un( dis ) );
                     break;
+                // case XWPDEV_MSGFWDOTHERS:
+                //     Assert.assertTrue( 0 == dis.readByte() ); // protocol; means "invite", I guess.
+                //     String nliData = dis.readUTF();
+                //     DbgUtils.logf( "RelayService: got invite: %s", nliData );
+                //     break;
                 default:
                     DbgUtils.logf( "RelayService.gotPacket(): Unhandled cmd" );
                     break;
@@ -764,6 +785,23 @@ public class RelayService extends XWService
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
         } 
+    }
+
+    private void sendForwardOthersMessage( String relayID, String nliData )
+    {
+        DbgUtils.logf( "sendForwardOthersMessage(relayID=%s); NOT IMPLEMENTED",
+                       relayID );
+        // ByteArrayOutputStream bas = new ByteArrayOutputStream();
+        // try {
+        //     DataOutputStream out = new DataOutputStream( bas );
+        //     out.writeBytes( relayID );
+        //     out.write( '\n' );  // terminator
+        //     out.writeByte( 0 ); // protocol; means "invite", I guess.
+        //     out.writeUTF( nliData );
+        //     postPacket( bas, XWRelayReg.XWPDEV_MSGFWDOTHERS );
+        // } catch ( java.io.IOException ioe ) {
+        //     DbgUtils.loge( ioe );
+        // } 
     }
 
     private void sendAckIf( PacketHeader header )
@@ -958,6 +996,8 @@ public class RelayService extends XWService
                     if ( msgLen + thisLen > MAX_BUF ) {
                         // Need to deal with this case by sending multiple
                         // packets.  It WILL happen.
+                        DbgUtils.logf( "dropping send for lack of space; FIX ME!!" );
+                        Assert.fail();
                         break;
                     }
                     // got space; now write it
