@@ -1031,14 +1031,19 @@ public class GameUtils {
     public static void postMoveNotification( Context context, long rowid, 
                                              LastMoveInfo lmi )
     {
-        Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
-        String msg = "";
-        if ( null != lmi ) {
-            msg = lmi.format( context );
+        if ( null == lmi ) {
+            DbgUtils.logf( "postMoveNotification: posting nothing for lack"
+                           + " of lmi" );
+        } else {
+            Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
+            String msg = "";
+            if ( null != lmi ) {
+                msg = lmi.format( context );
+            }
+            String title = LocUtils.getString( context, R.string.notify_title_fmt,
+                                               getName( context, rowid ) );
+            Utils.postNotification( context, intent, title, msg, (int)rowid );
         }
-        String title = LocUtils.getString( context, R.string.notify_title_fmt,
-                                           getName( context, rowid ) );
-        Utils.postNotification( context, intent, title, msg, (int)rowid );
     }
     
     private static void tellDied( Context context, GameLock lock, 
