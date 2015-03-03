@@ -136,6 +136,8 @@
   <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
   <string name="rename_label">CHANGE THE NAME OF THIS GAME TO:</string>
+  <string name="rename_label_caveat">CHANGE THE NAME OF THIS GAME
+    (ON THIS DEVICE ONLY) TO:</string>
   <string name="confirm_seldeletes_fmt">ARE YOU SURE YOU WANT TO DELETE
     THE %1$d SELECTED GAME[S]? THIS ACTION CANNOT BE UNDONE.</string>
   <!-- Text of confirmation dialog posted when list_item_reset menu

@@ -255,7 +255,7 @@ public class GameSummary {
         return result;
     }
 
-    private boolean anyMissing()
+    public boolean anyMissing()
     {
         boolean missing = false;
         for ( int ii = 0; ii < nPlayers; ++ii ) {

@@ -136,6 +136,8 @@
   <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
   <string name="rename_label">Egnahc eht eman fo siht emag ot:</string>
+  <string name="rename_label_caveat">Egnahc eht eman fo siht emag
+    no( siht ecived )ylno ot:</string>
   <string name="confirm_seldeletes_fmt">Era uoy erus uoy tnaw ot eteled
     eht %1$d detceles ?]s[emag Siht noitca tonnac eb enodnu.</string>
   <!-- Text of confirmation dialog posted when list_item_reset menu

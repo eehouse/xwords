@@ -687,9 +687,11 @@ public class GamesListDelegate extends ListDelegateBase
                         m_adapter.invalName( m_rowid );
                     }
                 };
+            GameSummary summary = DBUtils.getSummary( m_activity, m_rowid );
+            int labelID = (summary.isMultiGame() && !summary.anyMissing())
+                ? R.string.rename_label_caveat : R.string.rename_label;
             dialog = buildNamerDlg( GameUtils.getName( m_activity, m_rowid ),
-                                    R.string.rename_label,
-                                    R.string.game_rename_title,
+                                    labelID, R.string.game_rename_title,
                                     lstnr, null, DlgID.RENAME_GAME );
             break;
 
