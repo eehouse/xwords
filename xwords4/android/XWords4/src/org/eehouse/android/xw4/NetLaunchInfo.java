@@ -91,21 +91,33 @@ public class NetLaunchInfo {
         init( context, data );
     }
 
-    public NetLaunchInfo( Bundle bundle )
+    private NetLaunchInfo( Bundle bundle )
     {
-        room = bundle.getString( MultiService.ROOM );
-        m_inviteID = bundle.getString( MultiService.INVITEID );
         lang = bundle.getInt( MultiService.LANG );
-        forceChannel = bundle.getInt( MultiService.FORCECHANNEL );
-        dict = bundle.getString( MultiService.DICT );
-        gameName = bundle.getString( MultiService.GAMENAME );
-        nPlayersT = bundle.getInt( MultiService.NPLAYERST );
-        nPlayersH = bundle.getInt( MultiService.NPLAYERSH );
-        m_gameID = bundle.getInt( MultiService.GAMEID );
-        btName = bundle.getString( MultiService.BT_NAME );
-        btAddress = bundle.getString( MultiService.BT_ADDRESS );
+        if ( 0 != lang ) {      // don't bother if it's invalid
+            room = bundle.getString( MultiService.ROOM );
+            m_inviteID = bundle.getString( MultiService.INVITEID );
+            forceChannel = bundle.getInt( MultiService.FORCECHANNEL );
+            dict = bundle.getString( MultiService.DICT );
+            gameName = bundle.getString( MultiService.GAMENAME );
+            nPlayersT = bundle.getInt( MultiService.NPLAYERST );
+            nPlayersH = bundle.getInt( MultiService.NPLAYERSH );
+            m_gameID = bundle.getInt( MultiService.GAMEID );
+            btName = bundle.getString( MultiService.BT_NAME );
+            btAddress = bundle.getString( MultiService.BT_ADDRESS );
 
-        m_addrs = new CommsConnTypeSet( bundle.getInt( ADDRS_KEY ) );
+            m_addrs = new CommsConnTypeSet( bundle.getInt( ADDRS_KEY ) );
+        }
+    }
+
+    public static NetLaunchInfo makeFrom( Bundle bundle )
+    {
+        NetLaunchInfo nli = new NetLaunchInfo( bundle );
+        nli.calcValid();
+        if ( !nli.isValid() ) {
+            nli = null;
+        }
+        return nli;
     }
 
     public NetLaunchInfo( Context context, Uri data )

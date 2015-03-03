@@ -968,7 +968,7 @@ public class GamesListDelegate extends ListDelegateBase
             m_rowid = bundle.getLong( SAVE_ROWID );
             m_rowids = bundle.getLongArray( SAVE_ROWIDS );
             m_groupid = bundle.getLong( SAVE_GROUPID );
-            m_netLaunchInfo = new NetLaunchInfo( bundle );
+            m_netLaunchInfo = NetLaunchInfo.makeFrom( bundle );
             m_missingDictName = bundle.getString( SAVE_DICTNAMES );
             m_nextIsSolo = bundle.getBoolean( SAVE_NEXTSOLO );
         }
