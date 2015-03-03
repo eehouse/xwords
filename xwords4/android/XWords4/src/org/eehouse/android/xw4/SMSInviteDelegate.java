@@ -406,7 +406,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         }
 
         public Object getItem( final int position ) 
-        { 
+        {
             // For some reason I can't cache items to be returned.
             // Checking/unchecking breaks for some but not all items,
             // with some relation to whether they were scrolled into
@@ -463,13 +463,6 @@ public class SMSInviteDelegate extends InviteDelegate {
         public View getView( final int position, View convertView, 
                              ViewGroup parent ) {
             return (View)getItem( position );
-        }
-
-        public boolean isChecked( int index ) 
-        {
-            SMSListItem item = m_items[index];
-            boolean checked = null != item && item.isChecked();
-            return checked;
         }
     }
 }
