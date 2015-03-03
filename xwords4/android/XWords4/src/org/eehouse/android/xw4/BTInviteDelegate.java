@@ -48,8 +48,8 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 public class BTInviteDelegate extends InviteDelegate {
 
     private Activity m_activity;
-    private Set<Integer> m_checked;
-    private Map<Integer, Integer> m_counts;
+    private Set<String> m_checked;
+    private Map<String, Integer> m_counts;
     private boolean m_setChecked;
     private BTDevsAdapter m_adapter;
 
@@ -71,8 +71,8 @@ public class BTInviteDelegate extends InviteDelegate {
     @Override
     protected void init( Bundle savedInstanceState )
     {
-        m_checked = new HashSet<Integer>();
-        m_counts = new HashMap<Integer, Integer>();
+        m_checked = new HashSet<String>();
+        m_counts = new HashMap<String, Integer>();
 
         String msg = getString( R.string.bt_pick_addall_button );
         msg = getString( R.string.invite_bt_desc_fmt, m_nMissing, msg );
@@ -138,40 +138,38 @@ public class BTInviteDelegate extends InviteDelegate {
 
     protected void listSelected( String[][] devsP, int[][] countsP )
     {
-        ListView list = (ListView)findViewById( android.R.id.list );
         int size = m_checked.size();
+        int[] counts = null;
         String[] devs = new String[size];
-        int[] counts = new int[size];
-        int index = 0;
-
-        for ( Iterator<Integer> iter = m_checked.iterator();
-              iter.hasNext(); ) {
-            int position = iter.next();
-            LinearLayout layout = (LinearLayout)list.getChildAt( position );
-            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
-            Assert.assertTrue( box.isChecked() ); // fired after doing add-all-paired
-            String btAddr = m_adapter.getBTAddr( box );
-            String btName = m_adapter.getBTName( box );
-            Assert.assertTrue( box.getText().toString().equals( btName ) );
-            devs[index] = btAddr;
-            counts[index] = m_counts.get( position );
-            ++index;
-        }
         devsP[0] = devs;
         if ( null != countsP ) {
+            counts = new int[size];
             countsP[0] = counts;
+        }
+
+        int nxt = 0;
+        for ( Iterator<String> iter = m_checked.iterator();
+              iter.hasNext(); ) {
+            String btAddr = iter.next();
+            devs[nxt] = btAddr;
+            if ( null != counts ) {
+                counts[nxt] = m_counts.get( btAddr );
+            }
+            ++nxt;
         }
     }
 
     protected void tryEnable() 
     {
-        m_clearButton.setEnabled( 0 < m_checked.size() );
+        String[][] devs = new String[1][];
+        int[][] counts = new int[1][];
+        listSelected( devs, counts );
+
+        m_clearButton.setEnabled( 0 < devs[0].length );
 
         int count = 0;
-        for ( Iterator<Integer> iter = m_checked.iterator();
-              iter.hasNext(); ) {
-            int position = iter.next();
-            count += m_counts.get( position );
+        for ( int one : counts[0] ) {
+            count += one;
         }
         m_okButton.setEnabled( 0 < count && count <= m_nMissing );
     }
@@ -179,24 +177,23 @@ public class BTInviteDelegate extends InviteDelegate {
     private class BTDevsAdapter extends XWListAdapter {
         private String[] m_devAddrs;
         private String[] m_devNames;
-        private Map<CheckBox, String> m_boxAddrs;
         public BTDevsAdapter( String[] btAddrs, String[] btNames )
         {
             super( null == btAddrs? 0 : btAddrs.length );
-            m_boxAddrs = new HashMap<CheckBox, String>();
             m_devAddrs = btAddrs;
             m_devNames = btNames;
         }
 
-        public Object getItem( int position) { return m_devNames[position]; }
-        public View getView( final int position, View convertView, 
-                             ViewGroup parent ) {
+        public Object getItem( int position ) { return m_devNames[position]; }
+
+        public View getView( int position, View convertView, ViewGroup parent ) {
+            final String btAddr = m_devAddrs[position];
             LinearLayout layout = (LinearLayout)inflate( R.layout.btinviter_item );
             CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
             box.setText( m_devNames[position] );
-            m_boxAddrs.put( box, m_devAddrs[position] );
+            box.setTag( btAddr );
 
-            m_counts.put( position, 1 );
+            m_counts.put( btAddr, 1 );
             if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
                 Spinner spinner = (Spinner)
                     layout.findViewById(R.id.nperdev_spinner);
@@ -214,7 +211,7 @@ public class BTInviteDelegate extends InviteDelegate {
                                                     View view, int pos, 
                                                     long id )
                         {
-                            m_counts.put( position, 1 + pos );
+                            m_counts.put( btAddr, 1 + pos );
                             tryEnable();
                         }
 
@@ -228,24 +225,24 @@ public class BTInviteDelegate extends InviteDelegate {
                                                   boolean isChecked )
                     {
                         if ( isChecked ) {
-                            m_checked.add( position );
+                            m_checked.add( btAddr );
                         } else {
-                            m_checked.remove( position );
+                            m_checked.remove( btAddr );
                             // User's now making changes; don't check new views
                             m_setChecked = false;
                         }
                         tryEnable();
                     }
                 };
-
             box.setOnCheckedChangeListener( listener );
-            if ( m_setChecked ) {
+
+            if ( m_setChecked || m_checked.contains( btAddr ) ) {
                 box.setChecked( true );
             }
             return layout;
         }
 
-        public String getBTAddr( CheckBox box ) { return m_boxAddrs.get(box); }
+        public String getBTAddr( CheckBox box ) { return (String)box.getTag(); }
         public String getBTName( CheckBox box ) { return box.getText().toString(); }
     }
 
