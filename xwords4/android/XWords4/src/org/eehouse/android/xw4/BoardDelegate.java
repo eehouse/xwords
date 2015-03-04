@@ -1878,16 +1878,11 @@ public class BoardDelegate extends DelegateBase
                                                       pairs.m_paths, langName, 
                                                       m_utils, m_jniu, 
                                                       null, cp, m_xport ) ) {
-                        Assert.fail(); // does this ever happen?
                         XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
                                                 m_jniu, null, cp, m_xport, 
                                                 dictNames, pairs.m_bytes, 
                                                 pairs.m_paths, langName );
                     }
-
-                    // XwJNI.game_summarize( m_jniGamePtr, m_summary );
-                    DbgUtils.logf( "BoardDelegate:after makeFromStream: room name: %s", 
-                                   m_summary.roomName );
 
                     Handler handler = new Handler() {
                             public void handleMessage( Message msg ) {
