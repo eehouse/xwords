@@ -71,7 +71,7 @@ public class GameSummary {
     public DeviceRole serverRole;
     public int nPacketsPending;
 
-    private int m_giFlags;
+    private Integer m_giFlags;
     private String m_playersSummary;
     private CurGameInfo m_gi;
     private Context m_context;
@@ -287,7 +287,7 @@ public class GameSummary {
 
     public void setGiFlags( int flags ) 
     {
-        m_giFlags = flags;
+        m_giFlags = new Integer( flags );
     }
 
     public String summarizePlayer( int indx ) 
@@ -343,7 +343,7 @@ public class GameSummary {
         boolean result = false;
         if ( !gameOver && 0 <= turn ) {
             // HACK!!! Need to fix so we ensure m_giFlags is set here
-            Assert.assertNotNull( m_gi );
+            Assert.assertTrue( null != m_gi || null != m_giFlags );
             result = localTurnNextImpl( giflags(), turn );
         }
         return result;
