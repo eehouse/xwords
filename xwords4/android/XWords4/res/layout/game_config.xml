@@ -131,6 +131,7 @@
                     android:capitalize="none"
                     android:singleLine="true"
                     android:selectAllOnFocus="true"
+                    android:windowSoftInputMode="stateHidden"
                     android:maxLength="31"
                     android:hint="@string/new_room_hint"
                     />

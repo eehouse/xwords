@@ -106,6 +106,7 @@
     <activity android:name="GameConfigActivity"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation|screenSize"
+              android:windowSoftInputMode="stateAlwaysHidden"
               >
       <intent-filter>
         <action android:name="android.intent.action.EDIT" />
