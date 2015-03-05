@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2015 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -577,6 +577,7 @@ public class GamesListDelegate extends ListDelegateBase
     private Set<Long> m_selGroupIDs;
     private String m_origTitle;
     private boolean m_nextIsSolo;
+    private Button[] m_newGameButtons;
 
     public GamesListDelegate( ListDelegator delegator, Bundle sis )
     {
@@ -888,6 +889,11 @@ public class GamesListDelegate extends ListDelegateBase
             s_firstShown = true;
         }
 
+        m_newGameButtons = new Button[] {
+            (Button)findViewById( R.id.button_newgame_solo ),
+            (Button)findViewById( R.id.button_newgame_multi )
+        };
+
         mkListAdapter();
         ListView listView = getListView();
         listView.setOnItemLongClickListener( this );
@@ -985,6 +991,18 @@ public class GamesListDelegate extends ListDelegateBase
         //     m_adapter.notifyDataSetChanged();
         //     // mkListAdapter();
         // }
+    }
+
+    public void invalidateOptionsMenuIf()
+    {
+        super.invalidateOptionsMenuIf();
+
+        if ( !XWPrefs.getHideNewgameButtons( m_activity ) ) {
+            boolean enable = 0 == m_selGames.size() && 1 >= m_selGroupIDs.size();
+            for ( Button button : m_newGameButtons ) {
+                button.setEnabled( enable );
+            }
+        }
     }
 
     protected void onWindowFocusChanged( boolean hasFocus )
@@ -1317,7 +1335,7 @@ public class GamesListDelegate extends ListDelegateBase
                 0 < DBUtils.getGamesWithSendsPending( m_activity ).size();
             Utils.setItemVisible( menu, R.id.games_menu_resend, enable );
             
-            m_menuPrepared = true;
+            Assert.assertTrue( m_menuPrepared );
         } else {
             DbgUtils.logf( "onPrepareOptionsMenu: incomplete so bailing" );
         }
@@ -1568,10 +1586,9 @@ public class GamesListDelegate extends ListDelegateBase
     private void setupButtons()
     {
         boolean hidden = XWPrefs.getHideNewgameButtons( m_activity );
-        int[] ids = { R.id.button_newgame_solo, R.id.button_newgame_multi };
         boolean[] isSolos = { true, false };
-        for ( int ii = 0; ii < ids.length; ++ii ) {
-            Button button = (Button)findViewById( ids[ii] );
+        for ( int ii = 0; ii < m_newGameButtons.length; ++ii ) {
+            Button button = m_newGameButtons[ii];
             if ( hidden ) {
                 button.setVisibility( View.GONE );
             } else {
