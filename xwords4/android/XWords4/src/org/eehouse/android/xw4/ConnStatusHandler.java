@@ -62,6 +62,7 @@ public class ConnStatusHandler {
     private static final int SUCCESS_IN = 0;
     private static final int SUCCESS_OUT = 1;
     private static final int SHOW_SUCCESS_INTERVAL = 1000;
+    private static final boolean SOLO_NOGREEN = false;
 
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
@@ -295,34 +296,29 @@ public class ConnStatusHandler {
     {
         synchronized( s_lockObj ) {
             if ( null != s_rect ) {
-                int iconID;
-                if ( isSolo ) {
-                    iconID = R.drawable.sologame__gen;
-                } else {
-                    iconID = R.drawable.multigame__gen;
-                }
-
                 Rect rect = new Rect( s_rect );
                 int quarterHeight = rect.height() / 4;
 
-                if ( isSolo ) {
+                if ( isSolo && SOLO_NOGREEN ) {
                     // paint a black background for the icon
                     s_fillPaint.setColor( BLACK );
                     canvas.drawRect( rect, s_fillPaint );
                 } else {
                     int saveTop = rect.top;
                     SuccessRecord record;
-                    boolean enabled = anyTypeEnabled( context, connTypes );
+                    boolean enabled = isSolo || anyTypeEnabled( context, connTypes );
 
                     // Do the background coloring. Top quarter first
                     rect.bottom = rect.top + quarterHeight;
                     record = newestSuccess( connTypes, false );
-                    s_fillPaint.setColor( enabled && record.successNewer
+                    s_fillPaint.setColor( isSolo || (enabled && record.successNewer)
                                           ? GREEN : RED );
                     canvas.drawRect( rect, s_fillPaint );
-                    int arrowID = s_showSuccesses[SUCCESS_OUT]? 
-                        R.drawable.out_arrow_active : R.drawable.out_arrow;
-                    drawIn( canvas, res, arrowID, rect );
+                    if ( !isSolo ) {
+                        int arrowID = s_showSuccesses[SUCCESS_OUT]? 
+                            R.drawable.out_arrow_active : R.drawable.out_arrow;
+                        drawIn( canvas, res, arrowID, rect );
+                    }
 
                     // paint the middle two quarters black to give the icon a
                     // clear background
@@ -335,12 +331,14 @@ public class ConnStatusHandler {
                     rect.top = rect.bottom;
                     rect.bottom = rect.top + quarterHeight;
                     record = newestSuccess( connTypes, true );
-                    s_fillPaint.setColor( enabled && record.successNewer
+                    s_fillPaint.setColor( isSolo || (enabled && record.successNewer)
                                           ? GREEN : RED );
                     canvas.drawRect( rect, s_fillPaint );
-                    arrowID = s_showSuccesses[SUCCESS_IN]? 
-                        R.drawable.in_arrow_active : R.drawable.in_arrow;
-                    drawIn( canvas, res, arrowID, rect );
+                    if ( !isSolo ) {
+                        int arrowID = s_showSuccesses[SUCCESS_IN]? 
+                            R.drawable.in_arrow_active : R.drawable.in_arrow;
+                        drawIn( canvas, res, arrowID, rect );
+                    }
 
                     rect.top = saveTop;
                 }
@@ -355,6 +353,9 @@ public class ConnStatusHandler {
                 center = rect.centerY();
                 rect.top = center - halfMin;
                 rect.bottom = center + halfMin;
+
+                int iconID = isSolo
+                    ? R.drawable.sologame__gen : R.drawable.multigame__gen;
                 drawIn( canvas, res, iconID, rect );
             }
         }
@@ -460,12 +461,14 @@ public class ConnStatusHandler {
                                                 boolean isIn )
     {
         SuccessRecord result = null;
-        Iterator<CommsConnType> iter = connTypes.iterator();
-        while ( iter.hasNext() ) {
-            CommsConnType connType = iter.next();
-            SuccessRecord record = recordFor( connType, isIn );
-            if ( null == result || result.lastSuccess < record.lastSuccess ) {
-                result = record;
+        if ( null != connTypes ) {
+            Iterator<CommsConnType> iter = connTypes.iterator();
+            while ( iter.hasNext() ) {
+                CommsConnType connType = iter.next();
+                SuccessRecord record = recordFor( connType, isIn );
+                if ( null == result || result.lastSuccess < record.lastSuccess ) {
+                    result = record;
+                }
             }
         }
         return result;
