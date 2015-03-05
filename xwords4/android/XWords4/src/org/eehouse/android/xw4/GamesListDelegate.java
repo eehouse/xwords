@@ -998,9 +998,10 @@ public class GamesListDelegate extends ListDelegateBase
         super.invalidateOptionsMenuIf();
 
         if ( !XWPrefs.getHideNewgameButtons( m_activity ) ) {
-            boolean enable = 0 == m_selGames.size() && 1 >= m_selGroupIDs.size();
+            int vis = 0 == m_selGames.size() && 1 >= m_selGroupIDs.size()
+                ? View.VISIBLE : View.GONE;
             for ( Button button : m_newGameButtons ) {
-                button.setEnabled( enable );
+                button.setVisibility( vis );
             }
         }
     }
