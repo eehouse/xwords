@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2015 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -451,12 +451,6 @@ public class GameConfigDelegate extends DelegateBase
     {
         getBundledData( savedInstanceState );
 
-        // 1.5 doesn't have SDK_INT.  So parse the string version.
-        // int sdk_int = 0;
-        // try {
-        //     sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
-        // } catch ( Exception ex ) {}
-        // m_canDoSMS = sdk_int >= android.os.Build.VERSION_CODES.DONUT;
         m_browseText = getString( R.string.download_dicts );
         DictLangCache.setLast( m_browseText );
 
@@ -1213,8 +1207,13 @@ public class GameConfigDelegate extends DelegateBase
 
     private void setConnLabel()
     {
-        String connString = m_conTypes.toString( m_activity );
-        m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
+        if ( localOnlyGame() ) {
+            m_connLabel.setVisibility( View.GONE );
+            m_changeConnButton.setVisibility( View.GONE );
+        } else {
+            String connString = m_conTypes.toString( m_activity );
+            m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
+        }
     }
 
     private void setupRelayStuffIf()
