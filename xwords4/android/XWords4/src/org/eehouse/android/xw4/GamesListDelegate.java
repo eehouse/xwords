@@ -864,7 +864,7 @@ public class GamesListDelegate extends ListDelegateBase
             TextView edit = (TextView)dialog.findViewById( R.id.msg );
             edit.setText( msg );
             edit = (TextView)dialog.findViewById( R.id.edit );
-            edit.setText( GameUtils.makeDefaultName( m_activity ) );
+            edit.setText( GameUtils.makeDefaultName( m_activity, m_nextIsSolo ) );
             break;
         }
     }

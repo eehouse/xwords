@@ -267,7 +267,7 @@ public class GameUtils {
         return result;
     }
 
-    public static String makeDefaultName( Context context )
+    public static String makeDefaultName( Context context, boolean isSolo )
     {
         return LocUtils.getString( context, R.string.default_game_name );
     }
