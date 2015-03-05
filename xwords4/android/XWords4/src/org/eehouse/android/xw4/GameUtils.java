@@ -474,19 +474,20 @@ public class GameUtils {
                                  nli.inviteID(), nli.gameID(), false );
     }
 
-    public static long makeNewMultiGame( Context context )
+    public static long makeNewMultiGame( Context context, long groupID )
     {
-        return makeNewMultiGame( context, (CommsConnTypeSet)null );
+        return makeNewMultiGame( context, groupID, (CommsConnTypeSet)null );
     }
 
-    public static long makeNewMultiGame( Context context, CommsConnTypeSet addrSet )
+    public static long makeNewMultiGame( Context context, long groupID, 
+                                         CommsConnTypeSet addrSet )
     {
         String inviteID = makeRandomID();
-        return makeNewMultiGame( context, inviteID, addrSet );
+        return makeNewMultiGame( context, groupID, inviteID, addrSet );
     }
 
-    private static long makeNewMultiGame( Context context, String inviteID,
-                                          CommsConnTypeSet addrSet )
+    private static long makeNewMultiGame( Context context, long groupID, 
+                                          String inviteID, CommsConnTypeSet addrSet )
     {
         int[] lang = {0};
         String[] dict = {null};
@@ -496,9 +497,8 @@ public class GameUtils {
         CommsAddrRec addr = new CommsAddrRec( addrSet );
         addr.populate( context );
         int forceChannel = 0;
-        return makeNewMultiGame( context, null, DBUtils.GROUPID_UNSPEC, addr,
-                                 lang, dict, 2, 1, forceChannel, inviteID, 0,
-                                 true );
+        return makeNewMultiGame( context, null, groupID, addr, lang, dict, 2, 1,
+                                 forceChannel, inviteID, 0, true );
     }
 
     private static long makeNewMultiGame( Context context, MultiMsgSink sink, 

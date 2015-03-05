@@ -1829,7 +1829,7 @@ public class GamesListDelegate extends ListDelegateBase
     private void startRematch( Intent intent )
     {
         long rowid = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
-        if ( -1 != rowid ) {
+        if ( XWApp.REMATCH_SUPPORTED && -1 != rowid ) {
             String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
             String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
             String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
@@ -1840,7 +1840,9 @@ public class GamesListDelegate extends ListDelegateBase
             } else {
                 int bits = intent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
                 CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
-                newid = GameUtils.makeNewMultiGame( m_activity, addrs );
+
+                long groupID = DBUtils.getGroupForGame( m_activity, rowid );
+                newid = GameUtils.makeNewMultiGame( m_activity, groupID, addrs );
 
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
                                         relayID );
@@ -2134,13 +2136,14 @@ public class GamesListDelegate extends ListDelegateBase
     {
         String name = edit.getText().toString();
         long rowID;
-        long groupID = DBUtils.GROUPID_UNSPEC;
+        long groupID = 1 == m_selGroupIDs.size()
+            ? m_selGroupIDs.iterator().next() : DBUtils.GROUPID_UNSPEC;
         if ( m_nextIsSolo ) {
             rowID = GameUtils.saveNew( m_activity, 
                                        new CurGameInfo( m_activity ), 
                                        groupID );
         } else {
-            rowID = GameUtils.makeNewMultiGame( m_activity );
+            rowID = GameUtils.makeNewMultiGame( m_activity, groupID );
         }
 
         DBUtils.setName( m_activity, rowID, name );
