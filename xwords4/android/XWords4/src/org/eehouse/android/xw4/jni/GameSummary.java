@@ -342,7 +342,6 @@ public class GameSummary {
     {
         boolean result = false;
         if ( !gameOver && 0 <= turn ) {
-            // HACK!!! Need to fix so we ensure m_giFlags is set here
             Assert.assertTrue( null != m_gi || null != m_giFlags );
             result = localTurnNextImpl( giflags(), turn );
         }
