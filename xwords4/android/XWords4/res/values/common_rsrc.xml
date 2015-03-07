@@ -124,6 +124,7 @@
   <string name="key_xlations_locale">key_xlations_locale</string>
   <string name="key_xlations_enabled">key_xlations_enabled</string>
   <string name="key_invite_multi">key_invite_multi</string>
+  <string name="key_notagain_enablepublic">key_notagain_enablepublic</string>
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>

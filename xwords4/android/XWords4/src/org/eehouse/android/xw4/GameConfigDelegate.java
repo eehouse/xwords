@@ -53,6 +53,7 @@ import java.util.List;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
@@ -290,7 +291,7 @@ public class GameConfigDelegate extends DelegateBase
                             m_car.populate( m_activity, m_conTypes );
 
                             setConnLabel();
-                            setupRelayStuffIf();
+                            setupRelayStuffIf( false );
                             showHideRelayStuff();
                         }
                     };
@@ -477,6 +478,17 @@ public class GameConfigDelegate extends DelegateBase
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
 
         m_connLabel = (TextView)findViewById( R.id.conns_label );
+
+        // This should only be in for one ship! Remove it and all associated
+        // strings immediately after shipping it.
+        if ( !Utils.onFirstVersion( m_activity ) 
+             && !XWPrefs.getPublicRoomsEnabled( m_activity ) ) {
+            ActionPair pair = new ActionPair( Action.SET_ENABLE_PUBLIC, 
+                                              R.string.enable_pubroom_title );
+            showNotAgainDlgThen( R.string.not_again_enablepublic,
+                                 R.string.key_notagain_enablepublic,
+                                 Action.SKIP_CALLBACK, pair );
+        }
     } // init
 
     @Override
@@ -580,7 +592,7 @@ public class GameConfigDelegate extends DelegateBase
                 }
 
                 setConnLabel();
-                setupRelayStuffIf();
+                setupRelayStuffIf( false );
                 loadPlayersList();
                 configLangSpinner();
 
@@ -648,6 +660,11 @@ public class GameConfigDelegate extends DelegateBase
                     deleteGame();
                 }
                 finish();
+                break;
+            case SET_ENABLE_PUBLIC:
+                XWPrefs.setPrefsBoolean( m_activity, R.string.key_enable_pubroom,
+                                         true );
+                setupRelayStuffIf( true );
                 break;
             default:
                 callSuper = true;
@@ -1169,12 +1186,12 @@ public class GameConfigDelegate extends DelegateBase
         }
     }
 
-    private void setupRelayStuffIf()
+    private void setupRelayStuffIf( boolean reset )
     {
         if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
             boolean publicEnabled = XWPrefs.getPublicRoomsEnabled( m_activity );
             int vis = publicEnabled ? View.VISIBLE : View.GONE;
-            if ( null == m_joinPublicCheck ) {
+            if ( reset || null == m_joinPublicCheck ) {
                 m_joinPublicCheck = 
                     (CheckBox)findViewById(R.id.join_public_room_check);
                 m_joinPublicCheck.setVisibility( vis );

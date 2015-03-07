@@ -2331,4 +2331,8 @@
     keep this game open while waiting. You will be notified when the
     game is ready to play.</string>
 
+    <string name="not_again_enablepublic">Public rooms have been made
+    an \"advanced\" feature in this release. If you were using them
+    and want them back, enable them now. You can turn them off again
+    in Settings.</string>
 </resources>

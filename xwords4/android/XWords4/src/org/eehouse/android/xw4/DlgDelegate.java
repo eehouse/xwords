@@ -89,6 +89,7 @@ public class DlgDelegate {
         // Game configs
         LOCKED_CHANGE_ACTION,
         DELETE_AND_EXIT,
+        SET_ENABLE_PUBLIC,
 
         // New Game
         NEW_GAME_ACTION,
