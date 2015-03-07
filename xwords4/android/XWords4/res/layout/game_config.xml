@@ -122,19 +122,32 @@
                       android:orientation="vertical"
                       >
 
-          <!-- maxLength derives from MAX_INVITE_LEN in xwrelay.h -->
-          <EditText android:id="@+id/room_edit"
-                    android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
-                    android:scrollHorizontally="false"
-                    android:autoText="false"
-                    android:capitalize="none"
-                    android:singleLine="true"
-                    android:selectAllOnFocus="true"
-                    android:windowSoftInputMode="stateHidden"
-                    android:maxLength="31"
-                    android:hint="@string/new_room_hint"
-                    />
+          <LinearLayout android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        >
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="fill_parent"
+                      android:text="@string/new_room_hint"
+                      android:gravity="left"
+                      android:textAppearance="?android:attr/textAppearanceMedium"
+                      />
+
+            <!-- maxLength derives from MAX_INVITE_LEN in xwrelay.h -->
+            <EditText android:id="@+id/room_edit"
+                      android:layout_height="wrap_content"
+                      android:layout_width="fill_parent"
+                      android:scrollHorizontally="false"
+                      android:autoText="false"
+                      android:capitalize="none"
+                      android:singleLine="true"
+                      android:selectAllOnFocus="true"
+                      android:windowSoftInputMode="stateHidden"
+                      android:maxLength="31"
+                      android:hint="@string/new_room_hint"
+                      />
+          </LinearLayout>
+
           <CheckBox android:id="@+id/advertise_new_room_check"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"

@@ -964,41 +964,6 @@ public class GameConfigDelegate extends DelegateBase
         m_boardsizeSpinner.setSelection( selection );
     }
 
-    // private void configConnectSpinner()
-    // {
-    //     m_connectSpinner = (Spinner)findViewById( R.id.connect_spinner );
-    //     m_connStrings = makeXportStrings();
-    //     ArrayAdapter<String> adapter = 
-    //         new ArrayAdapter<String>( this,
-    //                                   android.R.layout.simple_spinner_item,
-    //                                   m_connStrings );
-    //     adapter.setDropDownViewResource( android.R.layout
-    //                                      .simple_spinner_dropdown_item );
-    //     m_connectSpinner.setAdapter( adapter );
-    //     m_connectSpinner.setSelection( connTypeToPos( m_car.conType ) );
-    //     AdapterView.OnItemSelectedListener
-    //         lstnr = new AdapterView.OnItemSelectedListener() {
-    //                 @Override
-    //                 public void onItemSelected(AdapterView<?> parentView, 
-    //                                            View selectedItemView, 
-    //                                            int position, 
-    //                                            long id ) 
-    //                 {
-    //                     String fmt = getString( R.string.configure_rolef );
-    //                     m_configureButton
-    //                         .setText( String.format( fmt, 
-    //                                                  m_connStrings[position] ));
-    //                 }
-
-    //                 @Override
-    //                 public void onNothingSelected(AdapterView<?> parentView) 
-    //                 {
-    //                 }
-    //             };
-    //     m_connectSpinner.setOnItemSelectedListener( lstnr );
-
-    // } // configConnectSpinner
-
     private void adjustPlayersLabel()
     {
         DbgUtils.logf( "adjustPlayersLabel()" );
@@ -1016,27 +981,15 @@ public class GameConfigDelegate extends DelegateBase
 
     private void adjustConnectStuff()
     {
-        if ( m_joinPublicCheck.isChecked() ) {
-            refreshNames();
-            m_privateRoomsSet.setVisibility( View.GONE );
-            m_publicRoomsSet.setVisibility( View.VISIBLE );
-
-            // // make the room spinner match the saved value if present
-            // String invite = m_car.ip_relay_invite;
-            // ArrayAdapter<String> adapter = 
-            //     (ArrayAdapter<String>)m_roomChoose.getAdapter();
-            // if ( null != adapter ) {
-            //     for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
-            //         if ( adapter.getItem(ii).equals( invite ) ) {
-            //             m_roomChoose.setSelection( ii );
-            //             break;
-            //         }
-            //     }
-            // }
-
-        } else {
-            m_privateRoomsSet.setVisibility( View.VISIBLE );
-            m_publicRoomsSet.setVisibility( View.GONE );
+        if ( XWPrefs.getPublicRoomsEnabled( m_activity ) ) {
+            if ( m_joinPublicCheck.isChecked() ) {
+                refreshNames();
+                m_privateRoomsSet.setVisibility( View.GONE );
+                m_publicRoomsSet.setVisibility( View.VISIBLE );
+            } else {
+                m_privateRoomsSet.setVisibility( View.VISIBLE );
+                m_publicRoomsSet.setVisibility( View.GONE );
+            }
         }
     }
 
@@ -1219,24 +1172,34 @@ public class GameConfigDelegate extends DelegateBase
     private void setupRelayStuffIf()
     {
         if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+            boolean publicEnabled = XWPrefs.getPublicRoomsEnabled( m_activity );
+            int vis = publicEnabled ? View.VISIBLE : View.GONE;
             if ( null == m_joinPublicCheck ) {
                 m_joinPublicCheck = 
                     (CheckBox)findViewById(R.id.join_public_room_check);
-                m_joinPublicCheck.setOnClickListener( this );
-                m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
-                setChecked( R.id.advertise_new_room_check, 
-                            m_car.ip_relay_advertiseRoom );
-                m_publicRoomsSet = 
-                    (LinearLayout)findViewById(R.id.public_rooms_set );
-                m_privateRoomsSet = 
-                    (LinearLayout)findViewById(R.id.private_rooms_set );
+                m_joinPublicCheck.setVisibility( vis );
+
+                CheckBox advertise = (CheckBox)
+                    findViewById( R.id.advertise_new_room_check );
+                advertise.setVisibility( vis );
+                if ( publicEnabled ) {
+                    m_joinPublicCheck.setOnClickListener( this );
+                    m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
+                   advertise.setChecked( m_car.ip_relay_advertiseRoom );
+                    m_publicRoomsSet = 
+                        (LinearLayout)findViewById(R.id.public_rooms_set );
+                    m_privateRoomsSet = 
+                        (LinearLayout)findViewById(R.id.private_rooms_set );
+                }
 
                 setText( R.id.room_edit, m_car.ip_relay_invite );
         
                 m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
+                m_roomChoose.setVisibility( vis );
 
                 m_refreshRoomsButton = 
                     (ImageButton)findViewById( R.id.refresh_button );
+                m_refreshRoomsButton.setVisibility( vis );
                 m_refreshRoomsButton.setOnClickListener( this );
 
                 adjustConnectStuff();

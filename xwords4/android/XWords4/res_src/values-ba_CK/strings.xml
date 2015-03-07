@@ -1945,8 +1945,12 @@
   <string name="err_dup_invite_fmt">Etacilpud noitativni detcejer:
     ecived \"%1$s\" sah ydaerla detpecca na noitativni ot siht
     emag.</string>
-  <string name="invite_multi_title">Etivni elpitlum )Decnavda(</string>
+  <string name="network_advanced_title">Decnavda</string>
+  <string name="network_advanced_summary">Rof decneirepxe sreyalp</string>
+  <string name="invite_multi_title">Etivni elpitlum</string>
   <string name="invite_multi_summary">Etivni erom naht eno reyalp rep etomer ecived</string>
+  <string name="enable_pubroom_title">Elbane cilbup smoor</string>
+  <string name="enable_pubroom_summary">Smoor srehto nac ees dna nioj</string>
   <string name="connection_via_label">Egnahc Etacinummoc aiv</string>
   <string name="set_pref">Edih snottub</string>
   <string name="not_again_hidenewgamebuttons">Won taht uoy evah a

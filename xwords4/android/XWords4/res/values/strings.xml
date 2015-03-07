@@ -2289,8 +2289,12 @@
     device \"%1$s\" has already accepted an invitation to this
     game.</string>
 
-    <string name="invite_multi_title">Invite multiple (Advanced)</string>
+    <string name="network_advanced_title">Advanced</string>
+    <string name="network_advanced_summary">For experienced players</string>
+    <string name="invite_multi_title">Invite multiple</string>
     <string name="invite_multi_summary">Invite more than one player per remote device</string>
+    <string name="enable_pubroom_title">Enable public rooms</string>
+    <string name="enable_pubroom_summary">Rooms others can see and join</string>
 
     <string name="connection_via_label">Change Communicate via</string>
 
