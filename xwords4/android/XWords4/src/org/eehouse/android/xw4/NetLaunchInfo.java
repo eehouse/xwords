@@ -54,6 +54,7 @@ public class NetLaunchInfo {
     private static final String HEREPLAYERS_KEY = "nh";
     private static final String GID_KEY = "gid";
     private static final String FORCECHANNEL_KEY = "fc";
+    private static final String NAME_KEY = "nm";
 
     protected String gameName;
     protected String dict;
@@ -194,6 +195,7 @@ public class NetLaunchInfo {
                     m_gameID = null == val ? 0 : Integer.decode( val );
                     val = data.getQueryParameter( FORCECHANNEL_KEY );
                     forceChannel = null == val ? 0 : Integer.decode( val );
+                    gameName = data.getQueryParameter( NAME_KEY );
                 }
                 calcValid();
             } catch ( Exception e ) {
@@ -436,6 +438,7 @@ public class NetLaunchInfo {
         appendInt( ub, GID_KEY, gameID() );
         appendInt( ub, FORCECHANNEL_KEY, forceChannel );
         appendInt( ub, ADDRS_KEY, addrs );
+        ub.appendQueryParameter( NAME_KEY, gameName );
 
         if ( null != dict ) {
             ub.appendQueryParameter( WORDLIST_KEY, dict );
