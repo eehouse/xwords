@@ -1867,7 +1867,6 @@
     <!--  -->
     <string name="game_name_label">New game name:</string>
     <string name="name_copy_fmt">%1$s copy</string>
-    <string name="default_game_name">New Game</string>
     <!--  -->
     <string name="newgame_sms_header">New SMS Game</string>
     <!--  -->

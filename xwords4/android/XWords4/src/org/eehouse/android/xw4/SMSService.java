@@ -630,13 +630,9 @@ public class SMSService extends XWService {
                                 int nPlayersH, int forceChannel )
     {
         long rowid = 
-            GameUtils.makeNewGame( this, gameID, 
-                                   new CommsAddrRec( phone ), lang, dict, 
-                                   nPlayersT, nPlayersH, forceChannel );
-
-        if ( null != gameName && 0 < gameName.length() ) {
-            DBUtils.setName( this, rowid, gameName );
-        }
+            GameUtils.makeNewGame( this, gameID, new CommsAddrRec( phone ), 
+                                   lang, dict, nPlayersT, nPlayersH, 
+                                   forceChannel, gameName );
         postNotification( phone, gameID, rowid );
         ackInvite( phone, gameID );
     }

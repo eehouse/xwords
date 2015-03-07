@@ -269,7 +269,8 @@ public class GameUtils {
 
     public static String makeDefaultName( Context context, boolean isSolo )
     {
-        return LocUtils.getString( context, R.string.default_game_name );
+        int count = DBUtils.getIncrementIntFor( context, DBUtils.KEY_NEWGAMECOUNT, 0, 1 );
+        return LocUtils.getString( context, R.string.game_fmt, count );
     }
 
     public static int loadMakeGame( Context context, CurGameInfo gi, 
@@ -418,7 +419,7 @@ public class GameUtils {
                                     CurGameInfo gi, long groupID )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
-        GameLock lock = DBUtils.saveNewGame( context, stream, groupID );
+        GameLock lock = DBUtils.saveNewGame( context, stream, groupID, null );
         long rowid = lock.getRowid();
         lock.unlock();
         return rowid;
@@ -438,10 +439,11 @@ public class GameUtils {
     public static GameLock saveNewGame( Context context, byte[] bytes,
                                         long groupID )
     {
-        return DBUtils.saveNewGame( context, bytes, groupID );
+        return DBUtils.saveNewGame( context, bytes, groupID, null );
     }
 
-    public static long saveNew( Context context, CurGameInfo gi, long groupID )
+    public static long saveNew( Context context, CurGameInfo gi, long groupID,
+                                String gameName )
     {
         if ( DBUtils.GROUPID_UNSPEC == groupID ) {
             groupID = XWPrefs.getDefaultNewGameGroup( context );
@@ -450,7 +452,8 @@ public class GameUtils {
         long rowid = DBUtils.ROWID_NOTFOUND;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            GameLock lock = DBUtils.saveNewGame( context, bytes, groupID );
+            GameLock lock = DBUtils.saveNewGame( context, bytes, groupID, 
+                                                 gameName );
             rowid = lock.getRowid();
             lock.unlock();
         }
@@ -471,23 +474,27 @@ public class GameUtils {
         return makeNewMultiGame( context, sink, DBUtils.GROUPID_UNSPEC, addr, 
                                  new int[] {nli.lang}, new String[] { nli.dict },
                                  nli.nPlayersT, nli.nPlayersH, nli.forceChannel,
-                                 nli.inviteID(), nli.gameID(), false );
-    }
-
-    public static long makeNewMultiGame( Context context, long groupID )
-    {
-        return makeNewMultiGame( context, groupID, (CommsConnTypeSet)null );
+                                 nli.inviteID(), nli.gameID(), nli.gameName,
+                                 false );
     }
 
     public static long makeNewMultiGame( Context context, long groupID, 
-                                         CommsConnTypeSet addrSet )
+                                         String gameName )
+    {
+        return makeNewMultiGame( context, groupID, (CommsConnTypeSet)null, 
+                                 gameName );
+    }
+
+    public static long makeNewMultiGame( Context context, long groupID, 
+                                         CommsConnTypeSet addrSet, String gameName )
     {
         String inviteID = makeRandomID();
-        return makeNewMultiGame( context, groupID, inviteID, addrSet );
+        return makeNewMultiGame( context, groupID, inviteID, addrSet, gameName );
     }
 
     private static long makeNewMultiGame( Context context, long groupID, 
-                                          String inviteID, CommsConnTypeSet addrSet )
+                                          String inviteID, CommsConnTypeSet addrSet,
+                                          String gameName )
     {
         int[] lang = {0};
         String[] dict = {null};
@@ -498,7 +505,7 @@ public class GameUtils {
         addr.populate( context );
         int forceChannel = 0;
         return makeNewMultiGame( context, null, groupID, addr, lang, dict, 2, 1,
-                                 forceChannel, inviteID, 0, true );
+                                 forceChannel, inviteID, 0, gameName, true );
     }
 
     private static long makeNewMultiGame( Context context, MultiMsgSink sink, 
@@ -506,7 +513,8 @@ public class GameUtils {
                                           int[] lang, String[] dict, 
                                           int nPlayersT, int nPlayersH, 
                                           int forceChannel, String inviteID,
-                                          int gameID, boolean isHost )
+                                          int gameID, String gameName, 
+                                          boolean isHost )
     {
         long rowid = -1;
 
@@ -527,7 +535,7 @@ public class GameUtils {
         // Will need to add a setNPlayers() method to gi to make this
         // work
         Assert.assertTrue( gi.nPlayers == nPlayersT );
-        rowid = saveNew( context, gi, groupID );
+        rowid = saveNew( context, gi, groupID, gameName );
         if ( null != sink ) {
             sink.setRowID( rowid );
         }
@@ -544,35 +552,39 @@ public class GameUtils {
     public static long makeNewGame( Context context, MultiMsgSink sink,
                                     int gameID, CommsAddrRec addr, int lang, 
                                     String dict, int nPlayersT, 
-                                    int nPlayersH, int forceChannel )
+                                    int nPlayersH, int forceChannel, 
+                                    String gameName )
     {
         return makeNewGame( context, sink, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                            lang, dict, nPlayersT, nPlayersH, forceChannel );
+                            lang, dict, nPlayersT, nPlayersH, forceChannel, 
+                            gameName );
     }
 
     public static long makeNewGame( Context context, int gameID, 
                                     CommsAddrRec addr, int lang, 
                                     String dict, int nPlayersT, 
-                                    int nPlayersH, int forceChannel )
+                                    int nPlayersH, int forceChannel, 
+                                    String gameName )
     {
         return makeNewGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                            lang, dict, nPlayersT, nPlayersH, forceChannel );
+                            lang, dict, nPlayersT, nPlayersH, forceChannel, 
+                            gameName );
     }
     
     public static long makeNewGame( Context context, long groupID,  int gameID, 
                                     CommsAddrRec addr, int lang, String dict,
                                     int nPlayersT, int nPlayersH, 
-                                    int forceChannel )
+                                    int forceChannel, String gameName )
     {
-        return makeNewGame( context, null, groupID, gameID, addr, 
-                            lang,  dict, nPlayersT, nPlayersH, forceChannel );
+        return makeNewGame( context, null, groupID, gameID, addr, lang, dict,
+                            nPlayersT, nPlayersH, forceChannel, gameName );
     }
 
     public static long makeNewGame( Context context, MultiMsgSink sink, 
                                     long groupID,  int gameID, CommsAddrRec addr,
                                     int lang, String dict, 
                                     int nPlayersT, int nPlayersH, 
-                                    int forceChannel )
+                                    int forceChannel, String gameName )
     {
         long rowid = -1;
         int[] langa = { lang };
@@ -584,7 +596,7 @@ public class GameUtils {
         String inviteID = GameUtils.formatGameID( gameID );
         return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
                                  nPlayersT, nPlayersH, forceChannel, 
-                                 inviteID, gameID, isHost );
+                                 inviteID, gameID, gameName, isHost );
     }
 
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )

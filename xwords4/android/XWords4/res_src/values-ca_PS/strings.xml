@@ -1601,7 +1601,6 @@
   <!--  -->
   <string name="game_name_label">NEW GAME NAME:</string>
   <string name="name_copy_fmt">%1$s COPY</string>
-  <string name="default_game_name">NEW GAME</string>
   <!--  -->
   <string name="newgame_sms_header">NEW SMS GAME</string>
   <!--  -->

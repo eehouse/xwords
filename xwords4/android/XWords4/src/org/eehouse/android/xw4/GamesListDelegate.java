@@ -1842,7 +1842,9 @@ public class GamesListDelegate extends ListDelegateBase
                 CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
 
                 long groupID = DBUtils.getGroupForGame( m_activity, rowid );
-                newid = GameUtils.makeNewMultiGame( m_activity, groupID, addrs );
+                String gameName = "rematch"; // FIX ME :-)
+                newid = GameUtils.makeNewMultiGame( m_activity, groupID, addrs, 
+                                                    gameName );
 
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
                                         relayID );
@@ -2141,12 +2143,10 @@ public class GamesListDelegate extends ListDelegateBase
         if ( m_nextIsSolo ) {
             rowID = GameUtils.saveNew( m_activity, 
                                        new CurGameInfo( m_activity ), 
-                                       groupID );
+                                       groupID, name );
         } else {
-            rowID = GameUtils.makeNewMultiGame( m_activity, groupID );
+            rowID = GameUtils.makeNewMultiGame( m_activity, groupID, name );
         }
-
-        DBUtils.setName( m_activity, rowID, name );
 
         if ( doConfigure ) {
             // configure it

@@ -62,6 +62,7 @@ public class DBUtils {
     public static final int ROWID_NOTFOUND = -1;
     public static final int ROWIDS_ALL = -2;
     public static final int GROUPID_UNSPEC = -1;
+    public static final String KEY_NEWGAMECOUNT = "DBUtils.newGameCount";
 
     private static final String DICTS_SEP = ",";
 
@@ -821,7 +822,7 @@ public class DBUtils {
     }
 
     public static GameLock saveNewGame( Context context, byte[] bytes,
-                                        long groupID )
+                                        long groupID, String name )
     {
         Assert.assertTrue( GROUPID_UNSPEC != groupID );
         GameLock lock = null;
@@ -833,6 +834,9 @@ public class DBUtils {
         values.put( DBHelper.CREATE_TIME, timestamp );
         values.put( DBHelper.LASTPLAY_TIME, timestamp );
         values.put( DBHelper.GROUPID, groupID );
+        if ( null != name ) {
+            values.put( DBHelper.GAME_NAME, name );
+        }
 
         invalGroupsCache();  // do first in case any listener has cached data
 
@@ -1956,22 +1960,60 @@ public class DBUtils {
         }
     }
 
-    public static void setStringFor( Context context, String key, String value )
+    private static void setStringForSync( SQLiteDatabase db, String key, String value )
     {
         String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
         ContentValues values = new ContentValues();
         values.put( DBHelper.VALUE, value );
 
+        long result = db.update( DBHelper.TABLE_NAME_PAIRS,
+                                 values, selection, null );
+        if ( 0 == result ) {
+            values.put( DBHelper.KEY, key );
+            db.insert( DBHelper.TABLE_NAME_PAIRS, null, values );
+        }
+    }
+
+    private static String getStringForSync( SQLiteDatabase db, String key, String dflt )
+    {
+        String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
+        String[] columns = { DBHelper.VALUE };
+
+        Cursor cursor = db.query( DBHelper.TABLE_NAME_PAIRS, columns, 
+                                  selection, null, null, null, null );
+        Assert.assertTrue( 1 >= cursor.getCount() );
+        int indx = cursor.getColumnIndex( DBHelper.VALUE );
+        if ( cursor.moveToNext() ) {
+            dflt = cursor.getString( indx );
+        }
+        cursor.close();
+        return dflt;
+    }
+
+    private static interface Modifier {
+        public String modifySync( String curVal );
+    }
+
+    private static String getModStringFor( Context context, String key, Modifier proc )
+    {
+        String result = null;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            long result = db.update( DBHelper.TABLE_NAME_PAIRS,
-                                     values, selection, null );
-            if ( 0 == result ) {
-                values.put( DBHelper.KEY, key );
-                db.insert( DBHelper.TABLE_NAME_PAIRS, null, values );
-            }
+            result = getStringForSync( db, key, null );
+            result = proc.modifySync( result );
+            setStringForSync( db, key, result );
+            db.close();
+        }
+        return result;
+    }
 
+    public static void setStringFor( Context context, String key, String value )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            setStringForSync( db, key, value );
             db.close();
         }
     }
@@ -1984,32 +2026,41 @@ public class DBUtils {
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            Cursor cursor = db.query( DBHelper.TABLE_NAME_PAIRS, columns, 
-                                      selection, null, null, null, null );
-            Assert.assertTrue( 1 >= cursor.getCount() );
-            int indx = cursor.getColumnIndex( DBHelper.VALUE );
-            if ( cursor.moveToNext() ) {
-                dflt = cursor.getString( indx );
-            }
-            cursor.close();
+            dflt = getStringForSync( db, key, dflt );
             db.close();
         }
         return dflt;
     }
 
-    public static void setIntFor( Context context, String key, int value )
-    {
-        String asStr = String.format( "%d", value );
-        setStringFor( context, key, asStr );
-    }
+    // public static void setIntFor( Context context, String key, int value )
+    // {
+    //     String asStr = String.format( "%d", value );
+    //     setStringFor( context, key, asStr );
+    // }
 
-    public static int getIntFor( Context context, String key, int dflt )
+    // public static int getIntFor( Context context, String key, int dflt )
+    // {
+    //     String asStr = getStringFor( context, key, null );
+    //     if ( null != asStr ) {
+    //         dflt = Integer.parseInt( asStr );
+    //     }
+    //     return dflt;
+    // }
+
+    public static int getIncrementIntFor( Context context, String key, int dflt,
+                                          final int incr )
     {
-        String asStr = getStringFor( context, key, null );
-        if ( null != asStr ) {
-            dflt = Integer.parseInt( asStr );
-        }
-        return dflt;
+        Modifier proc = new Modifier() {
+                public String modifySync( String curVal ) {
+                    int val = null == curVal ? 0 : Integer.parseInt( curVal );
+                    String newVal = String.format( "%d", val + incr );
+                    return newVal;
+                }
+            };
+        String newVal = getModStringFor( context, key, proc );
+        int asInt = Integer.parseInt( newVal );
+        DbgUtils.logf( "getIncrementIntFor(%s) => %d", key, asInt );
+        return asInt;
     }
 
     public static void setBytesFor( Context context, String key, byte[] bytes )
