@@ -522,9 +522,9 @@
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
-    <string name="invite_msg_fmt">This game is missing %1$d remote
-      player[s].  Would you like to invite someone to join -- assuming
-      you haven\'t already?</string>
+    <string name="invite_msg_fmt">This game is waiting for %1$d remote
+    player[s]. Would you like to invite someone to join -- assuming
+    you haven\'t already?</string>
 
     <!-- Appended to message above if local device has NFC available -->
     <string name="invite_if_nfc">(Or just Tap to Invite -- if the
@@ -1153,7 +1153,7 @@
 	<string name="invite_choice_email">Email</string>
 	<string name="invite_choice_bt">Bluetooth</string>
 	<string name="invite_choice_nfc">NFC (\"Android beaming\")</string>
-	<string name="invite_choice_title">How would you like to send this invitation?</string>
+	<string name="invite_choice_title">Inviting players: How?</string>
     <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
     <!--    via email?</string> -->
     <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
@@ -2308,8 +2308,12 @@
     unhide them go to the Appearance section of App settings).
     </string>
 
+    <string name="waiting_title">Waiting for players</string>
+
     <string name="invite_stays">(This dialog will stay up until all
-    invited players have connected.)</string>
+    remote players have connected. You can close the game if you
+    expect it to take a while. They will still be able to
+    connect.)</string>
 
     <string name="nfc_just_tap">To invite via NFC just touch the back
     of this device against the one you want to invite—any time the

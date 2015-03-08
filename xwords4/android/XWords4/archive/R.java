@@ -657,7 +657,7 @@ public final class R {
          reset a game. 
          */
         public static final int button_discard=0x7f0501c5;
-        public static final int button_discard_changes=0x7f0502f4;
+        public static final int button_discard_changes=0x7f0502f5;
         /**   
   
          */
@@ -670,7 +670,7 @@ public final class R {
  Text of button displayed when downloading is an option 
          */
         public static final int button_download=0x7f0501b9;
-        public static final int button_edit=0x7f0502f3;
+        public static final int button_edit=0x7f0502f4;
         public static final int button_enable_bt=0x7f050258;
         public static final int button_enable_sms=0x7f050257;
         public static final int button_go_settings=0x7f050291;
@@ -949,7 +949,7 @@ public final class R {
          on the board.
          */
         public static final int clr_crosshairs=0x7f050168;
-        public static final int config_no_connvia=0x7f0502f2;
+        public static final int config_no_connvia=0x7f0502f3;
         /**   
   
          */
@@ -1757,7 +1757,7 @@ public final class R {
   
          */
         public static final int invite_sms_desc_fmt=0x7f05022d;
-        public static final int invite_stays=0x7f0502ef;
+        public static final int invite_stays=0x7f0502f0;
         /**  <string name="sms_or_email">Send invitation using SMS (texting) or 
     via email?</string> 
  <string name="nfc_or_email">Send invitation using NFC (Android 
@@ -2449,7 +2449,7 @@ public final class R {
          */
         public static final int newgame_sms_header=0x7f050228;
         public static final int newgroup_label=0x7f050272;
-        public static final int nfc_just_tap=0x7f0502f0;
+        public static final int nfc_just_tap=0x7f0502f1;
         public static final int nfc_to_self=0x7f05009d;
         /**  Title of dialog for renaming game (triggered by selecting
          list_item_rename) 
@@ -2618,7 +2618,7 @@ public final class R {
          the same thing. 
          */
         public static final int not_again_done=0x7f0501de;
-        public static final int not_again_enablepublic=0x7f0502f6;
+        public static final int not_again_enablepublic=0x7f0502f7;
         /**  Shown when you tap the flip button on the toolbar of the main
          Board screen 
  Shown when you tap the flip button on the toolbar of the main
@@ -3103,7 +3103,7 @@ public final class R {
  Shown in toast when relaunching after switching dicts 
          */
         public static final int reload_new_dict_fmt=0x7f050266;
-        public static final int rematch_msg=0x7f0502f5;
+        public static final int rematch_msg=0x7f0502f6;
         public static final int remote_digesting=0x7f0502bd;
         public static final int remote_empty=0x7f0502bc;
         /**  checkbox determining of this player is on this device or
@@ -3723,8 +3723,9 @@ public final class R {
     line in a game summary.  The \u0020 is a space in xml. 
          */
         public static final int vs_join=0x7f050133;
+        public static final int waiting_title=0x7f0502ef;
         public static final int warn_bt_disabled=0x7f050256;
-        public static final int warn_no_comms=0x7f0502f1;
+        public static final int warn_no_comms=0x7f0502f2;
         /**   
   
          */

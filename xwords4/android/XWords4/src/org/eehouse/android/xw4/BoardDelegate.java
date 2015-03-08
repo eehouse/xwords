@@ -482,7 +482,7 @@ public class BoardDelegate extends DelegateBase
                 message = getString( R.string.rematch_msg );
                 ad.getButton( AlertDialog.BUTTON_POSITIVE ).setVisibility( View.GONE );
             } else {
-                titleID = R.string.query_title;
+                titleID = R.string.waiting_title;
                 message = getString( R.string.invite_msg_fmt, m_nMissing );
 
                 String ps = null;
