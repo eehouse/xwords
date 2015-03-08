@@ -440,9 +440,9 @@
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
-  <string name="invite_msg_fmt">Siht emag si gnissim %1$d etomer
-      ]s[reyalp.  Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa
-      uoy nevah\'t ?ydaerla</string>
+  <string name="invite_msg_fmt">Siht emag si gnitiaw rof %1$d etomer
+    ]s[reyalp. Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa
+    uoy nevah\'t ?ydaerla</string>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">rO( tsuj Pat ot Etivni -- fi eht
         rehto ecived osla sah Diordna Gnimaeb dna si ybraen.)</string>
@@ -985,7 +985,7 @@
   <string name="invite_choice_email">Liame</string>
   <string name="invite_choice_bt">Htooteulb</string>
   <string name="invite_choice_nfc">CFN (\"Diordna gnimaeb\")</string>
-  <string name="invite_choice_title">Woh dluow uoy ekil ot dnes siht ?noitativni</string>
+  <string name="invite_choice_title">Gnitivni sreyalp: ?woh</string>
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
   <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
@@ -1960,8 +1960,11 @@
     wodniw\'s Noitca Rab od eht emas gniht.\n\nfI( uoy retal tnaw ot
     edihnu meht og ot eht Ecnaraeppa noitces fo Ppa )sgnittes.
     </string>
+  <string name="waiting_title">Gnitiaw rof sreyalp</string>
   <string name="invite_stays">sIht( golaid lliw yats pu litnu lla
-    detivni sreyalp evah detcennoc.)</string>
+    etomer sreyalp evah detcennoc. Uoy nac esolc eht emag fi uoy
+    tcepxe ti ot ekat a elihw. Yeht lliw llits eb elba ot
+    tcennoc.)</string>
   <string name="nfc_just_tap">Ot etivni aiv CFN tsuj hcuot eht kcab
     fo siht ecived tsniaga eht eno uoy tnaw ot yna—etivni emit eht
     emag si nepo.</string>

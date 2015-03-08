@@ -440,9 +440,9 @@
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
-  <string name="invite_msg_fmt">THIS GAME IS MISSING %1$d REMOTE
-      PLAYER[S].  WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
-      YOU HAVEN\'T ALREADY?</string>
+  <string name="invite_msg_fmt">THIS GAME IS WAITING FOR %1$d REMOTE
+    PLAYER[S]. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
+    YOU HAVEN\'T ALREADY?</string>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">(OR JUST TAP TO INVITE -- IF THE
         OTHER DEVICE ALSO HAS ANDROID BEAMING AND IS NEARBY.)</string>
@@ -985,7 +985,7 @@
   <string name="invite_choice_email">EMAIL</string>
   <string name="invite_choice_bt">BLUETOOTH</string>
   <string name="invite_choice_nfc">NFC (\"ANDROID BEAMING\")</string>
-  <string name="invite_choice_title">HOW WOULD YOU LIKE TO SEND THIS INVITATION?</string>
+  <string name="invite_choice_title">INVITING PLAYERS: HOW?</string>
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
   <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
@@ -1960,8 +1960,11 @@
     WINDOW\'S ACTION BAR DO THE SAME THING.\n\n(IF YOU LATER WANT TO
     UNHIDE THEM GO TO THE APPEARANCE SECTION OF APP SETTINGS).
     </string>
+  <string name="waiting_title">WAITING FOR PLAYERS</string>
   <string name="invite_stays">(THIS DIALOG WILL STAY UP UNTIL ALL
-    INVITED PLAYERS HAVE CONNECTED.)</string>
+    REMOTE PLAYERS HAVE CONNECTED. YOU CAN CLOSE THE GAME IF YOU
+    EXPECT IT TO TAKE A WHILE. THEY WILL STILL BE ABLE TO
+    CONNECT.)</string>
   <string name="nfc_just_tap">TO INVITE VIA NFC JUST TOUCH THE BACK
     OF THIS DEVICE AGAINST THE ONE YOU WANT TO INVITE—ANY TIME THE
     GAME IS OPEN.</string>
