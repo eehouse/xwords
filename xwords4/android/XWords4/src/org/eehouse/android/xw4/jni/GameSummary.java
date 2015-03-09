@@ -198,10 +198,12 @@ public class GameSummary {
 
             // If we're using relay to connect, get status from that
             if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                if ( null == relayID || 0 == relayID.length() ) {
-                    fmtID = R.string.summary_relay_conf_fmt;
-                } else if ( anyMissing() ) {
-                    fmtID = R.string.summary_relay_wait_fmt;
+                if ( anyMissing() ) {
+                    if ( null == relayID || 0 == relayID.length() ) {
+                        fmtID = R.string.summary_relay_conf_fmt;
+                    } else {
+                        fmtID = R.string.summary_relay_wait_fmt;
+                    }
                 } else if ( gameOver ) {
                     fmtID = R.string.summary_relay_gameover_fmt;
                 } else {
