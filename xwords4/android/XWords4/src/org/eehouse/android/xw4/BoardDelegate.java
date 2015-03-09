@@ -494,8 +494,11 @@ public class BoardDelegate extends DelegateBase
                         ps = getString( R.string.invite_if_nfc );
                     }
                 }
-                message += "\n\n" + 
-                    (null == ps ? getString( R.string.invite_stays ) : ps);
+                if ( null != ps ) {
+                    message += "\n\n" + ps;
+                }
+
+                message += "\n\n" + getString( R.string.invite_stays );
             }
             ad.setMessage( message );
             ad.setTitle( titleID );

@@ -444,8 +444,8 @@
     PLAYER[S]. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
     YOU HAVEN\'T ALREADY?</string>
   <!-- Appended to message above if local device has NFC available -->
-  <string name="invite_if_nfc">(OR JUST TAP TO INVITE -- IF THE
-        OTHER DEVICE ALSO HAS ANDROID BEAMING AND IS NEARBY.)</string>
+  <string name="invite_if_nfc">OR JUST TAP TO INVITE -- IF THE OTHER
+    DEVICE ALSO HAS ANDROID BEAMING AND IS NEARBY.</string>
   <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
   <string name="players_miss_fmt">%1$d PLAYER[S] MISSING</string>
