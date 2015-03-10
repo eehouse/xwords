@@ -1953,12 +1953,11 @@
   <string name="enable_pubroom_summary">Smoor srehto nac ees dna nioj</string>
   <string name="connection_via_label">Egnahc Etacinummoc aiv</string>
   <string name="set_pref">Edih snottub</string>
-  <string name="not_again_hidenewgamebuttons">Won taht uoy evah a
-    wef semag devas uoy thgim tnaw ot edih eseht Wen Emag snottub ot
-    teg erom ecaps. Yeht era tneinevnoc rof wen ,sreyalp tub uoy
-    nod\'t deen meht esuaceb eht tsrif owt smeti ni eht Semag Tsil
-    wodniw\'s Noitca Rab od eht emas gniht.\n\nfI( uoy retal tnaw ot
-    edihnu meht og ot eht Ecnaraeppa noitces fo Ppa )sgnittes.
+  <string name="not_again_hidenewgamebuttons">Eseht owt snottub od
+    eht emas gniht sa eht tsrif owt smeti ni siht wodniw\'s Noitca Rab
+    ro( )unem. Fi uoy ekil uoy nac edih eht snottub ot ekam erom semag
+    elbisiv.\n\nfI( uoy retal tnaw ot edihnu meht og ot eht Ecnaraeppa
+    noitces fo Ppa )sgnittes.
     </string>
   <string name="waiting_title">Gnitiaw rof sreyalp</string>
   <string name="invite_stays">sIht( golaid lliw yats pu litnu lla

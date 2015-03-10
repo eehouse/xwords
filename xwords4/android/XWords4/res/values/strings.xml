@@ -2300,12 +2300,11 @@
 
     <string name="set_pref">Hide buttons</string>
 
-    <string name="not_again_hidenewgamebuttons">Now that you have a
-    few games saved you might want to hide these New Game buttons to
-    get more space. They are convenient for new players, but you
-    don\'t need them because the first two items in the Games List
-    window\'s Action Bar do the same thing.\n\n(If you later want to
-    unhide them go to the Appearance section of App settings).
+    <string name="not_again_hidenewgamebuttons">These two buttons do
+    the same thing as the first two items in this window\'s Action Bar
+    (or menu). If you like you can hide the buttons to make more games
+    visible.\n\n(If you later want to unhide them go to the Appearance
+    section of App settings).
     </string>
 
     <string name="waiting_title">Waiting for players</string>
