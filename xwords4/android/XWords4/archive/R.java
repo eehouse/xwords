@@ -678,6 +678,8 @@ public final class R {
          reset a game. 
          */
         public static final int button_discard=0x7f0501c5;
+        /** XLATE-ME
+         */
         public static final int button_discard_changes=0x7f0502f5;
         /**   
   
@@ -691,8 +693,14 @@ public final class R {
  Text of button displayed when downloading is an option 
          */
         public static final int button_download=0x7f0501b9;
+        /** XLATE-ME
+         */
         public static final int button_edit=0x7f0502f4;
+        /** XLATE-ME
+         */
         public static final int button_enable_bt=0x7f050258;
+        /** XLATE-ME
+         */
         public static final int button_enable_sms=0x7f050257;
         public static final int button_go_settings=0x7f050291;
         /**   
@@ -704,6 +712,8 @@ public final class R {
 <string name="button_juggle_players">Shuffle players</string>
          */
         public static final int button_juggle_players=0x7f0500d6;
+        /** XLATE-ME
+         */
         public static final int button_later=0x7f050259;
         /**  New strings that need to be documented and found a home
          above. 
@@ -977,6 +987,8 @@ public final class R {
 <string name="clr_crosshairs">Crosshairs color</string>
          */
         public static final int clr_crosshairs=0x7f050168;
+        /** XLATE-ME
+         */
         public static final int config_no_connvia=0x7f0502f3;
         /**   
   
@@ -1105,6 +1117,7 @@ public final class R {
          */
         public static final int connect_frequency=0x7f050180;
         /**  text of separator marking out the connection area of the dialog 
+XLATE-ME
          */
         public static final int connect_label_fmt=0x7f0500d9;
         /**   
@@ -1127,6 +1140,8 @@ public final class R {
         /** <string name="connect_thirty_mins">Every 30 minutes</string>
          */
         public static final int connect_thirty_mins=0x7f050184;
+        /** XLATE-ME
+         */
         public static final int connection_via_label=0x7f0502ec;
         /**   
   
@@ -1396,7 +1411,11 @@ public final class R {
         public static final int enable_nfc=0x7f050290;
         public static final int enable_nfc_toself_summary=0x7f050095;
         public static final int enable_nfc_toself_title=0x7f050094;
+        /** XLATE-ME
+         */
         public static final int enable_pubroom_summary=0x7f0502eb;
+        /** XLATE-ME
+         */
         public static final int enable_pubroom_title=0x7f0502ea;
         /**   
   
@@ -1411,6 +1430,8 @@ public final class R {
         /** <string name="entering_trade">Tap tiles to select…</string>
          */
         public static final int entering_trade=0x7f0500fe;
+        /** XLATE-ME
+         */
         public static final int err_dup_invite_fmt=0x7f0502e5;
         public static final int expl_update_url=0x7f05007a;
         /**  if this preference is checked, a dialog will be posted every
@@ -1533,9 +1554,11 @@ public final class R {
         public static final int game_locked=0x7f0500d2;
         public static final int game_name_group_title=0x7f05027d;
         /**   
+XLATE-ME
          */
         public static final int game_name_label=0x7f050226;
         /**   
+XLATE-ME
          */
         public static final int game_name_title=0x7f050225;
         /**   
@@ -1651,10 +1674,12 @@ public final class R {
          */
         public static final int hide_crosshairs_summary=0x7f05017d;
         /**  clarification of above 
+XLATE-ME
          */
         public static final int hide_newgames_summary=0x7f05015d;
         /**  Checkbox that when set prevents showing the newgame buttons
          on the main screen to save space 
+XLATE-ME
          */
         public static final int hide_newgames_title=0x7f05015c;
         /**  Checkbox that when set prevents showing a title bar in the
@@ -1826,7 +1851,11 @@ public final class R {
       you haven\'t already?</string>
          */
         public static final int invite_msg_fmt=0x7f050104;
+        /** XLATE-ME
+         */
         public static final int invite_multi_summary=0x7f0502e9;
+        /** XLATE-ME
+         */
         public static final int invite_multi_title=0x7f0502e8;
         /**  Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -1853,6 +1882,8 @@ public final class R {
   
          */
         public static final int invite_sms_desc_fmt=0x7f05022d;
+        /** XLATE-ME
+         */
         public static final int invite_stays=0x7f0502f0;
         /**  <string name="sms_or_email">Send invitation using SMS (texting) or 
     via email?</string> 
@@ -2384,6 +2415,8 @@ public final class R {
  above is inserted in this the last time I warn 
          */
         public static final int nag_warn_last_fmt=0x7f0502d1;
+        /** XLATE-ME
+         */
         public static final int name_copy_fmt=0x7f050227;
         public static final int name_dict_fmt=0x7f05008d;
         public static final int nbs_port=0x7f05007c;
@@ -2406,7 +2439,11 @@ public final class R {
          */
         public static final int nethints_allowed_sum=0x7f05014d;
         public static final int netstats_title=0x7f050089;
+        /** XLATE-ME
+         */
         public static final int network_advanced_summary=0x7f0502e7;
+        /** XLATE-ME
+         */
         public static final int network_advanced_title=0x7f0502e6;
         /** <string name="network_behavior">Network game settings</string>
          */
@@ -2445,10 +2482,20 @@ public final class R {
   
          */
         public static final int new_dict_avail_fmt=0x7f05025d;
+        /** XLATE-ME
+         */
         public static final int new_game=0x7f0502dd;
+        /** XLATE-ME
+         */
         public static final int new_game_message=0x7f0502df;
+        /** XLATE-ME
+         */
         public static final int new_game_message_net=0x7f0502e1;
+        /** XLATE-ME
+         */
         public static final int new_game_message_nodflt=0x7f0502e0;
+        /** XLATE-ME
+         */
         public static final int new_game_networked=0x7f0502de;
         /**   
   
@@ -2594,6 +2641,8 @@ public final class R {
          */
         public static final int newgame_sms_header=0x7f050228;
         public static final int newgroup_label=0x7f050272;
+        /** XLATE-ME
+         */
         public static final int nfc_just_tap=0x7f0502f1;
         public static final int nfc_to_self=0x7f05009d;
         /**  Title of dialog for renaming game (triggered by selecting
@@ -2767,6 +2816,8 @@ public final class R {
          the same thing. 
          */
         public static final int not_again_done=0x7f0501de;
+        /** XLATE-ME
+         */
         public static final int not_again_enablepublic=0x7f0502f7;
         /**  Shown when you tap the flip button on the toolbar of the main
          Board screen 
@@ -2775,6 +2826,8 @@ public final class R {
          */
         public static final int not_again_flip=0x7f0501d9;
         public static final int not_again_fmt_expl=0x7f0502bb;
+        /** XLATE-ME
+         */
         public static final int not_again_hidenewgamebuttons=0x7f0502ee;
         /**  Shown when you tap the next hint button on the toolbar of the
          main Board screen 
@@ -2902,7 +2955,11 @@ public final class R {
 <string name="notify_vibrate">Vibrate</string>
          */
         public static final int notify_vibrate=0x7f050189;
+        /** XLATE-ME
+         */
         public static final int nplayers_fmt=0x7f0502e4;
+        /** XLATE-ME
+         */
         public static final int nplayers_prompt=0x7f0502e3;
         /**  text of label identifying the field where human players can
          enter an option password.  The label and field disappear when
@@ -3295,6 +3352,8 @@ public final class R {
  Shown in toast when relaunching after switching dicts 
          */
         public static final int reload_new_dict_fmt=0x7f050266;
+        /** XLATE-ME
+         */
         public static final int rematch_msg=0x7f0502f6;
         public static final int remote_digesting=0x7f0502bd;
         public static final int remote_empty=0x7f0502bc;
@@ -3319,6 +3378,8 @@ public final class R {
          list_item_rename) 
          */
         public static final int rename_label=0x7f0500bc;
+        /** XLATE-ME
+         */
         public static final int rename_label_caveat=0x7f0500bd;
         /** <string name="resend_finished_fmt">Resend finished; sent %1$d message[s].</string>
          */
@@ -3401,6 +3462,8 @@ public final class R {
          possible answers are the three button text strings below. 
          */
         public static final int set_default_message_fmt=0x7f0500c8;
+        /** XLATE-ME
+         */
         public static final int set_pref=0x7f0502ed;
         /**  text of separator marking out other-setting area of the dialog 
  text of separator marking out other-setting area of the dialog 
@@ -3443,6 +3506,8 @@ public final class R {
         public static final int slmenu_copy_sel=0x7f05029a;
         public static final int slmenu_deselect_all=0x7f0502a6;
         public static final int slmenu_select_all=0x7f0502a5;
+        /** XLATE-ME
+         */
         public static final int sms_bad_proto_fmt=0x7f05021b;
         /**  Title of phone number picker during invitation to a game via SMS 
  Title of phone number picker during invitation to a game via SMS 
@@ -3961,6 +4026,8 @@ public final class R {
          */
         public static final int title_tile_picker=0x7f0501c9;
         public static final int update_dicts_fmt=0x7f0502c2;
+        /** XLATE-ME
+         */
         public static final int use_defaults=0x7f0502e2;
         /**  text of checkbox controlling whether there's a game timer 
  text of checkbox controlling whether there's a game timer 
@@ -3974,8 +4041,14 @@ public final class R {
 <string name="vs_join">\u0020vs.\u0020</string>
          */
         public static final int vs_join=0x7f050133;
+        /** XLATE-ME
+         */
         public static final int waiting_title=0x7f0502ef;
+        /** XLATE-ME
+         */
         public static final int warn_bt_disabled=0x7f050256;
+        /** XLATE-ME
+         */
         public static final int warn_no_comms=0x7f0502f2;
         /**   
   
