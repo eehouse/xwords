@@ -2444,4 +2444,119 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
 
 	<!-- label within default wordlists in app preferences -->
 	<string name="default_language">Default language</string>
+
+    <!--XLATE-ME-->
+    <string name="rename_label_caveat">Change the name of this game
+    (on this device only) to:</string>
+    <!--XLATE-ME-->
+    <string name="connect_label_fmt">Connection (via %1$s)</string>
+    <!--XLATE-ME-->
+    <string name="hide_newgames_title">Hide newgame buttons</string>
+    <!--XLATE-ME-->
+    <string name="hide_newgames_summary">Hiding the newgame buttons in
+        the main screen makes more games visible</string>
+    <!--XLATE-ME-->
+    <string name="sms_bad_proto_fmt">The version of Crosswords on the
+    phone with number \"%1$s\" is incompatible with this one for play
+    using SMS. One of you may need to upgrade before you can
+    continue.</string>
+    <!--XLATE-ME-->
+    <string name="game_name_title">Name your game</string>
+    <!--XLATE-ME-->
+    <string name="game_name_label">New game name:</string>
+    <!--XLATE-ME-->
+    <string name="name_copy_fmt">%1$s copy</string>
+    <!--XLATE-ME-->
+    <string name="warn_bt_disabled">Bluetooth is currently off on this
+    device. No moves will be sent via Bluetooth.\n\nYou can enable
+    Bluetooth now, or later.
+    </string>
+    <!--XLATE-ME-->
+    <string name="button_enable_sms">Enable SMS</string>
+    <!--XLATE-ME-->
+    <string name="button_enable_bt">Enable Bluetooth</string>
+    <!--XLATE-ME-->
+    <string name="button_later">Later</string>
+    <!--XLATE-ME-->
+    <string name="new_game">New one-device game</string>
+    <!--XLATE-ME-->
+    <string name="new_game_networked">New networked game</string>
+    <!--XLATE-ME-->
+    <string name="new_game_message">Would you like to create this game
+    using default settings?\n\nOr would you like to configure it
+    first?</string>
+    <!--XLATE-ME-->
+    <string name="new_game_message_nodflt">This game must be
+    configured before it can be opened.</string>
+    <!--XLATE-ME-->
+    <string name="new_game_message_net">(You will have a chance to
+    invite other players when it is open.)</string>
+    <!--XLATE-ME-->
+    <string name="use_defaults">Use defaults</string>
+    <!--XLATE-ME-->
+    <string name="nplayers_prompt">Number on this device</string>
+    <!--XLATE-ME-->
+    <string name="nplayers_fmt">%1$d player[s]</string>
+    <!--XLATE-ME-->
+    <string name="err_dup_invite_fmt">Duplicate invitation rejected:
+    device \"%1$s\" has already accepted an invitation to this
+    game.</string>
+    <!--XLATE-ME-->
+    <string name="network_advanced_title">Advanced</string>
+    <!--XLATE-ME-->
+    <string name="network_advanced_summary">For experienced players</string>
+    <!--XLATE-ME-->
+    <string name="invite_multi_title">Invite multiple</string>
+    <!--XLATE-ME-->
+    <string name="invite_multi_summary">Invite more than one player per remote device</string>
+    <!--XLATE-ME-->
+    <string name="enable_pubroom_title">Enable public rooms</string>
+    <!--XLATE-ME-->
+    <string name="enable_pubroom_summary">Rooms others can see and join</string>
+    <!--XLATE-ME-->
+    <string name="connection_via_label">Change Communicate via</string>
+    <!--XLATE-ME-->
+    <string name="set_pref">Hide buttons</string>
+    <!--XLATE-ME-->
+    <string name="not_again_hidenewgamebuttons">Now that you have a
+    few games saved you might want to hide these New Game buttons to
+    get more space. They are convenient for new players, but you
+    don\'t need them because the first two items in the Games List
+    window\'s Action Bar do the same thing.\n\n(If you later want to
+    unhide them go to the Appearance section of App settings).
+    </string>
+    <!--XLATE-ME-->
+    <string name="waiting_title">Waiting for players</string>
+    <!--XLATE-ME-->
+    <string name="invite_stays">(This dialog will stay up until all
+    remote players have connected. You can close the game if you
+    expect it to take a while. They will still be able to
+    connect.)</string>
+    <!--XLATE-ME-->
+    <string name="nfc_just_tap">To invite via NFC just touch the back
+    of this device against the one you want to invite—any time the
+    game is open.</string>
+    <!--XLATE-ME-->
+    <string name="warn_no_comms">Every networked game must have at
+    least one way of communicating. If you have no default connection
+    options every new networked game will have to be configured
+    manually.</string>
+    <!--XLATE-ME-->
+    <string name="config_no_connvia">This game has no way to connect
+    and cannot be saved. Would you like to discard your changes, or
+    edit to give it a way to connect?</string>
+    <!--XLATE-ME-->
+    <string name="button_edit">Edit</string>
+    <!--XLATE-ME-->
+    <string name="button_discard_changes">Discard changes</string>
+    <!--XLATE-ME-->
+    <string name="rematch_msg">Issuing rematch invitation. You will
+    see this message until it has been accepted.\n\nYou do not need to
+    keep this game open while waiting. You will be notified when the
+    game is ready to play.</string>
+    <!--XLATE-ME-->
+    <string name="not_again_enablepublic">Public rooms have been made
+    an \"advanced\" feature in this release. If you were using them
+    and want them back, enable them now. You can turn them off again
+    in Settings.</string>
 </resources>
