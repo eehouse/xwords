@@ -391,24 +391,31 @@ public final class R {
          e.g. between entries in the scoreboard 
  the background color of the area outside the board,
          e.g. between entries in the scoreboard 
+<string name="background">Board background</string>
          */
         public static final int background=0x7f05016b;
         /**  Appended to the above in the phonies_warn case.  User may
          ignore the warning 
  Appended to the above in the phonies_warn case.  User may
          ignore the warning 
+<string name="badwords_accept">\u0020Do you still want to accept
+    this move?</string>
          */
         public static final int badwords_accept=0x7f050112;
         /**  Appended to the above in the phonies_disallow case.  User has
          lost his turn. 
  Appended to the above in the phonies_disallow case.  User has
          lost his turn. 
+<string name="badwords_lost">  Turn lost.</string>
          */
         public static final int badwords_lost=0x7f050113;
         /**  title of the dialog in which the above is posted. 
  title of the dialog in which the above is posted. 
+<string name="badwords_title">Illegal word[s]</string>
          */
         public static final int badwords_title=0x7f050114;
+        /** <string name="blue">Blue</string>
+         */
         public static final int blue=0x7f05016f;
         /**  board menu for small devices only 
  board menu for small devices only 
@@ -448,6 +455,7 @@ public final class R {
          the language of the game along with how many of each there
          are and how many points each is worth.  This display is the
          same throughout the game. 
+<string name="board_menu_game_counts">Counts and values…</string>
          */
         public static final int board_menu_game_counts=0x7f05011b;
         /**  Brings up explanation of the game's final score.  If the game
@@ -456,10 +464,12 @@ public final class R {
  Brings up explanation of the game's final score.  If the game
          is not yet over, gives you a choice whether to end it now,
          and if you decline does nothing. 
+<string name="board_menu_game_final">Final scores</string>
          */
         public static final int board_menu_game_final=0x7f05011e;
         /**  Brings up listing of all moves played so far this game.  
  Brings up listing of all moves played so far this game.  
+<string name="board_menu_game_history">Game history…</string>
          */
         public static final int board_menu_game_history=0x7f05011d;
         /**  menu on Game submenu: brings up dialog listing all tiles not
@@ -472,6 +482,7 @@ public final class R {
          visible (whose turn it is, generally).  This display will
          change as tiles are used and depending on what player is
          asking. 
+<string name="board_menu_game_left">Tiles remaining…</string>
          */
         public static final int board_menu_game_left=0x7f05011c;
         public static final int board_menu_game_netstats=0x7f050088;
@@ -485,8 +496,11 @@ public final class R {
          device in the game to be resent.  Eventually I hope to be
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. 
+<string name="board_menu_game_resend">Resend messages</string>
          */
         public static final int board_menu_game_resend=0x7f050120;
+        /** <string name="board_menu_game_resign">Resign</string>
+         */
         public static final int board_menu_game_resign=0x7f05011f;
         public static final int board_menu_invite=0x7f05028f;
         /**   
@@ -522,10 +536,12 @@ public final class R {
          from the undo button that undoes or redoes an in-progress
          not-yet-committed turn.  This is disabled for networked
          games.
+<string name="board_menu_undo_last">Undo last</string>
          */
         public static final int board_menu_undo_last=0x7f050119;
         /**  preference for board size (15x15, 13x13 etc.) 
  preference for board size (15x15, 13x13 etc.) 
+<string name="board_size">Board size</string>
          */
         public static final int board_size=0x7f050152;
         /**  Title of submenu 
@@ -542,6 +558,7 @@ public final class R {
          title of the color editor that comes up when the name is
          tapped. 
  (color for) double-letter bonus squares on the board 
+<string name="bonus_l2x">Double letter</string>
          */
         public static final int bonus_l2x=0x7f050164;
         /**  Bonus value hint that's displayed in gray text in the colored
@@ -552,6 +569,7 @@ public final class R {
         public static final int bonus_l2x_summary=0x7f0500ff;
         /**  (color for) triple-letter bonus squares on the board 
  (color for) triple-letter bonus squares on the board 
+<string name="bonus_l3x">Triple letter</string>
          */
         public static final int bonus_l3x=0x7f050165;
         /**  Bonus value hint that's displayed in gray text in the colored
@@ -562,6 +580,7 @@ public final class R {
         public static final int bonus_l3x_summary=0x7f050101;
         /**  (color for) double-word squares on the board 
  (color for) double-word squares on the board 
+<string name="bonus_w2x">Double word</string>
          */
         public static final int bonus_w2x=0x7f050166;
         /**  Bonus value hint that's displayed in gray text in the colored
@@ -572,6 +591,7 @@ public final class R {
         public static final int bonus_w2x_summary=0x7f050100;
         /**  (color for) triple-word squares on the board 
  (color for) triple-word squares on the board 
+<string name="bonus_w3x">Triple word</string>
          */
         public static final int bonus_w3x=0x7f050167;
         /**  Bonus value hint that's displayed in gray text in the colored
@@ -609,6 +629,7 @@ public final class R {
         public static final int bt_resend_fmt=0x7f05021f;
         /**  text of button for adding new player to game 
  text of button for adding new player to game 
+<string name="button_add_player">Add player</string>
          */
         public static final int button_add_player=0x7f0500d5;
         public static final int button_cancel=0x7f0501c1;
@@ -680,6 +701,7 @@ public final class R {
         public static final int button_invite=0x7f050221;
         /**  text of button to juggle (randomly rearrange order of) players 
  text of button to juggle (randomly rearrange order of) players 
+<string name="button_juggle_players">Shuffle players</string>
          */
         public static final int button_juggle_players=0x7f0500d6;
         public static final int button_later=0x7f050259;
@@ -804,12 +826,14 @@ public final class R {
       
  text of first menu item.  Will revert all preferences to
          their default/original values 
+<string name="button_revert_all">Restore all</string>
          */
         public static final int button_revert_all=0x7f05013a;
         /**  Second menu item.  Reverts only the colors to their
          default/original values 
  Second menu item.  Reverts only the colors to their
          default/original values 
+<string name="button_revert_colors">Restore colors</string>
          */
         public static final int button_revert_colors=0x7f05013c;
         /**  Used in Game config dialog to confirm saving changes that reset a game 
@@ -830,6 +854,8 @@ public final class R {
          different (but same-language wordlist) 
          */
         public static final int button_substdict=0x7f0501ba;
+        /** <string name="button_trade_cancel">Cancel trade</string>
+         */
         public static final int button_trade_cancel=0x7f0500fd;
         /** 
        ############################################################
@@ -855,6 +881,7 @@ public final class R {
       
  Buttons shown at bottom when board is in exchange mode,
          i.e. after user has picked board_menu_trade menu item 
+<string name="button_trade_commit">Commit trade</string>
          */
         public static final int button_trade_commit=0x7f0500fc;
         public static final int button_yes=0x7f0501c2;
@@ -947,6 +974,7 @@ public final class R {
          touching in order to guide the fat-fingered (most of us) in
          operations that require accurately selecting a single square
          on the board.
+<string name="clr_crosshairs">Crosshairs color</string>
          */
         public static final int clr_crosshairs=0x7f050168;
         public static final int config_no_connvia=0x7f0502f3;
@@ -982,10 +1010,14 @@ public final class R {
         public static final int confirm_reset_fmt=0x7f0500bf;
         /**  Text of confirmation dialog for above 
  Text of confirmation dialog for above 
+<string name="confirm_revert_all">Are you sure you want to restore
+      all settings to their original values?</string>
          */
         public static final int confirm_revert_all=0x7f05013d;
         /**  Text of confirmation dialog for above 
  Text of confirmation dialog for above 
+<string name="confirm_revert_colors">Are you sure you want to
+      restore all color settings to their original values?</string>
          */
         public static final int confirm_revert_colors=0x7f05013b;
         /**  title of confirmation dialog put up when user has unlocked an
@@ -994,10 +1026,14 @@ public final class R {
  title of confirmation dialog put up when user has unlocked an
          in-progress game and wants to save changes (has hit the
          play button). 
+<string name="confirm_save">This game is in play.  If you
+      save these changes it must be restarted.  Do you want to save
+      these changes?</string>
          */
         public static final int confirm_save=0x7f0500ef;
         /**  title of above confirmation dialog 
  title of above confirmation dialog 
+<string name="confirm_save_title">Confirm save</string>
          */
         public static final int confirm_save_title=0x7f0500f0;
         public static final int confirm_seldeletes_fmt=0x7f0500be;
@@ -1030,10 +1066,18 @@ public final class R {
          is chosen. 
  text of dialog shown when the menu item board_menu_undo_last
          is chosen. 
+<string name="confirm_undo_last">Are you sure you want to undo the
+      last committed turn? (There is no redo option.)</string>
          */
         public static final int confirm_undo_last=0x7f050138;
+        /** <string name="connect_daily">Once every day</string>
+         */
         public static final int connect_daily=0x7f050187;
+        /** <string name="connect_fifteen_mins">Every 15 minutes</string>
+         */
         public static final int connect_fifteen_mins=0x7f050183;
+        /** <string name="connect_five_mins">Every 5 minutes</string>
+         */
         public static final int connect_five_mins=0x7f050182;
         /**        
        ############################################################
@@ -1057,6 +1101,7 @@ public final class R {
          Crosswords wakes up periodically to check if there are any
          new moves available and fetches them.  This controls how
          frequently that check is done. 
+<string name="connect_frequency">Background move check</string>
          */
         public static final int connect_frequency=0x7f050180;
         /**  text of separator marking out the connection area of the dialog 
@@ -1070,10 +1115,17 @@ public final class R {
          setting presented as a drop-down list. 
  These are the possible values for the connect_frequency
          setting presented as a drop-down list. 
+<string name="connect_never">Never check</string>
          */
         public static final int connect_never=0x7f050181;
+        /** <string name="connect_one_hour">Every hour</string>
+         */
         public static final int connect_one_hour=0x7f050185;
+        /** <string name="connect_six_hours">Every six hours</string>
+         */
         public static final int connect_six_hours=0x7f050186;
+        /** <string name="connect_thirty_mins">Every 30 minutes</string>
+         */
         public static final int connect_thirty_mins=0x7f050184;
         public static final int connection_via_label=0x7f0502ec;
         /**   
@@ -1142,6 +1194,7 @@ public final class R {
          new game 
  dictionary used by default for human players when creating
          new game 
+<string name="default_dict">Wordlist for humans</string>
          */
         public static final int default_dict=0x7f05014a;
         /**  other 
@@ -1189,12 +1242,14 @@ public final class R {
          found in the word list) 
  default new-game setting for handline phonies (words not
          found in the word list) 
+<string name="default_phonies">Handle phonies</string>
          */
         public static final int default_phonies=0x7f050150;
         /**  dictionary used by default for robot players when creating
          new game 
  dictionary used by default for robot players when creating
          new game 
+<string name="default_robodict">Wordlist for robots</string>
          */
         public static final int default_robodict=0x7f05014b;
         public static final int default_update_url=0x7f05007b;
@@ -1228,6 +1283,7 @@ public final class R {
          player will use.  The language the game will use (which
          constrains the choice of wordlists) is substituted in for
          "%1$s". 
+<string name="dict_lang_label_fmt">Wordlist (in %1$s)</string>
          */
         public static final int dict_lang_label_fmt=0x7f0500f8;
         public static final int dict_on_server=0x7f0502c6;
@@ -1276,6 +1332,7 @@ public final class R {
  If the dropdown is selected, this is the title displayed
          above the list of selectable items.  The language the game
          will use is substituted in for "%1$s". 
+<string name="dicts_list_prompt_fmt">Installed wordlists (in %1$s)</string>
          */
         public static final int dicts_list_prompt_fmt=0x7f0500f9;
         /**  text of item at bottom of dicts choice spinner.  It
@@ -1327,6 +1384,7 @@ public final class R {
         public static final int email_body_rev_fmt=0x7f05020f;
         /**  color of empty squares on the board (that are not bonus squares) 
  color of empty squares on the board (that are not bonus squares) 
+<string name="empty">Empty cell/background</string>
          */
         public static final int empty=0x7f05016a;
         /**  Shows in SMS Invite dialog when no phone numbers have been saved previously 
@@ -1350,6 +1408,8 @@ public final class R {
         public static final int enable_sms_summary=0x7f05024e;
         public static final int enable_sms_toself_summary=0x7f050097;
         public static final int enable_sms_toself_title=0x7f050096;
+        /** <string name="entering_trade">Tap tiles to select…</string>
+         */
         public static final int entering_trade=0x7f0500fe;
         public static final int err_dup_invite_fmt=0x7f0502e5;
         public static final int expl_update_url=0x7f05007a;
@@ -1359,10 +1419,13 @@ public final class R {
  if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
          player. 
+<string name="explain_robot">Explain other moves</string>
          */
         public static final int explain_robot=0x7f050172;
         /**  explanation of the above 
  explanation of the above 
+<string name="explain_robot_summary">Display score summary after
+        every robot or remote turn</string>
          */
         public static final int explain_robot_summary=0x7f050173;
         /**  title of dialog brought up in response to the
@@ -1379,6 +1442,9 @@ public final class R {
         public static final int finalscores_title=0x7f0501cd;
         /**  Explanatory text appears in the dialog 
  Explanatory text appears in the dialog 
+<string name="force_expl">In a multi-device game there must be at
+    least one player from and another not from this device.  Please
+    check off-device players.</string>
          */
         public static final int force_expl=0x7f0500f3;
         public static final int force_radio_title=0x7f050098;
@@ -1410,6 +1476,7 @@ public final class R {
        ############################################################
        
  title of this dialog 
+<string name="force_title">Off-device player[s]</string>
          */
         public static final int force_title=0x7f0500f2;
         /**  Displayed as a "Toast" (mini window briefly displayed) if you
@@ -1418,6 +1485,7 @@ public final class R {
  Displayed as a "Toast" (mini window briefly displayed) if you
        didn't choose a remote player and I was forced to pick one. I
        always pick the first. 
+<string name="forced_consistent">Modified first player.</string>
          */
         public static final int forced_consistent=0x7f0500f4;
         /**  Games that have ended are listed with this string 
@@ -1460,6 +1528,7 @@ public final class R {
     game to make changes 
  text of checkbox at top of dialog allowing to unlock in-play
     game to make changes 
+<string name="game_locked">Lock settings</string>
          */
         public static final int game_locked=0x7f0500d2;
         public static final int game_name_group_title=0x7f05027d;
@@ -1475,16 +1544,19 @@ public final class R {
         public static final int game_rename_title=0x7f0500bb;
         /**  Put nothing in the summary space, so it just reads "Game 2" 
  Put nothing in the summary space, so it just reads "Game 2" 
+<string name="game_summary_field_empty">\u003CNothing\u003E</string>
          */
         public static final int game_summary_field_empty=0x7f050156;
         public static final int game_summary_field_gameid=0x7f050077;
         /**  Put the language there, so it reads "Game 2 (English)" 
  Put the language there, so it reads "Game 2 (English)" 
+<string name="game_summary_field_language">Game language\u200C</string>
          */
         public static final int game_summary_field_language=0x7f050157;
         public static final int game_summary_field_npackets=0x7f050078;
         /**  List names of opponents (summarized), e.g. "Game 2 (vs Kati)" 
  List names of opponents (summarized), e.g. "Game 2 (vs Kati)" 
+<string name="game_summary_field_opponents">Opponent name[s]</string>
          */
         public static final int game_summary_field_opponents=0x7f050158;
         public static final int game_summary_field_rowid=0x7f050076;
@@ -1492,6 +1564,7 @@ public final class R {
          etc. 
  List the state of the game, "Game over" or "10 moves made"
          etc. 
+<string name="game_summary_field_state">Game state</string>
          */
         public static final int game_summary_field_state=0x7f050159;
         /**  Regardless of the setting of the connect_frequency
@@ -1540,6 +1613,8 @@ public final class R {
         public static final int getinfo=0x7f0502bf;
         public static final int git_rev=0x7f05009e;
         public static final int git_rev_title=0x7f05008a;
+        /** <string name="green">Green</string>
+         */
         public static final int green=0x7f05016e;
         public static final int group_cur_games=0x7f050278;
         public static final int group_name_fmt=0x7f05027f;
@@ -1550,6 +1625,7 @@ public final class R {
          the Game configure screen 
  Used as the default name for remote players displayed within
          the Game configure screen 
+<string name="guest_name">(Off-device player)</string>
          */
         public static final int guest_name=0x7f0500ee;
         /**  If this preference is checked the "crosshairs" (vertical and
@@ -1566,10 +1642,12 @@ public final class R {
          is distracting, presumably because they're using tablets with
          large enough screens that they always know where they're
          tapping. 
+<string name="hide_crosshairs">Disable crosshairs</string>
          */
         public static final int hide_crosshairs=0x7f05017c;
         /**  explanation of the above 
  explanation of the above 
+<string name="hide_crosshairs_summary">Do not visually indicate which board cell is touched</string>
          */
         public static final int hide_crosshairs_summary=0x7f05017d;
         /**  clarification of above 
@@ -1583,10 +1661,13 @@ public final class R {
          game board window to save space 
  Checkbox that when set prevents showing a title bar in the
          game board window to save space 
+<string name="hide_title">Hide titlebar</string>
          */
         public static final int hide_title=0x7f05015a;
         /**  clarification of above 
  clarification of above 
+<string name="hide_title_summary">Hiding the game name lets the
+        board be slightly larger</string>
          */
         public static final int hide_title_summary=0x7f05015b;
         /**  text of checkbox.  If this checkbox is checked, buttons will
@@ -1595,6 +1676,7 @@ public final class R {
  text of checkbox.  If this checkbox is checked, buttons will
          appear by which the user can get high- and low-scoring moves
          generated based on his tray.  Can be used to cheat.  
+<string name="hints_allowed">Allow hints</string>
          */
         public static final int hints_allowed=0x7f0500e1;
         /**  clarification on hints_allowed, whether new games will
@@ -1603,6 +1685,7 @@ public final class R {
  clarification on hints_allowed, whether new games will
          default to having the hint feature enabled(string elsewhere
          in this file) 
+<string name="hints_allowed_sum">Enable the hint feature</string>
          */
         public static final int hints_allowed_sum=0x7f05014c;
         /**  title of dialog brought up in response to the
@@ -1623,6 +1706,8 @@ public final class R {
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
          
+<string name="ids_badwords_fmt">Word[s] %1$s not found in
+         wordlist %2$s.</string>
          */
         public static final int ids_badwords_fmt=0x7f050111;
         /**  text of confirmation dialog shown when user chooses the menu
@@ -1651,14 +1736,17 @@ public final class R {
          order of players. 
  Will new games, on default, randomly rearrange the start
          order of players. 
+<string name="init_autojuggle">Juggle players</string>
          */
         public static final int init_autojuggle=0x7f05014e;
         /**  clarification on above 
  clarification on above 
+<string name="init_autojuggle_sum">Randomly, for new games</string>
          */
         public static final int init_autojuggle_sum=0x7f05014f;
         /**  default number of minutes on timer for new games 
  default number of minutes on timer for new games 
+<string name="initial_player_minutes">Timer minutes per player</string>
          */
         public static final int initial_player_minutes=0x7f050151;
         /**   
@@ -1712,6 +1800,8 @@ public final class R {
         public static final int invite_htm_fmt=0x7f050199;
         /**  Appended to message above if local device has NFC available 
  Appended to message above if local device has NFC available 
+<string name="invite_if_nfc">(Or just Tap to Invite - if the
+        other device also has Android Beaming and is nearby.)</string>
          */
         public static final int invite_if_nfc=0x7f050105;
         public static final int invite_mime=0x7f050075;
@@ -1731,6 +1821,9 @@ public final class R {
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". 
+<string name="invite_msg_fmt">This game is missing %1$d remote
+      player[s].  Would you like to invite someone to join - assuming
+      you haven\'t already?</string>
          */
         public static final int invite_msg_fmt=0x7f050104;
         public static final int invite_multi_summary=0x7f0502e9;
@@ -1745,6 +1838,9 @@ public final class R {
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. 
+<string name="invite_multiple">\u0020(You are expecting multiple
+      remote players.  Be sure to address your invitation to
+      that many people.)</string>
          */
         public static final int invite_multiple=0x7f050107;
         public static final int invite_prefix=0x7f050074;
@@ -1772,6 +1868,9 @@ public final class R {
  <string name="button_nfc">NFC</string> 
  This is the subject line of the email/text sent to invite
          someone to join a game. 
+ EXPLAIN ME 
+     <string name="bt_disabled">Le Bluetooth n\'est pas disponible. Cela peut 
+ signifier que votre périphérique ne peut pas en faire, ou qu\'il a été éteint.</string> 
  This is the subject line of the email/text sent to invite
          someone to join a game. 
          */
@@ -1788,6 +1887,7 @@ public final class R {
     public rooms 
  text of checkbox asking if user wants to search for open
     public rooms 
+<string name="join_room">Join public room</string>
          */
         public static final int join_room=0x7f0500da;
         /**  Checkbox that when set keeps the device screen from dimming
@@ -1798,10 +1898,12 @@ public final class R {
          if the board screen is what's displayed.  This is to allow
          users to think about a move without having to touch the
          screen all the time.
+<string name="keep_screenon">Keep screen on</string>
          */
         public static final int keep_screenon=0x7f050160;
         /**  clarification of above 
  clarification of above 
+<string name="keep_screenon_summary">Keep board screen on 10 mins</string>
          */
         public static final int keep_screenon_summary=0x7f050161;
         public static final int key_addrs_pref=0x7f05003d;
@@ -1815,6 +1917,7 @@ public final class R {
          board 
  the color of text, e.g. "2L", shown on a bonus square on the
          board 
+<string name="key_bonushint">In-square bonus hint</string>
          */
         public static final int key_bonushint=0x7f05016c;
         public static final int key_bt_addrs=0x7f05003f;
@@ -1934,11 +2037,14 @@ public final class R {
          dialog.  First is used for single-device games, and second
          for networked games (where players aren't allowed to have
          different wordlists.) 
+<string name="lang_label">Game language</string>
          */
         public static final int lang_label=0x7f0500d7;
         public static final int lang_name_english=0x7f0502b5;
         public static final int lang_name_fmt=0x7f0502c7;
         public static final int lang_unknown=0x7f0502c8;
+        /** <string name="langdict_label">Game language/wordlist</string>
+         */
         public static final int langdict_label=0x7f0500d8;
         public static final int list_group_default=0x7f050275;
         public static final int list_group_delete=0x7f050273;
@@ -2117,6 +2223,7 @@ public final class R {
         public static final int min_len=0x7f050208;
         /**  label for the field used to set the timer's inital value 
  label for the field used to set the timer's inital value 
+<string name="minutes_label">Minutes per player</string>
          */
         public static final int minutes_label=0x7f0500e4;
         /**  body of notification shown when invitation requires a
@@ -2197,18 +2304,26 @@ public final class R {
          relay.  Once this happens there is no way to continue the
          game so you might as well delete it (unless you're saving it
          for its history etc.) 
+<string name="msg_dev_deleted">This game has been deleted on
+      another device. You will not be able to play any
+      further.</string>
          */
         public static final int msg_dev_deleted=0x7f050110;
         /**  (I believe this can no longer occur) 
  (I believe this can no longer occur) 
+<string name="msg_dup_room">Another host has already registered a
+         room using that name.  Rename yours or retry later.</string>
          */
         public static final int msg_dup_room=0x7f05010e;
         /**  (I believe this can no longer occur) 
  (I believe this can no longer occur) 
+<string name="msg_lost_other">The relay has lost contact with
+         another device in this game.</string>
          */
         public static final int msg_lost_other=0x7f05010f;
         /**  (I believe this can no longer occur) 
  (I believe this can no longer occur) 
+<string name="msg_no_room">No host has registered a room by that name.</string>
          */
         public static final int msg_no_room=0x7f05010d;
         /**  Text of "toast" shown when a game is notified by the relay
@@ -2217,6 +2332,8 @@ public final class R {
  Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. 
+<string name="msg_relay_all_here_fmt">All players are here in room
+      \"%1$s\".</string>
          */
         public static final int msg_relay_all_here_fmt=0x7f05010a;
         /**  Text of "toast" (mini window briefly displayed) shown when a
@@ -2231,10 +2348,14 @@ public final class R {
          the room, and how many additional players have not yet
          registered with the relay in this game.  This should be seen
          only once per game. 
+<string name="msg_relay_waiting_fmt">Device %1$d connected to relay in
+      room \"%2$s\". Waiting for %3$d player[s].</string>
          */
         public static final int msg_relay_waiting_fmt=0x7f050109;
         /**  (I believe this can no longer occur) 
  (I believe this can no longer occur) 
+<string name="msg_too_many">You are providing more players than
+         the host expects.</string>
          */
         public static final int msg_too_many=0x7f05010c;
         /**  Text of progress indicator shown while check is being conducted 
@@ -2272,6 +2393,7 @@ public final class R {
  text of checkbox.  If this checkbox is checked, games created
          for network play will by default have the hint feature
          enabled. 
+<string name="nethints_allowed">Allow hints (networked)</string>
          */
         public static final int nethints_allowed=0x7f0500e2;
         /**  clarification on hints_allowed, whether new NETWORKED games
@@ -2280,14 +2402,19 @@ public final class R {
  clarification on hints_allowed, whether new NETWORKED games
          will default to having the hint feature enabled(string
          elsewhere in this file) 
+<string name="nethints_allowed_sum">Enable hints for two-device games</string>
          */
         public static final int nethints_allowed_sum=0x7f05014d;
         public static final int netstats_title=0x7f050089;
         public static final int network_advanced_summary=0x7f0502e7;
         public static final int network_advanced_title=0x7f0502e6;
+        /** <string name="network_behavior">Network game settings</string>
+         */
         public static final int network_behavior=0x7f05017e;
         /**  explanation of the above 
  explanation of the above 
+<string name="network_behavior_summary">Settings that apply to
+        networked games</string>
          */
         public static final int network_behavior_summary=0x7f05017f;
         /**   
@@ -2333,6 +2460,7 @@ public final class R {
         public static final int new_name_body_fmt=0x7f05022b;
         /**  hint (text shown when field is empty) for room name field 
  hint (text shown when field is empty) for room name field 
+<string name="new_room_hint">Room name</string>
          */
         public static final int new_room_hint=0x7f0500db;
         /**   
@@ -2368,12 +2496,14 @@ public final class R {
          bluetooth games 
  section separator (white-on-gray bar) for third section:
          bluetooth games 
+<string name="newgame_bt_header">New Bluetooth game</string>
          */
         public static final int newgame_bt_header=0x7f050192;
         /**  Text of second of two buttons for new standalone games.  Tap
     this and you'll get taken to the "Game configure" screen 
  Text of second of two buttons for new standalone games.  Tap
     this and you'll get taken to the "Game configure" screen 
+<string name="newgame_configure_first">Configure first</string>
          */
         public static final int newgame_configure_first=0x7f05018e;
         /**  Text of first of two buttons for new networked games.  Tap
@@ -2384,6 +2514,7 @@ public final class R {
          this and a game will be created, but you probably won't see
          it immediately because an email or messaging app will be
          launched to send your invitation. 
+<string name="newgame_invite">Invite now</string>
          */
         public static final int newgame_invite=0x7f050191;
         /**  Text of first of two buttons for new standalone games.  Tap
@@ -2392,6 +2523,7 @@ public final class R {
  Text of first of two buttons for new standalone games.  Tap
          this and a new game will be created and opened.  If the first
          player is a robot it will immediately take its turn.
+<string name="newgame_local">Play now</string>
          */
         public static final int newgame_local=0x7f05018d;
         /**  This is one of two descriptions on this screen.  It explains
@@ -2402,6 +2534,11 @@ public final class R {
          what standalone games are and describes the two buttons used
          to create them.  The name of the language of the default
          wordlist is substituted in for %1$s. 
+<string name="newgame_local_desc_fmt">Create a new game where all
+      players will be on this device.  To play against a robot and
+      with your default settings (in %1$s, etc.) just press \"Play
+      now\".  To add players or change game settings, press
+      \"Configure first\".</string>
          */
         public static final int newgame_local_desc_fmt=0x7f05018c;
         /**  ############################################################
@@ -2428,6 +2565,7 @@ public final class R {
       
  section separator (white-on-gray bar) for first section:
          standalone games 
+<string name="newgame_local_header">New Local-only game</string>
          */
         public static final int newgame_local_header=0x7f05018b;
         /**  This is the second of two descriptions on this screen.  It
@@ -2436,12 +2574,19 @@ public final class R {
  This is the second of two descriptions on this screen.  It
          explains what networked games are and describes the two
          buttons used to create them. 
+<string name="newgame_networked_desc">Create a game that will be
+      played over the network.  The \"Invite now\" button starts a
+      two-device game and helps you invite a friend to join it.  Or
+      press \"Configure first\" to change some of the defaults before
+      you start your networked game. (You\'ll have a chance to send
+      invites later.)</string>
          */
         public static final int newgame_networked_desc=0x7f050190;
         /**  section separator (white-on-gray bar) for second section:
          networked games 
  section separator (white-on-gray bar) for second section:
          networked games 
+<string name="newgame_networked_header">New Networked game</string>
          */
         public static final int newgame_networked_header=0x7f05018f;
         /**   
@@ -2532,6 +2677,7 @@ public final class R {
          most recent score to show 
  displayed when you long-tap a scoreboard entry and there's no
          most recent score to show 
+<string name="no_moves_made">(No moves yet)</string>
          */
         public static final int no_moves_made=0x7f050103;
         /**  If the query returns no rooms, this message is displayed,
@@ -2540,6 +2686,9 @@ public final class R {
  If the query returns no rooms, this message is displayed,
     with the number of players in the game and its language
     substituted. 
+<string name="no_name_found_fmt">No public rooms found for
+      %1$d-player games in %2$s. Try refreshing or creating your
+      own.</string>
          */
         public static final int no_name_found_fmt=0x7f0500df;
         /**  This is not currently shown 
@@ -2726,12 +2875,14 @@ public final class R {
          notify choices above, as extra information.  (There could be
          different strings if it makes more sense in your language.)
          
+<string name="notify_other_summary">When opponent moves arrive</string>
          */
         public static final int notify_other_summary=0x7f05018a;
         /**  When one or more new moves is found, should I play a
          notification sound 
  When one or more new moves is found, should I play a
          notification sound 
+<string name="notify_sound">Play sound</string>
          */
         public static final int notify_sound=0x7f050188;
         /**  When a move is fetched from the relay a Notification is
@@ -2748,6 +2899,7 @@ public final class R {
          device 
  When one or more new moves is found, should I vibrate the
          device 
+<string name="notify_vibrate">Vibrate</string>
          */
         public static final int notify_vibrate=0x7f050189;
         public static final int nplayers_fmt=0x7f0502e4;
@@ -2766,6 +2918,7 @@ public final class R {
          only make sense where there's more than one local human
          player on a device, so they are infrequently used in network
          games as well. 
+<string name="password_label">Password</string>
          */
         public static final int password_label=0x7f0500fb;
         public static final int paste_done_fmt=0x7f05029d;
@@ -2791,10 +2944,13 @@ public final class R {
          might make sense for one to be able to study the board even
          though it's not his turn e.g. while the player whose turn it
          is is temporarily unable to play. 
+<string name="peek_other">View tiles out-of-turn</string>
          */
         public static final int peek_other=0x7f05017a;
         /**  explanation of the above 
  explanation of the above 
+<string name="peek_other_summary">Tapping on scoreboard name shows
+        that player\'s tiles</string>
          */
         public static final int peek_other_summary=0x7f05017b;
         /**   
@@ -2805,6 +2961,7 @@ public final class R {
          when user attempts to play word not in the wordlist. 
  Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. 
+<string name="phonies_disallow">Disallow phonies</string>
          */
         public static final int phonies_disallow=0x7f0500ec;
         /**  These are the three choices in the popup above whose text is
@@ -2813,6 +2970,7 @@ public final class R {
  These are the three choices in the popup above whose text is
          phonies_spinner_prompt 
  Don't care if words played are in the wordlist or not 
+<string name="phonies_ignore">Ignore phonies</string>
          */
         public static final int phonies_ignore=0x7f0500ea;
         /**  title of popup used to determine how words are handled that
@@ -2821,12 +2979,15 @@ public final class R {
  title of popup used to determine how words are handled that
          are not in the wordlist used for the game (or player if using
          different wordlists per player) 
+<string name="phonies_spinner_prompt">How to handle \"phonies\"
+        (words not in wordlist)</string>
          */
         public static final int phonies_spinner_prompt=0x7f0500e9;
         /**  warn player when word played is not in the wordlist, but
          allow him to play it. 
  warn player when word played is not in the wordlist, but
          allow him to play it. 
+<string name="phonies_warn">Warn if phonies</string>
          */
         public static final int phonies_warn=0x7f0500eb;
         /**   
@@ -2841,6 +3002,7 @@ public final class R {
          configure screen and open the game into the Board screen 
  Text of button at bottom.  Press it and you exit this
          configure screen and open the game into the Board screen 
+<string name="play">Play game</string>
          */
         public static final int play=0x7f0500f1;
         /**      
@@ -2863,6 +3025,7 @@ public final class R {
        ############################################################
       
  dialog title 
+<string name="player_edit_title">Edit player</string>
          */
         public static final int player_edit_title=0x7f0500f5;
         /**  used to create default player names.  Number between 1 and 4
@@ -2875,6 +3038,7 @@ public final class R {
          set/displayed 
  text of lable identifying the field in which player's name is
          set/displayed 
+<string name="player_label">Name:</string>
          */
         public static final int player_label=0x7f0500f7;
         /**  text for separator above the list of players that's used for
@@ -2883,38 +3047,47 @@ public final class R {
  text for separator above the list of players that's used for
          networked games.  The numbers of local and non-local players
          are substituted for %1$d and %2$d. 
+<string name="players_label_host_fmt">Players (%1$d local, %2$d
+      off-device)</string>
          */
         public static final int players_label_host_fmt=0x7f0500d4;
         /**  text for separator above the list of players that's used for
          non-networked games 
  text for separator above the list of players that's used for
          non-networked games 
+<string name="players_label_standalone">Players (tap to edit)</string>
          */
         public static final int players_label_standalone=0x7f0500d3;
         /**  Toast shown when players are missing, same time as above
            but more subtle.  
  Toast shown when players are missing, same time as above
            but more subtle.  
+<string name="players_miss_fmt">%1$d player[s] missing</string>
          */
         public static final int players_miss_fmt=0x7f050106;
         /**  Label for the first "human player" name preference 
  Label for the first "human player" name preference 
+<string name="pref_human_name">Human player</string>
          */
         public static final int pref_human_name=0x7f050146;
         /**  Label for the first player color preference 
  Label for the first player color preference 
+<string name="pref_player1_name">First player</string>
          */
         public static final int pref_player1_name=0x7f050142;
         /**  Label for the second player color preference 
  Label for the second player color preference 
+<string name="pref_player2_name">Second player</string>
          */
         public static final int pref_player2_name=0x7f050143;
         /**  Label for the third player color preference 
  Label for the third player color preference 
+<string name="pref_player3_name">Third player</string>
          */
         public static final int pref_player3_name=0x7f050144;
         /**  Label for the fourth player color preference 
  Label for the fourth player color preference 
+<string name="pref_player4_name">Fourth player</string>
          */
         public static final int pref_player4_name=0x7f050145;
         /** 
@@ -2931,10 +3104,13 @@ public final class R {
        ############################################################
       
  title of this sub-preference 
+<string name="prefs_appearance">Appearance</string>
          */
         public static final int prefs_appearance=0x7f050153;
         /**  clarification of the above 
  clarification of the above 
+<string name="prefs_appearance_summary">Settings controlling
+        appearance</string>
          */
         public static final int prefs_appearance_summary=0x7f050154;
         /**        
@@ -2951,10 +3127,12 @@ public final class R {
        ############################################################
       
  title of this sub-preference 
+<string name="prefs_behavior">Behavior</string>
          */
         public static final int prefs_behavior=0x7f050170;
         /**  clarification of the above 
  clarification of the above 
+<string name="prefs_behavior_summary">Settings controlling app behavior</string>
          */
         public static final int prefs_behavior_summary=0x7f050171;
         /** 
@@ -2973,10 +3151,12 @@ public final class R {
        ############################################################
       
  title of this sub-preference 
+<string name="prefs_colors">Individual colors</string>
          */
         public static final int prefs_colors=0x7f050162;
         /**  clarification of the above 
  clarification of the above 
+<string name="prefs_colors_summary">Edit colors used on the board</string>
          */
         public static final int prefs_colors_summary=0x7f050163;
         /**        
@@ -2993,28 +3173,35 @@ public final class R {
        ############################################################
       
  title of this sub-preference 
+<string name="prefs_defaults">New game defaults</string>
          */
         public static final int prefs_defaults=0x7f05013e;
         /**  clarification of the above 
  clarification of the above 
+<string name="prefs_defaults_summary">Default settings for new
+        games</string>
          */
         public static final int prefs_defaults_summary=0x7f05013f;
         /**  sub-preference for dictionaries (soon to be called "word lists") 
  sub-preference for dictionaries (soon to be called "word lists") 
+<string name="prefs_dicts">Wordlists</string>
          */
         public static final int prefs_dicts=0x7f050148;
         /**  clarification of above 
  clarification of above 
+<string name="prefs_dicts_summary">Default wordlists</string>
          */
         public static final int prefs_dicts_summary=0x7f050149;
         /**  sub-preference title for editing default player names.
          There's only enabled now, though.
  sub-preference title for editing default player names.
          There's only enabled now, though.
+<string name="prefs_names">Player names</string>
          */
         public static final int prefs_names=0x7f050140;
         /**  clarification of the above 
  clarification of the above 
+<string name="prefs_names_summary">Default player names</string>
          */
         public static final int prefs_names_summary=0x7f050141;
         /**  Used when prev player's name can't be looked up 
@@ -3037,6 +3224,7 @@ public final class R {
  Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. 
+<string name="pts">pts</string>
          */
         public static final int pts=0x7f050108;
         /**  If you check the join_room checkbox Crosswords queries the
@@ -3047,6 +3235,8 @@ public final class R {
     relay.  This is the text of the progress indicator displayed what
     that's going on.  (It's often visible for only a very short
     time.)
+<string name="public_names_progress_fmt">Fetching public rooms for
+      %1$d-player games in %2$s.</string>
          */
         public static final int public_names_progress_fmt=0x7f0500de;
         /**  Title for generic dialog asking a question, usually in the
@@ -3087,6 +3277,7 @@ public final class R {
       
  Names of the three colors by which colors can be edited in
          the color preferences dialog 
+<string name="red">Red</string>
          */
         public static final int red=0x7f05016d;
         public static final int redir_host=0x7f050080;
@@ -3094,6 +3285,7 @@ public final class R {
          problems with the current game. 
  Title of dialog used to alert players to relay-related
          problems with the current game. 
+<string name="relay_alert">Connection problem</string>
          */
         public static final int relay_alert=0x7f05010b;
         public static final int relay_alert_title=0x7f050286;
@@ -3112,6 +3304,7 @@ public final class R {
  checkbox determining of this player is on this device or
          remote.  If remote, then the rest of the fields disappear
          (since they will be set by the remote device.) 
+<string name="remote_label">Off-device player</string>
          */
         public static final int remote_label=0x7f0500f6;
         public static final int remote_no_net=0x7f0502be;
@@ -3127,6 +3320,8 @@ public final class R {
          */
         public static final int rename_label=0x7f0500bc;
         public static final int rename_label_caveat=0x7f0500bd;
+        /** <string name="resend_finished_fmt">Resend finished; sent %1$d message[s].</string>
+         */
         public static final int resend_finished_fmt=0x7f050121;
         /**  if this preference is checked, the hardware volume keys will
          work to zoom the board in and out (and will not control
@@ -3136,14 +3331,17 @@ public final class R {
          work to zoom the board in and out (and will not control
          volume) This only applies when the Board screen is
          frontmost. 
+<string name="ringer_zoom">Volume keys zoom</string>
          */
         public static final int ringer_zoom=0x7f050178;
         /**  explanation of the above 
  explanation of the above 
+<string name="ringer_zoom_summary">Zoom board using volume keys</string>
          */
         public static final int ringer_zoom_summary=0x7f050179;
         /**  checkbox determining if player is robot/automated or human 
  checkbox determining if player is robot/automated or human 
+<string name="robot_label">Robot player</string>
          */
         public static final int robot_label=0x7f0500fa;
         /**  Used to format robot player names in the lists of players
@@ -3154,22 +3352,30 @@ public final class R {
         public static final int robot_name_fmt=0x7f0500a2;
         /**  Three possible choices presented in the popup above 
  Three possible choices presented in the popup above 
+<string name="robot_smart">Smart robot</string>
          */
         public static final int robot_smart=0x7f0500e6;
+        /** <string name="robot_smarter">Smarter robot</string>
+         */
         public static final int robot_smarter=0x7f0500e7;
+        /** <string name="robot_smartest">Smartest robot</string>
+         */
         public static final int robot_smartest=0x7f0500e8;
         /**  title of popup used to select how "smart" (how capable) the
     robot player will be. 
  title of popup used to select how "smart" (how capable) the
     robot player will be. 
+<string name="robot_spinner_prompt">How smart is the robot player?</string>
          */
         public static final int robot_spinner_prompt=0x7f0500e5;
         /**  text of checkbox 
  text of checkbox 
+<string name="room_public">Make new room public</string>
          */
         public static final int room_public=0x7f0500dc;
         /**  title for popup of public rooms found on server 
  title for popup of public rooms found on server 
+<string name="room_public_prompt">Select public room</string>
          */
         public static final int room_public_prompt=0x7f0500dd;
         public static final int sel_games_fmt=0x7f050289;
@@ -3198,6 +3404,7 @@ public final class R {
         public static final int set_pref=0x7f0502ed;
         /**  text of separator marking out other-setting area of the dialog 
  text of separator marking out other-setting area of the dialog 
+<string name="settings_label">Other settings</string>
          */
         public static final int settings_label=0x7f0500e0;
         /**  Checkbox that when set makes taps on the board manipulate an
@@ -3206,10 +3413,13 @@ public final class R {
  Checkbox that when set makes taps on the board manipulate an
          arrow that then directs where tiles go when tapped in the
          tray. 
+<string name="show_arrow">Show board arrow</string>
          */
         public static final int show_arrow=0x7f05015e;
         /**  clarification of above 
  clarification of above 
+<string name="show_arrow_summary">Tapped rack tiles land on this
+        arrow when it is visible</string>
          */
         public static final int show_arrow_summary=0x7f05015f;
         public static final int show_remote=0x7f0502c1;
@@ -3220,10 +3430,13 @@ public final class R {
  If this preference is checked, the user will not be asked to
          confirm after selecting the "Turn done" menu (or tapping the
          points display at the right end of the tray) 
+<string name="skip_confirm_turn">Skip confirming turn</string>
          */
         public static final int skip_confirm_turn=0x7f050174;
         /**  explanation of the above 
  explanation of the above 
+<string name="skip_confirm_turn_summary">Do NOT display score
+        summary after every human turn</string>
          */
         public static final int skip_confirm_turn_summary=0x7f050175;
         public static final int slmenu_clear_sel=0x7f05029b;
@@ -3240,6 +3453,7 @@ public final class R {
         public static final int square_tiles_summary=0x7f050283;
         /**  Used in formatting moves and history 
  Used in formatting moves and history 
+<string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
          */
         public static final int str_bonus_all=0x7f050134;
         /**  Using the hint feature is cheating by some players, and it
@@ -3266,6 +3480,7 @@ public final class R {
          to confirm committing the current turn
  Beginning of the message presented to a user when asking him
          to confirm committing the current turn
+<string name="str_commit_confirm">Commit the current move?\n</string>
          */
         public static final int str_commit_confirm=0x7f050131;
         /**  Used to format game name plus some other information as the
@@ -3314,6 +3529,7 @@ public final class R {
     indicate that the player is remote. 
  Used, with remote player's name substituted for %1$s, to
     indicate that the player is remote. 
+<string name="str_nonlocal_name_fmt">%1$s (remote)</string>
          */
         public static final int str_nonlocal_name_fmt=0x7f050132;
         /**  Displyed when you try to commit a move and it's not your
@@ -3324,6 +3540,7 @@ public final class R {
         public static final int str_not_your_turn=0x7f0501ab;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
+<string name="str_pass">pass\n</string>
          */
         public static final int str_pass=0x7f05012b;
         /**  Used to alert user to loss of turn when a move is made and
@@ -3332,12 +3549,15 @@ public final class R {
  Used to alert user to loss of turn when a move is made and
          phonies is set to lose turn when word used not in wordlist
          
+<string name="str_phony_rejected">Illegal word in move; turn lost!</string>
          */
         public static final int str_phony_rejected=0x7f050130;
         /**  Shown when using the the Game configure screen to configure a
          networked game and you try to make all players local. 
  Shown when using the the Game configure screen to configure a
          networked game and you try to make all players local. 
+<string name="str_reg_server_sans_remote">At least one player must
+         be marked \"Remote\" for a game started as Host.</string>
          */
         public static final int str_reg_server_sans_remote=0x7f0500ed;
         /**  This error message is shown when a remote device tries to
@@ -3356,6 +3576,8 @@ public final class R {
         public static final int str_reg_unexpected_user=0x7f0501b1;
         /**  Used in formatting remote player move summaries 
  Used in formatting remote player move summaries 
+<string name="str_remote_moved_fmt">Remote player %1$s made this
+    move:\u0020</string>
          */
         public static final int str_remote_moved_fmt=0x7f050129;
         /**  Used in formatting final scores display 
@@ -3380,6 +3602,7 @@ public final class R {
        ############################################################
       
  Notifies user of a normal robot move 
+<string name="str_robot_moved_fmt">The robot %1$s made this move:\u0020</string>
          */
         public static final int str_robot_moved_fmt=0x7f050122;
         /**  Shown when a remote device tries to join a game and wants to
@@ -3438,64 +3661,79 @@ public final class R {
          information about the current rack is hidden then) 
  Used in formatting game history (not move summaries since
          information about the current rack is hidden then) 
+<string name="strd_cumulative_score_fmt">Cumulative score: %1$d\n</string>
          */
         public static final int strd_cumulative_score_fmt=0x7f050128;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
+<string name="strd_remaining_tiles_add_fmt">+ %1$d [all remaining tiles]</string>
          */
         public static final int strd_remaining_tiles_add_fmt=0x7f050125;
         /**  Intro to the paragraph lisiting all of the tiles remaining 
  Intro to the paragraph lisiting all of the tiles remaining 
+<string name="strd_remains_expl_fmt">%1$d tiles left in pool and all
+    tray[s]:\n</string>
          */
         public static final int strd_remains_expl_fmt=0x7f050137;
         /**  First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) 
  First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) 
+<string name="strd_remains_header_fmt">%1$d tiles left in pool.</string>
          */
         public static final int strd_remains_header_fmt=0x7f050136;
         /**  Notifies user of a robot trade move 
  Notifies user of a robot trade move 
+<string name="strd_robot_traded_fmt">exchanged %1$d tiles.</string>
          */
         public static final int strd_robot_traded_fmt=0x7f050123;
         /**  I don't know how this is used. :-) 
  I don't know how this is used. :-) 
+<string name="strd_time_penalty_sub_fmt"> - %1$d [time]</string>
          */
         public static final int strd_time_penalty_sub_fmt=0x7f05012a;
         /**  Used in formatting moves and history.  The total score for
          one turn is substituted for %1$d.
  Used in formatting moves and history.  The total score for
          one turn is substituted for %1$d.
+<string name="strd_turn_score_fmt">Score for turn: %1$d\n</string>
          */
         public static final int strd_turn_score_fmt=0x7f050135;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
+<string name="strd_unused_tiles_sub_fmt">- %1$d [unused tiles]</string>
          */
         public static final int strd_unused_tiles_sub_fmt=0x7f050126;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
+<string name="strs_move_across_fmt">move (from %1$s across)\n</string>
          */
         public static final int strs_move_across_fmt=0x7f05012c;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
+<string name="strs_move_down_fmt">move (from %1$s down)\n</string>
          */
         public static final int strs_move_down_fmt=0x7f05012d;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
+<string name="strs_new_tiles_fmt">New tiles: %1$s</string>
          */
         public static final int strs_new_tiles_fmt=0x7f050127;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
+<string name="strs_tray_at_start_fmt">Rack at start: %1$s\n</string>
          */
         public static final int strs_tray_at_start_fmt=0x7f05012e;
         /**  title for window you get when you select menu with text
          board_menu_game_counts 
  title for window you get when you select menu with text
          board_menu_game_counts 
+<string name="strs_values_header_fmt">%1$s counts/values:\n</string>
          */
         public static final int strs_values_header_fmt=0x7f050124;
         /**  Used in formatting exchange move summaries 
  Used in formatting exchange move summaries 
+<string name="strss_traded_for_fmt">Exchanged %1$s for %2$s.</string>
          */
         public static final int strss_traded_for_fmt=0x7f05012f;
         public static final int study_langpick=0x7f0502a0;
@@ -3532,6 +3770,7 @@ public final class R {
          
          The following strings beginning with "game_summary_field_" are
          possible values 
+<string name="summary_field">Include in game listing</string>
          */
         public static final int summary_field=0x7f050155;
         /**   
@@ -3577,6 +3816,8 @@ public final class R {
         public static final int summary_send_data_sms=0x7f050087;
         /**  explanation of the above 
  explanation of the above 
+<string name="summary_sort_tiles">Sort racks whenever new tiles
+      are added</string>
          */
         public static final int summary_sort_tiles=0x7f050177;
         public static final int summary_studyon=0x7f050298;
@@ -3593,11 +3834,13 @@ public final class R {
          part of the game and that the user should ignore it. 
  Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. 
+<string name="tell_unused">Not used yet…</string>
          */
         public static final int tell_unused=0x7f050147;
         public static final int thumb_off=0x7f05028c;
         /**  color of the tiles' background 
  color of the tiles' background 
+<string name="tile_back">Tile background</string>
          */
         public static final int tile_back=0x7f050169;
         /**   
@@ -3656,14 +3899,18 @@ public final class R {
        ############################################################ 
       
  window title (game name substituted for %1$s) 
+<string name="title_game_config_fmt">Settings for %1$s</string>  
          */
         public static final int title_game_config_fmt=0x7f0500cf;
         /**  alternate window title used when game is networked 
  alternate window title used when game is networked 
+<string name="title_gamenet_config_fmt">%1$s settings (networked)</string>  
          */
         public static final int title_gamenet_config_fmt=0x7f0500d0;
         /**  title for popup list of langugages from which user picks 
  title for popup list of langugages from which user picks 
+<string name="title_langs_list">Languages (based on installed
+      wordlists)</string>
          */
         public static final int title_langs_list=0x7f0500d1;
         /**   
@@ -3693,6 +3940,7 @@ public final class R {
        ############################################################
       
  window title 
+<string name="title_prefs">Crosswords Settings</string>
          */
         public static final int title_prefs=0x7f050139;
         public static final int title_send_data_sms=0x7f050086;
@@ -3702,6 +3950,7 @@ public final class R {
  If this preference is checked, tiles in the rack will be
          re-ordered alphabetically whenever tiles are added,
          i.e. after ever move.
+<string name="title_sort_tiles">Sort new tiles</string>
          */
         public static final int title_sort_tiles=0x7f050176;
         public static final int title_studyon=0x7f050297;
@@ -3715,12 +3964,14 @@ public final class R {
         public static final int use_defaults=0x7f0502e2;
         /**  text of checkbox controlling whether there's a game timer 
  text of checkbox controlling whether there's a game timer 
+<string name="use_timer">Enable game timer</string>
          */
         public static final int use_timer=0x7f0500e3;
         /**  Used to separate names of players when listing them on one
     line in a game summary.  The \u0020 is a space in xml. 
  Used to separate names of players when listing them on one
     line in a game summary.  The \u0020 is a space in xml. 
+<string name="vs_join">\u0020vs.\u0020</string>
          */
         public static final int vs_join=0x7f050133;
         public static final int waiting_title=0x7f0502ef;
