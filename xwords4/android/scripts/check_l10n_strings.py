@@ -54,10 +54,12 @@ def load_strings(lang=''):
 def main():
     langs = []
     generate = False
-    pairs, rest = getopt.getopt(sys.argv[1:], "l:g")
+    newOnly = False
+    pairs, rest = getopt.getopt(sys.argv[1:], "l:ghn")
     for option, value in pairs:
         if option == '-l': langs.append(value)
         elif option == '-g': generate = True
+        elif option == '-n': newOnly = True
         else: usage()
 
     if generate and 1 != len(langs):
@@ -86,7 +88,8 @@ def main():
                 if indx in en_strings.values(): # it's a string
                     id = [siid for siid in en_strings.keys() if en_strings[siid] == indx][0]
                     if id in l_strings.keys(): 
-                        print l_nodes[l_strings[id]]
+                        if not newOnly:
+                            print l_nodes[l_strings[id]]
                     else: 
                         print '    <!--XLATE-ME-->'
                         print en_nodes[indx]
