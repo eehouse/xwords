@@ -18,6 +18,8 @@ check_add () {
 
 usage() {
     echo "usage: $0 [--locale <locale>] [--all]" 1>&2
+	echo "pulls string ids out of .xml and .java files" 1>&2
+	exit 1
 }
 
 BASE=$(dirname $0)
@@ -28,7 +30,9 @@ while [ -n "$1" ]; do
         --all)
             for DIR in $(ls -d res/values-*); do
                 DIR=$(basename $DIR)
-                LOCALES="$LOCALES $DIR"
+				if [ -e $DIR/strings.xml ]; then
+					LOCALES="$LOCALES $DIR"
+				fi
             done
             ;;
         --locale)
