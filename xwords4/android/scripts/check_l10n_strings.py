@@ -24,9 +24,10 @@ pat_empty = re.compile( p_empty, re.DOTALL | re.MULTILINE )
 def usage(msg=''):
     print
     if not '' == msg: print 'Error:', msg
-    print "usage:", sys.argv[0], "[-l lang]* [-g]"
+    print "usage:", sys.argv[0], "[-l lang]* [-g] [-n]"
     print '    [-l lang]* # include in list of langs compared'
     print '    [-g] # generate dummy nodes where missing'
+    print '    [-n] # generate new/missing nodes only'
     sys.exit(0)
 
 def load_strings(lang=''):
