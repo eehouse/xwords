@@ -1984,4 +1984,40 @@
     na \"decnavda\" erutaef ni siht esaeler. Fi uoy erew gnisu meht
     dna tnaw meht ,kcab elbane meht won. Uoy nac nrut meht ffo niaga
     ni Sgnittes.</string>
+  <!-- Debugging stuff. Localize if you think your langauge users will
+       care. -->
+  <string name="advanced">Rof gniggubed</string>
+  <string name="advanced_summary">Uoy dluohs reven deen eseht...</string>
+  <string name="relay_host">Yaler tsoh</string>
+  <string name="redir_host">Etivni tcerider tsoh</string>
+  <string name="dict_host">Tsildrow daolnwod LRU</string>
+  <string name="logging_on">Elbane gniggol</string>
+  <string name="logging_on_summary">esaeler( sdliub )ylno</string>
+  <string name="debug_features">Elbane gubed serutaef</string>
+  <string name="debug_features_summary">Smetiunem cte. esaeler( sdliub
+  )ylno</string>
+  <string name="title_send_data_sms">Dnes SMS sa atad</string>
+  <string name="summary_send_data_sms">mSG( senohp )ylno</string>
+  <string name="board_menu_game_netstats">Krowten stats</string>
+  <string name="netstats_title">Emag krowten stats</string>
+  <string name="git_rev_title">Ecruos noisrev di</string>
+  <string name="relay_port">Yaler emag trop</string>
+  <string name="proxy_port">Yaler ecived trop</string>
+  <string name="name_dict_fmt">%1$s/%2$s</string>
+  <string name="gamel_menu_storedb">Etirw BD ot DS drac</string>
+  <string name="gamel_menu_loaddb">Daol BD morf DS drac</string>
+  <string name="enable_dupes_title">Tpecca etacilpud setivni</string>
+  <string name="xlations_locale">Ekaf elacol rof noitalsnart</string>
+  <string name="enable_dupes_summary">Tpecca snoitativni erom naht ecno</string>
+  <string name="nag_intervals">Rednimer slavretni ,2setunim,1setunim(...)</string>
+  <string name="enable_nfc_toself_title">Elbane CFN ot fles</string>
+  <string name="enable_nfc_toself_summary">Ekaf noitativni ot dia gniggubed</string>
+  <string name="enable_sms_toself_title">Tiucric-trohs SMS ot fles</string>
+  <string name="enable_sms_toself_summary">Piks oidar nehw enohp srebmun emas</string>
+  <string name="force_radio_title">Dneterp ot evah oidar</string>
+  <string name="radio_name_real">Nod\'t dneterp</string>
+  <string name="radio_name_tablet">On/telbat oidar</string>
+  <string name="radio_name_gsm">MSG</string>
+  <string name="radio_name_cdma">AMDC</string>
+  <string name="nfc_to_self">Dnes aiv CFN ot ?fles</string>
 </resources>

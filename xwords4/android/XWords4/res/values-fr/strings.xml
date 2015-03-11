@@ -2558,4 +2558,72 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
     an \"advanced\" feature in this release. If you were using them
     and want them back, enable them now. You can turn them off again
     in Settings.</string>
+
+    <!--XLATE-ME-->
+  <string name="advanced">For debugging</string>
+    <!--XLATE-ME-->
+  <string name="advanced_summary">You should never need these...</string>
+    <!--XLATE-ME-->
+  <string name="relay_host">Relay host</string>
+    <!--XLATE-ME-->
+  <string name="redir_host">Invite redirect host</string>
+    <!--XLATE-ME-->
+  <string name="dict_host">Wordlist download URL</string>
+    <!--XLATE-ME-->
+  <string name="logging_on">Enable logging</string>
+    <!--XLATE-ME-->
+  <string name="logging_on_summary">(release builds only)</string>
+    <!--XLATE-ME-->
+  <string name="debug_features">Enable debug features</string>
+    <!--XLATE-ME-->
+  <string name="debug_features_summary">Menuitems etc. (release builds
+  only)</string>
+    <!--XLATE-ME-->
+  <string name="title_send_data_sms">Send SMS as data</string>
+    <!--XLATE-ME-->
+  <string name="summary_send_data_sms">(GSM phones only)</string>
+    <!--XLATE-ME-->
+  <string name="board_menu_game_netstats">Network stats</string>
+    <!--XLATE-ME-->
+  <string name="netstats_title">Game network stats</string>
+    <!--XLATE-ME-->
+  <string name="git_rev_title">Source version id</string>
+    <!--XLATE-ME-->
+  <string name="relay_port">Relay game port</string>
+    <!--XLATE-ME-->
+  <string name="proxy_port">Relay device port</string>
+    <!--XLATE-ME-->
+  <string name="name_dict_fmt">%1$s/%2$s</string>
+    <!--XLATE-ME-->
+  <string name="gamel_menu_storedb">Write DB to SD card</string>
+    <!--XLATE-ME-->
+  <string name="gamel_menu_loaddb">Load DB from SD card</string>
+    <!--XLATE-ME-->
+  <string name="enable_dupes_title">Accept duplicate invites</string>
+    <!--XLATE-ME-->
+  <string name="xlations_locale">Fake locale for translation</string>
+    <!--XLATE-ME-->
+  <string name="enable_dupes_summary">Accept invitations more than once</string>
+    <!--XLATE-ME-->
+  <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
+    <!--XLATE-ME-->
+  <string name="enable_nfc_toself_title">Enable NFC to self</string>
+    <!--XLATE-ME-->
+  <string name="enable_nfc_toself_summary">Fake invitation to aid debugging</string>
+    <!--XLATE-ME-->
+  <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
+    <!--XLATE-ME-->
+  <string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>
+    <!--XLATE-ME-->
+  <string name="force_radio_title">Pretend to have radio</string>
+    <!--XLATE-ME-->
+  <string name="radio_name_real">Don\'t pretend</string>
+    <!--XLATE-ME-->
+  <string name="radio_name_tablet">Tablet/no radio</string>
+    <!--XLATE-ME-->
+  <string name="radio_name_gsm">GSM</string>
+    <!--XLATE-ME-->
+  <string name="radio_name_cdma">CDMA</string>
+    <!--XLATE-ME-->
+  <string name="nfc_to_self">Send via NFC to self?</string>
 </resources>

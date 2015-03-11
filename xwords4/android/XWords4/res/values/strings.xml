@@ -2338,4 +2338,45 @@
     an \"advanced\" feature in this release. If you were using them
     and want them back, enable them now. You can turn them off again
     in Settings.</string>
+
+  <!-- Debugging stuff. Localize if you think your langauge users will
+       care. -->
+  <string name="advanced">For debugging</string>
+  <string name="advanced_summary">You should never need these...</string>
+  <string name="relay_host">Relay host</string>
+  <string name="redir_host">Invite redirect host</string>
+  <string name="dict_host">Wordlist download URL</string>
+  <string name="logging_on">Enable logging</string>
+  <string name="logging_on_summary">(release builds only)</string>
+  <string name="debug_features">Enable debug features</string>
+  <string name="debug_features_summary">Menuitems etc. (release builds
+  only)</string>
+  <string name="title_send_data_sms">Send SMS as data</string>
+  <string name="summary_send_data_sms">(GSM phones only)</string>
+  <string name="board_menu_game_netstats">Network stats</string>
+  <string name="netstats_title">Game network stats</string>
+
+  <string name="git_rev_title">Source version id</string>
+  <string name="relay_port">Relay game port</string>
+  <string name="proxy_port">Relay device port</string>
+  <string name="name_dict_fmt">%1$s/%2$s</string>
+  <string name="gamel_menu_storedb">Write DB to SD card</string>
+  <string name="gamel_menu_loaddb">Load DB from SD card</string>
+  <string name="enable_dupes_title">Accept duplicate invites</string>
+  <string name="xlations_locale">Fake locale for translation</string>
+  <string name="enable_dupes_summary">Accept invitations more than once</string>
+  <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
+  <string name="enable_nfc_toself_title">Enable NFC to self</string>
+  <string name="enable_nfc_toself_summary">Fake invitation to aid debugging</string>
+  <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
+  <string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>
+
+  <string name="force_radio_title">Pretend to have radio</string>
+  <string name="radio_name_real">Don\'t pretend</string>
+  <string name="radio_name_tablet">Tablet/no radio</string>
+  <string name="radio_name_gsm">GSM</string>
+  <string name="radio_name_cdma">CDMA</string>
+
+  <string name="nfc_to_self">Send via NFC to self?</string>
+
 </resources>
