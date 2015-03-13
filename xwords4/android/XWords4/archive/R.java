@@ -377,6 +377,7 @@ XLATE-ME
         public static final int advanced=0x7f0502d7;
         /**  This button takes you to the normal Game Configure screen 
  This button takes you to the normal Game Configure screen 
+<string name="advanced_config">Advanced game settings</string>
          */
         public static final int advanced_config=0x7f050184;
         /** XLATE-ME
@@ -638,9 +639,12 @@ XLATE-ME
 <string name="button_add_player">Add player</string>
          */
         public static final int button_add_player=0x7f0500b4;
+        /** <string name="button_cancel">Cancel</string>  
+         */
         public static final int button_cancel=0x7f0501a0;
         /**  The only button available when the above message is displayed 
  The only button available when the above message is displayed 
+<string name="button_close_game">Close game</string>
          */
         public static final int button_close_game=0x7f050195;
         public static final int button_decline=0x7f05024b;
@@ -682,6 +686,7 @@ XLATE-ME
          used as an option in the Game config dialog, where "Save" is
          the other option, for discarding changes that would otherwise
          reset a game. 
+<string name="button_discard">Discard</string>
          */
         public static final int button_discard=0x7f0501a4;
         /** XLATE-ME
@@ -697,6 +702,7 @@ XLATE-ME
         public static final int button_done_fmt=0x7f0501d5;
         /**  Text of button displayed when downloading is an option 
  Text of button displayed when downloading is an option 
+<string name="button_download">Download</string>
          */
         public static final int button_download=0x7f050198;
         /** XLATE-ME
@@ -772,11 +778,14 @@ XLATE-ME
          */
         public static final int button_new_group=0x7f05007f;
         public static final int button_newgroup=0x7f0501da;
+        /** <string name="button_no">No</string>  
+         */
         public static final int button_no=0x7f0501a2;
         /**  Text for button in new-user-info dialog with title just
          above.  
  Text for button in new-user-info dialog with title just
          above.  
+<string name="button_notagain">Do not show again</string>
          */
         public static final int button_notagain=0x7f0501b0;
         /** 
@@ -793,6 +802,7 @@ XLATE-ME
       
  Text for buttons at the bottom of dialogs.  These first are
       in many places.
+<string name="button_ok">OK</string>  
          */
         public static final int button_ok=0x7f05019f;
         public static final int button_reconnect=0x7f050260;
@@ -818,6 +828,7 @@ XLATE-ME
  Used for a button when informing user that his attempt to
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) 
+<string name="button_retry">Retry</string>  
          */
         public static final int button_retry=0x7f0501a5;
         /** 
@@ -854,6 +865,7 @@ XLATE-ME
         public static final int button_revert_colors=0x7f05011b;
         /**  Used in Game config dialog to confirm saving changes that reset a game 
  Used in Game config dialog to confirm saving changes that reset a game 
+<string name="button_save">Save</string>
          */
         public static final int button_save=0x7f0501a3;
         /**   
@@ -868,6 +880,7 @@ XLATE-ME
          different (but same-language wordlist) 
  Text of button allowing user to choose to open with a
          different (but same-language wordlist) 
+<string name="button_substdict">Substitute</string>
          */
         public static final int button_substdict=0x7f050199;
         /** <string name="button_trade_cancel">Cancel trade</string>
@@ -900,6 +913,8 @@ XLATE-ME
 <string name="button_trade_commit">Commit trade</string>
          */
         public static final int button_trade_commit=0x7f0500db;
+        /** <string name="button_yes">Yes</string>  
+         */
         public static final int button_yes=0x7f0501a1;
         public static final int cannot_delete_default_group_fmt=0x7f05025d;
         public static final int change_group=0x7f050263;
@@ -917,6 +932,7 @@ XLATE-ME
         public static final int changes_title=0x7f0501cc;
         /**  Prefix for local messages 
  Prefix for local messages 
+<string name="chat_local_id">Me:\u0020</string>
          */
         public static final int chat_local_id=0x7f05017f;
         /** 
@@ -939,16 +955,19 @@ XLATE-ME
          all the chat messages are erased.  There is no effect on
          other devices in the game: no "clear chat" message is
          transmitted. 
+<string name="chat_menu_clear">Clear history</string>
          */
         public static final int chat_menu_clear=0x7f050182;
         /**  Prefix for remote messages 
  Prefix for remote messages 
+<string name="chat_other_id">Not me:\u0020</string>
          */
         public static final int chat_other_id=0x7f050180;
         /**  Text on the button that causes the contents of the
          message-composition field to be sent. 
  Text on the button that causes the contents of the
          message-composition field to be sent. 
+<string name="chat_send">Send</string>
          */
         public static final int chat_send=0x7f050181;
         /**  ############################################################
@@ -977,6 +996,7 @@ XLATE-ME
       
  title of the chat screen.  The name of the current game is
          substituted for %1$s. 
+<string name="chat_title_fmt">%1$s message history</string>
          */
         public static final int chat_title_fmt=0x7f05017e;
         public static final int checkupdates_none_found=0x7f05023a;
@@ -1201,6 +1221,7 @@ XLATE-ME
          board_menu_game_counts menu.  The dialog lists all tiles in
          the language being used for the game together with how many
          of each there are are and how many points each is worth. 
+<string name="counts_values_title">Tile Counts and Values</string>
          */
         public static final int counts_values_title=0x7f0501aa;
         public static final int cur_menu_marker_fmt=0x7f05026d;
@@ -1373,6 +1394,8 @@ XLATE-ME
         public static final int download_done=0x7f05024c;
         public static final int download_failed=0x7f05024d;
         public static final int download_path_title=0x7f050250;
+        /** <string name="downloading_dict_fmt">Downloading %1$s…</string>
+         */
         public static final int downloading_dict_fmt=0x7f050192;
         /**  <string name="summary_thumb_enabled">Display snapshots of games</string> 
  <string name="summary_thumb_enabled">Display snapshots of games</string> 
@@ -1392,6 +1415,9 @@ XLATE-ME
          confused.  But some people who play together all the time use
          the same room name over and over so they'll get this warning
          and it's harmless to ignore it. 
+<string name="dup_game_query_fmt">You already have a game that seems
+    to have been created (on %1$s) from the same invitation.  Are you
+    sure you want to create another?</string>
          */
         public static final int dup_game_query_fmt=0x7f0501a6;
         /**   
@@ -1483,6 +1509,7 @@ XLATE-ME
          score and an accounting of it (including subtractions for
          running out the game timer if there is one.)
      
+<string name="finalscores_title">Final scores\u200C</string>
          */
         public static final int finalscores_title=0x7f0501ac;
         /**  Explanatory text appears in the dialog 
@@ -1547,6 +1574,7 @@ XLATE-ME
          named them.) 
  used to create default names of games (when user has not
          named them.) 
+<string name="game_fmt">Game %1$d</string>
          */
         public static final int game_fmt=0x7f05019c;
         /**  
@@ -1753,6 +1781,7 @@ XLATE-ME
          board_menu_game_history menu.  A full history of the game up
          to the last turn is displayed, though details about what's in
          players' racks is left out if the game is not yet over. 
+<string name="history_title">Game History</string>
          */
         public static final int history_title=0x7f0501ab;
         /**  Partial text of alert posted when phonies_warn or
@@ -1773,10 +1802,12 @@ XLATE-ME
  text of confirmation dialog shown when user chooses the menu
          item with text board_menu_game_final and the game is not over
          
+<string name="ids_endnow">Are you sure you want to resign?</string>
          */
         public static final int ids_endnow=0x7f0501ad;
         /**  Title of generic dialog used to display information 
  Title of generic dialog used to display information 
+<string name="info_title">FYI…</string>
          */
         public static final int info_title=0x7f0501a7;
         /**   
@@ -1823,6 +1854,8 @@ XLATE-ME
          */
         public static final int invite_choice_sms=0x7f050172;
         public static final int invite_choice_title=0x7f050176;
+        /** <string name="invite_chooser_email">email</string>
+         */
         public static final int invite_chooser_email=0x7f05017b;
         /**  When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
@@ -1836,8 +1869,11 @@ XLATE-ME
          of the installed apps that can process the request he'd like
          to have launched.  This string is passed to Android and used
          as the title of the dialog that presents that choice. 
+<string name="invite_chooser_fmt">Send invitation via %1$s</string>
          */
         public static final int invite_chooser_fmt=0x7f05017a;
+        /** <string name="invite_chooser_sms">sms</string>
+         */
         public static final int invite_chooser_sms=0x7f05017c;
         public static final int invite_dict_missing_body_fmt=0x7f050249;
         public static final int invite_dict_missing_body_noname_fmt=0x7f05024a;
@@ -1853,6 +1889,15 @@ XLATE-ME
          substituted for "%1$s".  (The funky \u003c and friends are
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)
+<string name="invite_htm_fmt">\u003Ca href=\"%1$s\"\u003ETap
+    here\u003C/a\u003E (or tap the full link below, or, if you already
+    have Crosswords installed, open the attachment) to accept my
+    invitation and join this game.
+
+    \u003Cbr \\\u003E
+    \u003Cbr \\\u003E
+    (full link: %1$s )
+    </string>
          */
         public static final int invite_htm_fmt=0x7f050178;
         /**  Appended to message above if local device has NFC available 
@@ -1936,6 +1981,7 @@ XLATE-ME
  signifier que votre périphérique ne peut pas en faire, ou qu\'il a été éteint.</string> 
  This is the subject line of the email/text sent to invite
          someone to join a game. 
+<string name="invite_subject_fmt">Let\'s play Crosswords (Room %1$s)</string>
          */
         public static final int invite_subject_fmt=0x7f050177;
         /**  This is the body of the text version of the invitation. A URL
@@ -1944,6 +1990,8 @@ XLATE-ME
  This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".
+<string name="invite_txt_fmt">Let\'s play Crosswords! Join this game:
+    %1$s .</string>
          */
         public static final int invite_txt_fmt=0x7f050179;
         /**  text of checkbox asking if user wants to search for open
@@ -2234,6 +2282,7 @@ XLATE-ME
          
  This is the "hint" printed in light text in the empty player
          name field 
+<string name="local_name_hint">Player name</string>
          */
         public static final int local_name_hint=0x7f050183;
         /** XLATE-ME
@@ -2357,6 +2406,7 @@ XLATE-ME
        ############################################################
        
  Text of dialog.  Player name is substituted 
+<string name="msg_ask_password_fmt">Password for \"%1$s\":</string>
          */
         public static final int msg_ask_password_fmt=0x7f05019b;
         /**  When a game has been connected and the relay is notified that
@@ -2579,6 +2629,7 @@ XLATE-ME
        ########################################################### 
       
  Title of New user info dialog
+<string name="newbie_title">Here\'s a tip</string>
          */
         public static final int newbie_title=0x7f0501af;
         /**  section separator (white-on-gray bar) for third section:
@@ -2705,6 +2756,9 @@ XLATE-ME
  If the wordlist disappears mid-game there are no choices,
          just an explanation and this button, after which the game
          closes. 
+<string name="no_dict_finish">A wordlist this game is using has
+      disappeared. (Usually this means it\'s on an external card that
+      is no longer available.)</string>
          */
         public static final int no_dict_finish=0x7f050194;
         /**  If the missing wordlist is discovered when trying to open the
@@ -2721,6 +2775,8 @@ XLATE-ME
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ 
+<string name="no_dict_fmt">Game \"%1$s\" requires a %2$s wordlist.
+    Please download one before opening.</string>
          */
         public static final int no_dict_fmt=0x7f050196;
         /**  This is an alternative message presented when there's also
@@ -2729,6 +2785,11 @@ XLATE-ME
  This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. 
+<string name="no_dict_subst_fmt">Unable to open game \"%1$s\" because
+      wordlist %2$s not found. (It may have been deleted, or stored
+      on an external card that is no longer available.)\n\nYou can
+      download a replacement or substitute another %3$s
+      wordlist.</string>
          */
         public static final int no_dict_subst_fmt=0x7f050197;
         /**  
@@ -2751,12 +2812,15 @@ XLATE-ME
        ############################################################
       
  title of alert 
+<string name="no_dict_title">Wordlist not found</string>
          */
         public static final int no_dict_title=0x7f050193;
         /**  If you click on the Play button without having entered a room
          name you get an alert with this error message. 
  If you click on the Play button without having entered a room
          name you get an alert with this error message. 
+<string name="no_empty_rooms">This game cannot connect without a
+        room name.</string>
          */
         public static final int no_empty_rooms=0x7f050185;
         /**  If you choose the above option and have no networked games
@@ -2821,6 +2885,9 @@ XLATE-ME
          main Board screen 
  Shown when you tap the chat button on the toolbar of the
          main Board screen 
+<string name="not_again_chat">This button opens the screen for
+      messaging between devices in this game.  Messages will be kept
+      until you delete the game that contains them.</string>
          */
         public static final int not_again_chat=0x7f0501bb;
         /**  This is shown in the Board screen when you successfully
@@ -2831,6 +2898,10 @@ XLATE-ME
          connecting a game to the relay and are the last device in the
          game to do so, i.e. the game is now complete and you should
          expect play to begin. 
+<string name="not_again_conndall">You have connected and joined a
+      game on the relay; the room is now full. The device that
+      created the room will now assign your initial tiles and play can
+      begin.</string>
          */
         public static final int not_again_conndall=0x7f0501c1;
         /**  This is shown in the Board screen when you successfully
@@ -2839,6 +2910,10 @@ XLATE-ME
  This is shown in the Board screen when you successfully
          connect a game to the relay and are the first device in the
          game to do so. 
+<string name="not_again_conndfirst">You have connected and started
+      a game in a new room.  Once the remaining devices have joined
+      your room and Crosswords has assigned them tiles the game can
+      begin.</string>
          */
         public static final int not_again_conndfirst=0x7f0501bf;
         /**  This is shown in the Board screen when you successfully
@@ -2849,6 +2924,9 @@ XLATE-ME
          connecting a game to the relay and are not the first device
          in the game but not the last either.  So it will only occur
          for games with more than two devices, which are rare. 
+<string name="not_again_conndmid">You have connected and joined a
+      game on the relay. You will be notified when the remaining
+      device[s] have joined your room and play can begin.</string>
          */
         public static final int not_again_conndmid=0x7f0501c0;
         public static final int not_again_dicts=0x7f0502a8;
@@ -2858,6 +2936,9 @@ XLATE-ME
  This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. 
+<string name="not_again_done">Tapping the \"pts\" counter that
+      appears at the right end of the rack is the easiest way to
+      commit a move.</string>
          */
         public static final int not_again_done=0x7f0501bd;
         /** XLATE-ME
@@ -2867,6 +2948,8 @@ XLATE-ME
          Board screen 
  Shown when you tap the flip button on the toolbar of the main
          Board screen 
+<string name="not_again_flip">This button flips the board across a
+      diagonal axis.</string>
          */
         public static final int not_again_flip=0x7f0501b8;
         public static final int not_again_fmt_expl=0x7f05029a;
@@ -2877,6 +2960,9 @@ XLATE-ME
          main Board screen 
  Shown when you tap the next hint button on the toolbar of the
          main Board screen 
+<string name="not_again_hintnext">This button shows all possible
+      moves in descending order (using tiles to the right of the rack
+      divider.)</string>
          */
         public static final int not_again_hintnext=0x7f0501b6;
         /**  Currently not used 
@@ -2893,12 +2979,17 @@ XLATE-ME
    settings or for other options.</string> 
  Shown when you tap the Previous Hint button on the toolbar of
          the main Board screen 
+<string name="not_again_hintprev">This button shows all possible
+      moves in ascending order (using tiles to the right of the rack
+      divider.)</string>
          */
         public static final int not_again_hintprev=0x7f0501b5;
         /**  Shown when you tap the juggle button on the toolbar of the
          main Board screen 
  Shown when you tap the juggle button on the toolbar of the
          main Board screen 
+<string name="not_again_juggle">This button randomly rearranges
+      tiles in the rack.</string>
          */
         public static final int not_again_juggle=0x7f0501b7;
         /**   
@@ -2919,13 +3010,27 @@ XLATE-ME
          "not_again") appear in the New user info dialog.
       
  shown when user chooses the gamel_menu_checkmoves menu 
+<string name="not_again_sync">This action checks the relay for
+      pending moves/messages for all networked games and flags those
+      with pending moves. When you open a flagged game it will connect
+      and sync. (In a later release these moves will be downloaded in
+      the background.)</string>
          */
         public static final int not_again_sync=0x7f0501b1;
         /**  Shown when the user chooses the "board_menu_trade" menu 
  Shown when the user chooses the "board_menu_trade" menu 
+<string name="not_again_trading">You are entering tile-exchange
+      mode.\n\nTap tiles to add/remove them from the set to be
+      exchanged.\n\n</string>
          */
         public static final int not_again_trading=0x7f0501b2;
+        /** <string name="not_again_trading_buttons">Use the buttons to
+      commit your turn or exit exchange mode.</string>
+         */
         public static final int not_again_trading_buttons=0x7f0501b3;
+        /** <string name="not_again_trading_menu">Use the menu or action bar
+      to commit your turn or exit exchange mode.</string>
+         */
         public static final int not_again_trading_menu=0x7f0501b4;
         /**  Shown when the board screen is visible and it's just become
          another players turn. The idea is to give a hint about how to
@@ -2939,12 +3044,18 @@ XLATE-ME
          main Board screen 
  Shown when you tap the undo/redo button on the toolbar of the
          main Board screen 
+<string name="not_again_undo">This button undos or redoes the
+      current turn.</string>
          */
         public static final int not_again_undo=0x7f0501ba;
         /**  Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  
  Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  
+<string name="not_again_unlock">This game is in play. Some
+      settings, e.g. the number of players, cannot be changed without
+      restarting it.  When you leave this page you will have a chance
+      to discard changes to avoid a restart.</string>
          */
         public static final int not_again_unlock=0x7f0501be;
         /**  Shown when you tap the values button on the toolbar of the
@@ -2955,12 +3066,18 @@ XLATE-ME
          main Board screen.  This is intended to allow players to
          remind themselves how much played tiles are worth while
          planning a move. 
+<string name="not_again_values">This button changes whether the
+        board shows letters on placed tiles or their point values.
+        Use it to remind yourself what a tile is worth.</string>
          */
         public static final int not_again_values=0x7f0501bc;
         /**  Shown when you tap the zoom (+/-) button on the toolbar of
          the main Board screen 
  Shown when you tap the zoom (+/-) button on the toolbar of
          the main Board screen 
+<string name="not_again_zoom">This button toggles the board
+      between zoomed and regular size. Drag it when it is zoomed to
+      see parts that are hidden.</string>
          */
         public static final int not_again_zoom=0x7f0501b9;
         public static final int note_none=0x7f0502a4;
@@ -2990,6 +3107,7 @@ XLATE-ME
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
     down. 
+<string name="notify_title_fmt">Move in game %1$s</string>
          */
         public static final int notify_title_fmt=0x7f05019e;
         /**  When one or more new moves is found, should I vibrate the
@@ -3133,6 +3251,7 @@ XLATE-ME
          is substituted 
  used to create default player names.  Number between 1 and 4
          is substituted 
+<string name="player_fmt">Player %1$d</string>
          */
         public static final int player_fmt=0x7f05019d;
         /**  text of lable identifying the field in which player's name is
@@ -3346,12 +3465,15 @@ XLATE-ME
          middle of a game, like "do you want to commit this move?"
  Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"
+<string name="query_title">A question…</string>
          */
         public static final int query_title=0x7f0501ae;
         /**  Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) 
  Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) 
+<string name="query_trade_fmt">Are you sure you want to exchange the
+        %1$d selected tiles (%2$s)?</string>
          */
         public static final int query_trade_fmt=0x7f05017d;
         /** XLATE-ME
@@ -3589,6 +3711,9 @@ XLATE-ME
          can be disabled via the hints_allowed preference.  I should
          be disabling the buttons in this case, but if I don't and you
          try to get a hint you'll get this message instead.
+<string name="str_cant_hint_while_disabled">The hint feature is
+         disabled for this game.  Enable it for a new game using the
+         Settings dialog.</string>
          */
         public static final int str_cant_hint_while_disabled=0x7f05018f;
         /**  Displayed if you try to use the undo menuitem or button and
@@ -3628,12 +3753,16 @@ XLATE-ME
  Displayed when you try to commit a turn that is illegal
          because there is empty space between some of the tiles
          placed, i.e. they do not form a single word. 
+<string name="str_no_empties_in_turn">Empty squares cannot
+         separate tiles played.</string>
          */
         public static final int str_no_empties_in_turn=0x7f050187;
         /**  Same as above, but used when you try to show tiles belonging
          to a player on another device (a remote player.) 
  Same as above, but used when you try to show tiles belonging
          to a player on another device (a remote player.) 
+<string name="str_no_peek_remote_tiles">No peeking at remote
+         players\' tiles!</string>
          */
         public static final int str_no_peek_remote_tiles=0x7f05018c;
         /**  Displayed when you try to reveal a robot player's tiles,
@@ -3648,6 +3777,8 @@ XLATE-ME
          ability to reveal another players tiles this way is
          controlled by the peek_other preference and is disabled by
          default.)
+<string name="str_no_peek_robot_tiles">No peeking at the robot\'s
+         tiles!</string>
          */
         public static final int str_no_peek_robot_tiles=0x7f05018b;
         /**  Used, with remote player's name substituted for %1$s, to
@@ -3661,6 +3792,8 @@ XLATE-ME
          turn. 
  Displyed when you try to commit a move and it's not your
          turn. 
+<string name="str_not_your_turn">You can\'t do that; it\'s not
+         your turn!</string>
          */
         public static final int str_not_your_turn=0x7f05018a;
         /**  Used in formatting game history and move summaries 
@@ -3697,6 +3830,8 @@ XLATE-ME
          when playing via the relay because the relay is aware of how
          many players are expected and only connects devices where the
          numbers match. 
+<string name="str_reg_unexpected_user">Refused attempt to register
+         unexpected user[s].</string>
          */
         public static final int str_reg_unexpected_user=0x7f050190;
         /**  Used in formatting remote player move summaries 
@@ -3736,6 +3871,8 @@ XLATE-ME
  Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. 
+<string name="str_server_dict_wins">Conflict between Host and
+      Guest wordlists; Host wins.</string>
          */
         public static final int str_server_dict_wins=0x7f050191;
         /**  Displayed when you try to commit a turn that is illegal
@@ -3746,6 +3883,9 @@ XLATE-ME
          because tiles played do not touch other tiles already on the
          board (or the middle/star square in the case of the initial
          move.) 
+<string name="str_tiles_must_contact">New pieces must contact
+         others already in place (or the middle square on the first
+         move)</string>
          */
         public static final int str_tiles_must_contact=0x7f050189;
         /**  
@@ -3760,6 +3900,8 @@ XLATE-ME
  Displayed when you try to commit a turn that is illegal
          because the tiles placed are not all in the same row or
          column. 
+<string name="str_tiles_not_in_line">All tiles played must be in a
+         line.</string>
          */
         public static final int str_tiles_not_in_line=0x7f050186;
         /**  Displayed when you try to begin a trade but there are not
@@ -3768,6 +3910,8 @@ XLATE-ME
  Displayed when you try to begin a trade but there are not
          seven or more tiles in the pool.  The rules don't allow
          trading in this case. 
+<string name="str_too_few_tiles_left_to_trade">Too few tiles left
+         to exchange.</string>
          */
         public static final int str_too_few_tiles_left_to_trade=0x7f05018d;
         /**  Displayed when you try to commit the first move of the game
@@ -3776,6 +3920,8 @@ XLATE-ME
  Displayed when you try to commit the first move of the game
          and are playing a single tile.  The first move must include
          two or more tiles. 
+<string name="str_two_tiles_first_move">Must play two or more
+         pieces on the first move.</string>
          */
         public static final int str_two_tiles_first_move=0x7f050188;
         /**  Used in formatting final scores display 
@@ -3871,6 +4017,7 @@ XLATE-ME
  If substituting an existing same-language wordlist by
          choosing button_substdict user gets to choose from a list of
          wordlists.  This is the title of that list. 
+<string name="subst_dict_title">Substitute wordlist (wordcount)</string>
          */
         public static final int subst_dict_title=0x7f05019a;
         /**   
@@ -3986,6 +4133,7 @@ XLATE-ME
          board_menu_game_left menu. The dialog lists all tiles
          remaining in the pool, i.e. not on the board or in the rack
          of the player whose turn it is. 
+<string name="tiles_left_title">Remaining tiles</string>
          */
         public static final int tiles_left_title=0x7f0501a9;
         /**  Title of preference in which you select which addressing
@@ -4087,6 +4235,7 @@ XLATE-ME
          feature is not yet supported on Android.) 
  title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) 
+<string name="title_tile_picker">Letter for blank</string>
          */
         public static final int title_tile_picker=0x7f0501a8;
         public static final int update_dicts_fmt=0x7f0502a1;

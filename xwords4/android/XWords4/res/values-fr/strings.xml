@@ -91,7 +91,7 @@
     <string name="gamel_menu_dicts">Listes de mots…</string>
 
     <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">Paramètres de l\'application…</string>
+    <string name="menu_prefs">Paramètres application…</string>
 
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
@@ -887,7 +887,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
     <!-- Text of confirmation dialog for above -->
     <!--<string name="confirm_revert_colors">Are you sure you want to
       restore all color settings to their original values?</string>-->
-    <string name="confirm_revert_colors">Êtes-vous sûr de vouloir redonner à tous les paramètres de couleurs leurs valeurs d\'origine ?</string>
+    <string name="confirm_revert_colors">Êtes-vous sûr de vouloir redonner à tous les paramètres de couleurs leurs valeurs d\'origine ?</string>
     <!-- Second menu item.  Reverts only the colors to their
          default/original values -->
     <!--<string name="button_revert_colors">Restore colors</string>-->
@@ -895,7 +895,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
     <!-- Text of confirmation dialog for above -->
     <!--<string name="confirm_revert_all">Are you sure you want to restore
       all settings to their original values?</string>-->
-    <string name="confirm_revert_all">Êtes-vous sûr de vouloir redonner à tous les paramètres leurs valeurs d\'origine ?</string>
+    <string name="confirm_revert_all">Êtes-vous sûr de vouloir redonner à tous les paramètres leurs valeurs d\'origine ?</string>
 
     <!--       
        ############################################################
@@ -999,11 +999,11 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
       -->
     <!-- title of this sub-preference -->
     <!--<string name="prefs_appearance">Appearance</string>-->
-    <string name="prefs_appearance">Apparance</string>
+    <string name="prefs_appearance">Apparence</string>
     <!-- clarification of the above -->
     <!--<string name="prefs_appearance_summary">Settings controlling
         appearance</string>-->
-    <string name="prefs_appearance_summary">Paramètres contrôlant l\'apparance</string>
+    <string name="prefs_appearance_summary">Paramètres contrôlant l\'apparence</string>
 
     <!-- Preference to control what's listed next to game name in the
          first line of a game summary in the main games-list screen,
@@ -1017,7 +1017,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
 
     <!-- Put nothing in the summary space, so it just reads "Game 2" -->
     <!--<string name="game_summary_field_empty">\u003CNothing\u003E</string>-->
-    <string name="game_summary_field_empty">\u003CRien\u003E</string>
+    <string name="game_summary_field_empty">&lt;Rien&gt;</string>
     <!-- Put the language there, so it reads "Game 2 (English)" -->
     <!--<string name="game_summary_field_language">Game language\u200C</string>-->
     <string name="game_summary_field_language">Langue de la partie\u200C</string>
@@ -1067,7 +1067,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
       -->
     <!-- title of this sub-preference -->
     <!--<string name="prefs_colors">Individual colors</string>-->
-    <string name="prefs_colors">Couleurs individuelles</string>
+    <string name="prefs_colors">Couleurs</string>
     <!-- clarification of the above -->
     <!--<string name="prefs_colors_summary">Edit colors used on the board</string>-->
     <string name="prefs_colors_summary">Modifier les couleurs utilisées sur le
@@ -1362,14 +1362,15 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
 
     <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
-    <string name="invite_subject_fmt">Let\'s play Crosswords (Room %1$s)</string>
+    <!--<string name="invite_subject_fmt">Let\'s play Crosswords (Room %1$s)</string>-->
+    <string name="invite_subject_fmt">Jouons à Crosswords (salon %1$s)</string>
 
     <!-- This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".  (The funky \u003c and friends are
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)-->
-    <string name="invite_htm_fmt">\u003Ca href=\"%1$s\"\u003ETap
+    <!--<string name="invite_htm_fmt">\u003Ca href=\"%1$s\"\u003ETap
     here\u003C/a\u003E (or tap the full link below, or, if you already
     have Crosswords installed, open the attachment) to accept my
     invitation and join this game.
@@ -1377,13 +1378,24 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
     \u003Cbr \\\u003E
     \u003Cbr \\\u003E
     (full link: %1$s )
-    </string>
+    </string>-->
+    <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Toucher ici&lt;/a&gt;
+ (ou suivez le lien complet ci-dessous, ou, si vous déjà
+installé Crosswords, ouvrez l\'attachement) pour accepter mon invitation and
+rejoindre cette partie.
+
+    &lt;br \\&gt;
+    &lt;br \\&gt;
+    (lien complet : %1$s )
+</string>
 
     <!-- This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".-->
-    <string name="invite_txt_fmt">Let\'s play Crosswords! Join this game:
-    %1$s .</string>
+    <!--<string name="invite_txt_fmt">Let\'s play Crosswords! Join this game:
+    %1$s .</string>-->
+    <string name="invite_txt_fmt">Jouons à Crosswords ! Rejoignez cette
+partie : %1$s .</string>
 
     <!-- When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
@@ -1391,14 +1403,19 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          of the installed apps that can process the request he'd like
          to have launched.  This string is passed to Android and used
          as the title of the dialog that presents that choice. -->
-    <string name="invite_chooser_fmt">Send invitation via %1$s</string>
+    <!--<string name="invite_chooser_fmt">Send invitation via %1$s</string>-->
+    <string name="invite_chooser_fmt">Envoyer l\'invitation par %1$s</string>
+    <!--<string name="invite_chooser_email">email</string>-->
     <string name="invite_chooser_email">email</string>
-    <string name="invite_chooser_sms">sms</string>
+    <!--<string name="invite_chooser_sms">sms</string>-->
+    <string name="invite_chooser_sms">SMS</string>
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-    <string name="query_trade_fmt">Are you sure you want to exchange the
-        %1$d selected tiles (%2$s)?</string>
+    <!--<string name="query_trade_fmt">Are you sure you want to exchange the
+        %1$d selected tiles (%2$s)?</string>-->
+    <string name="query_trade_fmt">Êtes-vous sûr de vouloir échanger les %1$d
+jetons sélectionnés (%2$s) ?</string>
 
     <!-- ############################################################
          # :Screens:
@@ -1413,14 +1430,18 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
       -->
     <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-    <string name="chat_title_fmt">%1$s message history</string>
+    <!--<string name="chat_title_fmt">%1$s message history</string>-->
+    <string name="chat_title_fmt">Historique des messages de %1$s</string>
     <!-- Prefix for local messages -->
-    <string name="chat_local_id">Me:\u0020</string>
+    <!--<string name="chat_local_id">Me:\u0020</string>-->
+    <string name="chat_local_id">Moi :\u0020</string>
     <!-- Prefix for remote messages -->
-    <string name="chat_other_id">Not me:\u0020</string>
+    <!--<string name="chat_other_id">Not me:\u0020</string>-->
+    <string name="chat_other_id">Pas moi :\u0020</string>
     <!-- Text on the button that causes the contents of the
          message-composition field to be sent. -->
-    <string name="chat_send">Send</string>
+    <!--<string name="chat_send">Send</string>-->
+    <string name="chat_send">Envoyer</string>
 
     <!--
        ############################################################
@@ -1433,7 +1454,8 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          all the chat messages are erased.  There is no effect on
          other devices in the game: no "clear chat" message is
          transmitted. -->
-    <string name="chat_menu_clear">Clear history</string>
+    <!--<string name="chat_menu_clear">Clear history</string>-->
+    <string name="chat_menu_clear">Effacer l\'historique</string>
 
     <!-- ############################################################
          # :Screens:
@@ -1455,15 +1477,19 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
 
     <!-- This is the "hint" printed in light text in the empty player
          name field -->
-    <string name="local_name_hint">Player name</string>
+    <!--<string name="local_name_hint">Player name</string>-->
+    <string name="local_name_hint">Nom du joueur</string>
 
     <!-- This button takes you to the normal Game Configure screen -->
-    <string name="advanced_config">Advanced game settings</string>
+    <!--<string name="advanced_config">Advanced game settings</string>-->
+    <string name="advanced_config">Paramètres avancés de partie</string>
 
     <!-- If you click on the Play button without having entered a room
          name you get an alert with this error message. -->
-    <string name="no_empty_rooms">This game cannot connect without a
-        room name.</string>
+    <!--<string name="no_empty_rooms">This game cannot connect without a
+        room name.</string>-->
+    <string name="no_empty_rooms">Cette partie ne peut pas se connecter sans un
+nom de salon.</string>
 
 
 
@@ -1474,33 +1500,42 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
     <!-- Displayed when you try to commit a turn that is illegal
          because the tiles placed are not all in the same row or
          column. -->
-    <string name="str_tiles_not_in_line">All tiles played must be in a
-         line.</string>
+    <!--<string name="str_tiles_not_in_line">All tiles played must be in a
+         line.</string>-->
+    <string name="str_tiles_not_in_line">Tous les jetons doivent être alignés.</string>
 
     <!-- Displayed when you try to commit a turn that is illegal
          because there is empty space between some of the tiles
          placed, i.e. they do not form a single word. -->
-    <string name="str_no_empties_in_turn">Empty squares cannot
-         separate tiles played.</string>
+    <!--<string name="str_no_empties_in_turn">Empty squares cannot
+         separate tiles played.</string>-->
+    <string name="str_no_empties_in_turn">Les jetons joués ne peuvent pas être
+séparés par des cases vides.</string>
 
     <!-- Displayed when you try to commit the first move of the game
          and are playing a single tile.  The first move must include
          two or more tiles. -->
-    <string name="str_two_tiles_first_move">Must play two or more
-         pieces on the first move.</string>
+    <!--<string name="str_two_tiles_first_move">Must play two or more
+         pieces on the first move.</string>-->
+    <string name="str_two_tiles_first_move">Il faut jouer au moins deux jetons
+pour le premier coup.</string>
 
     <!-- Displayed when you try to commit a turn that is illegal
          because tiles played do not touch other tiles already on the
          board (or the middle/star square in the case of the initial
          move.) -->
-    <string name="str_tiles_must_contact">New pieces must contact
+    <!--<string name="str_tiles_must_contact">New pieces must contact
          others already in place (or the middle square on the first
-         move)</string>
+         move)</string>-->
+    <string name="str_tiles_must_contact">Les nouvelles lettres doivent toucher
+celles déjà placées (ou toucher la case du milieu lors du premier coup)</string>
 
     <!-- Displyed when you try to commit a move and it's not your
          turn. -->
-    <string name="str_not_your_turn">You can\'t do that; it\'s not
-         your turn!</string>
+    <!--<string name="str_not_your_turn">You can\'t do that; it\'s not
+         your turn!</string>-->
+    <string name="str_not_your_turn">Vous ne pouvez pas faire ça ; ce n\'est
+pas votre tour !</string>
 
     <!-- Displayed when you try to reveal a robot player's tiles,
          either by tapping on its "hidden" rack (marked by "?"
@@ -1508,19 +1543,25 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          ability to reveal another players tiles this way is
          controlled by the peek_other preference and is disabled by
          default.)-->
-    <string name="str_no_peek_robot_tiles">No peeking at the robot\'s
-         tiles!</string>
+    <!--<string name="str_no_peek_robot_tiles">No peeking at the robot\'s
+         tiles!</string>-->
+    <string name="str_no_peek_robot_tiles">Interdit de voir les jetons du
+robot !</string>
 
     <!-- Same as above, but used when you try to show tiles belonging
          to a player on another device (a remote player.) -->
-    <string name="str_no_peek_remote_tiles">No peeking at remote
-         players\' tiles!</string>
+    <!--<string name="str_no_peek_remote_tiles">No peeking at remote
+         players\' tiles!</string>-->
+    <string name="str_no_peek_remote_tiles">Interdit de voir les jetons des
+joueurs distants !</string>
 
     <!-- Displayed when you try to begin a trade but there are not
          seven or more tiles in the pool.  The rules don't allow
          trading in this case. -->
-    <string name="str_too_few_tiles_left_to_trade">Too few tiles left
-         to exchange.</string>
+    <!--<string name="str_too_few_tiles_left_to_trade">Too few tiles left
+         to exchange.</string>-->
+    <string name="str_too_few_tiles_left_to_trade">Trop peu de jetons restants
+pour échanger.</string>
 
     <!-- Displayed if you try to use the undo menuitem or button and
          there are no tiles on the board (no move has yet been made.)
@@ -1533,9 +1574,12 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          can be disabled via the hints_allowed preference.  I should
          be disabling the buttons in this case, but if I don't and you
          try to get a hint you'll get this message instead.-->
-    <string name="str_cant_hint_while_disabled">The hint feature is
+    <!--<string name="str_cant_hint_while_disabled">The hint feature is
          disabled for this game.  Enable it for a new game using the
-         Settings dialog.</string>
+         Settings dialog.</string>-->
+    <string name="str_cant_hint_while_disabled">Les indications sont
+désactivées pour cette partie. Vous pouvez l\'activer pour une nouvelle partie
+en configurant les paramètres.</string>
 
     <!-- This error message is shown when a remote device tries to
          join a game and is providing more players than that game
@@ -1543,17 +1587,22 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          when playing via the relay because the relay is aware of how
          many players are expected and only connects devices where the
          numbers match. -->
-    <string name="str_reg_unexpected_user">Refused attempt to register
-         unexpected user[s].</string>
+    <!--<string name="str_reg_unexpected_user">Refused attempt to register
+         unexpected user[s].</string>-->
+    <string name="str_reg_unexpected_user">Tentative refusée d\'enregistrer des
+joueurs inattendus.</string>
 
     <!-- Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. -->
-    <string name="str_server_dict_wins">Conflict between Host and
-      Guest wordlists; Host wins.</string>
+    <!--<string name="str_server_dict_wins">Conflict between Host and
+      Guest wordlists; Host wins.</string>-->
+    <string name="str_server_dict_wins">Conflit entre les listes de mots de
+l\'Hôte et l\'invité ; l\'Hôte gagne.</string>
 
 
-    <string name="downloading_dict_fmt">Downloading %1$s…</string>
+    <!--<string name="downloading_dict_fmt">Downloading %1$s…</string>-->
+    <string name="downloading_dict_fmt">Téléchargement de %1$s…</string>
 
     <!-- 
        ############################################################
@@ -1566,17 +1615,22 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
       -->
 
     <!-- title of alert -->
-    <string name="no_dict_title">Wordlist not found</string>
+    <!--<string name="no_dict_title">Wordlist not found</string>-->
+    <string name="no_dict_title">Liste de mots non trouvée</string>
 
     <!-- If the wordlist disappears mid-game there are no choices,
          just an explanation and this button, after which the game
          closes. -->
-    <string name="no_dict_finish">A wordlist this game is using has
+    <!--<string name="no_dict_finish">A wordlist this game is using has
       disappeared. (Usually this means it\'s on an external card that
-      is no longer available.)</string>
+      is no longer available.)</string>-->
+    <string name="no_dict_finish">Une liste de mots utilisée par cette partie a
+disparu. (En général cela signifie qu\'elle est sur une carte mémoire externe
+qui n\'est plus disponible.)</string>
 
     <!-- The only button available when the above message is displayed -->
-    <string name="button_close_game">Close game</string>
+    <!--<string name="button_close_game">Close game</string>-->
+    <string name="button_close_game">Arrêter la partie</string>
 
     <!-- If the missing wordlist is discovered when trying to open the
          game, we have more options.  If there's another wordlist in
@@ -1585,29 +1639,39 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-    <string name="no_dict_fmt">Game \"%1$s\" requires a %2$s wordlist.
-    Please download one before opening.</string>
+    <!--<string name="no_dict_fmt">Game \"%1$s\" requires a %2$s wordlist.
+    Please download one before opening.</string>-->
+    <string name="no_dict_fmt">La partie \"%1$s\" nécessite une liste de mots
+en %2$s. Téléchargez-en une avant de commencer.</string>
 
     <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
-    <string name="no_dict_subst_fmt">Unable to open game \"%1$s\" because
+    <!--<string name="no_dict_subst_fmt">Unable to open game \"%1$s\" because
       wordlist %2$s not found. (It may have been deleted, or stored
       on an external card that is no longer available.)\n\nYou can
       download a replacement or substitute another %3$s
-      wordlist.</string>
+      wordlist.</string>-->
+    <string name="no_dict_subst_fmt">Impossible de charger la partie \"%1$s\"
+car la liste de mots %2$s n\'a pas été trouvée. (Elle a pu être effacée, ou
+stockée sur une carte mémoire externe qui n\'est plus disponible.)\n\nVous
+pouvez en télécharger une autre ou utiliser une autre liste de mots en %3$s.</string>
 
     <!-- Text of button displayed when downloading is an option -->
-    <string name="button_download">Download</string>
+    <!--<string name="button_download">Download</string>-->
+    <string name="button_download">Télécharger</string>
 
     <!-- Text of button allowing user to choose to open with a
          different (but same-language wordlist) -->
-    <string name="button_substdict">Substitute</string>
+    <!--<string name="button_substdict">Substitute</string>-->
+    <string name="button_substdict">Substituer</string>
 
     <!-- If substituting an existing same-language wordlist by
          choosing button_substdict user gets to choose from a list of
          wordlists.  This is the title of that list. -->
-    <string name="subst_dict_title">Substitute wordlist (wordcount)</string>
+    <!--<string name="subst_dict_title">Substitute wordlist (wordcount)</string>-->
+    <string name="subst_dict_title">Listes de mots de substitution (nombre de
+mots)</string>
 
     <!-- 
        ############################################################
@@ -1621,21 +1685,25 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
        -->
 
     <!-- Text of dialog.  Player name is substituted -->
-    <string name="msg_ask_password_fmt">Password for \"%1$s\":</string>
+    <!--<string name="msg_ask_password_fmt">Password for \"%1$s\":</string>-->
+    <string name="msg_ask_password_fmt">Mot de passe pour \"%1$s\" :</string>
 
     <!-- used to create default names of games (when user has not
          named them.) -->
-    <string name="game_fmt">Game %1$d</string>
+    <!--<string name="game_fmt">Game %1$d</string>-->
+    <string name="game_fmt">Partie %1$d</string>
 
     <!-- used to create default player names.  Number between 1 and 4
          is substituted -->
-    <string name="player_fmt">Player %1$d</string>
+    <!--<string name="player_fmt">Player %1$d</string>-->
+    <string name="player_fmt">Joueur %1$d</string>
 
     <!-- When a move is fetched from the relay a Notification is
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
     down. -->
-    <string name="notify_title_fmt">Move in game %1$s</string>
+    <!--<string name="notify_title_fmt">Move in game %1$s</string>-->
+    <string name="notify_title_fmt">Coup dans la partie %1$s</string>
 
     <!--
         ############################################################
@@ -1645,25 +1713,32 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
 
     <!-- Text for buttons at the bottom of dialogs.  These first are
       in many places.-->
-    <string name="button_ok">OK</string>  
-    <string name="button_cancel">Cancel</string>  
-    <string name="button_yes">Yes</string>  
-    <string name="button_no">No</string>  
+    <!--<string name="button_ok">OK</string>  -->
+    <string name="button_ok">@android:string/ok</string>  
+    <!--<string name="button_cancel">Cancel</string>  -->
+    <string name="button_cancel">@android:string/cancel</string>  
+    <!--<string name="button_yes">Yes</string>  -->
+    <string name="button_yes">Oui</string>  
+    <!--<string name="button_no">No</string>  -->
+    <string name="button_no">Non</string>  
 
     <!-- Used in Game config dialog to confirm saving changes that reset a game -->
-    <string name="button_save">Save</string>
+    <!--<string name="button_save">Save</string>-->
+    <string name="button_save">Sauver</string>
     <!-- Used for button in dialog put up with the relay says the
          remote partner of this game has deleted it.  Ok, meaning
          "don't discard", is the other option.  This same button is
          used as an option in the Game config dialog, where "Save" is
          the other option, for discarding changes that would otherwise
          reset a game. -->
-    <string name="button_discard">Discard</string>
+    <!--<string name="button_discard">Discard</string>-->
+    <string name="button_discard">Rejeter</string>
 
     <!-- Used for a button when informing user that his attempt to
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) -->
-    <string name="button_retry">Retry</string>  
+    <!--<string name="button_retry">Retry</string>  -->
+    <string name="button_retry">Réessayer</string>  
 
     <!-- Shown in the main screen when you launch Crosswords from an
          invitation (received in email or messaging app, say) and
@@ -1672,50 +1747,61 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          confused.  But some people who play together all the time use
          the same room name over and over so they'll get this warning
          and it's harmless to ignore it. -->
-    <string name="dup_game_query_fmt">You already have a game that seems
+    <!--<string name="dup_game_query_fmt">You already have a game that seems
     to have been created (on %1$s) from the same invitation.  Are you
-    sure you want to create another?</string>
+    sure you want to create another?</string>-->
+    <string name="dup_game_query_fmt">Vous avez déjà une partie qui semble
+avoir été créée (sur %1$s) avec la même invitation. Êtes-vous sûr de vouloir en
+créer une autre ?</string>
 
     <!-- Title of generic dialog used to display information -->
-    <string name="info_title">FYI…</string>
+    <!--<string name="info_title">FYI…</string>-->
+    <string name="info_title">Pour information…</string>
 
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
-    <string name="title_tile_picker">Letter for blank</string>
+    <!--<string name="title_tile_picker">Letter for blank</string>-->
+    <string name="title_tile_picker">Lettre pour la lettre blanche</string>
 
     <!-- title of dialog brought up in response to the
          board_menu_game_left menu. The dialog lists all tiles
          remaining in the pool, i.e. not on the board or in the rack
          of the player whose turn it is. -->
-    <string name="tiles_left_title">Remaining tiles</string>
+    <!--<string name="tiles_left_title">Remaining tiles</string>-->
+    <string name="tiles_left_title">Jetons restants</string>
 
     <!-- title of dialog brought up in response to the
          board_menu_game_counts menu.  The dialog lists all tiles in
          the language being used for the game together with how many
          of each there are are and how many points each is worth. -->
-    <string name="counts_values_title">Tile Counts and Values</string>
+    <!--<string name="counts_values_title">Tile Counts and Values</string>-->
+    <string name="counts_values_title">Comptes et valeurs des jetons</string>
 
     <!-- title of dialog brought up in response to the
          board_menu_game_history menu.  A full history of the game up
          to the last turn is displayed, though details about what's in
          players' racks is left out if the game is not yet over. -->
-    <string name="history_title">Game History</string>
+    <!--<string name="history_title">Game History</string>-->
+    <string name="history_title">Historique de la partie</string>
 
     <!-- title of dialog brought up in response to the
          board_menu_game_final menu.  The dialog displays the final
          score and an accounting of it (including subtractions for
          running out the game timer if there is one.)
      -->
-    <string name="finalscores_title">Final scores\u200C</string>
+    <!--<string name="finalscores_title">Final scores\u200C</string>-->
+    <string name="finalscores_title">Scores finaux\u200C</string>
 
     <!-- text of confirmation dialog shown when user chooses the menu
          item with text board_menu_game_final and the game is not over
          -->
-    <string name="ids_endnow">Are you sure you want to resign?</string>
+    <!--<string name="ids_endnow">Are you sure you want to resign?</string>-->
+    <string name="ids_endnow">Êtes-vous sûr de vouloir abandonner ?</string>
 
     <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
-    <string name="query_title">A question…</string>
+    <!--<string name="query_title">A question…</string>-->
+    <string name="query_title">Question…</string>
 
     <!--
        ###########################################################
@@ -1729,32 +1815,46 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
       -->
 
     <!-- Title of New user info dialog-->
-    <string name="newbie_title">Here\'s a tip</string>
+    <!--<string name="newbie_title">Here\'s a tip</string>-->
+    <string name="newbie_title">Voici une astuce</string>
 
     <!-- Text for button in new-user-info dialog with title just
          above.  -->
-    <string name="button_notagain">Do not show again</string>
+    <!--<string name="button_notagain">Do not show again</string>-->
+    <string name="button_notagain">Ne plus montrer</string>
 
     <!-- The following strings (all whose names start with
          "not_again") appear in the New user info dialog.
       -->
 
     <!-- shown when user chooses the gamel_menu_checkmoves menu -->
-    <string name="not_again_sync">This action checks the relay for
+    <!--<string name="not_again_sync">This action checks the relay for
       pending moves/messages for all networked games and flags those
       with pending moves. When you open a flagged game it will connect
       and sync. (In a later release these moves will be downloaded in
-      the background.)</string>
+      the background.)</string>-->
+    <string name="not_again_sync">Cette action vérifie si le relai a des
+messages/coups en suspens pour toutes les parties en réseau et marque celles
+avec des coups en suspens. Quand vous ouvrirez une partie marquée, elle se
+connectera et se synchronisera. (Dans une prochaine versions ces coups seront
+téléchargés en arrière-plan.)</string>
 
     <!-- Shown when the user chooses the "board_menu_trade" menu -->
-    <string name="not_again_trading">You are entering tile-exchange
+    <!--<string name="not_again_trading">You are entering tile-exchange
       mode.\n\nTap tiles to add/remove them from the set to be
-      exchanged.\n\n</string>
+      exchanged.\n\n</string>-->
+    <string name="not_again_trading">Vous entrez dans le mode d\'échange de
+jetons.\n\nTouchez des jetons pour les ajouter ou les retirer de l\'ensemble de
+ceux à échanger.</string>
 
-      <string name="not_again_trading_buttons">Use the buttons to
-      commit your turn or exit exchange mode.</string>
-      <string name="not_again_trading_menu">Use the menu or action bar
-      to commit your turn or exit exchange mode.</string>
+      <!--<string name="not_again_trading_buttons">Use the buttons to
+      commit your turn or exit exchange mode.</string>-->
+      <string name="not_again_trading_buttons">Utilisez les boutons pour
+valider votre tour ou sortir du mode d\'échange.</string>
+      <!--<string name="not_again_trading_menu">Use the menu or action bar
+      to commit your turn or exit exchange mode.</string>-->
+      <string name="not_again_trading_menu">Utilisez le menu ou la barre
+d\'action pour valider votre tour ou sortir du mode d\'échange.</string>
 
     <!-- Currently not used -->
     <!-- <string name="not_again_newgame">The new game you have created has -->
@@ -1764,81 +1864,119 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
 
     <!-- Shown when you tap the Previous Hint button on the toolbar of
          the main Board screen -->
-    <string name="not_again_hintprev">This button shows all possible
+    <!--<string name="not_again_hintprev">This button shows all possible
       moves in ascending order (using tiles to the right of the rack
-      divider.)</string>
+      divider.)</string>-->
+    <string name="not_again_hintprev">Ce bouton montre tous les coups possibles
+par ordre croissant (en utilisant les jetons à droite du séparateur du
+chevalet)</string>
     <!-- Shown when you tap the next hint button on the toolbar of the
          main Board screen -->
-    <string name="not_again_hintnext">This button shows all possible
+    <!--<string name="not_again_hintnext">This button shows all possible
       moves in descending order (using tiles to the right of the rack
-      divider.)</string>
+      divider.)</string>-->
+    <string name="not_again_hintnext">Ce bouton montre tous les coups possibles
+par ordre décroissant (en utilisant les jetons à droite du séparateur du
+chevalet)</string>
     <!-- Shown when you tap the juggle button on the toolbar of the
          main Board screen -->
-    <string name="not_again_juggle">This button randomly rearranges
-      tiles in the rack.</string>
+    <!--<string name="not_again_juggle">This button randomly rearranges
+      tiles in the rack.</string>-->
+    <string name="not_again_juggle">Ce bouton réordonne les jetons
+aléatoirement sur le chevalet.</string>
     <!-- Shown when you tap the flip button on the toolbar of the main
          Board screen -->
-    <string name="not_again_flip">This button flips the board across a
-      diagonal axis.</string>
+    <!--<string name="not_again_flip">This button flips the board across a
+      diagonal axis.</string>-->
+    <string name="not_again_flip">Ce bouton fait tourner le plateau
+symétriquement à la diagonale.</string>
     <!-- Shown when you tap the zoom (+/-) button on the toolbar of
          the main Board screen -->
-    <string name="not_again_zoom">This button toggles the board
+    <!--<string name="not_again_zoom">This button toggles the board
       between zoomed and regular size. Drag it when it is zoomed to
-      see parts that are hidden.</string>
+      see parts that are hidden.</string>-->
+    <string name="not_again_zoom">Ce bouton bascule entre les tailles normale
+et zoomée du plateau. Tirez-le quand il est zoomé pour voir les parties
+cachées.</string>
     <!-- Shown when you tap the undo/redo button on the toolbar of the
          main Board screen -->
-    <string name="not_again_undo">This button undos or redoes the
-      current turn.</string>
+    <!--<string name="not_again_undo">This button undos or redoes the
+      current turn.</string>-->
+    <string name="not_again_undo">Ce bouton annule ou rétablie le tour
+actuel.</string>
     <!-- Shown when you tap the chat button on the toolbar of the
          main Board screen -->
-    <string name="not_again_chat">This button opens the screen for
+    <!--<string name="not_again_chat">This button opens the screen for
       messaging between devices in this game.  Messages will be kept
-      until you delete the game that contains them.</string>
+      until you delete the game that contains them.</string>-->
+    <string name="not_again_chat">Ce bouton ouvre l\'écran de discussion entre
+périphériques pour cette partie. Les messages seront préservés jusqu\'à ce que
+effaciez la partie qui les contient</string>
     <!-- Shown when you tap the values button on the toolbar of the
          main Board screen.  This is intended to allow players to
          remind themselves how much played tiles are worth while
          planning a move. -->
-    <string name="not_again_values">This button changes whether the
+    <!--<string name="not_again_values">This button changes whether the
         board shows letters on placed tiles or their point values.
-        Use it to remind yourself what a tile is worth.</string>
+        Use it to remind yourself what a tile is worth.</string>-->
+    <string name="not_again_values">Ce bouton détermine si on voit les lettres 
+– ou bien la valeur –, des jetons placés sur le plateau. Utilisez-le pour vous
+rappeler ce que vaut un jeton.</string>
     <!-- This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. -->
-    <string name="not_again_done">Tapping the \"pts\" counter that
+    <!--<string name="not_again_done">Tapping the \"pts\" counter that
       appears at the right end of the rack is the easiest way to
-      commit a move.</string>
+      commit a move.</string>-->
+    <string name="not_again_done">Toucher le compteur \"pts\" qui se trouve à
+droite du chevalet est la façon la plus simple de valider un coup.</string>
 
     <!-- Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  -->
-    <string name="not_again_unlock">This game is in play. Some
+    <!--<string name="not_again_unlock">This game is in play. Some
       settings, e.g. the number of players, cannot be changed without
       restarting it.  When you leave this page you will have a chance
-      to discard changes to avoid a restart.</string>
+      to discard changes to avoid a restart.</string>-->
+    <string name="not_again_unlock">Cette partie est en cours. Certains
+paramètres, par exemple le nombre de joueurs, ne peuvent pas être modifiés sans
+la redémarrer. Quand vous quitterez cet écran, vous aurez la possiblité
+d\'annuler les changements afin d\'éviter un redémarrage.</string>
 
     <!-- This is shown in the Board screen when you successfully
          connect a game to the relay and are the first device in the
          game to do so. -->
-    <string name="not_again_conndfirst">You have connected and started
+    <!--<string name="not_again_conndfirst">You have connected and started
       a game in a new room.  Once the remaining devices have joined
       your room and Crosswords has assigned them tiles the game can
-      begin.</string>
+      begin.</string>-->
+    <string name="not_again_conndfirst">Vous vous êtes connecté et avez
+démarré une partie dans un nouveau salon. Une fois que les périphériques
+restants auront rejoint votre salon et que Crosswords leur aura attribué des
+jetons, la partie pourra commencer.</string>
 
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are not the first device
          in the game but not the last either.  So it will only occur
          for games with more than two devices, which are rare. -->
-    <string name="not_again_conndmid">You have connected and joined a
+    <!--<string name="not_again_conndmid">You have connected and joined a
       game on the relay. You will be notified when the remaining
-      device[s] have joined your room and play can begin.</string>
+      device[s] have joined your room and play can begin.</string>-->
+    <string name="not_again_conndmid">Vous vous êtes connecté et avez rejoint
+une partie sur le relai. Vous serez averti quand les périphériques restants
+auront rejoint votre salon et que la partie pourra commencer.</string>
 
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are the last device in the
          game to do so, i.e. the game is now complete and you should
          expect play to begin. -->
-    <string name="not_again_conndall">You have connected and joined a
+    <!--<string name="not_again_conndall">You have connected and joined a
       game on the relay; the room is now full. The device that
       created the room will now assign your initial tiles and play can
-      begin.</string>
+      begin.</string>-->
+    <string name="not_again_conndall">Vous vous êtes connecté et avez rejoint
+une partie sur le relai ; le salon est maintenant complet. Le périphérique qui
+a créé le salon va maintenant vous attribuer vos jetons initiaux et la partie
+va commencer.</string>
 
     <!-- This is not currently shown -->
     <!-- <string name="not_again_dicts">Crosswords wordlists, which are -->
