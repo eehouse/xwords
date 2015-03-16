@@ -497,7 +497,7 @@ public class DlgDelegate {
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
         String str = getString( R.string.xlator );
-        if ( str.length() > 0 ) {
+        if ( str.length() > 0 && !str.equals("[empty]") ) {
             xlator.setText( str );
         } else {
             xlator.setVisibility( View.GONE );

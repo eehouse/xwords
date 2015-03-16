@@ -135,13 +135,9 @@
   <string name="invite_host">eehouse.org</string>
   <string name="invite_prefix">/and/</string>
   <string name="invite_mime">application/x-xwordsinvite</string>
-  <string name="game_summary_field_rowid">rowid</string>
-  <string name="game_summary_field_gameid">gameid</string>
-  <string name="game_summary_field_npackets">Pending packet count</string>
   <!--string name="invite_mime">text/plain</string-->
 
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
-  <string name="expl_update_url">Update checks URL</string>
   <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
 
   <string name="nbs_port">3344</string>

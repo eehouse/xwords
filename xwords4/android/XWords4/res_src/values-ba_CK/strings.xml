@@ -1463,7 +1463,7 @@
   <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language-->
-  <string name="xlator"/>
+  <string name="xlator">]ytpme[</string>
   <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
   <string name="about_credits">Rabloot snoci yb Haras Uhc.</string>
@@ -2020,4 +2020,8 @@
   <string name="radio_name_gsm">MSG</string>
   <string name="radio_name_cdma">AMDC</string>
   <string name="nfc_to_self">Dnes aiv CFN ot ?fles</string>
+  <string name="game_summary_field_rowid">diwor</string>
+  <string name="game_summary_field_gameid">diemag</string>
+  <string name="game_summary_field_npackets">Gnidnep tekcap tnuoc</string>
+  <string name="expl_update_url">Etadpu skcehc LRU</string>
 </resources>

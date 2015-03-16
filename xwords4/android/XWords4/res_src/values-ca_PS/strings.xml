@@ -1463,7 +1463,7 @@
   <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language-->
-  <string name="xlator"/>
+  <string name="xlator">[EMPTY]</string>
   <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
   <string name="about_credits">TOOLBAR ICONS BY SARAH CHU.</string>
@@ -2020,4 +2020,8 @@
   <string name="radio_name_gsm">GSM</string>
   <string name="radio_name_cdma">CDMA</string>
   <string name="nfc_to_self">SEND VIA NFC TO SELF?</string>
+  <string name="game_summary_field_rowid">ROWID</string>
+  <string name="game_summary_field_gameid">GAMEID</string>
+  <string name="game_summary_field_npackets">PENDING PACKET COUNT</string>
+  <string name="expl_update_url">UPDATE CHECKS URL</string>
 </resources>
