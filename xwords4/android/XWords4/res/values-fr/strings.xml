@@ -578,7 +578,7 @@ hors-périphériques.</string>
       player[s].  Would you like to invite someone to join - assuming
       you haven\'t already?</string>-->
     <string name="invite_msg_fmt">Il manque %1$d joueur[s] distant[s] à cette
-partie. Voulez-vous inviter quelqu\'un -- à moins que vous ne l\'ayiez déjà
+partie. Voulez-vous inviter quelqu\'un -- à moins que vous ne l\'ayez déjà
 fait ?</string>
 
     <!-- Appended to message above if local device has NFC available -->
@@ -803,10 +803,10 @@ restants]</string>
     <string name="str_pass">A passé son tour\n</string>
     <!-- Used in formatting game history and move summaries -->
     <!--<string name="strs_move_across_fmt">move (from %1$s across)\n</string>-->
-    <string name="strs_move_across_fmt">coup (depuis %1$s horizontalement</string>
+    <string name="strs_move_across_fmt">coup (depuis %1$s horizontalement)\n</string>
     <!-- Used in formatting game history and move summaries -->
     <!--<string name="strs_move_down_fmt">move (from %1$s down)\n</string>-->
-    <string name="strs_move_down_fmt">coup (depuis %1$s verticalement)</string>
+    <string name="strs_move_down_fmt">coup (depuis %1$s verticalement)\n</string>
     <!-- Used in formatting game history and move summaries -->
     <!--<string name="strs_tray_at_start_fmt">Rack at start: %1$s\n</string>-->
     <string name="strs_tray_at_start_fmt">Chevalet au départ : %1$s\n</string>
@@ -821,7 +821,7 @@ restants]</string>
     <!-- Beginning of the message presented to a user when asking him
          to confirm committing the current turn-->
     <!--<string name="str_commit_confirm">Commit the current move?\n</string>-->
-    <string name="str_commit_confirm">Valider le coup courrant ?\n</string>
+    <string name="str_commit_confirm">Valider le coup actuel ?\n</string>
     <!-- Used, with remote player's name substituted for %1$s, to
     indicate that the player is remote. -->
     <!--<string name="str_nonlocal_name_fmt">%1$s (remote)</string>-->
@@ -905,7 +905,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
       -->
     <!-- title of this sub-preference -->
     <!--<string name="prefs_defaults">New game defaults</string>-->
-    <string name="prefs_defaults">Par défaut pour les nouvelles parties</string>
+    <string name="prefs_defaults">Nouvelles parties</string>
     <!-- clarification of the above -->
     <!--<string name="prefs_defaults_summary">Default settings for new
         games</string>-->
@@ -1154,7 +1154,7 @@ de l\'application</string>
          time a robot makes a move or a move is received from a remote
          player. -->
     <!--<string name="explain_robot">Explain other moves</string>-->
-    <string name="explain_robot">Expliquer les coups des autres</string>
+    <string name="explain_robot">Expliquer les coups</string>
     <!-- explanation of the above -->
     <!--<string name="explain_robot_summary">Display score summary after
         every robot or remote turn</string>-->
@@ -1165,7 +1165,7 @@ tour de chaque robot ou joueur distant</string>
          confirm after selecting the "Turn done" menu (or tapping the
          points display at the right end of the tray) -->
     <!--<string name="skip_confirm_turn">Skip confirming turn</string>-->
-    <string name="skip_confirm_turn">Sauter la confirmation du tour</string>
+    <string name="skip_confirm_turn">Sauter confirmation du tour</string>
     <!-- explanation of the above -->
     <!--<string name="skip_confirm_turn_summary">Do NOT display score
         summary after every human turn</string>-->
@@ -1188,7 +1188,7 @@ jetons sont ajoutés</string>
          volume) This only applies when the Board screen is
          frontmost. -->
     <!--<string name="ringer_zoom">Volume keys zoom</string>-->
-    <string name="ringer_zoom">Zoom avec les touches de volume</string>
+    <string name="ringer_zoom">Zoom avec touches volume</string>
     <!-- explanation of the above -->
     <!--<string name="ringer_zoom_summary">Zoom board using volume keys</string>-->
     <string name="ringer_zoom_summary">Zoom du plateau avec les touches de
@@ -1203,7 +1203,7 @@ volume</string>
          though it's not his turn e.g. while the player whose turn it
          is is temporarily unable to play. -->
     <!--<string name="peek_other">View tiles out-of-turn</string>-->
-    <string name="peek_other">Voir les jetons en dehors du tour</string>
+    <string name="peek_other">Voir les jetons inopinément</string>
     <!-- explanation of the above -->
     <!--<string name="peek_other_summary">Tapping on scoreboard name shows
         that player\'s tiles</string>-->
@@ -1246,7 +1246,7 @@ parties en réseau</string>
          new moves available and fetches them.  This controls how
          frequently that check is done. -->
     <!--<string name="connect_frequency">Background move check</string>-->
-    <string name="connect_frequency">Vérification des coups en arrière-plan</string>
+    <string name="connect_frequency">Vérification des coups</string>
     <!-- These are the possible values for the connect_frequency
          setting presented as a drop-down list. -->
     <!--<string name="connect_never">Never check</string>-->
@@ -1381,7 +1381,7 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
     </string>-->
     <string name="invite_htm_fmt">&lt;a href=\"%1$s\"&gt;Toucher ici&lt;/a&gt;
  (ou suivez le lien complet ci-dessous, ou, si vous déjà
-installé Crosswords, ouvrez l\'attachement) pour accepter mon invitation and
+installé Crosswords, ouvrez l\'attachement) pour accepter mon invitation et 
 rejoindre cette partie.
 
     &lt;br \\&gt;
@@ -1567,8 +1567,10 @@ pour échanger.</string>
          there are no tiles on the board (no move has yet been made.)
          [If I'm being clever and disabling those features in this
          case there may be no way to see this.] -->
-    <string name="str_cant_undo_tileassign">Tile assignment can\'t be
-         undone.</string>
+    <!--<string name="str_cant_undo_tileassign">Tile assignment can\'t be
+         undone.</string>-->
+    <string name="str_cant_undo_tileassign">Le déplacement des jetons ne peut
+être annulé.</string>
 
     <!-- Using the hint feature is cheating by some players, and it
          can be disabled via the hints_allowed preference.  I should
@@ -1724,7 +1726,7 @@ mots)</string>
 
     <!-- Used in Game config dialog to confirm saving changes that reset a game -->
     <!--<string name="button_save">Save</string>-->
-    <string name="button_save">Sauver</string>
+    <string name="button_save">Accepter</string>
     <!-- Used for button in dialog put up with the relay says the
          remote partner of this game has deleted it.  Ok, meaning
          "don't discard", is the other option.  This same button is
@@ -1845,7 +1847,7 @@ téléchargés en arrière-plan.)</string>
       exchanged.\n\n</string>-->
     <string name="not_again_trading">Vous entrez dans le mode d\'échange de
 jetons.\n\nTouchez des jetons pour les ajouter ou les retirer de l\'ensemble de
-ceux à échanger.</string>
+ceux à échanger.\n\n</string>
 
       <!--<string name="not_again_trading_buttons">Use the buttons to
       commit your turn or exit exchange mode.</string>-->
@@ -1869,7 +1871,7 @@ d\'action pour valider votre tour ou sortir du mode d\'échange.</string>
       divider.)</string>-->
     <string name="not_again_hintprev">Ce bouton montre tous les coups possibles
 par ordre croissant (en utilisant les jetons à droite du séparateur du
-chevalet)</string>
+chevalet).</string>
     <!-- Shown when you tap the next hint button on the toolbar of the
          main Board screen -->
     <!--<string name="not_again_hintnext">This button shows all possible
@@ -1877,7 +1879,7 @@ chevalet)</string>
       divider.)</string>-->
     <string name="not_again_hintnext">Ce bouton montre tous les coups possibles
 par ordre décroissant (en utilisant les jetons à droite du séparateur du
-chevalet)</string>
+chevalet).</string>
     <!-- Shown when you tap the juggle button on the toolbar of the
          main Board screen -->
     <!--<string name="not_again_juggle">This button randomly rearranges
@@ -1896,13 +1898,13 @@ symétriquement à la diagonale.</string>
       between zoomed and regular size. Drag it when it is zoomed to
       see parts that are hidden.</string>-->
     <string name="not_again_zoom">Ce bouton bascule entre les tailles normale
-et zoomée du plateau. Tirez-le quand il est zoomé pour voir les parties
-cachées.</string>
+et gros plan du plateau. Tirez-le quand il est en gros plan pour voir les
+parties cachées.</string>
     <!-- Shown when you tap the undo/redo button on the toolbar of the
          main Board screen -->
     <!--<string name="not_again_undo">This button undos or redoes the
       current turn.</string>-->
-    <string name="not_again_undo">Ce bouton annule ou rétablie le tour
+    <string name="not_again_undo">Ce bouton annule ou rétablit le tour
 actuel.</string>
     <!-- Shown when you tap the chat button on the toolbar of the
          main Board screen -->
@@ -1939,7 +1941,7 @@ droite du chevalet est la façon la plus simple de valider un coup.</string>
       to discard changes to avoid a restart.</string>-->
     <string name="not_again_unlock">Cette partie est en cours. Certains
 paramètres, par exemple le nombre de joueurs, ne peuvent pas être modifiés sans
-la redémarrer. Quand vous quitterez cet écran, vous aurez la possiblité
+la redémarrer. Quand vous quitterez cet écran, vous aurez la possibilité
 d\'annuler les changements afin d\'éviter un redémarrage.</string>
 
     <!-- This is shown in the Board screen when you successfully
@@ -1990,26 +1992,41 @@ va commencer.</string>
          Board screen.  The idea is that you're tapping around
          figuring out how to play and when you tap an empty cell the
          arrow appears.  This explains it. -->
-    <string name="not_again_arrow">Moving tiles to the board:\nYou can
+    <!--<string name="not_again_arrow">Moving tiles to the board:\nYou can
       drag tiles between the rack and the board, or you can tap an
       empty square to place the board arrow. Rack tiles you tap will
       replace the arrow (moving it one square in the direction it
       points.)  Tap the arrow once to change its orientation; a second
       time, to hide it. A checkbox in the Appearance section of
-      Settings will hide it permanently.</string>
+      Settings will hide it permanently.</string>-->
+    <string name="not_again_arrow">Placer les jetons sur le plateau :\nVous
+pouvez déplacer les jetons entre le chevalet et le plateau, ou vous pouvez
+toucher une case vide pour placer la flèche du plateau. Les jetons du chevalet
+que vous touchez se placeront à l\'endroit de la flèche (tout en la déplaçant
+d\'une case dans la direction ou elle pointe.) Touchez la flèche une fois pour
+changer son orientation ; une deuxième fois pour la cacher. Une case à cocher
+dans la section Apparence des Paramètres peut la cacher de façon
+permanente.</string>
 
     <!-- Shown when the board screen is visible and it's just become
          another players turn. The idea is to give a hint about how to
          find out about recent moves. -->
-    <string name="not_again_turnchanged">The player whose turn it is
+    <!--<string name="not_again_turnchanged">The player whose turn it is
       is drawn large in the scoreboard.\n\nHold your finger on a name in
       the scoreboard to get details about that player\'s most recent
-      move.</string>
+      move.</string>-->
+    <string name="not_again_turnchanged">Le joueur dont c\'est le tour est
+affiché en grand sur le tableau d\'affichage.\n\nFaites un appui long sur un
+nom du tableau d\'affichage pour avoir des détails sur le coup le plus récent
+de ce joueur.</string>
 
     <!-- Shown when you first pick the list_item_new_from menuitem -->
-    <string name="not_again_newfrom">Create a new ready-to-play game
+    <!--<string name="not_again_newfrom">Create a new ready-to-play game
       using all the settings from this one.  That is, treat this game
-      as a template.</string>
+      as a template.</string>-->
+    <string name="not_again_newfrom">Créez une nouvelle partie en utilisant
+tous les paramètres de celle-ci. Autrement dit, utilisez cette partie comme un
+modèle.</string>
 
     <!--
        ###########################################################
@@ -2025,12 +2042,17 @@ va commencer.</string>
       -->
 
     <!-- Welcome dialog title -->
-    <string name="default_name_title">Welcome</string>
+    <!--<string name="default_name_title">Welcome</string>-->
+    <string name="default_name_title">Bienvenue</string>
     <!-- Welcome dialog text -->
-    <string name="default_name_message">Thanks for installing
+    <!--<string name="default_name_message">Thanks for installing
       Crosswords!\n\nFeel free to enter your name here. It will be used
       when creating new games.  (You can change it later in the \"New
-      game default\" section of Settings.)</string>
+      game default\" section of Settings.)</string>-->
+    <string name="default_name_message">Merci d\'avoir installé
+Crosswords !\n\n Vous pouvez saisir votre nom ici. Il sera utilisé lors de la
+création de nouvelles parties. (Vous pourrez le changer plus tard dans la
+section \"Nouvelles parties\" des Paramètres.)</string>
 
     <!-- 
        ###########################################################
@@ -2041,727 +2063,1148 @@ va commencer.</string>
        ########################################################### 
       -->
     <!-- String giving version info, which is substituted in. -->
-    <string name="about_vers_fmt">Crosswords for Android, Version %1$s,
-        rev %2$s, built on %3$s.</string>
+    <!--<string name="about_vers_fmt">Crosswords for Android, Version %1$s,
+        rev %2$s, built on %3$s.</string>-->
+    <string name="about_vers_fmt">Crosswords pour Android, version %1$s,
+rév. %2$s, compilé le %3$s.</string>
     <!-- copyright info -->
-    <string name="about_copyright">Copyright (C) 1998-2015 by Eric
+    <!--<string name="about_copyright">Copyright (C) 1998-2015 by Eric
         House. This free/open source software is released under the GNU Public
-        License.</string>
+        License.</string>-->
+    <string name="about_copyright">Copyright (C) 1998-2015 par Eric House. Ce
+logiciel libre/open source est sous la Licence Publique GNU.</string>
 
     <!-- Another paragraph in the about dialog -->
-    <string name="about_web">For a manual or sourcecode see:
+    <!--<string name="about_web">For a manual or sourcecode see:
     http://xwords.sf.net/android.php.  To report bugs, suggest
     features, offer to help, etc., please email:
-    xwords@eehouse.org.</string>
+    xwords@eehouse.org.</string>-->
+    <string name="about_web">Pour un manuel ou le code source, voyez :
+http://xwords.sf.net/android.php. Pour rapporter des bugs, suggérer des
+fonctionnalités, offrir votre aide, etc., veuillez envoyer un email à :
+xwords@eehouse.org.</string>
 
     <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language-->
-    <string name="xlator"></string>
+    <string name="xlator">Traduction française par Bernard Massot.</string>
 
     <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
-    <string name="about_credits">Toolbar icons by Sarah Chu.</string>
+    <!--<string name="about_credits">Toolbar icons by Sarah Chu.</string>-->
+    <string name="about_credits">Icônes de la barre d\'outils par Sarah Chu.</string>
 
     <!-- text of dialog showing the set of changes made since the last
          release -->
-    <string name="changes_title">Recent changes</string>
+    <!--<string name="changes_title">Recent changes</string>-->
+    <string name="changes_title">Changements récents</string>
     <!-- text of button in About Crosswords dialog summoning above
          dialog -->
-    <string name="changes_button">Recent changes\u200C</string>
+    <!--<string name="changes_button">Recent changes\u200C</string>-->
+    <string name="changes_button">Changements récents</string>
 
     <!-- New strings that need to be documented and found a home
          above. -->
-    <string name="button_lookup">Look up words</string>
-    <string name="button_lookup_study">Look up/study words</string>
+    <!--<string name="button_lookup">Look up words</string>-->
+    <string name="button_lookup">Chercher des mots</string>
+    <!--<string name="button_lookup_study">Look up/study words</string>-->
+    <string name="button_lookup_study">Chercher/étudier des mots</string>
       <!--  -->
-    <string name="button_lookup_fmt">Look up %1$s</string>
-    <string name="button_lookup_study_fmt">Look up/study %1$s</string>
+    <!--<string name="button_lookup_fmt">Look up %1$s</string>-->
+    <string name="button_lookup_fmt">Chercher %1$s</string>
+    <!--<string name="button_lookup_study_fmt">Look up/study %1$s</string>-->
+    <string name="button_lookup_study_fmt">Chercher/étudier %1$s</string>
       <!--  -->
-    <string name="title_lookup">Tap to look up</string>
-    <string name="title_lookup_study">Tap to look up or study</string>
+    <!--<string name="title_lookup">Tap to look up</string>-->
+    <string name="title_lookup">Toucher pour chercher</string>
+    <!--<string name="title_lookup_study">Tap to look up or study</string>-->
+    <string name="title_lookup_study">Toucher pour chercher ou étudier</string>
       <!--  -->
-    <string name="button_done">Done</string>
+    <!--<string name="button_done">Done</string>-->
+    <string name="button_done">Fini</string>
       <!--  -->
-    <string name="button_done_fmt">Done with %1$s</string>
+    <!--<string name="button_done_fmt">Done with %1$s</string>-->
+    <string name="button_done_fmt">Fini avec %1$s</string>
 
       <!--  -->
-    <string name="pick_url_title_fmt">Look up %1$s at</string>
+    <!--<string name="pick_url_title_fmt">Look up %1$s at</string>-->
+    <string name="pick_url_title_fmt">Chercher %1$s sur</string>
 
       <!--  -->
-    <string name="board_menu_pass">Pass</string>
+    <!--<string name="board_menu_pass">Pass</string>-->
+    <string name="board_menu_pass">Passer</string>
 
       <!--  -->
-    <string name="not_again_lookup">This button lets you look up,
-      online, the words just played.</string>
+    <!--<string name="not_again_lookup">This button lets you look up,
+      online, the words just played.</string>-->
+    <string name="not_again_lookup">Ce bouton vous permet de chercher, en
+ligne, les mots qui viennent d\'être joués.</string>
 
       <!--  -->
-    <string name="button_move">Move</string>
-    <string name="button_newgroup">New group</string>
+    <!--<string name="button_move">Move</string>-->
+    <string name="button_move">Déplacer</string>
+    <!--<string name="button_newgroup">New group</string>-->
+    <string name="button_newgroup">Nouveau groupe</string>
 
       <!--  -->
-    <string name="button_search">Find</string>
+    <!--<string name="button_search">Find</string>-->
+    <string name="button_search">Trouver</string>
       <!--  -->
-    <string name="word_search_hint">First letters</string>
+    <!--<string name="word_search_hint">First letters</string>-->
+    <string name="word_search_hint">Premières lettres</string>
       <!--  -->
-    <string name="tilepick_undo">Undo last\u200C</string>
+    <!--<string name="tilepick_undo">Undo last\u200C</string>-->
+    <string name="tilepick_undo">Annuler le dernier tirage</string>
       <!--  -->
-    <string name="tilepick_all">Pick for me</string>
+    <!--<string name="tilepick_all">Pick for me</string>-->
+    <string name="tilepick_all">Tirer pour moi</string>
       <!--  -->
-    <string name="cur_tiles_fmt">Tile picker\n(so far: %1$s)</string>
+    <!--<string name="cur_tiles_fmt">Tile picker\n(so far: %1$s)</string>-->
+    <string name="cur_tiles_fmt">Tirage de jetons\n(pour l\'instant : %1$s)</string>
       <!--  -->
-    <string name="pick_faceup">Pick tiles face-up</string>
+    <!--<string name="pick_faceup">Pick tiles face-up</string>-->
+    <string name="pick_faceup">Choisir ses jetons</string>
 
       <!--  -->
-    <string name="dict_browse_title_fmt">%1$s (%2$d words using %3$d-%4$d
-      tiles)</string>
+    <!--<string name="dict_browse_title_fmt">%1$s (%2$d words using %3$d-%4$d
+      tiles)</string>-->
+    <string name="dict_browse_title_fmt">%1$s (%2$d mots utilisant de %3$d à
+%4$d jetons)</string>
       <!--  -->
-    <string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
-      tiles)</string>
+    <!--<string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
+      tiles)</string>-->
+    <string name="dict_browse_title1_fmt">%1$s (%2$d mots utilisant %3$d jetons)</string>
       <!--  -->
-    <string name="dict_browse_nowords_fmt">No word in %1$s starts with
-      %2$s.</string>
+    <!--<string name="dict_browse_nowords_fmt">No word in %1$s starts with
+      %2$s.</string>-->
+    <string name="dict_browse_nowords_fmt">Aucun mot de %1$s ne commence par
+%2$s.</string>
       <!--  -->
-    <string name="not_again_browse">This button opens the wordlist
-      browser on the current player\'s wordlist.</string>
+    <!--<string name="not_again_browse">This button opens the wordlist
+      browser on the current player\'s wordlist.</string>-->
+    <string name="not_again_browse">Ce bouton ouvre le navigateur de liste de
+mots en utilisant la liste du jouer actuel.</string>
       <!--  -->
-    <string name="not_again_browseall">This button opens the wordlist
-      browser on the wordlist of your choice.</string>
+    <!--<string name="not_again_browseall">This button opens the wordlist
+      browser on the wordlist of your choice.</string>-->
+    <string name="not_again_browseall">Ce bouton ouvre le navigateur de liste
+de mots en utilisant la liste de votre choix.</string>
       <!--  -->
-    <string name="alert_empty_dict_fmt">The wordlist %1$s contains only
-      tile information.  There are no words to browse.</string>
+    <!--<string name="alert_empty_dict_fmt">The wordlist %1$s contains only
+      tile information.  There are no words to browse.</string>-->
+    <string name="alert_empty_dict_fmt">La liste de mots %1$s contient
+seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</string>
 
       <!--  -->
-    <string name="min_len">Min length</string>
+    <!--<string name="min_len">Min length</string>-->
+    <string name="min_len">Longueur min</string>
       <!--  -->
-    <string name="max_len">Max length</string>
+    <!--<string name="max_len">Max length</string>-->
+    <string name="max_len">Longueur max</string>
       <!--  -->
-    <string name="prompt_min_len">Words no shorter than</string>
+    <!--<string name="prompt_min_len">Words no shorter than</string>-->
+    <string name="prompt_min_len">Mots pas plus courts que</string>
       <!--  -->
-    <string name="prompt_max_len">Words no longer than</string>
+    <!--<string name="prompt_max_len">Words no longer than</string>-->
+    <string name="prompt_max_len">Mots pas plus longs que</string>
 
       <!--  -->
-    <string name="board_menu_file_email">Email author</string>
+    <!--<string name="board_menu_file_email">Email author</string>-->
+    <string name="board_menu_file_email">Envoyer un mail à l\'auteur</string>
       <!--  -->
+      <!-- Should not be translated -->
     <string name="email_author_subject">Comment about Crosswords</string>
       <!--  -->
-    <string name="email_author_chooser">Send comment via</string>
+    <!--<string name="email_author_chooser">Send comment via</string>-->
+    <string name="email_author_chooser">Envoyer un commentaire par</string>
 
       <!--  -->
+      <!-- Should not be translated -->
     <string name="email_body_rev_fmt">(If relevant, please include the
       version: \"%1$s\"; and make/model of your phone or
       tablet.)</string>
 
       <!-- In the Bluetooth invite device dialog -->
-    <string name="bt_pick_addall_button">Add all Paired</string>
+    <!--<string name="bt_pick_addall_button">Add all Paired</string>-->
+    <string name="bt_pick_addall_button">Ajouter tous les périphériques appairés</string>
       <!--  -->
-    <string name="bt_pick_clear_button">Remove checked</string>
+    <!--<string name="bt_pick_clear_button">Remove checked</string>-->
+    <string name="bt_pick_clear_button">Retirer les périphériques cochés</string>
 
       <!--  -->
-    <string name="invite_progress_title">Connecting...</string>
-    <string name="invite_progress_fmt">Sending invitation to Crosswords on %1$s</string>
+    <!--<string name="invite_progress_title">Connecting...</string>-->
+    <string name="invite_progress_title">Connexion…</string>
+    <!--<string name="invite_progress_fmt">Sending invitation to Crosswords on %1$s</string>-->
+    <string name="invite_progress_fmt">Envoi d\'une invitation à Crosswords sur %1$s</string>
       <!--  -->
-    <string name="summary_wait_host">Waiting for connection[s]</string>
+    <!--<string name="summary_wait_host">Waiting for connection[s]</string>-->
+    <string name="summary_wait_host">En attente de connexion[s]</string>
       <!--  -->
-    <string name="summary_wait_guest">Unconnected</string>
+    <!--<string name="summary_wait_guest">Unconnected</string>-->
+    <string name="summary_wait_guest">Non connecté</string>
       <!--  -->
-    <string name="summary_gameover">Game over\u200C</string>
+    <!--<string name="summary_gameover">Game over\u200C</string>-->
+    <string name="summary_gameover">Partie terminée</string>
       <!--  -->
-    <string name="summary_conn">Game in play</string>
+    <!--<string name="summary_conn">Game in play</string>-->
+    <string name="summary_conn">Partie en cours</string>
       <!--  -->
-    <string name="new_bt_title">New game via Bluetooth</string>
+    <!--<string name="new_bt_title">New game via Bluetooth</string>-->
+    <string name="new_bt_title">Nouvelle partie par Bluetooth</string>
       <!--  -->
     <string name="new_bt_body_fmt">From a player on the device %1$s wants to start a game</string>
       <!--  -->
-    <string name="bt_bad_proto_fmt">The version of Crosswords on
+    <!--<string name="bt_bad_proto_fmt">The version of Crosswords on
     \"%1$s\" is incompatible with this one for play using
     Bluetooth. One of you may need to upgrade before you can
-    continue.</string>
+    continue.</string>-->
+    <string name="bt_bad_proto_fmt">La version de Crosswords sur \"%1$s\" est incompatible avec celle-ci pour jouer par Bluetooth. L\'un de vous devrait se mettre à jour avant de pouvoir continuer.</string>
 
       <!--  -->
     <string name="new_btmove_title">Invitation via Bluetooth</string>
     <!--  -->
-    <string name="new_move_body">One or more moves has arrived</string>
+    <!--<string name="new_move_body">One or more moves has arrived</string>-->
+    <string name="new_move_body">Un ou plusieurs coups sont arrivés</string>
     <!--  -->
-    <string name="invite_bt_desc_fmt">Please select the %1$d device[s]
+    <!--<string name="invite_bt_desc_fmt">Please select the %1$d device[s]
     you want to include in this game.  Use the \"%2$s\"
-    button if you don\'t see a device you expect.</string>
+    button if you don\'t see a device you expect.</string>-->
+    <string name="invite_bt_desc_fmt">Sélectionnez les %1$d périphériques que
+vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne
+voyez pas un périphérique que vous attendez.</string>
         <!--  -->
-    <string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry %3$d in
-        %2$d seconds.</string>
+    <!--<string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry %3$d in
+        %2$d seconds.</string>-->
+    <string name="bt_resend_fmt">Un envoi Bluetooth à %1$s a échoué ; essai
+%3$d dans %2$d secondes.</string>
         <!--  -->
-    <string name="bt_fail_fmt">Bluetooth sends to %1$s have failed too many
-        times. Re-open the game to try again.</string>
+    <!--<string name="bt_fail_fmt">Bluetooth sends to %1$s have failed too many
+        times. Re-open the game to try again.</string>-->
+    <string name="bt_fail_fmt">Les envois Bluetooth à %1$s ont échoué trop de
+fois. Ouvrez à nouveau la partie pour réessayer.</string>
         <!--  -->
-    <string name="button_invite">Invite checked</string>
+    <!--<string name="button_invite">Invite checked</string>-->
+    <string name="button_invite">Inviter les périphériques cochés</string>
 
     <!-- Title of device picker during invitation to a game via Bluetooth -->
-	<string name="bt_invite_title">Bluetooth Invitation</string>
+	<!--<string name="bt_invite_title">Bluetooth Invitation</string>-->
+	<string name="bt_invite_title">Invitation par Bluetooth</string>
     <!-- Title of phone number picker during invitation to a game via SMS -->
-	<string name="sms_invite_title">SMS Invitation</string>
+	<!--<string name="sms_invite_title">SMS Invitation</string>-->
+	<string name="sms_invite_title">Invitation par SMS</string>
 
     <!--  -->
-    <string name="game_btname_title">Bluetooth game name</string>
+    <!--<string name="game_btname_title">Bluetooth game name</string>-->
+    <string name="game_btname_title">Nom de la partie par Bluetooth</string>
     <!--  -->
-    <string name="newgame_sms_header">New SMS Game</string>
+    <!--<string name="newgame_sms_header">New SMS Game</string>-->
+    <string name="newgame_sms_header">Nouvelle partie par SMS</string>
     <!--  -->
-    <string name="dft_sms_name_fmt">SMS Game %1$X</string>    
+    <!--<string name="dft_sms_name_fmt">SMS Game %1$X</string>    -->
+    <string name="dft_sms_name_fmt">Partie %1$X par SMS</string>    
     <!--  -->
-    <string name="new_sms_title">New game via SMS</string>
+    <!--<string name="new_sms_title">New game via SMS</string>-->
+    <string name="new_sms_title">Nouvelle partie par SMS</string>
     <!--  -->
-    <string name="new_name_body_fmt">%1$s has invited you to play</string>
+    <!--<string name="new_name_body_fmt">%1$s has invited you to play</string>-->
+    <string name="new_name_body_fmt">%1$s vous a invité à jouer</string>
     <!--  -->
-    <string name="button_sms_add">Import contact</string>
+    <!--<string name="button_sms_add">Import contact</string>-->
+    <string name="button_sms_add">Importer le contact</string>
     <!--  -->
-    <string name="invite_sms_desc_fmt">Please check the %1$d phone
-    number[s] you want to invite to your new game, then tap \"%2$s\".</string>
+    <!--<string name="invite_sms_desc_fmt">Please check the %1$d phone
+    number[s] you want to invite to your new game, then tap \"%2$s\".</string>-->
+    <string name="invite_sms_desc_fmt">Vérifiez les %1$d numéros de téléphone
+que vous voulez inviter à votre partie, puis touchez \"%2$s\".</string>
     <!--  -->
-    <string name="manual_owner_name">(Not in contacts)</string>
+    <!--<string name="manual_owner_name">(Not in contacts)</string>-->
+    <string name="manual_owner_name">(Pas dans les contacts)</string>
     <!--  -->
-    <string name="warn_nomobile_fmt">The number %1$s for %2$s is not
-    a \"mobile\" number. Import anyway?</string>
+    <!--<string name="warn_nomobile_fmt">The number %1$s for %2$s is not
+    a \"mobile\" number. Import anyway?</string>-->
+    <string name="warn_nomobile_fmt">Le numéro %1$s pour %2$s n\'est pas un
+numéro de \"portable\". Importer malgré tout ?</string>
     <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
-    <string name="empty_sms_inviter">This phone list is empty. Use the
+    <!--<string name="empty_sms_inviter">This phone list is empty. Use the
     \"Import contact\" button to add people you want to invite, the +
-    button to enter numbers directly.</string>
+    button to enter numbers directly.</string>-->
+    <string name="empty_sms_inviter">Cette liste de numéros est vide. Utilisez
+le bouton \"Importer le contact\" pour ajouter des gens que vous voulez
+inviter, ou le bouton + pour saisir des numéros directement.</string>
     <!--  -->
-    <string name="get_sms_number">Enter phone number:</string>
+    <!--<string name="get_sms_number">Enter phone number:</string>-->
+    <string name="get_sms_number">Saisir un numéro de téléphone :</string>
     <!--  -->
-    <string name="confirm_clear">Are you sure you want to delete the
-    checked phone number[s]?</string>
+    <!--<string name="confirm_clear">Are you sure you want to delete the
+    checked phone number[s]?</string>-->
+    <string name="confirm_clear">Êtes-vous sûr de vouloir effacer les numéros
+de téléphone cochés ?</string>
     <!--  -->
-    <string name="connect_label_sms">Connection (via SMS/text)</string>
+    <!--<string name="connect_label_sms">Connection (via SMS/text)</string>-->
+    <string name="connect_label_sms">Connexion (par SMS)</string>
     <!--  -->
-    <string name="phone_label">Connected number[s]:</string>
+    <!--<string name="phone_label">Connected number[s]:</string>-->
+    <string name="phone_label">Numéro[s] connecté[s] :</string>
     <!--  -->
-    <string name="summary_conn_sms_fmt">Game in play with %1$s</string>
+    <!--<string name="summary_conn_sms_fmt">Game in play with %1$s</string>-->
+    <string name="summary_conn_sms_fmt">Partie en cours avec %1$s</string>
     <!--  -->
-    <string name="warn_unlimited">Are you certain this number is on an
-    account with unlimited texting?  Click cancel if you are not.</string>
+    <!--<string name="warn_unlimited">Are you certain this number is on an
+    account with unlimited texting?  Click cancel if you are not.</string>-->
+    <string name="warn_unlimited">Êtes-vous sûr que ce numéro a un forfait SMS
+illimités ? Annulez si vous n\'êtes pas sûr.</string>
 
     <!--  -->
-    <string name="remote_undone">Remote device undid a turn.</string>
+    <!--<string name="remote_undone">Remote device undid a turn.</string>-->
+    <string name="remote_undone">Le périphérique distant a annulé un tour.</string>
 
     <!--  -->
-    <string name="menu_hint_prev">Prev hint</string>
+    <!--<string name="menu_hint_prev">Prev hint</string>-->
+    <string name="menu_hint_prev">Indication précédente</string>
 
     <!--  -->
-    <string name="menu_hint_next">Next hint</string>
+    <!--<string name="menu_hint_next">Next hint</string>-->
+    <string name="menu_hint_next">Indication suivante</string>
 
     <!--  -->
-    <string name="board_menu_undo_current">Undo/Redo</string>
+    <!--<string name="board_menu_undo_current">Undo/Redo</string>-->
+    <string name="board_menu_undo_current">Annuler/Rétablir</string>
 
     <!--  -->
-    <string name="menu_juggle">Juggle rack</string>
+    <!--<string name="menu_juggle">Juggle rack</string>-->
+    <string name="menu_juggle">Mélanger le chevalet</string>
 
     <!--  -->
-    <string name="menu_flip">Flip board</string>
+    <!--<string name="menu_flip">Flip board</string>-->
+    <string name="menu_flip">Faire tourner le plateau</string>
     <!--  -->
-    <string name="menu_zoom">Zoom in/out</string>
+    <!--<string name="menu_zoom">Zoom in/out</string>-->
+    <string name="menu_zoom">Zoomer/Dézoomer</string>
     <!--  -->
-    <string name="menu_chat">Chat</string>
+    <!--<string name="menu_chat">Chat</string>-->
+    <string name="menu_chat">Discussion</string>
     <!--  -->
-    <string name="menu_toggle_values">Toggle values</string>
+    <!--<string name="menu_toggle_values">Toggle values</string>-->
+    <string name="menu_toggle_values">Basculer l\'affichage des valeurs</string>
 
     <!-- board menu for small devices only -->
-    <string name="board_menu_dict">Browse wordlist</string>
+    <!--<string name="board_menu_dict">Browse wordlist</string>-->
+    <string name="board_menu_dict">Parcourir la liste de mots</string>
 
     <!--  -->
-    <string name="game_list_tmp">Building game summary…</string>
+    <!--<string name="game_list_tmp">Building game summary…</string>-->
+    <string name="game_list_tmp">Création du résumé de la partie…</string>
 
     <!--  -->
-    <string name="connstat_nonet">This is a standalone game. There is
-    no network status.</string>
+    <!--<string name="connstat_nonet">This is a standalone game. There is
+    no network status.</string>-->
+    <string name="connstat_nonet">Cette partie est autonome. Il n\'y a pas
+d\'état du réseau.</string>
     <!--  -->
-    <string name="connstat_net_fmt">Network status for game connected via
-    %1$s:</string>
+    <!--<string name="connstat_net_fmt">Network status for game connected via
+    %1$s:</string>-->
+    <string name="connstat_net_fmt">État du réseau pour la partie connectée par
+%1$s :</string>
     <!--  -->
-    <string name="connstat_succ">successful</string>
+    <!--<string name="connstat_succ">successful</string>-->
+    <string name="connstat_succ">succès</string>
     <!--  -->
-    <string name="connstat_unsucc">unsuccessful</string>
+    <!--<string name="connstat_unsucc">unsuccessful</string>-->
+    <string name="connstat_unsucc">échec</string>
     <!--  -->
-    <string name="connstat_lastsend_fmt">Last send was %1$s (%2$s)</string>
+    <!--<string name="connstat_lastsend_fmt">Last send was %1$s (%2$s)</string>-->
+    <string name="connstat_lastsend_fmt">Le dernier envoi a été %1$s (%2$s)</string>
     <!--  -->
-    <string name="connstat_lastother_succ_fmt">(Last failure was %1$s)</string>
+    <!--<string name="connstat_lastother_succ_fmt">(Last failure was %1$s)</string>-->
+    <string name="connstat_lastother_succ_fmt">(Le dernier échec a été %1$s)</string>
     <!--  -->
-    <string name="connstat_lastother_unsucc_fmt">(Last successful send was
-    %1$s)</string>
+    <!--<string name="connstat_lastother_unsucc_fmt">(Last successful send was
+    %1$s)</string>-->
+    <string name="connstat_lastother_unsucc_fmt">(Le dernier envoi réussi a été
+%1$s)</string>
     <!--  -->
-    <string name="connstat_lastreceipt_fmt">Last receipt was %1$s</string>
+    <!--<string name="connstat_lastreceipt_fmt">Last receipt was %1$s</string>-->
+    <string name="connstat_lastreceipt_fmt">La dernière réception a été %1$s</string>
     <!--  -->
-    <string name="connstat_noreceipt">No messages have been received.</string>
+    <!--<string name="connstat_noreceipt">No messages have been received.</string>-->
+    <string name="connstat_noreceipt">Aucun message n\'a été reçu.</string>
     <!--  -->
-    <string name="connstat_relay">internet/relay</string>
+    <!--<string name="connstat_relay">internet/relay</string>-->
+    <string name="connstat_relay">Internet/relai</string>
     <!--  -->
-    <string name="connstat_sms">sms/texting</string>
+    <!--<string name="connstat_sms">sms/texting</string>-->
+    <string name="connstat_sms">SMS</string>
     <!--  -->
-    <string name="enable_sms">Allow games via SMS</string>
+    <!--<string name="enable_sms">Allow games via SMS</string>-->
+    <string name="enable_sms">Autoriser les parties par SMS</string>
     <!--  -->
-    <string name="enable_sms_summary">Only if you have unlimited texting!</string>
+    <!--<string name="enable_sms_summary">Only if you have unlimited texting!</string>-->
+    <string name="enable_sms_summary">Seulement si vous avez un forfait SMS
+illimité !</string>
 
     <!--  -->
-    <string name="confirm_sms_title">Confirm your SMS plan</string>
+    <!--<string name="confirm_sms_title">Confirm your SMS plan</string>-->
+    <string name="confirm_sms_title">Confirmez votre forfait SMS</string>
     <!--  -->
-    <string name="confirm_sms_expl">Warning: This feature is meant for
+    <!--<string name="confirm_sms_expl">Warning: This feature is meant for
     phones with unlimited texting plans. Once you enable it dozens of
     SMS (text) messages will be sent (invisibly) for each game
     played. If you don\'t have an unlimited plan your carrier may
     charge you for each and every message!\n\nShould play via SMS be
-    enabled?</string>
+    enabled?</string>-->
+    <string name="confirm_sms_expl">Attention : Cette fonctionnalité est faite
+pour les téléphones avec un forfait SMS illimités. Une fois que vous l\'aurez
+activée, des douzaines de SMS seront envoyés (de façon invisible) pour chaque
+partie jouée. Si vous n\'avez pas un forfait illimité votre opérateur pourrait
+vous faire payer pour chaque message !\n\nLes parties par SMS devraient-elles
+être activées ?</string>
     <!--  -->
-    <string name="confirm_sms_prompt">Enable play via SMS?</string>
+    <!--<string name="confirm_sms_prompt">Enable play via SMS?</string>-->
+    <string name="confirm_sms_prompt">Activer les parties par SMS ?</string>
     <!--  -->
-    <string name="confirm_sms_leave">No: leave disabled</string>
+    <!--<string name="confirm_sms_leave">No: leave disabled</string>-->
+    <string name="confirm_sms_leave">Non : laisser désactivé</string>
     <!--  -->
-    <string name="confirm_sms_unlimited">Yes: I have unlimited texting</string>
+    <!--<string name="confirm_sms_unlimited">Yes: I have unlimited texting</string>-->
+    <string name="confirm_sms_unlimited">Oui : j\'ai des SMS illimités</string>
     <!--  -->
-    <string name="confirm_sms_willpay">Yes: I\'ll pay all carrier charges</string>
+    <!--<string name="confirm_sms_willpay">Yes: I\'ll pay all carrier charges</string>-->
+    <string name="confirm_sms_willpay">Oui : je paierai l\'opérateur</string>
 
     <!--  -->
-    <string name="warn_sms_disabled">Play via SMS is currently
+    <!--<string name="warn_sms_disabled">Play via SMS is currently
     disabled, so no moves will be sent for this game.  (If you want to
     enable play via SMS, go to Settings->Network game settings.)
-    </string>
+    </string>-->
+    <!--<string name="warn_sms_disabled">Les parties par SMS sont actuellement
+désactivées, donc aucun coup ne sera envoyé pour cette partie. (Si vous voulez
+activer les parties par SMS, allez dans Paramètres->Paramètres des parties en
+réseau.)</string>-->
+    <string name="warn_sms_disabled">Les parties par SMS sont actuellement
+désactivées, donc aucun coup ne sera envoyé pour cette partie. (Si vous voulez
+activer les parties par SMS, allez dans Paramètres->Paramètres des parties en réseau.)</string>
 
     <!--  -->
-    <string name="gamel_menu_checkupdates">Check for updates</string>
-    <string name="checkupdates_none_found">Everything is up-to-date.</string>
+    <!--<string name="gamel_menu_checkupdates">Check for updates</string>-->
+    <string name="gamel_menu_checkupdates">Vérifier les mises à jour</string>
+    <!--<string name="checkupdates_none_found">Everything is up-to-date.</string>-->
+    <string name="checkupdates_none_found">Tout est à jour.</string>
     <!--  -->
-    <string name="new_dict_avail">New wordlist available</string>
+    <!--<string name="new_dict_avail">New wordlist available</string>-->
+    <string name="new_dict_avail">Nouvelle liste de mots disponible</string>
     <!--  -->
-    <string name="new_dict_avail_fmt">Tap to update %1$s</string>
+    <!--<string name="new_dict_avail_fmt">Tap to update %1$s</string>-->
+    <string name="new_dict_avail_fmt">Toucher pour mettre à jour %1$s</string>
     <!--  -->
-    <string name="new_app_avail_fmt">New version of %1$s</string>
+    <!--<string name="new_app_avail_fmt">New version of %1$s</string>-->
+    <string name="new_app_avail_fmt">Nouvelle version de %1$s</string>
     <!--  -->
-    <string name="new_app_avail">Tap to download and install</string>
+    <!--<string name="new_app_avail">Tap to download and install</string>-->
+    <string name="new_app_avail">Toucher pour télécharger et installer</string>
     <!-- Used in formatting final scores display -->
-    <string name="str_resigned">Resigned</string>
+    <!--<string name="str_resigned">Resigned</string>-->
+    <string name="str_resigned">Abandon</string>
     <!-- Used in formatting final scores display -->
-    <string name="str_winner">Winner</string>
+    <!--<string name="str_winner">Winner</string>-->
+    <string name="str_winner">Vainqueur</string>
 
     <!--  -->
-    <string name="inform_dict_diffversion_fmt">You and the host of this
-    game are using different versions of the wordlist %1$s.</string>
-    <string name="inform_dict_title">Wordlist mismatch</string>
+    <!--<string name="inform_dict_diffversion_fmt">You and the host of this
+    game are using different versions of the wordlist %1$s.</string>-->
+    <string name="inform_dict_diffversion_fmt">Vous et l\'hôte de cette partie
+utilisez des versions différentes de la liste de mots %1$s.</string>
+    <!--<string name="inform_dict_title">Wordlist mismatch</string>-->
+    <string name="inform_dict_title">Incompatibilité de liste de mots</string>
     <!--  -->
-    <string name="inform_dict_diffdict_fmt">You are using the wordlist
+    <!--<string name="inform_dict_diffdict_fmt">You are using the wordlist
     %1$s but the game host is using %2$s. Would you like to use %3$s
-    too?</string>
-    <string name="inform_dict_download">\u0020(You will have to download it
-    first.)</string>
+    too?</string>-->
+    <string name="inform_dict_diffdict_fmt">Vous utilisez la liste de mots %1$s
+mais l\'hôte de la partie utilise %2$s. Voulez-vous utiliser %2$s également ?</string>
+    <!--<string name="inform_dict_download">\u0020(You will have to download it
+    first.)</string>-->
+    <string name="inform_dict_download">\u0020(Vous devrez d\'abord la
+télécharger.)</string>
     <!-- Shown in toast when relaunching after switching dicts -->
-    <string name="reload_new_dict_fmt">Reloading game with %1$s</string>
+    <!--<string name="reload_new_dict_fmt">Reloading game with %1$s</string>-->
+    <string name="reload_new_dict_fmt">Rechargement de la partie avec %1$s</string>
 
 	<!-- Title of notification shown when invitation requires a
 	     wordslist that's not installed -->
-    <string name="missing_dict_title">Game invitation pending</string>
+    <!--<string name="missing_dict_title">Game invitation pending</string>-->
+    <string name="missing_dict_title">Invitation à une partie en suspens</string>
 	<!-- body of notification shown when invitation requires a
 	     wordslist that's not installed -->
-    <string name="missing_dict_detail">Tap to download missing wordlist</string>
-    <string name="invite_dict_missing_title">Missing wordlist</string>
-    <string name="invite_dict_missing_body_fmt">%1$s has invited you to
+    <!--<string name="missing_dict_detail">Tap to download missing wordlist</string>-->
+    <string name="missing_dict_detail">Toucher pour télécharger la liste de
+mots manquante</string>
+    <!--<string name="invite_dict_missing_title">Missing wordlist</string>-->
+    <string name="invite_dict_missing_title">Liste de mots manquantes</string>
+    <!--<string name="invite_dict_missing_body_fmt">%1$s has invited you to
     play Crosswords using the wordlist %2$s (for play in %3$s), but it
     is not installed.  Would you like to download the wordlist or
-    decline the invitation?</string>
-    <string name="invite_dict_missing_body_noname_fmt">You have been
+    decline the invitation?</string>-->
+    <string name="invite_dict_missing_body_fmt">%1$s vous a invité à jouer à
+Crosswords en utilisant la liste de mots %2$s (pour jouer en %3$s), mais elle
+n\'est pas installée. Voulez-vous télécharger la liste de mots ou refuser
+l\'invitation ?</string>
+    <!--<string name="invite_dict_missing_body_noname_fmt">You have been
     invited to play Crosswords using the wordlist %2$s (for play in
     %3$s), but it is not installed.  Would you like to download the
-    wordlist?</string>
-    <string name="button_decline">Decline</string>
+    wordlist?</string>-->
+    <string name="invite_dict_missing_body_noname_fmt">Vous avez été invité
+à jouer à Crosswords en utilisant la liste de mots %2$s (pour jouer en
+%3$s), mais elle n\'est pas installée. Voulez-vous télécharger la liste de
+mots ?</string>
+    <!--<string name="button_decline">Decline</string>-->
+    <string name="button_decline">Refuser</string>
 
-    <string name="download_done">Download finished</string>
-    <string name="download_failed">Download unsuccessful</string>
+    <!--<string name="download_done">Download finished</string>-->
+    <string name="download_done">Téléchargement fini</string>
+    <!--<string name="download_failed">Download unsuccessful</string>-->
+    <string name="download_failed">Téléchargement infructueux</string>
 
-    <string name="default_loc">Store wordlists internally</string> 
-    <string name="default_loc_summary">(Not in external/sdcard memory)</string>
+    <!--<string name="default_loc">Store wordlists internally</string> -->
+    <string name="default_loc">Stocker les listes de mots en interne</string> 
+    <!--<string name="default_loc_summary">(Not in external/sdcard memory)</string>-->
+    <string name="default_loc_summary">(Pas dans une carte SD/externe)</string>
 
-    <string name="download_path_title">Downloads Directory</string>
+    <!--<string name="download_path_title">Downloads Directory</string>-->
+    <string name="download_path_title">Répertoire des téléchargements</string>
 
-    <string name="newgroup_label">Name your new group:</string>
+    <!--<string name="newgroup_label">Name your new group:</string>-->
+    <string name="newgroup_label">Nommez votre nouveau groupe :</string>
 
-    <string name="list_group_delete">Delete group</string>
-    <string name="list_group_rename">Rename</string>
-    <string name="list_group_default">Put new games here</string>
-    <string name="list_group_moveup">Move up</string>
-    <string name="list_group_movedown">Move down</string>
+    <!--<string name="list_group_delete">Delete group</string>-->
+    <string name="list_group_delete">Effacer le groupe</string>
+    <!--<string name="list_group_rename">Rename</string>-->
+    <string name="list_group_rename">Renommer</string>
+    <!--<string name="list_group_default">Put new games here</string>-->
+    <string name="list_group_default">Mettre les nouvelles parties ici</string>
+    <!--<string name="list_group_moveup">Move up</string>-->
+    <string name="list_group_moveup">Monter</string>
+    <!--<string name="list_group_movedown">Move down</string>-->
+    <string name="list_group_movedown">Descendre</string>
 
-    <string name="group_cur_games">My games</string>
-    <string name="group_new_games">New games</string>
+    <!--<string name="group_cur_games">My games</string>-->
+    <string name="group_cur_games">Mes parties</string>
+    <!--<string name="group_new_games">New games</string>-->
+    <string name="group_new_games">Nouvelles parties</string>
 
-    <string name="groups_confirm_del_fmt">Are you sure you want to delete
-    the %1$d selected group[s]?</string>
-    <string name="groups_confirm_del_games_fmt">\n\n(%1$d game[s] will
-    also be deleted.)</string>
+    <!--<string name="groups_confirm_del_fmt">Are you sure you want to delete
+    the %1$d selected group[s]?</string>-->
+    <string name="groups_confirm_del_fmt">Êtes-vous sûr de vouloir effacer les
+%1$d groupes sélectionnés ?</string>
+    <!--<string name="groups_confirm_del_games_fmt">\n\n(%1$d game[s] will
+    also be deleted.)</string>-->
+    <string name="groups_confirm_del_games_fmt">\n\n(%1$d parties seront aussi
+effacées.)</string>
 
-    <string name="rename_group_label">Change the name of this group to:</string>
-    <string name="game_name_group_title">Name group</string>
+    <!--<string name="rename_group_label">Change the name of this group to:</string>-->
+    <string name="rename_group_label">Changer le nom de ce groupe pour :</string>
+    <!--<string name="game_name_group_title">Name group</string>-->
+    <string name="game_name_group_title">Nom du groupe</string>
 
-    <string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
-    cannot be deleted.</string>
+    <!--<string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
+    cannot be deleted.</string>-->
+    <string name="cannot_delete_default_group_fmt">Le groupe pour les nouvelles
+parties, %1$s, ne peut pas être effacé.</string>
 
-    <string name="group_name_fmt">%1$s (%2$d games)</string>
+    <!--<string name="group_name_fmt">%1$s (%2$d games)</string>-->
+    <string name="group_name_fmt">%1$s (%2$d parties)</string>
 
     <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
          just ended. -->
-    <string name="button_rematch">Rematch</string>
+    <!--<string name="button_rematch">Rematch</string>-->
+    <string name="button_rematch">Revanche</string>
 
-    <string name="button_reconnect">Reconnect</string>
+    <!--<string name="button_reconnect">Reconnect</string>-->
+    <string name="button_reconnect">Se reconnecter</string>
 
-    <string name="square_tiles">Square rack tiles</string>
-    <string name="square_tiles_summary">Even if they can be taller</string>
+    <!--<string name="square_tiles">Square rack tiles</string>-->
+    <string name="square_tiles">Jetons carrés sur le chevalet</string>
+    <!--<string name="square_tiles_summary">Even if they can be taller</string>-->
+    <string name="square_tiles_summary">Même si ils peuvent être plus grands</string>
 
-    <string name="change_group">Move selected games to:</string>
+    <!--<string name="change_group">Move selected games to:</string>-->
+    <string name="change_group">Déplacer les parties sélectionnées vers :</string>
 
-    <string name="show_wordlist_browser">Wordlist browser</string>
+    <!--<string name="show_wordlist_browser">Wordlist browser</string>-->
+    <string name="show_wordlist_browser">Navigateur de liste de mots</string>
 
-    <string name="relay_alert_title">Message from relay</string>
+    <!--<string name="relay_alert_title">Message from relay</string>-->
+    <string name="relay_alert_title">Message du relai</string>
 
-    <string name="not_again_newselect">Tapping a game opens it.\n\nYou
+    <!--<string name="not_again_newselect">Tapping a game opens it.\n\nYou
     can instead tap the icons at the left to select or deselect games,
     then act on selected games, e.g. to delete them, using the menu or
-    \"Actionbar.\"</string>
+    \"Actionbar.\"</string>-->
+    <string name="not_again_newselect">Toucher une partie l\'ouvre.\n\nSinon
+vous pouvez aussi toucher les icônes sur la gauche pour sélectionner ou
+désélectionner des parties, par exemples pour les effacer, en utilisant le menu
+ou la \"barre d\'action\".</string>
 
-    <string name="not_again_backclears">The back button clears any
+    <!--<string name="not_again_backclears">The back button clears any
     selection instead of exiting. Hit it again to exit the
-    app.</string>
+    app.</string>-->
+    <string name="not_again_backclears">Le bouton retour efface les sélections
+au lieu de quitter. Pressez le de nouveau pour quitter l\'application.</string>
 
-    <string name="sel_games_fmt">Games: %1$d</string>
-    <string name="sel_groups_fmt">Groups: %1$d</string>
-    <string name="summary_thumbsize">Thumbnail size</string>
-    <string name="thumb_off">Disabled</string>
+    <!--<string name="sel_games_fmt">Games: %1$d</string>-->
+    <string name="sel_games_fmt">Parties : %1$d</string>
+    <!--<string name="sel_groups_fmt">Groups: %1$d</string>-->
+    <string name="sel_groups_fmt">Groupes : %1$d</string>
+    <!--<string name="summary_thumbsize">Thumbnail size</string>-->
+    <string name="summary_thumbsize">Taille des vignettes</string>
+    <!--<string name="thumb_off">Disabled</string>-->
+    <string name="thumb_off">Désactivé</string>
 
     <!-- <string name="summary_thumb_enabled">Display snapshots of games</string> -->
 
-    <string name="dropped_dupe">Invitation received but ignored: it
-    has already been used to create a game.</string>
-    <string name="cur_menu_marker_fmt">%1$s (in use)</string>
-    <string name="board_menu_invite">Invite</string>
+    <!--<string name="dropped_dupe">Invitation received but ignored: it
+    has already been used to create a game.</string>-->
+    <string name="dropped_dupe">Invitation reçue mais ignorée : elle a déjà été
+utilisée pour créer une partie.</string>
+    <!--<string name="cur_menu_marker_fmt">%1$s (in use)</string>-->
+    <string name="cur_menu_marker_fmt">%1$s (en cours d\'utilisation)</string>
+    <!--<string name="board_menu_invite">Invite</string>-->
+    <string name="board_menu_invite">Inviter</string>
 
-    <string name="enable_nfc">NFC is turned off on this device. You
-    can use the Android Settings app to turn it on .</string>
+    <!--<string name="enable_nfc">NFC is turned off on this device. You
+    can use the Android Settings app to turn it on .</string>-->
+    <string name="enable_nfc">La NFC est éteinte sur ce périphérique. Vous
+pouvez utiliser l\'application des Paramètres Android pour l\'allumer.</string>
 
     <string name="button_go_settings">Launch Settings</string>
 
-    <string name="sms_ready_text">Tap the receiving device now</string>
+    <!--<string name="sms_ready_text">Tap the receiving device now</string>-->
+    <string name="sms_ready_text">Toucher le périphérique récepteur maintenant</string>
 
+    <!--<string name="pct_suffix">\u0020pct.</string>-->
     <string name="pct_suffix">\u0020pct.</string>
 
-    <string name="menu_rateme">Rate Crosswords</string>
-    <string name="no_market">Google Play app not found</string>
+    <!--<string name="menu_rateme">Rate Crosswords</string>-->
+    <string name="menu_rateme">Évaluer Crosswords</string>
+    <!--<string name="no_market">Google Play app not found</string>-->
+    <string name="no_market">Application Google Play non trouvée</string>
 
-    <string name="add_to_study_fmt">Add %1$s to studylist</string>
-    <string name="title_studyon">Enable studylists</string>
-    <string name="summary_studyon">Offer to add to and display lists
-    of words to remember</string>
-    <string name="gamel_menu_study">Studylist…</string>
+    <!--<string name="add_to_study_fmt">Add %1$s to studylist</string>-->
+    <string name="add_to_study_fmt">Ajouter %1$s à la liste d\'étude</string>
+    <!--<string name="title_studyon">Enable studylists</string>-->
+    <string name="title_studyon">Activer les listes d\'étude</string>
+    <!--<string name="summary_studyon">Offer to add to and display lists
+    of words to remember</string>-->
+    <string name="summary_studyon">Permettre d\'ajouter et afficher des listes
+de mots à retenir</string>
+    <!--<string name="gamel_menu_study">Studylist…</string>-->
+    <string name="gamel_menu_study">Liste d\'étude…</string>
 
-    <string name="slmenu_copy_sel">Copy to clipboard</string>
-    <string name="slmenu_clear_sel">Delete selected</string>
-    <string name="confirm_studylist_clear_fmt">Are you sure you want to
-    delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>
-    <string name="paste_done_fmt">%1$d word[s] copied</string>
-    <string name="add_done_fmt">%1$s added to %2$s studylist</string>
-    <string name="studylist_title_fmt">Studylist for %1$s</string>
+    <!--<string name="slmenu_copy_sel">Copy to clipboard</string>-->
+    <string name="slmenu_copy_sel">Copier dans le presse-papier</string>
+    <!--<string name="slmenu_clear_sel">Delete selected</string>-->
+    <string name="slmenu_clear_sel">Effacer les mots sélectionnés</string>
+    <!--<string name="confirm_studylist_clear_fmt">Are you sure you want to
+    delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>-->
+    <string name="confirm_studylist_clear_fmt">Êtes-vous sûr de vouloir effacer
+les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</string>
+    <!--<string name="paste_done_fmt">%1$d word[s] copied</string>-->
+    <string name="paste_done_fmt">%1$d mots copiés</string>
+    <!--<string name="add_done_fmt">%1$s added to %2$s studylist</string>-->
+    <string name="add_done_fmt">%1$s ajouté à la liste d\'étude en %2$s</string>
+    <!--<string name="studylist_title_fmt">Studylist for %1$s</string>-->
+    <string name="studylist_title_fmt">Liste d\'étude pour le %1$s</string>
 
-    <string name="study_langpick">Your words for:</string>
+    <!--<string name="study_langpick">Your words for:</string>-->
+    <string name="study_langpick">Vos mots en :</string>
 
-    <string name="study_no_lang_fmt">You have not yet saved any words
-    into a studylist for %1$s.</string>
-    <string name="study_no_lists">You have not yet saved any words
-    into a studylist.</string>
+    <!--<string name="study_no_lang_fmt">You have not yet saved any words
+    into a studylist for %1$s.</string>-->
+    <string name="study_no_lang_fmt">Vous n\'avez encore enregistré aucun mot
+dans une liste d\'étude en %1$s.</string>
+    <!--<string name="study_no_lists">You have not yet saved any words
+    into a studylist.</string>-->
+    <string name="study_no_lists">Vous n\'avez encore enregistré aucun mot dans
+une liste d\'étude.</string>
 
-    <string name="not_again_studycopy">The selected words will be
+    <!--<string name="not_again_studycopy">The selected words will be
     copied to the system clipboard. You can then paste them into any
-    app that supports pasting text, e.g. an email app.</string>
+    app that supports pasting text, e.g. an email app.</string>-->
+    <string name="not_again_studycopy">Les mots sélectionnés seront copiés dans
+le presse-papier du système. Vous pourrez ensuite les coller dans toute
+application qui supporte le collage de texte, par exemple une application de
+mails.</string>
 
-    <string name="lookup_title">Word lookup</string>
+    <!--<string name="lookup_title">Word lookup</string>-->
+    <string name="lookup_title">Recherche de mot</string>
 
-    <string name="slmenu_select_all">Select all</string>
-    <string name="slmenu_deselect_all">Unselect all</string>
-    <string name="sel_items_fmt">Selected: %1$d</string>
+    <!--<string name="slmenu_select_all">Select all</string>-->
+    <string name="slmenu_select_all">Tout sélectionner</string>
+    <!--<string name="slmenu_deselect_all">Unselect all</string>-->
+    <string name="slmenu_deselect_all">Tout déselectionner</string>
+    <!--<string name="sel_items_fmt">Selected: %1$d</string>-->
+    <string name="sel_items_fmt">Sélectionnés : %1$d</string>
 
-    <string name="loc_menu_xlate">Translate</string>
-    <string name="loc_lang_blessed">%1$s (official)</string>
-    <string name="loc_lang_local">%1$s (yours)</string>
+    <!--<string name="loc_menu_xlate">Translate</string>-->
+    <string name="loc_menu_xlate">Traduire</string>
+    <!--<string name="loc_lang_blessed">%1$s (official)</string>-->
+    <string name="loc_lang_blessed">%1$s (officielle)</string>
+    <!--<string name="loc_lang_local">%1$s (yours)</string>-->
+    <string name="loc_lang_local">%1$s (la votre)</string>
 
-    <string name="new_xlations_fmt">Installed %1$d new translations</string>
+    <!--<string name="new_xlations_fmt">Installed %1$d new translations</string>-->
+    <string name="new_xlations_fmt">%1$d nouvelles traductions installées</string>
 
-    <string name="xlations_enabled_title">Enable local translating</string>
-    <string name="xlations_enabled_summary">Add option to every screen menu</string>
+    <!--<string name="xlations_enabled_title">Enable local translating</string>-->
+    <string name="xlations_enabled_title">Activer les traductions locales</string>
+    <!--<string name="xlations_enabled_summary">Add option to every screen menu</string>-->
+    <string name="xlations_enabled_summary">Ajouter une option au menu de
+chaque écran</string>
 
-    <string name="data_gsm_only">SMS Data is only available on GSM phones.</string>
+    <!--<string name="data_gsm_only">SMS Data is only available on GSM phones.</string>-->
+    <string name="data_gsm_only">Les SMS de données ne sont disponibles que sur
+les téléphones GSM.</string>
 
-    <string name="loc_filters_prompt">Filter by:</string>
-    <string name="loc_search_prompt">Search for:</string>
-    <string name="loc_filters_all">All</string>
-    <string name="loc_filters_screen">Latest screen</string>
-    <string name="loc_filters_menu">Latest menu</string>
-    <string name="loc_filters_modified">Modified by me</string>
+    <!--<string name="loc_filters_prompt">Filter by:</string>-->
+    <string name="loc_filters_prompt">Filtrer par :</string>
+    <!--<string name="loc_search_prompt">Search for:</string>-->
+    <string name="loc_search_prompt">Chercher :</string>
+    <!--<string name="loc_filters_all">All</string>-->
+    <string name="loc_filters_all">Toutes</string>
+    <!--<string name="loc_filters_screen">Latest screen</string>-->
+    <string name="loc_filters_screen">Dernier écran</string>
+    <!--<string name="loc_filters_menu">Latest menu</string>-->
+    <string name="loc_filters_menu">Dernier menu</string>
+    <!--<string name="loc_filters_modified">Modified by me</string>-->
+    <string name="loc_filters_modified">Modifiées par moi</string>
     
-    <string name="lang_name_english">English</string>
+    <!--<string name="lang_name_english">English</string>-->
+    <string name="lang_name_english">Anglais</string>
 
     <!-- for loc item edit menu -->
-    <string name="loc_item_clear">Clear</string>
-    <string name="loc_item_check">Check</string>
-    <string name="loc_item_copy_eng">Copy English</string>
-    <string name="loc_item_copy_bless">Copy official</string>
+    <!--<string name="loc_item_clear">Clear</string>-->
+    <string name="loc_item_clear">Effacer</string>
+    <!--<string name="loc_item_check">Check</string>-->
+    <string name="loc_item_check">Vérifier</string>
+    <!--<string name="loc_item_copy_eng">Copy English</string>-->
+    <string name="loc_item_copy_eng">Copier l\'anglais</string>
+    <!--<string name="loc_item_copy_bless">Copy official</string>-->
+    <string name="loc_item_copy_bless">Copier l\'officielle</string>
 
-    <string name="loc_fmts_mismatch">Illegal translation: a translated
+    <!--<string name="loc_fmts_mismatch">Illegal translation: a translated
     string must have the same format specifiers (e.g. %1$s) as the
-    original.</string>
-    <string name="not_again_fmt_expl">This string has special format
+    original.</string>-->
+    <string name="loc_fmts_mismatch">Traduction illégale : une chaîne de
+caractères traduite doit avoir les mêmes indicateurs de format (par ex. %1$s)
+que l\'originale.</string>
+    <!--<string name="not_again_fmt_expl">This string has special format
     specifiers (e.g. %1$s). Please be sure that your translation has
     the same ones as the original.\n\n(You will not be able to save it
-    unless it does.)</string>
+    unless it does.)</string>-->
+    <string name="not_again_fmt_expl">Cette chaîne de caractères a des
+indicateurs de format spéciaux (par ex. %1$s). Assurez-vous que votre
+traduction a les mêmes que l\'originale.\n\n(Vous ne pourrez pas l\'enregistrer
+sans cela.)</string>
 
-    <string name="remote_empty">Fetching wordlist information from server…</string>
-    <string name="remote_digesting">Processing wordlist information…</string>
-    <string name="remote_no_net">Unable to fetch wordlist information
-        from server.</string>
-    <string name="getinfo">Get info</string>
+    <!--<string name="remote_empty">Fetching wordlist information from server…</string>-->
+    <string name="remote_empty">Récupération des informations sur les listes de mots depuis le serveur…</string>
+    <!--<string name="remote_digesting">Processing wordlist information…</string>-->
+    <string name="remote_digesting">Traitement des informations sur les listes
+de mots…</string>
+    <!--<string name="remote_no_net">Unable to fetch wordlist information
+        from server.</string>-->
+    <string name="remote_no_net">Impossible de récupérer les informations sur
+les listes de mots depuis le serveur.</string>
+    <!--<string name="getinfo">Get info</string>-->
+    <string name="getinfo">Avoir des informations</string>
 
-    <string name="delete_dicts">Delete wordlist[s]</string>
+    <!--<string name="delete_dicts">Delete wordlist[s]</string>-->
+    <string name="delete_dicts">Effacer les listes de mots</string>
 
-    <string name="show_remote">Show downloadable</string>
-    <string name="update_dicts_fmt">Updates are available for one or more
+    <!--<string name="show_remote">Show downloadable</string>-->
+    <string name="show_remote">Montrer les listes téléchargeables</string>
+    <!--<string name="update_dicts_fmt">Updates are available for one or more
     installed wordlists. Would you like to download the new
-    version[s] of %1$s now?</string>
+    version[s] of %1$s now?</string>-->
+    <string name="update_dicts_fmt">Des mises à jour sont disponibles pour une
+ou plusieurs listes de mots installées. Voulez-vous télécharger les nouvelles
+versions de %1$s maintenant ?</string>
 
-    <string name="progress_title">Downloading</string>
+    <!--<string name="progress_title">Downloading</string>-->
+    <string name="progress_title">Téléchargement</string>
 
-    <string name="dict_info_fmt">Number of words: %1$d\nDownload size:
-    %2$dK\nNote: %3$s</string>
-    <string name="note_none">(None)</string>
-    <string name="dict_on_server">Tap to download</string>
-    <string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    
+    <!--<string name="dict_info_fmt">Number of words: %1$d\nDownload size:
+    %2$dK\nNote: %3$s</string>-->
+    <string name="dict_info_fmt">Nombre de mots : %1$d\nTaille du
+téléchargement : %2$dk\nNote : %2$s</string>
+    <!--<string name="note_none">(None)</string>-->
+    <string name="note_none">(aucune)</string>
+    <!--<string name="dict_on_server">Tap to download</string>-->
+    <string name="dict_on_server">Toucher pour télécharger</string>
+    <!--<string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    -->
+    <string name="lang_name_fmt">%1$s (%2$d listes de mots)</string>    
 
-    <string name="lang_unknown">Unknown</string>
+    <!--<string name="lang_unknown">Unknown</string>-->
+    <string name="lang_unknown">Inconnu</string>
 
-    <string name="not_again_dicts">This screen lets you install new
+    <!--<string name="not_again_dicts">This screen lets you install new
     wordslists and view the ones you already have.\n\nWhat wordlists
     you have installed determines:\n• What languages you can play
     in\n• How smart the robot player is\n• What words are
     legal.\n\nCheck the \"Show downloadable\" box at the top to see
-    what\'s available.</string>
+    what\'s available.</string>-->
+    <string name="not_again_dicts">Cet écran vous permet d\'installer de
+nouvelles listes de mots et de voir celles que vous avez déjà.\n\nLes listes de
+mots que vous avez installées déterminent :\n– dans quelle langue vous pouvez
+jouer ;\n– le degré d\'intelligence du joueur robot ;\n– quels mots sont
+autorisés.\n\nCochez la case \"Montrer les listes téléchargeables\" en haut
+pour voir ce qui est disponible.</string>
 
-    <string name="force_tablet_title">Force tablet layout</string>
-    <string name="force_tablet_summary">Even if my screen is too small</string>
+    <!--<string name="force_tablet_title">Force tablet layout</string>-->
+    <string name="force_tablet_title">Forcer la mise en page de tablette</string>
+    <!--<string name="force_tablet_summary">Even if my screen is too small</string>-->
+    <string name="force_tablet_summary">Même si mon écran est trop petit</string>
 
     <!-- Nagging: title of notification reminder message -->
-    <string name="nag_title">Reminder: It\'s your turn</string>
+    <!--<string name="nag_title">Reminder: It\'s your turn</string>-->
+    <string name="nag_title">Rappel : c\'est votre tour</string>
     <!-- body of warning notification reminder message. First three
     are used to build a string based on the length of time that's then
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
     4 hour[s] ago." -->
+    <!--<string name="nag_minutes_fmt">%1$d minute[s]</string>-->
     <string name="nag_minutes_fmt">%1$d minute[s]</string>
-    <string name="nag_hours_fmt">%1$d hour[s]</string>
-    <string name="nag_days_fmt">%1$d day[s]</string>
-    <string name="nag_body_fmt">%1$s moved more than %2$s ago.</string>
+    <!--<string name="nag_hours_fmt">%1$d hour[s]</string>-->
+    <string name="nag_hours_fmt">%1$d heure[s]</string>
+    <!--<string name="nag_days_fmt">%1$d day[s]</string>-->
+    <string name="nag_days_fmt">%1$d jour[s]</string>
+    <!--<string name="nag_body_fmt">%1$s moved more than %2$s ago.</string>-->
+    <string name="nag_body_fmt">%1$s a joué il y a plus de %2$s.</string>
     <!-- above is inserted in this the last time I warn -->
-    <string name="nag_warn_last_fmt">Last warning: %1$s</string>
+    <!--<string name="nag_warn_last_fmt">Last warning: %1$s</string>-->
+    <string name="nag_warn_last_fmt">Dernier avertissement : %2$s</string>
     <!-- Used when prev player's name can't be looked up -->
-    <string name="prev_player">Your opponent</string>
+    <!--<string name="prev_player">Your opponent</string>-->
+    <string name="prev_player">Votre adversaire</string>
 
     <!-- formatting for last move summary in notifications -->
-    <string name="lmi_pass_fmt">%1$s passed (0 points)</string>
-    <string name="lmi_move_fmt">%1$s played %2$s for %3$d points</string>
-    <string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>
-    <string name="lmi_phony_fmt">%1$s lost a turn</string>
-    <string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>
+    <!--<string name="lmi_pass_fmt">%1$s passed (0 points)</string>-->
+    <string name="lmi_pass_fmt">%1$s a passé (0 point)</string>
+    <!--<string name="lmi_move_fmt">%1$s played %2$s for %3$d points</string>-->
+    <string name="lmi_move_fmt">%1$s a joué %2$s pour %3$d points</string>
+    <!--<string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>-->
+    <string name="lmi_trade_fmt">%1$s a échangé %2$d jetons</string>
+    <!--<string name="lmi_phony_fmt">%1$s lost a turn</string>-->
+    <string name="lmi_phony_fmt">%1$s a perdu un tour</string>
+    <!--<string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>-->
+    <string name="lmi_tiles_fmt">Jetons attribués à %1$s</string>
 
-    <string name="bt_err_count_fmt">%1$d bluetooth errors so far</string>
+    <!--<string name="bt_err_count_fmt">%1$d bluetooth errors so far</string>-->
+    <string name="bt_err_count_fmt">%1$d erreurs Bluetooth jusqu\'à maintenant</string>
 
-	<string name="bt_no_devs">You currently have no paired Bluetooth
+	<!--<string name="bt_no_devs">You currently have no paired Bluetooth
 	devices. Would you like to open the Android Settings Panel to add
 	one or more?\n\n(You may also need to open it on the device you
-	want to pair with.)</string>
-	<string name="app_not_found_fmt">Unable to connect to Crosswords
+	want to pair with.)</string>-->
+	<string name="bt_no_devs">Vous n\'avez pour l\'instant aucun périphérique
+Bluetooth appairé. Voulez-vous ouvrir les paramètres d\'Android pour en ajouter
+un ou plusieurs ?\n\n(Vous pouvez aussi avoir besoin de les ouvrir sur le
+périphérique auquel vous voulez vous appairer.)</string>
+	<!--<string name="app_not_found_fmt">Unable to connect to Crosswords
 	on the device %1$s.  Please check that the device is within range
-	and that Crosswords is installed on it.</string>
+	and that Crosswords is installed on it.</string>-->
+	<string name="app_not_found_fmt">Impossible de se connecter à Crosswords
+sur le périphérique %1$s. Vérifiez que ce périphérique est à portée et que
+Crosswords est installé dessus.</string>
 
 	<!-- label within default wordlists in app preferences -->
-	<string name="default_language">Default language</string>
+	<!--<string name="default_language">Default language</string>-->
+	<string name="default_language">Langue par défaut</string>
 
     <!--XLATE-ME-->
-    <string name="rename_label_caveat">Change the name of this game
-    (on this device only) to:</string>
+    <!--<string name="rename_label_caveat">Change the name of this game
+    (on this device only) to:</string>-->
+    <string name="rename_label_caveat">Changer le nom de cette partie
+(uniquement sur ce périphérique) pour :</string>
     <!--XLATE-ME-->
-    <string name="connect_label_fmt">Connection (via %1$s)</string>
+    <!--<string name="connect_label_fmt">Connection (via %1$s)</string>-->
+    <string name="connect_label_fmt">Connexion (par %1$s)</string>
     <!--XLATE-ME-->
-    <string name="hide_newgames_title">Hide newgame buttons</string>
+    <!--<string name="hide_newgames_title">Hide newgame buttons</string>-->
+    <string name="hide_newgames_title">Cacher boutons nouvelle partie</string>
     <!--XLATE-ME-->
-    <string name="hide_newgames_summary">Hiding the newgame buttons in
-        the main screen makes more games visible</string>
+    <!--<string name="hide_newgames_summary">Hiding the newgame buttons in
+        the main screen makes more games visible</string>-->
+    <string name="hide_newgames_summary">Cacher les boutons de nouvelles
+parties sur l\'écran principal permet de voir plus de parties</string>
     <!--XLATE-ME-->
-    <string name="sms_bad_proto_fmt">The version of Crosswords on the
+    <!--<string name="sms_bad_proto_fmt">The version of Crosswords on the
     phone with number \"%1$s\" is incompatible with this one for play
     using SMS. One of you may need to upgrade before you can
-    continue.</string>
+    continue.</string>-->
+    <string name="sms_bad_proto_fmt">La version de Crosswords sur le téléphone
+de numéro \"%1$s\" est incompatible avec celle-ci pour jouer par SMS. L\'un de
+vous doit faire une mise à jour avant de pouvoir continuer.</string>
     <!--XLATE-ME-->
-    <string name="game_name_title">Name your game</string>
+    <!--<string name="game_name_title">Name your game</string>-->
+    <string name="game_name_title">Nommez votre partie</string>
     <!--XLATE-ME-->
-    <string name="game_name_label">New game name:</string>
+    <!--<string name="game_name_label">New game name:</string>-->
+    <string name="game_name_label">Nom de la nouvelle partie :</string>
     <!--XLATE-ME-->
-    <string name="name_copy_fmt">%1$s copy</string>
+    <!--<string name="name_copy_fmt">%1$s copy</string>-->
+    <string name="name_copy_fmt">Copier %1$s</string>
     <!--XLATE-ME-->
-    <string name="warn_bt_disabled">Bluetooth is currently off on this
+    <!--<string name="warn_bt_disabled">Bluetooth is currently off on this
     device. No moves will be sent via Bluetooth.\n\nYou can enable
     Bluetooth now, or later.
-    </string>
+    </string>-->
+    <string name="warn_bt_disabled">Le Bluetooth est actuellement éteint sur ce
+périphérique. Aucun coup ne sera envoyé par Bluetooth.\n\nVous pouvez activer
+le Bluetooth maintenant, ou plus tard.</string>
     <!--XLATE-ME-->
-    <string name="button_enable_sms">Enable SMS</string>
+    <!--<string name="button_enable_sms">Enable SMS</string>-->
+    <string name="button_enable_sms">Activer les SMS</string>
     <!--XLATE-ME-->
-    <string name="button_enable_bt">Enable Bluetooth</string>
+    <!--<string name="button_enable_bt">Enable Bluetooth</string>-->
+    <string name="button_enable_bt">Activer le Bluetooth</string>
     <!--XLATE-ME-->
-    <string name="button_later">Later</string>
+    <!--<string name="button_later">Later</string>-->
+    <string name="button_later">Plus tard</string>
     <!--XLATE-ME-->
-    <string name="new_game">New one-device game</string>
+    <!--<string name="new_game">New one-device game</string>-->
+    <string name="new_game">Nouvelle partie à un seul périphérique</string>
     <!--XLATE-ME-->
-    <string name="new_game_networked">New networked game</string>
+    <!--<string name="new_game_networked">New networked game</string>-->
+    <string name="new_game_networked">Nouvelle partie en réseau</string>
     <!--XLATE-ME-->
-    <string name="new_game_message">Would you like to create this game
+    <!--<string name="new_game_message">Would you like to create this game
     using default settings?\n\nOr would you like to configure it
-    first?</string>
+    first?</string>-->
+    <string name="new_game_message">Voulez-vous créer cette partie en utilisant
+les paramètres par défaut ?\n\nOu voulez-vous d\'abord la configurer ?</string>
     <!--XLATE-ME-->
-    <string name="new_game_message_nodflt">This game must be
-    configured before it can be opened.</string>
+    <!--<string name="new_game_message_nodflt">This game must be
+    configured before it can be opened.</string>-->
+    <string name="new_game_message_nodflt">Cette partie doit être configurée
+avant de pouvoir être ouverte.</string>
     <!--XLATE-ME-->
-    <string name="new_game_message_net">(You will have a chance to
-    invite other players when it is open.)</string>
+    <!--<string name="new_game_message_net">(You will have a chance to
+    invite other players when it is open.)</string>-->
+    <string name="new_game_message_net">(Vous aurez la possibilité d\'inviter
+d\'autres joueurs quand elle sera ouverte.)</string>
     <!--XLATE-ME-->
-    <string name="use_defaults">Use defaults</string>
+    <!--<string name="use_defaults">Use defaults</string>-->
+    <string name="use_defaults">Utiliser param. par défaut</string>
     <!--XLATE-ME-->
-    <string name="nplayers_prompt">Number on this device</string>
+    <!--<string name="nplayers_prompt">Number on this device</string>-->
+    <string name="nplayers_prompt">Nombre sur ce périphérique</string>
     <!--XLATE-ME-->
-    <string name="nplayers_fmt">%1$d player[s]</string>
+    <!--<string name="nplayers_fmt">%1$d player[s]</string>-->
+    <string name="nplayers_fmt">%1$d joueur[s]</string>
     <!--XLATE-ME-->
-    <string name="err_dup_invite_fmt">Duplicate invitation rejected:
+    <!--<string name="err_dup_invite_fmt">Duplicate invitation rejected:
     device \"%1$s\" has already accepted an invitation to this
-    game.</string>
+    game.</string>-->
+    <string name="err_dup_invite_fmt">Invitation redondante rejetée : le
+périphérique \"%2$s\" a déjà accepté une invitation à cette partie.</string>
     <!--XLATE-ME-->
-    <string name="network_advanced_title">Advanced</string>
+    <!--<string name="network_advanced_title">Advanced</string>-->
+    <string name="network_advanced_title">Avancé</string>
     <!--XLATE-ME-->
-    <string name="network_advanced_summary">For experienced players</string>
+    <!--<string name="network_advanced_summary">For experienced players</string>-->
+    <string name="network_advanced_summary">Pour les joueurs expérimentés</string>
     <!--XLATE-ME-->
-    <string name="invite_multi_title">Invite multiple</string>
+    <!--<string name="invite_multi_title">Invite multiple</string>-->
+    <string name="invite_multi_title">Inviter plusieurs</string>
     <!--XLATE-ME-->
-    <string name="invite_multi_summary">Invite more than one player per remote device</string>
+    <!--<string name="invite_multi_summary">Invite more than one player per remote device</string>-->
+    <string name="invite_multi_summary">Inviter plus d\'un joueur par
+périphérique distant</string>
     <!--XLATE-ME-->
-    <string name="enable_pubroom_title">Enable public rooms</string>
+    <!--<string name="enable_pubroom_title">Enable public rooms</string>-->
+    <string name="enable_pubroom_title">Activer les salons publics</string>
     <!--XLATE-ME-->
-    <string name="enable_pubroom_summary">Rooms others can see and join</string>
+    <!--<string name="enable_pubroom_summary">Rooms others can see and join</string>-->
+    <string name="enable_pubroom_summary">Des salons que les autres peuvent
+voir et rejoindre</string>
     <!--XLATE-ME-->
-    <string name="connection_via_label">Change Communicate via</string>
+    <!--<string name="connection_via_label">Change Communicate via</string>-->
+    <string name="connection_via_label">Changer Communiquer par</string>
     <!--XLATE-ME-->
-    <string name="set_pref">Hide buttons</string>
+    <!--<string name="set_pref">Hide buttons</string>-->
+    <string name="set_pref">Cacher les boutons</string>
     <!--XLATE-ME-->
-    <string name="not_again_hidenewgamebuttons">These two buttons do
+    <!--<string name="not_again_hidenewgamebuttons">These two buttons do
     the same thing as the first two items in this window\'s Action Bar
     (or menu). If you like you can hide the buttons to make more games
     visible.\n\n(If you later want to unhide them go to the Appearance
     section of App settings).
-    </string>
+    </string>-->
+    <string name="not_again_hidenewgamebuttons">Ces deux boutons font la même
+chose que les deux premiers items dans la barre d\'action de cette fenêtre (ou
+du menu). Si vous voulez, vous pouvez cacher les boutons pour rendre plus de
+parties visibles.\n\n(Si vous voulez les faire réapparaître, allez dans la
+section Apparence des paramètres de l\'application.)</string>
     <!--XLATE-ME-->
-    <string name="waiting_title">Waiting for players</string>
+    <!--<string name="waiting_title">Waiting for players</string>-->
+    <string name="waiting_title">En attente de joueurs</string>
     <!--XLATE-ME-->
-    <string name="invite_stays">(This dialog will stay up until all
+    <!--<string name="invite_stays">(This dialog will stay up until all
     remote players have connected. You can close the game if you
     expect it to take a while. They will still be able to
-    connect.)</string>
+    connect.)</string>-->
+    <string name="invite_stays">(Ce message restera jusqu\'à ce que tous les
+joueurs distants se soient connectés. Vous pouvez fermer la partie si vous
+pensez que cela prendra du temps. Ils pourront toujours se connecter.)</string>
     <!--XLATE-ME-->
-    <string name="nfc_just_tap">To invite via NFC just touch the back
+    <!--<string name="nfc_just_tap">To invite via NFC just touch the back
     of this device against the one you want to invite—any time the
-    game is open.</string>
+    game is open.</string>-->
+    <string name="nfc_just_tap">Pour inviter par NFC, mettez le dos de ce
+périphérique contre celui que vous voulez inviter – à n\'importe quel moment
+quand la partie est ouverte.</string>
     <!--XLATE-ME-->
-    <string name="warn_no_comms">Every networked game must have at
+    <!--<string name="warn_no_comms">Every networked game must have at
     least one way of communicating. If you have no default connection
     options every new networked game will have to be configured
-    manually.</string>
+    manually.</string>-->
+    <string name="warn_no_comms">Toute partie en réseau doit avoir au moins un
+moyen de communiquer. Si vous n\'avez aucune option de communication par
+défaut, toute nouvelle partie en réseau devra être configurée manuellement.</string>
     <!--XLATE-ME-->
-    <string name="config_no_connvia">This game has no way to connect
+    <!--<string name="config_no_connvia">This game has no way to connect
     and cannot be saved. Would you like to discard your changes, or
-    edit to give it a way to connect?</string>
+    edit to give it a way to connect?</string>-->
+    <string name="config_no_connvia">Cette partie ne peut se connecter
+d\'aucune façon et ne peut pas être enregistrée. Voulez-vous annuler votre
+changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</string>
     <!--XLATE-ME-->
-    <string name="button_edit">Edit</string>
+    <!--<string name="button_edit">Edit</string>-->
+    <string name="button_edit">Éditer</string>
     <!--XLATE-ME-->
-    <string name="button_discard_changes">Discard changes</string>
+    <!--<string name="button_discard_changes">Discard changes</string>-->
+    <string name="button_discard_changes">Annuler les changements</string>
     <!--XLATE-ME-->
-    <string name="rematch_msg">Issuing rematch invitation. You will
+    <!--<string name="rematch_msg">Issuing rematch invitation. You will
     see this message until it has been accepted.\n\nYou do not need to
     keep this game open while waiting. You will be notified when the
-    game is ready to play.</string>
+    game is ready to play.</string>-->
+    <string name="rematch_msg">Lancement d\'une invitation de revanche. Vous
+verrez ce message jusqu\'à ce qu\'elle ait été acceptée.\n\nVous n\'avez pas à
+garder cette partie ouverte pendant l\'attente. Vous recevrez une notification
+quand la partie sera prête à être jouée.</string>
     <!--XLATE-ME-->
-    <string name="not_again_enablepublic">Public rooms have been made
+    <!--<string name="not_again_enablepublic">Public rooms have been made
     an \"advanced\" feature in this release. If you were using them
     and want them back, enable them now. You can turn them off again
-    in Settings.</string>
+    in Settings.</string>-->
+    <string name="not_again_enablepublic">Les salons ont été transformés en
+fonctionnalité \"avancée\" dans cette version. Si vous les utilisiez et les
+revoulez, activez-les maintenant. Vous pouvez les désactiver de nouveau dans
+les paramètres.</string>
 
     <!--XLATE-ME-->
-  <string name="advanced">For debugging</string>
+  <!--<string name="advanced">For debugging</string>-->
+  <string name="advanced">Pour débugger</string>
     <!--XLATE-ME-->
-  <string name="advanced_summary">You should never need these...</string>
+  <!--<string name="advanced_summary">You should never need these...</string>-->
+  <string name="advanced_summary">Vous ne devriez jamais en avoir besoin…</string>
     <!--XLATE-ME-->
-  <string name="relay_host">Relay host</string>
+  <!--<string name="relay_host">Relay host</string>-->
+  <string name="relay_host">Hôte relai</string>
     <!--XLATE-ME-->
-  <string name="redir_host">Invite redirect host</string>
+  <!--<string name="redir_host">Invite redirect host</string>-->
+  <string name="redir_host">Inviter un hôte de redirection</string>
     <!--XLATE-ME-->
-  <string name="dict_host">Wordlist download URL</string>
+  <!--<string name="dict_host">Wordlist download URL</string>-->
+  <string name="dict_host">URL de téléchargement de liste de mots</string>
     <!--XLATE-ME-->
-  <string name="logging_on">Enable logging</string>
+  <!--<string name="logging_on">Enable logging</string>-->
+  <string name="logging_on">Activer les logs</string>
     <!--XLATE-ME-->
-  <string name="logging_on_summary">(release builds only)</string>
+  <!--<string name="logging_on_summary">(release builds only)</string>-->
+  <string name="logging_on_summary">(seulement pour les release builds)</string>
     <!--XLATE-ME-->
-  <string name="debug_features">Enable debug features</string>
+  <!--<string name="debug_features">Enable debug features</string>-->
+  <string name="debug_features">Activer les fonctionnalités de débuggage</string>
     <!--XLATE-ME-->
-  <string name="debug_features_summary">Menuitems etc. (release builds
-  only)</string>
+  <!--<string name="debug_features_summary">Menuitems etc. (release builds
+  only)</string>-->
+  <string name="debug_features_summary">Items de menu, etc. (uniquement pour
+les release builds)</string>
     <!--XLATE-ME-->
-  <string name="title_send_data_sms">Send SMS as data</string>
+  <!--<string name="title_send_data_sms">Send SMS as data</string>-->
+  <string name="title_send_data_sms">Envoyer les SMS comme données</string>
     <!--XLATE-ME-->
-  <string name="summary_send_data_sms">(GSM phones only)</string>
+  <!--<string name="summary_send_data_sms">(GSM phones only)</string>-->
+  <string name="summary_send_data_sms">(Téléphones GSM uniquement)</string>
     <!--XLATE-ME-->
-  <string name="board_menu_game_netstats">Network stats</string>
+  <!--<string name="board_menu_game_netstats">Network stats</string>-->
+  <string name="board_menu_game_netstats">Statistiques réseau</string>
     <!--XLATE-ME-->
-  <string name="netstats_title">Game network stats</string>
+  <!--<string name="netstats_title">Game network stats</string>-->
+  <string name="netstats_title">Statistiques réseau de la partie</string>
     <!--XLATE-ME-->
-  <string name="git_rev_title">Source version id</string>
+  <!--<string name="git_rev_title">Source version id</string>-->
+  <string name="git_rev_title">Identifiant de version du source</string>
     <!--XLATE-ME-->
-  <string name="relay_port">Relay game port</string>
+  <!--<string name="relay_port">Relay game port</string>-->
+  <string name="relay_port">Port de partie du relai</string>
     <!--XLATE-ME-->
-  <string name="proxy_port">Relay device port</string>
+  <!--<string name="proxy_port">Relay device port</string>-->
+  <string name="proxy_port">Port de périphérique du relai</string>
     <!--XLATE-ME-->
+  <!--<string name="name_dict_fmt">%1$s/%2$s</string>-->
   <string name="name_dict_fmt">%1$s/%2$s</string>
     <!--XLATE-ME-->
-  <string name="gamel_menu_storedb">Write DB to SD card</string>
+  <!--<string name="gamel_menu_storedb">Write DB to SD card</string>-->
+  <string name="gamel_menu_storedb">Écrire BDD sur carte SD</string>
     <!--XLATE-ME-->
-  <string name="gamel_menu_loaddb">Load DB from SD card</string>
+  <!--<string name="gamel_menu_loaddb">Load DB from SD card</string>-->
+  <string name="gamel_menu_loaddb">Charger BDD depuis carte SD</string>
     <!--XLATE-ME-->
-  <string name="enable_dupes_title">Accept duplicate invites</string>
+  <!--<string name="enable_dupes_title">Accept duplicate invites</string>-->
+  <string name="enable_dupes_title">Accepter les invitations redondantes</string>
     <!--XLATE-ME-->
-  <string name="xlations_locale">Fake locale for translation</string>
+  <!--<string name="xlations_locale">Fake locale for translation</string>-->
+  <string name="xlations_locale">Fausse locale pour les traductions</string>
     <!--XLATE-ME-->
-  <string name="enable_dupes_summary">Accept invitations more than once</string>
+  <!--<string name="enable_dupes_summary">Accept invitations more than once</string>-->
+  <string name="enable_dupes_summary">Accepter les invitations plusieurs fois</string>
     <!--XLATE-ME-->
-  <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
+  <!--<string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>-->
+  <string name="nag_intervals">Intervalles des rappels (minutes1,minutes2,…)</string>
     <!--XLATE-ME-->
-  <string name="enable_nfc_toself_title">Enable NFC to self</string>
+  <!--<string name="enable_nfc_toself_title">Enable NFC to self</string>-->
+  <string name="enable_nfc_toself_title">Activer la NFC à soi-même</string>
     <!--XLATE-ME-->
-  <string name="enable_nfc_toself_summary">Fake invitation to aid debugging</string>
+  <!--<string name="enable_nfc_toself_summary">Fake invitation to aid debugging</string>-->
+  <string name="enable_nfc_toself_summary">Fausse invitation pour aider le
+débuggage</string>
     <!--XLATE-ME-->
-  <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
+  <!--<string name="enable_sms_toself_title">Short-circuit SMS to self</string>-->
+  <string name="enable_sms_toself_title">Court-circuiter les SMS vers soi-même</string>
     <!--XLATE-ME-->
-  <string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>
+  <!--<string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>-->
+  <string name="enable_sms_toself_summary">Ne pas utiliser la radio quand les
+numéros de téléphones sont les mêmes</string>
     <!--XLATE-ME-->
-  <string name="force_radio_title">Pretend to have radio</string>
+  <!--<string name="force_radio_title">Pretend to have radio</string>-->
+  <string name="force_radio_title">Prétendre avoir la radio</string>
     <!--XLATE-ME-->
-  <string name="radio_name_real">Don\'t pretend</string>
+  <!--<string name="radio_name_real">Don\'t pretend</string>-->
+  <string name="radio_name_real">Ne pas prétendre</string>
     <!--XLATE-ME-->
-  <string name="radio_name_tablet">Tablet/no radio</string>
+  <!--<string name="radio_name_tablet">Tablet/no radio</string>-->
+  <string name="radio_name_tablet">Tablette/pas de radio</string>
     <!--XLATE-ME-->
+  <!--<string name="radio_name_gsm">GSM</string>-->
   <string name="radio_name_gsm">GSM</string>
     <!--XLATE-ME-->
+  <!--<string name="radio_name_cdma">CDMA</string>-->
   <string name="radio_name_cdma">CDMA</string>
     <!--XLATE-ME-->
-  <string name="nfc_to_self">Send via NFC to self?</string>
+  <!--<string name="nfc_to_self">Send via NFC to self?</string>-->
+  <string name="nfc_to_self">Envoyer par NFC à soi-même ?</string>
 </resources>
