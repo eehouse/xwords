@@ -493,8 +493,8 @@ public class DlgDelegate {
         final View view = LocUtils.inflate( m_activity, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
 
-        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
-                                                        DateFormat.SHORT );
+        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.FULL, 
+                                                        DateFormat.FULL );
         String dateString
             = df.format( new Date( BuildConstants.BUILD_STAMP * 1000 ) );
         vers.setText( getString( R.string.about_vers_fmt,
