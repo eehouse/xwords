@@ -40,11 +40,14 @@ public class XWThumbListPreference extends XWListPreference {
         super.onAttachedToActivity();
 
         CharSequence[] newEntries = new CharSequence[7];
-        int indx = 0;
-        newEntries[indx++] = LocUtils.getString( m_context, R.string.thumb_off );
+        newEntries[0] = LocUtils.getString( m_context, R.string.thumb_off );
+        CharSequence[] newEntryValues = new CharSequence[7];
+        newEntryValues[0] = "0";
         String suffix = LocUtils.getString( m_context, R.string.pct_suffix );
-        for ( int pct = 20; pct <= 45; pct += 5 ) {
-            newEntries[indx++] = String.format( "%d%s", pct, suffix );
+        for ( int ii = 1; ii < newEntries.length; ++ii ) {
+            int pct = 15 + (ii * 5);
+            newEntries[ii] = String.format( "%d%s", pct, suffix );
+            newEntryValues[ii] = String.format( "%d", pct );
         }
         setEntries( newEntries );
         setEntryValues( newEntries );

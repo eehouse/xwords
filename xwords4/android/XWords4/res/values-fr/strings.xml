@@ -2682,7 +2682,7 @@ pouvez utiliser l\'application des Paramètres Android pour l\'allumer.</string>
     <string name="sms_ready_text">Toucher le périphérique récepteur maintenant</string>
 
     <!--<string name="pct_suffix">\u0020pct.</string>-->
-    <string name="pct_suffix">\u0020pct.</string>
+    <string name="pct_suffix">\u0020prct.</string>
 
     <!--<string name="menu_rateme">Rate Crosswords</string>-->
     <string name="menu_rateme">Évaluer Crosswords</string>
