@@ -35,7 +35,9 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -490,10 +492,14 @@ public class DlgDelegate {
     {
         final View view = LocUtils.inflate( m_activity, R.layout.about_dlg );
         TextView vers = (TextView)view.findViewById( R.id.version_string );
+
+        DateFormat df = DateFormat.getDateTimeInstance( DateFormat.SHORT, 
+                                                        DateFormat.SHORT );
+        String dateString
+            = df.format( new Date( BuildConstants.BUILD_STAMP * 1000 ) );
         vers.setText( getString( R.string.about_vers_fmt,
                                  getString( R.string.app_version ),
-                                 BuildConstants.GIT_REV, 
-                                 BuildConstants.BUILD_STAMP ) );
+                                 BuildConstants.GIT_REV, dateString ) );
 
         TextView xlator = (TextView)view.findViewById( R.id.about_xlator );
         String str = getString( R.string.xlator );
