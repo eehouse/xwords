@@ -147,7 +147,7 @@
   <string name="force_expl">Jako Server vyberte jedoho nebo více hráčů kteří se budou moct
     připojit jako Klient.</string>
   <string name="gameOver">Hra skončena</string>
-  <string name="moves_fmt">Bylo zahráno %1$d tahů</string>
+  <!-- <string name="moves_fmt">Bylo zahráno %1$d tahů</string> -->
   <!-- about dialog stuff -->
   <string name="about_vers_fmt">Crosswords pro Android, Verze %1$s,
       revize %2$s.</string>

@@ -1012,7 +1012,7 @@
        always pick the first. -->
   <string name="forced_consistent">XLATE ME: Modified first player.</string>
   <string name="gameOver">Hra skončená</string>
-  <string name="moves_fmt">Bolo zahraných %1$d ťahov</string>
+  <!-- <string name="moves_fmt">Bolo zahraných %1$d ťahov</string> -->
   <!-- When you select the list_item_reset contextual menu, you are
           asked to confirm.  This is the text of the first button
           ("Cancel" is the second).  -->

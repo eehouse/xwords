@@ -57,7 +57,10 @@
   <!-- Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... -->
-  <string name="moves_fmt">%1$d sevom deyalp</string>
+  <plurals name="moves_fmt">
+    <item quantity="one">%1$d move played</item>
+    <item quantity="other">%1$d moves played</item>
+  </plurals>
   <!-- When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the

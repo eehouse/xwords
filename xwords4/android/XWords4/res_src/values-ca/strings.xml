@@ -160,7 +160,7 @@
   <string name="force_title">Jugador/s remot/s</string>
   <string name="force_expl">Un amfitrió ha de tenir com a mínim un jugador remot.</string>
   <string name="gameOver">Final de partida</string>
-  <string name="moves_fmt">%1$d torns jugats</string>
+  <!-- <string name="moves_fmt">%1$d torns jugats</string> -->
   <!-- about dialog stuff -->
   <string name="about_copyright">Copyright (C) 1998-2012 d\'Eric
     House. Aquest programari es troba sota la Llicència Pública General GNU.</string>

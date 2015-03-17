@@ -183,7 +183,8 @@ public class GameSummary {
         if ( gameOver ) {
             result = LocUtils.getString( m_context, R.string.gameOver );
         } else {
-            result = LocUtils.getString( m_context, R.string.moves_fmt, nMoves );
+            result = LocUtils.getQuantityString( m_context, R.plurals.moves_fmt,
+                                                 nMoves, nMoves );
         }
         return result;
     }

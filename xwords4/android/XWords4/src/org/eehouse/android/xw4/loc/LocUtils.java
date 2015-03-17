@@ -191,7 +191,7 @@ public class LocUtils {
 
     public static String getString( Context context, int id ) 
     {
-        return  getString( context, true, id );
+        return getString( context, true, id );
     }
 
     public static String getString( Context context, boolean canUseDB, int id )
@@ -222,6 +222,16 @@ public class LocUtils {
                 result = getString( context, id, params );
             }
         }
+        return result;
+    }
+
+    public static String getQuantityString( Context context, int id, 
+                                            int quantity, Object... params )
+    {
+        DbgUtils.logf( "getQuantityString(%d): punting on locutils stuff for"
+                       + " now. FIXME", quantity );
+        String result = context.getResources()
+            .getQuantityString( id, quantity, params );
         return result;
     }
 
