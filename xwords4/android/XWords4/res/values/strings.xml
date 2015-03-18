@@ -162,8 +162,10 @@
     <string name="rename_label_caveat">Change the name of this game
     (on this device only) to:</string>
 
-    <string name="confirm_seldeletes_fmt">Are you sure you want to delete
-    the %1$d selected game[s]? This action cannot be undone.</string>
+    <plurals name="confirm_seldeletes_fmt">
+      <item quantity="other">Are you sure you want to delete
+      the %1$d selected game[s]? This action cannot be undone.</item>
+    </plurals>
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->

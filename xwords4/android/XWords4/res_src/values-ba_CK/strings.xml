@@ -141,8 +141,10 @@
   <string name="rename_label">Egnahc eht eman fo siht emag ot:</string>
   <string name="rename_label_caveat">Egnahc eht eman fo siht emag
     no( siht ecived )ylno ot:</string>
-  <string name="confirm_seldeletes_fmt">Era uoy erus uoy tnaw ot eteled
-    eht %1$d detceles ?]s[emag Siht noitca tonnac eb enodnu.</string>
+  <plurals name="confirm_seldeletes_fmt">
+    <item quantity="other">Era uoy erus uoy tnaw ot eteled
+      eht %1$d detceles ?]s[emag Siht noitca tonnac eb enodnu.</item>
+  </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
   <string name="confirm_reset_fmt">Era uoy erus uoy tnaw ot teser eht %1$d

@@ -158,8 +158,10 @@ obtenir une copie avec les mêmes paramètres.</string>
          list_item_rename) -->
     <string name="rename_label">Changer le nom de la partie pour :</string>
 
-    <string name="confirm_seldeletes_fmt">Êtes-vous sûr de vouloir effacer les
-%1$d parties sélectionnées ? Cette action ne peut pas être annulée.</string>
+    <plurals name="confirm_seldeletes_fmt">
+      <item quantity="other">Êtes-vous sûr de vouloir effacer les
+      %1$d parties sélectionnées ? Cette action ne peut pas être annulée.</item>
+    </plurals>
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->

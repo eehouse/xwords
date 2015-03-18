@@ -141,8 +141,10 @@
   <string name="rename_label">CHANGE THE NAME OF THIS GAME TO:</string>
   <string name="rename_label_caveat">CHANGE THE NAME OF THIS GAME
     (ON THIS DEVICE ONLY) TO:</string>
-  <string name="confirm_seldeletes_fmt">ARE YOU SURE YOU WANT TO DELETE
-    THE %1$d SELECTED GAME[S]? THIS ACTION CANNOT BE UNDONE.</string>
+  <plurals name="confirm_seldeletes_fmt">
+    <item quantity="other">ARE YOU SURE YOU WANT TO DELETE
+      THE %1$d SELECTED GAME[S]? THIS ACTION CANNOT BE UNDONE.</item>
+  </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
   <string name="confirm_reset_fmt">ARE YOU SURE YOU WANT TO RESET THE %1$d

@@ -1438,8 +1438,8 @@ public class GamesListDelegate extends ListDelegateBase
 
             // Game menus: one or more games selected
         case R.id.games_game_delete:
-            String msg = getString( R.string.confirm_seldeletes_fmt, 
-                                    selRowIDs.length );
+            String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt, 
+                                            selRowIDs.length, selRowIDs.length );
             showConfirmThen( msg, R.string.button_delete, 
                              Action.DELETE_GAMES, selRowIDs );
             break;

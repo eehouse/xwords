@@ -209,6 +209,13 @@ public class DelegateBase implements DlgClickNotify,
         return LocUtils.getString( m_activity, resID, params );
     }
 
+    protected String getQuantityString( int resID, int quantity, 
+                                        Object... params )
+    {
+        return LocUtils.getQuantityString( m_activity, resID, quantity, 
+                                           params );
+    }
+
     protected String[] getStringArray( int resID )
     {
         return LocUtils.getStringArray( m_activity, resID );
