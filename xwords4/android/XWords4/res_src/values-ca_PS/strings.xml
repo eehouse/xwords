@@ -58,8 +58,8 @@
          how far along they are.  I may list "tiles left" someday
          instead... -->
   <plurals name="moves_fmt">
-    <item quantity="one">%1$d move played</item>
-    <item quantity="other">%1$d moves played</item>
+    <item quantity="one">%1$d MOVE PLAYED</item>
+    <item quantity="other">%1$d MOVES PLAYED</item>
   </plurals>
   <!-- When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
