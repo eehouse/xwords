@@ -2962,7 +2962,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
 {
     PoolContext* pool = server->pool;
     if ( !!pool ) {
-        XP_UCHAR buf[48];
+        XP_UCHAR buf[128];
         DictionaryCtxt* dict = model_getDictionary( server->vol.model );
         Tile tile;
         XP_U16 nChars = dict_numTileFaces( dict );
