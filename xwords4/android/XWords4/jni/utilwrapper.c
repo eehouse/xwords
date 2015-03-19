@@ -426,6 +426,36 @@ and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
     return result;
 }
 
+/* FIXME: This will always return the same string, ignoring quantity all but
+   the first time (because of util->userStrings) */
+static const XP_UCHAR*
+and_util_getUserQuantityString( XW_UtilCtxt* uc, XP_U16 stringCode, XP_U16 quantity )
+{
+    LOG_FUNC();
+    XP_UCHAR* result = "";
+    UTIL_CBK_HEADER("getUserQuantityString", "(II)Ljava/lang/String;" );
+    int index = stringCode - 1; /* see LocalizedStrIncludes.h */
+    XP_ASSERT( index < VSIZE( util->userStrings ) );
+
+    if ( ! util->userStrings[index] ) {
+        jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, 
+                                                    stringCode, quantity );
+        jsize len = (*env)->GetStringUTFLength( env, jresult );
+        XP_UCHAR* buf = XP_MALLOC( util->util.mpool, len + 1 );
+
+        const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
+        XP_MEMCPY( buf, jchars, len );
+        buf[len] = '\0';
+        (*env)->ReleaseStringUTFChars( env, jresult, jchars );
+        deleteLocalRef( env, jresult );
+        util->userStrings[index] = buf;
+    }
+
+    result = util->userStrings[index];
+    UTIL_CBK_TAIL();
+    LOG_RETURNF( "%s", result );
+    return result;
+}
 
 static XP_Bool
 and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
@@ -697,6 +727,7 @@ makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi,
     SET_PROC(getCurSeconds);
     SET_PROC(makeEmptyDict);
     SET_PROC(getUserString);
+    SET_PROC(getUserQuantityString);
     SET_PROC(warnIllegalWord);
 #ifdef XWFEATURE_CHAT
     SET_PROC(showChat);

@@ -226,12 +226,23 @@ public class LocUtils {
     }
 
     public static String getQuantityString( Context context, int id, 
+                                            int quantity )
+    {
+        DbgUtils.logf( "getQuantityString(%d): punting on locutils stuff for"
+                       + " now. FIXME", quantity );
+        String result = context.getResources().getQuantityString( id, quantity );
+        DbgUtils.logf( "LocUtils.getQuantityString() => %s", result );
+        return result;
+    }
+
+    public static String getQuantityString( Context context, int id, 
                                             int quantity, Object... params )
     {
         DbgUtils.logf( "getQuantityString(%d): punting on locutils stuff for"
                        + " now. FIXME", quantity );
         String result = context.getResources()
             .getQuantityString( id, quantity, params );
+        DbgUtils.logf( "LocUtils.getQuantityString() => %s", result );
         return result;
     }
 

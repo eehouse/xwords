@@ -158,16 +158,28 @@ obtenir une copie avec les mêmes paramètres.</string>
          list_item_rename) -->
     <string name="rename_label">Changer le nom de la partie pour :</string>
 
+    <!--<string name="confirm_seldeletes_fmt">Êtes-vous sûr de vouloir effacer les
+%1$d parties sélectionnées ? Cette action ne peut pas être annulée.</string>-->
     <plurals name="confirm_seldeletes_fmt">
-      <item quantity="other">Êtes-vous sûr de vouloir effacer les
-      %1$d parties sélectionnées ? Cette action ne peut pas être annulée.</item>
+        <item quantity="one">Êtes-vous sûr de vouloir effacer la partie
+        sélectionnée ? Cette action ne peut pas être annulée.</item>
+        <item quantity="other">Êtes-vous sûr de vouloir effacer les
+%1$d parties sélectionnées ? Cette action ne peut pas être annulée.</item>
     </plurals>
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-    <string name="confirm_reset_fmt">Êtes-vous sûr de vouloir recommencer les %1$d
+    <!--<string name="confirm_reset_fmt">Êtes-vous sûr de vouloir recommencer les %1$d
     parties sélectionnées ?\n\n(Recommencer fait perdre tous les coups et
-toutes les informations de connexion.)</string>
+toutes les informations de connexion.)</string>-->
+    <plurals name="confirm_reset_fmt">
+        <item quantity="one">Êtes-vous sûr de vouloir recommencer la
+    partie sélectionnée ?\n\n(Recommencer fait perdre tous les coups et
+toutes les informations de connexion.)</item>
+        <item quantity="other">Êtes-vous sûr de vouloir recommencer les %1$d
+    parties sélectionnées ?\n\n(Recommencer fait perdre tous les coups et
+toutes les informations de connexion.)</item>
+    </plurals>
 
     <!--
        ############################################################
@@ -582,9 +594,17 @@ hors-périphériques.</string>
     <!--<string name="invite_msg_fmt">This game is missing %1$d remote
       player[s].  Would you like to invite someone to join - assuming
       you haven\'t already?</string>-->
-    <string name="invite_msg_fmt">Il manque %1$d joueur[s] distant[s] à cette
+    <!--<string name="invite_msg_fmt">Il manque %1$d joueur[s] distant[s] à cette
+partie. Voulez-vous inviter quelqu\'un - - à moins que vous ne l\'ayez déjà
+fait ?</string>-->
+    <plurals name="invite_msg_fmt">
+        <item quantity="one">Il manque un joueur distant à cette
 partie. Voulez-vous inviter quelqu\'un -- à moins que vous ne l\'ayez déjà
-fait ?</string>
+fait ?</item>
+        <item quantity="other">Il manque %1$d joueurs distants à cette
+partie. Voulez-vous inviter quelqu\'un -- à moins que vous ne l\'ayez déjà
+fait ?</item>
+    </plurals>
 
     <!-- Appended to message above if local device has NFC available -->
     <!--<string name="invite_if_nfc">(Or just Tap to Invite - if the
@@ -595,7 +615,11 @@ périphérique a aussi Android Beam et est proche.)</string>
       <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
       <!--<string name="players_miss_fmt">%1$d player[s] missing</string>-->
-      <string name="players_miss_fmt">%1$d joueur[s] manquant[s]</string>
+      <!--<string name="players_miss_fmt">%1$d joueur[s] manquant[s]</string>-->
+      <plurals name="players_miss_fmt">
+        <item quantity="one">%1$d joueur manquant</item>
+        <item quantity="other">%1$d joueurs manquants</item>
+    </plurals>
 
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -622,8 +646,14 @@ distants. Assurez-vous d\'envoyer votre invitation à ce nombre de personnes.)</
          only once per game. -->
     <!--<string name="msg_relay_waiting_fmt">Device %1$d connected to relay in
       room \"%2$s\". Waiting for %3$d player[s].</string>-->
-    <string name="msg_relay_waiting_fmt">Le périphérique %1$d est connecté au
-relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>
+    <!--<string name="msg_relay_waiting_fmt">Le périphérique %1$d est connecté au
+relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>-->
+    <plurals name="msg_relay_waiting_fmt">
+        <item quantity="one">Le périphérique %1$d est connecté au
+relai dans le salon \"%2$s\". En attente d\'un joueur.</item>
+        <item quantity="other">Le périphérique %1$d est connecté au
+relai dans le salon \"%2$s\". En attente de %3$d joueurs.</item>
+    </plurals>
 
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
@@ -761,7 +791,11 @@ coup ?</string>
     <!--<string name="board_menu_game_resend">Resend messages</string>-->
     <string name="board_menu_game_resend">Renvoyer les messages</string>
     <!--<string name="resend_finished_fmt">Resend finished; sent %1$d message[s].</string>-->
-    <string name="resend_finished_fmt">Renvoi fini ; %1$d message[s] envoyé[s].</string>
+    <!--<string name="resend_finished_fmt">Renvoi fini ; %1$d message[s] envoyé[s].</string>-->
+    <plurals name="resend_finished_fmt">
+        <item quantity="one">Renvoi fini ; %1$d message envoyé.</item>
+        <item quantity="other">Renvoi fini ; %1$d messages envoyés.</item>
+    </plurals>
 
     <!--       
        ############################################################
@@ -777,7 +811,11 @@ coup ?</string>
     <string name="str_robot_moved_fmt">Le robot %1$s a joué ce coup :\u0020</string>
     <!-- Notifies user of a robot trade move -->
     <!--<string name="strd_robot_traded_fmt">exchanged %1$d tiles.</string>-->
-    <string name="strd_robot_traded_fmt">a échangé %1$d jetons.</string>
+    <!--<string name="strd_robot_traded_fmt">a échangé %1$d jetons.</string>-->
+    <plurals name="strd_robot_traded_fmt">
+        <item quantity="one">a échangé un jeton.</item>
+        <item quantity="other">a échangé %1$d jetons.</item>
+    </plurals>
     <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
     <!--<string name="strs_values_header_fmt">%1$s counts/values:\n</string>-->
@@ -848,12 +886,22 @@ restants]</string>
     <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
     <!--<string name="strd_remains_header_fmt">%1$d tiles left in pool.</string>-->
-    <string name="strd_remains_header_fmt">%1$d jetons restants dans le sac.</string>
+    <!--<string name="strd_remains_header_fmt">%1$d jetons restants dans le sac.</string>-->
+    <plurals name="strd_remains_header_fmt">
+        <item quantity="one">%1$d jeton restant dans le sac.</item>
+        <item quantity="other">%1$d jetons restants dans le sac.</item>
+    </plurals>
     <!-- Intro to the paragraph lisiting all of the tiles remaining -->
     <!--<string name="strd_remains_expl_fmt">%1$d tiles left in pool and all
     tray[s]:\n</string>-->
-    <string name="strd_remains_expl_fmt">%1$d jetons restants dans le sac et
-tous les chevalets :\n</string>
+    <!--<string name="strd_remains_expl_fmt">%1$d jetons restants dans le sac et
+tous les chevalets :\n</string>-->
+    <plurals name="strd_remains_expl_fmt">
+        <item quantity="one">%d jeton restant dans le sac et tous les
+        chevalets :\n</item>
+        <item quantity="other">%d jetons restants dans le sac et tous
+        les chevalets :\n</item>
+    </plurals>
 
     <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
@@ -1419,8 +1467,14 @@ partie : %1$s .</string>
          tiles (instead of forming a new word to earn points) -->
     <!--<string name="query_trade_fmt">Are you sure you want to exchange the
         %1$d selected tiles (%2$s)?</string>-->
-    <string name="query_trade_fmt">Êtes-vous sûr de vouloir échanger les %1$d
-jetons sélectionnés (%2$s) ?</string>
+    <!--<string name="query_trade_fmt">Êtes-vous sûr de vouloir échanger les %1$d
+jetons sélectionnés (%2$s) ?</string>-->
+    <plurals name="query_trade_fmt">
+        <item quantity="one">Êtes-vous sûr de vouloir échanger le
+jeton sélectionné (%2$s) ?</item>
+        <item quantity="other">Êtes-vous sûr de vouloir échanger les %1$d
+jetons sélectionnés (%2$s) ?</item>
+    </plurals>
 
     <!-- ############################################################
          # :Screens:
@@ -2173,12 +2227,22 @@ ligne, les mots qui viennent d\'être joués.</string>
       <!--  -->
     <!--<string name="dict_browse_title_fmt">%1$s (%2$d words using %3$d-%4$d
       tiles)</string>-->
-    <string name="dict_browse_title_fmt">%1$s (%2$d mots utilisant de %3$d à
-%4$d jetons)</string>
+    <!--<string name="dict_browse_title_fmt">%1$s (%2$d mots utilisant de %3$d à
+%4$d jetons)</string>-->
+    <plurals name="dict_browse_title_fmt">
+        <item quantity="one">%1$s (%2$d mot utilisant de %3$d à
+%4$d jetons)</item>
+        <item quantity="other">%1$s (%2$d mots utilisant de %3$d à
+%4$d jetons)</item>
+    </plurals>
       <!--  -->
     <!--<string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
       tiles)</string>-->
-    <string name="dict_browse_title1_fmt">%1$s (%2$d mots utilisant %3$d jetons)</string>
+    <!--<string name="dict_browse_title1_fmt">%1$s (%2$d mots utilisant %3$d jetons)</string>-->
+    <plurals name="dict_browse_title1_fmt">
+        <item quantity="one">%1$s (%2$d mot utilisant %3$d jetons)</item>
+        <item quantity="other">%1$s (%2$d mots utilisant %3$d jetons)</item>
+    </plurals>
       <!--  -->
     <!--<string name="dict_browse_nowords_fmt">No word in %1$s starts with
       %2$s.</string>-->
@@ -2274,14 +2338,28 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     <!--<string name="invite_bt_desc_fmt">Please select the %1$d device[s]
     you want to include in this game.  Use the \"%2$s\"
     button if you don\'t see a device you expect.</string>-->
-    <string name="invite_bt_desc_fmt">Sélectionnez les %1$d périphériques que
+    <!--<string name="invite_bt_desc_fmt">Sélectionnez les %1$d périphériques que
 vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne
-voyez pas un périphérique que vous attendez.</string>
+voyez pas un périphérique que vous attendez.</string>-->
+    <plurals name="invite_bt_desc_fmt">
+        <item quantity="one">Sélectionnez le périphérique que
+vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne
+voyez pas un périphérique que vous attendez.</item>
+        <item quantity="other">Sélectionnez les %1$d périphériques que
+vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne
+voyez pas un périphérique que vous attendez.</item>
+    </plurals>
         <!--  -->
     <!--<string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry %3$d in
         %2$d seconds.</string>-->
-    <string name="bt_resend_fmt">Un envoi Bluetooth à %1$s a échoué ; essai
-%3$d dans %2$d secondes.</string>
+    <!--<string name="bt_resend_fmt">Un envoi Bluetooth à %1$s a échoué ; essai
+%3$d dans %2$d secondes.</string>-->
+    <plurals name="bt_resend_fmt">
+        <item quantity="one">Un envoi Bluetooth à %1$s a échoué ; essai
+%3$d dans %2$d seconde.</item>
+        <item quantity="other">Un envoi Bluetooth à %1$s a échoué ; essai
+%3$d dans %2$d secondes.</item>
+    </plurals>
         <!--  -->
     <!--<string name="bt_fail_fmt">Bluetooth sends to %1$s have failed too many
         times. Re-open the game to try again.</string>-->
@@ -2319,8 +2397,14 @@ fois. Ouvrez à nouveau la partie pour réessayer.</string>
     <!--  -->
     <!--<string name="invite_sms_desc_fmt">Please check the %1$d phone
     number[s] you want to invite to your new game, then tap \"%2$s\".</string>-->
-    <string name="invite_sms_desc_fmt">Vérifiez les %1$d numéros de téléphone
-que vous voulez inviter à votre partie, puis touchez \"%2$s\".</string>
+    <!--<string name="invite_sms_desc_fmt">Vérifiez les %1$d numéros de téléphone
+que vous voulez inviter à votre partie, puis touchez \"%2$s\".</string>-->
+    <plurals name="invite_sms_desc_fmt">
+        <item quantity="one">Vérifiez le numéro de téléphone
+que vous voulez inviter à votre partie, puis touchez \"%2$s\".</item>
+        <item quantity="other">Vérifiez les %1$d numéros de téléphone
+que vous voulez inviter à votre partie, puis touchez \"%2$s\".</item>
+    </plurals>
     <!--  -->
     <!--<string name="manual_owner_name">(Not in contacts)</string>-->
     <string name="manual_owner_name">(Pas dans les contacts)</string>
@@ -2598,12 +2682,24 @@ mots ?</string>
 
     <!--<string name="groups_confirm_del_fmt">Are you sure you want to delete
     the %1$d selected group[s]?</string>-->
-    <string name="groups_confirm_del_fmt">Êtes-vous sûr de vouloir effacer les
-%1$d groupes sélectionnés ?</string>
+    <!--<string name="groups_confirm_del_fmt">Êtes-vous sûr de vouloir effacer les
+%1$d groupes sélectionnés ?</string>-->
+    <plurals name="groups_confirm_del_fmt">
+        <item quantity="one">Êtes-vous sûr de vouloir effacer le
+groupe sélectionné ?</item>
+        <item quantity="other">Êtes-vous sûr de vouloir effacer les
+%1$d groupes sélectionnés ?</item>
+    </plurals>
     <!--<string name="groups_confirm_del_games_fmt">\n\n(%1$d game[s] will
     also be deleted.)</string>-->
-    <string name="groups_confirm_del_games_fmt">\n\n(%1$d parties seront aussi
-effacées.)</string>
+    <!--<string name="groups_confirm_del_games_fmt">\n\n(%1$d parties seront aussi
+effacées.)</string>-->
+    <plurals name="groups_confirm_del_games_fmt">
+        <item quantity="one">\n\n(une partie sera aussi
+effacée.)</item>
+        <item quantity="other">\n\n(%1$d parties seront aussi
+effacées.)</item>
+    </plurals>
 
     <!--<string name="rename_group_label">Change the name of this group to:</string>-->
     <string name="rename_group_label">Changer le nom de ce groupe pour :</string>
@@ -2616,7 +2712,11 @@ effacées.)</string>
 parties, %1$s, ne peut pas être effacé.</string>
 
     <!--<string name="group_name_fmt">%1$s (%2$d games)</string>-->
-    <string name="group_name_fmt">%1$s (%2$d parties)</string>
+    <!--<string name="group_name_fmt">%1$s (%2$d parties)</string>-->
+    <plurals name="group_name_fmt">
+        <item quantity="one">%1$s (%2$d partie)</item>
+        <item quantity="other">%1$s (%2$d parties)</item>
+    </plurals>
 
     <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
@@ -2687,7 +2787,7 @@ pouvez utiliser l\'application des Paramètres Android pour l\'allumer.</string>
     <string name="sms_ready_text">Toucher le périphérique récepteur maintenant</string>
 
     <!--<string name="pct_suffix">\u0020pct.</string>-->
-    <string name="pct_suffix">\u0020prct.</string>
+    <string name="pct_suffix">\u0020pct.</string>
 
     <!--<string name="menu_rateme">Rate Crosswords</string>-->
     <string name="menu_rateme">Évaluer Crosswords</string>
@@ -2711,10 +2811,20 @@ de mots à retenir</string>
     <string name="slmenu_clear_sel">Effacer les mots sélectionnés</string>
     <!--<string name="confirm_studylist_clear_fmt">Are you sure you want to
     delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>-->
-    <string name="confirm_studylist_clear_fmt">Êtes-vous sûr de vouloir effacer
-les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</string>
+    <!--<string name="confirm_studylist_clear_fmt">Êtes-vous sûr de vouloir effacer
+les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</string>-->
+    <plurals name="confirm_studylist_clear_fmt">
+        <item quantity="one">Êtes-vous sûr de vouloir effacer
+le mot sélectionné ?\n\n(Cette action ne peut pas être annulée.)</item>
+        <item quantity="other">Êtes-vous sûr de vouloir effacer
+les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</item>
+    </plurals>
     <!--<string name="paste_done_fmt">%1$d word[s] copied</string>-->
-    <string name="paste_done_fmt">%1$d mots copiés</string>
+    <!--<string name="paste_done_fmt">%1$d mots copiés</string>-->
+    <plurals name="paste_done_fmt">
+        <item quantity="one">%1$d mot copié</item>
+        <item quantity="other">%1$d mots copiés</item>
+    </plurals>
     <!--<string name="add_done_fmt">%1$s added to %2$s studylist</string>-->
     <string name="add_done_fmt">%1$s ajouté à la liste d\'étude en %2$s</string>
     <!--<string name="studylist_title_fmt">Studylist for %1$s</string>-->
@@ -2758,7 +2868,11 @@ mails.</string>
     <string name="loc_lang_local">%1$s (la votre)</string>
 
     <!--<string name="new_xlations_fmt">Installed %1$d new translations</string>-->
-    <string name="new_xlations_fmt">%1$d nouvelles traductions installées</string>
+    <!--<string name="new_xlations_fmt">%1$d nouvelles traductions installées</string>-->
+    <plurals name="new_xlations_fmt">
+        <item quantity="one">%1$d nouvelle traduction installée</item>
+        <item quantity="other">%1$d nouvelles traductions installées</item>
+    </plurals>
 
     <!--<string name="xlations_enabled_title">Enable local translating</string>-->
     <string name="xlations_enabled_title">Activer les traductions locales</string>
@@ -2847,7 +2961,11 @@ téléchargement : %2$dk\nNote : %2$s</string>
     <!--<string name="dict_on_server">Tap to download</string>-->
     <string name="dict_on_server">Toucher pour télécharger</string>
     <!--<string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    -->
-    <string name="lang_name_fmt">%1$s (%2$d listes de mots)</string>    
+    <!--<string name="lang_name_fmt">%1$s (%2$d listes de mots)</string>    -->
+    <plurals name="lang_name_fmt">
+        <item quantity="one">%1$s (%2$d liste de mots)</item>
+        <item quantity="other">%1$s (%2$d listes de mots)</item>
+    </plurals>
 
     <!--<string name="lang_unknown">Unknown</string>-->
     <string name="lang_unknown">Inconnu</string>
@@ -2878,11 +2996,23 @@ pour voir ce qui est disponible.</string>
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
     4 hour[s] ago." -->
     <!--<string name="nag_minutes_fmt">%1$d minute[s]</string>-->
-    <string name="nag_minutes_fmt">%1$d minute[s]</string>
+    <!--<string name="nag_minutes_fmt">%1$d minute[s]</string>-->
+    <plurals name="nag_minutes_fmt">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
     <!--<string name="nag_hours_fmt">%1$d hour[s]</string>-->
-    <string name="nag_hours_fmt">%1$d heure[s]</string>
+    <!--<string name="nag_hours_fmt">%1$d heure[s]</string>-->
+    <plurals name="nag_hours_fmt">
+        <item quantity="one">%1$d heure</item>
+        <item quantity="other">%1$d heures</item>
+    </plurals>
     <!--<string name="nag_days_fmt">%1$d day[s]</string>-->
-    <string name="nag_days_fmt">%1$d jour[s]</string>
+    <!--<string name="nag_days_fmt">%1$d jour[s]</string>-->
+    <plurals name="nag_days_fmt">
+        <item quantity="one">%1$d jour</item>
+        <item quantity="other">%1$d jours</item>
+    </plurals>
     <!--<string name="nag_body_fmt">%1$s moved more than %2$s ago.</string>-->
     <string name="nag_body_fmt">%1$s a joué il y a plus de %2$s.</string>
     <!-- above is inserted in this the last time I warn -->
@@ -2896,16 +3026,28 @@ pour voir ce qui est disponible.</string>
     <!--<string name="lmi_pass_fmt">%1$s passed (0 points)</string>-->
     <string name="lmi_pass_fmt">%1$s a passé (0 point)</string>
     <!--<string name="lmi_move_fmt">%1$s played %2$s for %3$d points</string>-->
-    <string name="lmi_move_fmt">%1$s a joué %2$s pour %3$d points</string>
+    <!--<string name="lmi_move_fmt">%1$s a joué %2$s pour %3$d points</string>-->
+    <plurals name="lmi_move_fmt">
+        <item quantity="one">%1$s a joué %2$s pour %3$d point</item>
+        <item quantity="other">%1$s a joué %2$s pour %3$d points</item>
+    </plurals>
     <!--<string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>-->
-    <string name="lmi_trade_fmt">%1$s a échangé %2$d jetons</string>
+    <!--<string name="lmi_trade_fmt">%1$s a échangé %2$d jetons</string>-->
+    <plurals name="lmi_trade_fmt">
+        <item quantity="one">%1$s a échangé %2$d jeton</item>
+        <item quantity="other">%1$s a échangé %2$d jetons</item>
+    </plurals>
     <!--<string name="lmi_phony_fmt">%1$s lost a turn</string>-->
     <string name="lmi_phony_fmt">%1$s a perdu un tour</string>
     <!--<string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>-->
     <string name="lmi_tiles_fmt">Jetons attribués à %1$s</string>
 
     <!--<string name="bt_err_count_fmt">%1$d bluetooth errors so far</string>-->
-    <string name="bt_err_count_fmt">%1$d erreurs Bluetooth jusqu\'à maintenant</string>
+    <!--<string name="bt_err_count_fmt">%1$d erreurs Bluetooth jusqu\'à maintenant</string>-->
+    <plurals name="bt_err_count_fmt">
+        <item quantity="one">%1$d erreur Bluetooth jusqu\'à maintenant</item>
+        <item quantity="other">%1$d erreurs Bluetooth jusqu\'à maintenant</item>
+    </plurals>
 
 	<!--<string name="bt_no_devs">You currently have no paired Bluetooth
 	devices. Would you like to open the Android Settings Panel to add
@@ -3006,7 +3148,11 @@ d\'autres joueurs quand elle sera ouverte.)</string>
     <string name="nplayers_prompt">Nombre sur ce périphérique</string>
     <!--XLATE-ME-->
     <!--<string name="nplayers_fmt">%1$d player[s]</string>-->
-    <string name="nplayers_fmt">%1$d joueur[s]</string>
+    <!--<string name="nplayers_fmt">%1$d joueur[s]</string>-->
+    <plurals name="nplayers_fmt">
+        <item quantity="one">%1$d joueur</item>
+        <item quantity="other">%1$d joueurs</item>
+    </plurals>
     <!--XLATE-ME-->
     <!--<string name="err_dup_invite_fmt">Duplicate invitation rejected:
     device \"%1$s\" has already accepted an invitation to this
@@ -3217,7 +3363,9 @@ numéros de téléphones sont les mêmes</string>
     <!--XLATE-ME-->
   <string name="game_summary_field_gameid">gameid</string>
     <!--XLATE-ME-->
-  <string name="game_summary_field_npackets">Pending packet count</string>
+  <!--<string name="game_summary_field_npackets">Pending packet count</string>-->
+  <string name="game_summary_field_npackets">Nombre de paquets en attente</string>
     <!--XLATE-ME-->
-  <string name="expl_update_url">Update checks URL</string>
+  <!--<string name="expl_update_url">Update checks URL</string>-->
+  <string name="expl_update_url">URL de vérifications des mises à jour</string>
 </resources>

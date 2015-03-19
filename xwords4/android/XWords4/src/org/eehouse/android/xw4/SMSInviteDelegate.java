@@ -82,7 +82,8 @@ public class SMSInviteDelegate extends InviteDelegate {
     protected void init( Bundle savedInstanceState )
     {
         String msg = getString( R.string.button_invite );
-        msg = getString( R.string.invite_sms_desc_fmt, m_nMissing, msg );
+        msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing, 
+                                 m_nMissing, msg );
         super.init( R.id.button_invite, R.id.button_add, R.id.button_clear, 
                     R.id.invite_desc, msg );
 
@@ -439,7 +440,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                     new ArrayAdapter<String>( m_activity, android.R.layout
                                               .simple_spinner_item );
                 for ( int ii = 1; ii <= m_nMissing; ++ii ) {
-                    String str = getString( R.string.nplayers_fmt, ii );
+                    String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
                     adapter.add( str );
                 }
                 spinner.setAdapter( adapter );

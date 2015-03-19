@@ -88,12 +88,12 @@ public class DictBrowseDelegate extends ListDelegateBase
             XwJNI.dict_iter_setMinMax( m_dictClosure, m_browseState.m_minShown,
                                        m_browseState.m_maxShown );
             m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
-
+            
             int format = m_browseState.m_minShown == m_browseState.m_maxShown ?
-                R.string.dict_browse_title1_fmt : R.string.dict_browse_title_fmt;
-            setTitle( getString( format,
-                                 m_name, m_nWords, m_browseState.m_minShown, 
-                                 m_browseState.m_maxShown ));
+                R.plurals.dict_browse_title1_fmt : R.plurals.dict_browse_title_fmt;
+            setTitle( getQuantityString( format, m_nWords, m_name, m_nWords, 
+                                         m_browseState.m_minShown, 
+                                         m_browseState.m_maxShown ));
 
             String desc = XwJNI.dict_iter_getDesc( m_dictClosure );
             if ( null != desc ) {

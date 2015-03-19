@@ -147,9 +147,11 @@
   </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-  <string name="confirm_reset_fmt">ARE YOU SURE YOU WANT TO RESET THE %1$d
+  <plurals name="confirm_reset_fmt">
+    <item quantity="other">ARE YOU SURE YOU WANT TO RESET THE %1$d
     SELECTED GAME[S]?\n\n(RESETTING ERASES ALL MOVES AND ANY CONNECTION
-    INFORMATION.)</string>
+    INFORMATION.)</item>
+  </plurals>
   <!--
        ############################################################
        # :Screens:
@@ -445,15 +447,19 @@
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
-  <string name="invite_msg_fmt">THIS GAME IS WAITING FOR %1$d REMOTE
+  <plurals name="invite_msg_fmt">
+    <item quantity="other">THIS GAME IS WAITING FOR %1$d REMOTE
     PLAYER[S]. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
-    YOU HAVEN\'T ALREADY?</string>
+    YOU HAVEN\'T ALREADY?</item>
+  </plurals>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">OR JUST TAP TO INVITE -- IF THE OTHER
     DEVICE ALSO HAS ANDROID BEAMING AND IS NEARBY.</string>
   <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
-  <string name="players_miss_fmt">%1$d PLAYER[S] MISSING</string>
+  <plurals name="players_miss_fmt">
+    <item quantity="other">%1$d PLAYER[S] MISSING</item>
+  </plurals>
   <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
@@ -473,8 +479,10 @@
          the room, and how many additional players have not yet
          registered with the relay in this game.  This should be seen
          only once per game. -->
-  <string name="msg_relay_waiting_fmt">DEVICE %1$d CONNECTED TO RELAY IN
-      ROOM \"%2$s\". WAITING FOR %3$d PLAYER[S].</string>
+  <plurals name="msg_relay_waiting_fmt">
+    <item quantity="other">DEVICE %1$d CONNECTED TO RELAY IN
+      ROOM \"%2$s\". WAITING FOR %3$d PLAYER[S].</item>
+  </plurals>
   <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. -->
@@ -567,7 +575,9 @@
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
   <string name="board_menu_game_resend">RESEND MESSAGES</string>
-  <string name="resend_finished_fmt">RESEND FINISHED; SENT %1$d MESSAGE[S].</string>
+  <plurals name="resend_finished_fmt">
+    <item quantity="other">RESEND FINISHED; SENT %1$d MESSAGE[S].</item>
+  </plurals>
   <!--       
        ############################################################
        # Board info/error dialog messages
@@ -579,7 +589,9 @@
   <!-- Notifies user of a normal robot move -->
   <string name="str_robot_moved_fmt">THE ROBOT %1$s MADE THIS MOVE:\u0020</string>
   <!-- Notifies user of a robot trade move -->
-  <string name="strd_robot_traded_fmt">EXCHANGED %1$d TILES.</string>
+  <plurals name="strd_robot_traded_fmt">
+    <item quantity="other">EXCHANGED %1$d TILES.</item>
+  </plurals>
   <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
   <string name="strs_values_header_fmt">%1$s COUNTS/VALUES:\n</string>
@@ -627,10 +639,14 @@
   <string name="strd_turn_score_fmt">SCORE FOR TURN: %1$d\n</string>
   <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
-  <string name="strd_remains_header_fmt">%1$d TILES LEFT IN POOL.</string>
+  <plurals name="strd_remains_header_fmt">
+    <item quantity="other">%1$d TILES LEFT IN POOL.</item>
+  </plurals>
   <!-- Intro to the paragraph lisiting all of the tiles remaining -->
-  <string name="strd_remains_expl_fmt">%1$d TILES LEFT IN POOL AND ALL
-    TRAY[S]:\n</string>
+  <plurals name="strd_remains_expl_fmt">
+    <item quantity="other">%1$d TILES LEFT IN POOL AND ALL
+    TRAY[S]:\n</item>
+  </plurals>
   <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
   <string name="confirm_undo_last">ARE YOU SURE YOU WANT TO UNDO THE
@@ -994,9 +1010,9 @@
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
   <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
-  <!-- beaming – NEW) or via email?</string> -->
+  <!-- beaming &#8211; NEW) or via email?</string> -->
   <!-- <string name="nfc_or_sms_or_email">Send invitation using SMS -->
-  <!-- (texting) or NFC (\"Android beaming\" – NEW) or via email?</string> -->
+  <!-- (texting) or NFC (\"Android beaming\" &#8211; NEW) or via email?</string> -->
   <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
@@ -1036,8 +1052,10 @@
   <string name="invite_chooser_sms">SMS</string>
   <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-  <string name="query_trade_fmt">ARE YOU SURE YOU WANT TO EXCHANGE THE
-        %1$d SELECTED TILES (%2$s)?</string>
+  <plurals name="query_trade_fmt">
+    <item quantity="other">ARE YOU SURE YOU WANT TO EXCHANGE THE
+        %1$d SELECTED TILES (%2$s)?</item>
+  </plurals>
   <!-- ############################################################
          # :Screens:
          # Chat screen
@@ -1515,11 +1533,15 @@
   <!--  -->
   <string name="pick_faceup">PICK TILES FACE-UP</string>
   <!--  -->
-  <string name="dict_browse_title_fmt">%1$s (%2$d WORDS USING %3$d-%4$d
-      TILES)</string>
+  <plurals name="dict_browse_title_fmt">
+    <item quantity="other">%1$s (%2$d WORDS USING %3$d-%4$d
+      TILES)</item>
+  </plurals>
   <!--  -->
-  <string name="dict_browse_title1_fmt">%1$s (%2$d WORDS USING %3$d
-      TILES)</string>
+  <plurals name="dict_browse_title1_fmt">
+    <item quantity="other">%1$s (%2$d WORDS USING %3$d
+      TILES)</item>
+  </plurals>
   <!--  -->
   <string name="dict_browse_nowords_fmt">NO WORD IN %1$s STARTS WITH
       %2$s.</string>
@@ -1584,12 +1606,16 @@
   <!--  -->
   <string name="new_move_body">ONE OR MORE MOVES HAS ARRIVED</string>
   <!--  -->
-  <string name="invite_bt_desc_fmt">PLEASE SELECT UP TO %1$d DEVICE[S]
+  <plurals name="invite_bt_desc_fmt">
+    <item quantity="other">PLEASE SELECT UP TO %1$d DEVICE[S]
     YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
-    BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</string>
+    BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</item>
+  </plurals>
   <!--  -->
-  <string name="bt_resend_fmt">BLUETOOTH SEND TO %1$s FAILED; RETRY %3$d IN
-        %2$d SECONDS.</string>
+  <plurals name="bt_resend_fmt">
+    <item quantity="other">BLUETOOTH SEND TO %1$s FAILED; RETRY %3$d IN
+        %2$d SECONDS.</item>
+  </plurals>
   <!--  -->
   <string name="bt_fail_fmt">BLUETOOTH SENDS TO %1$s HAVE FAILED TOO MANY
         TIMES. RE-OPEN THE GAME TO TRY AGAIN.</string>
@@ -1620,8 +1646,10 @@
   <!--  -->
   <string name="button_sms_add">IMPORT CONTACT</string>
   <!--  -->
-  <string name="invite_sms_desc_fmt">PLEASE CHECK THE %1$d PHONE
-    NUMBER[S] YOU WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</string>
+  <plurals name="invite_sms_desc_fmt">
+    <item quantity="other">PLEASE CHECK THE %1$d PHONE
+    NUMBER[S] YOU WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+  </plurals>
   <!--  -->
   <string name="manual_owner_name">(NOT IN CONTACTS)</string>
   <!--  -->
@@ -1781,15 +1809,21 @@
   <string name="list_group_movedown">MOVE DOWN</string>
   <string name="group_cur_games">MY GAMES</string>
   <string name="group_new_games">NEW GAMES</string>
-  <string name="groups_confirm_del_fmt">ARE YOU SURE YOU WANT TO DELETE
-    THE %1$d SELECTED GROUP[S]?</string>
-  <string name="groups_confirm_del_games_fmt">\n\n(%1$d GAME[S] WILL
-    ALSO BE DELETED.)</string>
+  <plurals name="groups_confirm_del_fmt">
+    <item quantity="other">ARE YOU SURE YOU WANT TO DELETE
+    THE %1$d SELECTED GROUP[S]?</item>
+  </plurals>
+  <plurals name="groups_confirm_del_games_fmt">
+    <item quantity="other">\n\n(%1$d GAME[S] WILL
+    ALSO BE DELETED.)</item>
+  </plurals>
   <string name="rename_group_label">CHANGE THE NAME OF THIS GROUP TO:</string>
   <string name="game_name_group_title">NAME GROUP</string>
   <string name="cannot_delete_default_group_fmt">THE GROUP FOR NEW GAMES, %1$s, 
     CANNOT BE DELETED.</string>
-  <string name="group_name_fmt">%1$s (%2$d GAMES)</string>
+  <plurals name="group_name_fmt">
+    <item quantity="other">%1$s (%2$d GAMES)</item>
+  </plurals>
   <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
          just ended. -->
@@ -1823,7 +1857,7 @@
   <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->
   <!-- means that any time a board that\'s missing a player is open, you -->
   <!-- can tap a nearby person\'s device to invite him/her to -->
-  <!-- play – if he/she is also using NFC.</string> -->
+  <!-- play &#8211; if he/she is also using NFC.</string> -->
   <string name="pct_suffix">\u0020PCT.</string>
   <string name="menu_rateme">RATE CROSSWORDS</string>
   <string name="no_market">GOOGLE PLAY APP NOT FOUND</string>
@@ -1834,9 +1868,13 @@
   <string name="gamel_menu_study">STUDYLIST…</string>
   <string name="slmenu_copy_sel">COPY TO CLIPBOARD</string>
   <string name="slmenu_clear_sel">DELETE SELECTED</string>
-  <string name="confirm_studylist_clear_fmt">ARE YOU SURE YOU WANT TO
-    DELETE THE %1$d SELECTED WORD[S]?\n\n(THIS ACTION CANNOT BE UNDONE.)</string>
-  <string name="paste_done_fmt">%1$d WORD[S] COPIED</string>
+  <plurals name="confirm_studylist_clear_fmt">
+    <item quantity="other">ARE YOU SURE YOU WANT TO
+    DELETE THE %1$d SELECTED WORD[S]?\n\n(THIS ACTION CANNOT BE UNDONE.)</item>
+  </plurals>
+  <plurals name="paste_done_fmt">
+    <item quantity="other">%1$d WORD[S] COPIED</item>
+  </plurals>
   <string name="add_done_fmt">%1$s ADDED TO %2$s STUDYLIST</string>
   <string name="studylist_title_fmt">STUDYLIST FOR %1$s</string>
   <string name="study_langpick">YOUR WORDS FOR:</string>
@@ -1854,7 +1892,9 @@
   <string name="loc_menu_xlate">TRANSLATE</string>
   <string name="loc_lang_blessed">%1$s (OFFICIAL)</string>
   <string name="loc_lang_local">%1$s (YOURS)</string>
-  <string name="new_xlations_fmt">INSTALLED %1$d NEW TRANSLATIONS</string>
+  <plurals name="new_xlations_fmt">
+    <item quantity="other">INSTALLED %1$d NEW TRANSLATIONS</item>
+  </plurals>
   <string name="xlations_enabled_title">ENABLE LOCAL TRANSLATING</string>
   <string name="xlations_enabled_summary">ADD OPTION TO EVERY SCREEN MENU</string>
   <string name="data_gsm_only">SMS DATA IS ONLY AVAILABLE ON GSM PHONES.</string>
@@ -1892,7 +1932,9 @@
     %2$dK\nNOTE: %3$s</string>
   <string name="note_none">(NONE)</string>
   <string name="dict_on_server">TAP TO DOWNLOAD</string>
-  <string name="lang_name_fmt">%1$s (%2$d WORDLISTS)</string>
+  <plurals name="lang_name_fmt">
+    <item quantity="other">%1$s (%2$d WORDLISTS)</item>
+  </plurals>
   <string name="lang_unknown">UNKNOWN</string>
   <string name="not_again_dicts">THIS SCREEN LETS YOU INSTALL NEW
     WORDSLISTS AND VIEW THE ONES YOU ALREADY HAVE.\n\nWHAT WORDLISTS
@@ -1908,9 +1950,15 @@
     are used to build a string based on the length of time that's then
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
     4 hour[s] ago." -->
-  <string name="nag_minutes_fmt">%1$d MINUTE[S]</string>
-  <string name="nag_hours_fmt">%1$d HOUR[S]</string>
-  <string name="nag_days_fmt">%1$d DAY[S]</string>
+  <plurals name="nag_minutes_fmt">
+    <item quantity="other">%1$d MINUTE[S]</item>
+  </plurals>
+  <plurals name="nag_hours_fmt">
+    <item quantity="other">%1$d HOUR[S]</item>
+  </plurals>
+  <plurals name="nag_days_fmt">
+    <item quantity="other">%1$d DAY[S]</item>
+  </plurals>
   <string name="nag_body_fmt">%1$s MOVED MORE THAN %2$s AGO.</string>
   <!-- above is inserted in this the last time I warn -->
   <string name="nag_warn_last_fmt">LAST WARNING: %1$s</string>
@@ -1918,11 +1966,17 @@
   <string name="prev_player">YOUR OPPONENT</string>
   <!-- formatting for last move summary in notifications -->
   <string name="lmi_pass_fmt">%1$s PASSED (0 POINTS)</string>
-  <string name="lmi_move_fmt">%1$s PLAYED %2$s FOR %3$d POINTS</string>
-  <string name="lmi_trade_fmt">%1$s TRADED %2$d TILES</string>
+  <plurals name="lmi_move_fmt">
+    <item quantity="other">%1$s PLAYED %2$s FOR %3$d POINTS</item>
+  </plurals>
+  <plurals name="lmi_trade_fmt">
+    <item quantity="other">%1$s TRADED %2$d TILES</item>
+  </plurals>
   <string name="lmi_phony_fmt">%1$s LOST A TURN</string>
   <string name="lmi_tiles_fmt">TILES ASSIGNED TO %1$s</string>
-  <string name="bt_err_count_fmt">%1$d BLUETOOTH ERRORS SO FAR</string>
+  <plurals name="bt_err_count_fmt">
+    <item quantity="other">%1$d BLUETOOTH ERRORS SO FAR</item>
+  </plurals>
   <string name="bt_no_devs">YOU CURRENTLY HAVE NO PAIRED BLUETOOTH
 	DEVICES. WOULD YOU LIKE TO OPEN THE ANDROID SETTINGS PANEL TO ADD
 	ONE OR MORE?\n\n(YOU MAY ALSO NEED TO OPEN IT ON THE DEVICE YOU
@@ -1946,7 +2000,9 @@
     INVITE OTHER PLAYERS WHEN IT IS OPEN.)</string>
   <string name="use_defaults">USE DEFAULTS</string>
   <string name="nplayers_prompt">NUMBER ON THIS DEVICE</string>
-  <string name="nplayers_fmt">%1$d PLAYER[S]</string>
+  <plurals name="nplayers_fmt">
+    <item quantity="other">%1$d PLAYER[S]</item>
+  </plurals>
   <string name="err_dup_invite_fmt">DUPLICATE INVITATION REJECTED:
     DEVICE \"%1$s\" HAS ALREADY ACCEPTED AN INVITATION TO THIS
     GAME.</string>

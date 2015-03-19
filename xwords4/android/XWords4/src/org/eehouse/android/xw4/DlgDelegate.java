@@ -457,8 +457,8 @@ public class DlgDelegate {
         boolean asToast = true;
         switch( event ) {
         case MESSAGE_RESEND:
-            msg = getString( R.string.bt_resend_fmt, (String)args[0], 
-                             (Long)args[1], (Integer)args[2] );
+            msg = getQuantityString( R.plurals.bt_resend_fmt, 1, (String)args[0], 
+                                     (Long)args[1], (Integer)args[2] );
             break;
         case MESSAGE_FAILOUT:
             msg = getString( R.string.bt_fail_fmt, (String)args[0] );
@@ -778,5 +778,10 @@ public class DlgDelegate {
     private String getString( int id, Object... params )
     {
         return m_dlgt.getString( id, params );
+    }
+
+    private String getQuantityString( int id, int quantity, Object... params )
+    {
+        return m_dlgt.getQuantityString( id, quantity, params );
     }
 }

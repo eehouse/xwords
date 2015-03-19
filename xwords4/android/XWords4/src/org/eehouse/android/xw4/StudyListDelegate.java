@@ -123,8 +123,8 @@ public class StudyListDelegate extends ListDelegateBase
                                  Action.SL_COPY_ACTION );
             break;
         case R.id.slmenu_clear_sel:
-            String msg = getString( R.string.confirm_studylist_clear_fmt, 
-                                    m_checkeds.size() );
+            String msg = getQuantityString( R.plurals.confirm_studylist_clear_fmt, 
+                                            m_checkeds.size(), m_checkeds.size() );
             showConfirmThen( msg, Action.SL_CLEAR_ACTION );
             break;
 
@@ -171,8 +171,8 @@ public class StudyListDelegate extends ListDelegateBase
                     getSystemService( Context.CLIPBOARD_SERVICE );
                 clipboard.setText( TextUtils.join( "\n", selWords ) );
 
-                String msg = getString( R.string.paste_done_fmt, 
-                                        selWords.length );
+                String msg = getQuantityString( R.plurals.paste_done_fmt, 
+                                                selWords.length, selWords.length );
                 showToast( msg );
                 break;
             default:

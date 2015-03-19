@@ -339,6 +339,13 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     }
 } /* linux_util_getUserString */
 
+static const XP_UCHAR*
+linux_util_getUserQuantityString( XW_UtilCtxt* uc, XP_U16 code, 
+                                  XP_U16 XP_UNUSED(quantity) )
+{
+    return linux_util_getUserString( uc, code );
+}
+
 #ifdef XWFEATURE_DEVID
 static const XP_UCHAR*
 linux_util_getDevID( XW_UtilCtxt* uc, DevIDType* typ )
@@ -409,6 +416,7 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
     util->vtable->m_util_getSquareBonus = linux_util_getSquareBonus;
     util->vtable->m_util_getCurSeconds = linux_util_getCurSeconds;
     util->vtable->m_util_getUserString = linux_util_getUserString;
+    util->vtable->m_util_getUserQuantityString = linux_util_getUserQuantityString;
 #ifdef XWFEATURE_DEVID
     util->vtable->m_util_getDevID = linux_util_getDevID;
     util->vtable->m_util_deviceRegistered = linux_util_deviceRegistered;

@@ -75,7 +75,8 @@ public class BTInviteDelegate extends InviteDelegate {
         m_counts = new HashMap<String, Integer>();
 
         String msg = getString( R.string.bt_pick_addall_button );
-        msg = getString( R.string.invite_bt_desc_fmt, m_nMissing, msg );
+        msg = getQuantityString( R.plurals.invite_bt_desc_fmt, m_nMissing, 
+                                 m_nMissing, msg );
         super.init( R.id.button_invite, R.id.button_rescan, 
                     R.id.button_clear, R.id.invite_desc, msg );
         BTService.clearDevices( m_activity, null ); // will return names
@@ -201,7 +202,7 @@ public class BTInviteDelegate extends InviteDelegate {
                     new ArrayAdapter<String>( m_activity, android.R.layout
                                               .simple_spinner_item );
                 for ( int ii = 1; ii <= m_nMissing; ++ii ) {
-                    String str = getString( R.string.nplayers_fmt, ii );
+                    String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
                     adapter.add( str );
                 }
                 spinner.setAdapter( adapter );

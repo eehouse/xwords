@@ -146,9 +146,6 @@ public class UtilCtxtImpl implements UtilCtxt {
     {
         int id = 0;
         switch( stringCode ) {
-        case UtilCtxt.STRD_ROBOT_TRADED:
-            id = R.string.strd_robot_traded_fmt;
-            break;
         case UtilCtxt.STR_ROBOT_MOVED:
             id = R.string.str_robot_moved_fmt;
             break;
@@ -200,12 +197,6 @@ public class UtilCtxtImpl implements UtilCtxt {
         case UtilCtxt.STRD_TURN_SCORE:
             id = R.string.strd_turn_score_fmt;
             break;
-        case UtilCtxt.STRD_REMAINS_HEADER:
-            id = R.string.strd_remains_header_fmt;
-            break;
-        case UtilCtxt.STRD_REMAINS_EXPL:
-            id = R.string.strd_remains_expl_fmt;
-            break;
         case UtilCtxt.STR_RESIGNED:
             id = R.string.str_resigned;
             break;
@@ -217,12 +208,30 @@ public class UtilCtxtImpl implements UtilCtxt {
             DbgUtils.logf( "no such stringCode: %d", stringCode );
         }
 
-        String result;
-        if ( 0 == id ) {
-            result = "";
-        } else {
-            result = LocUtils.getString( m_context, id );
+        String result = (0 == id) ? "" : LocUtils.getString( m_context, id );
+        return result;
+    }
+
+    public String getUserQuantityString( int stringCode, int quantity )
+    {
+        int pluralsId = 0;
+        switch ( stringCode ) {
+        case UtilCtxt.STRD_ROBOT_TRADED:
+            pluralsId = R.plurals.strd_robot_traded_fmt;
+            break;
+        case UtilCtxt.STRD_REMAINS_HEADER:
+            pluralsId = R.plurals.strd_remains_header_fmt;
+            break;
+        case UtilCtxt.STRD_REMAINS_EXPL:
+            pluralsId = R.plurals.strd_remains_expl_fmt;
+            break;
         }
+
+        String result = "";
+        if ( 0 != pluralsId ) {
+            result = LocUtils.getQuantityString( m_context, pluralsId, quantity );
+        }
+        DbgUtils.logf( "UtilCtxtImpl.getUserQuantityString() => %s", result );
         return result;
     }
 

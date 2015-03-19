@@ -483,7 +483,7 @@ public class BoardDelegate extends DelegateBase
                 ad.getButton( AlertDialog.BUTTON_POSITIVE ).setVisibility( View.GONE );
             } else {
                 titleID = R.string.waiting_title;
-                message = getString( R.string.invite_msg_fmt, m_nMissing );
+                message = getQuantityString( R.plurals.invite_msg_fmt, m_nMissing, m_nMissing );
 
                 String ps = null;
                 if ( m_nMissing > 1 ) {
@@ -1385,8 +1385,8 @@ public class BoardDelegate extends DelegateBase
                     showDialog( DlgID.DLG_INVITE );
                     invalidateOptionsMenuIf();
                 } else {
-                    toastStr = getString( R.string.msg_relay_waiting_fmt, devOrder, 
-                                          room, nMissing );
+                    toastStr = getQuantityString( R.plurals.msg_relay_waiting_fmt, nMissing,
+                                                  devOrder, room, nMissing );
                     if ( devOrder == 1 ) {
                         naMsg = R.string.not_again_conndfirst;
                         naKey = R.string.key_notagain_conndfirst;
@@ -1631,8 +1631,9 @@ public class BoardDelegate extends DelegateBase
         public boolean confirmTrade( String[] tiles )
         {
             m_dlgTitle = R.string.info_title;
-            m_dlgBytes = getString( R.string.query_trade_fmt, tiles.length,
-                                    TextUtils.join( ", ", tiles ) );
+            m_dlgBytes = 
+                getQuantityString( R.plurals.query_trade_fmt, tiles.length,
+                                   tiles.length, TextUtils.join( ", ", tiles ));
             return 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
         }
 

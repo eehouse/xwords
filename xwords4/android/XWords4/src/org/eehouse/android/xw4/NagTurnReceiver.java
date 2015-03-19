@@ -49,9 +49,9 @@ public class NagTurnReceiver extends BroadcastReceiver {
     };
 
     private static final int[][] s_fmtData = {
-        { 60*60*24, R.string.nag_days_fmt },
-        { 60*60, R.string.nag_hours_fmt },
-        { 60, R.string.nag_minutes_fmt },
+        { 60*60*24, R.plurals.nag_days_fmt },
+        { 60*60, R.plurals.nag_hours_fmt },
+        { 60, R.plurals.nag_minutes_fmt },
     };
 
     @Override
@@ -183,7 +183,7 @@ public class NagTurnReceiver extends BroadcastReceiver {
         for ( int[] datum : s_fmtData ) {
             long val = seconds / datum[0];
             if ( 1 <= val ) {
-                results.add( LocUtils.getString( context, datum[1], val ) );
+                results.add( LocUtils.getQuantityString( context, datum[1], (int)val, val ) );
                 seconds %= datum[0];
             }
         }

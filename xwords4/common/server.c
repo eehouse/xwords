@@ -907,7 +907,8 @@ makeRobotMove( ServerCtxt* server )
 
             if ( !!stream ) {
                 XP_UCHAR buf[64];
-                str = util_getUserString(util, STRD_ROBOT_TRADED);
+                str = util_getUserQuantityString( util, STRD_ROBOT_TRADED, 
+                                                  MAX_TRAY_TILES );
                 XP_SNPRINTF( buf, sizeof(buf), str, MAX_TRAY_TILES );
 
                 stream_catString( stream, buf );
@@ -2138,8 +2139,9 @@ makeTradeReportIf( ServerCtxt* server, const TrayTileSet* tradedTiles )
     XWStreamCtxt* stream = NULL;
     if ( server->nv.showRobotScores ) {
         XP_UCHAR tradeBuf[64];
-        const XP_UCHAR* tradeStr = util_getUserString( server->vol.util,
-                                                       STRD_ROBOT_TRADED );
+        const XP_UCHAR* tradeStr = 
+            util_getUserQuantityString( server->vol.util, STRD_ROBOT_TRADED,
+                                        tradedTiles->nTiles );
         XP_SNPRINTF( tradeBuf, sizeof(tradeBuf), tradeStr, 
                      tradedTiles->nTiles );
         stream = mkServerStream( server );
@@ -2971,8 +2973,9 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
 
         XP_ASSERT( !!server->vol.model );
 
-        const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
-                                                  STRD_REMAINS_HEADER );
+        const XP_UCHAR* fmt = util_getUserQuantityString( server->vol.util, 
+                                                          STRD_REMAINS_HEADER, 
+                                                          nLeft );
         XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
         stream_catString( stream, buf );
         stream_catString( stream, "\n\n" );
@@ -3010,7 +3013,8 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
             XP_ASSERT( offset < sizeof(cntsBuf) );
         }
 
-        fmt = util_getUserString( server->vol.util, STRD_REMAINS_EXPL );
+        fmt = util_getUserQuantityString( server->vol.util, STRD_REMAINS_EXPL,
+                                          nLeft );
         XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
         stream_catString( stream, buf );
 

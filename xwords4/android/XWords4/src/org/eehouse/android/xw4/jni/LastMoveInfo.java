@@ -53,13 +53,14 @@ public class LastMoveInfo {
                     result = LocUtils.getString( context, R.string.lmi_pass_fmt, 
                                                  name );
                 } else {
-                    result = LocUtils.getString( context, R.string.lmi_move_fmt, 
-                                                 name, word, score );
+                    result = LocUtils.getQuantityString( context, R.plurals.lmi_move_fmt, 
+                                                         score, name, word, score );
                 }
                 break;
             case TRADE_TYPE:
-                result = LocUtils.getString( context, R.string.lmi_trade_fmt, 
-                                             name, nTiles );
+                result = LocUtils
+                    .getQuantityString( context, R.plurals.lmi_trade_fmt, 
+                                        nTiles, name, nTiles );
                 break;
             case PHONY_TYPE:
                 result = LocUtils.getString( context, R.string.lmi_phony_fmt, 

@@ -161,6 +161,9 @@ typedef struct UtilVtable {
 
     const XP_UCHAR* (*m_util_getUserString)( XW_UtilCtxt* uc, 
                                              XP_U16 stringCode );
+    const XP_UCHAR* (*m_util_getUserQuantityString)( XW_UtilCtxt* uc, 
+                                                     XP_U16 stringCode,
+                                                     XP_U16 quantity );
 
     XP_Bool (*m_util_warnIllegalWord)( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                        XP_U16 turn, XP_Bool turnLost );
@@ -301,6 +304,8 @@ struct XW_UtilCtxt {
 
 #define util_getUserString( uc, c ) \
          (uc)->vtable->m_util_getUserString((uc),(c))
+#define util_getUserQuantityString( uc, c, q )            \
+         (uc)->vtable->m_util_getUserQuantityString((uc),(c),(q))
 
 #define util_warnIllegalWord( uc, w, p, b ) \
          (uc)->vtable->m_util_warnIllegalWord((uc),(w),(p),(b))

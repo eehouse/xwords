@@ -1163,7 +1163,11 @@ public class GameUtils {
         {
             if ( m_showUI ) {
                 int nSent = null == m_sink ? 0 : m_sink.numSent();
-                DbgUtils.showf( m_context, R.string.resend_finished_fmt, nSent );
+                String msg = 
+                    LocUtils.getQuantityString( m_context,
+                                                R.plurals.resend_finished_fmt,
+                                                nSent, nSent );
+                DbgUtils.showf( m_context, msg );
             }
         }
     }

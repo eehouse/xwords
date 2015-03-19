@@ -154,8 +154,11 @@ public class GamesListDelegate extends ListDelegateBase
                                                    GamesListDelegate.this );
                 updateGroupPct( group, ggi );
 
-                String name = LocUtils.getString( m_activity, R.string.group_name_fmt, 
-                                                  ggi.m_name, ggi.m_count );
+                String name = 
+                    LocUtils.getQuantityString( m_activity, 
+                                                R.plurals.group_name_fmt, 
+                                                ggi.m_count, ggi.m_name,
+                                                ggi.m_count );
                 group.setText( name );
                 group.setSelected( getSelected( group ) );
                 result = group;
@@ -1497,16 +1500,16 @@ public class GamesListDelegate extends ListDelegateBase
             } else {
                 long[] groupIDs = getSelGroupIDs();
                 Assert.assertTrue( 0 < groupIDs.length );
-                msg = getString( R.string.groups_confirm_del_fmt, 
-                                 groupIDs.length );
+                msg = getQuantityString( R.plurals.groups_confirm_del_fmt, 
+                                         groupIDs.length, groupIDs.length );
 
                 int nGames = 0;
                 for ( long tmp : groupIDs ) {
                     nGames += m_adapter.getChildrenCount( tmp );
                 }
                 if ( 0 < nGames ) {
-                    msg += getString( R.string.groups_confirm_del_games_fmt,
-                                      nGames );
+                    msg += getQuantityString( R.plurals.groups_confirm_del_games_fmt,
+                                              nGames, nGames );
                 }
                 showConfirmThen( msg, Action.DELETE_GROUPS, groupIDs );
             }
@@ -2112,7 +2115,8 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void doConfirmReset( long[] rowIDs )
     {
-        String msg = getString( R.string.confirm_reset_fmt, rowIDs.length );
+        String msg = getQuantityString( R.plurals.confirm_reset_fmt, 
+                                        rowIDs.length, rowIDs.length );
         showConfirmThen( msg, R.string.button_reset, Action.RESET_GAMES, 
                          rowIDs );
     }

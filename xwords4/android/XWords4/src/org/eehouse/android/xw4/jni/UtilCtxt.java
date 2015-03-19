@@ -98,6 +98,7 @@ public interface UtilCtxt {
     static final int STR_WINNER =                        22;
 
     String getUserString( int stringCode );
+    String getUserQuantityString( int stringCode, int quantity );
 
     static final int QUERY_COMMIT_TURN = 0;
     static final int QUERY_ROBOT_TRADE = 1;

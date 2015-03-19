@@ -37,7 +37,7 @@
          they aren't available yet because the connection is not
          complete.  Displayed in the lists of players found in each
          game listing. -->
-    <string name="missing_player">(not here yet…)</string>
+    <string name="missing_player">(not here yet&#8230;)</string>
 
     <!-- The display of each networked game includes one of three
          states it can be in in the process of connecting to the
@@ -91,10 +91,10 @@
       -->
 
     <!-- Brings up the Wordlists (formerly Dictionaries) screen -->
-    <string name="gamel_menu_dicts">Wordlists…</string>
+    <string name="gamel_menu_dicts">Wordlists&#8230;</string>
 
     <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">App Settings…</string>
+    <string name="menu_prefs">App Settings&#8230;</string>
 
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
@@ -104,7 +104,7 @@
 
     <!-- Text of progress indicator shown while check is being conducted -->
     <string name="msgs_progress">Checking relay for moves
-      etc…</string>
+      etc&#8230;</string>
 
     <!-- If you choose the above option and have no networked games
          you get this error message -->
@@ -112,7 +112,7 @@
       the relay.</string>
 
     <!-- Brings up "About Crosswords" dialog -->
-    <string name="board_menu_file_about">About Crosswords…</string>
+    <string name="board_menu_file_about">About Crosswords&#8230;</string>
 
     <!-- 
        ############################################################
@@ -126,11 +126,11 @@
 
     <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
-    <string name="list_item_config">Game settings…</string>
+    <string name="list_item_config">Game settings&#8230;</string>
     <!-- pulls up dialog to rename (change name of) the selected game -->
-    <string name="list_item_rename">Rename…</string>
+    <string name="list_item_rename">Rename&#8230;</string>
     <!-- pulls up dialog to change the group of the selected game -->
-    <string name="list_item_move">Move to group…</string>
+    <string name="list_item_move">Move to group&#8230;</string>
 
     <!-- pulls up dialog to delete the selected game -->
     <string name="list_item_delete">Delete game</string>
@@ -169,9 +169,9 @@
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-    <string name="confirm_reset_fmt">Are you sure you want to reset the %1$d
+    <plurals name="confirm_reset_fmt"><item quantity="other">Are you sure you want to reset the %1$d
     selected game[s]?\n\n(Resetting erases all moves and any connection
-    information.)</string>
+    information.)</item></plurals>
 
     <!--
        ############################################################
@@ -186,7 +186,7 @@
     <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
-    <string name="download_dicts">Download more…</string>
+    <string name="download_dicts">Download more&#8230;</string>
 
 
     <!-- One of the strings used in the right column of the list of
@@ -499,7 +499,7 @@
     <string name="button_trade_commit">Commit trade</string>
     <string name="button_trade_cancel">Cancel trade</string>
 
-    <string name="entering_trade">Tap tiles to select…</string>
+    <string name="entering_trade">Tap tiles to select&#8230;</string>
 
 
     <!-- Bonus value hint that's displayed in gray text in the colored
@@ -527,9 +527,9 @@
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
-    <string name="invite_msg_fmt">This game is waiting for %1$d remote
+    <plurals name="invite_msg_fmt"><item quantity="other">This game is waiting for %1$d remote
     player[s]. Would you like to invite someone to join -- assuming
-    you haven\'t already?</string>
+    you haven\'t already?</item></plurals>
 
     <!-- Appended to message above if local device has NFC available -->
     <string name="invite_if_nfc">Or just Tap to Invite -- if the other
@@ -537,7 +537,7 @@
 
       <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
-      <string name="players_miss_fmt">%1$d player[s] missing</string>
+      <plurals name="players_miss_fmt"><item quantity="other">%1$d player[s] missing</item></plurals>
 
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -560,8 +560,8 @@
          the room, and how many additional players have not yet
          registered with the relay in this game.  This should be seen
          only once per game. -->
-    <string name="msg_relay_waiting_fmt">Device %1$d connected to relay in
-      room \"%2$s\". Waiting for %3$d player[s].</string>
+    <plurals name="msg_relay_waiting_fmt"><item quantity="other">Device %1$d connected to relay in
+      room \"%2$s\". Waiting for %3$d player[s].</item></plurals>
 
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
@@ -643,23 +643,23 @@
     <string name="board_menu_undo_last">Undo last</string>
 
     <!-- Title of submenu -->
-    <string name="board_submenu_game">Game -></string>
+    <string name="board_submenu_game">Game -&gt;</string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles in
          the language of the game along with how many of each there
          are and how many points each is worth.  This display is the
          same throughout the game. -->
-    <string name="board_menu_game_counts">Counts and values…</string>
+    <string name="board_menu_game_counts">Counts and values&#8230;</string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles not
          yet played and not in the rack of the player whose rack is
          visible (whose turn it is, generally).  This display will
          change as tiles are used and depending on what player is
          asking. -->
-    <string name="board_menu_game_left">Tiles remaining…</string>
+    <string name="board_menu_game_left">Tiles remaining&#8230;</string>
 
     <!-- Brings up listing of all moves played so far this game.  -->
-    <string name="board_menu_game_history">Game history…</string>
+    <string name="board_menu_game_history">Game history&#8230;</string>
 
     <!-- Brings up explanation of the game's final score.  If the game
          is not yet over, gives you a choice whether to end it now,
@@ -673,7 +673,7 @@
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
     <string name="board_menu_game_resend">Resend messages</string>
-    <string name="resend_finished_fmt">Resend finished; sent %1$d message[s].</string>
+    <plurals name="resend_finished_fmt"><item quantity="other">Resend finished; sent %1$d message[s].</item></plurals>
 
     <!--       
        ############################################################
@@ -687,7 +687,7 @@
     <!-- Notifies user of a normal robot move -->
     <string name="str_robot_moved_fmt">The robot %1$s made this move:\u0020</string>
     <!-- Notifies user of a robot trade move -->
-    <string name="strd_robot_traded_fmt">exchanged %1$d tiles.</string>
+    <plurals name="strd_robot_traded_fmt"><item quantity="other">exchanged %1$d tiles.</item></plurals>
     <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
     <string name="strs_values_header_fmt">%1$s counts/values:\n</string>
@@ -737,10 +737,10 @@
 
     <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
-    <string name="strd_remains_header_fmt">%1$d tiles left in pool.</string>
+    <plurals name="strd_remains_header_fmt"><item quantity="other">%1$d tiles left in pool.</item></plurals>
     <!-- Intro to the paragraph lisiting all of the tiles remaining -->
-    <string name="strd_remains_expl_fmt">%1$d tiles left in pool and all
-    tray[s]:\n</string>
+    <plurals name="strd_remains_expl_fmt"><item quantity="other">%1$d tiles left in pool and all
+    tray[s]:\n</item></plurals>
 
     <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
@@ -815,7 +815,7 @@
 
     <!-- Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. -->
-    <string name="tell_unused">Not used yet…</string>
+    <string name="tell_unused">Not used yet&#8230;</string>
 
     <!-- sub-preference for dictionaries (soon to be called "word lists") -->
     <string name="prefs_dicts">Wordlists</string>
@@ -1162,9 +1162,9 @@
     <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
     <!--    via email?</string> -->
     <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
-    <!-- beaming – NEW) or via email?</string> -->
+    <!-- beaming &#8211; NEW) or via email?</string> -->
     <!-- <string name="nfc_or_sms_or_email">Send invitation using SMS -->
-    <!-- (texting) or NFC (\"Android beaming\" – NEW) or via email?</string> -->
+    <!-- (texting) or NFC (\"Android beaming\" &#8211; NEW) or via email?</string> -->
 
     <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
@@ -1210,8 +1210,8 @@
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-    <string name="query_trade_fmt">Are you sure you want to exchange the
-        %1$d selected tiles (%2$s)?</string>
+    <plurals name="query_trade_fmt"><item quantity="other">Are you sure you want to exchange the
+        %1$d selected tiles (%2$s)?</item></plurals>
 
     <!-- ############################################################
          # :Screens:
@@ -1349,7 +1349,7 @@
       Guest wordlists; Host wins.</string>
 
 
-    <string name="downloading_dict_fmt">Downloading %1$s…</string>
+    <string name="downloading_dict_fmt">Downloading %1$s&#8230;</string>
 
     <!-- 
        ############################################################
@@ -1473,7 +1473,7 @@
     sure you want to create another?</string>
 
     <!-- Title of generic dialog used to display information -->
-    <string name="info_title">FYI…</string>
+    <string name="info_title">FYI&#8230;</string>
 
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
@@ -1511,7 +1511,7 @@
 
     <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
-    <string name="query_title">A question…</string>
+    <string name="query_title">A question&#8230;</string>
 
     <!--
        ###########################################################
@@ -1771,11 +1771,11 @@
     <string name="pick_faceup">Pick tiles face-up</string>
 
       <!--  -->
-    <string name="dict_browse_title_fmt">%1$s (%2$d words using %3$d-%4$d
-      tiles)</string>
+    <plurals name="dict_browse_title_fmt"><item quantity="other">%1$s (%2$d words using %3$d-%4$d
+      tiles)</item></plurals>
       <!--  -->
-    <string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
-      tiles)</string>
+    <plurals name="dict_browse_title1_fmt"><item quantity="other">%1$s (%2$d words using %3$d
+      tiles)</item></plurals>
       <!--  -->
     <string name="dict_browse_nowords_fmt">No word in %1$s starts with
       %2$s.</string>
@@ -1848,12 +1848,12 @@
     <!--  -->
     <string name="new_move_body">One or more moves has arrived</string>
     <!--  -->
-    <string name="invite_bt_desc_fmt">Please select up to %1$d device[s]
+    <plurals name="invite_bt_desc_fmt"><item quantity="other">Please select up to %1$d device[s]
     you want to include in this game.  Use the \"%2$s\"
-    button if you don\'t see a device you expect.</string>
+    button if you don\'t see a device you expect.</item></plurals>
         <!--  -->
-    <string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry %3$d in
-        %2$d seconds.</string>
+    <plurals name="bt_resend_fmt"><item quantity="other">Bluetooth send to %1$s failed; retry %3$d in
+        %2$d seconds.</item></plurals>
         <!--  -->
     <string name="bt_fail_fmt">Bluetooth sends to %1$s have failed too many
         times. Re-open the game to try again.</string>
@@ -1886,8 +1886,8 @@
     <!--  -->
     <string name="button_sms_add">Import contact</string>
     <!--  -->
-    <string name="invite_sms_desc_fmt">Please check the %1$d phone
-    number[s] you want to invite to your new game, then tap \"%2$s\".</string>
+    <plurals name="invite_sms_desc_fmt"><item quantity="other">Please check the %1$d phone
+    number[s] you want to invite to your new game, then tap \"%2$s\".</item></plurals>
     <!--  -->
     <string name="manual_owner_name">(Not in contacts)</string>
     <!--  -->
@@ -1940,7 +1940,7 @@
     <string name="board_menu_dict">Browse wordlist</string>
 
     <!--  -->
-    <string name="game_list_tmp">Building game summary…</string>
+    <string name="game_list_tmp">Building game summary&#8230;</string>
 
     <!--  -->
     <string name="connstat_nonet">This is a standalone game. There is
@@ -2070,10 +2070,10 @@
     <string name="group_cur_games">My games</string>
     <string name="group_new_games">New games</string>
 
-    <string name="groups_confirm_del_fmt">Are you sure you want to delete
-    the %1$d selected group[s]?</string>
-    <string name="groups_confirm_del_games_fmt">\n\n(%1$d game[s] will
-    also be deleted.)</string>
+    <plurals name="groups_confirm_del_fmt"><item quantity="other">Are you sure you want to delete
+    the %1$d selected group[s]?</item></plurals>
+    <plurals name="groups_confirm_del_games_fmt"><item quantity="other">\n\n(%1$d game[s] will
+    also be deleted.)</item></plurals>
 
     <string name="rename_group_label">Change the name of this group to:</string>
     <string name="game_name_group_title">Name group</string>
@@ -2081,7 +2081,7 @@
     <string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
     cannot be deleted.</string>
 
-    <string name="group_name_fmt">%1$s (%2$d games)</string>
+    <plurals name="group_name_fmt"><item quantity="other">%1$s (%2$d games)</item></plurals>
 
     <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
@@ -2130,7 +2130,7 @@
     <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->
     <!-- means that any time a board that\'s missing a player is open, you -->
     <!-- can tap a nearby person\'s device to invite him/her to -->
-    <!-- play – if he/she is also using NFC.</string> -->
+    <!-- play &#8211; if he/she is also using NFC.</string> -->
 
     <string name="pct_suffix">\u0020pct.</string>
 
@@ -2141,13 +2141,13 @@
     <string name="title_studyon">Enable studylists</string>
     <string name="summary_studyon">Offer to add to and display lists
     of words to remember</string>
-    <string name="gamel_menu_study">Studylist…</string>
+    <string name="gamel_menu_study">Studylist&#8230;</string>
 
     <string name="slmenu_copy_sel">Copy to clipboard</string>
     <string name="slmenu_clear_sel">Delete selected</string>
-    <string name="confirm_studylist_clear_fmt">Are you sure you want to
-    delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>
-    <string name="paste_done_fmt">%1$d word[s] copied</string>
+    <plurals name="confirm_studylist_clear_fmt"><item quantity="other">Are you sure you want to
+    delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</item></plurals>
+    <plurals name="paste_done_fmt"><item quantity="other">%1$d word[s] copied</item></plurals>
     <string name="add_done_fmt">%1$s added to %2$s studylist</string>
     <string name="studylist_title_fmt">Studylist for %1$s</string>
 
@@ -2172,7 +2172,7 @@
     <string name="loc_lang_blessed">%1$s (official)</string>
     <string name="loc_lang_local">%1$s (yours)</string>
 
-    <string name="new_xlations_fmt">Installed %1$d new translations</string>
+    <plurals name="new_xlations_fmt"><item quantity="other">Installed %1$d new translations</item></plurals>
 
     <string name="xlations_enabled_title">Enable local translating</string>
     <string name="xlations_enabled_summary">Add option to every screen menu</string>
@@ -2202,8 +2202,8 @@
     the same ones as the original.\n\n(You will not be able to save it
     unless it does.)</string>
 
-    <string name="remote_empty">Fetching wordlist information from server…</string>
-    <string name="remote_digesting">Processing wordlist information…</string>
+    <string name="remote_empty">Fetching wordlist information from server&#8230;</string>
+    <string name="remote_digesting">Processing wordlist information&#8230;</string>
     <string name="remote_no_net">Unable to fetch wordlist information
         from server.</string>
     <string name="getinfo">Get info</string>
@@ -2221,14 +2221,14 @@
     %2$dK\nNote: %3$s</string>
     <string name="note_none">(None)</string>
     <string name="dict_on_server">Tap to download</string>
-    <string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    
+    <plurals name="lang_name_fmt"><item quantity="other">%1$s (%2$d wordlists)</item></plurals>    
 
     <string name="lang_unknown">Unknown</string>
 
     <string name="not_again_dicts">This screen lets you install new
     wordslists and view the ones you already have.\n\nWhat wordlists
-    you have installed determines:\n• What languages you can play
-    in\n• How smart the robot player is\n• What words are
+    you have installed determines:\n&#8226; What languages you can play
+    in\n&#8226; How smart the robot player is\n&#8226; What words are
     legal.\n\nCheck the \"Show downloadable\" box at the top to see
     what\'s available.</string>
 
@@ -2241,9 +2241,9 @@
     are used to build a string based on the length of time that's then
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
     4 hour[s] ago." -->
-    <string name="nag_minutes_fmt">%1$d minute[s]</string>
-    <string name="nag_hours_fmt">%1$d hour[s]</string>
-    <string name="nag_days_fmt">%1$d day[s]</string>
+    <plurals name="nag_minutes_fmt"><item quantity="other">%1$d minute[s]</item></plurals>
+    <plurals name="nag_hours_fmt"><item quantity="other">%1$d hour[s]</item></plurals>
+    <plurals name="nag_days_fmt"><item quantity="other">%1$d day[s]</item></plurals>
     <string name="nag_body_fmt">%1$s moved more than %2$s ago.</string>
     <!-- above is inserted in this the last time I warn -->
     <string name="nag_warn_last_fmt">Last warning: %1$s</string>
@@ -2252,12 +2252,12 @@
 
     <!-- formatting for last move summary in notifications -->
     <string name="lmi_pass_fmt">%1$s passed (0 points)</string>
-    <string name="lmi_move_fmt">%1$s played %2$s for %3$d points</string>
-    <string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>
+    <plurals name="lmi_move_fmt"><item quantity="other">%1$s played %2$s for %3$d points</item></plurals>
+    <plurals name="lmi_trade_fmt"><item quantity="other">%1$s traded %2$d tiles</item></plurals>
     <string name="lmi_phony_fmt">%1$s lost a turn</string>
     <string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>
 
-    <string name="bt_err_count_fmt">%1$d bluetooth errors so far</string>
+    <plurals name="bt_err_count_fmt"><item quantity="other">%1$d bluetooth errors so far</item></plurals>
 
 	<string name="bt_no_devs">You currently have no paired Bluetooth
 	devices. Would you like to open the Android Settings Panel to add
@@ -2289,7 +2289,7 @@
     <string name="use_defaults">Use defaults</string>
 
     <string name="nplayers_prompt">Number on this device</string>
-    <string name="nplayers_fmt">%1$d player[s]</string>
+    <plurals name="nplayers_fmt"><item quantity="other">%1$d player[s]</item></plurals>
     <string name="err_dup_invite_fmt">Duplicate invitation rejected:
     device \"%1$s\" has already accepted an invitation to this
     game.</string>
@@ -2320,7 +2320,7 @@
     connect.)</string>
 
     <string name="nfc_just_tap">To invite via NFC just touch the back
-    of this device against the one you want to invite—any time the
+    of this device against the one you want to invite&#8212;any time the
     game is open.</string>
 
     <string name="warn_no_comms">Every networked game must have at
