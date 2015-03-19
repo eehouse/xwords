@@ -25,7 +25,7 @@ def modFile( path, stringNames, inPlace ):
                 child.text = None
     out = sys.stdout
     if inPlace: out = open(path, 'w')
-    doc.write( out, pretty_print=True )
+    doc.write( out, pretty_print=True, encoding="UTF-8", xml_declaration=True )
 
 def main():
     stringFiles = []
