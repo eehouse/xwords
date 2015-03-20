@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <!-- What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
@@ -37,7 +36,7 @@
          they aren't available yet because the connection is not
          complete.  Displayed in the lists of players found in each
          game listing. -->
-    <string name="missing_player">(not here yet&#8230;)</string>
+    <string name="missing_player">(not here yet…)</string>
 
     <!-- The display of each networked game includes one of three
          states it can be in in the process of connecting to the
@@ -91,10 +90,10 @@
       -->
 
     <!-- Brings up the Wordlists (formerly Dictionaries) screen -->
-    <string name="gamel_menu_dicts">Wordlists&#8230;</string>
+    <string name="gamel_menu_dicts">Wordlists…</string>
 
     <!-- text of menu that brings up the Settings (preferences) dialog -->
-    <string name="menu_prefs">App Settings&#8230;</string>
+    <string name="menu_prefs">App Settings…</string>
 
     <!-- Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
@@ -104,7 +103,7 @@
 
     <!-- Text of progress indicator shown while check is being conducted -->
     <string name="msgs_progress">Checking relay for moves
-      etc&#8230;</string>
+      etc…</string>
 
     <!-- If you choose the above option and have no networked games
          you get this error message -->
@@ -112,7 +111,7 @@
       the relay.</string>
 
     <!-- Brings up "About Crosswords" dialog -->
-    <string name="board_menu_file_about">About Crosswords&#8230;</string>
+    <string name="board_menu_file_about">About Crosswords…</string>
 
     <!-- 
        ############################################################
@@ -126,11 +125,11 @@
 
     <!--  ############## menu items ############## -->
     <!-- pulls up dialog to configure the selected game -->
-    <string name="list_item_config">Game settings&#8230;</string>
+    <string name="list_item_config">Game settings…</string>
     <!-- pulls up dialog to rename (change name of) the selected game -->
-    <string name="list_item_rename">Rename&#8230;</string>
+    <string name="list_item_rename">Rename…</string>
     <!-- pulls up dialog to change the group of the selected game -->
-    <string name="list_item_move">Move to group&#8230;</string>
+    <string name="list_item_move">Move to group…</string>
 
     <!-- pulls up dialog to delete the selected game -->
     <string name="list_item_delete">Delete game</string>
@@ -186,7 +185,7 @@
     <!-- text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. -->
-    <string name="download_dicts">Download more&#8230;</string>
+    <string name="download_dicts">Download more…</string>
 
 
     <!-- One of the strings used in the right column of the list of
@@ -499,7 +498,7 @@
     <string name="button_trade_commit">Commit trade</string>
     <string name="button_trade_cancel">Cancel trade</string>
 
-    <string name="entering_trade">Tap tiles to select&#8230;</string>
+    <string name="entering_trade">Tap tiles to select…</string>
 
 
     <!-- Bonus value hint that's displayed in gray text in the colored
@@ -649,17 +648,17 @@
          the language of the game along with how many of each there
          are and how many points each is worth.  This display is the
          same throughout the game. -->
-    <string name="board_menu_game_counts">Counts and values&#8230;</string>
+    <string name="board_menu_game_counts">Counts and values…</string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles not
          yet played and not in the rack of the player whose rack is
          visible (whose turn it is, generally).  This display will
          change as tiles are used and depending on what player is
          asking. -->
-    <string name="board_menu_game_left">Tiles remaining&#8230;</string>
+    <string name="board_menu_game_left">Tiles remaining…</string>
 
     <!-- Brings up listing of all moves played so far this game.  -->
-    <string name="board_menu_game_history">Game history&#8230;</string>
+    <string name="board_menu_game_history">Game history…</string>
 
     <!-- Brings up explanation of the game's final score.  If the game
          is not yet over, gives you a choice whether to end it now,
@@ -737,10 +736,14 @@
 
     <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
-    <plurals name="strd_remains_header_fmt"><item quantity="other">%1$d tiles left in pool.</item></plurals>
-    <!-- Intro to the paragraph lisiting all of the tiles remaining -->
-    <plurals name="strd_remains_expl_fmt"><item quantity="other">%1$d tiles left in pool and all
-    tray[s]:\n</item></plurals>
+    <plurals name="strd_remains_header_fmt">
+      <item quantity="other">%1$d tiles left in pool.</item>
+    </plurals>
+    <!-- Intro to the paragraph listing all of the tiles remaining -->
+    <plurals name="strd_remains_expl_fmt">
+      <item quantity="other">%1$d tiles left in pool and all
+      trays:\n</item>
+    </plurals>
 
     <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
@@ -815,7 +818,7 @@
 
     <!-- Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. -->
-    <string name="tell_unused">Not used yet&#8230;</string>
+    <string name="tell_unused">Not used yet…</string>
 
     <!-- sub-preference for dictionaries (soon to be called "word lists") -->
     <string name="prefs_dicts">Wordlists</string>
@@ -1349,7 +1352,7 @@
       Guest wordlists; Host wins.</string>
 
 
-    <string name="downloading_dict_fmt">Downloading %1$s&#8230;</string>
+    <string name="downloading_dict_fmt">Downloading %1$s…</string>
 
     <!-- 
        ############################################################
@@ -1473,7 +1476,7 @@
     sure you want to create another?</string>
 
     <!-- Title of generic dialog used to display information -->
-    <string name="info_title">FYI&#8230;</string>
+    <string name="info_title">FYI…</string>
 
     <!-- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) -->
@@ -1511,7 +1514,7 @@
 
     <!-- Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"-->
-    <string name="query_title">A question&#8230;</string>
+    <string name="query_title">A question…</string>
 
     <!--
        ###########################################################
@@ -1940,7 +1943,7 @@
     <string name="board_menu_dict">Browse wordlist</string>
 
     <!--  -->
-    <string name="game_list_tmp">Building game summary&#8230;</string>
+    <string name="game_list_tmp">Building game summary…</string>
 
     <!--  -->
     <string name="connstat_nonet">This is a standalone game. There is
@@ -2141,7 +2144,7 @@
     <string name="title_studyon">Enable studylists</string>
     <string name="summary_studyon">Offer to add to and display lists
     of words to remember</string>
-    <string name="gamel_menu_study">Studylist&#8230;</string>
+    <string name="gamel_menu_study">Studylist…</string>
 
     <string name="slmenu_copy_sel">Copy to clipboard</string>
     <string name="slmenu_clear_sel">Delete selected</string>
@@ -2187,6 +2190,22 @@
     <string name="loc_filters_modified">Modified by me</string>
     
     <string name="lang_name_english">English</string>
+    <string name="lang_name_french">French</string>
+    <string name="lang_name_german">German</string>
+    <string name="lang_name_turkish">Turkish</string>
+    <string name="lang_name_arabic">Arabic</string>
+    <string name="lang_name_spanish">Spanish</string>
+    <string name="lang_name_swedish">Swedish</string>
+    <string name="lang_name_polish">Polish</string>
+    <string name="lang_name_danish">Danish</string>
+    <string name="lang_name_italian">Italian</string>
+    <string name="lang_name_dutch">Dutch</string>
+    <string name="lang_name_catalan">Catalan</string>
+    <string name="lang_name_portuguese">Portuguese</string>
+    <string name="lang_name_russian">Russian</string>
+    <string name="lang_name_czech">Czech</string>
+    <string name="lang_name_greek">Greek</string>
+    <string name="lang_name_slovak">Slovak</string>
 
     <!-- for loc item edit menu -->
     <string name="loc_item_clear">Clear</string>
@@ -2202,8 +2221,8 @@
     the same ones as the original.\n\n(You will not be able to save it
     unless it does.)</string>
 
-    <string name="remote_empty">Fetching wordlist information from server&#8230;</string>
-    <string name="remote_digesting">Processing wordlist information&#8230;</string>
+    <string name="remote_empty">Fetching wordlist information from server…</string>
+    <string name="remote_digesting">Processing wordlist information…</string>
     <string name="remote_no_net">Unable to fetch wordlist information
         from server.</string>
     <string name="getinfo">Get info</string>
@@ -2227,8 +2246,8 @@
 
     <string name="not_again_dicts">This screen lets you install new
     wordslists and view the ones you already have.\n\nWhat wordlists
-    you have installed determines:\n&#8226; What languages you can play
-    in\n&#8226; How smart the robot player is\n&#8226; What words are
+    you have installed determines:\n• What languages you can play
+    in\n• How smart the robot player is\n• What words are
     legal.\n\nCheck the \"Show downloadable\" box at the top to see
     what\'s available.</string>
 
@@ -2320,7 +2339,7 @@
     connect.)</string>
 
     <string name="nfc_just_tap">To invite via NFC just touch the back
-    of this device against the one you want to invite&#8212;any time the
+    of this device against the one you want to invite—any time the
     game is open.</string>
 
     <string name="warn_no_comms">Every networked game must have at
