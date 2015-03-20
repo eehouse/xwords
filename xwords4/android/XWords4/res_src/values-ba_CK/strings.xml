@@ -642,10 +642,10 @@
   <plurals name="strd_remains_header_fmt">
     <item quantity="other">%1$d selit tfel ni loop.</item>
   </plurals>
-  <!-- Intro to the paragraph lisiting all of the tiles remaining -->
+  <!-- Intro to the paragraph listing all of the tiles remaining -->
   <plurals name="strd_remains_expl_fmt">
     <item quantity="other">%1$d selit tfel ni loop dna lla
-    ]s[yart:\n</item>
+      syart:\n</item>
   </plurals>
   <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
@@ -1905,6 +1905,22 @@
   <string name="loc_filters_menu">Tsetal unem</string>
   <string name="loc_filters_modified">Deifidom yb em</string>
   <string name="lang_name_english">Hsilgne</string>
+  <string name="lang_name_french">Hcnerf</string>
+  <string name="lang_name_german">Namreg</string>
+  <string name="lang_name_turkish">Hsikrut</string>
+  <string name="lang_name_arabic">Cibara</string>
+  <string name="lang_name_spanish">Hsinaps</string>
+  <string name="lang_name_swedish">Hsidews</string>
+  <string name="lang_name_polish">Hsilop</string>
+  <string name="lang_name_danish">Hsinad</string>
+  <string name="lang_name_italian">Nailati</string>
+  <string name="lang_name_dutch">Hctud</string>
+  <string name="lang_name_catalan">Nalatac</string>
+  <string name="lang_name_portuguese">Eseugutrop</string>
+  <string name="lang_name_russian">Naissur</string>
+  <string name="lang_name_czech">Hcezc</string>
+  <string name="lang_name_greek">Keerg</string>
+  <string name="lang_name_slovak">Kavols</string>
   <!-- for loc item edit menu -->
   <string name="loc_item_clear">Raelc</string>
   <string name="loc_item_check">Kcehc</string>

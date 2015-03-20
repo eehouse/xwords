@@ -642,10 +642,10 @@
   <plurals name="strd_remains_header_fmt">
     <item quantity="other">%1$d TILES LEFT IN POOL.</item>
   </plurals>
-  <!-- Intro to the paragraph lisiting all of the tiles remaining -->
+  <!-- Intro to the paragraph listing all of the tiles remaining -->
   <plurals name="strd_remains_expl_fmt">
     <item quantity="other">%1$d TILES LEFT IN POOL AND ALL
-    TRAY[S]:\n</item>
+      TRAYS:\n</item>
   </plurals>
   <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
@@ -1905,6 +1905,22 @@
   <string name="loc_filters_menu">LATEST MENU</string>
   <string name="loc_filters_modified">MODIFIED BY ME</string>
   <string name="lang_name_english">ENGLISH</string>
+  <string name="lang_name_french">FRENCH</string>
+  <string name="lang_name_german">GERMAN</string>
+  <string name="lang_name_turkish">TURKISH</string>
+  <string name="lang_name_arabic">ARABIC</string>
+  <string name="lang_name_spanish">SPANISH</string>
+  <string name="lang_name_swedish">SWEDISH</string>
+  <string name="lang_name_polish">POLISH</string>
+  <string name="lang_name_danish">DANISH</string>
+  <string name="lang_name_italian">ITALIAN</string>
+  <string name="lang_name_dutch">DUTCH</string>
+  <string name="lang_name_catalan">CATALAN</string>
+  <string name="lang_name_portuguese">PORTUGUESE</string>
+  <string name="lang_name_russian">RUSSIAN</string>
+  <string name="lang_name_czech">CZECH</string>
+  <string name="lang_name_greek">GREEK</string>
+  <string name="lang_name_slovak">SLOVAK</string>
   <!-- for loc item edit menu -->
   <string name="loc_item_clear">CLEAR</string>
   <string name="loc_item_check">CHECK</string>
