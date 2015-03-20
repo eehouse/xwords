@@ -28,6 +28,8 @@
 #include "paths.h"
 #include "LocalizedStrIncludes.h"
 
+#define MAX_QUANTITY_STRS 4
+
 typedef struct _TimerStorage {
     XWTimerProc proc;
     void* closure;
@@ -39,6 +41,7 @@ typedef struct _AndUtil {
     jobject jutil;  /* global ref to object implementing XW_UtilCtxt */
     TimerStorage timerStorage[NUM_TIMERS_PLUS_ONE];
     XP_UCHAR* userStrings[N_AND_USER_STRINGS];
+    XP_U32 userStringsBits;
 #ifdef XWFEATURE_DEVID
     XP_UCHAR* devIDStorage;
 #endif
@@ -436,22 +439,42 @@ and_util_getUserQuantityString( XW_UtilCtxt* uc, XP_U16 stringCode, XP_U16 quant
     UTIL_CBK_HEADER("getUserQuantityString", "(II)Ljava/lang/String;" );
     int index = stringCode - 1; /* see LocalizedStrIncludes.h */
     XP_ASSERT( index < VSIZE( util->userStrings ) );
+    XP_UCHAR** ptrs;
 
-    if ( ! util->userStrings[index] ) {
-        jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, 
-                                                    stringCode, quantity );
-        jsize len = (*env)->GetStringUTFLength( env, jresult );
-        XP_UCHAR* buf = XP_MALLOC( util->util.mpool, len + 1 );
-
-        const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
-        XP_MEMCPY( buf, jchars, len );
-        buf[len] = '\0';
-        (*env)->ReleaseStringUTFChars( env, jresult, jchars );
-        deleteLocalRef( env, jresult );
-        util->userStrings[index] = buf;
+    util->userStringsBits |= 1 << index;
+    ptrs = (XP_UCHAR**)util->userStrings[index];
+    if ( !ptrs ) {
+        ptrs = (XP_UCHAR**)XP_CALLOC( util->util.mpool, MAX_QUANTITY_STRS * sizeof(*ptrs) );
+        util->userStrings[index] = (XP_UCHAR*)ptrs;
     }
 
-    result = util->userStrings[index];
+    jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, 
+                                                stringCode, quantity );
+    const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
+    int indx = 0;
+    for ( ; indx < MAX_QUANTITY_STRS; ++indx ) {
+        if ( !ptrs[indx] ) {
+            XP_LOGF( "%s: found empty slot %d for %s", __func__, indx, jchars );
+            break;
+        } else if ( 0 == XP_STRCMP( jchars, ptrs[indx] ) ) {
+            XP_LOGF( "%s: found %s at slot %d", __func__, jchars, indx );
+            break;
+        }
+    }
+
+    if ( !ptrs[indx] ) {
+        XP_ASSERT( indx < MAX_QUANTITY_STRS );
+        jsize len = (*env)->GetStringUTFLength( env, jresult );
+        XP_UCHAR* buf = XP_MALLOC( util->util.mpool, len + 1 );
+        XP_MEMCPY( buf, jchars, len );
+        buf[len] = '\0';
+        ptrs[indx] = buf;
+    }
+
+    (*env)->ReleaseStringUTFChars( env, jresult, jchars );
+    deleteLocalRef( env, jresult );
+
+    result = ptrs[indx];
     UTIL_CBK_TAIL();
     LOG_RETURNF( "%s", result );
     return result;
@@ -780,7 +803,18 @@ destroyUtil( XW_UtilCtxt** utilc )
     for ( int ii = 0; ii < VSIZE(util->userStrings); ++ii ) {
         XP_UCHAR* ptr = util->userStrings[ii];
         if ( NULL != ptr ) {
-            XP_FREE( util->util.mpool, ptr );
+            if ( 0 == (util->userStringsBits & (1 << ii)) ) {
+                XP_FREE( util->util.mpool, ptr );
+            } else {
+                XP_UCHAR** ptrs = (XP_UCHAR**)ptr;
+                for ( int jj = 0; jj < MAX_QUANTITY_STRS; ++jj ) {
+                    ptr = ptrs[jj];
+                    if ( !!ptr ) {
+                        XP_FREE( util->util.mpool, ptr );
+                    }
+                }
+                XP_FREE( util->util.mpool, ptrs );
+            }
         }
     }
 
