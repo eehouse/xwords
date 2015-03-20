@@ -2356,12 +2356,8 @@ voyez pas un périphérique que vous attendez.</item>
         %2$d seconds.</string>-->
     <!--<string name="bt_resend_fmt">Un envoi Bluetooth à %1$s a échoué ; essai
 %3$d dans %2$d secondes.</string>-->
-    <plurals name="bt_resend_fmt">
-        <item quantity="one">Un envoi Bluetooth à %1$s a échoué ; essai
-%3$d dans %2$d seconde.</item>
-        <item quantity="other">Un envoi Bluetooth à %1$s a échoué ; essai
-%3$d dans %2$d secondes.</item>
-    </plurals>
+    <string name="bt_resend_fmt">Un envoi Bluetooth à %1$s a échoué ; essai
+    %3$d dans %2$d secondes.</string>
         <!--  -->
     <!--<string name="bt_fail_fmt">Bluetooth sends to %1$s have failed too many
         times. Re-open the game to try again.</string>-->

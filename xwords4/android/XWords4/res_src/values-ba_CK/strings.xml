@@ -142,15 +142,20 @@
   <string name="rename_label_caveat">Egnahc eht eman fo siht emag
     no( siht ecived )ylno ot:</string>
   <plurals name="confirm_seldeletes_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot eteled
+      eht %1$d detceles ?emag Siht noitca tonnac eb enodnu.</item>
     <item quantity="other">Era uoy erus uoy tnaw ot eteled
-      eht %1$d detceles ?]s[emag Siht noitca tonnac eb enodnu.</item>
+      eht %1$d detceles ?semag Siht noitca tonnac eb enodnu.</item>
   </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
   <plurals name="confirm_reset_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot teser eht %1$d
+      detceles ?emag\n\ngNitteser( sesare lla sevom dna yna noitcennoc
+      noitamrofni.)</item>
     <item quantity="other">Era uoy erus uoy tnaw ot teser eht %1$d
-    detceles ?]s[emag\n\ngNitteser( sesare lla sevom dna yna noitcennoc
-    noitamrofni.)</item>
+      detceles ?semag\n\ngNitteser( sesare lla sevom dna yna noitcennoc
+      noitamrofni.)</item>
   </plurals>
   <!--
        ############################################################
@@ -448,9 +453,12 @@
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
   <plurals name="invite_msg_fmt">
+    <item quantity="one">Siht emag si gnitiaw rof %1$d etomer
+      reyalp. Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa uoy
+      nevah\'t ?ydaerla</item>
     <item quantity="other">Siht emag si gnitiaw rof %1$d etomer
-    ]s[reyalp. Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa
-    uoy nevah\'t ?ydaerla</item>
+      sreyalp. Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa
+      uoy nevah\'t ?ydaerla</item>
   </plurals>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">Ro tsuj Pat ot Etivni -- fi eht rehto
@@ -458,7 +466,8 @@
   <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
   <plurals name="players_miss_fmt">
-    <item quantity="other">%1$d ]s[reyalp gnissim</item>
+    <item quantity="one">%1$d reyalp gnissim</item>
+    <item quantity="other">%1$d sreyalp gnissim</item>
   </plurals>
   <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -480,8 +489,10 @@
          registered with the relay in this game.  This should be seen
          only once per game. -->
   <plurals name="msg_relay_waiting_fmt">
+    <item quantity="one">Ecived %1$d detcennoc ot yaler ni
+      moor \"%2$s\". Gnitiaw rof %3$d reyalp.</item>
     <item quantity="other">Ecived %1$d detcennoc ot yaler ni
-      moor \"%2$s\". Gnitiaw rof %3$d ]s[reyalp.</item>
+      moor \"%2$s\". Gnitiaw rof %3$d sreyalp.</item>
   </plurals>
   <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
@@ -576,7 +587,8 @@
          because users should not have to do do this EVER. -->
   <string name="board_menu_game_resend">Dneser segassem</string>
   <plurals name="resend_finished_fmt">
-    <item quantity="other">Dneser dehsinif; tnes %1$d ]s[egassem.</item>
+    <item quantity="one">Dneser dehsinif; tnes %1$d egassem.</item>
+    <item quantity="other">Dneser dehsinif; tnes %1$d segassem.</item>
   </plurals>
   <!--       
        ############################################################
@@ -1163,7 +1175,7 @@
          many players are expected and only connects devices where the
          numbers match. -->
   <string name="str_reg_unexpected_user">Desufer tpmetta ot retsiger
-         detcepxenu ]s[resu.</string>
+         detcepxenu resu.</string>
   <!-- Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. -->
@@ -1608,14 +1620,12 @@
   <!--  -->
   <plurals name="invite_bt_desc_fmt">
     <item quantity="other">Esaelp tceles pu ot %1$d ]s[ecived
-    uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
-    nottub fi uoy nod\'t ees a ecived uoy tcepxe.</item>
+      uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
+      nottub fi uoy nod\'t ees a ecived uoy tcepxe.</item>
   </plurals>
   <!--  -->
-  <plurals name="bt_resend_fmt">
-    <item quantity="other">Htooteulb dnes ot %1$s deliaf; yrter %3$d ni
-        %2$d sdnoces.</item>
-  </plurals>
+  <string name="bt_resend_fmt">Htooteulb dnes ot %1$s deliaf; yrter
+    %3$d ni %2$d sdnoces.</string>
   <!--  -->
   <string name="bt_fail_fmt">Htooteulb sdnes ot %1$s evah deliaf oot ynam
         semit. Nepo-er eht emag ot yrt niaga.</string>
@@ -1822,6 +1832,7 @@
   <string name="cannot_delete_default_group_fmt">Eht puorg rof wen ,semag %1$s, 
     tonnac eb deteled.</string>
   <plurals name="group_name_fmt">
+    <item quantity="one">%1$s (%2$d )emag</item>
     <item quantity="other">%1$s (%2$d )semag</item>
   </plurals>
   <!-- Button shown in game over dialog triggering creation of new
@@ -1949,11 +1960,12 @@
   <string name="note_none">)Enon(</string>
   <string name="dict_on_server">Pat ot daolnwod</string>
   <plurals name="lang_name_fmt">
+    <item quantity="one">%1$s (%2$d )tsildrow</item>
     <item quantity="other">%1$s (%2$d )stsildrow</item>
   </plurals>
   <string name="lang_unknown">Nwonknu</string>
   <string name="not_again_dicts">Siht neercs stel uoy llatsni wen
-    stsilsdrow dna weiv eht seno uoy ydaerla evah.\n\nTahw stsildrow
+    stsildrow dna weiv eht seno uoy ydaerla evah.\n\nTahw stsildrow
     uoy evah dellatsni senimreted:\n• Tahw segaugnal uoy nac yalp
     ni\n• Woh trams eht tobor reyalp si\n• Tahw sdrow era
     lagel.\n\nKcehc eht \"Wohs elbadaolnwod\" xob ta eht pot ot ees

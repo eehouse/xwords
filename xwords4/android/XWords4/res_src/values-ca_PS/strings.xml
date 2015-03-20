@@ -142,15 +142,20 @@
   <string name="rename_label_caveat">CHANGE THE NAME OF THIS GAME
     (ON THIS DEVICE ONLY) TO:</string>
   <plurals name="confirm_seldeletes_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO DELETE
+      THE %1$d SELECTED GAME? THIS ACTION CANNOT BE UNDONE.</item>
     <item quantity="other">ARE YOU SURE YOU WANT TO DELETE
-      THE %1$d SELECTED GAME[S]? THIS ACTION CANNOT BE UNDONE.</item>
+      THE %1$d SELECTED GAMES? THIS ACTION CANNOT BE UNDONE.</item>
   </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
   <plurals name="confirm_reset_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO RESET THE %1$d
+      SELECTED GAME?\n\n(RESETTING ERASES ALL MOVES AND ANY CONNECTION
+      INFORMATION.)</item>
     <item quantity="other">ARE YOU SURE YOU WANT TO RESET THE %1$d
-    SELECTED GAME[S]?\n\n(RESETTING ERASES ALL MOVES AND ANY CONNECTION
-    INFORMATION.)</item>
+      SELECTED GAMES?\n\n(RESETTING ERASES ALL MOVES AND ANY CONNECTION
+      INFORMATION.)</item>
   </plurals>
   <!--
        ############################################################
@@ -448,9 +453,12 @@
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
   <plurals name="invite_msg_fmt">
+    <item quantity="one">THIS GAME IS WAITING FOR %1$d REMOTE
+      PLAYER. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING YOU
+      HAVEN\'T ALREADY?</item>
     <item quantity="other">THIS GAME IS WAITING FOR %1$d REMOTE
-    PLAYER[S]. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
-    YOU HAVEN\'T ALREADY?</item>
+      PLAYERS. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
+      YOU HAVEN\'T ALREADY?</item>
   </plurals>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">OR JUST TAP TO INVITE -- IF THE OTHER
@@ -458,7 +466,8 @@
   <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
   <plurals name="players_miss_fmt">
-    <item quantity="other">%1$d PLAYER[S] MISSING</item>
+    <item quantity="one">%1$d PLAYER MISSING</item>
+    <item quantity="other">%1$d PLAYERS MISSING</item>
   </plurals>
   <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -480,8 +489,10 @@
          registered with the relay in this game.  This should be seen
          only once per game. -->
   <plurals name="msg_relay_waiting_fmt">
+    <item quantity="one">DEVICE %1$d CONNECTED TO RELAY IN
+      ROOM \"%2$s\". WAITING FOR %3$d PLAYER.</item>
     <item quantity="other">DEVICE %1$d CONNECTED TO RELAY IN
-      ROOM \"%2$s\". WAITING FOR %3$d PLAYER[S].</item>
+      ROOM \"%2$s\". WAITING FOR %3$d PLAYERS.</item>
   </plurals>
   <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
@@ -576,7 +587,8 @@
          because users should not have to do do this EVER. -->
   <string name="board_menu_game_resend">RESEND MESSAGES</string>
   <plurals name="resend_finished_fmt">
-    <item quantity="other">RESEND FINISHED; SENT %1$d MESSAGE[S].</item>
+    <item quantity="one">RESEND FINISHED; SENT %1$d MESSAGE.</item>
+    <item quantity="other">RESEND FINISHED; SENT %1$d MESSAGES.</item>
   </plurals>
   <!--       
        ############################################################
@@ -1163,7 +1175,7 @@
          many players are expected and only connects devices where the
          numbers match. -->
   <string name="str_reg_unexpected_user">REFUSED ATTEMPT TO REGISTER
-         UNEXPECTED USER[S].</string>
+         UNEXPECTED USER.</string>
   <!-- Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. -->
@@ -1608,14 +1620,12 @@
   <!--  -->
   <plurals name="invite_bt_desc_fmt">
     <item quantity="other">PLEASE SELECT UP TO %1$d DEVICE[S]
-    YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
-    BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</item>
+      YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
+      BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</item>
   </plurals>
   <!--  -->
-  <plurals name="bt_resend_fmt">
-    <item quantity="other">BLUETOOTH SEND TO %1$s FAILED; RETRY %3$d IN
-        %2$d SECONDS.</item>
-  </plurals>
+  <string name="bt_resend_fmt">BLUETOOTH SEND TO %1$s FAILED; RETRY
+    %3$d IN %2$d SECONDS.</string>
   <!--  -->
   <string name="bt_fail_fmt">BLUETOOTH SENDS TO %1$s HAVE FAILED TOO MANY
         TIMES. RE-OPEN THE GAME TO TRY AGAIN.</string>
@@ -1822,6 +1832,7 @@
   <string name="cannot_delete_default_group_fmt">THE GROUP FOR NEW GAMES, %1$s, 
     CANNOT BE DELETED.</string>
   <plurals name="group_name_fmt">
+    <item quantity="one">%1$s (%2$d GAME)</item>
     <item quantity="other">%1$s (%2$d GAMES)</item>
   </plurals>
   <!-- Button shown in game over dialog triggering creation of new
@@ -1949,11 +1960,12 @@
   <string name="note_none">(NONE)</string>
   <string name="dict_on_server">TAP TO DOWNLOAD</string>
   <plurals name="lang_name_fmt">
+    <item quantity="one">%1$s (%2$d WORDLIST)</item>
     <item quantity="other">%1$s (%2$d WORDLISTS)</item>
   </plurals>
   <string name="lang_unknown">UNKNOWN</string>
   <string name="not_again_dicts">THIS SCREEN LETS YOU INSTALL NEW
-    WORDSLISTS AND VIEW THE ONES YOU ALREADY HAVE.\n\nWHAT WORDLISTS
+    WORDLISTS AND VIEW THE ONES YOU ALREADY HAVE.\n\nWHAT WORDLISTS
     YOU HAVE INSTALLED DETERMINES:\n• WHAT LANGUAGES YOU CAN PLAY
     IN\n• HOW SMART THE ROBOT PLAYER IS\n• WHAT WORDS ARE
     LEGAL.\n\nCHECK THE \"SHOW DOWNLOADABLE\" BOX AT THE TOP TO SEE
