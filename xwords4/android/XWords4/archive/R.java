@@ -2562,8 +2562,6 @@ XLATE-ME
         public static final int lang_name_czech=0x7f050288;
         public static final int lang_name_danish=0x7f050282;
         public static final int lang_name_dutch=0x7f050284;
-        /** <string name="lang_name_english">English</string>
-         */
         public static final int lang_name_english=0x7f05027a;
         public static final int lang_name_french=0x7f05027b;
         public static final int lang_name_german=0x7f05027c;

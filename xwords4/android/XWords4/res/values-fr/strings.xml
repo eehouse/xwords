@@ -2899,8 +2899,23 @@ les téléphones GSM.</string>
     <!--<string name="loc_filters_modified">Modified by me</string>-->
     <string name="loc_filters_modified">Modifiées par moi</string>
     
-    <!--<string name="lang_name_english">English</string>-->
-    <string name="lang_name_english">Anglais</string>
+    <string name="lang_name_english">anglais</string>
+    <string name="lang_name_french">français</string>
+    <string name="lang_name_german">allemand</string>
+    <string name="lang_name_turkish">turc</string>
+    <string name="lang_name_arabic">arabe</string>
+    <string name="lang_name_spanish">espagnol</string>
+    <string name="lang_name_swedish">suédois</string>
+    <string name="lang_name_polish">polonais</string>
+    <string name="lang_name_danish">danois</string>
+    <string name="lang_name_italian">italien</string>
+    <string name="lang_name_dutch">néerlandais</string>
+    <string name="lang_name_catalan">catalan</string>
+    <string name="lang_name_portuguese">portugais</string>
+    <string name="lang_name_russian">russe</string>
+    <string name="lang_name_czech">tchèque</string>
+    <string name="lang_name_greek">grec</string>
+    <string name="lang_name_slovak">slovaque</string>
 
     <!-- for loc item edit menu -->
     <!--<string name="loc_item_clear">Clear</string>-->
