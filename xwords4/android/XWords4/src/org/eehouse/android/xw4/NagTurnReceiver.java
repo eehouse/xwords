@@ -54,42 +54,50 @@ public class NagTurnReceiver extends BroadcastReceiver {
         { 60, R.plurals.nag_minutes_fmt },
     };
 
+    private static Boolean s_nagsDisabled = null;
+
     @Override
     public void onReceive( Context context, Intent intent )
     {
         // loop through all games testing who's been sitting on a turn
-        NeedsNagInfo[] needNagging = DBUtils.getNeedNagging( context );
-        if ( null != needNagging ) {
-            long now = new Date().getTime(); // in milliseconds
-            for ( NeedsNagInfo info : needNagging ) {
-                Assert.assertTrue( info.m_nextNag < now );
-                info.m_nextNag = figureNextNag( context, info.m_lastMoveMillis );
-                boolean lastWarning = 0 == info.m_nextNag;
+        if ( !getNagsDisabled( context ) ) {
+            NeedsNagInfo[] needNagging = DBUtils.getNeedNagging( context );
+            if ( null != needNagging ) {
+                long now = new Date().getTime(); // in milliseconds
+                for ( NeedsNagInfo info : needNagging ) {
+                    Assert.assertTrue( info.m_nextNag < now );
+                    info.m_nextNag = figureNextNag( context, 
+                                                    info.m_lastMoveMillis );
+                    boolean lastWarning = 0 == info.m_nextNag;
 
-                long rowid = info.m_rowid;
-                GameSummary summary = DBUtils.getSummary( context, rowid, 10 );
-                String prevPlayer = null == summary 
-                    ? LocUtils.getString(context, R.string.prev_player)
-                    : summary.getPrevPlayer();
+                    long rowid = info.m_rowid;
+                    GameSummary summary = DBUtils.getSummary( context, rowid, 
+                                                              10 );
+                    String prevPlayer = null == summary 
+                        ? LocUtils.getString(context, R.string.prev_player)
+                        : summary.getPrevPlayer();
 
-                Intent msgIntent = GamesListDelegate.makeRowidIntent( context, rowid );
-                String body =
-                    String.format( LocUtils.getString(context, 
-                                                      R.string.nag_body_fmt),
-                                   prevPlayer,
-                                   formatMillis( context,
-                                                 now - info.m_lastMoveMillis) );
-                if ( lastWarning ) {
-                    body = LocUtils
-                        .getString( context, R.string.nag_warn_last_fmt, body );
+                    Intent msgIntent = 
+                        GamesListDelegate.makeRowidIntent( context, rowid );
+                    String millis = formatMillis( context,
+                                                  now - info.m_lastMoveMillis);
+                    String body =
+                        String.format( LocUtils.getString(context, 
+                                                          R.string.nag_body_fmt),
+                                       prevPlayer, millis );
+                    if ( lastWarning ) {
+                        body = LocUtils
+                            .getString( context, R.string.nag_warn_last_fmt, body );
+                    }
+                    Utils.postNotification( context, msgIntent, 
+                                            R.string.nag_title, body, 
+                                            (int)rowid );
+
                 }
-                Utils.postNotification( context, msgIntent, R.string.nag_title, 
-                                        body, (int)rowid );
+                DBUtils.updateNeedNagging( context, needNagging );
 
+                setNagTimer( context );
             }
-            DBUtils.updateNeedNagging( context, needNagging );
-
-            setNagTimer( context );
         }
     }
 
@@ -100,21 +108,25 @@ public class NagTurnReceiver extends BroadcastReceiver {
 
     private static void restartTimer( Context context, long atMillis )
     {
-        AlarmManager am =
-            (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
+        if ( !getNagsDisabled( context ) ) {
+            AlarmManager am =
+                (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
 
-        Intent intent = new Intent( context, NagTurnReceiver.class );
-        PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
+            Intent intent = new Intent( context, NagTurnReceiver.class );
+            PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
-        long now = new Date().getTime(); // in milliseconds
-        am.set( AlarmManager.RTC, atMillis, pi );
+            long now = new Date().getTime(); // in milliseconds
+            am.set( AlarmManager.RTC, atMillis, pi );
+        }
     }
 
     public static void setNagTimer( Context context )
     {
-        long nextNag = DBUtils.getNextNag( context );
-        if ( 0 < nextNag ) {
-            restartTimer( context, nextNag );
+        if ( !getNagsDisabled( context ) ) {
+            long nextNag = DBUtils.getNextNag( context );
+            if ( 0 < nextNag ) {
+                restartTimer( context, nextNag );
+            }
         }
     }
 
@@ -188,7 +200,23 @@ public class NagTurnReceiver extends BroadcastReceiver {
             }
         }
         String result = TextUtils.join( ", ", results );
-        DbgUtils.logf( "formatMillis(%d) => %s", millis, result );
         return result;
+    }
+
+    private static boolean getNagsDisabled( Context context )
+    {
+        if ( null == s_nagsDisabled ) {
+            boolean nagsDisabled = 
+                XWPrefs.getPrefsBoolean( context, R.string.key_disable_nag, 
+                                         false );
+            s_nagsDisabled = new Boolean( nagsDisabled );
+        }
+        return s_nagsDisabled;
+    }
+
+    public static void resetNagsDisabled( Context context )
+    {
+        s_nagsDisabled = null;
+        restartTimer( context );
     }
 }

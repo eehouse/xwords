@@ -231,6 +231,11 @@
                         android:summary="@string/skip_confirm_turn_summary"
                         android:defaultValue="false"
                         />
+    <CheckBoxPreference android:key="@string/key_disable_nag"
+                        android:title="@string/disable_nag_title"
+                        android:summary="@string/disable_nag_summary"
+                        android:defaultValue="false"
+                        />
     <CheckBoxPreference android:key="@string/key_default_loc"
                         android:title="@string/default_loc"
                         android:summary="@string/default_loc_summary"

@@ -52,6 +52,7 @@ public class PrefsDelegate extends DelegateBase
     private String m_keyLocale;
     private String m_keyLangs;
     private String m_keyFakeRadio;
+    private String m_keyNagsDisabled;
 
     public PrefsDelegate( PreferenceActivity activity, Delegator delegator,
                           Bundle savedInstanceState )
@@ -136,6 +137,7 @@ public class PrefsDelegate extends DelegateBase
         m_keyLocale = getString( R.string.key_xlations_locale );
         m_keyLangs = getString( R.string.key_default_language );
         m_keyFakeRadio = getString( R.string.key_force_radio );
+        m_keyNagsDisabled = getString( R.string.key_disable_nag );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -205,6 +207,8 @@ public class PrefsDelegate extends DelegateBase
             forceDictsMatch( sp.getString( key, null ) );
         } else if ( key.equals( m_keyFakeRadio ) ) {
             SMSService.resetPhoneInfo();
+        } else if ( key.equals( m_keyNagsDisabled ) ) {
+            NagTurnReceiver.resetNagsDisabled( m_activity );
         }
     }
 

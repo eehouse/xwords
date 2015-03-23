@@ -2073,6 +2073,9 @@
     na \"decnavda\" erutaef ni siht esaeler. Fi uoy erew gnisu meht
     dna tnaw meht ,kcab elbane meht won. Uoy nac nrut meht ffo niaga
     ni Sgnittes.</string>
+  <string name="disable_nag_title">Elbasid nrut srednimer</string>
+  <string name="disable_nag_summary">Od ton yfiton em on rettam
+    woh gnol ti\'s neeb ym nrut</string>
   <!-- Debugging stuff. Localize if you think your langauge users will
        care. -->
   <string name="advanced">Rof gniggubed</string>

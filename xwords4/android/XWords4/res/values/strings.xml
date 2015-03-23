@@ -2393,6 +2393,10 @@
     and want them back, enable them now. You can turn them off again
     in Settings.</string>
 
+    <string name="disable_nag_title">Disable turn reminders</string>
+    <string name="disable_nag_summary">Do not notify me no matter
+    how long it\'s been my turn</string>
+
   <!-- Debugging stuff. Localize if you think your langauge users will
        care. -->
   <string name="advanced">For debugging</string>

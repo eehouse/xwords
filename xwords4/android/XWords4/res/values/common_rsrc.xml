@@ -11,6 +11,7 @@
   <string name="key_square_tiles">key_square_tiles</string>
   <string name="key_explain_robot">key_explain_robot</string>
   <string name="key_skip_confirm">key_skip_confirm</string>
+  <string name="key_disable_nag">key_disable_nag</string>
   <string name="key_sort_tiles">key_sort_tiles</string>
   <string name="key_peek_other">key_peek_other</string>
   <string name="key_hide_crosshairs">key_hide_crosshairs</string>
