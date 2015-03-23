@@ -3030,7 +3030,7 @@ pour voir ce qui est disponible.</string>
     <string name="nag_body_fmt">%1$s a joué il y a plus de %2$s.</string>
     <!-- above is inserted in this the last time I warn -->
     <!--<string name="nag_warn_last_fmt">Last warning: %1$s</string>-->
-    <string name="nag_warn_last_fmt">Dernier avertissement : %2$s</string>
+    <string name="nag_warn_last_fmt">Dernier avertissement : %1$s</string>
     <!-- Used when prev player's name can't be looked up -->
     <!--<string name="prev_player">Your opponent</string>-->
     <string name="prev_player">Votre adversaire</string>
