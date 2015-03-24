@@ -64,10 +64,11 @@ import java.util.Iterator;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
-import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DictsDelegate extends ListDelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
@@ -108,16 +109,17 @@ public class DictsDelegate extends ListDelegateBase
 
     private static class DictInfo implements Comparable {
         public String m_name;
-        // public boolean m_needsUpdate;
         public String m_lang;
+        public String m_langLoc;
         public int m_nWords;
         public long m_nBytes;
         public String m_note;
-        public DictInfo( String name, String lang, int nWords, long nBytes, 
-                         String note )
+        public DictInfo( String name, String lang, String langLoc, int nWords, 
+                         long nBytes, String note )
         {
             m_name = name;
             m_lang = lang;
+            m_langLoc = langLoc;
             m_nWords = nWords;
             m_nBytes = nBytes;
             m_note = note;
@@ -136,7 +138,6 @@ public class DictsDelegate extends ListDelegateBase
             m_numDicts = numDicts;
         }
     }
-    private HashMap<String, DictAndLoc[]> m_localInfo;
     private HashMap<String, DictInfo[]> m_remoteInfo;
 
     private boolean m_launchedForMissing = false;
@@ -1174,14 +1175,15 @@ public class DictsDelegate extends ListDelegateBase
                     for ( int ii = 0; !isCancelled() && ii < nLangs; ++ii ) {
                         JSONObject langObj = langs.getJSONObject( ii );
                         String langName = langObj.getString( "lang" );
+                        String locLangName = LocUtils.xlateLang( m_context, langName );
                     
                         if ( null != m_filterLang && 
-                             ! m_filterLang.equals( langName ) ) {
+                             ! m_filterLang.equals( locLangName ) ) {
                             continue;
                         }
 
-                        if ( ! curLangs.contains( langName ) ) {
-                            closedLangs.add( langName );
+                        if ( ! curLangs.contains( locLangName ) ) {
+                            closedLangs.add( locLangName );
                         }
 
                         JSONArray dicts = langObj.getJSONArray( "dicts" );
@@ -1200,13 +1202,13 @@ public class DictsDelegate extends ListDelegateBase
                                 note = null;
                             }
                             DictInfo info = 
-                                new DictInfo( name, langName, nWords, nBytes, 
-                                              note );
+                                new DictInfo( name, langName, locLangName, 
+                                              nWords, nBytes, note );
 
                             if ( !m_quickFetchMode ) {
                                 // Check if we have it and it needs an update
                                 if ( DictLangCache.haveDict( m_activity, 
-                                                             langName, name )){
+                                                             locLangName, name )){
                                     boolean matches = true;
                                     String curSum = DictLangCache
                                         .getDictMD5Sum( m_activity, name );
@@ -1237,7 +1239,7 @@ public class DictsDelegate extends ListDelegateBase
                             DictInfo[] asArray = new DictInfo[dictNames.size()];
                             asArray = dictNames.toArray( asArray );
                             Arrays.sort( asArray );
-                            m_remoteInfo.put( langName, asArray );
+                            m_remoteInfo.put( locLangName, asArray );
                         }
                     }
 
@@ -1251,7 +1253,7 @@ public class DictsDelegate extends ListDelegateBase
             }
 
             return success;
-        }
+        } // digestData
 
         /////////////////////////////////////////////////////////////////
         // DialogInterface.OnCancelListener interface

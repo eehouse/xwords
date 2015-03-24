@@ -80,10 +80,11 @@ public class LocUtils {
     private static Boolean s_enabled = null;
     private static String s_curLocale;
     private static WeakReference<Menu> s_latestMenuRef;
-    private static HashMap<WeakReference<Menu>, HashSet<String> > s_menuSets
+    private static Map<WeakReference<Menu>, HashSet<String> > s_menuSets
         = new HashMap<WeakReference<Menu>, HashSet<String> >();
-    private static HashMap<String, HashSet<String> > s_contextSets
+    private static Map<String, HashSet<String> > s_contextSets
         = new HashMap<String, HashSet<String> >();
+    private static Map<String, String> s_langMap = null;
     
     public static void localeChanged( Context context, String newLocale )
     {
@@ -109,6 +110,36 @@ public class LocUtils {
         if ( ! title.equals(xlated) ) {
             activity.setTitle( xlated );
         }
+    }
+
+    public static String xlateLang( Context context, String lang )
+    {
+        if ( null == s_langMap ) {
+            s_langMap = new HashMap<String, String>();
+            s_langMap.put( "English", context.getString( R.string.lang_name_english ) );
+            s_langMap.put( "French", context.getString( R.string.lang_name_french ) );
+            s_langMap.put( "German", context.getString( R.string.lang_name_german ) );
+            s_langMap.put( "Turkish", context.getString( R.string.lang_name_turkish ) );
+            s_langMap.put( "Arabic", context.getString( R.string.lang_name_arabic ) );
+            s_langMap.put( "Spanish", context.getString( R.string.lang_name_spanish ) );
+            s_langMap.put( "Swedish", context.getString( R.string.lang_name_swedish ) );
+            s_langMap.put( "Polish", context.getString( R.string.lang_name_polish ) );
+            s_langMap.put( "Danish", context.getString( R.string.lang_name_danish ) );
+            s_langMap.put( "Italian", context.getString( R.string.lang_name_italian ) );
+            s_langMap.put( "Dutch", context.getString( R.string.lang_name_dutch ) );
+            s_langMap.put( "Catalan", context.getString( R.string.lang_name_catalan ) );
+            s_langMap.put( "Portuguese", context.getString( R.string.lang_name_portuguese ) );
+            s_langMap.put( "Russian", context.getString( R.string.lang_name_russian ) );
+            s_langMap.put( "Czech", context.getString( R.string.lang_name_czech ) );
+            s_langMap.put( "Greek", context.getString( R.string.lang_name_greek ) );
+            s_langMap.put( "Slovak", context.getString( R.string.lang_name_slovak ) );
+        }
+
+        String xlated = s_langMap.get( lang );
+        if ( null == xlated ) {
+            xlated = lang;
+        }
+        return xlated;
     }
 
     public static void xlateView( Activity activity )
