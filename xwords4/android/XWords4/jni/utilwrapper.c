@@ -410,6 +410,8 @@ and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
     int index = stringCode - 1; /* see LocalizedStrIncludes.h */
     XP_ASSERT( index < VSIZE( util->userStrings ) );
 
+    XP_ASSERT( 0 == (util->userStringsBits & (1 << index)) );
+
     if ( ! util->userStrings[index] ) {
         jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, 
                                                     stringCode );
