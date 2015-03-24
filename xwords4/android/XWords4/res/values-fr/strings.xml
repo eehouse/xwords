@@ -379,13 +379,13 @@ des parties à %1$d joueurs en %2$s.</string>
          appear by which the user can get high- and low-scoring moves
          generated based on his tray.  Can be used to cheat.  -->
     <!--<string name="hints_allowed">Allow hints</string>-->
-    <string name="hints_allowed">Autoriser les indications</string>
+    <string name="hints_allowed">Autoriser les suggestions</string>
 
     <!-- text of checkbox.  If this checkbox is checked, games created
          for network play will by default have the hint feature
          enabled. -->
     <!--<string name="nethints_allowed">Allow hints (networked)</string>-->
-    <string name="nethints_allowed">Autoriser les indications (en réseau)</string>
+    <string name="nethints_allowed">Autoriser les suggestions (en réseau)</string>
 
     <!-- text of checkbox controlling whether there's a game timer -->
     <!--<string name="use_timer">Enable game timer</string>-->
@@ -864,7 +864,7 @@ restants]</string>
     <!-- Beginning of the message presented to a user when asking him
          to confirm committing the current turn-->
     <!--<string name="str_commit_confirm">Commit the current move?\n</string>-->
-    <string name="str_commit_confirm">Valider le coup actuel ?\n</string>
+    <string name="str_commit_confirm">Valider ce coup ?\n</string>
     <!-- Used, with remote player's name substituted for %1$s, to
     indicate that the player is remote. -->
     <!--<string name="str_nonlocal_name_fmt">%1$s (remote)</string>-->
@@ -1015,13 +1015,13 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
          default to having the hint feature enabled(string elsewhere
          in this file) -->
     <!--<string name="hints_allowed_sum">Enable the hint feature</string>-->
-    <string name="hints_allowed_sum">Activer les indications</string>
+    <string name="hints_allowed_sum">Activer les suggestions</string>
 
     <!-- clarification on hints_allowed, whether new NETWORKED games
          will default to having the hint feature enabled(string
          elsewhere in this file) -->
     <!--<string name="nethints_allowed_sum">Enable hints for two-device games</string>-->
-    <string name="nethints_allowed_sum">Activer les indications pour les parties à deux périphériques</string>
+    <string name="nethints_allowed_sum">Activer les suggestions pour les parties à deux périphériques</string>
 
     <!-- Will new games, on default, randomly rearrange the start
          order of players. -->
@@ -1638,7 +1638,7 @@ pour échanger.</string>
     <!--<string name="str_cant_hint_while_disabled">The hint feature is
          disabled for this game.  Enable it for a new game using the
          Settings dialog.</string>-->
-    <string name="str_cant_hint_while_disabled">Les indications sont
+    <string name="str_cant_hint_while_disabled">Les suggestions sont
 désactivées pour cette partie. Vous pouvez l\'activer pour une nouvelle partie
 en configurant les paramètres.</string>
 
@@ -1964,7 +1964,7 @@ parties cachées.</string>
     <!--<string name="not_again_undo">This button undos or redoes the
       current turn.</string>-->
     <string name="not_again_undo">Ce bouton annule ou rétablit le tour
-actuel.</string>
+courant.</string>
     <!-- Shown when you tap the chat button on the toolbar of the
          main Board screen -->
     <!--<string name="not_again_chat">This button opens the screen for
@@ -2252,7 +2252,7 @@ ligne, les mots qui viennent d\'être joués.</string>
     <!--<string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>-->
     <string name="not_again_browse">Ce bouton ouvre le navigateur de liste de
-mots en utilisant la liste du jouer actuel.</string>
+mots en utilisant la liste du joueur courant.</string>
       <!--  -->
     <!--<string name="not_again_browseall">This button opens the wordlist
       browser on the wordlist of your choice.</string>-->
@@ -3273,6 +3273,12 @@ fonctionnalité \"avancée\" dans cette version. Si vous les utilisiez et les
 revoulez, activez-les maintenant. Vous pouvez les désactiver de nouveau dans
 les paramètres.</string>
 
+    <!--<string name="disable_nag_title">Disable turn reminders</string>-->
+    <string name="disable_nag_title">Désactiver rappels de tour</string>
+    <!--<string name="disable_nag_summary">Do not notify me no matter
+    how long it\'s been my turn</string>-->
+    <string name="disable_nag_summary">Ne pas me notifier, quelque soit le temps
+écoulé depuis que c\'est mon tour</string>
     <!--XLATE-ME-->
   <!--<string name="advanced">For debugging</string>-->
   <string name="advanced">Pour débugger</string>
