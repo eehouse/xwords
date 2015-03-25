@@ -265,7 +265,11 @@
     <!--  -->
     <item>Viccionari</item>
     <item>:ca:</item>
-    <item>http://ca.wiktionary.org/w/index.php?search=%2$s</item>
+    <item>http://%1$s.wiktionary.org/w/index.php?search=%2$s</item>
+    <!--  -->
+    <item>Wiktionnaire</item>
+    <item>:fr:</item>
+    <item>http://%1$s.wiktionary.org/w/index.php?search=%2$s</item>
     <!--  -->
     <item>DISC lookup</item>
     <item>:ca:</item>
@@ -273,7 +277,7 @@
     <!--  -->
     <item>Wiktionary</item>
     <item></item>
-    <item>https://%1$s.wiktionary.org/w/index.php?search=%2$s</item>
+    <item>http://%1$s.wiktionary.org/w/index.php?search=%2$s</item>
     <!--  -->
     <item>Google</item>
     <item></item> <!-- means all supported -->

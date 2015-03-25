@@ -314,8 +314,11 @@ public class LookupAlert extends LinearLayout
             for ( int ii = 0; ii < urls.length; ii += 3 ) {
                 String codes = urls[ii+1];
                 if ( 0 == codes.length() || codes.contains( langCode ) ) {
-                    tmpNames.add( urls[ii] );
-                    tmpUrls.add( urls[ii+2] );
+                    String url = urls[ii+2];
+                    if ( ! tmpUrls.contains( url ) ) {
+                        tmpNames.add( urls[ii] );
+                        tmpUrls.add( url );
+                    }
                 }
             }
             s_lookupNames = tmpNames.toArray( new String[tmpNames.size()] );
