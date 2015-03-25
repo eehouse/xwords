@@ -1997,7 +1997,7 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
 {
     XWStreamCtxt* stream;
     const XP_UCHAR* format;
-    XP_UCHAR buf[32];
+    XP_UCHAR buf[64];
     XP_UCHAR traybuf[MAX_TRAY_TILES+1];
     MovePrintClosure* closure = (MovePrintClosure*)p_closure;
 
