@@ -56,12 +56,16 @@ def main():
     langs = []
     generate = False
     newOnly = False
-    pairs, rest = getopt.getopt(sys.argv[1:], "l:ghn")
-    for option, value in pairs:
-        if option == '-l': langs.append(value)
-        elif option == '-g': generate = True
-        elif option == '-n': newOnly = True
-        else: usage()
+
+    try:
+        pairs, rest = getopt.getopt(sys.argv[1:], "l:ghn")
+        for option, value in pairs:
+            if option == '-l': langs.append(value)
+            elif option == '-g': generate = True
+            elif option == '-n': newOnly = True
+            else: usage()
+    except:
+        usage()
 
     if generate and 1 != len(langs):
         usage('-g requires exactly one -l lang')
