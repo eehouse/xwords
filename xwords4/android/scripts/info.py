@@ -73,6 +73,20 @@ k_versions = { 'org.eehouse.android.xw4': {
 #                }
 s_shelf = None
 
+g_langs = {'English' : 'en',
+           'Swedish' : 'se',
+           'Portuguese' : 'pt',
+           'Dutch' : 'nl',
+           'Danish' : 'dk',
+           'Czech' : 'cz',
+           'French' : 'fr',
+           'German' : 'de',
+           'Catalan' : 'ca',
+           'Slovak' : 'sk',
+           'Spanish' : 'es',
+           'Polish' : 'pl',
+           'Italian' : 'it',
+}
 
 logging.basicConfig(level=logging.DEBUG
         ,format='%(asctime)s [[%(levelname)s]] %(message)s'
@@ -82,6 +96,11 @@ logging.basicConfig(level=logging.DEBUG
 
 # This seems to be required to prime the pump somehow.
 # logging.debug( "loaded...." )
+
+def languageCodeFor( lang ):
+    result = ''
+    if lang in g_langs: result = g_langs[lang]
+    return result
 
 def getInternalSum( filePath ):
     filePath = k_filebase + "and_wordlists/" + filePath
@@ -289,6 +308,7 @@ def listDicts():
         langs = []
         for lang, entry in ldict.iteritems():
             obj = { 'lang' : lang,
+                    'lc' : languageCodeFor(lang),
                     'dicts' : entry,
                 }
             langs.append( obj )
