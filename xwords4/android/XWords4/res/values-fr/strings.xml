@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <!-- What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
@@ -235,8 +234,10 @@ toutes les informations de connexion.)</item>
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %1$s.  Sometimes one of the two
          strings below is appended. -->
-    <string name="confirm_delete_dict_fmt">Êtes-vous sûr de vouloir effacer les
-listes de mots %1$s ?</string>
+    <plurals name="confirm_delete_dict_fmt">
+      <item quantity="other">Êtes-vous sûr de vouloir effacer les
+      listes de mots %1$s ?</item>
+    </plurals>
 
     <!-- Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
@@ -754,7 +755,7 @@ coup ?</string>
     <string name="board_menu_undo_last">Annuler le dernier tour</string>
 
     <!-- Title of submenu -->
-    <string name="board_submenu_game">Partie -></string>
+    <string name="board_submenu_game">Partie -&gt;</string>
 
     <!-- menu on Game submenu: brings up dialog listing all tiles in
          the language of the game along with how many of each there
@@ -2569,7 +2570,7 @@ activer les parties par SMS, allez dans Paramètres->Paramètres des parties en
 réseau.)</string>-->
     <string name="warn_sms_disabled">Les parties par SMS sont actuellement
 désactivées, donc aucun coup ne sera envoyé pour cette partie. (Si vous voulez
-activer les parties par SMS, allez dans Paramètres->Paramètres des parties en réseau.)</string>
+activer les parties par SMS, allez dans Paramètres-&gt;Paramètres des parties en réseau.)</string>
 
     <!--  -->
     <!--<string name="gamel_menu_checkupdates">Check for updates</string>-->

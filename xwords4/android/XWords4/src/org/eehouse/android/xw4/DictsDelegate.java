@@ -709,8 +709,8 @@ public class DictsDelegate extends ListDelegateBase
     private void deleteSelected()
     {
         XWListItem[] items = getSelItems();
-        String msg = getString( R.string.confirm_delete_dict_fmt, 
-                                getJoinedNames( items ) );
+        String msg = getQuantityString( R.plurals.confirm_delete_dict_fmt, 
+                                        items.length, getJoinedNames( items ) );
 
         // Confirm.  And for each dict, warn if (after ALL are deleted) any
         // game will no longer be openable without downloading.  For now
