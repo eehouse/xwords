@@ -495,7 +495,7 @@ public class LocUtils {
         return name;
     }
 
-    protected static String getCurLocale( Context context )
+    public static String getCurLocale( Context context )
     {
         if ( null == s_curLocale ) {
             String locale = XWPrefs.getFakeLocale( context );

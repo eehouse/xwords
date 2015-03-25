@@ -888,7 +888,9 @@ public class GamesListDelegate extends ListDelegateBase
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
         if ( isUpgrade && !s_firstShown ) {
-            FirstRunDialog.show( m_activity );
+            if ( LocUtils.getCurLocale( m_activity ).equals( "en" ) ) {
+                FirstRunDialog.show( m_activity );
+            }
             s_firstShown = true;
         }
 
@@ -900,27 +902,6 @@ public class GamesListDelegate extends ListDelegateBase
         mkListAdapter();
         ListView listView = getListView();
         listView.setOnItemLongClickListener( this );
-
-        // This doesn't work: test isn't sensitive enough, and doesn't notice
-        // scrolling's possible until the user actually does it, then winds up
-        // flashing the screen.
-        // 
-        // listView.setOnScrollListener( new AbsListView.OnScrollListener() {
-        //         @Override
-        //         public void onScroll( AbsListView lw, int firstVisItem,
-        //                               int nVisItems, int nTotalItems ) {
-        //             DbgUtils.logf( "onScroll(nVis=%d, nTotal=%d)", nVisItems, 
-        //                            nTotalItems );
-        //             if ( 0 < nVisItems && nVisItems < nTotalItems ) {
-        //                 DbgUtils.logf( "scroll list too big; hiding buttons" );
-        //                 soloButton.setVisibility( View.GONE );
-        //                 netButton.setVisibility( View.GONE );
-        //                 getListView().setOnScrollListener( null );
-        //             }
-        //         }
-        //         @Override
-        //         public void onScrollStateChanged (AbsListView view, int scrollState) {}
-        //     });
 
         NetUtils.informOfDeaths( m_activity );
 
