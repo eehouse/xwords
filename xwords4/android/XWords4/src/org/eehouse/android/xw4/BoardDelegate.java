@@ -250,6 +250,7 @@ public class BoardDelegate extends DelegateBase
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
+                                NetStateCache.reset( m_activity );
                                 RelayService.reset( m_activity );
                             }
                         };

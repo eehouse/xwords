@@ -30,6 +30,7 @@ import android.os.Build;
 import android.os.Handler;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import junit.framework.Assert;
 
@@ -42,7 +43,7 @@ public class NetStateCache {
         public void netAvail( boolean nowAvailable );
     }
 
-    private static Boolean s_haveReceiver = new Boolean( false );
+    private static AtomicBoolean s_haveReceiver = new AtomicBoolean( false );
     private static HashSet<StateChangedIf> s_ifs;
     private static boolean s_netAvail = false;
     private static PvtBroadcastReceiver s_receiver;
@@ -70,10 +71,22 @@ public class NetStateCache {
         return s_netAvail || s_onSim;
     }
 
+    public static void reset( Context context )
+    {
+        synchronized( s_haveReceiver ) {
+            s_haveReceiver.set( false );
+
+            if ( null != s_receiver ) {
+                context.getApplicationContext().unregisterReceiver( s_receiver );
+                s_receiver = null;
+            }
+        }
+    }
+
     private static void initIfNot( Context context )
     {
         synchronized( s_haveReceiver ) {
-            if ( !s_haveReceiver ) {
+            if ( !s_haveReceiver.get() ) {
                 // First figure out the current net state.  Note that
                 // this doesn't seem to work on the emulator.
 
@@ -82,6 +95,8 @@ public class NetStateCache {
                 NetworkInfo ni = connMgr.getActiveNetworkInfo();
 
                 s_netAvail = ni != null && ni.isAvailable() && ni.isConnected();
+                DbgUtils.logf( "NetStateCache.initIfNot(): set s_netAvail = %b",
+                               s_netAvail );
 
                 s_receiver = new PvtBroadcastReceiver();
                 IntentFilter filter = new IntentFilter();
@@ -91,7 +106,7 @@ public class NetStateCache {
                     .registerReceiver( s_receiver, filter );
 
                 s_ifs = new HashSet<StateChangedIf>();
-                s_haveReceiver = true;
+                s_haveReceiver.set( true );
             }
         }
     }
@@ -111,6 +126,7 @@ public class NetStateCache {
         @Override
         public void onReceive( final Context context, Intent intent ) 
         {
+            DbgUtils.logf( "NetStateCache.onReceive()" );
             DbgUtils.assertOnUIThread();
 
             if ( intent.getAction().
@@ -136,6 +152,8 @@ public class NetStateCache {
 
                 if ( s_netAvail != netAvail ) {
                     s_netAvail = netAvail; // keep current in case we're asked
+                    DbgUtils.logf( "NetStateCache.onReceive(): set s_netAvail"
+                                   + " = %b", s_netAvail );
 
                     // We want to wait for WAIT_STABLE_MILLIS of inactivity
                     // before informing listeners.  So each time there's a
