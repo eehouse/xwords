@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,12 +64,13 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 
 public class GamesListDelegate extends ListDelegateBase
     implements OnItemLongClickListener,
                DBUtils.DBChangeListener, SelectableItem, 
-               DwnldDelegate.DownloadFinishedListener,
-               DlgDelegate.HasDlgDelegate, GroupStateListener {
+               DownloadFinishedListener, DlgDelegate.HasDlgDelegate, 
+               GroupStateListener {
     
 
     private static final String SAVE_ROWID = "SAVE_ROWID";
@@ -908,6 +910,8 @@ public class GamesListDelegate extends ListDelegateBase
         tryStartsFromIntent( getIntent() );
 
         askDefaultNameIf();
+
+        getDictForLangIf();
 
         m_origTitle = getTitle();
     } // init
@@ -1863,6 +1867,36 @@ public class GamesListDelegate extends ListDelegateBase
             CommonPrefs.setDefaultPlayerName( m_activity, name );
             showDialog( DlgID.GET_NAME );
         }
+    }
+
+    private void getDictForLangIf()
+    { 
+        String lc = Locale.getDefault().getLanguage();
+        if ( !lc.equals("en") ) {
+            int code = LocUtils.codeForLangCode( m_activity, lc );
+            String[] names = DictLangCache.getHaveLang( m_activity, code );
+            if ( 0 == names.length ) {
+                DownloadFinishedListener lstnr = new DownloadFinishedListener() {
+                        public void downloadFinished( final String lang, 
+                                                      String name, 
+                                                      boolean success ) {
+                            if ( success ) {
+                                runOnUiThread( new Runnable() {
+                                        public void run() {
+                                            showGotDictForLang( lang );
+                                        }
+                                    } );
+                            }
+                        }
+                    };
+                DictsDelegate.downloadDefaultDict( m_activity, lc, lstnr );
+            }
+        }
+    }
+
+    private void showGotDictForLang( String lang )
+    {
+        showOKOnlyDialog( String.format( "got dict for %s", lang ) );
     }
 
     private void updateField()

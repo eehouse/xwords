@@ -142,6 +142,24 @@ public class LocUtils {
         return xlated;
     }
 
+    private static Map<String, Integer> s_langCodeMap = null;
+    public static int codeForLangCode( Context context, String lc )
+    {
+        if ( null == s_langCodeMap ) {
+            s_langCodeMap = new HashMap<String, Integer>();
+            String[] langCodes = 
+                context.getResources().getStringArray( R.array.language_codes );
+            for ( int ii = 0; ii < langCodes.length; ++ii ) {
+                String item = langCodes[ii];
+                if ( 0 < item.length() ) {
+                    s_langCodeMap.put( item, ii );
+                }
+            }
+        }
+
+        return s_langCodeMap.get( lc );
+    }
+
     public static void xlateView( Activity activity )
     {
         xlateView( activity, Utils.getContentView( activity ) );

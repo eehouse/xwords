@@ -69,13 +69,13 @@ import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
 
 public class DictsDelegate extends ListDelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
                SelectableItem, MountEventReceiver.SDCardNotifiee, 
                DlgDelegate.DlgClickNotify, GroupStateListener,
-               DwnldDelegate.DownloadFinishedListener, 
-               XWListItem.ExpandedListener {
+               DownloadFinishedListener, XWListItem.ExpandedListener {
 
     protected static final String DICT_SHOWREMOTE = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
@@ -989,6 +989,12 @@ public class DictsDelegate extends ListDelegateBase
         downloadForResult( activity, requestCode, 0, null );
     }
 
+    public static void downloadDefaultDict( Context context, String lc,
+                                            DownloadFinishedListener lstnr )
+    {
+        new GetDefaultDictTask( context, lc, lstnr ).execute();
+    }
+
     //////////////////////////////////////////////////////////////////////
     // XWListItem.ExpandedListener interface
     //////////////////////////////////////////////////////////////////////
@@ -1084,6 +1090,75 @@ public class DictsDelegate extends ListDelegateBase
         XWListItem dictView = (XWListItem)obj;
         boolean result = m_selDicts.containsKey( dictView.getText() );
         return result;
+    }
+
+    private static class GetDefaultDictTask extends AsyncTask<Void, Void, Void> {
+        private Context m_context;
+        private String m_lc;
+        private DownloadFinishedListener m_lstnr;
+
+        public GetDefaultDictTask( Context context, String lc, 
+                                   DownloadFinishedListener lnr ) {
+            m_context = context;
+            m_lc = lc;
+            m_lstnr = lnr;
+        }
+
+        @Override 
+        public Void doInBackground( Void... unused )
+        {
+            // FIXME: this should pass up the language code to retrieve and
+            // parse less data
+            HttpPost post = UpdateCheckReceiver.makePost( m_context, "listDicts" );
+            if ( null != post ) {
+                JSONObject theOne = null;
+                String langName = null;
+                String json = UpdateCheckReceiver.runPost( post, new JSONObject() );
+                try {
+                    JSONObject obj = new JSONObject( json );
+                    JSONArray langs = obj.optJSONArray( "langs" );
+                    int nLangs = langs.length();
+                    for ( int ii = 0; ii < nLangs; ++ii ) {
+                        JSONObject langObj = langs.getJSONObject( ii );
+                        String langCode = langObj.getString( "lc" );
+                        if ( ! langCode.equals( m_lc ) ) {
+                            continue;
+                        }
+                        // we have our language; look for one marked default;
+                        // otherwise take the largest.
+                        langName = langObj.getString( "lang" );
+                        JSONArray dicts = langObj.getJSONArray( "dicts" );
+                        int nDicts = dicts.length();
+                        int theOneNWords = 0;
+                        for ( int jj = 0; jj < nDicts; ++jj ) {
+                            JSONObject dict = dicts.getJSONObject( jj );
+                            if ( dict.optBoolean( "isDflt", false ) ) {
+                                theOne = dict;
+                                break;
+                            } else {
+                                int nWords = dict.getInt( "nWords" );
+                                if ( null == theOne || nWords > theOneNWords ) {
+                                    theOne = dict;
+                                    theOneNWords = nWords;
+                                }
+                            }
+                        }
+                    }
+                } catch ( JSONException ex ) {
+                    DbgUtils.loge( ex );
+                    theOne = null;
+                }
+
+                if ( null != theOne ) {
+                    String name = theOne.optString( "xwd" );
+                    if ( null != name ) {
+                        DwnldDelegate.downloadDictInBack( m_context, langName, 
+                                                          name, m_lstnr );
+                    }
+                }
+            }
+            return null;
+        }
     }
 
     private class FetchListTask extends AsyncTask<Void, Void, Boolean> 
