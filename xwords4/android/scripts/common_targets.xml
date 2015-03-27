@@ -38,6 +38,10 @@
               failonerror="true" output="/dev/null" 
               />
 
+        <exec dir="." executable="../scripts/copy-strings.py" 
+              failonerror="true" output="/dev/null" 
+              />
+
         <exec dir="." executable="../scripts/mk_xml.py" 
               failonerror="true" 
               >
