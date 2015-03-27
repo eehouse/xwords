@@ -43,6 +43,7 @@ public class XWApp extends Application {
     public static final boolean GCM_IGNORED = false;
     public static final boolean UDP_ENABLED = true;
     public static final boolean SMS_INVITE_ENABLED = false;
+    public static final boolean LOCUTILS_ENABLED = false;
     
     public static final String SMS_PUBLIC_HEADER = "-XW4";
     public static final int MAX_TRAY_TILES = 7; // comtypes.h

@@ -65,6 +65,7 @@ import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.XWPrefs;
 
 public class LocUtils {
@@ -167,21 +168,27 @@ public class LocUtils {
 
     public static void xlatePreferences( PreferenceActivity activity )
     {
-        xlatePreferences( activity, activity.getPreferenceScreen(), 0 );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            xlatePreferences( activity, activity.getPreferenceScreen(), 0 );
+        }
     }
 
     public static void xlateView( Context context, View view )
     {
         // DbgUtils.logf( "xlateView(%s, %s)", context.getClass().getName(),
         //                view.getClass().getName() );
-        xlateView( context, context.getClass().getName(), view, 0 );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            xlateView( context, context.getClass().getName(), view, 0 );
+        }
     }
 
     public static void xlateMenu( Activity activity, Menu menu )
     {
-        pareMenus();
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            pareMenus();
 
-        xlateMenu( activity, new WeakReference<Menu>( menu ), menu, 0 );
+            xlateMenu( activity, new WeakReference<Menu>( menu ), menu, 0 );
+        }
     }
 
     private static String xlateString( Context context, CharSequence str )
@@ -210,7 +217,10 @@ public class LocUtils {
 
     public static String xlateString( Context context, String str )
     {
-        return xlateString( context, str, true );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            str = xlateString( context, str, true );
+        }
+        return str;
     }
 
     public static CharSequence[] xlateStrings( Context context, CharSequence[] strs )
@@ -246,10 +256,13 @@ public class LocUtils {
     public static String getString( Context context, boolean canUseDB, int id )
     {
         String result = null;
-        String key = keyForID( context, id );
-        if ( null != key ) {
-            associateContextString( context, key );
-            result = getXlation( context, key, canUseDB );
+
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            String key = keyForID( context, id );
+            if ( null != key ) {
+                associateContextString( context, key );
+                result = getXlation( context, key, canUseDB );
+            }
         }
         
         if ( null == result ) {
@@ -262,14 +275,19 @@ public class LocUtils {
     public static String getString( Context context, int id, Object... params )
     {
         Assert.assertNotNull( params );
-        String result = getString( context, id );
-        if ( null != result ) {
-            try {
-                result = String.format( result, params );
-            } catch ( IllegalFormatConversionException fce ) {
-                dropXLations( context );
-                result = getString( context, id, params );
+        String result;
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            result = getString( context, id );
+            if ( null != result ) {
+                try {
+                    result = String.format( result, params );
+                } catch ( IllegalFormatConversionException fce ) {
+                    dropXLations( context );
+                    result = getString( context, id, params );
+                }
             }
+        } else {
+            result = context.getString( id, params );
         }
         return result;
     }
@@ -277,43 +295,49 @@ public class LocUtils {
     public static String getQuantityString( Context context, int id, 
                                             int quantity )
     {
-        DbgUtils.logf( "getQuantityString(%d): punting on locutils stuff for"
-                       + " now. FIXME", quantity );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            DbgUtils.logf( "getQuantityString(%d): punting on locutils stuff for"
+                           + " now. FIXME", quantity );
+        }
         String result = context.getResources().getQuantityString( id, quantity );
-        DbgUtils.logf( "LocUtils.getQuantityString() => %s", result );
         return result;
     }
 
     public static String getQuantityString( Context context, int id, 
                                             int quantity, Object... params )
     {
-        DbgUtils.logf( "getQuantityString(%d): punting on locutils stuff for"
-                       + " now. FIXME", quantity );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            DbgUtils.logf( "getQuantityString(%d): punting on locutils stuff for"
+                           + " now. FIXME", quantity );
+        }
         String result = context.getResources()
             .getQuantityString( id, quantity, params );
-        DbgUtils.logf( "LocUtils.getQuantityString() => %s", result );
         return result;
     }
 
     public static void setXlation( Context context, String key, CharSequence txt )
     {
-        loadXlations( context );
-        if ( null == txt || 0 == txt.length() ) {
-            s_xlationsLocal.remove( key );
-        } else {
-            s_xlationsLocal.put( key, txt.toString() );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            loadXlations( context );
+            if ( null == txt || 0 == txt.length() ) {
+                s_xlationsLocal.remove( key );
+            } else {
+                s_xlationsLocal.put( key, txt.toString() );
+            }
         }
     }
 
     protected static String getLocalXlation( Context context, String key,
                                              boolean canUseDB )
     {
-        if ( canUseDB ) {
-            loadXlations( context );
-        }
         String result = null;
-        if ( null != s_xlationsLocal ) {
-            result = s_xlationsLocal.get( key );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            if ( canUseDB ) {
+                loadXlations( context );
+            }
+            if ( null != s_xlationsLocal ) {
+                result = s_xlationsLocal.get( key );
+            }
         }
         return result;
     }
@@ -321,12 +345,14 @@ public class LocUtils {
     protected static String getBlessedXlation( Context context, String key,
                                                boolean canUseDB )
     {
-        if ( canUseDB ) {
-            loadXlations( context );
-        }
         String result = null;
-        if ( null != s_xlationsBlessed ) {
-            result = s_xlationsBlessed.get( key );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            if ( canUseDB ) {
+                loadXlations( context );
+            }
+            if ( null != s_xlationsBlessed ) {
+                result = s_xlationsBlessed.get( key );
+            }
         }
         return result;
     }
@@ -346,18 +372,22 @@ public class LocUtils {
 
     public static void saveLocalData( Context context )
     {
-        DBUtils.saveXlations( context, getCurLocale( context ),
-                              s_xlationsLocal, false );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            DBUtils.saveXlations( context, getCurLocale( context ),
+                                  s_xlationsLocal, false );
+        }
     }
 
     public static JSONArray makeForXlationUpdate( Context context )
     {
-        String locale = getCurLocale( context );
-        String fake = XWPrefs.getFakeLocale( context );
-        JSONArray result = new JSONArray()
-            .put( entryForLocale( context, locale ) );
-        if ( null != fake && 0 < fake.length() && ! fake.equals(locale) ) {
-            result.put( entryForLocale( context, fake ) );
+        JSONArray result = null;
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            String locale = getCurLocale( context );
+            String fake = XWPrefs.getFakeLocale( context );
+            result = new JSONArray().put( entryForLocale( context, locale ) );
+            if ( null != fake && 0 < fake.length() && ! fake.equals(locale) ) {
+                result.put( entryForLocale( context, fake ) );
+            }
         }
         return result;
     }
@@ -365,14 +395,16 @@ public class LocUtils {
     private static JSONObject entryForLocale( Context context, String locale )
     {
         JSONObject result = null;
-        try {
-            String version = 
-                DBUtils.getStringFor( context, localeKey(locale), "0" );
-            result = new JSONObject()
-                .put( k_LOCALE, locale )
-                .put( k_XLATEVERS, version );
-        } catch ( org.json.JSONException jse ) {
-            DbgUtils.loge( jse );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            try {
+                String version = 
+                    DBUtils.getStringFor( context, localeKey(locale), "0" );
+                result = new JSONObject()
+                    .put( k_LOCALE, locale )
+                    .put( k_XLATEVERS, version );
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
         }
         return result;
     }
@@ -389,36 +421,40 @@ public class LocUtils {
     public static int addXlations( Context context, JSONArray data )
     {
         int nAdded = 0;
-        try {
-            int nLocales = data.length();
-            for ( int ii = 0; ii < nLocales; ++ii ) {
-                JSONObject entry = data.getJSONObject( ii );
-                String locale = entry.getString( k_LOCALE );
-                String newVersion = entry.getString( k_NEW );
-                JSONArray pairs = entry.getJSONArray( k_PAIRS );
-                DbgUtils.logf( "addXlations: locale %s: got pairs of len %d, version %s", locale,
-                               pairs.length(), newVersion );
+        if ( XWApp.LOCUTILS_ENABLED ) {
+            try {
+                int nLocales = data.length();
+                for ( int ii = 0; ii < nLocales; ++ii ) {
+                    JSONObject entry = data.getJSONObject( ii );
+                    String locale = entry.getString( k_LOCALE );
+                    String newVersion = entry.getString( k_NEW );
+                    JSONArray pairs = entry.getJSONArray( k_PAIRS );
+                    DbgUtils.logf( "addXlations: locale %s: got pairs of len %d,"
+                                   + " version %s", locale,
+                                   pairs.length(), newVersion );
 
-                int len = pairs.length();
-                Map<String,String> newXlations = new HashMap<String,String>( len );
-                for ( int jj = 0; jj < len; ++jj ) {
-                    JSONObject pair = pairs.getJSONObject( jj );
-                    int id = pair.getInt( "id" );
-                    String key = context.getString( id );
-                    Assert.assertNotNull( key );
-                    String txt = pair.getString( "loc" );
-                    txt = replaceEscaped( txt );
-                    newXlations.put( key, txt );
+                    int len = pairs.length();
+                    Map<String,String> newXlations = 
+                        new HashMap<String,String>( len );
+                    for ( int jj = 0; jj < len; ++jj ) {
+                        JSONObject pair = pairs.getJSONObject( jj );
+                        int id = pair.getInt( "id" );
+                        String key = context.getString( id );
+                        Assert.assertNotNull( key );
+                        String txt = pair.getString( "loc" );
+                        txt = replaceEscaped( txt );
+                        newXlations.put( key, txt );
+                    }
+
+                    DBUtils.saveXlations( context, locale, newXlations, true );
+                    DBUtils.setStringFor( context, localeKey(locale), newVersion );
+                    nAdded += len;
                 }
-
-                DBUtils.saveXlations( context, locale, newXlations, true );
-                DBUtils.setStringFor( context, localeKey(locale), newVersion );
-                nAdded += len;
+                s_xlationsBlessed = null;
+                loadXlations( context );
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
             }
-            s_xlationsBlessed = null;
-            loadXlations( context );
-        } catch ( org.json.JSONException jse ) {
-            DbgUtils.loge( jse );
         }
         return nAdded;
     }
