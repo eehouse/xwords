@@ -41,6 +41,7 @@ def checkAndCopy( engNames, src, dest, verbose ):
     parser = etree.XMLParser(remove_blank_text=True, encoding="utf-8")
     doc = etree.parse(src, parser)
     for elem in doc.getroot().iter():
+        toRemove = None
         if 'resources' == elem.tag:
             pass
         elif 'item' == elem.tag:
@@ -48,11 +49,11 @@ def checkAndCopy( engNames, src, dest, verbose ):
         elif 'string' == elem.tag:
             name = elem.get('name')
             if not name in engNames or elem.text.startswith(s_prefix):
-                elem.getparent().remove( elem )
+                toRemove = elem
             elif not 'string' == engNames[name]['type']:
                 if 'plurals' == engNames[name]['type']:
                     if sameAsEnglishPlural( engNames, elem ):
-                        elem.getparent().remove( elem )
+                        toRemove = elem
                     else:
                         elem.tag = 'plurals'
                         item = etree.Element("item")
@@ -62,20 +63,22 @@ def checkAndCopy( engNames, src, dest, verbose ):
                         elem.append( item )
                         if verbose: print 'translated string', name, 'to plural'
                 else:
-                    elem.getparent().remove( elem )
+                    toRemove = elem
             elif engNames[name]['string'] == elem.text:
                 if verbose: print "Same as english: name: %s; text: %s" % (name, elem.text)
-                elem.getparent().remove( elem )
+                toRemove = elem
         elif 'plurals' == elem.tag:
             name = elem.get('name')
             if not name in engNames or not 'plurals' == engNames[name]['type']:
                 # print 'removing', name
-                elem.getparent().remove( elem )
+                toRemove = elem
         elif not isinstance( elem.tag, basestring ): # comment
-            elem.getparent().remove(elem)
+            toRemove = elem
         else:
             print 'unexpected elem:', elem.tag
             sys.exit(1)
+
+        if toRemove: toRemove.getparent().remove( toRemove )
     
     if True:
         comment = etree.Comment(sComment % (src))
