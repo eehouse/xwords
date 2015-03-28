@@ -284,7 +284,7 @@ def getStats( path ):
 
 # create obj containing array of objects each with 'lang' and 'xwds',
 # the latter an array of objects giving info about a dict.
-def listDicts():
+def listDicts( lc = None ):
     global s_shelf
     langsVers = 2
     # langsVers = random.random()            # change this to force recalc of shelf langs data
@@ -317,6 +317,11 @@ def listDicts():
 
     result = { 'langs' : s_shelf[k_LANGS] }
     closeShelf();
+
+    print "looking for", lc
+    if lc:
+        result['langs'] = [elem for elem in result['langs'] if elem['lc'] == lc]
+
     return result
 
 def getDicts( params ):
@@ -455,7 +460,9 @@ def main():
     if arg == '--clear-shelf':
         clearShelf()
     elif arg == '--list-dicts':
-        dictsJson = listDicts()
+        if 2 < len(sys.argv): lc = sys.argv[2]
+        else: lc = None
+        dictsJson = listDicts( lc )
         print json.dumps( dictsJson )
     elif arg == '--get-sums':
         dictSums = getDictSums()
