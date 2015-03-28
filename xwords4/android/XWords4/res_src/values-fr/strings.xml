@@ -235,6 +235,8 @@ toutes les informations de connexion.)</item>
          wordlist is substituted for %1$s.  Sometimes one of the two
          strings below is appended. -->
     <plurals name="confirm_delete_dict_fmt">
+      <item quantity="one">Êtes-vous sûr de vouloir effacer la
+      liste de mots %1$s ?</item>
       <item quantity="other">Êtes-vous sûr de vouloir effacer les
       listes de mots %1$s ?</item>
     </plurals>
