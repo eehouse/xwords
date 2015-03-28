@@ -2120,4 +2120,6 @@
   <string name="game_summary_field_gameid">GAMEID</string>
   <string name="game_summary_field_npackets">PENDING PACKET COUNT</string>
   <string name="expl_update_url">UPDATE CHECKS URL</string>
+  <string name="got_langdict_title">FETCH DEFAULT WORDLIST FOR LANGUAGE</string>
+  <string name="got_langdict_summary">DON\'T TRY A SECOND TIME</string>
 </resources>

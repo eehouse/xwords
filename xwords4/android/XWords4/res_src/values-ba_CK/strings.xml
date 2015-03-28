@@ -2120,4 +2120,6 @@
   <string name="game_summary_field_gameid">diemag</string>
   <string name="game_summary_field_npackets">Gnidnep tekcap tnuoc</string>
   <string name="expl_update_url">Etadpu skcehc LRU</string>
+  <string name="got_langdict_title">Hctef tluafed tsildrow rof egaugnal</string>
+  <string name="got_langdict_summary">Nod\'t yrt a dnoces emit</string>
 </resources>

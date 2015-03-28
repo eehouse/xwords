@@ -323,6 +323,7 @@
   <PreferenceScreen android:title="@string/advanced"
                     android:summary="@string/advanced_summary"
                     >
+
     <CheckBoxPreference android:key="@string/key_logging_on"
 			            android:title="@string/logging_on"
 			            android:summary="@string/logging_on_summary"
@@ -398,6 +399,12 @@
     <PreferenceScreen android:title="Localization Stuff"
                       android:summary="Prefs related to in-app localization"
                       >
+      <CheckBoxPreference android:key="@string/key_got_langdict"
+			              android:title="@string/got_langdict_title"
+			              android:summary="@string/got_langdict_summary"
+			              android:defaultValue="false"
+			              />
+
       <org.eehouse.android.xw4.XWEditTextPreference 
 	      android:key="@string/key_xlations_locale"
 	      android:title="@string/xlations_locale"
