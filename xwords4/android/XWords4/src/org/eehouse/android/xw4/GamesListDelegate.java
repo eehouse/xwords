@@ -1206,10 +1206,18 @@ public class GamesListDelegate extends ListDelegateBase
                         public void downloadFinished( String lang, String name, boolean success )
                         {
                             if ( success ) {
+                                XWPrefs.setPrefsString( m_activity, 
+                                                        R.string.key_default_language, 
+                                                        lang );
+                                int[] ids = { R.string.key_default_dict, 
+                                              R.string.key_default_robodict };
+                                for ( int id : ids ) {
+                                    XWPrefs.setPrefsString( m_activity, id, name );
+                                }
+
                                 XWPrefs.setPrefsBoolean( m_activity, 
                                                          R.string.key_got_langdict, 
                                                          true );
-                                // TODO: set language and dict pref to match
                             }
                         }
                     };
