@@ -1898,7 +1898,7 @@ public class GamesListDelegate extends ListDelegateBase
     { 
         if ( ! XWPrefs.getPrefsBoolean( m_activity, R.string.key_got_langdict, 
                                         false ) ) {
-            String lc = "it";//Locale.getDefault().getLanguage();
+            String lc = Locale.getDefault().getLanguage();
             if ( !lc.equals("en") ) {
                 int code = LocUtils.codeForLangCode( m_activity, lc );
                 String[] names = DictLangCache.getHaveLang( m_activity, code );
