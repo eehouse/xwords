@@ -2122,4 +2122,7 @@
   <string name="expl_update_url">Etadpu skcehc LRU</string>
   <string name="got_langdict_title">Hctef tluafed tsildrow rof egaugnal</string>
   <string name="got_langdict_summary">Nod\'t yrt a dnoces emit</string>
+  <string name="confirm_get_locdict_fmt">Ruoy ecived si tes pu rof
+  %1$s. Dluow uoy ekil ot daolnwod a tsildrow os uoy nac yalp
+  Sdrowssorc ni %1$s?</string>
 </resources>

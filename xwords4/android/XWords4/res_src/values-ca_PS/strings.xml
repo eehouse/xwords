@@ -2122,4 +2122,7 @@
   <string name="expl_update_url">UPDATE CHECKS URL</string>
   <string name="got_langdict_title">FETCH DEFAULT WORDLIST FOR LANGUAGE</string>
   <string name="got_langdict_summary">DON\'T TRY A SECOND TIME</string>
+  <string name="confirm_get_locdict_fmt">YOUR DEVICE IS SET UP FOR
+  %1$s. WOULD YOU LIKE TO DOWNLOAD A WORDLIST SO YOU CAN PLAY
+  CROSSWORDS IN %1$s?</string>
 </resources>
