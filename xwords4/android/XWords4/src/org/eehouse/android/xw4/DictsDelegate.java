@@ -1148,6 +1148,17 @@ public class DictsDelegate extends ListDelegateBase
                             }
                         }
                     }
+
+                    // If we got here and theOne isn't set, there is
+                    // no wordlist available for this language. Set
+                    // the flag so we don't try again, even though
+                    // we've failed.
+                    if ( null == theOne ) {
+                        XWPrefs.setPrefsBoolean( m_context, 
+                                                 R.string.key_got_langdict, 
+                                                 true );
+                    }
+
                 } catch ( JSONException ex ) {
                     DbgUtils.loge( ex );
                     theOne = null;
