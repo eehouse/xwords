@@ -2449,4 +2449,8 @@
   <string name="got_langdict_title">Fetch default wordlist for language</string>
   <string name="got_langdict_summary">Don\'t try a second time</string>
 
+  <string name="confirm_get_locdict_fmt">Your device is set up for
+  %1$s. Would you like to download a wordlist so you can play
+  Crosswords in %1$s?</string>
+
 </resources>

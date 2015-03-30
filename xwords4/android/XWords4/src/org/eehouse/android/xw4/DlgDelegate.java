@@ -61,6 +61,7 @@ public class DlgDelegate {
         NEW_NET_GAME,
         NEW_GAME_PRESSED,
         SET_HIDE_NEWGAME_BUTTONS,
+        DWNLD_LOC_DICT,
 
         // BoardDelegate
         UNDO_LAST_ACTION,

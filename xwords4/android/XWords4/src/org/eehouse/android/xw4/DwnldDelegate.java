@@ -65,6 +65,11 @@ public class DwnldDelegate extends ListDelegateBase {
         void downloadFinished( String lang, String name, boolean success );
     }
 
+    public interface OnGotLcDictListener {
+        void gotDictInfo( boolean success, String lc, String name );
+
+    }
+
     public DwnldDelegate( ListDelegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.import_dict );

@@ -70,6 +70,7 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
+import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 
 public class DictsDelegate extends ListDelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
@@ -990,7 +991,7 @@ public class DictsDelegate extends ListDelegateBase
     }
 
     public static void downloadDefaultDict( Context context, String lc,
-                                            DownloadFinishedListener lstnr )
+                                            OnGotLcDictListener lstnr )
     {
         new GetDefaultDictTask( context, lc, lstnr ).execute();
     }
@@ -1092,24 +1093,27 @@ public class DictsDelegate extends ListDelegateBase
         return result;
     }
 
-    private static class GetDefaultDictTask extends AsyncTask<Void, Void, Void> {
+    private static class GetDefaultDictTask extends AsyncTask<Void, Void, String> {
         private Context m_context;
         private String m_lc;
-        private DownloadFinishedListener m_lstnr;
+        private String m_langName;
+        private OnGotLcDictListener m_lstnr;
 
         public GetDefaultDictTask( Context context, String lc, 
-                                   DownloadFinishedListener lnr ) {
+                                   OnGotLcDictListener lnr ) {
             m_context = context;
             m_lc = lc;
             m_lstnr = lnr;
         }
 
         @Override 
-        public Void doInBackground( Void... unused )
+        public String doInBackground( Void... unused )
         {
             // FIXME: this should pass up the language code to retrieve and
             // parse less data
-            HttpPost post = UpdateCheckReceiver.makePost( m_context, "listDicts" );
+            String name = null;
+            String proc = String.format( "listDicts?lc=%s", m_lc );
+            HttpPost post = UpdateCheckReceiver.makePost( m_context, proc );
             if ( null != post ) {
                 JSONObject theOne = null;
                 String langName = null;
@@ -1126,7 +1130,7 @@ public class DictsDelegate extends ListDelegateBase
                         }
                         // we have our language; look for one marked default;
                         // otherwise take the largest.
-                        langName = langObj.getString( "lang" );
+                        m_langName = langObj.getString( "lang" );
                         JSONArray dicts = langObj.getJSONArray( "dicts" );
                         int nDicts = dicts.length();
                         int theOneNWords = 0;
@@ -1150,14 +1154,16 @@ public class DictsDelegate extends ListDelegateBase
                 }
 
                 if ( null != theOne ) {
-                    String name = theOne.optString( "xwd" );
-                    if ( null != name ) {
-                        DwnldDelegate.downloadDictInBack( m_context, langName, 
-                                                          name, m_lstnr );
-                    }
+                    name = theOne.optString( "xwd" );
                 }
             }
-            return null;
+            return name;
+        }
+
+        @Override
+        protected void onPostExecute( String name )
+        {
+            m_lstnr.gotDictInfo( null != name, m_langName, name );
         }
     }
 

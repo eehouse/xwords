@@ -65,6 +65,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
+import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 
 public class GamesListDelegate extends ListDelegateBase
     implements OnItemLongClickListener,
@@ -1198,6 +1199,22 @@ public class GamesListDelegate extends ListDelegateBase
                 XWPrefs.setHideNewgameButtons( m_activity, true );
                 setupButtons();
                 break;
+            case DWNLD_LOC_DICT:
+                String lang = (String)params[0];
+                String name = (String)params[1];
+                DownloadFinishedListener lstnr = new DownloadFinishedListener() {
+                        public void downloadFinished( String lang, String name, boolean success )
+                        {
+                            if ( success ) {
+                                XWPrefs.setPrefsBoolean( m_activity, 
+                                                         R.string.key_got_langdict, 
+                                                         true );
+                                // TODO: set language and dict pref to match
+                            }
+                        }
+                    };
+                DwnldDelegate.downloadDictInBack( m_activity, lang, name, lstnr );
+                break;
             default:
                 Assert.fail();
             }
@@ -1871,25 +1888,26 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void getDictForLangIf()
     { 
-        String lc = Locale.getDefault().getLanguage();
-        if ( !lc.equals("en") ) {
-            int code = LocUtils.codeForLangCode( m_activity, lc );
-            String[] names = DictLangCache.getHaveLang( m_activity, code );
-            if ( 0 == names.length ) {
-                DownloadFinishedListener lstnr = new DownloadFinishedListener() {
-                        public void downloadFinished( final String lang, 
-                                                      String name, 
-                                                      boolean success ) {
-                            if ( success ) {
-                                runOnUiThread( new Runnable() {
-                                        public void run() {
-                                            showGotDictForLang( lang );
-                                        }
-                                    } );
+        if ( ! XWPrefs.getPrefsBoolean( m_activity, R.string.key_got_langdict, 
+                                        false ) ) {
+            String lc = "it";//Locale.getDefault().getLanguage();
+            if ( !lc.equals("en") ) {
+                int code = LocUtils.codeForLangCode( m_activity, lc );
+                String[] names = DictLangCache.getHaveLang( m_activity, code );
+                if ( 0 == names.length ) {
+                    OnGotLcDictListener lstnr = new OnGotLcDictListener() {
+                            public void gotDictInfo( boolean success, String lang, 
+                                                     String name ) {
+                                if ( success ) {
+                                    String msg = getString( R.string.confirm_get_locdict_fmt, lang );
+                                    showConfirmThen( msg, R.string.button_download, 
+                                                     Action.DWNLD_LOC_DICT, lang, 
+                                                     name );
+                                }
                             }
-                        }
-                    };
-                DictsDelegate.downloadDefaultDict( m_activity, lc, lstnr );
+                        };
+                    DictsDelegate.downloadDefaultDict( m_activity, lc, lstnr );
+                }
             }
         }
     }
