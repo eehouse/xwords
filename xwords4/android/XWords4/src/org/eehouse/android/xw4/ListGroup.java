@@ -35,7 +35,7 @@ public class ListGroup extends LinearLayout
     private boolean m_expanded;
     private ImageButton m_expandButton;
     private TextView m_text;
-    private String m_langName;
+    private String m_desc;
     private GroupStateListener m_listener;
     private int m_posn;
 
@@ -85,13 +85,13 @@ public class ListGroup extends LinearLayout
     private void setText()
     {
         if ( null != m_text ) {
-            m_text.setText( m_langName );
+            m_text.setText( m_desc );
         }
     }
 
     public static ListGroup make( Context context, View convertView, 
                                   GroupStateListener lstnr, int posn, 
-                                  String lang, boolean expanded )
+                                  String desc, boolean expanded )
     {
         ListGroup result;
         if ( null != convertView && convertView instanceof ListGroup ) {
@@ -102,7 +102,7 @@ public class ListGroup extends LinearLayout
         }
         result.m_posn = posn;
         result.m_expanded = expanded;
-        result.m_langName = lang;
+        result.m_desc = desc;
         result.m_listener = lstnr;
 
         result.setButtonImage();     // in case onFinishInflate already called
