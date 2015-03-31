@@ -352,8 +352,8 @@
                         android:defaultValue="false"
                         />
 
-    <PreferenceScreen android:title="SMS Stuff"
-                      android:summary="Prefs related to play-via-sms"
+    <PreferenceScreen android:title="@string/pref_group_sms_title"
+                      android:summary="@string/pref_group_sms_summary"
                       >
       <CheckBoxPreference android:key="@string/key_enable_sms_toself"
                           android:title="@string/enable_sms_toself_title"
@@ -374,8 +374,8 @@
 			              />
     </PreferenceScreen>
 
-    <PreferenceScreen android:title="Relay Stuff"
-                      android:summary="Prefs related to play via internet/relay"
+    <PreferenceScreen android:title="@string/pref_group_relay_title"
+                      android:summary="@string/pref_group_relay_summary"
                       >
       <org.eehouse.android.xw4.XWEditTextPreference 
 	      android:key="@string/key_relay_host"
@@ -396,8 +396,8 @@
 	      />
     </PreferenceScreen>
 
-    <PreferenceScreen android:title="Localization Stuff"
-                      android:summary="Prefs related to in-app localization"
+    <PreferenceScreen android:title="@string/pref_group_l10n_title"
+                      android:summary="@string/pref_group_l10n_summary"
                       >
       <CheckBoxPreference android:key="@string/key_got_langdict"
 			              android:title="@string/got_langdict_title"
@@ -445,8 +445,8 @@
 	   android:defaultValue="@string/default_update_url"
 	   />
     <CheckBoxPreference android:key="@string/key_update_prerel"
-                        android:title="Update between releases"
-                        android:summary="Get intermediate builds"
+                        android:title="@string/pref_item_update_title"
+                        android:summary="@string/pref_item_update_summary"
                         android:defaultValue="false"
                         />
 

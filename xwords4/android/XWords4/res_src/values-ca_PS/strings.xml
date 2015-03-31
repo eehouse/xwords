@@ -2080,6 +2080,9 @@
   <string name="disable_nag_title">DISABLE TURN REMINDERS</string>
   <string name="disable_nag_summary">DO NOT NOTIFY ME NO MATTER
     HOW LONG IT\'S BEEN MY TURN</string>
+  <string name="confirm_get_locdict_fmt">YOUR DEVICE IS SET UP FOR
+  %1$s. WOULD YOU LIKE TO DOWNLOAD A WORDLIST SO YOU CAN PLAY
+  CROSSWORDS IN %1$s?</string>
   <!-- Debugging stuff. Localize if you think your langauge users will
        care. -->
   <string name="advanced">FOR DEBUGGING</string>
@@ -2122,7 +2125,12 @@
   <string name="expl_update_url">UPDATE CHECKS URL</string>
   <string name="got_langdict_title">FETCH DEFAULT WORDLIST FOR LANGUAGE</string>
   <string name="got_langdict_summary">DON\'T TRY A SECOND TIME</string>
-  <string name="confirm_get_locdict_fmt">YOUR DEVICE IS SET UP FOR
-  %1$s. WOULD YOU LIKE TO DOWNLOAD A WORDLIST SO YOU CAN PLAY
-  CROSSWORDS IN %1$s?</string>
+  <string name="pref_group_sms_title">SMS STUFF</string>
+  <string name="pref_group_sms_summary">PREFS RELATED TO PLAY-VIA-SMS</string>
+  <string name="pref_group_relay_title">RELAY STUFF</string>
+  <string name="pref_group_relay_summary">PREFS RELATED TO PLAY VIA INTERNET/RELAY</string>
+  <string name="pref_group_l10n_title">LOCALIZATION STUFF</string>
+  <string name="pref_group_l10n_summary">PREFS RELATED TO IN-APP LOCALIZATION</string>
+  <string name="pref_item_update_title">UPDATE BETWEEN RELEASES</string>
+  <string name="pref_item_update_summary">GET INTERMEDIATE BUILDS</string>
 </resources>

@@ -2401,6 +2401,10 @@
     <string name="disable_nag_summary">Do not notify me no matter
     how long it\'s been my turn</string>
 
+  <string name="confirm_get_locdict_fmt">Your device is set up for
+  %1$s. Would you like to download a wordlist so you can play
+  Crosswords in %1$s?</string>
+
   <!-- Debugging stuff. Localize if you think your langauge users will
        care. -->
   <string name="advanced">For debugging</string>
@@ -2449,8 +2453,14 @@
   <string name="got_langdict_title">Fetch default wordlist for language</string>
   <string name="got_langdict_summary">Don\'t try a second time</string>
 
-  <string name="confirm_get_locdict_fmt">Your device is set up for
-  %1$s. Would you like to download a wordlist so you can play
-  Crosswords in %1$s?</string>
+  <string name="pref_group_sms_title">SMS Stuff</string>
+  <string name="pref_group_sms_summary">Prefs related to play-via-sms</string>
+  <string name="pref_group_relay_title">Relay Stuff</string>
+  <string name="pref_group_relay_summary">Prefs related to play via internet/relay</string>
+  <string name="pref_group_l10n_title">Localization Stuff</string>
+  <string name="pref_group_l10n_summary">Prefs related to in-app localization</string>
+  <string name="pref_item_update_title">Update between releases</string>
+  <string name="pref_item_update_summary">Get intermediate builds</string>
+
 
 </resources>

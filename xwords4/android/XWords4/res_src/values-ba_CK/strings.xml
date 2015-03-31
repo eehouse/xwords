@@ -2080,6 +2080,9 @@
   <string name="disable_nag_title">Elbasid nrut srednimer</string>
   <string name="disable_nag_summary">Od ton yfiton em on rettam
     woh gnol ti\'s neeb ym nrut</string>
+  <string name="confirm_get_locdict_fmt">Ruoy ecived si tes pu rof
+  %1$s. Dluow uoy ekil ot daolnwod a tsildrow os uoy nac yalp
+  Sdrowssorc ni %1$s?</string>
   <!-- Debugging stuff. Localize if you think your langauge users will
        care. -->
   <string name="advanced">Rof gniggubed</string>
@@ -2122,7 +2125,12 @@
   <string name="expl_update_url">Etadpu skcehc LRU</string>
   <string name="got_langdict_title">Hctef tluafed tsildrow rof egaugnal</string>
   <string name="got_langdict_summary">Nod\'t yrt a dnoces emit</string>
-  <string name="confirm_get_locdict_fmt">Ruoy ecived si tes pu rof
-  %1$s. Dluow uoy ekil ot daolnwod a tsildrow os uoy nac yalp
-  Sdrowssorc ni %1$s?</string>
+  <string name="pref_group_sms_title">SMS Ffuts</string>
+  <string name="pref_group_sms_summary">Sferp detaler ot sms-aiv-yalp</string>
+  <string name="pref_group_relay_title">Yaler Ffuts</string>
+  <string name="pref_group_relay_summary">Sferp detaler ot yalp aiv yaler/tenretni</string>
+  <string name="pref_group_l10n_title">Noitazilacol Ffuts</string>
+  <string name="pref_group_l10n_summary">Sferp detaler ot ppa-ni noitazilacol</string>
+  <string name="pref_item_update_title">Etadpu neewteb sesaeler</string>
+  <string name="pref_item_update_summary">Teg etaidemretni sdliub</string>
 </resources>
