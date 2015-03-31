@@ -602,10 +602,10 @@ partie. Voulez-vous inviter quelqu\'un - - à moins que vous ne l\'ayez déjà
 fait ?</string>-->
     <plurals name="invite_msg_fmt">
         <item quantity="one">Il manque un joueur distant à cette
-partie. Voulez-vous inviter quelqu\'un -- à moins que vous ne l\'ayez déjà
+partie. Voulez-vous inviter quelqu\'un – à moins que vous ne l\'ayez déjà
 fait ?</item>
         <item quantity="other">Il manque %1$d joueurs distants à cette
-partie. Voulez-vous inviter quelqu\'un -- à moins que vous ne l\'ayez déjà
+partie. Voulez-vous inviter quelqu\'un – à moins que vous ne l\'ayez déjà
 fait ?</item>
     </plurals>
 
@@ -1983,9 +1983,9 @@ effaciez la partie qui les contient</string>
     <!--<string name="not_again_values">This button changes whether the
         board shows letters on placed tiles or their point values.
         Use it to remind yourself what a tile is worth.</string>-->
-    <string name="not_again_values">Ce bouton détermine si on voit les lettres 
-– ou bien la valeur –, des jetons placés sur le plateau. Utilisez-le pour vous
-rappeler ce que vaut un jeton.</string>
+    <string name="not_again_values">Ce bouton fait alterner l\'affichage des
+jetons du plateau entre lettres et valeurs. Utilisez-le pour vous rappeler ce
+que vaut un jeton.</string>
     <!-- This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. -->
@@ -2746,8 +2746,8 @@ parties, %1$s, ne peut pas être effacé.</string>
     can instead tap the icons at the left to select or deselect games,
     then act on selected games, e.g. to delete them, using the menu or
     \"Actionbar.\"</string>-->
-    <string name="not_again_newselect">Toucher une partie l\'ouvre.\n\nSinon
-vous pouvez aussi toucher les icônes sur la gauche pour sélectionner ou
+    <string name="not_again_newselect">Toucher une partie l\'ouvre.\n\nVous
+pouvez aussi toucher les icônes sur la gauche pour sélectionner ou
 désélectionner des parties, par exemples pour les effacer, en utilisant le menu
 ou la \"barre d\'action\".</string>
 
