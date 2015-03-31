@@ -386,13 +386,19 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void showConfirmThen( String msg, Action action, Object... params )
     {
-        m_dlgDelegate.showConfirmThen( msg, action, params );
+        m_dlgDelegate.showConfirmThen( null, msg, action, params );
+    }
+
+    protected void showConfirmThen( Runnable onNA, String msg, int posButton, 
+                                    Action action, Object... params )
+    {
+        m_dlgDelegate.showConfirmThen( onNA, msg, posButton, action, params );
     }
 
     protected void showConfirmThen( String msg, int posButton, Action action,
                                     Object... params )
     {
-        m_dlgDelegate.showConfirmThen( msg, posButton, action, params );
+        m_dlgDelegate.showConfirmThen( null, msg, posButton, action, params );
     }
 
     protected void showConfirmThen( int msg, int posButton, int negButton, Action action )

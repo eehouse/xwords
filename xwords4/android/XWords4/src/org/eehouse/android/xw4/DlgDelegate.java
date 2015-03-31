@@ -329,47 +329,47 @@ public class DlgDelegate {
 
     public void showConfirmThen( String msg, Action action )
     {
-        showConfirmThen( msg, R.string.button_ok, action, null );
+        showConfirmThen( null, msg, R.string.button_ok, action, null );
     }
 
     public void showConfirmThen( int msgID, Action action )
     {
-        showConfirmThen( getString( msgID ), R.string.button_ok, action, null );
+        showConfirmThen( null, getString( msgID ), R.string.button_ok, action, null );
     }
 
-    public void showConfirmThen( String msg, Action action, Object[] params )
+    public void showConfirmThen( Runnable onNA, String msg, Action action, Object[] params )
     {
-        showConfirmThen( msg, R.string.button_ok, action, params );
+        showConfirmThen( onNA, msg, R.string.button_ok, action, params );
     }
 
-    public void showConfirmThen( String msg, int posButton, Action action )
+    public void showConfirmThen( Runnable onNA, String msg, int posButton, Action action )
     {
-        showConfirmThen( msg, posButton, action, null );
+        showConfirmThen( onNA, msg, posButton, action, null );
     }
 
     public void showConfirmThen( int msg, int posButton, int negButton, Action action )
     {
-        showConfirmThen( getString(msg), posButton, negButton, action, null );
+        showConfirmThen( null, getString(msg), posButton, negButton, action, null );
     }
 
     public void showConfirmThen( int msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( getString(msg), posButton, R.string.button_cancel, 
+        showConfirmThen( null, getString(msg), posButton, R.string.button_cancel, 
                          action, params );
     }
 
-    public void showConfirmThen( String msg, int posButton, Action action,
+    public void showConfirmThen( Runnable onNA, String msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( msg, posButton, R.string.button_cancel, action, 
+        showConfirmThen( onNA, msg, posButton, R.string.button_cancel, action, 
                          params );
     }
 
-    public void showConfirmThen( String msg, int posButton, int negButton, 
-                                 Action action, Object[] params )
+    public void showConfirmThen( Runnable onNA, String msg, int posButton, 
+                                 int negButton, Action action, Object[] params )
     {
-        DlgState state = new DlgState( DlgID.CONFIRM_THEN, msg, posButton, 
+        DlgState state = new DlgState( DlgID.CONFIRM_THEN, onNA, msg, posButton, 
                                        negButton, action, 0, params );
         addState( state );
         showDialog( DlgID.CONFIRM_THEN );
@@ -582,13 +582,17 @@ public class DlgDelegate {
 
     private Dialog createConfirmThenDialog( DlgState state, DlgID dlgID )
     {
-        OnClickListener lstnr = mkCallbackClickListener( state, null );
+        NotAgainView naView = (NotAgainView)
+            LocUtils.inflate( m_activity, R.layout.not_again_view );
+        naView.setMessage( state.m_msg );
+        naView.setShowNACheckbox( null != state.m_onNAChecked );
+        OnClickListener lstnr = mkCallbackClickListener( state, naView );
 
-        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
-        builder.setTitle( R.string.query_title );
-        builder.setMessage( state.m_msg );
-        builder.setPositiveButton( state.m_posButton, lstnr );
-        builder.setNegativeButton( state.m_negButton, lstnr );
+        AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
+            .setTitle( R.string.query_title )
+            .setView( naView )
+            .setPositiveButton( state.m_posButton, lstnr )
+            .setNegativeButton( state.m_negButton, lstnr );
         Dialog dialog = builder.create();
         
         return setCallbackDismissListener( dialog, state, dlgID );
@@ -708,8 +712,12 @@ public class DlgDelegate {
         cbkOnClickLstnr = new OnClickListener() {
                 public void onClick( DialogInterface dlg, int button ) {
                     if ( null != naView && naView.getChecked() ) {
-                        XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
-                                                 true );
+                        if ( 0 != state.m_prefsKey ) {
+                            XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
+                                                     true );
+                        } else if ( null != state.m_onNAChecked ) {
+                            state.m_onNAChecked.run();
+                        }
                     }
 
                     if ( Action.SKIP_CALLBACK != state.m_action ) {

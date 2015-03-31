@@ -1903,14 +1903,21 @@ public class GamesListDelegate extends ListDelegateBase
                 int code = LocUtils.codeForLangCode( m_activity, lc );
                 String[] names = DictLangCache.getHaveLang( m_activity, code );
                 if ( 0 == names.length ) {
+                    final Runnable onNA = new Runnable() {
+                            public void run() {
+                                XWPrefs.setPrefsBoolean( m_activity, R.string
+                                                         .key_got_langdict, 
+                                                         true );
+                            }
+                        };
                     OnGotLcDictListener lstnr = new OnGotLcDictListener() {
                             public void gotDictInfo( boolean success, String lang, 
                                                      String name ) {
                                 if ( success ) {
                                     String msg = getString( R.string.confirm_get_locdict_fmt, lang );
-                                    showConfirmThen( msg, R.string.button_download, 
-                                                     Action.DWNLD_LOC_DICT, lang, 
-                                                     name );
+                                    showConfirmThen( onNA, msg, R.string.button_download, 
+                                                     Action.DWNLD_LOC_DICT, 
+                                                     lang, name );
                                 }
                             }
                         };

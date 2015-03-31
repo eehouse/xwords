@@ -35,6 +35,7 @@ public class DlgState implements Parcelable {
     public ActionPair m_pair = null;
     public int m_prefsKey;
     public Object[] m_params;
+    public Runnable m_onNAChecked;
 
     public DlgState( DlgID dlgID, String msg, Action action )
     {
@@ -63,14 +64,15 @@ public class DlgState implements Parcelable {
     public DlgState( DlgID dlgID, String msg, int posButton, 
                      Action action, int prefsKey, Object[] params )
     {
-        this( dlgID, msg, posButton, R.string.button_cancel, 
+        this( dlgID, null, msg, posButton, R.string.button_cancel, 
               action, prefsKey, params );
     }
     
-    public DlgState( DlgID dlgID, String msg, int posButton, int negButton, 
+    public DlgState( DlgID dlgID, Runnable onNA, String msg, int posButton, int negButton, 
                      Action action, int prefsKey, Object[] params )
     {
         m_id = dlgID;
+        m_onNAChecked = onNA;
         m_msg = msg;
         m_posButton = posButton;
         m_negButton = negButton;
@@ -112,7 +114,7 @@ public class DlgState implements Parcelable {
             Action action = 0 > tmp ? null : Action.values()[tmp];
             int prefsKey = in.readInt();
             String msg = in.readString();
-            return new DlgState( id, msg, posButton, negButton, action, prefsKey, null );
+            return new DlgState( id, null, msg, posButton, negButton, action, prefsKey, null );
         }
 
         public DlgState[] newArray(int size) {

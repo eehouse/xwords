@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -41,5 +42,11 @@ public class NotAgainView extends LinearLayout {
     {
         CheckBox cbx = (CheckBox)findViewById( R.id.not_again_check );
         return cbx.isChecked();
+    }
+
+    public void setShowNACheckbox( boolean show )
+    {
+        findViewById( R.id.not_again_check )
+            .setVisibility( show ? View.VISIBLE : View.GONE );
     }
 }
