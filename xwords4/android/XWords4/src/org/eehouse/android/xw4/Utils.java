@@ -273,6 +273,14 @@ public class Utils {
         return name;
     }
 
+    public static String capitalize( String str )
+    {
+        if ( null != str && 0 < str.length() ) {
+            str = str.substring( 0, 1 ).toUpperCase() + str.substring( 1 );
+        }
+        return str;
+    }
+
     public static void setChecked( Dialog dialog, int id, boolean value )
     {
         CheckBox cbx = (CheckBox)dialog.findViewById( id );
