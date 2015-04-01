@@ -58,6 +58,7 @@ import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.DictLangCache.LangsArrayAdapter;
 
 public class GameConfigDelegate extends DelegateBase
     implements View.OnClickListener
@@ -527,7 +528,7 @@ public class GameConfigDelegate extends DelegateBase
             case REQUEST_LANG:
                 String langName = data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
                 selLangChanged( langName );
-                setSpinnerSelection( m_langSpinner, langName );
+                setLangSpinnerSelection( langName );
                 break;
             default:
                 Assert.fail();
@@ -868,6 +869,8 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == m_langSpinner ) {
             m_langSpinner = (Spinner)findViewById( R.id.lang_spinner );
 
+            final LangsArrayAdapter adapter = DictLangCache.getLangsAdapter( m_activity );
+
             OnItemSelectedListener onSel = 
                 new OnItemSelectedListener() {
                     @Override
@@ -879,7 +882,8 @@ public class GameConfigDelegate extends DelegateBase
                         if ( chosen.equals( m_browseText ) ) {
                             DictsDelegate.downloadForResult( m_activity, REQUEST_LANG );
                         } else {
-                            selLangChanged( chosen );
+                            String langName = adapter.getLangAtPosition( position );
+                            selLangChanged( langName );
                         }
                     }
 
@@ -887,7 +891,6 @@ public class GameConfigDelegate extends DelegateBase
                     public void onNothingSelected(AdapterView<?> parentView) {}
                 };
 
-            ArrayAdapter adapter = DictLangCache.getLangsAdapter( m_activity );
             String lang = DictLangCache.getLangName( m_activity, m_gi.dictLang );
             configSpinnerWDownload( m_langSpinner, adapter, onSel, lang );
         }
@@ -909,7 +912,20 @@ public class GameConfigDelegate extends DelegateBase
         adapter.setDropDownViewResource( resID );
         spinner.setAdapter( adapter );
         spinner.setOnItemSelectedListener( onSel );
-        setSpinnerSelection( spinner, curSel );
+        if ( m_langSpinner == spinner ) {
+            setLangSpinnerSelection( curSel );
+        } else {
+            setSpinnerSelection( spinner, curSel );
+        }
+    }
+
+    private void setLangSpinnerSelection( String sel )
+    {
+        LangsArrayAdapter adapter = (LangsArrayAdapter)m_langSpinner.getAdapter();
+        int pos = adapter.getPosForLang( sel );
+        if ( 0 <= pos ) {
+            m_langSpinner.setSelection( pos, true );
+        }
     }
 
     private void setSpinnerSelection( Spinner spinner, String sel )

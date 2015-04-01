@@ -18,6 +18,8 @@ public final class R {
         public static final int force_radio_names=0x7f06000b;
         public static final int game_summary_values=0x7f060009;
         public static final int language_codes=0x7f060007;
+        /**  These two arrays need to be kept in sync 
+         */
         public static final int language_names=0x7f060006;
         /**  Keep in sync with LocSearcher SHOW_BYS enum 
          */

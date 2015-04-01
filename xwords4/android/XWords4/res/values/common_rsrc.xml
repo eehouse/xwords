@@ -195,27 +195,28 @@
     <item>86400</item>
   </string-array>
 
+  <!-- These two arrays need to be kept in sync -->
   <string-array name="language_names">
     <item>@string/lang_unknown</item> <!-- Unknown -->
-    <item>@string/lang_name_english</item> <!-- 1 -->
-    <item>@string/lang_name_french</item>  <!-- 2 -->
-    <item>@string/lang_name_german</item>  <!-- 3 -->
-    <item>@string/lang_name_turkish</item> <!-- 4 -->
-    <item>@string/lang_name_arabic</item>  <!-- 5 -->
-    <item>@string/lang_name_spanish</item> <!-- 6 -->
-    <item>@string/lang_name_swedish</item> <!-- 7 -->
-    <item>@string/lang_name_polish</item>  <!-- 8 -->
-    <item>@string/lang_name_danish</item>  <!-- 9 -->
-    <item>@string/lang_name_italian</item> <!-- A -->
-    <item>@string/lang_name_dutch</item>   <!-- B -->
-    <item>@string/lang_name_catalan</item> <!-- C -->
-    <item>@string/lang_name_portuguese</item> <!-- D -->
+    <item>English</item> <!-- 1 -->
+    <item>French</item>  <!-- 2 -->
+    <item>German</item>  <!-- 3 -->
+    <item>Turkish</item> <!-- 4 -->
+    <item>Arabic</item>  <!-- 5 -->
+    <item>Spanish</item> <!-- 6 -->
+    <item>Swedish</item> <!-- 7 -->
+    <item>Polish</item>  <!-- 8 -->
+    <item>Danish</item>  <!-- 9 -->
+    <item>Italian</item> <!-- A -->
+    <item>Dutch</item>   <!-- B -->
+    <item>Catalan</item> <!-- C -->
+    <item>Portuguese</item> <!-- D -->
     <item></item> <!-- E -->
-    <item>@string/lang_name_russian</item>
+    <item>Russian</item>
     <item></item> <!-- 10 -->
-    <item>@string/lang_name_czech</item>
-    <item>@string/lang_name_greek</item>
-    <item>@string/lang_name_slovak</item>
+    <item>Czech</item>
+    <item>Greek</item>
+    <item>Slovak</item>
   </string-array>
 
   <string-array name="language_codes">

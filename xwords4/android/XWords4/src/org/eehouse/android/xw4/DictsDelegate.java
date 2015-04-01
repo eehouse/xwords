@@ -111,16 +111,14 @@ public class DictsDelegate extends ListDelegateBase
     private static class DictInfo implements Comparable {
         public String m_name;
         public String m_lang;
-        public String m_langLoc;
         public int m_nWords;
         public long m_nBytes;
         public String m_note;
-        public DictInfo( String name, String lang, String langLoc, int nWords, 
+        public DictInfo( String name, String lang, int nWords, 
                          long nBytes, String note )
         {
             m_name = name;
             m_lang = lang;
-            m_langLoc = langLoc;
             m_nWords = nWords;
             m_nBytes = nBytes;
             m_note = note;
@@ -189,8 +187,9 @@ public class DictsDelegate extends ListDelegateBase
                 int langCode = DictLangCache.getLangLangCode( m_context,
                                                               langName );
                 boolean expanded = ! m_closedLangs.contains( langName );
+                String locLangName = LocUtils.xlateLang( m_context, langName );
                 String name = getQuantityString( R.plurals.lang_name_fmt, info.m_numDicts,
-                                                 langName, info.m_numDicts );
+                                                 locLangName, info.m_numDicts );
                 result = ListGroup.make( m_context, convertView, 
                                          DictsDelegate.this, groupPos, name, 
                                          expanded );
@@ -1267,15 +1266,14 @@ public class DictsDelegate extends ListDelegateBase
                     for ( int ii = 0; !isCancelled() && ii < nLangs; ++ii ) {
                         JSONObject langObj = langs.getJSONObject( ii );
                         String langName = langObj.getString( "lang" );
-                        String locLangName = LocUtils.xlateLang( m_context, langName );
                     
                         if ( null != m_filterLang && 
-                             ! m_filterLang.equals( locLangName ) ) {
+                             ! m_filterLang.equals( langName ) ) {
                             continue;
                         }
 
-                        if ( ! curLangs.contains( locLangName ) ) {
-                            closedLangs.add( locLangName );
+                        if ( ! curLangs.contains( langName ) ) {
+                            closedLangs.add( langName );
                         }
 
                         JSONArray dicts = langObj.getJSONArray( "dicts" );
@@ -1293,14 +1291,13 @@ public class DictsDelegate extends ListDelegateBase
                             if ( 0 == note.length() ) {
                                 note = null;
                             }
-                            DictInfo info = 
-                                new DictInfo( name, langName, locLangName, 
-                                              nWords, nBytes, note );
+                            DictInfo info = new DictInfo( name, langName, nWords,
+                                                          nBytes, note );
 
                             if ( !m_quickFetchMode ) {
                                 // Check if we have it and it needs an update
                                 if ( DictLangCache.haveDict( m_activity, 
-                                                             locLangName, name )){
+                                                             langName, name )){
                                     boolean matches = true;
                                     String curSum = DictLangCache
                                         .getDictMD5Sum( m_activity, name );
@@ -1331,7 +1328,7 @@ public class DictsDelegate extends ListDelegateBase
                             DictInfo[] asArray = new DictInfo[dictNames.size()];
                             asArray = dictNames.toArray( asArray );
                             Arrays.sort( asArray );
-                            m_remoteInfo.put( locLangName, asArray );
+                            m_remoteInfo.put( langName, asArray );
                         }
                     }
 

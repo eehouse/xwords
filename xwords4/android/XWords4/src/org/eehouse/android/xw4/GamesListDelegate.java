@@ -1211,6 +1211,7 @@ public class GamesListDelegate extends ListDelegateBase
                                 XWPrefs.setPrefsString( m_activity, 
                                                         R.string.key_default_language, 
                                                         lang );
+                                name = DictUtils.removeDictExtn( name );
                                 int[] ids = { R.string.key_default_dict, 
                                               R.string.key_default_robodict };
                                 for ( int id : ids ) {
