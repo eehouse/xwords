@@ -78,7 +78,7 @@ def checkAndCopy( engNames, src, dest, verbose ):
             print 'unexpected elem:', elem.tag
             sys.exit(1)
 
-        if toRemove: toRemove.getparent().remove( toRemove )
+        if toRemove is not None: toRemove.getparent().remove( toRemove )
     
     if True:
         comment = etree.Comment(sComment % (src))
