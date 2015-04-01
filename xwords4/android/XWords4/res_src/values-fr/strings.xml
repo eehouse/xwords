@@ -3397,4 +3397,49 @@ numéros de téléphones sont les mêmes</string>
     <!--XLATE-ME-->
   <!--<string name="expl_update_url">Update checks URL</string>-->
   <string name="expl_update_url">URL de vérifications des mises à jour</string>
+
+    <!-- The invitation process begins with this query.  The choice is
+         between html and plaintext formatting but I also provide some
+         explanation/guidance. -->
+	<!--<string name="invite_choice_sms">SMS (texting)</string>-->
+	<string name="invite_choice_sms">SMS</string>
+	<!--<string name="invite_choice_email">Email</string>-->
+	<string name="invite_choice_email">Email</string>
+	<!--<string name="invite_choice_bt">Bluetooth</string>-->
+	<string name="invite_choice_bt">Bluetooth</string>
+	<!--<string name="invite_choice_nfc">NFC (\"Android beaming\")</string>-->
+	<string name="invite_choice_nfc">NFC (\"Android Beam\")</string>
+	<!--<string name="invite_choice_title">Inviting players: How?</string>-->
+	<string name="invite_choice_title">Comment inviter les joueurs ?</string>
+
+  <!--<string name="got_langdict_title">Fetch default wordlist for language</string>-->
+  <string name="got_langdict_title">Télécharger la liste de mots par défaut
+pour la langue</string>
+  <!--<string name="got_langdict_summary">Don\'t try a second time</string>-->
+  <string name="got_langdict_summary">Ne pas essayer une seconde fois</string>
+
+  <!--<string name="pref_group_sms_title">SMS Stuff</string>-->
+  <string name="pref_group_sms_title">Trucs pour les SMS</string>
+  <!--<string name="pref_group_sms_summary">Prefs related to play-via-sms</string>-->
+  <string name="pref_group_sms_summary">Préférences pour le jeu par SMS</string>
+  <!--<string name="pref_group_relay_title">Relay Stuff</string>-->
+  <string name="pref_group_relay_title">Trucs pour les relais</string>
+  <!--<string name="pref_group_relay_summary">Prefs related to play via internet/relay</string>-->
+  <string name="pref_group_relay_summary">Préférences pour le jeu par
+  Internet/relai</string>
+  <!--<string name="pref_group_l10n_title">Localization Stuff</string>-->
+  <string name="pref_group_l10n_title">Trucs pour la localisation</string>
+  <!--<string name="pref_group_l10n_summary">Prefs related to in-app localization</string>-->
+  <string name="pref_group_l10n_summary">Préférences pour la
+  localisation interne à l\'application</string>
+  <!--<string name="pref_item_update_title">Update between releases</string>-->
+  <string name="pref_item_update_title">Mettre à jour entre deux sorties</string>
+  <!--<string name="pref_item_update_summary">Get intermediate builds</string>-->
+  <string name="pref_item_update_summary">Obtenir les versions intermédiaires</string>
+  <!--<string name="confirm_get_locdict_fmt">Your device is set up for
+  %1$s. Would you like to download a wordlist so you can play
+  Crosswords in %1$s?</string>-->
+  <string name="confirm_get_locdict_fmt">Votre périphérique est
+  configuré en %1$s. Souhaitez-vous télécharger une liste de mots afin
+  de pouvoir jouer à Crosswords en %1$s ?</string>
 </resources>
