@@ -807,6 +807,8 @@ public class GamesListDelegate extends ListDelegateBase
                                 getDefaultPlayerName( m_activity, 0, true );
                         }
                         CommonPrefs.setDefaultPlayerName( m_activity, name );
+
+                        getDictForLangIf(); // hack!!!
                     }
                 });
             break;
@@ -910,9 +912,9 @@ public class GamesListDelegate extends ListDelegateBase
 
         tryStartsFromIntent( getIntent() );
 
-        askDefaultNameIf();
-
-        getDictForLangIf();
+        if ( !askDefaultNameIf() ) {
+            getDictForLangIf();
+        }
 
         m_origTitle = getTitle();
     } // init
@@ -1885,13 +1887,16 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private void askDefaultNameIf()
+    private boolean askDefaultNameIf()
     {
-        if ( null == CommonPrefs.getDefaultPlayerName( m_activity, 0, false ) ) {
+        boolean showing = 
+            null == CommonPrefs.getDefaultPlayerName( m_activity, 0, false );
+        if ( showing ) {
             String name = CommonPrefs.getDefaultPlayerName( m_activity, 0, true );
             CommonPrefs.setDefaultPlayerName( m_activity, name );
             showDialog( DlgID.GET_NAME );
         }
+        return showing;
     }
 
     private void getDictForLangIf()
