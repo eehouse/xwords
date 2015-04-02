@@ -249,8 +249,12 @@ public class PrefsDelegate extends DelegateBase
             m_activity.findPreference( m_keyLangs );
 
         String[] langs = DictLangCache.listLangs( m_activity );
-        lp.setEntries( langs );
-        lp.setDefaultValue( langs[0] );
+        String[] langsLoc = new String[langs.length];
+        for ( int ii = 0; ii < langs.length; ++ii ) {
+            langsLoc[ii] = LocUtils.xlateLang( m_activity, langs[ii] );
+        }
+        lp.setEntries( langsLoc );
+        lp.setDefaultValue( langsLoc[0] );
         lp.setEntryValues( langs );
     }
 

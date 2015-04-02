@@ -30,7 +30,7 @@
                       >
 
 	  <!-- entries provided programatically -->
-      <org.eehouse.android.xw4.XWListPreference
+      <org.eehouse.android.xw4.LangListPreference
 		  android:key="@string/key_default_language"
 		  android:title="@string/default_language"
 		  android:defaultValue="@string/lang_name_english"
