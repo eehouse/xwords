@@ -1920,8 +1920,13 @@ public class GamesListDelegate extends ListDelegateBase
                             public void gotDictInfo( boolean success, String lang, 
                                                      String name ) {
                                 if ( success ) {
-                                    String msg = getString( R.string.confirm_get_locdict_fmt, lang );
-                                    showConfirmThen( onNA, msg, R.string.button_download, 
+                                    String locLang = 
+                                        LocUtils.xlateLang( m_activity, lang );
+                                    String msg = 
+                                        getString( R.string.confirm_get_locdict_fmt, 
+                                                   locLang );
+                                    showConfirmThen( onNA, msg, R.string
+                                                     .button_download, 
                                                      Action.DWNLD_LOC_DICT, 
                                                      lang, name );
                                 }
