@@ -135,12 +135,10 @@ public class DictLangCache {
             int wordCount = info.wordCount;
             
             String langName = getLangName( context, dal.name );
-            if ( 0 == wordCount ) {
-                result = String.format( "%s (%s)", dal.name, langName );
-            } else {
-                result = String.format( "%s (%s/%d)", dal.name, langName, 
-                                        wordCount );
-            }
+            String locName = LocUtils.xlateLang( context, langName );
+            result = LocUtils.getString( context, R.string.dict_desc_fmt, 
+                                         dal.name, locName,
+                                         wordCount );
         }
         return result;
     }
