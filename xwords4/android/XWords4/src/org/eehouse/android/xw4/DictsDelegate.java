@@ -187,8 +187,9 @@ public class DictsDelegate extends ListDelegateBase
                 int langCode = DictLangCache.getLangLangCode( m_context,
                                                               langName );
                 boolean expanded = ! m_closedLangs.contains( langName );
-                String locLangName = LocUtils.xlateLang( m_context, langName );
-                String name = getQuantityString( R.plurals.lang_name_fmt, info.m_numDicts,
+                String locLangName = xlateLang( langName );
+                String name = getQuantityString( R.plurals.lang_name_fmt, 
+                                                 info.m_numDicts,
                                                  locLangName, info.m_numDicts );
                 result = ListGroup.make( m_context, convertView, 
                                          DictsDelegate.this, groupPos, name, 

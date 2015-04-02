@@ -1920,8 +1920,7 @@ public class GamesListDelegate extends ListDelegateBase
                             public void gotDictInfo( boolean success, String lang, 
                                                      String name ) {
                                 if ( success ) {
-                                    String locLang = 
-                                        LocUtils.xlateLang( m_activity, lang );
+                                    String locLang = xlateLang( lang );
                                     String msg = 
                                         getString( R.string.confirm_get_locdict_fmt, 
                                                    locLang );
