@@ -1967,6 +1967,7 @@
     <item quantity="one">%1$s (%2$d WORDLIST)</item>
     <item quantity="other">%1$s (%2$d WORDLISTS)</item>
   </plurals>
+  <string name="dict_desc_fmt">%1$s (%2$s/%3$d WORDS)</string>
   <string name="lang_unknown">UNKNOWN</string>
   <string name="not_again_dicts">THIS SCREEN LETS YOU INSTALL NEW
     WORDLISTS AND VIEW THE ONES YOU ALREADY HAVE.\n\nWHAT WORDLISTS

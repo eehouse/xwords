@@ -1967,6 +1967,7 @@
     <item quantity="one">%1$s (%2$d )tsildrow</item>
     <item quantity="other">%1$s (%2$d )stsildrow</item>
   </plurals>
+  <string name="dict_desc_fmt">%1$s (%2$s/%3$d )sdrow</string>
   <string name="lang_unknown">Nwonknu</string>
   <string name="not_again_dicts">Siht neercs stel uoy llatsni wen
     stsildrow dna weiv eht seno uoy ydaerla evah.\n\nTahw stsildrow
