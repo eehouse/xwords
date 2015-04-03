@@ -2983,6 +2983,9 @@ téléchargement : %2$dk\nNote : %2$s</string>
         <item quantity="other">%1$s (%2$d listes de mots)</item>
     </plurals>
 
+    <!--<string name="dict_desc_fmt">%1$s (%2$s/%3$d words)</string>-->
+    <string name="dict_desc_fmt">%1$s (%2$s/%3$d mots)</string>
+
     <!--<string name="lang_unknown">Unknown</string>-->
     <string name="lang_unknown">Inconnu</string>
 
