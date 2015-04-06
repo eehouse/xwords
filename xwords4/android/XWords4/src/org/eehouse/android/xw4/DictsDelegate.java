@@ -765,8 +765,9 @@ public class DictsDelegate extends ListDelegateBase
             int nLeftAfter = data.nDicts - data.delDicts.size();
 
             if ( 0 == nLeftAfter ) { // last in this language?
+                String locName = xlateLang( data.langName );
                 String newMsg = getString( R.string.confirm_deleteonly_dicts_fmt,
-                                           data.dictsStr(), data.langName );
+                                           data.dictsStr(), locName );
                 msg += "\n\n" + newMsg;
             }
         }
