@@ -625,16 +625,17 @@ public class GamesListDelegate extends ListDelegateBase
             String message;
             String langName = 
                 DictLangCache.getLangName( m_activity, m_missingDictLang );
+            String locLang = xlateLang( langName );
             String gameName = GameUtils.getName( m_activity, m_missingDictRowId );
             if ( DlgID.WARN_NODICT == dlgID ) {
-                message = getString( R.string.no_dict_fmt, gameName, langName );
+                message = getString( R.string.no_dict_fmt, gameName, locLang );
             } else if ( DlgID.WARN_NODICT_NEW == dlgID ) {
                 message = getString( R.string.invite_dict_missing_body_noname_fmt,
-                                     null, m_missingDictName, langName );
+                                     null, m_missingDictName, locLang );
             } else {
                 // WARN_NODICT_SUBST
                 message = getString( R.string.no_dict_subst_fmt, gameName, 
-                                     m_missingDictName, langName );
+                                     m_missingDictName, locLang );
             }
 
             ab = makeAlertBuilder()
