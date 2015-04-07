@@ -16,9 +16,12 @@
     </target>
 
     <target name="my-pre-build">
-      <exec dir="." executable="../scripts/key-setup.sh"
-            failonerror="true"
-            />
+
+        <exec dir="." executable="../scripts/key-setup.sh" failonerror="true"
+              >
+          <arg value="${build.target}"/>
+        </exec>
+
         <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null"
               failonerror="true">
             <arg value="${build.target}"/>
