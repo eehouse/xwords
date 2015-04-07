@@ -2,17 +2,23 @@
 
 set -e -u
 
+ANDROID_NDK=${ANDROID_NDK:-''}
+
 if [ ! -e build.xml ]; then
     echo "no build.xml; please run from root of source tree"
     exit 1
 fi
 
-if [ -z "$NDK_ROOT" ]; then
-    echo -n "NDK_ROOT not set... "
-    echo "NDK not found; install and set NDK_ROOT to point to it"
-    exit 1
+if [ -z "$ANDROID_NDK" ]; then
+	if which ndk-build >/dev/null; then
+		ANDROID_NDK=$(dirname $(which ndk-build))
+	else
+		echo -n "ANDROID_NDK not set... "
+		echo "NDK not found; install and set ANDROID_NDK to point to it"
+		exit 1
+	fi
 fi
 
-${NDK_ROOT}/ndk-build $*
+${ANDROID_NDK}/ndk-build $*
 
 echo "$0 done"
