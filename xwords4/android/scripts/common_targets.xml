@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="XWords4">
+<project>
 
     <target name="my-pre-clean">
         <exec dir="." executable="../scripts/rm-non-git.sh" output="/dev/null" 
