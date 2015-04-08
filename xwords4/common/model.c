@@ -1864,19 +1864,18 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 void
 model_sortTiles( ModelCtxt* model, XP_S16 turn )
 {
-    XP_S16 nTiles;
-
-    TrayTileSet sorted;
-    const TrayTileSet* curTiles = model_getPlayerTiles( model, turn );
     XP_U16 dividerLoc = model_getDividerLoc( model, turn );
-    sortTiles( &sorted, curTiles, dividerLoc );
+    const TrayTileSet* curTiles = model_getPlayerTiles( model, turn );
+    if ( curTiles->nTiles >= dividerLoc) { /* any to sort? */
+        TrayTileSet sorted;
+        sortTiles( &sorted, curTiles, dividerLoc );
 
-    nTiles = sorted.nTiles;
-    while ( nTiles > 0 ) {
-        removePlayerTile( model, turn, --nTiles );
+        for ( XP_S16 nTiles = sorted.nTiles; nTiles > 0; ) {
+            removePlayerTile( model, turn, --nTiles );
+        }
+
+        assignPlayerTiles( model, turn, &sorted );
     }
-
-    assignPlayerTiles( model, turn, &sorted );
 } /* model_sortTiles */
 
 XP_U16
