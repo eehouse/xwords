@@ -366,12 +366,14 @@ makeGamesWindow( GtkAppGlobals* apg )
     
     gtk_widget_show( list );
 
-    GSList* games = listGames( params->pDb );
-    for ( GSList* iter = games; !!iter; iter = iter->next ) {
-        sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
-        onNewData( apg, *rowid, XP_TRUE );
+    if ( !!params->pDb ) {
+        GSList* games = listGames( params->pDb );
+        for ( GSList* iter = games; !!iter; iter = iter->next ) {
+            sqlite3_int64* rowid = (sqlite3_int64*)iter->data;
+            onNewData( apg, *rowid, XP_TRUE );
+        }
+        g_slist_free( games );
     }
-    g_slist_free( games );
 
     GtkWidget* hbox = gtk_hbox_new( FALSE, 0 );
     gtk_widget_show( hbox );
@@ -385,6 +387,17 @@ makeGamesWindow( GtkAppGlobals* apg )
     (void)addButton( "Quit", hbox, G_CALLBACK(handle_quit_button), apg );
     updateButtons( apg );
 
+    gtk_widget_show( window );
+    return window;
+}
+
+static GtkWidget* 
+openDBFile( GtkAppGlobals* apg )
+{
+    GtkGameGlobals* globals = malloc( sizeof(*globals) );
+    initGlobals( globals, apg->params, NULL );
+
+    GtkWidget* window = globals->window;
     gtk_widget_show( window );
     return window;
 }
@@ -619,59 +632,64 @@ gtkmain( LaunchParams* params )
 
     apg.selRows = g_array_new( FALSE, FALSE, sizeof( sqlite3_int64 ) );
     apg.params = params;
-    XP_ASSERT( !!params->dbName );
-    params->pDb = openGamesDB( params->dbName );
+    XP_ASSERT( !!params->dbName || params->dbFileName );
+    if ( !!params->dbName ) {
+        params->pDb = openGamesDB( params->dbName );
 
-    /* Check if we have a local ID already.  If we do and it's
-       changed, we care. */
-    XP_Bool idIsNew = linux_setupDevidParams( params );
+        /* Check if we have a local ID already.  If we do and it's
+           changed, we care. */
+        XP_Bool idIsNew = linux_setupDevidParams( params );
 
-    if ( params->useUdp ) {
-        RelayConnProcs procs = {
-            .msgReceived = gtkGotBuf,
-            .msgNoticeReceived = gtkNoticeRcvd,
-            .devIDReceived = gtkDevIDReceived,
-            .msgErrorMsg = gtkErrorMsgRcvd,
-            .socketAdded = gtkSocketAdded,
-        };
+        if ( params->useUdp ) {
+            RelayConnProcs procs = {
+                .msgReceived = gtkGotBuf,
+                .msgNoticeReceived = gtkNoticeRcvd,
+                .devIDReceived = gtkDevIDReceived,
+                .msgErrorMsg = gtkErrorMsgRcvd,
+                .socketAdded = gtkSocketAdded,
+            };
 
-        relaycon_init( params, &procs, &apg, 
-                       params->connInfo.relay.relayName,
-                       params->connInfo.relay.defaultSendPort );
+            relaycon_init( params, &procs, &apg, 
+                           params->connInfo.relay.relayName,
+                           params->connInfo.relay.defaultSendPort );
 
-        linux_doInitialReg( params, idIsNew );
-    }
+            linux_doInitialReg( params, idIsNew );
+        }
 
 #ifdef XWFEATURE_SMS
-    gchar buf[32];
-    const gchar* myPhone = params->connInfo.sms.phone;
-    if ( !!myPhone ) {
-        db_store( params->pDb, KEY_SMSPHONE, myPhone );
-    } else if ( !myPhone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
-        params->connInfo.sms.phone = myPhone = buf;
-    }
-    XP_U16 myPort = params->connInfo.sms.port;
-    gchar portbuf[8];
-    if ( 0 < myPort ) {
-        sprintf( portbuf, "%d", myPort );
-        db_store( params->pDb, KEY_SMSPORT, portbuf );
-    } else if ( db_fetch( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
-        params->connInfo.sms.port = myPort = atoi( portbuf );
-    }
-    if ( !!myPhone && 0 < myPort ) {
-        SMSProcs smsProcs = {
-            .socketAdded = gtkSocketAdded,
-            .inviteReceived = smsInviteReceived,
-            .msgReceived = smsMsgReceivedGTK,
-        };
-        linux_sms_init( params, myPhone, myPort, &smsProcs, &apg );
-    } else {
-        XP_LOGF( "not activating SMS: I don't have a phone" );
-    }
+        gchar buf[32];
+        const gchar* myPhone = params->connInfo.sms.phone;
+        if ( !!myPhone ) {
+            db_store( params->pDb, KEY_SMSPHONE, myPhone );
+        } else if ( !myPhone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+            params->connInfo.sms.phone = myPhone = buf;
+        }
+        XP_U16 myPort = params->connInfo.sms.port;
+        gchar portbuf[8];
+        if ( 0 < myPort ) {
+            sprintf( portbuf, "%d", myPort );
+            db_store( params->pDb, KEY_SMSPORT, portbuf );
+        } else if ( db_fetch( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
+            params->connInfo.sms.port = myPort = atoi( portbuf );
+        }
+        if ( !!myPhone && 0 < myPort ) {
+            SMSProcs smsProcs = {
+                .socketAdded = gtkSocketAdded,
+                .inviteReceived = smsInviteReceived,
+                .msgReceived = smsMsgReceivedGTK,
+            };
+            linux_sms_init( params, myPhone, myPort, &smsProcs, &apg );
+        } else {
+            XP_LOGF( "not activating SMS: I don't have a phone" );
+        }
+
 
 #endif
+        apg.window = makeGamesWindow( &apg );
+    } else if ( !!params->dbFileName ) {
+        apg.window = openDBFile( &apg );
+    }
 
-    apg.window = makeGamesWindow( &apg );
     gtk_main();
 
     closeGamesDB( params->pDb );

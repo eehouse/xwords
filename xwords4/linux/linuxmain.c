@@ -2206,6 +2206,7 @@ main( int argc, char** argv )
                    "disabling XWFEATURE_SEARCHLIMIT" );
 # endif
             mainParams.dbFileName = optarg;
+            break;
         case CMD_GAMEDB_ID:
             mainParams.dbFileID = atoi(optarg);
             break;

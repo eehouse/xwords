@@ -367,7 +367,7 @@ linux_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ,
         cGlobals->params->lDevID = NULL;
         break;
     case ID_TYPE_RELAY:
-        if ( 0 < strlen( idRelay ) ) {
+        if ( !!cGlobals->pDb && 0 < strlen( idRelay ) ) {
             XP_LOGF( "%s: new id: %s", __func__, idRelay );
             db_store( cGlobals->pDb, KEY_RDEVID, idRelay );
         }
