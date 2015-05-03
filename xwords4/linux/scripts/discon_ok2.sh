@@ -418,7 +418,7 @@ check_game() {
         echo -n "Closing $CONNNAME [$(date)]: "
         # kill_from_logs $OTHERS $KEY
         for ID in $OTHERS $KEY; do
-            echo -n "${LOGS[$ID]}, "
+            echo -n "${ID}:${LOGS[$ID]}, "
             kill_from_log ${LOGS[$ID]} || /bin/true
             close_device $ID $DONEDIR "game over"
         done
