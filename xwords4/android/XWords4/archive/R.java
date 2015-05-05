@@ -72,14 +72,15 @@ public final class R {
         public static final int save__gen=0x7f020021;
         public static final int search__gen=0x7f020022;
         public static final int select_all__gen=0x7f020023;
-        public static final int shuffle=0x7f020024;
-        public static final int sologame__gen=0x7f020025;
-        public static final int stat_notify_chat=0x7f020026;
-        public static final int stat_notify_sync=0x7f020027;
-        public static final int undo=0x7f020028;
-        public static final int up__gen=0x7f020029;
-        public static final int values=0x7f02002a;
-        public static final int zoom=0x7f02002b;
+        public static final int send__gen=0x7f020024;
+        public static final int shuffle=0x7f020025;
+        public static final int sologame__gen=0x7f020026;
+        public static final int stat_notify_chat=0x7f020027;
+        public static final int stat_notify_sync=0x7f020028;
+        public static final int undo=0x7f020029;
+        public static final int up__gen=0x7f02002a;
+        public static final int values=0x7f02002b;
+        public static final int zoom=0x7f02002c;
     }
     public static final class id {
         public static final int about_xlator=0x7f0a0001;
