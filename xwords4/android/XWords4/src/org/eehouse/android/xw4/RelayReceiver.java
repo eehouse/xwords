@@ -36,25 +36,26 @@ public class RelayReceiver extends BroadcastReceiver {
         RelayService.timerFired( context );
     }
 
-    public static void restartTimer( Context context )
+    public static void setTimer( Context context )
     {
-        restartTimer( context, 1000 * XWPrefs.getProxyInterval( context ) );
+        setTimer( context, 1000 * XWPrefs.getProxyInterval( context ) );
     }
 
-    public static void restartTimer( Context context, long interval_millis )
+    public static void setTimer( Context context, long interval_millis )
     {
+        DbgUtils.logf( "RelayReceiver.restartTimer(%d)", interval_millis );
         AlarmManager am =
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
 
         Intent intent = new Intent( context, RelayReceiver.class );
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
-        if ( interval_millis > 0 ) {
-            long first_millis = SystemClock.elapsedRealtime() + interval_millis;
-            am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
-                                    first_millis, // first firing
-                                    interval_millis, pi );
+        // Check if we have any relay games
+        if ( interval_millis > 0 && DBUtils.haveRelayGames( context ) ) {
+            long fire_millis = SystemClock.elapsedRealtime() + interval_millis;
+            am.set( AlarmManager.ELAPSED_REALTIME_WAKEUP, fire_millis, pi );
         } else {
+            DbgUtils.logf( "RelayReceiver.restartTimer(): cancelling" );
             // will happen if user's set getProxyInterval to return 0
             am.cancel( pi );
         }

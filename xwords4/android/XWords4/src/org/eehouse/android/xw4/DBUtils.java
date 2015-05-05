@@ -751,6 +751,15 @@ public class DBUtils {
         return result;
     }
 
+    public static boolean haveRelayGames( Context context )
+    {
+        long[][] rowIDss = new long[1][];
+        String[] relayIDs = getRelayIDs( context, rowIDss );
+        boolean result = null != relayIDs && 0 < relayIDs.length;
+        DbgUtils.logf( "haveRelayGames() => %b", result );
+        return result;
+    }
+
     public static void addDeceased( Context context, String relayID, 
                                     int seed )
     {

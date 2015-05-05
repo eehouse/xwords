@@ -348,6 +348,7 @@ public class RelayService extends XWService
                     } else if ( registerWithRelayIfNot() ) {
                         requestMessages();
                     }
+                    RelayReceiver.setTimer( this );
                     break;
                 default:
                     Assert.fail();
@@ -371,7 +372,7 @@ public class RelayService extends XWService
     {
         if ( shouldMaintainConnection() ) {
             long interval_millis = getMaxIntervalSeconds() * 1000;
-            RelayReceiver.restartTimer( this, interval_millis );
+            RelayReceiver.setTimer( this, interval_millis );
         }
         stopThreads();
         super.onDestroy();
