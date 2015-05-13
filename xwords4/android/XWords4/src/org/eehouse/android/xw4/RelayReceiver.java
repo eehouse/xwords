@@ -50,8 +50,9 @@ public class RelayReceiver extends BroadcastReceiver {
         Intent intent = new Intent( context, RelayReceiver.class );
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
-        // Check if we have any relay games
-        if ( interval_millis > 0 && DBUtils.haveRelayGames( context ) ) {
+        // Check if we have any relay IDs, since we'll be using them to
+        // identify connected games for which we can fetch messages
+        if ( interval_millis > 0 && DBUtils.haveRelayIDs( context ) ) {
             long fire_millis = SystemClock.elapsedRealtime() + interval_millis;
             am.set( AlarmManager.ELAPSED_REALTIME_WAKEUP, fire_millis, pi );
         } else {

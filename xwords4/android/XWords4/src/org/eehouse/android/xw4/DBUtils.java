@@ -280,6 +280,7 @@ public class DBUtils {
     public static void saveSummary( Context context, GameLock lock,
                                     GameSummary summary, String inviteID )
     {
+        boolean needsTimer = false;
         Assert.assertTrue( lock.canWrite() );
         long rowid = lock.getRowid();
         String selection = String.format( ROW_ID_FMT, rowid );
@@ -328,7 +329,9 @@ public class DBUtils {
                     switch ( iter.next() ) {
                     case COMMS_CONN_RELAY:
                         values.put( DBHelper.ROOMNAME, summary.roomName );
-                        values.put( DBHelper.RELAYID, summary.relayID );
+                        String relayID = summary.relayID;
+                        values.put( DBHelper.RELAYID, relayID );
+                        needsTimer = null != relayID && 0 < relayID.length();
                         break;
                     case COMMS_CONN_BT:
                     case COMMS_CONN_SMS:
@@ -360,6 +363,10 @@ public class DBUtils {
 
         if ( null != summary ) { // nag time may have changed
             NagTurnReceiver.setNagTimer( context );
+        }
+
+        if ( needsTimer ) {
+            RelayReceiver.setTimer( context );
         }
     } // saveSummary
 
@@ -751,7 +758,7 @@ public class DBUtils {
         return result;
     }
 
-    public static boolean haveRelayGames( Context context )
+    public static boolean haveRelayIDs( Context context )
     {
         long[][] rowIDss = new long[1][];
         String[] relayIDs = getRelayIDs( context, rowIDss );
