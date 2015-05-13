@@ -36,7 +36,8 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class DictsActivity extends XWListActivity {
 
     private static interface SafePopup {
-        public void doPopup( Context context, View button, String curDict );
+        public void doPopup( Context context, View button, 
+                             String curDict, int lang );
     }
     private static SafePopup s_safePopup = null;
     // I can't provide a subclass of MenuItem to hold DictAndLoc, so
@@ -61,7 +62,7 @@ public class DictsActivity extends XWListActivity {
 
     private static class SafePopupImpl implements SafePopup {
         public void doPopup( final Context context, View button, 
-                             String curDict ) {
+                             String curDict, int lang ) {
 
             MenuItem.OnMenuItemClickListener listener = 
                 new MenuItem.OnMenuItemClickListener() {
@@ -83,8 +84,6 @@ public class DictsActivity extends XWListActivity {
             s_itemData = new HashMap<MenuItem, DictAndLoc>();
             PopupMenu popup = new PopupMenu( context, button );
             Menu menu = popup.getMenu();
-            menu.add( R.string.show_wordlist_browser )
-                .setOnMenuItemClickListener( listener );
 
             // Add at top but save until have dal info
             MenuItem curItem =
@@ -92,19 +91,23 @@ public class DictsActivity extends XWListActivity {
                                               R.string.cur_menu_marker_fmt, 
                                               curDict ) );
 
-            DictAndLoc[] dals = DictUtils.dictList( context );
+            DictAndLoc[] dals = DictLangCache.getDALsHaveLang( context, lang );
             for ( DictAndLoc dal : dals ) {
                 MenuItem item = dal.name.equals(curDict)
                     ? curItem : menu.add( dal.name );
                 item.setOnMenuItemClickListener( listener );
                 s_itemData.put( item, dal );
             }
+
+            menu.add( R.string.show_wordlist_browser )
+                .setOnMenuItemClickListener( listener );
+
             popup.show();
         }
     }
 
     public static boolean handleDictsPopup( Context context, View button,
-                                            String curDict )
+                                            String curDict, int lang )
     {
         if ( null == s_safePopup ) {
             int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
@@ -115,7 +118,7 @@ public class DictsActivity extends XWListActivity {
 
         boolean canHandle = null != s_safePopup;
         if ( canHandle ) {
-            s_safePopup.doPopup( context, button, curDict );
+            s_safePopup.doPopup( context, button, curDict, lang );
         }
         return canHandle;
     }

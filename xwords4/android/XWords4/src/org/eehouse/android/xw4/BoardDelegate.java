@@ -937,7 +937,8 @@ public class BoardDelegate extends DelegateBase
                 String curDict = m_gi.dictName( m_view.getCurPlayer() );
                 View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
                 if ( Action.BUTTON_BROWSEALL_ACTION == action &&
-                     DictsActivity.handleDictsPopup( m_activity, button, curDict ) ) {
+                     DictsActivity.handleDictsPopup( m_activity, button, 
+                                                     curDict, m_gi.dictLang ) ){
                     break;
                 }
                 DictBrowseDelegate.launch( m_activity, curDict );
