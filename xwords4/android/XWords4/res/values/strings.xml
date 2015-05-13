@@ -2050,7 +2050,9 @@
     <!-- Used in formatting final scores display -->
     <string name="str_resigned">Resigned</string>
     <!-- Used in formatting final scores display -->
-    <string name="str_winner">Winner</string>
+    <string name="str_winner_fmt" formatted="false">[Winner] %s: %d</string>
+    <string name="str_resigned_fmt" formatted="false">[Resigned] %s: %d</string>
+    <string name="str_placer_fmt" formatted="false">[#%d] %s: %d</string>
 
     <!--  -->
     <string name="inform_dict_diffversion_fmt">You and the host of this

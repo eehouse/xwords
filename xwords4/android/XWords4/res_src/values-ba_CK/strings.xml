@@ -1781,7 +1781,9 @@
   <!-- Used in formatting final scores display -->
   <string name="str_resigned">Dengiser</string>
   <!-- Used in formatting final scores display -->
-  <string name="str_winner">Renniw</string>
+  <string name="str_winner_fmt" formatted="false">]Renniw[ s%: d%</string>
+  <string name="str_resigned_fmt" formatted="false">]Dengiser[ s%: d%</string>
+  <string name="str_placer_fmt" formatted="false">]d%#[ s%: d%</string>
   <!--  -->
   <string name="inform_dict_diffversion_fmt">Uoy dna eht tsoh fo siht
     emag era gnisu tnereffid snoisrev fo eht tsildrow %1$s.</string>

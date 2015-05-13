@@ -197,11 +197,14 @@ public class UtilCtxtImpl implements UtilCtxt {
         case UtilCtxt.STRD_TURN_SCORE:
             id = R.string.strd_turn_score_fmt;
             break;
-        case UtilCtxt.STR_RESIGNED:
-            id = R.string.str_resigned;
+        case UtilCtxt.STRSD_RESIGNED:
+            id = R.string.str_resigned_fmt;
             break;
-        case UtilCtxt.STR_WINNER:
-            id = R.string.str_winner;
+        case UtilCtxt.STRSD_WINNER:
+            id = R.string.str_winner_fmt;
+            break;
+        case UtilCtxt.STRDSD_PLACER:
+            id = R.string.str_placer_fmt;
             break;
 
         default:

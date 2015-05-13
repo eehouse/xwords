@@ -94,8 +94,10 @@ public interface UtilCtxt {
     static final int STRD_TURN_SCORE =                   18;
     static final int STRD_REMAINS_HEADER =               19;
     static final int STRD_REMAINS_EXPL =                 20;
-    static final int STR_RESIGNED =                      21;
-    static final int STR_WINNER =                        22;
+    static final int STRSD_RESIGNED =                    21;
+    static final int STRSD_WINNER =                      22;
+    static final int STRDSD_PLACER  =                    23;
+
 
     String getUserString( int stringCode );
     String getUserQuantityString( int stringCode, int quantity );

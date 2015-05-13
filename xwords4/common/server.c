@@ -3121,8 +3121,6 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
         XP_UCHAR buf[128]; 
         XP_S16 thisScore = IMPOSSIBLY_LOW_SCORE;
         XP_S16 thisIndex = -1;
-        const XP_UCHAR* placeStr = NULL;
-        XP_UCHAR placeBuf[32];
         XP_UCHAR tmpbuf[48];
         XP_U16 ii, placeKey = 0;
         XP_Bool firstDone;
@@ -3145,21 +3143,12 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
                 XP_ASSERT( !quitterDone );
                 thisIndex = quitter;
                 quitterDone = XP_TRUE;
-                placeKey = STR_RESIGNED;
+                placeKey = STRSD_RESIGNED;
             } else {
                 break; /* we're done */
             }
         } else if ( thisScore == winningScore ) {
-            placeKey = STR_WINNER;
-        }
-
-        if ( !placeStr ) {
-            if ( 0 < placeKey ) {
-                placeStr = util_getUserString( server->vol.util, placeKey );
-            } else {
-                XP_SNPRINTF( placeBuf, VSIZE(placeBuf), "#%d", place );
-                placeStr = placeBuf;
-            }
+            placeKey = STRSD_WINNER;
         }
 
         timeStr = (XP_UCHAR*)"";
@@ -3182,12 +3171,24 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
                      tilePenalties.arr[thisIndex]:
                      -tilePenalties.arr[thisIndex] );
 
-        XP_SNPRINTF( buf, sizeof(buf), 
-                     (XP_UCHAR*)"[%s] %s: %d" XP_CR "  (%d %s%s)", placeStr, 
-                     emptyStringIfNull(gi->players[thisIndex].name),
-                     scores.arr[thisIndex], 
+        const XP_UCHAR* name = emptyStringIfNull(gi->players[thisIndex].name);
+        if ( 0 == placeKey ) {
+            const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
+                                                      STRDSD_PLACER );
+            XP_SNPRINTF( buf, sizeof(buf), fmt, place,
+                         name, scores.arr[thisIndex] );
+        } else {
+            const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
+                                                      placeKey );
+            XP_SNPRINTF( buf, sizeof(buf), fmt, name,
+                         scores.arr[thisIndex] );
+        }
+
+        XP_UCHAR buf2[64];
+        XP_SNPRINTF( buf2, sizeof(buf2), XP_CR "  (%d %s%s)",
                      model_getPlayerScore( model, thisIndex ),
                      tmpbuf, timeStr );
+        XP_STRCAT( buf, buf2 );
 
         if ( 1 < place ) {
             stream_catString( stream, XP_CR );

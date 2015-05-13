@@ -24,8 +24,9 @@
 # define STRD_TURN_SCORE                   18
 # define STRD_REMAINS_HEADER               19
 # define STRD_REMAINS_EXPL                 20
-# define STR_RESIGNED                      21
-# define STR_WINNER                        22
+# define STRSD_RESIGNED                    21
+# define STRSD_WINNER                      22
+# define STRDSD_PLACER                     23
 
-# define N_AND_USER_STRINGS                22
+# define N_AND_USER_STRINGS                23
 #endif

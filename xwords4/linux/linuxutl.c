@@ -330,10 +330,14 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
         return (XP_UCHAR*)"%d tiles left in pool.";
     case STRD_REMAINS_EXPL:
         return (XP_UCHAR*)"%d tiles left in pool and all tray[s]:\n";
-    case STR_RESIGNED:
-        return "Resigned";
-    case STR_WINNER:
-        return "Winner";
+
+    case STRSD_RESIGNED:
+        return "[Resigned] %s: %d";
+    case STRSD_WINNER:
+        return "[Winner] %s: %d";
+    case STRDSD_PLACER:
+        return "[#%d] %s: %d";
+
     default:
         return (XP_UCHAR*)"unknown code to linux_util_getUserString";
     }
