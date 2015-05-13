@@ -2122,6 +2122,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
                                          traybuf1, sizeof(traybuf1), 
                                          XP_FALSE ) );
                 printString( stream, buf );
+                stream_catString( stream, (XP_UCHAR*)XP_CR );
             }
         }
 
