@@ -1779,8 +1779,6 @@
   <!--  -->
   <string name="new_app_avail">Pat ot daolnwod dna llatsni</string>
   <!-- Used in formatting final scores display -->
-  <string name="str_resigned">Dengiser</string>
-  <!-- Used in formatting final scores display -->
   <string name="str_winner_fmt" formatted="false">]Renniw[ s%: d%</string>
   <string name="str_resigned_fmt" formatted="false">]Dengiser[ s%: d%</string>
   <string name="str_placer_fmt" formatted="false">]d%#[ s%: d%</string>

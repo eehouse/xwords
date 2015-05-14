@@ -1779,8 +1779,6 @@
   <!--  -->
   <string name="new_app_avail">TAP TO DOWNLOAD AND INSTALL</string>
   <!-- Used in formatting final scores display -->
-  <string name="str_resigned">RESIGNED</string>
-  <!-- Used in formatting final scores display -->
   <string name="str_winner_fmt" formatted="false">[WINNER] %S: %D</string>
   <string name="str_resigned_fmt" formatted="false">[RESIGNED] %S: %D</string>
   <string name="str_placer_fmt" formatted="false">[#%D] %S: %D</string>

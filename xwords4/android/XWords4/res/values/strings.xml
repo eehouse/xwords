@@ -2048,8 +2048,6 @@
     <!--  -->
     <string name="new_app_avail">Tap to download and install</string>
     <!-- Used in formatting final scores display -->
-    <string name="str_resigned">Resigned</string>
-    <!-- Used in formatting final scores display -->
     <string name="str_winner_fmt" formatted="false">[Winner] %s: %d</string>
     <string name="str_resigned_fmt" formatted="false">[Resigned] %s: %d</string>
     <string name="str_placer_fmt" formatted="false">[#%d] %s: %d</string>
