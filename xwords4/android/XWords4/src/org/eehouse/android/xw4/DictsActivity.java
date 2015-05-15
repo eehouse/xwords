@@ -42,8 +42,6 @@ public class DictsActivity extends XWListActivity {
     private static SafePopup s_safePopup = null;
     // I can't provide a subclass of MenuItem to hold DictAndLoc, so
     // settle for a hash on the side.
-    private static HashMap<MenuItem, DictAndLoc> s_itemData;
-
     private DictsDelegate m_dlgt;
 
     @Override
@@ -64,24 +62,21 @@ public class DictsActivity extends XWListActivity {
         public void doPopup( final Context context, View button, 
                              String curDict, int lang ) {
 
+            final HashMap<MenuItem, DictAndLoc> itemData
+                = new HashMap<MenuItem, DictAndLoc>();
+
             MenuItem.OnMenuItemClickListener listener = 
                 new MenuItem.OnMenuItemClickListener() {
                     public boolean onMenuItemClick( MenuItem item )
                     {
-                        DictAndLoc dal = s_itemData.get( item );
-                        s_itemData = null;
+                        DictAndLoc dal = itemData.get( item );
 
-                        if ( null == dal ) {
-                            DictsActivity.start( context );
-                        } else {
-                            DictBrowseDelegate.launch( context, dal.name, 
-                                                       dal.loc );
-                        }
+                        DictBrowseDelegate.launch( context, dal.name, 
+                                                   dal.loc );
                         return true;
                     }
                 };
 
-            s_itemData = new HashMap<MenuItem, DictAndLoc>();
             PopupMenu popup = new PopupMenu( context, button );
             Menu menu = popup.getMenu();
 
@@ -96,11 +91,8 @@ public class DictsActivity extends XWListActivity {
                 MenuItem item = dal.name.equals(curDict)
                     ? curItem : menu.add( dal.name );
                 item.setOnMenuItemClickListener( listener );
-                s_itemData.put( item, dal );
+                itemData.put( item, dal );
             }
-
-            menu.add( R.string.show_wordlist_browser )
-                .setOnMenuItemClickListener( listener );
 
             popup.show();
         }
