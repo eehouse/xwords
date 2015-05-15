@@ -27,6 +27,7 @@ import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.text.Html;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -200,7 +201,7 @@ public class DictUtils {
                 fis.close();
                 loc = DictLoc.INTERNAL;
             } catch ( java.io.FileNotFoundException fnf ) {
-                DbgUtils.loge( fnf );
+                // DbgUtils.loge( fnf );
             } catch ( java.io.IOException ioe ) {
                 DbgUtils.loge( ioe );
             }
@@ -315,21 +316,23 @@ public class DictUtils {
         if ( loc == DictLoc.UNKNOWN || loc == DictLoc.BUILT_IN ) {
             try {
                 AssetManager am = context.getAssets();
-                InputStream dict = am.open( name, android.content.res.
-                                            AssetManager.ACCESS_RANDOM );
+                InputStream dict = am.open( name );
 
                 int len = dict.available(); // this may not be the
                                             // full length!
-                bytes = new byte[len];
-                int nRead = dict.read( bytes, 0, len );
-                if ( nRead != len ) {
-                    DbgUtils.logf( "**** warning ****; read only %d of %d bytes.",
-                                   nRead, len );
+                ByteArrayOutputStream bas = new ByteArrayOutputStream( len );
+                byte[] tmp = new byte[1024*16];
+                for ( ; ; ) {
+                    int nRead = dict.read( tmp, 0, tmp.length );
+                    if ( 0 >= nRead ) {
+                        break;
+                    }
+                    bas.write( tmp, 0, nRead );
                 }
-                // check that with len bytes we've read the whole file
+
                 Assert.assertTrue( -1 == dict.read() );
+                bytes = bas.toByteArray();
             } catch ( java.io.IOException ee ){
-                // DbgUtils.logf( "%s failed to open; likely not built-in", name );
             }
         }
 
