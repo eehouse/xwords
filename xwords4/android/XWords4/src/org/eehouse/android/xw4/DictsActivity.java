@@ -109,14 +109,15 @@ public class DictsActivity extends XWListActivity {
     public static boolean handleDictsPopup( Context context, View button,
                                             String curDict, int lang )
     {
-        if ( null == s_safePopup ) {
+        int nDicts = DictLangCache.getLangCount( context, lang );
+        if ( null == s_safePopup && 1 < nDicts ) {
             int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
             if ( 11 <= sdkVersion ) {
                 s_safePopup = new SafePopupImpl();
             }
         }
 
-        boolean canHandle = null != s_safePopup;
+        boolean canHandle = null != s_safePopup && 1 < nDicts;
         if ( canHandle ) {
             s_safePopup.doPopup( context, button, curDict, lang );
         }
