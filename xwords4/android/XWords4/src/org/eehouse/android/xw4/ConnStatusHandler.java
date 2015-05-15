@@ -62,7 +62,7 @@ public class ConnStatusHandler {
     private static final int SUCCESS_IN = 0;
     private static final int SUCCESS_OUT = 1;
     private static final int SHOW_SUCCESS_INTERVAL = 1000;
-    private static final boolean SOLO_NOGREEN = false;
+    private static final boolean SOLO_NOGREEN = true;
 
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
