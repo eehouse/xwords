@@ -74,6 +74,7 @@ public class SMSService extends XWService {
     private static final int SMS_PROTO_VERSION = 0;
     private static final int MAX_LEN_TEXT = 100;
     private static final int MAX_LEN_BINARY = 100;
+    private static final int MAX_MSG_COUNT = 16; // 1.6K enough? Should be....
     private enum SMSAction { _NONE,
                              INVITE,
                              SEND,
@@ -453,35 +454,40 @@ public class SMSService extends XWService {
         das.flush();
 
         byte[] data = bas.toByteArray();
-        boolean result = false;
         byte[][] msgs = breakAndEncode( data );
-        result = sendBuffers( msgs, phone );
+        boolean result = null != msgs && sendBuffers( msgs, phone );
         return result;
     }
 
     private byte[][] breakAndEncode( byte msg[] ) throws java.io.IOException 
     {
+        byte[][] result = null;
         int count = (msg.length + (MAX_LEN_BINARY-1)) / MAX_LEN_BINARY;
-        byte[][] result = new byte[count][];
-        int msgID = ++s_nSent % 0x000000FF;
+        if ( count < MAX_MSG_COUNT ) {
+            result = new byte[count][];
+            int msgID = ++s_nSent % 0x000000FF;
 
-        int start = 0;
-        int end = 0;
-        for ( int ii = 0; ii < count; ++ii ) {
-            int len = msg.length - end;
-            if ( len > MAX_LEN_BINARY ) {
-                len = MAX_LEN_BINARY;
+            int start = 0;
+            int end = 0;
+            for ( int ii = 0; ii < count; ++ii ) {
+                int len = msg.length - end;
+                if ( len > MAX_LEN_BINARY ) {
+                    len = MAX_LEN_BINARY;
+                }
+                end += len;
+                byte[] part = new byte[4 + len]; 
+                part[0] = (byte)SMS_PROTO_VERSION;
+                part[1] = (byte)msgID;
+                part[2] = (byte)ii;
+                part[3] = (byte)count;
+                System.arraycopy( msg, start, part, 4, len );
+
+                result[ii] = part;
+                start = end;
             }
-            end += len;
-            byte[] part = new byte[4 + len]; 
-            part[0] = (byte)SMS_PROTO_VERSION;
-            part[1] = (byte)msgID;
-            part[2] = (byte)ii;
-            part[3] = (byte)count;
-            System.arraycopy( msg, start, part, 4, len );
-
-            result[ii] = part;
-            start = end;
+        } else {
+            DbgUtils.logf( "breakAndEncode(): msg count %d too large; dropping",
+                           count );
         }
         return result;
     }
@@ -549,17 +555,21 @@ public class SMSService extends XWService {
         int count = buffer[3];
         byte[] rest = new byte[buffer.length - 4];
         System.arraycopy( buffer, 4, rest, 0, rest.length );
-        tryAssemble( senderPhone, id, index, count, rest );
-            
-        sendResult( MultiEvent.SMS_RECEIVE_OK );
+        if ( tryAssemble( senderPhone, id, index, count, rest ) ) {
+            sendResult( MultiEvent.SMS_RECEIVE_OK );
+        } else {
+            DbgUtils.logf( "SMSService: receiveBuffer(): bogus message from"
+                           + " phone %s", senderPhone );
+        }
     }
 
-    private void tryAssemble( String senderPhone, int id, int index, 
-                              int count, byte[] msg )
+    private boolean tryAssemble( String senderPhone, int id, int index, 
+                                 int count, byte[] msg )
     {
-        if ( index == 0 && count == 1 ) {
+        boolean success = true;
+        if ( index == 0 && count == 1 ) { // most common case
             disAssemble( senderPhone, msg );
-        } else {
+        } else if ( count > 0 && count < MAX_MSG_COUNT && index < count ) {
             // required?  Should always be in main thread.
             synchronized( s_partialMsgs ) { 
                 HashMap<Integer, MsgStore> perPhone = 
@@ -579,7 +589,10 @@ public class SMSService extends XWService {
                     perPhone.remove( id );
                 }
             }
+        } else {
+            success = false;
         }
+        return success;
     }
 
     private void disAssemble( String senderPhone, byte[] fullMsg )
