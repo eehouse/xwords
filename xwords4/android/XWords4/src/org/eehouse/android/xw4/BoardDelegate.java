@@ -1251,13 +1251,15 @@ public class BoardDelegate extends DelegateBase
     public void onStatusClicked()
     {
         final String msg = ConnStatusHandler.getStatusText( m_activity, m_connTypes );
-        post( new Runnable() {
-                public void run() {
-                    m_dlgBytes = msg;
-                    m_dlgTitle = R.string.info_title;
-                    showDialog( DlgID.DLG_CONNSTAT );
-                }
-            } );
+        if ( null != msg ) {
+            post( new Runnable() {
+                    public void run() {
+                        m_dlgBytes = msg;
+                        m_dlgTitle = R.string.info_title;
+                        showDialog( DlgID.DLG_CONNSTAT );
+                    }
+                } );
+        }
     }
 
     public Handler getHandler()

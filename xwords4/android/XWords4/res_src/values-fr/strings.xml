@@ -2486,11 +2486,6 @@ illimités ? Annulez si vous n\'êtes pas sûr.</string>
     <string name="game_list_tmp">Création du résumé de la partie…</string>
 
     <!--  -->
-    <!--<string name="connstat_nonet">This is a standalone game. There is
-    no network status.</string>-->
-    <string name="connstat_nonet">Cette partie est autonome. Il n\'y a pas
-d\'état du réseau.</string>
-    <!--  -->
     <!--<string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>-->
     <string name="connstat_net_fmt">État du réseau pour la partie connectée par

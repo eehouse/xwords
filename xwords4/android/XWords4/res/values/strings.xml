@@ -1974,9 +1974,6 @@
     <string name="game_list_tmp">Building game summary…</string>
 
     <!--  -->
-    <string name="connstat_nonet">This is a standalone game. There is
-    no network status.</string>
-    <!--  -->
     <string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>
     <!--  -->

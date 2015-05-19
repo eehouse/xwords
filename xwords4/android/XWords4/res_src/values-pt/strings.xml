@@ -1723,9 +1723,6 @@
   <!--  -->
   <string name="game_list_tmp">Carregando resumo do jogo...</string>
   <!--  -->
-  <string name="connstat_nonet">Este é um jogo local. Não
-    há informações de rede.</string>
-  <!--  -->
   <string name="connstat_net_fmt">Informações de rede para jogo conectado
     por %1$s:</string>
   <!--  -->

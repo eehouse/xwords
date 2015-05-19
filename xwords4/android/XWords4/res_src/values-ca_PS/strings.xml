@@ -1710,9 +1710,6 @@
   <!--  -->
   <string name="game_list_tmp">BUILDING GAME SUMMARY…</string>
   <!--  -->
-  <string name="connstat_nonet">THIS IS A STANDALONE GAME. THERE IS
-    NO NETWORK STATUS.</string>
-  <!--  -->
   <string name="connstat_net_fmt">NETWORK STATUS FOR GAME CONNECTED VIA
     %1$s:</string>
   <!--  -->

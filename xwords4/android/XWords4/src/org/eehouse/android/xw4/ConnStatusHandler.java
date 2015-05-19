@@ -176,7 +176,7 @@ public class ConnStatusHandler {
     {
         String msg;
         if ( null == connTypes || 0 == connTypes.size() ) {
-            msg = LocUtils.getString( context, R.string.connstat_nonet );
+            msg = null;
         } else {
             StringBuffer sb = new StringBuffer();
             String tmp;
@@ -294,8 +294,8 @@ public class ConnStatusHandler {
     public static void draw( Context context, Canvas canvas, Resources res, 
                              CommsConnTypeSet connTypes, boolean isSolo )
     {
-        synchronized( s_lockObj ) {
-            if ( null != s_rect ) {
+        if ( !isSolo && null != s_rect ) {
+            synchronized( s_lockObj ) {
                 Rect rect = new Rect( s_rect );
                 int quarterHeight = rect.height() / 4;
 

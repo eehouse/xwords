@@ -1710,9 +1710,6 @@
   <!--  -->
   <string name="game_list_tmp">Gnidliub emag yrammus…</string>
   <!--  -->
-  <string name="connstat_nonet">Siht si a enoladnats emag. Ereht si
-    on krowten sutats.</string>
-  <!--  -->
   <string name="connstat_net_fmt">Krowten sutats rof emag detcennoc aiv
     %1$s:</string>
   <!--  -->
