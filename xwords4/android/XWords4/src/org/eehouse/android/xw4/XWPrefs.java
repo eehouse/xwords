@@ -145,7 +145,7 @@ public class XWPrefs {
         return result;
     }
 
-    public static long getProxyInterval( Context context )
+    public static long getProxyIntervalSeconds( Context context )
     {
         String value = getPrefsString( context, R.string.key_connect_frequency );
         long result;
