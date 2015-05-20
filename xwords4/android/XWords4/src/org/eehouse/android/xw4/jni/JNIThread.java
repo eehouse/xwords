@@ -242,11 +242,15 @@ public class JNIThread extends Thread {
                                   150 /*scorePct*/, 200 /*trayPct*/, 
                                   width, fontWidth, fontHeight, squareTiles, 
                                   dims /* out param */ );
-        int statusWidth = dims.boardWidth / 15;
-        dims.scoreWidth -= statusWidth;
-        int left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth;
-        ConnStatusHandler.setRect( left, dims.top, left + statusWidth, 
-                                   dims.top + dims.scoreHt );
+
+        // Make space for net status icon if appropriate
+        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+            int statusWidth = dims.boardWidth / 15;
+            dims.scoreWidth -= statusWidth;
+            int left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth;
+            ConnStatusHandler.setRect( left, dims.top, left + statusWidth, 
+                                       dims.top + dims.scoreHt );
+        }
 
         XwJNI.board_applyLayout( m_jniGamePtr, dims );
 
