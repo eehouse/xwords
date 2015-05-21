@@ -370,11 +370,13 @@ public class DictsDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_POSITIVE == item ) {
-                            setDefault( row, R.string.key_default_dict );
+                            setDefault( row, R.string.key_default_dict, 
+                                        R.string.key_default_robodict );
                         }
                         if ( DialogInterface.BUTTON_NEGATIVE == item 
                              || DialogInterface.BUTTON_NEUTRAL == item ) {
-                            setDefault( row, R.string.key_default_robodict );
+                            setDefault( row, R.string.key_default_robodict, 
+                                        R.string.key_default_dict );
                         }
                     }
                 };
@@ -649,14 +651,31 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    private void setDefault( XWListItem view, int keyId )
+    private void setDefault( XWListItem view, int keyId, int otherKey )
     {
+        String name = view.getText();
+        int langCode = DictLangCache.getDictLangCode( m_activity, name );
+        String curLangName = XWPrefs.getPrefsString( m_activity, R.string.key_default_language );
+        int curLangCode = DictLangCache.getLangLangCode( m_activity, curLangName );
+        boolean changeLang = langCode != curLangCode;
+
         SharedPreferences sp
             = PreferenceManager.getDefaultSharedPreferences( m_activity );
         SharedPreferences.Editor editor = sp.edit();
         String key = getString( keyId );
-        String name = view.getText();
         editor.putString( key, name );
+
+        if ( changeLang ) {
+            // change other dict too
+            key = getString( otherKey );
+            editor.putString( key, name );
+
+            // and change language
+            String langName = DictLangCache.getLangName( m_activity, langCode );
+            key = getString( R.string.key_default_language );
+            editor.putString( key, langName );
+        }
+
         editor.commit();
     }
 
