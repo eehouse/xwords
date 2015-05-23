@@ -38,7 +38,7 @@ public class LangListPreference extends XWListPreference {
     @Override
     public void setSummary( CharSequence summary )
     {
-        super.setSummary( LocUtils.xlateLang( m_context, summary.toString() ) );
+        super.setSummary( LocUtils.xlateLang( m_context, summary.toString(), true ) );
     }
 
 }

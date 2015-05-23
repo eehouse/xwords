@@ -214,6 +214,11 @@ public class DelegateBase implements DlgClickNotify,
         return LocUtils.xlateLang( m_activity, langCode );
     }
 
+    protected String xlateLang( String langCode, boolean caps )
+    {
+        return LocUtils.xlateLang( m_activity, langCode, caps );
+    }
+
     protected String getQuantityString( int resID, int quantity, 
                                         Object... params )
     {

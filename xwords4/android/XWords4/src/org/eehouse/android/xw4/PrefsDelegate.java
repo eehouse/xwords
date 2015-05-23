@@ -255,7 +255,7 @@ public class PrefsDelegate extends DelegateBase
             String lang = langs[ii];
             haveDictForLang = haveDictForLang
                 || lang.equals( curLang );
-            langsLoc[ii] = xlateLang( lang );
+            langsLoc[ii] = xlateLang( lang, true );
         }
 
         if ( !haveDictForLang ) {
@@ -265,7 +265,7 @@ public class PrefsDelegate extends DelegateBase
         forceDictsMatch( curLang );
 
         lp.setEntries( langsLoc );
-        lp.setDefaultValue( xlateLang( curLang ) );
+        lp.setDefaultValue( xlateLang( curLang, true ) );
         lp.setEntryValues( langs );
     }
 

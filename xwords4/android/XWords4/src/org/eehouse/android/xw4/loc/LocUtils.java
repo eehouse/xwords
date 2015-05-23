@@ -115,6 +115,11 @@ public class LocUtils {
 
     public static String xlateLang( Context context, String lang )
     {
+        return xlateLang( context, lang, false );
+    }
+
+    public static String xlateLang( Context context, String lang, boolean caps )
+    {
         if ( null == s_langMap ) {
             s_langMap = new HashMap<String, String>();
             s_langMap.put( "English", context.getString( R.string.lang_name_english ) );
@@ -139,6 +144,9 @@ public class LocUtils {
         String xlated = s_langMap.get( lang );
         if ( null == xlated ) {
             xlated = lang;
+        }
+        if ( caps ) {
+            xlated = Utils.capitalize( xlated );
         }
         return xlated;
     }
