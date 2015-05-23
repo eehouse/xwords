@@ -382,6 +382,7 @@ public class DictsDelegate extends ListDelegateBase
                 };
             String name = row.getText();
             String lang = DictLangCache.getLangName( m_activity, name);
+            lang = xlateLang( lang );
             message = getString( R.string.set_default_message_fmt, name, lang );
             dialog = makeAlertBuilder()
                 .setTitle( R.string.query_title )

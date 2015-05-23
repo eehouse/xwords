@@ -271,9 +271,10 @@ public class GameConfigDelegate extends DelegateBase
                     });
                 break;
             case NO_NAME_FOUND:
+                String langName = DictLangCache.getLangName( m_activity, 
+                                                             m_gi.dictLang );
                 String msg = getString( R.string.no_name_found_fmt,
-                                        m_gi.nPlayers, DictLangCache.
-                                        getLangName( m_activity, m_gi.dictLang ) );
+                                        m_gi.nPlayers, xlateLang( langName ) );
                 dialog = makeAlertBuilder()
                     .setPositiveButton( R.string.button_ok, null )
                     // message added below since varies with language etc.

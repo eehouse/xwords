@@ -72,8 +72,8 @@ public class DictLangCache {
                 String lang = getLangName( m_context, dal.name );
                 if ( null != lang && 0 != lang.length() ) {
                     if ( ! m_map.containsValue( lang ) ) {
-                        String locName = LocUtils.xlateLang( m_context, lang );
-                        locName = Utils.capitalize( locName );
+                        String locName = LocUtils.xlateLang( m_context, lang, 
+                                                             true );
                         m_map.put( locName, lang );
                     }
                 }

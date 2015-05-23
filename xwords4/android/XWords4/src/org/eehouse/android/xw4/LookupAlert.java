@@ -326,7 +326,8 @@ public class LookupAlert extends LinearLayout
             s_urlsAdapter = new ArrayAdapter<String>( context, LIST_LAYOUT, 
                                                       s_lookupNames );
             s_lang = lang;
-            s_langName = DictLangCache.getLangNames( context )[lang];
+            String langName = DictLangCache.getLangName( context, lang );
+            s_langName = LocUtils.xlateLang( context, langName );
         }
     }
 

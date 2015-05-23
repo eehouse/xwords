@@ -253,8 +253,9 @@ public class StudyListDelegate extends ListDelegateBase
 
         makeAdapter();
 
-        String langName = DictLangCache.getLangNames( m_activity )[lang];
-        m_origTitle = getString( R.string.studylist_title_fmt, langName );
+        String langName = DictLangCache.getLangName( m_activity, lang );
+        m_origTitle = getString( R.string.studylist_title_fmt, 
+                                 xlateLang( langName ) );
         setTitleBar();
     }
 
@@ -284,7 +285,7 @@ public class StudyListDelegate extends ListDelegateBase
             String[] myNames = new String[m_langCodes.length];
             for ( int ii = 0; ii < m_langCodes.length; ++ii ) {
                 int lang = m_langCodes[ii];
-                myNames[ii] = names[lang];
+                myNames[ii] = xlateLang( names[lang], true );
                 if ( lang == startLang ) {
                     startIndex = ii;
                 }
