@@ -173,7 +173,6 @@ public class PrefsDelegate extends DelegateBase
     @Override
     public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
     {
-        // DbgUtils.logf( "onSharedPreferenceChanged(key=%s)", key );
         if ( key.equals( m_keyLogging ) ) {
             DbgUtils.logEnable( sp.getBoolean( key, false ) );
         } else if ( key.equals( m_smsToasting ) ) {
@@ -247,14 +246,26 @@ public class PrefsDelegate extends DelegateBase
     {
         ListPreference lp = (ListPreference)
             m_activity.findPreference( m_keyLangs );
+        String curLang = lp.getValue().toString();
+        boolean haveDictForLang = false;
 
         String[] langs = DictLangCache.listLangs( m_activity );
         String[] langsLoc = new String[langs.length];
         for ( int ii = 0; ii < langs.length; ++ii ) {
-            langsLoc[ii] = xlateLang( langs[ii] );
+            String lang = langs[ii];
+            haveDictForLang = haveDictForLang
+                || lang.equals( curLang );
+            langsLoc[ii] = xlateLang( lang );
         }
+
+        if ( !haveDictForLang ) {
+            curLang = DictLangCache.getLangName( m_activity, 1 ); // English, unlocalized
+            lp.setValue( curLang );
+        }
+        forceDictsMatch( curLang );
+
         lp.setEntries( langsLoc );
-        lp.setDefaultValue( langsLoc[0] );
+        lp.setDefaultValue( xlateLang( curLang ) );
         lp.setEntryValues( langs );
     }
 
@@ -262,13 +273,14 @@ public class PrefsDelegate extends DelegateBase
     {
         int code = DictLangCache.getLangLangCode( m_activity, newLang );
         int[] keyIds = { R.string.key_default_dict, 
-                       R.string.key_default_robodict };
+                         R.string.key_default_robodict };
         for ( int id : keyIds ) {
             String key = getString( id );
             DictListPreference pref = (DictListPreference)m_activity.findPreference( key );
             String curDict = pref.getValue().toString();
-            int curCode = DictLangCache.getDictLangCode( m_activity, curDict );
-            if ( curCode != code ) {
+            if ( ! DictUtils.dictExists( m_activity, curDict )
+                 || code != DictLangCache.getDictLangCode( m_activity, 
+                                                           curDict ) ) {
                 pref.invalidate();
             }
         }
