@@ -84,7 +84,6 @@ public class BoardDelegate extends DelegateBase
     private static final String GETDICT = "GETDICT";
 
     private Activity m_activity;
-    private Delegator m_delegator;
     private BoardView m_view;
     private int m_jniGamePtr;
     private GameLock m_gameLock;
@@ -294,7 +293,7 @@ public class BoardDelegate extends DelegateBase
 
                             waitCloseGame( false );
                             GameUtils.deleteGame( m_activity, m_rowid, false );
-                            m_delegator.finish();
+                            finish();
                         }
                     };
                 ab.setNegativeButton( R.string.button_delete, lstnr );
@@ -514,7 +513,6 @@ public class BoardDelegate extends DelegateBase
     {
         super( delegator, savedInstanceState, R.layout.board, R.menu.board_menu );
         m_activity = delegator.getActivity();
-        m_delegator = delegator;
     }
 
     protected void init( Bundle savedInstanceState ) 
@@ -1273,7 +1271,7 @@ public class BoardDelegate extends DelegateBase
 
         String msg = getString( R.string.reload_new_dict_fmt, getDict );
         showToast( msg );
-        m_delegator.finish();
+        finish();
         GameUtils.launchGame( m_activity, m_rowid, false );
     }
 
@@ -1838,11 +1836,14 @@ public class BoardDelegate extends DelegateBase
             m_blockingDlgID = DlgID.NONE;
         }
 
-        loadGame( isStart );
-
-        if ( !isStart ) {
-            setKeepScreenOn();
-            ConnStatusHandler.setHandler( this );
+        try {
+            loadGame( isStart );
+            if ( !isStart ) {
+                setKeepScreenOn();
+                ConnStatusHandler.setHandler( this );
+            }
+        } catch ( GameUtils.NoSuchGameException nsge ) {
+            finish();
         }
     }
 
@@ -1988,7 +1989,7 @@ public class BoardDelegate extends DelegateBase
                 }
            } catch ( GameUtils.NoSuchGameException nsge ) {
                 DbgUtils.loge( nsge );
-                m_delegator.finish();
+                finish();
             }
         }
     } // loadGame
@@ -2435,7 +2436,7 @@ public class BoardDelegate extends DelegateBase
                                 phone, relayID );
         if ( null != intent ) {
             startActivity( intent );
-            m_delegator.finish();
+            finish();
         }
     }
 
