@@ -61,8 +61,8 @@ public class RelayService extends XWService
     private static final int MAX_BUF = MAX_SEND - 2;
     private static final int REG_WAIT_INTERVAL = 10;
 
-    // One week, in seconds.  Probably should be configurable.
-    private static final long MAX_KEEPALIVE_SECS = 7 * 24 * 60 * 60;
+    // One day, in seconds.  Probably should be configurable.
+    private static final long MAX_KEEPALIVE_SECS = 24 * 60 * 60;
 
     private static final String CMD_STR = "CMD";
 
