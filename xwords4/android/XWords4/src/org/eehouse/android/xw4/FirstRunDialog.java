@@ -73,7 +73,7 @@ public class FirstRunDialog {
             .setIcon(android.R.drawable.ic_menu_info_details)
             .setTitle( R.string.changes_title )
             .setView( view )
-            .setPositiveButton( R.string.button_ok, null)
+            .setPositiveButton( android.R.string.ok, null)
             .create();
         dialog.show();
     }

@@ -44,7 +44,7 @@ public class XWConnAddrPreference extends DialogPreference {
 
         setDialogLayoutResource( R.layout.conn_types_display );
 
-        setNegativeButtonText( LocUtils.getString( context, R.string.button_cancel ) );
+        setNegativeButtonText( LocUtils.getString( context, android.R.string.cancel ) );
 
         CommsConnTypeSet curSet = XWPrefs.getAddrTypes( context );
         setSummary( curSet.toString( context ) );

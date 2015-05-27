@@ -150,7 +150,7 @@ public class NFCUtils {
         return LocUtils.makeAlertBuilder( activity )
             .setTitle( R.string.info_title )
             .setMessage( R.string.enable_nfc )
-            .setPositiveButton( R.string.button_cancel, null )
+            .setPositiveButton( android.R.string.cancel, null )
             .setNegativeButton( R.string.button_go_settings, lstnr )
             .create();
     }

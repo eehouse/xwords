@@ -1261,8 +1261,6 @@
       -->
   <!-- Text for buttons at the bottom of dialogs.  These first are
       in many places.-->
-  <string name="button_ok">KO</string>
-  <string name="button_cancel">Lecnac</string>
   <string name="button_yes">Sey</string>
   <string name="button_no">On</string>
   <!-- Used in Game config dialog to confirm saving changes that reset a game -->

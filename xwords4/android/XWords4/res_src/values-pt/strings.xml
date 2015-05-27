@@ -1276,8 +1276,6 @@
       -->
   <!-- Text for buttons at the bottom of dialogs.  These first are
       in many places.-->
-  <string name="button_ok">OK</string>
-  <string name="button_cancel">Cancelar</string>
   <string name="button_yes">Sim</string>
   <string name="button_no">Não</string>
   <!-- Used in Game config dialog to confirm saving changes that reset a game -->

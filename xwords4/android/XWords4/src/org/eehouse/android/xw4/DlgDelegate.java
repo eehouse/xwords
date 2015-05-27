@@ -329,17 +329,17 @@ public class DlgDelegate {
 
     public void showConfirmThen( String msg, Action action )
     {
-        showConfirmThen( null, msg, R.string.button_ok, action, null );
+        showConfirmThen( null, msg, android.R.string.ok, action, null );
     }
 
     public void showConfirmThen( int msgID, Action action )
     {
-        showConfirmThen( null, getString( msgID ), R.string.button_ok, action, null );
+        showConfirmThen( null, getString( msgID ), android.R.string.ok, action, null );
     }
 
     public void showConfirmThen( Runnable onNA, String msg, Action action, Object[] params )
     {
-        showConfirmThen( onNA, msg, R.string.button_ok, action, params );
+        showConfirmThen( onNA, msg, android.R.string.ok, action, params );
     }
 
     public void showConfirmThen( Runnable onNA, String msg, int posButton, Action action )
@@ -355,14 +355,14 @@ public class DlgDelegate {
     public void showConfirmThen( int msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( null, getString(msg), posButton, R.string.button_cancel, 
+        showConfirmThen( null, getString(msg), posButton, android.R.string.cancel, 
                          action, params );
     }
 
     public void showConfirmThen( Runnable onNA, String msg, int posButton, Action action,
                                  Object[] params )
     {
-        showConfirmThen( onNA, msg, posButton, R.string.button_cancel, action, 
+        showConfirmThen( onNA, msg, posButton, android.R.string.cancel, action, 
                          params );
     }
 
@@ -523,7 +523,7 @@ public class DlgDelegate {
                                            FirstRunDialog.show( m_activity );
                                        }
                                    } );
-        builder.setPositiveButton( R.string.button_ok, null );
+        builder.setPositiveButton( android.R.string.ok, null );
         return builder.create();
     }
 
@@ -539,7 +539,7 @@ public class DlgDelegate {
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity );
         builder.setTitle( R.string.info_title );
         builder.setMessage( state.m_msg );
-        builder.setPositiveButton( R.string.button_ok, null );
+        builder.setPositiveButton( android.R.string.ok, null );
         Dialog dialog = builder.create();
         dialog = setCallbackDismissListener( dialog, state, dlgID );
 
@@ -556,7 +556,7 @@ public class DlgDelegate {
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.newbie_title )
             .setView( naView )
-            .setPositiveButton( R.string.button_ok, lstnr_p );
+            .setPositiveButton( android.R.string.ok, lstnr_p );
 
         // Adding third button doesn't work for some reason. Either this
         // feature goes away or the "do not show again" becomes a checkbox as
@@ -647,8 +647,8 @@ public class DlgDelegate {
             .setTitle( R.string.invite_choice_title )
             .setSingleChoiceItems( items.toArray( new String[items.size()] ), 
                                    sel[0], selChanged )
-            .setPositiveButton( R.string.button_ok, okClicked )
-            .setNegativeButton( R.string.button_cancel, null );
+            .setPositiveButton( android.R.string.ok, okClicked )
+            .setNegativeButton( android.R.string.cancel, null );
 
         return setCallbackDismissListener( builder.create(), state, dlgID );
     }
@@ -699,7 +699,7 @@ public class DlgDelegate {
         Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.confirm_sms_title )
             .setView( layout )
-            .setPositiveButton( R.string.button_ok, lstnr )
+            .setPositiveButton( android.R.string.ok, lstnr )
             .create();
         Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
         return dialog;

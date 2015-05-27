@@ -226,7 +226,7 @@ public class BoardDelegate extends DelegateBase
             case DLG_CONNSTAT:
                 ab.setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
-                    .setPositiveButton( R.string.button_ok, null );
+                    .setPositiveButton( android.R.string.ok, null );
                 if ( DlgID.DLG_RETRY == dlgID ) {
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
@@ -286,7 +286,7 @@ public class BoardDelegate extends DelegateBase
             case DLG_DELETED:
                 ab = ab.setTitle( R.string.query_title )
                     .setMessage( R.string.msg_dev_deleted )
-                    .setPositiveButton( R.string.button_ok, null );
+                    .setPositiveButton( android.R.string.ok, null );
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
@@ -315,7 +315,7 @@ public class BoardDelegate extends DelegateBase
                         }
                     };
                 ab.setPositiveButton( DlgID.QUERY_REQUEST_BLK == dlgID ?
-                                      R.string.button_yes : R.string.button_ok,
+                                      R.string.button_yes : android.R.string.ok,
                                       lstnr );
                 if ( DlgID.QUERY_REQUEST_BLK == dlgID ) {
                     lstnr = new OnClickListener() {
@@ -404,7 +404,7 @@ public class BoardDelegate extends DelegateBase
                 m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
                 ab.setTitle( m_dlgTitleStr )
                     .setView( pwdLayout )
-                    .setPositiveButton( R.string.button_ok,
+                    .setPositiveButton( android.R.string.ok,
                                         new OnClickListener() {
                                             public void 
                                                 onClick( DialogInterface dlg,

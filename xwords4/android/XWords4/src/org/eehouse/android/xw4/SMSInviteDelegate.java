@@ -152,8 +152,8 @@ public class SMSInviteDelegate extends InviteDelegate {
                         }
                     };
                 dialog = makeAlertBuilder()
-                    .setNegativeButton( R.string.button_cancel, null )
-                    .setPositiveButton( R.string.button_ok, lstnr )
+                    .setNegativeButton( android.R.string.cancel, null )
+                    .setPositiveButton( android.R.string.ok, lstnr )
                     .setView( namerView )
                     .create();
                 break;

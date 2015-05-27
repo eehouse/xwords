@@ -360,7 +360,7 @@ public class DictsDelegate extends ListDelegateBase
                 .setSingleChoiceItems( makeDictDirItems(), moveTo[0],
                                        newSelLstnr )
                 .setPositiveButton( R.string.button_move, lstnr )
-                .setNegativeButton( R.string.button_cancel, null )
+                .setNegativeButton( android.R.string.cancel, null )
                 .create();
             break;
 

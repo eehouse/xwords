@@ -25,8 +25,6 @@
   <string name="title_dicts_list">Slovníky Crosswords</string>
   <string name="title_game_config_fmt">Konfigurovat %1$s</string>
   <string name="title_prefs">Předvolby Crosswords</string>
-  <string name="button_ok">OK</string>
-  <string name="button_cancel">Zrušit</string>
   <string name="button_yes">Ano</string>
   <string name="button_no">Ne</string>
   <string name="button_save">Uložit</string>

@@ -74,8 +74,6 @@
   <!-- text of first menu item.  Will revert all preferences to
          their default/original values -->
   <string name="button_revert_all">XLATE ME: Restore all</string>
-  <string name="button_ok">OK</string>
-  <string name="button_cancel">Zrušiť</string>
   <string name="button_yes">Áno</string>
   <string name="button_no">Nie</string>
   <string name="button_save">Uložiť</string>

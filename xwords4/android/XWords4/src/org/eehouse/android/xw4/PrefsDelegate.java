@@ -116,8 +116,8 @@ public class PrefsDelegate extends DelegateBase
                 dialog = makeAlertBuilder()
                     .setTitle( R.string.query_title )
                     .setMessage( confirmID )
-                    .setPositiveButton( R.string.button_ok, lstnr )
-                    .setNegativeButton( R.string.button_cancel, null )
+                    .setPositiveButton( android.R.string.ok, lstnr )
+                    .setNegativeButton( android.R.string.cancel, null )
                     .create();
             }
         }

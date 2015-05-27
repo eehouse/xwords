@@ -641,7 +641,7 @@ public class GamesListDelegate extends ListDelegateBase
             ab = makeAlertBuilder()
                 .setTitle( R.string.no_dict_title )
                 .setMessage( message )
-                .setPositiveButton( R.string.button_cancel, null )
+                .setPositiveButton( android.R.string.cancel, null )
                 .setNegativeButton( R.string.button_download, lstnr )
                 ;
             if ( DlgID.WARN_NODICT_SUBST == dlgID ) {
@@ -676,7 +676,7 @@ public class GamesListDelegate extends ListDelegateBase
             dialog = makeAlertBuilder()
                 .setTitle( R.string.subst_dict_title )
                 .setPositiveButton( R.string.button_substdict, lstnr )
-                .setNegativeButton( R.string.button_cancel, null )
+                .setNegativeButton( android.R.string.cancel, null )
                 .setSingleChoiceItems( m_sameLangDicts, 0, null )
                 .create();
             // Force destruction so onCreateDialog() will get
@@ -782,7 +782,7 @@ public class GamesListDelegate extends ListDelegateBase
                 .setSingleChoiceItems( groups, curGroupPos, lstnr )
                 .setPositiveButton( R.string.button_move, lstnr2 )
                 .setNeutralButton( R.string.button_newgroup, lstnr3 )
-                .setNegativeButton( R.string.button_cancel, null )
+                .setNegativeButton( android.R.string.cancel, null )
                 .create();
             setRemoveOnDismiss( dialog, dlgID );
             break;
@@ -796,7 +796,7 @@ public class GamesListDelegate extends ListDelegateBase
             dialog = makeAlertBuilder()
                 .setTitle( R.string.default_name_title )
                 .setMessage( R.string.default_name_message )
-                .setPositiveButton( R.string.button_ok, null )
+                .setPositiveButton( android.R.string.ok, null )
                 .setView( layout )
                 .create();
             dialog.setOnDismissListener(new DialogInterface.
@@ -1963,8 +1963,8 @@ public class GamesListDelegate extends ListDelegateBase
         
         Dialog dialog = makeAlertBuilder()
             .setTitle( titleID )
-            .setPositiveButton( R.string.button_ok, lstnr1 )
-            .setNegativeButton( R.string.button_cancel, lstnr2 )
+            .setPositiveButton( android.R.string.ok, lstnr1 )
+            .setNegativeButton( android.R.string.cancel, lstnr2 )
             .setView( m_namer )
             .create();
         setRemoveOnDismiss( dialog, dlgID );

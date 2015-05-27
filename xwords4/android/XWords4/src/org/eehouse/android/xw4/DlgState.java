@@ -39,18 +39,18 @@ public class DlgState implements Parcelable {
 
     public DlgState( DlgID dlgID, String msg, Action action )
     {
-        this( dlgID, msg, R.string.button_ok, action, 0 );
+        this( dlgID, msg, android.R.string.ok, action, 0 );
     }
 
     public DlgState( DlgID dlgID, String msg, Action action, int prefsKey )
     {
-        this( dlgID, msg, R.string.button_ok, action, prefsKey );
+        this( dlgID, msg, android.R.string.ok, action, prefsKey );
     }
 
     public DlgState( DlgID dlgID, String msg, int prefsKey, Action action, 
                      ActionPair more, Object[] params )
     {
-        this( dlgID, msg, R.string.button_ok, action, prefsKey );
+        this( dlgID, msg, android.R.string.ok, action, prefsKey );
         m_params = params;
         m_pair = more;
     }
@@ -64,7 +64,7 @@ public class DlgState implements Parcelable {
     public DlgState( DlgID dlgID, String msg, int posButton, 
                      Action action, int prefsKey, Object[] params )
     {
-        this( dlgID, null, msg, posButton, R.string.button_cancel, 
+        this( dlgID, null, msg, posButton, android.R.string.cancel, 
               action, prefsKey, params );
     }
     

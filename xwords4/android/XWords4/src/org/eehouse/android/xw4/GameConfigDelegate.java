@@ -180,7 +180,7 @@ public class GameConfigDelegate extends DelegateBase
                 dialog = makeAlertBuilder()
                     .setTitle(R.string.player_edit_title)
                     .setView(playerEditView)
-                    .setPositiveButton( R.string.button_ok,
+                    .setPositiveButton( android.R.string.ok,
                                         new DialogInterface.OnClickListener() {
                                             public void 
                                                 onClick( DialogInterface dlg, 
@@ -189,7 +189,7 @@ public class GameConfigDelegate extends DelegateBase
                                                 loadPlayersList();
                                             }
                                         })
-                    .setNegativeButton( R.string.button_cancel, null )
+                    .setNegativeButton( android.R.string.cancel, null )
                     .create();
                 break;
                 // case ROLE_EDIT_RELAY:
@@ -199,14 +199,14 @@ public class GameConfigDelegate extends DelegateBase
                 //         .setTitle(titleForDlg(id))
                 //         .setView( LayoutInflater.from(this)
                 //                   .inflate( layoutForDlg(id), null ))
-                //         .setPositiveButton( R.string.button_ok,
+                //         .setPositiveButton( android.R.string.ok,
                 //                             new DialogInterface.OnClickListener() {
                 //                                 public void onClick( DialogInterface dlg, 
                 //                                                      int whichButton ) {
                 //                                     getRoleSettings();
                 //                                 }
                 //                             })
-                //         .setNegativeButton( R.string.button_cancel, null )
+                //         .setNegativeButton( android.R.string.cancel, null )
                 //         .create();
                 //     break;
 
@@ -220,7 +220,7 @@ public class GameConfigDelegate extends DelegateBase
                 dialog = makeAlertBuilder()
                     .setTitle( R.string.force_title )
                     .setView( inflate( layoutForDlg(dlgID) ) )
-                    .setPositiveButton( R.string.button_ok, dlpos )
+                    .setPositiveButton( android.R.string.ok, dlpos )
                     .create();
                 DialogInterface.OnDismissListener dismiss = 
                     new DialogInterface.OnDismissListener() {
@@ -276,7 +276,7 @@ public class GameConfigDelegate extends DelegateBase
                 String msg = getString( R.string.no_name_found_fmt,
                                         m_gi.nPlayers, xlateLang( langName ) );
                 dialog = makeAlertBuilder()
-                    .setPositiveButton( R.string.button_ok, null )
+                    .setPositiveButton( android.R.string.ok, null )
                     // message added below since varies with language etc.
                     .setMessage( msg )
                     .create();
@@ -301,8 +301,8 @@ public class GameConfigDelegate extends DelegateBase
                 dialog = makeAlertBuilder()
                     .setTitle( R.string.title_addrs_pref )
                     .setView( layout )
-                    .setPositiveButton( R.string.button_ok, lstnr )
-                    .setNegativeButton( R.string.button_cancel, null )
+                    .setPositiveButton( android.R.string.ok, lstnr )
+                    .setNegativeButton( android.R.string.cancel, null )
                     .create();
                 break;
             }
