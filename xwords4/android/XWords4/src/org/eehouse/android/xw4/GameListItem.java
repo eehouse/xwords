@@ -243,7 +243,7 @@ public class GameListItem extends LinearLayout
                 value = 
                     DictLangCache.getLangName( m_context, 
                                                m_summary.dictLang );
-                value = LocUtils.xlateLang( m_context, value );
+                value = LocUtils.xlateLang( m_context, value, true );
                 break;
             case R.string.game_summary_field_opponents:
                 value = m_summary.playerNames();
