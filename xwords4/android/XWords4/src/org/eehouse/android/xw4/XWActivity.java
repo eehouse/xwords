@@ -35,7 +35,7 @@ public class XWActivity extends Activity implements Delegator {
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onCreate()", getClass().getName() );
+            DbgUtils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
         }
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
@@ -59,7 +59,7 @@ public class XWActivity extends Activity implements Delegator {
     protected void onPause()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onPause()", getClass().getName() );
+            DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
         }
         m_dlgt.onPause();
         super.onPause();
@@ -69,7 +69,7 @@ public class XWActivity extends Activity implements Delegator {
     protected void onResume()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onResume()", getClass().getName() );
+            DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
         }
         super.onResume();
         m_dlgt.onResume();
@@ -79,7 +79,7 @@ public class XWActivity extends Activity implements Delegator {
     protected void onStart()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStart()", getClass().getName() );
+            DbgUtils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
         }
         super.onStart();
         m_dlgt.onStart();
@@ -89,7 +89,7 @@ public class XWActivity extends Activity implements Delegator {
     protected void onStop()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStop()", getClass().getName() );
+            DbgUtils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
         }
         m_dlgt.onStop();
         super.onStop();
@@ -99,7 +99,7 @@ public class XWActivity extends Activity implements Delegator {
     protected void onDestroy()
     {
         if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onDestroy()", getClass().getName() );
+            DbgUtils.logf( "%s.onDestroy(this=%H)", getClass().getName(), this );
         }
         m_dlgt.onDestroy();
         super.onDestroy();
