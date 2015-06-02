@@ -3,13 +3,28 @@
 set -e -u
 
 MANIFEST=AndroidManifest.xml
+XWORDS=org.eehouse.android.xw4
 INSTALL=''
+UNINSTALL=''
 CMDS=''
 
 usage() {
     [ $# -ge 1 ] && echo "ERROR: $1"
     echo "usage: $0 <cmds to ant>"
     exit 1
+}
+
+uninstall() {
+	adb devices | while read DEV TYPE; do
+		case "$TYPE" in
+			device)
+				adb -s $DEV uninstall $XWORDS
+				;;
+			emulator)
+				adb -s $DEV uninstall $XWORDS
+				;;
+		esac
+	done
 }
 
 while [ $# -gt 0 ]; do
@@ -21,6 +36,10 @@ while [ $# -gt 0 ]; do
 			CMDS="$CMDS $1"
 			;;
 		install)
+			INSTALL=1
+			;;
+		reinstall)
+			UNINSTALL=1
 			INSTALL=1
 			;;
 		*)
@@ -53,6 +72,9 @@ esac
 
 ant $CMDS
 
+if [ -n "$UNINSTALL" ]; then
+	uninstall
+fi
 if [ -n "$INSTALL" ]; then
 	adb-install.sh -e -d
 fi
