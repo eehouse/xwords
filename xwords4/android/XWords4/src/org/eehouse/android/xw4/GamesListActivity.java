@@ -44,6 +44,12 @@ public class GamesListActivity extends XWListActivity {
     {
         m_dlgt = new GamesListDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
+
+        int flags = getIntent().getFlags();
+        if (0 != (flags & Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)) {
+            // DbgUtils.logf( "GamesListActivity.onCreate(); bad duplicate case; exiting" );
+            finish();
+        }
     } // onCreate
 
     // called when we're brought to the front (probably as a result of
