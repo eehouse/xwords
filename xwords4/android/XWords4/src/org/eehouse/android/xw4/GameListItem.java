@@ -27,10 +27,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
-import java.util.concurrent.LinkedBlockingQueue;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -39,6 +39,7 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import junit.framework.Assert;
 
@@ -121,7 +122,14 @@ public class GameListItem extends LinearLayout
         // AsyncTask, so let it complete, but drop the results as soon
         // as we're back on the UI thread.
         ++m_loadingCount;
-        new LoadItemTask().execute();
+
+        LoadItemTask task = new LoadItemTask();
+        if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+            // Actually run these in parallel if the OS supports it
+            task.executeOnExecutor( AsyncTask.THREAD_POOL_EXECUTOR );
+        } else {
+            task.execute();
+        }
     }
 
     public void invalName()
