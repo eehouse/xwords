@@ -841,6 +841,8 @@ public final class R {
          substituted for %1$s. 
          */
         public static final int chat_title_fmt=0x7f050170;
+        public static final int checking_for_fmt=0x7f0502f9;
+        public static final int checking_title=0x7f0502f8;
         public static final int checkupdates_none_found=0x7f050225;
         /**  color of the "crosshairs", lines drawn vertically and
          horizontally through the square the user is currently

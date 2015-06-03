@@ -2129,4 +2129,6 @@
   <string name="pref_group_l10n_summary">PREFS RELATED TO IN-APP LOCALIZATION</string>
   <string name="pref_item_update_title">UPDATE BETWEEN RELEASES</string>
   <string name="pref_item_update_summary">GET INTERMEDIATE BUILDS</string>
+  <string name="checking_title">CHECKING</string>
+  <string name="checking_for_fmt">CHECKING SERVER FOR %1$s WORDLISTS…</string>
 </resources>

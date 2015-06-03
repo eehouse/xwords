@@ -584,6 +584,7 @@ public class GamesListDelegate extends ListDelegateBase
     private String m_origTitle;
     private boolean m_nextIsSolo;
     private Button[] m_newGameButtons;
+    private boolean m_haveShownGetDict;
 
     public GamesListDelegate( ListDelegator delegator, Bundle sis )
     {
@@ -1903,8 +1904,11 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void getDictForLangIf()
     { 
-        if ( ! XWPrefs.getPrefsBoolean( m_activity, R.string.key_got_langdict, 
+        if ( ! m_haveShownGetDict && 
+             ! XWPrefs.getPrefsBoolean( m_activity, R.string.key_got_langdict, 
                                         false ) ) {
+            m_haveShownGetDict = true;
+
             String lc = Locale.getDefault().getLanguage();
             if ( !lc.equals("en") ) {
                 int code = LocUtils.codeForLangCode( m_activity, lc );
@@ -1917,14 +1921,15 @@ public class GamesListDelegate extends ListDelegateBase
                                                          true );
                             }
                         };
+
                     OnGotLcDictListener lstnr = new OnGotLcDictListener() {
                             public void gotDictInfo( boolean success, String lang, 
                                                      String name ) {
+                                stopProgress();
                                 if ( success ) {
-                                    String locLang = xlateLang( lang );
                                     String msg = 
                                         getString( R.string.confirm_get_locdict_fmt, 
-                                                   locLang );
+                                                   xlateLang( lang ) );
                                     showConfirmThen( onNA, msg, R.string
                                                      .button_download, 
                                                      Action.DWNLD_LOC_DICT, 
@@ -1932,6 +1937,11 @@ public class GamesListDelegate extends ListDelegateBase
                                 }
                             }
                         };
+
+                    String langName = DictLangCache.getLangName( m_activity, code );
+                    String locLang = xlateLang( langName );
+                    String msg = getString( R.string.checking_for_fmt, locLang );
+                    startProgress( R.string.checking_title, msg );
                     DictsDelegate.downloadDefaultDict( m_activity, lc, lstnr );
                 }
             }

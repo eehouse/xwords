@@ -2459,5 +2459,7 @@
   <string name="pref_item_update_title">Update between releases</string>
   <string name="pref_item_update_summary">Get intermediate builds</string>
 
+  <string name="checking_title">Checking</string>
+  <string name="checking_for_fmt">Checking server for %1$s wordlists…</string>
 
 </resources>
