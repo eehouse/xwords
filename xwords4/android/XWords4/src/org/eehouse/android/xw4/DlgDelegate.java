@@ -193,8 +193,10 @@ public class DlgDelegate {
 
     protected void showDialog( DlgID dlgID )
     {
-        int id = dlgID.ordinal();
-        m_activity.showDialog( id );
+        if ( !m_activity.isFinishing() ) {
+            int id = dlgID.ordinal();
+            m_activity.showDialog( id );
+        }
     }
     
     public Dialog createDialog( int id )
