@@ -344,7 +344,7 @@ public class DictUtils {
                     if ( loc == DictLoc.UNKNOWN || loc == DictLoc.DOWNLOAD ) {
                         File path = getDownloadsPathFor( context, name );
                         if ( null != path && path.exists() ) {
-                            DbgUtils.logf( "loading %s from Download", name );
+                            // DbgUtils.logf( "loading %s from Download", name );
                             fis = new FileInputStream( path );
                         }
                     }
@@ -352,13 +352,13 @@ public class DictUtils {
                 if ( loc == DictLoc.UNKNOWN || loc == DictLoc.EXTERNAL ) {
                     File sdFile = getSDPathFor( context, name );
                     if ( null != sdFile && sdFile.exists() ) {
-                        DbgUtils.logf( "loading %s from SD", name );
+                        // DbgUtils.logf( "loading %s from SD", name );
                         fis = new FileInputStream( sdFile );
                     }
                 }
                 if ( null == fis ) {
                     if ( loc == DictLoc.UNKNOWN || loc == DictLoc.INTERNAL ) {
-                        DbgUtils.logf( "loading %s from private storage", name );
+                        // DbgUtils.logf( "loading %s from private storage", name );
                         fis = context.openFileInput( name );
                     }
                 }
