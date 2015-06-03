@@ -40,7 +40,7 @@ public class XWService extends Service {
     public final static void setListener( MultiService.MultiEventListener li )
     {
         if ( null == s_srcMgr ) {
-            DbgUtils.logf( "XWService.setListener: registering %s", li.getClass().getName() );
+            // DbgUtils.logf( "XWService.setListener: registering %s", li.getClass().getName() );
             s_srcMgr = new MultiService();
         }
         s_srcMgr.setListener( li );
