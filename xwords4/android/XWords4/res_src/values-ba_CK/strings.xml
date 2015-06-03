@@ -2130,5 +2130,5 @@
   <string name="pref_item_update_title">Etadpu neewteb sesaeler</string>
   <string name="pref_item_update_summary">Teg etaidemretni sdliub</string>
   <string name="checking_title">Gnikcehc</string>
-  <string name="checking_for_fmt">Gnikcehc revres rof %1$s stsildrow…</string>
+  <string name="checking_for_fmt">Gnikcehc rof stsildrow ni %1$s…</string>
 </resources>

@@ -2130,5 +2130,5 @@
   <string name="pref_item_update_title">UPDATE BETWEEN RELEASES</string>
   <string name="pref_item_update_summary">GET INTERMEDIATE BUILDS</string>
   <string name="checking_title">CHECKING</string>
-  <string name="checking_for_fmt">CHECKING SERVER FOR %1$s WORDLISTS…</string>
+  <string name="checking_for_fmt">CHECKING FOR WORDLISTS IN %1$s…</string>
 </resources>

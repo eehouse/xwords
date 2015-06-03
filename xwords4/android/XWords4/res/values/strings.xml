@@ -2460,6 +2460,6 @@
   <string name="pref_item_update_summary">Get intermediate builds</string>
 
   <string name="checking_title">Checking</string>
-  <string name="checking_for_fmt">Checking server for %1$s wordlists…</string>
+  <string name="checking_for_fmt">Checking for wordlists in %1$s…</string>
 
 </resources>
