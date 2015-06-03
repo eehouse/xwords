@@ -45,11 +45,12 @@ public class GamesListActivity extends XWListActivity {
         m_dlgt = new GamesListDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
 
+        // Trying to debug situation where two of this activity are running at
+        // once. finish()ing when Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT is
+        // passed is not the fix, but perhaps there's another
         int flags = getIntent().getFlags();
-        if (0 != (flags & Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT)) {
-            // DbgUtils.logf( "GamesListActivity.onCreate(); bad duplicate case; exiting" );
-            finish();
-        }
+        DbgUtils.logf( "GamesListActivity.onCreate(this=%H): flags=0x%x", 
+                       this, flags );
     } // onCreate
 
     // called when we're brought to the front (probably as a result of
