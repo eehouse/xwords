@@ -1909,40 +1909,42 @@ public class GamesListDelegate extends ListDelegateBase
                                         false ) ) {
             m_haveShownGetDict = true;
 
-            String lc = Locale.getDefault().getLanguage();
+            String lc = LocUtils.getCurLangCode( m_activity );
             if ( !lc.equals("en") ) {
                 int code = LocUtils.codeForLangCode( m_activity, lc );
-                String[] names = DictLangCache.getHaveLang( m_activity, code );
-                if ( 0 == names.length ) {
-                    final Runnable onNA = new Runnable() {
-                            public void run() {
-                                XWPrefs.setPrefsBoolean( m_activity, R.string
-                                                         .key_got_langdict, 
-                                                         true );
-                            }
-                        };
-
-                    OnGotLcDictListener lstnr = new OnGotLcDictListener() {
-                            public void gotDictInfo( boolean success, String lang, 
-                                                     String name ) {
-                                stopProgress();
-                                if ( success ) {
-                                    String msg = 
-                                        getString( R.string.confirm_get_locdict_fmt, 
-                                                   xlateLang( lang ) );
-                                    showConfirmThen( onNA, msg, R.string
-                                                     .button_download, 
-                                                     Action.DWNLD_LOC_DICT, 
-                                                     lang, name );
+                if ( 0 < code ) {
+                    String[] names = DictLangCache.getHaveLang( m_activity, code );
+                    if ( 0 == names.length ) {
+                        final Runnable onNA = new Runnable() {
+                                public void run() {
+                                    XWPrefs.setPrefsBoolean( m_activity, R.string
+                                                             .key_got_langdict, 
+                                                             true );
                                 }
-                            }
-                        };
+                            };
 
-                    String langName = DictLangCache.getLangName( m_activity, code );
-                    String locLang = xlateLang( langName );
-                    String msg = getString( R.string.checking_for_fmt, locLang );
-                    startProgress( R.string.checking_title, msg );
-                    DictsDelegate.downloadDefaultDict( m_activity, lc, lstnr );
+                        OnGotLcDictListener lstnr = new OnGotLcDictListener() {
+                                public void gotDictInfo( boolean success, String lang, 
+                                                         String name ) {
+                                    stopProgress();
+                                    if ( success ) {
+                                        String msg = 
+                                            getString( R.string.confirm_get_locdict_fmt, 
+                                                       xlateLang( lang ) );
+                                        showConfirmThen( onNA, msg, R.string
+                                                         .button_download, 
+                                                         Action.DWNLD_LOC_DICT, 
+                                                         lang, name );
+                                    }
+                                }
+                            };
+
+                        String langName = DictLangCache.getLangName( m_activity, code );
+                        String locLang = xlateLang( langName );
+                        String msg = getString( R.string.checking_for_fmt, locLang );
+                        startProgress( R.string.checking_title, msg );
+                        DictsDelegate.downloadDefaultDict( m_activity, lc, lstnr );
+                    }
                 }
             }
         }

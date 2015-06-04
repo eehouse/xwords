@@ -30,6 +30,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceGroup;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -80,6 +81,7 @@ public class LocUtils {
     private static HashMap<Integer, String> s_idsToKeys = null;
     private static Boolean s_enabled = null;
     private static String s_curLocale;
+    private static String s_curLang;
     private static WeakReference<Menu> s_latestMenuRef;
     private static Map<WeakReference<Menu>, HashSet<String> > s_menuSets
         = new HashMap<WeakReference<Menu>, HashSet<String> >();
@@ -91,6 +93,7 @@ public class LocUtils {
     {
         saveLocalData( context );
         s_curLocale = newLocale;
+        s_curLang = splitLocale( newLocale );
         s_xlationsLocal = null;
         s_xlationsBlessed = null;
         s_enabled = null;
@@ -154,6 +157,7 @@ public class LocUtils {
     private static Map<String, Integer> s_langCodeMap = null;
     public static int codeForLangCode( Context context, String lc )
     {
+        int result = 0;
         if ( null == s_langCodeMap ) {
             s_langCodeMap = new HashMap<String, Integer>();
             String[] langCodes = 
@@ -166,7 +170,10 @@ public class LocUtils {
             }
         }
 
-        return s_langCodeMap.get( lc );
+        if ( s_langCodeMap.containsKey( lc ) ) {
+            result = s_langCodeMap.get( lc );
+        }
+        return result;
     }
 
     public static void xlateView( Activity activity )
@@ -553,8 +560,23 @@ public class LocUtils {
         String locale_code = getCurLocale( context );
         Locale locale = new Locale( locale_code );
         String name = locale.getDisplayLanguage( locale );
-        DbgUtils.logf( "getCurLocaleName(%s)=>%s", locale_code, name );
         return name;
+    }
+
+    public static String getCurLangCode( Context context )
+    {
+        if ( null == s_curLang ) {
+            String lang = null;
+            String locale = XWPrefs.getFakeLocale( context );
+            if ( null != locale && 0 < locale.length() ) {
+                lang = splitLocale( locale );
+            }
+            if ( null == lang ) {
+                lang = Locale.getDefault().getLanguage();
+            }
+            s_curLang = lang;
+        }
+        return s_curLang;
     }
 
     public static String getCurLocale( Context context )
@@ -800,6 +822,16 @@ public class LocUtils {
         //     DbgUtils.logf( "replaceEscaped: <<%s>> -> <<%s>>", orig, txt );
         // }
         return txt;
+    }
+
+    private static String splitLocale( String locale )
+    {
+        String result = null;
+        String[] tuple = TextUtils.split( locale, "_" );
+        if ( null != tuple && 2 == tuple.length ) {
+            result = tuple[0];
+        }
+        return result;
     }
 
     public static AlertDialog.Builder makeAlertBuilder( Context context )
