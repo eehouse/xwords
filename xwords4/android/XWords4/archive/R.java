@@ -969,6 +969,7 @@ public final class R {
          */
         public static final int cur_tiles_fmt=0x7f0501cf;
         public static final int data_gsm_only=0x7f050273;
+        public static final int db_store_done=0x7f0502fa;
         public static final int debug_features=0x7f0502d0;
         public static final int debug_features_summary=0x7f0502d1;
         /**  dictionary used by default for human players when creating

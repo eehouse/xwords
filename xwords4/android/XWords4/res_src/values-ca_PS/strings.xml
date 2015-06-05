@@ -2131,4 +2131,5 @@
   <string name="pref_item_update_summary">GET INTERMEDIATE BUILDS</string>
   <string name="checking_title">CHECKING</string>
   <string name="checking_for_fmt">CHECKING FOR WORDLISTS IN %1$s…</string>
+  <string name="db_store_done">SD CARD WRITE COMPLETE.</string>
 </resources>

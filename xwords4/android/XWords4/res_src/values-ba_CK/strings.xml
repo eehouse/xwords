@@ -2131,4 +2131,5 @@
   <string name="pref_item_update_summary">Teg etaidemretni sdliub</string>
   <string name="checking_title">Gnikcehc</string>
   <string name="checking_for_fmt">Gnikcehc rof stsildrow ni %1$s…</string>
+  <string name="db_store_done">DS drac etirw etelpmoc.</string>
 </resources>
