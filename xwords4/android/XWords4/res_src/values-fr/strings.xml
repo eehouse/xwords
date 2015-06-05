@@ -3437,4 +3437,8 @@ pour la langue</string>
   <string name="confirm_get_locdict_fmt">Votre périphérique est
   configuré en %1$s. Souhaitez-vous télécharger une liste de mots afin
   de pouvoir jouer à Crosswords en %1$s ?</string>
+  <!--<string name="checking_title">Checking</string>-->
+  <string name="checking_title">Recherche</string>
+  <!--<string name="checking_for_fmt">Checking for wordlists in %1$s…</string>-->
+  <string name="checking_for_fmt">Recherche de listes de mots en %1$s…</string>
 </resources>
