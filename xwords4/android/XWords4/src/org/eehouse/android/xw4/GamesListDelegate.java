@@ -1452,6 +1452,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
         case R.id.games_menu_storedb:
             DBUtils.saveDB( m_activity );
+            showToast( R.string.db_store_done );
             break;
 
             // Game menus: one or more games selected

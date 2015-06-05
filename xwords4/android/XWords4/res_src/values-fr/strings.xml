@@ -3441,4 +3441,7 @@ pour la langue</string>
   <string name="checking_title">Recherche</string>
   <!--<string name="checking_for_fmt">Checking for wordlists in %1$s…</string>-->
   <string name="checking_for_fmt">Recherche de listes de mots en %1$s…</string>
+  <!-- <string name="db_store_done">SD card write complete.</string> -->
+  <string name="db_store_done">Écriture sur la carte SD finie.</string>
+
 </resources>

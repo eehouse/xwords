@@ -2461,5 +2461,5 @@
 
   <string name="checking_title">Checking</string>
   <string name="checking_for_fmt">Checking for wordlists in %1$s…</string>
-
+  <string name="db_store_done">SD card write complete.</string>
 </resources>
