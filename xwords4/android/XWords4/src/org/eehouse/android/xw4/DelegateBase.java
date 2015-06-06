@@ -317,7 +317,11 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void dismissDialog( DlgID dlgID )
     {
-        m_activity.dismissDialog( dlgID.ordinal() );
+        try {
+            m_activity.dismissDialog( dlgID.ordinal() );
+        } catch ( Exception ex ) {
+            // DbgUtils.loge( ex );
+        }
     }
 
     protected void removeDialog( int id )
