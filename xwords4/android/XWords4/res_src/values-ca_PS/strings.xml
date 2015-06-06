@@ -2132,4 +2132,9 @@
   <string name="checking_title">CHECKING</string>
   <string name="checking_for_fmt">CHECKING FOR WORDLISTS IN %1$s…</string>
   <string name="db_store_done">SD CARD WRITE COMPLETE.</string>
+  <string name="no_relay_conn">THIS GAME IS CONFIGURED TO USE THE
+  RELAY FOR COMMUNICATION BUT HAS BEEN UNABLE TO CONNECT, EITHER
+  BECAUSE OF PROBLEMS WITH YOUR DEVICE\'S INTERNET CONNECTION OR
+  BECAUSE THE RELAY IS NOT RUNNING.\n\nPLEASE TRY OPENING THE GAME AGAIN
+  LATER.</string>
 </resources>

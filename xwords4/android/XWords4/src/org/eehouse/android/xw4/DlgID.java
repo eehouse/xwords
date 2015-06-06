@@ -35,6 +35,7 @@ public enum DlgID {
     , DLG_DELETED
     , DLG_DICTGONE
     , DLG_INVITE
+    , DLG_NOINVITE
     , DLG_OKONLY
     , ENABLE_NFC
     , FORCE_REMOTE

@@ -2132,4 +2132,9 @@
   <string name="checking_title">Gnikcehc</string>
   <string name="checking_for_fmt">Gnikcehc rof stsildrow ni %1$s…</string>
   <string name="db_store_done">DS drac etirw etelpmoc.</string>
+  <string name="no_relay_conn">Siht emag si derugifnoc ot esu eht
+  yaler rof noitacinummoc tub sah neeb elbanu ot ,tcennoc rehtie
+  esuaceb fo smelborp htiw ruoy ecived\'s tenretni noitcennoc ro
+  esuaceb eht yaler si ton gninnur.\n\nEsaelp yrt gninepo eht emag niaga
+  retal.</string>
 </resources>

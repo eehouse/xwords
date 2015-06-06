@@ -1475,7 +1475,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
         case R.id.games_game_copy:
             final GameSummary smry = DBUtils.getSummary( m_activity, selRowIDs[0] );
-            if ( smry.inNetworkGame() ) {
+            if ( smry.inRelayGame() ) {
                 showOKOnlyDialog( R.string.no_copy_network );
             } else {
                 dropSels = true;    // will select the new game instead

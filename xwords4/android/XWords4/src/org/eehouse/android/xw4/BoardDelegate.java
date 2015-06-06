@@ -89,6 +89,7 @@ public class BoardDelegate extends DelegateBase
     private GameLock m_gameLock;
     private CurGameInfo m_gi;
     private GameSummary m_summary;
+    private boolean m_relayConnected;
     private CommsTransport m_xport;
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
@@ -431,6 +432,8 @@ public class BoardDelegate extends DelegateBase
                     .setNegativeButton( R.string.button_no, null )
                     .create();
                 break;
+            case DLG_NOINVITE:
+                Assert.assertFalse( m_relayConnected );
             case DLG_INVITE:
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
@@ -472,15 +475,18 @@ public class BoardDelegate extends DelegateBase
     protected void prepareDialog( DlgID dlgID, Dialog dialog )
     {
         switch( dlgID ) {
-        case DLG_INVITE:        // here
+        case DLG_INVITE:
+        case DLG_NOINVITE:
             AlertDialog ad = (AlertDialog)dialog;
             String message;
-            int titleID;
-            boolean rematch = m_summary.hasRematchInfo();
-            if ( rematch ) {
-                titleID = R.string.info_title;
+            int titleID = R.string.info_title;;
+            boolean nukeButton = false;
+            if ( m_summary.hasRematchInfo() ) {
                 message = getString( R.string.rematch_msg );
-                ad.getButton( AlertDialog.BUTTON_POSITIVE ).setVisibility( View.GONE );
+                nukeButton = true;
+            } else if ( DlgID.DLG_NOINVITE == dlgID ) {
+                message = getString( R.string.no_relay_conn );
+                nukeButton = true;
             } else {
                 titleID = R.string.waiting_title;
                 message = getQuantityString( R.plurals.invite_msg_fmt, m_nMissing, m_nMissing );
@@ -499,6 +505,9 @@ public class BoardDelegate extends DelegateBase
                 }
 
                 message += "\n\n" + getString( R.string.invite_stays );
+            }
+            if ( nukeButton ) {
+                ad.getButton( AlertDialog.BUTTON_POSITIVE ).setVisibility( View.GONE );
             }
             ad.setMessage( message );
             ad.setTitle( titleID );
@@ -649,8 +658,12 @@ public class BoardDelegate extends DelegateBase
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
-            } else if ( 0 < m_nMissing && ! isFinishing() ) {
-                showDialog( DlgID.DLG_INVITE );
+            } else if ( ! isFinishing() ) {
+                if ( !m_relayConnected ) {
+                    showDialog( DlgID.DLG_NOINVITE );
+                } else if ( 0 < m_nMissing ) {
+                    showDialog( DlgID.DLG_INVITE );
+                }
             }
         }
     }
@@ -1356,9 +1369,7 @@ public class BoardDelegate extends DelegateBase
     {
         DbgUtils.logf( "BoardDelegate.handleConndMessage(): nMissing = %d", nMissing );
 
-        if ( 0 == nMissing ) {
-            dismissInviteAlert();
-        }
+        dismissInviteAlerts( nMissing, true );
 
         int naMsg = 0;
         int naKey = 0;
@@ -1708,17 +1719,16 @@ public class BoardDelegate extends DelegateBase
             m_nGuestDevs = nDevs;
 
             // If we might have put up an alert earlier, take it down
-            if ( 0 < m_nMissing && m_nMissing != nMissing ) {
-                dismissInviteAlert();
-            }
+            dismissInviteAlerts( nMissing, m_relayConnected );
 
             m_nMissing = nMissing; // will be 0 unless isServer is true
 
-            Action action = null;
+            final DlgID dlgID = 
+                m_relayConnected ? DlgID.DLG_INVITE : DlgID.DLG_NOINVITE;
             if ( 0 < nMissing && isServer && !m_haveInvited ) {
                 post( new Runnable() {
                         public void run() {
-                            showDialog( DlgID.DLG_INVITE );
+                            showDialog( dlgID );
                         }
                     } );
             }
@@ -1869,6 +1879,7 @@ public class BoardDelegate extends DelegateBase
                     String langName = m_gi.langName();
 
                     m_summary = DBUtils.getSummary( m_activity, m_gameLock );
+                    m_relayConnected = !m_summary.relayConnectPending();
 
                     setThis( this );
 
@@ -2018,14 +2029,17 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void dismissInviteAlert()
+    private void dismissInviteAlerts( final int nMissing, final boolean connected )
     {
-        post( new Runnable() {
+        runOnUiThread( new Runnable() {
                 public void run() {
-                    try {
-                        dismissDialog( DlgID.DLG_INVITE );
-                    } catch ( Exception ex ) {
+                    if ( !m_relayConnected && connected ) {
+                        m_relayConnected = true;
+                        dismissDialog( DlgID.DLG_NOINVITE );
                     }
+                    if ( 0 == nMissing ) {
+                        dismissDialog( DlgID.DLG_INVITE );
+                    } 
                 }
             } );
     }

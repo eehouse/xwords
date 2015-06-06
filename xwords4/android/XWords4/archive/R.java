@@ -1927,6 +1927,7 @@ public final class R {
     substituted. 
          */
         public static final int no_name_found_fmt=0x7f0500b8;
+        public static final int no_relay_conn=0x7f0502fb;
         /**  This is not currently shown 
  <string name="not_again_dicts">Crosswords wordlists, which are 
    just compressed lists of words plus tile information, determine 

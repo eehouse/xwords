@@ -102,7 +102,7 @@ public class GameSummary {
         return m_context; 
     }
 
-    public boolean inNetworkGame()
+    public boolean inRelayGame()
     {
         return null != relayID;
     }
@@ -239,6 +239,13 @@ public class GameSummary {
                 }
             }
         }
+        return result;
+    }
+
+    public boolean relayConnectPending()
+    {
+        boolean result = conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+            && (null == relayID || 0 == relayID.length());
         return result;
     }
 
