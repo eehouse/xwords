@@ -489,7 +489,7 @@ public class ConnStatusHandler {
     private static void doSave( Context context )
     {
         synchronized( s_lockObj ) {
-            DbgUtils.logf( "ConnStatusHandler:doSave() doing save" );
+            // DbgUtils.logf( "ConnStatusHandler:doSave() doing save" );
             ByteArrayOutputStream bas
                 = new ByteArrayOutputStream();
             try {

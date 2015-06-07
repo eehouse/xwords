@@ -525,7 +525,7 @@ public class DelegateBase implements DlgClickNotify,
             fmtId = R.string.app_not_found_fmt;
             break;
         default:
-            DbgUtils.logf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", event.toString() );
+            // DbgUtils.logf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", event.toString() );
         }
 
         if ( 0 != fmtId ) {
