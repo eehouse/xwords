@@ -1112,7 +1112,7 @@ public class BTService extends XWService {
             DbgUtils.logf( "connect() to %s successful", name );
         } catch ( IOException ioe ) {
             dos = null;
-            DbgUtils.logf( "connect() to %s failed", name );
+            DbgUtils.logf( "BTService.connect() to %s failed", name );
             // logIOE( ioe );
         }
         return dos;
