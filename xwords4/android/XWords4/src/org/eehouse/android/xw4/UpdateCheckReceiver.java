@@ -75,6 +75,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_URL = "url";
     private static final String k_PARAMS = "params";
     private static final String k_DEVID = "did";
+    private static final String k_DEBUG = "dbg";    
     private static final String k_XLATEINFO = "xlatinfo";
     private static final String k_STRINGSHASH = "strings";
 
@@ -156,6 +157,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 }
                 params.put( k_APP, appParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
+                params.put( k_DEBUG, BuildConfig.DEBUG );
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
             }
