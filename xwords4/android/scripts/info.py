@@ -20,6 +20,7 @@ k_GVERS = 'gvers'
 k_INSTALLER = 'installer'
 k_DEVOK = 'devOK'
 k_APP = 'app'
+k_DEBUG = "dbg"
 k_DICTS = 'dicts'
 k_XLATEINFO = 'xlatinfo'
 k_CALLBACK = 'callback'
@@ -218,7 +219,9 @@ def getApp( params, name ):
         name = params[k_NAME]
     if name:
         # If we're a dev device, always push the latest
-        if k_DEVOK in params and params[k_DEVOK]:
+        if k_DEBUG in params and params[k_DEBUG]:
+            pass                # we don't upgrade DEBUG builds
+        elif k_DEVOK in params and params[k_DEVOK]:
             apks = getOrderedApks( k_filebase + k_apkDir )
             if 0 < len(apks):
                 apk = apks[0]
