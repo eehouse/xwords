@@ -2463,9 +2463,15 @@
   <string name="checking_for_fmt">Checking for wordlists in %1$s…</string>
   <string name="db_store_done">SD card write complete.</string>
 
+  <string name="seeking_relay">Connecting to relay…</string>
+
   <string name="no_relay_conn">This game is configured to use the
   relay for communication but has been unable to connect, either
   because of problems with your device\'s internet connection or
-  because the relay is not running.\n\nPlease try opening the game again
-  later.</string>
+  because the relay is not running.\n\nPlease try opening the game
+  again later after conditions have changed.</string>
+
+  <string name="wifi_warning">\u0020For example, you may need to be on
+  a different WiFi network.</string>
+  
 </resources>

@@ -46,6 +46,7 @@ public class NetStateCache {
     private static AtomicBoolean s_haveReceiver = new AtomicBoolean( false );
     private static HashSet<StateChangedIf> s_ifs;
     private static boolean s_netAvail = false;
+    private static boolean s_isWifi;
     private static PvtBroadcastReceiver s_receiver;
     private static final boolean s_onSim = Build.PRODUCT.contains("sdk");
 
@@ -69,6 +70,11 @@ public class NetStateCache {
     {
         initIfNot( context );
         return s_netAvail || s_onSim;
+    }
+
+    public static boolean onWifi()
+    {
+        return s_isWifi;
     }
 
     public static void reset( Context context )
@@ -140,6 +146,7 @@ public class NetStateCache {
                 switch ( state ) {
                 case CONNECTED:
                     netAvail = true;
+                    s_isWifi = ConnectivityManager.TYPE_WIFI == ni.getType();
                     break;
                 case DISCONNECTED:
                     netAvail = false;

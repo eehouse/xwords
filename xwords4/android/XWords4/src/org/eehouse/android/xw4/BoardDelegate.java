@@ -479,17 +479,24 @@ public class BoardDelegate extends DelegateBase
         case DLG_NOINVITE:
             AlertDialog ad = (AlertDialog)dialog;
             String message;
-            int titleID = R.string.info_title;;
+            int titleID;
             boolean nukeButton = false;
             if ( m_summary.hasRematchInfo() ) {
+                titleID = R.string.info_title;;
                 message = getString( R.string.rematch_msg );
                 nukeButton = true;
             } else if ( DlgID.DLG_NOINVITE == dlgID ) {
+                titleID = R.string.seeking_relay;
                 message = getString( R.string.no_relay_conn );
+                if ( NetStateCache.netAvail( m_activity )
+                     && NetStateCache.onWifi() ) {
+                    message += getString( R.string.wifi_warning );
+                }
                 nukeButton = true;
             } else {
                 titleID = R.string.waiting_title;
-                message = getQuantityString( R.plurals.invite_msg_fmt, m_nMissing, m_nMissing );
+                message = getQuantityString( R.plurals.invite_msg_fmt, 
+                                             m_nMissing, m_nMissing );
 
                 String ps = null;
                 if ( m_nMissing > 1 ) {

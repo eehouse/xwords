@@ -2132,9 +2132,12 @@
   <string name="checking_title">Gnikcehc</string>
   <string name="checking_for_fmt">Gnikcehc rof stsildrow ni %1$s…</string>
   <string name="db_store_done">DS drac etirw etelpmoc.</string>
+  <string name="seeking_relay">Gnitcennoc ot yaler…</string>
   <string name="no_relay_conn">Siht emag si derugifnoc ot esu eht
   yaler rof noitacinummoc tub sah neeb elbanu ot ,tcennoc rehtie
   esuaceb fo smelborp htiw ruoy ecived\'s tenretni noitcennoc ro
-  esuaceb eht yaler si ton gninnur.\n\nEsaelp yrt gninepo eht emag niaga
-  retal.</string>
+  esuaceb eht yaler si ton gninnur.\n\nEsaelp yrt gninepo eht emag
+  niaga retal retfa snoitidnoc evah degnahc.</string>
+  <string name="wifi_warning">\u0020Rof ,elpmaxe uoy yam deen ot eb no
+  a tnereffid IfIw krowten.</string>
 </resources>

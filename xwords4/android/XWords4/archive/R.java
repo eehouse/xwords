@@ -1927,7 +1927,7 @@ public final class R {
     substituted. 
          */
         public static final int no_name_found_fmt=0x7f0500b8;
-        public static final int no_relay_conn=0x7f0502fb;
+        public static final int no_relay_conn=0x7f0502fc;
         /**  This is not currently shown 
  <string name="not_again_dicts">Crosswords wordlists, which are 
    just compressed lists of words plus tile information, determine 
@@ -2339,6 +2339,7 @@ public final class R {
         /**  title for popup of public rooms found on server 
          */
         public static final int room_public_prompt=0x7f0500b6;
+        public static final int seeking_relay=0x7f0502fb;
         public static final int sel_games_fmt=0x7f050251;
         public static final int sel_groups_fmt=0x7f050252;
         public static final int sel_items_fmt=0x7f05026d;
@@ -2702,6 +2703,7 @@ public final class R {
         /**   
          */
         public static final int warn_unlimited=0x7f050201;
+        public static final int wifi_warning=0x7f0502fd;
         /**   
          */
         public static final int word_search_hint=0x7f0501cc;
