@@ -523,6 +523,15 @@ public class RelayService extends XWService
                                 }
                                 resetExitTimer();
                                 ConnStatusHandler.showSuccessOut();
+                            } catch ( java.net.SocketException se ) {
+                                DbgUtils.loge( se );
+                                DbgUtils.logf( "Restarting threads to force"
+                                               + " new socket" );
+                                m_handler.post( new Runnable() {
+                                        public void run() {
+                                            stopUDPThreadsIf();
+                                        }
+                                    } );
                             } catch ( java.io.IOException ioe ) {
                                 DbgUtils.loge( ioe );
                             } catch ( NullPointerException npe ) {
