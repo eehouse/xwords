@@ -1300,7 +1300,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // check for updates only serves release builds, so don't offer in
             // DEBUG case
-            boolean enable = showDbg && !BuildConfig.DEBUG && nothingSelected
+            boolean enable = showDbg && nothingSelected
                 && UpdateCheckReceiver.haveToCheck( m_activity );
             Utils.setItemVisible( menu, R.id.games_menu_checkupdates, enable );
 
