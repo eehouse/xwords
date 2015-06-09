@@ -220,7 +220,8 @@ def getApp( params, name ):
     if name:
         # If we're a dev device, always push the latest
         if k_DEBUG in params and params[k_DEBUG]:
-            pass                # we don't upgrade DEBUG builds
+            url = k_urlbase + '/' + k_apkDir + 'XWords4-debug.apk'
+            result = {k_URL: url}
         elif k_DEVOK in params and params[k_DEVOK]:
             apks = getOrderedApks( k_filebase + k_apkDir )
             if 0 < len(apks):
