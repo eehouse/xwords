@@ -3444,10 +3444,16 @@ pour la langue</string>
   <!-- <string name="db_store_done">SD card write complete.</string> -->
   <string name="db_store_done">Écriture sur la carte SD finie.</string>
 
+  <string name="seeking_relay">Connexion au relai…</string>
+
   <string name="no_relay_conn">Cette partie est configurée pour
-  communiquer en utilisant le relai mais n\'a pas pu se connecter, soit
-  à cause de problèmes avec la connexion Internet de votre périphérique,
-  soit parce que le relai est hors service.\n\n Veuillez réessayer
-  d\'ouvrir la partie ultérieurement.</string>
+  communiquer en utilisant le relai mais n\'a pas pu se connecter,
+  soit à cause de problèmes avec la connexion Internet de votre
+  périphérique, soit parce que le relai ne tourne pas.\n\n Veuillez
+  réessayer d\'ouvrir la partie ultérieurement, après que les
+  conditions aient changé.</string>
+
+  <string name="wifi_warning">\u0020Vous pourriez, par exemple,
+  avoir besoin d\'être sur un réseau Wi-Fi différent.</string>
 
 </resources>
