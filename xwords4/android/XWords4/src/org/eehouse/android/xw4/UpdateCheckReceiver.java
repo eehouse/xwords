@@ -155,9 +155,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 if ( devOK( context ) ) {
                     appParams.put( k_DEVOK, true );
                 }
+                appParams.put( k_DEBUG, BuildConfig.DEBUG );
                 params.put( k_APP, appParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
-                params.put( k_DEBUG, BuildConfig.DEBUG );
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
             }
