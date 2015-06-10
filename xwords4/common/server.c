@@ -1927,6 +1927,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
         } else {
             XP_LOGF( "%s: Doing nothing; waiting for server to end game", 
                      __func__ );
+            setTurn( server, -1 );
             /* I'm the client. Do ++nothing++. */
         }
     }
