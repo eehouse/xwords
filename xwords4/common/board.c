@@ -1048,10 +1048,12 @@ board_commitTurn( BoardCtxt* board )
                      || util_userQuery( board->util, QUERY_COMMIT_TURN,
                                         stream ) ) {
                     result = server_commitMove( board->server ) || result;
-                    /* invalidate any selected tiles in case we'll be drawing
-                       this tray again rather than some other -- as is the
-                       case in a two-player game where one's a robot. */
-                    board_invalTrayTiles( board, pti->traySelBits );
+                    /* invalidate all tiles in case we'll be drawing this tray
+                       again rather than some other -- as is the case in a
+                       two-player game where one's a robot. We really only
+                       need the selected tiles and the rightmost (in case it's
+                       showing points-this-turn), but this is easier. */
+                    board_invalTrayTiles( board, ALLTILES );
                     pti->traySelBits = 0x00;
                 }
             }
