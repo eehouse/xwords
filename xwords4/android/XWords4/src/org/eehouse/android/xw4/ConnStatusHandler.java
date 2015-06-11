@@ -310,15 +310,7 @@ public class ConnStatusHandler {
 
                     // Do the background coloring. Top quarter first
                     rect.bottom = rect.top + quarterHeight;
-                    record = newestSuccess( connTypes, false );
-                    s_fillPaint.setColor( isSolo || (enabled && record.successNewer)
-                                          ? GREEN : RED );
-                    canvas.drawRect( rect, s_fillPaint );
-                    if ( !isSolo ) {
-                        int arrowID = s_showSuccesses[SUCCESS_OUT]? 
-                            R.drawable.out_arrow_active : R.drawable.out_arrow;
-                        drawIn( canvas, res, arrowID, rect );
-                    }
+                    drawQuarter( canvas, res, rect, connTypes, enabled, false );
 
                     // paint the middle two quarters black to give the icon a
                     // clear background
@@ -330,15 +322,7 @@ public class ConnStatusHandler {
                     // bottom quarter
                     rect.top = rect.bottom;
                     rect.bottom = rect.top + quarterHeight;
-                    record = newestSuccess( connTypes, true );
-                    s_fillPaint.setColor( isSolo || (enabled && record.successNewer)
-                                          ? GREEN : RED );
-                    canvas.drawRect( rect, s_fillPaint );
-                    if ( !isSolo ) {
-                        int arrowID = s_showSuccesses[SUCCESS_IN]? 
-                            R.drawable.in_arrow_active : R.drawable.in_arrow;
-                        drawIn( canvas, res, arrowID, rect );
-                    }
+                    drawQuarter( canvas, res, rect, connTypes, enabled, true );
 
                     rect.top = saveTop;
                 }
@@ -359,6 +343,26 @@ public class ConnStatusHandler {
                 drawIn( canvas, res, iconID, rect );
             }
         }
+    }
+
+    private static void drawQuarter( Canvas canvas, Resources res, Rect rect, 
+                                     CommsConnTypeSet connTypes, 
+                                     boolean enabled, boolean isIn )
+    {
+        enabled = enabled && null != newestSuccess( connTypes, isIn );
+        s_fillPaint.setColor( enabled ? GREEN : RED );
+        canvas.drawRect( rect, s_fillPaint );
+
+        int arrowID;
+        boolean showSuccesses = s_showSuccesses[isIn? SUCCESS_IN : SUCCESS_OUT];
+        if ( isIn ) {
+            arrowID = showSuccesses ? 
+                R.drawable.in_arrow_active : R.drawable.in_arrow;
+        } else {
+            arrowID = showSuccesses ? 
+                R.drawable.out_arrow_active : R.drawable.out_arrow;
+        }
+        drawIn( canvas, res, arrowID, rect );
     }
 
     // This gets rid of lint warning, but I don't like it as it
@@ -466,8 +470,10 @@ public class ConnStatusHandler {
             while ( iter.hasNext() ) {
                 CommsConnType connType = iter.next();
                 SuccessRecord record = recordFor( connType, isIn );
-                if ( null == result || result.lastSuccess < record.lastSuccess ) {
-                    result = record;
+                if ( record.successNewer ) {
+                    if ( null == result || result.lastSuccess < record.lastSuccess ) {
+                        result = record;
+                    }
                 }
             }
         }
