@@ -1392,23 +1392,20 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
                 const CommsAddrRec* addrP;
                 (void)channelToAddress( comms, channelNo, &addrP );
 
-                if ( NULL == addrP ) {
-                    XP_LOGF( TAGFMT() "no addr for channel so using comms'", TAGPRMS );
+                if ( NULL == addrP || !addr_hasType( addrP, typ ) ) {
+                    XP_LOGF( TAGFMT() "no addr for channel or addr type %s"
+                             " so using comms'", ConnType2Str(typ), TAGPRMS );
                     comms_getAddr( comms, &addr );
                 } else {
                     addr = *addrP;
                 }
+                XP_ASSERT( addr_hasType( &addr, typ ) );
 
                 XP_ASSERT( !!comms->procs.send );
-                if ( addr_hasType( &addr, typ ) ) {
-                    XP_U32 gameid = gameID( comms );
-                    logAddr( comms, &addr, __func__ );
-                    nSent = (*comms->procs.send)( elem->msg, elem->len, &addr, typ, 
-                                                  gameid, comms->procs.closure );
-                } else {
-                    XP_LOGF( TAGFMT() "not sending b/c type %s missing from addr", 
-                             TAGPRMS, ConnType2Str(typ) );
-                }
+                XP_U32 gameid = gameID( comms );
+                logAddr( comms, &addr, __func__ );
+                nSent = (*comms->procs.send)( elem->msg, elem->len, &addr, typ, 
+                                              gameid, comms->procs.closure );
                 break;
             }
             } /* switch */
