@@ -535,7 +535,9 @@ public class ConnStatusHandler {
             break;
         case COMMS_CONN_BT:
             result = XWApp.BTSUPPORTED && BTService.BTEnabled()
-                && !getAirplaneModeOn( context );
+                && BTService.BTEnabled();
+            // No: we can be in airplane mode but with BT turned on manually.
+            //!getAirplaneModeOn( context );
             break;
         case COMMS_CONN_RELAY:
             result = NetStateCache.netAvail( context );
