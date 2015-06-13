@@ -1008,6 +1008,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">Etivni won</string>
+  <string name="newgame_invite_anyway">Etivni yawyna</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">Wen Htooteulb emag</string>
@@ -2134,10 +2135,13 @@
   <string name="db_store_done">DS drac etirw etelpmoc.</string>
   <string name="seeking_relay">Gnitcennoc ot yaler…</string>
   <string name="no_relay_conn">Siht emag si derugifnoc ot esu eht
-  yaler rof noitacinummoc tub sah neeb elbanu ot ,tcennoc rehtie
-  esuaceb fo smelborp htiw ruoy ecived\'s tenretni noitcennoc ro
-  esuaceb eht yaler si ton gninnur.\n\nEsaelp yrt gninepo eht emag
+  yaler )revres( rof noitacinummoc tub sah neeb elbanu ot ,tcennoc
+  rehtie esuaceb fo smelborp htiw ruoy ecived\'s tenretni noitcennoc
+  ro esuaceb eht yaler si ton gninnur.\n\nEsaelp yrt gninepo eht emag
   niaga retal retfa snoitidnoc evah degnahc.</string>
+  <string name="skip_relay_warning">eSuaceb( siht emag sah rehto syaw
+  fo ,gnitacinummoc uoy nac etivni neve tuohtiw a yaler ,noitcennoc
+  tub yeht uoy\'ll evah ot yalp eht emag tuohtiw ti.)</string>
   <string name="wifi_warning">\u0020Rof ,elpmaxe uoy yam deen ot eb no
   a tnereffid IfIw krowten.</string>
 </resources>

@@ -1008,6 +1008,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">INVITE NOW</string>
+  <string name="newgame_invite_anyway">INVITE ANYWAY</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">NEW BLUETOOTH GAME</string>
@@ -2134,10 +2135,13 @@
   <string name="db_store_done">SD CARD WRITE COMPLETE.</string>
   <string name="seeking_relay">CONNECTING TO RELAY…</string>
   <string name="no_relay_conn">THIS GAME IS CONFIGURED TO USE THE
-  RELAY FOR COMMUNICATION BUT HAS BEEN UNABLE TO CONNECT, EITHER
-  BECAUSE OF PROBLEMS WITH YOUR DEVICE\'S INTERNET CONNECTION OR
-  BECAUSE THE RELAY IS NOT RUNNING.\n\nPLEASE TRY OPENING THE GAME
+  RELAY (SERVER) FOR COMMUNICATION BUT HAS BEEN UNABLE TO CONNECT,
+  EITHER BECAUSE OF PROBLEMS WITH YOUR DEVICE\'S INTERNET CONNECTION
+  OR BECAUSE THE RELAY IS NOT RUNNING.\n\nPLEASE TRY OPENING THE GAME
   AGAIN LATER AFTER CONDITIONS HAVE CHANGED.</string>
+  <string name="skip_relay_warning">(BECAUSE THIS GAME HAS OTHER WAYS
+  OF COMMUNICATING, YOU CAN INVITE EVEN WITHOUT A RELAY CONNECTION,
+  BUT THEY YOU\'LL HAVE TO PLAY THE GAME WITHOUT IT.)</string>
   <string name="wifi_warning">\u0020FOR EXAMPLE, YOU MAY NEED TO BE ON
   A DIFFERENT WIFI NETWORK.</string>
 </resources>
