@@ -258,6 +258,11 @@ public class NetLaunchInfo {
         return m_addrs.contains( typ );
     }
 
+    public void removeAddress( CommsConnType typ )
+    {
+        m_addrs.remove( typ );
+    }
+
     public String inviteID()
     { 
         String result = m_inviteID;

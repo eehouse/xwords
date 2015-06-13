@@ -246,6 +246,13 @@ public class GameSummary {
     {
         boolean result = conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
             && (null == relayID || 0 == relayID.length());
+        if ( result ) {
+            // Don't report it as unconnected if a game's happening
+            // anyway, e.g. via BT.
+            result = 0 > turn && !gameOver;
+        }
+        // DbgUtils.logf( "relayConnectPending()=>%b (turn=%d)", result, 
+        //                turn );
         return result;
     }
 

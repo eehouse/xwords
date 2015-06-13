@@ -432,8 +432,6 @@ public class BoardDelegate extends DelegateBase
                     .setNegativeButton( R.string.button_no, null )
                     .create();
                 break;
-            case DLG_NOINVITE:
-                Assert.assertFalse( m_relayConnected );
             case DLG_INVITE:
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
@@ -449,7 +447,7 @@ public class BoardDelegate extends DelegateBase
                     };
                 dialog = ab.setTitle( "foo" )
                     .setMessage( "" )
-                    .setPositiveButton( R.string.newgame_invite, lstnr )
+                    .setPositiveButton( "", lstnr )
                     .setNegativeButton( R.string.button_close_game, lstnr2 )
                     .setOnCancelListener( new OnCancelListener() {
                             public void onCancel( DialogInterface dialog ) {
@@ -476,48 +474,60 @@ public class BoardDelegate extends DelegateBase
     {
         switch( dlgID ) {
         case DLG_INVITE:
-        case DLG_NOINVITE:
             AlertDialog ad = (AlertDialog)dialog;
             String message;
             int titleID;
             boolean nukeButton = false;
+            int buttonTxt = R.string.newgame_invite;
             if ( m_summary.hasRematchInfo() ) {
                 titleID = R.string.info_title;;
                 message = getString( R.string.rematch_msg );
                 nukeButton = true;
-            } else if ( DlgID.DLG_NOINVITE == dlgID ) {
-                titleID = R.string.seeking_relay;
-                message = getString( R.string.no_relay_conn );
-                if ( NetStateCache.netAvail( m_activity )
-                     && NetStateCache.onWifi() ) {
-                    message += getString( R.string.wifi_warning );
-                }
-                nukeButton = true;
-            } else {
-                titleID = R.string.waiting_title;
-                message = getQuantityString( R.plurals.invite_msg_fmt, 
-                                             m_nMissing, m_nMissing );
-
-                String ps = null;
-                if ( m_nMissing > 1 ) {
-                    ps = getString( R.string.invite_multiple );
-                } else {
-                    boolean[] avail = NFCUtils.nfcAvail( m_activity );
-                    if ( avail[1] ) {
-                        ps = getString( R.string.invite_if_nfc );
+            } else { 
+                if ( !m_relayConnected ) {
+                    titleID = R.string.seeking_relay;
+                    // If relay is only means, don't allow at all
+                    boolean relayOnly = 1 >= m_connTypes.size();
+                    nukeButton = relayOnly;
+                    message = getString( R.string.no_relay_conn );
+                    if ( NetStateCache.netAvail( m_activity )
+                         && NetStateCache.onWifi() ) {
+                        message += getString( R.string.wifi_warning );
                     }
-                }
-                if ( null != ps ) {
-                    message += "\n\n" + ps;
-                }
+                    if ( !relayOnly ) {
+                        message += "\n\n" + getString( R.string.skip_relay_warning );
+                        buttonTxt = R.string.newgame_invite_anyway;
+                    }
+                } else {
+                    titleID = R.string.waiting_title;
+                    message = getQuantityString( R.plurals.invite_msg_fmt, 
+                                                 m_nMissing, m_nMissing );
 
-                message += "\n\n" + getString( R.string.invite_stays );
+                    String ps = null;
+                    if ( m_nMissing > 1 ) {
+                        ps = getString( R.string.invite_multiple );
+                    } else {
+                        boolean[] avail = NFCUtils.nfcAvail( m_activity );
+                        if ( avail[1] ) {
+                            ps = getString( R.string.invite_if_nfc );
+                        }
+                    }
+                    if ( null != ps ) {
+                        message += "\n\n" + ps;
+                    }
+
+                    message += "\n\n" + getString( R.string.invite_stays );
+                }
             }
-            if ( nukeButton ) {
-                ad.getButton( AlertDialog.BUTTON_POSITIVE ).setVisibility( View.GONE );
-            }
+
             ad.setMessage( message );
             ad.setTitle( titleID );
+
+            Button posButton = ad.getButton( AlertDialog.BUTTON_POSITIVE );
+            posButton.setVisibility( nukeButton ? View.GONE : View.VISIBLE );
+            if ( !nukeButton ) {
+                posButton.setText( buttonTxt );
+            }
             break;
         default:
             super.prepareDialog( dlgID, dialog );
@@ -666,9 +676,7 @@ public class BoardDelegate extends DelegateBase
                 setBackgroundColor();
                 setKeepScreenOn();
             } else if ( ! isFinishing() ) {
-                if ( !m_relayConnected ) {
-                    showDialog( DlgID.DLG_NOINVITE );
-                } else if ( 0 < m_nMissing ) {
+                if ( !m_relayConnected || 0 < m_nMissing ) {
                     showDialog( DlgID.DLG_INVITE );
                 }
             }
@@ -1034,6 +1042,9 @@ public class BoardDelegate extends DelegateBase
             case EMAIL:
                 NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1,
                                                        1 + m_nGuestDevs );
+                if ( !m_relayConnected ) {
+                    nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
+                }
                 GameUtils.launchEmailInviteActivity( m_activity, nli );
                 break;
             default:
@@ -1376,7 +1387,7 @@ public class BoardDelegate extends DelegateBase
     {
         DbgUtils.logf( "BoardDelegate.handleConndMessage(): nMissing = %d", nMissing );
 
-        dismissInviteAlerts( nMissing, true );
+        dismissInviteAlert( nMissing, true );
 
         int naMsg = 0;
         int naKey = 0;
@@ -1726,16 +1737,14 @@ public class BoardDelegate extends DelegateBase
             m_nGuestDevs = nDevs;
 
             // If we might have put up an alert earlier, take it down
-            dismissInviteAlerts( nMissing, m_relayConnected );
+            dismissInviteAlert( nMissing, m_relayConnected );
 
             m_nMissing = nMissing; // will be 0 unless isServer is true
 
-            final DlgID dlgID = 
-                m_relayConnected ? DlgID.DLG_INVITE : DlgID.DLG_NOINVITE;
             if ( 0 < nMissing && isServer && !m_haveInvited ) {
                 post( new Runnable() {
                         public void run() {
-                            showDialog( dlgID );
+                            showDialog( DlgID.DLG_INVITE );
                         }
                     } );
             }
@@ -2036,15 +2045,14 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void dismissInviteAlerts( final int nMissing, final boolean connected )
+    private void dismissInviteAlert( final int nMissing, final boolean connected )
     {
         runOnUiThread( new Runnable() {
                 public void run() {
                     if ( !m_relayConnected && connected ) {
                         m_relayConnected = true;
-                        dismissDialog( DlgID.DLG_NOINVITE );
                     }
-                    if ( 0 == nMissing ) {
+                    if ( 0 == nMissing || m_relayConnected ) {
                         dismissDialog( DlgID.DLG_INVITE );
                     } 
                 }
@@ -2285,6 +2293,10 @@ public class BoardDelegate extends DelegateBase
                     int forceChannel = ii + m_nGuestDevs + 1;
                     NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 
                                                            nPlayers, forceChannel );
+                    if ( !m_relayConnected ) {
+                        nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
+                    }
+
                     switch ( m_missingMeans ) {
                     case BLUETOOTH:
                         if ( ! m_progressShown ) {
