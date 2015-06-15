@@ -24,12 +24,10 @@ import android.os.Bundle;
 
 public class GameConfigActivity extends XWActivity {
 
-    private GameConfigDelegate m_dlgt;
-
     @Override
     public void onCreate( Bundle savedInstanceState )
     {
-        m_dlgt = new GameConfigDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, m_dlgt );
+        super.onCreate( savedInstanceState, 
+                        new GameConfigDelegate( this, savedInstanceState ) );
     } // onCreate
 }

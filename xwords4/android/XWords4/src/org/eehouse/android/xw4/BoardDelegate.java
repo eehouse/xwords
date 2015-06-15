@@ -1385,8 +1385,6 @@ public class BoardDelegate extends DelegateBase
     private void handleConndMessage( String room, int devOrder, // <- hostID
                                      boolean allHere, int nMissing )
     {
-        DbgUtils.logf( "BoardDelegate.handleConndMessage(): nMissing = %d", nMissing );
-
         dismissInviteAlert( nMissing, true );
 
         int naMsg = 0;
@@ -1732,8 +1730,8 @@ public class BoardDelegate extends DelegateBase
         {
             m_connTypes = connTypes;
             Assert.assertTrue( isServer || 0 == nMissing );
-            DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nDevs=%d, nMissing=%d)", 
-                           isServer, nDevs, nMissing );
+            // DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nDevs=%d, nMissing=%d)", 
+            //                isServer, nDevs, nMissing );
             m_nGuestDevs = nDevs;
 
             // If we might have put up an alert earlier, take it down
@@ -1891,7 +1889,6 @@ public class BoardDelegate extends DelegateBase
                     m_gi = new CurGameInfo( m_activity );
                     m_gi.setName( gameName );
                     XwJNI.gi_from_stream( m_gi, stream );
-                    DbgUtils.logf( "BoardDelegate:after loadGame: gi.nPlayers: %d", m_gi.nPlayers );
                     String langName = m_gi.langName();
 
                     m_summary = DBUtils.getSummary( m_activity, m_gameLock );
@@ -2443,39 +2440,41 @@ public class BoardDelegate extends DelegateBase
 
     private void doRematch()
     {
-        String phone = null;
-        String btAddr = null;
-        String relayID = null;
-        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
-            for ( CommsAddrRec addr : addrs ) {
-                if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
-                    Assert.assertNull( btAddr );
-                    btAddr = addr.bt_btAddr;
-                } 
-                if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
-                    Assert.assertNull( phone );
-                    phone = addr.sms_phone;
-                }
-                if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                    Assert.assertNull( relayID );
-                    relayID = m_summary.relayID;
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            String phone = null;
+            String btAddr = null;
+            String relayID = null;
+            if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
+                for ( CommsAddrRec addr : addrs ) {
+                    if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                        Assert.assertNull( btAddr );
+                        btAddr = addr.bt_btAddr;
+                    } 
+                    if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+                        Assert.assertNull( phone );
+                        phone = addr.sms_phone;
+                    }
+                    if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                        Assert.assertNull( relayID );
+                        relayID = m_summary.relayID;
+                    }
                 }
             }
-        }
 
-        Intent intent = GamesListDelegate
-            .makeRematchIntent( m_activity, m_rowid, m_connTypes, btAddr, 
-                                phone, relayID );
-        if ( null != intent ) {
-            startActivity( intent );
-            finish();
+            Intent intent = GamesListDelegate
+                .makeRematchIntent( m_activity, m_rowid, m_connTypes, btAddr, 
+                                    phone, relayID );
+            if ( null != intent ) {
+                startActivity( intent );
+                finish();
+            }
         }
     }
 
     private void tryRematchInvites()
     {
-        if ( !m_rematchInvitesSent ) {
+        if ( XWApp.REMATCH_SUPPORTED && !m_rematchInvitesSent ) {
             m_rematchInvitesSent = true;
 
             Assert.assertNotNull( m_summary );

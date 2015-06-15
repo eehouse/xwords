@@ -431,12 +431,9 @@ and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
     return result;
 }
 
-/* FIXME: This will always return the same string, ignoring quantity all but
-   the first time (because of util->userStrings) */
 static const XP_UCHAR*
 and_util_getUserQuantityString( XW_UtilCtxt* uc, XP_U16 stringCode, XP_U16 quantity )
 {
-    LOG_FUNC();
     XP_UCHAR* result = "";
     UTIL_CBK_HEADER("getUserQuantityString", "(II)Ljava/lang/String;" );
     int index = stringCode - 1; /* see LocalizedStrIncludes.h */
@@ -478,7 +475,6 @@ and_util_getUserQuantityString( XW_UtilCtxt* uc, XP_U16 stringCode, XP_U16 quant
 
     result = ptrs[indx];
     UTIL_CBK_TAIL();
-    LOG_RETURNF( "%s", result );
     return result;
 }
 

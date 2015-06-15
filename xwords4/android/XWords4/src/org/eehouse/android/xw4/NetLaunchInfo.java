@@ -235,7 +235,7 @@ public class NetLaunchInfo {
         this( gi );
 
         for ( CommsConnType typ : summary.conTypes.getTypes() ) {
-            DbgUtils.logf( "NetLaunchInfo(): got type %s", typ.toString() );
+            // DbgUtils.logf( "NetLaunchInfo(): got type %s", typ.toString() );
             switch( typ ) {
             case COMMS_CONN_BT:
                 addBTInfo();
@@ -268,7 +268,7 @@ public class NetLaunchInfo {
         String result = m_inviteID;
         if ( null == result ) {
             result = GameUtils.formatGameID( m_gameID );
-            DbgUtils.logf( "inviteID(): m_inviteID null so substituting %s", result );
+            // DbgUtils.logf( "inviteID(): m_inviteID null so substituting %s", result );
         }
         return result;
     }
@@ -279,7 +279,7 @@ public class NetLaunchInfo {
         if ( 0 == result ) {
             Assert.assertNotNull( m_inviteID );
             result = Integer.parseInt( m_inviteID, 16 );
-            DbgUtils.logf( "gameID(): m_gameID -1 so substituting %d", result );
+            // DbgUtils.logf( "gameID(): m_gameID -1 so substituting %d", result );
             m_gameID = result;
         }
         Assert.assertTrue( 0 != result );
@@ -465,10 +465,11 @@ public class NetLaunchInfo {
         }
         Uri result = ub.build();
 
-        // Now test
-        DbgUtils.logf( "testing %s...", result.toString() );
-        NetLaunchInfo instance = new NetLaunchInfo( context, result );
-        Assert.assertTrue( instance.isValid() );
+        if ( BuildConfig.DEBUG ) { // Test...
+            DbgUtils.logf( "testing %s...", result.toString() );
+            NetLaunchInfo instance = new NetLaunchInfo( context, result );
+            Assert.assertTrue( instance.isValid() );
+        }
 
         return result;
     }
@@ -505,7 +506,7 @@ public class NetLaunchInfo {
 
     public boolean isValid()
     {
-        DbgUtils.logf( "NetLaunchInfo(%s).isValid() => %b", toString(), m_valid );
+        // DbgUtils.logf( "NetLaunchInfo(%s).isValid() => %b", toString(), m_valid );
         return m_valid;
     }
 
@@ -531,7 +532,7 @@ public class NetLaunchInfo {
     private void calcValid()
     {
         boolean valid = hasCommon() && null != m_addrs;
-        DbgUtils.logf( "calcValid(%s)", toString() );
+        // DbgUtils.logf( "calcValid(%s)", toString() );
         if ( valid ) {
             for ( Iterator<CommsConnType> iter = m_addrs.iterator();
                   valid && iter.hasNext(); ) {

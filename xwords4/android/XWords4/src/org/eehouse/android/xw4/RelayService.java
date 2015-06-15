@@ -588,7 +588,7 @@ public class RelayService extends XWService
                 if ( !skipAck ) {
                     sendAckIf( header );
                 }
-                DbgUtils.logf( "RelayService.gotPacket: cmd=%s", header.m_cmd.toString() );
+                // DbgUtils.logf( "RelayService.gotPacket: cmd=%s", header.m_cmd.toString() );
                 switch ( header.m_cmd ) { 
                 case XWPDEV_UNAVAIL:
                     int unavail = dis.readInt();
@@ -614,8 +614,8 @@ public class RelayService extends XWService
                 case XWPDEV_REGRSP:
                     str = getVLIString( dis );
                     short maxIntervalSeconds = dis.readShort();
-                    DbgUtils.logf( "got relayid %s, maxInterval %d", str, 
-                                   maxIntervalSeconds );
+                    // DbgUtils.logf( "got relayid %s, maxInterval %d", str, 
+                    //                maxIntervalSeconds );
                     setMaxIntervalSeconds( maxIntervalSeconds );
                     XWPrefs.setRelayDevID( this, str );
                     s_registered = true;

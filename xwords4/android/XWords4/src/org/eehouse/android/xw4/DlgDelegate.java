@@ -194,8 +194,7 @@ public class DlgDelegate {
     protected void showDialog( DlgID dlgID )
     {
         if ( !m_activity.isFinishing() ) {
-            int id = dlgID.ordinal();
-            m_activity.showDialog( id );
+            m_activity.showDialog( dlgID.ordinal() );
         }
     }
     

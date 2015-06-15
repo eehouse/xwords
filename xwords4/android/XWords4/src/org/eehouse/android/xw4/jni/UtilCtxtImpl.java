@@ -234,7 +234,6 @@ public class UtilCtxtImpl implements UtilCtxt {
         if ( 0 != pluralsId ) {
             result = LocUtils.getQuantityString( m_context, pluralsId, quantity );
         }
-        DbgUtils.logf( "UtilCtxtImpl.getUserQuantityString() => %s", result );
         return result;
     }
 
@@ -303,7 +302,6 @@ public class UtilCtxtImpl implements UtilCtxt {
     {
         Assert.assertTrue( XWApp.SMSSUPPORTED );
         boolean same = PhoneNumberUtils.compare( m_context, num1, num2 );
-        DbgUtils.logf( "phoneNumbersSame => %b", same );
         return same;
     }
 

@@ -601,9 +601,9 @@ public class GameUtils {
 
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
     {
-        DbgUtils.logf( "launchEmailInviteActivity: nli=%s", nli.makeLaunchJSON() );
+        // DbgUtils.logf( "launchEmailInviteActivity: nli=%s", nli.makeLaunchJSON() );
         Uri gameUri = nli.makeLaunchUri( activity );
-        DbgUtils.logf( "launchEmailInviteActivity: uri=%s", gameUri );
+        // DbgUtils.logf( "launchEmailInviteActivity: uri=%s", gameUri );
 
         String msgString = null == gameUri ? null : gameUri.toString();
         if ( null != msgString ) {

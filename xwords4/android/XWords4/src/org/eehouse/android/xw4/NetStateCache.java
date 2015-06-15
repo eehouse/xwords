@@ -101,8 +101,8 @@ public class NetStateCache {
                 NetworkInfo ni = connMgr.getActiveNetworkInfo();
 
                 s_netAvail = ni != null && ni.isAvailable() && ni.isConnected();
-                DbgUtils.logf( "NetStateCache.initIfNot(): set s_netAvail = %b",
-                               s_netAvail );
+                // DbgUtils.logf( "NetStateCache.initIfNot(): set s_netAvail = %b",
+                //                s_netAvail );
 
                 s_receiver = new PvtBroadcastReceiver();
                 IntentFilter filter = new IntentFilter();
@@ -132,7 +132,6 @@ public class NetStateCache {
         @Override
         public void onReceive( final Context context, Intent intent ) 
         {
-            DbgUtils.logf( "NetStateCache.onReceive()" );
             DbgUtils.assertOnUIThread();
 
             if ( intent.getAction().
@@ -159,8 +158,6 @@ public class NetStateCache {
 
                 if ( s_netAvail != netAvail ) {
                     s_netAvail = netAvail; // keep current in case we're asked
-                    DbgUtils.logf( "NetStateCache.onReceive(): set s_netAvail"
-                                   + " = %b", s_netAvail );
 
                     // We want to wait for WAIT_STABLE_MILLIS of inactivity
                     // before informing listeners.  So each time there's a

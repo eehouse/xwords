@@ -87,7 +87,6 @@ public class XWConnAddrPreference extends DialogPreference {
     public void onClick( DialogInterface dialog, int which )
     {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
-            DbgUtils.logf( "ok pressed" );
             CommsConnTypeSet curSet = m_view.getTypes();
             XWPrefs.setAddrTypes( m_context, curSet );
             setSummary( curSet.toString( m_context ) );
