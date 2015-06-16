@@ -2377,7 +2377,7 @@ public final class R {
         /**  explanation of the above 
          */
         public static final int skip_confirm_turn_summary=0x7f050147;
-        public static final int skip_relay_warning=0x7f0502fe;
+        public static final int skip_relay_warning=0x7f0502ff;
         public static final int slmenu_clear_sel=0x7f050264;
         public static final int slmenu_copy_sel=0x7f050263;
         public static final int slmenu_deselect_all=0x7f05026d;
@@ -2705,7 +2705,7 @@ public final class R {
         /**   
          */
         public static final int warn_unlimited=0x7f050202;
-        public static final int wifi_warning=0x7f0502ff;
+        public static final int wifi_warning=0x7f0502fe;
         /**   
          */
         public static final int word_search_hint=0x7f0501cd;

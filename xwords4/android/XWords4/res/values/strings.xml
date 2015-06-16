@@ -2472,11 +2472,11 @@
   or because the relay is not running.\n\nPlease try opening the game
   again later after conditions have changed.</string>
 
-  <string name="skip_relay_warning">(Because this game has other ways
-  of communicating, you can invite even without a relay connection,
-  but they you\'ll have to play the game without it.)</string>
-
   <string name="wifi_warning">\u0020For example, you may need to be on
   a different WiFi network.</string>
   
+  <string name="skip_relay_warning">(Because this game has other ways
+  of communicating, you can invite even without a relay connection,
+  but then you\'ll have to play the game without it.)</string>
+
 </resources>

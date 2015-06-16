@@ -2139,9 +2139,9 @@
   rehtie esuaceb fo smelborp htiw ruoy ecived\'s tenretni noitcennoc
   ro esuaceb eht yaler si ton gninnur.\n\nEsaelp yrt gninepo eht emag
   niaga retal retfa snoitidnoc evah degnahc.</string>
-  <string name="skip_relay_warning">eSuaceb( siht emag sah rehto syaw
-  fo ,gnitacinummoc uoy nac etivni neve tuohtiw a yaler ,noitcennoc
-  tub yeht uoy\'ll evah ot yalp eht emag tuohtiw ti.)</string>
   <string name="wifi_warning">\u0020Rof ,elpmaxe uoy yam deen ot eb no
   a tnereffid IfIw krowten.</string>
+  <string name="skip_relay_warning">eSuaceb( siht emag sah rehto syaw
+  fo ,gnitacinummoc uoy nac etivni neve tuohtiw a yaler ,noitcennoc
+  tub neht uoy\'ll evah ot yalp eht emag tuohtiw ti.)</string>
 </resources>

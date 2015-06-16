@@ -1405,6 +1405,7 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          launched to send your invitation. -->
     <!--<string name="newgame_invite">Invite now</string>-->
     <string name="newgame_invite">Inviter maintenant</string>
+    <string name="newgame_invite_anyway">Inviter malgré tout</string>
 
     <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
@@ -3447,13 +3448,18 @@ pour la langue</string>
   <string name="seeking_relay">Connexion au relai…</string>
 
   <string name="no_relay_conn">Cette partie est configurée pour
-  communiquer en utilisant le relai mais n\'a pas pu se connecter,
-  soit à cause de problèmes avec la connexion Internet de votre
-  périphérique, soit parce que le relai ne tourne pas.\n\n Veuillez
-  réessayer d\'ouvrir la partie ultérieurement, après que les
+  communiquer en utilisant le relai (serveur) mais n\'a pas pu se
+  connecter, soit à cause de problèmes avec la connexion Internet de
+  votre périphérique, soit parce que le relai ne tourne pas.\n\n
+  Veuillez réessayer d\'ouvrir la partie ultérieurement, après que les
   conditions aient changé.</string>
 
   <string name="wifi_warning">\u0020Vous pourriez, par exemple,
   avoir besoin d\'être sur un réseau Wi-Fi différent.</string>
+
+  <string name="skip_relay_warning">(Étant donné que cette partie a
+  d\'autres moyens de communiquer, vous pouvez inviter même sans une
+  connexion à un relai, mais ensuite vous devrez jouer sans elle.)
+  </string>
 
 </resources>
