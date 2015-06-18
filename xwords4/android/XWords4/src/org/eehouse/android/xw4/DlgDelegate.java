@@ -83,6 +83,7 @@ public class DlgDelegate {
         SMS_CONFIG_ACTION,
         BUTTON_BROWSEALL_ACTION,
         NFC_TO_SELF,
+        DROP_RELAY_ACTION,
 
         // Dict Browser
         FINISH_ACTION,

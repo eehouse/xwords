@@ -1008,7 +1008,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">Etivni won</string>
-  <string name="newgame_invite_anyway">Etivni yawyna</string>
+  <string name="newgame_drop_relay">Pord Yaler</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">Wen Htooteulb emag</string>
@@ -2135,13 +2135,19 @@
   <string name="db_store_done">DS drac etirw etelpmoc.</string>
   <string name="seeking_relay">Gnitcennoc ot yaler…</string>
   <string name="no_relay_conn">Siht emag si derugifnoc ot esu eht
-  yaler )revres( rof noitacinummoc tub sah neeb elbanu ot ,tcennoc
-  rehtie esuaceb fo smelborp htiw ruoy ecived\'s tenretni noitcennoc
-  ro esuaceb eht yaler si ton gninnur.\n\nEsaelp yrt gninepo eht emag
-  niaga retal retfa snoitidnoc evah degnahc.</string>
+  yaler )tenretni( rof noitacinummoc tub sah neeb elbanu ot
+  tcennoc.\n\nEsaelp yrt gninepo eht emag niaga retal retfa
+  snoitidnoc evah degnahc.</string>
   <string name="wifi_warning">\u0020Rof ,elpmaxe uoy yam deen ot eb no
   a tnereffid IfIw krowten.</string>
-  <string name="skip_relay_warning">eSuaceb( siht emag sah rehto syaw
-  fo ,gnitacinummoc uoy nac etivni neve tuohtiw a yaler ,noitcennoc
-  tub neht uoy\'ll evah ot yalp eht emag tuohtiw ti.)</string>
+  <string name="drop_relay_warning_fmt">sIht( emag nac osla tcennoc
+  aiv %1$s, os fi uoy\'d ekil ot yalp eht emag tuohtiw a yaler
+  noitcennoc uoy nac.)
+  </string>
+  <string name="confirm_drop_relay">Era uoy erus uoy tnaw ot pord siht
+  emag\'s ytiliba ot etacinummoc aiv eht ?yaler</string>
+  <string name="confirm_drop_relay_bt">Htooteulb ylno skrow rof ybraen
+  secived.</string>
+  <string name="confirm_drop_relay_sms">Ton lla sreirrac troppus yalp
+  aiv SMS.</string>
 </resources>

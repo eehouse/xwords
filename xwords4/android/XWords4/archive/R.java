@@ -861,6 +861,9 @@ public final class R {
          of the language is substituted for %1$s. 
          */
         public static final int confirm_deleteonly_dicts_fmt=0x7f0500a0;
+        public static final int confirm_drop_relay=0x7f050300;
+        public static final int confirm_drop_relay_bt=0x7f050301;
+        public static final int confirm_drop_relay_sms=0x7f050302;
         public static final int confirm_get_locdict_fmt=0x7f0502c9;
         /**  Text of confirmation dialog for above 
          */
@@ -1070,6 +1073,7 @@ public final class R {
         public static final int download_failed=0x7f05023a;
         public static final int download_path_title=0x7f05023d;
         public static final int downloading_dict_fmt=0x7f050185;
+        public static final int drop_relay_warning_fmt=0x7f0502ff;
         /**  <string name="summary_thumb_enabled">Display snapshots of games</string> 
          */
         public static final int dropped_dupe=0x7f050256;
@@ -1826,13 +1830,13 @@ public final class R {
     this and you'll get taken to the "Game configure" screen 
          */
         public static final int newgame_configure_first=0x7f050160;
+        public static final int newgame_drop_relay=0x7f050164;
         /**  Text of first of two buttons for new networked games.  Tap
          this and a game will be created, but you probably won't see
          it immediately because an email or messaging app will be
          launched to send your invitation. 
          */
         public static final int newgame_invite=0x7f050163;
-        public static final int newgame_invite_anyway=0x7f050164;
         /**  Text of first of two buttons for new standalone games.  Tap
          this and a new game will be created and opened.  If the first
          player is a robot it will immediately take its turn.
@@ -2377,7 +2381,6 @@ public final class R {
         /**  explanation of the above 
          */
         public static final int skip_confirm_turn_summary=0x7f050147;
-        public static final int skip_relay_warning=0x7f0502ff;
         public static final int slmenu_clear_sel=0x7f050264;
         public static final int slmenu_copy_sel=0x7f050263;
         public static final int slmenu_deselect_all=0x7f05026d;

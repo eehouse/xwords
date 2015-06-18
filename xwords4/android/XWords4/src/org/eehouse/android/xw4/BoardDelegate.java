@@ -436,7 +436,12 @@ public class BoardDelegate extends DelegateBase
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
-                            showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
+                            if ( m_relayConnected ||
+                                 ! m_connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
+                                showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
+                            } else {
+                                askDropRelay();
+                            }
                         }
                     };
                 OnClickListener lstnr2 = new OnClickListener() {
@@ -495,8 +500,13 @@ public class BoardDelegate extends DelegateBase
                         message += getString( R.string.wifi_warning );
                     }
                     if ( !relayOnly ) {
-                        message += "\n\n" + getString( R.string.skip_relay_warning );
-                        buttonTxt = R.string.newgame_invite_anyway;
+                        CommsConnTypeSet without = (CommsConnTypeSet)
+                            m_connTypes.clone();
+                        without.remove( CommsConnType.COMMS_CONN_RELAY );
+                        message += "\n\n" 
+                            + getString( R.string.drop_relay_warning_fmt, 
+                                         without.toString( m_activity ) );
+                        buttonTxt = R.string.newgame_drop_relay;
                     }
                 } else {
                     titleID = R.string.waiting_title;
@@ -1003,6 +1013,9 @@ public class BoardDelegate extends DelegateBase
             case NFC_TO_SELF:
                 GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
                 break;
+            case DROP_RELAY_ACTION:
+                dropRelayAndRestart();
+                break;
             default:
                 handled = false;
             }
@@ -1294,6 +1307,29 @@ public class BoardDelegate extends DelegateBase
     public Handler getHandler()
     {
         return m_handler;
+    }
+
+    private void askDropRelay()
+    {
+        String msg = getString( R.string.confirm_drop_relay );
+        if ( m_connTypes.contains(CommsConnType.COMMS_CONN_BT) ) {
+            msg += " " + getString( R.string.confirm_drop_relay_bt );
+        }
+        if ( m_connTypes.contains(CommsConnType.COMMS_CONN_SMS) ) {
+            msg += " " + getString( R.string.confirm_drop_relay_sms );
+        }
+        showConfirmThen( msg, Action.DROP_RELAY_ACTION );
+    }
+
+    private void dropRelayAndRestart() {
+        CommsAddrRec addr = new CommsAddrRec();
+        XwJNI.comms_getAddr( m_jniGamePtr, addr );
+        addr.remove( CommsConnType.COMMS_CONN_RELAY );
+        XwJNI.comms_setAddr( m_jniGamePtr, addr );
+
+        finish();
+
+        GameUtils.launchGame( m_activity, m_rowid, m_haveInvited );
     }
 
     private void setGotGameDict( String getDict )

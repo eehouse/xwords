@@ -270,6 +270,11 @@ public class CommsAddrRec {
         }
     }
 
+    public void remove( CommsConnType typ )
+    {
+        conTypes.remove( typ );
+    }
+
     public boolean changesMatter( final CommsAddrRec other )
     {
         boolean matter = ! conTypes.equals( other.conTypes );

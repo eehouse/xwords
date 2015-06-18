@@ -1405,7 +1405,6 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          launched to send your invitation. -->
     <!--<string name="newgame_invite">Invite now</string>-->
     <string name="newgame_invite">Inviter maintenant</string>
-    <string name="newgame_invite_anyway">Inviter malgré tout</string>
 
     <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
@@ -3457,9 +3456,5 @@ pour la langue</string>
   <string name="wifi_warning">\u0020Vous pourriez, par exemple,
   avoir besoin d\'être sur un réseau Wi-Fi différent.</string>
 
-  <string name="skip_relay_warning">(Étant donné que cette partie a
-  d\'autres moyens de communiquer, vous pouvez inviter même sans une
-  connexion à un relai, mais ensuite vous devrez jouer sans elle.)
-  </string>
 
 </resources>
