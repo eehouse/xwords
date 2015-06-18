@@ -185,6 +185,8 @@ public class NetLaunchInfo {
                         }
                     }
 
+                    removeUnsupported( supported );
+
                     dict = data.getQueryParameter( WORDLIST_KEY );
                     String langStr = data.getQueryParameter( LANG_KEY );
                     lang = Integer.decode( langStr );
@@ -369,6 +371,7 @@ public class NetLaunchInfo {
 
     private void init( Context context, String data )
     {
+        CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
         try { 
             JSONObject json = new JSONObject( data );
 
@@ -386,7 +389,6 @@ public class NetLaunchInfo {
             m_gameID = json.optInt( MultiService.GAMEID, 0 );
 
             // Try each type
-            CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
             for ( CommsConnType typ : supported.getTypes() ) {
                 if ( hasAddrs && !m_addrs.contains( typ ) ) {
                     continue;
@@ -421,6 +423,8 @@ public class NetLaunchInfo {
         } catch ( JSONException jse ) {
             DbgUtils.loge( jse );
         }
+
+        removeUnsupported( supported );
 
         calcValid();
     }
@@ -527,6 +531,16 @@ public class NetLaunchInfo {
             && 0 < lang
             && 0 < nPlayersT
             && 0 != gameID();
+    }
+
+    private void removeUnsupported( CommsConnTypeSet supported )
+    {
+        for ( Iterator<CommsConnType> iter = m_addrs.iterator();
+              iter.hasNext(); ) {
+            if ( !supported.contains( iter.next() ) ) {
+                iter.remove();
+            }
+        }
     }
 
     private void calcValid()
