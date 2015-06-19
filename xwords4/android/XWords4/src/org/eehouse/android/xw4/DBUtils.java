@@ -572,8 +572,9 @@ public class DBUtils {
                 long rowid = cursor.getLong( indx1 );
                 CommsConnTypeSet typs = new CommsConnTypeSet( cursor.getInt(indx2) );
                 // Better have an address if has pending sends
-                Assert.assertTrue( 0 < typs.size() );
-                result.put( rowid, typs );
+                if ( 0 < typs.size() ) {
+                    result.put( rowid, typs );
+                }
             }
             cursor.close();
             db.close();
