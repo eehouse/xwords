@@ -291,10 +291,7 @@ public class BoardDelegate extends DelegateBase
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
-
-                            waitCloseGame( false );
-                            GameUtils.deleteGame( m_activity, m_rowid, false );
-                            finish();
+                            deleteAndClose();
                         }
                     };
                 ab.setNegativeButton( R.string.button_delete, lstnr );
@@ -1016,6 +1013,9 @@ public class BoardDelegate extends DelegateBase
             case DROP_RELAY_ACTION:
                 dropRelayAndRestart();
                 break;
+            case DELETE_AND_EXIT:
+                deleteAndClose();
+                break;
             default:
                 handled = false;
             }
@@ -1293,20 +1293,36 @@ public class BoardDelegate extends DelegateBase
     public void onStatusClicked()
     {
         final String msg = ConnStatusHandler.getStatusText( m_activity, m_connTypes );
-        if ( null != msg ) {
-            post( new Runnable() {
-                    public void run() {
+        post( new Runnable() {
+                public void run() {
+                    if ( null == msg ) {
+                        askNoAddrsDelete();
+                    } else {
                         m_dlgBytes = msg;
                         m_dlgTitle = R.string.info_title;
                         showDialog( DlgID.DLG_CONNSTAT );
                     }
-                } );
-        }
+                }
+            } );
     }
 
     public Handler getHandler()
     {
         return m_handler;
+    }
+
+    private void deleteAndClose()
+    {
+        waitCloseGame( false );
+        GameUtils.deleteGame( m_activity, m_rowid, false );
+        finish();
+    }
+
+    private void askNoAddrsDelete()
+    {
+        showConfirmThen( R.string.connstat_net_noaddr, 
+                         R.string.list_item_delete,
+                         Action.DELETE_AND_EXIT );
     }
 
     private void askDropRelay()
@@ -1775,7 +1791,9 @@ public class BoardDelegate extends DelegateBase
 
             m_nMissing = nMissing; // will be 0 unless isServer is true
 
-            if ( 0 < nMissing && isServer && !m_haveInvited ) {
+            if ( null != connTypes && 0 == connTypes.size() ) {
+                askNoAddrsDelete();
+            } else if ( 0 < nMissing && isServer && !m_haveInvited ) {
                 post( new Runnable() {
                         public void run() {
                             showDialog( DlgID.DLG_INVITE );

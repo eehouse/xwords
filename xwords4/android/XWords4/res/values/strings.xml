@@ -1972,6 +1972,10 @@
     <!--  -->
     <string name="game_list_tmp">Building game summary…</string>
 
+    <string name="connstat_net_noaddr">This networked game has no way
+    to connect and will never be playable.\n\n(It was probably created
+    from an invitation that didn\'t specify any way of connecting
+    that your device supports.)</string>
     <!--  -->
     <string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>
