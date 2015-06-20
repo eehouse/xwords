@@ -163,7 +163,8 @@ obtenir une copie avec les mêmes paramètres.</string>
         <item quantity="one">Êtes-vous sûr de vouloir effacer la partie
         sélectionnée ? Cette action ne peut pas être annulée.</item>
         <item quantity="other">Êtes-vous sûr de vouloir effacer les
-%1$d parties sélectionnées ? Cette action ne peut pas être annulée.</item>
+        %1$d parties sélectionnées ? Cette action ne peut pas être
+        annulée.</item>
     </plurals>
 
     <!-- Text of confirmation dialog posted when list_item_reset menu
@@ -1405,7 +1406,8 @@ réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
          launched to send your invitation. -->
     <!--<string name="newgame_invite">Invite now</string>-->
     <string name="newgame_invite">Inviter maintenant</string>
-
+    <string name="newgame_drop_relay">Abandonner le relai</string>
+  
     <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
     <!--<string name="newgame_bt_header">New Bluetooth game</string>-->
@@ -2481,6 +2483,12 @@ illimités ? Annulez si vous n\'êtes pas sûr.</string>
     <!--<string name="game_list_tmp">Building game summary…</string>-->
     <string name="game_list_tmp">Création du résumé de la partie…</string>
 
+    <string name="connstat_net_noaddr"> Cette partie en réseau n\'a
+    aucun moyen de se connecter et ne sera jamais jouable.\n\n(Elle a
+    probablement été créée depuis une invitation qui ne spécifiait
+    aucun moyen de connexion permis par votre périphérique.)
+    </string>
+
     <!--  -->
     <!--<string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>-->
@@ -3447,14 +3455,24 @@ pour la langue</string>
   <string name="seeking_relay">Connexion au relai…</string>
 
   <string name="no_relay_conn">Cette partie est configurée pour
-  communiquer en utilisant le relai (serveur) mais n\'a pas pu se
-  connecter, soit à cause de problèmes avec la connexion Internet de
-  votre périphérique, soit parce que le relai ne tourne pas.\n\n
-  Veuillez réessayer d\'ouvrir la partie ultérieurement, après que les
-  conditions aient changé.</string>
+  communiquer en utilisant le relai (Internet) mais n\'a pas pu se
+  connecter.\n\nVeuillez réessayer d\'ouvrir la partie ultérieurement,
+  après que les conditions aient changé.</string>
+
+  <string name="drop_relay_warning_fmt">(Cette partie peut aussi se
+  connecter par %1$s, donc vous pouvez jouer sans un relai si vous le
+  souhaitez.)  </string>
+  
+  <string name="confirm_drop_relay">Êtes-vous sûr de vouloir
+  abandonner la possibilité de communiquer via le relai pour cette
+  partie ?</string>
 
   <string name="wifi_warning">\u0020Vous pourriez, par exemple,
   avoir besoin d\'être sur un réseau Wi-Fi différent.</string>
 
+  <string name="confirm_drop_relay_bt">Le Bluetooth ne marche que pour
+  les périphériques proches.</string>
+  <string name="confirm_drop_relay_sms">Jouer par SMS n\'est pas
+  possible avec tous les opérateurs.</string>
 
 </resources>

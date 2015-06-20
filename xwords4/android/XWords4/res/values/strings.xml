@@ -2475,9 +2475,6 @@
   connect.\n\nPlease try opening the game again later after
   conditions have changed.</string>
 
-  <string name="wifi_warning">\u0020For example, you may need to be on
-  a different WiFi network.</string>
-  
   <string name="drop_relay_warning_fmt">(This game can also connect
   via %1$s, so if you\'d like to play the game without a relay
   connection you can.)
@@ -2485,6 +2482,10 @@
 
   <string name="confirm_drop_relay">Are you sure you want to drop this
   game\'s ability to communicate via the relay?</string>
+
+  <string name="wifi_warning">\u0020For example, you may need to be on
+  a different WiFi network.</string>
+
   <string name="confirm_drop_relay_bt">Bluetooth only works for nearby
   devices.</string>
   <string name="confirm_drop_relay_sms">Not all carriers support play

@@ -2142,14 +2142,14 @@
   RELAY (INTERNET) FOR COMMUNICATION BUT HAS BEEN UNABLE TO
   CONNECT.\n\nPLEASE TRY OPENING THE GAME AGAIN LATER AFTER
   CONDITIONS HAVE CHANGED.</string>
-  <string name="wifi_warning">\u0020FOR EXAMPLE, YOU MAY NEED TO BE ON
-  A DIFFERENT WIFI NETWORK.</string>
   <string name="drop_relay_warning_fmt">(THIS GAME CAN ALSO CONNECT
   VIA %1$s, SO IF YOU\'D LIKE TO PLAY THE GAME WITHOUT A RELAY
   CONNECTION YOU CAN.)
   </string>
   <string name="confirm_drop_relay">ARE YOU SURE YOU WANT TO DROP THIS
   GAME\'S ABILITY TO COMMUNICATE VIA THE RELAY?</string>
+  <string name="wifi_warning">\u0020FOR EXAMPLE, YOU MAY NEED TO BE ON
+  A DIFFERENT WIFI NETWORK.</string>
   <string name="confirm_drop_relay_bt">BLUETOOTH ONLY WORKS FOR NEARBY
   DEVICES.</string>
   <string name="confirm_drop_relay_sms">NOT ALL CARRIERS SUPPORT PLAY

@@ -861,7 +861,7 @@ public final class R {
          of the language is substituted for %1$s. 
          */
         public static final int confirm_deleteonly_dicts_fmt=0x7f0500a0;
-        public static final int confirm_drop_relay=0x7f050301;
+        public static final int confirm_drop_relay=0x7f050300;
         public static final int confirm_drop_relay_bt=0x7f050302;
         public static final int confirm_drop_relay_sms=0x7f050303;
         public static final int confirm_get_locdict_fmt=0x7f0502ca;
@@ -1074,7 +1074,7 @@ public final class R {
         public static final int download_failed=0x7f05023b;
         public static final int download_path_title=0x7f05023e;
         public static final int downloading_dict_fmt=0x7f050185;
-        public static final int drop_relay_warning_fmt=0x7f050300;
+        public static final int drop_relay_warning_fmt=0x7f0502ff;
         /**  <string name="summary_thumb_enabled">Display snapshots of games</string> 
          */
         public static final int dropped_dupe=0x7f050257;
@@ -2709,7 +2709,7 @@ public final class R {
         /**   
          */
         public static final int warn_unlimited=0x7f050202;
-        public static final int wifi_warning=0x7f0502ff;
+        public static final int wifi_warning=0x7f050301;
         /**   
          */
         public static final int word_search_hint=0x7f0501cd;

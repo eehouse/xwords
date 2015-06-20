@@ -2142,14 +2142,14 @@
   yaler )tenretni( rof noitacinummoc tub sah neeb elbanu ot
   tcennoc.\n\nEsaelp yrt gninepo eht emag niaga retal retfa
   snoitidnoc evah degnahc.</string>
-  <string name="wifi_warning">\u0020Rof ,elpmaxe uoy yam deen ot eb no
-  a tnereffid IfIw krowten.</string>
   <string name="drop_relay_warning_fmt">sIht( emag nac osla tcennoc
   aiv %1$s, os fi uoy\'d ekil ot yalp eht emag tuohtiw a yaler
   noitcennoc uoy nac.)
   </string>
   <string name="confirm_drop_relay">Era uoy erus uoy tnaw ot pord siht
   emag\'s ytiliba ot etacinummoc aiv eht ?yaler</string>
+  <string name="wifi_warning">\u0020Rof ,elpmaxe uoy yam deen ot eb no
+  a tnereffid IfIw krowten.</string>
   <string name="confirm_drop_relay_bt">Htooteulb ylno skrow rof ybraen
   secived.</string>
   <string name="confirm_drop_relay_sms">Ton lla sreirrac troppus yalp
