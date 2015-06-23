@@ -2154,4 +2154,5 @@
   DEVICES.</string>
   <string name="confirm_drop_relay_sms">NOT ALL CARRIERS SUPPORT PLAY
   VIA SMS.</string>
+  <string name="button_enable">ENABLE</string>
 </resources>

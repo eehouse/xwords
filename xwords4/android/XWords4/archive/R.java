@@ -652,6 +652,7 @@ public final class R {
          */
         public static final int button_download=0x7f05018b;
         public static final int button_edit=0x7f0502c4;
+        public static final int button_enable=0x7f050304;
         public static final int button_enable_bt=0x7f050224;
         public static final int button_enable_sms=0x7f050223;
         public static final int button_go_settings=0x7f05025b;

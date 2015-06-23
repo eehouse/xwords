@@ -2491,4 +2491,6 @@
   <string name="confirm_drop_relay_sms">Not all carriers support play
   via SMS.</string>
 
+  <string name="button_enable">Enable</string>
+
 </resources>
