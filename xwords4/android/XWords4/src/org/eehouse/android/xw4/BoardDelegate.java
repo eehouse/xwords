@@ -660,11 +660,8 @@ public class BoardDelegate extends DelegateBase
                 // onResume -- meaning m_gi etc are still null.
                 m_missingDevs = data.getStringArrayExtra( InviteDelegate.DEVS );
                 m_missingCounts = data.getIntArrayExtra( InviteDelegate.COUNTS );
-                if ( BT_INVITE_RESULT == requestCode ) {
-                    m_missingMeans = InviteMeans.BLUETOOTH;
-                } else {
-                    m_missingMeans = InviteMeans.SMS;
-                }
+                m_missingMeans = (BT_INVITE_RESULT == requestCode)
+                    ? InviteMeans.BLUETOOTH : InviteMeans.SMS;
                 break;
             }
         }
