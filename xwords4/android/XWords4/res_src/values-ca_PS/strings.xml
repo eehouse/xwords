@@ -2155,4 +2155,7 @@
   <string name="confirm_drop_relay_sms">NOT ALL CARRIERS SUPPORT PLAY
   VIA SMS.</string>
   <string name="button_enable">ENABLE</string>
+  <string name="not_again_comms_relay">ABOUT RELAY CONNECTING</string>
+  <string name="not_again_comms_sms">ABOUT SMS CONNECTING</string>
+  <string name="not_again_comms_bt">ABOUT BT CONNECTING</string>
 </resources>

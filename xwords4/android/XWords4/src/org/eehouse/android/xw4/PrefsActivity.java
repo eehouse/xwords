@@ -29,7 +29,8 @@ import android.preference.PreferenceActivity;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-public class PrefsActivity extends PreferenceActivity implements Delegator {
+public class PrefsActivity extends PreferenceActivity
+    implements Delegator, DlgDelegate.HasDlgDelegate {
 
     private PrefsDelegate m_dlgt;
 
@@ -88,9 +89,20 @@ public class PrefsActivity extends PreferenceActivity implements Delegator {
         super.onDestroy();
     }
 
-    protected void showOKOnlyDialog( int msgID )
+    public void showOKOnlyDialog( int msgID )
     {
         m_dlgt.showOKOnlyDialog( msgID );
+    }
+
+    public void showOKOnlyDialog( String msg )
+    {
+        m_dlgt.showOKOnlyDialog( msg );
+    }
+
+    public void showNotAgainDlgThen( int msgID, int prefsKey, 
+                                     DlgDelegate.Action action )
+    {
+        m_dlgt.showNotAgainDlgThen( msgID, prefsKey, action );
     }
 
     protected void showConfirmThen( int msg, int posButton, int negButton, 

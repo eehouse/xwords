@@ -285,11 +285,18 @@ public class GameConfigDelegate extends DelegateBase
                 LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
                 final ConnViaViewLayout items = (ConnViaViewLayout)
                     layout.findViewById( R.id.conn_types );
+                final CheckBox cb = (CheckBox)layout
+                    .findViewById(R.id.default_check);
+                cb.setVisibility( View.VISIBLE );
 
                 final DialogInterface.OnClickListener lstnr = 
                     new DialogInterface.OnClickListener() {
                         public void onClick( DialogInterface dlg, int button ) {
                             m_conTypes = items.getTypes();
+                            if ( cb.isChecked()) {
+                                XWPrefs.setAddrTypes( m_activity, m_conTypes );
+                            }
+
                             m_car.populate( m_activity, m_conTypes );
 
                             setConnLabel();
@@ -349,7 +356,7 @@ public class GameConfigDelegate extends DelegateBase
                                          break;
                                      }
                                  }
-                             }, null );
+                             }, null, this );
             break;
         }
     }

@@ -2493,4 +2493,8 @@
 
   <string name="button_enable">Enable</string>
 
+  <string name="not_again_comms_relay">About relay connecting</string>
+  <string name="not_again_comms_sms">About SMS connecting</string>
+  <string name="not_again_comms_bt">About BT connecting</string>
+
 </resources>

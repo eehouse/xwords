@@ -128,6 +128,10 @@
   <string name="key_invite_multi">key_invite_multi</string>
   <string name="key_notagain_enablepublic">key_notagain_enablepublic</string>
 
+  <string name="key_na_comms_bt">key_na_comms_bt</string>
+  <string name="key_na_comms_sms">key_na_comms_sms</string>
+  <string name="key_na_comms_relay">key_na_comms_relay</string>
+
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>
 
