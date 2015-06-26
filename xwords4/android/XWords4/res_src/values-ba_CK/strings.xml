@@ -2155,7 +2155,17 @@
   <string name="confirm_drop_relay_sms">Ton lla sreirrac troppus yalp
   aiv SMS.</string>
   <string name="button_enable">Elbane</string>
-  <string name="not_again_comms_relay">Tuoba yaler gnitcennoc</string>
-  <string name="not_again_comms_sms">Tuoba SMS gnitcennoc</string>
-  <string name="not_again_comms_bt">Tuoba TB gnitcennoc</string>
+  <string name="not_again_comms_relay">Eht \"yaler\" si a revres no
+  eht tenretni taht sessap segassem neewteb secived taht era gninnur
+  Sdrowssorc. Ti skrow yna emit uoy evah a lanoitcnuf-ylluf tenretni
+  ,noitcennoc tub thgim evah smelborp no detcirtser IfIw
+  skrowten.</string>
+  <string name="not_again_comms_sms">Yalp aiv SMS sesu eht emas
+  ygolonhcet sa \"gnitxet\". Hguoht eht segassem era elbisivni ot ,uoy
+  ruoy reirrac sredisnoc meht ,stxet os uoy tnaw ot diova siht erutaef
+  sselnu uoy evah na detimilnu gnitxet nalp ro( tegdub.) Eton taht
+  Diordna ylno stroppus siht erutaef no secived no a MSG ,reirrac
+  i.e. yreve reirrac ni eht dlrow tpecxe Nozirev dna Tnirps.</string>
+  <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
+  ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
 </resources>

@@ -2493,8 +2493,20 @@
 
   <string name="button_enable">Enable</string>
 
-  <string name="not_again_comms_relay">About relay connecting</string>
-  <string name="not_again_comms_sms">About SMS connecting</string>
-  <string name="not_again_comms_bt">About BT connecting</string>
+  <string name="not_again_comms_relay">The \"relay\" is a server on
+  the internet that passes messages between devices that are running
+  Crosswords. It works any time you have a fully-functional internet
+  connection, but might have problems on restricted WiFi
+  networks.</string>
+
+  <string name="not_again_comms_sms">Play via SMS uses the same
+  technology as \"texting\". Though the messages are invisible to you,
+  your carrier considers them texts, so you want to avoid this feature
+  unless you have an unlimited texting plan (or budget.) Note that
+  Android only supports this feature on devices on a GSM carrier,
+  i.e. every carrier in the world except Verizon and Sprint.</string>
+
+  <string name="not_again_comms_bt">Use Bluetooth to play against a
+  nearby device that\'s \"paired\" with yours.</string>
 
 </resources>
