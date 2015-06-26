@@ -21,14 +21,29 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import javax.net.SocketFactory;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 public class NetUtils {
 
+    public static final String k_PARAMS = "params";
     public static final byte PROTOCOL_VERSION = 0;
     // from xwrelay.h
     public static byte PRX_PUB_ROOMS = 1;
@@ -182,6 +197,48 @@ public class NetUtils {
         }
         return msgs;
     } // queryRelay
+
+    protected static HttpPost makePost( Context context, String proc )
+    {
+        String url = String.format( "%s/%s", 
+                                    XWPrefs.getDefaultUpdateUrl( context ),
+                                    proc );
+        HttpPost result;
+        try {
+            result = new HttpPost( url );
+        } catch ( IllegalArgumentException iae ) {
+            DbgUtils.loge( iae );
+            result = null;
+        }
+        return result;
+    }
+
+    protected static String runPost( HttpPost post, JSONObject param )
+    {
+        String result = null;
+        try {
+            String jsonStr = param.toString();
+            List<NameValuePair> nvp = new ArrayList<NameValuePair>();
+            nvp.add( new BasicNameValuePair( k_PARAMS, jsonStr ) );
+            post.setEntity( new UrlEncodedFormEntity(nvp) );
+
+            // Execute HTTP Post Request
+            HttpClient httpclient = new DefaultHttpClient();
+            HttpResponse response = httpclient.execute(post);
+            HttpEntity entity = response.getEntity();
+            if ( null != entity ) {
+                result = EntityUtils.toString( entity );
+                if ( 0 == result.length() ) {
+                    result = null;
+                }
+            }
+        } catch( java.io.UnsupportedEncodingException uee ) {
+            DbgUtils.loge( uee );
+        } catch( java.io.IOException ioe ) {
+            DbgUtils.loge( ioe );
+        }
+        return result;
+    }
 
     private static int sumStrings( final String[] strs )
     {
