@@ -35,12 +35,6 @@ public class PrefsActivity extends PreferenceActivity
     private PrefsDelegate m_dlgt;
 
     @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        return m_dlgt.onCreateDialog( id );
-    }
-
-    @Override
     protected void onCreate( Bundle savedInstanceState )
     {
         super.onCreate( savedInstanceState );
@@ -87,6 +81,19 @@ public class PrefsActivity extends PreferenceActivity
     {
         m_dlgt.onDestroy();
         super.onDestroy();
+    }
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        return m_dlgt.onCreateDialog( id );
+    }
+
+    @Override
+    public void onPrepareDialog( int id, Dialog dialog )
+    {
+        super.onPrepareDialog( id, dialog );
+        m_dlgt.prepareDialog( DlgID.values()[id], dialog );
     }
 
     public void showOKOnlyDialog( int msgID )
