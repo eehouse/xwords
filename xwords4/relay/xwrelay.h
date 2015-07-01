@@ -108,6 +108,11 @@ enum { XWPDEV_NONE             /* 0 is an illegal value */
                                    to check for upgrades; may eventually
                                    replace device needing a timer. */
 
+       ,XWPDEV_INVITE           /* dev->relay; format: header, sender relay
+                                   id: 4, recipient relay id: 4; nli data:
+                                   variable length. */
+       ,XWPDEV_GOTINVITE       /* relay->dev */
+
        ,XWPDEV_N_ELEMS          /* MUST BE LAST */
 
 }

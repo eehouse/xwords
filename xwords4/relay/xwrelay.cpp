@@ -374,10 +374,15 @@ getHeader( const uint8_t** bufpp, const uint8_t* end,
     uint8_t byt;
     if ( getNetByte( bufpp, end, &byt ) ) {
         header->proto = (XWPDevProto)byt;
-        if ( XWPDEV_PROTO_VERSION_1 == header->proto
-             && vli2un( bufpp, end, &header->packetID )
-             && getNetByte( bufpp, end, &byt )
-             && byt < XWPDEV_N_ELEMS ) {
+        if ( XWPDEV_PROTO_VERSION_1 != header->proto ) {
+            logf( XW_LOGERROR, "%s: bad proto %d", __func__, header->proto );
+        } else if ( !vli2un( bufpp, end, &header->packetID ) ) {
+            logf( XW_LOGERROR, "%s: can't get packet id", __func__ );
+        } else if ( !getNetByte( bufpp, end, &byt ) ) {
+            logf( XW_LOGERROR, "%s: can't get cmd", __func__ );
+        } else if ( XWPDEV_N_ELEMS <= byt ) {
+            logf( XW_LOGERROR, "%s: cmd %d too high", __func__, byt );
+        } else {
             header->cmd = (XWRelayReg)byt;
             success = true;
         }
@@ -836,6 +841,22 @@ post_upgrade( DevIDRelay devid )
     assemble_packet( packet, &packetID, XWPDEV_UPGRADE, NULL );
 
     (void)post_or_store( devid, packet, packetID, NULL, NULL );
+}
+
+void
+post_invite( DevIDRelay sender, DevIDRelay invitee, const uint8_t* ptr, size_t len )
+{
+    vector<uint8_t> packet;
+    uint32_t packetID;
+    sender = htonl( sender );
+    assemble_packet( packet, &packetID, XWPDEV_GOTINVITE, 
+                     &sender, sizeof(sender),
+                     ptr, len, 
+                     NULL );
+
+    bool sent = post_or_store( invitee, packet, packetID, NULL, NULL );
+    logf( XW_LOGINFO, "%s(): post_or_store => %s", __func__, 
+          sent ? "sent" : "stored");
 }
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
@@ -1652,6 +1673,7 @@ msgToStr( XWRelayReg msg )
     CASE_STR(XWPDEV_UNAVAIL);
     CASE_STR(XWPDEV_REG);
     CASE_STR(XWPDEV_REGRSP);
+    CASE_STR(XWPDEV_INVITE);
     CASE_STR(XWPDEV_KEEPALIVE);
     CASE_STR(XWPDEV_HAVEMSGS);
     CASE_STR(XWPDEV_RQSTMSGS);
@@ -1756,6 +1778,18 @@ handle_udp_packet( UdpThreadClosure* utc )
             }
             break;
         }
+
+        case XWPDEV_INVITE:
+            DevIDRelay sender;
+            DevIDRelay invitee;
+            if ( getNetLong( &ptr, end, &sender )
+                 && getNetLong( &ptr, end, &invitee) ) {
+                logf( XW_LOGVERBOSE0, "got invite from %d for %d", 
+                      sender, invitee );
+                post_invite( sender, invitee, ptr, end - ptr );
+            }
+            break;
+
         case XWPDEV_KEEPALIVE:
         case XWPDEV_RQSTMSGS: {
             DevID devID( ID_TYPE_RELAY );
