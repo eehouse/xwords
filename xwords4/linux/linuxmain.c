@@ -895,6 +895,19 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
 } /* linShiftFocus */
 #endif
 
+const XP_U32
+linux_getDevIDRelay( LaunchParams* params )
+{
+    XP_U32 result = 0;
+    gchar buf[32];
+    if ( db_fetch( params->pDb, KEY_RDEVID, buf, sizeof(buf) ) ) {
+        sscanf( buf, "%X", &result );
+        XP_LOGF( "%s(): %s => %x", __func__, buf, result );
+    }
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
 const XP_UCHAR*
 linux_getDevID( LaunchParams* params, DevIDType* typ )
 {
@@ -2088,7 +2101,7 @@ main( int argc, char** argv )
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
     mainParams.useUdp = true;
-    mainParams.dbName = "xwgames.sql";
+    mainParams.dbName = "xwgames.sqldb";
 
     char* envDictPath = getenv( "XW_DICTDIR" );
     XP_LOGF( "%s: envDictPath=%s", __func__, envDictPath );

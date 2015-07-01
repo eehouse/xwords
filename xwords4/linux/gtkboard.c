@@ -1,6 +1,6 @@
 /* -*- compile-command: "make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2000-2013 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2015 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -55,6 +55,7 @@
 #include "game.h"
 #include "movestak.h"
 #include "gtkask.h"
+#include "gtkinvit.h"
 #include "gtkaskm.h"
 #include "gtkchat.h"
 #include "gtknewgame.h"
@@ -969,15 +970,16 @@ static XP_Bool
 new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
 {
     XP_Bool success = XP_FALSE;
+    CommonGlobals* cGlobals = &globals->cGlobals;
     CommsAddrRec addr;
 
-    if ( !!globals->cGlobals.game.comms ) {
-        comms_getAddr( globals->cGlobals.game.comms, &addr );
+    if ( !!cGlobals->game.comms ) {
+        comms_getAddr( cGlobals->game.comms, &addr );
     } else {
         comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT );
     }
 
-    CurGameInfo* gi = globals->cGlobals.gi;
+    CurGameInfo* gi = cGlobals->gi;
     success = newGameDialog( globals, gi, &addr, XP_TRUE, fireConnDlg );
     if ( success ) {
 #ifndef XWFEATURE_STANDALONE_ONLY
@@ -991,9 +993,9 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
 #endif
         };
 
-        if ( !game_reset( MEMPOOL &globals->cGlobals.game, gi,
-                          globals->cGlobals.util,
-                          &globals->cGlobals.cp, &procs ) ) {
+        if ( !game_reset( MEMPOOL &cGlobals->game, gi,
+                          cGlobals->util,
+                          &cGlobals->cp, &procs ) ) {
             /* if ( NULL == globals->draw ) { */
             /*     globals->draw = (GtkDrawCtx*)gtkDrawCtxtMake( globals->drawing_area, */
             /*                                                   globals ); */
@@ -1013,24 +1015,24 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
         }
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-        if ( !!globals->cGlobals.game.comms ) {
-            comms_setAddr( globals->cGlobals.game.comms, &addr );
+        if ( !!cGlobals->game.comms ) {
+            comms_setAddr( cGlobals->game.comms, &addr );
         } else if ( gi->serverRole != SERVER_STANDALONE ) {
             XP_ASSERT(0);
         }
 
         if ( isClient ) {
             XWStreamCtxt* stream =
-                mem_stream_make( MEMPOOL globals->cGlobals.params->vtMgr,
-                                 &globals->cGlobals, CHANNEL_NONE, 
+                mem_stream_make( MEMPOOL cGlobals->params->vtMgr,
+                                 cGlobals, CHANNEL_NONE, 
                                  sendOnClose );
-            (void)server_initClientConnection( globals->cGlobals.game.server, 
+            (void)server_initClientConnection( cGlobals->game.server, 
                                                stream );
         }
 #endif
-        (void)server_do( globals->cGlobals.game.server ); /* assign tiles, etc. */
-        board_invalAll( globals->cGlobals.game.board );
-        board_draw( globals->cGlobals.game.board );
+        (void)server_do( cGlobals->game.server ); /* assign tiles, etc. */
+        board_invalAll( cGlobals->game.board );
+        board_draw( cGlobals->game.board );
     }
     return success;
 } /* new_game_impl */
@@ -1559,63 +1561,108 @@ handle_commit_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    const CurGameInfo* gi = globals->cGlobals.gi;
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    const CurGameInfo* gi = cGlobals->gi;
 
-    gchar* countStr;
-    gchar* phone = NULL;
-    gchar* portstr = NULL;
-    gchar* forceChannelStr;
-    AskMInfo infos[] = {
-        { "Number of players", &countStr },
-        { "Remote phone#", &phone },
-        { "Remote port", &portstr },
-        { "Force channel", &forceChannelStr },
-    };
+    /* gchar* countStr; */
+    /* gchar* phone = NULL; */
+    /* gchar* portstr = NULL; */
+    /* gchar* forceChannelStr; */
+    /* AskMInfo infos[] = { */
+    /*     { "Number of players", &countStr }, */
+    /*     { "Remote phone#", &phone }, */
+    /*     { "Remote port", &portstr }, */
+    /*     { "Force channel", &forceChannelStr }, */
+    /* }; */
 
     XP_U16 nMissing = server_getPendingRegs( globals->cGlobals.game.server );
-    gchar buf[64];
-    sprintf( buf, "%d", nMissing );
-    countStr = buf;
-    gchar forceChannelBuf[64];
-    sprintf( forceChannelBuf, "%d", 1 );
-    forceChannelStr = forceChannelBuf;
+    /* gchar buf[64]; */
+    /* sprintf( buf, "%d", nMissing ); */
+    /* countStr = buf; */
+    /* gchar forceChannelBuf[64]; */
+    /* sprintf( forceChannelBuf, "%d", 1 ); */
+    /* forceChannelStr = forceChannelBuf; */
 
-    while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) { 
-        int nPlayers = atoi( countStr );
-        if ( 0 >= nPlayers || nPlayers > nMissing ) {
-            gchar buf[128];
-            sprintf( buf, "Please invite between 1 and %d players (inclusive).", 
-                     nMissing );
-            gtktell( globals->window, buf );
-            break;
-        }
+    CommsAddrRec inviteAddr = {0};
+    gint nPlayers = nMissing;
+    XP_U32 devID;
+    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers, &devID );
+    XP_LOGF( "%s: inviteDlg => %d", __func__, confirmed );
 
-        int port = atoi( portstr );
-        if ( 0 == port ) {
-            gtktell( globals->window, "Port must be a number and not 0." );
-            break;
-        }
-        int forceChannel = atoi( forceChannelStr );
-        if ( 1 > forceChannel || 4 <= forceChannel ) {
-            gtktell( globals->window, "Channel must be between 1 and the number of client devices." );
-            break;
-        }
-
+    if ( confirmed ) {
         gchar gameName[64];
         snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
 
         CommsAddrRec addr;
-        CommsCtxt* comms = globals->cGlobals.game.comms;
+        CommsCtxt* comms = cGlobals->game.comms;
         XP_ASSERT( comms );
         comms_getAddr( comms, &addr );
 
-        linux_sms_invite( globals->cGlobals.params, gi, &addr, gameName,
-                          nPlayers, forceChannel, phone, port );
-        break;
+        gint forceChannel = 0;  /* PENDING */
+
+        InviteInfo invit = {0};
+        invit_init( &invit, gi, &addr, nPlayers, forceChannel );
+        invit_setDevID( &invit, linux_getDevIDRelay( cGlobals->params ) );
+
+#ifdef DEBUG
+        {
+            XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
+                                                    cGlobals->params->vtMgr,
+                                                    NULL, CHANNEL_NONE, NULL );
+            invit_saveToStream( &invit, stream );
+            InviteInfo tmp;
+            invit_makeFromStream( &tmp, stream );
+            stream_destroy( stream );
+            XP_ASSERT( 0 == memcmp( &invit, &tmp, sizeof(invit) ) );
+        }
+#endif
+
+        if ( addr_hasType( &inviteAddr, COMMS_CONN_SMS ) ) {
+            linux_sms_invite( cGlobals->params, gi, &addr, gameName,
+                              nPlayers, forceChannel, 
+                              inviteAddr.u.sms.phone, inviteAddr.u.sms.port );
+        }
+        if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
+            relaycon_invite( cGlobals->params, devID, &invit );
+        }
     }
-    for ( int ii = 0; ii < VSIZE(infos); ++ii ) {
-        g_free( *infos[ii].result );
-    }
+
+    /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */
+    /*     int nPlayers = atoi( countStr ); */
+    /*     if ( 0 >= nPlayers || nPlayers > nMissing ) { */
+    /*         gchar buf[128]; */
+    /*         sprintf( buf, "Please invite between 1 and %d players (inclusive).",  */
+    /*                  nMissing ); */
+    /*         gtktell( globals->window, buf ); */
+    /*         break; */
+    /*     } */
+
+    /*     int port = atoi( portstr ); */
+    /*     if ( 0 == port ) { */
+    /*         gtktell( globals->window, "Port must be a number and not 0." ); */
+    /*         break; */
+    /*     } */
+    /*     int forceChannel = atoi( forceChannelStr ); */
+    /*     if ( 1 > forceChannel || 4 <= forceChannel ) { */
+    /*         gtktell( globals->window, "Channel must be between 1 and the number of client devices." ); */
+    /*         break; */
+    /*     } */
+
+    /*     gchar gameName[64]; */
+    /*     snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID ); */
+
+    /*     CommsAddrRec addr; */
+    /*     CommsCtxt* comms = globals->cGlobals.game.comms; */
+    /*     XP_ASSERT( comms ); */
+    /*     comms_getAddr( comms, &addr ); */
+
+    /*     linux_sms_invite( globals->cGlobals.params, gi, &addr, gameName, */
+    /*                       nPlayers, forceChannel, phone, port ); */
+    /*     break; */
+    /* } */
+    /* for ( int ii = 0; ii < VSIZE(infos); ++ii ) { */
+    /*     g_free( *infos[ii].result ); */
+    /* } */
 } /* handle_invite_button */
 
 static void

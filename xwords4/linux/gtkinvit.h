@@ -1,6 +1,6 @@
-/* -*- fill-column: 78; compile-command: "make MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "make MEMDEBUG=TRUE -j5"; -*- */
 /* 
- * Copyright 2000-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -17,18 +17,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-
-
 #ifdef PLATFORM_GTK
 
-#ifndef _GTKUTILS_H_
-#define _GTKUTILS_H_
-
+#include "xptypes.h"
 #include "gtkboard.h"
 
-GtkWidget* makeButton( const char* text, GCallback func, gpointer data );
-GtkWidget* makeLabeledField( const char* labelText, GtkWidget** field,
-                             const gchar* initialVal );
+/* return true if not cancelled */
+XP_Bool gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, 
+                      /*inout*/ gint* nPlayers, XP_U32* devID );
 
-#endif /*  _GTKUTILS_H_ */
-#endif /* PLATFORM_GTK */
+#endif
+
+

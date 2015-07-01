@@ -2698,8 +2698,13 @@ countAddrRecs( const CommsCtxt* comms )
 XP_Bool
 addr_iter( const CommsAddrRec* addr, CommsConnType* typp, XP_U32* state )
 {
+    return types_iter( addr->_conTypes, typp, state );
+}
+
+XP_Bool
+types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state )
+{
     CommsConnType typ = *state;
-    XP_U16 conTypes = addr->_conTypes;
     while ( ++typ < COMMS_CONN_NTYPES ) {
         *state = typ;
         XP_U16 mask = 1 << (typ - 1);
@@ -2718,10 +2723,16 @@ addr_iter( const CommsAddrRec* addr, CommsConnType* typp, XP_U32* state )
 XP_Bool
 addr_hasType( const CommsAddrRec* addr, CommsConnType typ )
 {
+    return types_hasType( addr->_conTypes, typ );
+}
+
+XP_Bool
+types_hasType( XP_U16 conTypes, CommsConnType typ )
+{
     /* Any address has NONE */
     XP_Bool hasType = COMMS_CONN_NONE == typ;
     if ( !hasType ) {
-        hasType = 0 != (addr->_conTypes & (1 << (typ - 1)));
+        hasType = 0 != (conTypes & (1 << (typ - 1)));
     }
     // XP_LOGF( "%s(%s) => %d", __func__, ConnType2Str(typ), hasType );
     return hasType;
@@ -2741,11 +2752,17 @@ addr_getType( const CommsAddrRec* addr )
 }
 
 void
-addr_addType( CommsAddrRec* addr, CommsConnType type )
+types_addType( XP_U16* conTypes, CommsConnType type )
 {
     XP_ASSERT( COMMS_CONN_NONE != type );
     // XP_LOGF( "%s(%s)", __func__, ConnType2Str(type) );
-    addr->_conTypes |= 1 << (type - 1);
+    *conTypes |= 1 << (type - 1);
+}
+
+void
+addr_addType( CommsAddrRec* addr, CommsConnType type )
+{
+    types_addType( &addr->_conTypes, type );
 }
 
 void

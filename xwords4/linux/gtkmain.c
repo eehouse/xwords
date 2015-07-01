@@ -336,15 +336,11 @@ addButton( gchar* label, GtkWidget* parent, GCallback proc, void* closure )
     return button;
 }
 
-static GtkWidget* 
-makeGamesWindow( GtkAppGlobals* apg )
+static void
+setWindowTitle( GtkAppGlobals* apg )
 {
-    GtkWidget* window;
+    GtkWidget* window = apg->window;
     LaunchParams* params = apg->params;
-
-    window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
-    g_signal_connect( G_OBJECT(window), "destroy",
-                      G_CALLBACK(handle_destroy), apg );
 
     gchar title[128] = {0};
     if ( !!params->dbName ) {
@@ -355,7 +351,25 @@ makeGamesWindow( GtkAppGlobals* apg )
     snprintf( &title[len], VSIZE(title) - len, " (phone: %s, port: %d)", 
               params->connInfo.sms.phone, params->connInfo.sms.port );
 #endif
+#ifdef XWFEATURE_RELAY
+    XP_U32 relayID = linux_getDevIDRelay( params );
+    len = strlen( title );
+    snprintf( &title[len], VSIZE(title) - len, " (relayid: %d)", relayID );
+#endif
     gtk_window_set_title( GTK_WINDOW(window), title );
+}
+
+static void
+makeGamesWindow( GtkAppGlobals* apg )
+{
+    GtkWidget* window;
+    LaunchParams* params = apg->params;
+
+    apg->window = window = gtk_window_new( GTK_WINDOW_TOPLEVEL );
+    g_signal_connect( G_OBJECT(window), "destroy",
+                      G_CALLBACK(handle_destroy), apg );
+
+    setWindowTitle( apg );
     
     GtkWidget* vbox = gtk_vbox_new( FALSE, 0 );
     gtk_container_add( GTK_CONTAINER(window), vbox );
@@ -388,7 +402,6 @@ makeGamesWindow( GtkAppGlobals* apg )
     updateButtons( apg );
 
     gtk_widget_show( window );
-    return window;
 }
 
 static GtkWidget* 
@@ -458,6 +471,38 @@ gtkSocketAdded( void* closure, int newSock, GIOFunc proc )
     (void)g_io_add_watch( channel, G_IO_IN | G_IO_ERR, proc, closure );
     LOG_RETURN_VOID();
 } /* gtk_socket_changed */
+
+
+static void
+relayInviteReceived( void* closure, InviteInfo* invite )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    LaunchParams* params = apg->params;
+
+    CurGameInfo gi = {0};
+    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
+
+    gi_setNPlayers( &gi, invite->nPlayersT, invite->nPlayersH );
+    gi.gameID = invite->gameID;
+    gi.dictLang = invite->lang;
+    gi.forceChannel = invite->forceChannel;
+    replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict );
+
+    GtkGameGlobals* globals = malloc( sizeof(*globals) );
+    params->needsNewGame = XP_FALSE;
+    initGlobals( globals, params, &gi );
+
+    invit_makeAddrRec( invite, &globals->cGlobals.addr );
+    // globals->cGlobals.addr = *returnAddr;
+
+    GtkWidget* gameWindow = globals->window;
+    globals->cGlobals.pDb = apg->params->pDb;
+    globals->cGlobals.selRow = -1;
+    recordOpened( apg, globals );
+    gtk_widget_show( gameWindow );
+
+    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
+}
 
 static void
 gtkGotBuf( void* closure, const CommsAddrRec* from, 
@@ -570,6 +615,8 @@ gtkDevIDReceived( void* closure, const XP_UCHAR* devID, XP_U16 maxInterval )
         XP_LOGF( "%s(devID=%s)", __func__, devID );
         db_store( params->pDb, KEY_RDEVID, devID );
         (void)g_timeout_add_seconds( maxInterval, keepalive_timer, apg );
+
+        setWindowTitle( apg );
     } else {
         XP_LOGF( "%s: bad relayid", __func__ );
         db_remove( params->pDb, KEY_RDEVID );
@@ -647,6 +694,7 @@ gtkmain( LaunchParams* params )
                 .devIDReceived = gtkDevIDReceived,
                 .msgErrorMsg = gtkErrorMsgRcvd,
                 .socketAdded = gtkSocketAdded,
+                .inviteReceived = relayInviteReceived,
             };
 
             relaycon_init( params, &procs, &apg, 
@@ -685,7 +733,7 @@ gtkmain( LaunchParams* params )
 
 
 #endif
-        apg.window = makeGamesWindow( &apg );
+        makeGamesWindow( &apg );
     } else if ( !!params->dbFileName ) {
         apg.window = openDBFile( &apg );
     }

@@ -187,6 +187,7 @@ GTK_OBJS = \
 	$(BUILD_PLAT_DIR)/gtkpasswdask.o \
 	$(BUILD_PLAT_DIR)/gtknewgame.o \
 	$(BUILD_PLAT_DIR)/gtkconnsdlg.o \
+	$(BUILD_PLAT_DIR)/gtkinvit.o \
 	$(BUILD_PLAT_DIR)/gtkutils.o \
 	$(BUILD_PLAT_DIR)/gtkntilesask.o \
 	$(BUILD_PLAT_DIR)/gtkaskdict.o \

@@ -21,6 +21,7 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
+#include "comtypes.h"
 #include "gameinfo.h"
 #include "model.h"
 #include "board.h"

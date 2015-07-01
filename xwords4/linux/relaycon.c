@@ -22,6 +22,7 @@
 #include <stdbool.h>
 
 #include "relaycon.h"
+#include "linuxmain.h"
 #include "comtypes.h"
 
 typedef struct _RelayConStorage {
@@ -31,6 +32,7 @@ typedef struct _RelayConStorage {
     struct sockaddr_in saddr;
     uint32_t nextID;
     XWPDevProto proto;
+    LaunchParams* params;
 } RelayConStorage;
 
 typedef struct _MsgHeader {
@@ -53,6 +55,7 @@ static int writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd );
 static bool readHeader( const XP_U8** buf, MsgHeader* header );
 static size_t writeDevID( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static size_t writeShort( XP_U8* buf, size_t len, XP_U16 shrt );
+static size_t writeLong( XP_U8* buf, size_t len, XP_U32 lng );
 static size_t writeVLI( XP_U8* out, uint32_t nn );
 static size_t un2vli( int nn, uint8_t* buf );
 static bool vli2un( const uint8_t** inp, uint32_t* outp );
@@ -74,6 +77,8 @@ relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
     storage->saddr.sin_family = PF_INET;
     storage->saddr.sin_addr.s_addr = htonl( hostNameToIP(host) );
     storage->saddr.sin_port = htons(port);
+
+    storage->params = params;
 
     storage->proto = XWPDEV_PROTO_VERSION_1;
 }
@@ -105,6 +110,34 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID,
     indx += addVLIStr( &tmpbuf[indx], sizeof(tmpbuf) - indx, "linux version" );
 
     sendIt( storage, tmpbuf, indx );
+}
+
+void
+relaycon_invite( LaunchParams* params, XP_U32 dest, InviteInfo* invit )
+{
+    XP_U8 tmpbuf[256];
+    int indx = 0;
+
+    RelayConStorage* storage = getStorage( params );
+    indx += writeHeader( storage, tmpbuf, XWPDEV_INVITE );
+    XP_U32 me = linux_getDevIDRelay( params );
+    indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, me );
+    indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, dest );
+
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool) 
+                                            params->vtMgr, params, 
+                                            CHANNEL_NONE, NULL );
+    invit_saveToStream( invit, stream );
+    XP_U16 len = stream_getSize( stream );
+    indx += writeShort( &tmpbuf[indx], sizeof(tmpbuf) - indx, len );
+    XP_ASSERT( indx + len < sizeof(tmpbuf) );
+    const XP_U8* ptr = stream_getPtr( stream );
+    XP_MEMCPY( &tmpbuf[indx], ptr, len );
+    indx += len;
+    stream_destroy( stream );
+
+    sendIt( storage, tmpbuf, indx );
+    LOG_RETURN_VOID();
 }
 
 XP_S16
@@ -295,6 +328,27 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
                 XP_LOGF( "%s: got message: %s", __func__, buf );
                 break;
             }
+            case XWPDEV_GOTINVITE: {
+                XP_LOGF( "%s(): got XWPDEV_GOTINVITE", __func__ );
+                XP_U32 sender = getNetLong( &ptr );
+                XP_U16 len = getNetShort( &ptr );
+                XWStreamCtxt* stream = mem_stream_make( MPPARM(storage->params->mpool) 
+                                                        storage->params->vtMgr, storage,
+                                                        CHANNEL_NONE, NULL );
+                stream_putBytes( stream, ptr, len );
+                InviteInfo invit;
+                XP_Bool success = invit_makeFromStream( &invit, stream );
+                XP_LOGF( "sender: %d; invit.devID: %d", sender, invit.devID );
+                XP_ASSERT( sender == invit.devID );
+                stream_destroy( stream );
+
+                if ( success ) {
+                    (*storage->procs.inviteReceived)( storage->procsClosure, 
+                                                      &invit );
+                }
+            }
+                break;
+
             default:
                 XP_LOGF( "%s: Unexpected cmd %d", __func__, header.cmd );
                 XP_ASSERT( 0 );
@@ -389,6 +443,15 @@ writeShort( XP_U8* buf, size_t len, XP_U16 shrt )
 }
 
 static size_t
+writeLong( XP_U8* buf, size_t len, XP_U32 lng )
+{
+    lng = htonl( lng );
+    assert( sizeof( lng ) <= len );
+    memcpy( buf, &lng, sizeof(lng) );
+    return sizeof(lng);
+}
+
+static size_t
 writeVLI( XP_U8* out, uint32_t nn )
 {
     uint8_t buf[5];
@@ -430,6 +493,7 @@ writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd )
 {
     int indx = 0;
     dest[indx++] = storage->proto;
+    XP_LOGF( "%s: wrote proto %d", __func__, storage->proto );
     uint32_t packetNum = 0;
     if ( XWPDEV_ACK != cmd ) {
         packetNum = storage->nextID++;

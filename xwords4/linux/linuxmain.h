@@ -106,6 +106,7 @@ void gameGotBuf( CommonGlobals* globals, XP_Bool haveDraw,
                  const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
 gboolean app_socket_proc( GIOChannel* source, GIOCondition condition, 
                           gpointer data );
+const XP_U32 linux_getDevIDRelay( LaunchParams* params );
 const XP_UCHAR* linux_getDevID( LaunchParams* params, DevIDType* typ );
 void linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew );
 XP_Bool linux_setupDevidParams( LaunchParams* params );
