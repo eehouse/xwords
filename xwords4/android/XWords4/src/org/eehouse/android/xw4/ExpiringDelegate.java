@@ -201,6 +201,8 @@ public class ExpiringDelegate {
             m_pct = (int)((100 * passed) / INTERVAL_SECS);
             if ( m_pct > 100 ) {
                 m_pct = 100;
+            } else if ( m_pct < 0 ) {
+                m_pct = 0;
             } else if ( null != m_handler ) {
                 long onePct = INTERVAL_SECS / 100;
                 long lastStart = m_startSecs + (onePct * m_pct);
