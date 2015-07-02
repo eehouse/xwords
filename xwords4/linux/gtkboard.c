@@ -80,6 +80,8 @@ static void disenable_buttons( GtkGameGlobals* globals );
 static GtkWidget* addButton( GtkWidget* hbox, gchar* label, GCallback func, 
                              GtkGameGlobals* globals );
 static void handle_invite_button( GtkWidget* widget, GtkGameGlobals* globals );
+static void gtkShowFinalScores( const GtkGameGlobals* globals, 
+                                XP_Bool ignoreTimeout );
 
 #define GTK_TRAY_HT_ROWS 3
 
@@ -861,6 +863,14 @@ destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     saveGame( &globals->cGlobals );
     windowDestroyed( globals );
     // gtk_main_quit();
+}
+
+static void
+on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
+{
+    if ( server_getGameIsOver( globals->cGlobals.game.server ) ) {
+        gtkShowFinalScores( globals, XP_TRUE );
+    }
 }
 
 static void
@@ -1769,7 +1779,7 @@ gtk_util_yOffsetChange( XW_UtilCtxt* uc, XP_U16 maxOffset,
 } /* gtk_util_yOffsetChange */
 
 static void
-gtkShowFinalScores( const GtkGameGlobals* globals )
+gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
 {
     XWStreamCtxt* stream;
     XP_UCHAR* text;
@@ -1783,7 +1793,8 @@ gtkShowFinalScores( const GtkGameGlobals* globals )
     text = strFromStream( stream );
     stream_destroy( stream );
 
-    XP_U16 timeout = cGlobals->manualFinal? 0 : cGlobals->params->askTimeout;
+    XP_U16 timeout = (ignoreTimeout || cGlobals->manualFinal)
+        ? 0 : cGlobals->params->askTimeout;
     const AskPair buttons[] = {
       { "OK", 1 },
       { "Rematch", 2 },
@@ -1836,7 +1847,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
         server_handleUndo( cGlobals->game.server, 0 );
         board_draw( cGlobals->game.board );
     } else if ( !cGlobals->params->skipGameOver ) {
-        gtkShowFinalScores( globals );
+        gtkShowFinalScores( globals, XP_FALSE );
     }
 } /* gtk_util_notifyGameOver */
 
@@ -2623,6 +2634,9 @@ initGlobals( GtkGameGlobals* globals, LaunchParams* params, CurGameInfo* gi )
 
     g_signal_connect( G_OBJECT (window), "destroy",
                       G_CALLBACK( destroy_board_window ), globals );
+    XP_ASSERT( !!globals );
+    g_signal_connect( G_OBJECT (window), "show",
+                      G_CALLBACK( on_board_window_shown ), globals );
 
     menubar = makeMenus( globals );
     gtk_box_pack_start( GTK_BOX(vbox), menubar, FALSE, TRUE, 0);
