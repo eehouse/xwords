@@ -918,6 +918,10 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
     if ( !!params->lDevID ) {
         result = params->lDevID;
         *typ = ID_TYPE_LINUX;
+    } else if ( db_fetch( params->pDb, KEY_RDEVID, params->devIDStore, 
+                          sizeof(params->devIDStore) ) ) {
+        result = params->devIDStore;
+        *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_RELAY;
     } else if ( db_fetch( params->pDb, KEY_LDEVID, params->devIDStore, 
                           sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;

@@ -39,7 +39,10 @@ void relaycon_init( LaunchParams* params, const RelayConnProcs* procs,
                     void* procsClosure, const char* host, int port );
 void relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID, 
                    DevIDType typ, const XP_UCHAR* devID );
-void relaycon_invite( LaunchParams* params, XP_U32 dest, InviteInfo* invite );
+/* Need one of dest or relayID, with dest preferred. pass 0 for dest to use
+   relayID (formatted per comms::formatRelayID()) */
+void relaycon_invite( LaunchParams* params, XP_U32 dest, 
+                      const XP_UCHAR* relayID, InviteInfo* invite );
 XP_S16 relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
                       XP_U32 gameToken, const CommsAddrRec* addrRec );
 XP_S16 relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, 

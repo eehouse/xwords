@@ -33,7 +33,6 @@
 static void onNewData( GtkAppGlobals* apg, sqlite3_int64 rowid, 
                        XP_Bool isNew );
 static void updateButtons( GtkAppGlobals* apg );
-static void open_row( GtkAppGlobals* apg, sqlite3_int64 row );
 
 static void
 recordOpened( GtkAppGlobals* apg, GtkGameGlobals* globals )
@@ -77,7 +76,7 @@ findOpenGame( const GtkAppGlobals* apg, sqlite3_int64 rowid )
 }
 
 enum { ROW_ITEM, NAME_ITEM, ROOM_ITEM, GAMEID_ITEM, SEED_ITEM, CONN_ITEM, OVER_ITEM, TURN_ITEM, 
-       NMOVES_ITEM, MISSING_ITEM, N_ITEMS };
+       NMOVES_ITEM, NTOTAL_ITEM, MISSING_ITEM, N_ITEMS };
 
 static void
 foreachProc( GtkTreeModel* model, GtkTreePath* XP_UNUSED(path),
@@ -111,7 +110,7 @@ row_activated_cb( GtkTreeView* tree_view, GtkTreePath* path,
     if ( gtk_tree_model_get_iter( model, &iter, path ) ) {
         sqlite3_int64 rowid;
         gtk_tree_model_get( model, &iter, ROW_ITEM, &rowid, -1 );
-        open_row( apg, rowid );
+        open_row( apg, rowid, XP_FALSE );
     }
 }
 
@@ -158,6 +157,7 @@ init_games_list( GtkAppGlobals* apg )
     addTextColumn( list, "Ended", OVER_ITEM );
     addTextColumn( list, "Turn", TURN_ITEM );
     addTextColumn( list, "NMoves", NMOVES_ITEM );
+    addTextColumn( list, "NTotal", NTOTAL_ITEM );
     addTextColumn( list, "NMissing", MISSING_ITEM );
 
     GtkListStore* store = gtk_list_store_new( N_ITEMS, 
@@ -170,6 +170,7 @@ init_games_list( GtkAppGlobals* apg )
                                               G_TYPE_BOOLEAN, /* OVER_ITEM */
                                               G_TYPE_INT,     /* TURN_ITEM */
                                               G_TYPE_INT,     /* NMOVES_ITEM */
+                                              G_TYPE_INT,     /* NTOTAL_ITEM */
                                               G_TYPE_INT      /* MISSING_ITEM */
                                               );
     gtk_tree_view_set_model( GTK_TREE_VIEW(list), GTK_TREE_MODEL(store) );
@@ -217,6 +218,7 @@ add_to_list( GtkWidget* list, sqlite3_int64 rowid, XP_Bool isNew,
                         OVER_ITEM, gib->gameOver,
                         TURN_ITEM, gib->turn,
                         NMOVES_ITEM, gib->nMoves,
+                        NTOTAL_ITEM, gib->nTotal,
                         MISSING_ITEM, gib->nMissing,
                         -1 );
     XP_LOGF( "DONE adding" );
@@ -226,7 +228,8 @@ static void updateButtons( GtkAppGlobals* apg )
 {
     guint count = apg->selRows->len;
 
-    gtk_widget_set_sensitive( apg->openButton, 1 == count );
+    gtk_widget_set_sensitive( apg->openButton, 1 <= count );
+    gtk_widget_set_sensitive( apg->rematchButton, 1 == count );
     gtk_widget_set_sensitive( apg->deleteButton, 1 <= count );
 }
 
@@ -249,10 +252,14 @@ handle_newgame_button( GtkWidget* XP_UNUSED(widget), void* closure )
     }
 }
 
-static void
-open_row( GtkAppGlobals* apg, sqlite3_int64 row )
+void
+open_row( GtkAppGlobals* apg, sqlite3_int64 row, XP_Bool isNew )
 {
     if ( -1 != row && !gameIsOpen( apg, row ) ) {
+        if ( isNew ) {
+            onNewData( apg, row, XP_TRUE );
+        }
+
         apg->params->needsNewGame = XP_FALSE;
         GtkGameGlobals* globals = malloc( sizeof(*globals) );
         initGlobals( globals, apg->params, NULL );
@@ -267,8 +274,82 @@ static void
 handle_open_button( GtkWidget* XP_UNUSED(widget), void* closure )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
-    sqlite3_int64 selRow = getSelRow( apg );
-    open_row( apg, selRow );
+
+    GArray* selRows = apg->selRows;
+    for ( int ii = 0; ii < selRows->len; ++ii ) {
+        sqlite3_int64 row = g_array_index( selRows, sqlite3_int64, ii );
+        open_row( apg, row, XP_FALSE );
+    }
+}
+
+void
+make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
+{
+    // LaunchParams* params = apg->params;
+    XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
+                                            cGlobals->params->vtMgr,
+                                            NULL, CHANNEL_NONE, NULL );
+
+    /* Create new game. But has no addressing info, so need to set that
+       aside for later. */
+    CurGameInfo gi = {0};
+    gi_copy( MPPARM(cGlobals->util->mpool) &gi, cGlobals->gi );
+    gi.gameID = 0;          /* clear so will get generated */
+    game_saveNewGame( MPPARM(cGlobals->util->mpool) &gi, 
+                      cGlobals->util, &cGlobals->cp, stream );
+
+    sqlite3_int64 rowID = writeNewGameToDB( stream, cGlobals->pDb );
+    stream_destroy( stream );
+    gi_disposePlayerInfo( MPPARM(cGlobals->util->mpool) &gi );
+
+    /* If it's a multi-device game, save enough information with it than when
+       opened it can invite the other device[s] join the rematch. */
+    const CommsCtxt* comms = cGlobals->game.comms;
+    if ( !!comms ) {
+        XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
+                                                cGlobals->params->vtMgr,
+                                                NULL, CHANNEL_NONE, NULL );
+        CommsAddrRec addr;
+        comms_getAddr( comms, &addr );
+        addrToStream( stream, &addr );
+
+        CommsAddrRec addrs[4];
+        XP_U16 nRecs = VSIZE(addrs);
+        comms_getAddrs( comms, addrs, &nRecs );
+
+        stream_putU8( stream, nRecs );
+        for ( int ii = 0; ii < nRecs; ++ii ) {
+            XP_UCHAR relayID[32];
+            XP_U16 len = sizeof(relayID);
+            comms_formatRelayID( comms, ii, relayID, &len );
+            XP_LOGF( "%s: adding relayID: %s", __func__, relayID );
+            stringToStream( stream, relayID );
+            if ( addr_hasType( &addrs[ii], COMMS_CONN_RELAY ) ) {
+                /* copy over room name */
+                XP_STRCAT( addrs[ii].u.ip_relay.invite, addr.u.ip_relay.invite );
+            }
+            addrToStream( stream, &addrs[ii] );
+        }
+        saveInviteAddrs( stream, cGlobals->pDb, rowID );
+        stream_destroy( stream );
+    }
+
+    open_row( apg, rowID, XP_TRUE );
+}
+
+static void
+handle_rematch_button( GtkWidget* XP_UNUSED(widget), void* closure )
+{
+    GtkAppGlobals* apg = (GtkAppGlobals*)closure;
+    GArray* selRows = apg->selRows;
+    for ( int ii = 0; ii < selRows->len; ++ii ) {
+        sqlite3_int64 rowid = g_array_index( selRows, sqlite3_int64, ii );
+        GtkGameGlobals tmpGlobals;
+        if ( loadGameNoDraw( &tmpGlobals, apg->params, rowid ) ) {
+            make_rematch( apg, &tmpGlobals.cGlobals );
+        }
+        freeGlobals( &tmpGlobals );
+    }
 }
 
 static void
@@ -396,6 +477,8 @@ makeGamesWindow( GtkAppGlobals* apg )
     (void)addButton( "New game", hbox, G_CALLBACK(handle_newgame_button), apg );
     apg->openButton = addButton( "Open", hbox, 
                                  G_CALLBACK(handle_open_button), apg );
+    apg->rematchButton = addButton( "Rematch", hbox, 
+                                    G_CALLBACK(handle_rematch_button), apg );
     apg->deleteButton = addButton( "Delete", hbox, 
                                    G_CALLBACK(handle_delete_button), apg );
     (void)addButton( "Quit", hbox, G_CALLBACK(handle_quit_button), apg );
@@ -479,29 +562,38 @@ relayInviteReceived( void* closure, InviteInfo* invite )
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;
 
-    CurGameInfo gi = {0};
-    gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
+    XP_U32 gameID = invite->gameID;
+    sqlite3_int64 rowids[1];
+    int nRowIDs = VSIZE(rowids);
+    getRowsForGameID( apg->params->pDb, gameID, rowids, &nRowIDs );
+    
+    if ( 0 < nRowIDs ) {
+        gtktell( apg->window, "Duplicate invite rejected" );
+    } else {
+        CurGameInfo gi = {0};
+        gi_copy( MPPARM(params->mpool) &gi, &params->pgi );
 
-    gi_setNPlayers( &gi, invite->nPlayersT, invite->nPlayersH );
-    gi.gameID = invite->gameID;
-    gi.dictLang = invite->lang;
-    gi.forceChannel = invite->forceChannel;
-    replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict );
+        gi_setNPlayers( &gi, invite->nPlayersT, invite->nPlayersH );
+        gi.gameID = gameID;
+        gi.dictLang = invite->lang;
+        gi.forceChannel = invite->forceChannel;
+        replaceStringIfDifferent( params->mpool, &gi.dictName, invite->dict );
 
-    GtkGameGlobals* globals = malloc( sizeof(*globals) );
-    params->needsNewGame = XP_FALSE;
-    initGlobals( globals, params, &gi );
+        GtkGameGlobals* globals = malloc( sizeof(*globals) );
+        params->needsNewGame = XP_FALSE;
+        initGlobals( globals, params, &gi );
 
-    invit_makeAddrRec( invite, &globals->cGlobals.addr );
-    // globals->cGlobals.addr = *returnAddr;
+        invit_makeAddrRec( invite, &globals->cGlobals.addr );
+        // globals->cGlobals.addr = *returnAddr;
 
-    GtkWidget* gameWindow = globals->window;
-    globals->cGlobals.pDb = apg->params->pDb;
-    globals->cGlobals.selRow = -1;
-    recordOpened( apg, globals );
-    gtk_widget_show( gameWindow );
+        GtkWidget* gameWindow = globals->window;
+        globals->cGlobals.pDb = apg->params->pDb;
+        globals->cGlobals.selRow = -1;
+        recordOpened( apg, globals );
+        gtk_widget_show( gameWindow );
 
-    gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
+        gi_disposePlayerInfo( MPPARM(params->mpool) &gi );
+    }
 }
 
 static void
@@ -644,17 +736,6 @@ onGameSaved( void* closure, sqlite3_int64 rowid,
     if ( !!apg ) {
         onNewData( apg, rowid, firstTime );
     }
-}
-
-sqlite3_int64
-getSelRow( const GtkAppGlobals* apg )
-{
-    sqlite3_int64 result = -1;
-    guint len = apg->selRows->len;
-    if ( 1 == len ) {
-        result = g_array_index( apg->selRows, sqlite3_int64, 0 );
-    }
-    return result;
 }
 
 static GtkAppGlobals* g_globals_for_signal = NULL;

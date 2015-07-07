@@ -90,6 +90,7 @@ typedef struct _CommsAddrRec {
             XP_UCHAR invite[MAX_INVITE_LEN + 1];
             XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
             XP_U32 ipAddr;      /* looked up from above */
+            XP_U32 devID;
             XP_U16 port;
             XP_Bool seeksPublicRoom;
             XP_Bool advertiseRoom;
@@ -180,6 +181,7 @@ void comms_getInitialAddr( CommsAddrRec* addr
 #ifdef XWFEATURE_RELAY
                            , const XP_UCHAR* relayName
                            , XP_U16 relayPort
+                           , XP_U32 devID
 #endif
  );
 XP_Bool comms_checkAddr( DeviceRole role, const CommsAddrRec* addr,
@@ -189,6 +191,9 @@ void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
 void comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], 
                      XP_U16* nRecs );
+XP_Bool comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
+                             XP_UCHAR* buf, XP_U16* lenp );
+
 XP_U16 comms_countPendingPackets( const CommsCtxt* comms );
 
 

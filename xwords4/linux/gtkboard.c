@@ -54,6 +54,7 @@
 #include "draw.h"
 #include "game.h"
 #include "movestak.h"
+#include "strutils.h"
 #include "gtkask.h"
 #include "gtkinvit.h"
 #include "gtkaskm.h"
@@ -82,6 +83,10 @@ static GtkWidget* addButton( GtkWidget* hbox, gchar* label, GCallback func,
 static void handle_invite_button( GtkWidget* widget, GtkGameGlobals* globals );
 static void gtkShowFinalScores( const GtkGameGlobals* globals, 
                                 XP_Bool ignoreTimeout );
+static void send_invites( CommonGlobals* cGlobals, 
+                          const CommsAddrRec* inviteAddr, 
+                          const XP_UCHAR* relayID, 
+                          XP_U16 nPlayers );
 
 #define GTK_TRAY_HT_ROWS 3
 
@@ -103,7 +108,7 @@ lookupClientStream( GtkGameGlobals* globals, int sock )
 
 static void
 rememberClient( GtkGameGlobals* globals, guint key, int sock, 
-		XWStreamCtxt* stream )
+                XWStreamCtxt* stream )
 {
     short i;
     for ( i = 0; i < MAX_NUM_PLAYERS; ++i ) {
@@ -868,10 +873,39 @@ destroy_board_window( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 static void
 on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
-    if ( server_getGameIsOver( globals->cGlobals.game.server ) ) {
+    LOG_FUNC();
+    CommonGlobals* cGlobals = &globals->cGlobals;
+    if ( server_getGameIsOver( cGlobals->game.server ) ) {
         gtkShowFinalScores( globals, XP_TRUE );
     }
-}
+
+    CommsCtxt* comms = cGlobals->game.comms;
+    if ( !!comms /*&& COMMS_CONN_NONE == comms_getConTypes( comms )*/ ) {
+        /* If it has pending invite info, send the invitation! */
+        XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool) 
+                                                cGlobals->params->vtMgr, 
+                                                cGlobals, CHANNEL_NONE, NULL );
+        if ( loadInviteAddrs( stream, cGlobals->pDb, cGlobals->selRow ) ) {
+            CommsAddrRec addr = {0};
+            addrFromStream( &addr, stream );
+            comms_setAddr( cGlobals->game.comms, &addr );
+
+            XP_U16 nRecs = stream_getU8( stream );
+            XP_LOGF( "%s: got invite info: %d records", __func__, nRecs );
+            for ( int ii = 0; ii < nRecs; ++ii ) {
+                XP_UCHAR relayID[32];
+                stringFromStreamHere( stream, relayID, sizeof(relayID) );
+                XP_LOGF( "%s: loaded relayID %s", __func__, relayID );
+
+                CommsAddrRec addr = {0};
+                addrFromStream( &addr, stream );
+
+                send_invites( cGlobals, &addr, relayID, 1 /*nPlayers*/ );
+            }
+        }
+        stream_destroy( stream );
+    }
+} /* on_board_window_shown */
 
 static void
 cleanup( GtkGameGlobals* globals )
@@ -986,7 +1020,9 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
     if ( !!cGlobals->game.comms ) {
         comms_getAddr( cGlobals->game.comms, &addr );
     } else {
-        comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT );
+        XP_U32 devID = linux_getDevIDRelay( cGlobals->params );
+        comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT,
+                              devID );
     }
 
     CurGameInfo* gi = cGlobals->gi;
@@ -1572,7 +1608,7 @@ static void
 handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     CommonGlobals* cGlobals = &globals->cGlobals;
-    const CurGameInfo* gi = cGlobals->gi;
+    /* const CurGameInfo* gi = cGlobals->gi; */
 
     /* gchar* countStr; */
     /* gchar* phone = NULL; */
@@ -1595,46 +1631,52 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     CommsAddrRec inviteAddr = {0};
     gint nPlayers = nMissing;
-    XP_U32 devID;
-    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers, &devID );
+    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers );
     XP_LOGF( "%s: inviteDlg => %d", __func__, confirmed );
 
     if ( confirmed ) {
-        gchar gameName[64];
-        snprintf( gameName, VSIZE(gameName), "Game %d", gi->gameID );
+        send_invites( cGlobals, &inviteAddr, NULL, nPlayers );
+    }
+} /* handle_invite_button */
 
-        CommsAddrRec addr;
-        CommsCtxt* comms = cGlobals->game.comms;
-        XP_ASSERT( comms );
-        comms_getAddr( comms, &addr );
+static void
+send_invites( CommonGlobals* cGlobals, const CommsAddrRec* inviteAddr,
+              const XP_UCHAR* relayID, XP_U16 nPlayers )
+{
+    CommsAddrRec addr = {0};
+    CommsCtxt* comms = cGlobals->game.comms;
+    XP_ASSERT( comms );
+    comms_getAddr( comms, &addr );
 
-        gint forceChannel = 0;  /* PENDING */
+    gint forceChannel = 0;  /* PENDING */
 
-        InviteInfo invit = {0};
-        invit_init( &invit, gi, &addr, nPlayers, forceChannel );
-        invit_setDevID( &invit, linux_getDevIDRelay( cGlobals->params ) );
+    InviteInfo invit = {0};
+    invit_init( &invit, cGlobals->gi, &addr, nPlayers, forceChannel );
+    invit_setDevID( &invit, linux_getDevIDRelay( cGlobals->params ) );
 
 #ifdef DEBUG
-        {
-            XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
-                                                    cGlobals->params->vtMgr,
-                                                    NULL, CHANNEL_NONE, NULL );
-            invit_saveToStream( &invit, stream );
-            InviteInfo tmp;
-            invit_makeFromStream( &tmp, stream );
-            stream_destroy( stream );
-            XP_ASSERT( 0 == memcmp( &invit, &tmp, sizeof(invit) ) );
-        }
+    {
+        XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
+                                                cGlobals->params->vtMgr,
+                                                NULL, CHANNEL_NONE, NULL );
+        invit_saveToStream( &invit, stream );
+        InviteInfo tmp;
+        invit_makeFromStream( &tmp, stream );
+        stream_destroy( stream );
+        XP_ASSERT( 0 == memcmp( &invit, &tmp, sizeof(invit) ) );
+    }
 #endif
 
-        if ( addr_hasType( &inviteAddr, COMMS_CONN_SMS ) ) {
-            linux_sms_invite( cGlobals->params, gi, &addr, gameName,
-                              nPlayers, forceChannel, 
-                              inviteAddr.u.sms.phone, inviteAddr.u.sms.port );
-        }
-        if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
-            relaycon_invite( cGlobals->params, devID, &invit );
-        }
+    if ( addr_hasType( inviteAddr, COMMS_CONN_SMS ) ) {
+        XP_ASSERT( 0 );         /* not implemented */
+        /* linux_sms_invite( cGlobals->params, gi, &addr, gameName, */
+        /*                   nPlayers, forceChannel,  */
+        /*                   inviteAddr.u.sms.phone, inviteAddr.u.sms.port ); */
+    }
+    if ( addr_hasType( inviteAddr, COMMS_CONN_RELAY ) ) {
+        XP_U32 devID = inviteAddr->u.ip_relay.devID;
+        XP_ASSERT( 0 != devID || (!!relayID && !!relayID[0]) );
+        relaycon_invite( cGlobals->params, devID, relayID, &invit );
     }
 
     /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */
@@ -1673,7 +1715,7 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
     /* for ( int ii = 0; ii < VSIZE(infos); ++ii ) { */
     /*     g_free( *infos[ii].result ); */
     /* } */
-} /* handle_invite_button */
+}
 
 static void
 gtkUserError( GtkGameGlobals* globals, const char* format, ... )
@@ -1805,8 +1847,7 @@ gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
                                   buttons, timeout );
     free( text );
     if ( 2 == chosen ) {
-        XP_LOGF( "%s: rematch chosen!", __func__ );
-	XP_ASSERT( 0 );
+        make_rematch( globals->apg, cGlobals );
     }
 } /* gtkShowFinalScores */
 
@@ -1847,7 +1888,7 @@ gtk_util_notifyGameOver( XW_UtilCtxt* uc, XP_S16 quitter )
         server_handleUndo( cGlobals->game.server, 0 );
         board_draw( cGlobals->game.board );
     } else if ( !cGlobals->params->skipGameOver ) {
-        gtkShowFinalScores( globals, XP_FALSE );
+        gtkShowFinalScores( globals, XP_TRUE );
     }
 } /* gtk_util_notifyGameOver */
 
@@ -2785,7 +2826,8 @@ makeNewGame( GtkGameGlobals* globals )
         if ( 0 == relayPort ) {
             relayPort = RELAY_PORT_DEFAULT;
         }
-        comms_getInitialAddr( &cGlobals->addr, relayName, relayPort );
+        comms_getInitialAddr( &cGlobals->addr, relayName, relayPort,
+                              linux_getDevIDRelay( cGlobals->params ) );
     }
 
     CurGameInfo* gi = cGlobals->gi;

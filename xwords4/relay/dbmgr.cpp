@@ -873,6 +873,19 @@ DBMgr::readArray( const char* const connName, const char* column, int arr[]  ) /
     PQclear( result );
 }
 
+// parse something created by comms.c's formatRelayID
+DevIDRelay 
+DBMgr::getDevID( string& relayID )
+{
+    size_t pos = relayID.find_first_of( '/' );
+    string connName = relayID.substr( 0, pos );
+    int hid = relayID[pos + 1] - '0';
+    DevIDRelay result = getDevID( connName.c_str(), hid );
+    // Not an error. Remove or downlog when confirm working
+    logf( XW_LOGERROR, "%s(%s) => %d", __func__, relayID.c_str(), result );
+    return result;
+}
+
 DevIDRelay 
 DBMgr::getDevID( const char* connName, int hid )
 {

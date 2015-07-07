@@ -560,6 +560,7 @@ comms_setConnID( CommsCtxt* comms, XP_U32 connID )
 static void
 addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ )
 {
+    XP_U16 version = stream_getVersion( stream );
     switch( typ ) {
     case COMMS_CONN_NONE:
         break;
@@ -584,8 +585,11 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
         stringFromStreamHere( stream, addrP->u.ip_relay.hostName,
                               sizeof(addrP->u.ip_relay.hostName) );
         addrP->u.ip_relay.ipAddr = stream_getU32( stream );
+        if ( version >= STREAM_VERS_DEVIDS ) {
+            addrP->u.ip_relay.devID = stream_getU32( stream );
+        }
         addrP->u.ip_relay.port = stream_getU16( stream );
-        if ( stream_getVersion( stream ) >= STREAM_VERS_DICTLANG ) {
+        if ( version >= STREAM_VERS_DICTLANG ) {
             addrP->u.ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
             addrP->u.ip_relay.advertiseRoom = stream_getBits( stream, 1 );
         }
@@ -632,7 +636,8 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     isServer = stream_getU8( stream );
     addrFromStream( &addr, stream );
 
-    if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
+    if ( version >= STREAM_VERS_DEVIDS
+         || addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
         nPlayersHere = (XP_U16)stream_getBits( stream, 4 );
         nPlayersTotal = (XP_U16)stream_getBits( stream, 4 );
     } else {
@@ -810,6 +815,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* ad
         stringToStream( stream, addrP->u.ip_relay.invite );
         stringToStream( stream, addrP->u.ip_relay.hostName );
         stream_putU32( stream, addrP->u.ip_relay.ipAddr );
+        stream_putU32( stream, addrP->u.ip_relay.devID );
         stream_putU16( stream, addrP->u.ip_relay.port );
         stream_putBits( stream, 1, addrP->u.ip_relay.seeksPublicRoom );
         stream_putBits( stream, 1, addrP->u.ip_relay.advertiseRoom );
@@ -827,6 +833,7 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* ad
 void
 addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addrP )
 {
+    stream_setVersion( stream, CUR_STREAM_VERS );
     stream_putU8( stream, addrP->_conTypes );
 
     CommsConnType typ;
@@ -843,13 +850,13 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     AddressRecord* rec;
     MsgQueueElem* msg;
 
+    stream_setVersion( stream, CUR_STREAM_VERS );
+
     stream_putU8( stream, (XP_U8)comms->isServer );
     logAddr( comms, &comms->addr, __func__ );
     addrToStream( stream, &comms->addr );
-    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
-        stream_putBits( stream, 4, comms->rr.nPlayersHere );
-        stream_putBits( stream, 4, comms->rr.nPlayersTotal );
-    }
+    stream_putBits( stream, 4, comms->rr.nPlayersHere );
+    stream_putBits( stream, 4, comms->rr.nPlayersTotal );
 
     stream_putU32( stream, comms->connID );
     stream_putU16( stream, comms->nextChannelNo );
@@ -982,6 +989,20 @@ formatRelayID( const CommsCtxt* comms, XWHostID hostID,
     return XP_TRUE;
 }
 
+XP_Bool
+comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
+                     XP_UCHAR* buf, XP_U16* lenp )
+{
+    XP_LOGF( "%s(indx=%d)", __func__, indx );
+    XWHostID hostID = HOST_ID_SERVER;
+    if ( comms->isServer ) {
+        hostID += 1 + indx;
+    }
+    XP_Bool success = formatRelayID( comms, hostID, buf, lenp );
+    XP_LOGF( "%s(%d) => %s", __func__, indx, buf );
+    return success;
+}
+
 /* Get *my* "relayID", a combo of connname and host id */
 XP_Bool
 comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* lenp )
@@ -997,12 +1018,14 @@ comms_getInitialAddr( CommsAddrRec* addr
 #ifdef XWFEATURE_RELAY
                       , const XP_UCHAR* relayName
                       , XP_U16 relayPort
+                      , XP_U32 devID
 #endif
                       )
 {
 #if defined  XWFEATURE_RELAY
     addr_setType( addr, COMMS_CONN_RELAY ); /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
+    addr->u.ip_relay.devID = devID;
     addr->u.ip_relay.port = relayPort;
     {
         const char* name = relayName;
@@ -1051,7 +1074,7 @@ comms_getConTypes( const CommsCtxt* comms )
         XP_LOGF( "%s: returning COMMS_CONN_NONE for null comms", __func__ );
     }
     return typ;
-} /* comms_getConType */
+} /* comms_getConTypes */
 
 XP_Bool
 comms_getIsServer( const CommsCtxt* comms )
@@ -2629,14 +2652,8 @@ augmentChannelAddr( CommsCtxt* comms, AddressRecord * const rec,
             switch( typ ) {
             case COMMS_CONN_RELAY:
                 dest = &rec->addr.u.ip_relay;
+                src = &addr->u.ip_relay;
                 siz = sizeof( rec->addr.u.ip_relay );
-                /* Special case for relay: use comms' relay info if caller
-                   didn't bother to fill it in */
-                if ( addr->u.ip_relay.invite[0] ) {
-                    src = &addr->u.ip_relay;
-                } else {
-                    src = &comms->addr.u.ip_relay;
-                }
                 if ( 0 != hostID ) {
                     rec->rr.hostID = hostID;
                     XP_LOGF( "%s: set hostID for rec %p to %d", __func__, rec, hostID );

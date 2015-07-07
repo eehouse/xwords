@@ -30,6 +30,12 @@
 
 typedef enum {OSType_NONE, OSType_LINUX, OSType_ANDROID, } XP_OSType;
 
+/* InviteInfo
+ *
+ * A representation of return addresses sent with an invitation so that the
+ * recipient has all it needs to create a game and connect back.
+ */
+
 typedef struct _InviteInfo {
     XP_U8 version;              /* struct version for backward compatibility */
     XP_U16 _conTypes;

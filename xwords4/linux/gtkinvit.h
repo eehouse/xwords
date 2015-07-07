@@ -24,7 +24,7 @@
 
 /* return true if not cancelled */
 XP_Bool gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, 
-                      /*inout*/ gint* nPlayers, XP_U32* devID );
+                      /*inout*/ gint* nPlayers );
 
 #endif
 

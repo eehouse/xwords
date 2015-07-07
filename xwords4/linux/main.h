@@ -247,9 +247,8 @@ typedef struct _GtkAppGlobals {
     GtkWidget* window;
     GtkWidget* listWidget;
     GtkWidget* openButton;
+    GtkWidget* rematchButton;
     GtkWidget* deleteButton;
 } GtkAppGlobals;
-
-sqlite3_int64 getSelRow( const GtkAppGlobals* apg );
 
 #endif

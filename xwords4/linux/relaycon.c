@@ -48,14 +48,14 @@ static ssize_t sendIt( RelayConStorage* storage, const XP_U8* msgbuf, XP_U16 len
 static size_t addVLIStr( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static void getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf );
 static XP_U16 getNetShort( const XP_U8** ptr );
-#ifdef DEBUG
 static XP_U32 getNetLong( const XP_U8** ptr );
-#endif
 static int writeHeader( RelayConStorage* storage, XP_U8* dest, XWRelayReg cmd );
 static bool readHeader( const XP_U8** buf, MsgHeader* header );
 static size_t writeDevID( XP_U8* buf, size_t len, const XP_UCHAR* str );
 static size_t writeShort( XP_U8* buf, size_t len, XP_U16 shrt );
 static size_t writeLong( XP_U8* buf, size_t len, XP_U32 lng );
+static size_t writeBytes( XP_U8* buf, size_t len, const XP_U8* bytes, 
+                          size_t nBytes );
 static size_t writeVLI( XP_U8* out, uint32_t nn );
 static size_t un2vli( int nn, uint8_t* buf );
 static bool vli2un( const uint8_t** inp, uint32_t* outp );
@@ -113,7 +113,8 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID,
 }
 
 void
-relaycon_invite( LaunchParams* params, XP_U32 dest, InviteInfo* invit )
+relaycon_invite( LaunchParams* params, XP_U32 destDevID, 
+                 const XP_UCHAR* relayID, InviteInfo* invit )
 {
     XP_U8 tmpbuf[256];
     int indx = 0;
@@ -122,7 +123,17 @@ relaycon_invite( LaunchParams* params, XP_U32 dest, InviteInfo* invit )
     indx += writeHeader( storage, tmpbuf, XWPDEV_INVITE );
     XP_U32 me = linux_getDevIDRelay( params );
     indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, me );
-    indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, dest );
+
+    /* write relayID <connname>/<hid>, or if we have an actual devID write a
+       null byte plus it. */
+    if ( 0 == destDevID ) {
+        XP_ASSERT( '\0' != relayID[0] );
+        indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, 
+                            (XP_U8*)relayID, 1 + XP_STRLEN( relayID ) );
+    } else {
+        tmpbuf[indx++] = '\0';  /* null byte: zero-len str */
+        indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, destDevID );
+    }
 
     XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool) 
                                             params->vtMgr, params, 
@@ -132,8 +143,7 @@ relaycon_invite( LaunchParams* params, XP_U32 dest, InviteInfo* invit )
     indx += writeShort( &tmpbuf[indx], sizeof(tmpbuf) - indx, len );
     XP_ASSERT( indx + len < sizeof(tmpbuf) );
     const XP_U8* ptr = stream_getPtr( stream );
-    XP_MEMCPY( &tmpbuf[indx], ptr, len );
-    indx += len;
+    indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, ptr, len );
     stream_destroy( stream );
 
     sendIt( storage, tmpbuf, indx );
@@ -151,11 +161,8 @@ relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
     XP_U8 tmpbuf[1 + 4 + 1 + sizeof(gameToken) + buflen];
     int indx = 0;
     indx += writeHeader( storage, tmpbuf, XWPDEV_MSG );
-    XP_U32 inNBO = htonl(gameToken);
-    XP_MEMCPY( &tmpbuf[indx], &inNBO, sizeof(inNBO) );
-    indx += sizeof(inNBO);
-    XP_MEMCPY( &tmpbuf[indx], buf, buflen );
-    indx += buflen;
+    indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, gameToken );
+    indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, buf, buflen );
     nSent = sendIt( storage, tmpbuf, indx );
     if ( nSent > buflen ) {
         nSent = buflen;
@@ -179,14 +186,12 @@ relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, XP_U16 buflen,
                  1 + idLen +
                  sizeof(gameToken) + buflen];
     indx += writeHeader( storage, tmpbuf, XWPDEV_MSGNOCONN );
-    gameToken = htonl( gameToken );
-    XP_MEMCPY( &tmpbuf[indx], &gameToken, sizeof(gameToken) );
-    indx += sizeof(gameToken);
-    XP_MEMCPY( &tmpbuf[indx], relayID, idLen );
-    indx += idLen;
+    indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, gameToken );
+    indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, 
+                        (const XP_U8*)relayID, idLen );
     tmpbuf[indx++] = '\n';
-    XP_MEMCPY( &tmpbuf[indx], buf, buflen );
-    nSent = sendIt( storage, tmpbuf, sizeof(tmpbuf) );
+    indx += writeBytes( &tmpbuf[indx], sizeof(tmpbuf) - indx, buf, buflen );
+    nSent = sendIt( storage, tmpbuf, indx );
     if ( nSent > buflen ) {
         nSent = buflen;
     }
@@ -218,9 +223,7 @@ relaycon_deleted( LaunchParams* params, const XP_UCHAR* devID,
     int indx = 0;
     indx += writeHeader( storage, tmpbuf, XWPDEV_DELGAME );
     indx += writeDevID( &tmpbuf[indx], sizeof(tmpbuf) - indx, devID );
-    gameToken = htonl( gameToken );
-    memcpy( &tmpbuf[indx], &gameToken, sizeof(gameToken) );
-    indx += sizeof( gameToken );
+    indx += writeLong( &tmpbuf[indx], sizeof(tmpbuf) - indx, gameToken );
 
     sendIt( storage, tmpbuf, indx );
 }
@@ -330,7 +333,10 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
             }
             case XWPDEV_GOTINVITE: {
                 XP_LOGF( "%s(): got XWPDEV_GOTINVITE", __func__ );
-                XP_U32 sender = getNetLong( &ptr );
+#ifdef DEBUG
+                XP_U32 sender = 
+#endif
+                    getNetLong( &ptr );
                 XP_U16 len = getNetShort( &ptr );
                 XWStreamCtxt* stream = mem_stream_make( MPPARM(storage->params->mpool) 
                                                         storage->params->vtMgr, storage,
@@ -438,7 +444,7 @@ writeShort( XP_U8* buf, size_t len, XP_U16 shrt )
 {
     shrt = htons( shrt );
     assert( sizeof( shrt ) <= len );
-    memcpy( buf, &shrt, sizeof(shrt) );
+    XP_MEMCPY( buf, &shrt, sizeof(shrt) );
     return sizeof(shrt);
 }
 
@@ -449,6 +455,14 @@ writeLong( XP_U8* buf, size_t len, XP_U32 lng )
     assert( sizeof( lng ) <= len );
     memcpy( buf, &lng, sizeof(lng) );
     return sizeof(lng);
+}
+
+static size_t
+writeBytes( XP_U8* buf, size_t len, const XP_U8* bytes, size_t nBytes )
+{
+    assert( nBytes <= len );
+    XP_MEMCPY( buf, bytes, nBytes );
+    return nBytes;
 }
 
 static size_t
@@ -469,7 +483,6 @@ getNetShort( const XP_U8** ptr )
     return ntohs( result );
 }
 
-#ifdef DEBUG
 static XP_U32
 getNetLong( const XP_U8** ptr )
 {
@@ -478,7 +491,6 @@ getNetLong( const XP_U8** ptr )
     *ptr += sizeof(result);
     return ntohl( result );
 }
-#endif
 
 static void
 getNetString( const XP_U8** ptr, XP_U16 len, XP_UCHAR* buf )

@@ -55,6 +55,7 @@ void
 invit_setDevID( InviteInfo* invit, XP_U32 devID )
 {
     invit->devID = devID;
+    types_addType( &invit->_conTypes, COMMS_CONN_RELAY );
 }
 
 void 

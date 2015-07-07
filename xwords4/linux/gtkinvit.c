@@ -36,7 +36,6 @@ typedef struct _GtkInviteState {
     GtkGameGlobals* globals;
     CommsAddrRec* addr;
     gint* nPlayersP;
-    XP_U32* devIDP;
     gint maxPlayers;
     XP_UCHAR devIDBuf[32];
 
@@ -94,7 +93,7 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
 #ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
         txt = gtk_entry_get_text( GTK_ENTRY(state->devID) );
-        *(state->devIDP) = atoi( txt );
+        state->addr->u.ip_relay.devID = atoi( txt );
         break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
@@ -276,17 +275,15 @@ onPageChanged( GtkNotebook* XP_UNUSED(notebook), gpointer XP_UNUSED(arg1),
 }
 
 XP_Bool
-gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayers,
-              XP_U32* devIDP )
+gtkInviteDlg( GtkGameGlobals* globals, CommsAddrRec* addr, gint* nPlayersP )
 {
     GtkInviteState state;
     XP_MEMSET( &state, 0, sizeof(state) );
 
     state.globals = globals;
     state.addr = addr;
-    state.nPlayersP = nPlayers;
-    state.maxPlayers = *nPlayers;
-    state.devIDP = devIDP;
+    state.nPlayersP = nPlayersP;
+    state.maxPlayers = *nPlayersP;
 
     GtkWidget* dialog;
     GtkWidget* hbox;
