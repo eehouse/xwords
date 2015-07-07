@@ -292,9 +292,14 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 
     /* Create new game. But has no addressing info, so need to set that
        aside for later. */
+    const CommsCtxt* comms = cGlobals->game.comms;
     CurGameInfo gi = {0};
     gi_copy( MPPARM(cGlobals->util->mpool) &gi, cGlobals->gi );
     gi.gameID = 0;          /* clear so will get generated */
+    if ( !!comms ) {
+        gi.serverRole = SERVER_ISSERVER;
+        gi.forceChannel = 0;
+    }
     game_saveNewGame( MPPARM(cGlobals->util->mpool) &gi, 
                       cGlobals->util, &cGlobals->cp, stream );
 
@@ -304,7 +309,6 @@ make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals )
 
     /* If it's a multi-device game, save enough information with it than when
        opened it can invite the other device[s] join the rematch. */
-    const CommsCtxt* comms = cGlobals->game.comms;
     if ( !!comms ) {
         XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
                                                 cGlobals->params->vtMgr,
