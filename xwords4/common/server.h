@@ -67,7 +67,7 @@ void server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream );
 void server_reset( ServerCtxt* server, CommsCtxt* comms );
 void server_destroy( ServerCtxt* server );
 
-void server_prefsChanged( ServerCtxt* server, CommonPrefs* cp );
+void server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp );
 
 typedef void (*TurnChangeListener)( void* data );
 void server_setTurnChangeListener( ServerCtxt* server, TurnChangeListener tl,

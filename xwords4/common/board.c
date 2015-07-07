@@ -609,7 +609,7 @@ board_getScale( BoardCtxt* board, XP_U16* hScale, XP_U16* vScale )
 #endif
 
 XP_Bool
-board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
+board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp )
 {
     XP_Bool showArrowChanged;
     XP_Bool hideValChanged;

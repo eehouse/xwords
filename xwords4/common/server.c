@@ -546,7 +546,7 @@ figureSleepTime( const ServerCtxt* server )
 #endif
 
 void
-server_prefsChanged( ServerCtxt* server, CommonPrefs* cp )
+server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp )
 {
     server->nv.showRobotScores = cp->showRobotScores;
     server->nv.sortNewTiles = cp->sortNewTiles;
