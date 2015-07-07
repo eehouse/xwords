@@ -32,12 +32,13 @@ typedef struct _PageData {
     const char* okButtonTxt;
 } PageData;
 
+static XP_UCHAR s_devIDBuf[32] = {0};
+
 typedef struct _GtkInviteState {
     GtkGameGlobals* globals;
     CommsAddrRec* addr;
     gint* nPlayersP;
     gint maxPlayers;
-    XP_UCHAR devIDBuf[32];
 
     GtkWidget* nPlayersCombo;
     /* relay */
@@ -93,6 +94,7 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
 #ifdef XWFEATURE_RELAY
     case COMMS_CONN_RELAY:
         txt = gtk_entry_get_text( GTK_ENTRY(state->devID) );
+        snprintf( s_devIDBuf, sizeof(s_devIDBuf), "%s", txt );
         state->addr->u.ip_relay.devID = atoi( txt );
         break;
 #endif
@@ -119,7 +121,6 @@ handle_ok( GtkWidget* XP_UNUSED(widget), gpointer closure )
     gchar* num = 
         gtk_combo_box_get_active_text( GTK_COMBO_BOX(state->nPlayersCombo) );
     *(state->nPlayersP) = atoi( num );
-    XP_LOGF( "num players: %d", *(state->nPlayersP) );
         
     state->cancelled = XP_FALSE;
     gtk_main_quit();
@@ -170,10 +171,7 @@ makeRelayPage( GtkInviteState* state, PageData* data )
     GtkWidget* hbox;
 
     hbox = makeLabeledField( "Invitee DeviceID", &state->devID, NULL );
-    XP_Bool hasRelay = addr_hasType( state->addr, COMMS_CONN_RELAY );
-    if ( hasRelay ) {
-        gtk_entry_set_text( GTK_ENTRY(state->devID), state->devIDBuf );
-    }
+    gtk_entry_set_text( GTK_ENTRY(state->devID), s_devIDBuf );
     gtk_box_pack_start( GTK_BOX(vbox), hbox, FALSE, TRUE, 0 );
 
     gtk_widget_show( vbox );
