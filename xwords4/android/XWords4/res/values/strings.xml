@@ -2529,4 +2529,6 @@
   <string name="not_again_comms_bt">Use Bluetooth to play against a
   nearby device that\'s \"paired\" with yours.</string>
 
+  <string name="str_no_hint_found">Cannot find any moves</string>
+
 </resources>

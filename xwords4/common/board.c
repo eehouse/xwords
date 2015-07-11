@@ -2121,6 +2121,8 @@ board_requestHint( BoardCtxt* board,
                 }
                 setArrowVisible( board, wasVisible );
             }
+        } else {
+            util_userError( board->util, ERR_NO_HINT_FOUND );
         }
     }
     return result || redraw;

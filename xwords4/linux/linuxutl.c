@@ -492,6 +492,10 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
         message = "No tiles selected; trade cancelled.";
         break;
 
+    case ERR_NO_HINT_FOUND:
+        message = "Unable to suggest any moves.";
+        break;
+
     case ERR_CANT_UNDO_TILEASSIGN:
         message = "Tile assignment can't be undone.";
         break;
