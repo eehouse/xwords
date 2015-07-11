@@ -2184,4 +2184,5 @@
   I.E. EVERY CARRIER IN THE WORLD EXCEPT VERIZON AND SPRINT.</string>
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
+  <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
 </resources>

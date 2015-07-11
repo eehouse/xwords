@@ -58,6 +58,7 @@ typedef enum {
 /*     ERR_NOT_YOUR_TURN_TO_MOVE, */
     ERR_CANT_UNDO_TILEASSIGN,
     ERR_CANT_HINT_WHILE_DISABLED,
+    ERR_NO_HINT_FOUND,          /* not really an error... */
 
     ERR_RELAY_BASE,
     ERR_RELAY_END = ERR_RELAY_BASE + XWRELAY_ERROR_LASTERR

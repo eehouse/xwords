@@ -125,7 +125,9 @@ public interface UtilCtxt {
     static final int ERR_NO_EMPTY_TRADE = 13;
     static final int ERR_CANT_UNDO_TILEASSIGN = 14;
     static final int ERR_CANT_HINT_WHILE_DISABLED = 15;
-    static final int ERR_RELAY_BASE = 16;
+    static final int ERR_NO_HINT_FOUND = 16;
+
+    static final int ERR_RELAY_BASE = 17;
     void userError( int id );
 
     void informMove( String expl, String words );
