@@ -78,6 +78,14 @@ public class DbgUtils {
         }
     } // logf
 
+    public static void logdf( String format, Object... args )
+    {
+        if ( s_doLog && BuildConfig.DEBUG ) {
+            Formatter formatter = new Formatter();
+            logf( formatter.format( format, args ).toString() );
+        }
+    } // logdf
+
     public static void showf( Context context, String format, Object... args )
     {
         Formatter formatter = new Formatter();
