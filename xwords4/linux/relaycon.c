@@ -344,8 +344,7 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
                 stream_putBytes( stream, ptr, len );
                 NetLaunchInfo invit;
                 XP_Bool success = nli_makeFromStream( &invit, stream );
-                XP_LOGF( "sender: %d; invit.devID: %d", sender, invit.devID );
-                XP_ASSERT( sender == invit.devID );
+                XP_LOGF( "sender: %d", sender );
                 stream_destroy( stream );
 
                 if ( success ) {

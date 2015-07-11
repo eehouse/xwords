@@ -49,7 +49,7 @@ typedef struct _InviteInfo {
 
     /* Relay */
     XP_UCHAR room[MAX_INVITE_LEN + 1];
-    XP_U32 devID;
+    XP_U32 devID;               /* not used on android; remove?? */
 
     /* BT */
     XP_UCHAR btName[32];
