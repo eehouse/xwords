@@ -255,11 +255,9 @@ public class RelayService extends XWService
                 if ( null != nli.gameName && 0 < nli.gameName.length() ) {
                     DBUtils.setName( this, rowid, nli.gameName );
                 }
-
-                Intent intent = GamesListDelegate
-                    .makeGameIDIntent( this, nli.gameID() );
-                Utils.postNotification( this, intent, R.string.new_btmove_title, 
-                                        "body", (int)rowid );
+                String body = LocUtils.getString( this, 
+                                                  R.string.new_relay_body );
+                GameUtils.postInvitedNotification( this, nli.gameID(), body );
             }
         } else {
             DbgUtils.logf( "RelayService.makeGame(): dropping invite b/c already have"

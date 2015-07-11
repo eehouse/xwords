@@ -2385,9 +2385,6 @@ fois. Ouvrez à nouveau la partie pour réessayer.</string>
     <!--<string name="dft_sms_name_fmt">SMS Game %1$X</string>    -->
     <string name="dft_sms_name_fmt">Partie %1$X par SMS</string>    
     <!--  -->
-    <!--<string name="new_sms_title">New game via SMS</string>-->
-    <string name="new_sms_title">Nouvelle partie par SMS</string>
-    <!--  -->
     <!--<string name="new_name_body_fmt">%1$s has invited you to play</string>-->
     <string name="new_name_body_fmt">%1$s vous a invité à jouer</string>
     <!--  -->

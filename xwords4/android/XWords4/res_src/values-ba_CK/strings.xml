@@ -1605,9 +1605,10 @@
   <!--  -->
   <string name="summary_conn">Emag ni yalp</string>
   <!--  -->
-  <string name="new_bt_title">Wen emag aiv Htooteulb</string>
+  <string name="invite_notice_title">Wen emag aiv Noitativni</string>
   <!--  -->
   <string name="new_bt_body_fmt">A reyalp no eht ecived %1$s stnaw ot trats a emag</string>
+  <string name="new_relay_body">Pat ot nepo eht wen emag</string>
   <!--  -->
   <string name="bt_bad_proto_fmt">Eht noisrev fo Sdrowssorc no
     \"%1$s\" si elbitapmocni htiw siht eno rof yalp gnisu
@@ -1654,8 +1655,6 @@
   <!-- You can enable it in Settings->Network game settings.</string> -->
   <!--  -->
   <string name="dft_sms_name_fmt">SMS Emag %1$X</string>
-  <!--  -->
-  <string name="new_sms_title">Wen emag aiv SMS</string>
   <!--  -->
   <string name="new_name_body_fmt">%1$s sah detivni uoy ot yalp</string>
   <!--  -->

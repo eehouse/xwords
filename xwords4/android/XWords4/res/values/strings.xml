@@ -1858,9 +1858,12 @@
       <!--  -->
     <string name="summary_conn">Game in play</string>
       <!--  -->
-    <string name="new_bt_title">New game via Bluetooth</string>
+    <string name="invite_notice_title">New game via Invitation</string>
       <!--  -->
     <string name="new_bt_body_fmt">A player on the device %1$s wants to start a game</string>
+    <string name="new_relay_body">Tap to open the new game</string>
+
+
       <!--  -->
     <string name="bt_bad_proto_fmt">The version of Crosswords on
     \"%1$s\" is incompatible with this one for play using
@@ -1911,8 +1914,6 @@
     <!-- You can enable it in Settings->Network game settings.</string> -->
     <!--  -->
     <string name="dft_sms_name_fmt">SMS Game %1$X</string>    
-    <!--  -->
-    <string name="new_sms_title">New game via SMS</string>
     <!--  -->
     <string name="new_name_body_fmt">%1$s has invited you to play</string>
     <!--  -->

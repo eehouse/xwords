@@ -1605,9 +1605,10 @@
   <!--  -->
   <string name="summary_conn">GAME IN PLAY</string>
   <!--  -->
-  <string name="new_bt_title">NEW GAME VIA BLUETOOTH</string>
+  <string name="invite_notice_title">NEW GAME VIA INVITATION</string>
   <!--  -->
   <string name="new_bt_body_fmt">A PLAYER ON THE DEVICE %1$s WANTS TO START A GAME</string>
+  <string name="new_relay_body">TAP TO OPEN THE NEW GAME</string>
   <!--  -->
   <string name="bt_bad_proto_fmt">THE VERSION OF CROSSWORDS ON
     \"%1$s\" IS INCOMPATIBLE WITH THIS ONE FOR PLAY USING
@@ -1654,8 +1655,6 @@
   <!-- You can enable it in Settings->Network game settings.</string> -->
   <!--  -->
   <string name="dft_sms_name_fmt">SMS GAME %1$X</string>
-  <!--  -->
-  <string name="new_sms_title">NEW GAME VIA SMS</string>
   <!--  -->
   <string name="new_name_body_fmt">%1$s HAS INVITED YOU TO PLAY</string>
   <!--  -->

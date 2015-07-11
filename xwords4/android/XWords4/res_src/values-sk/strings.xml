@@ -1267,8 +1267,6 @@
   <!--  -->
   <string name="new_name_body_fmt">XLATE ME: %1$s has invited you to play</string>
   <!--  -->
-  <string name="new_sms_title">XLATE ME: New game via SMS</string>
-  <!--  -->
   <string name="dft_sms_name_fmt">XLATE ME: SMS Game %1$X</string>
   <!--  -->
   <string name="sms_disabled">XLATE ME: Playing via SMS is currently disabled.

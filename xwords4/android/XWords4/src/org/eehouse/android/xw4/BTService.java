@@ -1087,7 +1087,9 @@ public class BTService extends XWService {
                 String body = LocUtils.getString( BTService.this, 
                                                   R.string.new_bt_body_fmt, 
                                                   sender );
-                postNotification( nli.gameID(), R.string.new_bt_title, body, rowid );
+
+                GameUtils.postInvitedNotification( this, nli.gameID(), body );
+
                 sendResult( MultiEvent.BT_GAME_CREATED, rowid );
             }
         } else {
@@ -1130,14 +1132,6 @@ public class BTService extends XWService {
     private void sendBadProto( BluetoothSocket socket )
     {
         sendResult( MultiEvent.BAD_PROTO_BT, socket.getRemoteDevice().getName() );
-    }
-
-    private void postNotification( int gameID, int title, String body, 
-                                   long rowid )
-    {
-        Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
-        Utils.postNotification( this, intent, R.string.new_btmove_title, 
-                                body, (int)rowid );
     }
 
     private void updateStatusOut( boolean success )

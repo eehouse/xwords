@@ -593,13 +593,13 @@ public final class R {
         public static final int bonus_w3x_summary=0x7f0500df;
         /**   
          */
-        public static final int bt_bad_proto_fmt=0x7f0501ed;
+        public static final int bt_bad_proto_fmt=0x7f0501ee;
         /**   
          */
-        public static final int bt_fail_fmt=0x7f0501f2;
+        public static final int bt_fail_fmt=0x7f0501f3;
         /**  Title of device picker during invitation to a game via Bluetooth 
          */
-        public static final int bt_invite_title=0x7f0501f4;
+        public static final int bt_invite_title=0x7f0501f5;
         public static final int bt_no_devs=0x7f0502b4;
         /**  <string name="newgame_enable_bt">Turn Bluetooth on</string> 
  In the Bluetooth invite device dialog 
@@ -610,7 +610,7 @@ public final class R {
         public static final int bt_pick_clear_button=0x7f0501e4;
         /**   
          */
-        public static final int bt_resend_fmt=0x7f0501f1;
+        public static final int bt_resend_fmt=0x7f0501f2;
         /**  text of button for adding new player to game 
          */
         public static final int button_add_player=0x7f0500b2;
@@ -660,7 +660,7 @@ public final class R {
         public static final int button_go_settings=0x7f050265;
         /**   
          */
-        public static final int button_invite=0x7f0501f3;
+        public static final int button_invite=0x7f0501f4;
         /**  text of button to juggle (randomly rearrange order of) players 
          */
         public static final int button_juggle_players=0x7f0500b3;
@@ -1029,7 +1029,7 @@ public final class R {
  You can enable it in Settings->Network game settings.</string> 
   
          */
-        public static final int dft_sms_name_fmt=0x7f0501fc;
+        public static final int dft_sms_name_fmt=0x7f0501fd;
         /**   
          */
         public static final int dict_browse_nowords_fmt=0x7f0501d7;
@@ -1180,7 +1180,7 @@ public final class R {
         public static final int gameOver=0x7f050089;
         /**   
          */
-        public static final int game_btname_title=0x7f0501f7;
+        public static final int game_btname_title=0x7f0501f8;
         /**  used to create default names of games (when user has not
          named them.) 
          */
@@ -1205,10 +1205,10 @@ public final class R {
         public static final int game_name_group_title=0x7f050252;
         /**   
          */
-        public static final int game_name_label=0x7f0501f9;
+        public static final int game_name_label=0x7f0501fa;
         /**   
          */
-        public static final int game_name_title=0x7f0501f8;
+        public static final int game_name_title=0x7f0501f9;
         /**   
          */
         public static final int game_rename_title=0x7f05009b;
@@ -1390,6 +1390,9 @@ public final class R {
          greater than one this text is appended to the above. 
          */
         public static final int invite_multiple=0x7f0500e2;
+        /**   
+         */
+        public static final int invite_notice_title=0x7f0501eb;
         public static final int invite_prefix=0x7f05007a;
         public static final int invite_progress_fmt=0x7f0501e6;
         /**   
@@ -1769,7 +1772,7 @@ public final class R {
         /**  above is inserted in this the last time I warn 
          */
         public static final int nag_warn_last_fmt=0x7f0502af;
-        public static final int name_copy_fmt=0x7f0501fa;
+        public static final int name_copy_fmt=0x7f0501fb;
         public static final int name_dict_fmt=0x7f0502e6;
         public static final int nbs_port=0x7f05007e;
         /**  text of checkbox.  If this checkbox is checked, games created
@@ -1800,10 +1803,7 @@ public final class R {
         public static final int new_bt_body_fmt=0x7f0501ec;
         /**   
          */
-        public static final int new_bt_title=0x7f0501eb;
-        /**   
-         */
-        public static final int new_btmove_title=0x7f0501ef;
+        public static final int new_btmove_title=0x7f0501f0;
         /**   
          */
         public static final int new_dict_avail=0x7f050232;
@@ -1817,16 +1817,14 @@ public final class R {
         public static final int new_game_networked=0x7f0502b9;
         /**   
          */
-        public static final int new_move_body=0x7f0501f0;
+        public static final int new_move_body=0x7f0501f1;
         /**   
          */
         public static final int new_name_body_fmt=0x7f0501fe;
+        public static final int new_relay_body=0x7f0501ed;
         /**  hint (text shown when field is empty) for room name field 
          */
         public static final int new_room_hint=0x7f0500b8;
-        /**   
-         */
-        public static final int new_sms_title=0x7f0501fd;
         /** 
        ###########################################################
        # :Dialogs:
@@ -1891,7 +1889,7 @@ public final class R {
         public static final int newgame_networked_header=0x7f050165;
         /**   
          */
-        public static final int newgame_sms_header=0x7f0501fb;
+        public static final int newgame_sms_header=0x7f0501fc;
         public static final int newgroup_label=0x7f050249;
         public static final int nfc_just_tap=0x7f0502cb;
         public static final int nfc_to_self=0x7f0502f6;
@@ -2312,7 +2310,7 @@ public final class R {
         public static final int relay_alert=0x7f0500e5;
         public static final int relay_alert_title=0x7f05025a;
         public static final int relay_host=0x7f0502d7;
-        public static final int relay_invite_title=0x7f0501f6;
+        public static final int relay_invite_title=0x7f0501f7;
         public static final int relay_port=0x7f0502e4;
         /**  Shown in toast when relaunching after switching dicts 
          */
@@ -2407,10 +2405,10 @@ public final class R {
         public static final int slmenu_copy_sel=0x7f05026e;
         public static final int slmenu_deselect_all=0x7f050278;
         public static final int slmenu_select_all=0x7f050277;
-        public static final int sms_bad_proto_fmt=0x7f0501ee;
+        public static final int sms_bad_proto_fmt=0x7f0501ef;
         /**  Title of phone number picker during invitation to a game via SMS 
          */
-        public static final int sms_invite_title=0x7f0501f5;
+        public static final int sms_invite_title=0x7f0501f6;
         public static final int sms_ready_text=0x7f050266;
         public static final int square_tiles=0x7f050256;
         public static final int square_tiles_summary=0x7f050257;

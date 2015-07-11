@@ -1660,7 +1660,7 @@
   <!--  -->
   <string name="dft_sms_name_fmt">Jogo SMS %X</string>
   <!--  -->
-  <string name="new_sms_title">Novo jogo por SMS</string>
+  <string name="invite_notice_title">Novo jogo</string>
   <!--  -->
   <string name="new_name_body_fmt">%1$s te convidou para jogar</string>
   <!--  -->

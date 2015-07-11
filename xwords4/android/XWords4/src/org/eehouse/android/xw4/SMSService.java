@@ -619,22 +619,19 @@ public class SMSService extends XWService {
         }
     }
 
-    private void postNotification( String phone, int gameID, long rowid )
+    private void postNotification( String phone, int gameID )
     {
         String owner = Utils.phoneToContact( this, phone, true );
         String body = LocUtils.getString( this, R.string.new_name_body_fmt, 
                                           owner );
-
-        Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
-        Utils.postNotification( this, intent, R.string.new_sms_title, body, 
-                                (int)rowid );
+        GameUtils.postInvitedNotification( this, gameID, body );
     }
 
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
         SMSMsgSink sink = new SMSMsgSink( this );
         long rowid = GameUtils.makeNewMultiGame( this, nli, sink );
-        postNotification( phone, nli.gameID(), rowid );
+        postNotification( phone, nli.gameID() );
         ackInvite( phone, nli.gameID() );
     }
 
@@ -646,7 +643,7 @@ public class SMSService extends XWService {
             GameUtils.makeNewGame( this, gameID, new CommsAddrRec( phone ), 
                                    lang, dict, nPlayersT, nPlayersH, 
                                    forceChannel, gameName );
-        postNotification( phone, gameID, rowid );
+        postNotification( phone, gameID );
         ackInvite( phone, gameID );
     }
 
