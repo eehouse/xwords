@@ -204,9 +204,9 @@ public class Utils {
            Intents is to send a different second param each time,
            though the docs say that param's ignored.
         */
-        PendingIntent pi = 
-            PendingIntent.getActivity( context, Utils.nextRandomInt(), intent, 
-                                       PendingIntent.FLAG_ONE_SHOT );
+        PendingIntent pi = null == intent ? null
+            : PendingIntent.getActivity( context, Utils.nextRandomInt(), intent, 
+                                         PendingIntent.FLAG_ONE_SHOT );
 
         Notification notification = 
             new Notification( R.drawable.icon48x48, title,
