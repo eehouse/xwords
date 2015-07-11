@@ -338,6 +338,7 @@ public class XwJNI {
     public static native void comms_transportFailed( int gamePtr, 
                                                      CommsConnType failed );
     public static native boolean comms_isConnected( int gamePtr );
+    public static native String comms_formatRelayID( int gamePtr, int indx );
     public static native String comms_getStats( int gamePtr );
 
     // Dicts
