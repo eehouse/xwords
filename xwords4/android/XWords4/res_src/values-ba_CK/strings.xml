@@ -2117,6 +2117,7 @@
   <string name="board_menu_game_netstats">Krowten stats</string>
   <string name="netstats_title">Emag krowten stats</string>
   <string name="git_rev_title">Ecruos noisrev di</string>
+  <string name="devid_title">Ecived DI no( )yaler</string>
   <string name="relay_port">Yaler emag trop</string>
   <string name="proxy_port">Yaler ecived trop</string>
   <string name="name_dict_fmt">%1$s/%2$s</string>

@@ -654,7 +654,7 @@ public final class R {
          */
         public static final int button_download=0x7f050190;
         public static final int button_edit=0x7f0502ce;
-        public static final int button_enable=0x7f05030e;
+        public static final int button_enable=0x7f05030f;
         public static final int button_enable_bt=0x7f05022e;
         public static final int button_enable_sms=0x7f05022d;
         public static final int button_go_settings=0x7f050265;
@@ -847,8 +847,8 @@ public final class R {
          substituted for %1$s. 
          */
         public static final int chat_title_fmt=0x7f050176;
-        public static final int checking_for_fmt=0x7f050305;
-        public static final int checking_title=0x7f050304;
+        public static final int checking_for_fmt=0x7f050306;
+        public static final int checking_title=0x7f050305;
         public static final int checkupdates_none_found=0x7f050231;
         /**  color of the "crosshairs", lines drawn vertically and
          horizontally through the square the user is currently
@@ -868,9 +868,9 @@ public final class R {
          of the language is substituted for %1$s. 
          */
         public static final int confirm_deleteonly_dicts_fmt=0x7f0500a4;
-        public static final int confirm_drop_relay=0x7f05030a;
-        public static final int confirm_drop_relay_bt=0x7f05030c;
-        public static final int confirm_drop_relay_sms=0x7f05030d;
+        public static final int confirm_drop_relay=0x7f05030b;
+        public static final int confirm_drop_relay_bt=0x7f05030d;
+        public static final int confirm_drop_relay_sms=0x7f05030e;
         public static final int confirm_get_locdict_fmt=0x7f0502d4;
         /**  Text of confirmation dialog for above 
          */
@@ -980,7 +980,7 @@ public final class R {
          */
         public static final int cur_tiles_fmt=0x7f0501d5;
         public static final int data_gsm_only=0x7f05027f;
-        public static final int db_store_done=0x7f050306;
+        public static final int db_store_done=0x7f050307;
         public static final int debug_features=0x7f0502dc;
         public static final int debug_features_summary=0x7f0502dd;
         /**  dictionary used by default for human players when creating
@@ -1023,6 +1023,7 @@ public final class R {
         public static final int default_robodict=0x7f050121;
         public static final int default_update_url=0x7f05007d;
         public static final int delete_dicts=0x7f0502a1;
+        public static final int devid_title=0x7f0502e3;
         /**   
  <string name="sms_disabled">Playing via SMS is currently disabled. 
  You can enable it in Settings->Network game settings.</string> 
@@ -1081,7 +1082,7 @@ public final class R {
         public static final int download_failed=0x7f050245;
         public static final int download_path_title=0x7f050248;
         public static final int downloading_dict_fmt=0x7f05018a;
-        public static final int drop_relay_warning_fmt=0x7f050309;
+        public static final int drop_relay_warning_fmt=0x7f05030a;
         /**  <string name="summary_thumb_enabled">Display snapshots of games</string> 
          */
         public static final int dropped_dupe=0x7f050261;
@@ -1115,11 +1116,11 @@ public final class R {
         /**  Shows in SMS Invite dialog when no phone numbers have been saved previously 
          */
         public static final int empty_sms_inviter=0x7f050203;
-        public static final int enable_dupes_summary=0x7f0502ea;
-        public static final int enable_dupes_title=0x7f0502e8;
+        public static final int enable_dupes_summary=0x7f0502eb;
+        public static final int enable_dupes_title=0x7f0502e9;
         public static final int enable_nfc=0x7f050264;
-        public static final int enable_nfc_toself_summary=0x7f0502ed;
-        public static final int enable_nfc_toself_title=0x7f0502ec;
+        public static final int enable_nfc_toself_summary=0x7f0502ee;
+        public static final int enable_nfc_toself_title=0x7f0502ed;
         public static final int enable_pubroom_summary=0x7f0502c5;
         public static final int enable_pubroom_title=0x7f0502c4;
         /**   
@@ -1128,11 +1129,11 @@ public final class R {
         /**   
          */
         public static final int enable_sms_summary=0x7f050224;
-        public static final int enable_sms_toself_summary=0x7f0502ef;
-        public static final int enable_sms_toself_title=0x7f0502ee;
+        public static final int enable_sms_toself_summary=0x7f0502f0;
+        public static final int enable_sms_toself_title=0x7f0502ef;
         public static final int entering_trade=0x7f0500db;
         public static final int err_dup_invite_fmt=0x7f0502bf;
-        public static final int expl_update_url=0x7f0502f9;
+        public static final int expl_update_url=0x7f0502fa;
         /**  if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
          player. 
@@ -1151,7 +1152,7 @@ public final class R {
         /**  Explanatory text appears in the dialog 
          */
         public static final int force_expl=0x7f0500d0;
-        public static final int force_radio_title=0x7f0502f0;
+        public static final int force_radio_title=0x7f0502f1;
         public static final int force_tablet_summary=0x7f0502ac;
         public static final int force_tablet_title=0x7f0502ab;
         /**      
@@ -1214,15 +1215,15 @@ public final class R {
         /**  Put nothing in the summary space, so it just reads "Game 2" 
          */
         public static final int game_summary_field_empty=0x7f05012c;
-        public static final int game_summary_field_gameid=0x7f0502f7;
+        public static final int game_summary_field_gameid=0x7f0502f8;
         /**  Put the language there, so it reads "Game 2 (English)" 
          */
         public static final int game_summary_field_language=0x7f05012d;
-        public static final int game_summary_field_npackets=0x7f0502f8;
+        public static final int game_summary_field_npackets=0x7f0502f9;
         /**  List names of opponents (summarized), e.g. "Game 2 (vs Kati)" 
          */
         public static final int game_summary_field_opponents=0x7f05012e;
-        public static final int game_summary_field_rowid=0x7f0502f6;
+        public static final int game_summary_field_rowid=0x7f0502f7;
         /**  List the state of the game, "Game over" or "10 moves made"
          etc. 
          */
@@ -1248,8 +1249,8 @@ public final class R {
  Brings up the Wordlists (formerly Dictionaries) screen 
          */
         public static final int gamel_menu_dicts=0x7f05008c;
-        public static final int gamel_menu_loaddb=0x7f0502e7;
-        public static final int gamel_menu_storedb=0x7f0502e6;
+        public static final int gamel_menu_loaddb=0x7f0502e8;
+        public static final int gamel_menu_storedb=0x7f0502e7;
         public static final int gamel_menu_study=0x7f05026d;
         public static final int get_relay_number=0x7f050206;
         /**   
@@ -1258,8 +1259,8 @@ public final class R {
         public static final int getinfo=0x7f0502a0;
         public static final int git_rev=0x7f05007f;
         public static final int git_rev_title=0x7f0502e2;
-        public static final int got_langdict_summary=0x7f0502fb;
-        public static final int got_langdict_title=0x7f0502fa;
+        public static final int got_langdict_summary=0x7f0502fc;
+        public static final int got_langdict_title=0x7f0502fb;
         public static final int green=0x7f050144;
         public static final int group_cur_games=0x7f05024f;
         public static final int group_new_games=0x7f050250;
@@ -1761,7 +1762,7 @@ public final class R {
          */
         public static final int msgs_progress=0x7f05008f;
         public static final int nag_body_fmt=0x7f0502ae;
-        public static final int nag_intervals=0x7f0502eb;
+        public static final int nag_intervals=0x7f0502ec;
         /**  Nagging: title of notification reminder message 
          */
         public static final int nag_title=0x7f0502ad;
@@ -1769,7 +1770,7 @@ public final class R {
          */
         public static final int nag_warn_last_fmt=0x7f0502af;
         public static final int name_copy_fmt=0x7f0501fa;
-        public static final int name_dict_fmt=0x7f0502e5;
+        public static final int name_dict_fmt=0x7f0502e6;
         public static final int nbs_port=0x7f05007e;
         /**  text of checkbox.  If this checkbox is checked, games created
          for network play will by default have the hint feature
@@ -1893,7 +1894,7 @@ public final class R {
         public static final int newgame_sms_header=0x7f0501fb;
         public static final int newgroup_label=0x7f050249;
         public static final int nfc_just_tap=0x7f0502cb;
-        public static final int nfc_to_self=0x7f0502f5;
+        public static final int nfc_to_self=0x7f0502f6;
         /**  Title of dialog for renaming game (triggered by selecting
          list_item_rename) 
  If you try to copy a networked game you get this error
@@ -1949,7 +1950,7 @@ public final class R {
     substituted. 
          */
         public static final int no_name_found_fmt=0x7f0500bc;
-        public static final int no_relay_conn=0x7f050308;
+        public static final int no_relay_conn=0x7f050309;
         /**  This is not currently shown 
  <string name="not_again_dicts">Crosswords wordlists, which are 
    just compressed lists of words plus tile information, determine 
@@ -1974,9 +1975,9 @@ public final class R {
          main Board screen 
          */
         public static final int not_again_chat=0x7f0501b1;
-        public static final int not_again_comms_bt=0x7f050311;
-        public static final int not_again_comms_relay=0x7f05030f;
-        public static final int not_again_comms_sms=0x7f050310;
+        public static final int not_again_comms_bt=0x7f050312;
+        public static final int not_again_comms_relay=0x7f050310;
+        public static final int not_again_comms_sms=0x7f050311;
         /**  This is shown in the Board screen when you successfully
          connecting a game to the relay and are the last device in the
          game to do so, i.e. the game is now complete and you should
@@ -2176,17 +2177,17 @@ public final class R {
          non-networked games 
          */
         public static final int players_label_standalone=0x7f0500b0;
-        public static final int pref_group_l10n_summary=0x7f050301;
-        public static final int pref_group_l10n_title=0x7f050300;
-        public static final int pref_group_relay_summary=0x7f0502ff;
-        public static final int pref_group_relay_title=0x7f0502fe;
-        public static final int pref_group_sms_summary=0x7f0502fd;
-        public static final int pref_group_sms_title=0x7f0502fc;
+        public static final int pref_group_l10n_summary=0x7f050302;
+        public static final int pref_group_l10n_title=0x7f050301;
+        public static final int pref_group_relay_summary=0x7f050300;
+        public static final int pref_group_relay_title=0x7f0502ff;
+        public static final int pref_group_sms_summary=0x7f0502fe;
+        public static final int pref_group_sms_title=0x7f0502fd;
         /**  Label for the first "human player" name preference 
          */
         public static final int pref_human_name=0x7f05011c;
-        public static final int pref_item_update_summary=0x7f050303;
-        public static final int pref_item_update_title=0x7f050302;
+        public static final int pref_item_update_summary=0x7f050304;
+        public static final int pref_item_update_title=0x7f050303;
         /**  Label for the first player color preference 
          */
         public static final int pref_player1_name=0x7f050118;
@@ -2271,7 +2272,7 @@ public final class R {
         /**   
          */
         public static final int prompt_min_len=0x7f0501dd;
-        public static final int proxy_port=0x7f0502e4;
+        public static final int proxy_port=0x7f0502e5;
         /**  Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. 
@@ -2287,10 +2288,10 @@ public final class R {
          middle of a game, like "do you want to commit this move?"
          */
         public static final int query_title=0x7f0501a4;
-        public static final int radio_name_cdma=0x7f0502f4;
-        public static final int radio_name_gsm=0x7f0502f3;
-        public static final int radio_name_real=0x7f0502f1;
-        public static final int radio_name_tablet=0x7f0502f2;
+        public static final int radio_name_cdma=0x7f0502f5;
+        public static final int radio_name_gsm=0x7f0502f4;
+        public static final int radio_name_real=0x7f0502f2;
+        public static final int radio_name_tablet=0x7f0502f3;
         /**        
        ############################################################
        # :Dialogs:
@@ -2312,7 +2313,7 @@ public final class R {
         public static final int relay_alert_title=0x7f05025a;
         public static final int relay_host=0x7f0502d7;
         public static final int relay_invite_title=0x7f0501f6;
-        public static final int relay_port=0x7f0502e3;
+        public static final int relay_port=0x7f0502e4;
         /**  Shown in toast when relaunching after switching dicts 
          */
         public static final int reload_new_dict_fmt=0x7f05023d;
@@ -2365,7 +2366,7 @@ public final class R {
         /**  title for popup of public rooms found on server 
          */
         public static final int room_public_prompt=0x7f0500ba;
-        public static final int seeking_relay=0x7f050307;
+        public static final int seeking_relay=0x7f050308;
         public static final int sel_games_fmt=0x7f05025d;
         public static final int sel_groups_fmt=0x7f05025e;
         public static final int sel_items_fmt=0x7f050279;
@@ -2729,13 +2730,13 @@ public final class R {
         /**   
          */
         public static final int warn_unlimited=0x7f05020c;
-        public static final int wifi_warning=0x7f05030b;
+        public static final int wifi_warning=0x7f05030c;
         /**   
          */
         public static final int word_search_hint=0x7f0501d2;
         public static final int xlations_enabled_summary=0x7f05027e;
         public static final int xlations_enabled_title=0x7f05027d;
-        public static final int xlations_locale=0x7f0502e9;
+        public static final int xlations_locale=0x7f0502ea;
         /**  Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language

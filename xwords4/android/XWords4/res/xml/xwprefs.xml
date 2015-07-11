@@ -454,5 +454,9 @@
 			            android:summary="@string/git_rev"
 			            android:enabled="false"
 			            />
+    <org.eehouse.android.xw4.XWDevIDPreference 
+        android:title="@string/devid_title"
+		android:enabled="false"
+		/>
   </PreferenceScreen>
 </PreferenceScreen>
