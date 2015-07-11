@@ -1780,17 +1780,24 @@ handle_udp_packet( UdpThreadClosure* utc )
             break;
         }
 
-        case XWPDEV_INVITE:
+        case XWPDEV_INVITE: {
             DevIDRelay sender;
-            DevIDRelay invitee;
-            if ( getNetLong( &ptr, end, &sender )
-                 && getNetLong( &ptr, end, &invitee) ) {
+            string relayID;
+            if ( getNetLong( &ptr, end, &sender ) 
+                 && getNetString( &ptr, end, relayID ) ) {
+                DevIDRelay invitee;
+                if ( 0 < relayID.size() ) {
+                    invitee = DBMgr::Get()->getDevID( relayID );
+                } else if ( !getNetLong( &ptr, end, &invitee ) ) {
+                    break;      // failure
+                }
                 logf( XW_LOGVERBOSE0, "got invite from %d for %d", 
                       sender, invitee );
                 post_invite( sender, invitee, ptr, end - ptr );
             }
             break;
-
+        }
+            
         case XWPDEV_KEEPALIVE:
         case XWPDEV_RQSTMSGS: {
             DevID devID( ID_TYPE_RELAY );
@@ -2048,7 +2055,7 @@ main( int argc, char** argv )
            exit( 0 );
        case 'b':
            doBlock = true;
-	 break;
+           break;
        case 'c':
            ctrlport = atoi( optarg );
            break;

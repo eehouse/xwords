@@ -148,6 +148,8 @@ class DBMgr {
     void RemoveStoredMessage( const int msgID );
     void RemoveStoredMessages( vector<int>& ids );
 
+    DevIDRelay getDevID( string& relayID );
+
  private:
     DBMgr();
     bool execSql( const string& query );
