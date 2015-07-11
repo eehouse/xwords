@@ -2425,7 +2425,7 @@ inviter, ou le bouton + pour saisir des numéros directement.</string>
     <!--  -->
     <!--<string name="confirm_clear">Are you sure you want to delete the
     checked phone number[s]?</string>-->
-    <string name="confirm_clear">Êtes-vous sûr de vouloir effacer les numéros
+    <string name="confirm_clear_sms">Êtes-vous sûr de vouloir effacer les numéros
 de téléphone cochés ?</string>
     <!--  -->
     <!--<string name="connect_label_sms">Connection (via SMS/text)</string>-->

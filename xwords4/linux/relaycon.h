@@ -31,7 +31,7 @@ typedef struct _Procs {
     void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
                            XP_U16 maxInterval );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
-    void (*inviteReceived)( void* closure, InviteInfo* invit );
+    void (*inviteReceived)( void* closure, NetLaunchInfo* invit );
     SocketAddedFunc socketAdded;
 } RelayConnProcs;
 
@@ -42,7 +42,7 @@ void relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID,
 /* Need one of dest or relayID, with dest preferred. pass 0 for dest to use
    relayID (formatted per comms::formatRelayID()) */
 void relaycon_invite( LaunchParams* params, XP_U32 dest, 
-                      const XP_UCHAR* relayID, InviteInfo* invite );
+                      const XP_UCHAR* relayID, NetLaunchInfo* invite );
 XP_S16 relaycon_send( LaunchParams* params, const XP_U8* buf, XP_U16 buflen, 
                       XP_U32 gameToken, const CommsAddrRec* addrRec );
 XP_S16 relaycon_sendnoconn( LaunchParams* params, const XP_U8* buf, 

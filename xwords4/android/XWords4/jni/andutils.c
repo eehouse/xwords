@@ -78,12 +78,14 @@ error error error
 int
 getInt( JNIEnv* env, jobject obj, const char* name )
 {
+    // XP_LOGF( "%s(name=%s)", __func__, name );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
     int result = (*env)->GetIntField( env, obj, fid );
     deleteLocalRef( env, cls );
+    // XP_LOGF( "%s(name=%s) => %d", __func__, name, result );
     return result;
 }
 
@@ -113,12 +115,14 @@ getInts( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis 
 void
 setInt( JNIEnv* env, jobject obj, const char* name, int value )
 {
+    // XP_LOGF( "%s(name=%s)", __func__, name );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
     (*env)->SetIntField( env, obj, fid, value );
     deleteLocalRef( env, cls );
+    // XP_LOGF( "%s(name=%s) DONE", __func__, name );
 }
 
 void
@@ -178,6 +182,7 @@ setBools( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis
 bool
 setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
 {
+    // XP_LOGF( "%s(%s)", __func__, name );
     bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
@@ -194,9 +199,31 @@ setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
 }
 
 void
+getStrings( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis )
+{
+    for ( int ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        XP_UCHAR* buf = (XP_UCHAR*)(((uint8_t*)cobj) + si->offset);
+        getString( env, jobj, si->name, buf, si->siz );
+    }
+}
+
+void
+setStrings( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis )
+{
+    for ( int ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        // XP_LOGF( "calling setString(%s)", si->name );
+        XP_UCHAR* val = (XP_UCHAR*)(((uint8_t*)cobj) + si->offset);
+        setString( env, jobj, si->name, val );
+    }
+}
+
+void
 getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
            int bufLen )
 {
+    // XP_LOGF( "%s(%s)", __func__, name );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
@@ -214,6 +241,7 @@ getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
     buf[len] = '\0';
 
     deleteLocalRef( env, cls );
+    // XP_LOGF( "%s(%s) DONE", __func__, name );
 }
 
 XP_UCHAR* 

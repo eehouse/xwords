@@ -1650,7 +1650,7 @@ send_invites( CommonGlobals* cGlobals, const CommsAddrRec* inviteAddr,
 
     gint forceChannel = 0;  /* PENDING */
 
-    InviteInfo invit = {0};
+    NetLaunchInfo invit = {0};
     invit_init( &invit, cGlobals->gi, &addr, nPlayers, forceChannel );
     invit_setDevID( &invit, linux_getDevIDRelay( cGlobals->params ) );
 
@@ -1660,7 +1660,7 @@ send_invites( CommonGlobals* cGlobals, const CommsAddrRec* inviteAddr,
                                                 cGlobals->params->vtMgr,
                                                 NULL, CHANNEL_NONE, NULL );
         invit_saveToStream( &invit, stream );
-        InviteInfo tmp;
+        NetLaunchInfo tmp;
         invit_makeFromStream( &tmp, stream );
         stream_destroy( stream );
         XP_ASSERT( 0 == memcmp( &invit, &tmp, sizeof(invit) ) );

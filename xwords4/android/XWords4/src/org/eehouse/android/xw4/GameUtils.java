@@ -112,7 +112,8 @@ public class GameUtils {
             if ( 0 == addr.conTypes.size() ) {
                 String relayName = XWPrefs.getDefaultRelayHost( context );
                 int relayPort = XWPrefs.getDefaultRelayPort( context );
-                XwJNI.comms_getInitialAddr( addr, relayName, relayPort );
+                int devID = XWPrefs.getRelayDevIDInt( context );
+                XwJNI.comms_getInitialAddr( addr, relayName, relayPort, devID );
             }
         }
         XwJNI.game_dispose( gamePtr );

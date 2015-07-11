@@ -58,6 +58,10 @@ void setBools( JNIEnv* env, jobject jobj, void* cobj,
 bool setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value );
 void getString( JNIEnv* env, jobject jlp, const char* name, XP_UCHAR* buf,
                 int bufLen );
+void getStrings( JNIEnv* env, void* cobj, jobject jobj, 
+                 const SetInfo* sis, XP_U16 nSis );
+void setStrings( JNIEnv* env, jobject jobj, void* cobj, 
+                 const SetInfo* sis, XP_U16 nSis );
 XP_UCHAR* getStringCopy( MPFORMAL JNIEnv* env, jstring jname );
 void setObject( JNIEnv* env, jobject obj, const char* name, const char* sig,
                 jobject val );

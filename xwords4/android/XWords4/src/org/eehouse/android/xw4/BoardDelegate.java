@@ -71,6 +71,7 @@ public class BoardDelegate extends DelegateBase
     private static final int CHAT_REQUEST = 1;
     private static final int BT_INVITE_RESULT = 2;
     private static final int SMS_INVITE_RESULT = 3;
+    private static final int RELAY_INVITE_RESULT = 4;
 
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
@@ -644,6 +645,7 @@ public class BoardDelegate extends DelegateBase
     protected void onActivityResult( int requestCode, int resultCode, Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
+            InviteMeans missingMeans = null;
             switch ( requestCode ) {
             case CHAT_REQUEST:
                 if ( BuildConstants.CHAT_SUPPORTED ) {
@@ -655,14 +657,22 @@ public class BoardDelegate extends DelegateBase
                 }
                 break;
             case BT_INVITE_RESULT:
+                missingMeans = InviteMeans.BLUETOOTH;
+                break;
             case SMS_INVITE_RESULT:
-                // onActivityResult is called immediately *before*
-                // onResume -- meaning m_gi etc are still null.
+                missingMeans = InviteMeans.SMS;
+                break;
+            case RELAY_INVITE_RESULT:
+                missingMeans = InviteMeans.RELAY;
+                break;
+            }
+
+            if ( null != missingMeans ) {
+                // onActivityResult is called immediately *before* onResume --
+                // meaning m_gi etc are still null.
                 m_missingDevs = data.getStringArrayExtra( InviteDelegate.DEVS );
                 m_missingCounts = data.getIntArrayExtra( InviteDelegate.COUNTS );
-                m_missingMeans = (BT_INVITE_RESULT == requestCode)
-                    ? InviteMeans.BLUETOOTH : InviteMeans.SMS;
-                break;
+                m_missingMeans = missingMeans;
             }
         }
     }
@@ -1048,6 +1058,10 @@ public class BoardDelegate extends DelegateBase
             case SMS:
                 SMSInviteDelegate.launchForResult( m_activity, m_nMissing, 
                                                    SMS_INVITE_RESULT );
+                break;
+            case RELAY:
+                RelayInviteDelegate.launchForResult( m_activity, m_nMissing, 
+                                                     RELAY_INVITE_RESULT );
                 break;
             case EMAIL:
                 NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1,
@@ -2364,6 +2378,11 @@ public class BoardDelegate extends DelegateBase
                     case SMS:
                         SMSService.inviteRemote( m_activity, dev, nli );
                         break;
+                    case RELAY:
+                        int destDevID = Integer.parseInt( dev );
+                        RelayService.inviteRemote( m_activity, destDevID, 
+                                                   null, nli );
+                        break;
                     }
                 }
                 m_missingDevs = null;
@@ -2548,7 +2567,7 @@ public class BoardDelegate extends DelegateBase
 
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
             if ( null != value ) {
-                RelayService.inviteRemote( m_activity, value, nli );
+                RelayService.inviteRemote( m_activity, 0, value, nli );
             }
         }
     }

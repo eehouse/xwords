@@ -561,7 +561,7 @@ gtkSocketAdded( void* closure, int newSock, GIOFunc proc )
 
 
 static void
-relayInviteReceived( void* closure, InviteInfo* invite )
+relayInviteReceived( void* closure, NetLaunchInfo* invite )
 {
     GtkAppGlobals* apg = (GtkAppGlobals*)closure;
     LaunchParams* params = apg->params;

@@ -1684,7 +1684,7 @@
   <!--  -->
   <string name="get_sms_number">Entre o número telefônico:</string>
   <!--  -->
-  <string name="confirm_clear">Tem certeza que você quer apagar o(s)
+  <string name="confirm_clear_sms">Tem certeza que você quer apagar o(s)
     número(s) telefônico(s) selecionado(s)?</string>
   <!--  -->
   <string name="invite_success">Convite recebido.</string>

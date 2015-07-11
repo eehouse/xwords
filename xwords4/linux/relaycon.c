@@ -114,7 +114,7 @@ relaycon_reg( LaunchParams* params, const XP_UCHAR* rDevID,
 
 void
 relaycon_invite( LaunchParams* params, XP_U32 destDevID, 
-                 const XP_UCHAR* relayID, InviteInfo* invit )
+                 const XP_UCHAR* relayID, NetLaunchInfo* invit )
 {
     XP_U8 tmpbuf[256];
     int indx = 0;
@@ -342,7 +342,7 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
                                                         storage->params->vtMgr, storage,
                                                         CHANNEL_NONE, NULL );
                 stream_putBytes( stream, ptr, len );
-                InviteInfo invit;
+                NetLaunchInfo invit;
                 XP_Bool success = invit_makeFromStream( &invit, stream );
                 XP_LOGF( "sender: %d; invit.devID: %d", sender, invit.devID );
                 XP_ASSERT( sender == invit.devID );

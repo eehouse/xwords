@@ -138,7 +138,7 @@ public class DlgDelegate {
 
     public interface DlgClickNotify {
         public static enum InviteMeans {
-            SMS, EMAIL, NFC, BLUETOOTH,
+            SMS, EMAIL, NFC, BLUETOOTH, RELAY,
         };
         void dlgButtonClicked( Action action, int button, Object[] params );
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
@@ -625,6 +625,10 @@ public class DlgDelegate {
              || NFCUtils.nfcAvail( m_activity )[0] ) {
             items.add( getString( R.string.invite_choice_nfc ) );
             means.add( DlgClickNotify.InviteMeans.NFC );
+        }
+        if ( BuildConfig.DEBUG ) {
+            items.add( getString( R.string.invite_choice_relay ) );
+            means.add( DlgClickNotify.InviteMeans.RELAY );
         }
 
         final int[] sel = { -1 };

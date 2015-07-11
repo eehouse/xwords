@@ -247,6 +247,16 @@ public class XWPrefs {
         return getPrefsStringArray( context, R.string.key_sms_phones );
     }
 
+    public static void setRelayIDs( Context context, String[] names )
+    {
+        setPrefsStringArray( context, R.string.key_relay_ids, names );
+    }
+
+    public static String[] getRelayIDs( Context context )
+    {
+        return getPrefsStringArray( context, R.string.key_relay_ids );
+    }
+
     public static void setBTAddresses( Context context, String[] addrs )
     {
         setPrefsStringArray( context, R.string.key_bt_addrs, addrs );
@@ -299,6 +309,17 @@ public class XWPrefs {
         if ( null != result && 0 == result.length() ) {
             result = null;
         }
+        return result;
+    }
+
+    public static int getRelayDevIDInt( Context context )
+    {
+        int result = 0;
+        String str = getRelayDevID( context );
+        if ( null != str ) {
+            result = Integer.valueOf( str, 16 );
+        }
+        DbgUtils.logf( "getRelayDevIDInt(): %s => %d", str, result );
         return result;
     }
 

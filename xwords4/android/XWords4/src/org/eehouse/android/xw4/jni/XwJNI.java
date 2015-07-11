@@ -23,6 +23,7 @@ package org.eehouse.android.xw4.jni;
 import android.graphics.Rect;
 
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.Utils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
@@ -81,9 +82,23 @@ public class XwJNI {
     // Stateless methods
     public static native byte[] gi_to_stream( CurGameInfo gi );
     public static native void gi_from_stream( CurGameInfo gi, byte[] stream );
+    public static byte[] nliToStream( NetLaunchInfo nli )
+    {
+        nli.freezeAddrs();
+        return nli_to_stream( nli );
+    }
+    private static native byte[] nli_to_stream( NetLaunchInfo nli );
+    public static NetLaunchInfo nliFromStream( byte[] stream )
+    {
+        NetLaunchInfo nli = new NetLaunchInfo();
+        nli_from_stream( nli, stream );
+        nli.unfreezeAddrs();
+        return nli;
+    }
+    private static native void nli_from_stream( NetLaunchInfo nli, byte[] stream );
     public static native void comms_getInitialAddr( CommsAddrRec addr,
                                                     String relayHost,
-                                                    int relayPort );
+                                                    int relayPort, int devID );
     public static native String comms_getUUID();
 
     // Game methods

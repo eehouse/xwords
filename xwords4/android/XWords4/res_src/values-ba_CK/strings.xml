@@ -1023,6 +1023,7 @@
   <string name="invite_choice_email">Liame</string>
   <string name="invite_choice_bt">Htooteulb</string>
   <string name="invite_choice_nfc">CFN (\"Diordna gnimaeb\")</string>
+  <string name="invite_choice_relay">Yaler/tenRetni</string>
   <string name="invite_choice_title">Gnitivni sreyalp: ?woh</string>
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
@@ -1638,6 +1639,7 @@
   <string name="bt_invite_title">Htooteulb Noitativni</string>
   <!-- Title of phone number picker during invitation to a game via SMS -->
   <string name="sms_invite_title">SMS Noitativni</string>
+  <string name="relay_invite_title">Yaler Noitativni</string>
   <!--  -->
   <string name="game_btname_title">Htooteulb emag eman</string>
   <!--  -->
@@ -1659,9 +1661,16 @@
   <!--  -->
   <string name="button_sms_add">Tropmi tcatnoc</string>
   <!--  -->
+  <string name="button_relay_add">Nacs semag</string>
+  <!--  -->
   <plurals name="invite_sms_desc_fmt">
     <item quantity="other">Esaelp kcehc eht %1$d enohp
     ]s[rebmun uoy tnaw ot etivni ot ruoy wen ,emag neht pat \"%2$s\".</item>
+  </plurals>
+  <!--  -->
+  <plurals name="invite_relay_desc_fmt">
+    <item quantity="other">Esaelp kcehc eht %1$d secived uoy tnaw ot etivni
+    ot ruoy wen ,emag neht pat \"%2$s\".</item>
   </plurals>
   <!--  -->
   <string name="manual_owner_name">tOn( ni )stcatnoc</string>
@@ -1673,10 +1682,17 @@
     \"Tropmi tcatnoc\" nottub ot dda elpoep uoy tnaw ot ,etivni eht +
     nottub ot retne srebmun yltcerid.</string>
   <!--  -->
-  <string name="get_sms_number">Retne enohp rebmun:</string>
+  <string name="empty_relay_inviter">Siht tsil fo seived si
+    ytpme. Esu eht \"Nacs semag\" nottub ot nacs ruoy dlo semag
+    rof stnenoppo. Esu eht + nottub ot retne ecived SDi yltcerid.</string>
   <!--  -->
-  <string name="confirm_clear">Era uoy erus uoy tnaw ot eteled eht
+  <string name="get_sms_number">Retne enohp rebmun:</string>
+  <string name="get_relay_number">Retne ecived DI:</string>
+  <!--  -->
+  <string name="confirm_clear_sms">Era uoy erus uoy tnaw ot eteled eht
     dekcehc enohp ?]s[rebmun</string>
+  <string name="confirm_clear_relay">Era uoy erus uoy tnaw ot eteled eht
+    dekcehc ?]s[ecived</string>
   <!--  -->
   <string name="connect_label_sms">Noitcennoc aiv( )TXet/sms</string>
   <!--  -->

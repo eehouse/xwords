@@ -63,19 +63,19 @@ typedef struct _InviteInfo {
 
     XP_U32 gameID;
     XP_UCHAR inviteID[32];
-} InviteInfo;
+} NetLaunchInfo;
 
 void
-invit_init( InviteInfo* invit, const CurGameInfo* gi, const CommsAddrRec* addr,
+invit_init( NetLaunchInfo* invit, const CurGameInfo* gi, const CommsAddrRec* addr,
             XP_U16 nPlayers, XP_U16 forceChannel );
 
 
-XP_Bool invit_makeFromStream( InviteInfo* invit, XWStreamCtxt* stream );
-void invit_saveToStream( const InviteInfo* invit, XWStreamCtxt* stream );
+XP_Bool invit_makeFromStream( NetLaunchInfo* invit, XWStreamCtxt* stream );
+void invit_saveToStream( const NetLaunchInfo* invit, XWStreamCtxt* stream );
 
-void invit_makeAddrRec( const InviteInfo* invit, CommsAddrRec* addr );
+void invit_makeAddrRec( const NetLaunchInfo* invit, CommsAddrRec* addr );
 
-void invit_setDevID( InviteInfo* invit, XP_U32 devID );
+void invit_setDevID( NetLaunchInfo* invit, XP_U32 devID );
 
 
 #endif

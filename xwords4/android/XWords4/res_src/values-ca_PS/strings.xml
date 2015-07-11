@@ -1023,6 +1023,7 @@
   <string name="invite_choice_email">EMAIL</string>
   <string name="invite_choice_bt">BLUETOOTH</string>
   <string name="invite_choice_nfc">NFC (\"ANDROID BEAMING\")</string>
+  <string name="invite_choice_relay">INTERNET/RELAY</string>
   <string name="invite_choice_title">INVITING PLAYERS: HOW?</string>
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
@@ -1638,6 +1639,7 @@
   <string name="bt_invite_title">BLUETOOTH INVITATION</string>
   <!-- Title of phone number picker during invitation to a game via SMS -->
   <string name="sms_invite_title">SMS INVITATION</string>
+  <string name="relay_invite_title">RELAY INVITATION</string>
   <!--  -->
   <string name="game_btname_title">BLUETOOTH GAME NAME</string>
   <!--  -->
@@ -1659,9 +1661,16 @@
   <!--  -->
   <string name="button_sms_add">IMPORT CONTACT</string>
   <!--  -->
+  <string name="button_relay_add">SCAN GAMES</string>
+  <!--  -->
   <plurals name="invite_sms_desc_fmt">
     <item quantity="other">PLEASE CHECK THE %1$d PHONE
     NUMBER[S] YOU WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+  </plurals>
+  <!--  -->
+  <plurals name="invite_relay_desc_fmt">
+    <item quantity="other">PLEASE CHECK THE %1$d DEVICES YOU WANT TO INVITE
+    TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
   </plurals>
   <!--  -->
   <string name="manual_owner_name">(NOT IN CONTACTS)</string>
@@ -1673,10 +1682,17 @@
     \"IMPORT CONTACT\" BUTTON TO ADD PEOPLE YOU WANT TO INVITE, THE +
     BUTTON TO ENTER NUMBERS DIRECTLY.</string>
   <!--  -->
-  <string name="get_sms_number">ENTER PHONE NUMBER:</string>
+  <string name="empty_relay_inviter">THIS LIST OF DEVIES IS
+    EMPTY. USE THE \"SCAN GAMES\" BUTTON TO SCAN YOUR OLD GAMES
+    FOR OPPONENTS. USE THE + BUTTON TO ENTER DEVICE IDS DIRECTLY.</string>
   <!--  -->
-  <string name="confirm_clear">ARE YOU SURE YOU WANT TO DELETE THE
+  <string name="get_sms_number">ENTER PHONE NUMBER:</string>
+  <string name="get_relay_number">ENTER DEVICE ID:</string>
+  <!--  -->
+  <string name="confirm_clear_sms">ARE YOU SURE YOU WANT TO DELETE THE
     CHECKED PHONE NUMBER[S]?</string>
+  <string name="confirm_clear_relay">ARE YOU SURE YOU WANT TO DELETE THE
+    CHECKED DEVICE[S]?</string>
   <!--  -->
   <string name="connect_label_sms">CONNECTION (VIA SMS/TEXT)</string>
   <!--  -->

@@ -18,12 +18,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+#ifdef NATIVE_NLI
+
 #include "invit.h"
 #include "comms.h"
 #include "strutils.h"
 
 void
-invit_init( InviteInfo* invit, const CurGameInfo* gi, const CommsAddrRec* addr,
+invit_init( NetLaunchInfo* invit, const CurGameInfo* gi, const CommsAddrRec* addr,
           XP_U16 nPlayers, XP_U16 forceChannel )
 {
     XP_MEMSET( invit, 0, sizeof(*invit) );
@@ -42,7 +44,7 @@ invit_init( InviteInfo* invit, const CurGameInfo* gi, const CommsAddrRec* addr,
 }
 
 static XP_U32 
-gameID( const InviteInfo* invit )
+gameID( const NetLaunchInfo* invit )
 {
     XP_U32 gameID = invit->gameID;
     if ( 0 == gameID ) {
@@ -52,18 +54,19 @@ gameID( const InviteInfo* invit )
 }
 
 void
-invit_setDevID( InviteInfo* invit, XP_U32 devID )
+invit_setDevID( NetLaunchInfo* invit, XP_U32 devID )
 {
     invit->devID = devID;
     types_addType( &invit->_conTypes, COMMS_CONN_RELAY );
 }
 
 void 
-invit_saveToStream( const InviteInfo* invit, XWStreamCtxt* stream )
+invit_saveToStream( const NetLaunchInfo* invit, XWStreamCtxt* stream )
 {
     LOG_FUNC();
     stream_putU8( stream, invit->version );
     stream_putU16( stream, invit->_conTypes );
+    XP_LOGF( "%s: wrote _conTypes: %x", __func__, invit->_conTypes );
     stream_putU16( stream, invit->lang );
     stringToStream( stream, invit->dict );
     stringToStream( stream, invit->gameName );
@@ -73,33 +76,37 @@ invit_saveToStream( const InviteInfo* invit, XWStreamCtxt* stream )
     stream_putU8( stream, invit->forceChannel );
 
     if ( types_hasType( invit->_conTypes, COMMS_CONN_RELAY ) ) {
+        XP_LOGF( "%s: writing relay stuff", __func__ );
         stringToStream( stream, invit->room );
-        XP_LOGF( "%s: wrote room %s", __func__, invit->room );
+        XP_LOGF( "%s: writing room: %s", __func__, invit->room );
         stringToStream( stream, invit->inviteID );
         stream_putU32( stream, invit->devID );
-        XP_LOGF( "%s: wrote devID %d", __func__, invit->devID );
     }
     if ( types_hasType( invit->_conTypes, COMMS_CONN_BT ) ) {
+        XP_LOGF( "%s: writing bt stuff", __func__ );
         stringToStream( stream, invit->btName );
         stringToStream( stream, invit->btAddress );
     }
     if ( types_hasType( invit->_conTypes, COMMS_CONN_SMS ) ) {
+        XP_LOGF( "%s: writing sms stuff", __func__ );
         stringToStream( stream, invit->phone );
         stream_putU8( stream, invit->isGSM );
         stream_putU8( stream, invit->osType );
         stream_putU32( stream, invit->osVers );
     }
+    LOG_RETURN_VOID();
 }
 
 XP_Bool 
-invit_makeFromStream( InviteInfo* invit, XWStreamCtxt* stream )
+invit_makeFromStream( NetLaunchInfo* invit, XWStreamCtxt* stream )
 {
     LOG_FUNC();
     XP_MEMSET( invit, 0, sizeof(*invit) );
     invit->version = stream_getU8( stream );
     XP_Bool success = 0 == invit->version;
     if ( success ) {
-        invit->_conTypes  = stream_getU16( stream );
+        invit->_conTypes = stream_getU16( stream );
+        XP_LOGF( "%s: read _conTypes: %x", __func__, invit->_conTypes );
         invit->lang = stream_getU16( stream );
         stringFromStreamHere( stream, invit->dict, sizeof(invit->dict) );
         stringFromStreamHere( stream, invit->gameName, sizeof(invit->gameName) );
@@ -109,28 +116,31 @@ invit_makeFromStream( InviteInfo* invit, XWStreamCtxt* stream )
         invit->forceChannel = stream_getU8( stream );
 
         if ( types_hasType( invit->_conTypes, COMMS_CONN_RELAY ) ) {
+            XP_LOGF( "%s: reading relay stuff", __func__ );
             stringFromStreamHere( stream, invit->room, sizeof(invit->room) );
-            XP_LOGF( "%s: read room %s", __func__, invit->room );
+            XP_LOGF( "%s: read room: %s", __func__, invit->room );
             stringFromStreamHere( stream, invit->inviteID, sizeof(invit->inviteID) );
             invit->devID = stream_getU32( stream );
-            XP_LOGF( "%s: read devID %d", __func__, invit->devID );
         }
         if ( types_hasType( invit->_conTypes, COMMS_CONN_BT ) ) {
+            XP_LOGF( "%s: reading bt stuff", __func__ );
             stringFromStreamHere( stream, invit->btName, sizeof(invit->btName) );
             stringFromStreamHere( stream, invit->btAddress, sizeof(invit->btAddress) );
         }
         if ( types_hasType( invit->_conTypes, COMMS_CONN_SMS ) ) {
+            XP_LOGF( "%s: reading sms stuff", __func__ );
             stringFromStreamHere( stream, invit->phone, sizeof(invit->phone) );
             invit->isGSM = stream_getU8( stream );
             invit->osType= stream_getU8( stream );
             invit->osVers = stream_getU32( stream );
         }
     }
+    LOG_RETURNF( "%d", success );
     return success;
 }
 
 void
-invit_makeAddrRec( const InviteInfo* invit, CommsAddrRec* addr )
+invit_makeAddrRec( const NetLaunchInfo* invit, CommsAddrRec* addr )
 {
     XP_U32 state = 0;
     CommsConnType type;
@@ -156,3 +166,4 @@ invit_makeAddrRec( const InviteInfo* invit, CommsAddrRec* addr )
         }
     }
 }
+#endif

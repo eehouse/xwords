@@ -1188,6 +1188,7 @@
 	<string name="invite_choice_email">Email</string>
 	<string name="invite_choice_bt">Bluetooth</string>
 	<string name="invite_choice_nfc">NFC (\"Android beaming\")</string>
+	<string name="invite_choice_relay">Internet/Relay</string>
 	<string name="invite_choice_title">Inviting players: How?</string>
     <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
     <!--    via email?</string> -->
@@ -1894,6 +1895,7 @@
 	<string name="bt_invite_title">Bluetooth Invitation</string>
     <!-- Title of phone number picker during invitation to a game via SMS -->
 	<string name="sms_invite_title">SMS Invitation</string>
+	<string name="relay_invite_title">Relay Invitation</string>
 
     <!--  -->
     <string name="game_btname_title">Bluetooth game name</string>
@@ -1916,8 +1918,14 @@
     <!--  -->
     <string name="button_sms_add">Import contact</string>
     <!--  -->
+    <string name="button_relay_add">Scan games</string>
+    <!--  -->
     <plurals name="invite_sms_desc_fmt"><item quantity="other">Please check the %1$d phone
     number[s] you want to invite to your new game, then tap \"%2$s\".</item></plurals>
+    <!--  -->
+    <plurals name="invite_relay_desc_fmt"><item
+    quantity="other">Please check the %1$d devices you want to invite
+    to your new game, then tap \"%2$s\".</item></plurals>
     <!--  -->
     <string name="manual_owner_name">(Not in contacts)</string>
     <!--  -->
@@ -1928,10 +1936,17 @@
     \"Import contact\" button to add people you want to invite, the +
     button to enter numbers directly.</string>
     <!--  -->
-    <string name="get_sms_number">Enter phone number:</string>
+    <string name="empty_relay_inviter">This list of devies is
+    empty. Use the \"Scan games\" button to scan your old games
+    for opponents. Use the + button to enter device IDs directly.</string>
     <!--  -->
-    <string name="confirm_clear">Are you sure you want to delete the
+    <string name="get_sms_number">Enter phone number:</string>
+    <string name="get_relay_number">Enter device ID:</string>
+    <!--  -->
+    <string name="confirm_clear_sms">Are you sure you want to delete the
     checked phone number[s]?</string>
+    <string name="confirm_clear_relay">Are you sure you want to delete the
+    checked device[s]?</string>
     <!--  -->
     <string name="connect_label_sms">Connection (via SMS/text)</string>
     <!--  -->

@@ -291,8 +291,11 @@ game_saveNewGame( MPFORMAL const CurGameInfo* gi, XW_UtilCtxt* util,
 
     game_makeNewGame( MPPARM(mpool) &newGame, &newGI, util, 
                       NULL, /* DrawCtx*,  */
-                      cp, NULL, /* TransportProcs* procs */
-                      0 );
+                      cp, NULL /* TransportProcs* procs */
+#ifdef SET_GAMESEED
+                      ,0 
+#endif
+                      );
 
     game_saveToStream( &newGame, &newGI, out, 1 );
     game_saveSucceeded( &newGame, 1 );
