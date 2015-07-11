@@ -1172,6 +1172,7 @@ usage( char* arg0 )
 #ifdef DO_HTTP
              "\t-w <cport>           (localhost port for web interface)\\\n"
 #endif
+             "\t-b                   (block until postgres connection available)\\\n"
              "\t-D                   (don't become daemon)\\\n"
              "\t-F                   (don't fork and wait to respawn child)\\\n"
              "\t-f <conffile>        (config file)\\\n"
@@ -2022,6 +2023,7 @@ main( int argc, char** argv )
     const char* maint_str = NULL;
     bool doDaemon = true;
     bool doFork = true;
+    bool doBlock = false;
 
     (void)uptime();                /* force capture of start time */
 
@@ -2033,7 +2035,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:M:m:n:f:l:t:s:u:w:"
+       int opt = getopt(argc, argv, "bh?c:p:M:m:n:f:l:t:s:u:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -2044,6 +2046,9 @@ main( int argc, char** argv )
        case 'h':
            usage( argv[0] );
            exit( 0 );
+       case 'b':
+           doBlock = true;
+	 break;
        case 'c':
            ctrlport = atoi( optarg );
            break;
@@ -2194,6 +2199,10 @@ main( int argc, char** argv )
     }
 #endif
 
+    if ( doBlock ) {
+        DBMgr::Get()->WaitDBConn();
+    }
+    
     if ( -1 != udpport ) {
         struct sockaddr_in saddr;
         g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );
