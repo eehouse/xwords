@@ -79,6 +79,8 @@ public class NetLaunchInfo {
     public NetLaunchInfo()
     {
         m_addrs = new CommsConnTypeSet();
+        // Give it a random number. It may be overwritten, but so what.
+        inviteID = GameUtils.formatGameID( Utils.nextRandomInt() );
     }
 
     public NetLaunchInfo( Context context, String data )
