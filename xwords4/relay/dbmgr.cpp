@@ -44,6 +44,7 @@
 static DBMgr* s_instance = NULL;
 
 #define MAX_NUM_PLAYERS 4
+#define MAX_WAIT_SECONDS (5*60) // five minutes
 
 static int here_less_seed( const char* seeds, int perDeviceSum, 
                            unsigned short seed );
@@ -748,6 +749,34 @@ DBMgr::KillGame( const char* const connName, int hid )
 }
 
 void
+DBMgr::WaitDBConn( void )
+{
+    int nSeconds = 0;
+    int toSleep = 1;
+    for ( ; ; ) {
+        PGconn* conn = DBMgr::getThreadConn();
+        if ( !!conn ) {
+            ConnStatusType status = PQstatus( conn );
+            if ( CONNECTION_OK == status ) {
+                break;
+            }
+        }
+
+        toSleep *= 2;
+        if ( toSleep > MAX_WAIT_SECONDS ) {
+            toSleep = MAX_WAIT_SECONDS;
+        }
+    
+        (void)sleep( toSleep );
+        nSeconds += toSleep;
+        logf( XW_LOGERROR, "%s: waiting for postgres; %d seconds so far", __func__,
+              nSeconds );
+    }
+
+    logf( XW_LOGERROR, "%s() done", __func__ );
+}
+
+void
 DBMgr::ClearCIDs( void )
 {
     execSql( "UPDATE " GAMES_TABLE " set cid = null" );
@@ -1330,7 +1359,12 @@ DBMgr::getThreadConn( void )
         params.catf( "port = %d ", port );
 
         conn = PQconnectdb( params.c_str() );
-        pthread_setspecific( m_conn_key, conn );
+        if ( CONNECTION_OK == PQstatus( conn ) ) {
+            pthread_setspecific( m_conn_key, conn );
+        } else {
+            PQfinish( conn );
+            conn = NULL;
+        }
     }
     return conn;
 }
