@@ -1822,7 +1822,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1formatRelayID
 ( JNIEnv* env, jclass C, jint gamePtr, jint indx )
 {
     jstring result = NULL;
-    XWJNI_START_GLOBALS();
+    XWJNI_START();
 
     XP_UCHAR buf[64];
     XP_U16 len = sizeof(buf);
