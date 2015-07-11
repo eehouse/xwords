@@ -101,8 +101,15 @@ public class GCMIntentService extends GCMBaseIntentService {
             if ( null != value ) {
                 String title = intent.getStringExtra( "title" );
                 if ( null != title ) {
+                    String teaser = intent.getStringExtra( "teaser" );
+                    if ( null == teaser ) {
+                        teaser = value;
+                    }
+                    Intent alertIntent = GamesListDelegate
+                        .makeAlertIntent( this, value );
                     int code = value.hashCode() ^ title.hashCode();
-                    Utils.postNotification( context, null, title, value, code );
+                    Utils.postNotification( context, alertIntent, title, 
+                                            teaser, code );
                 }
             }
         }

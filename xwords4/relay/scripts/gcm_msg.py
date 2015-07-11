@@ -14,7 +14,8 @@ def usage():
 def sendMsg( devid, msg ):
     values = {
         'registration_ids': [ devid ],
-        'data' : { 'title' : 'Msg from Darth2',
+        'data' : { 'title' : 'Re: CrossWords',
+                   'teaser' : 'Please tap to read in the app',
                    'msg' : msg,
                    }
         }
