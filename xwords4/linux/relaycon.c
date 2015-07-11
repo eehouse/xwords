@@ -138,7 +138,7 @@ relaycon_invite( LaunchParams* params, XP_U32 destDevID,
     XWStreamCtxt* stream = mem_stream_make( MPPARM(params->mpool) 
                                             params->vtMgr, params, 
                                             CHANNEL_NONE, NULL );
-    invit_saveToStream( invit, stream );
+    nli_saveToStream( invit, stream );
     XP_U16 len = stream_getSize( stream );
     indx += writeShort( &tmpbuf[indx], sizeof(tmpbuf) - indx, len );
     XP_ASSERT( indx + len < sizeof(tmpbuf) );
@@ -343,7 +343,7 @@ relaycon_receive( GIOChannel* source, GIOCondition XP_UNUSED_DBG(condition), gpo
                                                         CHANNEL_NONE, NULL );
                 stream_putBytes( stream, ptr, len );
                 NetLaunchInfo invit;
-                XP_Bool success = invit_makeFromStream( &invit, stream );
+                XP_Bool success = nli_makeFromStream( &invit, stream );
                 XP_LOGF( "sender: %d; invit.devID: %d", sender, invit.devID );
                 XP_ASSERT( sender == invit.devID );
                 stream_destroy( stream );

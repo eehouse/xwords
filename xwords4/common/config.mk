@@ -40,7 +40,7 @@ COMMONSRC = \
 	$(COMMONDIR)/engine.c \
 	$(COMMONDIR)/memstream.c \
 	$(COMMONDIR)/comms.c \
-	$(COMMONDIR)/invit.c \
+	$(COMMONDIR)/nli.c \
 	$(COMMONDIR)/mempool.c \
 	$(COMMONDIR)/movestak.c \
 	$(COMMONDIR)/strutils.c \
@@ -75,7 +75,7 @@ COMMON4 = \
 	$(COMMONOBJDIR)/dragdrpp.o \
 	$(COMMONOBJDIR)/memstream.o \
 	$(COMMONOBJDIR)/comms.o \
-	$(COMMONOBJDIR)/invit.o \
+	$(COMMONOBJDIR)/nli.o \
 	$(COMMONOBJDIR)/mempool.o \
 
 COMMON5 = \

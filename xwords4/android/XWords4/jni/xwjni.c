@@ -32,7 +32,7 @@
 #include "dictnry.h"
 #include "dictiter.h"
 #include "dictmgr.h"
-#include "invit.h"
+#include "nli.h"
 
 #include "utilwrapper.h"
 #include "drawwrapper.h"
@@ -510,7 +510,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1to_1stream
     XWStreamCtxt* stream = mem_stream_make( MPPARM(mpool) vtMgr,
                                             NULL, 0, NULL );
 
-    invit_saveToStream( &nli, stream );
+    nli_saveToStream( &nli, stream );
 
     result = streamToBArray( env, stream );
     stream_destroy( stream );
@@ -534,7 +534,7 @@ Java_org_eehouse_android_xw4_jni_XwJNI_nli_1from_1stream
     XWStreamCtxt* stream = streamFromJStream( MPPARM(mpool) env, vtMgr, jstream );
 
     NetLaunchInfo nli = {0};
-    if ( invit_makeFromStream( &nli, stream ) ) {
+    if ( nli_makeFromStream( &nli, stream ) ) {
         setNLI( env, jnli, &nli );
     } else {
         XP_LOGF( "%s: game_makeFromStream failed", __func__ );

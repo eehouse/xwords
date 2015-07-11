@@ -22,7 +22,7 @@
 #define _RELAYCON_H_
 
 #include "main.h"
-#include "invit.h"
+#include "nli.h"
 
 typedef struct _Procs {
     void (*msgReceived)( void* closure, const CommsAddrRec* from, 

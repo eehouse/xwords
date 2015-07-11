@@ -1650,20 +1650,20 @@ send_invites( CommonGlobals* cGlobals, const CommsAddrRec* inviteAddr,
 
     gint forceChannel = 0;  /* PENDING */
 
-    NetLaunchInfo invit = {0};
-    invit_init( &invit, cGlobals->gi, &addr, nPlayers, forceChannel );
-    invit_setDevID( &invit, linux_getDevIDRelay( cGlobals->params ) );
+    NetLaunchInfo nli = {0};
+    nli_init( &nli, cGlobals->gi, &addr, nPlayers, forceChannel );
+    nli_setDevID( &nli, linux_getDevIDRelay( cGlobals->params ) );
 
 #ifdef DEBUG
     {
         XWStreamCtxt* stream = mem_stream_make( MPPARM(cGlobals->util->mpool)
                                                 cGlobals->params->vtMgr,
                                                 NULL, CHANNEL_NONE, NULL );
-        invit_saveToStream( &invit, stream );
+        nli_saveToStream( &nli, stream );
         NetLaunchInfo tmp;
-        invit_makeFromStream( &tmp, stream );
+        nli_makeFromStream( &tmp, stream );
         stream_destroy( stream );
-        XP_ASSERT( 0 == memcmp( &invit, &tmp, sizeof(invit) ) );
+        XP_ASSERT( 0 == memcmp( &nli, &tmp, sizeof(nli) ) );
     }
 #endif
 
@@ -1676,7 +1676,7 @@ send_invites( CommonGlobals* cGlobals, const CommsAddrRec* inviteAddr,
     if ( addr_hasType( inviteAddr, COMMS_CONN_RELAY ) ) {
         XP_U32 devID = inviteAddr->u.ip_relay.devID;
         XP_ASSERT( 0 != devID || (!!relayID && !!relayID[0]) );
-        relaycon_invite( cGlobals->params, devID, relayID, &invit );
+        relaycon_invite( cGlobals->params, devID, relayID, &nli );
     }
 
     /* while ( gtkaskm( "Invite how many and how?", infos, VSIZE(infos) ) ) {  */

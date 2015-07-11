@@ -587,7 +587,7 @@ relayInviteReceived( void* closure, NetLaunchInfo* invite )
         params->needsNewGame = XP_FALSE;
         initGlobals( globals, params, &gi );
 
-        invit_makeAddrRec( invite, &globals->cGlobals.addr );
+        nli_makeAddrRec( invite, &globals->cGlobals.addr );
         // globals->cGlobals.addr = *returnAddr;
 
         GtkWidget* gameWindow = globals->window;
