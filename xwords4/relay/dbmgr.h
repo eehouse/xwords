@@ -63,6 +63,8 @@ class DBMgr {
 
     ~DBMgr();
 
+    void WaitDBConn( void );
+    
     void ClearCIDs( void );
 
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
