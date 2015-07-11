@@ -2516,7 +2516,8 @@ public class BoardDelegate extends DelegateBase
             String relayID = null;
             if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                 CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
-                for ( CommsAddrRec addr : addrs ) {
+                for ( int ii = 0; ii < addrs.length; ++ii ) {
+                    CommsAddrRec addr = addrs[ii];
                     if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
                         Assert.assertNull( btAddr );
                         btAddr = addr.bt_btAddr;
@@ -2527,7 +2528,7 @@ public class BoardDelegate extends DelegateBase
                     }
                     if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                         Assert.assertNull( relayID );
-                        relayID = m_summary.relayID;
+                        relayID = XwJNI.comms_formatRelayID( m_jniGamePtr, ii );
                     }
                 }
             }
