@@ -1,4 +1,4 @@
-# -*- mode: Makefile; compile-command: "cd ../; ${NDK_ROOT}/ndk-build -j3"; -*-
+# -*- mode: Makefile; -*-
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
