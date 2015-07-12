@@ -2528,4 +2528,9 @@
 
   <string name="str_no_hint_found">Cannot find any moves</string>
 
+  <string name="not_again_rematch_two_only">The Rematch button is
+  diabled because, for now anyway, rematch is limited to two-person
+  games. I think it\'s rare that people play with more than two. Let
+  me know if I\'m wrong and I\'ll try harder to make it work.</string>
+
 </resources>

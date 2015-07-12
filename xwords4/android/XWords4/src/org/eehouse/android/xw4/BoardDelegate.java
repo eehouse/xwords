@@ -241,7 +241,7 @@ public class BoardDelegate extends DelegateBase
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
-                                doRematch();
+                                doRematchIf();
                             }
                         };
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
@@ -1674,8 +1674,8 @@ public class BoardDelegate extends DelegateBase
                 m_nMissing = 0;
                 post( new Runnable() {
                         public void run() {
-                            showNotAgainDlgThen( R.string.not_again_turnchanged, 
-                                                 R.string.key_notagain_turnchanged );
+                            showNotAgainDlg( R.string.not_again_turnchanged, 
+                                             R.string.key_notagain_turnchanged );
                         }
                     } );
                 m_jniThread.handle( JNICmd. CMD_ZOOM, -8 );
@@ -2512,23 +2512,39 @@ public class BoardDelegate extends DelegateBase
     {
         boolean supported = false;
         if ( XWApp.REMATCH_SUPPORTED ) {
+            // standalone games are easy to rematch
             supported = m_gi.serverRole == DeviceRole.SERVER_STANDALONE;
-            if ( !supported && 2 == m_gi.nPlayers ) {
-                supported = m_connTypes.contains( CommsConnType.COMMS_CONN_BT )
-                    || m_connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                    || m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
-            }
+
+            if ( !supported )
+                if ( 2 != m_gi.nPlayers ) {
+                    // show the button if people haven't dismissed the hint yet
+                    supported = ! XWPrefs
+                        .getPrefsBoolean( m_activity, 
+                                          R.string.key_na_rematch_two_only, 
+                                          false );
+                } else {
+                    supported = m_connTypes.contains( CommsConnType.COMMS_CONN_BT )
+                        || m_connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
+                        || m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
+                }
         }
         return supported;
     }
 
-    private void doRematch()
+    private void doRematchIf()
     {
         if ( XWApp.REMATCH_SUPPORTED ) {
+            boolean doIt = true;
             String phone = null;
             String btAddr = null;
             String relayID = null;
-            if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+            if ( DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
+                // nothing to do??
+            } else if ( 2 != m_gi.nPlayers ) {
+                showNotAgainDlg( R.string.not_again_rematch_two_only, 
+                                 R.string.key_na_rematch_two_only );
+                doIt = false;
+            } else {
                 CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
                 for ( int ii = 0; ii < addrs.length; ++ii ) {
                     CommsAddrRec addr = addrs[ii];
@@ -2547,12 +2563,14 @@ public class BoardDelegate extends DelegateBase
                 }
             }
 
-            Intent intent = GamesListDelegate
-                .makeRematchIntent( m_activity, m_rowid, m_connTypes, btAddr, 
-                                    phone, relayID );
-            if ( null != intent ) {
-                startActivity( intent );
-                finish();
+            if ( doIt ) {
+                Intent intent = GamesListDelegate
+                    .makeRematchIntent( m_activity, m_rowid, m_connTypes, btAddr, 
+                                        phone, relayID );
+                if ( null != intent ) {
+                    startActivity( intent );
+                    finish();
+                }
             }
         }
     }

@@ -2185,4 +2185,8 @@
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
   <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
+  <string name="not_again_rematch_two_only">THE REMATCH BUTTON IS
+  DIABLED BECAUSE, FOR NOW ANYWAY, REMATCH IS LIMITED TO TWO-PERSON
+  GAMES. I THINK IT\'S RARE THAT PEOPLE PLAY WITH MORE THAN TWO. LET
+  ME KNOW IF I\'M WRONG AND I\'LL TRY HARDER TO MAKE IT WORK.</string>
 </resources>
