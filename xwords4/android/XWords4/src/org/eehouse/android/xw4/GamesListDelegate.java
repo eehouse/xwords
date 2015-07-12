@@ -2260,18 +2260,19 @@ public class GamesListDelegate extends ListDelegateBase
     {
         Intent intent = null;
         if ( XWApp.REMATCH_SUPPORTED ) {
-            DbgUtils.logf( "makeRematchIntent(btAddr=%s; phone=%s)", btAddr, phone );
             intent = makeSelfIntent( context );
             intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
-            intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
-            if ( null != btAddr ) {
-                intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
-            }
-            if ( null != phone ) {
-                intent.putExtra( REMATCH_PHONE_EXTRA, phone );
-            }
-            if ( null != relayID ) {
-                intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
+            if ( null != addrTypes ) {
+                intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
+                if ( null != btAddr ) {
+                    intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
+                }
+                if ( null != phone ) {
+                    intent.putExtra( REMATCH_PHONE_EXTRA, phone );
+                }
+                if ( null != relayID ) {
+                    intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
+                }
             }
         }
         return intent;
