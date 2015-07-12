@@ -626,7 +626,7 @@ public class DlgDelegate {
             items.add( getString( R.string.invite_choice_nfc ) );
             means.add( DlgClickNotify.InviteMeans.NFC );
         }
-        if ( BuildConfig.DEBUG ) {
+        if ( XWApp.RELAYINVITE_SUPPORTED ) {
             items.add( getString( R.string.invite_choice_relay ) );
             means.add( DlgClickNotify.InviteMeans.RELAY );
         }
