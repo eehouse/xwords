@@ -394,6 +394,11 @@
 	      android:defaultValue="10998"
 	      android:numeric="decimal"
 	      />
+      <CheckBoxPreference android:key="@string/key_enable_relay_toself"
+                          android:title="@string/enable_relay_toself_title"
+                          android:summary="@string/enable_relay_toself_summary"
+                          android:defaultValue="false"
+                          />
     </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/pref_group_l10n_title"

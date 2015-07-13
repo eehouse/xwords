@@ -2533,4 +2533,7 @@
   games. I think it\'s rare that people play with more than two. Let
   me know if I\'m wrong and I\'ll try harder to make it work.</string>
 
+  <string name="enable_relay_toself_title">Enable relay invites to self</string>
+  <string name="enable_relay_toself_summary">(To aid testing and debugging)</string>
+
 </resources>

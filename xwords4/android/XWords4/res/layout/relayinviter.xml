@@ -49,6 +49,13 @@
                    android:src="@android:drawable/ic_input_add"
                    android:clickable="false"
                    />
+      <ImageButton android:id="@+id/add_self_button"
+                   android:layout_height="fill_parent"
+                   android:layout_width="wrap_content" 
+                   android:src="@android:drawable/ic_input_add"
+                   android:clickable="false"
+                   android:visibility="gone"
+                   />
       <Button android:id="@+id/button_clear"
               android:text="@string/bt_pick_clear_button"
               style="@style/evenly_spaced_horizontal"

@@ -95,6 +95,20 @@ public class RelayInviteDelegate extends InviteDelegate {
                 }
             } );
 
+        if ( XWPrefs.getRelayInviteToSelfEnabled( m_activity ) ) {
+            ImageButton addMe = (ImageButton)findViewById( R.id.add_self_button );
+            addMe.setVisibility( View.VISIBLE );
+            addMe.setOnClickListener( new View.OnClickListener() {
+                    public void onClick( View view ) {
+                        int devIDInt = XWPrefs.getRelayDevIDInt( m_activity );
+                        String devID = String.format( "%d", devIDInt );
+                        DevIDRec rec = new DevIDRec( "self", devID );
+                        addChecked( rec );
+                        saveAndRebuild();
+                    }
+                } );
+        }
+
         getSavedState();
         rebuildList( true );
     }

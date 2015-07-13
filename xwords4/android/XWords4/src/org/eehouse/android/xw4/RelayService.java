@@ -243,7 +243,8 @@ public class RelayService extends XWService
     private void makeGame( NetLaunchInfo nli )
     {
         long[] rowids = DBUtils.getRowIDsFor( this, nli.gameID() );
-        if ( null == rowids || 0 == rowids.length ) {
+        if ( (null == rowids || 0 == rowids.length)
+             || XWPrefs.getRelayInviteToSelfEnabled( this )) {
             CommsAddrRec addr = nli.makeAddrRec( this );
             // We can't pass a message sink, meaning we can't let the device
             // connect to the inviting game, because it needs to be open to
@@ -259,9 +260,6 @@ public class RelayService extends XWService
                                                   R.string.new_relay_body );
                 GameUtils.postInvitedNotification( this, nli.gameID(), body );
             }
-        } else {
-            DbgUtils.logf( "RelayService.makeGame(): dropping invite b/c already have"
-                           + " game with gameID: %d", nli.gameID() );
         }
     }
 
