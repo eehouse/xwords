@@ -100,7 +100,7 @@ public class RelayInviteDelegate extends InviteDelegate {
             addMe.setVisibility( View.VISIBLE );
             addMe.setOnClickListener( new View.OnClickListener() {
                     public void onClick( View view ) {
-                        int devIDInt = XWPrefs.getRelayDevIDInt( m_activity );
+                        int devIDInt = DevID.getRelayDevIDInt( m_activity );
                         String devID = String.format( "%d", devIDInt );
                         DevIDRec rec = new DevIDRec( "self", devID );
                         addChecked( rec );

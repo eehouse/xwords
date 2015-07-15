@@ -38,7 +38,7 @@ public class XWDevIDPreference extends EditTextPreference {
     protected void onAttachedToActivity()
     {
         super.onAttachedToActivity();
-        int devID = XWPrefs.getRelayDevIDInt( m_context );
+        int devID = DevID.getRelayDevIDInt( m_context );
         setSummary( String.format( "%d", devID ) );
     }
 }

@@ -25,7 +25,6 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import com.google.android.gcm.GCMRegistrar;
 import java.util.ArrayList;
 
 import junit.framework.Assert;
@@ -252,6 +251,7 @@ public class XWPrefs {
         return getPrefsStringArray( context, R.string.key_sms_phones );
     }
 
+    // Used by RelayInviteDelegate.java
     public static void setRelayIDs( Context context, String[] names )
     {
         setPrefsStringArray( context, R.string.key_relay_ids, names );
@@ -281,62 +281,6 @@ public class XWPrefs {
             setPrefsString( context, R.string.key_dev_id, id );
         }
         return id;
-    }
-
-    public static void setGCMDevID( Context context, String devID )
-    {
-        int curVers = Utils.getAppVersion( context );
-        setPrefsInt( context, R.string.key_gcmvers_regid, curVers );
-        setPrefsBoolean( context, R.string.key_relay_regid_ackd, false );
-    }
-
-    public static String getGCMDevID( Context context )
-    {
-        int curVers = Utils.getAppVersion( context );
-        int storedVers = getPrefsInt( context, R.string.key_gcmvers_regid, 0 );
-        String result;
-        if ( 0 != storedVers && storedVers < curVers ) {
-            result = "";        // Don't trust what registrar has
-        } else {
-            result = GCMRegistrar.getRegistrationId( context );
-        }
-        return result;
-    }
-
-    public static void clearGCMDevID( Context context )
-    {
-        setPrefsBoolean( context, R.string.key_relay_regid_ackd, false );
-    }
-
-    public static String getRelayDevID( Context context )
-    {
-        String result = getPrefsString( context, R.string.key_relay_regid );
-        if ( null != result && 0 == result.length() ) {
-            result = null;
-        }
-        return result;
-    }
-
-    public static int getRelayDevIDInt( Context context )
-    {
-        int result = 0;
-        String str = getRelayDevID( context );
-        if ( null != str ) {
-            result = Integer.valueOf( str, 16 );
-        }
-        DbgUtils.logf( "getRelayDevIDInt(): %s => %d", str, result );
-        return result;
-    }
-
-    public static void setRelayDevID( Context context, String idRelay )
-    {
-        setPrefsString( context, R.string.key_relay_regid, idRelay );
-        setPrefsBoolean( context, R.string.key_relay_regid_ackd, true );
-    }
-
-    public static void clearRelayDevID( Context context )
-    {
-        clearPrefsKey( context, R.string.key_relay_regid );
     }
 
     public static DictUtils.DictLoc getDefaultLoc( Context context )

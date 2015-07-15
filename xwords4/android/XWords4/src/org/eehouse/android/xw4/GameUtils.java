@@ -112,7 +112,7 @@ public class GameUtils {
             if ( 0 == addr.conTypes.size() ) {
                 String relayName = XWPrefs.getDefaultRelayHost( context );
                 int relayPort = XWPrefs.getDefaultRelayPort( context );
-                int devID = XWPrefs.getRelayDevIDInt( context );
+                int devID = DevID.getRelayDevIDInt( context );
                 XwJNI.comms_getInitialAddr( addr, relayName, relayPort, devID );
             }
         }

@@ -28,7 +28,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.XWApp;
-import org.eehouse.android.xw4.XWPrefs;
+import org.eehouse.android.xw4.DevID;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -100,11 +100,11 @@ public class UtilCtxtImpl implements UtilCtxt {
     public String getDevID( /*out*/ byte[] typa )
     {
         UtilCtxt.DevIDType typ = UtilCtxt.DevIDType.ID_TYPE_NONE;
-        String result = XWPrefs.getRelayDevID( m_context );
+        String result = DevID.getRelayDevID( m_context );
         if ( null != result ) {
             typ = UtilCtxt.DevIDType.ID_TYPE_RELAY;
         } else {
-            result = XWPrefs.getGCMDevID( m_context );
+            result = DevID.getGCMDevID( m_context );
             if ( result.equals("") ) {
                 result = null;
             } else {
@@ -119,10 +119,10 @@ public class UtilCtxtImpl implements UtilCtxt {
     {
         switch ( devIDType ) {
         case ID_TYPE_RELAY:
-            XWPrefs.setRelayDevID( m_context, idRelay );
+            DevID.setRelayDevID( m_context, idRelay );
             break;
         case ID_TYPE_NONE:
-            XWPrefs.clearRelayDevID( m_context );
+            DevID.clearRelayDevID( m_context );
             break;
         default:
             Assert.fail();

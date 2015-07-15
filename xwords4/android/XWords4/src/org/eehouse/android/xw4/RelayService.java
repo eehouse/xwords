@@ -45,15 +45,16 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.jni.UtilCtxt;
-import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
-import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
+import org.eehouse.android.xw4.jni.UtilCtxt;
+import org.eehouse.android.xw4.jni.UtilCtxtImpl;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RelayService extends XWService 
@@ -163,7 +164,7 @@ public class RelayService extends XWService
     public static void inviteRemote( Context context, int destDevID, 
                                      String relayID, NetLaunchInfo nli )
     {
-        int myDevID = XWPrefs.getRelayDevIDInt( context );
+        int myDevID = DevID.getRelayDevIDInt( context );
         if ( 0 != myDevID ) {
             context.startService( getIntentTo( context, MsgCmds.INVITE )
                                   .putExtra( DEV_ID_SRC, myDevID )
@@ -538,6 +539,8 @@ public class RelayService extends XWService
 
                 InetAddress addr = InetAddress.getByName( host );
                 m_UDPSocket.connect( addr, port ); // remember this address
+                DbgUtils.logdf( "RelayService.connectSocket(%s:%d): m_UDPSocket"
+                                + " now %H", host, port, m_UDPSocket );
             } catch( java.net.SocketException se ) {
                 DbgUtils.loge( se );
                 Assert.fail();
@@ -574,12 +577,13 @@ public class RelayService extends XWService
                             try {
                                 DatagramPacket outPacket = outData.assemble();
                                 m_UDPSocket.send( outPacket );
-                                int packetID = outData.m_packetID;
-                                DbgUtils.logdf( "Sent udp packet, id=%d, of "
-                                                + "length %d", 
-                                                packetID, outPacket.getLength() );
+                                int pid = outData.m_packetID;
+                                DbgUtils.logdf( "Sent udp packet, cmd=%s, id=%d,"
+                                                + " of length %d", 
+                                                outData.m_cmd.toString(), 
+                                                pid, outPacket.getLength());
                                 synchronized( s_packetsSent ) {
-                                    s_packetsSent.add( packetID );
+                                    s_packetsSent.add( pid );
                                 }
                                 resetExitTimer();
                                 ConnStatusHandler.showSuccessOut();
@@ -665,7 +669,7 @@ public class RelayService extends XWService
                 case XWPDEV_BADREG:
                     str = getVLIString( dis );
                     DbgUtils.logf( "bad relayID \"%s\" reported", str );
-                    XWPrefs.clearRelayDevID( this );
+                    DevID.clearRelayDevID( this );
                     s_registered = false;
                     registerWithRelay();
                     break;
@@ -676,7 +680,7 @@ public class RelayService extends XWService
                                     Integer.parseInt( str, 16 ), 
                                     maxIntervalSeconds );
                     setMaxIntervalSeconds( maxIntervalSeconds );
-                    XWPrefs.setRelayDevID( this, str );
+                    DevID.setRelayDevID( this, str );
                     s_registered = true;
                     break;
                 case XWPDEV_HAVEMSGS:
@@ -744,13 +748,9 @@ public class RelayService extends XWService
 
     private boolean shouldRegister()
     {
-        String relayID = XWPrefs.getRelayDevID( this );
+        String relayID = DevID.getRelayDevID( this, true );
         boolean registered = null != relayID;
-        if ( registered ) {
-            registered = XWPrefs
-                .getPrefsBoolean( this, R.string.key_relay_regid_ackd, false );
-        }
-        // DbgUtils.logf( "shouldRegister()=>%b", !registered );
+        DbgUtils.logdf( "shouldRegister()=>%b", !registered );
         return !registered;
     }
 
@@ -770,7 +770,7 @@ public class RelayService extends XWService
             DbgUtils.logf( "registerWithRelay: skipping because only %d "
                            + "seconds since last start", interval );
         } else {
-            String relayID = XWPrefs.getRelayDevID( this );
+            String relayID = DevID.getRelayDevID( this );
             DevIDType[] typa = new DevIDType[1];
             String devid = getDevID( typa );
             DevIDType typ = typa[0];
@@ -954,17 +954,13 @@ public class RelayService extends XWService
 
     private String getDevID( DevIDType[] typp )
     {
-        String devid = null;
         DevIDType typ;
+        String devid = DevID.getRelayDevID( this, true );
 
-        if ( XWPrefs.getPrefsBoolean( this, R.string.key_relay_regid_ackd, 
-                                      false ) ) {
-            devid = XWPrefs.getRelayDevID( this );
-        }
         if ( null != devid && 0 < devid.length() ) {
             typ = DevIDType.ID_TYPE_RELAY;
         } else {
-            devid = XWPrefs.getGCMDevID( this );
+            devid = DevID.getGCMDevID( this );
             if ( null != devid && 0 < devid.length() ) {
                 typ = DevIDType.ID_TYPE_ANDROID_GCM;
             } else {
@@ -1411,5 +1407,4 @@ public class RelayService extends XWService
         public byte[] m_header;
         public int m_packetID;
     }
-
 }
