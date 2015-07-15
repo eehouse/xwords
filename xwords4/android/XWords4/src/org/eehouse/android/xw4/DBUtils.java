@@ -2050,20 +2050,39 @@ public class DBUtils {
         return dflt;
     }
 
-    // public static void setIntFor( Context context, String key, int value )
-    // {
-    //     String asStr = String.format( "%d", value );
-    //     setStringFor( context, key, asStr );
-    // }
+    public static void setIntFor( Context context, String key, int value )
+    {
+        DbgUtils.logdf( "DBUtils.setIntFor(key=%s, val=%d)", key, value );
+        String asStr = String.format( "%d", value );
+        setStringFor( context, key, asStr );
+    }
 
-    // public static int getIntFor( Context context, String key, int dflt )
-    // {
-    //     String asStr = getStringFor( context, key, null );
-    //     if ( null != asStr ) {
-    //         dflt = Integer.parseInt( asStr );
-    //     }
-    //     return dflt;
-    // }
+    public static int getIntFor( Context context, String key, int dflt )
+    {
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            dflt = Integer.parseInt( asStr );
+        }
+        DbgUtils.logdf( "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
+        return dflt;
+    }
+
+    public static void setBoolFor( Context context, String key, boolean value )
+    {
+        DbgUtils.logdf( "DBUtils.setBoolFor(key=%s, val=%b)", key, value );
+        String asStr = String.format( "%b", value );
+        setStringFor( context, key, asStr );
+    }
+
+    public static boolean getBoolFor( Context context, String key, boolean dflt )
+    {
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            dflt = Boolean.parseBoolean( asStr );
+        }
+        DbgUtils.logdf( "DBUtils.getBoolFor(key=%s)=>%b", key, dflt );
+        return dflt;
+    }
 
     public static int getIncrementIntFor( Context context, String key, int dflt,
                                           final int incr )
