@@ -1066,11 +1066,11 @@ public class GameUtils {
     }
 
     public static void postInvitedNotification( Context context, int gameID,
-                                                String body )
+                                                String body, long rowid )
     {
         Intent intent = GamesListDelegate.makeGameIDIntent( context, gameID );
         Utils.postNotification( context, intent, R.string.invite_notice_title,
-                                body, gameID );
+                                body, (int)rowid );
     }
     
     private static void tellDied( Context context, GameLock lock, 

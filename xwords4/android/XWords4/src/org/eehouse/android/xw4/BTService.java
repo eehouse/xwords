@@ -1089,7 +1089,8 @@ public class BTService extends XWService {
                                                   R.string.new_bt_body_fmt, 
                                                   sender );
 
-                GameUtils.postInvitedNotification( this, nli.gameID(), body );
+                GameUtils.postInvitedNotification( this, nli.gameID(), body, 
+                                                   rowid );
 
                 sendResult( MultiEvent.BT_GAME_CREATED, rowid );
             }

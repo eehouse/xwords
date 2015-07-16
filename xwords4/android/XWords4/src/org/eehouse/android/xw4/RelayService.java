@@ -260,7 +260,8 @@ public class RelayService extends XWService
                 }
                 String body = LocUtils.getString( this, 
                                                   R.string.new_relay_body );
-                GameUtils.postInvitedNotification( this, nli.gameID(), body );
+                GameUtils.postInvitedNotification( this, nli.gameID(), body, 
+                                                   rowid );
             }
         }
     }
