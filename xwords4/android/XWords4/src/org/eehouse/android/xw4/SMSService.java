@@ -630,7 +630,7 @@ public class SMSService extends XWService {
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
         SMSMsgSink sink = new SMSMsgSink( this );
-        long rowid = GameUtils.makeNewMultiGame( this, nli, sink );
+        long rowid = GameUtils.makeNewMultiGame( this, nli, sink, null );
         postNotification( phone, nli.gameID() );
         ackInvite( phone, nli.gameID() );
     }

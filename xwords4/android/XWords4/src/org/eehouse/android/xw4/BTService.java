@@ -1076,7 +1076,8 @@ public class BTService extends XWService {
         long[] rowids = DBUtils.getRowIDsFor( BTService.this, nli.gameID() );
         if ( null == rowids || 0 == rowids.length ) {
             CommsAddrRec addr = nli.makeAddrRec( BTService.this );
-            long rowid = GameUtils.makeNewMultiGame( BTService.this, nli, m_btMsgSink );
+            long rowid = GameUtils.makeNewMultiGame( BTService.this, nli, 
+                                                     m_btMsgSink, null );
             if ( DBUtils.ROWID_NOTFOUND == rowid ) {
                 result = BTCmd.INVITE_FAILED;
             } else {

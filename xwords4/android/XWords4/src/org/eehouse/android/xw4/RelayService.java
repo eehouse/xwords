@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2010 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2015 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -251,8 +251,9 @@ public class RelayService extends XWService
             // connect to the inviting game, because it needs to be open to
             // make the initial connection -- needs access to util. That
             // should be fixable -- eventually.
-            RelayMsgSink sink = null; // new RelayMsgSink();
-            long rowid = GameUtils.makeNewMultiGame( this, nli, sink );
+            RelayMsgSink sink = new RelayMsgSink();
+            UtilCtxt util = new UtilCtxtImpl( this );
+            long rowid = GameUtils.makeNewMultiGame( this, nli, sink, util );
             if ( DBUtils.ROWID_NOTFOUND != rowid ) {
                 if ( null != nli.gameName && 0 < nli.gameName.length() ) {
                     DBUtils.setName( this, rowid, nli.gameName );

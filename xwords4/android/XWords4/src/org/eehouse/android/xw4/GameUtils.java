@@ -463,18 +463,20 @@ public class GameUtils {
 
     public static long makeNewMultiGame( Context context, NetLaunchInfo nli )
     {
-        return makeNewMultiGame( context, nli, null );
+        return makeNewMultiGame( context, nli, (MultiMsgSink)null, 
+                                 (UtilCtxt)null );
     }
 
     public static long makeNewMultiGame( Context context, NetLaunchInfo nli,
-                                         MultiMsgSink sink )
+                                         MultiMsgSink sink, UtilCtxt util )
     {
         DbgUtils.logf( "makeNewMultiGame(nli=%s)", nli.toString() );
         CommsAddrRec addr = nli.makeAddrRec( context );
 
-        return makeNewMultiGame( context, sink, DBUtils.GROUPID_UNSPEC, addr, 
-                                 new int[] {nli.lang}, new String[] { nli.dict },
-                                 nli.nPlayersT, nli.nPlayersH, nli.forceChannel,
+        return makeNewMultiGame( context, sink, util, DBUtils.GROUPID_UNSPEC, 
+                                 addr, new int[] {nli.lang}, 
+                                 new String[] { nli.dict }, nli.nPlayersT, 
+                                 nli.nPlayersH, nli.forceChannel,
                                  nli.inviteID(), nli.gameID(), nli.gameName,
                                  false );
     }
@@ -505,12 +507,14 @@ public class GameUtils {
         CommsAddrRec addr = new CommsAddrRec( addrSet );
         addr.populate( context );
         int forceChannel = 0;
-        return makeNewMultiGame( context, null, groupID, addr, lang, dict, 2, 1,
+        return makeNewMultiGame( context, (MultiMsgSink)null, (UtilCtxt)null,
+                                 groupID, addr, lang, dict, 2, 1,
                                  forceChannel, inviteID, 0, gameName, true );
     }
 
     private static long makeNewMultiGame( Context context, MultiMsgSink sink, 
-                                          long groupID, CommsAddrRec addr, 
+                                          UtilCtxt util, long groupID, 
+                                          CommsAddrRec addr,
                                           int[] lang, String[] dict, 
                                           int nPlayersT, int nPlayersH, 
                                           int forceChannel, String inviteID,
@@ -543,7 +547,7 @@ public class GameUtils {
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             GameLock lock = new GameLock( rowid, true ).lock();
-            applyChanges( context, sink, gi, addr, inviteID, lock, false );
+            applyChanges( context, sink, gi, util, addr, inviteID, lock, false );
             lock.unlock();
         }
 
@@ -595,9 +599,10 @@ public class GameUtils {
             addr = new CommsAddrRec( null, null );
         }
         String inviteID = GameUtils.formatGameID( gameID );
-        return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
-                                 nPlayersT, nPlayersH, forceChannel, 
-                                 inviteID, gameID, gameName, isHost );
+        return makeNewMultiGame( context, sink, (UtilCtxt)null, groupID, addr, 
+                                 langa, dicta, nPlayersT, nPlayersH, 
+                                 forceChannel, inviteID, gameID, gameName,
+                                 isHost );
     }
 
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
@@ -955,13 +960,14 @@ public class GameUtils {
                                      CommsAddrRec car, String inviteID, 
                                      GameLock lock, boolean forceNew )
     {
-        applyChanges( context, null, gi, car, inviteID, lock, forceNew );
+        applyChanges( context, (MultiMsgSink)null, gi, (UtilCtxt)null, car, 
+                      inviteID, lock, forceNew );
     }
 
     public static void applyChanges( Context context, MultiMsgSink sink,
-                                     CurGameInfo gi, CommsAddrRec car, 
-                                     String inviteID, GameLock lock, 
-                                     boolean forceNew )
+                                     CurGameInfo gi, UtilCtxt util, 
+                                     CommsAddrRec car, String inviteID, 
+                                     GameLock lock, boolean forceNew )
     {
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
@@ -988,7 +994,9 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
+            XwJNI.game_makeNewGame( gamePtr, gi, util, 
+                                    JNIUtilsImpl.get(context), 
+                                    (DrawCtx)null,
                                     cp, sink, dictNames, pairs.m_bytes, 
                                     pairs.m_paths, langName );
         }
