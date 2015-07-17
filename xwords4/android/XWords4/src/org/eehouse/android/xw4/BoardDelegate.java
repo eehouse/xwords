@@ -2043,6 +2043,8 @@ public class BoardDelegate extends DelegateBase
                     m_view.startHandling( m_activity, m_jniThread, m_jniGamePtr, m_gi,
                                           m_connTypes );
                     if ( null != m_xport ) {
+                        // informMissing should have been called by now
+                        Assert.assertNotNull( m_connTypes );
                         m_xport.setReceiver( m_jniThread, m_handler );
                     }
                     m_jniThread.handle( JNICmd.CMD_START );
