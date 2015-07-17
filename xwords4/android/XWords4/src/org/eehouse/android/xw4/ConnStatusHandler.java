@@ -146,6 +146,11 @@ public class ConnStatusHandler {
         s_rect = new Rect( left, top, right, bottom );
     }
 
+    public static void clearRect()
+    {
+        s_rect = null;
+    }
+
     public static void setHandler( ConnStatusCBacks cbacks )
     {
         s_cbacks = cbacks;
