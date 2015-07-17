@@ -188,6 +188,7 @@ public class RelayService extends XWService
 
     public static int sendPacket( Context context, long rowid, byte[] msg )
     {
+        DbgUtils.logdf( "RelayService.sendPacket(len=%d)", msg.length );
         int result = -1;
         if ( NetStateCache.netAvail( context ) ) {
             Intent intent = getIntentTo( context, MsgCmds.SEND )
