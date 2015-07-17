@@ -250,6 +250,8 @@ public class JNIThread extends Thread {
             int left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth;
             ConnStatusHandler.setRect( left, dims.top, left + statusWidth, 
                                        dims.top + dims.scoreHt );
+        } else {
+            ConnStatusHandler.clearRect();
         }
 
         XwJNI.board_applyLayout( m_jniGamePtr, dims );
