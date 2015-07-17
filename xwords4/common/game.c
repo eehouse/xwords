@@ -227,7 +227,8 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     XP_DEBUGF( "%s: strVersion = 0x%x", __func__, (XP_U16)strVersion );
 
     if ( strVersion > CUR_STREAM_VERS ) {
-        XP_LOGF( "%s: aborting; stream version too new!", __func__ );
+        XP_LOGF( "%s: aborting; stream version too new (%d > %d)!", __func__, 
+                 strVersion, CUR_STREAM_VERS );
     } else {
         do { /* do..while so can break */
             stream_setVersion( stream, strVersion );
