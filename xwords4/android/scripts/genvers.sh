@@ -50,7 +50,6 @@ cat <<EOF > ${BUILD_DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
 package org.eehouse.android.${VARIANT};
 class BuildConstants {
     public static final String GIT_REV = "$SHORTVERS";
-    public static final String GIT_HASH = "$GITHASH";
     public static final String STRINGS_HASH = "$STRINGS_HASH";
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
