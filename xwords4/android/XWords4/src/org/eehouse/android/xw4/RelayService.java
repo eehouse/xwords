@@ -226,7 +226,9 @@ public class RelayService extends XWService
     {
         DbgUtils.logdf( "receiveInvitation: got nli from %d: %s", srcDevID,
                        nli.toString() );
-        makeOrNotify( nli );
+        if ( checkNotDupe( nli ) ) {
+            makeOrNotify( nli );
+        }
     }
 
     private void makeOrNotify( NetLaunchInfo nli )

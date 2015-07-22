@@ -502,7 +502,7 @@ public class SMSService extends XWService {
             case INVITE:
                 String nliData = dis.readUTF();
                 NetLaunchInfo nli = new NetLaunchInfo( this, nliData );
-                if ( nli.isValid() ) {
+                if ( nli.isValid() && checkNotDupe( nli ) ) {
                     if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
                         makeForInvite( phone, nli );
                     } else {

@@ -104,6 +104,7 @@ public class BTService extends XWService {
         MESG_DECL,
         MESG_GAMEGONE,
         REMOVE_FOR,
+        INVITE_DUP_INVITE,
     };
 
     private class BTQueueElem {
@@ -372,12 +373,6 @@ public class BTService extends XWService {
                     String jsonData = intent.getStringExtra( GAMEDATA_KEY );
                     NetLaunchInfo nli = new NetLaunchInfo( this, jsonData );
                     DbgUtils.logf( "onStartCommand: nli: %s", nli.toString() );
-                    // int gameID = intent.getIntExtra( GAMEID_KEY, -1 );
-                    // String btAddr = intent.getStringExtra( ADDR_KEY );
-                    // String gameName = intent.getStringExtra( GAMENAME_KEY );
-                    // int lang = intent.getIntExtra( LANG_KEY, -1 );
-                    // String dict = intent.getStringExtra( DICT_KEY );
-                    // int nPlayersT = intent.getIntExtra( NTO_KEY, -1 );
                     String btAddr = intent.getStringExtra( ADDR_KEY );
                     m_sender.add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
                     break;
@@ -1055,16 +1050,20 @@ public class BTService extends XWService {
                                 String btAddr )
     {
         BTCmd result;
-        if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
-            result = makeGame( nli, btName, btAddr );
+        if ( checkNotDupe( nli ) ) {
+            if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
+                result = makeGame( nli, btName, btAddr );
+            } else {
+                Intent intent = MultiService
+                    .makeMissingDictIntent( this, nli, 
+                                            DictFetchOwner.OWNER_BT );
+                // NetLaunchInfo.putExtras( intent, gameID, btName, btAddr );
+                MultiService.postMissingDictNotification( this, intent, 
+                                                          nli.gameID() );
+                result = BTCmd.INVITE_ACCPT; // ???
+            }
         } else {
-            Intent intent = MultiService
-                .makeMissingDictIntent( this, nli, 
-                                        DictFetchOwner.OWNER_BT );
-            // NetLaunchInfo.putExtras( intent, gameID, btName, btAddr );
-            MultiService.postMissingDictNotification( this, intent, 
-                                                      nli.gameID() );
-            result = BTCmd.INVITE_ACCPT; // ???
+            result = BTCmd.INVITE_DUP_INVITE; // dupe of rematch 
         }
         return result;
     }
