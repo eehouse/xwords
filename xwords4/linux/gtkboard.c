@@ -83,10 +83,10 @@ static GtkWidget* addButton( GtkWidget* hbox, gchar* label, GCallback func,
 static void handle_invite_button( GtkWidget* widget, GtkGameGlobals* globals );
 static void gtkShowFinalScores( const GtkGameGlobals* globals, 
                                 XP_Bool ignoreTimeout );
-static void send_invites( CommonGlobals* cGlobals, 
-                          const CommsAddrRec* inviteAddr, 
-                          const XP_UCHAR* relayID, 
-                          XP_U16 nPlayers );
+static void send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
+                          XP_U32 devID, const XP_UCHAR* relayID, 
+                          const XP_UCHAR* phone );
+
 
 #define GTK_TRAY_HT_ROWS 3
 
@@ -900,7 +900,7 @@ on_board_window_shown( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
                 CommsAddrRec addr = {0};
                 addrFromStream( &addr, stream );
 
-                send_invites( cGlobals, &addr, relayID, 1 /*nPlayers*/ );
+                send_invites( cGlobals, 1, 0, relayID, NULL );
             }
         }
         stream_destroy( stream );
@@ -1020,9 +1020,7 @@ new_game_impl( GtkGameGlobals* globals, XP_Bool fireConnDlg )
     if ( !!cGlobals->game.comms ) {
         comms_getAddr( cGlobals->game.comms, &addr );
     } else {
-        XP_U32 devID = linux_getDevIDRelay( cGlobals->params );
-        comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT,
-                              devID );
+        comms_getInitialAddr( &addr, RELAY_NAME_DEFAULT, RELAY_PORT_DEFAULT );
     }
 
     CurGameInfo* gi = cGlobals->gi;
@@ -1631,17 +1629,19 @@ handle_invite_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 
     CommsAddrRec inviteAddr = {0};
     gint nPlayers = nMissing;
-    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers );
+    XP_U32 devID;
+    XP_Bool confirmed = gtkInviteDlg( globals, &inviteAddr, &nPlayers, &devID );
     XP_LOGF( "%s: inviteDlg => %d", __func__, confirmed );
 
     if ( confirmed ) {
-        send_invites( cGlobals, &inviteAddr, NULL, nPlayers );
+        send_invites( cGlobals, nPlayers, devID, NULL, NULL );
     }
 } /* handle_invite_button */
 
 static void
-send_invites( CommonGlobals* cGlobals, const CommsAddrRec* inviteAddr,
-              const XP_UCHAR* relayID, XP_U16 nPlayers )
+send_invites( CommonGlobals* cGlobals, XP_U16 nPlayers,
+              XP_U32 devID, const XP_UCHAR* relayID, 
+              const XP_UCHAR* phone )
 {
     CommsAddrRec addr = {0};
     CommsCtxt* comms = cGlobals->game.comms;
@@ -1667,14 +1667,13 @@ send_invites( CommonGlobals* cGlobals, const CommsAddrRec* inviteAddr,
     }
 #endif
 
-    if ( addr_hasType( inviteAddr, COMMS_CONN_SMS ) ) {
+    if ( !!phone ) {
         XP_ASSERT( 0 );         /* not implemented */
         /* linux_sms_invite( cGlobals->params, gi, &addr, gameName, */
         /*                   nPlayers, forceChannel,  */
         /*                   inviteAddr.u.sms.phone, inviteAddr.u.sms.port ); */
     }
-    if ( addr_hasType( inviteAddr, COMMS_CONN_RELAY ) ) {
-        XP_U32 devID = inviteAddr->u.ip_relay.devID;
+    if ( 0 != devID || !!relayID ) {
         XP_ASSERT( 0 != devID || (!!relayID && !!relayID[0]) );
         relaycon_invite( cGlobals->params, devID, relayID, &nli );
     }
@@ -2826,8 +2825,7 @@ makeNewGame( GtkGameGlobals* globals )
         if ( 0 == relayPort ) {
             relayPort = RELAY_PORT_DEFAULT;
         }
-        comms_getInitialAddr( &cGlobals->addr, relayName, relayPort,
-                              linux_getDevIDRelay( cGlobals->params ) );
+        comms_getInitialAddr( &cGlobals->addr, relayName, relayPort );
     }
 
     CurGameInfo* gi = cGlobals->gi;

@@ -585,9 +585,6 @@ addrFromStreamOne( CommsAddrRec* addrP, XWStreamCtxt* stream, CommsConnType typ 
         stringFromStreamHere( stream, addrP->u.ip_relay.hostName,
                               sizeof(addrP->u.ip_relay.hostName) );
         addrP->u.ip_relay.ipAddr = stream_getU32( stream );
-        if ( version >= STREAM_VERS_DEVIDS ) {
-            addrP->u.ip_relay.devID = stream_getU32( stream );
-        }
         addrP->u.ip_relay.port = stream_getU16( stream );
         if ( version >= STREAM_VERS_DICTLANG ) {
             addrP->u.ip_relay.seeksPublicRoom = stream_getBits( stream, 1 );
@@ -815,7 +812,6 @@ addrToStreamOne( XWStreamCtxt* stream, CommsConnType typ, const CommsAddrRec* ad
         stringToStream( stream, addrP->u.ip_relay.invite );
         stringToStream( stream, addrP->u.ip_relay.hostName );
         stream_putU32( stream, addrP->u.ip_relay.ipAddr );
-        stream_putU32( stream, addrP->u.ip_relay.devID );
         stream_putU16( stream, addrP->u.ip_relay.port );
         stream_putBits( stream, 1, addrP->u.ip_relay.seeksPublicRoom );
         stream_putBits( stream, 1, addrP->u.ip_relay.advertiseRoom );
@@ -1018,14 +1014,12 @@ comms_getInitialAddr( CommsAddrRec* addr
 #ifdef XWFEATURE_RELAY
                       , const XP_UCHAR* relayName
                       , XP_U16 relayPort
-                      , XP_U32 devID
 #endif
                       )
 {
 #if defined  XWFEATURE_RELAY
     addr_setType( addr, COMMS_CONN_RELAY ); /* for temporary ease in debugging */
     addr->u.ip_relay.ipAddr = 0L; /* force 'em to set it */
-    addr->u.ip_relay.devID = devID;
     addr->u.ip_relay.port = relayPort;
     {
         const char* name = relayName;

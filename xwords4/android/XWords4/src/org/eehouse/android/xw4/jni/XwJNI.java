@@ -97,8 +97,8 @@ public class XwJNI {
     }
     private static native void nli_from_stream( NetLaunchInfo nli, byte[] stream );
     public static native void comms_getInitialAddr( CommsAddrRec addr,
-                                                    String relayHost,
-                                                    int relayPort, int devID );
+                                                    String relayHost, 
+                                                    int relayPort );
     public static native String comms_getUUID();
 
     // Game methods

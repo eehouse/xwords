@@ -581,9 +581,8 @@ public class GameConfigDelegate extends DelegateBase
                 } else if ( !localOnlyGame() ) {
                     String relayName = XWPrefs.getDefaultRelayHost( m_activity );
                     int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
-                    int devID = DevID.getRelayDevIDInt( m_activity );
                     XwJNI.comms_getInitialAddr( m_carOrig, relayName, 
-                                                relayPort, devID );
+                                                relayPort );
                 }
                 m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
                 XwJNI.game_dispose( gamePtr );

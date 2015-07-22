@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2001 - 2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -90,7 +90,6 @@ typedef struct _CommsAddrRec {
             XP_UCHAR invite[MAX_INVITE_LEN + 1];
             XP_UCHAR hostName[MAX_HOSTNAME_LEN + 1];
             XP_U32 ipAddr;      /* looked up from above */
-            XP_U32 devID;
             XP_U16 port;
             XP_Bool seeksPublicRoom;
             XP_Bool advertiseRoom;
@@ -181,7 +180,6 @@ void comms_getInitialAddr( CommsAddrRec* addr
 #ifdef XWFEATURE_RELAY
                            , const XP_UCHAR* relayName
                            , XP_U16 relayPort
-                           , XP_U32 devID
 #endif
  );
 XP_Bool comms_checkAddr( DeviceRole role, const CommsAddrRec* addr,
