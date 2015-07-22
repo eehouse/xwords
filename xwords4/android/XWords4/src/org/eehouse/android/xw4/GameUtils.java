@@ -483,23 +483,27 @@ public class GameUtils {
     public static long makeNewMultiGame( Context context, long groupID, 
                                          String gameName )
     {
-        return makeNewMultiGame( context, groupID, (CommsConnTypeSet)null, 
-                                 gameName );
+        return makeNewMultiGame( context, groupID, null, 0, 
+                                 (CommsConnTypeSet)null, gameName );
     }
 
     public static long makeNewMultiGame( Context context, long groupID, 
-                                         CommsConnTypeSet addrSet, String gameName )
+                                         String dict, int lang, 
+                                         CommsConnTypeSet addrSet, 
+                                         String gameName )
     {
         String inviteID = makeRandomID();
-        return makeNewMultiGame( context, groupID, inviteID, addrSet, gameName );
+        return makeNewMultiGame( context, groupID, inviteID, dict, lang, 
+                                 addrSet, gameName );
     }
 
     private static long makeNewMultiGame( Context context, long groupID, 
-                                          String inviteID, CommsConnTypeSet addrSet,
+                                          String inviteID, String dict, 
+                                          int lang, CommsConnTypeSet addrSet,
                                           String gameName )
     {
-        int[] lang = {0};
-        String[] dict = {null};
+        int[] langArray = {lang};
+        String[] dictArray = {dict};
         if ( null == addrSet ) {
             addrSet = XWPrefs.getAddrTypes( context );
         }
@@ -507,7 +511,7 @@ public class GameUtils {
         addr.populate( context );
         int forceChannel = 0;
         return makeNewMultiGame( context, (MultiMsgSink)null, (UtilCtxt)null,
-                                 groupID, addr, lang, dict, 2, 1,
+                                 groupID, addr, langArray, dictArray, 2, 1,
                                  forceChannel, inviteID, 0, gameName, true );
     }
 

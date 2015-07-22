@@ -87,10 +87,13 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
     private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
+    private static final String REMATCH_DICT_EXTRA = "rm_dict";
+    private static final String REMATCH_LANG_EXTRA = "rm_lang";
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
     private static final String REMATCH_PHONE_EXTRA = "rm_phone";
     private static final String REMATCH_RELAYID_EXTRA = "rm_relayid";
+
 
     private static final String ALERT_MSG = "alert_msg";
 
@@ -1858,12 +1861,15 @@ public class GamesListDelegate extends ListDelegateBase
                     // this will juggle if the preference is set
                     newid = GameUtils.dupeGame( m_activity, rowid );
                 } else {
+                    String dict = intent.getStringExtra( REMATCH_DICT_EXTRA );
+                    int lang = intent.getIntExtra( REMATCH_LANG_EXTRA, -1 );
                     int bits = intent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
                     CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
 
                     long groupID = DBUtils.getGroupForGame( m_activity, rowid );
                     String gameName = "rematch"; // FIX ME :-)
                     newid = GameUtils.makeNewMultiGame( m_activity, groupID, 
+                                                        dict, lang,
                                                         addrs, gameName );
 
                     DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
@@ -2254,6 +2260,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     public static Intent makeRematchIntent( Context context, long rowid,
+                                            String dict, int lang,
                                             CommsConnTypeSet addrTypes, 
                                             String btAddr, String phone,
                                             String relayID )
@@ -2262,6 +2269,8 @@ public class GamesListDelegate extends ListDelegateBase
         if ( XWApp.REMATCH_SUPPORTED ) {
             intent = makeSelfIntent( context );
             intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
+            intent.putExtra( REMATCH_DICT_EXTRA, dict );
+            intent.putExtra( REMATCH_LANG_EXTRA, lang );
             if ( null != addrTypes ) {
                 intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
                 if ( null != btAddr ) {

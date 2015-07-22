@@ -2564,7 +2564,8 @@ public class BoardDelegate extends DelegateBase
 
             if ( doIt ) {
                 Intent intent = GamesListDelegate
-                    .makeRematchIntent( m_activity, m_rowid, m_connTypes, btAddr, 
+                    .makeRematchIntent( m_activity, m_rowid, m_gi.dictName, 
+                                        m_gi.dictLang, m_connTypes, btAddr, 
                                         phone, relayID );
                 if ( null != intent ) {
                     startActivity( intent );
