@@ -65,7 +65,7 @@ public class DevID {
     public static String getRelayDevID( Context context, boolean insistAckd )
     {
         String result = getRelayDevID( context );
-        if ( insistAckd && 0 < result.length()
+        if ( insistAckd && null != result && 0 < result.length()
              && ! DBUtils.getBoolFor( context, DEVID_ACK_KEY, false ) ) {
             result = null;
         }
