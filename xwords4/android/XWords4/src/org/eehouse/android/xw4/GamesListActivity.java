@@ -30,13 +30,6 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 import junit.framework.Assert;
 
 public class GamesListActivity extends XWListActivity {
-
-    // private static final String RELAYIDS_EXTRA = "relayids";
-    private static final String ROWID_EXTRA = "rowid";
-    private static final String GAMEID_EXTRA = "gameid";
-    private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
-    private static final String ALERT_MSG = "alert_msg";
-
     private GamesListDelegate m_dlgt;
 
     @Override
