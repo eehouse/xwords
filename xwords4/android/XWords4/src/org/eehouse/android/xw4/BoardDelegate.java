@@ -2356,55 +2356,52 @@ public class BoardDelegate extends DelegateBase
 
     private void tryInvites()
     {
-        if ( XWApp.BTSUPPORTED || XWApp.SMSSUPPORTED ) {
-            // test if summary knows of rematch pending first
-            if ( 0 < m_nMissing && m_summary.hasRematchInfo() ) {
-                tryRematchInvites();
-            } else if ( null != m_missingDevs ) {
-                Assert.assertNotNull( m_missingMeans );
-                String gameName = GameUtils.getName( m_activity, m_rowid );
-                m_invitesPending = m_missingDevs.length;
-                for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
-                    String dev = m_missingDevs[ii];
-                    int nPlayers = m_missingCounts[ii];
-                    Assert.assertTrue( 0 <= m_nGuestDevs );
-                    int forceChannel = ii + m_nGuestDevs + 1;
-                    NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 
-                                                           nPlayers, forceChannel );
-                    if ( !m_relayConnected ) {
-                        nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
-                    }
-
-                    switch ( m_missingMeans ) {
-                    case BLUETOOTH:
-                        if ( ! m_progressShown ) {
-                            m_progressShown = true;
-                            String progMsg = BTService.nameForAddr( dev );
-                            progMsg = getString( R.string.invite_progress_fmt, progMsg );
-                            startProgress( R.string.invite_progress_title, progMsg,
-                                           new OnCancelListener() {
-                                               public void onCancel( DialogInterface dlg )
-                                               {
-                                                   m_progressShown = false;
-                                               }
-                                           });
-                        }
-                        BTService.inviteRemote( m_activity, dev, nli );
-                        break;
-                    case SMS:
-                        SMSService.inviteRemote( m_activity, dev, nli );
-                        break;
-                    case RELAY:
-                        int destDevID = Integer.parseInt( dev );
-                        RelayService.inviteRemote( m_activity, destDevID, 
-                                                   null, nli );
-                        break;
-                    }
+        if ( 0 < m_nMissing && m_summary.hasRematchInfo() ) {
+            tryRematchInvites();
+        } else if ( null != m_missingDevs ) {
+            Assert.assertNotNull( m_missingMeans );
+            String gameName = GameUtils.getName( m_activity, m_rowid );
+            m_invitesPending = m_missingDevs.length;
+            for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
+                String dev = m_missingDevs[ii];
+                int nPlayers = m_missingCounts[ii];
+                Assert.assertTrue( 0 <= m_nGuestDevs );
+                int forceChannel = ii + m_nGuestDevs + 1;
+                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 
+                                                       nPlayers, forceChannel );
+                if ( !m_relayConnected ) {
+                    nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
                 }
-                m_missingDevs = null;
-                m_missingCounts = null;
-                m_missingMeans = null;
+
+                switch ( m_missingMeans ) {
+                case BLUETOOTH:
+                    if ( ! m_progressShown ) {
+                        m_progressShown = true;
+                        String progMsg = BTService.nameForAddr( dev );
+                        progMsg = getString( R.string.invite_progress_fmt, progMsg );
+                        startProgress( R.string.invite_progress_title, progMsg,
+                                       new OnCancelListener() {
+                                           public void onCancel( DialogInterface dlg )
+                                           {
+                                               m_progressShown = false;
+                                           }
+                                       });
+                    }
+                    BTService.inviteRemote( m_activity, dev, nli );
+                    break;
+                case SMS:
+                    SMSService.inviteRemote( m_activity, dev, nli );
+                    break;
+                case RELAY:
+                    int destDevID = Integer.parseInt( dev );
+                    RelayService.inviteRemote( m_activity, destDevID, 
+                                               null, nli );
+                    break;
+                }
             }
+            m_missingDevs = null;
+            m_missingCounts = null;
+            m_missingMeans = null;
         }
     }
 
@@ -2599,7 +2596,6 @@ public class BoardDelegate extends DelegateBase
             if ( null != value ) {
                 BTService.inviteRemote( m_activity, value, nli );
             }
-
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
             if ( null != value ) {
                 RelayService.inviteRemote( m_activity, 0, value, nli );
