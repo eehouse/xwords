@@ -441,10 +441,11 @@ public class NetLaunchInfo {
     public Uri makeLaunchUri( Context context )
     {
         int addrs = m_addrs.toInt();
+        String host = LocUtils.getString( context, R.string.invite_host );
+        host = NetUtils.forceHost( host );
         Uri.Builder ub = new Uri.Builder()
             .scheme( "http" )
-            .path( String.format( "//%s%s", 
-                                  LocUtils.getString(context, R.string.invite_host),
+            .path( String.format( "//%s%s", host,
                                   LocUtils.getString(context, R.string.invite_prefix) ) );
         appendInt( ub, LANG_KEY, lang );
         appendInt( ub, TOTPLAYERS_KEY, nPlayersT );

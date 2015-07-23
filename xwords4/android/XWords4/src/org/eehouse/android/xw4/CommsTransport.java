@@ -46,6 +46,7 @@ public class CommsTransport implements TransportProcs,
     private SocketChannel m_socketChannel;
     private int m_jniGamePtr;
     private CommsAddrRec m_relayAddr;
+    private String m_useHost;
     private JNIThread m_jniThread;
     private CommsThread m_thread;
     private TransportProcs.TPMsgHandler m_tpHandler;
@@ -99,8 +100,7 @@ public class CommsTransport implements TransportProcs,
                     DbgUtils.loge( ioe );
                 } catch ( UnresolvedAddressException uae ) {
                     DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
-                                   m_relayAddr.ip_relay_hostName, 
-                                   m_relayAddr.ip_relay_port, 
+                                   m_useHost, m_relayAddr.ip_relay_port, 
                                    uae.toString() );
                 }
 
@@ -127,11 +127,11 @@ public class CommsTransport implements TransportProcs,
                                 try {
                                     m_socketChannel = SocketChannel.open();
                                     m_socketChannel.configureBlocking( false );
-                                    DbgUtils.logf( "connecting to %s:%d",
-                                                   m_relayAddr.ip_relay_hostName, 
+                                    DbgUtils.logf( "connecting to %s:%d", 
+                                                   m_useHost, 
                                                    m_relayAddr.ip_relay_port );
                                     InetSocketAddress isa = new 
-                                        InetSocketAddress(m_relayAddr.ip_relay_hostName,
+                                        InetSocketAddress(m_useHost,
                                                           m_relayAddr.ip_relay_port );
                                     m_socketChannel.connect( isa );
                                 } catch ( java.io.IOException ioe ) {
@@ -368,6 +368,7 @@ public class CommsTransport implements TransportProcs,
         if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY 
              && null == m_relayAddr ) {
             m_relayAddr = new CommsAddrRec( addr );
+            m_useHost = NetUtils.forceHost( m_relayAddr.ip_relay_hostName );
         }
 
         if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY ) {

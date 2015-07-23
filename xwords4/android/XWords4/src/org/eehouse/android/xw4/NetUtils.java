@@ -198,6 +198,14 @@ public class NetUtils {
         return msgs;
     } // queryRelay
 
+    public static String forceHost( String host )
+    {
+        if ( 0 < XWApp.FORCE_RELAY_HOST.length() ) {
+            host = XWApp.FORCE_RELAY_HOST;
+        }
+        return host;
+    }
+
     protected static HttpPost makePost( Context context, String proc )
     {
         String url = String.format( "%s/%s", 

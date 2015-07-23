@@ -90,7 +90,8 @@ public class XWPrefs {
 
     public static String getDefaultRelayHost( Context context )
     {
-        return getPrefsString( context, R.string.key_relay_host );
+        String host = getPrefsString( context, R.string.key_relay_host );
+        return NetUtils.forceHost( host );
     }
 
     public static int getDefaultRelayPort( Context context )
