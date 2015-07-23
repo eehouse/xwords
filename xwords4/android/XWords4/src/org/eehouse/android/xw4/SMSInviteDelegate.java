@@ -173,7 +173,10 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     protected void clearSelected()
     {
-        showConfirmThen( R.string.confirm_clear_sms, Action.CLEAR_ACTION );
+        int count = countChecks();
+        String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt, 
+                                        count, count );
+        showConfirmThen( msg, Action.CLEAR_ACTION );
     }
 
     protected void listSelected( String[][] devsP, int[][] countsP )

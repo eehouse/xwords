@@ -1663,8 +1663,10 @@
   <string name="button_relay_add">SCAN GAMES</string>
   <!--  -->
   <plurals name="invite_sms_desc_fmt">
-    <item quantity="other">PLEASE CHECK THE %1$d PHONE
-    NUMBER[S] YOU WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+    <item quantity="one">PLEASE CHECK THE PHONE NUMBER YOU WANT TO
+      INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+    <item quantity="other">PLEASE CHECK THE %1$d PHONE NUMBERS YOU
+      WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
   </plurals>
   <!--  -->
   <plurals name="invite_relay_desc_fmt">
@@ -1688,8 +1690,12 @@
   <string name="get_sms_number">ENTER PHONE NUMBER:</string>
   <string name="get_relay_number">ENTER DEVICE ID:</string>
   <!--  -->
-  <string name="confirm_clear_sms">ARE YOU SURE YOU WANT TO DELETE THE
-    CHECKED PHONE NUMBER[S]?</string>
+  <plurals name="confirm_clear_sms_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO DELETE THE CHECKED
+      PHONE NUMBER?</item>
+    <item quantity="other">ARE YOU SURE YOU WANT TO DELETE THE
+       %1$d CHECKED PHONE NUMBERS?</item>
+  </plurals>
   <string name="confirm_clear_relay">ARE YOU SURE YOU WANT TO DELETE THE
     CHECKED DEVICE[S]?</string>
   <!--  -->
@@ -1999,13 +2005,16 @@
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
     4 hour[s] ago." -->
   <plurals name="nag_minutes_fmt">
-    <item quantity="other">%1$d MINUTE[S]</item>
+    <item quantity="one">%1$d MINUTE</item>
+    <item quantity="other">%1$d MINUTES</item>
   </plurals>
   <plurals name="nag_hours_fmt">
-    <item quantity="other">%1$d HOUR[S]</item>
+    <item quantity="one">%1$d HOUR</item>
+    <item quantity="other">%1$d HOURS</item>
   </plurals>
   <plurals name="nag_days_fmt">
-    <item quantity="other">%1$d DAY[S]</item>
+    <item quantity="one">%1$d DAY</item>
+    <item quantity="other">%1$d DAYS</item>
   </plurals>
   <string name="nag_body_fmt">%1$s MOVED MORE THAN %2$s AGO.</string>
   <!-- above is inserted in this the last time I warn -->
@@ -2049,7 +2058,8 @@
   <string name="use_defaults">USE DEFAULTS</string>
   <string name="nplayers_prompt">NUMBER ON THIS DEVICE</string>
   <plurals name="nplayers_fmt">
-    <item quantity="other">%1$d PLAYER[S]</item>
+    <item quantity="one">ONE PLAYER</item>
+    <item quantity="other">%1$d PLAYERS</item>
   </plurals>
   <string name="err_dup_invite_fmt">DUPLICATE INVITATION REJECTED:
     DEVICE \"%1$s\" HAS ALREADY ACCEPTED AN INVITATION TO THIS

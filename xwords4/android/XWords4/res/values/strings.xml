@@ -1921,8 +1921,12 @@
     <!--  -->
     <string name="button_relay_add">Scan games</string>
     <!--  -->
-    <plurals name="invite_sms_desc_fmt"><item quantity="other">Please check the %1$d phone
-    number[s] you want to invite to your new game, then tap \"%2$s\".</item></plurals>
+    <plurals name="invite_sms_desc_fmt">
+      <item quantity="one">Please check the phone number you want to
+      invite to your new game, then tap \"%2$s\".</item>
+      <item quantity="other">Please check the %1$d phone numbers you
+      want to invite to your new game, then tap \"%2$s\".</item>
+    </plurals>
     <!--  -->
     <plurals name="invite_relay_desc_fmt"><item
     quantity="other">Please check the %1$d devices you want to invite
@@ -1944,8 +1948,12 @@
     <string name="get_sms_number">Enter phone number:</string>
     <string name="get_relay_number">Enter device ID:</string>
     <!--  -->
-    <string name="confirm_clear_sms">Are you sure you want to delete the
-    checked phone number[s]?</string>
+    <plurals name="confirm_clear_sms_fmt">
+      <item quantity="one">Are you sure you want to delete the checked
+      phone number?</item>
+      <item quantity="other">Are you sure you want to delete the
+       %1$d checked phone numbers?</item>
+    </plurals>
     <string name="confirm_clear_relay">Are you sure you want to delete the
     checked device[s]?</string>
     <!--  -->
@@ -2312,9 +2320,18 @@
     are used to build a string based on the length of time that's then
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
     4 hour[s] ago." -->
-    <plurals name="nag_minutes_fmt"><item quantity="other">%1$d minute[s]</item></plurals>
-    <plurals name="nag_hours_fmt"><item quantity="other">%1$d hour[s]</item></plurals>
-    <plurals name="nag_days_fmt"><item quantity="other">%1$d day[s]</item></plurals>
+    <plurals name="nag_minutes_fmt">
+      <item quantity="one">%1$d minute</item>
+      <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <plurals name="nag_hours_fmt">
+      <item quantity="one">%1$d hour</item>
+      <item quantity="other">%1$d hours</item>
+    </plurals>
+    <plurals name="nag_days_fmt">
+      <item quantity="one">%1$d day</item>
+      <item quantity="other">%1$d days</item>
+    </plurals>
     <string name="nag_body_fmt">%1$s moved more than %2$s ago.</string>
     <!-- above is inserted in this the last time I warn -->
     <string name="nag_warn_last_fmt">Last warning: %1$s</string>
@@ -2360,7 +2377,10 @@
     <string name="use_defaults">Use defaults</string>
 
     <string name="nplayers_prompt">Number on this device</string>
-    <plurals name="nplayers_fmt"><item quantity="other">%1$d player[s]</item></plurals>
+    <plurals name="nplayers_fmt">
+      <item quantity="one">One player</item>
+      <item quantity="other">%1$d players</item>
+    </plurals>
     <string name="err_dup_invite_fmt">Duplicate invitation rejected:
     device \"%1$s\" has already accepted an invitation to this
     game.</string>

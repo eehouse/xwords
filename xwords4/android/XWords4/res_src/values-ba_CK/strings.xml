@@ -1663,8 +1663,10 @@
   <string name="button_relay_add">Nacs semag</string>
   <!--  -->
   <plurals name="invite_sms_desc_fmt">
-    <item quantity="other">Esaelp kcehc eht %1$d enohp
-    ]s[rebmun uoy tnaw ot etivni ot ruoy wen ,emag neht pat \"%2$s\".</item>
+    <item quantity="one">Esaelp kcehc eht enohp rebmun uoy tnaw ot
+      etivni ot ruoy wen ,emag neht pat \"%2$s\".</item>
+    <item quantity="other">Esaelp kcehc eht %1$d enohp srebmun uoy
+      tnaw ot etivni ot ruoy wen ,emag neht pat \"%2$s\".</item>
   </plurals>
   <!--  -->
   <plurals name="invite_relay_desc_fmt">
@@ -1688,8 +1690,12 @@
   <string name="get_sms_number">Retne enohp rebmun:</string>
   <string name="get_relay_number">Retne ecived DI:</string>
   <!--  -->
-  <string name="confirm_clear_sms">Era uoy erus uoy tnaw ot eteled eht
-    dekcehc enohp ?]s[rebmun</string>
+  <plurals name="confirm_clear_sms_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot eteled eht dekcehc
+      enohp ?rebmun</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot eteled eht
+       %1$d dekcehc enohp ?srebmun</item>
+  </plurals>
   <string name="confirm_clear_relay">Era uoy erus uoy tnaw ot eteled eht
     dekcehc ?]s[ecived</string>
   <!--  -->
@@ -1999,13 +2005,16 @@
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
     4 hour[s] ago." -->
   <plurals name="nag_minutes_fmt">
-    <item quantity="other">%1$d ]s[etunim</item>
+    <item quantity="one">%1$d etunim</item>
+    <item quantity="other">%1$d setunim</item>
   </plurals>
   <plurals name="nag_hours_fmt">
-    <item quantity="other">%1$d ]s[ruoh</item>
+    <item quantity="one">%1$d ruoh</item>
+    <item quantity="other">%1$d sruoh</item>
   </plurals>
   <plurals name="nag_days_fmt">
-    <item quantity="other">%1$d ]s[yad</item>
+    <item quantity="one">%1$d yad</item>
+    <item quantity="other">%1$d syad</item>
   </plurals>
   <string name="nag_body_fmt">%1$s devom erom naht %2$s oga.</string>
   <!-- above is inserted in this the last time I warn -->
@@ -2049,7 +2058,8 @@
   <string name="use_defaults">Esu stluafed</string>
   <string name="nplayers_prompt">Rebmun no siht ecived</string>
   <plurals name="nplayers_fmt">
-    <item quantity="other">%1$d ]s[reyalp</item>
+    <item quantity="one">Eno reyalp</item>
+    <item quantity="other">%1$d sreyalp</item>
   </plurals>
   <string name="err_dup_invite_fmt">Etacilpud noitativni detcejer:
     ecived \"%1$s\" sah ydaerla detpecca na noitativni ot siht
