@@ -1,3 +1,257 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
-</resources>
+<string name="button_new_game">Nieuw spel</string>
+    <string name="button_new_group">Nieuwe groep</string>
+
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+
+    <string name="robot_name_fmt">%1$s (robot)</string>
+
+    <string name="missing_player">(nog niet hier...)</string>
+
+    <string name="summary_relay_conf_fmt">Ingesteld voor kamer \"%1$s\"</string>
+    <string name="summary_relay_wait_fmt">Wachtend op spelers in kamer \"%1$s\"</string>
+    <string name="summary_relay_conn_fmt">Spel bezig in kamer \"%1$s\"</string>
+    <string name="summary_relay_gameover_fmt">Spel voorbij is kamer \"%1$s\"</string>
+
+    <string name="gameOver">Spel voorbij</string>
+    <plurals name="moves_fmt">
+	<item quantity="one">%1$s zet gespeeld</item>
+	<item quantity="other">%1$s zetten gespeeld</item>
+</plurals>
+
+    <string name="button_delete">Verwijder</string>
+    <string name="button_reset">Reset</string>
+
+    <string name="gamel_menu_dicts">Woordenlijsten</string>
+
+    <string name="menu_prefs">Instellingen</string>
+
+    <string name="gamel_menu_checkmoves">Zoek naar nieuwe zetten</string>
+
+    <string name="msgs_progress">Zoeken naar nieuwe zetten</string>
+
+    <string name="no_games_to_refresh">Geen spellen gevonden die via de relay verbinden.</string>
+
+    <string name="board_menu_file_about">Over Crosswords</string>
+
+    <string name="game_item_menu_title_fmt">\"%1$s\" acties:</string>
+
+    <string name="list_item_config">Spelinstellingen</string>
+    <string name="list_item_rename">Hernoem</string>
+    <string name="list_item_move">Verplaats naar groep</string>
+
+    <string name="list_item_delete">Verwijder spel</string>
+    <string name="list_item_reset">Reset</string>
+    <string name="list_item_new_from">Nieuw spel gebaseerd op</string>
+    <string name="list_item_copy">Kopieer</string>
+    <string name="no_copy_network">Spellen die al verbonden zijn kunnen niet gekopieerd worden. Gebruik \"Nieuw spel gebaseerd op\" voor een kopie met dezelfde instellingen, klaar om mee te spelen.</string>
+      <string name="game_rename_title">Hernoem spel</string>
+    <string name="rename_label">Verander de naam van dit spel naar:</string>
+    <string name="rename_label_caveat">Verander de naam van dit spel (op dit apparaat) naar:</string>
+
+    <plurals name="confirm_seldeletes_fmt">
+	<item quantity="one">Weet je zeker dat je %1$d geselecteerd spel wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.</item>
+	<item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.</item>
+</plurals>
+
+    <plurals name="confirm_reset_fmt">
+	<item quantity="one">Weet je zeker dat je %1$d geselecteerd spel wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
+	<item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
+</plurals>
+
+    <string name="title_dicts_list">Crosswords Woordenlijsten</string>   
+    <string name="download_dicts">Meer downloaden</string>
+
+
+    <string name="loc_builtin">Ingebouwd</string>
+
+    <string name="loc_downloads">Downloads</string>
+
+    <string name="dicts_item_move">Verander opslaglocatie</string>
+
+    <string name="dicts_item_select">Als standaard instellen</string>
+
+    <plurals name="confirm_delete_dict_fmt">
+	<item quantity="one">Weet je zeker dat je de woordenlijst %1$s wilt verwijderen?</item>
+	<item quantity="other">Weet je zeker dat je de woordenlijsten %1$s wilt verwijderen?</item>
+</plurals>
+
+    <string name="confirm_deleteonly_dicts_fmt">Het wissen van %1$s zal ervoor zorgen dat je geen woordenlijsten meer hebt voor %2$s. Een of meer spellen zullen onspeelbaar worden (totdat je een vervangende woordenlijst download.)</string>
+
+    <string name="set_default_message_fmt">Voor welke spelers moet de woordenlijst %1$s als standaard voor nieuwe spellen ingesteld worden? (De taal %2$s zal voor beiden als standaard gebruikt worden.)</string>
+
+    <string name="button_default_human">Mens</string>
+    <string name="button_default_robot">Robot</string>
+    <string name="button_default_both">Beiden</string>
+
+    <string name="move_dict_fmt">Locatie voor woordenlijst %1$s</string>
+
+    <string name="loc_internal">Intern</string>
+    <string name="loc_external">Extern</string>
+
+    <string name="title_game_config_fmt">Instellingen voor %1$s</string>  
+
+    <string name="title_gamenet_config_fmt">%1$s instellingen (netwerk)</string>  
+
+    <string name="title_langs_list">Talen (gebaseerd op geïnstalleerde woordenlijsten)</string>
+
+    <string name="game_locked">Instellingen vastzetten</string>
+
+    <string name="players_label_standalone">Spelers (druk om te bewerken)</string>
+
+    <string name="players_label_host_fmt">Spelers (%1$d lokaal, %2$d op een ander apparaat)</string>
+
+    <string name="button_add_player">Speler toevoegen</string>
+
+    <string name="button_juggle_players">Spelers schudden</string>
+
+    <string name="lang_label">Speltaal</string>
+    <string name="langdict_label">Speltaal/woordenlijst</string>
+
+    <string name="connect_label_fmt">Verbinding (via %1$s)</string>
+
+    <string name="join_room">Treed publieke kamer toe</string>
+
+    <string name="new_room_hint">Kamernaam</string>
+
+    <string name="room_public">Maak nieuwe kamer publiek</string>
+
+    <string name="room_public_prompt">Kies publieke kamer</string>
+
+    <string name="public_names_progress_fmt">Publieke kamers ophalen voor %1$d-speler spellen in %2$s.</string>
+
+    <string name="no_name_found_fmt">Geen publieke kamers gevonden voor %1$d-speler spellen in %2$s. Probeer te vernieuwen of een eigen kamer te maken.</string>
+
+    <string name="settings_label">Andere instellingen</string>
+
+    <string name="hints_allowed">Sta hints toe</string>
+
+    <string name="nethints_allowed">Sta hints toe (netwerk)</string>
+
+    <string name="use_timer">Gebruik een timer</string>
+
+    <string name="minutes_label">Minuten per speler</string>
+
+    <string name="robot_spinner_prompt">Hoe slim moet de robot speler zijn?</string>
+
+    <string name="robot_smart">Slimme robot</string>
+    <string name="robot_smarter">Slimmere robot</string>
+    <string name="robot_smartest">Slimste robot</string>
+
+    <string name="phonies_spinner_prompt">Hoe met foute woorden om te gaan (woorden niet in de woordenlijst)</string>
+
+    <string name="phonies_ignore">Negeer foute woorden</string>
+    <string name="phonies_warn">Waarschuw bij fout woord</string>
+    <string name="phonies_disallow">Sta geen foute woorden toe</string>
+
+    <string name="str_reg_server_sans_remote">Tenminste een speler moet als \"Afgelegen\" gemarkeerd zijn om een spel te starten als Host.</string>
+
+    <string name="guest_name">(Speler op ander apparaat)</string>
+
+    <string name="confirm_save">Dit spel is bezig. Indien je deze veranderingen op slaat, moet het spel herstart worden. Wil je deze veranderingen opslaan?</string>
+    <string name="confirm_save_title">Bevestig opslaan</string>
+
+    <string name="play">Speel spel</string>
+
+    <string name="force_title">Speler[s] op ander apparaat</string>
+    <string name="force_expl">In een spel met meerdere apparaten moet er tenminste een speler op dit apparaat en een speler op een ander apparaat zijn. Kijk na of er spelers op andere apparaten spelen.</string>
+    
+    <string name="forced_consistent">Eerste speler gemodificeerd.</string>
+
+    <string name="player_edit_title">Speler aanpassen</string>
+
+    <string name="remote_label">Speler op ander apparaat</string>
+
+    <string name="player_label">Naam:</string>
+
+    <string name="dict_lang_label_fmt">Woordenlijst (in %1$s)</string>
+
+    <string name="dicts_list_prompt_fmt">Geïnstalleerde woordenlijsten (in %1$s)</string>
+
+    <string name="robot_label">Robot speler</string>
+
+    <string name="password_label">Wachtwoord</string>
+
+
+    <string name="button_trade_commit">Bevestig wisselen</string>
+    <string name="button_trade_cancel">Annuleer wisselen</string>
+
+    <string name="entering_trade">Druk op letters om ze te selecteren</string>
+
+
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="bonus_w2x_summary">2W</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_w3x_summary">3W</string>
+
+    <string name="no_moves_made">(Nog geen zetten gedaan)</string>
+
+    <plurals name="invite_msg_fmt">
+	<item quantity="one">Dit spel wacht op %1$d speler op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
+	<item quantity="other">Dit spel wacht op %1$d spelers op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
+</plurals>
+
+    <string name="invite_if_nfc">Of druk om uit te nodigen, indien het andere apparaat dichtbij is en Android Beam (NFC) ondersteund.</string>
+
+      <plurals name="players_miss_fmt">
+	<item quantity="one">Nog %1$d speler nodig</item>
+	<item quantity="other">Nog %1$d spelers nodig</item>
+</plurals>
+
+    <string name="invite_multiple">" (Je verwacht meerdere spelers op afstand. Je hoeft ze niet allemaal tegelijk uit te nodigen, maar dit bericht zal niet verdwijnen totdat iedereen uitgenodigd is en de uitnodiging geaccepteerd heeft.)"</string>
+
+    <string name="pts">pntn</string>
+
+    <plurals name="msg_relay_waiting_fmt">
+	<item quantity="one">Apparaat %1$d verbonden met relay in kamer \"%2$s\". Wachtend op %3$d speler.</item>
+	<item quantity="other">Apparaat %1$d verbonden met relay in kamer \"%2$s\". Wachtend op %3$d spelers.</item>
+</plurals>
+
+    <string name="msg_relay_all_here_fmt">Alle spelers spelers zijn hier in kamer \"%1$s\".</string>
+
+    <string name="relay_alert">Verbindingsprobleem</string>
+
+    <string name="msg_too_many">Je bied meer spelers aan dan de host verwacht.</string>
+    <string name="msg_no_room">Geen host heeft een kamer met deze naam geregistreerd.</string>
+
+    <string name="msg_dup_room">Een andere host heeft al een kamer met deze naam geregistreerd. Hernoem jouw kamer of probeer het later opnieuw.</string>
+    <string name="msg_lost_other">De relay heeft het contact met een ander apparaat in het spel verloren.</string>
+
+    <string name="msg_dev_deleted">Dit spel is verwijderd op een ander apparaat. Je kan niet verder spelen.</string>
+
+    <string name="ids_badwords_fmt">Woord[en] %1$s niet gevonden in woordenlijst %2$s.</string>
+
+    <string name="badwords_accept">" Wil je deze zet toch goed rekenen?"</string>
+    <string name="badwords_lost">" Beurt verloren."</string>
+
+    <string name="badwords_title">Foute woord[en]</string>
+
+    <string name="board_menu_done">Beurt voorbij</string>
+
+    <string name="board_menu_trade">Wisselen</string>
+
+    <string name="board_menu_tray_hide">Verberg rek</string>
+    <string name="board_menu_tray_show">Toon rek</string>
+
+    <string name="board_menu_undo_last">Maak laatste zet ongedaan</string>
+
+    <string name="board_submenu_game">Spel -&gt;</string>
+
+    <string name="board_menu_game_counts">Tellingen en waarden</string>
+
+    <string name="board_menu_game_left">Letters over</string>
+
+    <string name="board_menu_game_history">Spelgeschiedenis</string>
+
+    <string name="board_menu_game_final">Eindscores</string>
+    <string name="board_menu_game_resign">Opgeven</string>
+
+    <string name="board_menu_game_resend">Verstuur berichten opnieuw</string>
+    <plurals name="resend_finished_fmt">
+	<item quantity="one">Opnieuw versturen voltooid; %1$d bericht verstuurd.</item>
+	<item quantity="other">Opnieuw versturen voltooid; %1$d berichten verstuurd.</item>
+</plurals>
+
+    <string name="str_robot_moved_fmt">"De robot %1$s maakte de volgende zet: "</string>
+    </resources>
