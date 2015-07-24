@@ -94,9 +94,9 @@ public class DevID {
         DbgUtils.logdf( "DevID.setRelayDevID()" );
         if ( BuildConfig.DEBUG ) {
             String oldID = getRelayDevID( context );
-            if ( 0 < oldID.length() && ! devID.equals( oldID ) ) {
-                DbgUtils.logf( "devID changing!!!: %s => %s", oldID, devID );
-                Assert.fail();
+            if ( null != oldID && 0 < oldID.length()
+                 && ! devID.equals( oldID ) ) {
+                DbgUtils.logdf( "devID changing!!!: %s => %s", oldID, devID );
             }
         }
         DBUtils.setStringFor( context, DEVID_KEY, devID );
