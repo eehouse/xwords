@@ -198,10 +198,12 @@ public class NetUtils {
         return msgs;
     } // queryRelay
 
+    private static final String FORCE_RELAY_HOST = null;
+    // private static final String FORCE_RELAY_HOST = "eehouse.org";
     public static String forceHost( String host )
     {
-        if ( 0 < XWApp.FORCE_RELAY_HOST.length() ) {
-            host = XWApp.FORCE_RELAY_HOST;
+        if ( null != FORCE_RELAY_HOST ) {
+            host = FORCE_RELAY_HOST;
         }
         return host;
     }
