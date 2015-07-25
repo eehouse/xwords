@@ -2,4 +2,6 @@
 
 <resources>
   <string name="app_version">4.4 beta 97</string>
+  <!-- The name of the app.  Not localized! -->
+  <string name="app_name">Crosswords</string>  
 </resources>
