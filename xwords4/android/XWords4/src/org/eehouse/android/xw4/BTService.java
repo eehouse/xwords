@@ -50,6 +50,7 @@ import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
@@ -59,7 +60,10 @@ public class BTService extends XWService {
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
 
-    private static final int BT_PROTO = 1; // using jsons instead of lots of fields
+    private static final int BT_PROTO_ORIG = 0;
+    private static final int BT_PROTO_JSONS = 1; // using jsons instead of lots of fields
+    private static final int BT_PROTO_NLI = 2; // using binary/common form of NLI
+    private static final int BT_PROTO = BT_PROTO_JSONS; // change in a release or two
 
     private enum BTAction { _NONE,
                             SCAN,
@@ -461,32 +465,32 @@ public class BTService extends XWService {
                     inStream = new DataInputStream( socket.getInputStream() );
 
                     byte proto = inStream.readByte();
-                    if ( proto != BT_PROTO ) {
-                        DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
-                        os.writeByte( BTCmd.BAD_PROTO.ordinal() );
-                        os.flush();
-                        socket.close();
-
-                        sendBadProto( socket );
-                    } else {
-                        byte msg = inStream.readByte();
-                        BTCmd cmd = BTCmd.values()[msg];
+                    BTCmd cmd = BTCmd.values()[inStream.readByte()];
+                    if ( protoOK( proto, cmd ) ) {
                         switch( cmd ) {
                         case PING:
                             receivePing( socket );
                             break;
                         case INVITE:
-                            receiveInvitation( inStream, socket );
+                            receiveInvitation( proto, inStream, socket );
                             break;
                         case MESG_SEND:
                             receiveMessage( inStream, socket );
                             break;
 
                         default:
-                            DbgUtils.logf( "unexpected msg %d", msg );
+                            DbgUtils.logf( "unexpected msg %s", cmd.toString());
                             break;
                         }
                         updateStatusIn( true );
+                    } else {
+                        DataOutputStream os = 
+                            new DataOutputStream( socket.getOutputStream() );
+                        os.writeByte( BTCmd.BAD_PROTO.ordinal() );
+                        os.flush();
+                        socket.close();
+
+                        sendBadProto( socket );
                     }
                 } catch ( IOException ioe ) {
                     DbgUtils.logf( "trying again..." );
@@ -518,6 +522,12 @@ public class BTService extends XWService {
             interrupt();
         }
 
+        private boolean protoOK( byte proto, BTCmd cmd )
+        {
+            boolean ok = proto == BT_PROTO_NLI || proto == BT_PROTO_JSONS;
+            return ok;
+        }
+
         private void receivePing( BluetoothSocket socket ) throws IOException
         {
             DataInputStream inStream = new DataInputStream( socket.getInputStream() );
@@ -533,13 +543,21 @@ public class BTService extends XWService {
             updateStatusOut( true );
         }
 
-        private void receiveInvitation( DataInputStream is,
+        private void receiveInvitation( byte proto, DataInputStream is,
                                         BluetoothSocket socket )
             throws IOException
         {
             BTCmd result;
-            String asJson = is.readUTF();
-            NetLaunchInfo nli = new NetLaunchInfo( BTService.this, asJson );
+            NetLaunchInfo nli;
+            if ( BT_PROTO_JSONS == proto ) {
+                String asJson = is.readUTF();
+                nli = new NetLaunchInfo( BTService.this, asJson );
+            } else {
+                short len = is.readShort();
+                byte[] nliData = new byte[len];
+                is.read( nliData );
+                nli = XwJNI.nliFromStream( nliData );
+            }
 
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
@@ -795,7 +813,13 @@ public class BTService extends XWService {
                     BTCmd reply = null;
                     DataOutputStream outStream = connect( socket, BTCmd.INVITE );
                     if ( null != outStream ) {
-                        outStream.writeUTF( elem.m_nli.toString() );
+                        if ( BT_PROTO == BT_PROTO_JSONS ) {
+                            outStream.writeUTF( elem.m_nli.toString() );
+                        } else {
+                            byte[] nliData = XwJNI.nliToStream( elem.m_nli );
+                            outStream.writeShort( nliData.length );
+                            outStream.write( nliData, 0, nliData.length );
+                        }
                         DbgUtils.logf( "<eeh>sending invite for %d players", elem.m_nPlayersH );
                         outStream.flush();
 
