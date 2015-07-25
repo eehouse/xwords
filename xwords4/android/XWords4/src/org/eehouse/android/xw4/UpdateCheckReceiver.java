@@ -138,6 +138,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 appParams.put( k_GVERS, BuildConstants.GIT_REV );
                 appParams.put( k_GHASH, context.getString( R.string.git_rev ) );
                 appParams.put( k_INSTALLER, installer );
+                appParams.put( k_NAME, packageName );
                 if ( devOK( context ) ) {
                     appParams.put( k_DEVOK, true );
                 }
@@ -179,7 +180,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_STRINGSHASH, BuildConstants.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
-                DbgUtils.logf( "current update: %s", params.toString() );
+                DbgUtils.logdf( "current update: %s", params.toString() );
                 new UpdateQueryTask( context, params, fromUI, pm, 
                                      packageName, dals ).execute();
             } catch ( org.json.JSONException jse ) {
