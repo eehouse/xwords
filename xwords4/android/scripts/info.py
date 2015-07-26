@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Script meant to be installed on eehouse.org.
 
-import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct, random
+import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct, random, string
 import mk_for_download, mygit
 import xwconfig
 
@@ -161,10 +161,13 @@ def getDictSums():
     openShelf()
     return s_shelf[k_SUMS]
 
-def getOrderedApks( path ):
+def getOrderedApks( path, debug ):
+    # logging.debug( "getOrderedApks(" + path + ")" )
     apks = []
 
-    pattern = path + "/XWords4-release_*android_beta_*.apk"
+    pattern = path
+    if debug: pattern += "/XWords4-debug-android_*.apk"
+    else: pattern += "/XWords4-release_*android_beta_*.apk"
 
     files = ((os.stat(apk).st_mtime, apk) for apk in glob.glob(pattern))
     for mtime, file in sorted(files, reverse=True):
@@ -172,6 +175,14 @@ def getOrderedApks( path ):
         apks.append( file )
 
     return apks
+
+def getVariantDir( name ):
+    result = ''
+    splits = string.split( name, '.' )
+    last = splits[-1]
+    if not last == 'xw4': result = last + '/'
+    # logging.debug( 'getVariantDir(' + name + ") => " + result )
+    return result
 
 # public, but deprecated
 def curVersion( req, name, avers = 41, gvers = None, installer = None ):
@@ -218,11 +229,16 @@ def getApp( params, name ):
     if k_NAME in params:
         name = params[k_NAME]
     if name:
+        variantDir = getVariantDir( name )
         # If we're a dev device, always push the latest
         if k_DEBUG in params and params[k_DEBUG]:
-            pass                # we don't upgrade DEBUG builds
+            dir = k_filebase + k_apkDir + variantDir
+            apks = getOrderedApks( dir, True )
+            if 0 < len(apks):
+                url = k_urlbase + '/' + k_apkDir + variantDir + apks[0][len(dir):]
+                result = {k_URL: url}
         elif k_DEVOK in params and params[k_DEVOK]:
-            apks = getOrderedApks( k_filebase + k_apkDir )
+            apks = getOrderedApks( k_filebase + k_apkDir, False )
             if 0 < len(apks):
                 apk = apks[0]
                 # Does path NOT contain name of installed file
@@ -438,7 +454,6 @@ def getUpdates( req, params ):
     else:
         logging.debug( "NOT FOUND xlate info" )
         
-    logging.debug( 'getUpdates done:', )
     result = json.dumps( result )
     # logging.debug( result )
     return result
@@ -493,7 +508,7 @@ def main():
         if argc >= 4: usage()
         path = ""
         if argc >= 3: path = sys.argv[2]
-        apks = getOrderedApks( path )
+        apks = getOrderedApks( path, False )
         if 0 == len(apks): print "No apks in", path
         for apk in apks:
             print apk
