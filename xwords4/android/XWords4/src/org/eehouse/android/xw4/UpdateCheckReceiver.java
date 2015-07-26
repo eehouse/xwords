@@ -138,7 +138,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 appParams.put( k_GVERS, BuildConstants.GIT_REV );
                 appParams.put( k_GHASH, context.getString( R.string.git_rev ) );
                 appParams.put( k_INSTALLER, installer );
-                appParams.put( k_NAME, packageName );
                 if ( devOK( context ) ) {
                     appParams.put( k_DEVOK, true );
                 }
