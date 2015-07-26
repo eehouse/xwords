@@ -453,8 +453,6 @@ public class CommsTransport implements TransportProcs,
             Assert.fail();
             break;
         }
-        DbgUtils.logf( "sendForAddr(addr=%s)=>%d", conType.toString(), 
-                       nSent );
         return nSent;
     }
 

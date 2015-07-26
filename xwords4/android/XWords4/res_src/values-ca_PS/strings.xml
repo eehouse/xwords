@@ -1008,6 +1008,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">INVITE NOW</string>
+  <string name="newgame_drop_relay">DROP RELAY</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">NEW BLUETOOTH GAME</string>
@@ -1707,6 +1708,10 @@
   <string name="board_menu_dict">BROWSE WORDLIST</string>
   <!--  -->
   <string name="game_list_tmp">BUILDING GAME SUMMARY…</string>
+  <string name="connstat_net_noaddr">THIS NETWORKED GAME HAS NO WAY
+    TO CONNECT AND WILL NEVER BE PLAYABLE.\n\n(IT WAS PROBABLY CREATED
+    FROM AN INVITATION THAT DIDN\'T SPECIFY ANY WAY OF CONNECTING
+    THAT YOUR DEVICE SUPPORTS.)</string>
   <!--  -->
   <string name="connstat_net_fmt">NETWORK STATUS FOR GAME CONNECTED VIA
     %1$s:</string>
@@ -2132,9 +2137,35 @@
   <string name="checking_title">CHECKING</string>
   <string name="checking_for_fmt">CHECKING FOR WORDLISTS IN %1$s…</string>
   <string name="db_store_done">SD CARD WRITE COMPLETE.</string>
+  <string name="seeking_relay">CONNECTING TO RELAY…</string>
   <string name="no_relay_conn">THIS GAME IS CONFIGURED TO USE THE
-  RELAY FOR COMMUNICATION BUT HAS BEEN UNABLE TO CONNECT, EITHER
-  BECAUSE OF PROBLEMS WITH YOUR DEVICE\'S INTERNET CONNECTION OR
-  BECAUSE THE RELAY IS NOT RUNNING.\n\nPLEASE TRY OPENING THE GAME AGAIN
-  LATER.</string>
+  RELAY (INTERNET) FOR COMMUNICATION BUT HAS BEEN UNABLE TO
+  CONNECT.\n\nPLEASE TRY OPENING THE GAME AGAIN LATER AFTER
+  CONDITIONS HAVE CHANGED.</string>
+  <string name="drop_relay_warning_fmt">(THIS GAME CAN ALSO CONNECT
+  VIA %1$s, SO IF YOU\'D LIKE TO PLAY THE GAME WITHOUT A RELAY
+  CONNECTION YOU CAN.)
+  </string>
+  <string name="confirm_drop_relay">ARE YOU SURE YOU WANT TO DROP THIS
+  GAME\'S ABILITY TO COMMUNICATE VIA THE RELAY?</string>
+  <string name="wifi_warning">\u0020FOR EXAMPLE, YOU MAY NEED TO BE ON
+  A DIFFERENT WIFI NETWORK.</string>
+  <string name="confirm_drop_relay_bt">BLUETOOTH ONLY WORKS FOR NEARBY
+  DEVICES.</string>
+  <string name="confirm_drop_relay_sms">NOT ALL CARRIERS SUPPORT PLAY
+  VIA SMS.</string>
+  <string name="button_enable">ENABLE</string>
+  <string name="not_again_comms_relay">THE \"RELAY\" IS A SERVER ON
+  THE INTERNET THAT PASSES MESSAGES BETWEEN DEVICES THAT ARE RUNNING
+  CROSSWORDS. IT WORKS ANY TIME YOU HAVE A FULLY-FUNCTIONAL INTERNET
+  CONNECTION, BUT MIGHT HAVE PROBLEMS ON RESTRICTED WIFI
+  NETWORKS.</string>
+  <string name="not_again_comms_sms">PLAY VIA SMS USES THE SAME
+  TECHNOLOGY AS \"TEXTING\". THOUGH THE MESSAGES ARE INVISIBLE TO YOU,
+  YOUR CARRIER CONSIDERS THEM TEXTS, SO YOU WANT TO AVOID THIS FEATURE
+  UNLESS YOU HAVE AN UNLIMITED TEXTING PLAN (OR BUDGET.) NOTE THAT
+  ANDROID ONLY SUPPORTS THIS FEATURE ON DEVICES ON A GSM CARRIER,
+  I.E. EVERY CARRIER IN THE WORLD EXCEPT VERIZON AND SPRINT.</string>
+  <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
+  NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
 </resources>

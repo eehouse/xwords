@@ -30,6 +30,7 @@ import org.json.JSONObject;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
@@ -246,6 +247,13 @@ public class GameSummary {
     {
         boolean result = conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
             && (null == relayID || 0 == relayID.length());
+        if ( result ) {
+            // Don't report it as unconnected if a game's happening
+            // anyway, e.g. via BT.
+            result = 0 > turn && !gameOver;
+        }
+        // DbgUtils.logf( "relayConnectPending()=>%b (turn=%d)", result, 
+        //                turn );
         return result;
     }
 
@@ -422,17 +430,19 @@ public class GameSummary {
     public boolean hasRematchInfo()
     {
         boolean found = false;
-        String[] keys = { EXTRA_REMATCH_BTADDR,
-                          EXTRA_REMATCH_PHONE,
-                          EXTRA_REMATCH_RELAY,
-        };
-        for ( String key : keys ) {
-            found = null != getStringExtra( key );
-            if ( found ) {
-                break;
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            String[] keys = { EXTRA_REMATCH_BTADDR,
+                              EXTRA_REMATCH_PHONE,
+                              EXTRA_REMATCH_RELAY,
+            };
+            for ( String key : keys ) {
+                found = null != getStringExtra( key );
+                if ( found ) {
+                    break;
+                }
             }
+            DbgUtils.logf( "hasRematchInfo() => %b", found );
         }
-        DbgUtils.logf( "hasRematchInfo() => %b", found );
         return found;
     }
 

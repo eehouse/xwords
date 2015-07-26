@@ -44,6 +44,7 @@
 static DBMgr* s_instance = NULL;
 
 #define MAX_NUM_PLAYERS 4
+#define MAX_WAIT_SECONDS (5*60) // five minutes
 
 static int here_less_seed( const char* seeds, int perDeviceSum, 
                            unsigned short seed );
@@ -368,8 +369,6 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
 {
     DevIDRelay devID;
     assert( host->m_devIDType != ID_TYPE_NONE );
-    int ii;
-    bool success;
 
     // if it's already present, just return
     devID = getDevID( host );
@@ -383,7 +382,7 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
         // coming from random, but test with increasing values initially to make
         // sure duplicates are detected.
         const char* devidStr = host->m_devIDString.c_str();
-        for ( success = false, ii = 0; !success; ++ii ) {
+        for ( bool success = false, ii = 0; !success; ++ii ) {
             assert( 10 > ii );  // better to check that we're looping BECAUSE
                                 // of uniqueness problem.
             do {
@@ -393,9 +392,9 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
             QueryBuilder qb;
             qb.appendQueryf( "INSERT INTO " DEVICES_TABLE " (id, devTypes[1],"
                              " devids[1], clntVers, versdesc, model, osvers)"
-                             " VALUES($$, $$, $$, $$, $$, $$, $$)" );
+                             " VALUES($$, $$, $$, $$, $$, $$, $$)" )
 
-            qb.appendParam( devID )
+                .appendParam( devID )
                 .appendParam( host->m_devIDType )
                 .appendParam( devidStr )
                 .appendParam( clientVersion )
@@ -750,6 +749,34 @@ DBMgr::KillGame( const char* const connName, int hid )
 }
 
 void
+DBMgr::WaitDBConn( void )
+{
+    int nSeconds = 0;
+    int toSleep = 1;
+    for ( ; ; ) {
+        PGconn* conn = DBMgr::getThreadConn();
+        if ( !!conn ) {
+            ConnStatusType status = PQstatus( conn );
+            if ( CONNECTION_OK == status ) {
+                break;
+            }
+        }
+
+        toSleep *= 2;
+        if ( toSleep > MAX_WAIT_SECONDS ) {
+            toSleep = MAX_WAIT_SECONDS;
+        }
+    
+        (void)sleep( toSleep );
+        nSeconds += toSleep;
+        logf( XW_LOGERROR, "%s: waiting for postgres; %d seconds so far", __func__,
+              nSeconds );
+    }
+
+    logf( XW_LOGERROR, "%s() done", __func__ );
+}
+
+void
 DBMgr::ClearCIDs( void )
 {
     execSql( "UPDATE " GAMES_TABLE " set cid = null" );
@@ -873,6 +900,19 @@ DBMgr::readArray( const char* const connName, const char* column, int arr[]  ) /
     logf( XW_LOGINFO, "%s: arrStr=\"%s\"", __func__, arrStr );
     sscanf( arrStr, "{%d,%d,%d,%d}", &arr[0], &arr[1], &arr[2], &arr[3] );
     PQclear( result );
+}
+
+// parse something created by comms.c's formatRelayID
+DevIDRelay 
+DBMgr::getDevID( string& relayID )
+{
+    size_t pos = relayID.find_first_of( '/' );
+    string connName = relayID.substr( 0, pos );
+    int hid = relayID[pos + 1] - '0';
+    DevIDRelay result = getDevID( connName.c_str(), hid );
+    // Not an error. Remove or downlog when confirm working
+    logf( XW_LOGERROR, "%s(%s) => %d", __func__, relayID.c_str(), result );
+    return result;
 }
 
 DevIDRelay 
@@ -1332,7 +1372,12 @@ DBMgr::getThreadConn( void )
         params.catf( "port = %d ", port );
 
         conn = PQconnectdb( params.c_str() );
-        pthread_setspecific( m_conn_key, conn );
+        if ( CONNECTION_OK == PQstatus( conn ) ) {
+            pthread_setspecific( m_conn_key, conn );
+        } else {
+            PQfinish( conn );
+            conn = NULL;
+        }
     }
     return conn;
 }

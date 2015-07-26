@@ -895,7 +895,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         boolean isUpgrade = Utils.firstBootThisVersion( m_activity );
         if ( isUpgrade && !s_firstShown ) {
-            if ( LocUtils.getCurLocale( m_activity ).equals( "en" ) ) {
+            if ( LocUtils.getCurLangCode( m_activity ).equals( "en" ) ) {
                 FirstRunDialog.show( m_activity );
             }
             s_firstShown = true;
@@ -1300,7 +1300,7 @@ public class GamesListDelegate extends ListDelegateBase
 
             // check for updates only serves release builds, so don't offer in
             // DEBUG case
-            boolean enable = showDbg && !BuildConfig.DEBUG && nothingSelected
+            boolean enable = showDbg && nothingSelected
                 && UpdateCheckReceiver.haveToCheck( m_activity );
             Utils.setItemVisible( menu, R.id.games_menu_checkupdates, enable );
 
@@ -1847,28 +1847,30 @@ public class GamesListDelegate extends ListDelegateBase
     // used to connect.
     private void startRematch( Intent intent )
     {
-        long rowid = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
-        if ( XWApp.REMATCH_SUPPORTED && -1 != rowid ) {
-            String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
-            String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
-            String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
-            long newid;
-            if ( null == btAddr && null == phone && null == relayID ) {
-                // this will juggle if the preference is set
-                newid = GameUtils.dupeGame( m_activity, rowid );
-            } else {
-                int bits = intent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
-                CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            long rowid = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
+            if ( -1 != rowid ) {
+                String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
+                String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
+                String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
+                long newid;
+                if ( null == btAddr && null == phone && null == relayID ) {
+                    // this will juggle if the preference is set
+                    newid = GameUtils.dupeGame( m_activity, rowid );
+                } else {
+                    int bits = intent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
+                    CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
 
-                long groupID = DBUtils.getGroupForGame( m_activity, rowid );
-                String gameName = "rematch"; // FIX ME :-)
-                newid = GameUtils.makeNewMultiGame( m_activity, groupID, addrs, 
-                                                    gameName );
+                    long groupID = DBUtils.getGroupForGame( m_activity, rowid );
+                    String gameName = "rematch"; // FIX ME :-)
+                    newid = GameUtils.makeNewMultiGame( m_activity, groupID, 
+                                                        addrs, gameName );
 
-                DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
-                                        relayID );
+                    DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
+                                            relayID );
+                }
+                launchGame( newid );
             }
-            launchGame( newid );
         }
     }
 
@@ -2104,12 +2106,6 @@ public class GamesListDelegate extends ListDelegateBase
         launchGame( rowid, true );
     }
 
-    // private void makeNewBTGame( NetLaunchInfo nli )
-    // {
-    //     long rowid = GameUtils.makeNewBTGame( m_activity, nli );
-    //     launchGame( rowid, true );
-    // }
-
     private void tryStartsFromIntent( Intent intent )
     {
         startFirstHasDict( intent );
@@ -2128,17 +2124,6 @@ public class GamesListDelegate extends ListDelegateBase
         if ( summary.conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {
             Assert.fail();
-            // If it's unconfigured and of the type RelayGameActivity
-            // can handle send it there, otherwise use the full-on
-            // config.
-            // Class clazz;
-            
-            // if ( RelayGameDelegate.isSimpleGame( summary ) ) {
-            //     clazz = RelayGameActivity.class;
-            // } else {
-            //     clazz = GameConfigActivity.class;
-            // }
-            // GameUtils.doConfig( m_activity, rowid, clazz );
         } else {
             if ( checkWarnNoDict( rowid ) ) {
                 launchGame( rowid );
@@ -2273,18 +2258,21 @@ public class GamesListDelegate extends ListDelegateBase
                                             String btAddr, String phone,
                                             String relayID )
     {
-        DbgUtils.logf( "makeRematchIntent(btAddr=%s; phone=%s)", btAddr, phone );
-        Intent intent = makeSelfIntent( context );
-        intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
-        intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
-        if ( null != btAddr ) {
-            intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
-        }
-        if ( null != phone ) {
-            intent.putExtra( REMATCH_PHONE_EXTRA, phone );
-        }
-        if ( null != relayID ) {
-            intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
+        Intent intent = null;
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            DbgUtils.logf( "makeRematchIntent(btAddr=%s; phone=%s)", btAddr, phone );
+            intent = makeSelfIntent( context );
+            intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
+            intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() );
+            if ( null != btAddr ) {
+                intent.putExtra( REMATCH_BTADDR_EXTRA, btAddr );
+            }
+            if ( null != phone ) {
+                intent.putExtra( REMATCH_PHONE_EXTRA, phone );
+            }
+            if ( null != relayID ) {
+                intent.putExtra( REMATCH_RELAYID_EXTRA, relayID );
+            }
         }
         return intent;
     }

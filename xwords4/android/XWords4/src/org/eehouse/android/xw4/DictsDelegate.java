@@ -1135,11 +1135,11 @@ public class DictsDelegate extends ListDelegateBase
             // parse less data
             String name = null;
             String proc = String.format( "listDicts?lc=%s", m_lc );
-            HttpPost post = UpdateCheckReceiver.makePost( m_context, proc );
+            HttpPost post = NetUtils.makePost( m_context, proc );
             if ( null != post ) {
                 JSONObject theOne = null;
                 String langName = null;
-                String json = UpdateCheckReceiver.runPost( post, new JSONObject() );
+                String json = NetUtils.runPost( post, new JSONObject() );
                 try {
                     JSONObject obj = new JSONObject( json );
                     JSONArray langs = obj.optJSONArray( "langs" );
@@ -1214,9 +1214,9 @@ public class DictsDelegate extends ListDelegateBase
         public Boolean doInBackground( Void... unused )
         {
             boolean success = false;
-            HttpPost post = UpdateCheckReceiver.makePost( m_context, "listDicts" );
+            HttpPost post = NetUtils.makePost( m_context, "listDicts" );
             if ( null != post ) {
-                String json = UpdateCheckReceiver.runPost( post, new JSONObject() );
+                String json = NetUtils.runPost( post, new JSONObject() );
                 if ( !isCancelled() ) {
                     if ( null != json ) {
                         post( new Runnable() {

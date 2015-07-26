@@ -67,7 +67,6 @@ public class DwnldDelegate extends ListDelegateBase {
 
     public interface OnGotLcDictListener {
         void gotDictInfo( boolean success, String lc, String name );
-
     }
 
     public DwnldDelegate( ListDelegator delegator, Bundle savedInstanceState )

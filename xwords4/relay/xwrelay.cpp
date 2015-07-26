@@ -374,10 +374,15 @@ getHeader( const uint8_t** bufpp, const uint8_t* end,
     uint8_t byt;
     if ( getNetByte( bufpp, end, &byt ) ) {
         header->proto = (XWPDevProto)byt;
-        if ( XWPDEV_PROTO_VERSION_1 == header->proto
-             && vli2un( bufpp, end, &header->packetID )
-             && getNetByte( bufpp, end, &byt )
-             && byt < XWPDEV_N_ELEMS ) {
+        if ( XWPDEV_PROTO_VERSION_1 != header->proto ) {
+            logf( XW_LOGERROR, "%s: bad proto %d", __func__, header->proto );
+        } else if ( !vli2un( bufpp, end, &header->packetID ) ) {
+            logf( XW_LOGERROR, "%s: can't get packet id", __func__ );
+        } else if ( !getNetByte( bufpp, end, &byt ) ) {
+            logf( XW_LOGERROR, "%s: can't get cmd", __func__ );
+        } else if ( XWPDEV_N_ELEMS <= byt ) {
+            logf( XW_LOGERROR, "%s: cmd %d too high", __func__, byt );
+        } else {
             header->cmd = (XWRelayReg)byt;
             success = true;
         }
@@ -838,6 +843,22 @@ post_upgrade( DevIDRelay devid )
     (void)post_or_store( devid, packet, packetID, NULL, NULL );
 }
 
+void
+post_invite( DevIDRelay sender, DevIDRelay invitee, const uint8_t* ptr, size_t len )
+{
+    vector<uint8_t> packet;
+    uint32_t packetID;
+    sender = htonl( sender );
+    assemble_packet( packet, &packetID, XWPDEV_GOTINVITE, 
+                     &sender, sizeof(sender),
+                     ptr, len, 
+                     NULL );
+
+    bool sent = post_or_store( invitee, packet, packetID, NULL, NULL );
+    logf( XW_LOGINFO, "%s(): post_or_store => %s", __func__, 
+          sent ? "sent" : "stored");
+}
+
 /* A CONNECT message from a device gives us the hostID and socket we'll
  * associate with one participant in a relayed session.  We'll store this
  * information with the cookie where other participants can find it when they
@@ -1151,6 +1172,7 @@ usage( char* arg0 )
 #ifdef DO_HTTP
              "\t-w <cport>           (localhost port for web interface)\\\n"
 #endif
+             "\t-b                   (block until postgres connection available)\\\n"
              "\t-D                   (don't become daemon)\\\n"
              "\t-F                   (don't fork and wait to respawn child)\\\n"
              "\t-f <conffile>        (config file)\\\n"
@@ -1652,6 +1674,7 @@ msgToStr( XWRelayReg msg )
     CASE_STR(XWPDEV_UNAVAIL);
     CASE_STR(XWPDEV_REG);
     CASE_STR(XWPDEV_REGRSP);
+    CASE_STR(XWPDEV_INVITE);
     CASE_STR(XWPDEV_KEEPALIVE);
     CASE_STR(XWPDEV_HAVEMSGS);
     CASE_STR(XWPDEV_RQSTMSGS);
@@ -1756,6 +1779,25 @@ handle_udp_packet( UdpThreadClosure* utc )
             }
             break;
         }
+
+        case XWPDEV_INVITE: {
+            DevIDRelay sender;
+            string relayID;
+            if ( getNetLong( &ptr, end, &sender ) 
+                 && getNetString( &ptr, end, relayID ) ) {
+                DevIDRelay invitee;
+                if ( 0 < relayID.size() ) {
+                    invitee = DBMgr::Get()->getDevID( relayID );
+                } else if ( !getNetLong( &ptr, end, &invitee ) ) {
+                    break;      // failure
+                }
+                logf( XW_LOGVERBOSE0, "got invite from %d for %d", 
+                      sender, invitee );
+                post_invite( sender, invitee, ptr, end - ptr );
+            }
+            break;
+        }
+            
         case XWPDEV_KEEPALIVE:
         case XWPDEV_RQSTMSGS: {
             DevID devID( ID_TYPE_RELAY );
@@ -1988,6 +2030,7 @@ main( int argc, char** argv )
     const char* maint_str = NULL;
     bool doDaemon = true;
     bool doFork = true;
+    bool doBlock = false;
 
     (void)uptime();                /* force capture of start time */
 
@@ -1999,7 +2042,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:M:m:n:f:l:t:s:u:w:"
+       int opt = getopt(argc, argv, "bh?c:p:M:m:n:f:l:t:s:u:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -2010,6 +2053,9 @@ main( int argc, char** argv )
        case 'h':
            usage( argv[0] );
            exit( 0 );
+       case 'b':
+           doBlock = true;
+           break;
        case 'c':
            ctrlport = atoi( optarg );
            break;
@@ -2160,6 +2206,10 @@ main( int argc, char** argv )
     }
 #endif
 
+    if ( doBlock ) {
+        DBMgr::Get()->WaitDBConn();
+    }
+    
     if ( -1 != udpport ) {
         struct sockaddr_in saddr;
         g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );

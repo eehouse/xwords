@@ -1170,6 +1170,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
     <string name="newgame_invite">Invite now</string>
+    <string name="newgame_drop_relay">Drop Relay</string>
 
     <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
@@ -1971,6 +1972,10 @@
     <!--  -->
     <string name="game_list_tmp">Building game summary…</string>
 
+    <string name="connstat_net_noaddr">This networked game has no way
+    to connect and will never be playable.\n\n(It was probably created
+    from an invitation that didn\'t specify any way of connecting
+    that your device supports.)</string>
     <!--  -->
     <string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>
@@ -2463,9 +2468,45 @@
   <string name="checking_for_fmt">Checking for wordlists in %1$s…</string>
   <string name="db_store_done">SD card write complete.</string>
 
+  <string name="seeking_relay">Connecting to relay…</string>
+
   <string name="no_relay_conn">This game is configured to use the
-  relay for communication but has been unable to connect, either
-  because of problems with your device\'s internet connection or
-  because the relay is not running.\n\nPlease try opening the game again
-  later.</string>
+  relay (internet) for communication but has been unable to
+  connect.\n\nPlease try opening the game again later after
+  conditions have changed.</string>
+
+  <string name="drop_relay_warning_fmt">(This game can also connect
+  via %1$s, so if you\'d like to play the game without a relay
+  connection you can.)
+  </string>
+
+  <string name="confirm_drop_relay">Are you sure you want to drop this
+  game\'s ability to communicate via the relay?</string>
+
+  <string name="wifi_warning">\u0020For example, you may need to be on
+  a different WiFi network.</string>
+
+  <string name="confirm_drop_relay_bt">Bluetooth only works for nearby
+  devices.</string>
+  <string name="confirm_drop_relay_sms">Not all carriers support play
+  via SMS.</string>
+
+  <string name="button_enable">Enable</string>
+
+  <string name="not_again_comms_relay">The \"relay\" is a server on
+  the internet that passes messages between devices that are running
+  Crosswords. It works any time you have a fully-functional internet
+  connection, but might have problems on restricted WiFi
+  networks.</string>
+
+  <string name="not_again_comms_sms">Play via SMS uses the same
+  technology as \"texting\". Though the messages are invisible to you,
+  your carrier considers them texts, so you want to avoid this feature
+  unless you have an unlimited texting plan (or budget.) Note that
+  Android only supports this feature on devices on a GSM carrier,
+  i.e. every carrier in the world except Verizon and Sprint.</string>
+
+  <string name="not_again_comms_bt">Use Bluetooth to play against a
+  nearby device that\'s \"paired\" with yours.</string>
+
 </resources>

@@ -126,19 +126,14 @@ map_init( MPFORMAL EnvThreadInfo* ti, JNIEnv* env )
 static void
 map_remove( EnvThreadInfo* ti, JNIEnv* env )
 {
-#ifdef DEBUG
-    pthread_t self = pthread_self();
-#endif
     XP_Bool found = false;
 
     pthread_mutex_lock( &ti->mtxThreads );
     for ( int ii = 0; !found && ii < ti->nEntries; ++ii ) {
         found = env == ti->entries[ii].env;
         if ( found ) {
-            /* XP_LOGF( "%s: clearing out %dth entry (thread %x)", __func__, ii,  */
-            /*          (int)self ); */
+            XP_ASSERT( pthread_self() == ti->entries[ii].owner );
             ti->entries[ii].env = NULL;
-            XP_ASSERT( ti->entries[ii].owner = self );
             ti->entries[ii].owner = 0;
         }
     }

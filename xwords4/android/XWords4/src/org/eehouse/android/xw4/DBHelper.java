@@ -60,7 +60,6 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String GAMEID = "GAMEID";
     public static final String REMOTEDEVS = "REMOTEDEVS";
     public static final String EXTRAS = "EXTRAS";
-    public static final String JSON_EXTRAS = "JSON_EXTRAS";
     public static final String DICTLANG = "DICTLANG";
     public static final String DICTLIST = "DICTLIST";
     public static final String HASMSGS = "HASMSGS";

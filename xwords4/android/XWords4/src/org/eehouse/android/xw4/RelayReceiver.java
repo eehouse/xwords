@@ -43,7 +43,6 @@ public class RelayReceiver extends BroadcastReceiver {
 
     public static void setTimer( Context context, long interval_millis )
     {
-        DbgUtils.logf( "RelayReceiver.restartTimer(%d)", interval_millis );
         AlarmManager am =
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
 
@@ -56,7 +55,6 @@ public class RelayReceiver extends BroadcastReceiver {
             long fire_millis = SystemClock.elapsedRealtime() + interval_millis;
             am.set( AlarmManager.ELAPSED_REALTIME_WAKEUP, fire_millis, pi );
         } else {
-            DbgUtils.logf( "RelayReceiver.restartTimer(): cancelling" );
             // will happen if user's set getProxyIntervalSeconds to return 0
             am.cancel( pi );
         }

@@ -29,15 +29,10 @@ import android.preference.PreferenceActivity;
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-public class PrefsActivity extends PreferenceActivity implements Delegator {
+public class PrefsActivity extends PreferenceActivity
+    implements Delegator, DlgDelegate.HasDlgDelegate {
 
     private PrefsDelegate m_dlgt;
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        return m_dlgt.onCreateDialog( id );
-    }
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -88,9 +83,33 @@ public class PrefsActivity extends PreferenceActivity implements Delegator {
         super.onDestroy();
     }
 
-    protected void showOKOnlyDialog( int msgID )
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        return m_dlgt.onCreateDialog( id );
+    }
+
+    @Override
+    public void onPrepareDialog( int id, Dialog dialog )
+    {
+        super.onPrepareDialog( id, dialog );
+        m_dlgt.prepareDialog( DlgID.values()[id], dialog );
+    }
+
+    public void showOKOnlyDialog( int msgID )
     {
         m_dlgt.showOKOnlyDialog( msgID );
+    }
+
+    public void showOKOnlyDialog( String msg )
+    {
+        m_dlgt.showOKOnlyDialog( msg );
+    }
+
+    public void showNotAgainDlgThen( int msgID, int prefsKey, 
+                                     DlgDelegate.Action action )
+    {
+        m_dlgt.showNotAgainDlgThen( msgID, prefsKey, action );
     }
 
     protected void showConfirmThen( int msg, int posButton, int negButton, 

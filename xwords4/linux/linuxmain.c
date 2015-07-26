@@ -631,6 +631,7 @@ typedef enum {
     ,CMD_SPLITPACKETS
     ,CMD_CHAT
     ,CMD_USEUDP
+    ,CMD_NOUDP
     ,CMD_DROPSENDRELAY
     ,CMD_DROPRCVRELAY
     ,CMD_DROPSENDSMS
@@ -747,7 +748,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SPLITPACKETS, true, "split-packets", "send tcp packets in "
        "sections every random MOD <n> seconds to test relay reassembly" }
     ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
-    ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp" }
+    ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp (on by default)" }
+    ,{ CMD_NOUDP, false, "no-use-udp", "connect to relay old-style, via tcp not udp" }
 
     ,{ CMD_DROPSENDRELAY, false, "drop-send-relay", "start new games with relay send disabled" }
     ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
@@ -2085,6 +2087,8 @@ main( int argc, char** argv )
     mainParams.allowPeek = XP_TRUE;
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
+    mainParams.useUdp = true;
+    mainParams.dbName = "xwgames.sql";
 
     char* envDictPath = getenv( "XW_DICTDIR" );
     XP_LOGF( "%s: envDictPath=%s", __func__, envDictPath );
@@ -2189,6 +2193,7 @@ main( int argc, char** argv )
             break;
         case CMD_GAMEFILE:
             mainParams.fileName = optarg;
+            mainParams.dbName = NULL; /* clear the default */
             break;
         case CMD_DBFILE:
             mainParams.dbName = optarg;
@@ -2206,6 +2211,7 @@ main( int argc, char** argv )
                    "disabling XWFEATURE_SEARCHLIMIT" );
 # endif
             mainParams.dbFileName = optarg;
+            mainParams.dbName = NULL;
             break;
         case CMD_GAMEDB_ID:
             mainParams.dbFileID = atoi(optarg);
@@ -2368,6 +2374,9 @@ main( int argc, char** argv )
             break;
         case CMD_USEUDP:
             mainParams.useUdp = true;
+            break;
+        case CMD_NOUDP:
+            mainParams.useUdp = false;
             break;
 
         case CMD_DROPSENDRELAY:

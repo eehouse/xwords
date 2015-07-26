@@ -1008,6 +1008,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">Etivni won</string>
+  <string name="newgame_drop_relay">Pord Yaler</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">Wen Htooteulb emag</string>
@@ -1707,6 +1708,10 @@
   <string name="board_menu_dict">Esworb tsildrow</string>
   <!--  -->
   <string name="game_list_tmp">Gnidliub emag yrammus…</string>
+  <string name="connstat_net_noaddr">Siht dekrowten emag sah on yaw
+    ot tcennoc dna lliw reven eb elbayalp.\n\ntI( saw ylbaborp detaerc
+    morf na noitativni taht ndid\'t yficeps yna yaw fo gnitcennoc
+    taht ruoy ecived stroppus.)</string>
   <!--  -->
   <string name="connstat_net_fmt">Krowten sutats rof emag detcennoc aiv
     %1$s:</string>
@@ -2132,9 +2137,35 @@
   <string name="checking_title">Gnikcehc</string>
   <string name="checking_for_fmt">Gnikcehc rof stsildrow ni %1$s…</string>
   <string name="db_store_done">DS drac etirw etelpmoc.</string>
+  <string name="seeking_relay">Gnitcennoc ot yaler…</string>
   <string name="no_relay_conn">Siht emag si derugifnoc ot esu eht
-  yaler rof noitacinummoc tub sah neeb elbanu ot ,tcennoc rehtie
-  esuaceb fo smelborp htiw ruoy ecived\'s tenretni noitcennoc ro
-  esuaceb eht yaler si ton gninnur.\n\nEsaelp yrt gninepo eht emag niaga
-  retal.</string>
+  yaler )tenretni( rof noitacinummoc tub sah neeb elbanu ot
+  tcennoc.\n\nEsaelp yrt gninepo eht emag niaga retal retfa
+  snoitidnoc evah degnahc.</string>
+  <string name="drop_relay_warning_fmt">sIht( emag nac osla tcennoc
+  aiv %1$s, os fi uoy\'d ekil ot yalp eht emag tuohtiw a yaler
+  noitcennoc uoy nac.)
+  </string>
+  <string name="confirm_drop_relay">Era uoy erus uoy tnaw ot pord siht
+  emag\'s ytiliba ot etacinummoc aiv eht ?yaler</string>
+  <string name="wifi_warning">\u0020Rof ,elpmaxe uoy yam deen ot eb no
+  a tnereffid IfIw krowten.</string>
+  <string name="confirm_drop_relay_bt">Htooteulb ylno skrow rof ybraen
+  secived.</string>
+  <string name="confirm_drop_relay_sms">Ton lla sreirrac troppus yalp
+  aiv SMS.</string>
+  <string name="button_enable">Elbane</string>
+  <string name="not_again_comms_relay">Eht \"yaler\" si a revres no
+  eht tenretni taht sessap segassem neewteb secived taht era gninnur
+  Sdrowssorc. Ti skrow yna emit uoy evah a lanoitcnuf-ylluf tenretni
+  ,noitcennoc tub thgim evah smelborp no detcirtser IfIw
+  skrowten.</string>
+  <string name="not_again_comms_sms">Yalp aiv SMS sesu eht emas
+  ygolonhcet sa \"gnitxet\". Hguoht eht segassem era elbisivni ot ,uoy
+  ruoy reirrac sredisnoc meht ,stxet os uoy tnaw ot diova siht erutaef
+  sselnu uoy evah na detimilnu gnitxet nalp ro( tegdub.) Eton taht
+  Diordna ylno stroppus siht erutaef no secived no a MSG ,reirrac
+  i.e. yreve reirrac ni eht dlrow tpecxe Nozirev dna Tnirps.</string>
+  <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
+  ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
 </resources>

@@ -185,6 +185,8 @@ public class NetLaunchInfo {
                         }
                     }
 
+                    removeUnsupported( supported );
+
                     dict = data.getQueryParameter( WORDLIST_KEY );
                     String langStr = data.getQueryParameter( LANG_KEY );
                     lang = Integer.decode( langStr );
@@ -235,7 +237,7 @@ public class NetLaunchInfo {
         this( gi );
 
         for ( CommsConnType typ : summary.conTypes.getTypes() ) {
-            DbgUtils.logf( "NetLaunchInfo(): got type %s", typ.toString() );
+            // DbgUtils.logf( "NetLaunchInfo(): got type %s", typ.toString() );
             switch( typ ) {
             case COMMS_CONN_BT:
                 addBTInfo();
@@ -258,12 +260,17 @@ public class NetLaunchInfo {
         return m_addrs.contains( typ );
     }
 
+    public void removeAddress( CommsConnType typ )
+    {
+        m_addrs.remove( typ );
+    }
+
     public String inviteID()
     { 
         String result = m_inviteID;
         if ( null == result ) {
             result = GameUtils.formatGameID( m_gameID );
-            DbgUtils.logf( "inviteID(): m_inviteID null so substituting %s", result );
+            // DbgUtils.logf( "inviteID(): m_inviteID null so substituting %s", result );
         }
         return result;
     }
@@ -274,7 +281,7 @@ public class NetLaunchInfo {
         if ( 0 == result ) {
             Assert.assertNotNull( m_inviteID );
             result = Integer.parseInt( m_inviteID, 16 );
-            DbgUtils.logf( "gameID(): m_gameID -1 so substituting %d", result );
+            // DbgUtils.logf( "gameID(): m_gameID -1 so substituting %d", result );
             m_gameID = result;
         }
         Assert.assertTrue( 0 != result );
@@ -364,6 +371,7 @@ public class NetLaunchInfo {
 
     private void init( Context context, String data )
     {
+        CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
         try { 
             JSONObject json = new JSONObject( data );
 
@@ -381,7 +389,6 @@ public class NetLaunchInfo {
             m_gameID = json.optInt( MultiService.GAMEID, 0 );
 
             // Try each type
-            CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
             for ( CommsConnType typ : supported.getTypes() ) {
                 if ( hasAddrs && !m_addrs.contains( typ ) ) {
                     continue;
@@ -416,6 +423,8 @@ public class NetLaunchInfo {
         } catch ( JSONException jse ) {
             DbgUtils.loge( jse );
         }
+
+        removeUnsupported( supported );
 
         calcValid();
     }
@@ -460,10 +469,11 @@ public class NetLaunchInfo {
         }
         Uri result = ub.build();
 
-        // Now test
-        DbgUtils.logf( "testing %s...", result.toString() );
-        NetLaunchInfo instance = new NetLaunchInfo( context, result );
-        Assert.assertTrue( instance.isValid() );
+        if ( BuildConfig.DEBUG ) { // Test...
+            DbgUtils.logf( "testing %s...", result.toString() );
+            NetLaunchInfo instance = new NetLaunchInfo( context, result );
+            Assert.assertTrue( instance.isValid() );
+        }
 
         return result;
     }
@@ -500,7 +510,7 @@ public class NetLaunchInfo {
 
     public boolean isValid()
     {
-        DbgUtils.logf( "NetLaunchInfo(%s).isValid() => %b", toString(), m_valid );
+        // DbgUtils.logf( "NetLaunchInfo(%s).isValid() => %b", toString(), m_valid );
         return m_valid;
     }
 
@@ -523,10 +533,20 @@ public class NetLaunchInfo {
             && 0 != gameID();
     }
 
+    private void removeUnsupported( CommsConnTypeSet supported )
+    {
+        for ( Iterator<CommsConnType> iter = m_addrs.iterator();
+              iter.hasNext(); ) {
+            if ( !supported.contains( iter.next() ) ) {
+                iter.remove();
+            }
+        }
+    }
+
     private void calcValid()
     {
         boolean valid = hasCommon() && null != m_addrs;
-        DbgUtils.logf( "calcValid(%s)", toString() );
+        // DbgUtils.logf( "calcValid(%s)", toString() );
         if ( valid ) {
             for ( Iterator<CommsConnType> iter = m_addrs.iterator();
                   valid && iter.hasNext(); ) {

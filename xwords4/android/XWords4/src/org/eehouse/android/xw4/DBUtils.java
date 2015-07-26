@@ -373,19 +373,21 @@ public class DBUtils {
     public static void addRematchInfo( Context context, long rowid, String btAddr, 
                                        String phone, String relayID )
     {
-        GameLock lock = new GameLock( rowid, true ).lock();
-        GameSummary summary = getSummary( context, lock );
-        if ( null != btAddr ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            GameLock lock = new GameLock( rowid, true ).lock();
+            GameSummary summary = getSummary( context, lock );
+            if ( null != btAddr ) {
+                summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
+            }
+            if ( null != phone ) {
+                summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
+            }
+            if ( null != relayID ) {
+                summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
+            }
+            saveSummary( context, lock, summary );
+            lock.unlock();
         }
-        if ( null != phone ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
-        }
-        if ( null != relayID ) {
-            summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
-        }
-        saveSummary( context, lock, summary );
-        lock.unlock();
     }
 
     public static int countGamesUsingLang( Context context, int lang )
@@ -570,8 +572,9 @@ public class DBUtils {
                 long rowid = cursor.getLong( indx1 );
                 CommsConnTypeSet typs = new CommsConnTypeSet( cursor.getInt(indx2) );
                 // Better have an address if has pending sends
-                Assert.assertTrue( 0 < typs.size() );
-                result.put( rowid, typs );
+                if ( 0 < typs.size() ) {
+                    result.put( rowid, typs );
+                }
             }
             cursor.close();
             db.close();
@@ -718,7 +721,7 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "getMostRecentCreate(%d) => %H", gameID, result );
+
         return result;
     }
 
@@ -763,7 +766,6 @@ public class DBUtils {
         long[][] rowIDss = new long[1][];
         String[] relayIDs = getRelayIDs( context, rowIDss );
         boolean result = null != relayIDs && 0 < relayIDs.length;
-        DbgUtils.logf( "haveRelayGames() => %b", result );
         return result;
     }
 

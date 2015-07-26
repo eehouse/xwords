@@ -14,4 +14,12 @@
 	  android:layout_height="wrap_content"
 	  />
 
+  <CheckBox android:id="@+id/default_check"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/dicts_item_select"
+            android:layout_marginLeft="20dip"
+            android:visibility="gone"
+            />
+
 </LinearLayout>

@@ -55,10 +55,10 @@ public class XWConnAddrPreference extends DialogPreference {
     {
         LocUtils.xlateView( m_context, view );
         m_view = (ConnViaViewLayout)view.findViewById( R.id.conn_types );
+        final PrefsActivity activity = (PrefsActivity)m_context;
         m_view.configure( XWPrefs.getAddrTypes( m_context ),
                           new ConnViaViewLayout.CheckEnabledWarner() {
                               public void warnDisabled( CommsConnType typ ) {
-                                  PrefsActivity activity = (PrefsActivity)m_context;
                                   switch( typ ) {
                                   case COMMS_CONN_SMS:
                                       activity.showConfirmThen( R.string.warn_sms_disabled, 
@@ -80,14 +80,13 @@ public class XWConnAddrPreference extends DialogPreference {
                                   PrefsActivity activity = (PrefsActivity)m_context;
                                   activity.showOKOnlyDialog( R.string.warn_no_comms );
                               }
-                          } );
+                          }, activity );
     }
     
     @Override
     public void onClick( DialogInterface dialog, int which )
     {
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
-            DbgUtils.logf( "ok pressed" );
             CommsConnTypeSet curSet = m_view.getTypes();
             XWPrefs.setAddrTypes( m_context, curSet );
             setSummary( curSet.toString( m_context ) );

@@ -33,8 +33,11 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
+import junit.framework.Assert;
+
 public class ConnViaViewLayout extends LinearLayout {
     private CommsConnTypeSet m_curSet;
+    private DlgDelegate.HasDlgDelegate m_dlgDlgt;
 
     public interface CheckEnabledWarner {
         public void warnDisabled( CommsConnType typ );
@@ -52,7 +55,8 @@ public class ConnViaViewLayout extends LinearLayout {
 
     protected void configure( CommsConnTypeSet types,
                               CheckEnabledWarner cew, 
-                              SetEmptyWarner sew )
+                              SetEmptyWarner sew,
+                              DlgDelegate.HasDlgDelegate dlgDlgt )
     {
         m_curSet = (CommsConnTypeSet)types.clone();
 
@@ -60,6 +64,7 @@ public class ConnViaViewLayout extends LinearLayout {
 
         m_disabledWarner = cew;
         m_emptyWarner = sew;
+        m_dlgDlgt = dlgDlgt;
     }
 
     protected CommsConnTypeSet getTypes()
@@ -88,6 +93,7 @@ public class ConnViaViewLayout extends LinearLayout {
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                   boolean isChecked ) {
                         if ( isChecked ) {
+                            showNotAgainTypeTip( typf );
                             enabledElseWarn( typf );
                             m_curSet.add( typf );
                         } else {
@@ -115,6 +121,34 @@ public class ConnViaViewLayout extends LinearLayout {
 
         if ( !enabled && null != m_disabledWarner ) {
             m_disabledWarner.warnDisabled( typ );
+        }
+    }
+
+    private void showNotAgainTypeTip( CommsConnType typ )
+    {
+        if ( null != m_dlgDlgt ) {
+            int keyID = 0;
+            int msgID = 0;
+            switch( typ ) {
+            case COMMS_CONN_RELAY:
+                msgID = R.string.not_again_comms_relay;
+                keyID = R.string.key_na_comms_relay;
+                break;
+            case COMMS_CONN_SMS:
+                msgID = R.string.not_again_comms_sms;
+                keyID = R.string.key_na_comms_sms;
+                break;
+            case COMMS_CONN_BT:
+                msgID = R.string.not_again_comms_bt;
+                keyID = R.string.key_na_comms_bt;
+                break;
+            default:
+                Assert.fail();
+                break;
+            }
+            m_dlgDlgt.showNotAgainDlgThen( msgID, keyID, 
+                                           DlgDelegate.Action.SKIP_CALLBACK );
+
         }
     }
 }

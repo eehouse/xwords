@@ -63,6 +63,8 @@ class DBMgr {
 
     ~DBMgr();
 
+    void WaitDBConn( void );
+    
     void ClearCIDs( void );
 
     void AddNew( const char* cookie, const char* connName, CookieID cid, 
@@ -145,6 +147,8 @@ class DBMgr {
     void RemoveStoredMessages( const int* msgID, int nMsgIDs );
     void RemoveStoredMessage( const int msgID );
     void RemoveStoredMessages( vector<int>& ids );
+
+    DevIDRelay getDevID( string& relayID );
 
  private:
     DBMgr();

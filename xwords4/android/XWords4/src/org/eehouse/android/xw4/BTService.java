@@ -1099,7 +1099,7 @@ public class BTService extends XWService {
     private DataOutputStream connect( BluetoothSocket socket, BTCmd cmd )
     {
         String name = socket.getRemoteDevice().getName();
-        DbgUtils.logf( "connecting to %s to send cmd %s", name, cmd.toString() );
+        // DbgUtils.logf( "connecting to %s to send cmd %s", name, cmd.toString() );
         // Docs say always call cancelDiscovery before trying to connect
         m_adapter.cancelDiscovery();
         
@@ -1112,7 +1112,7 @@ public class BTService extends XWService {
             DbgUtils.logf( "connect() to %s successful", name );
         } catch ( IOException ioe ) {
             dos = null;
-            DbgUtils.logf( "connect() to %s failed", name );
+            DbgUtils.logf( "BTService.connect() to %s failed", name );
             // logIOE( ioe );
         }
         return dos;

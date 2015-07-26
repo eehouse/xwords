@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009-2015 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -601,9 +601,9 @@ public class GameUtils {
 
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
     {
-        DbgUtils.logf( "launchEmailInviteActivity: nli=%s", nli.makeLaunchJSON() );
+        // DbgUtils.logf( "launchEmailInviteActivity: nli=%s", nli.makeLaunchJSON() );
         Uri gameUri = nli.makeLaunchUri( activity );
-        DbgUtils.logf( "launchEmailInviteActivity: uri=%s", gameUri );
+        // DbgUtils.logf( "launchEmailInviteActivity: uri=%s", gameUri );
 
         String msgString = null == gameUri ? null : gameUri.toString();
         if ( null != msgString ) {
@@ -1043,18 +1043,16 @@ public class GameUtils {
     public static void postMoveNotification( Context context, long rowid, 
                                              LastMoveInfo lmi )
     {
-        if ( null == lmi ) {
-            DbgUtils.logf( "postMoveNotification: posting nothing for lack"
-                           + " of lmi" );
-        } else {
+        if ( null != lmi ) {
             Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
-            String msg = "";
-            if ( null != lmi ) {
-                msg = lmi.format( context );
-            }
-            String title = LocUtils.getString( context, R.string.notify_title_fmt,
-                                               getName( context, rowid ) );
+            String msg = lmi.format( context );
+            String title = 
+                LocUtils.getString( context, R.string.notify_title_fmt,
+                                    getName( context, rowid ) );
             Utils.postNotification( context, intent, title, msg, (int)rowid );
+        } else {
+            DbgUtils.logf( "postMoveNotification(): posting nothing for lack"
+                           + " of lmi" );
         }
     }
     

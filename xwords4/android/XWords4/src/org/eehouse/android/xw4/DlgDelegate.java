@@ -31,10 +31,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -83,6 +86,7 @@ public class DlgDelegate {
         SMS_CONFIG_ACTION,
         BUTTON_BROWSEALL_ACTION,
         NFC_TO_SELF,
+        DROP_RELAY_ACTION,
 
         // Dict Browser
         FINISH_ACTION,
@@ -194,8 +198,7 @@ public class DlgDelegate {
     protected void showDialog( DlgID dlgID )
     {
         if ( !m_activity.isFinishing() ) {
-            int id = dlgID.ordinal();
-            m_activity.showDialog( id );
+            m_activity.showDialog( dlgID.ordinal() );
         }
     }
     
@@ -238,6 +241,9 @@ public class DlgDelegate {
         switch( dlgId ) {
         case INVITE_CHOICES_THEN:
             prepareInviteChoicesDialog( dialog );
+            break;
+        case DIALOG_ENABLESMS:
+            prepareEnableSMSDialog( dialog );
             break;
         }
     }
@@ -691,6 +697,7 @@ public class DlgDelegate {
                     Spinner reasons = (Spinner)
                         layout.findViewById( R.id.confirm_sms_reasons );
                     boolean enabled = 0 < reasons.getSelectedItemPosition();
+                    Assert.assertTrue( enabled );
                     Object[] params = { new Boolean(enabled), };
                     m_clickCallback.dlgButtonClicked( state.m_action, 
                                                       AlertDialog.BUTTON_POSITIVE,
@@ -701,10 +708,37 @@ public class DlgDelegate {
         Dialog dialog = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.confirm_sms_title )
             .setView( layout )
-            .setPositiveButton( android.R.string.ok, lstnr )
+            .setPositiveButton( R.string.button_enable, lstnr )
+            .setNegativeButton( android.R.string.cancel, null )
             .create();
         Utils.setRemoveOnDismiss( m_activity, dialog, dlgID );
         return dialog;
+    }
+
+    private void checkEnableButton( Dialog dialog, Spinner reasons )
+    {
+        boolean enabled = 0 < reasons.getSelectedItemPosition();
+        AlertDialog adlg = (AlertDialog)dialog;
+        Button button = adlg.getButton( AlertDialog.BUTTON_POSITIVE );
+        button.setEnabled( enabled );
+    }
+
+    private void prepareEnableSMSDialog( final Dialog dialog ) 
+    {
+        final Spinner reasons = (Spinner)
+            dialog.findViewById( R.id.confirm_sms_reasons );
+
+        OnItemSelectedListener onItemSel = new OnItemSelectedListener() { 
+                public void onItemSelected( AdapterView<?> parent, View view, 
+                                            int position, long id )
+                {
+                    checkEnableButton( dialog, reasons );
+                }
+
+                public void onNothingSelected( AdapterView<?> parent ) {}
+            };
+        reasons.setOnItemSelectedListener( onItemSel );
+        checkEnableButton( dialog, reasons );
     }
 
     private OnClickListener mkCallbackClickListener( final DlgState state,
