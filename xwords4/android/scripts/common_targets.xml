@@ -112,4 +112,15 @@
         </exec>
     </target>
 
+    <target name="-post-build" >
+      <if condition="${build.is.packaging.debug}">
+        <then>
+          <exec executable="git" outputproperty="git-rev" >
+            <arg value="describe" />
+          </exec>  
+          <copy file="bin/XWords4-debug.apk" tofile="XWords4-debug-${git-rev}.apk"/>
+        </then>
+      </if>
+    </target>
+
 </project>
