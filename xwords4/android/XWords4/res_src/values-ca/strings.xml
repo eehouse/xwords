@@ -15,7 +15,7 @@
 -->
 <resources>
   <string name="button_new_game">Afegeix una partida</string>
-  <string name="list_item_config">Configura</string>
+  <string name="list_item_config">Configuració de la partida…</string>
   <string name="list_item_delete">Suprimeix</string>
   <string name="list_item_copy">Copia</string>
   <string name="list_item_reset">Reinicialitza</string>
@@ -30,8 +30,8 @@
   <string name="button_discard">Descarta</string>
   <string name="button_retry">Reintenta</string>
   <string name="player_label">Nom:</string>
-  <string name="info_title">Per a la vostra informació...</string>
-  <string name="query_title">Una pregunta...</string>
+  <string name="info_title">Per a la vostra informació…</string>
+  <string name="query_title">Una pregunta…</string>
   <string name="title_tile_picker">Seleccioneu una fitxa</string>
   <string name="tiles_left_title">Fitxes romanents</string>
   <string name="counts_values_title">Quantitat i valor de les fitxes</string>
@@ -41,12 +41,12 @@
   <string name="board_menu_done">Fet</string>
   <string name="board_menu_trade">Canvia</string>
   <string name="board_submenu_game">Partida</string>
-  <string name="board_menu_game_counts">Quantitat i valors</string>
-  <string name="board_menu_game_left">Fitxes romanents</string>
-  <string name="board_menu_game_history">Historial de la partida</string>
+  <string name="board_menu_game_counts">Quantitat i valors…</string>
+  <string name="board_menu_game_left">Fitxes romanents…</string>
+  <string name="board_menu_game_history">Historial de la partida…</string>
   <string name="board_menu_game_final">Puntuacions finals</string>
   <string name="board_menu_game_resend">Reenvia els missatges</string>
-  <string name="board_menu_file_about">Quant al Crosswords</string>
+  <string name="board_menu_file_about">Quant al Crosswords…</string>
   <!-- returned by util_getUserString -->
   <string name="strd_robot_traded_fmt">El robot ha canviat %1$d fitxes en aquest torn.</string>
   <!--string name="str_robot_moved">El robot ha fet aquesta jugada:</string-->
@@ -70,7 +70,7 @@
   <string name="str_tiles_not_in_line">Heu de jugar les fitxes en una mateixa línia.</string>
   <string name="str_no_empties_in_turn">No podeu deixar caselles buides entre les fitxes jugades.</string>
   <string name="str_two_tiles_first_move">Heu de jugar dues o més fitxes en la primera jugada.</string>
-  <string name="str_tiles_must_contact">Les fitxes noves han de tocar alguna de les que ja estan jugades al tauler (o la casella central en la primera jugada).</string>
+  <string name="str_tiles_must_contact">Les fitxes noves han de tocar alguna de les que ja estan jugades al tauler (o la casella central en la primera jugada)</string>
   <string name="str_not_your_turn">No podeu fer això, no és el vostre torn!</string>
   <string name="str_no_peek_robot_tiles">No podeu mirar les fitxes del robot!</string>
   <string name="str_too_few_tiles_left_to_trade">Hi ha poques fitxes al saquet i ja no podeu canviar-les.</string>
@@ -93,7 +93,7 @@
   <string name="dicts_item_select">Estableix com a predeterminat</string>
   <string name="settings_label">Paràmetres de la partida</string>
   <string name="minutes_label">Minuts a la partida</string>
-  <string name="download_dicts">Baixa\'n més...</string>
+  <string name="download_dicts">Baixa\'n més…</string>
   <string name="confirm_save_title">Confirmeu els canvis</string>
   <string name="confirm_save">Aquesta partida es troba en joc. Si deseu els canvis haureu de tornar a començar. Voleu desar o descartar els canvis?</string>
   <string name="hints_allowed">Permet pistes</string>
@@ -107,14 +107,14 @@
   <string name="title_sort_tiles">Ordena les fitxes noves</string>
   <string name="summary_sort_tiles">Ordena el faristol en agafar noves fitxes</string>
   <string name="ringer_zoom">Zoom amb els botons de volum</string>
-  <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum.</string>
+  <string name="ringer_zoom_summary">Apropa o allunya el tauler fent servir les tecles de volum</string>
   <string name="hide_title">Amaga la capçalera</string>
   <string name="hide_title_summary">Permet que el tauler sigui una mica més gran</string>
   <string name="phonies_ignore">Ignora-les</string>
   <string name="phonies_warn">Avisa\'m</string>
   <string name="phonies_disallow">No es poden jugar</string>
-  <string name="menu_prefs">Preferències</string>
-  <string name="gamel_menu_dicts">Diccionaris</string>
+  <string name="menu_prefs">Preferències…</string>
+  <string name="gamel_menu_dicts">Diccionaris…</string>
   <string name="confirm_revert_colors">Esteu segur de voler reestablir tots tots els paràmetres de colors als seus valors predeterminats?</string>
   <string name="confirm_revert_all">Esteu segur de voler reestablir totes les preferències als seus valors predeterminats?</string>
   <string name="prefs_defaults">Valors predeterminats per a partides noves</string>
@@ -124,7 +124,7 @@
   <string name="prefs_behavior">Comportament</string>
   <string name="prefs_behavior_summary">Paràmetres que controlen el comportament de l\'aplicació</string>
   <string name="default_dict">Diccionari arbitral</string>
-  <string name="default_phonies">Paraules fora del dicc.</string>
+  <string name="default_phonies">Gestió de les «llufes»</string>
   <string name="board_size">Mida del tauler</string>
   <string name="prefs_colors">Colors</string>
   <string name="prefs_colors_summary">Canvieu els colors emprats al tauler</string>
@@ -166,7 +166,7 @@
     http://xwords.sf.net.  Per informar d\'errors, suggerir noves funcionalitats, oferir ajuda, etc., envieu un correu a: eehouse@eehouse.org.</string>
   <!-- fill this in other than in English -->
   <string name="xlator">Traducció: Joan Montané --- Softcatalà</string>
-  <string name="downloading_dict_fmt">S\'està baixant el diccionari %1$s per al Crosswords...</string>
+  <string name="downloading_dict_fmt">S\'està baixant %1$s…</string>
   <string name="no_dict_title">No s\'ha trobat el diccionari</string>
   <string name="button_download">Baixa</string>
   <string name="msg_ask_password_fmt">Contrasenya per \"%1$s\":</string>
@@ -176,4 +176,764 @@
   <string name="game_fmt">Partida %1$d</string>
   <string name="player_fmt">Jugador %1$d</string>
   <string name="initial_player_minutes">Minuts de partida</string>
-</resources>
+<string name="button_new_group">Afegeix un grup</string>
+
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+
+    <string name="missing_player">(encara no és aquí...)</string>
+
+    <string name="summary_relay_conf_fmt">Configurat per a la salla «%1$s»</string>
+    <string name="summary_relay_wait_fmt">S\'està esperant els jugadors en la sala «%1$s»</string>
+    <string name="summary_relay_conn_fmt">Partida en joc a la sala «%1$s»</string>
+    <string name="summary_relay_gameover_fmt">Partida finalitzada en la sala «%1$s»</string>
+
+    <plurals name="moves_fmt">
+	<item quantity="one">%1$d jugada feta</item>
+	<item quantity="other">%1$d jugades fetes</item>
+</plurals>
+
+    <string name="button_delete">Suprimeix</string>
+    <string name="button_reset">Reinicialitza</string>
+
+    <string name="gamel_menu_checkmoves">Comprova si hi ha jugades</string>
+
+    <string name="msgs_progress">S\'està comprovant el repetidor si hi ha jugades…</string>
+
+    <string name="no_games_to_refresh">No s\'ha trobat cap partida que connecti via el repetidor.</string>
+
+    <string name="game_item_menu_title_fmt">«%1$s» accions:</string>
+
+    <string name="list_item_rename">Canvia el nom…</string>
+    <string name="list_item_move">Mou al grup…</string>
+
+    <string name="no_copy_network">Les partides que ja estan connectades al repetidor no es poden copiar. Useu «Nova des de» per a una còpia preparada per a jugar amb la mateixa configuració.</string>
+      <string name="game_rename_title">Canvia de nom la partida</string>
+    <string name="rename_label">Canvia el nom d\'aquesta partida a:</string>
+    <string name="rename_label_caveat">Canvia el nom d\'aquesta partida (només en aquest aparell) a:</string>
+
+    <plurals name="confirm_seldeletes_fmt">
+	<item quantity="one">Esteu segur de voler suprimir el joc seleccionat? Aquesta acció no es pot desfer.</item>
+	<item quantity="other">Esteu segur de voler suprimir els %1$d jocs seleccionats? Aquesta acció no es pot desfer.</item>
+</plurals>
+
+    <plurals name="confirm_reset_fmt">
+	<item quantity="one">Esteu segur de voler reinicialitzar el joc seleccionat?\n\n(La reinicialització suprimeix totes les jugades i qualsevol informació de connexió.)</item>
+	<item quantity="other">Esteu segur de voler reinicialitzar els %1$d jocs seleccionats?\n\n(La reinicialització suprimeix totes les jugades i qualsevol informació de connexió.)</item>
+</plurals>
+
+    <string name="loc_builtin">Incorporat</string>
+
+    <string name="loc_downloads">Baixades</string>
+
+    <string name="dicts_item_move">Canvia la ubicació d\'emmagatzematge</string>
+
+    <plurals name="confirm_delete_dict_fmt">
+	<item quantity="one">Esteu segur de voler suprimir el diccionari %1$s?</item>
+	<item quantity="other">Esteu segur de voler suprimir els diccionaris %1$s?</item>
+</plurals>
+
+    <string name="confirm_deleteonly_dicts_fmt">Si suprimiu %1$s no tindreu cap diccionari %2$s. Una o més partides no es podran obrir (fins que baixeu un diccionari de substitució.)</string>
+
+    <string name="set_default_message_fmt">Per a quins jugadors el diccionari %1$s hauria de ser el diccionari predeterminat per a partides noves? (la llengua %2$s serà la predeterminada per a ambdós.)</string>
+
+    <string name="button_default_human">Humà</string>
+    <string name="button_default_robot">Robot</string>
+    <string name="button_default_both">Ambdós</string>
+
+    <string name="move_dict_fmt">Ubicació del diccionari %1$s</string>
+
+    <string name="loc_internal">Intern</string>
+    <string name="loc_external">Extern</string>
+
+    <string name="title_gamenet_config_fmt">Paràmetres de %1$s (en xarxa)</string>  
+
+    <string name="title_langs_list">Llengües (en base als diccionaris instal·lats)</string>
+
+    <string name="game_locked">Paràmetres de bloqueig</string>
+
+    <string name="lang_label">Llengua de la partida</string>
+    <string name="langdict_label">Llengua i diccionari de la partida</string>
+
+    <string name="connect_label_fmt">Connexió (via %1$s)</string>
+
+    <string name="join_room">Entra a una sala pública</string>
+
+    <string name="new_room_hint">Nom de la sala</string>
+
+    <string name="room_public">Crea una sala pública nova</string>
+
+    <string name="room_public_prompt">Seleccioneu una sala pública</string>
+
+    <string name="public_names_progress_fmt">S\'estan obtenint les sales públiques per a partides de %1$d jugadors en %2$s.</string>
+
+    <string name="no_name_found_fmt">No s\'ha trobat cap sala pública per a partides de %1$d jugadors en %2$s. Podeu tornar a provar-ho o crear-ne una vós mateix.</string>
+
+    <string name="nethints_allowed">Permet consells (en xarxa)</string>
+
+    <string name="robot_spinner_prompt">Com d\'intel·ligent ha de ser el jugador robot?</string>
+
+    <string name="robot_smart">Robot intel·ligent</string>
+    <string name="robot_smarter">Robot més intel·ligent</string>
+    <string name="robot_smartest">Robot intel·ligentíssim</string>
+
+    <string name="phonies_spinner_prompt">Com s\'han de gestionar les «llufes» (paraules que no són al diccionari)</string>
+
+    <string name="forced_consistent">Primer jugador modificat.</string>
+
+    <string name="dict_lang_label_fmt">Diccionari (en %1$s)</string>
+
+    <string name="dicts_list_prompt_fmt">Diccionaris instal·lats (en %1$s)</string>
+
+    <string name="button_trade_commit">Envia el canvi</string>
+    <string name="button_trade_cancel">Cancel·la el canvi</string>
+
+    <string name="entering_trade">Toqueu les fitxes per a seleccionar-les…</string>
+
+
+    <string name="no_moves_made">(Encara no s\'ha fet cap jugada)</string>
+
+    <plurals name="invite_msg_fmt">
+	<item quantity="one">Aquesta partida està esperant a %1$d jugador remot. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
+	<item quantity="other">Aquesta partida està esperant a %1$d jugadors remots. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
+</plurals>
+
+    <string name="invite_if_nfc">O simplement toqueu per a convidar, si l\'altre aparell també té Android Beaming i és a prop.</string>
+
+      <plurals name="players_miss_fmt">
+	<item quantity="one">Manca %1$d jugador</item>
+	<item quantity="other">Manquen %1$d jugadors</item>
+</plurals>
+
+    <string name="invite_multiple">" (Esteu esperant més d\'un jugador remot. No els heu de convidar a tots a la vegada, però aquest avís no desapareixerà fins que hàgiu convidat a tothom i totes les invitacions s\'hagin acceptat.)"</string>
+
+    <string name="msg_relay_all_here_fmt">Tots els jugadors són a la sala «%1$s».</string>
+
+    <string name="msg_dev_deleted">Aquesta partida s\'ha suprimit en un altre aparell. No podreu jugar-hi més.</string>
+
+    <string name="board_menu_tray_hide">Amaga el faristol</string>
+    <string name="board_menu_tray_show">Mostra el faristol</string>
+
+    <string name="board_menu_undo_last">Desfés</string>
+
+    <string name="board_menu_game_resign">Rendició</string>
+
+    <string name="str_robot_moved_fmt">"El robot %1$s ha fet aquesta jugada: "</string>
+    <string name="str_remote_moved_fmt">"El jugador remot %1$s ha fet aquesta jugada: "</string>
+    <string name="str_pass">passa\n</string>
+    <string name="str_nonlocal_name_fmt">%1$s (remot)</string>
+    <string name="vs_join">" vs. "</string>
+
+    <plurals name="strd_remains_header_fmt">
+	<item quantity="one">%1$d fitxes romanents al sac.</item>
+	<item quantity="other"/>
+</plurals>
+    <plurals name="strd_remains_expl_fmt">
+	<item quantity="one">%1$d fitxes romanents al sac i als faristols:\n</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="confirm_undo_last">Esteu segur que voleu desfer l\'últim torn enviat? (No hi ha opció per a refer-lo.)</string>
+
+    <string name="button_revert_all">Restaura-ho tot</string>
+    <string name="button_revert_colors">Restaura els colors</string>
+    <string name="prefs_names">Noms dels jugadors</string>
+
+    <string name="prefs_names_summary">Noms predeterminats dels jugadors</string>
+
+    <string name="pref_human_name">Jugador humà</string>
+
+    <string name="tell_unused">Encara no s\'ha usat…</string>
+
+    <string name="prefs_dicts">Diccionaris</string>
+    <string name="prefs_dicts_summary">Diccionaris predeterminats</string>
+
+    <string name="default_robodict">Diccionaris per als robots</string>
+
+    <string name="hints_allowed_sum">Permet les pistes</string>
+
+    <string name="nethints_allowed_sum">Permet les pistes per a les partides de 2 aparells</string>
+
+    <string name="init_autojuggle">Barreja els jugadors</string>
+    <string name="init_autojuggle_sum">Aleatòriament, per a noves partides</string>
+
+    <string name="summary_field">Inclou al llistat de partides</string>
+
+    <string name="game_summary_field_empty">&lt;Res&gt;</string>
+    <string name="game_summary_field_language">Llengua de la partida</string>
+    <string name="game_summary_field_opponents">Noms dels oponents</string>
+    <string name="game_summary_field_state">Estat de la partida</string>
+
+    <string name="hide_newgames_title">Amaga els botons de partida nova</string>
+    <string name="hide_newgames_summary">Si amagueu els botons de partida nova en la finestra principal, les partides seran més visibles</string>
+
+    <string name="keep_screenon">Conserva la pantalla activa</string>
+    <string name="keep_screenon_summary">Conserva la pantalla del tauler activa durant 10 minuts</string>
+
+    <string name="background">Fons del tauler</string>
+
+    <string name="key_bonushint">Indicació de la bonificació de la casella</string>
+
+    <string name="peek_other">Mostra les fitxes fora del torn</string>
+    <string name="peek_other_summary">Si toqueu el nom del marcador, es mostren les fitxes del jugador corresponent</string>
+
+    
+    <string name="hide_crosshairs_summary">No indica visualment la cel·la del tauler que es toca</string>
+
+    <string name="network_behavior">Configuració de les partides en xarxa</string>
+    <string name="network_behavior_summary">Configuració que s\'aplica a les partides en xarxa</string>
+
+    <string name="connect_frequency">Comprovació de jugades en segon pla</string>
+    <string name="connect_never">No ho comprovis mai</string>
+    <string name="connect_five_mins">Cada 5 minuts</string>
+    <string name="connect_fifteen_mins">Cada 15 minuts</string>
+    <string name="connect_thirty_mins">Cada 30 minuts</string>
+    <string name="connect_one_hour">Cada hora</string>
+    <string name="connect_six_hours">Cada 6 hores</string>
+    <string name="connect_daily">Un cop al dia</string>
+
+    <string name="notify_sound">Reprodueix un so</string>
+
+    <string name="notify_vibrate">Vibra</string>
+
+    <string name="notify_other_summary">Quan arribi la jugada de l\'oponent</string>
+
+    <string name="newgame_local_header">Partida només local nova</string>
+
+    <string name="newgame_local_desc_fmt">Crea una partida nova on totes els jugadors seran en aquest aparell. Per a jugar contra un robot amb la configuració predeterminada (en %1$s, etc.) simplment pitgeu «Juga ara». Per a afegir jugadors o canviar els paràmetres de la partida, pitgeu «Configura primer».</string>
+
+    <string name="newgame_local">Juga ara</string>
+
+    <string name="newgame_configure_first">Configura primer</string>
+
+    <string name="newgame_networked_header">Partida en xarxa nova</string>
+
+    <string name="newgame_networked_desc">Crea una partida per a jugar en xarxa. El botó «Convida ara» inicia una partida entre 2 aparells i us ajuda a convidar un amic a unir-s\'hi. O pitgeu «Configura primer» per a canviar alguns dels paràmetres predeterminats abans de començar la partida en xarxa. (Podreu enviar les invitacions després.)</string>
+
+    <string name="newgame_invite">Convida ara</string>
+    <string name="newgame_bt_header">Partida Bluetooth nova</string>
+
+    <string name="invite_choice_sms">SMS (missatges)</string>
+	<string name="invite_choice_email">Correu-e</string>
+	<string name="invite_choice_bt">Bluetooth</string>
+	<string name="invite_choice_nfc">NFC («Android beaming»)</string>
+	<string name="invite_choice_title">Invitació de jugadors: Com?</string>
+    <string name="invite_subject_fmt">Juga al Crosswords (sala %1$s)</string>
+
+    <string name="invite_txt_fmt">Juga al Crosswords! Uneix-te a aquesta partida: %1$s.</string>
+
+    <string name="invite_chooser_fmt">Envia la invitació via %1$s</string>
+    <string name="invite_chooser_email">correu-e</string>
+    <string name="invite_chooser_sms">SMS</string>
+
+    <plurals name="query_trade_fmt">
+	<item quantity="one">Esteu segur que voleu canviar les %1$d fitxes seleccionades (%2$s)?</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="chat_title_fmt">%1$s historial de missatges</string>
+    <string name="chat_local_id">"Jo: "</string>
+    <string name="chat_other_id">"No jo: "</string>
+    <string name="chat_send">Envia</string>
+
+    <string name="chat_menu_clear">Buida l\'historial</string>
+
+
+    <string name="local_name_hint">Nom del jugador</string>
+
+    <string name="advanced_config">Paràmetres de partida avançats</string>
+
+    <string name="no_empty_rooms">Aquesta partida no pot connectar sense un nom de sala.</string>
+
+
+
+    <string name="no_dict_finish">Ha desaparegut el diccionari que usava aquesta partida. (Habitualment això significa que és en una targeta externa que no es troba disponible.)</string>
+
+    <string name="button_close_game">Tanca la partida</string>
+
+    <string name="no_dict_fmt">La partida «%1$s» requereix un diccionari de %2$s. Baixeu-ne un abans d\'obrir-la.</string>
+
+    <string name="button_substdict">Substitueix</string>
+
+    <string name="subst_dict_title">Substitueix el diccionari (nombre de paraules)</string>
+
+    <string name="notify_title_fmt">Jugada en la partida %1$s</string>
+
+    <string name="button_notagain">No ho mostris més</string>
+
+    <string name="not_again_trading">Esteu entrant en el mode de canvi de fitxes.\n\nToqueu les fitxes per a afegir-les o treure-les del conjunt a canviar.\n\n</string>
+
+      <string name="not_again_trading_buttons">Useu els botons per a enviar el vostre torn o sortir del mode de canvi.</string>
+      <string name="not_again_trading_menu">Useu el menú o la barra d\'acció per a enviar el torn o sortir del mode de canvi.</string>
+
+    <string name="not_again_hintprev">Aquest botó mostra totes les jugades possibles en ordre ascendent (usa les fitxes a la dreta del separador del faristol.)</string>
+    <string name="not_again_hintnext">Aquest botó mostra totes les jugades possibles en ordre descendent (usa les fitxes a la dreta del separador del faristol.)</string>
+    <string name="not_again_juggle">Aquest botó barreja aleatòriament les fitxes del faristol.</string>
+    <string name="not_again_flip">Aquest botó capgira el tauler pel seu eix diagonal.</string>
+    <string name="not_again_zoom">Aquest botó canvia l\'escala del tauler entre la mida normal i l\'ampliada. Si està ampliat, arrossegueu per a veure la part oculta.</string>
+    <string name="not_again_undo">Aquest botó desfà o refà el torn actual.</string>
+    <string name="not_again_chat">Aquest botó obre la pantalla per a enviar missatges entre els aparells d\'aquesta partida. Els missatges es conservaran fins que suprimiu la partida que els conté.</string>
+    <string name="not_again_values">Aquest botó canvia si el tauler mostra les lletres de les fitxes jugades o els seu valor numèric. Useu-lo per a recordar quin valor té una fitxa.</string>
+    <string name="not_again_done">Tocar el comptador «pts» que apareix a la dreta del faristol és la manera més senzilla d\'enviar una jugada.</string>
+
+    <string name="not_again_unlock">Aquesta partida és en joc. Alguns paràmetres, p. e. el nombre de jugadors, no es poden canviar sense reiniciar-la. En deixar aquesta pantalla podreu descartar els canvis per a evitar la reinicialització.</string>
+
+    <string name="default_name_title">Benvingut</string>
+    <string name="default_name_message">Gràcies per instal·lar el Crosswords!\n\nIntroduïu el vostre nom aquí. S\'usarà en crear partides noves. (Podreu canviar-lo després a la secció «Partida nova predeterminada» de la configuració.)</string>
+
+    <string name="about_vers_fmt">Crosswords per a l\'Android, versió %1$s, rev %2$s, construït en %3$s.</string>
+    <string name="about_credits">Icones de la barra d\'eines per Sarah Chu.</string>
+
+    <string name="changes_title">Canvis recents</string>
+    <string name="changes_button">Canvis recents</string>
+
+    <string name="button_lookup">Comprova paraules</string>
+    <string name="button_lookup_study">Comprova o estudia paraules</string>
+      <string name="button_lookup_fmt">Cerca %1$s</string>
+    <string name="button_lookup_study_fmt">Cerca o estudia %1$s</string>
+      <string name="title_lookup">Toqueu per a cercar</string>
+    <string name="title_lookup_study">Toqueu per a cercar o estudiar</string>
+      <string name="button_done">Fet</string>
+      <string name="button_done_fmt">Fet amb %1$s</string>
+
+      <string name="pick_url_title_fmt">Cerca %1$s a</string>
+
+      <string name="board_menu_pass">Passa</string>
+
+      <string name="not_again_lookup">Aquest botó us permet cercar, en línia, les paraules acabades de jugar.</string>
+
+      <string name="button_move">Jugada</string>
+    <string name="button_newgroup">Grup nou</string>
+
+      <string name="button_search">Cerca</string>
+      <string name="word_search_hint">Primeres lletres</string>
+      <string name="tilepick_undo">Desfés</string>
+      <string name="tilepick_all">Tria-les per mi</string>
+      <string name="cur_tiles_fmt">Selector de fitxes\n(com a molt:%1$s)</string>
+      <string name="pick_faceup">Tria les fitxes cara amunt</string>
+
+      <plurals name="dict_browse_title_fmt">
+	<item quantity="one">%1$s (%2$d paraules usant %3$d-%4$d fitxes)</item>
+	<item quantity="other"/>
+</plurals>
+      <plurals name="dict_browse_title1_fmt">
+	<item quantity="one">%1$s (%2$d paraules usant %3$d fitxes)</item>
+	<item quantity="other"/>
+</plurals>
+      <string name="dict_browse_nowords_fmt">No hi ha cap paraula a %1$s que comenci amb %2$s.</string>
+      <string name="not_again_browse">Aquest botó obre l\'explorador de diccionaris en el diccionari actual del jugador.</string>
+      <string name="not_again_browseall">Aquest botó obre l\'explorador de diccionaris en el diccionari de la vostra elecció.</string>
+      <string name="alert_empty_dict_fmt">El diccionari %1$s conté només la informació de fitxes. No hi ha paraules a explorar.</string>
+
+      <string name="min_len">Longitud mín.</string>
+      <string name="max_len">Longitud màx.</string>
+      <string name="prompt_min_len">Paraules no més curtes de</string>
+      <string name="prompt_max_len">Paraules no més llargues de</string>
+
+      <string name="board_menu_file_email">Envia un correu-e a l\'autor</string>
+      <string name="email_author_subject">Comentari sobre el Crosswords</string>
+      <string name="email_author_chooser">Envia el comentari via</string>
+
+      <string name="email_body_rev_fmt">(Si és rellevant, incloeu la versió: «%1$s»; i el fabricant i model del telèfon o tauleta.)</string>
+
+    <string name="bt_pick_clear_button">Suprimeix els seleccionats</string>
+
+      <string name="invite_progress_title">S\'està connectant...</string>
+    <string name="invite_progress_fmt">S\'està enviant la invitació al Crosswords a %1$s</string>
+      <string name="summary_wait_host">S\'està esperant la connexió...</string>
+      <string name="summary_wait_guest">Sense connexió</string>
+      <string name="summary_gameover">Partida finalitzada</string>
+      <string name="summary_conn">Partida en joc</string>
+      <string name="new_bt_title">Partida nova via Bluetooth</string>
+      <string name="new_bt_body_fmt">Un jugador de l\'aparell %1$s vol iniciar una partida</string>
+      <string name="bt_bad_proto_fmt">La versió del Crosswords en «%1$s» és incompatible amb aquesta per a jugar via Bluetooth. Cal que actualitzeu abans per a continuar.</string>
+
+    <string name="new_btmove_title">Invitació via Bluetooth</string>
+    <string name="new_move_body">Han arribat una o més jugades</string>
+    <string name="newbie_title">Aquí teniu un consell</string>
+
+    <string name="bt_invite_title">Invitació per Bluetooth</string>
+    <string name="sms_invite_title">Invitació per SMS</string>
+
+    <string name="game_btname_title">Nom de la partida Bluetooth</string>
+    <string name="game_name_title">Poseu nom a la partida</string>
+    <string name="game_name_label">Nom de la partida nova:</string>
+    <string name="name_copy_fmt">%1$s copia</string>
+    <string name="newgame_sms_header">Partida SMS nova</string>
+    <string name="dft_sms_name_fmt">Partida SMS %1$X</string>    
+    <string name="new_sms_title">Partida via SMS nova</string>
+    <string name="new_name_body_fmt">%1$s us ha convidat a jugar</string>
+    <string name="button_sms_add">Importa el contacte</string>
+    <string name="menu_hint_prev">Consell anterior</string>
+
+    <string name="menu_hint_next">Consell següent</string>
+
+    <string name="board_menu_undo_current">Desfés/Refés</string>
+
+    <string name="menu_juggle">Remena el faristol</string>
+
+    <string name="menu_flip">Gira el tauler</string>
+    <string name="menu_zoom">Apropa\'t o allunya\'t</string>
+    <string name="menu_chat">Xat</string>
+    <string name="board_menu_dict">Explora el diccionari</string>
+
+    <string name="game_list_tmp">S\'està construint el resum de la partida…</string>
+
+    <string name="connstat_succ">correctament</string>
+    <string name="connstat_unsucc">amb error</string>
+    <string name="connstat_noreceipt">No s\'ha rebut cap missatge.</string>
+    <string name="connstat_relay">Internet/repetidor</string>
+    <string name="connstat_sms">SMS/missatges</string>
+    <string name="enable_sms">Permet partides via SMS</string>
+    <string name="enable_sms_summary">Només si teniu missatges SMS il·limitats!</string>
+
+    <string name="confirm_sms_title">Confirmeu el vostre pla de SMS</string>
+    <string name="confirm_sms_prompt">Voleu activar les partides via SMS?</string>
+    <string name="confirm_sms_leave">No, deixa-ho desactivat</string>
+    <string name="confirm_sms_unlimited">Sí, tinc missatges SMS il·limitats</string>
+    <string name="confirm_sms_willpay">Sí, pagaré el cost de l\'operadora</string>
+
+    <string name="button_enable_sms">Activa els SMS</string>
+    <string name="button_enable_bt">Activa el Bluetooth</string>
+    <string name="button_later">Més tard</string>
+
+    <string name="gamel_menu_checkupdates">Comprova si hi ha actualitzacions</string>
+    <string name="checkupdates_none_found">Tot és actualitzat.</string>
+    <string name="new_dict_avail">Hi ha un diccionari nou disponible</string>
+    <string name="new_dict_avail_fmt">Toqueu per a actualitzar %1$s</string>
+    <string name="new_app_avail_fmt">Versió nova de %1$s</string>
+    <string name="new_app_avail">Toqueu per a baixar i instal·lar</string>
+    <string name="str_winner_fmt" formatted="false">[Victòria] %s: %d</string>
+    <string name="str_placer_fmt" formatted="false">[#%d] %s: %d</string>
+
+    <string name="str_resigned_fmt" formatted="false">[Abandonament] %s: %d</string>
+    <string name="inform_dict_title">Els diccionaris no coincideixen</string>
+    <string name="inform_dict_download">" (primer l\'heu de baixar.)"</string>
+    <string name="inform_dict_diffdict_fmt">Esteu usant el diccionari %1$s però l\'amfitrió de la partida usa %2$s. Voleu usar %3$s també?</string>
+    <string name="reload_new_dict_fmt">S\'està carregant la partida amb %1$s</string>
+
+	<string name="missing_dict_detail">Toqueu per a baixar el diccionari pendent</string>
+    <string name="invite_dict_missing_title">Manca el diccionari</string>
+    <string name="button_decline">Rebutja</string>
+
+    <string name="download_done">La baixada ha finalitzat</string>
+    <string name="default_loc">Emmagatzema els diccionaris internament</string> 
+    <string name="default_loc_summary">(no a la memòria externa de la targeta SD)</string>
+
+    <string name="download_path_title">Directori de baixades</string>
+
+    <string name="newgroup_label">Nom del grup nou:</string>
+
+    <string name="list_group_delete">Suprimeix el grup</string>
+    <string name="list_group_rename">Canvia el nom</string>
+    <string name="list_group_default">Posa les partides noves aquí</string>
+    <string name="list_group_moveup">Mou amunt</string>
+    <string name="list_group_movedown">Mou avall</string>
+
+    <string name="group_cur_games">Partides</string>
+    <string name="group_new_games">Partides noves</string>
+
+    <plurals name="groups_confirm_del_fmt">
+	<item quantity="one">Esteu segur de voler suprimir els %1$d grups seleccionats?</item>
+	<item quantity="other"/>
+</plurals>
+    <string name="rename_group_label">Canvia el nom d\'aquest grup a:</string>
+    <plurals name="group_name_fmt">
+	<item quantity="one">%1$s (%2$d partida)</item>
+	<item quantity="other">%1$s (%2$d partides)</item>
+</plurals>
+
+    <string name="button_rematch">Torna a jugar-hi</string>
+
+    <string name="button_reconnect">Torna a connectar</string>
+
+    <string name="change_group">Mou les partides seleccionades a:</string>
+
+    <string name="show_wordlist_browser">Explorador de diccionaris</string>
+
+    <string name="relay_alert_title">Missatge del dia</string>
+
+    <string name="sel_games_fmt">Partides: %1$d</string>
+    <string name="sel_groups_fmt">Grups: %1$d</string>
+    <string name="summary_thumbsize">Mida de la miniatura</string>
+    <string name="thumb_off">Desactivat</string>
+
+    <string name="cur_menu_marker_fmt">%1$s (en ús)</string>
+    <string name="board_menu_invite">Convida</string>
+
+    <string name="button_go_settings">Configuració d\'inici</string>
+
+    <string name="menu_rateme">Valoreu el Crosswords</string>
+    <string name="no_market">No s\'ha trobat l\'aplicació del Google Play</string>
+
+    <string name="add_to_study_fmt">Afegeix %1$s a la llista d\'estudi</string>
+    <string name="title_studyon">Habilita les llistes d\'estudi</string>
+    <string name="gamel_menu_study">Llista d\'estudi…</string>
+
+    <string name="slmenu_copy_sel">Copia al porta-retalls</string>
+    <string name="slmenu_clear_sel">Suprimeix la selecció</string>
+    <plurals name="paste_done_fmt">
+	<item quantity="one">S\'han copiat %1$d paraules</item>
+	<item quantity="other"/>
+</plurals>
+    <string name="add_done_fmt">S\'ha afegit %1$s a la llista d\'estudi %2$s</string>
+    <string name="studylist_title_fmt">Llista d\'estudi per a %1$s</string>
+
+    <string name="lookup_title">Cerca paraules</string>
+
+    <string name="slmenu_select_all">Selecciona-ho tot</string>
+    <string name="slmenu_deselect_all">No seleccionis res</string>
+    <string name="sel_items_fmt">Seleccionat: %1$d</string>
+
+    <string name="loc_menu_xlate">Tradueix</string>
+    <string name="loc_lang_blessed">%1$s (oficial)</string>
+    <string name="loc_lang_local">%1$s (vostre)</string>
+
+    <string name="xlations_enabled_title">Habilita la traducció local</string>
+    <string name="xlations_enabled_summary">Afegeix un opció en cada menú de pantalla</string>
+
+    <string name="loc_filters_prompt">Filtra per:</string>
+    <string name="loc_search_prompt">Cerca:</string>
+    <string name="loc_filters_all">Tot</string>
+    <string name="loc_filters_screen">Última pantalla</string>
+    <string name="loc_filters_menu">Últim menú</string>
+    <string name="loc_filters_modified">Modificat per mi</string>
+    
+    <string name="lang_name_english">anglès</string>
+    <string name="lang_name_french">francès</string>
+    <string name="lang_name_german">alemany</string>
+    <string name="lang_name_turkish">turc</string>
+    <string name="lang_name_arabic">àrab</string>
+    <string name="lang_name_spanish">espanyol</string>
+    <string name="lang_name_swedish">suec</string>
+    <string name="lang_name_polish">polonès</string>
+    <string name="lang_name_danish">danès</string>
+    <string name="lang_name_italian">italià</string>
+    <string name="lang_name_dutch">neerlandès</string>
+    <string name="lang_name_catalan">català</string>
+    <string name="lang_name_portuguese">portuguès</string>
+    <string name="lang_name_russian">rus</string>
+    <string name="lang_name_czech">txec</string>
+    <string name="lang_name_greek">grec</string>
+    <string name="lang_name_slovak">eslovac</string>
+
+    <string name="loc_item_clear">Buida</string>
+    <string name="loc_item_check">Comprova</string>
+    <string name="loc_item_copy_eng">Copia l\'anglès</string>
+    <string name="loc_item_copy_bless">Copia l\'oficial</string>
+
+    <string name="getinfo">Obtén la informació</string>
+
+    <string name="delete_dicts">Suprimeix els diccionaris</string>
+
+    <string name="show_remote">Mostra els baixables</string>
+    <string name="progress_title">S\'està baixant</string>
+
+    <string name="dict_info_fmt">Nombre de paraules: %1$d\nMida de la baixada: %2dK\nNota: %3$s</string>
+    <string name="note_none">(Cap)</string>
+    <string name="dict_on_server">Toqueu per a baixar</string>
+    <string name="dict_desc_fmt">%1$s (%2$s/%3$d paraules)</string>
+
+    <string name="lang_unknown">Desconegut</string>
+
+    <string name="nag_title">Recordatori: és el vostre torn</string>
+    <plurals name="nag_minutes_fmt">
+	<item quantity="one">%1$d minut</item>
+	<item quantity="other">%1$d minuts</item>
+</plurals>
+    <string name="lmi_pass_fmt">%1$s ha passat (0 punts)</string>
+    <string name="lmi_phony_fmt">%1$s ha perdut el torn</string>
+    <string name="lmi_tiles_fmt">Fitxes assignades a %1$s</string>
+
+    <string name="default_language">Llengua predeterminada</string>
+
+	<string name="title_addrs_pref">Comunica via</string>
+
+    <string name="new_game">Partida a l\'aparell nova</string>
+    <string name="new_game_networked">Partida en xarxa nova</string>
+
+    <plurals name="nplayers_fmt">
+	<item quantity="one">Un jugador</item>
+	<item quantity="other">%1$d jugadors</item>
+</plurals>
+    <string name="network_advanced_title">Avançat</string>
+    <string name="network_advanced_summary">Per a jugadors experimentats</string>
+    <string name="invite_multi_title">Invitació múltiple</string>
+    <string name="invite_multi_summary">Convideu a més d\'un jugador per a aparell remot</string>
+    <string name="enable_pubroom_title">Habilita les sales públiques</string>
+    <string name="set_pref">Amaga botons</string>
+
+    <string name="waiting_title">S\'estan esperant els jugadors</string>
+
+    <string name="button_edit">Edita</string>
+    <string name="button_discard_changes">Descarta els canvis</string>
+
+    <string name="dict_host">URL de baixada de diccionari</string>
+  <string name="logging_on">Habilita el registre</string>
+  <string name="title_send_data_sms">Envia SMS com a dades</string>
+  <string name="summary_send_data_sms">(Només telèfons GSM)</string>
+  <string name="board_menu_game_netstats">Estadístiques de xarxa</string>
+  <string name="relay_port">Port del repetidor de partides</string>
+  <string name="gamel_menu_storedb">Escriu les partides a la targeta SD</string>
+  <string name="gamel_menu_loaddb">Carrega les partides de la targeta SD</string>
+  <string name="enable_dupes_title">Accepta invitacions duplicades</string>
+  <string name="enable_dupes_summary">Accepta invitacions més d\'una vegada</string>
+  <string name="radio_name_gsm">GSM</string>
+  <string name="radio_name_cdma">CDMA</string>
+
+  <string name="game_summary_field_rowid">rowid</string>
+  <string name="game_summary_field_gameid">gameid</string>
+  <string name="seeking_relay">S\'està connectant al repetidor…</string>
+
+  <string name="pref_group_l10n_summary">Preferències relacionades amb la traducció en l\'aplicació</string>
+  <string name="pref_item_update_title">Actualitza entre versions</string>
+  <string name="pref_item_update_summary">Obtén construccions intermèdies</string>
+
+  <string name="checking_title">S\'està comprovant</string>
+  <string name="checking_for_fmt">S\'estan comprovant els diccionaris a %1$s…</string>
+  <plurals name="lang_name_fmt">
+	<item quantity="one">%1$s (%2$d diccionari)</item>
+	<item quantity="other">%1$s (%2$d diccionaris)</item>
+</plurals>
+
+    <plurals name="nag_hours_fmt">
+	<item quantity="one">%1$d hora</item>
+	<item quantity="other">%1$d hores</item>
+</plurals>
+    <plurals name="nag_days_fmt">
+	<item quantity="one">%1$d dia</item>
+	<item quantity="other">%1$d dies</item>
+</plurals>
+    <string name="nag_body_fmt">%1$s ha jugat fa més de %2$s.</string>
+    <string name="nag_warn_last_fmt">Últim avís: %1$s</string>
+    <string name="prev_player">Oponent</string>
+
+    <plurals name="lmi_move_fmt">
+	<item quantity="one">%1$s ha jugat %2$s i anota %3$d punts</item>
+	<item quantity="other"/>
+</plurals>
+    <plurals name="lmi_trade_fmt">
+	<item quantity="one">%1$s ha canviat %2$d fitxes</item>
+	<item quantity="other"/>
+</plurals>
+    <string name="new_game_message_nodflt">Cal configurar aquesta partida abans d\'obrir-la.</string>
+
+    <string name="use_defaults">Usa els valors predeterminats</string>
+
+    <string name="disable_nag_title">Desactiva els avisos de torn</string>
+    <string name="disable_nag_summary">No m\'avisis, tant se val quan faci del meu torn</string>
+
+  <string name="advanced">Per a depuració</string>
+  <string name="advanced_summary">No hauríeu de necessitar això...</string>
+  <string name="relay_host">Amfitrió de repetició</string>
+  <string name="logging_on_summary">(només construccions de desenvolupament)</string>
+  <string name="debug_features">Habilita les característiques de depuració</string>
+  <string name="debug_features_summary">Elements del menú, etc. (només construccions de depuració)</string>
+  <string name="name_dict_fmt">%1$s/%2$s</string>
+  <string name="xlations_locale">Simula la llengua per a la traducció</string>
+  <string name="nag_intervals">Intervals de recordatori (minuts1, minuts2...)</string>
+  <string name="got_langdict_summary">No ho intentis una segona vegada</string>
+
+  <string name="pref_group_sms_title">Coses de l\'SMS</string>
+  <string name="pref_group_relay_title">Coses del repetidor</string>
+  <string name="pref_group_l10n_title">Coses de la traducció</string>
+  <string name="button_enable">Habilita</string>
+
+  <string name="warn_nomobile_fmt">El número %1$s de %2$s no sembla un número de mòbil. Voleu importar-lo igualment?</string>
+    <string name="get_sms_number">Introduïu el número de telèfon:</string>
+    <plurals name="confirm_clear_fmt">
+	<item quantity="one">Esteu segur de voler suprimir el número de telèfon seleccionat?</item>
+	<item quantity="other">Esteu segur de voler suprimir els %1$d números de telèfon seleccionats?</item>
+</plurals>
+    <string name="connect_label_sms">Connexió (via SMS/missatges)</string>
+    <string name="phone_label">Números connectats:</string>
+    <string name="summary_conn_sms_fmt">Partida en joc amb %1$s</string>
+    <string name="menu_toggle_values">Canvia els valors</string>
+
+    <string name="invite_dict_missing_body_noname_fmt">Us han convidat a jugar al Crosswords amb el diccionari %2$s (per a jugar en %3$s), però no el teniu instal·lat. Voleu baixar el diccionari?</string>
+    <string name="invite_dict_missing_body_fmt">%1$s us ha convidat a jugar al Crosswords amb el diccionari %2$s (per a jugar en %3$s), però no el teniu instal·lat. Voleu baixar el diccionari o rebutjar la invitació?</string>
+    <string name="missing_dict_title">Invitació a una partida pendent</string>
+	<string name="inform_dict_diffversion_fmt">Vós i l\'amfitrió de la partida useu versions difernts del diccionari %1$s.</string>
+    <string name="remote_undone">L\'aparell remot ha desfet un torn.</string>
+
+    <string name="cannot_delete_default_group_fmt">El grup per a les partides noves, %1$s, no es pot suprimir.</string>
+
+    <string name="game_name_group_title">Anomena el grup</string>
+
+    <plurals name="groups_confirm_del_games_fmt">
+	<item quantity="one">\n\n(també se suprimiran %1$d partides.)</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="confirm_studylist_clear_fmt">
+	<item quantity="one">Esteu segur de voler suprimir les %1$d paraules seleccionades?\n\n(Aquesta acció no es pot desfer.)</item>
+	<item quantity="other"/>
+</plurals>
+    <string name="study_langpick">Les vostres paraules per a:</string>
+
+    <string name="study_no_lang_fmt">Encara no heu desat cap paraula al llistat d\'estudi per a %1$s.</string>
+    <string name="study_no_lists">Encara no heu desat cap paraula a llistat d\'estudi.</string>
+
+    <string name="not_again_studycopy">Les paraules seleccionades s\'han copiat al porta-retalls del sistema. Podeu enganxar-les en qualsevol aplicació que permeti enganxar text, p. e. l\'aplicació de correu.</string>
+
+    <plurals name="new_xlations_fmt">
+	<item quantity="one">Ha instal·lat %1$d traduccions noves</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="loc_fmts_mismatch">Traducció no permesa: les cadenes traduïdes han de tenir els mateixos indicadors de format (p. e. %1$s) que l\'original.</string>
+    <string name="not_again_fmt_expl">Aquesta cadena té indicadors de format especials (p. e. %1$s). Assegureu-vos que la traducció té els mateixos que l\'original.\n\n(No podreu desar-la si no ho compleix.)</string>
+
+    <string name="remote_empty">S\'està obtenint la informació del diccionari des del servidor…</string>
+    <string name="remote_digesting">S\'està processant la informació del diccionari…</string>
+    <string name="remote_no_net">No s\'ha pogut obtenir la informació del diccionari del servidor.</string>
+    <string name="not_again_turnchanged">E jugador amb el torn apareix apareix amb el marcador més gros.\n\nAguanteu el dit en un nom del marcador per a obtenir detalls sobre la jugada més recent del jugador.</string>
+
+    <string name="not_again_newfrom">Crea una partida llesta per a jugar usant la configuració d\'aquesta. Això és, usa aquesta partida com a plantilla.</string>
+
+    <string name="sms_bad_proto_fmt">La versió del Crosswords al telèfon amb número «%1$s» no és compatible amb aquest per a jugar via SMS. Heu d\'actualitzar abans de continuar.</string>
+
+      <plurals name="invite_bt_desc_fmt">
+	<item quantity="one">Selecioneu fins a %1$d aparells que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
+	<item quantity="other"/>
+</plurals>
+    <plurals name="invite_sms_desc_fmt">
+	<item quantity="one">Comproveu el número de telèfon que voleu convidar a la partida nova, aleshores toqueu «%2$s».</item>
+	<item quantity="other">Comproveu els %1$d números de telèfon que voleu convidar a la partida nova, aleshores toqueu «%2$s».</item>
+</plurals>
+    <string name="warn_unlimited">Esteu segur que aquest número és d\'un compte amb SMS il·limitats? Feu clic a «Cancel·la si no ho esteu.</string>
+
+    <string name="square_tiles_summary">Encara que pugin ser més altes</string>
+
+    <string name="square_tiles">Fitxes els faristol quadrades</string>
+    <string name="data_gsm_only">Les dades SMS només són disponibles als telèfons GSM.</string>
+
+    <string name="update_dicts_fmt">Les actualitzacions són disponibles per a algun dels diccionaris. Voleu baixar la versió nova de %1$s ara?</string>
+
+    <string name="netstats_title">Estadístiques de la partida en xarxa</string>
+
+  <string name="git_rev_title">ID de la versió de codi font</string>
+  <string name="proxy_port">Port de l\'aparell repetidor</string>
+  <string name="enable_nfc_toself_title">Habilita NFC a un mateix</string>
+  <string name="enable_nfc_toself_summary">Simula la invitació per a ajudar a la depuració</string>
+  <string name="enable_sms_toself_title">SMS curtcircuit a un mateix</string>
+  <string name="force_radio_title">Simula tenir ràdio</string>
+  <string name="radio_name_real">No ho simulis</string>
+  <string name="radio_name_tablet">Tauleta/sense ràdio</string>
+  <string name="nfc_to_self">Envia via NFC a un mateix?</string>
+
+  <string name="got_langdict_title">Obté el diccionari predeterminat per a la llengua</string>
+  <string name="wifi_warning">" Per exemple, potser necessitareu estar en una xarxa WiFi diferent."</string>
+
+  <string name="confirm_drop_relay_bt">Bluetooth només per a aparells propers.</string>
+  <string name="confirm_drop_relay_sms">No totes les operadores permeten jugar via SMS.</string>
+
+  <string name="not_again_comms_relay">El «repetidor» és un servidor d\'Internet que passa els missatges entre els aparells que executen el Crosswords. Això funciona bé si teniu una connexió a Internet plenament funcional, però podeu tenir problemes en xarxes WiFi restringides.</string>
+
+  <string name="not_again_comms_sms">Jugar via SMS usa la mateixa tecnologia que els missatges SMS. Els missatges seran invisibles, l\'operadora els considera missatges de text, per tant potser preferiu inhabilitar aquesta característica llevat que tingueu missatges SMS il·limitats (o un bon pressupost). Noteu que l\'Android només permet aquesta característica en els dispositius amb operadora GSM, això és qualsevol operadora mundial, excepte Verizon i Sprint.</string>
+
+  <string name="not_again_comms_bt">Useu Bluetooth per a jugar contra un aparell proper que estigui aparellat amb el vostre.</string>
+
+<string name="force_tablet_title">Força la disposició de tauleta</string>
+    <string name="force_tablet_summary">Encara que la pantalla sigui massa petita</string>
+
+    </resources>
