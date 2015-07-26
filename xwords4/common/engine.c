@@ -393,6 +393,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
 {
     XP_Bool result = XP_TRUE;
     XP_U16 star_row;
+    XP_Bool canMove = XP_FALSE;
 
     engine->nTilesMax = XP_MIN( MAX_TRAY_TILES, nTiles );
 #ifdef XWFEATURE_BONUSALL
@@ -445,9 +446,9 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
        dictionary's emtpy or there are no tiles, still return TRUE so we don't
        get scheduled again.  Fixes infinite loop with empty dict and a
        robot. */
-    *canMoveP = NULL != dict_getTopEdge(engine->dict)
+    canMove = NULL != dict_getTopEdge(engine->dict)
         && initTray( engine, tiles, nTiles );
-    if ( *canMoveP  ) {
+    if ( canMove  ) {
 
         util_engineStarting( engine->util, 
                              engine->rack[engine->blankTile] );
@@ -528,6 +529,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
                 XP_MEMCPY( newMove, &move->moveInfo, sizeof(*newMove) );
             } else {
                 newMove->nTiles = 0;
+                canMove = XP_FALSE;
             }
             result = XP_TRUE;
         }
@@ -540,6 +542,7 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
         newMove->nTiles = 0;
     }
 
+    *canMoveP = canMove;
     return result;
 } /* engine_findMove */
 
