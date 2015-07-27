@@ -237,7 +237,8 @@ public class BoardDelegate extends DelegateBase
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
-                } else if ( DlgID.GAME_OVER == dlgID && rematchSupported() ) {
+                } else if ( DlgID.GAME_OVER == dlgID
+                            && rematchSupported( true ) ) {
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
@@ -739,6 +740,7 @@ public class BoardDelegate extends DelegateBase
         boolean inTrade = false;
         MenuItem item;
         int strId;
+        boolean enable;
 
         if ( null != m_gsi ) {
             inTrade = m_gsi.inTrade;
@@ -783,10 +785,10 @@ public class BoardDelegate extends DelegateBase
         Utils.setItemVisible( menu, R.id.board_menu_game_resign, !inTrade );
 
         if ( !inTrade ) {
-            boolean enabled = null == m_gsi || m_gsi.curTurnSelected;
+            enable = null == m_gsi || m_gsi.curTurnSelected;
             item = menu.findItem( R.id.board_menu_done );
-            item.setVisible( enabled );
-            if ( enabled ) {
+            item.setVisible( enable );
+            if ( enable ) {
                 if ( 0 >= m_view.curPending() ) {
                     strId = R.string.board_menu_pass;
                 } else {
@@ -801,7 +803,10 @@ public class BoardDelegate extends DelegateBase
             }
         }
 
-        boolean enable = null != m_gi
+        enable = m_gameOver && rematchSupported( false );
+        Utils.setItemVisible( menu, R.id.board_menu_rematch, enable );
+
+        enable = null != m_gi
             && DeviceRole.SERVER_STANDALONE != m_gi.serverRole;
         Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, enable );
         Utils.setItemVisible( menu, R.id.board_menu_game_resend, 
@@ -836,6 +841,10 @@ public class BoardDelegate extends DelegateBase
             } else {
                 dlgButtonClicked( Action.COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
             }
+            break;
+
+        case R.id.board_menu_rematch:
+            doRematchIf();
             break;
 
         case R.id.board_menu_trade_commit:
@@ -2507,7 +2516,7 @@ public class BoardDelegate extends DelegateBase
     }
 
     // For now, supported if standalone or either BT or SMS used for transport
-    private boolean rematchSupported()
+    private boolean rematchSupported( boolean showMulti )
     {
         boolean supported = false;
         if ( XWApp.REMATCH_SUPPORTED ) {
@@ -2515,16 +2524,16 @@ public class BoardDelegate extends DelegateBase
             supported = m_gi.serverRole == DeviceRole.SERVER_STANDALONE;
 
             if ( !supported )
-                if ( 2 != m_gi.nPlayers ) {
+                if ( 2 == m_gi.nPlayers ) {
+                    supported = m_connTypes.contains( CommsConnType.COMMS_CONN_BT )
+                        || m_connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
+                        || m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
+                } else if ( showMulti ) {
                     // show the button if people haven't dismissed the hint yet
                     supported = ! XWPrefs
                         .getPrefsBoolean( m_activity, 
                                           R.string.key_na_rematch_two_only, 
                                           false );
-                } else {
-                    supported = m_connTypes.contains( CommsConnType.COMMS_CONN_BT )
-                        || m_connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                        || m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
                 }
         }
         return supported;
