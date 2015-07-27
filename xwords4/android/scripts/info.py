@@ -236,7 +236,6 @@ def getApp( params, name ):
             apks = getOrderedApks( dir, True )
             if 0 < len(apks):
                 apk = apks[0]
-                logging.debug("got: " + apk)
                 curApk = params[k_GVERS] + '.apk'
                 if curApk in apk:
                     logging.debug( "already have " + curApk )
@@ -244,7 +243,6 @@ def getApp( params, name ):
                     url = k_urlbase + '/' + k_apkDir + variantDir + apk[len(dir):]
                     logging.debug("url: " + url)
                     result = {k_URL: url}
-                logging.debug("DONE")
         elif k_DEVOK in params and params[k_DEVOK]:
             apks = getOrderedApks( k_filebase + k_apkDir, False )
             if 0 < len(apks):
