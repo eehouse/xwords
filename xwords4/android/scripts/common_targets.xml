@@ -119,6 +119,7 @@
             <arg value="describe" />
           </exec>  
           <copy file="bin/XWords4-debug.apk" tofile="XWords4-debug-${git-rev}.apk"/>
+          <echo>Created XWords4-debug-${git-rev}.apk</echo>
         </then>
       </if>
     </target>
