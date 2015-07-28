@@ -936,4 +936,111 @@
 <string name="force_tablet_title">Força la disposició de tauleta</string>
     <string name="force_tablet_summary">Encara que la pantalla sigui massa petita</string>
 
-    </resources>
+    <plurals name="resend_finished_fmt">
+	<item quantity="one">Reenviament finalitzat, s\'ha enviat %1$d missatge.</item>
+	<item quantity="other">Reenviament finalitzat, s\'han enviat %1$d missatges.</item>
+</plurals>
+
+    <string name="dup_game_query_fmt">Ja teniu una partida que sembla s\'ha creat (el %1$s) amb la mateixa invitació. Esteu segur de voler crear-ne una altra?</string>
+
+    <string name="not_again_sync">Aquesta acció comprova que no hi hagin jugades o missatges pendents al repetidor de totes partides i marca aquelles amb jugades pendents. Si obriu una partida marcada connectarà i sincronitzarà. (en una versió posterior aquestes jugades es baixaran en segon pla.)</string>
+
+    <string name="not_again_conndfirst">Teniu una partida connectada i iniciada en una sala nova. Una vegada els aparells que falten s\'hagin unit a la vostra sala, i el Crosswords hagi assignat les fitxes, la partida pot començar.</string>
+
+    <string name="not_again_conndmid">Heu connectat i unit a una partida al repetidor. Rebreu notificacions quan els aparells que manquen s\'hi hagin unit a la sala i pugui començar la partida.</string>
+
+    <string name="not_again_conndall">Heu connectat i unit a una partida al repetidor. La sala ara és plena. L\'aparell que ha creat la sala ara assignarà les fitxes inicials i la partida podrà començar.</string>
+
+    <string name="not_again_arrow">Moviment de fitxes al tauler:\nPodeu arrossegar les fitxes entre el faristol i el tauler, o podeu tocar una casella buida per a col·locar la fletxa del tauler. Les fitxes del faristol que toqueu substituiran la flexta (es mourà una casella en la direcció que assenyali.) Toqueu la fletxa un cop per a canviar-ne l\'orientació, una segon cop per a amagar-la. Un casella de verificació a la secció Aparença de la Configuració permet amagar-la permanentment.</string>
+
+    <string name="manual_owner_name">(no és als contactes)</string>
+    <string name="empty_sms_inviter">Aquest llistat telefònic és buit. Useu el botó «Importa un contacte» per a afegir persones que voleu convidar, el botó + per a introduir números directament.</string>
+    <string name="connstat_net_noaddr">Aquesta partida en xarxa no té forma de connectar i no es podrà jugar mai.\n\n(probablement fou creada amb una invitació que no especifica cap via de connexió suportada pel vostre aparell.)</string>
+    <string name="connstat_net_fmt">Estat de xarxa per a la partida connectada via %1$s:</string>
+    <string name="connstat_lastsend_fmt">Últim enviament fou %1$s (%2$s)</string>
+    <string name="connstat_lastother_succ_fmt">(últim error fou %1$s)</string>
+    <string name="connstat_lastother_unsucc_fmt">(últim enviament correcte fou %1$s)</string>
+    <string name="connstat_lastreceipt_fmt">Última recepció fou %1$s</string>
+    <string name="warn_sms_disabled">"El joc via SMS està inhabilitat. No s\'enviaran jugades via SMS.\n\nPodeu habilitar el joc via SMS ara, o més tard. "</string>
+
+    <string name="warn_bt_disabled">"El Bluetooth està actualment inhabilitat en aquesta aparell. No s\'enviaran jugades via Bluetooth.\n\nPodeu habilitar el Bluetooth ara, o més tard. "</string>
+
+    <string name="download_failed">Baixa correcta</string>
+
+    <string name="enable_nfc">L\'NFC està deshabilitat en aquest aparell. Podeu usar la configuració de l\'Android per a habiltar-ho.</string>
+
+    <string name="not_again_dicts">Aquesta pantalla us permet instal·lar diccionaris nous i visualitzar els que teniu.\n\nEls diccionaris que teniu instal·lats determinen:\n* En quines llengües podeu jugar.\n* Com d\'intel·ligent és el robot\n* Quines paraules són vàlides.\n\nComproveu la quadre «Mostra els baixables» a la part superior per a veure\'n els disponibles.</string>
+
+    <string name="confirm_drop_relay">Esteu segur de voler treure a aquesta partida la capacitat de comunicar via repetidor?</string>
+
+  <string name="bt_resend_fmt">L\'enviament via Bluetooth a %1$s ha fallat, intent %3$d en %2$d segons.</string>
+    <string name="bt_fail_fmt">Els enviaments via Bluetooth a %1$s han fallat moltes vegades. Torneu a obrir la partida per a intentar-ho altra vegada.</string>
+        <string name="not_again_newselect">Tocar una partida l\'obre.\n\nTambé podeu tocar les icones a l\'esquerra per a seleccionar o desselecionar partides, aleshores actuar en les partides seleccionades, p. e. suprimir-les, fent servir el menú o la barra d\'accions.</string>
+
+    <string name="not_again_backclears">El botó enrere anul·la qualsevol selecció en comptes de sortir. Toqueu-lo una altra vegada per a sortir de l\'aplicació.</string>
+
+    <string name="dropped_dupe">Invitació rebuda però ignorada, ja s\'havia fet servir per a crear una partida.</string>
+    <string name="sms_ready_text">Toqueu l\'aparell receptor ara</string>
+
+    <string name="new_game_message">Voleu crear aquesta partida usant els paràmetres predeterminats?\n\nO voleu configurar-la abans?</string>
+    <string name="new_game_message_net">(Podreu convidar a altres jugadors quan estigui oberta.)</string>
+
+    <string name="nplayers_prompt">Número d\'aquest aparell</string>
+    <string name="err_dup_invite_fmt">Invitació duplicada rebutjada: l\'aparell «%1$s» ja té una invitació acceptada per a aquesta partida.</string>
+
+    <string name="connection_via_label">Canvia la via de comunicació</string>
+
+    <string name="not_again_hidenewgamebuttons">"Aquesta dos botons fa el mateix que els dos primer elements d\'aquesta barra d\'acció de la finestra (o menú). Si voleu podeu amagar els botons per a tenir més partides visibles.\n\n(Si després voleu mostrar-los aneu a la secció Aparença de la configuració de l\'aplicació). "</string>
+
+    <string name="no_relay_conn">Aquesta partida està configurada per a usar el repetidor (internet) per a la comunicació, però no ha pogut connectar-hi.\n\nProveu a obrir la partida una altra vegada més tard quan les condicions hagin canviat.</string>
+
+  <string name="drop_relay_warning_fmt">"(Aquesta partida també pot connectar via %1$s, per tant si voleu jugar la partida sense haver de connectar a un repetidor, podeu fer-ho.) "</string>
+
+  <string name="pct_suffix">" punt."</string>
+
+    <string name="summary_studyon">Permet afegir paraules per a recordar a llistats i mostrar-los</string>
+    <string name="bt_no_devs">Actualment no teniu cap aparell aparellat via Bluetooth. Voleu obrir la configuració de l\'Android per a afegir-ne algun?\n\n(Potser també heu d\'obrir-lo a l\'aparell amb què vulgueu aparellar.)</string>
+	<string name="hide_crosshairs">Inhabilita la creu</string>
+    <string name="newgame_drop_relay">Treu el repetidor</string>
+
+    <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Toca aquí&lt;/a&gt; (o toca l'enllaç següent, o, si ja teniu el Crosswords instal·lat, obriu l'adjunt) per a acceptar la invitació i unir-te a la partida. &lt;br \&gt; &lt;br \&gt; (enllaç: %1$s ) </string>
+
+    <string name="no_dict_subst_fmt">No es pot obrir la partida «%1$s» perquè el diccionari %2$s no s\'ha trobat. (potser s\'ha suprimit o està emmagatzemat en una memòria externa que no es troba disponible.)\n\nPodeu baixar un substitut o substituir-lo amb un altre diccionari %3$s.</string>
+
+    <string name="bt_pick_addall_button">Afegeix tots els aparellats</string>
+      <string name="button_invite">Convida els marcats</string>
+
+    <string name="nfc_just_tap">Per a convidar via NFC només cal tocar la part del darrere d\'aquest aparell amb la de l\'aparell que voleu convidar ---només cal que la partida estigui oberta.</string>
+
+    <string name="warn_no_comms">Qualsevol partida en xarxa ha de tenir almenys una via de comunicació. Si no teniu opcions de connexió predeterminades, caldrà configurar manualment cada partida en xarxa.</string>
+
+    <string name="config_no_connvia">Aquesta partia no té cap via de connexió i no es pot desar. Voleu descartar els canvis, o editar-la per a indicar una via de connexió?</string>
+    <string name="confirm_get_locdict_fmt">L\'aparell està configurat en %1$s. Voleu baixar un diccionari pera jugar al Crosswords en %1$s?</string>
+
+  <string name="enable_sms_toself_summary">Omet la ràdio si els números de telèfon són iguals</string>
+
+  <string name="game_summary_field_npackets">Pendent del recompte de paquets</string>
+  <string name="pref_group_sms_summary">Configuració relacionada amb el joc via SMS</string>
+  <string name="pref_group_relay_summary">Configuracó relacionada amb el joc via internet/repetidor</string>
+  <string name="db_store_done">S\'ha completat l\'escriptura a la targeta SD.</string>
+
+  <string name="confirm_sms_expl">Atenció: aquesta funcionalitat és per a telèfons amb plans de missatges SMS il·limitats. Si l\'habiliteu, per cada partida jugada, s\'enviaran dotzenes de missatges de text SMS de forma invisible. Si no teniu un pla il·limitat, la vostra operadora us pot cobrar cadascun dels missatges!\n\nVoleu habilitar el joc via SMS?</string>
+    <plurals name="bt_err_count_fmt">
+	<item quantity="one">Fins ara, %1$d errors Bluetooth</item>
+	<item quantity="other"/>
+</plurals>
+
+	<string name="app_not_found_fmt">No es pot connectar al Crosswords en l\'aparell %1$s. Comproveu que l\'aparell és proper i que té el Crosswords instal·lat.</string>
+
+	<string name="enable_pubroom_summary">Els altres de la sala poden mirar i unir-s\'hi</string>
+
+    <string name="invite_stays">(Aquest diàleg es mostrarà fins que tots els jugadors remots hagin connectat. Podeu tancar la partida si penseu que pot trigar una mica. Podran connectar-hi igualment.)</string>
+
+    <string name="not_again_enablepublic">Les sales públiques són una funcionalitat avançada d\'aquesta versió. Si les usàveu i voleu seguir-ho fent, habiliteu l\'opció ara. Podeu inhabilitar-les altra vegada a la configuració.</string>
+
+    <string name="expl_update_url">URL de comprovació d\'actualitzacions</string>
+
+  <string name="rematch_msg">Gestió de les invitacions per a tornar a jugar la partida. Us mostrarem aquest missatge mentre no l\'accepteu.\n\nNo heu de tenir aquesta partida oberta mentre espereu. Rebreu una notificació quan la partida estigui preparada per a jugar.</string>
+
+    <string name="redir_host">Convida l\'amfitrió redirigit</string>
+  </resources>
