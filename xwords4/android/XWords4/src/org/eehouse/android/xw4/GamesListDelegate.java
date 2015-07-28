@@ -1601,6 +1601,7 @@ public class GamesListDelegate extends ListDelegateBase
             for ( long row : rows ) {
                 m_selGames.remove( row );
             }
+            invalidateOptionsMenuIf();
             setTitleBar();
         }
     }
