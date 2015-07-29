@@ -1719,6 +1719,7 @@ public class BoardDelegate extends DelegateBase
         public void userError( int code )
         {
             int resid = 0;
+            boolean asToast = false;
             switch( code ) {
             case UtilCtxt.ERR_TILES_NOT_IN_LINE:
                 resid = R.string.str_tiles_not_in_line;
@@ -1764,10 +1765,23 @@ public class BoardDelegate extends DelegateBase
             case ERR_REG_SERVER_SANS_REMOTE:
                 resid = R.string.str_reg_server_sans_remote;
                 break;
+            case ERR_NO_HINT_FOUND:
+                resid = R.string.str_no_hint_found;
+                asToast = true;
+                break;
             }
 
             if ( resid != 0 ) {
-                nonBlockingDialog( DlgID.DLG_OKONLY, getString( resid ) );
+                if ( asToast ) {
+                    final int residf = resid;
+                    runOnUiThread( new Runnable() {
+                            public void run() {
+                                showToast( residf );
+                            }
+                        } );
+                } else {
+                    nonBlockingDialog( DlgID.DLG_OKONLY, getString( resid ) );
+                }
             }
         } // userError
 

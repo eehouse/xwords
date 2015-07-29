@@ -2435,6 +2435,7 @@ public final class R {
          placed, i.e. they do not form a single word. 
          */
         public static final int str_no_empties_in_turn=0x7f05017d;
+        public static final int str_no_hint_found=0x7f05030a;
         /**  Same as above, but used when you try to show tiles belonging
          to a player on another device (a remote player.) 
          */

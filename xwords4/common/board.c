@@ -2107,6 +2107,7 @@ board_requestHint( BoardCtxt* board,
             if ( searchComplete && canMove ) {
                 model_makeTurnFromMoveInfo( model, selPlayer, &newMove);
             } else {
+                result = XP_FALSE;
                 XP_STATUSF( "unable to complete hint request\n" );
             }
             *workRemainsP = !searchComplete;
@@ -2121,6 +2122,10 @@ board_requestHint( BoardCtxt* board,
                 }
                 setArrowVisible( board, wasVisible );
             }
+        }
+
+        if ( !result ) {
+            util_userError( board->util, ERR_NO_HINT_FOUND );
         }
     }
     return result || redraw;
