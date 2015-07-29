@@ -2402,9 +2402,13 @@ public class BoardDelegate extends DelegateBase
                     SMSService.inviteRemote( m_activity, dev, nli );
                     break;
                 case RELAY:
-                    int destDevID = Integer.parseInt( dev );
-                    RelayService.inviteRemote( m_activity, destDevID, 
-                                               null, nli );
+                    try {
+                        int destDevID = Integer.parseInt( dev ); // failing
+                        RelayService.inviteRemote( m_activity, destDevID, 
+                                                   null, nli );
+                    } catch (NumberFormatException nfi) {
+                        DbgUtils.loge( nfi );
+                    }
                     break;
                 }
             }
