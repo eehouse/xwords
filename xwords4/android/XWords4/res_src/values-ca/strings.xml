@@ -728,7 +728,7 @@
     <string name="show_remote">Mostra els baixables</string>
     <string name="progress_title">S\'està baixant</string>
 
-    <string name="dict_info_fmt">Nombre de paraules: %1$d\nMida de la baixada: %2dK\nNota: %3$s</string>
+    <string name="dict_info_fmt">Nombre de paraules: %1$d\nMida de la baixada: %2$dK\nNota: %3$s</string>
     <string name="note_none">(Cap)</string>
     <string name="dict_on_server">Toqueu per a baixar</string>
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d paraules)</string>
@@ -1003,7 +1003,7 @@
 	<string name="hide_crosshairs">Inhabilita la creu</string>
     <string name="newgame_drop_relay">Treu el repetidor</string>
 
-    <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Toca aquí&lt;/a&gt; (o toca l'enllaç següent, o, si ja teniu el Crosswords instal·lat, obriu l'adjunt) per a acceptar la invitació i unir-te a la partida. &lt;br \&gt; &lt;br \&gt; (enllaç: %1$s ) </string>
+    <string name="invite_htm_fmt">&lt;a href="%1$s"&gt;Toca aquí&lt;/a&gt; (o toca l\'enllaç següent, o, si ja teniu el Crosswords instal·lat, obriu l\'adjunt) per a acceptar la invitació i unir-te a la partida. &lt;br \&gt; &lt;br \&gt; (enllaç: %1$s ) </string>
 
     <string name="no_dict_subst_fmt">No es pot obrir la partida «%1$s» perquè el diccionari %2$s no s\'ha trobat. (potser s\'ha suprimit o està emmagatzemat en una memòria externa que no es troba disponible.)\n\nPodeu baixar un substitut o substituir-lo amb un altre diccionari %3$s.</string>
 
