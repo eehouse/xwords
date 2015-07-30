@@ -452,7 +452,7 @@ public class BoardDelegate extends DelegateBase
                 dialog = ab.setTitle( "foo" )
                     .setMessage( "" )
                     .setPositiveButton( "", lstnr )
-                    .setNegativeButton( R.string.button_close_game, lstnr2 )
+                    .setNegativeButton( R.string.button_wait, lstnr2 )
                     .setOnCancelListener( new OnCancelListener() {
                             public void onCancel( DialogInterface dialog ) {
                                 finish();

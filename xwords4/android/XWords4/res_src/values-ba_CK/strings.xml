@@ -2079,6 +2079,8 @@
     noitces fo Ppa )sgnittes.
     </string>
   <string name="waiting_title">Gnitiaw rof sreyalp</string>
+  <!-- Button for alert with title above -->
+  <string name="button_wait">Tiaw</string>
   <string name="invite_stays">sIht( golaid lliw yats pu litnu lla
     etomer sreyalp evah detcennoc. Uoy nac esolc eht emag fi uoy
     tcepxe ti ot ekat a elihw. Yeht lliw llits eb elba ot

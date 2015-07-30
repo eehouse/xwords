@@ -2404,6 +2404,8 @@
     </string>
 
     <string name="waiting_title">Waiting for players</string>
+    <!-- Button for alert with title above -->
+    <string name="button_wait">Wait</string>
 
     <string name="invite_stays">(This dialog will stay up until all
     remote players have connected. You can close the game if you
