@@ -565,8 +565,14 @@ Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 {
     jstring jstr = NULL;
 #ifdef XWFEATURE_BLUETOOTH
-    const char* uuid = XW_BT_UUID;
-    XP_LOGF( "uuid: %s", uuid );
+    const char* uuid;
+    if ( 0 == XP_STRCMP( VARIANT, "xw4" ) ) {
+        uuid = XW_BT_UUID;
+    } else if ( 0 == XP_STRCMP( VARIANT, "xw4dbg" ) ) {
+        uuid = XW_BT_UUID_DBG;
+    } else {
+        XP_ASSERT(0);
+    }
     jstr = (*env)->NewStringUTF( env, uuid );
 #endif
     return jstr;

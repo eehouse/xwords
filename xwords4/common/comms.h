@@ -59,6 +59,7 @@ typedef enum {
 
 #ifdef XWFEATURE_BLUETOOTH
 # define XW_BT_UUID "7be0d084-ff89-4d6d-9c78-594773a6f963"
+# define XW_BT_UUID_DBG "b079b640-35fe-11e5-a432-0002a5d5c51b"
 
 # define XW_BT_NAME "Crosswords"
 #endif
