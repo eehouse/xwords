@@ -563,18 +563,17 @@ JNIEXPORT jstring JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1getUUID
 ( JNIEnv* env, jclass C )
 {
-    jstring jstr = NULL;
+    jstring jstr = 
 #ifdef XWFEATURE_BLUETOOTH
-    const char* uuid;
-    if ( 0 == XP_STRCMP( VARIANT, "xw4" ) ) {
-        uuid = XW_BT_UUID;
-    } else if ( 0 == XP_STRCMP( VARIANT, "xw4dbg" ) ) {
-        uuid = XW_BT_UUID_DBG;
-    } else {
-        XP_ASSERT(0);
-    }
-    jstr = (*env)->NewStringUTF( env, uuid );
+# if defined VARIANT_xw4
+        (*env)->NewStringUTF( env, XW_BT_UUID )
+# elif defined VARIANT_xw4dbg
+        (*env)->NewStringUTF( env, XW_BT_UUID_DBG )
+# endif
+#else
+        NULL
 #endif
+        ;
     return jstr;
 }
 
