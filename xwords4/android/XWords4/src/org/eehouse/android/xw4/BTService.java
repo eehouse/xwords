@@ -23,6 +23,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass.Device.Major;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
@@ -993,7 +994,10 @@ public class BTService extends XWService {
         Set<BluetoothDevice> pairedDevs = m_adapter.getBondedDevices();
         synchronized( m_addrs ) {
             for ( BluetoothDevice dev : pairedDevs ) {
-                m_addrs.add( dev.getAddress() );
+                int clazz = dev.getBluetoothClass().getMajorDeviceClass();
+                if ( Major.PHONE == clazz || Major.COMPUTER == clazz ) {
+                    m_addrs.add( dev.getAddress() );
+                }
             }
         }
     }
