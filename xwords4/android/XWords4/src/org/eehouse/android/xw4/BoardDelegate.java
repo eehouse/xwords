@@ -920,10 +920,6 @@ public class BoardDelegate extends DelegateBase
             Utils.launchSettings( m_activity );
             break;
 
-        case R.id.board_menu_file_about:
-            showAboutDialog();
-            break;
-
         default:
             DbgUtils.logf( "menuitem %d not handled", id );
             handled = false;
