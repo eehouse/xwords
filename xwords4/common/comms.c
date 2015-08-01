@@ -2138,12 +2138,14 @@ comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream,
     if ( comms_getAddrDisabled( comms, addr_getType(retAddr), XP_FALSE ) ) {
         XP_LOGF( "%s: dropping message because %s disabled", __func__,
                  ConnType2Str( addr_getType( retAddr ) ) );
+    } else if (0 == (comms->addr._conTypes & retAddr->_conTypes)) {
+        /* we don't expect messages with that address type; drop it */
+        XP_LOGF( "%s: not expecting %s messages", __func__, 
+                 ConnType2Str( addr_getType( retAddr ) ) );
     } else {
         XWHostID senderID = 0;      /* unset; default for non-relay cases */
         XP_Bool usingRelay = XP_FALSE;
 
-        XP_ASSERT( retAddr == NULL || 
-                   (0 != (comms->addr._conTypes & retAddr->_conTypes)) );
 #ifdef COMMS_CHECKSUM
         XP_U16 initialLen = stream_getSize( stream );
 #endif
