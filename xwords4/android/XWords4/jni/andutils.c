@@ -431,9 +431,15 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     XP_ASSERT( !!env );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
+#ifdef DEBUG
+    char buf[128] = {0};
+    /* int len = sizeof(buf); */
+    /* getClassName( env, obj, buf, &len ); */
+#endif
     jmethodID mid = (*env)->GetMethodID( env, cls, proc, sig );
     if ( !mid ) {
-        XP_LOGF( "%s: no mid for proc %s, sig %s", __func__, proc, sig );
+        XP_LOGF( "%s: no mid for proc %s, sig %s in object of class %s",
+                 __func__, proc, sig, buf );
     }
     XP_ASSERT( !!mid );
     deleteLocalRef( env, cls );
@@ -725,8 +731,46 @@ android_debugf( const char* format, ... )
     
     (void)__android_log_write( ANDROID_LOG_DEBUG, "xw4", buf );
 }
-#endif
 
+/* Print an object's class name into buffer.
+ *
+ * NOTE: this must be called in advance of any jni error, because methods on
+ * env can't be called once there's an exception pending.
+ */
+#if 0
+static void
+getClassName( JNIEnv* env, jobject obj, char* out, int* outLen )
+{
+    XP_ASSERT( !!obj );
+    jclass cls1 = (*env)->GetObjectClass( env, obj );
+
+    // First get the class object
+    jmethodID mid = (*env)->GetMethodID( env, cls1, "getClass",
+                                         "()Ljava/lang/Class;" );
+    jobject clsObj = (*env)->CallObjectMethod( env, obj, mid );
+
+    // Now get the class object's class descriptor
+    jclass cls2 = (*env)->GetObjectClass( env, clsObj );
+    // Find the getName() method on the class object
+    mid = (*env)->GetMethodID( env, cls2, "getName", "()Ljava/lang/String;" );
+
+    // Call the getName() to get a jstring object back
+    jstring strObj = (jstring)(*env)->CallObjectMethod( env, clsObj, mid );
+
+    jint slen = (*env)->GetStringUTFLength( env, strObj );
+    if ( slen < *outLen ) {
+        *outLen = slen;
+        (*env)->GetStringUTFRegion( env, strObj, 0, slen, out );
+        out[slen] = '\0';
+    } else {
+        *outLen = 0;
+        out[0] = '\0';
+    }
+    deleteLocalRefs( env, clsObj, cls1, cls2, strObj, DELETE_NO_REF );
+    LOG_RETURNF( "%s", out );
+}
+#endif
+#endif
 
 /* #ifdef DEBUG */
 /* XP_U32 */
