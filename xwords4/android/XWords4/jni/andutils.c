@@ -687,10 +687,10 @@ void deleteLocalRef( JNIEnv* env, jobject jobj )
 }
 
 void
-deleteLocalRefs( JNIEnv* env, jobject jobj, ... )
+deleteLocalRefs( JNIEnv* env, ... )
 {
     va_list ap;
-    va_start( ap, jobj );
+    va_start( ap, env );
     for ( ; ; ) {
         jobject jnext = va_arg( ap, jobject );
         if ( DELETE_NO_REF == jnext ) {
