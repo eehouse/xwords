@@ -463,9 +463,7 @@ public final class R {
         /**   
          */
         public static final int alert_empty_dict_fmt=0x7f0501dc;
-        /**  The name of the app.  Not localized! 
-         */
-        public static final int app_name=0x7f050001;
+        public static final int app_name=0x7f05007e;
         public static final int app_not_found_fmt=0x7f0502b6;
         public static final int app_version=0x7f050000;
         /**  the background color of the area outside the board,
@@ -993,7 +991,7 @@ public final class R {
         public static final int default_dict=0x7f050122;
         /**  other 
          */
-        public static final int default_host=0x7f050079;
+        public static final int default_host=0x7f050078;
         /**  label within default wordlists in app preferences 
          */
         public static final int default_language=0x7f0502b7;
@@ -1025,7 +1023,7 @@ public final class R {
          new game 
          */
         public static final int default_robodict=0x7f050123;
-        public static final int default_update_url=0x7f05007e;
+        public static final int default_update_url=0x7f05007d;
         public static final int delete_dicts=0x7f0502a2;
         public static final int devid_title=0x7f0502e5;
         /**   
@@ -1049,7 +1047,7 @@ public final class R {
         public static final int dict_on_server=0x7f0502a8;
         /** string name="invite_mime">text/plain</string
          */
-        public static final int dict_url=0x7f05007d;
+        public static final int dict_url=0x7f05007c;
         /** 
        ############################################################
        # :Menus:
@@ -1104,7 +1102,7 @@ public final class R {
         public static final int email_author_chooser=0x7f0501e3;
         /**  Nor is my email address 
          */
-        public static final int email_author_email=0x7f050078;
+        public static final int email_author_email=0x7f050077;
         /**   
          */
         public static final int email_author_subject=0x7f0501e2;
@@ -1375,7 +1373,7 @@ public final class R {
         public static final int invite_dict_missing_body_fmt=0x7f050242;
         public static final int invite_dict_missing_body_noname_fmt=0x7f050243;
         public static final int invite_dict_missing_title=0x7f050241;
-        public static final int invite_host=0x7f05007b;
+        public static final int invite_host=0x7f05007a;
         /**  This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".  (The funky \u003c and friends are
@@ -1386,7 +1384,7 @@ public final class R {
         /**  Appended to message above if local device has NFC available 
          */
         public static final int invite_if_nfc=0x7f0500e3;
-        public static final int invite_mime=0x7f05007c;
+        public static final int invite_mime=0x7f05007b;
         public static final int invite_multi_summary=0x7f0502c4;
         public static final int invite_multi_title=0x7f0502c3;
         /**  Most users create games with only two players, which is the
@@ -1439,134 +1437,134 @@ public final class R {
         /**  clarification of above 
          */
         public static final int keep_screenon_summary=0x7f050139;
-        public static final int key_addrs_pref=0x7f05003e;
-        public static final int key_background=0x7f05001a;
-        public static final int key_board_size=0x7f050029;
-        public static final int key_bonus_l2x=0x7f050014;
-        public static final int key_bonus_l3x=0x7f050015;
-        public static final int key_bonus_w2x=0x7f050016;
-        public static final int key_bonus_w3x=0x7f050017;
+        public static final int key_addrs_pref=0x7f05003d;
+        public static final int key_background=0x7f050019;
+        public static final int key_board_size=0x7f050028;
+        public static final int key_bonus_l2x=0x7f050013;
+        public static final int key_bonus_l3x=0x7f050014;
+        public static final int key_bonus_w2x=0x7f050015;
+        public static final int key_bonus_w3x=0x7f050016;
         /**  the color of text, e.g. "2L", shown on a bonus square on the
          board 
          */
         public static final int key_bonushint=0x7f050144;
-        public static final int key_bt_addrs=0x7f050040;
+        public static final int key_bt_addrs=0x7f05003f;
         /**  database keys whose entries aren't visible prefs 
          */
-        public static final int key_closed_langs=0x7f05003f;
-        public static final int key_clr_bonushint=0x7f05001c;
-        public static final int key_clr_crosshairs=0x7f05001b;
+        public static final int key_closed_langs=0x7f05003e;
+        public static final int key_clr_bonushint=0x7f05001b;
+        public static final int key_clr_crosshairs=0x7f05001a;
         /**  prefs keys 
          */
-        public static final int key_color_tiles=0x7f050002;
-        public static final int key_connect_frequency=0x7f050032;
-        public static final int key_connstat_data=0x7f050043;
-        public static final int key_default_dict=0x7f05002c;
-        public static final int key_default_group=0x7f050048;
-        public static final int key_default_language=0x7f05002b;
-        public static final int key_default_loc=0x7f05003b;
-        public static final int key_default_phonies=0x7f050030;
-        public static final int key_default_robodict=0x7f05002f;
-        public static final int key_default_timerenabled=0x7f050031;
-        public static final int key_dev_id=0x7f050044;
-        public static final int key_dict_host=0x7f050023;
-        public static final int key_disable_nag=0x7f050007;
-        public static final int key_download_path=0x7f05006e;
-        public static final int key_empty=0x7f050019;
-        public static final int key_enable_debug=0x7f050068;
-        public static final int key_enable_dup_invite=0x7f050069;
-        public static final int key_enable_nfc_toself=0x7f05006a;
-        public static final int key_enable_pubroom=0x7f05000f;
-        public static final int key_enable_relay_toself=0x7f05006c;
-        public static final int key_enable_sms=0x7f050035;
-        public static final int key_enable_sms_toself=0x7f05006b;
-        public static final int key_explain_robot=0x7f050005;
-        public static final int key_force_radio=0x7f05003d;
-        public static final int key_force_tablet=0x7f05003c;
-        public static final int key_gcmvers_regid=0x7f050045;
-        public static final int key_got_langdict=0x7f05006f;
-        public static final int key_group_posns=0x7f050049;
-        public static final int key_hide_crosshairs=0x7f05000a;
-        public static final int key_hide_newgames=0x7f05000e;
-        public static final int key_hide_title=0x7f05000d;
-        public static final int key_hide_values=0x7f05000b;
-        public static final int key_init_autojuggle=0x7f050028;
-        public static final int key_init_hintsallowed=0x7f050026;
-        public static final int key_init_nethintsallowed=0x7f050027;
-        public static final int key_initial_player_minutes=0x7f05002a;
-        public static final int key_invite_multi=0x7f050072;
-        public static final int key_keep_screenon=0x7f050037;
-        public static final int key_last_packet=0x7f05004a;
-        public static final int key_logging_on=0x7f050024;
-        public static final int key_na_browse=0x7f050062;
-        public static final int key_na_browseall=0x7f050063;
-        public static final int key_na_comms_bt=0x7f050075;
-        public static final int key_na_comms_relay=0x7f050077;
-        public static final int key_na_comms_sms=0x7f050076;
-        public static final int key_na_dicts=0x7f050067;
-        public static final int key_na_fmt_expl=0x7f050066;
-        public static final int key_na_lookup=0x7f050061;
-        public static final int key_na_rematch_two_only=0x7f050074;
-        public static final int key_na_studycopy=0x7f050065;
-        public static final int key_na_values=0x7f050064;
-        public static final int key_nag_intervals=0x7f05006d;
-        public static final int key_network_behavior=0x7f050036;
-        public static final int key_notagain_arrow=0x7f05005c;
-        public static final int key_notagain_backclears=0x7f05004e;
-        public static final int key_notagain_chat=0x7f05004f;
-        public static final int key_notagain_conndall=0x7f050059;
-        public static final int key_notagain_conndfirst=0x7f05005a;
-        public static final int key_notagain_conndmid=0x7f05005b;
-        public static final int key_notagain_done=0x7f050057;
-        public static final int key_notagain_enablepublic=0x7f050073;
-        public static final int key_notagain_flip=0x7f050054;
-        public static final int key_notagain_hidenewgamebuttons=0x7f050060;
-        public static final int key_notagain_hintnext=0x7f050052;
-        public static final int key_notagain_hintprev=0x7f050051;
-        public static final int key_notagain_juggle=0x7f050053;
-        public static final int key_notagain_newfrom=0x7f05005e;
+        public static final int key_color_tiles=0x7f050001;
+        public static final int key_connect_frequency=0x7f050031;
+        public static final int key_connstat_data=0x7f050042;
+        public static final int key_default_dict=0x7f05002b;
+        public static final int key_default_group=0x7f050047;
+        public static final int key_default_language=0x7f05002a;
+        public static final int key_default_loc=0x7f05003a;
+        public static final int key_default_phonies=0x7f05002f;
+        public static final int key_default_robodict=0x7f05002e;
+        public static final int key_default_timerenabled=0x7f050030;
+        public static final int key_dev_id=0x7f050043;
+        public static final int key_dict_host=0x7f050022;
+        public static final int key_disable_nag=0x7f050006;
+        public static final int key_download_path=0x7f05006d;
+        public static final int key_empty=0x7f050018;
+        public static final int key_enable_debug=0x7f050067;
+        public static final int key_enable_dup_invite=0x7f050068;
+        public static final int key_enable_nfc_toself=0x7f050069;
+        public static final int key_enable_pubroom=0x7f05000e;
+        public static final int key_enable_relay_toself=0x7f05006b;
+        public static final int key_enable_sms=0x7f050034;
+        public static final int key_enable_sms_toself=0x7f05006a;
+        public static final int key_explain_robot=0x7f050004;
+        public static final int key_force_radio=0x7f05003c;
+        public static final int key_force_tablet=0x7f05003b;
+        public static final int key_gcmvers_regid=0x7f050044;
+        public static final int key_got_langdict=0x7f05006e;
+        public static final int key_group_posns=0x7f050048;
+        public static final int key_hide_crosshairs=0x7f050009;
+        public static final int key_hide_newgames=0x7f05000d;
+        public static final int key_hide_title=0x7f05000c;
+        public static final int key_hide_values=0x7f05000a;
+        public static final int key_init_autojuggle=0x7f050027;
+        public static final int key_init_hintsallowed=0x7f050025;
+        public static final int key_init_nethintsallowed=0x7f050026;
+        public static final int key_initial_player_minutes=0x7f050029;
+        public static final int key_invite_multi=0x7f050071;
+        public static final int key_keep_screenon=0x7f050036;
+        public static final int key_last_packet=0x7f050049;
+        public static final int key_logging_on=0x7f050023;
+        public static final int key_na_browse=0x7f050061;
+        public static final int key_na_browseall=0x7f050062;
+        public static final int key_na_comms_bt=0x7f050074;
+        public static final int key_na_comms_relay=0x7f050076;
+        public static final int key_na_comms_sms=0x7f050075;
+        public static final int key_na_dicts=0x7f050066;
+        public static final int key_na_fmt_expl=0x7f050065;
+        public static final int key_na_lookup=0x7f050060;
+        public static final int key_na_rematch_two_only=0x7f050073;
+        public static final int key_na_studycopy=0x7f050064;
+        public static final int key_na_values=0x7f050063;
+        public static final int key_nag_intervals=0x7f05006c;
+        public static final int key_network_behavior=0x7f050035;
+        public static final int key_notagain_arrow=0x7f05005b;
+        public static final int key_notagain_backclears=0x7f05004d;
+        public static final int key_notagain_chat=0x7f05004e;
+        public static final int key_notagain_conndall=0x7f050058;
+        public static final int key_notagain_conndfirst=0x7f050059;
+        public static final int key_notagain_conndmid=0x7f05005a;
+        public static final int key_notagain_done=0x7f050056;
+        public static final int key_notagain_enablepublic=0x7f050072;
+        public static final int key_notagain_flip=0x7f050053;
+        public static final int key_notagain_hidenewgamebuttons=0x7f05005f;
+        public static final int key_notagain_hintnext=0x7f050051;
+        public static final int key_notagain_hintprev=0x7f050050;
+        public static final int key_notagain_juggle=0x7f050052;
+        public static final int key_notagain_newfrom=0x7f05005d;
         /**  <string name="key_notagain_sms_ready">key_notagain_sms_ready</string> 
          */
-        public static final int key_notagain_newselect=0x7f05004d;
-        public static final int key_notagain_relay=0x7f050050;
-        public static final int key_notagain_sync=0x7f05004c;
-        public static final int key_notagain_trading=0x7f05005f;
-        public static final int key_notagain_turnchanged=0x7f05005d;
-        public static final int key_notagain_undo=0x7f050056;
-        public static final int key_notagain_unlock=0x7f050058;
-        public static final int key_notagain_zoom=0x7f050055;
-        public static final int key_notify_sound=0x7f050033;
-        public static final int key_notify_vibrate=0x7f050034;
-        public static final int key_peek_other=0x7f050009;
-        public static final int key_player0=0x7f050010;
-        public static final int key_player1=0x7f050011;
-        public static final int key_player1_name=0x7f05002d;
-        public static final int key_player2=0x7f050012;
-        public static final int key_player3=0x7f050013;
-        public static final int key_proxy_port=0x7f050021;
-        public static final int key_relay_host=0x7f05001d;
-        public static final int key_relay_ids=0x7f050042;
-        public static final int key_relay_port=0x7f05001e;
-        public static final int key_relay_regid=0x7f050046;
-        public static final int key_relay_regid_ackd=0x7f050047;
-        public static final int key_ringer_zoom=0x7f05000c;
-        public static final int key_robot_name=0x7f05002e;
-        public static final int key_show_arrow=0x7f050003;
-        public static final int key_show_sms=0x7f050025;
-        public static final int key_skip_confirm=0x7f050006;
-        public static final int key_sms_phones=0x7f050041;
-        public static final int key_sms_port=0x7f050022;
-        public static final int key_sort_tiles=0x7f050008;
-        public static final int key_square_tiles=0x7f050004;
-        public static final int key_studyon=0x7f050039;
-        public static final int key_summary_field=0x7f05003a;
-        public static final int key_thumbsize=0x7f050038;
-        public static final int key_tile_back=0x7f050018;
-        public static final int key_udp_interval=0x7f05004b;
-        public static final int key_update_prerel=0x7f050020;
-        public static final int key_update_url=0x7f05001f;
-        public static final int key_xlations_enabled=0x7f050071;
-        public static final int key_xlations_locale=0x7f050070;
+        public static final int key_notagain_newselect=0x7f05004c;
+        public static final int key_notagain_relay=0x7f05004f;
+        public static final int key_notagain_sync=0x7f05004b;
+        public static final int key_notagain_trading=0x7f05005e;
+        public static final int key_notagain_turnchanged=0x7f05005c;
+        public static final int key_notagain_undo=0x7f050055;
+        public static final int key_notagain_unlock=0x7f050057;
+        public static final int key_notagain_zoom=0x7f050054;
+        public static final int key_notify_sound=0x7f050032;
+        public static final int key_notify_vibrate=0x7f050033;
+        public static final int key_peek_other=0x7f050008;
+        public static final int key_player0=0x7f05000f;
+        public static final int key_player1=0x7f050010;
+        public static final int key_player1_name=0x7f05002c;
+        public static final int key_player2=0x7f050011;
+        public static final int key_player3=0x7f050012;
+        public static final int key_proxy_port=0x7f050020;
+        public static final int key_relay_host=0x7f05001c;
+        public static final int key_relay_ids=0x7f050041;
+        public static final int key_relay_port=0x7f05001d;
+        public static final int key_relay_regid=0x7f050045;
+        public static final int key_relay_regid_ackd=0x7f050046;
+        public static final int key_ringer_zoom=0x7f05000b;
+        public static final int key_robot_name=0x7f05002d;
+        public static final int key_show_arrow=0x7f050002;
+        public static final int key_show_sms=0x7f050024;
+        public static final int key_skip_confirm=0x7f050005;
+        public static final int key_sms_phones=0x7f050040;
+        public static final int key_sms_port=0x7f050021;
+        public static final int key_sort_tiles=0x7f050007;
+        public static final int key_square_tiles=0x7f050003;
+        public static final int key_studyon=0x7f050038;
+        public static final int key_summary_field=0x7f050039;
+        public static final int key_thumbsize=0x7f050037;
+        public static final int key_tile_back=0x7f050017;
+        public static final int key_udp_interval=0x7f05004a;
+        public static final int key_update_prerel=0x7f05001f;
+        public static final int key_update_url=0x7f05001e;
+        public static final int key_xlations_enabled=0x7f050070;
+        public static final int key_xlations_locale=0x7f05006f;
         /**  text of separator marking out the language area of the
          dialog.  First is used for single-device games, and second
          for networked games (where players aren't allowed to have
@@ -2750,7 +2748,7 @@ public final class R {
          language
          */
         public static final int xlator=0x7f0501c2;
-        public static final int xwords_nfc_mime=0x7f05007a;
+        public static final int xwords_nfc_mime=0x7f050079;
     }
     public static final class style {
         public static final int about_items=0x7f080005;
