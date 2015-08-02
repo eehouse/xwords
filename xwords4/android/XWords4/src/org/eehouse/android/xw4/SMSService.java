@@ -71,7 +71,9 @@ public class SMSService extends XWService {
     private static final String MSG_SENT = "MSG_SENT";
     private static final String MSG_DELIVERED = "MSG_DELIVERED";
 
-    private static final int SMS_PROTO_VERSION = 0;
+    private static final int SMS_PROTO_VERSION_ORIG = 0;
+    private static final int SMS_PROTO_VERSION_WITHPORT = 1;
+    private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_WITHPORT;
     private static final int MAX_LEN_TEXT = 100;
     private static final int MAX_LEN_BINARY = 100;
     private static final int MAX_MSG_COUNT = 16; // 1.6K enough? Should be....
@@ -449,6 +451,7 @@ public class SMSService extends XWService {
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream das = new DataOutputStream( bas );
         das.writeByte( SMS_PROTO_VERSION );
+        das.writeShort( getNBSPort() );
         das.writeByte( cmd.ordinal() );
         das.write( bytes, 0, bytes.length );
         das.flush();
@@ -568,7 +571,7 @@ public class SMSService extends XWService {
     {
         boolean success = true;
         if ( index == 0 && count == 1 ) { // most common case
-            disAssemble( senderPhone, msg );
+            success = disAssemble( senderPhone, msg );
         } else if ( count > 0 && count < MAX_MSG_COUNT && index < count ) {
             // required?  Should always be in main thread.
             synchronized( s_partialMsgs ) { 
@@ -585,7 +588,7 @@ public class SMSService extends XWService {
                 }
 
                 if ( store.add( index, msg ).isComplete() ) {
-                    disAssemble( senderPhone, store.messageData() );
+                    success = disAssemble( senderPhone, store.messageData() );
                     perPhone.remove( id );
                 }
             }
@@ -595,21 +598,33 @@ public class SMSService extends XWService {
         return success;
     }
 
-    private void disAssemble( String senderPhone, byte[] fullMsg )
+    private boolean disAssemble( String senderPhone, byte[] fullMsg )
     {
+        boolean success = false;
         DataInputStream dis = 
             new DataInputStream( new ByteArrayInputStream(fullMsg) );
         try {
             byte proto = dis.readByte();
-            if ( SMS_PROTO_VERSION != proto ) {
+            short myPort = getNBSPort();
+            short sentPort;
+            if ( SMS_PROTO_VERSION_WITHPORT > proto ) {
+                sentPort = myPort;
+            } else {
+                sentPort = dis.readShort();
+            }
+            if ( SMS_PROTO_VERSION < proto ) {
                 DbgUtils.logf( "SMSService.disAssemble: bad proto %d from %s;"
                                + " dropping", proto, senderPhone );
                 sendResult( MultiEvent.BAD_PROTO_SMS, senderPhone );
+            } else if ( sentPort != myPort ) {
+                DbgUtils.logdf( "SMSService.disAssemble(): received on port %d"
+                                + " but expected %d", sentPort, myPort );
             } else {
                 SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
                 byte[] rest = new byte[dis.available()];
                 dis.read( rest );
                 receive( cmd, rest, senderPhone );
+                success = true;
             }
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
@@ -617,6 +632,7 @@ public class SMSService extends XWService {
             // enum this older code doesn't know about; drop it
             DbgUtils.logf( "disAssemble: dropping message with too-new enum" );
         }
+        return success;
     }
 
     private void postNotification( String phone, int gameID, long rowid )
@@ -673,7 +689,7 @@ public class SMSService extends XWService {
             }
 
             if ( !success ) {
-                short nbsPort = (short)Integer.parseInt( getString( R.string.nbs_port ) );
+                short nbsPort = getNBSPort();
                 try {
                     SmsManager mgr = SmsManager.getDefault();
                     PendingIntent sent = makeStatusIntent( MSG_SENT );
@@ -780,6 +796,16 @@ public class SMSService extends XWService {
         }
         DbgUtils.logf( "matchKeyIf(%s) => %s", phone, result );
         return result;
+    }
+
+    private static Short s_nbsPort = null;
+    private short getNBSPort()
+    {
+        if ( null == s_nbsPort ) {
+            String asStr = getString( R.string.nbs_port );
+            s_nbsPort = new Short((short)Integer.parseInt( asStr ) );
+        }
+        return s_nbsPort;
     }
 
     private class SMSMsgSink extends MultiMsgSink {
