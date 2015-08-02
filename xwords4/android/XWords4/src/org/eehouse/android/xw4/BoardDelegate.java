@@ -2144,7 +2144,8 @@ public class BoardDelegate extends DelegateBase
 
     private void pingBTRemotes()
     {
-        if ( m_connTypes.contains( CommsConnType.COMMS_CONN_BT ) ) {
+        if ( null != m_connTypes
+             && m_connTypes.contains( CommsConnType.COMMS_CONN_BT ) ) {
             CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
                 if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
