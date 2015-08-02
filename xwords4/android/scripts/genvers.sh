@@ -27,11 +27,13 @@ case $VARIANT in
 		APPNAME=Crosswords
 		SMSPORT=3344
 		INVITE_PREFIX=/and/
+		DBG_TAG=XW4
 		;;
 	xw4dbg)
 		APPNAME=CrossDbg
 		SMSPORT=3345
 		INVITE_PREFIX=/anddbg/
+		DBG_TAG=X4BG
 		;;
 	*)
 		usage
@@ -75,6 +77,7 @@ class BuildConstants {
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
     public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
     public static final long BUILD_STAMP = $(date +'%s');
+    public static final String DBG_TAG = "$DBG_TAG";
 }
 EOF
 

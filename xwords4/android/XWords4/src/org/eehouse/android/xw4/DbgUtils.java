@@ -43,7 +43,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DbgUtils {
-    private static final String TAG = "XW4";
+    private static final String TAG = BuildConstants.DBG_TAG;
     private static boolean s_doLog = BuildConfig.DEBUG;
 
     private static Time s_time = new Time();
