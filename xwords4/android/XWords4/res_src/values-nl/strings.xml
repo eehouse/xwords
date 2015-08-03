@@ -16,9 +16,9 @@
 
     <string name="gameOver">Spel voorbij</string>
     <plurals name="moves_fmt">
-	<item quantity="one">%1$s zet gespeeld</item>
-	<item quantity="other">%1$s zetten gespeeld</item>
-</plurals>
+	  <item quantity="one">%1$s zet gespeeld</item>
+	  <item quantity="other">%1$s zetten gespeeld</item>
+    </plurals>
 
     <string name="button_delete">Verwijder</string>
     <string name="button_reset">Reset</string>
@@ -51,14 +51,14 @@
     <string name="rename_label_caveat">Verander de naam van dit spel (op dit apparaat) naar:</string>
 
     <plurals name="confirm_seldeletes_fmt">
-	<item quantity="one">Weet je zeker dat je %1$d geselecteerd spel wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.</item>
-	<item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.</item>
-</plurals>
+	  <item quantity="one">Weet je zeker dat je %1$d geselecteerd spel wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.</item>
+	  <item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.</item>
+    </plurals>
 
     <plurals name="confirm_reset_fmt">
-	<item quantity="one">Weet je zeker dat je %1$d geselecteerd spel wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
-	<item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
-</plurals>
+	  <item quantity="one">Weet je zeker dat je %1$d geselecteerd spel wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
+	  <item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
+    </plurals>
 
     <string name="title_dicts_list">Crosswords Woordenlijsten</string>   
     <string name="download_dicts">Meer downloaden</string>
@@ -73,9 +73,9 @@
     <string name="dicts_item_select">Als standaard instellen</string>
 
     <plurals name="confirm_delete_dict_fmt">
-	<item quantity="one">Weet je zeker dat je de woordenlijst %1$s wilt verwijderen?</item>
-	<item quantity="other">Weet je zeker dat je de woordenlijsten %1$s wilt verwijderen?</item>
-</plurals>
+	  <item quantity="one">Weet je zeker dat je de woordenlijst %1$s wilt verwijderen?</item>
+	  <item quantity="other">Weet je zeker dat je de woordenlijsten %1$s wilt verwijderen?</item>
+    </plurals>
 
     <string name="confirm_deleteonly_dicts_fmt">Het wissen van %1$s zal ervoor zorgen dat je geen woordenlijsten meer hebt voor %2$s. Een of meer spellen zullen onspeelbaar worden (totdat je een vervangende woordenlijst download.)</string>
 
@@ -188,25 +188,25 @@
     <string name="no_moves_made">(Nog geen zetten gedaan)</string>
 
     <plurals name="invite_msg_fmt">
-	<item quantity="one">Dit spel wacht op %1$d speler op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
-	<item quantity="other">Dit spel wacht op %1$d spelers op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
-</plurals>
+	  <item quantity="one">Dit spel wacht op %1$d speler op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
+	  <item quantity="other">Dit spel wacht op %1$d spelers op afstand. Wil je iemand uitnodigen om mee te doen, indien je dit nog niet gedaan hebt?</item>
+    </plurals>
 
     <string name="invite_if_nfc">Of druk om uit te nodigen, indien het andere apparaat dichtbij is en Android Beam (NFC) ondersteund.</string>
 
-      <plurals name="players_miss_fmt">
-	<item quantity="one">Nog %1$d speler nodig</item>
-	<item quantity="other">Nog %1$d spelers nodig</item>
-</plurals>
+    <plurals name="players_miss_fmt">
+	  <item quantity="one">Nog %1$d speler nodig</item>
+	  <item quantity="other">Nog %1$d spelers nodig</item>
+    </plurals>
 
     <string name="invite_multiple">" (Je verwacht meerdere spelers op afstand. Je hoeft ze niet allemaal tegelijk uit te nodigen, maar dit bericht zal niet verdwijnen totdat iedereen uitgenodigd is en de uitnodiging geaccepteerd heeft.)"</string>
 
     <string name="pts">pntn</string>
 
     <plurals name="msg_relay_waiting_fmt">
-	<item quantity="one">Apparaat %1$d verbonden met relay in kamer \"%2$s\". Wachtend op %3$d speler.</item>
-	<item quantity="other">Apparaat %1$d verbonden met relay in kamer \"%2$s\". Wachtend op %3$d spelers.</item>
-</plurals>
+	  <item quantity="one">Apparaat %1$d verbonden met relay in kamer \"%2$s\". Wachtend op %3$d speler.</item>
+	  <item quantity="other">Apparaat %1$d verbonden met relay in kamer \"%2$s\". Wachtend op %3$d spelers.</item>
+    </plurals>
 
     <string name="msg_relay_all_here_fmt">Alle spelers spelers zijn hier in kamer \"%1$s\".</string>
 
@@ -249,15 +249,15 @@
 
     <string name="board_menu_game_resend">Verstuur berichten opnieuw</string>
     <plurals name="resend_finished_fmt">
-	<item quantity="one">Opnieuw versturen voltooid; %1$d bericht verstuurd.</item>
-	<item quantity="other">Opnieuw versturen voltooid; %1$d berichten verstuurd.</item>
-</plurals>
+	  <item quantity="one">Opnieuw versturen voltooid; %1$d bericht verstuurd.</item>
+	  <item quantity="other">Opnieuw versturen voltooid; %1$d berichten verstuurd.</item>
+    </plurals>
 
     <string name="str_robot_moved_fmt">"De robot %1$s maakte de volgende zet: "</string>
     <plurals name="strd_robot_traded_fmt">
-	<item quantity="one">heeft %1$d letters gewisseld.</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">heeft %1$d letters gewisseld.</item>
+	  <item quantity="other"/>
+    </plurals>
     <string name="strs_values_header_fmt">%1$s tellingen/waardes:\n</string>
     <string name="strd_remaining_tiles_add_fmt">+ %1$d [alle overgebleven letters]</string>
     <string name="strd_unused_tiles_sub_fmt">- %1$d [overgebleven letters]</string>
@@ -279,13 +279,13 @@
     <string name="strd_turn_score_fmt">Score voor beurt: %1$d\n</string>
 
     <plurals name="strd_remains_header_fmt">
-	<item quantity="one">%1$d letters in de zak.</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$d letters in de zak.</item>
+	  <item quantity="other"/>
+    </plurals>
     <plurals name="strd_remains_expl_fmt">
-	<item quantity="one">%1$d letters in de zak en op alle rekken:\n</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$d letters in de zak en op alle rekken:\n</item>
+	  <item quantity="other"/>
+    </plurals>
 
     <string name="confirm_undo_last">Weet je zeker dat je de laatste zet ongedaan wilt maken? (Je kan deze niet opnieuw uitvoeren.)</string>
 
@@ -449,9 +449,9 @@
     <string name="invite_chooser_sms">sms</string>
 
     <plurals name="query_trade_fmt">
-	<item quantity="one">Weet je zeker dat je de %1$d geselecteerde letters (%2$s) wilt wisselen?</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">Weet je zeker dat je de %1$d geselecteerde letters (%2$s) wilt wisselen?</item>
+	  <item quantity="other"/>
+    </plurals>
 
     <string name="chat_title_fmt">%1$s bericht geschiedenis</string>
     <string name="chat_local_id">"Ik: "</string>
@@ -622,13 +622,13 @@
       <string name="pick_faceup">Pak letters met de letter naar boven</string>
 
       <plurals name="dict_browse_title_fmt">
-	<item quantity="one">%1$s (%2$d woorden met %3$d-%4$d letters)</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="one">%1$s (%2$d woorden met %3$d-%4$d letters)</item>
+	    <item quantity="other"/>
+      </plurals>
       <plurals name="dict_browse_title1_fmt">
-	<item quantity="one">%1$s (%2$d woorden met %3$d letters)</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="one">%1$s (%2$d woorden met %3$d letters)</item>
+	    <item quantity="other"/>
+      </plurals>
       <string name="dict_browse_nowords_fmt">Geen woord in %1$s begint met %2$s.</string>
       <string name="not_again_browse">Deze knop opent de woordenlijst browser voor de woordenlijst van de speler die aan de beurt is.</string>
       <string name="not_again_browseall">Deze knop opent de woordenlijst browser voor de woordenlijst van jouw keuze.</string>
@@ -663,12 +663,12 @@
       <string name="new_btmove_title">Uitnodiging via Bluetooth</string>
     <string name="new_move_body">Een of meer zetten zijn gemaakt</string>
     <plurals name="invite_bt_desc_fmt">
-	<item quantity="one">Kies tot %1$d apparaat/apparaten die je aan dit spel toe wilt voegen. Gebruik de \"%2$s\" knop als je een apparaat dat je verwacht niet ziet.</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">Kies tot %1$d apparaat/apparaten die je aan dit spel toe wilt voegen. Gebruik de \"%2$s\" knop als je een apparaat dat je verwacht niet ziet.</item>
+	  <item quantity="other"/>
+    </plurals>
     <string name="bt_resend_fmt">Bluetooth versturen naar %1$s gefaald; nieuwe poging %3$d over %2$d seconden.</string>
     <string name="bt_fail_fmt">Bluetooth versturen naar %1$s is te vaak gefaald. Heropen het spel en probeer het opnieuw.</string>
-        <string name="button_invite">Nodig geselecteerden uit</string>
+    <string name="button_invite">Nodig geselecteerden uit</string>
 
     <string name="bt_invite_title">Bluetooth uitnodiging</string>
     <string name="sms_invite_title">SMS uitnodiging</string>
@@ -683,9 +683,9 @@
     <string name="new_name_body_fmt">%1$s heeft je uitgenodigd om te spelen</string>
     <string name="button_sms_add">Importeer contact</string>
     <plurals name="invite_sms_desc_fmt">
-	<item quantity="one">Selecteer de %1$d telefoonnummer[s] die je voor je nieuwe spel uit wilt nodigen en druk op \"%2$s\".</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">Selecteer de %1$d telefoonnummer[s] die je voor je nieuwe spel uit wilt nodigen en druk op \"%2$s\".</item>
+	  <item quantity="other"/>
+    </plurals>
     <string name="manual_owner_name">(Niet in contacten)</string>
     <string name="warn_nomobile_fmt">Het nummer %1$s voor %2$s is geen \"mobiel\" nummer. Toch importeren?</string>
     <string name="empty_sms_inviter">Deze telefoonlijst is leeg. Gebruik de \"Importeer contact\" knop om mensen toe te voegen die je uit wilt nodigen of de + knop om nummers direct in te voeren.</string>
@@ -787,13 +787,13 @@
     <string name="group_new_games">Nieuwe spellen</string>
 
     <plurals name="groups_confirm_del_fmt">
-	<item quantity="one">Weet je zeker dat je de %1$d geselecteerde groep[en] wilt verwijderen?</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">Weet je zeker dat je de %1$d geselecteerde groep[en] wilt verwijderen?</item>
+	  <item quantity="other"/>
+    </plurals>
     <plurals name="groups_confirm_del_games_fmt">
-	<item quantity="one">\n\n(%1$d spel[len] zullen ook verwijderd worden.)</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">\n\n(%1$d spel[len] zullen ook verwijderd worden.)</item>
+	  <item quantity="other"/>
+    </plurals>
 
     <string name="rename_group_label">Verander de naam van deze groep in:</string>
     <string name="game_name_group_title">Benoem groep</string>
@@ -801,9 +801,9 @@
     <string name="cannot_delete_default_group_fmt">De groep voor nieuwe spellen, %1$s, kan niet verwijderd worden.</string>
 
     <plurals name="group_name_fmt">
-	<item quantity="one">%1$s (%2$d spel)</item>
-	<item quantity="other">%1$s (%2$d spellen)</item>
-</plurals>
+	  <item quantity="one">%1$s (%2$d spel)</item>
+	  <item quantity="other">%1$s (%2$d spellen)</item>
+    </plurals>
 
     <string name="button_rematch">Opnieuw uitdagen</string>
 
@@ -850,13 +850,13 @@
     <string name="slmenu_copy_sel">Kopieer naar kladblok</string>
     <string name="slmenu_clear_sel">Verwijder geselecteerd</string>
     <plurals name="confirm_studylist_clear_fmt">
-	<item quantity="one">Weet je zeker dat je de %1$d geselecteerde woord[en] wilt verwijderen?\n\n(Deze actie kan niet ongedaan gemaakt worden.)</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">Weet je zeker dat je de %1$d geselecteerde woord[en] wilt verwijderen?\n\n(Deze actie kan niet ongedaan gemaakt worden.)</item>
+	  <item quantity="other"/>
+    </plurals>
     <plurals name="paste_done_fmt">
-	<item quantity="one">%1$d woord[en] gekopieerd</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$d woord[en] gekopieerd</item>
+	  <item quantity="other"/>
+    </plurals>
     <string name="add_done_fmt">%1$s toegevoegd aan %2$s studielijst</string>
     <string name="studylist_title_fmt">Studielijst voor %1$s</string>
 
@@ -878,9 +878,9 @@
     <string name="loc_lang_local">%1$s (van jou)</string>
 
     <plurals name="new_xlations_fmt">
-	<item quantity="one">%1$d nieuwe vertalingen geïnstalleerd</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$d nieuwe vertalingen geïnstalleerd</item>
+	  <item quantity="other"/>
+    </plurals>
 
     <string name="xlations_enabled_title">Lokaal vertalen inschakelen</string>
     <string name="xlations_enabled_summary">Voeg optie toe aan elk schermmenu</string>
@@ -936,9 +936,9 @@
     <string name="note_none">(Geen)</string>
     <string name="dict_on_server">Druk om te downloaden</string>
     <plurals name="lang_name_fmt">
-	<item quantity="one">%1$s (%2$d woordenlijst)</item>
-	<item quantity="other">%1$s (%2$d woordenlijsten)</item>
-</plurals>
+	  <item quantity="one">%1$s (%2$d woordenlijst)</item>
+	  <item quantity="other">%1$s (%2$d woordenlijsten)</item>
+    </plurals>
 
     <string name="dict_desc_fmt">%1$s (%2$s/%3$d woorden)</string>
 
@@ -951,37 +951,37 @@
 
     <string name="nag_title">Herinnering: Het is jouw beurt</string>
     <plurals name="nag_minutes_fmt">
-	<item quantity="one">%1$d minuten</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$d minuten</item>
+	  <item quantity="other"/>
+    </plurals>
     <plurals name="nag_hours_fmt">
-	<item quantity="one">%1$d uur</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$d uur</item>
+	  <item quantity="other"/>
+    </plurals>
     <plurals name="nag_days_fmt">
-	<item quantity="one">%1$d dagen</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$d dagen</item>
+	  <item quantity="other"/>
+    </plurals>
     <string name="nag_body_fmt">%1$s maakte een zet meer dan %2$s geleden.</string>
     <string name="nag_warn_last_fmt">Laatste waarschuwing: %1$s</string>
     <string name="prev_player">Jouw tegenstander</string>
 
     <string name="lmi_pass_fmt">%1$s heeft de beurt overgeslagen (0 punten)</string>
     <plurals name="lmi_move_fmt">
-	<item quantity="one">%1$s speelde %2$s voor %3$d punten</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$s speelde %2$s voor %3$d punten</item>
+	  <item quantity="other"/>
+    </plurals>
     <plurals name="lmi_trade_fmt">
-	<item quantity="one">%1$s heeft %2$d letters geruild</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$s heeft %2$d letters geruild</item>
+	  <item quantity="other"/>
+    </plurals>
     <string name="lmi_phony_fmt">%1$s heeft een beurt verloren</string>
     <string name="lmi_tiles_fmt">Letters gedeeld naar %1$s</string>
 
     <plurals name="bt_err_count_fmt">
-	<item quantity="one">%1$d bluetooth fouten tot nog toe</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$d bluetooth fouten tot nog toe</item>
+	  <item quantity="other"/>
+    </plurals>
 
 	<string name="bt_no_devs">Je hebt om het moment geen gepaarde Bluetooth apparaten. Wil je de Android instellingen openen om een of meer apparaten te paren?\n\n(Je moet dit mogelijk ook doen op het apparaat waar je mee wilt paren.)</string>
 	<string name="app_not_found_fmt">Kan niet met Crosswords verbinden op apparaat %1$s. Controleer of het apparaat dichtbij genoeg is en dat Crosswords erop geïnstalleerd is.</string>
@@ -1002,9 +1002,9 @@
 
     <string name="nplayers_prompt">Hoeveelheid op dit apparaat</string>
     <plurals name="nplayers_fmt">
-	<item quantity="one">%1$d speler[s]</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$d speler[s]</item>
+	  <item quantity="other"/>
+    </plurals>
     <string name="err_dup_invite_fmt">Dubbele uitnodiging geweigerd: apparaat \"%1$s\" heeft al een uitnodiging voor dit spel geaccepteerd.</string>
 
     <string name="network_advanced_title">Geavanceerd</string>
