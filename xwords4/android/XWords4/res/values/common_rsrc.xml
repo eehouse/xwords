@@ -2,8 +2,6 @@
 
 <!-- Resources in this file do not require localization -->
 <resources>
-  <!-- The name of the app.  Not localized! -->
-  <string name="app_name">Crosswords</string>  
 
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
@@ -139,14 +137,11 @@
   <string name="default_host">eehouse.org</string>
   <string name="xwords_nfc_mime">application/org.eehouse.android.xw4</string>
   <string name="invite_host">eehouse.org</string>
-  <string name="invite_prefix">/and/</string>
   <string name="invite_mime">application/x-xwordsinvite</string>
   <!--string name="invite_mime">text/plain</string-->
 
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
   <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
-
-  <string name="nbs_port">3344</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 

@@ -66,7 +66,7 @@ case $DIRNAME in
         PKG=xw4
         ;;
     *)
-        usage "running in unexpected directory $DIRNAME"
+        echo "running in unexpected directory $DIRNAME; hope that's ok"
         ;;
 esac
 

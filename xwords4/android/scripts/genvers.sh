@@ -22,6 +22,25 @@ cd ../
 
 GITVERSION=$(../scripts/gitversion.sh)
 
+case $VARIANT in
+	xw4)
+		APPNAME=Crosswords
+		SMSPORT=3344
+		INVITE_PREFIX=/and/
+		DBG_TAG=XW4
+		;;
+	xw4dbg)
+		APPNAME=CrossDbg
+		SMSPORT=3345
+		INVITE_PREFIX=/anddbg/
+		DBG_TAG=X4BG
+		;;
+	*)
+		usage
+		;;
+esac
+
+
 # Need to verify that R.java is unmodified; otherwise we can't set
 # this constant!!!  Shouldn't be a problem with release builds,
 # though.
@@ -31,12 +50,15 @@ fi
 # TODO: deal with case where there's no hash available -- exported
 # code maybe?  Better: gitversion.sh does that.
 
-cat <<EOF > ${BUILD_DIR}/res/values/git_string.xml
+cat <<EOF > ${BUILD_DIR}/res/values/gen_strings.xml
 <?xml version="1.0" encoding="utf-8"?>
-<!-- auto-generated; do not edit -->
+<!-- auto-generated (by $(basename $0)); do not edit -->
 
 <resources>
+    <string name="app_name">$APPNAME</string>  
     <string name="git_rev">$GITVERSION</string>
+    <string name="nbs_port">$SMSPORT</string>
+    <string name="invite_prefix">$INVITE_PREFIX</string>
 </resources>
 EOF
 
@@ -55,6 +77,7 @@ class BuildConstants {
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
     public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
     public static final long BUILD_STAMP = $(date +'%s');
+    public static final String DBG_TAG = "$DBG_TAG";
 }
 EOF
 

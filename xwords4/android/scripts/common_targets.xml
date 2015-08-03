@@ -35,6 +35,7 @@
             <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
             <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
             <arg value="THUMBNAIL_ENABLED=${THUMBNAIL_ENABLED}" />
+            <arg value="VARIANT=${VARIANT_NAME}" />
         </exec>
 
         <exec dir="." executable="../scripts/mkimages.sh" 
