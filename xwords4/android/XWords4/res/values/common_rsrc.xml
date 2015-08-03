@@ -2,8 +2,6 @@
 
 <!-- Resources in this file do not require localization -->
 <resources>
-  <!-- The name of the app.  Not localized! -->
-  <string name="app_name">Crosswords</string>  
 
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
