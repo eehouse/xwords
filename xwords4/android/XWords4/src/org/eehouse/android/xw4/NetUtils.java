@@ -234,6 +234,8 @@ public class NetUtils {
             }
         } catch( java.io.UnsupportedEncodingException uee ) {
             DbgUtils.loge( uee );
+        } catch( java.net.UnknownHostException uhe ) {
+            DbgUtils.loge( uhe );
         } catch( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
         }

@@ -1140,50 +1140,53 @@ public class DictsDelegate extends ListDelegateBase
                 JSONObject theOne = null;
                 String langName = null;
                 String json = NetUtils.runPost( post, new JSONObject() );
-                try {
-                    JSONObject obj = new JSONObject( json );
-                    JSONArray langs = obj.optJSONArray( "langs" );
-                    int nLangs = langs.length();
-                    for ( int ii = 0; ii < nLangs; ++ii ) {
-                        JSONObject langObj = langs.getJSONObject( ii );
-                        String langCode = langObj.getString( "lc" );
-                        if ( ! langCode.equals( m_lc ) ) {
-                            continue;
-                        }
-                        // we have our language; look for one marked default;
-                        // otherwise take the largest.
-                        m_langName = langObj.getString( "lang" );
-                        JSONArray dicts = langObj.getJSONArray( "dicts" );
-                        int nDicts = dicts.length();
-                        int theOneNWords = 0;
-                        for ( int jj = 0; jj < nDicts; ++jj ) {
-                            JSONObject dict = dicts.getJSONObject( jj );
-                            if ( dict.optBoolean( "isDflt", false ) ) {
-                                theOne = dict;
-                                break;
-                            } else {
-                                int nWords = dict.getInt( "nWords" );
-                                if ( null == theOne || nWords > theOneNWords ) {
+                if ( null != json ) {
+                    try {
+                        JSONObject obj = new JSONObject( json );
+                        JSONArray langs = obj.optJSONArray( "langs" );
+                        int nLangs = langs.length();
+                        for ( int ii = 0; ii < nLangs; ++ii ) {
+                            JSONObject langObj = langs.getJSONObject( ii );
+                            String langCode = langObj.getString( "lc" );
+                            if ( ! langCode.equals( m_lc ) ) {
+                                continue;
+                            }
+                            // we have our language; look for one marked default;
+                            // otherwise take the largest.
+                            m_langName = langObj.getString( "lang" );
+                            JSONArray dicts = langObj.getJSONArray( "dicts" );
+                            int nDicts = dicts.length();
+                            int theOneNWords = 0;
+                            for ( int jj = 0; jj < nDicts; ++jj ) {
+                                JSONObject dict = dicts.getJSONObject( jj );
+                                if ( dict.optBoolean( "isDflt", false ) ) {
                                     theOne = dict;
-                                    theOneNWords = nWords;
+                                    break;
+                                } else {
+                                    int nWords = dict.getInt( "nWords" );
+                                    if ( null == theOne 
+                                         || nWords > theOneNWords ) {
+                                        theOne = dict;
+                                        theOneNWords = nWords;
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // If we got here and theOne isn't set, there is
-                    // no wordlist available for this language. Set
-                    // the flag so we don't try again, even though
-                    // we've failed.
-                    if ( null == theOne ) {
-                        XWPrefs.setPrefsBoolean( m_context, 
-                                                 R.string.key_got_langdict, 
-                                                 true );
-                    }
+                        // If we got here and theOne isn't set, there is
+                        // no wordlist available for this language. Set
+                        // the flag so we don't try again, even though
+                        // we've failed.
+                        if ( null == theOne ) {
+                            XWPrefs.setPrefsBoolean( m_context, 
+                                                     R.string.key_got_langdict, 
+                                                     true );
+                        }
 
-                } catch ( JSONException ex ) {
-                    DbgUtils.loge( ex );
-                    theOne = null;
+                    } catch ( JSONException ex ) {
+                        DbgUtils.loge( ex );
+                        theOne = null;
+                    }
                 }
 
                 if ( null != theOne ) {
