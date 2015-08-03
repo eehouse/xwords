@@ -524,6 +524,9 @@ public class DelegateBase implements DlgClickNotify,
         case APP_NOT_FOUND:
             fmtId = R.string.app_not_found_fmt;
             break;
+        case RELAY_ALERT:
+            m_dlgDelegate.eventOccurred( event, args );
+            break;
         default:
             if ( BuildConfig.DEBUG ) {
                 DbgUtils.logf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", 

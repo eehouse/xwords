@@ -54,6 +54,8 @@
 
     <property name="INITIAL_CLIENT_VERS" value="4"/>
     <property name="VARIANT_NAME" value="xw4dbg"/>
+    <property name="APP_NAME" value="CrossDbg"/>
+
     <target name="-pre-clean">
         <antcall target="my-pre-clean" />
     </target>
