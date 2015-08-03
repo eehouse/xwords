@@ -324,7 +324,7 @@
     <string name="vs_join">" vs. "</string>
 
     <plurals name="strd_remains_header_fmt">
-	<item quantity="one">%1$d fitxes romanents al sac.</item>
+	<item quantity="one">Queden %1$d fitxes al sac.</item>
 	<item quantity="other"/>
 </plurals>
     <plurals name="strd_remains_expl_fmt">
@@ -893,7 +893,7 @@
     <string name="sms_bad_proto_fmt">La versió del Crosswords al telèfon amb número «%1$s» no és compatible amb aquest per a jugar via SMS. Heu d\'actualitzar abans de continuar.</string>
 
       <plurals name="invite_bt_desc_fmt">
-	<item quantity="one">Selecioneu fins a %1$d aparells que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
+	<item quantity="one">Seleccioneu fins a %1$d aparells que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
 	<item quantity="other"/>
 </plurals>
     <plurals name="invite_sms_desc_fmt">
@@ -1043,4 +1043,6 @@
   <string name="rematch_msg">Gestió de les invitacions per a tornar a jugar la partida. Us mostrarem aquest missatge mentre no l\'accepteu.\n\nNo heu de tenir aquesta partida oberta mentre espereu. Rebreu una notificació quan la partida estigui preparada per a jugar.</string>
 
     <string name="redir_host">Convida l\'amfitrió redirigit</string>
-  </resources>
+  <string name="str_no_hint_found">No puc trobar cap jugada</string>
+
+</resources>
