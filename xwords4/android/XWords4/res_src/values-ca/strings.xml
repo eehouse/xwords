@@ -672,9 +672,9 @@
     <string name="slmenu_copy_sel">Copia al porta-retalls</string>
     <string name="slmenu_clear_sel">Suprimeix la selecció</string>
     <plurals name="paste_done_fmt">
-	<item quantity="one">S\'han copiat %1$d paraules</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">S\'han copiat %1$d paraules</item>
+	  <item quantity="other"/>
+    </plurals>
     <string name="add_done_fmt">S\'ha afegit %1$s a la llista d\'estudi %2$s</string>
     <string name="studylist_title_fmt">Llista d\'estudi per a %1$s</string>
 
@@ -808,9 +808,9 @@
     <string name="prev_player">Oponent</string>
 
     <plurals name="lmi_move_fmt">
-	<item quantity="one">%1$s ha jugat %2$s i anota %3$d punts</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="one">%1$s ha jugat %2$s i anota %3$d punts</item>
+	  <item quantity="other"/>
+    </plurals>
     <plurals name="lmi_trade_fmt">
 	<item quantity="one">%1$s ha canviat %2$d fitxes</item>
 	<item quantity="other"/>
