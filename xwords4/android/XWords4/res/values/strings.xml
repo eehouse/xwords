@@ -2109,10 +2109,14 @@
     <string name="group_cur_games">My games</string>
     <string name="group_new_games">New games</string>
 
-    <plurals name="groups_confirm_del_fmt"><item quantity="other">Are you sure you want to delete
-    the %1$d selected group[s]?</item></plurals>
-    <plurals name="groups_confirm_del_games_fmt"><item quantity="other">\n\n(%1$d game[s] will
-    also be deleted.)</item></plurals>
+    <plurals name="groups_confirm_del_fmt">
+      <item quantity="other">Are you sure you want to delete the %1$d
+      selected group[s]?</item>
+    </plurals>
+    <plurals name="groups_confirm_del_games_fmt">
+      <item quantity="other">\n\n(%1$d game[s] will also be
+      deleted.)</item>
+    </plurals>
 
     <string name="rename_group_label">Change the name of this group to:</string>
     <string name="game_name_group_title">Name group</string>
@@ -2189,7 +2193,9 @@
     <string name="slmenu_clear_sel">Delete selected</string>
     <plurals name="confirm_studylist_clear_fmt"><item quantity="other">Are you sure you want to
     delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</item></plurals>
-    <plurals name="paste_done_fmt"><item quantity="other">%1$d word[s] copied</item></plurals>
+    <plurals name="paste_done_fmt">
+      <item quantity="other">%1$d word[s] copied</item>
+    </plurals>
     <string name="add_done_fmt">%1$s added to %2$s studylist</string>
     <string name="studylist_title_fmt">Studylist for %1$s</string>
 
@@ -2324,8 +2330,12 @@
 
     <!-- formatting for last move summary in notifications -->
     <string name="lmi_pass_fmt">%1$s passed (0 points)</string>
-    <plurals name="lmi_move_fmt"><item quantity="other">%1$s played %2$s for %3$d points</item></plurals>
-    <plurals name="lmi_trade_fmt"><item quantity="other">%1$s traded %2$d tiles</item></plurals>
+    <plurals name="lmi_move_fmt">
+      <item quantity="other">%1$s played %2$s for %3$d points</item>
+    </plurals>
+    <plurals name="lmi_trade_fmt">
+      <item quantity="other">%1$s traded %2$d tiles</item>
+    </plurals>
     <string name="lmi_phony_fmt">%1$s lost a turn</string>
     <string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>
 
