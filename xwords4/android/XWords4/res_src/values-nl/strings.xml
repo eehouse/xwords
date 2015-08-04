@@ -450,6 +450,13 @@
   <string name="warn_nomobile_fmt">Het nummer %1$s voor %2$s is geen \"mobiel\" nummer. Toch importeren?</string>
   <string name="empty_sms_inviter">Deze telefoonlijst is leeg. Gebruik de \"Importeer contact\" knop om mensen toe te voegen die je uit wilt nodigen of de + knop om nummers direct in te voeren.</string>
   <string name="get_sms_number">Voer telefoonnummer in:</string>
+  <!--  -->
+  <plurals name="confirm_clear_fmt">
+    <item quantity="one">XLATE ME: Are you sure you want to delete the checked
+      phone number?</item>
+    <item quantity="other">XLATE ME: Are you sure you want to delete the
+       %1$d checked phone numbers?</item>
+  </plurals>
   <string name="connect_label_sms">Verbinding (via SMS)</string>
   <string name="phone_label">Verbonden nummer[s]:</string>
   <string name="summary_conn_sms_fmt">Spel bezig met %1$s</string>
