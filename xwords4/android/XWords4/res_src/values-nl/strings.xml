@@ -450,7 +450,6 @@
   <string name="warn_nomobile_fmt">Het nummer %1$s voor %2$s is geen \"mobiel\" nummer. Toch importeren?</string>
   <string name="empty_sms_inviter">Deze telefoonlijst is leeg. Gebruik de \"Importeer contact\" knop om mensen toe te voegen die je uit wilt nodigen of de + knop om nummers direct in te voeren.</string>
   <string name="get_sms_number">Voer telefoonnummer in:</string>
-  <string name="confirm_clear">Weet je zeker dat je het geselecteerde telefoonnummer/de geselecteerde telefoonnummers wilt verwijderen?</string>
   <string name="connect_label_sms">Verbinding (via SMS)</string>
   <string name="phone_label">Verbonden nummer[s]:</string>
   <string name="summary_conn_sms_fmt">Spel bezig met %1$s</string>
