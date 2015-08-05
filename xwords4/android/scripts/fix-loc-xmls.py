@@ -4,13 +4,31 @@ import mk_xml, os, sys, getopt, re
 
 from lxml import etree
 
+g_verbose = False
+
+def getDocNames( doc ):
+    stringNames = {}
+    pluralsNames = {}
+
+    for elem in doc.getroot():
+        if elem.tag == 'string': stringNames[elem.get('name')] = True
+        elif elem.tag == 'plurals': pluralsNames[elem.get('name')] = True
+
+    return { 'stringNames' : stringNames,
+             'pluralsNames' : pluralsNames,
+         }
+
+def getEnglishNames():
+    doc = etree.parse("res/values/strings.xml")
+    return getDocNames( doc )
+
 def longestCommon( name, pairs ):
     match = None
     for ii in range(1, len(name)):
         str = name[:ii]
         for key in pairs.keys():
             if str == key[:ii]:
-                print str, "matches", key, "so far"
+                if g_verbose: print str, "matches", key, "so far"
                 match = key
                 break
     return match
@@ -50,28 +68,40 @@ def checkAgainst( doc, pairs ):
                 # response = raw_input( "unknown name: %s; respond:" % (name) )
                 # print "you wrote:", response
 
-def findWithName( doc, name ):
+def findWithName( doc, name, tag ):
     result = None
-    for string in doc.findall('string'):
+    for string in doc.findall(tag):
         if string.get('name') == name:
             result = string
             break
-    print 'findWithName=>', result, 'for', name
+    # if g_verbose: print 'findWithName=>', result, 'for', name
     return result
+
+def makePluralsFrom( src ):
+    newNode = etree.fromstring('<plurals name="%s"></plurals>' % (src.get('name')))
+    for item in src.findall('item'):
+        obj = etree.fromstring('<item quantity="%s">XLATE ME: %s</item>' 
+                               % (item.get('quantity'), item.text))
+        newNode.append(obj)
+    return newNode
 
 def insertAfter( locRoot, englishElem, lastMatch, prevComments ):
     name = englishElem.get('name')
     text = englishElem.text
-    print "insertAfter(", locRoot, englishElem.get('name'), lastMatch.get('name'), prevComments, ")"
+    if g_verbose: print "insertAfter(", locRoot, englishElem.get('name'), lastMatch.get('name'), prevComments, ")"
     index = locRoot.getchildren().index(lastMatch)
-    print 'index:', index
+    if g_verbose: print 'index:', index
 
     for comment in prevComments:
         commentNode = etree.Comment(comment)
         index += 1
         locRoot.insert( index, commentNode )
 
-    newNode = etree.fromstring('<string name="%s">XLATE ME: %s</string>' % (name, text))
+    if 'string' == englishElem.tag:
+        newNode = etree.fromstring('<string name="%s">XLATE ME: %s</string>' % (name, text))
+    elif 'plurals' == englishElem.tag:
+        newNode = makePluralsFrom(englishElem)
+    else: sys.exit(1)
     index += 1
     locRoot.insert( index, newNode )
 
@@ -79,6 +109,14 @@ def longFormFor(fmt ):
     if fmt == '%s': return '%1$s'
     elif fmt == '%d': return '%1$d'
     else: assert False
+
+def printStats( doc ):
+    engNames = getEnglishNames()
+    langNames = getDocNames( doc )
+    print "strings: English: %d; lang: %d" % (len(engNames['stringNames']), 
+                                              len(langNames['stringNames']))
+    print "plurals: English: %d; lang: %d" % (len(engNames['pluralsNames']), 
+                                              len(langNames['pluralsNames']))
 
 def replacePcts( doc ):
     pat = re.compile( '(%[sd])', re.DOTALL | re.MULTILINE )
@@ -95,29 +133,29 @@ def replacePcts( doc ):
 # elem before it that is in doc and insert it after.  Start over each
 # time to avoid problems with iteration and order
 def doAddMissing( doc ):
-    done = False
-    while not done:
-        locRoot = doc.getroot()
-        lastMatch = None
-        prevComments = []
-        for elem in etree.parse("res/values/strings.xml").getroot().iter():
-            if not isinstance( elem.tag, basestring ):
-                prevComments.append( elem.text )
-                print "added comment:", elem.text
-            elif 'string' == elem.tag:
-                name = elem.get('name')
-                match = findWithName( locRoot, name )
-                print 'elem', name, 'has comments', prevComments
-                if None == match:
-                    print 'NO match for', name
-                    insertAfter( locRoot, elem, lastMatch, prevComments )
-                    done = True
-                    # sys.exit(0)
-                else:
-                    print 'got match for', name
-                    lastMatch = match
-                    lastComments = prevComments
-                prevComments = []
+    locRoot = doc.getroot()
+    lastMatch = None
+    prevComments = []
+    resources = etree.parse("res/values/strings.xml").getroot()
+    for elem in resources:
+        # if g_verbose: print "got elem:", elem
+        tag = elem.tag
+        if not isinstance( tag, basestring ):
+            prevComments.append( elem.text )
+            # if g_verbose: print "added comment:", elem.text
+        elif 'string' == tag or 'plurals' == tag:
+            name = elem.get('name')
+            match = findWithName( locRoot, name, tag )
+            if None == match:
+                if g_verbose: print 'NO match for', name
+                insertAfter( locRoot, elem, lastMatch, prevComments )
+            else:
+                lastMatch = match
+                lastComments = prevComments
+            prevComments = []
+        else:
+            print "unexpected tag:", elem.tag
+            sys.exit(1)
                     
 def compare( engPairs, docPath ):
     locStrings = mk_xml.getStrings( docPath, True )
@@ -127,29 +165,67 @@ def compare( engPairs, docPath ):
     otherOnly = [key for key in locStrings.keys() if not key in engPairs]
     print "%d strings missing from English: %s" % (len(otherOnly), ", ".join(otherOnly))
 
+def removeNotInEnglish( doc ):
+    locRoot = doc.getroot()
+    engNames = getEnglishNames()
+    for elem in locRoot:
+        if not isinstance( elem.tag, basestring ):
+            prevComment = elem
+        elif elem.tag == 'string':
+            name = elem.get('name')
+            if not name in engNames['stringNames']:
+                print "removing string", name
+                locRoot.remove(elem)
+                if prevComment: locRoot.remove(prevComment)
+            prevComment = None
+        elif elem.tag == 'plurals':
+            name = elem.get('name')
+            if not name in engNames['pluralsNames']:
+                print "removing plurals", name
+                locRoot.remove(elem)
+                if prevComment: locRoot.remove(prevComment)
+            prevComment = None
+        else: 
+            print "unknown tag", elem.tag
+            sys.exit(1)
+
+
 def usage():
     print "usage:", sys.argv[0]
     print "   -a   # insert missing string elements for translation"
     print "   -c   # compare each file with the English, listing string not in both"
+    print "   -i   # save any changes made (does not by default)"
     print "   -f   # work on this strings.xml file (does all if none specified)"
+    print "   -l   # work on the strings.xml file for this language (e.g. ca, nl)"
+    print "   -r   # remove elements not present in English"
+    print "   -s   # print stats"
     print "   -%   # replace %[sd] with the correct longer form"
-    print "   -s   # save any changes made (does not by default)"
     sys.exit(1)
 
+def langFileFor(code):
+    return "res_src/values-%s/strings.xml" % code
+
 def main():
+    global g_verbose
     stringsFiles = []
     addMissing = False
     doSave = False
     doCompare = False
     doReplace = False
+    doRemove = False
+    doStats = False
     try:
-        pairs, rest = getopt.getopt(sys.argv[1:], "acf:s%")
+        pairs, rest = getopt.getopt(sys.argv[1:], "acf:il:rsv%")
         for option, value in pairs:
             if option == '-a': addMissing = True
             elif option == '-c': doCompare = True
-            elif option == '-%': doReplace = True
+            elif option == '-i': doSave = True
             elif option == '-f': stringsFiles.append(value)
-            elif option == '-s': doSave = True
+            elif option == '-l': stringsFiles.append(langFileFor(value))
+            elif option == '-v': g_verbose = True
+            elif option == '-r': doRemove = True
+            elif option == '-s': doStats = True
+            elif option == '-%': doReplace = True
             else: usage()
     except:
         usage()
@@ -164,11 +240,20 @@ def main():
 
     parser = etree.XMLParser(remove_blank_text=True, encoding="utf-8")
     for path in stringsFiles:
+        print "looking at", path
         doc = etree.parse(path, parser)
         # checkAgainst( doc, pairs )
-        if doReplace: replacePcts( doc )
-        if addMissing: doAddMissing( doc )
-        if doCompare: compare( pairs, path )
+        if doReplace: 
+            replacePcts( doc )
+        if addMissing: 
+            doAddMissing( doc )
+        if doCompare: 
+            compare( pairs, path )
+        if doRemove:
+            removeNotInEnglish( doc )
+        # print stats after any other changes have been made
+        if doStats:
+            printStats( doc )
         if doSave:
             out = open( path, "w" )
             out.write( etree.tostring( doc, pretty_print=True, encoding="utf-8", xml_declaration=True ) )
