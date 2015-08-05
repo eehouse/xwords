@@ -120,14 +120,16 @@ def printStats( doc ):
 
 def replacePcts( doc ):
     pat = re.compile( '(%[sd])', re.DOTALL | re.MULTILINE )
-    for string in doc.findall('string'):
-        splits = re.split( pat, string.text )
-        nParts = len(splits)
-        if 1 < nParts:
-            for ii in range(nParts):
-                part = splits[ii]
-                if re.match( pat, part ): splits[ii] = longFormFor(part)
-            string.text = ''.join( splits )
+    for typ in ['item', 'string']:
+        for elem in doc.findall(typ):
+            if 'false' == elem.get('formatted'): continue
+            splits = re.split( pat, elem.text )
+            nParts = len(splits)
+            if 1 < nParts:
+                for ii in range(nParts):
+                    part = splits[ii]
+                    if re.match( pat, part ): splits[ii] = longFormFor(part)
+                elem.text = ''.join( splits )
 
 # For each name in pairs, check if it's in doc. If not, find the last
 # elem before it that is in doc and insert it after.  Start over each
