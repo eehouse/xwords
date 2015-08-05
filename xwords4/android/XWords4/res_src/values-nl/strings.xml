@@ -16,8 +16,8 @@
 
     <string name="gameOver">Spel voorbij</string>
     <plurals name="moves_fmt">
-	<item quantity="one">%1$s zet gespeeld</item>
-	<item quantity="other">%1$s zetten gespeeld</item>
+	<item quantity="one">%1$d zet gespeeld</item>
+	<item quantity="other">%1$d zetten gespeeld</item>
 </plurals>
 
     <string name="button_delete">Verwijder</string>
