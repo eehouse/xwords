@@ -1120,4 +1120,10 @@
 
   <string name="not_again_comms_bt">Gebruik Bluetooth om te spelen tegen een dichtbijzijnd apparaat dat \"gepaard\" is met jouw apparaat.</string>
 
+<plurals name="confirm_clear_fmt">
+	<item quantity="one">Weet je zeker dat je het geselecteerde telefoonnummer wilt verwijderen?</item>
+	<item quantity="other">Weet je zeker dat je de %1$d geselecteerde telefoonnummers wilt verwijderen?</item>
+</plurals>
+    <string name="str_no_hint_found">Kon geen zetten vinden</string>
+
 </resources>
