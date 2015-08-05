@@ -594,7 +594,6 @@
   <plurals name="new_xlations_fmt">
     <item quantity="one">%1$d nieuwe vertaling geïnstalleerd</item>
     <item quantity="other">%1$d nieuwe vertalingen geïnstalleerd</item>
-
   </plurals>
   <string name="xlations_enabled_title">Lokaal vertalen inschakelen</string>
   <string name="xlations_enabled_summary">Voeg optie toe aan elk schermmenu</string>
