@@ -1,4 +1,4 @@
-# -*- mode: Makefile; compile-command: "cd ../; ${NDK_ROOT}/ndk-build -j3"; -*-
+# -*- mode: Makefile; -*-
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
@@ -41,7 +41,7 @@ LOCAL_DEFINES += \
 	-DCOMMON_LAYOUT \
 	-DCOMMS_VERSION=1 \
 	-DINITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS} \
-	-DVARIANT=\"${VARIANT}\" \
+	-DVARIANT_${VARIANT} \
 	-DRELAY_ROOM_DEFAULT=\"\" \
 	-D__LITTLE_ENDIAN \
 
