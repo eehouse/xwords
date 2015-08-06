@@ -1830,12 +1830,12 @@
   <string name="group_cur_games">Ym semag</string>
   <string name="group_new_games">Wen semag</string>
   <plurals name="groups_confirm_del_fmt">
-    <item quantity="other">Era uoy erus uoy tnaw ot eteled
-    eht %1$d detceles ?]s[puorg</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot eteled eht %1$d
+      detceles ?]s[puorg</item>
   </plurals>
   <plurals name="groups_confirm_del_games_fmt">
-    <item quantity="other">\n\n(%1$d ]s[emag lliw
-    osla eb deteled.)</item>
+    <item quantity="other">\n\n(%1$d ]s[emag lliw osla eb
+      deteled.)</item>
   </plurals>
   <string name="rename_group_label">Egnahc eht eman fo siht puorg ot:</string>
   <string name="game_name_group_title">Eman puorg</string>
