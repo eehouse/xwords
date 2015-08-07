@@ -49,7 +49,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
-import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 
 public class GameUtils {
 
@@ -597,6 +596,33 @@ public class GameUtils {
         return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
                                  nPlayersT, nPlayersH, forceChannel, 
                                  inviteID, gameID, gameName, isHost );
+    }
+
+    // @SuppressLint({ "NewApi", "NewApi", "NewApi", "NewApi" })
+    // @SuppressWarnings("deprecation")
+    // @TargetApi(11)
+    public static void inviteURLToClip( Context context, NetLaunchInfo nli )
+    {
+        Uri gameUri = nli.makeLaunchUri( context );
+        String asStr = gameUri.toString();
+
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        if ( sdk < android.os.Build.VERSION_CODES.HONEYCOMB ) {
+            android.text.ClipboardManager clipboard = 
+                (android.text.ClipboardManager) 
+                context.getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText( asStr );
+        } else {
+            android.content.ClipboardManager clipboard = 
+                (android.content.ClipboardManager) 
+                context.getSystemService(Context.CLIPBOARD_SERVICE); 
+            String label = LocUtils.getString( context, R.string.clip_label );
+            android.content.ClipData clip = android.content.ClipData
+                .newPlainText( label, asStr );
+            clipboard.setPrimaryClip( clip );
+        }
+
+        Utils.showToast( context, R.string.invite_copied );
     }
 
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
