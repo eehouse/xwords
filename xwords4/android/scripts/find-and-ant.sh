@@ -70,6 +70,10 @@ case $DIRNAME in
         ;;
 esac
 
+# if we're running for the first time in this directory/variant,
+# generate local.properties
+[ -e local.properties ] || ../scripts/setup_local_props.sh
+
 ant $CMDS
 
 if [ -n "$UNINSTALL" ]; then
