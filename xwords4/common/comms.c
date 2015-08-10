@@ -632,7 +632,8 @@ comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, XW_UtilCtxt* util,
     isServer = stream_getU8( stream );
     addrFromStream( &addr, stream );
 
-    if ( addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
+    if ( version >= STREAM_VERS_DEVIDS
+         || addr_hasType( &addr, COMMS_CONN_RELAY ) ) {
         nPlayersHere = (XP_U16)stream_getBits( stream, 4 );
         nPlayersTotal = (XP_U16)stream_getBits( stream, 4 );
     } else {
@@ -846,10 +847,8 @@ comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
     stream_putU8( stream, (XP_U8)comms->isServer );
     logAddr( comms, &comms->addr, __func__ );
     addrToStream( stream, &comms->addr );
-    if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
-        stream_putBits( stream, 4, comms->rr.nPlayersHere );
-        stream_putBits( stream, 4, comms->rr.nPlayersTotal );
-    }
+    stream_putBits( stream, 4, comms->rr.nPlayersHere );
+    stream_putBits( stream, 4, comms->rr.nPlayersTotal );
 
     stream_putU32( stream, comms->connID );
     stream_putU16( stream, comms->nextChannelNo );
@@ -1051,7 +1050,7 @@ comms_getConTypes( const CommsCtxt* comms )
         XP_LOGF( "%s: returning COMMS_CONN_NONE for null comms", __func__ );
     }
     return typ;
-} /* comms_getConType */
+} /* comms_getConTypes */
 
 XP_Bool
 comms_getIsServer( const CommsCtxt* comms )
