@@ -763,9 +763,9 @@
   <string name="pref_item_update_title">Update tussen versies</string>
   <string name="pref_item_update_summary">Download tussenversies</string>
   <string name="checking_title">Zoeken</string>
-  <string name="checking_for_fmt">Zoeken naar woordenlijsten in %1$s</string>
+  <string name="checking_for_fmt">Zoeken naar woordenlijsten in %1$s…</string>
   <string name="db_store_done">Schrijven naar SD kaart voltooid.</string>
-  <string name="seeking_relay">Verbinden met relay</string>
+  <string name="seeking_relay">Verbinden met relay…</string>
   <string name="no_relay_conn">Dit spel is ingesteld om gebruik te maken van de relay (internet) voor verbindingen maar heeft niet kunnen verbinden.\n\nProbeer het spel later te openen nadat de netwerkcondities veranderd zijn.</string>
   <string name="drop_relay_warning_fmt">"(Dit spel kan ook verbinden via %1$s, dus als je dit spel zonder relay wilt spelen is dat ook mogelijk.) "</string>
   <string name="confirm_drop_relay">Weet je zeker dat je het onmogelijk voor dit spel wilt maken om via de relay te communiceren?</string>
