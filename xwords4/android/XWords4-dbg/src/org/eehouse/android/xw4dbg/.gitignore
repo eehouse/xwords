@@ -111,3 +111,13 @@ DwnldActivity.java
 DwnldDelegate.java
 GroupStateListener.java
 ListGroup.java
+ConnViaViewLayout.java
+Delegator.java
+HeaderWithExpander.java
+LangListPreference.java
+ListDelegator.java
+NagTurnReceiver.java
+NotAgainView.java
+OnBootReceiver.java
+XWConnAddrPreference.java
+XWExpListAdapter.java
