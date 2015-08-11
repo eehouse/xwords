@@ -35,9 +35,9 @@ public class XWApp extends Application {
     public static final boolean BTSUPPORTED = true;
     public static final boolean SMSSUPPORTED = true;
     public static final boolean GCMSUPPORTED = true;
-    public static final boolean ATTACH_SUPPORTED = true;
     public static final boolean REMATCH_SUPPORTED = true;
     public static final boolean RELAYINVITE_SUPPORTED = true;
+    public static final boolean ATTACH_SUPPORTED = false;
     public static final boolean DEBUG_LOCKS = false;
     public static final boolean LOG_LIFECYLE = false;
     public static final boolean DEBUG_EXP_TIMERS = false;
