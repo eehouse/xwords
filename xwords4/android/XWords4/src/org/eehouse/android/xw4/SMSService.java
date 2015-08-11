@@ -55,6 +55,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.GameUtils.BackMoveResult;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -731,10 +732,10 @@ public class SMSService extends XWService {
                     // do nothing
                 } else {
                     SMSMsgSink sink = new SMSMsgSink( this );
-                    LastMoveInfo lmi = new LastMoveInfo();
+                    BackMoveResult bmr = new BackMoveResult();
                     if ( GameUtils.feedMessage( this, rowid, msg, addr, 
-                                                sink, lmi ) ) {
-                        GameUtils.postMoveNotification( this, rowid, lmi );
+                                                sink, bmr ) ) {
+                        GameUtils.postMoveNotification( this, rowid, bmr );
                     }
                 }
             }
