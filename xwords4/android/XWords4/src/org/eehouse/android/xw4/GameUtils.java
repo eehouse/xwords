@@ -69,6 +69,11 @@ public class GameUtils {
         }
     }
 
+    public static class BackMoveResult {
+        LastMoveInfo m_lmi;     // instantiated on demand
+        String m_chat;
+    }
+
     private static Object s_syncObj = new Object();
 
     public static byte[] savedGame( Context context, long rowid )
@@ -837,6 +842,7 @@ public class GameUtils {
     private static class FeedUtilsImpl extends UtilCtxtImpl {
         private Context m_context;
         private long m_rowid;
+        public String m_chat;
         public boolean m_gotMsg;
         public boolean m_gotChat;
         public boolean m_gameOver;
@@ -853,6 +859,7 @@ public class GameUtils {
         {
             DBUtils.appendChatHistory( m_context, m_rowid, msg, false );
             m_gotChat = true;
+            m_chat = msg;
         }
         public void turnChanged( int newTurn )
         {
@@ -867,7 +874,7 @@ public class GameUtils {
 
     public static boolean feedMessages( Context context, long rowid,
                                         byte[][] msgs, CommsAddrRec ret,
-                                        MultiMsgSink sink, LastMoveInfo lmi )
+                                        MultiMsgSink sink, BackMoveResult bmr )
     {
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
@@ -900,8 +907,14 @@ public class GameUtils {
                         DBUtils.saveThumbnail( context, lock, bitmap );
                     }
 
-                    if ( null != lmi ) {
-                        XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
+                    if ( null != bmr ) {
+                        if ( null != feedImpl.m_chat ) {
+                            bmr.m_chat = feedImpl.m_chat;
+                        } else {
+                            LastMoveInfo lmi = new LastMoveInfo();
+                            XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
+                            bmr.m_lmi = lmi;
+                        }
                     }
 
                     saveGame( context, gamePtr, gi, lock, false );
@@ -921,12 +934,12 @@ public class GameUtils {
 
     public static boolean feedMessage( Context context, long rowid, byte[] msg,
                                        CommsAddrRec ret, MultiMsgSink sink,
-                                       LastMoveInfo lmi )
+                                       BackMoveResult bmr )
     {
         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         byte[][] msgs = new byte[1][];
         msgs[0] = msg;
-        return feedMessages( context, rowid, msgs, ret, sink, lmi );
+        return feedMessages( context, rowid, msgs, ret, sink, bmr );
     }
 
     // This *must* involve a reset if the language is changing!!!
@@ -1067,18 +1080,25 @@ public class GameUtils {
     }
 
     public static void postMoveNotification( Context context, long rowid, 
-                                             LastMoveInfo lmi )
+                                             BackMoveResult bmr )
     {
-        if ( null != lmi ) {
+        if ( null != bmr ) {
             Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
-            String msg = lmi.format( context );
-            String title = 
-                LocUtils.getString( context, R.string.notify_title_fmt,
-                                    getName( context, rowid ) );
+            String msg;
+            int titleID;
+            if ( null != bmr.m_chat ) {
+                titleID = R.string.notify_chat_title_fmt;
+                msg = "\"" + bmr.m_chat + "\"";
+            } else {
+                titleID = R.string.notify_title_fmt;
+                msg = bmr.m_lmi.format( context );
+            }
+            String title = LocUtils.getString( context, titleID,
+                                               getName( context, rowid ) );
             Utils.postNotification( context, intent, title, msg, (int)rowid );
         } else {
-            DbgUtils.logf( "postMoveNotification(): posting nothing for lack"
-                           + " of lmi" );
+            DbgUtils.logdf( "postMoveNotification(): posting nothing for lack"
+                            + " of brm" );
         }
     }
     
