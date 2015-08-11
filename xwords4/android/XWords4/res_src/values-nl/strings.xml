@@ -777,7 +777,7 @@
   <string name="not_again_comms_sms">Spelen via SMS gebruikt dezelfde technologie als gewone SMS. Ook al zie je de berichten niet, je provider zal ze wel als SMS berichten rekenen, dus je wilt deze optie niet aanzetten tenzij je ongelimiteerd gratis SMS kan versturen. Let erop dat Android deze functie alleen ondersteund op apparaten met een GSM provider, dat wil zeggen elke provider ter wereld behalve Verizon en Sprint.</string>
   <string name="not_again_comms_bt">Gebruik Bluetooth om te spelen tegen een dichtbijzijnd apparaat dat \"gepaard\" is met jouw apparaat.</string>
   <string name="str_no_hint_found">Kon geen zetten vinden</string>
-<string name="invite_choice_clip">Ik kies</string>
+  <string name="invite_choice_clip">Ik kies</string>
   <string name="invite_copied">Uitnodiging kan nu geplakt worden</string>
   <string name="clip_label">Uitnodigingsadres</string>
   <string name="not_again_clip_expl_fmt">De \"%1$s\" optie kopieert een uitnodigingsadres naar het kladblok. Plak het in een app naar keuze en stuur het naar een vriend.</string>
