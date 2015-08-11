@@ -590,13 +590,14 @@ public class BTService extends XWService {
                         boolean consumed = 
                             BoardDelegate.feedMessage( rowid, buffer, addr );
                         if ( !consumed && haveGame ) {
-                            LastMoveInfo lmi = new LastMoveInfo();
+                            GameUtils.BackMoveResult bmr = 
+                                new GameUtils.BackMoveResult();
                             if ( GameUtils.feedMessage( BTService.this, rowid, 
                                                         buffer, addr, 
-                                                        m_btMsgSink, lmi ) ) {
+                                                        m_btMsgSink, bmr ) ) {
                                 consumed = true;
                                 GameUtils.postMoveNotification( BTService.this,
-                                                                rowid, lmi );
+                                                                rowid, bmr );
                             }
                         }
                         if ( !consumed ) {
