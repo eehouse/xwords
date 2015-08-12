@@ -1428,14 +1428,21 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 #ifdef XWFEATURE_CHAT
 static void
 curses_util_showChat( XW_UtilCtxt* uc, 
-                      const XP_UCHAR* const XP_UNUSED_DBG(msg) )
+                      const XP_UCHAR* const XP_UNUSED_DBG(msg),
+                      XP_S16 XP_UNUSED_DBG(from) )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     globals->nChatsSent = 0;
-    XP_LOGF( "%s: got \"%s\"", __func__, msg );
+# ifdef DEBUG
+    const XP_UCHAR* name = "<unknown>";
+    if ( 0 <= from ) {
+        CommonGlobals* cGlobals = &globals->cGlobals;
+        name = cGlobals->gi->players[from].name;
+    }
+    XP_LOGF( "%s: got \"%s\" from %s", __func__, msg, name );
+# endif
 }
 #endif
-
 
 static void
 setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
@@ -1770,7 +1777,7 @@ chatsTimerFired( gpointer data )
                   comms_getChannelSeed( game->comms ),
                   timp->tm_hour, timp->tm_min, timp->tm_sec );
         XP_LOGF( "%s: sending \"%s\"", __func__, msg );
-        server_sendChat( game->server, msg );
+        board_sendChat( game->board, msg );
         ++globals->nChatsSent;
     }
 

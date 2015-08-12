@@ -1899,7 +1899,7 @@ public class BoardDelegate extends DelegateBase
         // and may stack dialogs on top of this one.  Including later
         // chat-messages.
         @Override
-        public void showChat( final String msg )
+        public void showChat( final String msg, String fromPlayer )
         {
             if ( BuildConstants.CHAT_SUPPORTED ) {
                 post( new Runnable() {

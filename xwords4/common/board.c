@@ -796,6 +796,12 @@ board_canHint( const BoardCtxt* board )
     return canHint;
 }
 
+void
+board_sendChat( const BoardCtxt* board, const XP_UCHAR const* msg )
+{
+    server_sendChat( board->server, msg, board->selPlayer );
+}
+
 static XP_U16
 adjustOffset( XP_U16 curOffset, XP_S16 zoomBy )
 {

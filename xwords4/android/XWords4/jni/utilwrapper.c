@@ -501,12 +501,19 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
 #ifdef XWFEATURE_CHAT
 static void
-and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR const* msg )
+and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR const* msg, XP_S16 from )
 {
-    UTIL_CBK_HEADER("showChat", "(Ljava/lang/String;)V" );
+    UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;Ljava/lang/String;)V" );
+    jstring jname = NULL;
+    if ( 0 <= from ) {
+        LocalPlayer* lp = &uc->gameInfo->players[from];
+        XP_ASSERT( !lp->isLocal );
+        jname = (*env)->NewStringUTF( env, lp->name );
+    }
+
     jstring jmsg = (*env)->NewStringUTF( env, msg );
-    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg );
-    deleteLocalRef( env, jmsg );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg, jname );
+    deleteLocalRefs( env, jmsg, jname, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
 #endif
