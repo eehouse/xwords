@@ -636,12 +636,14 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
 #ifdef XWFEATURE_CHAT
 static void
-sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg )
+sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg,
+            XP_S8 from )
 {
     if ( comms_canChat( server->vol.comms ) ) {
         XWStreamCtxt* stream = messageStreamWithHeader( server, devIndex,
                                                         XWPROTO_CHAT );
         stringToStream( stream, msg );
+        stream_putU8( stream, from );
         stream_destroy( stream );
     } else {
         XP_LOGF( "%s: dropping chat %s; queue too full?", __func__, msg );
@@ -650,23 +652,23 @@ sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg )
 
 static void
 sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip, 
-                         const XP_UCHAR const* msg )
+                         const XP_UCHAR const* msg, XP_S8 from )
 {
     XP_U16 devIndex;
     for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         if ( devIndex != skip ) {
-            sendChatTo( server, devIndex, msg );
+            sendChatTo( server, devIndex, msg, from );
         }
     }
 }
 
 void
-server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg )
+server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg, XP_S16 from )
 {
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
-        sendChatTo( server, SERVER_DEVICE, msg );
+        sendChatTo( server, SERVER_DEVICE, msg, from );
     } else {
-        sendChatToClientsExcept( server, SERVER_DEVICE, msg );
+        sendChatToClientsExcept( server, SERVER_DEVICE, msg, from );
     }
 }
 #endif
@@ -2813,12 +2815,14 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 #ifdef XWFEATURE_CHAT
     } else if ( code == XWPROTO_CHAT ) {
         XP_UCHAR* msg = stringFromStream( server->mpool, incoming );
+        XP_S16 from = 1 <= stream_getSize( incoming ) 
+            ? stream_getU8( incoming ) : -1;
         if ( isServer ) {
             XP_U16 sourceClientIndex = 
                 getIndexForDevice( server, stream_getAddress( incoming ) );
-            sendChatToClientsExcept( server, sourceClientIndex, msg );
+            sendChatToClientsExcept( server, sourceClientIndex, msg, from );
         }
-        util_showChat( server->vol.util, msg );
+        util_showChat( server->vol.util, msg, from );
         XP_FREE( server->mpool, msg );
 #endif
     } else if ( readStreamHeader( server, incoming ) ) {

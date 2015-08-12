@@ -122,7 +122,8 @@ XP_Bool server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream );
 #endif
 
 #ifdef XWFEATURE_CHAT
-void server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg );
+void server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg, 
+                      XP_S16 from );
 #endif
 
 void server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,

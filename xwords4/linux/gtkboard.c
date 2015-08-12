@@ -1492,7 +1492,7 @@ handle_chat_button( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     gchar* msg = gtkGetChatMessage( globals );
     if ( NULL != msg ) {
-        server_sendChat( globals->cGlobals.game.server, msg );
+        board_sendChat( globals->cGlobals.game.board, msg );
         g_free( msg );
     }
 }
@@ -2093,10 +2093,16 @@ gtk_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #ifdef XWFEATURE_CHAT
 static void
-gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg )
+gtk_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR* const msg, XP_S16 from )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
-    (void)gtkask( globals->window, msg, GTK_BUTTONS_OK, NULL );
+    XP_UCHAR buf[1024];
+    XP_UCHAR* name = "<unknown>";
+    if ( 0 <= from ) {
+        name = globals->cGlobals.gi->players[from].name;
+    }
+    XP_SNPRINTF( buf, VSIZE(buf), "quoth %s: %s", name, msg );
+    (void)gtkask( globals->window, buf, GTK_BUTTONS_OK, NULL );
 }
 #endif
 #endif

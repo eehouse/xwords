@@ -564,7 +564,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_SENDCHAT:
-                XwJNI.server_sendChat( m_jniGamePtr, (String)args[0] );
+                XwJNI.board_sendChat( m_jniGamePtr, (String)args[0] );
                 break;
 
             case CMD_NETSTATS:

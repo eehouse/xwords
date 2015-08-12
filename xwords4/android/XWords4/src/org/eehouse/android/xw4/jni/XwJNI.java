@@ -262,6 +262,7 @@ public class XwJNI {
     public static native boolean board_endTrade( int gamePtr );
 
     public static native String board_formatRemainingTiles( int gamePtr );
+    public static native void board_sendChat( int gamePtr, String msg );
 
     public enum XP_Key {
         XP_KEY_NONE,
@@ -304,7 +305,6 @@ public class XwJNI {
     public static native String server_writeFinalScores( int gamePtr );
     public static native boolean server_initClientConnection( int gamePtr );
     public static native void server_endGame( int gamePtr );
-    public static native void server_sendChat( int gamePtr, String msg );
 
     // hybrid to save work
     public static native boolean board_server_prefsChanged( int gamePtr, 
