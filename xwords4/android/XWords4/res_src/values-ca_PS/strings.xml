@@ -1257,6 +1257,7 @@
     down. -->
   <string name="notify_title_fmt">MOVE IN GAME %1$s</string>
   <string name="notify_chat_title_fmt">CHAT MESSAGE IN GAME %1$s</string>
+  <string name="notify_chat_body_fmt">%1$s: %2$s</string>
   <!--
         ############################################################
         # Dialogs

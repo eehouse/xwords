@@ -72,6 +72,7 @@ public class GameUtils {
     public static class BackMoveResult {
         LastMoveInfo m_lmi;     // instantiated on demand
         String m_chat;
+        String m_chatFrom;
     }
 
     private static Object s_syncObj = new Object();
@@ -854,6 +855,7 @@ public class GameUtils {
         public String m_chat;
         public boolean m_gotMsg;
         public boolean m_gotChat;
+        public String m_chatFrom;
         public boolean m_gameOver;
 
         public FeedUtilsImpl( Context context, long rowid )
@@ -864,10 +866,12 @@ public class GameUtils {
             m_gotMsg = false;
             m_gameOver = false;
         }
-        public void showChat( String msg )
+        @Override
+        public void showChat( String msg, String fromName )
         {
             DBUtils.appendChatHistory( m_context, m_rowid, msg, false );
             m_gotChat = true;
+            m_chatFrom = fromName;
             m_chat = msg;
         }
         public void turnChanged( int newTurn )
@@ -919,6 +923,7 @@ public class GameUtils {
                     if ( null != bmr ) {
                         if ( null != feedImpl.m_chat ) {
                             bmr.m_chat = feedImpl.m_chat;
+                            bmr.m_chatFrom = feedImpl.m_chatFrom;
                         } else {
                             LastMoveInfo lmi = new LastMoveInfo();
                             XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
@@ -1100,7 +1105,13 @@ public class GameUtils {
             int titleID;
             if ( null != bmr.m_chat ) {
                 titleID = R.string.notify_chat_title_fmt;
-                msg = "\"" + bmr.m_chat + "\"";
+                if ( null != bmr.m_chatFrom ) {
+                    msg = LocUtils
+                        .getString( context, R.string.notify_chat_body_fmt,
+                                    bmr.m_chatFrom, bmr.m_chat );
+                } else {
+                    msg = bmr.m_chat;
+                }
             } else {
                 titleID = R.string.notify_title_fmt;
                 msg = bmr.m_lmi.format( context );

@@ -129,6 +129,7 @@ XP_Bool board_canHideRack( const BoardCtxt* board );
 XP_Bool board_canTrade( BoardCtxt* board );
 XP_Bool board_canTogglePending( const BoardCtxt* board );
 XP_Bool board_canHint( const BoardCtxt* board );
+void board_sendChat( const BoardCtxt* board, const XP_UCHAR const* msg );
 
 /* zoomBy: >0: zoom in; < 0: zoom out; 0: query only */
 XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut );
