@@ -2532,4 +2532,10 @@
 
   <string name="str_no_hint_found">Cannot find any moves</string>
 
+  <!-- Shown after "resend messages" menuitem chosen -->
+  <plurals name="resent_msgs_fmt">
+    <item quantity="one">One message sent</item>
+    <item quantity="other">%1$s messages sent</item>
+  </plurals>
+
 </resources>

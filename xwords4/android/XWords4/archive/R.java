@@ -411,6 +411,9 @@ public final class R {
          */
         public static final int query_trade_fmt=0x7f07000b;
         public static final int resend_finished_fmt=0x7f070007;
+        /**  Shown after "resend messages" menuitem chosen 
+         */
+        public static final int resent_msgs_fmt=0x7f07001f;
         /**  Intro to the paragraph listing all of the tiles remaining 
          */
         public static final int strd_remains_expl_fmt=0x7f07000a;
@@ -848,7 +851,6 @@ public final class R {
         public static final int checking_for_fmt=0x7f0502ff;
         public static final int checking_title=0x7f0502fe;
         public static final int checkupdates_none_found=0x7f05022b;
-        public static final int clip_label=0x7f05030f;
         /**  color of the "crosshairs", lines drawn vertically and
          horizontally through the square the user is currently
          touching in order to guide the fat-fingered (most of us) in
@@ -1333,7 +1335,6 @@ public final class R {
          */
         public static final int initial_player_minutes=0x7f050126;
         public static final int invite_choice_bt=0x7f05016b;
-        public static final int invite_choice_clip=0x7f05030d;
         public static final int invite_choice_email=0x7f05016a;
         public static final int invite_choice_nfc=0x7f05016c;
         /**  EXPLAIN ME 
@@ -1356,7 +1357,6 @@ public final class R {
          */
         public static final int invite_chooser_fmt=0x7f050171;
         public static final int invite_chooser_sms=0x7f050173;
-        public static final int invite_copied=0x7f05030e;
         public static final int invite_dict_missing_body_fmt=0x7f05023b;
         public static final int invite_dict_missing_body_noname_fmt=0x7f05023c;
         public static final int invite_dict_missing_title=0x7f05023a;
@@ -1965,7 +1965,6 @@ public final class R {
          main Board screen 
          */
         public static final int not_again_chat=0x7f0501b1;
-        public static final int not_again_clip_expl_fmt=0x7f050310;
         public static final int not_again_comms_bt=0x7f05030b;
         public static final int not_again_comms_relay=0x7f050309;
         public static final int not_again_comms_sms=0x7f05030a;

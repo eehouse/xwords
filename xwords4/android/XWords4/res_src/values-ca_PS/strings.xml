@@ -2181,4 +2181,9 @@
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
   <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
+  <!-- Shown after "resend messages" menuitem chosen -->
+  <plurals name="resent_msgs_fmt">
+    <item quantity="one">ONE MESSAGE SENT</item>
+    <item quantity="other">%1$s MESSAGES SENT</item>
+  </plurals>
 </resources>

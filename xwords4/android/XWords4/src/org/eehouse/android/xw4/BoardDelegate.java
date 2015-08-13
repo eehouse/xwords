@@ -2011,6 +2011,11 @@ public class BoardDelegate extends DelegateBase
                                     m_dlgTitle = msg.arg1;
                                     showDialog( DlgID.GAME_OVER );
                                     break;
+                                case JNIThread.MSGS_SENT:
+                                    int nSent = (Integer)msg.obj;
+                                    showToast( getQuantityString( R.plurals.resent_msgs_fmt, 
+                                                                  nSent, nSent ) );
+                                    break;
                                 }
                             }
                         };
