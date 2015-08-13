@@ -729,7 +729,13 @@ android_debugf( const char* format, ... )
         va_end(ap);
     }
     
-    (void)__android_log_write( ANDROID_LOG_DEBUG, "xw4", buf );
+    (void)__android_log_write( ANDROID_LOG_DEBUG, 
+# if defined VARIANT_xw4
+                               "xw4"
+# elif defined VARIANT_xw4dbg
+                               "x4bg"
+# endif
+                               , buf );
 }
 
 /* Print an object's class name into buffer.

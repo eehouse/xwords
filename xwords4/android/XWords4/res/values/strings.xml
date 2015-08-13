@@ -2559,6 +2559,12 @@
   <string name="enable_relay_toself_title">Enable relay invites to self</string>
   <string name="enable_relay_toself_summary">(To aid testing and debugging)</string>
 
+  <!-- Shown after "resend messages" menuitem chosen -->
+  <plurals name="resent_msgs_fmt">
+    <item quantity="one">One message sent</item>
+    <item quantity="other">%1$s messages sent</item>
+  </plurals>
+
   <!-- EXPERIMENATL: A choice of how to invite, along with SMS,
        Bluetooth, email etc -->
   <string name="invite_choice_clip">I\'ll choose</string>

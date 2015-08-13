@@ -1454,9 +1454,10 @@ send_ack( CommsCtxt* comms )
     (void)send_via_relay( comms, XWRELAY_ACK, comms->rr.myHostID, NULL, 0 );
 }
 
-XP_Bool
+XP_S16
 comms_resendAll( CommsCtxt* comms, XP_Bool force )
 {
+    XP_S16 count = 0;
     XP_Bool success = XP_TRUE;
     XP_ASSERT( !!comms );
 
@@ -1470,9 +1471,13 @@ comms_resendAll( CommsCtxt* comms, XP_Bool force )
         MsgQueueElem* msg;
 
         for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
-            if ( 0 > sendMsg( comms, msg ) ) {
+            XP_S16 len = sendMsg( comms, msg );
+            if ( 0 > len ) {
                 success = XP_FALSE;
                 break;
+            } else {
+                XP_ASSERT( 0 < len );
+                ++count;
             }
         }
 
@@ -1483,9 +1488,9 @@ comms_resendAll( CommsCtxt* comms, XP_Bool force )
             comms->nextResend = now + comms->resendBackoff;
         }
     }
-    XP_LOGF( TAGFMT() "=>%d", TAGPRMS, success );
-    return success;
-} /* comms_resend */
+    XP_LOGF( TAGFMT() "=>%d", TAGPRMS, count );
+    return count;
+} /* comms_resendAll */
 
 #ifdef XWFEATURE_COMMSACK
 void
