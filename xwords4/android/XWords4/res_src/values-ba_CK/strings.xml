@@ -2181,6 +2181,11 @@
   <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
   ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
   <string name="str_no_hint_found">Tonnac dnif yna sevom</string>
+  <!-- Shown after "resend messages" menuitem chosen -->
+  <plurals name="resent_msgs_fmt">
+    <item quantity="one">Eno egassem tnes</item>
+    <item quantity="other">%1$s segassem tnes</item>
+  </plurals>
   <!-- EXPERIMENATL: A choice of how to invite, along with SMS,
        Bluetooth, email etc -->
   <string name="invite_choice_clip">I\'ll esoohc</string>

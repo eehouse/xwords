@@ -411,6 +411,9 @@ public final class R {
          */
         public static final int query_trade_fmt=0x7f07000b;
         public static final int resend_finished_fmt=0x7f070007;
+        /**  Shown after "resend messages" menuitem chosen 
+         */
+        public static final int resent_msgs_fmt=0x7f07001f;
         /**  Intro to the paragraph listing all of the tiles remaining 
          */
         public static final int strd_remains_expl_fmt=0x7f07000a;
