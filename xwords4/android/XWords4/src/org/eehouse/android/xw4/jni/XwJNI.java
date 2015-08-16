@@ -235,7 +235,7 @@ public class XwJNI {
                                              boolean[] canZoom );
     public static native boolean board_getActiveRect( int gamePtr, Rect rect,
                                                       int[] dims );
-
+    public static native int board_getSelPlayer( int gamePtr );
     public static native boolean board_handlePenDown( int gamePtr, 
                                                       int xx, int yy, 
                                                       boolean[] handled );
