@@ -1823,6 +1823,12 @@ board_getTrayVisState( const BoardCtxt* board )
     return board->trayVisState;
 } /* board_getTrayVisible */
 
+XP_S16
+board_getSelPlayer( const BoardCtxt* board )
+{
+    return board->selPlayer;
+}
+
 static XP_Bool
 setTrayVisState( BoardCtxt* board, XW_TrayVisState newState )
 {

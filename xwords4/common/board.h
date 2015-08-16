@@ -197,6 +197,7 @@ XP_Bool board_focusChanged( BoardCtxt* board, BoardObjectType typ,
 XP_Bool board_hideTray( BoardCtxt* board );
 XP_Bool board_showTray( BoardCtxt* board );
 XW_TrayVisState board_getTrayVisState( const BoardCtxt* board );
+XP_S16 board_getSelPlayer( const BoardCtxt* board );
 
 void board_invalTrayTiles( BoardCtxt* board, TileBit what );
 XP_Bool board_juggleTray( BoardCtxt* board );
