@@ -528,10 +528,9 @@ public class DelegateBase implements DlgClickNotify,
             m_dlgDelegate.eventOccurred( event, args );
             break;
         default:
-            if ( BuildConfig.DEBUG ) {
-                DbgUtils.logf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", 
-                               event.toString() );
-            }
+            DbgUtils.logdf( "DelegateBase.eventOccurred(event=%s) (DROPPED)", 
+                            event.toString() );
+            break;
         }
 
         if ( 0 != fmtId ) {
