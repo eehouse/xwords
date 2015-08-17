@@ -2205,6 +2205,11 @@
   em wonk fi I\'m gnorw dna I\'ll yrt redrah ot ekam ti krow.</string>
   <string name="enable_relay_toself_title">Elbane yaler setivni ot fles</string>
   <string name="enable_relay_toself_summary">oT( dia gnitset dna )gniggubed</string>
+  <!-- Shown after "resend messages" menuitem chosen -->
+  <plurals name="resent_msgs_fmt">
+    <item quantity="one">Eno egassem tnes</item>
+    <item quantity="other">%1$s segassem tnes</item>
+  </plurals>
   <!-- EXPERIMENATL: A choice of how to invite, along with SMS,
        Bluetooth, email etc -->
   <string name="invite_choice_clip">I\'ll esoohc</string>
