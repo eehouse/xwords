@@ -523,11 +523,13 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_RESEND:
+                boolean force = ((Boolean)args[0]).booleanValue();
                 int nSent = 
-                    XwJNI.comms_resendAll( m_jniGamePtr, 
-                                           ((Boolean)args[0]).booleanValue(),
+                    XwJNI.comms_resendAll( m_jniGamePtr, force,
                                            ((Boolean)args[1]).booleanValue() );
-                Message.obtain( m_handler, MSGS_SENT, nSent ).sendToTarget();
+                if ( force ) {
+                    Message.obtain(m_handler, MSGS_SENT, nSent).sendToTarget();
+                }
                 break;
             // case CMD_ACKANY:
             //     XwJNI.comms_ackAny( m_jniGamePtr );
