@@ -781,4 +781,6 @@
   <string name="invite_copied">Uitnodiging kan nu geplakt worden</string>
   <string name="clip_label">Uitnodigingsadres</string>
   <string name="not_again_clip_expl_fmt">De \"%1$s\" optie kopieert een uitnodigingsadres naar het kladblok. Plak het in een app naar keuze en stuur het naar een vriend.</string>
+  <string name="notify_chat_title_fmt">Chatbericht in spel %1$s</string>
+
 </resources>
