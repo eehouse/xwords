@@ -925,7 +925,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.board_menu_game_resend:
-            m_jniThread.handle( JNICmd.CMD_RESEND, true, false );
+            m_jniThread.handle( JNICmd.CMD_RESEND, true, false, true );
             break;
 
         case R.id.gamel_menu_checkmoves:
@@ -2134,7 +2134,8 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( 0 < m_connTypes.size() ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, force, true );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, force, true, 
+                                false );
         }
     }
 
