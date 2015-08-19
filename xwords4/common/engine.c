@@ -345,9 +345,6 @@ chooseMove( EngineCtxt* engine, PossibleMove** move )
 
     result = (NULL != chosen) && (chosen->score > 0);
 
-    if ( !result ) {
-        engine_reset( engine ); 
-    }
     return result;
 } /* chooseMove */
 
@@ -381,7 +378,7 @@ normalizeIQ( EngineCtxt* engine, XP_U16 iq )
 XP_Bool
 engine_findMove( EngineCtxt* engine, const ModelCtxt* model, 
                  XP_U16 turn, const Tile* tiles,
-                 XP_U16 nTiles, XP_Bool usePrev,
+                 const XP_U16 nTiles, XP_Bool usePrev,
 #ifdef XWFEATURE_BONUSALL
                  XP_U16 allTilesBonus,
 #endif
@@ -394,7 +391,9 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
     XP_Bool result = XP_TRUE;
     XP_U16 star_row;
     XP_Bool canMove = XP_FALSE;
+    XP_Bool isRetry = XP_FALSE;
 
+ retry:
     engine->nTilesMax = XP_MIN( MAX_TRAY_TILES, nTiles );
 #ifdef XWFEATURE_BONUSALL
     engine->allTilesBonus = allTilesBonus;
@@ -540,6 +539,22 @@ engine_findMove( EngineCtxt* engine, const ModelCtxt* model,
            handle this case itself, but this doesn't preclude its doing
            so.  */
         newMove->nTiles = 0;
+    }
+
+    /* Gross hack alert: there's an elusive bug in move cacheing that means
+       when we move forward or back from the highest-scoring move to the
+       lowest (or vice-versa) no move is found. But the next try succeeds,
+       because an engine_reset clears the state that makes that happen. So as
+       a workaround, try doing that when no moves are found. If none is found
+       for some other reason, e.g. no tiles, at least the search should be
+       quick. */
+    if ( !canMove ) {
+        engine_reset( engine ); 
+        if ( !isRetry ) {
+            isRetry = XP_TRUE;
+            XP_LOGF( "%s: no moves found so retrying", __func__ );
+            goto retry;
+        }
     }
 
     *canMoveP = canMove;
