@@ -24,10 +24,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -35,8 +33,7 @@ import android.widget.TextView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-public class ChatDelegate extends DelegateBase
-    implements View.OnClickListener {
+public class ChatDelegate extends DelegateBase {
 
     private long m_rowid;
     private Activity m_activity;
@@ -76,9 +73,6 @@ public class ChatDelegate extends DelegateBase
                     }
                 });
 
-            ((Button)findViewById( R.id.send_button ))
-                .setOnClickListener( this );
-
             String title = getString( R.string.chat_title_fmt, 
                                       GameUtils.getName( m_activity, m_rowid ) );
             setTitle( title );
@@ -91,27 +85,32 @@ public class ChatDelegate extends DelegateBase
     @Override
     public boolean onOptionsItemSelected( MenuItem item ) 
     {
-        boolean handled = R.id.chat_menu_clear == item.getItemId();
-        if ( handled ) {
-            showConfirmThen( R.string.confirm_clear_chat, Action.CLEAR_ACTION );
+        boolean handled = true;
+        switch ( item.getItemId() ) {
+        case R.id.chat_menu_clear:
+            if ( handled ) {
+                showConfirmThen( R.string.confirm_clear_chat, Action.CLEAR_ACTION );
+            }
+            break;
+        case R.id.chat_menu_send:
+            EditText edit = (EditText)findViewById( R.id.chat_edit );
+            String text = edit.getText().toString();
+            if ( null == text || text.length() == 0 ) {
+                setResult( Activity.RESULT_CANCELED );
+            } else {
+                DBUtils.appendChatHistory( m_activity, m_rowid, text, true );
+
+                Intent result = new Intent();
+                result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
+                setResult( Activity.RESULT_OK, result );
+            }
+            finish();
+            break;
+        default:
+            handled = false;
+            break;
         }
         return handled;
-    }
-
-    public void onClick( View view ) 
-    {
-        EditText edit = (EditText)findViewById( R.id.chat_edit );
-        String text = edit.getText().toString();
-        if ( null == text || text.length() == 0 ) {
-            setResult( Activity.RESULT_CANCELED );
-        } else {
-            DBUtils.appendChatHistory( m_activity, m_rowid, text, true );
-
-            Intent result = new Intent();
-            result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
-            setResult( Activity.RESULT_OK, result );
-        }
-        finish();
     }
 
     @Override
