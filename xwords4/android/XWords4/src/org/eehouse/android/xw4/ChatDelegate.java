@@ -30,6 +30,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
@@ -66,6 +67,14 @@ public class ChatDelegate extends DelegateBase
                     layout.addView( view );
                 }
             }
+
+            final ScrollView scroll = (ScrollView)findViewById( R.id.scroll );
+            scroll.post(new Runnable() {            
+                    @Override
+                    public void run() {
+                        scroll.fullScroll(View.FOCUS_DOWN);              
+                    }
+                });
 
             ((Button)findViewById( R.id.send_button ))
                 .setOnClickListener( this );
