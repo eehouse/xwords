@@ -21,16 +21,18 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MenuInflater;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class ChatDelegate extends DelegateBase
     implements View.OnClickListener {
@@ -82,10 +84,7 @@ public class ChatDelegate extends DelegateBase
     {
         boolean handled = R.id.chat_menu_clear == item.getItemId();
         if ( handled ) {
-            DBUtils.clearChatHistory( m_activity, m_rowid );
-            LinearLayout layout = 
-                (LinearLayout)findViewById( R.id.chat_history );
-            layout.removeAllViews();
+            showConfirmThen( R.string.confirm_clear_chat, Action.CLEAR_ACTION );
         }
         return handled;
     }
@@ -104,5 +103,22 @@ public class ChatDelegate extends DelegateBase
             setResult( Activity.RESULT_OK, result );
         }
         finish();
+    }
+
+    @Override
+    public void dlgButtonClicked( Action action, int which, Object[] params )
+    {
+        switch ( action ) {
+        case CLEAR_ACTION:
+            if ( AlertDialog.BUTTON_POSITIVE == which ) {
+                DBUtils.clearChatHistory( m_activity, m_rowid );
+                LinearLayout layout = 
+                    (LinearLayout)findViewById( R.id.chat_history );
+                layout.removeAllViews();
+            }
+            break;
+        default:
+            super.dlgButtonClicked( action, which, params );
+        }
     }
 }

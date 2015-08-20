@@ -2538,4 +2538,7 @@
     <item quantity="other">%1$s messages sent</item>
   </plurals>
 
+  <string name="confirm_clear_chat">Are you sure you want to delete
+  all chat history for this game?\n\n(This action cannot be
+  undone.)</string>
 </resources>
