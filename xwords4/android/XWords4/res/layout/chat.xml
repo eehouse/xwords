@@ -9,7 +9,8 @@
   <!-- history is kept in a scrolling list of textview elems so
   different style can be applied based on whether they're local or
   remote.  Inserted at runtime.... -->
-  <ScrollView android:orientation="vertical"
+  <ScrollView android:id="@+id/scroll"
+              android:orientation="vertical"
               android:layout_width="fill_parent" 
               android:layout_height="wrap_content"
               android:layout_weight="1"
@@ -29,7 +30,7 @@
     <EditText android:id="@+id/chat_edit" 
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:singleLine="true"
+              android:singleLine="false"
               android:layout_weight="1"
               />
 
