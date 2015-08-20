@@ -21,19 +21,19 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.view.View;
-import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MenuInflater;
+import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
-public class ChatDelegate extends DelegateBase
-    implements View.OnClickListener {
+import org.eehouse.android.xw4.DlgDelegate.Action;
+
+public class ChatDelegate extends DelegateBase {
 
     private long m_rowid;
     private Activity m_activity;
@@ -65,8 +65,13 @@ public class ChatDelegate extends DelegateBase
                 }
             }
 
-            ((Button)findViewById( R.id.send_button ))
-                .setOnClickListener( this );
+            final ScrollView scroll = (ScrollView)findViewById( R.id.scroll );
+            scroll.post(new Runnable() {            
+                    @Override
+                    public void run() {
+                        scroll.fullScroll(View.FOCUS_DOWN);              
+                    }
+                });
 
             String title = getString( R.string.chat_title_fmt, 
                                       GameUtils.getName( m_activity, m_rowid ) );
@@ -80,29 +85,48 @@ public class ChatDelegate extends DelegateBase
     @Override
     public boolean onOptionsItemSelected( MenuItem item ) 
     {
-        boolean handled = R.id.chat_menu_clear == item.getItemId();
-        if ( handled ) {
-            DBUtils.clearChatHistory( m_activity, m_rowid );
-            LinearLayout layout = 
-                (LinearLayout)findViewById( R.id.chat_history );
-            layout.removeAllViews();
+        boolean handled = true;
+        switch ( item.getItemId() ) {
+        case R.id.chat_menu_clear:
+            if ( handled ) {
+                showConfirmThen( R.string.confirm_clear_chat, Action.CLEAR_ACTION );
+            }
+            break;
+        case R.id.chat_menu_send:
+            EditText edit = (EditText)findViewById( R.id.chat_edit );
+            String text = edit.getText().toString();
+            if ( null == text || text.length() == 0 ) {
+                setResult( Activity.RESULT_CANCELED );
+            } else {
+                DBUtils.appendChatHistory( m_activity, m_rowid, text, true );
+
+                Intent result = new Intent();
+                result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
+                setResult( Activity.RESULT_OK, result );
+            }
+            finish();
+            break;
+        default:
+            handled = false;
+            break;
         }
         return handled;
     }
 
-    public void onClick( View view ) 
+    @Override
+    public void dlgButtonClicked( Action action, int which, Object[] params )
     {
-        EditText edit = (EditText)findViewById( R.id.chat_edit );
-        String text = edit.getText().toString();
-        if ( null == text || text.length() == 0 ) {
-            setResult( Activity.RESULT_CANCELED );
-        } else {
-            DBUtils.appendChatHistory( m_activity, m_rowid, text, true );
-
-            Intent result = new Intent();
-            result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
-            setResult( Activity.RESULT_OK, result );
+        switch ( action ) {
+        case CLEAR_ACTION:
+            if ( AlertDialog.BUTTON_POSITIVE == which ) {
+                DBUtils.clearChatHistory( m_activity, m_rowid );
+                LinearLayout layout = 
+                    (LinearLayout)findViewById( R.id.chat_history );
+                layout.removeAllViews();
+            }
+            break;
+        default:
+            super.dlgButtonClicked( action, which, params );
         }
-        finish();
     }
 }
