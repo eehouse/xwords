@@ -2579,4 +2579,8 @@
   <string name="not_again_clip_expl_fmt">The \"%1$s\" option copies an
   invitation URL to the clipboard. Paste it into the app of your
   choice and send it to your friend.</string>
+
+  <string name="confirm_clear_chat">Are you sure you want to delete
+  all chat history for this game?\n\n(This action cannot be
+  undone.)</string>
 </resources>
