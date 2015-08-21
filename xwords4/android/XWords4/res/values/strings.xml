@@ -1256,7 +1256,7 @@
       -->
     <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-    <string name="chat_title_fmt">%1$s message history</string>
+    <string name="chat_title_fmt">%1$s messages</string>
     <!-- Prefix for local messages -->
     <string name="chat_local_id">Me:\u0020</string>
     <!-- Prefix for remote messages -->

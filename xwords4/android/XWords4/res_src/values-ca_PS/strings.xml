@@ -1086,7 +1086,7 @@
       -->
   <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-  <string name="chat_title_fmt">%1$s MESSAGE HISTORY</string>
+  <string name="chat_title_fmt">%1$s MESSAGES</string>
   <!-- Prefix for local messages -->
   <string name="chat_local_id">ME:\u0020</string>
   <!-- Prefix for remote messages -->
@@ -2186,4 +2186,7 @@
     <item quantity="one">ONE MESSAGE SENT</item>
     <item quantity="other">%1$s MESSAGES SENT</item>
   </plurals>
+  <string name="confirm_clear_chat">ARE YOU SURE YOU WANT TO DELETE
+  ALL CHAT HISTORY FOR THIS GAME?\n\n(THIS ACTION CANNOT BE
+  UNDONE.)</string>
 </resources>

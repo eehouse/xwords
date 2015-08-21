@@ -1086,7 +1086,7 @@
       -->
   <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-  <string name="chat_title_fmt">%1$s egassem yrotsih</string>
+  <string name="chat_title_fmt">%1$s segassem</string>
   <!-- Prefix for local messages -->
   <string name="chat_local_id">Em:\u0020</string>
   <!-- Prefix for remote messages -->
@@ -2186,4 +2186,7 @@
     <item quantity="one">Eno egassem tnes</item>
     <item quantity="other">%1$s segassem tnes</item>
   </plurals>
+  <string name="confirm_clear_chat">Era uoy erus uoy tnaw ot eteled
+  lla tahc yrotsih rof siht ?emag\n\nsIht( noitca tonnac eb
+  enodnu.)</string>
 </resources>
