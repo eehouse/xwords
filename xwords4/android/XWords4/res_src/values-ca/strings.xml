@@ -1037,4 +1037,12 @@
   <string name="invite_copied">Invitació preparada per a copiar</string>
   <string name="clip_label">URL de la invitació</string>
   <string name="not_again_clip_expl_fmt">L\'opció «%1$s» copia un URL d\'invitació al porta-retalls. Enganxeu-lo a l\'aplicació desitjada i envieu-lo al vostre amic.</string>
+<string name="notify_chat_body_fmt">%1$s: %2$s</string>
+    <plurals name="resent_msgs_fmt">
+	<item quantity="one">S\'ha enviat un missatge</item>
+	<item quantity="other">S\'han enviat %1$s missatges</item>
+</plurals>
+
+  <string name="confirm_clear_chat">Esteu segur de voler suprimir tot l\'historial de conversa d\'aquesta partida?\n\n(Aquesta acció no és pot desfer.)</string>
+
 </resources>
