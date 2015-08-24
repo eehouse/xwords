@@ -138,7 +138,7 @@ public class DlgDelegate {
 
     public interface DlgClickNotify {
         public static enum InviteMeans {
-            SMS, EMAIL, NFC, BLUETOOTH, RELAY, CLIPBOARD,
+            SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY,
         };
         void dlgButtonClicked( Action action, int button, Object[] params );
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
@@ -636,7 +636,7 @@ public class DlgDelegate {
             means.add( DlgClickNotify.InviteMeans.RELAY );
         }
         final int clipPos = means.size();
-        items.add( getString( R.string.invite_choice_clip ) );
+        items.add( getString( R.string.slmenu_copy_sel ) );
         means.add( DlgClickNotify.InviteMeans.CLIPBOARD );
 
         final int[] sel = { -1 };
@@ -653,7 +653,7 @@ public class DlgDelegate {
                     if ( view == clipPos ) {
                         String msg = 
                             getString( R.string.not_again_clip_expl_fmt,
-                                       getString(R.string.invite_choice_clip) );
+                                       getString(R.string.slmenu_copy_sel) );
                         showNotAgainDlgThen( msg, R.string.key_na_clip_expl );
                     }
                 }

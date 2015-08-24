@@ -865,10 +865,10 @@ public final class R {
         public static final int checking_for_fmt=0x7f05030b;
         public static final int checking_title=0x7f05030a;
         public static final int checkupdates_none_found=0x7f050235;
-        /**  EXPERIMENATL: "label" for invite on clipboard. If it's shown
+        /**  EXPERIMENTAL: "label" for invite on clipboard. If it's shown
        it's by some Android utility 
          */
-        public static final int clip_label=0x7f05031e;
+        public static final int clip_label=0x7f05031d;
         /**  color of the "crosshairs", lines drawn vertically and
          horizontally through the square the user is currently
          touching in order to guide the fat-fingered (most of us) in
@@ -877,7 +877,7 @@ public final class R {
          */
         public static final int clr_crosshairs=0x7f050141;
         public static final int config_no_connvia=0x7f0502d2;
-        public static final int confirm_clear_chat=0x7f050320;
+        public static final int confirm_clear_chat=0x7f05031f;
         public static final int confirm_clear_relay=0x7f05020c;
         /**  Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
@@ -1362,10 +1362,7 @@ public final class R {
          */
         public static final int initial_player_minutes=0x7f05012a;
         public static final int invite_choice_bt=0x7f05016f;
-        /**  EXPERIMENATL: A choice of how to invite, along with SMS,
-       Bluetooth, email etc 
-         */
-        public static final int invite_choice_clip=0x7f05031c;
+        public static final int invite_choice_clip=0x7f050320;
         public static final int invite_choice_email=0x7f05016e;
         public static final int invite_choice_nfc=0x7f050170;
         public static final int invite_choice_relay=0x7f050171;
@@ -1389,10 +1386,10 @@ public final class R {
          */
         public static final int invite_chooser_fmt=0x7f050176;
         public static final int invite_chooser_sms=0x7f050178;
-        /**  EXPERIMENATL: Shown as toast when user chooses "My choice" for
+        /**  EXPERIMENTAL: Shown as toast when user chooses "My choice" for
        invitation 
          */
-        public static final int invite_copied=0x7f05031d;
+        public static final int invite_copied=0x7f05031c;
         public static final int invite_dict_missing_body_fmt=0x7f050245;
         public static final int invite_dict_missing_body_noname_fmt=0x7f050246;
         public static final int invite_dict_missing_title=0x7f050244;
@@ -2003,10 +2000,10 @@ public final class R {
          main Board screen 
          */
         public static final int not_again_chat=0x7f0501b6;
-        /**  EXPERIMENATL: Newbie hint next when invite_choice_clip shown
+        /**  EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
        when chosen 
          */
-        public static final int not_again_clip_expl_fmt=0x7f05031f;
+        public static final int not_again_clip_expl_fmt=0x7f05031e;
         public static final int not_again_comms_bt=0x7f050317;
         public static final int not_again_comms_relay=0x7f050315;
         public static final int not_again_comms_sms=0x7f050316;

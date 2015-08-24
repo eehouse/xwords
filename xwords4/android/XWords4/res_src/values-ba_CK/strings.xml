@@ -2210,16 +2210,13 @@
     <item quantity="one">Eno egassem tnes</item>
     <item quantity="other">%1$s segassem tnes</item>
   </plurals>
-  <!-- EXPERIMENATL: A choice of how to invite, along with SMS,
-       Bluetooth, email etc -->
-  <string name="invite_choice_clip">I\'ll esoohc</string>
-  <!-- EXPERIMENATL: Shown as toast when user chooses "My choice" for
+  <!-- EXPERIMENTAL: Shown as toast when user chooses "My choice" for
        invitation -->
   <string name="invite_copied">Noitativni ydaer ot etsap</string>
-  <!-- EXPERIMENATL: "label" for invite on clipboard. If it's shown
+  <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
        it's by some Android utility -->
   <string name="clip_label">Noitativni LRU</string>
-  <!-- EXPERIMENATL: Newbie hint next when invite_choice_clip shown
+  <!-- EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
        when chosen -->
   <string name="not_again_clip_expl_fmt">Eht \"%1$s\" noitpo seipoc na
   noitativni LRU ot eht draobpilc. Etsap ti otni eht ppa fo ruoy

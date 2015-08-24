@@ -2210,16 +2210,13 @@
     <item quantity="one">ONE MESSAGE SENT</item>
     <item quantity="other">%1$s MESSAGES SENT</item>
   </plurals>
-  <!-- EXPERIMENATL: A choice of how to invite, along with SMS,
-       Bluetooth, email etc -->
-  <string name="invite_choice_clip">I\'LL CHOOSE</string>
-  <!-- EXPERIMENATL: Shown as toast when user chooses "My choice" for
+  <!-- EXPERIMENTAL: Shown as toast when user chooses "My choice" for
        invitation -->
   <string name="invite_copied">INVITATION READY TO PASTE</string>
-  <!-- EXPERIMENATL: "label" for invite on clipboard. If it's shown
+  <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
        it's by some Android utility -->
   <string name="clip_label">INVITATION URL</string>
-  <!-- EXPERIMENATL: Newbie hint next when invite_choice_clip shown
+  <!-- EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
        when chosen -->
   <string name="not_again_clip_expl_fmt">THE \"%1$s\" OPTION COPIES AN
   INVITATION URL TO THE CLIPBOARD. PASTE IT INTO THE APP OF YOUR
