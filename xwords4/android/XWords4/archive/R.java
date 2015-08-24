@@ -856,7 +856,7 @@ public final class R {
         /**  EXPERIMENTAL: "label" for invite on clipboard. If it's shown
        it's by some Android utility 
          */
-        public static final int clip_label=0x7f050311;
+        public static final int clip_label=0x7f050310;
         /**  color of the "crosshairs", lines drawn vertically and
          horizontally through the square the user is currently
          touching in order to guide the fat-fingered (most of us) in
@@ -1342,10 +1342,6 @@ public final class R {
          */
         public static final int initial_player_minutes=0x7f050127;
         public static final int invite_choice_bt=0x7f05016c;
-        /**  EXPERIMENTAL: A choice of how to invite, along with SMS,
-       Bluetooth, email etc 
-         */
-        public static final int invite_choice_clip=0x7f05030f;
         public static final int invite_choice_email=0x7f05016b;
         public static final int invite_choice_nfc=0x7f05016d;
         /**  EXPLAIN ME 
@@ -1371,7 +1367,7 @@ public final class R {
         /**  EXPERIMENTAL: Shown as toast when user chooses "My choice" for
        invitation 
          */
-        public static final int invite_copied=0x7f050310;
+        public static final int invite_copied=0x7f05030f;
         public static final int invite_dict_missing_body_fmt=0x7f05023c;
         public static final int invite_dict_missing_body_noname_fmt=0x7f05023d;
         public static final int invite_dict_missing_title=0x7f05023b;
@@ -1984,7 +1980,7 @@ public final class R {
         /**  EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
        when chosen 
          */
-        public static final int not_again_clip_expl_fmt=0x7f050312;
+        public static final int not_again_clip_expl_fmt=0x7f050311;
         public static final int not_again_comms_bt=0x7f05030c;
         public static final int not_again_comms_relay=0x7f05030a;
         public static final int not_again_comms_sms=0x7f05030b;

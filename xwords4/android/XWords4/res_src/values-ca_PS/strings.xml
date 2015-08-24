@@ -2189,9 +2189,6 @@
   <string name="confirm_clear_chat">ARE YOU SURE YOU WANT TO DELETE
   ALL CHAT HISTORY FOR THIS GAME?\n\n(THIS ACTION CANNOT BE
   UNDONE.)</string>
-  <!-- EXPERIMENTAL: A choice of how to invite, along with SMS,
-       Bluetooth, email etc -->
-  <string name="invite_choice_clip">I\'LL CHOOSE</string>
   <!-- EXPERIMENTAL: Shown as toast when user chooses "My choice" for
        invitation -->
   <string name="invite_copied">INVITATION READY TO PASTE</string>

@@ -2189,9 +2189,6 @@
   <string name="confirm_clear_chat">Era uoy erus uoy tnaw ot eteled
   lla tahc yrotsih rof siht ?emag\n\nsIht( noitca tonnac eb
   enodnu.)</string>
-  <!-- EXPERIMENTAL: A choice of how to invite, along with SMS,
-       Bluetooth, email etc -->
-  <string name="invite_choice_clip">I\'ll esoohc</string>
   <!-- EXPERIMENTAL: Shown as toast when user chooses "My choice" for
        invitation -->
   <string name="invite_copied">Noitativni ydaer ot etsap</string>
