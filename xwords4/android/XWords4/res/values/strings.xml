@@ -2548,21 +2548,6 @@
     <item quantity="other">%1$s messages sent</item>
   </plurals>
 
-  <!-- EXPERIMENATL: A choice of how to invite, along with SMS,
-       Bluetooth, email etc -->
-  <string name="invite_choice_clip">I\'ll choose</string>
-  <!-- EXPERIMENATL: Shown as toast when user chooses "My choice" for
-       invitation -->
-  <string name="invite_copied">Invitation ready to paste</string>
-  <!-- EXPERIMENATL: "label" for invite on clipboard. If it's shown
-       it's by some Android utility -->
-  <string name="clip_label">Invitation URL</string>
-  <!-- EXPERIMENATL: Newbie hint next when invite_choice_clip shown
-       when chosen -->
-  <string name="not_again_clip_expl_fmt">The \"%1$s\" option copies an
-  invitation URL to the clipboard. Paste it into the app of your
-  choice and send it to your friend.</string>
-
   <string name="confirm_clear_chat">Are you sure you want to delete
   all chat history for this game?\n\n(This action cannot be
   undone.)</string>
