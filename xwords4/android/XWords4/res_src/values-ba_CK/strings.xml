@@ -2189,4 +2189,18 @@
   <string name="confirm_clear_chat">Era uoy erus uoy tnaw ot eteled
   lla tahc yrotsih rof siht ?emag\n\nsIht( noitca tonnac eb
   enodnu.)</string>
+  <!-- EXPERIMENTAL: A choice of how to invite, along with SMS,
+       Bluetooth, email etc -->
+  <string name="invite_choice_clip">I\'ll esoohc</string>
+  <!-- EXPERIMENTAL: Shown as toast when user chooses "My choice" for
+       invitation -->
+  <string name="invite_copied">Noitativni ydaer ot etsap</string>
+  <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
+       it's by some Android utility -->
+  <string name="clip_label">Noitativni LRU</string>
+  <!-- EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
+       when chosen -->
+  <string name="not_again_clip_expl_fmt">Eht \"%1$s\" noitpo seipoc na
+  noitativni LRU ot eht draobpilc. Etsap ti otni eht ppa fo ruoy
+  eciohc dna dnes ti ot ruoy dneirf.</string>
 </resources>

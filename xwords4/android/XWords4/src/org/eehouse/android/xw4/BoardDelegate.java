@@ -1046,12 +1046,17 @@ public class BoardDelegate extends DelegateBase
                                                    SMS_INVITE_RESULT );
                 break;
             case EMAIL:
+            case CLIPBOARD:
                 NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1,
                                                        1 + m_nGuestDevs );
                 if ( !m_relayConnected ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
                 }
-                GameUtils.launchEmailInviteActivity( m_activity, nli );
+                if ( InviteMeans.EMAIL == means ) {
+                    GameUtils.launchEmailInviteActivity( m_activity, nli );
+                } else if ( InviteMeans.CLIPBOARD == means ) {
+                    GameUtils.inviteURLToClip( m_activity, nli );
+                }
                 break;
             default:
                 Assert.fail();
