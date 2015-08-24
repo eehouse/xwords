@@ -1256,7 +1256,7 @@
       -->
     <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-    <string name="chat_title_fmt">%1$s message history</string>
+    <string name="chat_title_fmt">%1$s messages</string>
     <!-- Prefix for local messages -->
     <string name="chat_local_id">Me:\u0020</string>
     <!-- Prefix for remote messages -->
@@ -2566,5 +2566,15 @@
   <string name="confirm_clear_chat">Are you sure you want to delete
   all chat history for this game?\n\n(This action cannot be
   undone.)</string>
-
+  <!-- EXPERIMENTAL: Shown as toast when user chooses "Copy to
+       clipboard" for invitation -->
+  <string name="invite_copied">Invitation ready to paste</string>
+  <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
+       it's by some Android utility -->
+  <string name="clip_label">Invitation URL</string>
+  <!-- EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
+       when chosen -->
+  <string name="not_again_clip_expl_fmt">The \"%1$s\" option copies an
+  invitation URL to the clipboard. Paste it into the app of your
+  choice and send it to your friend.</string>
 </resources>
