@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
     <!-- What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
@@ -3471,5 +3471,33 @@ pour la langue</string>
   les périphériques proches.</string>
   <string name="confirm_drop_relay_sms">Jouer par SMS n\'est pas
   possible avec tous les opérateurs.</string>
+
+<string name="notify_chat_title_fmt">Message de discussion dans la partie %1$s</string>
+    <string name="notify_chat_body_fmt">%1$s : %2$s</string>
+    <plurals name="confirm_clear_fmt">
+	<item quantity="one">Êtes-vous sûr de vouloir effacer le numéro de téléphone coché ?</item>
+	<item quantity="other">Êtes-vous sûr de vouloir effacer les numéros de téléphone cochés ?</item>
+</plurals>
+    <string name="button_enable">Activer</string>
+
+  <string name="not_again_comms_relay">Le \"relai\" est un serveur sur Internet qui permet l\'échange de messages entre périphériques qui font tourner Crosswords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
+
+  <string name="not_again_comms_sms">Les parties par SMS utilisent la même technologie que l\'envoi de SMS normaux. Bien que les messages soient invisibles pour vous, votre opérateur les considère comme des messages normaux, donc vous pourriez vouloir éviter cette fonctionnalité si vous n\'avez pas un forfait (ou un budget) illimité.</string>
+
+  <string name="not_again_comms_bt">"Utilisez le Bluetooth  pour jouer contre un périphérique à proximité appairé avec le votre."</string>
+
+  <string name="str_no_hint_found">Ne peut trouver aucun coup</string>
+
+  <plurals name="resent_msgs_fmt">
+	<item quantity="one">Un message envoyé</item>
+	<item quantity="other">%1$s messages envoyés</item>
+</plurals>
+
+  <string name="invite_choice_clip">Je choisirai</string>
+  <string name="invite_copied">Invitation prête à coller</string>
+  <string name="clip_label">Adresse de l\'invitation</string>
+  <string name="not_again_clip_expl_fmt">L\'option \"%1$s\" copie une adresse d\'invitation dans le presse-papier. Collez-là dans l\'application de votre choix et envoyez-là à votre ami.</string>
+
+  <string name="confirm_clear_chat">Êtes-vous sûr de vouloir effacer tout l\'historique de discussion pour cette partie ?\n\n(Cette action ne peut pas être annulée.)</string>
 
 </resources>
