@@ -142,7 +142,7 @@ public class DBUtils {
                              DBHelper.ROOMNAME, DBHelper.RELAYID, 
                              /*DBHelper.SMSPHONE,*/ DBHelper.SEED, 
                              DBHelper.DICTLANG, DBHelper.GAMEID,
-                             DBHelper.SCORES, DBHelper.HASMSGS,
+                             DBHelper.SCORES, 
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
                              DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING,
                              DBHelper.EXTRAS,
@@ -255,11 +255,6 @@ public class DBUtils {
                 col = cursor.getColumnIndex( DBHelper.SERVERROLE );
                 tmp = cursor.getInt( col );
                 summary.serverRole = CurGameInfo.DeviceRole.values()[tmp];
-
-                col = cursor.getColumnIndex( DBHelper.HASMSGS );
-                if ( col >= 0 ) {
-                    summary.pendingMsgLevel = cursor.getInt( col );
-                }
             }
             cursor.close();
             db.close();
@@ -307,7 +302,6 @@ public class DBUtils {
             values.put( DBHelper.NEXTNAG, nextNag );
                 
             values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
-            values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
             if ( null != inviteID ) {
                 values.put( DBHelper.INVITEID, inviteID );
             }
