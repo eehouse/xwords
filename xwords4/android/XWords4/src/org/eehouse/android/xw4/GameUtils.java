@@ -162,13 +162,6 @@ public class GameUtils {
         }
     }
 
-    private static GameSummary summarizeAndClose( Context context, 
-                                                  GameLock lock,
-                                                  int gamePtr, CurGameInfo gi )
-    {
-        return summarizeAndClose( context, lock, gamePtr, gi, null );
-    }
-
     private static int setFromFeedImpl( FeedUtilsImpl feedImpl )
     {
         int result = GameSummary.MSG_FLAGS_NONE;
@@ -185,16 +178,11 @@ public class GameUtils {
     }
 
     private static GameSummary summarizeAndClose( Context context, 
-                                                  GameLock lock,
-                                                  int gamePtr, CurGameInfo gi,
-                                                  FeedUtilsImpl feedImpl )
+                                                  GameLock lock, int gamePtr, 
+                                                  CurGameInfo gi )
     {
         GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
-
-        if ( null != feedImpl ) {
-            summary.pendingMsgLevel |= setFromFeedImpl( feedImpl );
-        }
 
         DBUtils.saveSummary( context, lock, summary );
 
@@ -923,12 +911,13 @@ public class GameUtils {
                     }
 
                     saveGame( context, gamePtr, gi, lock, false );
-                    summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
+                    summarizeAndClose( context, lock, gamePtr, gi );
 
                     int flags = setFromFeedImpl( feedImpl );
                     if ( GameSummary.MSG_FLAGS_NONE != flags ) {
                         draw = true;
-                        DBUtils.setMsgFlags( rowid, flags );
+                        int curFlags = DBUtils.getMsgFlags( context, rowid );
+                        DBUtils.setMsgFlags( rowid, flags | curFlags );
                     }
                 }
                 lock.unlock();
