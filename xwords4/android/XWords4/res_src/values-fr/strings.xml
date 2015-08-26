@@ -1474,9 +1474,9 @@ partie : %1$s .</string>
     <!--<string name="query_trade_fmt">Êtes-vous sûr de vouloir échanger les %1$d
 jetons sélectionnés (%2$s) ?</string>-->
     <plurals name="query_trade_fmt">
-	<item quantity="one">Êtes-vous sûr de vouloir échanger les %1$d jetons sélectionnés (%2$s) ?</item>
-	<item quantity="other"></item>
-</plurals>
+      <item quantity="one">Êtes-vous sûr de vouloir échanger le jeton sélectionné (%2$s) ?</item>
+      <item quantity="other">Êtes-vous sûr de vouloir échanger les %1$d jetons sélectionnés (%2$s) ?</item>
+    </plurals>
 
     <!-- ############################################################
          # :Screens:
