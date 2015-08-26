@@ -372,8 +372,7 @@ des parties à %1$d joueurs en %2$s.</string>
     <!--<string name="no_name_found_fmt">No public rooms found for
       %1$d-player games in %2$s. Try refreshing or creating your
       own.</string>-->
-    <string name="no_name_found_fmt">Aucun salon public trouvé pour des parties
-à %1$d dans %2$s</string>
+    <string name="no_name_found_fmt">Aucun salon public trouvé pour des parties à %1$d dans %2$s. Essayez de rafraîchir ou de créer le votre.</string>
 
     <!-- text of separator marking out other-setting area of the dialog -->
     <!--<string name="settings_label">Other settings</string>-->
@@ -1475,10 +1474,8 @@ partie : %1$s .</string>
     <!--<string name="query_trade_fmt">Êtes-vous sûr de vouloir échanger les %1$d
 jetons sélectionnés (%2$s) ?</string>-->
     <plurals name="query_trade_fmt">
-        <item quantity="one">Êtes-vous sûr de vouloir échanger le
-jeton sélectionné (%2$s) ?</item>
-        <item quantity="other">Êtes-vous sûr de vouloir échanger les %1$d
-jetons sélectionnés (%2$s) ?</item>
+      <item quantity="one">Êtes-vous sûr de vouloir échanger le jeton sélectionné (%2$s) ?</item>
+      <item quantity="other">Êtes-vous sûr de vouloir échanger les %1$d jetons sélectionnés (%2$s) ?</item>
     </plurals>
 
     <!-- ############################################################
@@ -1971,9 +1968,7 @@ courant.</string>
     <!--<string name="not_again_chat">This button opens the screen for
       messaging between devices in this game.  Messages will be kept
       until you delete the game that contains them.</string>-->
-    <string name="not_again_chat">Ce bouton ouvre l\'écran de discussion entre
-périphériques pour cette partie. Les messages seront préservés jusqu\'à ce que
-effaciez la partie qui les contient</string>
+    <string name="not_again_chat">Ce bouton ouvre l\'écran de discussion entre périphériques pour cette partie. Les messages seront préservés jusqu\'à ce que effaciez la partie qui les contient.</string>
     <!-- Shown when you tap the values button on the toolbar of the
          main Board screen.  This is intended to allow players to
          remind themselves how much played tiles are worth while
@@ -3127,9 +3122,7 @@ vous doit faire une mise à jour avant de pouvoir continuer.</string>
     device. No moves will be sent via Bluetooth.\n\nYou can enable
     Bluetooth now, or later.
     </string>-->
-    <string name="warn_bt_disabled">Le Bluetooth est actuellement éteint sur ce
-périphérique. Aucun coup ne sera envoyé par Bluetooth.\n\nVous pouvez activer
-le Bluetooth maintenant, ou plus tard.</string>
+    <string name="warn_bt_disabled">"Le Bluetooth est actuellement éteint sur ce périphérique. Aucun coup ne sera envoyé par Bluetooth.\n\nVous pouvez activer le Bluetooth maintenant, ou plus tard. "</string>
     <!--XLATE-ME-->
     <!--<string name="button_enable_sms">Enable SMS</string>-->
     <string name="button_enable_sms">Activer les SMS</string>

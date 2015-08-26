@@ -387,10 +387,10 @@ public class SMSService extends XWService {
     {
         DbgUtils.logf( "SMSService.inviteRemote()" );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream das = new DataOutputStream( bas );
+        DataOutputStream dos = new DataOutputStream( bas );
         try {
-            das.writeUTF( nliData );
-            das.flush();
+            dos.writeUTF( nliData );
+            dos.flush();
 
             send( SMS_CMD.INVITE, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
@@ -401,10 +401,10 @@ public class SMSService extends XWService {
     private void ackInvite( String phone, int gameID )
     {
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream das = new DataOutputStream( bas );
+        DataOutputStream dos = new DataOutputStream( bas );
         try {
-            das.writeInt( gameID );
-            das.flush();
+            dos.writeInt( gameID );
+            dos.flush();
 
             send( SMS_CMD.ACK, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
@@ -416,10 +416,10 @@ public class SMSService extends XWService {
     {
         if ( !s_sentDied.contains(gameID) ) {
             ByteArrayOutputStream bas = new ByteArrayOutputStream( 32 );
-            DataOutputStream das = new DataOutputStream( bas );
+            DataOutputStream dos = new DataOutputStream( bas );
             try {
-                das.writeInt( gameID );
-                das.flush();
+                dos.writeInt( gameID );
+                dos.flush();
                 send( SMS_CMD.DEATH, bas.toByteArray(), phone );
                 s_sentDied.add( gameID );
             } catch ( java.io.IOException ioe ) {
@@ -432,11 +432,11 @@ public class SMSService extends XWService {
     {
         int nSent = -1;
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream das = new DataOutputStream( bas );
+        DataOutputStream dos = new DataOutputStream( bas );
         try {
-            das.writeInt( gameID );
-            das.write( bytes, 0, bytes.length );
-            das.flush();
+            dos.writeInt( gameID );
+            dos.write( bytes, 0, bytes.length );
+            dos.flush();
             if ( send( SMS_CMD.DATA, bas.toByteArray(), phone ) ) {
                 nSent = bytes.length;
             }
@@ -450,12 +450,12 @@ public class SMSService extends XWService {
         throws java.io.IOException
     {
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream das = new DataOutputStream( bas );
-        das.writeByte( SMS_PROTO_VERSION );
-        das.writeShort( getNBSPort() );
-        das.writeByte( cmd.ordinal() );
-        das.write( bytes, 0, bytes.length );
-        das.flush();
+        DataOutputStream dos = new DataOutputStream( bas );
+        dos.writeByte( SMS_PROTO_VERSION );
+        dos.writeShort( getNBSPort() );
+        dos.writeByte( cmd.ordinal() );
+        dos.write( bytes, 0, bytes.length );
+        dos.flush();
 
         byte[] data = bas.toByteArray();
         byte[][] msgs = breakAndEncode( data );
