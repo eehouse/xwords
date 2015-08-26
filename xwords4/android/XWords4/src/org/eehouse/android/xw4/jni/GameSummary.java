@@ -63,7 +63,6 @@ public class GameSummary {
     public String roomName;
     public String relayID;
     public int seed;
-    public int pendingMsgLevel;
     public long modtime;
     public int gameID;
     public String[] remoteDevs; // BTAddrs and phone numbers
@@ -83,7 +82,6 @@ public class GameSummary {
 
     public GameSummary( Context context ) {
         m_context = context;
-        pendingMsgLevel = 0;
         gameID = 0;
     }
 

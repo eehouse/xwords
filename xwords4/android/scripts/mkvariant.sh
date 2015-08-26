@@ -40,6 +40,8 @@ do_dir() {
     for FILE in $SRC_PATH/*; do
         if [ -d $FILE ]; then
             do_dir $SRC_PATH $DEST_PATH $(basename $FILE)
+		elif [ ! -e $FILE ]; then
+			:
         else
             FILE=${FILE/$SRC_PATH/$DEST_PATH}
             if git ls-files $FILE --error-unmatch 2>/dev/null; then
