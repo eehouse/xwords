@@ -712,7 +712,10 @@
     <!-- Notifies user of a normal robot move -->
     <string name="str_robot_moved_fmt">The robot %1$s made this move:\u0020</string>
     <!-- Notifies user of a robot trade move -->
-    <plurals name="strd_robot_traded_fmt"><item quantity="other">exchanged %1$d tiles.</item></plurals>
+    <plurals name="strd_robot_traded_fmt">
+      <item quantity="one">exchanged one tile.</item>
+      <item quantity="other">exchanged %1$d tiles.</item>
+    </plurals>
     <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
     <string name="strs_values_header_fmt">%1$s counts/values:\n</string>
@@ -1240,8 +1243,12 @@
 
     <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-    <plurals name="query_trade_fmt"><item quantity="other">Are you sure you want to exchange the
-        %1$d selected tiles (%2$s)?</item></plurals>
+    <plurals name="query_trade_fmt">
+      <item quantity="one">Are you sure you want to exchange the
+      selected tile (%2$s)?</item>
+      <item quantity="other">Are you sure you want to exchange the
+      %1$d selected tiles (%2$s)?</item>
+    </plurals>
 
     <!-- ############################################################
          # :Screens:
@@ -1800,11 +1807,11 @@
     <string name="pick_faceup">Pick tiles face-up</string>
 
       <!--  -->
-    <plurals name="dict_browse_title_fmt"><item quantity="other">%1$s (%2$d words using %3$d-%4$d
-      tiles)</item></plurals>
+    <string name="dict_browse_title_fmt">%1$s (%2$d words using %3$d-%4$d
+    tiles)</string>
       <!--  -->
-    <plurals name="dict_browse_title1_fmt"><item quantity="other">%1$s (%2$d words using %3$d
-      tiles)</item></plurals>
+    <string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
+    tiles)</string>
       <!--  -->
     <string name="dict_browse_nowords_fmt">No word in %1$s starts with
       %2$s.</string>
@@ -1878,6 +1885,9 @@
     <string name="new_move_body">One or more moves has arrived</string>
     <!--  -->
     <plurals name="invite_bt_desc_fmt">
+      <item quantity="one">Please select the device
+      you want to include in this game.  Use the \"%2$s\"
+      button if you don\'t see the device you expect.</item>
       <item quantity="other">Please select up to %1$d device[s]
       you want to include in this game.  Use the \"%2$s\"
       button if you don\'t see a device you expect.</item>
@@ -2111,11 +2121,14 @@
     <string name="group_new_games">New games</string>
 
     <plurals name="groups_confirm_del_fmt">
-      <item quantity="other">Are you sure you want to delete the %1$d
-      selected group[s]?</item>
+      <item quantity="one">Are you sure you want to delete
+      the selected group?</item>
+      <item quantity="other">Are you sure you want to delete
+      the %1$d selected group[s]?</item>
     </plurals>
     <plurals name="groups_confirm_del_games_fmt">
-      <item quantity="other">\n\n(%1$d game[s] will also be
+      <item quantity="one">\n\n(one game will also be deleted.)</item>
+      <item quantity="other">\n\n(%1$d games will also be
       deleted.)</item>
     </plurals>
 
@@ -2192,10 +2205,15 @@
 
     <string name="slmenu_copy_sel">Copy to clipboard</string>
     <string name="slmenu_clear_sel">Delete selected</string>
-    <plurals name="confirm_studylist_clear_fmt"><item quantity="other">Are you sure you want to
-    delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</item></plurals>
+    <plurals name="confirm_studylist_clear_fmt">
+      <item quantity="one">Are you sure you want to delete the
+      selected word?\n\n(This action cannot be undone.)</item>
+      <item quantity="other">Are you sure you want to delete the %1$d
+      selected words?\n\n(This action cannot be undone.)</item>
+    </plurals>
     <plurals name="paste_done_fmt">
-      <item quantity="other">%1$d word[s] copied</item>
+      <item quantity="one">One word copied</item>
+      <item quantity="other">%1$d words copied</item>
     </plurals>
     <string name="add_done_fmt">%1$s added to %2$s studylist</string>
     <string name="studylist_title_fmt">Studylist for %1$s</string>
@@ -2221,7 +2239,10 @@
     <string name="loc_lang_blessed">%1$s (official)</string>
     <string name="loc_lang_local">%1$s (yours)</string>
 
-    <plurals name="new_xlations_fmt"><item quantity="other">Installed %1$d new translations</item></plurals>
+    <plurals name="new_xlations_fmt">
+      <item quantity="one">Installed one new translation</item>
+      <item quantity="other">Installed %1$d new translations</item>
+    </plurals>
 
     <string name="xlations_enabled_title">Enable local translating</string>
     <string name="xlations_enabled_summary">Add option to every screen menu</string>
@@ -2335,12 +2356,11 @@
       <item quantity="other">%1$s played %2$s for %3$d points</item>
     </plurals>
     <plurals name="lmi_trade_fmt">
+      <item quantity="one">%1$s traded one tile</item>
       <item quantity="other">%1$s traded %2$d tiles</item>
     </plurals>
     <string name="lmi_phony_fmt">%1$s lost a turn</string>
     <string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>
-
-    <plurals name="bt_err_count_fmt"><item quantity="other">%1$d bluetooth errors so far</item></plurals>
 
 	<string name="bt_no_devs">You currently have no paired Bluetooth
 	devices. Would you like to open the Android Settings Panel to add

@@ -508,12 +508,8 @@
       <string name="cur_tiles_fmt">Selector de fitxes\n(com a molt:%1$s)</string>
       <string name="pick_faceup">Tria les fitxes cara amunt</string>
 
-      <plurals name="dict_browse_title_fmt">
-	    <item quantity="other">%1$s (%2$d paraules usant %3$d-%4$d fitxes)</item>
-      </plurals>
-      <plurals name="dict_browse_title1_fmt">
-	    <item quantity="other">%1$s (%2$d paraules usant %3$d fitxes)</item>
-      </plurals>
+      <string name="dict_browse_title_fmt">%1$s (%2$d paraules usant %3$d-%4$d fitxes)</string>
+      <string name="dict_browse_title1_fmt">%1$s (%2$d paraules usant %3$d fitxes)</string>
       <string name="dict_browse_nowords_fmt">No hi ha cap paraula a %1$s que comenci amb %2$s.</string>
       <string name="not_again_browse">Aquest botó obre l\'explorador de diccionaris en el diccionari actual del jugador.</string>
       <string name="not_again_browseall">Aquest botó obre l\'explorador de diccionaris en el diccionari de la vostra elecció.</string>
@@ -1012,9 +1008,6 @@
   <string name="db_store_done">S\'ha completat l\'escriptura a la targeta SD.</string>
 
   <string name="confirm_sms_expl">Atenció: aquesta funcionalitat és per a telèfons amb plans de missatges SMS il·limitats. Si l\'habiliteu, per cada partida jugada, s\'enviaran dotzenes de missatges de text SMS de forma invisible. Si no teniu un pla il·limitat, la vostra operadora us pot cobrar cadascun dels missatges!\n\nVoleu habilitar el joc via SMS?</string>
-    <plurals name="bt_err_count_fmt">
-	  <item quantity="other">Fins ara, %1$d errors Bluetooth</item>
-    </plurals>
 
 	<string name="app_not_found_fmt">No es pot connectar al Crosswords en l\'aparell %1$s. Comproveu que l\'aparell és proper i que té el Crosswords instal·lat.</string>
 
