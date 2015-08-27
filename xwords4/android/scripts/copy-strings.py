@@ -31,63 +31,90 @@ def sameAsEnglishPlural(engNames, strElem):
              and sameOrSameWithPrefix( str, strs['other'] )
     return result
 
+def pluralsIsSame(engNames, plurals):
+    different = False           # all children duplicates of English
+    strings = engNames[plurals.get('name')]['strings']
+    for item in plurals.getchildren():
+        quantity = item.get('quantity')
+        text = item.text
+        if not text or 0 == len(text):
+            print "bogus empty item in", plurals.get('name')
+            sys.exit(1)
+        if quantity in strings:
+            if sameOrSameWithPrefix( strings[quantity], text ):
+                different = True
+    return different
+
+def checkPlurals( engNames, elem ):
+    name = elem.get('name')
+    if not name in engNames or not 'plurals' == engNames[name]['type']:
+        print 'plurals', name, 'not in engNames or not a plurals there'
+        ok = False
+    elif pluralsIsSame(engNames, elem):
+        ok = False
+    else:
+        for item in elem.getchildren():
+            if 0 == len(item.text):
+                ok = False
+                print 'bad empty item', name
+                sys.exit(1)
+        ok = True
+    return ok
+
 def loadPlural(plural):
     items = {}
     for child in plural.getchildren():
         items[child.get('quantity')] = child.text
     return items
 
-def checkAndCopy( engNames, src, dest, verbose ):
-    parser = etree.XMLParser(remove_blank_text=True, encoding="utf-8")
-    doc = etree.parse(src, parser)
-    for elem in doc.getroot().iter():
-        toRemove = None
-        if 'resources' == elem.tag:
-            pass
-        elif 'item' == elem.tag:
-            pass
-        elif 'string' == elem.tag:
-            name = elem.get('name')
-            if not name in engNames or elem.text.startswith(s_prefix):
-                toRemove = elem
-            elif not 'string' == engNames[name]['type']:
-                if 'plurals' == engNames[name]['type']:
-                    if sameAsEnglishPlural( engNames, elem ):
-                        toRemove = elem
-                    else:
-                        elem.tag = 'plurals'
-                        item = etree.Element("item")
-                        item.text = elem.text
-                        elem.text = None
-                        item.set('quantity', 'other')
-                        elem.append( item )
-                        if verbose: print 'translated string', name, 'to plural'
-                else:
-                    toRemove = elem
-            elif engNames[name]['string'] == elem.text:
-                if verbose: print "Same as english: name: %s; text: %s" % (name, elem.text)
-                toRemove = elem
-        elif 'plurals' == elem.tag:
-            name = elem.get('name')
-            if not name in engNames or not 'plurals' == engNames[name]['type']:
-                # print 'removing', name
-                toRemove = elem
-        elif not isinstance( elem.tag, basestring ): # comment
-            toRemove = elem
-        else:
-            print 'unexpected elem:', elem.tag
-            sys.exit(1)
+def writeDoc(doc, src, dest):
+    comment = etree.Comment(sComment % (src))
+    doc.getroot().insert( 0, comment )
+    dir = os.path.dirname( dest )
+    try: os.makedirs( dir )
+    except: pass
+    out = open( dest, "w" )
+    out.write( etree.tostring( doc, pretty_print=True, encoding="utf-8", xml_declaration=True ) )
 
-        if toRemove is not None: toRemove.getparent().remove( toRemove )
-    
-    if True:
-        comment = etree.Comment(sComment % (src))
-        doc.getroot().insert( 0, comment )
-        dir = os.path.dirname( dest )
-        try: os.makedirs( dir )
-        except: pass
-        out = open( dest, "w" )
-        out.write( etree.tostring( doc, pretty_print=True, encoding="utf-8", xml_declaration=True ) )
+def checkOrConvertString(engNames, elem, verbose):
+    name = elem.get('name')
+    if not name in engNames or elem.text.startswith(s_prefix):
+        ok = False
+    elif not 'string' == engNames[name]['type']:
+        if 'plurals' == engNames[name]['type']:
+            if sameAsEnglishPlural( engNames, elem ):
+                ok = False
+            else:
+                elem.tag = 'plurals'
+                item = etree.Element("item")
+                item.text = elem.text
+                elem.text = None
+                item.set('quantity', 'other')
+                elem.append( item )
+                if verbose: print 'translated string', name, 'to plural'
+                ok = True
+        else:
+            ok = False
+    elif sameOrSameWithPrefix(engNames[name]['string'], elem.text ):
+        if verbose: print "Same as english: name: %s; text: %s" % (name, elem.text)
+        ok = False
+    else:
+        ok = True
+    return ok
+
+def checkAndCopy( parser, engNames, src, dest, verbose ):
+    doc = etree.parse(src, parser)
+
+    # strings
+    for elem in doc.findall('string'):
+        if not checkOrConvertString(engNames, elem, verbose):
+            elem.getparent().remove(elem)
+
+    for elem in doc.findall('plurals'):
+        if not checkPlurals(engNames, elem):
+            elem.getparent().remove(elem)
+
+    writeDoc(doc, src, dest)
 
 def main():
     # add these via params later
@@ -123,10 +150,10 @@ def main():
                     path = None
                     break
             if path: 
-                verbose = 0 < len([verb for verb in verboses if verb in path])
+                verbose = 0 == len(verboses) or 0 < len([verb for verb in verboses if verb in path])
                 print "*** looking at %s ***" % (path)
                 dest = path.replace( 'res_src', 'res', 1 )
-                checkAndCopy( engNames, path, dest, verbose )
+                checkAndCopy( parser, engNames, path, dest, verbose )
 
 ##############################################################################
 if __name__ == '__main__':
