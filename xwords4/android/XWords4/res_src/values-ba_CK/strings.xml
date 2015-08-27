@@ -606,6 +606,7 @@
   <string name="str_robot_moved_fmt">Eht tobor %1$s edam siht evom:\u0020</string>
   <!-- Notifies user of a robot trade move -->
   <plurals name="strd_robot_traded_fmt">
+    <item quantity="one">degnahcxe eno elit.</item>
     <item quantity="other">degnahcxe %1$d selit.</item>
   </plurals>
   <!-- title for window you get when you select menu with text
@@ -1070,8 +1071,10 @@
   <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
   <plurals name="query_trade_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot egnahcxe eht
+      detceles elit (%2$s?)</item>
     <item quantity="other">Era uoy erus uoy tnaw ot egnahcxe eht
-        %1$d detceles selit (%2$s?)</item>
+      %1$d detceles selit (%2$s?)</item>
   </plurals>
   <!-- ############################################################
          # :Screens:
@@ -1550,15 +1553,11 @@
   <!--  -->
   <string name="pick_faceup">Kcip selit pu-ecaf</string>
   <!--  -->
-  <plurals name="dict_browse_title_fmt">
-    <item quantity="other">%1$s (%2$d sdrow gnisu %3$d-%4$d
-      )selit</item>
-  </plurals>
+  <string name="dict_browse_title_fmt">%1$s (%2$d sdrow gnisu %3$d-%4$d
+    )selit</string>
   <!--  -->
-  <plurals name="dict_browse_title1_fmt">
-    <item quantity="other">%1$s (%2$d sdrow gnisu %3$d
-      )selit</item>
-  </plurals>
+  <string name="dict_browse_title1_fmt">%1$s (%2$d sdrow gnisu %3$d
+    )selit</string>
   <!--  -->
   <string name="dict_browse_nowords_fmt">On drow ni %1$s strats htiw
       %2$s.</string>
@@ -1624,6 +1623,9 @@
   <string name="new_move_body">Eno ro erom sevom sah devirra</string>
   <!--  -->
   <plurals name="invite_bt_desc_fmt">
+    <item quantity="one">Esaelp tceles eht ecived
+      uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
+      nottub fi uoy nod\'t ees eht ecived uoy tcepxe.</item>
     <item quantity="other">Esaelp tceles pu ot %1$d ]s[ecived
       uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
       nottub fi uoy nod\'t ees a ecived uoy tcepxe.</item>
@@ -1832,12 +1834,15 @@
   <string name="group_cur_games">Ym semag</string>
   <string name="group_new_games">Wen semag</string>
   <plurals name="groups_confirm_del_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot eteled
+      eht detceles ?puorg</item>
     <item quantity="other">Era uoy erus uoy tnaw ot eteled
-    eht %1$d detceles ?]s[puorg</item>
+      eht %1$d detceles ?]s[puorg</item>
   </plurals>
   <plurals name="groups_confirm_del_games_fmt">
-    <item quantity="other">\n\n(%1$d ]s[emag lliw
-    osla eb deteled.)</item>
+    <item quantity="one">\n\neno( emag lliw osla eb deteled.)</item>
+    <item quantity="other">\n\n(%1$d semag lliw osla eb
+      deteled.)</item>
   </plurals>
   <string name="rename_group_label">Egnahc eht eman fo siht puorg ot:</string>
   <string name="game_name_group_title">Eman puorg</string>
@@ -1892,11 +1897,14 @@
   <string name="slmenu_copy_sel">Ypoc ot draobpilc</string>
   <string name="slmenu_clear_sel">Eteled detceles</string>
   <plurals name="confirm_studylist_clear_fmt">
-    <item quantity="other">Era uoy erus uoy tnaw ot
-    eteled eht %1$d detceles ?]s[drow\n\nsIht( noitca tonnac eb enodnu.)</item>
+    <item quantity="one">Era uoy erus uoy tnaw ot eteled eht
+      detceles ?drow\n\nsIht( noitca tonnac eb enodnu.)</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot eteled eht %1$d
+      detceles ?sdrow\n\nsIht( noitca tonnac eb enodnu.)</item>
   </plurals>
   <plurals name="paste_done_fmt">
-    <item quantity="other">%1$d ]s[drow deipoc</item>
+    <item quantity="one">Eno drow deipoc</item>
+    <item quantity="other">%1$d sdrow deipoc</item>
   </plurals>
   <string name="add_done_fmt">%1$s dedda ot %2$s tsilyduts</string>
   <string name="studylist_title_fmt">Tsilyduts rof %1$s</string>
@@ -1916,6 +1924,7 @@
   <string name="loc_lang_blessed">%1$s )laiciffo(</string>
   <string name="loc_lang_local">%1$s )sruoy(</string>
   <plurals name="new_xlations_fmt">
+    <item quantity="one">Dellatsni eno wen noitalsnart</item>
     <item quantity="other">Dellatsni %1$d wen snoitalsnart</item>
   </plurals>
   <string name="xlations_enabled_title">Elbane lacol gnitalsnart</string>
@@ -2014,13 +2023,11 @@
     <item quantity="other">%1$s deyalp %2$s rof %3$d stniop</item>
   </plurals>
   <plurals name="lmi_trade_fmt">
+    <item quantity="one">%1$s dedart eno elit</item>
     <item quantity="other">%1$s dedart %2$d selit</item>
   </plurals>
   <string name="lmi_phony_fmt">%1$s tsol a nrut</string>
   <string name="lmi_tiles_fmt">Selit dengissa ot %1$s</string>
-  <plurals name="bt_err_count_fmt">
-    <item quantity="other">%1$d htooteulb srorre os raf</item>
-  </plurals>
   <string name="bt_no_devs">Uoy yltnerruc evah on deriap Htooteulb
 	secived. Dluow uoy ekil ot nepo eht Diordna Sgnittes Lenap ot dda
 	eno ro ?erom\n\nuOy( yam osla deen ot nepo ti no eht ecived uoy
