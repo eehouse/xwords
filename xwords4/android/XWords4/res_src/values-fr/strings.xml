@@ -2225,20 +2225,13 @@ ligne, les mots qui viennent d\'être joués.</string>
       tiles)</string>-->
     <!--<string name="dict_browse_title_fmt">%1$s (%2$d mots utilisant de %3$d à
 %4$d jetons)</string>-->
-    <plurals name="dict_browse_title_fmt">
-        <item quantity="one">%1$s (%2$d mot utilisant de %3$d à
-%4$d jetons)</item>
-        <item quantity="other">%1$s (%2$d mots utilisant de %3$d à
-%4$d jetons)</item>
-    </plurals>
+    <string name="dict_browse_title_fmt">%1$s (%2$d mots utilisant de
+    %3$d à %4$d jetons)</string>
       <!--  -->
     <!--<string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
       tiles)</string>-->
     <!--<string name="dict_browse_title1_fmt">%1$s (%2$d mots utilisant %3$d jetons)</string>-->
-    <plurals name="dict_browse_title1_fmt">
-        <item quantity="one">%1$s (%2$d mot utilisant %3$d jetons)</item>
-        <item quantity="other">%1$s (%2$d mots utilisant %3$d jetons)</item>
-    </plurals>
+    <string name="dict_browse_title1_fmt">%1$s (%2$d mots utilisant %3$d jetons)</string>
       <!--  -->
     <!--<string name="dict_browse_nowords_fmt">No word in %1$s starts with
       %2$s.</string>-->
@@ -3052,13 +3045,6 @@ pour voir ce qui est disponible.</string>
     <string name="lmi_phony_fmt">%1$s a perdu un tour</string>
     <!--<string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>-->
     <string name="lmi_tiles_fmt">Jetons attribués à %1$s</string>
-
-    <!--<string name="bt_err_count_fmt">%1$d bluetooth errors so far</string>-->
-    <!--<string name="bt_err_count_fmt">%1$d erreurs Bluetooth jusqu\'à maintenant</string>-->
-    <plurals name="bt_err_count_fmt">
-        <item quantity="one">%1$d erreur Bluetooth jusqu\'à maintenant</item>
-        <item quantity="other">%1$d erreurs Bluetooth jusqu\'à maintenant</item>
-    </plurals>
 
 	<!--<string name="bt_no_devs">You currently have no paired Bluetooth
 	devices. Would you like to open the Android Settings Panel to add

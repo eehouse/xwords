@@ -390,14 +390,8 @@
   <string name="tilepick_all">Kies voor mij</string>
   <string name="cur_tiles_fmt">Letter kiezer\n(tot nog toe: %1$s)</string>
   <string name="pick_faceup">Pak letters met de letter naar boven</string>
-  <plurals name="dict_browse_title_fmt">
-    <item quantity="one">%1$s (%2$d woord met %3$d-%4$d letters)</item>
-    <item quantity="other">%1$s (%2$d woorden met %3$d-%4$d letters)</item>
-  </plurals>
-  <plurals name="dict_browse_title1_fmt">
-    <item quantity="one">%1$s (%2$d woord met %3$d letters)</item>
-    <item quantity="other">%1$s (%2$d woorden met %3$d letters)</item>
-  </plurals>
+  <string name="dict_browse_title_fmt">%1$s (%2$d woorden met %3$d-%4$d letters)</string>
+  <string name="dict_browse_title1_fmt">%1$s (%2$d woorden met %3$d letters)</string>
   <string name="dict_browse_nowords_fmt">Geen woord in %1$s begint met %2$s.</string>
   <string name="not_again_browse">Deze knop opent de woordenlijst browser voor de woordenlijst van de speler die aan de beurt is.</string>
   <string name="not_again_browseall">Deze knop opent de woordenlijst browser voor de woordenlijst van jouw keuze.</string>
@@ -674,10 +668,6 @@
   </plurals>
   <string name="lmi_phony_fmt">%1$s heeft een beurt verloren</string>
   <string name="lmi_tiles_fmt">Letters gedeeld naar %1$s</string>
-  <plurals name="bt_err_count_fmt">
-    <item quantity="one">%1$d bluetooth fout tot nog toe</item>
-    <item quantity="other">%1$d bluetooth fouten tot nog toe</item>
-  </plurals>
   <string name="bt_no_devs">Je hebt om het moment geen gepaarde Bluetooth apparaten. Wil je de Android instellingen openen om een of meer apparaten te paren?\n\n(Je moet dit mogelijk ook doen op het apparaat waar je mee wilt paren.)</string>
   <string name="app_not_found_fmt">Kan niet met Crosswords verbinden op apparaat %1$s. Controleer of het apparaat dichtbij genoeg is en dat Crosswords erop geïnstalleerd is.</string>
   <string name="default_language">Stardaardtaal</string>

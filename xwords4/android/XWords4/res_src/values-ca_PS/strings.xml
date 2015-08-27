@@ -606,6 +606,7 @@
   <string name="str_robot_moved_fmt">THE ROBOT %1$s MADE THIS MOVE:\u0020</string>
   <!-- Notifies user of a robot trade move -->
   <plurals name="strd_robot_traded_fmt">
+    <item quantity="one">EXCHANGED ONE TILE.</item>
     <item quantity="other">EXCHANGED %1$d TILES.</item>
   </plurals>
   <!-- title for window you get when you select menu with text
@@ -1071,8 +1072,10 @@
   <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
   <plurals name="query_trade_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO EXCHANGE THE
+      SELECTED TILE (%2$s)?</item>
     <item quantity="other">ARE YOU SURE YOU WANT TO EXCHANGE THE
-        %1$d SELECTED TILES (%2$s)?</item>
+      %1$d SELECTED TILES (%2$s)?</item>
   </plurals>
   <!-- ############################################################
          # :Screens:
@@ -1551,15 +1554,11 @@
   <!--  -->
   <string name="pick_faceup">PICK TILES FACE-UP</string>
   <!--  -->
-  <plurals name="dict_browse_title_fmt">
-    <item quantity="other">%1$s (%2$d WORDS USING %3$d-%4$d
-      TILES)</item>
-  </plurals>
+  <string name="dict_browse_title_fmt">%1$s (%2$d WORDS USING %3$d-%4$d
+    TILES)</string>
   <!--  -->
-  <plurals name="dict_browse_title1_fmt">
-    <item quantity="other">%1$s (%2$d WORDS USING %3$d
-      TILES)</item>
-  </plurals>
+  <string name="dict_browse_title1_fmt">%1$s (%2$d WORDS USING %3$d
+    TILES)</string>
   <!--  -->
   <string name="dict_browse_nowords_fmt">NO WORD IN %1$s STARTS WITH
       %2$s.</string>
@@ -1626,6 +1625,9 @@
   <string name="new_move_body">ONE OR MORE MOVES HAS ARRIVED</string>
   <!--  -->
   <plurals name="invite_bt_desc_fmt">
+    <item quantity="one">PLEASE SELECT THE DEVICE
+      YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
+      BUTTON IF YOU DON\'T SEE THE DEVICE YOU EXPECT.</item>
     <item quantity="other">PLEASE SELECT UP TO %1$d DEVICE[S]
       YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
       BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</item>
@@ -1847,12 +1849,15 @@
   <string name="group_cur_games">MY GAMES</string>
   <string name="group_new_games">NEW GAMES</string>
   <plurals name="groups_confirm_del_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO DELETE
+      THE SELECTED GROUP?</item>
     <item quantity="other">ARE YOU SURE YOU WANT TO DELETE
-    THE %1$d SELECTED GROUP[S]?</item>
+      THE %1$d SELECTED GROUP[S]?</item>
   </plurals>
   <plurals name="groups_confirm_del_games_fmt">
-    <item quantity="other">\n\n(%1$d GAME[S] WILL
-    ALSO BE DELETED.)</item>
+    <item quantity="one">\n\n(ONE GAME WILL ALSO BE DELETED.)</item>
+    <item quantity="other">\n\n(%1$d GAMES WILL ALSO BE
+      DELETED.)</item>
   </plurals>
   <string name="rename_group_label">CHANGE THE NAME OF THIS GROUP TO:</string>
   <string name="game_name_group_title">NAME GROUP</string>
@@ -1907,11 +1912,14 @@
   <string name="slmenu_copy_sel">COPY TO CLIPBOARD</string>
   <string name="slmenu_clear_sel">DELETE SELECTED</string>
   <plurals name="confirm_studylist_clear_fmt">
-    <item quantity="other">ARE YOU SURE YOU WANT TO
-    DELETE THE %1$d SELECTED WORD[S]?\n\n(THIS ACTION CANNOT BE UNDONE.)</item>
+    <item quantity="one">ARE YOU SURE YOU WANT TO DELETE THE
+      SELECTED WORD?\n\n(THIS ACTION CANNOT BE UNDONE.)</item>
+    <item quantity="other">ARE YOU SURE YOU WANT TO DELETE THE %1$d
+      SELECTED WORDS?\n\n(THIS ACTION CANNOT BE UNDONE.)</item>
   </plurals>
   <plurals name="paste_done_fmt">
-    <item quantity="other">%1$d WORD[S] COPIED</item>
+    <item quantity="one">ONE WORD COPIED</item>
+    <item quantity="other">%1$d WORDS COPIED</item>
   </plurals>
   <string name="add_done_fmt">%1$s ADDED TO %2$s STUDYLIST</string>
   <string name="studylist_title_fmt">STUDYLIST FOR %1$s</string>
@@ -1931,6 +1939,7 @@
   <string name="loc_lang_blessed">%1$s (OFFICIAL)</string>
   <string name="loc_lang_local">%1$s (YOURS)</string>
   <plurals name="new_xlations_fmt">
+    <item quantity="one">INSTALLED ONE NEW TRANSLATION</item>
     <item quantity="other">INSTALLED %1$d NEW TRANSLATIONS</item>
   </plurals>
   <string name="xlations_enabled_title">ENABLE LOCAL TRANSLATING</string>
@@ -2029,13 +2038,11 @@
     <item quantity="other">%1$s PLAYED %2$s FOR %3$d POINTS</item>
   </plurals>
   <plurals name="lmi_trade_fmt">
+    <item quantity="one">%1$s TRADED ONE TILE</item>
     <item quantity="other">%1$s TRADED %2$d TILES</item>
   </plurals>
   <string name="lmi_phony_fmt">%1$s LOST A TURN</string>
   <string name="lmi_tiles_fmt">TILES ASSIGNED TO %1$s</string>
-  <plurals name="bt_err_count_fmt">
-    <item quantity="other">%1$d BLUETOOTH ERRORS SO FAR</item>
-  </plurals>
   <string name="bt_no_devs">YOU CURRENTLY HAVE NO PAIRED BLUETOOTH
 	DEVICES. WOULD YOU LIKE TO OPEN THE ANDROID SETTINGS PANEL TO ADD
 	ONE OR MORE?\n\n(YOU MAY ALSO NEED TO OPEN IT ON THE DEVICE YOU
