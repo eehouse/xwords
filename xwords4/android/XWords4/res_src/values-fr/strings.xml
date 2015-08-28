@@ -2271,16 +2271,14 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     <string name="board_menu_file_email">Envoyer un mail à l\'auteur</string>
       <!--  -->
       <!-- Should not be translated -->
-    <string name="email_author_subject">Comment about Crosswords</string>
+    <string name="email_author_subject">Commentaire sur Crosswords</string>
       <!--  -->
     <!--<string name="email_author_chooser">Send comment via</string>-->
     <string name="email_author_chooser">Envoyer un commentaire par</string>
 
       <!--  -->
       <!-- Should not be translated -->
-    <string name="email_body_rev_fmt">(If relevant, please include the
-      version: \"%1$s\"; and make/model of your phone or
-      tablet.)</string>
+    <string name="email_body_rev_fmt">(Si c\'est pertinent, merci d\'inclure la version : « %1$s » ; et le modèle de votre téléphone ou votre tablette.)</string>
 
       <!-- In the Bluetooth invite device dialog -->
     <!--<string name="bt_pick_addall_button">Add all Paired</string>-->
