@@ -816,9 +816,9 @@ coup ?</string>
     <!--<string name="strd_robot_traded_fmt">exchanged %1$d tiles.</string>-->
     <!--<string name="strd_robot_traded_fmt">a échangé %1$d jetons.</string>-->
     <plurals name="strd_robot_traded_fmt">
-        <item quantity="one">a échangé un jeton.</item>
-        <item quantity="other">a échangé %1$d jetons.</item>
-    </plurals>
+	<item quantity="one">a échangé un jeton.</item>
+	<item quantity="other">a échangé %1$d jetons.</item>
+</plurals>
     <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
     <!--<string name="strs_values_header_fmt">%1$s counts/values:\n</string>-->
@@ -2809,9 +2809,9 @@ les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</i
     <!--<string name="paste_done_fmt">%1$d word[s] copied</string>-->
     <!--<string name="paste_done_fmt">%1$d mots copiés</string>-->
     <plurals name="paste_done_fmt">
-        <item quantity="one">%1$d mot copié</item>
-        <item quantity="other">%1$d mots copiés</item>
-    </plurals>
+	<item quantity="one">Un mot copié</item>
+	<item quantity="other">%1$d mots copiés</item>
+</plurals>
     <!--<string name="add_done_fmt">%1$s added to %2$s studylist</string>-->
     <string name="add_done_fmt">%1$s ajouté à la liste d\'étude en %2$s</string>
     <!--<string name="studylist_title_fmt">Studylist for %1$s</string>-->
@@ -2857,9 +2857,9 @@ mails.</string>
     <!--<string name="new_xlations_fmt">Installed %1$d new translations</string>-->
     <!--<string name="new_xlations_fmt">%1$d nouvelles traductions installées</string>-->
     <plurals name="new_xlations_fmt">
-        <item quantity="one">%1$d nouvelle traduction installée</item>
-        <item quantity="other">%1$d nouvelles traductions installées</item>
-    </plurals>
+	<item quantity="one">Une nouvelle traduction installée</item>
+	<item quantity="other">%1$d nouvelles traductions installées</item>
+</plurals>
 
     <!--<string name="xlations_enabled_title">Enable local translating</string>-->
     <string name="xlations_enabled_title">Activer les traductions locales</string>
@@ -3039,9 +3039,9 @@ pour voir ce qui est disponible.</string>
     <!--<string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>-->
     <!--<string name="lmi_trade_fmt">%1$s a échangé %2$d jetons</string>-->
     <plurals name="lmi_trade_fmt">
-        <item quantity="one">%1$s a échangé %2$d jeton</item>
-        <item quantity="other">%1$s a échangé %2$d jetons</item>
-    </plurals>
+	<item quantity="one">%1$s a échangé un jeton</item>
+	<item quantity="other">%1$s a échangé %2$d jetons</item>
+</plurals>
     <!--<string name="lmi_phony_fmt">%1$s lost a turn</string>-->
     <string name="lmi_phony_fmt">%1$s a perdu un tour</string>
     <!--<string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>-->
