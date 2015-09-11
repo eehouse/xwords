@@ -2119,7 +2119,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* send any events that need to get off before the event loop begins */
-        if ( !isServer ) {
+        if ( !!cGlobals->game.comms && !isServer ) {
             (void)server_initClientConnection( cGlobals->game.server, 
                                                mem_stream_make( MEMPOOL
                                                                 params->vtMgr,

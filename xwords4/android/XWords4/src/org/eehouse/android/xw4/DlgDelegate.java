@@ -138,7 +138,7 @@ public class DlgDelegate {
 
     public interface DlgClickNotify {
         public static enum InviteMeans {
-            SMS, EMAIL, NFC, BLUETOOTH,
+            SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD,
         };
         void dlgButtonClicked( Action action, int button, Object[] params );
         void inviteChoiceMade( Action action, InviteMeans means, Object[] params );
@@ -333,6 +333,11 @@ public class DlgDelegate {
     public void showNotAgainDlgThen( int msgID, int prefsKey )
     {
         showNotAgainDlgThen( msgID, prefsKey, Action.SKIP_CALLBACK );
+    }
+
+    private void showNotAgainDlgThen( String msg, int prefsKey )
+    {
+        showNotAgainDlgThen( msg, prefsKey, Action.SKIP_CALLBACK, null, null );
     }
 
     public void showConfirmThen( String msg, Action action )
@@ -626,6 +631,9 @@ public class DlgDelegate {
             items.add( getString( R.string.invite_choice_nfc ) );
             means.add( DlgClickNotify.InviteMeans.NFC );
         }
+        final int clipPos = means.size();
+        items.add( getString( R.string.slmenu_copy_sel ) );
+        means.add( DlgClickNotify.InviteMeans.CLIPBOARD );
 
         final int[] sel = { -1 };
         OnClickListener selChanged = new OnClickListener() {
@@ -637,6 +645,13 @@ public class DlgDelegate {
                             .setEnabled( true );
                     }
                     sel[0] = view;
+
+                    if ( view == clipPos ) {
+                        String msg = 
+                            getString( R.string.not_again_clip_expl_fmt,
+                                       getString(R.string.slmenu_copy_sel) );
+                        showNotAgainDlgThen( msg, R.string.key_na_clip_expl );
+                    }
                 }
             };
         OnClickListener okClicked = new OnClickListener() {

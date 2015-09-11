@@ -188,9 +188,9 @@
     <string name="summary_relay_gameover_fmt">Partida finalitzada en la sala «%1$s»</string>
 
     <plurals name="moves_fmt">
-	<item quantity="one">%1$d jugada feta</item>
-	<item quantity="other">%1$d jugades fetes</item>
-</plurals>
+	  <item quantity="one">%1$d jugada feta</item>
+	  <item quantity="other">%1$d jugades fetes</item>
+    </plurals>
 
     <string name="button_delete">Suprimeix</string>
     <string name="button_reset">Reinicialitza</string>
@@ -212,14 +212,14 @@
     <string name="rename_label_caveat">Canvia el nom d\'aquesta partida (només en aquest aparell) a:</string>
 
     <plurals name="confirm_seldeletes_fmt">
-	<item quantity="one">Esteu segur de voler suprimir el joc seleccionat? Aquesta acció no es pot desfer.</item>
-	<item quantity="other">Esteu segur de voler suprimir els %1$d jocs seleccionats? Aquesta acció no es pot desfer.</item>
-</plurals>
+	  <item quantity="one">Esteu segur de voler suprimir el joc seleccionat? Aquesta acció no es pot desfer.</item>
+	  <item quantity="other">Esteu segur de voler suprimir els %1$d jocs seleccionats? Aquesta acció no es pot desfer.</item>
+    </plurals>
 
     <plurals name="confirm_reset_fmt">
-	<item quantity="one">Esteu segur de voler reinicialitzar el joc seleccionat?\n\n(La reinicialització suprimeix totes les jugades i qualsevol informació de connexió.)</item>
-	<item quantity="other">Esteu segur de voler reinicialitzar els %1$d jocs seleccionats?\n\n(La reinicialització suprimeix totes les jugades i qualsevol informació de connexió.)</item>
-</plurals>
+	  <item quantity="one">Esteu segur de voler reinicialitzar el joc seleccionat?\n\n(La reinicialització suprimeix totes les jugades i qualsevol informació de connexió.)</item>
+	  <item quantity="other">Esteu segur de voler reinicialitzar els %1$d jocs seleccionats?\n\n(La reinicialització suprimeix totes les jugades i qualsevol informació de connexió.)</item>
+    </plurals>
 
     <string name="loc_builtin">Incorporat</string>
 
@@ -228,9 +228,9 @@
     <string name="dicts_item_move">Canvia la ubicació d\'emmagatzematge</string>
 
     <plurals name="confirm_delete_dict_fmt">
-	<item quantity="one">Esteu segur de voler suprimir el diccionari %1$s?</item>
-	<item quantity="other">Esteu segur de voler suprimir els diccionaris %1$s?</item>
-</plurals>
+	  <item quantity="one">Esteu segur de voler suprimir el diccionari %1$s?</item>
+	  <item quantity="other">Esteu segur de voler suprimir els diccionaris %1$s?</item>
+    </plurals>
 
     <string name="confirm_deleteonly_dicts_fmt">Si suprimiu %1$s no tindreu cap diccionari %2$s. Una o més partides no es podran obrir (fins que baixeu un diccionari de substitució.)</string>
 
@@ -293,16 +293,16 @@
     <string name="no_moves_made">(Encara no s\'ha fet cap jugada)</string>
 
     <plurals name="invite_msg_fmt">
-	<item quantity="one">Aquesta partida està esperant a %1$d jugador remot. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
-	<item quantity="other">Aquesta partida està esperant a %1$d jugadors remots. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
-</plurals>
+	  <item quantity="one">Aquesta partida està esperant a %1$d jugador remot. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
+	  <item quantity="other">Aquesta partida està esperant a %1$d jugadors remots. Si encara no ho heu fet, voleu convidar algú a unir-s\'hi?</item>
+    </plurals>
 
     <string name="invite_if_nfc">O simplement toqueu per a convidar, si l\'altre aparell també té Android Beaming i és a prop.</string>
 
-      <plurals name="players_miss_fmt">
-	<item quantity="one">Manca %1$d jugador</item>
-	<item quantity="other">Manquen %1$d jugadors</item>
-</plurals>
+    <plurals name="players_miss_fmt">
+	  <item quantity="one">Manca %1$d jugador</item>
+	  <item quantity="other">Manquen %1$d jugadors</item>
+    </plurals>
 
     <string name="invite_multiple">" (Esteu esperant més d\'un jugador remot. No els heu de convidar a tots a la vegada, però aquest avís no desapareixerà fins que hàgiu convidat a tothom i totes les invitacions s\'hagin acceptat.)"</string>
 
@@ -324,13 +324,11 @@
     <string name="vs_join">" vs. "</string>
 
     <plurals name="strd_remains_header_fmt">
-	<item quantity="one">Queden %1$d fitxes al sac.</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">Queden %1$d fitxes al sac.</item>
+    </plurals>
     <plurals name="strd_remains_expl_fmt">
-	<item quantity="one">%1$d fitxes romanents al sac i als faristols:\n</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">%1$d fitxes romanents al sac i als faristols:\n</item>
+    </plurals>
 
     <string name="confirm_undo_last">Esteu segur que voleu desfer l\'últim torn enviat? (No hi ha opció per a refer-lo.)</string>
 
@@ -426,9 +424,8 @@
     <string name="invite_chooser_sms">SMS</string>
 
     <plurals name="query_trade_fmt">
-	<item quantity="one">Esteu segur que voleu canviar les %1$d fitxes seleccionades (%2$s)?</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">Esteu segur que voleu canviar les %1$d fitxes seleccionades (%2$s)?</item>
+    </plurals>
 
     <string name="chat_title_fmt">%1$s historial de missatges</string>
     <string name="chat_local_id">"Jo: "</string>
@@ -512,13 +509,11 @@
       <string name="pick_faceup">Tria les fitxes cara amunt</string>
 
       <plurals name="dict_browse_title_fmt">
-	<item quantity="one">%1$s (%2$d paraules usant %3$d-%4$d fitxes)</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="other">%1$s (%2$d paraules usant %3$d-%4$d fitxes)</item>
+      </plurals>
       <plurals name="dict_browse_title1_fmt">
-	<item quantity="one">%1$s (%2$d paraules usant %3$d fitxes)</item>
-	<item quantity="other"/>
-</plurals>
+	    <item quantity="other">%1$s (%2$d paraules usant %3$d fitxes)</item>
+      </plurals>
       <string name="dict_browse_nowords_fmt">No hi ha cap paraula a %1$s que comenci amb %2$s.</string>
       <string name="not_again_browse">Aquest botó obre l\'explorador de diccionaris en el diccionari actual del jugador.</string>
       <string name="not_again_browseall">Aquest botó obre l\'explorador de diccionaris en el diccionari de la vostra elecció.</string>
@@ -633,14 +628,13 @@
     <string name="group_new_games">Partides noves</string>
 
     <plurals name="groups_confirm_del_fmt">
-	<item quantity="one">Esteu segur de voler suprimir els %1$d grups seleccionats?</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">Esteu segur de voler suprimir els %1$d grups seleccionats?</item>
+    </plurals>
     <string name="rename_group_label">Canvia el nom d\'aquest grup a:</string>
     <plurals name="group_name_fmt">
-	<item quantity="one">%1$s (%2$d partida)</item>
-	<item quantity="other">%1$s (%2$d partides)</item>
-</plurals>
+	  <item quantity="one">%1$s (%2$d partida)</item>
+	  <item quantity="other">%1$s (%2$d partides)</item>
+    </plurals>
 
     <string name="button_rematch">Torna a jugar-hi</string>
 
@@ -672,8 +666,7 @@
     <string name="slmenu_copy_sel">Copia al porta-retalls</string>
     <string name="slmenu_clear_sel">Suprimeix la selecció</string>
     <plurals name="paste_done_fmt">
-	  <item quantity="one">S\'han copiat %1$d paraules</item>
-	  <item quantity="other"/>
+	  <item quantity="other">S\'han copiat %1$d paraules</item>
     </plurals>
     <string name="add_done_fmt">S\'ha afegit %1$s a la llista d\'estudi %2$s</string>
     <string name="studylist_title_fmt">Llista d\'estudi per a %1$s</string>
@@ -737,9 +730,9 @@
 
     <string name="nag_title">Recordatori: és el vostre torn</string>
     <plurals name="nag_minutes_fmt">
-	<item quantity="one">%1$d minut</item>
-	<item quantity="other">%1$d minuts</item>
-</plurals>
+	  <item quantity="one">%1$d minut</item>
+	  <item quantity="other">%1$d minuts</item>
+    </plurals>
     <string name="lmi_pass_fmt">%1$s ha passat (0 punts)</string>
     <string name="lmi_phony_fmt">%1$s ha perdut el torn</string>
     <string name="lmi_tiles_fmt">Fitxes assignades a %1$s</string>
@@ -752,9 +745,9 @@
     <string name="new_game_networked">Partida en xarxa nova</string>
 
     <plurals name="nplayers_fmt">
-	<item quantity="one">Un jugador</item>
-	<item quantity="other">%1$d jugadors</item>
-</plurals>
+	  <item quantity="one">Un jugador</item>
+	  <item quantity="other">%1$d jugadors</item>
+    </plurals>
     <string name="network_advanced_title">Avançat</string>
     <string name="network_advanced_summary">Per a jugadors experimentats</string>
     <string name="invite_multi_title">Invitació múltiple</string>
@@ -793,28 +786,26 @@
   <plurals name="lang_name_fmt">
 	<item quantity="one">%1$s (%2$d diccionari)</item>
 	<item quantity="other">%1$s (%2$d diccionaris)</item>
-</plurals>
+  </plurals>
 
-    <plurals name="nag_hours_fmt">
+  <plurals name="nag_hours_fmt">
 	<item quantity="one">%1$d hora</item>
 	<item quantity="other">%1$d hores</item>
-</plurals>
-    <plurals name="nag_days_fmt">
+  </plurals>
+  <plurals name="nag_days_fmt">
 	<item quantity="one">%1$d dia</item>
 	<item quantity="other">%1$d dies</item>
-</plurals>
+  </plurals>
     <string name="nag_body_fmt">%1$s ha jugat fa més de %2$s.</string>
     <string name="nag_warn_last_fmt">Últim avís: %1$s</string>
     <string name="prev_player">Oponent</string>
 
     <plurals name="lmi_move_fmt">
-	  <item quantity="one">%1$s ha jugat %2$s i anota %3$d punts</item>
-	  <item quantity="other"/>
+	  <item quantity="other">%1$s ha jugat %2$s i anota %3$d punts</item>
     </plurals>
     <plurals name="lmi_trade_fmt">
-	<item quantity="one">%1$s ha canviat %2$d fitxes</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">%1$s ha canviat %2$d fitxes</item>
+    </plurals>
     <string name="new_game_message_nodflt">Cal configurar aquesta partida abans d\'obrir-la.</string>
 
     <string name="use_defaults">Usa els valors predeterminats</string>
@@ -841,9 +832,9 @@
   <string name="warn_nomobile_fmt">El número %1$s de %2$s no sembla un número de mòbil. Voleu importar-lo igualment?</string>
     <string name="get_sms_number">Introduïu el número de telèfon:</string>
     <plurals name="confirm_clear_fmt">
-	<item quantity="one">Esteu segur de voler suprimir el número de telèfon seleccionat?</item>
-	<item quantity="other">Esteu segur de voler suprimir els %1$d números de telèfon seleccionats?</item>
-</plurals>
+	  <item quantity="one">Esteu segur de voler suprimir el número de telèfon seleccionat?</item>
+	  <item quantity="other">Esteu segur de voler suprimir els %1$d números de telèfon seleccionats?</item>
+    </plurals>
     <string name="connect_label_sms">Connexió (via SMS/missatges)</string>
     <string name="phone_label">Números connectats:</string>
     <string name="summary_conn_sms_fmt">Partida en joc amb %1$s</string>
@@ -860,14 +851,12 @@
     <string name="game_name_group_title">Anomena el grup</string>
 
     <plurals name="groups_confirm_del_games_fmt">
-	<item quantity="one">\n\n(també se suprimiran %1$d partides.)</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">\n\n(també se suprimiran %1$d partides.)</item>
+    </plurals>
 
     <plurals name="confirm_studylist_clear_fmt">
-	<item quantity="one">Esteu segur de voler suprimir les %1$d paraules seleccionades?\n\n(Aquesta acció no es pot desfer.)</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">Esteu segur de voler suprimir les %1$d paraules seleccionades?\n\n(Aquesta acció no es pot desfer.)</item>
+    </plurals>
     <string name="study_langpick">Les vostres paraules per a:</string>
 
     <string name="study_no_lang_fmt">Encara no heu desat cap paraula al llistat d\'estudi per a %1$s.</string>
@@ -876,9 +865,8 @@
     <string name="not_again_studycopy">Les paraules seleccionades s\'han copiat al porta-retalls del sistema. Podeu enganxar-les en qualsevol aplicació que permeti enganxar text, p. e. l\'aplicació de correu.</string>
 
     <plurals name="new_xlations_fmt">
-	<item quantity="one">Ha instal·lat %1$d traduccions noves</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">Ha instal·lat %1$d traduccions noves</item>
+    </plurals>
 
     <string name="loc_fmts_mismatch">Traducció no permesa: les cadenes traduïdes han de tenir els mateixos indicadors de format (p. e. %1$s) que l\'original.</string>
     <string name="not_again_fmt_expl">Aquesta cadena té indicadors de format especials (p. e. %1$s). Assegureu-vos que la traducció té els mateixos que l\'original.\n\n(No podreu desar-la si no ho compleix.)</string>
@@ -892,14 +880,13 @@
 
     <string name="sms_bad_proto_fmt">La versió del Crosswords al telèfon amb número «%1$s» no és compatible amb aquest per a jugar via SMS. Heu d\'actualitzar abans de continuar.</string>
 
-      <plurals name="invite_bt_desc_fmt">
-	<item quantity="one">Seleccioneu fins a %1$d aparells que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
-	<item quantity="other"/>
-</plurals>
+    <plurals name="invite_bt_desc_fmt">
+	  <item quantity="other">Seleccioneu fins a %1$d aparells que voleu incloure en aquesta partida. Useu el botó «%2$s» si no veieu l\'aparell que espereu.</item>
+    </plurals>
     <plurals name="invite_sms_desc_fmt">
-	<item quantity="one">Comproveu el número de telèfon que voleu convidar a la partida nova, aleshores toqueu «%2$s».</item>
-	<item quantity="other">Comproveu els %1$d números de telèfon que voleu convidar a la partida nova, aleshores toqueu «%2$s».</item>
-</plurals>
+	  <item quantity="one">Comproveu el número de telèfon que voleu convidar a la partida nova, aleshores toqueu «%2$s».</item>
+	  <item quantity="other">Comproveu els %1$d números de telèfon que voleu convidar a la partida nova, aleshores toqueu «%2$s».</item>
+    </plurals>
     <string name="warn_unlimited">Esteu segur que aquest número és d\'un compte amb SMS il·limitats? Feu clic a «Cancel·la si no ho esteu.</string>
 
     <string name="square_tiles_summary">Encara que pugin ser més altes</string>
@@ -937,9 +924,9 @@
     <string name="force_tablet_summary">Encara que la pantalla sigui massa petita</string>
 
     <plurals name="resend_finished_fmt">
-	<item quantity="one">Reenviament finalitzat, s\'ha enviat %1$d missatge.</item>
-	<item quantity="other">Reenviament finalitzat, s\'han enviat %1$d missatges.</item>
-</plurals>
+	  <item quantity="one">Reenviament finalitzat, s\'ha enviat %1$d missatge.</item>
+	  <item quantity="other">Reenviament finalitzat, s\'han enviat %1$d missatges.</item>
+    </plurals>
 
     <string name="dup_game_query_fmt">Ja teniu una partida que sembla s\'ha creat (el %1$s) amb la mateixa invitació. Esteu segur de voler crear-ne una altra?</string>
 
@@ -1026,9 +1013,8 @@
 
   <string name="confirm_sms_expl">Atenció: aquesta funcionalitat és per a telèfons amb plans de missatges SMS il·limitats. Si l\'habiliteu, per cada partida jugada, s\'enviaran dotzenes de missatges de text SMS de forma invisible. Si no teniu un pla il·limitat, la vostra operadora us pot cobrar cadascun dels missatges!\n\nVoleu habilitar el joc via SMS?</string>
     <plurals name="bt_err_count_fmt">
-	<item quantity="one">Fins ara, %1$d errors Bluetooth</item>
-	<item quantity="other"/>
-</plurals>
+	  <item quantity="other">Fins ara, %1$d errors Bluetooth</item>
+    </plurals>
 
 	<string name="app_not_found_fmt">No es pot connectar al Crosswords en l\'aparell %1$s. Comproveu que l\'aparell és proper i que té el Crosswords instal·lat.</string>
 
@@ -1044,5 +1030,19 @@
 
     <string name="redir_host">Convida l\'amfitrió redirigit</string>
   <string name="str_no_hint_found">No puc trobar cap jugada</string>
+
+<string name="notify_chat_title_fmt">Missatge de xat a la partida %1$s</string>
+
+    <string name="invite_choice_clip">Ho triaré</string>
+  <string name="invite_copied">Invitació preparada per a copiar</string>
+  <string name="clip_label">URL de la invitació</string>
+  <string name="not_again_clip_expl_fmt">L\'opció «%1$s» copia un URL d\'invitació al porta-retalls. Enganxeu-lo a l\'aplicació desitjada i envieu-lo al vostre amic.</string>
+<string name="notify_chat_body_fmt">%1$s: %2$s</string>
+    <plurals name="resent_msgs_fmt">
+	<item quantity="one">S\'ha enviat un missatge</item>
+	<item quantity="other">S\'han enviat %1$s missatges</item>
+</plurals>
+
+  <string name="confirm_clear_chat">Esteu segur de voler suprimir tot l\'historial de conversa d\'aquesta partida?\n\n(Aquesta acció no és pot desfer.)</string>
 
 </resources>

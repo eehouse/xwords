@@ -102,6 +102,7 @@ public class JNIThread extends Thread {
     public static final int TOOLBAR_STATES = 4;
     public static final int GOT_WORDS = 5;
     public static final int GAME_OVER = 6;
+    public static final int MSGS_SENT = 7;
 
     public class GameStateInfo implements Cloneable {
         public int visTileCount;
@@ -522,9 +523,13 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_RESEND:
-                XwJNI.comms_resendAll( m_jniGamePtr, 
-                                       ((Boolean)args[0]).booleanValue(),
-                                       ((Boolean)args[1]).booleanValue() );
+                int nSent = 
+                    XwJNI.comms_resendAll( m_jniGamePtr, 
+                                           ((Boolean)args[0]).booleanValue(),           
+                                           ((Boolean)args[1]).booleanValue() );
+                if ( ((Boolean)args[2]).booleanValue() ) {
+                    Message.obtain(m_handler, MSGS_SENT, nSent).sendToTarget();
+                }
                 break;
             // case CMD_ACKANY:
             //     XwJNI.comms_ackAny( m_jniGamePtr );

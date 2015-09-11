@@ -1086,7 +1086,7 @@
       -->
   <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-  <string name="chat_title_fmt">%1$s MESSAGE HISTORY</string>
+  <string name="chat_title_fmt">%1$s MESSAGES</string>
   <!-- Prefix for local messages -->
   <string name="chat_local_id">ME:\u0020</string>
   <!-- Prefix for remote messages -->
@@ -2181,4 +2181,23 @@
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
   <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
+  <!-- Shown after "resend messages" menuitem chosen -->
+  <plurals name="resent_msgs_fmt">
+    <item quantity="one">ONE MESSAGE SENT</item>
+    <item quantity="other">%1$s MESSAGES SENT</item>
+  </plurals>
+  <string name="confirm_clear_chat">ARE YOU SURE YOU WANT TO DELETE
+  ALL CHAT HISTORY FOR THIS GAME?\n\n(THIS ACTION CANNOT BE
+  UNDONE.)</string>
+  <!-- EXPERIMENTAL: Shown as toast when user chooses "My choice" for
+       invitation -->
+  <string name="invite_copied">INVITATION READY TO PASTE</string>
+  <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
+       it's by some Android utility -->
+  <string name="clip_label">INVITATION URL</string>
+  <!-- EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
+       when chosen -->
+  <string name="not_again_clip_expl_fmt">THE \"%1$s\" OPTION COPIES AN
+  INVITATION URL TO THE CLIPBOARD. PASTE IT INTO THE APP OF YOUR
+  CHOICE AND SEND IT TO YOUR FRIEND.</string>
 </resources>

@@ -1086,7 +1086,7 @@
       -->
   <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-  <string name="chat_title_fmt">%1$s egassem yrotsih</string>
+  <string name="chat_title_fmt">%1$s segassem</string>
   <!-- Prefix for local messages -->
   <string name="chat_local_id">Em:\u0020</string>
   <!-- Prefix for remote messages -->
@@ -2181,4 +2181,23 @@
   <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
   ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
   <string name="str_no_hint_found">Tonnac dnif yna sevom</string>
+  <!-- Shown after "resend messages" menuitem chosen -->
+  <plurals name="resent_msgs_fmt">
+    <item quantity="one">Eno egassem tnes</item>
+    <item quantity="other">%1$s segassem tnes</item>
+  </plurals>
+  <string name="confirm_clear_chat">Era uoy erus uoy tnaw ot eteled
+  lla tahc yrotsih rof siht ?emag\n\nsIht( noitca tonnac eb
+  enodnu.)</string>
+  <!-- EXPERIMENTAL: Shown as toast when user chooses "My choice" for
+       invitation -->
+  <string name="invite_copied">Noitativni ydaer ot etsap</string>
+  <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
+       it's by some Android utility -->
+  <string name="clip_label">Noitativni LRU</string>
+  <!-- EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
+       when chosen -->
+  <string name="not_again_clip_expl_fmt">Eht \"%1$s\" noitpo seipoc na
+  noitativni LRU ot eht draobpilc. Etsap ti otni eht ppa fo ruoy
+  eciohc dna dnes ti ot ruoy dneirf.</string>
 </resources>

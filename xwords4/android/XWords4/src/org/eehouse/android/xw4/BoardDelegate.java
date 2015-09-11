@@ -906,7 +906,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.board_menu_game_resend:
-            m_jniThread.handle( JNICmd.CMD_RESEND, true, false );
+            m_jniThread.handle( JNICmd.CMD_RESEND, true, false, true );
             break;
 
         case R.id.gamel_menu_checkmoves:
@@ -1046,12 +1046,17 @@ public class BoardDelegate extends DelegateBase
                                                    SMS_INVITE_RESULT );
                 break;
             case EMAIL:
+            case CLIPBOARD:
                 NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1,
                                                        1 + m_nGuestDevs );
                 if ( !m_relayConnected ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
                 }
-                GameUtils.launchEmailInviteActivity( m_activity, nli );
+                if ( InviteMeans.EMAIL == means ) {
+                    GameUtils.launchEmailInviteActivity( m_activity, nli );
+                } else if ( InviteMeans.CLIPBOARD == means ) {
+                    GameUtils.inviteURLToClip( m_activity, nli );
+                }
                 break;
             default:
                 Assert.fail();
@@ -2011,6 +2016,11 @@ public class BoardDelegate extends DelegateBase
                                     m_dlgTitle = msg.arg1;
                                     showDialog( DlgID.GAME_OVER );
                                     break;
+                                case JNIThread.MSGS_SENT:
+                                    int nSent = (Integer)msg.obj;
+                                    showToast( getQuantityString( R.plurals.resent_msgs_fmt, 
+                                                                  nSent, nSent ) );
+                                    break;
                                 }
                             }
                         };
@@ -2099,7 +2109,8 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( 0 < m_connTypes.size() ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, force, true );
+            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, force, true, 
+                                false );
         }
     }
 

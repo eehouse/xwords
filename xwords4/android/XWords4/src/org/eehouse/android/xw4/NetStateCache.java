@@ -140,6 +140,8 @@ public class NetStateCache {
                 NetworkInfo ni = (NetworkInfo)intent.
                     getParcelableExtra(ConnectivityManager.EXTRA_NETWORK_INFO);
                 NetworkInfo.State state = ni.getState();
+                DbgUtils.logdf( "NetStateCache.PvtBroadcastReceiver.onReceive(state=%s)", 
+                                state.toString() );
 
                 boolean netAvail;
                 switch ( state ) {
@@ -193,6 +195,10 @@ public class NetStateCache {
                             };
                         mHandler.postDelayed( mNotifyLater, WAIT_STABLE_MILLIS );
                     }
+                } else {
+                    DbgUtils.logdf( "NetStateCache.PvtBroadcastReceiver.onReceive:"
+                                    + " no change; doing nothing; s_netAvail=%b",
+                                    s_netAvail );
                 }
             }
         }

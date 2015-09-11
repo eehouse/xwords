@@ -49,7 +49,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
-import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 
 public class GameUtils {
 
@@ -163,13 +162,6 @@ public class GameUtils {
         }
     }
 
-    private static GameSummary summarizeAndClose( Context context, 
-                                                  GameLock lock,
-                                                  int gamePtr, CurGameInfo gi )
-    {
-        return summarizeAndClose( context, lock, gamePtr, gi, null );
-    }
-
     private static int setFromFeedImpl( FeedUtilsImpl feedImpl )
     {
         int result = GameSummary.MSG_FLAGS_NONE;
@@ -186,16 +178,11 @@ public class GameUtils {
     }
 
     private static GameSummary summarizeAndClose( Context context, 
-                                                  GameLock lock,
-                                                  int gamePtr, CurGameInfo gi,
-                                                  FeedUtilsImpl feedImpl )
+                                                  GameLock lock, int gamePtr, 
+                                                  CurGameInfo gi )
     {
         GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
-
-        if ( null != feedImpl ) {
-            summary.pendingMsgLevel |= setFromFeedImpl( feedImpl );
-        }
 
         DBUtils.saveSummary( context, lock, summary );
 
@@ -605,6 +592,33 @@ public class GameUtils {
                                  inviteID, gameID, gameName, isHost );
     }
 
+    // @SuppressLint({ "NewApi", "NewApi", "NewApi", "NewApi" })
+    // @SuppressWarnings("deprecation")
+    // @TargetApi(11)
+    public static void inviteURLToClip( Context context, NetLaunchInfo nli )
+    {
+        Uri gameUri = nli.makeLaunchUri( context );
+        String asStr = gameUri.toString();
+
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        if ( sdk < android.os.Build.VERSION_CODES.HONEYCOMB ) {
+            android.text.ClipboardManager clipboard = 
+                (android.text.ClipboardManager) 
+                context.getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText( asStr );
+        } else {
+            android.content.ClipboardManager clipboard = 
+                (android.content.ClipboardManager) 
+                context.getSystemService(Context.CLIPBOARD_SERVICE); 
+            String label = LocUtils.getString( context, R.string.clip_label );
+            android.content.ClipData clip = android.content.ClipData
+                .newPlainText( label, asStr );
+            clipboard.setPrimaryClip( clip );
+        }
+
+        Utils.showToast( context, R.string.invite_copied );
+    }
+
     public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
     {
         // DbgUtils.logf( "launchEmailInviteActivity: nli=%s", nli.makeLaunchJSON() );
@@ -897,12 +911,13 @@ public class GameUtils {
                     }
 
                     saveGame( context, gamePtr, gi, lock, false );
-                    summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
+                    summarizeAndClose( context, lock, gamePtr, gi );
 
                     int flags = setFromFeedImpl( feedImpl );
                     if ( GameSummary.MSG_FLAGS_NONE != flags ) {
                         draw = true;
-                        DBUtils.setMsgFlags( rowid, flags );
+                        int curFlags = DBUtils.getMsgFlags( context, rowid );
+                        DBUtils.setMsgFlags( rowid, flags | curFlags );
                     }
                 }
                 lock.unlock();
