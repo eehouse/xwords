@@ -1975,7 +1975,7 @@ server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
     server->vol.gameOverData = data;
 } /* server_setGameOverListener */
 
-static XP_Bool
+static void
 storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
                const DictionaryCtxt* dict,
 #ifdef XWFEATURE_BOARDWORDS
@@ -1995,7 +1995,6 @@ storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
         server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
             = copyString( server->mpool, word );
     }
-    return XP_TRUE;
 } /* storeBadWords */
 
 static XP_Bool

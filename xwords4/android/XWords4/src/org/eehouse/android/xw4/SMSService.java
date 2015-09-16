@@ -74,7 +74,7 @@ public class SMSService extends XWService {
 
     private static final int SMS_PROTO_VERSION_ORIG = 0;
     private static final int SMS_PROTO_VERSION_WITHPORT = 1;
-    private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_WITHPORT;
+    private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_ORIG;
     private static final int MAX_LEN_TEXT = 100;
     private static final int MAX_LEN_BINARY = 100;
     private static final int MAX_MSG_COUNT = 16; // 1.6K enough? Should be....
@@ -452,7 +452,9 @@ public class SMSService extends XWService {
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
         DataOutputStream dos = new DataOutputStream( bas );
         dos.writeByte( SMS_PROTO_VERSION );
-        dos.writeShort( getNBSPort() );
+        if ( SMS_PROTO_VERSION_WITHPORT <= SMS_PROTO_VERSION ) {
+            dos.writeShort( getNBSPort() );
+        }
         dos.writeByte( cmd.ordinal() );
         dos.write( bytes, 0, bytes.length );
         dos.flush();
@@ -607,19 +609,19 @@ public class SMSService extends XWService {
         try {
             byte proto = dis.readByte();
             short myPort = getNBSPort();
-            short sentPort;
+            short gotPort;
             if ( SMS_PROTO_VERSION_WITHPORT > proto ) {
-                sentPort = myPort;
+                gotPort = myPort;
             } else {
-                sentPort = dis.readShort();
+                gotPort = dis.readShort();
             }
             if ( SMS_PROTO_VERSION < proto ) {
                 DbgUtils.logf( "SMSService.disAssemble: bad proto %d from %s;"
                                + " dropping", proto, senderPhone );
                 sendResult( MultiEvent.BAD_PROTO_SMS, senderPhone );
-            } else if ( sentPort != myPort ) {
+            } else if ( gotPort != myPort ) {
                 DbgUtils.logdf( "SMSService.disAssemble(): received on port %d"
-                                + " but expected %d", sentPort, myPort );
+                                + " but expected %d", gotPort, myPort );
             } else {
                 SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
                 byte[] rest = new byte[dis.available()];
