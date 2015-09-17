@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 1997 - 2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 1997 - 2015 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -39,11 +39,10 @@ typedef struct BlankTuple {
 } BlankTuple;
 
 typedef struct PossibleMove {
-    XP_U16 score; /* Because I'm doing a memcmp to sort these things,
-                     the comparison must be done differently on
-                           little-endian platforms. */
+    XP_U16 score; /* Because I'm doing a memcmp to sort these things, the
+                     comparison must be done differently on little-endian
+                     platforms. */
     MoveInfo moveInfo;
-    //XP_U16 whichBlanks; /* flags */
     Tile blankVals[MAX_COLS]; /* the faces for which we've substituted
                                  blanks */
 } PossibleMove;
@@ -1088,11 +1087,25 @@ considerMove( EngineCtxt* engine, Tile* tiles, XP_S16 tileLength,
         posmove.moveInfo.isHorizontal = engine->searchHorizontal;
         posmove.moveInfo.commonCoord = (XP_U8)lastRow;
 
-
         considerScoreWordHasBlanks( engine, engine->blankCount, &posmove, 
                                     lastRow, blankTuples, 0 );
     }
 } /* considerMove */
+
+static void
+countWords( const XP_UCHAR* XP_UNUSED(word), XP_Bool isLegal, 
+            const DictionaryCtxt* XP_UNUSED(dict),
+#ifdef XWFEATURE_BOARDWORDS
+            const MoveInfo* movei, XP_U16 start, 
+            XP_U16 end,
+#endif
+            void* closure )
+{
+    XP_U16* wcp = (XP_U16*)closure;
+    if ( isLegal ) {
+        ++*wcp;
+    }
+}
 
 static void
 considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
@@ -1104,11 +1117,19 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
 
     if ( blanksLeft == 0 ) {
         XP_U16 score;
+        XP_U16 nTiles = posmove->moveInfo.nTiles;
+        WordNotifierInfo* wiip = NULL;
+        WordNotifierInfo wii;
+        XP_U16 wordCount = 0;
+        if ( 1 == nTiles ) {
+            wii.proc = countWords;
+            wii.closure = &wordCount;
+            wiip = &wii;
+        }
 
         score = figureMoveScore( engine->model, engine->turn,
                                  &posmove->moveInfo,
-                                 engine, (XWStreamCtxt*)NULL,
-                                 (WordNotifierInfo*)NULL );
+                                 engine, (XWStreamCtxt*)NULL, wiip );
 #ifdef XWFEATURE_BONUSALL
         if ( 0 != engine->allTilesBonus && 0 == engine->nTilesMax ) {
             XP_LOGF( "%s: adding bonus: %d becoming %d", __func__, score ,
@@ -1119,7 +1140,9 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
         /* First, check that the score is even what we're interested in.  If
            it is, then go to the expense of filling in a PossibleMove to be
            compared in full */
-        if ( scoreQualifies( engine, score ) ) {
+        if ( 1 == nTiles && 1 < wordCount && !engine->searchHorizontal ) {
+            XP_LOGF( "%s(): dropping", __func__ );
+        } else if ( scoreQualifies( engine, score ) ) {
             posmove->score = score;
             XP_MEMSET( &posmove->blankVals, 0, sizeof(posmove->blankVals) );
             for ( ii = 0; ii < usedBlanksCount; ++ii ) {

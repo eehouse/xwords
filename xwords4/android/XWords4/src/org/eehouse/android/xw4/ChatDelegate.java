@@ -24,6 +24,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -37,6 +40,7 @@ public class ChatDelegate extends DelegateBase {
 
     private long m_rowid;
     private Activity m_activity;
+    private EditText mEdit;
 
     public ChatDelegate( Delegator delegator, Bundle savedInstanceState )
     {
@@ -48,6 +52,17 @@ public class ChatDelegate extends DelegateBase {
     protected void init( Bundle savedInstanceState ) 
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
+            mEdit = (EditText)findViewById( R.id.chat_edit );
+            mEdit.addTextChangedListener( new TextWatcher() {
+                    public void afterTextChanged( Editable s ) {
+                        invalidateOptionsMenuIf();
+                    }
+                    public void beforeTextChanged( CharSequence s, int st, 
+                                                   int cnt, int a ) {}
+                    public void onTextChanged( CharSequence s, int start, 
+                                               int before, int count ) {}
+                } );
+
             m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
      
             DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( m_activity, m_rowid );
@@ -83,6 +98,15 @@ public class ChatDelegate extends DelegateBase {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu( Menu menu )
+    {
+        String text = mEdit.getText().toString();
+        boolean haveText = null != text && 0 < text.length();
+        Utils.setItemVisible( menu, R.id.chat_menu_send, haveText );
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected( MenuItem item ) 
     {
         boolean handled = true;
@@ -93,8 +117,7 @@ public class ChatDelegate extends DelegateBase {
             }
             break;
         case R.id.chat_menu_send:
-            EditText edit = (EditText)findViewById( R.id.chat_edit );
-            String text = edit.getText().toString();
+            String text = mEdit.getText().toString();
             if ( null == text || text.length() == 0 ) {
                 setResult( Activity.RESULT_CANCELED );
             } else {

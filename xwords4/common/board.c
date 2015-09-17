@@ -946,7 +946,7 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 #endif
 #endif
 
-static XP_Bool
+static void
 warnBadWords( const XP_UCHAR* word, XP_Bool isLegal, 
               const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
@@ -970,7 +970,6 @@ warnBadWords( const XP_UCHAR* word, XP_Bool isLegal,
             && util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );
         board->badWordRejected = !ok || board->badWordRejected;
     }
-    return ok;
 } /* warnBadWords */
 
 static XP_Bool

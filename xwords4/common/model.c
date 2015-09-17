@@ -78,13 +78,13 @@ static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
 static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                              const PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
-static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
-                           const DictionaryCtxt* dict,
+static void recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
+                        const DictionaryCtxt* dict,
 
 #ifdef XWFEATURE_BOARDWORDS
-                           const MoveInfo* movei, XP_U16 start, XP_U16 end,
+                        const MoveInfo* movei, XP_U16 start, XP_U16 end,
 #endif
-                           void* clsur );
+                        void* clsur );
 #ifdef DEBUG 
 typedef struct _DiffTurnState {
     XP_S16 lastPlayerNum;
@@ -2190,7 +2190,7 @@ typedef struct _FirstWordData {
     XP_UCHAR word[32];
 } FirstWordData;
 
-static XP_Bool
+static void
 getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
               const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
@@ -2203,7 +2203,6 @@ getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
     if ( '\0' == data->word[0] && '\0' != word[0] ) {
         XP_STRCAT( data->word, word );
     }
-    return XP_TRUE;
 }
 
 static void
@@ -2281,7 +2280,7 @@ appendWithCR( XWStreamCtxt* stream, const XP_UCHAR* word, XP_U16* counter )
     stream_catString( stream, word );
 }
 
-static XP_Bool 
+static void
 recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
             const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
@@ -2293,7 +2292,6 @@ recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
 {
     RecordWordsInfo* info = (RecordWordsInfo*)closure;
     appendWithCR( info->stream, word, &info->nWords );
-    return XP_TRUE;
 }
 
 WordNotifierInfo* 
@@ -2313,7 +2311,7 @@ typedef struct _ListWordsThroughInfo {
     XP_U16 nWords;
 } ListWordsThroughInfo;
 
-static XP_Bool
+static void
 listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
                   const DictionaryCtxt* XP_UNUSED(dict),
                   const MoveInfo* movei, XP_U16 start, XP_U16 end, 
@@ -2331,8 +2329,6 @@ listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
     if ( contained ) {
         appendWithCR( info->stream, word, &info->nWords );
     }
-
-    return XP_TRUE;
 }
 
 /* List every word played that includes the tile on {col,row}.
