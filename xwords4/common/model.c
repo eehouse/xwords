@@ -2190,7 +2190,7 @@ typedef struct _FirstWordData {
     XP_UCHAR word[32];
 } FirstWordData;
 
-static XP_Bool
+static void
 getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
               const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
@@ -2203,7 +2203,6 @@ getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
     if ( '\0' == data->word[0] && '\0' != word[0] ) {
         XP_STRCAT( data->word, word );
     }
-    return XP_TRUE;
 }
 
 static void
@@ -2312,7 +2311,7 @@ typedef struct _ListWordsThroughInfo {
     XP_U16 nWords;
 } ListWordsThroughInfo;
 
-static XP_Bool
+static void
 listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
                   const DictionaryCtxt* XP_UNUSED(dict),
                   const MoveInfo* movei, XP_U16 start, XP_U16 end, 
@@ -2330,8 +2329,6 @@ listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
     if ( contained ) {
         appendWithCR( info->stream, word, &info->nWords );
     }
-
-    return XP_TRUE;
 }
 
 /* List every word played that includes the tile on {col,row}.
