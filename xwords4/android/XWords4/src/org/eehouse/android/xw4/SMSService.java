@@ -74,7 +74,7 @@ public class SMSService extends XWService {
 
     private static final int SMS_PROTO_VERSION_ORIG = 0;
     private static final int SMS_PROTO_VERSION_WITHPORT = 1;
-    private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_ORIG;
+    private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_WITHPORT;
     private static final int MAX_LEN_TEXT = 100;
     private static final int MAX_LEN_BINARY = 100;
     private static final int MAX_MSG_COUNT = 16; // 1.6K enough? Should be....
