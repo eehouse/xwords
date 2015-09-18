@@ -157,9 +157,9 @@
   </plurals>
   <string name="str_robot_moved_fmt">"De robot %1$s maakte de volgende zet: "</string>
   <plurals name="strd_robot_traded_fmt">
-    <item quantity="one">heeft %1$d letter geruild.</item>
-    <item quantity="other">heeft %1$d letters geruild.</item>
-  </plurals>
+	<item quantity="one">heeft een letter geruild.</item>
+	<item quantity="other">heeft %1$d letters geruild.</item>
+</plurals>
   <string name="strs_values_header_fmt">%1$s tellingen/waardes:\n</string>
   <string name="strd_remaining_tiles_add_fmt">+ %1$d [alle overgebleven letters]</string>
   <string name="strd_unused_tiles_sub_fmt">- %1$d [overgebleven letters]</string>
@@ -290,10 +290,10 @@
   <string name="invite_chooser_email">email</string>
   <string name="invite_chooser_sms">sms</string>
   <plurals name="query_trade_fmt">
-    <item quantity="one">Weet je zeker dat je de %1$d geselecteerde letter (%2$s) wilt ruilen?</item>
-    <item quantity="other">Weet je zeker dat je de %1$d geselecteerde letters (%2$s) wilt ruilen?</item>
-  </plurals>
-  <string name="chat_title_fmt">%1$s bericht geschiedenis</string>
+	<item quantity="one">Weet je zeker dat je de geselecteerde letter (%2$s) wilt ruilen?</item>
+	<item quantity="other">Weet je zeker dat je de %1$d geselecteerde letters (%2$s) wilt ruilen?</item>
+</plurals>
+  <string name="chat_title_fmt">%1$s berichten</string>
   <string name="chat_local_id">"Ik: "</string>
   <string name="chat_other_id">"Medespeler: "</string>
   <string name="chat_send">Verstuur</string>
@@ -332,7 +332,7 @@
   <string name="button_discard">Annuleren</string>
   <string name="button_retry">Opnieuw proberen</string>
   <string name="dup_game_query_fmt">Je hebt al een spel dat gemaakt is (via %1$s) met dezelfde uitnodiging. Weet je zeker dat je nog een spel aan wilt maken?</string>
-  <string name="info_title">Even wat informatie</string>
+  <string name="info_title">Ter informatie…</string>
   <string name="title_tile_picker">Letter voor joker</string>
   <string name="tiles_left_title">Letters in zak</string>
   <string name="counts_values_title">Letter hoeveelheid en waardes</string>
@@ -419,9 +419,9 @@
   <string name="new_btmove_title">Uitnodiging via Bluetooth</string>
   <string name="new_move_body">Een of meer zetten zijn gemaakt</string>
   <plurals name="invite_bt_desc_fmt">
-    <item quantity="one">Kies tot %1$d apparaat dat je aan dit spel toe wilt voegen. Gebruik de \"%2$s\" knop als je een apparaat dat je verwacht niet ziet.</item>
-    <item quantity="other">Kies tot %1$d apparaten die je aan dit spel toe wilt voegen. Gebruik de \"%2$s\" knop als je een apparaat dat je verwacht niet ziet.</item>
-  </plurals>
+	<item quantity="one">Kies het apparaat dat je aan dit spel toe wilt voegen. Gebruik de \"%2$s\" knop als je het apparaat dat je verwacht niet ziet.</item>
+	<item quantity="other">Kies tot %1$d apparaten die je aan dit spel toe wilt voegen. Gebruik de \"%2$s\" knop als je een apparaat dat je verwacht niet ziet.</item>
+</plurals>
   <string name="bt_resend_fmt">Bluetooth versturen naar %1$s gefaald; nieuwe poging %3$d over %2$d seconden.</string>
   <string name="bt_fail_fmt">Bluetooth versturen naar %1$s is te vaak gefaald. Heropen het spel en probeer het opnieuw.</string>
   <string name="button_invite">Nodig geselecteerden uit</string>
@@ -522,13 +522,13 @@
   <string name="group_cur_games">Mijn spellen</string>
   <string name="group_new_games">Nieuwe spellen</string>
   <plurals name="groups_confirm_del_fmt">
-    <item quantity="one">Weet je zeker dat je de %1$d geselecteerde groep wilt verwijderen?</item>
-    <item quantity="other">Weet je zeker dat je de %1$d geselecteerde groepen wilt verwijderen?</item>
-  </plurals>
+	<item quantity="one">Weet je zeker dat je de geselecteerde groep wilt verwijderen?</item>
+	<item quantity="other">Weet je zeker dat je de %1$d geselecteerde groepen wilt verwijderen?</item>
+</plurals>
   <plurals name="groups_confirm_del_games_fmt">
-    <item quantity="one">\n\n(%1$d spel zal ook verwijderd worden.)</item>
-    <item quantity="other">\n\n(%1$d spellen zullen ook verwijderd worden.)</item>
-  </plurals>
+	<item quantity="one">\n\n(een spel zal ook verwijderd worden.)</item>
+	<item quantity="other">\n\n(%1$d spellen zullen ook verwijderd worden.)</item>
+</plurals>
   <string name="rename_group_label">Verander de naam van deze groep in:</string>
   <string name="game_name_group_title">Benoem groep</string>
   <string name="cannot_delete_default_group_fmt">De groep voor nieuwe spellen, %1$s, kan niet verwijderd worden.</string>
@@ -565,13 +565,13 @@
   <string name="slmenu_copy_sel">Kopieer naar kladblok</string>
   <string name="slmenu_clear_sel">Verwijder geselecteerd</string>
   <plurals name="confirm_studylist_clear_fmt">
-    <item quantity="one">Weet je zeker dat je %1$d geselecteerd woord wilt verwijderen?\n\n(Deze actie kan niet ongedaan gemaakt worden.)</item>
-    <item quantity="other">Weet je zeker dat je de %1$d geselecteerde woorden wilt verwijderen?\n\n(Deze actie kan niet ongedaan gemaakt worden.)</item>
-  </plurals>
+	<item quantity="one">Weet je zeker dat je het geselecteerde woord wilt verwijderen?\n\n(Deze actie kan niet ongedaan gemaakt worden.)</item>
+	<item quantity="other">Weet je zeker dat je de %1$d geselecteerde woorden wilt verwijderen?\n\n(Deze actie kan niet ongedaan gemaakt worden.)</item>
+</plurals>
   <plurals name="paste_done_fmt">
-    <item quantity="one">%1$d woord gekopieerd</item>
-    <item quantity="other">%1$d woorden gekopieerd</item>
-  </plurals>
+	<item quantity="one">Een woord gekopieerd</item>
+	<item quantity="other">%1$d woorden gekopieerd</item>
+</plurals>
   <string name="add_done_fmt">%1$s toegevoegd aan %2$s studielijst</string>
   <string name="studylist_title_fmt">Studielijst voor %1$s</string>
   <string name="study_langpick">Jouw woorden voor:</string>
@@ -586,9 +586,9 @@
   <string name="loc_lang_blessed">%1$s (officieel)</string>
   <string name="loc_lang_local">%1$s (van jou)</string>
   <plurals name="new_xlations_fmt">
-    <item quantity="one">%1$d nieuwe vertaling geïnstalleerd</item>
-    <item quantity="other">%1$d nieuwe vertalingen geïnstalleerd</item>
-  </plurals>
+	<item quantity="one">Een nieuwe vertaling geïnstalleerd</item>
+	<item quantity="other">%1$d nieuwe vertalingen geïnstalleerd</item>
+</plurals>
   <string name="xlations_enabled_title">Lokaal vertalen inschakelen</string>
   <string name="xlations_enabled_summary">Voeg optie toe aan elk schermmenu</string>
   <string name="data_gsm_only">SMS data is enkel beschikbaar op GSM telefoons.</string>
@@ -663,16 +663,16 @@
     <item quantity="other">%1$s speelde %2$s voor %3$d punten</item>
   </plurals>
   <plurals name="lmi_trade_fmt">
-    <item quantity="one">%1$s heeft %2$d letter geruild</item>
-    <item quantity="other">%1$s heeft %2$d letters geruild</item>
-  </plurals>
+	<item quantity="one">%1$s heeft een letter geruild</item>
+	<item quantity="other">%1$s heeft %2$d letters geruild</item>
+</plurals>
   <string name="lmi_phony_fmt">%1$s heeft een beurt verloren</string>
   <string name="lmi_tiles_fmt">Letters gedeeld naar %1$s</string>
   <string name="bt_no_devs">Je hebt om het moment geen gepaarde Bluetooth apparaten. Wil je de Android instellingen openen om een of meer apparaten te paren?\n\n(Je moet dit mogelijk ook doen op het apparaat waar je mee wilt paren.)</string>
   <string name="app_not_found_fmt">Kan niet met Crosswords verbinden op apparaat %1$s. Controleer of het apparaat dichtbij genoeg is en dat Crosswords erop geïnstalleerd is.</string>
   <string name="default_language">Stardaardtaal</string>
   <string name="title_addrs_pref">Communiceer via</string>
-  <string name="new_game">Nieuw spel op enkel apparaat</string>
+  <string name="new_game">Nieuw lokaal spel</string>
   <string name="new_game_networked">Nieuw spel op netwerk</string>
   <string name="new_game_message">Wil je dit spel maken met de standaardinstellingen?\n\nOf wil je het spel eerst configureren?</string>
   <string name="new_game_message_nodflt">Dit spel moet ingesteld zijn voordat het geopend kan worden.</string>
