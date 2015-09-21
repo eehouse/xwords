@@ -1052,8 +1052,6 @@ XLATE-ME
         public static final int bt_no_devs=0x7f0502ba;
         /**  <string name="newgame_enable_bt">Turn Bluetooth on</string> 
  In the Bluetooth invite device dialog 
-  
- Should not be translated 
  In the Bluetooth invite device dialog 
 <string name="bt_pick_addall_button">Add all Paired</string>
          */
@@ -2365,8 +2363,6 @@ XLATE-ME
         public static final int dup_game_query_fmt=0x7f0501a1;
         /**   
   
- Should not be translated 
-  
 <string name="email_author_chooser">Send comment via</string>
   
          */
@@ -2376,9 +2372,13 @@ XLATE-ME
         public static final int email_author_email=0x7f050078;
         /**   
   
+ Should not be translated 
+  
          */
         public static final int email_author_subject=0x7f0501e7;
         /**   
+  
+ Should not be translated 
   
          */
         public static final int email_body_rev_fmt=0x7f0501e9;
