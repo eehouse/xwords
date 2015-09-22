@@ -20,8 +20,9 @@ LANGCODE=ca_ES
 TARGET_TYPE ?= WINCE
 ENC = UTF-8
 
-DICTNOTE = "Built from DISC 2.0.8.\nSee http://escrable.montane.cat/diccionari for more information."
-
+DICTNOTE = "Built from DISC 2.5.12.\nSee http://escrable.montane.cat/diccionari for more information."
+# not used yet
+DICTREV = bbbd5723281191ad197cc7e986074cc65ba892fe
 
 ifeq ($(TARGET_TYPE),PALM)
 PBITMS = ./bmps/palm
@@ -43,10 +44,10 @@ LANG_SPECIAL_INFO = \
 
 include ../Makefile.langcommon
 
-SOURCEDICT ?= $(XWDICTPATH)/Catalan/DISC2-LP.txt.gz
+SOURCEDICT ?= $(XWDICTPATH)/Catalan/DISC2-LP.dict
 
 $(XWLANG)Main.dict.gz: $(SOURCEDICT) $(MAKEFILE)
-	zcat $< \
+	cat $< \
 	| tr -d '\r' \
 	| tr [a-zç] [A-ZÇ] \
 	| sed 's/L·L/1/g' \
