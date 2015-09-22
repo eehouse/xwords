@@ -1025,10 +1025,18 @@ public class DBUtils {
         public long m_rowid;
         public long m_nextNag;
         public long m_lastMoveMillis;
-        public NeedsNagInfo( long rowid, long nextNag, long lastMove ) {
+        private boolean m_isSolo;
+
+        public NeedsNagInfo( long rowid, long nextNag, long lastMove, 
+                             CurGameInfo.DeviceRole role ) {
             m_rowid = rowid;
             m_nextNag = nextNag;
             m_lastMoveMillis = 1000 * lastMove;
+            m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == role;
+        }
+
+        public boolean isSolo() {
+            return m_isSolo;
         }
     }
 
@@ -1036,7 +1044,8 @@ public class DBUtils {
     {
         NeedsNagInfo[] result = null;
         long now = new Date().getTime(); // in milliseconds
-        String[] columns = { ROW_ID, DBHelper.NEXTNAG, DBHelper.LASTMOVE };
+        String[] columns = { ROW_ID, DBHelper.NEXTNAG, DBHelper.LASTMOVE, 
+                             DBHelper.SERVERROLE };
         // where nextnag > 0 AND nextnag < now
         String selection = 
             String.format( "%s > 0 AND %s < %s", DBHelper.NEXTNAG, 
@@ -1052,11 +1061,14 @@ public class DBUtils {
                 int rowIndex = cursor.getColumnIndex(ROW_ID);
                 int nagIndex = cursor.getColumnIndex( DBHelper.NEXTNAG );
                 int lastMoveIndex = cursor.getColumnIndex( DBHelper.LASTMOVE );
+                int roleIndex = cursor.getColumnIndex( DBHelper.SERVERROLE );
                 for ( int ii = 0; ii < result.length && cursor.moveToNext(); ++ii ) {
                     long rowid = cursor.getLong( rowIndex );
                     long nextNag = cursor.getLong( nagIndex );
                     long lastMove = cursor.getLong( lastMoveIndex );
-                    result[ii] = new NeedsNagInfo( rowid, nextNag, lastMove );
+                    CurGameInfo.DeviceRole role = 
+                        CurGameInfo.DeviceRole.values()[cursor.getInt( roleIndex )];
+                    result[ii] = new NeedsNagInfo( rowid, nextNag, lastMove, role );
                 }
             }
 

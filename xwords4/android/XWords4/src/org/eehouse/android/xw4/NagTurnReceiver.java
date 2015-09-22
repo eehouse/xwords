@@ -54,7 +54,8 @@ public class NagTurnReceiver extends BroadcastReceiver {
         { 60, R.plurals.nag_minutes_fmt },
     };
 
-    private static Boolean s_nagsDisabled = null;
+    private static Boolean s_nagsDisabledNet = null;
+    private static Boolean s_nagsDisabledSolo = null;
 
     @Override
     public void onReceive( Context context, Intent intent )
@@ -66,6 +67,15 @@ public class NagTurnReceiver extends BroadcastReceiver {
                 long now = new Date().getTime(); // in milliseconds
                 for ( NeedsNagInfo info : needNagging ) {
                     Assert.assertTrue( info.m_nextNag < now );
+
+                    // Skip processing if notifications disabled for this type
+                    // of game
+                    if ( s_nagsDisabledSolo && info.isSolo() ) {
+                        continue;
+                    } else if ( s_nagsDisabledNet && !info.isSolo() ) {
+                        continue;
+                    }
+
                     info.m_nextNag = figureNextNag( context, 
                                                     info.m_lastMoveMillis );
                     boolean lastWarning = 0 == info.m_nextNag;
@@ -205,18 +215,24 @@ public class NagTurnReceiver extends BroadcastReceiver {
 
     private static boolean getNagsDisabled( Context context )
     {
-        if ( null == s_nagsDisabled ) {
+        if ( null == s_nagsDisabledNet ) {
             boolean nagsDisabled = 
                 XWPrefs.getPrefsBoolean( context, R.string.key_disable_nag, 
                                          false );
-            s_nagsDisabled = new Boolean( nagsDisabled );
+            s_nagsDisabledNet = new Boolean( nagsDisabled );
         }
-        return s_nagsDisabled;
+        if ( null == s_nagsDisabledSolo ) {
+            boolean nagsDisabled = 
+                XWPrefs.getPrefsBoolean( context, R.string.key_disable_nag_solo, 
+                                         s_nagsDisabledNet );
+            s_nagsDisabledSolo = new Boolean( nagsDisabled );
+        }
+        return s_nagsDisabledNet && s_nagsDisabledSolo;
     }
 
     public static void resetNagsDisabled( Context context )
     {
-        s_nagsDisabled = null;
+        s_nagsDisabledNet = s_nagsDisabledSolo = null;
         restartTimer( context );
     }
 }

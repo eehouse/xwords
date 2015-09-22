@@ -52,7 +52,8 @@ public class PrefsDelegate extends DelegateBase
     private String m_keyLocale;
     private String m_keyLangs;
     private String m_keyFakeRadio;
-    private String m_keyNagsDisabled;
+    private String m_keyNagsDisabledNet;
+    private String m_keyNagsDisabledSolo;
 
     public PrefsDelegate( PreferenceActivity activity, Delegator delegator,
                           Bundle savedInstanceState )
@@ -137,7 +138,8 @@ public class PrefsDelegate extends DelegateBase
         m_keyLocale = getString( R.string.key_xlations_locale );
         m_keyLangs = getString( R.string.key_default_language );
         m_keyFakeRadio = getString( R.string.key_force_radio );
-        m_keyNagsDisabled = getString( R.string.key_disable_nag );
+        m_keyNagsDisabledNet = getString( R.string.key_disable_nag );
+        m_keyNagsDisabledSolo = getString( R.string.key_disable_nag_solo );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -206,7 +208,8 @@ public class PrefsDelegate extends DelegateBase
             forceDictsMatch( sp.getString( key, null ) );
         } else if ( key.equals( m_keyFakeRadio ) ) {
             SMSService.resetPhoneInfo();
-        } else if ( key.equals( m_keyNagsDisabled ) ) {
+        } else if ( key.equals( m_keyNagsDisabledNet ) 
+                    || key.equals( m_keyNagsDisabledSolo ) ) {
             NagTurnReceiver.resetNagsDisabled( m_activity );
         }
     }
