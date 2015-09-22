@@ -20,7 +20,7 @@ LANGCODE=ca_ES
 TARGET_TYPE ?= WINCE
 ENC = UTF-8
 
-DICTNOTE = "Built from DISC 2.5.12.\nSee http://escrable.montane.cat/diccionari for more information."
+DICTNOTE = "Built from DISC 2.5.12.\nSee http://diccionari.totescrable.cat for more information."
 # not used yet
 DICTREV = bbbd5723281191ad197cc7e986074cc65ba892fe
 
