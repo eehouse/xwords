@@ -368,6 +368,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 }
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
+                DbgUtils.logf( "json data was: \"%s\"", jstr );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.loge( nnfe );
             }
