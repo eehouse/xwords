@@ -20,10 +20,11 @@
 
 package org.eehouse.android.xw4.jni;
 
-import java.util.Random;
 import android.content.Context;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DbgUtils;
@@ -366,13 +367,15 @@ public class CurGameInfo {
         }
     }
 
-    public void setFirstLocalName( String name ) {
+    public String[] getRemoteNames()
+    {
+        ArrayList<String> al = new ArrayList<String>();
         for ( int ii = 0; ii < nPlayers; ++ii ) {
-            if ( players[ii].isLocal ) {
-                players[ii].name = name;
-                break;
+            if ( ! players[ii].isLocal ) {
+                al.add( players[ii].name );
             }
         }
+        return al.toArray( new String[al.size()] );
     }
 
     private boolean moveUp( int which )

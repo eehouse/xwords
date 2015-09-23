@@ -2057,6 +2057,7 @@
   <string name="title_addrs_pref">COMMUNICATE VIA</string>
   <string name="new_game">NEW ONE-DEVICE GAME</string>
   <string name="new_game_networked">NEW NETWORKED GAME</string>
+  <string name="rematch_name_fmt">REMATCH WITH %1$s</string>
   <string name="new_game_message">WOULD YOU LIKE TO CREATE THIS GAME
     USING DEFAULT SETTINGS?\n\nOR WOULD YOU LIKE TO CONFIGURE IT
     FIRST?</string>
@@ -2115,10 +2116,10 @@
     AND WANT THEM BACK, ENABLE THEM NOW. YOU CAN TURN THEM OFF AGAIN
     IN SETTINGS.</string>
   <string name="disable_nags_title">TURN REMINDERS</string>
-  <string name="disable_nag_title">DISABLE REMINDERS, NETWORK GAMES</string>
+  <string name="disable_nag_title">DISABLE NETWORK GAME REMINDERS</string>
   <string name="disable_nag_summary">DO NOT NOTIFY ME NO MATTER
     HOW LONG IT\'S BEEN MY TURN</string>
-  <string name="disable_nag_solo_title">DISABLE REMINDERS, SOLO GAMES </string>
+  <string name="disable_nag_solo_title">DISABLE SOLO GAME REMINDERS</string>
   <string name="confirm_get_locdict_fmt">YOUR DEVICE IS SET UP FOR
   %1$s. WOULD YOU LIKE TO DOWNLOAD A WORDLIST SO YOU CAN PLAY
   CROSSWORDS IN %1$s?</string>
