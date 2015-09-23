@@ -34,26 +34,33 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.view.View;
 import android.widget.Button;
+
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.loc.LocUtils;
+
+import junit.framework.Assert;
 
 public class PrefsDelegate extends DelegateBase
     implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private PreferenceActivity m_activity;
-
-    private String m_keyLogging;
-    private String m_smsToasting;
-    private String m_smsEnable;
-    private String m_downloadPath;
-    private String m_thumbSize;
-    private String m_keyLocale;
-    private String m_keyLangs;
-    private String m_keyFakeRadio;
-    private String m_keyNagsDisabledNet;
-    private String m_keyNagsDisabledSolo;
+    private static int[] s_keys = {
+        R.string.key_logging_on,
+        R.string.key_show_sms,
+        R.string.key_enable_sms,
+        R.string.key_download_path,
+        R.string.key_thumbsize,
+        R.string.key_xlations_locale,
+        R.string.key_default_language,
+        R.string.key_force_radio,
+        R.string.key_disable_nag,
+        R.string.key_disable_nag_solo,
+    };
+    private static Map<String, Integer> s_keysHash = null;
 
     public PrefsDelegate( PreferenceActivity activity, Delegator delegator,
                           Bundle savedInstanceState )
@@ -127,19 +134,16 @@ public class PrefsDelegate extends DelegateBase
 
     protected void init( Bundle savedInstanceState )
     {
+        if ( null == s_keysHash ) {
+            s_keysHash = new HashMap<String, Integer>();
+            for ( int key : s_keys ) {
+                String str = getString( key );
+                s_keysHash.put( str, key );
+            }
+        }
+
         // Load the preferences from an XML resource
         m_activity.addPreferencesFromResource( R.xml.xwprefs );
-
-        m_keyLogging = getString( R.string.key_logging_on );
-        m_smsToasting = getString( R.string.key_show_sms );
-        m_smsEnable = getString( R.string.key_enable_sms );
-        m_downloadPath = getString( R.string.key_download_path );
-        m_thumbSize = getString( R.string.key_thumbsize );
-        m_keyLocale = getString( R.string.key_xlations_locale );
-        m_keyLangs = getString( R.string.key_default_language );
-        m_keyFakeRadio = getString( R.string.key_force_radio );
-        m_keyNagsDisabledNet = getString( R.string.key_disable_nag );
-        m_keyNagsDisabledSolo = getString( R.string.key_disable_nag_solo );
 
         Button button = (Button)findViewById( R.id.revert_colors );
         button.setOnClickListener( new View.OnClickListener() {
@@ -175,42 +179,57 @@ public class PrefsDelegate extends DelegateBase
     @Override
     public void onSharedPreferenceChanged( SharedPreferences sp, String key ) 
     {
-        if ( key.equals( m_keyLogging ) ) {
-            DbgUtils.logEnable( sp.getBoolean( key, false ) );
-        } else if ( key.equals( m_smsToasting ) ) {
-            SMSService.smsToastEnable( sp.getBoolean( key, false ) );
-        } else if ( key.equals( m_smsEnable ) ) {
-            if ( ! sp.getBoolean( key, true ) ) {
-                SMSService.stopService( m_activity );
-            }
-        } else if ( key.equals( m_downloadPath ) ) {
-            String value = sp.getString( key, null );
-            if ( null != value ) {
-                File dir = new File( value );
-                String msg = null;
-                if ( !dir.exists() ) {
-                    msg = String.format( "%s does not exist", value );
-                } else if ( !dir.isDirectory() ) {
-                    msg = String.format( "%s is not a directory", value );
-                } else if ( !dir.canWrite() ) {
-                    msg = String.format( "Cannot write to %s", value );
+        if ( s_keysHash.containsKey( key ) ) {
+            switch( s_keysHash.get( key ) ) {
+            case R.string.key_logging_on:
+                DbgUtils.logEnable( sp.getBoolean( key, false ) );
+                break;
+            case R.string.key_show_sms:
+                SMSService.smsToastEnable( sp.getBoolean( key, false ) );
+                break;
+            case R.string.key_enable_sms:
+                if ( ! sp.getBoolean( key, true ) ) {
+                    SMSService.stopService( m_activity );
                 }
-                if ( null != msg ) {
-                    showToast( msg );
+                break;
+            case R.string.key_download_path:
+                String value = sp.getString( key, null );
+                if ( null != value ) {
+                    File dir = new File( value );
+                    String msg = null;
+                    if ( !dir.exists() ) {
+                        msg = String.format( "%s does not exist", value );
+                    } else if ( !dir.isDirectory() ) {
+                        msg = String.format( "%s is not a directory", value );
+                    } else if ( !dir.canWrite() ) {
+                        msg = String.format( "Cannot write to %s", value );
+                    }
+                    if ( null != msg ) {
+                        showToast( msg );
+                    }
                 }
+                DictUtils.invalDictList();
+                break;
+            case R.string.key_thumbsize:
+                DBUtils.clearThumbnails( m_activity );
+                break;
+            case R.string.key_xlations_locale:
+                LocUtils.localeChanged( m_activity, sp.getString( key, null ) );
+                break;
+            case R.string.key_default_language:
+                forceDictsMatch( sp.getString( key, null ) );
+                break;
+            case R.string.key_force_radio:
+                SMSService.resetPhoneInfo();
+                break;
+            case R.string.key_disable_nag:
+            case R.string.key_disable_nag_solo:
+                NagTurnReceiver.resetNagsDisabled( m_activity );
+                break;
+            default:
+                Assert.fail();
+                break;
             }
-            DictUtils.invalDictList();
-        } else if ( key.equals( m_thumbSize ) ) {
-            DBUtils.clearThumbnails( m_activity );
-        } else if ( key.equals( m_keyLocale ) ) {
-            LocUtils.localeChanged( m_activity, sp.getString( key, null ) );
-        } else if ( key.equals( m_keyLangs ) ) {
-            forceDictsMatch( sp.getString( key, null ) );
-        } else if ( key.equals( m_keyFakeRadio ) ) {
-            SMSService.resetPhoneInfo();
-        } else if ( key.equals( m_keyNagsDisabledNet ) 
-                    || key.equals( m_keyNagsDisabledSolo ) ) {
-            NagTurnReceiver.resetNagsDisabled( m_activity );
         }
     }
 
@@ -247,8 +266,9 @@ public class PrefsDelegate extends DelegateBase
 
     private void setupLangPref()
     {
+        String keyLangs = getString( R.string.key_default_language );
         ListPreference lp = (ListPreference)
-            m_activity.findPreference( m_keyLangs );
+            m_activity.findPreference( keyLangs );
         String curLang = lp.getValue().toString();
         boolean haveDictForLang = false;
 
