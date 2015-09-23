@@ -2116,10 +2116,8 @@
     IN SETTINGS.</string>
   <string name="disable_nags_title">TURN REMINDERS</string>
   <string name="disable_nag_title">DISABLE REMINDERS, NETWORK GAMES</string>
-  <string name="disable_nag_summary_net">DO NOT NOTIFY ME NO MATTER
-    HOW LONG IT\'S BEEN MY TURN - FOR NETWORKED GAMES</string>
-  <string name="disable_nag_summary_solo">DO NOT NOTIFY ME NO MATTER
-    HOW LONG IT\'S BEEN MY TURN - FOR SOLO GAMES</string>
+  <string name="disable_nag_summary">DO NOT NOTIFY ME NO MATTER
+    HOW LONG IT\'S BEEN MY TURN</string>
   <string name="disable_nag_solo_title">DISABLE REMINDERS, SOLO GAMES </string>
   <string name="confirm_get_locdict_fmt">YOUR DEVICE IS SET UP FOR
   %1$s. WOULD YOU LIKE TO DOWNLOAD A WORDLIST SO YOU CAN PLAY
