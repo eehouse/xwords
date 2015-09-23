@@ -271,12 +271,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         @Override protected void onPostExecute( String json )
         {
             if ( null != json ) {
-                makeNotificationsIf( json );
+                makeNotificationsIf( json, m_params );
                 XWPrefs.setHaveCheckedUpgrades( m_context, true );
             }
         }
 
-        private void makeNotificationsIf( String jstr )
+        private void makeNotificationsIf( String jstr, JSONObject params )
         {
             boolean gotOne = false;
             try {
@@ -368,7 +368,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 }
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
-                DbgUtils.logf( "json data was: \"%s\"", jstr );
+                DbgUtils.logf( "sent: \"%s\"", params.toString() );
+                DbgUtils.logf( "received: \"%s\"", jstr );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.loge( nnfe );
             }
