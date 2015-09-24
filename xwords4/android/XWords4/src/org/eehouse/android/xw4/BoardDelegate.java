@@ -2585,10 +2585,11 @@ public class BoardDelegate extends DelegateBase
 
             if ( doIt ) {
                 String[] opponents = m_gi.getRemoteNames();
+                String opponent = (0 == opponents.length) ? null : opponents[0];
                 Intent intent = GamesListDelegate
                     .makeRematchIntent( m_activity, m_rowid, m_gi.dictName, 
                                         m_gi.dictLang, m_connTypes, btAddr, 
-                                        phone, relayID, opponents[0] );
+                                        phone, relayID, opponent );
                 if ( null != intent ) {
                     startActivity( intent );
                     finish();

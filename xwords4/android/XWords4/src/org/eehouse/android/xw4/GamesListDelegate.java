@@ -851,7 +851,7 @@ public class GamesListDelegate extends ListDelegateBase
             dialog = makeAlertBuilder()
                 .setView( view )
                 .setTitle( R.string.button_rematch )
-                .setIcon( R.drawable.multigame__gen )
+                .setIcon( R.drawable.sologame__gen )
                 .setPositiveButton( android.R.string.ok, new OnClickListener() {
                         public void onClick( DialogInterface dlg, int item ) {
                             EditText edit = (EditText)((Dialog)dlg)
@@ -883,29 +883,33 @@ public class GamesListDelegate extends ListDelegateBase
             ad.getButton( AlertDialog.BUTTON_NEGATIVE )
                 .setVisibility( canDoDefaults ? View.VISIBLE : View.GONE );
 
+            ad.setIcon( m_nextIsSolo ? R.drawable.sologame__gen
+                        : R.drawable.multigame__gen );
+            ad.setTitle( m_nextIsSolo ? R.string.new_game
+                         : R.string.new_game_networked);
+
             String msg = getString( canDoDefaults ? R.string.new_game_message
                                     : R.string.new_game_message_nodflt );
-            if ( m_nextIsSolo ) {
-                ad.setTitle( R.string.new_game );
-                ad.setIcon( R.drawable.sologame__gen );
-            } else {
-                ad.setTitle( R.string.new_game_networked );
-                ad.setIcon( R.drawable.multigame__gen );
-
+            if ( !m_nextIsSolo ) {
                 msg += "\n\n" + getString( R.string.new_game_message_net );
             }
             TextView edit = (TextView)dialog.findViewById( R.id.msg );
             edit.setText( msg );
             edit = (TextView)dialog.findViewById( R.id.edit );
-            edit.setText( GameUtils.makeDefaultName( m_activity, m_nextIsSolo ) );
+            edit.setText( GameUtils.makeDefaultName( m_activity ) );
             edit.setVisibility( View.VISIBLE );
             break;
 
         case GAMES_LIST_NAME_REMATCH:
             edit = (TextView)dialog.findViewById( R.id.edit );
-            String name = getString( R.string.rematch_name_fmt, 
-                                     m_rematchOpponent );
+            boolean solo = m_rematchOpponent == null;
+            String name = solo 
+                ? GameUtils.makeDefaultName( m_activity )
+                : getString( R.string.rematch_name_fmt, m_rematchOpponent );
             edit.setText( name );
+            int icon = solo
+                ? R.drawable.sologame__gen : R.drawable.multigame__gen;
+            ad.setIcon( icon );
             ((TextView)dialog.findViewById( R.id.msg ))
                 .setVisibility( View.GONE );
             break;
@@ -2316,7 +2320,9 @@ public class GamesListDelegate extends ListDelegateBase
             intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
             intent.putExtra( REMATCH_DICT_EXTRA, dict );
             intent.putExtra( REMATCH_LANG_EXTRA, lang );
-            intent.putExtra( REMATCH_OPPONENT_EXTRA, opponent );
+            if ( null != opponent ) {
+                intent.putExtra( REMATCH_OPPONENT_EXTRA, opponent );
+            }
             if ( null != addrTypes ) {
                 intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
                 if ( null != btAddr ) {

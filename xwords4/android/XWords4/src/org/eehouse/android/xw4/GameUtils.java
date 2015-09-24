@@ -260,7 +260,7 @@ public class GameUtils {
         return result;
     }
 
-    public static String makeDefaultName( Context context, boolean isSolo )
+    public static String makeDefaultName( Context context )
     {
         int count = DBUtils.getIncrementIntFor( context, DBUtils.KEY_NEWGAMECOUNT, 0, 1 );
         return LocUtils.getString( context, R.string.game_fmt, count );
