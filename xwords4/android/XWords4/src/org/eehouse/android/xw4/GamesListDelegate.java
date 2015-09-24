@@ -590,7 +590,6 @@ public class GamesListDelegate extends ListDelegateBase
     private Button[] m_newGameButtons;
     private boolean m_haveShownGetDict;
     private Intent m_rematchIntent;
-    private String m_rematchOpponent;
 
     public GamesListDelegate( ListDelegator delegator, Bundle sis )
     {
@@ -902,10 +901,12 @@ public class GamesListDelegate extends ListDelegateBase
 
         case GAMES_LIST_NAME_REMATCH:
             edit = (TextView)dialog.findViewById( R.id.edit );
-            boolean solo = m_rematchOpponent == null;
+            String opponent = 
+                m_rematchIntent.getStringExtra( REMATCH_OPPONENT_EXTRA );
+            boolean solo = opponent == null;
             String name = solo 
                 ? GameUtils.makeDefaultName( m_activity )
-                : getString( R.string.rematch_name_fmt, m_rematchOpponent );
+                : getString( R.string.rematch_name_fmt, opponent );
             edit.setText( name );
             int icon = solo
                 ? R.drawable.sologame__gen : R.drawable.multigame__gen;
@@ -1885,23 +1886,10 @@ public class GamesListDelegate extends ListDelegateBase
     // used to connect.
     private void startRematch( Intent intent )
     {
-        if ( XWApp.REMATCH_SUPPORTED ) {
-            long rowid = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
-            if ( -1 != rowid ) {
-                String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
-                String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
-                String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
-                if ( null == btAddr && null == phone && null == relayID ) {
-                    // this will juggle if the preference is set
-                    long newid = GameUtils.dupeGame( m_activity, rowid );
-                    launchGame( newid );
-                } else {
-                    m_rematchIntent = intent;
-                    m_rematchOpponent = 
-                        intent.getStringExtra( REMATCH_OPPONENT_EXTRA );
-                    showDialog( DlgID.GAMES_LIST_NAME_REMATCH );
-                }
-            }
+        if ( XWApp.REMATCH_SUPPORTED 
+             && ( -1 != intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 ) ) ) {
+            m_rematchIntent = intent;
+            showDialog( DlgID.GAMES_LIST_NAME_REMATCH );
         }
     }
 
@@ -1910,7 +1898,7 @@ public class GamesListDelegate extends ListDelegateBase
         String gameName = edit.getText().toString();
         if ( null != gameName && 0 < gameName.length() ) {
             Intent intent = m_rematchIntent;
-            long rowid = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
+            long srcRowID = intent.getLongExtra( REMATCH_ROWID_EXTRA, -1 );
             String btAddr = intent.getStringExtra( REMATCH_BTADDR_EXTRA );
             String phone = intent.getStringExtra( REMATCH_PHONE_EXTRA );
             String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
@@ -1919,14 +1907,20 @@ public class GamesListDelegate extends ListDelegateBase
             int bits = intent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
             CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
 
-            long groupID = DBUtils.getGroupForGame( m_activity, rowid );
-            long newid = GameUtils.makeNewMultiGame( m_activity, groupID, 
-                                                     dict, lang,
-                                                     addrs, gameName );
-
-            DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
-                                    relayID );
+            if ( null == btAddr && null == phone && null == relayID ) {
+                long newid = GameUtils.dupeGame( m_activity, srcRowID );
+                DBUtils.setName( m_activity, newid, gameName );
+                launchGame( newid );
+            } else {
+                long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
+                long newid = GameUtils.makeNewMultiGame( m_activity, groupID, 
+                                                         dict, lang,
+                                                         addrs, gameName );
+                DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
+                                        relayID );
+            }
         }
+        m_rematchIntent = null;
     }
 
     private void tryAlert( Intent intent )
