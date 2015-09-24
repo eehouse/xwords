@@ -70,6 +70,7 @@
   <application android:icon="@drawable/icon48x48"
                android:label="@string/app_name"
                android:name=".XWApp"
+               android:debuggable="true"
                >
 
     <activity android:name="GamesListActivity" 
