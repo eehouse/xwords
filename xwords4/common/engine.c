@@ -1092,7 +1092,7 @@ considerMove( EngineCtxt* engine, Tile* tiles, XP_S16 tileLength,
     }
 } /* considerMove */
 
-static XP_Bool
+static void
 countWords( const XP_UCHAR* XP_UNUSED(word), XP_Bool isLegal, 
             const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
