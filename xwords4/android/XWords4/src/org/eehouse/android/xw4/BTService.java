@@ -456,14 +456,11 @@ public class BTService extends XWService {
             }
 
             while ( null != m_serverSocket && m_adapter.isEnabled() ) {
-
-                BluetoothSocket socket = null;
-                DataInputStream inStream = null;
-                int nRead = 0;
                 try {
-                    socket = m_serverSocket.accept(); // blocks
+                    BluetoothSocket socket = m_serverSocket.accept(); // blocks
                     addAddr( socket );
-                    inStream = new DataInputStream( socket.getInputStream() );
+                    DataInputStream inStream = 
+                        new DataInputStream( socket.getInputStream() );
 
                     byte proto = inStream.readByte();
                     BTCmd cmd = BTCmd.values()[inStream.readByte()];
