@@ -367,17 +367,6 @@ public class CurGameInfo {
         }
     }
 
-    public String[] getRemoteNames()
-    {
-        ArrayList<String> al = new ArrayList<String>();
-        for ( int ii = 0; ii < nPlayers; ++ii ) {
-            if ( ! players[ii].isLocal ) {
-                al.add( players[ii].name );
-            }
-        }
-        return al.toArray( new String[al.size()] );
-    }
-
     private boolean moveUp( int which )
     {
         boolean canMove = which > 0 && which < nPlayers;

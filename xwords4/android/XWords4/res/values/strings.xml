@@ -2395,7 +2395,7 @@
 
     <string name="new_game">New one-device game</string>
     <string name="new_game_networked">New networked game</string>
-    <string name="rematch_name_fmt">Rematch with %1$s</string>
+    <string name="rematch_name_fmt">Rematch: %1$s</string>
 
     <string name="new_game_message">Would you like to create this game
     using default settings?\n\nOr would you like to configure it

@@ -89,7 +89,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
     private static final String REMATCH_DICT_EXTRA = "rm_dict";
     private static final String REMATCH_LANG_EXTRA = "rm_lang";
-    private static final String REMATCH_OPPONENT_EXTRA = "rm_opp";
+    private static final String REMATCH_NEWNAME_EXTRA = "rm_nnm";
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
     private static final String REMATCH_PHONE_EXTRA = "rm_phone";
@@ -901,16 +901,12 @@ public class GamesListDelegate extends ListDelegateBase
 
         case GAMES_LIST_NAME_REMATCH:
             edit = (TextView)dialog.findViewById( R.id.edit );
-            String opponent = 
-                m_rematchIntent.getStringExtra( REMATCH_OPPONENT_EXTRA );
-            boolean solo = opponent == null;
-            String name = solo 
-                ? GameUtils.makeDefaultName( m_activity )
-                : getString( R.string.rematch_name_fmt, opponent );
-            edit.setText( name );
-            int icon = solo
-                ? R.drawable.sologame__gen : R.drawable.multigame__gen;
-            ad.setIcon( icon );
+            edit.setText( m_rematchIntent
+                          .getStringExtra( REMATCH_NEWNAME_EXTRA ) );
+            boolean solo =
+                -1 == m_rematchIntent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
+            ad.setIcon( solo ? R.drawable.sologame__gen
+                        : R.drawable.multigame__gen );
             ((TextView)dialog.findViewById( R.id.msg ))
                 .setVisibility( View.GONE );
             break;
@@ -2306,7 +2302,7 @@ public class GamesListDelegate extends ListDelegateBase
                                             String dict, int lang,
                                             CommsConnTypeSet addrTypes, 
                                             String btAddr, String phone,
-                                            String relayID, String opponent )
+                                            String relayID, String newName )
     {
         Intent intent = null;
         if ( XWApp.REMATCH_SUPPORTED ) {
@@ -2314,9 +2310,8 @@ public class GamesListDelegate extends ListDelegateBase
             intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
             intent.putExtra( REMATCH_DICT_EXTRA, dict );
             intent.putExtra( REMATCH_LANG_EXTRA, lang );
-            if ( null != opponent ) {
-                intent.putExtra( REMATCH_OPPONENT_EXTRA, opponent );
-            }
+            intent.putExtra( REMATCH_NEWNAME_EXTRA, newName );
+
             if ( null != addrTypes ) {
                 intent.putExtra( REMATCH_ADDRS_EXTRA, addrTypes.toInt() ); // here
                 if ( null != btAddr ) {
