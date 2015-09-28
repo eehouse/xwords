@@ -788,54 +788,56 @@ public class GameConfigDelegate extends DelegateBase
 
     private void loadPlayersList()
     {
-        m_playerLayout.removeAllViews();
+        if ( null != m_gameLock ) {
+            m_playerLayout.removeAllViews();
 
-        String[] names = m_gi.visibleNames( false );
-        // only enable delete if one will remain (or two if networked)
-        boolean canDelete = names.length > 2
-            || (localOnlyGame() && names.length > 1);
-        View.OnClickListener lstnr = new View.OnClickListener() {
-                @Override
-                public void onClick( View view ) {
-                    m_whichPlayer = ((XWListItem)view).getPosition();
-                    showDialog( DlgID.PLAYER_EDIT );
-                }
-            };
+            String[] names = m_gi.visibleNames( false );
+            // only enable delete if one will remain (or two if networked)
+            boolean canDelete = names.length > 2
+                || (localOnlyGame() && names.length > 1);
+            View.OnClickListener lstnr = new View.OnClickListener() {
+                    @Override
+                    public void onClick( View view ) {
+                        m_whichPlayer = ((XWListItem)view).getPosition();
+                        showDialog( DlgID.PLAYER_EDIT );
+                    }
+                };
  
-        boolean localGame = localOnlyGame();
-        for ( int ii = 0; ii < names.length; ++ii ) {
-            final XWListItem view = XWListItem.inflate( m_activity, null );
-            view.setPosition( ii );
-            view.setText( names[ii] );
-            if ( localGame && m_gi.players[ii].isLocal ) {
-                view.setComment( m_gi.dictName(ii) );
+            boolean localGame = localOnlyGame();
+            for ( int ii = 0; ii < names.length; ++ii ) {
+                final XWListItem view = XWListItem.inflate( m_activity, null );
+                view.setPosition( ii );
+                view.setText( names[ii] );
+                if ( localGame && m_gi.players[ii].isLocal ) {
+                    view.setComment( m_gi.dictName(ii) );
+                }
+                if ( canDelete ) {
+                    view.setDeleteCallback( this );
+                }
+
+                view.setOnClickListener( lstnr );
+                m_playerLayout.addView( view );
+
+                View divider = inflate( R.layout.divider_view );
+                m_playerLayout.addView( divider );
             }
-            if ( canDelete ) {
-                view.setDeleteCallback( this );
+
+            m_addPlayerButton
+                .setVisibility( names.length >= CurGameInfo.MAX_NUM_PLAYERS?
+                                View.GONE : View.VISIBLE );
+            m_jugglePlayersButton
+                .setVisibility( names.length <= 1 ?
+                                View.GONE : View.VISIBLE );
+
+            showHideRelayStuff();
+
+            if ( ! localOnlyGame()
+                 && ((0 == m_gi.remoteCount() )
+                     || (m_gi.nPlayers == m_gi.remoteCount()) ) ) {
+                showDialog( DlgID.FORCE_REMOTE );
             }
-
-            view.setOnClickListener( lstnr );
-            m_playerLayout.addView( view );
-
-            View divider = inflate( R.layout.divider_view );
-            m_playerLayout.addView( divider );
+            adjustPlayersLabel();
         }
-
-        m_addPlayerButton
-            .setVisibility( names.length >= CurGameInfo.MAX_NUM_PLAYERS?
-                            View.GONE : View.VISIBLE );
-        m_jugglePlayersButton
-            .setVisibility( names.length <= 1 ?
-                            View.GONE : View.VISIBLE );
-
-        showHideRelayStuff();
-
-        if ( ! localOnlyGame()
-             && ((0 == m_gi.remoteCount() )
-                 || (m_gi.nPlayers == m_gi.remoteCount()) ) ) {
-            showDialog( DlgID.FORCE_REMOTE );
-        }
-        adjustPlayersLabel();
     } // loadPlayersList
 
     private void configDictSpinner( Spinner dictsSpinner, int lang,
@@ -886,13 +888,15 @@ public class GameConfigDelegate extends DelegateBase
                     public void onItemSelected(AdapterView<?> parentView, 
                                                View selectedItemView, 
                                                int position, long id ) {
-                        String chosen = 
-                            (String)parentView.getItemAtPosition( position );
-                        if ( chosen.equals( m_browseText ) ) {
-                            DictsDelegate.downloadForResult( m_activity, REQUEST_LANG );
-                        } else {
-                            String langName = adapter.getLangAtPosition( position );
-                            selLangChanged( langName );
+                        if ( null != m_gameLock ) { // not on the way out?
+                            String chosen = 
+                                (String)parentView.getItemAtPosition( position );
+                            if ( chosen.equals( m_browseText ) ) {
+                                DictsDelegate.downloadForResult( m_activity, REQUEST_LANG );
+                            } else {
+                                String langName = adapter.getLangAtPosition( position );
+                                selLangChanged( langName );
+                            }
                         }
                     }
 
