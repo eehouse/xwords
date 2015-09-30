@@ -112,6 +112,7 @@ typedef struct _CommsAddrRec {
 } CommsAddrRec;
 
 typedef XP_S16 (*TransportSend)( const XP_U8* buf, XP_U16 len, 
+                                 const XP_UCHAR* msgNo,
                                  const CommsAddrRec* addr,
                                  CommsConnType conType,
                                  XP_U32 gameID, void* closure );
@@ -126,7 +127,8 @@ typedef void (*RelayConndProc)( void* closure, XP_UCHAR* const room,
                                 XP_U16 devOrder, /* 1 means created room, etc. */
                                 XP_Bool allHere, XP_U16 nMissing );
 typedef void (*RelayErrorProc)( void* closure, XWREASON relayErr );
-typedef XP_Bool (*RelayNoConnProc)( const XP_U8* buf, XP_U16 len,
+typedef XP_Bool (*RelayNoConnProc)( const XP_U8* buf, XP_U16 len, 
+                                    const XP_UCHAR* msgNo,
                                     const XP_UCHAR* relayID, void* closure );
 #endif
 

@@ -410,8 +410,9 @@ relay_error_gtk( void* closure, XWREASON relayErr )
 }
 
 static XP_Bool 
-relay_sendNoConn_gtk( const XP_U8* msg, XP_U16 len, const XP_UCHAR* relayID, 
-                      void* closure )
+relay_sendNoConn_gtk( const XP_U8* msg, XP_U16 len, 
+                      const XP_UCHAR* XP_UNUSED(msgNo),
+                      const XP_UCHAR* relayID, void* closure )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)closure;
     XP_Bool success = XP_FALSE;

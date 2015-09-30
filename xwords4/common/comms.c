@@ -207,7 +207,8 @@ static XP_U16 makeFlags( const CommsCtxt* comms );
 static XP_Bool relayConnect( CommsCtxt* comms );
 static void relayDisconnect( CommsCtxt* comms );
 static XP_Bool send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, 
-                               XWHostID destID, void* data, int dlen );
+                               XWHostID destID, void* data, int dlen,
+                               const XP_UCHAR* msgNo );
 static XP_Bool sendNoConn( CommsCtxt* comms, 
                            const MsgQueueElem* elem, XWHostID destID );
 static XWHostID getDestID( CommsCtxt* comms, XP_PlayerAddr channelNo );
@@ -239,7 +240,7 @@ static void setHeartbeatTimer( CommsCtxt* comms );
 static XP_S16 send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType msgTyp, 
                                  XP_PlayerAddr channelNo,
                                  CommsConnType typ,
-                                 void* data, int dlen );
+                                 void* data, int dlen, const XP_UCHAR* msgNo );
 #endif
 
 #if defined COMMS_HEARTBEAT || defined XWFEATURE_COMMSACK
@@ -776,7 +777,7 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
         case COMMS_CONN_BT:
         case COMMS_CONN_IP_DIRECT:
             /* This will only work on host side when there's a single guest! */
-            (void)send_via_bt_or_ip( comms, BTIPMSG_RESET, CHANNEL_NONE, typ, NULL, 0 );
+            (void)send_via_bt_or_ip( comms, BTIPMSG_RESET, CHANNEL_NONE, typ, NULL, 0, NULL );
             (void)comms_resendAll( comms, XP_FALSE );
             break;
 #endif
@@ -997,6 +998,13 @@ comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
     XP_Bool success = formatRelayID( comms, hostID, buf, lenp );
     XP_LOGF( "%s(%d) => %s", __func__, indx, buf );
     return success;
+}
+
+static void
+formatMsgNo( const MsgQueueElem* elem, XP_UCHAR* buf, XP_U16 len )
+{
+    XP_SNPRINTF( buf, len, "%d:%d", elem->channelNo & CHANNEL_MASK, 
+                 elem->msgID );
 }
 
 /* Get *my* "relayID", a combo of connname and host id */
@@ -1384,8 +1392,10 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
                     /* do nothing */
                     nSent = elem->len;
                 } else if ( comms->rr.relayState >= COMMS_RELAYSTATE_CONNECTED ) {
+                    XP_UCHAR msgNo[16];
+                    formatMsgNo( elem, msgNo, sizeof(msgNo) );
                     if ( send_via_relay( comms, XWRELAY_MSG_TORELAY, destID, 
-                                         elem->msg, elem->len ) ){
+                                         elem->msg, elem->len, msgNo ) ){
                         nSent = elem->len;
                     }
                 } else {
@@ -1421,8 +1431,10 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
                 XP_ASSERT( !!comms->procs.send );
                 XP_U32 gameid = gameID( comms );
                 logAddr( comms, &addr, __func__ );
-                nSent = (*comms->procs.send)( elem->msg, elem->len, &addr, typ, 
-                                              gameid, comms->procs.closure );
+                XP_UCHAR msgNo[16];
+                formatMsgNo( elem, msgNo, sizeof(msgNo) );
+                nSent = (*comms->procs.send)( elem->msg, elem->len, msgNo, &addr,
+                                              typ, gameid, comms->procs.closure );
                 break;
             }
             } /* switch */
@@ -1451,7 +1463,8 @@ static void
 send_ack( CommsCtxt* comms )
 {
     LOG_FUNC();
-    (void)send_via_relay( comms, XWRELAY_ACK, comms->rr.myHostID, NULL, 0 );
+    (void)send_via_relay( comms, XWRELAY_ACK, comms->rr.myHostID, NULL, 0, 
+                          NULL );
 }
 
 XP_S16
@@ -2398,7 +2411,7 @@ p_comms_timerFired( void* closure, XWTimerReason XP_UNUSED_DBG(why) )
     } else  if ( (comms->addr.conType == COMMS_CONN_RELAY ) 
          && (comms->rr.heartbeat != HEARTBEAT_NONE) ) {
         (void)send_via_relay( comms, XWRELAY_HEARTBEAT, HOST_ID_NONE, 
-                              NULL, 0 );
+                              NULL, 0, NULL );
         /* No need to reset timer.  send_via_relay does that. */
 #endif
 #ifdef COMMS_HEARTBEAT
@@ -2956,7 +2969,7 @@ relay_msg_to_stream( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 
 static XP_Bool
 send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID, 
-                void* data, int dlen )
+                void* data, int dlen, const XP_UCHAR* msgNo )
 {
     XP_Bool success = XP_FALSE;
     if ( comms_getAddrDisabled( comms, COMMS_CONN_RELAY, XP_TRUE ) ) {
@@ -2977,8 +2990,9 @@ send_via_relay( CommsCtxt* comms, XWRELAY_Cmd cmd, XWHostID destID,
 
                 comms_getAddr( comms, &addr );
                 XP_LOGF( "%s: passing %d bytes to sendproc", __func__, len );
-                result = (*comms->procs.send)( stream_getPtr(tmpStream), len, &addr,
-                                               COMMS_CONN_RELAY, gameID(comms), 
+                result = (*comms->procs.send)( stream_getPtr(tmpStream), len, 
+                                               msgNo, &addr, COMMS_CONN_RELAY, 
+                                               gameID(comms), 
                                                comms->procs.closure );
                 success = result == len;
                 if ( success ) {
@@ -3009,8 +3023,10 @@ sendNoConn( CommsCtxt* comms, const MsgQueueElem* elem, XWHostID destID )
         if ( NULL != stream ) {
             XP_U16 len = stream_getSize( stream );
             if ( 0 < len ) {
+                XP_UCHAR msgNo[16];
+                formatMsgNo( elem, msgNo, sizeof(msgNo) );
                 success = (*comms->procs.sendNoConn)( stream_getPtr( stream ), 
-                                                      len, relayID,
+                                                      len, msgNo, relayID,
                                                       comms->procs.closure );
             }
             stream_destroy( stream );
@@ -3034,7 +3050,7 @@ relayConnect( CommsCtxt* comms )
         comms->rr.connecting = XP_TRUE;
         success = send_via_relay( comms, comms->rr.connName[0]?
                                   XWRELAY_GAME_RECONNECT : XWRELAY_GAME_CONNECT,
-                                  comms->rr.myHostID, NULL, 0 );
+                                  comms->rr.myHostID, NULL, 0, NULL );
         comms->rr.connecting = XP_FALSE;
     }
     return success;
@@ -3044,7 +3060,7 @@ relayConnect( CommsCtxt* comms )
 #if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
 static XP_S16
 send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType msgTyp, XP_PlayerAddr channelNo,
-                   CommsConnType typ, void* data, int dlen )
+                   CommsConnType typ, void* data, int dlen, const XP_UCHAR* msgNo )
 {
     XP_S16 nSent;
     XP_U8* buf;
@@ -3060,7 +3076,7 @@ send_via_bt_or_ip( CommsCtxt* comms, BTIPMsgType msgTyp, XP_PlayerAddr channelNo
             XP_MEMCPY( &buf[1], data, dlen );
         }
 
-        nSent = (*comms->procs.send)( buf, dlen+1, addr, typ, gameID(comms),
+        nSent = (*comms->procs.send)( buf, dlen+1, msgNo, addr, typ, gameID(comms),
                                       comms->procs.closure );
         XP_FREE( comms->mpool, buf );
 
@@ -3080,7 +3096,7 @@ relayDisconnect( CommsCtxt* comms )
     if ( addr_hasType( &comms->addr, COMMS_CONN_RELAY ) ) {
         if ( comms->rr.relayState > COMMS_RELAYSTATE_CONNECT_PENDING ) {
             (void)send_via_relay( comms, XWRELAY_GAME_DISCONNECT, HOST_ID_NONE, 
-                                  NULL, 0 );
+                                  NULL, 0, NULL );
         }
         set_relay_state( comms, COMMS_RELAYSTATE_UNCONNECTED );
     }

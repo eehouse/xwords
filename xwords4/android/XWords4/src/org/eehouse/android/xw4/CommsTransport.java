@@ -356,7 +356,7 @@ public class CommsTransport implements TransportProcs,
 
     public int getFlags() { return COMMS_XPORT_FLAGS_NONE; }
 
-    public int transportSend( byte[] buf, CommsAddrRec addr, 
+    public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr, 
                               CommsConnType conType, int gameID )
     {
         DbgUtils.logdf( "CommsTransport.transportSend(len=%d, typ=%s)", 
@@ -429,7 +429,7 @@ public class CommsTransport implements TransportProcs,
         m_tpHandler.tpmRelayErrorProc( relayErr );
     }
 
-    public boolean relayNoConnProc( byte[] buf, String relayID )
+    public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
     {
         Assert.fail();
         return false;

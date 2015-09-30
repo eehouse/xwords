@@ -1234,9 +1234,11 @@ linux_reset( void* closure )
 #endif
 
 XP_S16
-linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
-            CommsConnType conType, XP_U32 gameID, void* closure )
+linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* msgNo,
+            const CommsAddrRec* addrRec, CommsConnType conType, XP_U32 gameID, 
+            void* closure )
 {
+    XP_LOGF( "%s(mid=%s)", __func__, msgNo );
     XP_S16 nSent = -1;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;   
 
