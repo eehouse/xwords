@@ -696,7 +696,7 @@
          because users should not have to do do this EVER. -->
     <string name="board_menu_game_resend">Resend messages</string>
     <plurals name="resend_finished_fmt">
-      <item quantity="one">Resend finished; sent %1$d message.</item>
+      <item quantity="one">Resend finished; sent one message.</item>
       <item quantity="other">Resend finished; sent %1$d messages.</item>
     </plurals>
 
@@ -1939,9 +1939,12 @@
       want to invite to your new game, then tap \"%2$s\".</item>
     </plurals>
     <!--  -->
-    <plurals name="invite_relay_desc_fmt"><item
-    quantity="other">Please check the %1$d devices you want to invite
-    to your new game, then tap \"%2$s\".</item></plurals>
+    <plurals name="invite_relay_desc_fmt">
+      <item quantity="one">Please check the device you want to invite
+      to your new game, then tap \"%2$s\".</item>
+      <item quantity="other">Please check the %1$d devices you want to invite
+      to your new game, then tap \"%2$s\".</item>
+    </plurals>
     <!--  -->
     <string name="manual_owner_name">(Not in contacts)</string>
     <!--  -->
