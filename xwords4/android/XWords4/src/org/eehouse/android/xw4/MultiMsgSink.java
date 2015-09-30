@@ -21,8 +21,6 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
