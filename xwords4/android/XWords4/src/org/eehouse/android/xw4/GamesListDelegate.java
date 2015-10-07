@@ -1356,7 +1356,7 @@ public class GamesListDelegate extends ListDelegateBase
             // selected
             enable = 1 == nGroupsSelected;
             Utils.setItemVisible( menu, R.id.games_group_moveup, 
-                                  enable && 0 <= selGroupPos );
+                                  enable && 0 < selGroupPos );
             Utils.setItemVisible( menu, R.id.games_group_movedown, enable
                                   && (selGroupPos + 1) < groupCount );
 
