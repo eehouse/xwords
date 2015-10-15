@@ -2236,4 +2236,7 @@
   <string name="confirm_clear_chat">ARE YOU SURE YOU WANT TO DELETE
   ALL CHAT HISTORY FOR THIS GAME?\n\n(THIS ACTION CANNOT BE
   UNDONE.)</string>
+  <string name="rel_invite_title">RELAY INVITE TITLE</string>
+  <string name="fetching_from_relay">FETCHING GAMES FROM RELAY</string>
+  <string name="processing_games">PROCESSING GAMES</string>
 </resources>

@@ -2236,4 +2236,7 @@
   <string name="confirm_clear_chat">Era uoy erus uoy tnaw ot eteled
   lla tahc yrotsih rof siht ?emag\n\nsIht( noitca tonnac eb
   enodnu.)</string>
+  <string name="rel_invite_title">Yaler etivni eltit</string>
+  <string name="fetching_from_relay">Gnihctef semag morf yaler</string>
+  <string name="processing_games">Gnissecorp semag</string>
 </resources>

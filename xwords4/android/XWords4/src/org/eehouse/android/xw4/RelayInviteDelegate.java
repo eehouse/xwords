@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2012 - 2015 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -24,10 +24,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.provider.ContactsContract;
@@ -44,8 +46,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import org.apache.http.client.methods.HttpPost;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import junit.framework.Assert;
 
@@ -58,8 +65,7 @@ public class RelayInviteDelegate extends InviteDelegate {
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
     private ArrayList<DevIDRec> m_devIDRecs;
-    private SMSPhonesAdapter m_adapter;
-    private ImageButton m_addButton;
+    private RelayDevsAdapter m_adapter;
     private boolean m_immobileConfirmed;
     private Activity m_activity;
 
@@ -87,27 +93,27 @@ public class RelayInviteDelegate extends InviteDelegate {
 
         // getBundledData( savedInstanceState );
 
-        m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
-        m_addButton.setOnClickListener( new View.OnClickListener() {
-                public void onClick( View view )
-                {
-                    showDialog( DlgID.GET_NUMBER );
-                }
-            } );
+        // m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
+        // m_addButton.setOnClickListener( new View.OnClickListener() {
+        //         public void onClick( View view )
+        //         {
+        //             showDialog( DlgID.GET_NUMBER );
+        //         }
+        //     } );
 
-        if ( XWPrefs.getRelayInviteToSelfEnabled( m_activity ) ) {
-            ImageButton addMe = (ImageButton)findViewById( R.id.add_self_button );
-            addMe.setVisibility( View.VISIBLE );
-            addMe.setOnClickListener( new View.OnClickListener() {
-                    public void onClick( View view ) {
-                        int devIDInt = DevID.getRelayDevIDInt( m_activity );
-                        String devID = String.format( "%d", devIDInt );
-                        DevIDRec rec = new DevIDRec( "self", devID );
-                        addChecked( rec );
-                        saveAndRebuild();
-                    }
-                } );
-        }
+        // if ( XWPrefs.getRelayInviteToSelfEnabled( m_activity ) ) {
+        //     ImageButton addMe = (ImageButton)findViewById( R.id.add_self_button );
+        //     addMe.setVisibility( View.VISIBLE );
+        //     addMe.setOnClickListener( new View.OnClickListener() {
+        //             public void onClick( View view ) {
+        //                 int devIDInt = DevID.getRelayDevIDInt( m_activity );
+        //                 String devID = String.format( "%d", devIDInt );
+        //                 DevIDRec rec = new DevIDRec( "self", devID );
+        //                 addChecked( rec );
+        //                 saveAndRebuild();
+        //             }
+        //         } );
+        // }
 
         getSavedState();
         rebuildList( true );
@@ -140,43 +146,55 @@ public class RelayInviteDelegate extends InviteDelegate {
     //     }
     // }
 
-    protected Dialog onCreateDialog( int id )
-    {        
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            DialogInterface.OnClickListener lstnr;
-            DlgID dlgID = DlgID.values()[id];
-            switch( dlgID ) {
-            case GET_NUMBER:
-                final GameNamer namerView =
-                    (GameNamer)inflate( R.layout.rename_game );
-                namerView.setLabel( R.string.get_relay_number );
-                namerView.setKeyListener(DialerKeyListener.getInstance());
-                lstnr = new DialogInterface.OnClickListener() {
-                        public void onClick( DialogInterface dlg, int item ) {
-                            String devID = namerView.getName();
-                            if ( 0 < devID.length() ) {
-                                DevIDRec rec = new DevIDRec( devID );
-                                addChecked( new DevIDRec( devID ) );
-                                saveAndRebuild();
-                            }
-                        }
-                    };
-                dialog = makeAlertBuilder()
-                    .setNegativeButton( android.R.string.cancel, null )
-                    .setPositiveButton( android.R.string.ok, lstnr )
-                    .setView( namerView )
-                    .create();
-                break;
-            }
-            setRemoveOnDismiss( dialog, dlgID );
-        }
-        return dialog;
-    }
+    // protected Dialog onCreateDialog( int id )
+    // {        
+    //     Dialog dialog = super.onCreateDialog( id );
+    //     if ( null == dialog ) {
+    //         DialogInterface.OnClickListener lstnr;
+    //         DlgID dlgID = DlgID.values()[id];
+    //         switch( dlgID ) {
+    //         case GET_NUMBER:
+    //             final GameNamer namerView =
+    //                 (GameNamer)inflate( R.layout.rename_game );
+    //             namerView.setLabel( R.string.get_relay_number );
+    //             namerView.setKeyListener(DialerKeyListener.getInstance());
+    //             lstnr = new DialogInterface.OnClickListener() {
+    //                     public void onClick( DialogInterface dlg, int item ) {
+    //                         String devID = namerView.getName();
+    //                         if ( 0 < devID.length() ) {
+    //                             DevIDRec rec = new DevIDRec( devID );
+    //                             addChecked( new DevIDRec( devID ) );
+    //                             saveAndRebuild();
+    //                         }
+    //                     }
+    //                 };
+    //             dialog = makeAlertBuilder()
+    //                 .setNegativeButton( android.R.string.cancel, null )
+    //                 .setPositiveButton( android.R.string.ok, lstnr )
+    //                 .setView( namerView )
+    //                 .create();
+    //             break;
+    //         }
+    //         setRemoveOnDismiss( dialog, dlgID );
+    //     }
+    //     return dialog;
+    // }
+
+    // We want to present user with list of previous opponents and devices. We
+    // can easily get list of relayIDs. The relay, if reachable, can convert
+    // that to a (likely shorter) list of devices. Then for each deviceID,
+    // open the newest game with a relayID mapping to it and get the name of
+    // the opponent?
 
     protected void scan()
     {
-        Utils.notImpl( m_activity );
+        long[][] rowIDss = new long[1][];
+        String[] relayIDs = DBUtils.getRelayIDs( m_activity, rowIDss );
+
+        if ( null != relayIDs && 0 < relayIDs.length ) {
+            new ListOpponentsTask( m_activity, relayIDs, rowIDss[0] ).execute();
+        }
+
         // Intent intent = new Intent( Intent.ACTION_PICK, 
         //                             ContactsContract.Contacts.CONTENT_URI );
         // intent.setType( Phone.CONTENT_TYPE );
@@ -313,10 +331,10 @@ public class RelayInviteDelegate extends InviteDelegate {
     {
         Collections.sort( m_devIDRecs, new Comparator<DevIDRec>() {
                 public int compare( DevIDRec rec1, DevIDRec rec2 ) {
-                    return rec1.m_name.compareTo(rec2.m_name);
+                    return rec1.m_opponent.compareTo(rec2.m_opponent);
                 }
             });
-        m_adapter = new SMSPhonesAdapter();
+        m_adapter = new RelayDevsAdapter();
         setListAdapter( m_adapter );
         if ( checkIfAll && m_devIDRecs.size() <= m_nMissing ) {
             Iterator<DevIDRec> iter = m_devIDRecs.iterator();
@@ -333,7 +351,7 @@ public class RelayInviteDelegate extends InviteDelegate {
 
         m_devIDRecs = new ArrayList<DevIDRec>(devIDs.length);
         for ( String devID : devIDs ) {
-            DevIDRec rec = new DevIDRec( devID );
+            DevIDRec rec = new DevIDRec( "me", devID );
             m_devIDRecs.add( rec );
         }
     }
@@ -377,35 +395,31 @@ public class RelayInviteDelegate extends InviteDelegate {
 
     private class DevIDRec {
         public String m_devID;
-        public String m_name;
+        public String m_opponent;
         public boolean m_isChecked;
         public int m_nPlayers;
         public DevIDRec( String name, String devID )
         {
             this( name, devID, false );
         }
-        public DevIDRec( String devID )
-        {
-            this( null, devID, false );
-        }
+        // public DevIDRec( String devID )
+        // {
+        //     this( null, devID, false );
+        // }
 
-        public DevIDRec( String name, String devID, boolean checked )
+        public DevIDRec( String opponent, String devID, boolean checked )
         {
             m_devID = devID;
             m_isChecked = checked;
             m_nPlayers = 1;
-
-            if ( null == name ) {
-                name = "<anon>";
-            }
-            m_name = name;
+            m_opponent = opponent;
         }
     }
 
-    private class SMSPhonesAdapter extends XWListAdapter {
+    private class RelayDevsAdapter extends XWListAdapter {
         private SMSListItem[] m_items;
 
-        public SMSPhonesAdapter()
+        public RelayDevsAdapter()
         {
             super( m_devIDRecs.size() );
             m_items = new SMSListItem[m_devIDRecs.size()];
@@ -433,7 +447,7 @@ public class RelayInviteDelegate extends InviteDelegate {
                 };
             item.setOnCheckedChangeListener( lstnr );
             final DevIDRec rec = m_devIDRecs.get( position );
-            item.setContents( rec.m_name, rec.m_devID );
+            item.setContents( rec.m_opponent, rec.m_devID );
             m_items[position] = item;
 
             // Set up spinner
@@ -470,5 +484,116 @@ public class RelayInviteDelegate extends InviteDelegate {
                              ViewGroup parent ) {
             return (View)getItem( position );
         }
+    }
+
+    private class ListOpponentsTask extends AsyncTask<Void, Void, Set<String>> {
+        private Context m_context;
+        private String[] m_relayIDs;
+        private long[] m_rowIDs;
+
+        public ListOpponentsTask( Context context, String[] relayIDs, long[] rowIDs ) {
+            m_context = context;
+            m_relayIDs = relayIDs;
+            m_rowIDs = rowIDs;
+        }
+
+        @Override protected Set<String> doInBackground( Void... unused )
+        {
+            Set<String> result = null;
+            JSONObject reply = null;
+            try {
+                startProgress( R.string.fetching_from_relay );
+
+                JSONArray ids = new JSONArray();
+                for ( String id : m_relayIDs ) {
+                    ids.put( id );
+                }
+                JSONObject params = new JSONObject();
+                params.put( "relayIDs", ids );
+                params.put( "me", DevID.getRelayDevIDInt( m_activity ) );
+                DbgUtils.logf( "sending to server: %s", params.toString() );
+
+                HttpPost post = NetUtils.makePost( m_context, "opponentIDsFor" );
+                if ( null != post ) {
+                    String str = NetUtils.runPost( post, params );
+                    DbgUtils.logf( "got json from server: %s", str );
+                    reply = new JSONObject( str );
+                }
+
+                if ( null != reply ) {
+                    result = new HashSet<String>();
+
+                    setProgressMsg( R.string.processing_games );
+
+                    JSONArray objs = reply.getJSONArray("devIDs");
+                    for ( int ii = 0; ii < objs.length(); ++ii ) {
+                        JSONObject obj = objs.getJSONObject( ii );
+                        Iterator<String> keys = obj.keys();
+                        Assert.assertTrue( keys.hasNext() );
+                        String key = keys.next();
+                        Assert.assertFalse( keys.hasNext() );
+                        JSONArray devIDs2 = obj.getJSONArray( key );
+                        for ( int jj = 0; jj < devIDs2.length(); ++jj ) {
+                            result.add( devIDs2.getString(jj) );
+                        }
+                    }
+                }
+
+            } catch ( org.json.JSONException je ) {
+                DbgUtils.loge( je );
+            }
+
+            stopProgress();
+            return result;
+        }
+
+        @Override protected void onPostExecute( Set<String> devIDs )
+        {
+            if ( null == devIDs ) {
+                DbgUtils.logf( "onPostExecute: no results from server?" );
+            } else {
+                m_devIDRecs = new ArrayList<DevIDRec>(devIDs.size());
+                Iterator<String> iter = devIDs.iterator();
+                while ( iter.hasNext() ) {
+                    String devID = iter.next();
+                    DevIDRec rec = new DevIDRec( "name", devID );
+                    m_devIDRecs.add( rec );
+                }
+
+                m_adapter = new RelayDevsAdapter();
+                setListAdapter( m_adapter );
+                // m_checked.clear();
+                tryEnable();
+            }
+        }
+
+        private void startProgress( final int msgID )
+        {
+            runOnUiThread( new Runnable() {
+                    public void run() {
+                        RelayInviteDelegate.this
+                            .startProgress( R.string.rel_invite_title, msgID );
+                    }
+                } );
+        }
+
+        private void setProgressMsg( final int id )
+        {
+            runOnUiThread( new Runnable() {
+                    public void run() {
+                        RelayInviteDelegate.this.setProgressMsg( id );
+                    }
+                } );
+        }
+
+        private void stopProgress()
+        {
+            runOnUiThread( new Runnable() {
+                    public void run() {
+                        RelayInviteDelegate.this.stopProgress();
+                    }
+                } );
+        }
+
     }
 }
