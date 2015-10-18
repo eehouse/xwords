@@ -1,2 +1,400 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='utf-8'?>
+<resources><string name="button_new_game">ゲームを追加</string>
+    <string name="button_new_group">グループを追加</string>
+
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+
+    <string name="robot_name_fmt">%1$s (ロボット)</string>
+
+    <string name="missing_player">(まだありません…)</string>
+
+    <string name="summary_relay_conf_fmt">ルーム \"%1$s\" の設定</string>
+    <string name="summary_relay_wait_fmt">ルーム \"%1$s\" でプレイヤーを待っています</string>
+    <string name="summary_relay_conn_fmt">ルーム \"%1$s\" でゲームをプレイ中</string>
+    <string name="summary_relay_gameover_fmt">ルーム \"%1$s\" でゲームオーバー</string>
+
+    <string name="gameOver">ゲームオーバー</string>
+    <string name="button_delete">削除</string>
+    <string name="button_reset">リセット</string>
+
+    <string name="gamel_menu_dicts">単語リスト…</string>
+
+    <string name="menu_prefs">アプリ設定…</string>
+
+    <string name="gamel_menu_checkmoves">移動のチェック</string>
+
+    <plurals name="moves_fmt">
+	<item quantity="one">%1$d 移動をプレイしました</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="msgs_progress">リレーの動きなどをチェック中…</string>
+
+    <string name="no_games_to_refresh">リレー経由で接続するゲームは見つかりません。</string>
+
+    <string name="board_menu_file_about">クロスワードについて…</string>
+
+    <string name="game_item_menu_title_fmt">\"%1$s\" アクション:</string>
+
+    <string name="list_item_config">ゲームの設定…</string>
+    <string name="list_item_rename">名前の変更…</string>
+    <string name="list_item_move">グループに移動…</string>
+
+    <string name="list_item_delete">ゲームを削除</string>
+    <string name="list_item_reset">リセット</string>
+    <string name="list_item_new_from">新規 から</string>
+    <string name="list_item_copy">コピー</string>
+    <string name="no_copy_network">既にリレーに接続されているゲームはコピーできません。すべて同じ設定でプレイする準備ができる、\"新規 から\" コピーを使用してください。</string>
+      <string name="game_rename_title">ゲームの名前を変更</string>
+    <string name="rename_label">このゲームの名前を変更します:</string>
+    <string name="rename_label_caveat">(このデバイス上でのみ) このゲームの名前を変更します:</string>
+
+    <plurals name="confirm_seldeletes_fmt">
+	<item quantity="one">選択したゲーム %1$d を削除してもよろしいですか? この操作は元に戻せません。</item>
+	<item quantity="other"/>
+</plurals>
+
+    <plurals name="confirm_reset_fmt">
+	<item quantity="one">選択したゲーム %1$d をリセットしますか?\n\n(リセットすると、すべての動きと接続情報を消去します。)</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="title_dicts_list">クロスワードの単語リスト</string>   
+    <string name="download_dicts">さらにダウンロード…</string>
+
+
+    <string name="loc_builtin">内蔵</string>
+
+    <string name="loc_downloads">ダウンロード</string>
+
+    <string name="dicts_item_move">保存場所を変更</string>
+
+    <string name="dicts_item_select">デフォルトにする</string>
+
+    <plurals name="confirm_delete_dict_fmt">
+	<item quantity="one">単語リスト %1$s を削除してもよろしいですか?</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="confirm_deleteonly_dicts_fmt">%1$s を削除すると、%2$s 単語リストを除き残りません。1 つまたは複数のゲームが開けなくなります。(代わりのリストをダウンロードするまで)</string>
+
+    <string name="set_default_message_fmt">どのプレイヤーが単語リスト %1$s を新しいゲームのデフォルトにしますか? (言語 %2$s は両方のデフォルトになります)</string>
+
+    <string name="button_default_human">人間</string>
+    <string name="button_default_robot">ロボット</string>
+    <string name="button_default_both">両方</string>
+
+    <string name="move_dict_fmt">単語リスト %1$s の場所</string>
+
+    <string name="loc_internal">内部</string>
+    <string name="loc_external">外部</string>
+
+    <string name="title_game_config_fmt">%1$s の設定</string>  
+
+    <string name="title_gamenet_config_fmt">%1$s 設定 (ネットワーク)</string>  
+
+    <string name="title_langs_list">言語 (インストールされている単語リストに基づく)</string>
+
+    <string name="game_locked">ロック設定</string>
+
+    <string name="players_label_standalone">プレイヤー (タップして編集)</string>
+
+    <string name="players_label_host_fmt">プレイヤー (%1$d ローカル、%2$d 他のデバイス)</string>
+
+    <string name="button_add_player">プレイヤーを追加</string>
+
+    <string name="button_juggle_players">プレイヤーをシャッフル</string>
+
+    <string name="lang_label">ゲームの言語</string>
+    <string name="langdict_label">ゲームの言語/単語リスト</string>
+
+    <string name="connect_label_fmt">接続 (%1$s 経由)</string>
+
+    <string name="join_room">公開ルームに参加</string>
+
+    <string name="new_room_hint">ルーム名</string>
+
+    <string name="room_public">新しい公開ルームを作る</string>
+
+    <string name="room_public_prompt">公開ルームを選択</string>
+
+    <string name="public_names_progress_fmt">%2$s で %1$d プレイヤーがゲーム中の公開ルームを取得します。</string>
+
+    <string name="no_name_found_fmt">%2$s で %1$d プレイヤーがゲーム中の公開ルームが見つかりません。リフレッシュするかあなた自身のルームを作成してください。</string>
+
+    <string name="settings_label">その他の設定</string>
+
+    <string name="hints_allowed">ヒントを許可</string>
+
+    <string name="nethints_allowed">ヒントを許可 (ネットワーク)</string>
+
+    <string name="use_timer">ゲームタイマーを有効にする</string>
+
+    <string name="minutes_label">プレイヤーごとの分数</string>
+
+    <string name="robot_spinner_prompt">ロボット プレイヤーをどれくらい賢くしますか?</string>
+
+    <string name="robot_smart">賢いロボット</string>
+    <string name="robot_smarter">より賢いロボット</string>
+    <string name="robot_smartest">最も賢いロボット</string>
+
+    <string name="phonies_spinner_prompt">\"偽物\" をどう扱いますか (単語リストにない単語)</string>
+
+    <string name="phonies_ignore">偽物を無視する</string>
+    <string name="phonies_warn">偽物の場合警告する</string>
+    <string name="phonies_disallow">偽物を禁止する</string>
+
+    <string name="str_reg_server_sans_remote">少なくとも 1 人のプレイヤーは、ホストとして開始するゲームの \"リモート\" にマークする必要があります。</string>
+
+    <string name="guest_name">(他のデバイスのプレイヤー)</string>
+
+    <string name="confirm_save">このゲームはプレイ中です。これらの変更を保存する場合、再起動する必要があります。変更を保存しますか?</string>
+    <string name="confirm_save_title">保存の確認</string>
+
+    <string name="play">ゲームをプレイ</string>
+
+    <string name="force_title">他のデバイスのプレイヤー</string>
+    <string name="force_expl">マルチデバイス ゲームは、少なくとも 1 人のプレイヤーがこのデバイスとは別からプレイする必要があります。他のデバイスのプレイヤーを確認してください。</string>
+    
+    <string name="forced_consistent">最初のプレイヤーを変更しました。</string>
+
+    <string name="player_edit_title">プレイヤーを編集</string>
+
+    <string name="remote_label">他のデバイスのプレイヤー</string>
+
+    <string name="player_label">名前:</string>
+
+    <string name="dict_lang_label_fmt">単語リスト (%1$s に)</string>
+
+    <string name="dicts_list_prompt_fmt">インストールされている単語リスト (%1$s に)</string>
+
+    <string name="robot_label">ロボット プレイヤー</string>
+
+    <string name="password_label">パスワード</string>
+
+
+    <string name="button_trade_commit">取引をコミット</string>
+    <string name="button_trade_cancel">取引をキャンセル</string>
+
+    <string name="entering_trade">タイトルをタップして選択…</string>
+
+
+    <string name="bonus_l2x_summary">2L</string>
+    <string name="bonus_w2x_summary">2W</string>
+    <string name="bonus_l3x_summary">3L</string>
+    <string name="bonus_w3x_summary">3W</string>
+
+    <string name="no_moves_made">(まだ動きはありません)</string>
+
+    <plurals name="invite_msg_fmt">
+	<item quantity="one">このゲームは %1$d リモート プレイヤーを待っています。まだであれば - 参加するユーザーを招待しますか?</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="invite_if_nfc">またはタップして招待します -- 他のデバイスにも Android ビームがあり、近くにいる場合。</string>
+
+      <plurals name="players_miss_fmt">
+	<item quantity="one">%1$d プレイヤーが見つかりません</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="invite_multiple">" (複数のリモートプレイヤーを期待している場合。一度にみんなを招待する必要はありませんが、招待されたみんなが招待状を受け入れるまで、このアラートは消えません)"</string>
+
+    <string name="pts">ﾎﾟｲﾝﾄ</string>
+
+    <plurals name="msg_relay_waiting_fmt">
+	<item quantity="one">デバイス %1$d はルーム \"%2$s\" のリレーに接続されています。%3$d プレイやーを待っています。</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="msg_relay_all_here_fmt">すべてのプレイヤーは、このルーム \"%1$s\" にいます。</string>
+
+    <string name="relay_alert">接続の問題</string>
+
+    <string name="msg_too_many">あなたが提供したプレイヤーはホストが期待するよりも多いです。</string>
+    <string name="msg_no_room">その名前のルームが登録されたホストはありません。</string>
+
+    <string name="msg_dup_room">別のホストで、既にその名前を使用してルームが登録されています。名前を変更するか、後でやり直してください。</string>
+    <string name="msg_lost_other">リレーが、このゲームで別のデバイスとの接続を失いました。</string>
+
+    <string name="msg_dev_deleted">このゲームが別のデバイスで削除されました。さらにプレイすることはできません。</string>
+
+    <string name="ids_badwords_fmt">単語 %1$s は単語リスト %2$s 内に見つかりません。</string>
+
+    <string name="badwords_accept">" この移動を反映してもよろしいですか?"</string>
+    <string name="badwords_lost">" 順番を失いました。"</string>
+
+    <string name="badwords_title">正しくない単語</string>
+
+    <string name="board_menu_done">順番が完了</string>
+
+    <string name="board_menu_trade">取引</string>
+
+    <string name="board_menu_tray_hide">ラックを非表示にする</string>
+    <string name="board_menu_tray_show">ラックを表示する</string>
+
+    <string name="board_menu_undo_last">元に戻す</string>
+
+    <string name="board_submenu_game">ゲーム -&gt;</string>
+
+    <string name="board_menu_game_counts">カウントと値…</string>
+
+    <string name="board_menu_game_left">残りのタイル…</string>
+
+    <string name="board_menu_game_history">ゲームの履歴…</string>
+
+    <string name="board_menu_game_final">最終スコア</string>
+    <string name="board_menu_game_resign">辞める</string>
+
+    <string name="board_menu_game_resend">メッセージを再送信</string>
+    <plurals name="resend_finished_fmt">
+	<item quantity="one">再送信が終了しました。%1$d メッセージを送信しました。</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="str_robot_moved_fmt">"ロボット %1$s がこの移動を行いました: "</string>
+    <plurals name="strd_robot_traded_fmt">
+	<item quantity="one">タイルを 1 つ交換しました。</item>
+	<item quantity="other"/>
+</plurals>
+    <string name="strs_values_header_fmt">%1$s カウント/値:\n</string>
+    <string name="strd_remaining_tiles_add_fmt">+ %1$d [すべての残りのタイル]</string>
+    <string name="strd_unused_tiles_sub_fmt">- %1$d [未使用タイル]</string>
+    <string name="strs_new_tiles_fmt">新しいタイル: %1$s</string>
+    <string name="strd_cumulative_score_fmt">累積スコア: %1$d\n</string>
+    <string name="str_remote_moved_fmt">"リモートプレイヤー %1$s がこの移動を行いました: "</string>
+    <string name="strd_time_penalty_sub_fmt">" - %1$d [時間]"</string>
+    <string name="str_pass">パス\n</string>
+    <string name="strs_move_across_fmt">移動 (%1$s から向こうに)\n</string>
+    <string name="strs_move_down_fmt">移動 (%1$s から下)\n</string>
+    <string name="strs_tray_at_start_fmt">開始時ラック: %1$s\n</string>
+    <string name="strss_traded_for_fmt">%2$s の %1$s を交換しました。</string>
+    <string name="str_phony_rejected">移動で正しくない単語。順番を失いました!</string>
+    <string name="str_commit_confirm">現在の移動を反映しますか?\n</string>
+    <string name="str_nonlocal_name_fmt">%1$s (リモート)</string>
+    <string name="vs_join">" 対 "</string>
+
+    <string name="str_bonus_all">すべてのタイルを使用するボーナス: 50\n</string>
+    <string name="strd_turn_score_fmt">順番のスコア: %1$d\n</string>
+
+    <plurals name="strd_remains_header_fmt">
+	<item quantity="one">%1$d のタイルがプールに残っています。</item>
+	<item quantity="other"/>
+</plurals>
+    <plurals name="strd_remains_expl_fmt">
+	<item quantity="one">%1$d のタイルがプールとすべてのトレイに残っています:\n</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="confirm_undo_last">最後に反映した順番を元に戻してもよろしいですか? (やり直しのオプションはありません)</string>
+
+    <string name="title_prefs">クロスワードの設定</string>
+
+    <string name="button_revert_all">すべて復元</string>
+    <string name="confirm_revert_colors">すべての色設定を元の値に復元してもよろしいですか?</string>
+    <string name="button_revert_colors">色を復元</string>
+    <string name="confirm_revert_all">すべての設定を元の値に復元してもよろしいですか?</string>
+
+    <string name="prefs_defaults">新規ゲームのデフォルト</string>
+    <string name="prefs_defaults_summary">新規ゲームのデフォルト設定</string>
+
+    <string name="prefs_names">プレイヤー名</string>
+
+    <string name="prefs_names_summary">デフォルトのプレイヤー名</string>
+
+    <string name="pref_player1_name">最初のプレイヤー</string>
+    <string name="pref_player2_name">2 番目のプレイヤー</string>
+    <string name="pref_player3_name">3 番目のプレイヤー</string>
+    <string name="pref_player4_name">4 番目のプレイヤー</string>
+
+    <string name="pref_human_name">人間のプレイヤー</string>
+
+    <string name="tell_unused">まだ利用しません…</string>
+
+    <string name="prefs_dicts">単語リスト</string>
+    <string name="prefs_dicts_summary">デフォルトの単語リスト</string>
+
+    <string name="default_dict">人間用の単語リスト</string>
+    <string name="default_robodict">ロボット用の単語リスト</string>
+
+    <string name="hints_allowed_sum">ヒント機能を有効にします</string>
+
+    <string name="nethints_allowed_sum">2 デバイス用のゲームのヒントを有効にします</string>
+
+    <string name="init_autojuggle">プレイヤーを両立</string>
+    <string name="init_autojuggle_sum">新しいゲームで、ランダムに</string>
+
+    <string name="default_phonies">偽物の扱い</string>
+
+    <string name="initial_player_minutes">プレイヤーごとのタイマー分数</string>
+
+    <string name="board_size">ボードのサイズ</string>
+
+    <string name="prefs_appearance">外観</string>
+    <string name="prefs_appearance_summary">外観をコントロールする設定</string>
+
+    <string name="summary_field">ゲームのリストに含めます</string>
+
+    <string name="game_summary_field_empty">&lt;なし&gt;</string>
+    <string name="game_summary_field_language">ゲームの言語</string>
+    <string name="game_summary_field_opponents">対戦相手名</string>
+    <string name="game_summary_field_state">ゲームの状態</string>
+
+    <string name="hide_title">タイトルバーを非表示にする</string>
+    <string name="hide_title_summary">ゲームの名前を非表示にすると、ボードを少し大きくすることができます</string>
+
+    <string name="hide_newgames_title">新しいゲーム ボタンを非表示にする</string>
+    <string name="hide_newgames_summary">メイン画面で、新しいゲーム ボタンを非表示にすると、より多くのゲームを表示します</string>
+
+    <string name="show_arrow">ボードの矢印を表示</string>
+    <string name="show_arrow_summary">表示すると、この矢印の上にタップしたラックのタイルが着地します</string>
+
+    <string name="keep_screenon">画面をオンのままにする</string>
+    <string name="keep_screenon_summary">10 分、ボード画面をオンのままにします</string>
+
+    <string name="prefs_colors">個別の色</string>
+    <string name="prefs_colors_summary">ボードに使用される色を編集します</string>
+
+    <string name="bonus_l2x">ダブルレター</string>
+    <string name="bonus_l3x">トリプルレター</string>
+    <string name="bonus_w2x">ダブルワード</string>
+    <string name="bonus_w3x">トリプルワード</string>
+
+    <string name="clr_crosshairs">十字カーソルの色</string>
+
+    <string name="tile_back">タイルの背景</string>
+
+    <string name="empty">空のマス/背景</string>
+
+    <string name="background">ボードの背景</string>
+
+    <string name="key_bonushint">マス内ボーナスのヒント</string>
+
+    <string name="red">赤</string>
+    <string name="green">緑</string>
+    <string name="blue">青</string>
+    
+
+    <string name="prefs_behavior">動作</string>
+    <string name="prefs_behavior_summary">アプリの動作をコントロールする設定</string>
+
+    <string name="explain_robot">他の動きを説明</string>
+    <string name="explain_robot_summary">すべてのロボットやリモートの順番の後で、スコアの要約を表示します</string>
+
+    <string name="skip_confirm_turn">確認の順番をスキップ</string>
+    <string name="skip_confirm_turn_summary">人間の順番の後で、スコアを概要を表示しません</string>
+
+    <string name="title_sort_tiles">新しいタイルを並べ替え</string>
+    <string name="summary_sort_tiles">新しいタイルを追加した場合、ラックを並べ替えます</string>
+
+    <string name="ringer_zoom">音量キーでズーム</string>
+    <string name="ringer_zoom_summary">音量キーを使ってボードをズームします</string>
+
+    <string name="peek_other">順番外のタイルを表示</string>
+    <string name="peek_other_summary">スコアボードの名前をタップすると、そのプレイヤーのタイルを表示します</string>
+
+    
+    <string name="hide_crosshairs">十字カーソルを無効にする</string>
+    <string name="hide_crosshairs_summary">ボードのどのマスをタッチしたかを視覚的に示しません</string>
+
+    </resources>
