@@ -24,12 +24,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -590,6 +592,7 @@ public class GamesListDelegate extends ListDelegateBase
     private Button[] m_newGameButtons;
     private boolean m_haveShownGetDict;
     private Intent m_rematchIntent;
+    private boolean m_longClickMenusEnabled = true;
 
     public GamesListDelegate( ListDelegator delegator, Bundle sis )
     {
@@ -1053,7 +1056,8 @@ public class GamesListDelegate extends ListDelegateBase
     // OnItemLongClickListener interface
     public boolean onItemLongClick( AdapterView<?> parent, View view, 
                                     int position, long id ) {
-        boolean success = view instanceof SelectableItem.LongClickHandler;
+        boolean success = ! m_longClickMenusEnabled
+            && view instanceof SelectableItem.LongClickHandler;
         if ( success ) {
             ((SelectableItem.LongClickHandler)view).longClicked();
         }
@@ -1399,10 +1403,10 @@ public class GamesListDelegate extends ListDelegateBase
     {
         Assert.assertTrue( m_menuPrepared );
 
+        String msg;
         int itemID = item.getItemId();
         boolean handled = true;
         boolean changeContent = false;
-        boolean dropSels = false;
         int groupPos = getSelGroupPos();
         long groupID = DBUtils.GROUPID_UNSPEC;
         if ( 0 <= groupPos ) {
@@ -1432,10 +1436,6 @@ public class GamesListDelegate extends ListDelegateBase
         case R.id.games_menu_newgroup:
             m_moveAfterNewGroup = false;
             showDialog( DlgID.NEW_GROUP );
-            break;
-
-        case R.id.games_game_config:
-            GameUtils.doConfig( m_activity, selRowIDs[0], GameConfigActivity.class );
             break;
 
         case R.id.games_menu_dicts:
@@ -1489,57 +1489,6 @@ public class GamesListDelegate extends ListDelegateBase
             showToast( R.string.db_store_done );
             break;
 
-            // Game menus: one or more games selected
-        case R.id.games_game_delete:
-            String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt, 
-                                            selRowIDs.length, selRowIDs.length );
-            showConfirmThen( msg, R.string.button_delete, 
-                             Action.DELETE_GAMES, selRowIDs );
-            break;
-
-        case R.id.games_game_move:
-            m_rowids = selRowIDs;
-            showDialog( DlgID.CHANGE_GROUP );
-            break;
-        case R.id.games_game_new_from:
-            dropSels = true;    // will select the new game instead
-            showNotAgainDlgThen( R.string.not_again_newfrom,
-                                 R.string.key_notagain_newfrom, 
-                                 Action.NEW_FROM, selRowIDs[0] );
-            break;
-        case R.id.games_game_copy:
-            final GameSummary smry = DBUtils.getSummary( m_activity, selRowIDs[0] );
-            if ( smry.inRelayGame() ) {
-                showOKOnlyDialog( R.string.no_copy_network );
-            } else {
-                dropSels = true;    // will select the new game instead
-                post( new Runnable() {
-                        public void run() {
-                            Activity self = m_activity;
-                            byte[] stream =
-                                GameUtils.savedGame( self, selRowIDs[0] );
-                            long groupID = XWPrefs
-                                .getDefaultNewGameGroup( self );
-                            GameLock lock = 
-                                GameUtils.saveNewGame( self, stream, groupID );
-                            DBUtils.saveSummary( self, lock, smry );
-                            m_selGames.add( lock.getRowid() );
-                            lock.unlock();
-                            mkListAdapter();
-                        }
-                    });
-            }
-            break;
-
-        case R.id.games_game_reset:
-            doConfirmReset( selRowIDs );
-            break;
-
-        case R.id.games_game_rename:
-            m_rowid = selRowIDs[0];
-            showDialog( DlgID.RENAME_GAME );
-            break;
-
             // Group menus
         case R.id.games_group_delete:
             long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
@@ -1579,17 +1528,33 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         default:
-            handled = false;
+            handled = handleSelGamesItem( itemID, selRowIDs );
         }
 
-        if ( dropSels ) {
-            clearSelections();
-        }
         if ( changeContent ) {
             mkListAdapter();
         }
 
         return handled;// || super.onOptionsItemSelected( item );
+    }
+
+    public void onCreateContextMenu( ContextMenu menu, View view, 
+                                     ContextMenuInfo menuInfo )
+    {
+        super.onCreateContextMenu( menu, view, menuInfo );
+        m_activity.getMenuInflater()
+            .inflate( R.menu.games_list_ctxt_menu, menu );
+    }
+
+    public boolean onContextItemSelected( MenuItem item ) 
+    {
+        AdapterView.AdapterContextMenuInfo info
+            = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+        GameListItem child = (GameListItem)info.targetView;
+
+        long[] rowIDs = { child.getRowID() };
+        return handleSelGamesItem( item.getItemId(), rowIDs )
+            || super.onContextItemSelected( item );
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -1635,6 +1600,76 @@ public class GamesListDelegate extends ListDelegateBase
             invalidateOptionsMenuIf();
             setTitleBar();
         }
+    }
+
+    private boolean handleSelGamesItem( int itemID, final long[] selRowIDs )
+    {
+        boolean handled = true;
+        boolean dropSels = false;
+
+        switch( itemID ) {
+        case R.id.games_game_delete:
+            String msg = getQuantityString( R.plurals.confirm_seldeletes_fmt, 
+                                            selRowIDs.length, selRowIDs.length );
+            showConfirmThen( msg, R.string.button_delete, 
+                             Action.DELETE_GAMES, selRowIDs );
+            break;
+
+        case R.id.games_game_config:
+            GameUtils.doConfig( m_activity, selRowIDs[0], GameConfigActivity.class );
+            break;
+
+        case R.id.games_game_move:
+            m_rowids = selRowIDs;
+            showDialog( DlgID.CHANGE_GROUP );
+            break;
+        case R.id.games_game_new_from:
+            dropSels = true;    // will select the new game instead
+            showNotAgainDlgThen( R.string.not_again_newfrom,
+                                 R.string.key_notagain_newfrom, 
+                                 Action.NEW_FROM, selRowIDs[0] );
+            break;
+        case R.id.games_game_copy:
+            final GameSummary smry = DBUtils.getSummary( m_activity, selRowIDs[0] );
+            if ( smry.inRelayGame() ) {
+                showOKOnlyDialog( R.string.no_copy_network );
+            } else {
+                dropSels = true;    // will select the new game instead
+                post( new Runnable() {
+                        public void run() {
+                            Activity self = m_activity;
+                            byte[] stream =
+                                GameUtils.savedGame( self, selRowIDs[0] );
+                            long groupID = XWPrefs
+                                .getDefaultNewGameGroup( self );
+                            GameLock lock = 
+                                GameUtils.saveNewGame( self, stream, groupID );
+                            DBUtils.saveSummary( self, lock, smry );
+                            m_selGames.add( lock.getRowid() );
+                            lock.unlock();
+                            mkListAdapter();
+                        }
+                    });
+            }
+            break;
+
+        case R.id.games_game_reset:
+            doConfirmReset( selRowIDs );
+            break;
+
+        case R.id.games_game_rename:
+            m_rowid = selRowIDs[0];
+            showDialog( DlgID.RENAME_GAME );
+            break;
+        default:
+            handled = false;
+        }
+
+        if ( dropSels ) {
+            clearSelections();
+        }
+
+        return handled;
     }
 
     private void setupButtons()
@@ -2229,7 +2264,9 @@ public class GamesListDelegate extends ListDelegateBase
         m_adapter = new GameListAdapter();
         setListAdapterKeepScroll( m_adapter );
 
-        // ListView listview = getListView();
+         ListView listView = getListView();
+         m_activity.registerForContextMenu( listView );
+
         // String field = CommonPrefs.getSummaryField( m_activity );
         // long[] positions = XWPrefs.getGroupPositions( m_activity );
         // GameListAdapter adapter = 

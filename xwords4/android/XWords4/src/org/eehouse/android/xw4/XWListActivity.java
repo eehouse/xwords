@@ -24,8 +24,11 @@ import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 public class XWListActivity extends ListActivity implements ListDelegator {
 
@@ -122,6 +125,19 @@ public class XWListActivity extends ListActivity implements ListDelegator {
     public boolean onCreateOptionsMenu( Menu menu ) 
     {
         return m_dlgt.onCreateOptionsMenu( menu );
+    }
+
+    @Override
+    public void onCreateContextMenu( ContextMenu menu, View view,
+                                     ContextMenuInfo menuInfo )
+    {
+        m_dlgt.onCreateContextMenu( menu, view, menuInfo );
+    }
+
+    @Override
+    public boolean onContextItemSelected( MenuItem item )
+    {
+        return m_dlgt.onContextItemSelected( item );
     }
 
     @Override
