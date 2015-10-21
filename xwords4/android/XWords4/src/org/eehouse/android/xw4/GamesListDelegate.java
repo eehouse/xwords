@@ -592,7 +592,6 @@ public class GamesListDelegate extends ListDelegateBase
     private Button[] m_newGameButtons;
     private boolean m_haveShownGetDict;
     private Intent m_rematchIntent;
-    private boolean m_longClickMenusEnabled = true;
 
     public GamesListDelegate( ListDelegator delegator, Bundle sis )
     {
@@ -1056,7 +1055,7 @@ public class GamesListDelegate extends ListDelegateBase
     // OnItemLongClickListener interface
     public boolean onItemLongClick( AdapterView<?> parent, View view, 
                                     int position, long id ) {
-        boolean success = ! m_longClickMenusEnabled
+        boolean success = ! XWApp.CONTEXT_MENUS_ENABLED
             && view instanceof SelectableItem.LongClickHandler;
         if ( success ) {
             ((SelectableItem.LongClickHandler)view).longClicked();
@@ -1489,46 +1488,9 @@ public class GamesListDelegate extends ListDelegateBase
             showToast( R.string.db_store_done );
             break;
 
-            // Group menus
-        case R.id.games_group_delete:
-            long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
-            if ( m_selGroupIDs.contains( dftGroup ) ) {
-                msg = getString( R.string.cannot_delete_default_group_fmt,
-                                 m_adapter.groupName( dftGroup ) );
-                showOKOnlyDialog( msg );
-            } else {
-                long[] groupIDs = getSelGroupIDs();
-                Assert.assertTrue( 0 < groupIDs.length );
-                msg = getQuantityString( R.plurals.groups_confirm_del_fmt, 
-                                         groupIDs.length, groupIDs.length );
-
-                int nGames = 0;
-                for ( long tmp : groupIDs ) {
-                    nGames += m_adapter.getChildrenCount( tmp );
-                }
-                if ( 0 < nGames ) {
-                    msg += getQuantityString( R.plurals.groups_confirm_del_games_fmt,
-                                              nGames, nGames );
-                }
-                showConfirmThen( msg, Action.DELETE_GROUPS, groupIDs );
-            }
-            break;
-        case R.id.games_group_default:
-            XWPrefs.setDefaultNewGameGroup( m_activity, groupID );
-            break;
-        case R.id.games_group_rename:
-            m_groupid = groupID;
-            showDialog( DlgID.RENAME_GROUP );
-            break;
-        case R.id.games_group_moveup:
-            moveGroup( groupID, true );
-            break;
-        case R.id.games_group_movedown:
-            moveGroup( groupID, false );
-            break;
-
         default:
-            handled = handleSelGamesItem( itemID, selRowIDs );
+            handled = handleSelGamesItem( itemID, selRowIDs )
+                || handleSelGroupsItem( itemID, getSelGroupIDs() );
         }
 
         if ( changeContent ) {
@@ -1542,19 +1504,59 @@ public class GamesListDelegate extends ListDelegateBase
                                      ContextMenuInfo menuInfo )
     {
         super.onCreateContextMenu( menu, view, menuInfo );
-        m_activity.getMenuInflater()
-            .inflate( R.menu.games_list_ctxt_menu, menu );
+
+        int id = 0;
+        boolean selected = false;
+        AdapterView.AdapterContextMenuInfo info
+            = (AdapterView.AdapterContextMenuInfo)menuInfo;
+        View targetView = info.targetView;
+        DbgUtils.logf( "onCreateContextMenu(t=%s)", 
+                       targetView.getClass().getName() );
+        if ( targetView instanceof GameListItem ) {
+            id = R.menu.games_list_item_menu;
+
+            long rowID = ((GameListItem)targetView).getRowID();
+            selected = m_selGames.contains( rowID ); 
+        } else if ( targetView instanceof GameListGroup ) {
+            id = R.menu.games_list_group_menu;
+
+            long groupID = ((GameListGroup)targetView).getGroupID();
+            selected = m_selGroupIDs.contains( groupID ); 
+        } else {
+            Assert.fail();
+        }
+
+        if ( 0 != id ) {
+            m_activity.getMenuInflater().inflate( id, menu );
+
+            int hideId = selected
+                ? R.id.games_game_select : R.id.games_game_deselect;
+            Utils.setItemVisible( menu, hideId, false );
+        }
     }
 
     public boolean onContextItemSelected( MenuItem item ) 
     {
+        boolean handled = true;
         AdapterView.AdapterContextMenuInfo info
             = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-        GameListItem child = (GameListItem)info.targetView;
+        View targetView = info.targetView;
 
-        long[] rowIDs = { child.getRowID() };
-        return handleSelGamesItem( item.getItemId(), rowIDs )
-            || super.onContextItemSelected( item );
+        int itemID = item.getItemId();
+        if ( ! handleToggleItem( itemID, targetView ) ) {
+            long[] selIds = new long[1];
+            if ( targetView instanceof GameListItem ) {
+                selIds[0] = ((GameListItem)targetView).getRowID();
+                handled = handleSelGamesItem( itemID, selIds );
+            } else if ( targetView instanceof GameListGroup ) {
+                selIds[0] = ((GameListGroup)targetView).getGroupID();
+                handled = handleSelGroupsItem( itemID, selIds );
+            } else {
+                Assert.fail();
+            }
+        }
+        
+        return handled || super.onContextItemSelected( item );
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -1600,6 +1602,24 @@ public class GamesListDelegate extends ListDelegateBase
             invalidateOptionsMenuIf();
             setTitleBar();
         }
+    }
+
+    private boolean handleToggleItem( int itemID, View target )
+    {
+        boolean handled;
+        switch( itemID ) {
+        case R.id.games_game_select:
+        case R.id.games_game_deselect:
+            SelectableItem.LongClickHandler toggled 
+                = (SelectableItem.LongClickHandler)target;
+            toggled.longClicked();
+            handled = true;
+            break;
+        default:
+            handled = false;
+        }
+
+        return handled;
     }
 
     private boolean handleSelGamesItem( int itemID, final long[] selRowIDs )
@@ -1669,6 +1689,54 @@ public class GamesListDelegate extends ListDelegateBase
             clearSelections();
         }
 
+        return handled;
+    }
+
+    private boolean handleSelGroupsItem( int itemID, long[] groupIDs )
+    {
+        boolean handled = true;
+        String msg;
+        Assert.assertTrue( 0 < groupIDs.length );
+        long groupID = groupIDs[0];
+        switch( itemID ) {
+        case R.id.games_group_delete:
+            long dftGroup = XWPrefs.getDefaultNewGameGroup( m_activity );
+            if ( m_selGroupIDs.contains( dftGroup ) ) {
+                msg = getString( R.string.cannot_delete_default_group_fmt,
+                                 m_adapter.groupName( dftGroup ) );
+                showOKOnlyDialog( msg );
+            } else {
+                Assert.assertTrue( 0 < groupIDs.length );
+                msg = getQuantityString( R.plurals.groups_confirm_del_fmt, 
+                                         groupIDs.length, groupIDs.length );
+
+                int nGames = 0;
+                for ( long tmp : groupIDs ) {
+                    nGames += m_adapter.getChildrenCount( tmp );
+                }
+                if ( 0 < nGames ) {
+                    msg += getQuantityString( R.plurals.groups_confirm_del_games_fmt,
+                                              nGames, nGames );
+                }
+                showConfirmThen( msg, Action.DELETE_GROUPS, groupIDs );
+            }
+            break;
+        case R.id.games_group_default:
+            XWPrefs.setDefaultNewGameGroup( m_activity, groupID );
+            break;
+        case R.id.games_group_rename:
+            m_groupid = groupID;
+            showDialog( DlgID.RENAME_GROUP );
+            break;
+        case R.id.games_group_moveup:
+            moveGroup( groupID, true );
+            break;
+        case R.id.games_group_movedown:
+            moveGroup( groupID, false );
+            break;
+        default:
+            handled = false;
+        }
         return handled;
     }
 

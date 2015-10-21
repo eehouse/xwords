@@ -2620,4 +2620,7 @@
   <string name="rel_invite_title">Relay invite title</string>
   <string name="fetching_from_relay">Fetching games from relay</string>
   <string name="processing_games">Processing games</string>
+
+  <string name="list_item_select">Select</string>
+  <string name="list_item_deselect">De-select</string>
 </resources>

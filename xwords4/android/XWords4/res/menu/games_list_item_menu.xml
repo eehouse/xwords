@@ -22,5 +22,10 @@
     <item android:id="@+id/games_game_copy"
           android:title="@string/list_item_copy"
           />
-
+    <item android:id="@+id/games_game_select"
+          android:title="@string/list_item_select"
+          />
+    <item android:id="@+id/games_game_deselect"
+          android:title="@string/list_item_deselect"
+          />
 </menu>
