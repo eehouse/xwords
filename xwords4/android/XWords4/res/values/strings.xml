@@ -163,7 +163,7 @@
 
     <plurals name="confirm_seldeletes_fmt">
       <item quantity="one">Are you sure you want to delete
-      the %1$d selected game? This action cannot be undone.</item>
+      the selected game? This action cannot be undone.</item>
       <item quantity="other">Are you sure you want to delete
       the %1$d selected games? This action cannot be undone.</item>
     </plurals>
@@ -171,7 +171,7 @@
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
     <plurals name="confirm_reset_fmt">
-      <item quantity="one">Are you sure you want to reset the %1$d
+      <item quantity="one">Are you sure you want to reset the
       selected game?\n\n(Resetting erases all moves and any connection
       information.)</item>
       <item quantity="other">Are you sure you want to reset the %1$d

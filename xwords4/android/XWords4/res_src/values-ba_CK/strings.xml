@@ -143,14 +143,14 @@
     no( siht ecived )ylno ot:</string>
   <plurals name="confirm_seldeletes_fmt">
     <item quantity="one">Era uoy erus uoy tnaw ot eteled
-      eht %1$d detceles ?emag Siht noitca tonnac eb enodnu.</item>
+      eht detceles ?emag Siht noitca tonnac eb enodnu.</item>
     <item quantity="other">Era uoy erus uoy tnaw ot eteled
       eht %1$d detceles ?semag Siht noitca tonnac eb enodnu.</item>
   </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
   <plurals name="confirm_reset_fmt">
-    <item quantity="one">Era uoy erus uoy tnaw ot teser eht %1$d
+    <item quantity="one">Era uoy erus uoy tnaw ot teser eht
       detceles ?emag\n\ngNitteser( sesare lla sevom dna yna noitcennoc
       noitamrofni.)</item>
     <item quantity="other">Era uoy erus uoy tnaw ot teser eht %1$d

@@ -143,14 +143,14 @@
     (ON THIS DEVICE ONLY) TO:</string>
   <plurals name="confirm_seldeletes_fmt">
     <item quantity="one">ARE YOU SURE YOU WANT TO DELETE
-      THE %1$d SELECTED GAME? THIS ACTION CANNOT BE UNDONE.</item>
+      THE SELECTED GAME? THIS ACTION CANNOT BE UNDONE.</item>
     <item quantity="other">ARE YOU SURE YOU WANT TO DELETE
       THE %1$d SELECTED GAMES? THIS ACTION CANNOT BE UNDONE.</item>
   </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
   <plurals name="confirm_reset_fmt">
-    <item quantity="one">ARE YOU SURE YOU WANT TO RESET THE %1$d
+    <item quantity="one">ARE YOU SURE YOU WANT TO RESET THE
       SELECTED GAME?\n\n(RESETTING ERASES ALL MOVES AND ANY CONNECTION
       INFORMATION.)</item>
     <item quantity="other">ARE YOU SURE YOU WANT TO RESET THE %1$d
