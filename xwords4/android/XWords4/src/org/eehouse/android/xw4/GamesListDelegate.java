@@ -1513,7 +1513,7 @@ public class GamesListDelegate extends ListDelegateBase
         DbgUtils.logf( "onCreateContextMenu(t=%s)", 
                        targetView.getClass().getName() );
         if ( targetView instanceof GameListItem ) {
-            id = R.menu.games_list_item_menu;
+            id = R.menu.games_list_game_menu;
 
             long rowID = ((GameListItem)targetView).getRowID();
             selected = m_selGames.contains( rowID ); 
