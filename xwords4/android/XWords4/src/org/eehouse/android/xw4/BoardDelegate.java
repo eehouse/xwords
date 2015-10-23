@@ -23,8 +23,9 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface.OnClickListener;
+import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -2530,23 +2531,39 @@ public class BoardDelegate extends DelegateBase
     // For now, supported if standalone or either BT or SMS used for transport
     private boolean rematchSupported( boolean showMulti )
     {
+        return rematchSupported( showMulti ? m_activity : null,
+                                 m_summary );
+    }
+
+    public static boolean rematchSupported( GameSummary summary )
+    {
+        return rematchSupported( null, summary );
+    }
+
+    private static boolean rematchSupported( Context context, 
+                                             GameSummary summary )
+    {
         boolean supported = false;
         if ( XWApp.REMATCH_SUPPORTED ) {
             // standalone games are easy to rematch
-            supported = m_gi.serverRole == DeviceRole.SERVER_STANDALONE;
+            supported = summary.serverRole == DeviceRole.SERVER_STANDALONE;
 
-            if ( !supported )
-                if ( 2 == m_gi.nPlayers ) {
-                    supported = m_connTypes.contains( CommsConnType.COMMS_CONN_BT )
-                        || m_connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
-                        || m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
-                } else if ( showMulti ) {
+            if ( !supported ) {
+                if ( 2 == summary.nPlayers ) {
+                    if ( !summary.anyMissing() ) {
+                        CommsConnTypeSet connTypes = summary.conTypes;
+                        supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
+                            || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
+                            || connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
+                    }
+                } else if ( null != context ) {
                     // show the button if people haven't dismissed the hint yet
                     supported = ! XWPrefs
-                        .getPrefsBoolean( m_activity, 
+                        .getPrefsBoolean( context, 
                                           R.string.key_na_rematch_two_only, 
                                           false );
                 }
+            }
         }
         return supported;
     }

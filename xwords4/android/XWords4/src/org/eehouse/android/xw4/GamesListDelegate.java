@@ -1355,6 +1355,15 @@ public class GamesListDelegate extends ListDelegateBase
                 .contains( XWPrefs.getDefaultNewGameGroup( m_activity ) );
             Utils.setItemVisible( menu, R.id.games_group_default, enable );
 
+            // Rematch supported if there's one game selected
+            enable = 1 == nGamesSelected;
+            if ( enable ) {
+                GameSummary summary = DBUtils.getSummary( m_activity, 
+                                                          getSelRowIDs()[0] );
+                enable = BoardDelegate.rematchSupported( summary );
+            }
+            Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
+
             // Move up/down enabled for groups if not the top-most or bottommost
             // selected
             enable = 1 == nGroupsSelected;
@@ -1507,6 +1516,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         int id = 0;
         boolean selected = false;
+        long gameRowID = 0;
         AdapterView.AdapterContextMenuInfo info
             = (AdapterView.AdapterContextMenuInfo)menuInfo;
         View targetView = info.targetView;
@@ -1515,8 +1525,8 @@ public class GamesListDelegate extends ListDelegateBase
         if ( targetView instanceof GameListItem ) {
             id = R.menu.games_list_game_menu;
 
-            long rowID = ((GameListItem)targetView).getRowID();
-            selected = m_selGames.contains( rowID ); 
+            gameRowID = ((GameListItem)targetView).getRowID();
+            selected = m_selGames.contains( gameRowID ); 
         } else if ( targetView instanceof GameListGroup ) {
             id = R.menu.games_list_group_menu;
 
@@ -1532,6 +1542,12 @@ public class GamesListDelegate extends ListDelegateBase
             int hideId = selected
                 ? R.id.games_game_select : R.id.games_game_deselect;
             Utils.setItemVisible( menu, hideId, false );
+
+            if ( 0 != gameRowID ) {
+                GameSummary summary = DBUtils.getSummary(m_activity, gameRowID);
+                boolean enable = BoardDelegate.rematchSupported( summary );
+                Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
+            }
         }
     }
 
@@ -1633,6 +1649,11 @@ public class GamesListDelegate extends ListDelegateBase
                                             selRowIDs.length, selRowIDs.length );
             showConfirmThen( msg, R.string.button_delete, 
                              Action.DELETE_GAMES, selRowIDs );
+            break;
+
+        case R.id.games_game_rematch:
+            Assert.assertTrue( 1 == selRowIDs.length );
+            Utils.notImpl( m_activity );
             break;
 
         case R.id.games_game_config:

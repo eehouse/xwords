@@ -4,6 +4,9 @@
     <item android:id="@+id/games_game_delete"
           android:title="@string/list_item_delete"
           />
+    <item android:id="@+id/games_game_rematch"
+          android:title="@string/button_rematch"
+          />
     <item android:id="@+id/games_game_config"
           android:title="@string/list_item_config"
           />
