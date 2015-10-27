@@ -1358,9 +1358,8 @@ public class GamesListDelegate extends ListDelegateBase
             // Rematch supported if there's one game selected
             enable = 1 == nGamesSelected;
             if ( enable ) {
-                GameSummary summary = DBUtils.getSummary( m_activity, 
-                                                          getSelRowIDs()[0] );
-                enable = BoardDelegate.rematchSupported( summary );
+                enable = BoardDelegate.rematchSupported( m_activity, 
+                                                         getSelRowIDs()[0] );
             }
             Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
 
@@ -1544,8 +1543,8 @@ public class GamesListDelegate extends ListDelegateBase
             Utils.setItemVisible( menu, hideId, false );
 
             if ( 0 != gameRowID ) {
-                GameSummary summary = DBUtils.getSummary(m_activity, gameRowID);
-                boolean enable = BoardDelegate.rematchSupported( summary );
+                boolean enable = BoardDelegate.rematchSupported( m_activity, 
+                                                                 gameRowID );
                 Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
             }
         }

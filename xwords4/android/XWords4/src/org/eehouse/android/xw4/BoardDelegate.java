@@ -2535,9 +2535,10 @@ public class BoardDelegate extends DelegateBase
                                  m_summary );
     }
 
-    public static boolean rematchSupported( GameSummary summary )
+    public static boolean rematchSupported( Context context, long rowID )
     {
-        return rematchSupported( null, summary );
+        GameSummary summary = DBUtils.getSummary( context, rowID, 1 );
+        return null != summary && rematchSupported( null, summary );
     }
 
     private static boolean rematchSupported( Context context, 
