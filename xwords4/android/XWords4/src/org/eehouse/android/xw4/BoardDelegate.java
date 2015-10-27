@@ -2570,19 +2570,33 @@ public class BoardDelegate extends DelegateBase
 
     private void doRematchIf()
     {
+        if ( doRematchIf( m_activity, this, m_rowid, m_summary, m_gi, 
+                          m_jniGamePtr ) ) {
+            finish();
+        }
+    }
+
+    private static boolean doRematchIf( Activity activity, DelegateBase dlgt, 
+                                        long rowid, GameSummary summary, 
+                                        CurGameInfo gi, int jniGamePtr )
+    {
+        boolean success = false;
         if ( XWApp.REMATCH_SUPPORTED ) {
             boolean doIt = true;
             String phone = null;
             String btAddr = null;
             String relayID = null;
-            if ( DeviceRole.SERVER_STANDALONE == m_gi.serverRole ) {
+            if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
                 // nothing to do??
-            } else if ( 2 != m_gi.nPlayers ) {
-                showNotAgainDlg( R.string.not_again_rematch_two_only, 
-                                 R.string.key_na_rematch_two_only );
+            } else if ( 2 != gi.nPlayers ) {
+                Assert.assertNotNull( dlgt );
+                if ( null != dlgt ) {
+                    dlgt.showNotAgainDlg( R.string.not_again_rematch_two_only, 
+                                          R.string.key_na_rematch_two_only );
+                }
                 doIt = false;
             } else {
-                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
+                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
                 for ( int ii = 0; ii < addrs.length; ++ii ) {
                     CommsAddrRec addr = addrs[ii];
                     if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
@@ -2595,22 +2609,41 @@ public class BoardDelegate extends DelegateBase
                     }
                     if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                         Assert.assertNull( relayID );
-                        relayID = XwJNI.comms_formatRelayID( m_jniGamePtr, ii );
+                        relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
                     }
                 }
             }
 
             if ( doIt ) {
-                String newName = m_summary.getRematchName();
+                CommsConnTypeSet connTypes = summary.conTypes;
+                String newName = summary.getRematchName();
                 Intent intent = GamesListDelegate
-                    .makeRematchIntent( m_activity, m_rowid, m_gi.dictName, 
-                                        m_gi.dictLang, m_connTypes, btAddr, 
+                    .makeRematchIntent( activity, rowid, gi.dictName, 
+                                        gi.dictLang, connTypes, btAddr, 
                                         phone, relayID, newName );
                 if ( null != intent ) {
-                    startActivity( intent );
-                    finish();
+                    activity.startActivity( intent );
+                    success = true;
                 }
             }
+        }
+        return success;
+    }
+
+    public static void setupRematchFor( Activity activity, long rowID )
+    {
+        GameLock lock = new GameLock( rowID, false );
+        if ( lock.tryLock() ) {
+            GameSummary summary = DBUtils.getSummary( activity, lock );
+            CurGameInfo gi = new CurGameInfo( activity );
+            int gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+
+            doRematchIf( activity, null, rowID, summary, gi, gamePtr );
+
+            XwJNI.game_dispose( gamePtr );
+            lock.unlock();
+        } else {
+            DbgUtils.logf( "setupRematchFor(): unable to lock game" );
         }
     }
 

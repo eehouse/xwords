@@ -1653,7 +1653,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         case R.id.games_game_rematch:
             Assert.assertTrue( 1 == selRowIDs.length );
-            Utils.notImpl( m_activity );
+            BoardDelegate.setupRematchFor( m_activity, selRowIDs[0] );
             break;
 
         case R.id.games_game_config:
