@@ -94,7 +94,6 @@ public class GameConfigDelegate extends DelegateBase
     private boolean m_forResult;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
-    private GameLock m_gameLock;
     private int m_whichPlayer;
     // private Spinner m_roleSpinner;
     // private Spinner m_connectSpinner;
@@ -509,10 +508,6 @@ public class GameConfigDelegate extends DelegateBase
 
     protected void onPause()
     {
-        if ( null != m_gameLock ) {
-            m_gameLock.unlock();
-            m_gameLock = null;
-        }
         m_giOrig = null;        // flag for onStart and onResume
         super.onPause();
     }
@@ -549,10 +544,8 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == m_giOrig ) {
             m_giOrig = new CurGameInfo( m_activity );
 
-            // Lock in case we're going to config.  We *could* re-get the
-            // lock once the user decides to make changes.  PENDING.
-            m_gameLock = new GameLock( m_rowid, true ).lock();
-            int gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, m_gameLock );
+            GameLock gameLock = new GameLock( m_rowid, false ).lock();
+            int gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
             if ( 0 == gamePtr ) {
                 showDictGoneFinish();
             } else {
@@ -586,6 +579,8 @@ public class GameConfigDelegate extends DelegateBase
                 }
                 m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
                 XwJNI.game_dispose( gamePtr );
+
+                gameLock.unlock();
 
                 m_car = new CommsAddrRec( m_carOrig );
 
@@ -699,7 +694,7 @@ public class GameConfigDelegate extends DelegateBase
 
     public void onClick( View view ) 
     {
-        if ( null == m_gameLock ) {
+        if ( isFinishing() ) {
             // do nothing; we're on the way out
         } else if ( m_addPlayerButton == view ) {
             int curIndex = m_gi.nPlayers;
@@ -757,7 +752,7 @@ public class GameConfigDelegate extends DelegateBase
     protected boolean onBackPressed()
     {
         boolean consumed = false;
-        if ( null != m_gameLock ) {
+        if ( ! isFinishing() ) {
             if ( m_forResult ) {
                 deleteGame();
             } else {
@@ -779,16 +774,12 @@ public class GameConfigDelegate extends DelegateBase
 
     private void deleteGame()
     {
-        if ( null != m_gameLock ) {
-            DBUtils.deleteGame( m_activity, m_gameLock );
-            m_gameLock.unlock();
-            m_gameLock = null;
-        }
+        GameUtils.deleteGame( m_activity, m_rowid, false );
     }
 
     private void loadPlayersList()
     {
-        if ( null != m_gameLock ) {
+        if ( !isFinishing() ) {
             m_playerLayout.removeAllViews();
 
             String[] names = m_gi.visibleNames( false );
@@ -888,7 +879,7 @@ public class GameConfigDelegate extends DelegateBase
                     public void onItemSelected(AdapterView<?> parentView, 
                                                View selectedItemView, 
                                                int position, long id ) {
-                        if ( null != m_gameLock ) { // not on the way out?
+                        if ( ! isFinishing() ) { // not on the way out?
                             String chosen = 
                                 (String)parentView.getItemAtPosition( position );
                             if ( chosen.equals( m_browseText ) ) {
@@ -1151,9 +1142,11 @@ public class GameConfigDelegate extends DelegateBase
 
     private void applyChanges( boolean forceNew )
     {
-        if ( null != m_gameLock ) {
-            GameUtils.applyChanges( m_activity, m_gi, m_car, m_gameLock, 
+        if ( !isFinishing() ) {
+            GameLock gameLock = new GameLock( m_rowid, true ).lock();
+            GameUtils.applyChanges( m_activity, m_gi, m_car, gameLock, 
                                     forceNew );
+            gameLock.unlock();
         }
     }
 
@@ -1163,8 +1156,6 @@ public class GameConfigDelegate extends DelegateBase
              && 0 == m_car.ip_relay_invite.length() ) {
             showOKOnlyDialog( R.string.no_empty_rooms );            
         } else {
-            m_gameLock.unlock();
-            m_gameLock = null;
             GameUtils.launchGameAndFinish( m_activity, m_rowid );
         }
     }
