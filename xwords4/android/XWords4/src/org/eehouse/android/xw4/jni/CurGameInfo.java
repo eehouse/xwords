@@ -212,7 +212,7 @@ public class CurGameInfo {
             || allowPickTiles != other.allowPickTiles
             || phoniesAction != other.phoniesAction;
 
-        if ( !matter && DeviceRole.SERVER_STANDALONE != serverRole ) {
+        if ( !matter ) {
             matter = !dictName.equals( other.dictName );
             for ( int ii = 0; !matter && ii < nPlayers; ++ii ) {
                 LocalPlayer me = players[ii];
