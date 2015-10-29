@@ -1156,6 +1156,7 @@ public class GameConfigDelegate extends DelegateBase
             GameLock gameLock = new GameLock( m_rowid, true ).lock();
             GameUtils.applyChanges( m_activity, m_gi, m_car, gameLock, 
                                     forceNew );
+            DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
             gameLock.unlock();
         }
     }
