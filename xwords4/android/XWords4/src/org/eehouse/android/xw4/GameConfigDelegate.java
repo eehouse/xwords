@@ -557,7 +557,6 @@ public class GameConfigDelegate extends DelegateBase
                         m_gameLockedCheck = 
                             (CheckBox)findViewById( R.id.game_locked_check );
                         m_gameLockedCheck.setVisibility( View.VISIBLE );
-                        m_gameLockedCheck.setChecked( true );
                         m_gameLockedCheck.setOnClickListener( this );
                     }
                     handleLockedChange();
@@ -795,6 +794,8 @@ public class GameConfigDelegate extends DelegateBase
                 };
  
             boolean localGame = localOnlyGame();
+            boolean unlocked = null == m_gameLockedCheck
+                || !m_gameLockedCheck.isChecked();
             for ( int ii = 0; ii < names.length; ++ii ) {
                 final XWListItem view = XWListItem.inflate( m_activity, null );
                 view.setPosition( ii );
@@ -806,6 +807,7 @@ public class GameConfigDelegate extends DelegateBase
                     view.setDeleteCallback( this );
                 }
 
+                view.setEnabled( unlocked );
                 view.setOnClickListener( lstnr );
                 m_playerLayout.addView( view );
 
@@ -1040,7 +1042,15 @@ public class GameConfigDelegate extends DelegateBase
         m_isLocked = locking;
         for ( int id : s_disabledWhenLocked ) {
             View view = findViewById( id );
-            view.setEnabled( !m_isLocked );
+            view.setEnabled( !locking );
+        }
+
+        int nChildren = m_playerLayout.getChildCount();
+        for ( int ii = 0; ii < nChildren; ++ii ) {
+            View child = m_playerLayout.getChildAt( ii );
+            if ( child instanceof XWListItem ) {
+                ((XWListItem)child).setEnabled( !locking );
+            }
         }
     }
     
