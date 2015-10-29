@@ -717,7 +717,7 @@ public class GamesListDelegate extends ListDelegateBase
                         String name = m_namer.getName();
                         DBUtils.setGroupName( m_activity,
                                               m_groupid, name );
-                        m_adapter.reloadGame( m_rowid );
+                        reloadGame( m_rowid );
                         mkListAdapter();
                     }
                 };
@@ -965,7 +965,7 @@ public class GamesListDelegate extends ListDelegateBase
         m_launchedGames.clear();
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
-        m_adapter.reloadGame( intent.getLongExtra( ROWID_EXTRA, -1 ) );
+        reloadGame( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         tryStartsFromIntent( intent );
     }
 
@@ -1081,7 +1081,7 @@ public class GamesListDelegate extends ListDelegateBase
                         if ( DBUtils.ROWIDS_ALL == rowid ) { // all changed
                             mkListAdapter();
                         } else {
-                            m_adapter.reloadGame( rowid );
+                            reloadGame( rowid );
                         }
                         break;
                     case GAME_CREATED:
@@ -1210,9 +1210,7 @@ public class GamesListDelegate extends ListDelegateBase
                 long curID = (Long)params[0];
                 long newid = GameUtils.dupeGame( m_activity, curID );
                 m_selGames.add( newid );
-                if ( null != m_adapter ) {
-                    m_adapter.reloadGame( newid );
-                }
+                reloadGame( newid );
                 break;
 
             case NEW_GAME_PRESSED:
@@ -1619,6 +1617,13 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
+    private void reloadGame( long rowID )
+    {
+        if ( null != m_adapter ) {
+            m_adapter.reloadGame( rowID );
+        }
+    }
+
     private boolean handleToggleItem( int itemID, View target )
     {
         boolean handled;
@@ -1898,7 +1903,7 @@ public class GamesListDelegate extends ListDelegateBase
                 long[] rowids = DBUtils.getRowIDsFor( m_activity, relayID );
                 if ( null != rowids ) {
                     for ( long rowid : rowids ) {
-                        m_adapter.reloadGame( rowid );
+                        reloadGame( rowid );
                     }
                 }
             }
