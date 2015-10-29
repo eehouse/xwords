@@ -205,7 +205,8 @@ public class NagTurnReceiver extends BroadcastReceiver {
         for ( int[] datum : s_fmtData ) {
             long val = seconds / datum[0];
             if ( 1 <= val ) {
-                results.add( LocUtils.getQuantityString( context, datum[1], (int)val, val ) );
+                results.add( LocUtils.getQuantityString( context, datum[1], 
+                                                         (int)val, val ) );
                 seconds %= datum[0];
             }
         }
@@ -223,8 +224,8 @@ public class NagTurnReceiver extends BroadcastReceiver {
         }
         if ( null == s_nagsDisabledSolo ) {
             boolean nagsDisabled = 
-                XWPrefs.getPrefsBoolean( context, R.string.key_disable_nag_solo, 
-                                         s_nagsDisabledNet );
+                XWPrefs.getPrefsBoolean( context, R.string.key_disable_nag_solo,
+                                         true );
             s_nagsDisabledSolo = new Boolean( nagsDisabled );
         }
         return s_nagsDisabledNet && s_nagsDisabledSolo;
