@@ -983,7 +983,7 @@
 
 	<string name="default_language">デフォルトの言語</string>
 
-	<string name="title_addrs_pref">次を経由して通信</string>
+	<string name="title_addrs_pref">通信経路</string>
 
     <string name="new_game_networked">新しいネットワーク ゲーム</string>
 
@@ -1016,7 +1016,7 @@
 
     <string name="invite_stays">(このダイアログはすべてリモート プレイヤーが接続するまで表示されます。しばらく時間がかかることが予想される場合は、ゲームを閉じることができます。彼らはそれでも接続できます。)</string>
 
-    <string name="nfc_just_tap">NFC を介して招待するには、招待したい人に対してこのデバイスの背面をタッチしてください —随時ゲームが開かれます。</string>
+    <string name="nfc_just_tap">NFC 経由で招待するには、招待したい人に対してこのデバイスの背面をタッチしてください —随時ゲームが開かれます。</string>
 
     <string name="warn_no_comms">すべてのネットワーク ゲームは、少なくとも 1 つ通信方法が必要です。デフォルトの接続オプションがない場合は、新しいネットワーク ゲームはすべて手動で設定する必要があります。</string>
 
@@ -1079,7 +1079,7 @@
   <string name="pref_group_sms_title">SMS 関連</string>
   <string name="pref_group_sms_summary">Sms 経由のプレイに関連する設定</string>
   <string name="pref_group_relay_title">リレー関連</string>
-  <string name="pref_group_relay_summary">インターネット/リレーを経由したプレイに関連する設定</string>
+  <string name="pref_group_relay_summary">インターネット/リレー経由のプレイに関連する設定</string>
   <string name="pref_group_l10n_title">ローカライズ関連</string>
   <string name="pref_group_l10n_summary">アプリ内ローカライズに関連する設定</string>
   <string name="pref_item_update_title">リリースの間で更新</string>
