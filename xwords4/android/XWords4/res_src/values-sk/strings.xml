@@ -1019,7 +1019,7 @@
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the
          second).  -->
-  <string name="button_delete">XLATE ME: Delete</string>
+  <string name="button_delete">Vymazat</string>
   <!-- about dialog stuff -->
   <string name="about_copyright">Copyright (C) 1998-2012 Eric
     House. Tento software je vydaný pod licenciou GNU Public License.</string>
