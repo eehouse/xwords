@@ -53,8 +53,9 @@ android {
                 res.srcDirs "src/${dir}/res"
             }
 			manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
             assets.srcDirs = ['assets']
-			res.srcDirs = ['res']
+            res.srcDirs = ['res']
             jniLibs.srcDir 'libs' // use the jni .so compiled from the manual ndk-build command
             jni.srcDirs = [] // disable automatic ndk-build call
         }
@@ -65,25 +66,55 @@ android {
     lintOptions {
         abortOnError false
     }
+
+    signingConfigs {
+        release { 
+            String password = System.getenv("KEYSTORE_PASSWORD")
+            if (null == password || ''.equals(password)) {
+                password = new String(System.console().readPassword("\n\$ Enter keystore password: "))
+            }
+            storePassword password
+            keyPassword password
+            storeFile "${System.properties['user.home']}${File.separator}.keystore" as File
+            keyAlias 'mykey'
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+        }
+    }
 }
 
 task genVers(type: Exec) {
     workingDir './'
     commandLine '../scripts/genvers.sh', VARIANT_NAME, 
-	    INITIAL_CLIENT_VERS, CHAT_ENABLED, THUMBNAIL_ENABLED
+        INITIAL_CLIENT_VERS, CHAT_ENABLED, THUMBNAIL_ENABLED
 }
 
 task mkImages(type: Exec) {
     workingDir './'
-	commandLine '../scripts/mkimages.sh'
+    commandLine '../scripts/mkimages.sh'
 }
 
 task copyStrings(type: Exec) {
     workingDir './'
-	commandLine '../scripts/copy-strings.py'
+    commandLine '../scripts/copy-strings.py'
 }
 
-task myPreBuild(dependsOn: ['genVers', 'mkImages', 'copyStrings']) {
+task ndkSetup(type: Exec) {
+    commandLine "../scripts/ndksetup.sh"
+}
+
+task genGcmid(type: Exec) {
+    commandLine '../scripts/gen_gcmid.sh', 
+        '-o', "src/org/eehouse/android/$VARIANT_NAME/GCMConsts.java",
+        '-v', "$VARIANT_NAME"
+}
+
+
+task myPreBuild(dependsOn: ['genVers', 'ndkSetup', 'mkImages', 'copyStrings', 'mkXml', 'genGcmid']) {
 }
 
 task ndkBuild(type: Exec) {
@@ -92,9 +123,14 @@ task ndkBuild(type: Exec) {
       "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS", "VARIANT=$VARIANT_NAME", 'V=1'
 }
 
-tasks.withType(JavaCompile) {
-    compileTask -> compileTask.dependsOn myPreBuild
+task mkXml(type: Exec) {
+    commandLine '../scripts/mk_xml.py', '-o', 
+        "src/org/eehouse/android/$VARIANT_NAME/loc/LocIDsData.java",
+        '-t', "debug", '-v', "$VARIANT_NAME"
 }
+
+preBuild.dependsOn myPreBuild
+
 tasks.withType(JavaCompile) {
     compileTask -> compileTask.dependsOn ndkBuild
 }
