@@ -19,14 +19,14 @@
           <task>generateDebugSources</task>
         </afterSyncTasks>
         <option name="ALLOW_USER_CONFIGURATION" value="false" />
-        <option name="MANIFEST_FILE_RELATIVE_PATH" value="/../AndroidManifest.xml" />
-        <option name="RES_FOLDER_RELATIVE_PATH" value="/../res" />
-        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/../res" />
-        <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/../assets" />
+        <option name="MANIFEST_FILE_RELATIVE_PATH" value="/src/main/AndroidManifest.xml" />
+        <option name="RES_FOLDER_RELATIVE_PATH" value="/src/main/res" />
+        <option name="RES_FOLDERS_RELATIVE_PATH" value="file://$MODULE_DIR$/src/main/res" />
+        <option name="ASSETS_FOLDER_RELATIVE_PATH" value="/src/main/assets" />
       </configuration>
     </facet>
   </component>
-  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_7" inherit-compiler-output="false">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_6" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/build/intermediates/classes/debug" />
     <output-test url="file://$MODULE_DIR$/build/intermediates/classes/androidTest/debug" />
     <exclude-output />
@@ -50,8 +50,12 @@
       <sourceFolder url="file://$MODULE_DIR$/src/debug/java" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/jni" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/debug/rs" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/res" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/assets" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/aidl" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/jni" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/main/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/androidTest/resources" type="java-test-resource" />
@@ -84,16 +88,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build/test-results" />
       <excludeFolder url="file://$MODULE_DIR$/build/tmp" />
     </content>
-    <content url="file://$MODULE_DIR$/../assets">
-      <sourceFolder url="file://$MODULE_DIR$/../assets" type="java-resource" />
-    </content>
-    <content url="file://$MODULE_DIR$/../res">
-      <sourceFolder url="file://$MODULE_DIR$/../res" type="java-resource" />
-    </content>
-    <content url="file://$MODULE_DIR$/../src">
-      <sourceFolder url="file://$MODULE_DIR$/../src" isTestSource="false" />
-    </content>
-    <orderEntry type="jdk" jdkName="Android API 22 Platform" jdkType="Android SDK" />
+    <orderEntry type="jdk" jdkName="Android API 14 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="gcm" level="project" />
   </component>
