@@ -1,137 +1,34 @@
-def VARIANT_NAME = 'xw4'
-def INITIAL_CLIENT_VERS = 6
-def CHAT_ENABLED = true
-def THUMBNAIL_ENABLED = true
-def LIBS_DEBUG = 'libs-debug'
-def LIBS_RELEASE = 'libs-release'
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
     repositories {
         jcenter()
     }
-
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.1.0'
+        classpath 'com.android.tools.build:gradle:1.3.0'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
     }
 }
 
-apply plugin: 'android'
-
-repositories {
-    jcenter()
-}
-
-dependencies {
-    compile files('libs/gcm.jar')
-}
-
-android {
-    compileSdkVersion 22
-    buildToolsVersion "22.0.1"
-
-    defaultConfig {
-        minSdkVersion 7
-        targetSdkVersion 14
+allprojects {
+    repositories {
+        jcenter()
     }
+}
 
-    signingConfigs {
-        release { 
-            String password = System.getenv("KEYSTORE_PASSWORD")
-            if (null == password || ''.equals(password)) {
-                password = new String(System.console().readPassword("\n\$ Enter keystore password: "))
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+subprojects {
+    afterEvaluate {project ->
+        if (project.hasProperty("android")) {
+            android {
+                compileSdkVersion 14
+                buildToolsVersion '22.0.1'
             }
-            storePassword password
-            keyPassword password
-            storeFile "${System.properties['user.home']}${File.separator}.keystore" as File
-            keyAlias 'mykey'
         }
     }
-
-    buildTypes {
-        release {
-            signingConfig signingConfigs.release
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
-    }
-
-    sourceSets {
-        main {
-			manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            assets.srcDirs = ['assets']
-            res.srcDirs = ['res']
-            jni.srcDirs = [] // disable automatic ndk-build call
-        }
-
-        release {
-            jniLibs.srcDir "$LIBS_RELEASE"
-        }
-
-        debug {
-            jniLibs.srcDir "$LIBS_DEBUG"
-        }
-    }
-
-    lintOptions {
-        abortOnError false
-    }
-}
-
-task genVers(type: Exec) {
-    workingDir './'
-    commandLine '../scripts/genvers.sh', VARIANT_NAME, 
-        INITIAL_CLIENT_VERS, CHAT_ENABLED, THUMBNAIL_ENABLED
-}
-
-task mkImages(type: Exec) {
-    workingDir './'
-    commandLine '../scripts/mkimages.sh'
-}
-
-task copyStrings(type: Exec) {
-    workingDir './'
-    commandLine '../scripts/copy-strings.py'
-}
-
-task ndkSetup(type: Exec) {
-    commandLine "../scripts/ndksetup.sh"
-}
-
-task genGcmid(type: Exec) {
-    commandLine '../scripts/gen_gcmid.sh', 
-        '-o', "src/org/eehouse/android/$VARIANT_NAME/GCMConsts.java",
-        '-v', "$VARIANT_NAME"
-}
-
-task myPreBuild(dependsOn: ['genVers', 'ndkSetup', 'mkImages', 'copyStrings', 'mkXml', 'genGcmid']) {
-}
-preBuild.dependsOn myPreBuild
-
-task ndkBuildDebug(type: Exec) {
-    commandLine '../scripts/ndkbuild.sh', '-j3', "CHAT_ENABLED=$CHAT_ENABLED",
-        "THUMBNAIL_ENABLED=$THUMBNAIL_ENABLED", 'BUILD_TARGET=debug',
-        "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS", "VARIANT=$VARIANT_NAME",
-        "NDK_LIBS_OUT=$LIBS_DEBUG", 'NDK_OUT=./obj-debug'
-}
-
-task ndkBuildRelease(type: Exec) {
-    commandLine '../scripts/ndkbuild.sh', '-j3', "CHAT_ENABLED=$CHAT_ENABLED",
-        "THUMBNAIL_ENABLED=$THUMBNAIL_ENABLED", 'BUILD_TARGET=release',
-        "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS", "VARIANT=$VARIANT_NAME", 
-        "NDK_LIBS_OUT=$LIBS_RELEASE", 'NDK_OUT=./obj-release'
-}
-
-task mkXml(type: Exec) {
-    commandLine '../scripts/mk_xml.py', '-o', 
-        "src/org/eehouse/android/$VARIANT_NAME/loc/LocIDsData.java",
-        '-t', "debug", '-v', "$VARIANT_NAME"
-}
-
-afterEvaluate {
-    compileReleaseNdk.dependsOn ndkBuildRelease
-    compileDebugNdk.dependsOn ndkBuildDebug
 }

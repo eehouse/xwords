@@ -1,6 +1,15 @@
 *.apk
-/.gradle
+.DS_Store
+.gradle
+/.idea/libraries
+/.idea/workspace.xml
 /build
+/captures
+/libs-debug
+/libs-release
+/local.properties
+/obj-debug
+/obj-release
 ant_out.txt
 bin
 gen
