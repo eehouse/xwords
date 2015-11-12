@@ -59,10 +59,12 @@
         </exec>
 
         <exec dir="." executable="../scripts/gen_gcmid.sh"
-              output="src/org/eehouse/android/${VARIANT_NAME}/GCMConsts.java"
               logError="true" failonerror="true"
               >
+          <arg value="-v"/>
           <arg value="${VARIANT_NAME}"/>
+          <arg value="-o"/>
+          <arg value="src/org/eehouse/android/${VARIANT_NAME}/GCMConsts.java"/>
           </exec>
         <exec dir="." executable="../scripts/genvers.sh" output="/dev/null" 
               failonerror="true">
