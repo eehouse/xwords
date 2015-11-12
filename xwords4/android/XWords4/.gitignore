@@ -1,3 +1,4 @@
+*.apk
 .DS_Store
 .gradle
 /.idea/libraries
@@ -7,12 +8,13 @@
 /libs-debug
 /libs-release
 /local.properties
-*.apk
+/obj-debug
+/obj-release
 ant_out.txt
-local.properties
 bin
 gen
 libs
-proguard.cfg
+local.properties
 obj
+proguard.cfg
 res/drawable*/*gen.png
