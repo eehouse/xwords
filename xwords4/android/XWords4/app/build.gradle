@@ -7,6 +7,20 @@ def LIBS_RELEASE = 'libs-release'
 
 apply plugin: 'com.android.application'
 
+def getVersionName = { ->
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--dirty'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim()
+    }
+    catch (ignored) {
+        return null;
+    }
+}
+
 dependencies {
     compile files('../libs/gcm.jar')
 }
@@ -19,6 +33,7 @@ android {
         minSdkVersion 7
         targetSdkVersion 14
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -26,6 +41,13 @@ android {
         }
         debug {
             debuggable true
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def versionName = getVersionName()
+                    versionName = "XWords4-debug-" + versionName + ".apk"
+                    output.outputFile = new File(output.outputFile.parent, versionName)
+                }
+            }
         }
     }
 
