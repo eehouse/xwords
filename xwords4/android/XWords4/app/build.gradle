@@ -1,0 +1,114 @@
+def VARIANT_NAME = 'xw4'
+def INITIAL_CLIENT_VERS = 6
+def CHAT_ENABLED = true
+def THUMBNAIL_ENABLED = true
+def LIBS_DEBUG = 'libs-debug'
+def LIBS_RELEASE = 'libs-release'
+
+apply plugin: 'com.android.application'
+
+dependencies {
+    compile files('../libs/gcm.jar')
+}
+
+android {
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
+    defaultConfig {
+        applicationId "org.eehouse.android.xw4"
+        minSdkVersion 7
+        targetSdkVersion 14
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+    }
+
+    sourceSets {
+        // Use symlinks instead of setting non-conventional
+        // directories here. AS doesn't respect what's set here: it'll
+        // compile, but post-install app launch and source-level
+        // debugging don't work.
+        release {
+            jniLibs.srcDir "../$LIBS_RELEASE"
+        }
+        debug {
+            jniLibs.srcDir "../$LIBS_DEBUG"
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+    productFlavors {
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+task genVers(type: Exec) {
+    workingDir '../'
+    commandLine '../scripts/genvers.sh', VARIANT_NAME, 
+        INITIAL_CLIENT_VERS, CHAT_ENABLED, THUMBNAIL_ENABLED
+}
+
+task mkImages(type: Exec) {
+    workingDir '../'
+    commandLine '../scripts/mkimages.sh'
+}
+
+task copyStrings(type: Exec) {
+    workingDir '../'
+    commandLine '../scripts/copy-strings.py'
+}
+
+task ndkSetup(type: Exec) {
+    workingDir '../'
+    commandLine "../scripts/ndksetup.sh"
+}
+
+task genGcmid(type: Exec) {
+    workingDir '../'
+    commandLine '../scripts/gen_gcmid.sh', 
+        '-o', "src/org/eehouse/android/$VARIANT_NAME/GCMConsts.java",
+        '-v', "$VARIANT_NAME"
+}
+
+task myPreBuild(dependsOn: ['genVers', 'ndkSetup', 'mkImages', 'copyStrings', 'mkXml', 'genGcmid']) {
+}
+preBuild.dependsOn myPreBuild
+
+task ndkBuildDebug(type: Exec) {
+    workingDir '../'
+    commandLine '../scripts/ndkbuild.sh', '-j3', "CHAT_ENABLED=$CHAT_ENABLED",
+        "THUMBNAIL_ENABLED=$THUMBNAIL_ENABLED", 'BUILD_TARGET=debug',
+        "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS", "VARIANT=$VARIANT_NAME",
+        "NDK_LIBS_OUT=$LIBS_DEBUG", 'NDK_OUT=./obj-debug'
+}
+
+task ndkBuildRelease(type: Exec) {
+    workingDir '../'
+    commandLine '../scripts/ndkbuild.sh', '-j3', "CHAT_ENABLED=$CHAT_ENABLED",
+        "THUMBNAIL_ENABLED=$THUMBNAIL_ENABLED", 'BUILD_TARGET=release',
+        "INITIAL_CLIENT_VERS=$INITIAL_CLIENT_VERS", "VARIANT=$VARIANT_NAME", 
+        "NDK_LIBS_OUT=$LIBS_RELEASE", 'NDK_OUT=./obj-release'
+}
+
+task mkXml(type: Exec) {
+    workingDir '../'
+    commandLine '../scripts/mk_xml.py', '-o', 
+        "src/org/eehouse/android/$VARIANT_NAME/loc/LocIDsData.java",
+        '-t', "debug", '-v', "$VARIANT_NAME"
+}
+
+afterEvaluate {
+    compileReleaseNdk.dependsOn ndkBuildRelease
+    compileDebugNdk.dependsOn ndkBuildDebug
+}

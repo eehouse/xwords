@@ -1,3 +1,12 @@
+.DS_Store
+.gradle
+/.idea/libraries
+/.idea/workspace.xml
+/build
+/captures
+/libs-debug
+/libs-release
+/local.properties
 *.apk
 ant_out.txt
 local.properties
