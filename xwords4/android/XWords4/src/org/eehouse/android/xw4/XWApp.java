@@ -112,7 +112,8 @@ public class XWApp extends Application {
     public static boolean onEmulator()
     {
         if ( null == s_onEmulator ) {
-            s_onEmulator = new Boolean( "google_sdk".equals(Build.MODEL) );
+            s_onEmulator = new Boolean( "google_sdk".equals(Build.MODEL)
+                                        || Build.PRODUCT.startsWith("vbox") );
         }
         return s_onEmulator;
     }

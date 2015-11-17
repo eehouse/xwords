@@ -87,7 +87,7 @@ public class CommsTransport implements TransportProcs,
                 m_done = false;
                 boolean failed = true;
                 try {   
-                    if ( Build.PRODUCT.contains("sdk") ) {
+                    if ( XWApp.onEmulator() ) {
                         System.setProperty("java.net.preferIPv6Addresses", "false");
                     }
 

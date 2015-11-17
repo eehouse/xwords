@@ -48,7 +48,7 @@ public class NetStateCache {
     private static boolean s_netAvail = false;
     private static boolean s_isWifi;
     private static PvtBroadcastReceiver s_receiver;
-    private static final boolean s_onSim = Build.PRODUCT.contains("sdk");
+    private static final boolean s_onSim = XWApp.onEmulator();
 
     public static void register( Context context, StateChangedIf proc )
     {
