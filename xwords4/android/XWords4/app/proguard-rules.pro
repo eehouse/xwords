@@ -15,3 +15,20 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# Keep everything. Useful maybe for confirming that proguard's causing
+#  a problem?
+# -keep class ** { *; }
+
+# Don't turn this on until it's clear that proguard isn't messing
+# anything else up. It'll make crash reports useless.
+
+-dontobfuscate
+
+# Uncomment this if obfuscation is enabled (by removing the line
+# above), and save the mapping.txt file or confirm it can be rebuilt
+# from a tag.
+# -keepattributes SourceFile,LineNumberTable
+
+# Prevents crash when jni code calls setInt on various jin.* classes
+-keep public class org.eehouse.android.xw4.jni.** { public *; }

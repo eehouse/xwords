@@ -34,20 +34,28 @@ android {
         targetSdkVersion 14
     }
 
+    signingConfigs {
+        release {
+            storeFile file(System.getenv("HOME") + "/.keystore")
+            keyAlias "mykey"
+
+            // These two lines make gradle believe that the signingConfigs
+            // section is complete. Without them, tasks like installRelease
+            // will not be available!
+            storePassword "notReal"
+            keyPassword "notReal"
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled false
+            signingConfig signingConfigs.release
+            debuggable false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
             debuggable true
-            applicationVariants.all { variant ->
-                variant.outputs.each { output ->
-                    def versionName = getVersionName()
-                    versionName = "XWords4-debug-" + versionName + ".apk"
-                    output.outputFile = new File(output.outputFile.parent, versionName)
-                }
-            }
         }
     }
 
@@ -133,4 +141,31 @@ task mkXml(type: Exec) {
 afterEvaluate {
     compileReleaseNdk.dependsOn ndkBuildRelease
     compileDebugNdk.dependsOn ndkBuildDebug
+}
+
+task askForPassword << {
+    def password = System.getenv("ANDROID_KEY_PASS")
+    if (null == password || 0 == password.length()) {
+        if ( null != System.console() ) {
+            password = new String(System.console()
+                                  .readPassword("ANDROID_KEY_PASS not set; "
+                                                + "Keystore password: "))
+        } else {
+            password = null
+            println( "ANDROID_KEY_PASS not set and no console; " )
+            println( "sign it yerself later. (Or you might try" )
+            println( " running gradlew with the --no-daemon flag)" )
+        }
+    }
+
+    if ( null != password ) {
+        android.signingConfigs.release.storePassword = password
+        android.signingConfigs.release.keyPassword = password
+    }
+}
+
+tasks.whenTaskAdded { theTask -> 
+    if (theTask.name.equals("packageRelease")) {
+        theTask.dependsOn "askForPassword"
+    }
 }
