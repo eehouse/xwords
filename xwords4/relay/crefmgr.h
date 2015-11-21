@@ -88,9 +88,9 @@ class CRefMgr {
 
 
     void MoveSockets( vector<int> sockets, CookieRef* cref );
-    pthread_mutex_t* GetWriteMutexForSocket( int socket );
+    pthread_mutex_t* GetWriteMutexForSocket( int sock );
     void RemoveSocketRefs( const AddrInfo* addr );
-    void PrintSocketInfo( int socket, string& out );
+    void PrintSocketInfo( int sock, string& out );
 
     void IncrementFullCount( void );
     int GetNumRoomsFilled( void );
@@ -137,7 +137,7 @@ class CRefMgr {
     CookieRef* AddNew( const char* cookie, const char* connName, CookieID cid,
                        int langCode, int nPlayers, int nAlreadyHere );
     CookieRef* FindOpenGameFor( const char* cookie, const char* connName,
-                                HostID hid, int socket, int nPlayersH, 
+                                HostID hid, int sock, int nPlayersH, 
                                 int nPlayersS, int gameSeed, int langCode, 
                                 bool wantsPublic, bool* alreadyHere );
 
@@ -281,11 +281,11 @@ class SafeCref {
     }
 
 #ifdef RELAY_HEARTBEAT
-    bool HandleHeartbeat( HostID id, int socket ) {
+    bool HandleHeartbeat( HostID id, int sock ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            cref->_HandleHeartbeat( id, socket );
+            cref->_HandleHeartbeat( id, sock );
             return true;
         } else {
             return false;

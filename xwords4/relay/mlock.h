@@ -52,18 +52,18 @@ class MutexLock {
 
 class SocketWriteLock {
  public:
-    SocketWriteLock( int socket, pthread_mutex_t* mutex )
-        : m_socket( socket )
+    SocketWriteLock( int sock, pthread_mutex_t* mutex )
+        : m_socket( sock )
         , m_mutex( mutex )
         {
 #ifdef DEBUG_LOCKS
-        logf( XW_LOGINFO, "tlm %p for socket %d", m_mutex, socket );
+        logf( XW_LOGINFO, "tlm %p for socket %d", m_mutex, sock );
 #endif
         if ( m_mutex != NULL ) {
             pthread_mutex_lock( m_mutex );
         }
 #ifdef DEBUG_LOCKS
-        logf( XW_LOGINFO, "slm %p for socket %d", m_mutex, socket );
+        logf( XW_LOGINFO, "slm %p for socket %d", m_mutex, sock );
 #endif
         }
 

@@ -385,14 +385,14 @@ CRefMgr::RemoveSocketRefs( const AddrInfo* addr )
 }
 
 void
-CRefMgr::PrintSocketInfo( int socket, string& out )
+CRefMgr::PrintSocketInfo( int sock, string& out )
 {
-    SafeCref scr( socket );
+    SafeCref scr( sock );
     const char* name = scr.Cookie();
     if ( name != NULL && name[0] != '\0' ) {
         char buf[64];
 
-        snprintf( buf, sizeof(buf), "* socket: %d\n", socket );
+        snprintf( buf, sizeof(buf), "* socket: %d\n", sock );
         out += buf;
 
         snprintf( buf, sizeof(buf), "  in cookie: %s\n", name );

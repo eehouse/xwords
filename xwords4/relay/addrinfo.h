@@ -49,9 +49,9 @@ class AddrInfo {
         m_isValid = false; 
     }
 
-    AddrInfo( int socket, const AddrUnion* saddr, bool isTCP ) {
-        assert( -1 != socket );
-        construct( socket, saddr, isTCP );
+    AddrInfo( int sock, const AddrUnion* saddr, bool isTCP ) {
+        assert( -1 != sock );
+        construct( sock, saddr, isTCP );
     }
 
     AddrInfo( const AddrUnion* saddr ) {
@@ -62,15 +62,15 @@ class AddrInfo {
         init( -1, clientToken, saddr );
     }
 
-    AddrInfo( int socket, ClientToken clientToken, const AddrUnion* saddr ) {
-        assert( -1 != socket );
-        init( socket, clientToken, saddr );
+    AddrInfo( int sock, ClientToken clientToken, const AddrUnion* saddr ) {
+        assert( -1 != sock );
+        init( sock, clientToken, saddr );
     }
 
     void setIsTCP( bool val ) { m_isTCP = val; }
     bool isTCP() const { return m_isTCP; }
     bool isUDP() const { return !m_isTCP; }
-    int socket() const { assert(m_isValid); return m_socket; }
+    int getSocket() const { assert(m_isValid); return m_socket; }
     ClientToken clientToken() const { assert(m_isValid); return m_clientToken; }
     struct in_addr sin_addr() const { return m_saddr.u.addr_in.sin_addr; }
     const struct sockaddr* sockaddr() const { assert(m_isValid); 
@@ -82,9 +82,9 @@ class AddrInfo {
     bool equals( const AddrInfo& other ) const;
 
  private:
-    void construct( int socket, const AddrUnion* saddr, bool isTCP );
-    void init( int socket, ClientToken clientToken, const AddrUnion* saddr ) {
-        construct( socket, saddr, false );
+    void construct( int sock, const AddrUnion* saddr, bool isTCP );
+    void init( int sock, ClientToken clientToken, const AddrUnion* saddr ) {
+        construct( sock, saddr, false );
         m_clientToken = clientToken;
     }
 
