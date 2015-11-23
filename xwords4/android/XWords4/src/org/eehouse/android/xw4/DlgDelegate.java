@@ -65,6 +65,7 @@ public class DlgDelegate {
         NEW_GAME_PRESSED,
         SET_HIDE_NEWGAME_BUTTONS,
         DWNLD_LOC_DICT,
+        NEW_GAME_DFLT_NAME,
 
         // BoardDelegate
         UNDO_LAST_ACTION,
@@ -561,7 +562,7 @@ public class DlgDelegate {
 
     private Dialog createNotAgainDialog( final DlgState state, DlgID dlgID )
     {
-        NotAgainView naView = (NotAgainView)
+        final NotAgainView naView = (NotAgainView)
             LocUtils.inflate( m_activity, R.layout.not_again_view );
         naView.setMessage( state.m_msg );
         final OnClickListener lstnr_p = mkCallbackClickListener( state, naView );
@@ -571,18 +572,15 @@ public class DlgDelegate {
             .setView( naView )
             .setPositiveButton( android.R.string.ok, lstnr_p );
 
-        // Adding third button doesn't work for some reason. Either this
-        // feature goes away or the "do not show again" becomes a checkbox as
-        // many apps do it.
         if ( null != state.m_pair ) {
             final ActionPair more = state.m_pair;
             OnClickListener lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
+                        checkNotAgainCheck( state, naView );
                         m_clickCallback.
                             dlgButtonClicked( more.action, 
                                               AlertDialog.BUTTON_POSITIVE,
                                               more.params );
-                        lstnr_p.onClick( dlg, AlertDialog.BUTTON_POSITIVE );
                     }
                 };
             builder.setNegativeButton( more.buttonStr, lstnr );
@@ -766,14 +764,7 @@ public class DlgDelegate {
         OnClickListener cbkOnClickLstnr;
         cbkOnClickLstnr = new OnClickListener() {
                 public void onClick( DialogInterface dlg, int button ) {
-                    if ( null != naView && naView.getChecked() ) {
-                        if ( 0 != state.m_prefsKey ) {
-                            XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
-                                                     true );
-                        } else if ( null != state.m_onNAChecked ) {
-                            state.m_onNAChecked.run();
-                        }
-                    }
+                    checkNotAgainCheck( state, naView );
 
                     if ( Action.SKIP_CALLBACK != state.m_action ) {
                         m_clickCallback.dlgButtonClicked( state.m_action, 
@@ -783,6 +774,18 @@ public class DlgDelegate {
                 }
             };
         return cbkOnClickLstnr;
+    }
+
+    private void checkNotAgainCheck( DlgState state, NotAgainView naView )
+    {
+        if ( null != naView && naView.getChecked() ) {
+            if ( 0 != state.m_prefsKey ) {
+                XWPrefs.setPrefsBoolean( m_activity, state.m_prefsKey, 
+                                         true );
+            } else if ( null != state.m_onNAChecked ) {
+                state.m_onNAChecked.run();
+            }
+        }
     }
 
     private Dialog setCallbackDismissListener( final Dialog dialog, 

@@ -1720,12 +1720,11 @@
       -->
 
     <!-- Welcome dialog title -->
-    <string name="default_name_title">Welcome</string>
+    <string name="default_name_title">Default player name</string>
     <!-- Welcome dialog text -->
-    <string name="default_name_message">Thanks for installing
-      Crosswords!\n\nFeel free to enter your name here. It will be used
-      when creating new games.  (You can change it later in the \"New
-      game default\" section of Settings.)</string>
+    <string name="default_name_message">Please enter your name
+    here. It will be used when creating new games. (You can change it
+    later in the \"New game default\" section of Settings.)</string>
 
     <!-- 
        ###########################################################
@@ -2623,4 +2622,8 @@
 
   <string name="list_item_select">Select</string>
   <string name="list_item_deselect">De-select</string>
+
+  <string name="not_again_dfltname_fmt">You are using the default
+  player name \"%1$s\". Would you like to personalize with your own
+  name before you create this game?</string>
 </resources>

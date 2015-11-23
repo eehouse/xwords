@@ -592,6 +592,7 @@ public class GamesListDelegate extends ListDelegateBase
     private Button[] m_newGameButtons;
     private boolean m_haveShownGetDict;
     private Intent m_rematchIntent;
+    private Object[] m_newGameParams;
 
     public GamesListDelegate( ListDelegator delegator, Bundle sis )
     {
@@ -817,7 +818,7 @@ public class GamesListDelegate extends ListDelegateBase
                         }
                         CommonPrefs.setDefaultPlayerName( m_activity, name );
 
-                        getDictForLangIf(); // hack!!!
+                        makeThenLaunchOrConfigure();
                     }
                 });
             break;
@@ -828,12 +829,12 @@ public class GamesListDelegate extends ListDelegateBase
             final EditText edit = (EditText)view.findViewById( R.id.edit );
             lstnr = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        makeThenLaunchOrConfigure( edit, true );
+                        makeThenLaunchOrConfigure( edit, true, false );
                     }
                 };
             lstnr2 = new OnClickListener() {
                     public void onClick( DialogInterface dlg, int item ) {
-                        makeThenLaunchOrConfigure( edit, false );
+                        makeThenLaunchOrConfigure( edit, false, false );
                     }
                 };
 
@@ -915,6 +916,7 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
+    @Override
     protected void init( Bundle savedInstanceState ) 
     {
         m_handler = new Handler();
@@ -950,9 +952,7 @@ public class GamesListDelegate extends ListDelegateBase
 
         tryStartsFromIntent( getIntent() );
 
-        if ( !askDefaultNameIf() ) {
-            getDictForLangIf();
-        }
+        getDictForLangIf();
 
         m_origTitle = getTitle();
     } // init
@@ -1213,6 +1213,10 @@ public class GamesListDelegate extends ListDelegateBase
                 reloadGame( newid );
                 break;
 
+            case SET_HIDE_NEWGAME_BUTTONS:
+                XWPrefs.setHideNewgameButtons(m_activity, true);
+                setupButtons();
+                // FALLTHRU
             case NEW_GAME_PRESSED:
                 handleNewGame( m_nextIsSolo );
                 break;
@@ -1233,10 +1237,6 @@ public class GamesListDelegate extends ListDelegateBase
                 break;
             case CLEAR_SELS:
                 clearSelections();
-                break;
-            case SET_HIDE_NEWGAME_BUTTONS:
-                XWPrefs.setHideNewgameButtons( m_activity, true );
-                setupButtons();
                 break;
             case DWNLD_LOC_DICT:
                 String lang = (String)params[0];
@@ -1263,8 +1263,17 @@ public class GamesListDelegate extends ListDelegateBase
                     };
                 DwnldDelegate.downloadDictInBack( m_activity, lang, name, lstnr );
                 break;
+            case NEW_GAME_DFLT_NAME:
+                m_newGameParams = params;
+                askDefaultName();
+                break;
             default:
                 Assert.fail();
+            }
+        } else if ( AlertDialog.BUTTON_NEGATIVE == which ) {
+            if ( Action.NEW_GAME_DFLT_NAME == action ) {
+                m_newGameParams = params;
+                makeThenLaunchOrConfigure();
             }
         }
     }
@@ -2066,16 +2075,11 @@ public class GamesListDelegate extends ListDelegateBase
         }
     }
 
-    private boolean askDefaultNameIf()
+    private void askDefaultName()
     {
-        boolean showing = 
-            null == CommonPrefs.getDefaultPlayerName( m_activity, 0, false );
-        if ( showing ) {
-            String name = CommonPrefs.getDefaultPlayerName( m_activity, 0, true );
-            CommonPrefs.setDefaultPlayerName( m_activity, name );
-            showDialog( DlgID.GET_NAME );
-        }
-        return showing;
+        String name = CommonPrefs.getDefaultPlayerName( m_activity, 0, true );
+        CommonPrefs.setDefaultPlayerName( m_activity, name );
+        showDialog( DlgID.GET_NAME );
     }
 
     private void getDictForLangIf()
@@ -2370,26 +2374,79 @@ public class GamesListDelegate extends ListDelegateBase
         // return adapter;
     }
 
-    private void makeThenLaunchOrConfigure( EditText edit, boolean doConfigure )
+    // Returns true if user has what looks like a default name and has not
+    // said he wants us to stop bugging him about it.
+    private boolean askingChangeName( EditText edit, boolean doConfigure )
     {
-        String name = edit.getText().toString();
-        long rowID;
-        long groupID = 1 == m_selGroupIDs.size()
-            ? m_selGroupIDs.iterator().next() : DBUtils.GROUPID_UNSPEC;
-        if ( m_nextIsSolo ) {
-            rowID = GameUtils.saveNew( m_activity, 
-                                       new CurGameInfo( m_activity ), 
-                                       groupID, name );
-        } else {
-            rowID = GameUtils.makeNewMultiGame( m_activity, groupID, name );
-        }
+        boolean asking = false;
+        boolean skipAsk = XWPrefs
+            .getPrefsBoolean( m_activity, R.string.key_notagain_dfltname, 
+                              false );
+        if ( ! skipAsk ) {
+            String name1 = CommonPrefs.getDefaultPlayerName( m_activity, 0, 
+                                                             false );
+            String name2 = CommonPrefs.getDefaultOriginalPlayerName( m_activity, 0 );
+            if ( null == name1 || name1.equals( name2 ) ) {
+                asking = true;
 
-        if ( doConfigure ) {
-            // configure it
-            GameConfigDelegate.editForResult( m_activity, CONFIG_GAME, rowID );
-        } else {
-            // launch it
-            GameUtils.launchGame( m_activity, rowID );
+                String msg = LocUtils
+                    .getString( m_activity, R.string.not_again_dfltname_fmt,
+                                name2 );
+
+                Runnable onChecked = new Runnable() {
+                        public void run() {
+                            XWPrefs
+                                .setPrefsBoolean( m_activity, 
+                                                  R.string.key_notagain_dfltname,
+                                                  true );
+                        }
+                    };
+                showConfirmThen( onChecked, msg, android.R.string.ok, 
+                                 R.string.button_later, Action.NEW_GAME_DFLT_NAME,
+                                 edit, doConfigure );
+            }
+        }
+        return asking;
+    }
+
+    private boolean makeThenLaunchOrConfigure()
+    {
+        boolean handled = null != m_newGameParams;
+        if ( handled ) {
+            EditText edit = (EditText)m_newGameParams[0];
+            boolean doConfigure = (Boolean)m_newGameParams[1];
+            m_newGameParams = null;
+            makeThenLaunchOrConfigure( edit, doConfigure, true );
+        }
+        return handled;
+    }
+
+    private void makeThenLaunchOrConfigure( EditText edit, boolean doConfigure, 
+                                            boolean skipAsk )
+    {
+        if ( skipAsk || !askingChangeName( edit, doConfigure ) ) {
+            String name = edit.getText().toString();
+            long rowID;
+            long groupID = 1 == m_selGroupIDs.size()
+                ? m_selGroupIDs.iterator().next() : DBUtils.GROUPID_UNSPEC;
+
+            // Ideally we'd check here whether user has set player name.
+
+            if ( m_nextIsSolo ) {
+                rowID = GameUtils.saveNew( m_activity, 
+                                           new CurGameInfo( m_activity ), 
+                                           groupID, name );
+            } else {
+                rowID = GameUtils.makeNewMultiGame( m_activity, groupID, name );
+            }
+
+            if ( doConfigure ) {
+                // configure it
+                GameConfigDelegate.editForResult( m_activity, CONFIG_GAME, rowID );
+            } else {
+                // launch it
+                GameUtils.launchGame( m_activity, rowID );
+            }
         }
     }
 

@@ -1478,12 +1478,11 @@
        ###########################################################
       -->
   <!-- Welcome dialog title -->
-  <string name="default_name_title">WELCOME</string>
+  <string name="default_name_title">DEFAULT PLAYER NAME</string>
   <!-- Welcome dialog text -->
-  <string name="default_name_message">THANKS FOR INSTALLING
-      CROSSWORDS!\n\nFEEL FREE TO ENTER YOUR NAME HERE. IT WILL BE USED
-      WHEN CREATING NEW GAMES.  (YOU CAN CHANGE IT LATER IN THE \"NEW
-      GAME DEFAULT\" SECTION OF SETTINGS.)</string>
+  <string name="default_name_message">PLEASE ENTER YOUR NAME
+    HERE. IT WILL BE USED WHEN CREATING NEW GAMES. (YOU CAN CHANGE IT
+    LATER IN THE \"NEW GAME DEFAULT\" SECTION OF SETTINGS.)</string>
   <!-- 
        ###########################################################
        # :Dialogs:
@@ -2241,4 +2240,7 @@
   <string name="processing_games">PROCESSING GAMES</string>
   <string name="list_item_select">SELECT</string>
   <string name="list_item_deselect">DE-SELECT</string>
+  <string name="not_again_dfltname_fmt">YOU ARE USING THE DEFAULT
+  PLAYER NAME \"%1$s\". WOULD YOU LIKE TO PERSONALIZE WITH YOUR OWN
+  NAME BEFORE YOU CREATE THIS GAME?</string>
 </resources>
