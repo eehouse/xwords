@@ -23,8 +23,12 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MenuItem;
+import android.view.View;
 
 import junit.framework.Assert;
 
@@ -137,6 +141,19 @@ public class XWActivity extends Activity implements Delegator {
     {
         return m_dlgt.onOptionsItemSelected( item )
             || super.onOptionsItemSelected( item );
+    }
+
+    @Override
+    public void onCreateContextMenu( ContextMenu menu, View view,
+                                     ContextMenuInfo menuInfo )
+    {
+        m_dlgt.onCreateContextMenu( menu, view, menuInfo );
+    }
+
+    @Override
+    public boolean onContextItemSelected( MenuItem item )
+    {
+        return m_dlgt.onContextItemSelected( item );
     }
 
     @Override

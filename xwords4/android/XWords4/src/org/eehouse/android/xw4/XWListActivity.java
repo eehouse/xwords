@@ -19,175 +19,28 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
-import android.app.Dialog;
-import android.app.ListActivity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
-public class XWListActivity extends ListActivity implements ListDelegator {
-
-    private DelegateBase m_dlgt;
-
-    protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
-    {
-        if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
-        }
-        super.onCreate( savedInstanceState );
-        m_dlgt = dlgt;
-
-        int layoutID = dlgt.getLayoutID();
-        if ( 0 < layoutID ) {
-            dlgt.setContentView( layoutID );
-        }
-
-        dlgt.init( savedInstanceState );
-    }
-
-    @Override
-    protected void onSaveInstanceState( Bundle outState ) 
-    {
-        super.onSaveInstanceState( outState );
-        m_dlgt.onSaveInstanceState( outState );
-    }
-
-    @Override
-    protected void onPause()
-    {
-        if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
-        }
-        m_dlgt.onPause();
-        super.onPause();
-    }
-
-    @Override
-    protected void onResume()
-    {
-        if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
-        }
-        super.onResume();
-        m_dlgt.onResume();
-    }
-
-    @Override
-    protected void onStart()
-    {
-        if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
-        }
-        super.onStart();
-        m_dlgt.onStart();
-    }
-
-    @Override
-    protected void onStop()
-    {
-        if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
-        }
-        m_dlgt.onStop();
-        super.onStop();
-    }
-
-    @Override
-    protected void onDestroy()
-    {
-        if ( XWApp.LOG_LIFECYLE ) {
-            DbgUtils.logf( "%s.onDestroy(this=%H)", getClass().getName(), this );
-        }
-        m_dlgt.onDestroy();
-        super.onDestroy();
-    }
-
-    @Override
-    public void onWindowFocusChanged( boolean hasFocus )
-    {
-        super.onWindowFocusChanged( hasFocus );
-        m_dlgt.onWindowFocusChanged( hasFocus );
-    }
-
-    @Override
-    public void onBackPressed() {
-        if ( !m_dlgt.onBackPressed() ) {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onCreateOptionsMenu( menu );
-    }
-
-    @Override
-    public void onCreateContextMenu( ContextMenu menu, View view,
-                                     ContextMenuInfo menuInfo )
-    {
-        m_dlgt.onCreateContextMenu( menu, view, menuInfo );
-    }
-
-    @Override
-    public boolean onContextItemSelected( MenuItem item )
-    {
-        return m_dlgt.onContextItemSelected( item );
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu( Menu menu ) 
-    {
-        return m_dlgt.onPrepareOptionsMenu( menu )
-            || super.onPrepareOptionsMenu( menu );
-    } // onPrepareOptionsMenu
-
-    @Override
-    public boolean onOptionsItemSelected( MenuItem item ) 
-    {
-        return m_dlgt.onOptionsItemSelected( item )
-            || super.onOptionsItemSelected( item );
-    }
-
-    @Override
-    protected Dialog onCreateDialog( int id )
-    {
-        Dialog dialog = super.onCreateDialog( id );
-        if ( null == dialog ) {
-            dialog = m_dlgt.onCreateDialog( id );
-        }
-        return dialog;
-    } // onCreateDialog
-
-    @Override
-    public void onPrepareDialog( int id, Dialog dialog )
-    {
-        super.onPrepareDialog( id, dialog );
-        m_dlgt.prepareDialog( DlgID.values()[id], dialog );
-    }
-
-    @Override
-    protected void onActivityResult( int requestCode, int resultCode, 
-                                     Intent data )
-    {
-        m_dlgt.onActivityResult( requestCode, resultCode, data );
-    }
+public class XWListActivity extends XWActivity implements ListDelegator {
 
     //////////////////////////////////////////////////////////////////////
-    // Delegator interface
+    // ListDelegator interface
     //////////////////////////////////////////////////////////////////////
-    public Activity getActivity()
+    public ListView getListView()
     {
-        return this;
+        ListView view = (ListView)findViewById( android.R.id.list );
+        return view;
     }
 
-    public Bundle getArguments()
+    public void setListAdapter( ListAdapter adapter )
+    { 
+        getListView().setAdapter( adapter );
+    }
+
+    public ListAdapter getListAdapter()
     {
-        return getIntent().getExtras();
+        return getListView().getAdapter();
     }
 }

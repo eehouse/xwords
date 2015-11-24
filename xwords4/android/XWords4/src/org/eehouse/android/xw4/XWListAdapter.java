@@ -20,7 +20,6 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.ListActivity;
 import android.widget.ListAdapter;
 import android.content.Context;
 import android.database.DataSetObserver;
