@@ -28,15 +28,15 @@ import android.widget.ListView;
 public class ListDelegateBase extends DelegateBase {
     
     private Activity m_activity;
-    private ListDelegator m_delegator;
+    private Delegator m_delegator;
 
-    protected ListDelegateBase( ListDelegator delegator, Bundle savedInstanceState,
+    protected ListDelegateBase( Delegator delegator, Bundle savedInstanceState,
                                 int layoutID )
     {
         this( delegator, savedInstanceState, layoutID, R.menu.empty );
     }
 
-    protected ListDelegateBase( ListDelegator delegator, Bundle savedInstanceState,
+    protected ListDelegateBase( Delegator delegator, Bundle savedInstanceState,
                                 int layoutID, int menuID )
     {
         super( delegator, savedInstanceState, layoutID, menuID );

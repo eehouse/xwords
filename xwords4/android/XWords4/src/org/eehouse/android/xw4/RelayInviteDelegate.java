@@ -76,7 +76,7 @@ public class RelayInviteDelegate extends InviteDelegate {
         activity.startActivityForResult( intent, requestCode );
     }
 
-    public RelayInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    public RelayInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.relayinviter );
         m_activity = delegator.getActivity();

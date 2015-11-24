@@ -72,7 +72,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         activity.startActivityForResult( intent, requestCode );
     }
 
-    public SMSInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    public SMSInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.smsinviter );
         m_activity = delegator.getActivity();

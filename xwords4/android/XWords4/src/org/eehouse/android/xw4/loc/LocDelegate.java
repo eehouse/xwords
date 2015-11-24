@@ -35,7 +35,7 @@ import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.ListDelegateBase;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
-import org.eehouse.android.xw4.ListDelegator;
+import org.eehouse.android.xw4.Delegator;
 
 public class LocDelegate extends ListDelegateBase 
     implements View.OnClickListener,
@@ -50,7 +50,7 @@ public class LocDelegate extends ListDelegateBase
     private String m_curSearch;
     private LocListItem m_lastItem;
 
-    protected LocDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected LocDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.loc_main );
         m_activity = delegator.getActivity();

@@ -68,7 +68,7 @@ public class DwnldDelegate extends ListDelegateBase {
         void gotDictInfo( boolean success, String lc, String name );
     }
 
-    public DwnldDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    public DwnldDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.import_dict );
         m_activity = delegator.getActivity();

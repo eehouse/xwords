@@ -299,7 +299,7 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    protected DictsDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected DictsDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.dict_browse, 
                R.menu.dicts_menu );

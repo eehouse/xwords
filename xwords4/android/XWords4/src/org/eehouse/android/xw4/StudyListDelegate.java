@@ -65,7 +65,7 @@ public class StudyListDelegate extends ListDelegateBase
     private ListView m_list;
     private String m_origTitle;
 
-    protected StudyListDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected StudyListDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.studylist, R.menu.studylist );
         m_activity = delegator.getActivity();

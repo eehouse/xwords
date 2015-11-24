@@ -29,6 +29,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import junit.framework.Assert;
 
@@ -192,5 +194,21 @@ public class XWActivity extends Activity implements Delegator {
     public Bundle getArguments()
     {
         return getIntent().getExtras();
+    }
+
+    public ListView getListView()
+    {
+        ListView view = (ListView)findViewById( android.R.id.list );
+        return view;
+    }
+
+    public void setListAdapter( ListAdapter adapter )
+    { 
+        getListView().setAdapter( adapter );
+    }
+
+    public ListAdapter getListAdapter()
+    {
+        return getListView().getAdapter();
     }
 }

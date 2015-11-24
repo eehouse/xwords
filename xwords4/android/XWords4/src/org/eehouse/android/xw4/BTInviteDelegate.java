@@ -62,7 +62,7 @@ public class BTInviteDelegate extends InviteDelegate {
         activity.startActivityForResult( intent, requestCode );
     }
 
-    protected BTInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected BTInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.btinviter );
         m_activity = delegator.getActivity();

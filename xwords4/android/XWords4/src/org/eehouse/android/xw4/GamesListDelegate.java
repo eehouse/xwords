@@ -567,7 +567,7 @@ public class GamesListDelegate extends ListDelegateBase
 
     private Activity m_activity;
     private static GamesListDelegate s_self;
-    private ListDelegator m_delegator;
+    private Delegator m_delegator;
     private GameListAdapter m_adapter;
     private Handler m_handler;
     private String m_missingDict;
@@ -594,7 +594,7 @@ public class GamesListDelegate extends ListDelegateBase
     private Intent m_rematchIntent;
     private Object[] m_newGameParams;
 
-    public GamesListDelegate( ListDelegator delegator, Bundle sis )
+    public GamesListDelegate( Delegator delegator, Bundle sis )
     {
         super( delegator, sis, R.layout.game_list, R.menu.games_list_menu );
         m_delegator = delegator;

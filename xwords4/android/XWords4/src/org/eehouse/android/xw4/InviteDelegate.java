@@ -44,7 +44,7 @@ abstract class InviteDelegate extends ListDelegateBase
     protected Button m_clearButton;
     private Activity m_activity;
 
-    public InviteDelegate( ListDelegator delegator, Bundle savedInstanceState,
+    public InviteDelegate( Delegator delegator, Bundle savedInstanceState,
                            int layoutID )
     {
         super( delegator, savedInstanceState, layoutID, R.menu.empty );

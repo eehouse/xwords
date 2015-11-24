@@ -29,7 +29,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class GamesListActivity extends XWListActivity {
+public class GamesListActivity extends XWActivity {
     private GamesListDelegate m_dlgt;
 
     @Override

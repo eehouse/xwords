@@ -155,7 +155,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         }
     }
 
-    protected DictBrowseDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected DictBrowseDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.dict_browser );
         m_activity = delegator.getActivity();
