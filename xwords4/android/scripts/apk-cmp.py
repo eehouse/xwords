@@ -74,7 +74,7 @@ def printDiff( apks, key ):
     print ''.join(diff)
 
 def compare( apks, apkData, indices ):
-    print 'Comparing {one} and {two}'.format(one=apks[0], two=apks[1])
+    print 'Comparing', ' and '.join(apks)
     same = 0
     index = 0
     keys = list( set( apkData[0]['files'].keys() + apkData[1]['files'].keys() ) )
@@ -83,21 +83,24 @@ def compare( apks, apkData, indices ):
         lines = []
         sizes = set()
         crcs = set()
+        inAll = True
         for apk in apkData:
             apk = apk['files']
             if key in apk:
-                size = apk[key]['size']
+                size = '{size: >6}b'.format(size=apk[key]['size'])
                 sizes.add(size)
-                crc = apk[key]['crc']
+                crc = '{crc:X}'.format(crc=apk[key]['crc'])
                 crcs.add( crc )
             else:
-                size = 0
-            lines.append( '{size: >6}b {crc:x}'.format(name=key, size=size, crc=crc) )
-        if 1 == len(sizes) and 1 == len(crcs):
+                size = ''
+                crc = ''
+                inAll = False
+            lines.append( '{size: >7} {crc: >8}'.format(name=key, size=size, crc=crc) )
+        if inAll and 1 == len(sizes) and 1 == len(crcs):
             same = same + 1 # same size?
         else:
             if not indices or index in indices:
-                print '{index: >4}: {name: <60} '.format(index=index, name=key), ' '.join(lines)
+                print '{index: >4}: {name: <60} '.format(index=index, name=key), '   '.join(lines)
             if index in indices:
                 printDiff( apks, key )
             index += 1
