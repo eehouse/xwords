@@ -1538,7 +1538,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
                 break;          /* PRX_DEVICE_GONE */
             }
             default:
-                logf( XW_LOGERROR, "unexpected command %d", __func__, cmd );
+                logf( XW_LOGERROR, "%s: unexpected command %d", __func__, cmd );
                 break;
             }
         }
