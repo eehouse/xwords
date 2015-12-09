@@ -180,7 +180,8 @@ public class XWActivity extends Activity implements Delegator {
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data )
     {
-        m_dlgt.onActivityResult( requestCode, resultCode, data );
+        RequestCode rc = RequestCode.values()[requestCode]; 
+        m_dlgt.onActivityResult( rc, resultCode, data );
     }
 
     //////////////////////////////////////////////////////////////////////

@@ -86,7 +86,7 @@ public class DelegateBase implements DlgClickNotify,
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean onBackPressed() { return false; }
-    protected void onActivityResult( int requestCode, int resultCode, 
+    protected void onActivityResult( RequestCode requestCode, int resultCode, 
                                      Intent data ) 
     {
         DbgUtils.logf( "DelegateBase.onActivityResult(): subclass responsibility!!!" );
@@ -179,9 +179,10 @@ public class DelegateBase implements DlgClickNotify,
         return m_activity.getTitle().toString();
     }
 
-    protected void startActivityForResult( Intent intent, int requestCode )
+    protected void startActivityForResult( Intent intent, 
+                                           RequestCode requestCode )
     {
-        m_activity.startActivityForResult( intent, requestCode );
+        m_activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
     protected void setResult( int result, Intent intent )

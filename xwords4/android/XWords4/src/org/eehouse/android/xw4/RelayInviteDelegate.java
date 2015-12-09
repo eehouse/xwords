@@ -69,11 +69,11 @@ public class RelayInviteDelegate extends InviteDelegate {
     private Activity m_activity;
 
     public static void launchForResult( Activity activity, int nMissing, 
-                                        int requestCode )
+                                        RequestCode requestCode )
     {
         Intent intent = new Intent( activity, RelayInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
+        activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
     public RelayInviteDelegate( Delegator delegator, Bundle savedInstanceState )

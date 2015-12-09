@@ -984,7 +984,7 @@ public class DictsDelegate extends ListDelegateBase
         // return mkDownloadIntent( context, dict_url );
     }
 
-    public static void downloadForResult( Activity activity, int requestCode, 
+    public static void downloadForResult( Activity activity, RequestCode requestCode, 
                                           int lang, String name )
     {
         Intent intent = new Intent( activity, DictsActivity.class );
@@ -997,16 +997,16 @@ public class DictsDelegate extends ListDelegateBase
             intent.putExtra( DICT_NAME_EXTRA, name );
         }
 
-        activity.startActivityForResult( intent, requestCode );
+        activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
-    public static void downloadForResult( Activity activity, int requestCode,
+    public static void downloadForResult( Activity activity, RequestCode requestCode,
                                           int lang )
     {
         downloadForResult( activity, requestCode, lang, null );
     }
 
-    public static void downloadForResult( Activity activity, int requestCode )
+    public static void downloadForResult( Activity activity, RequestCode requestCode )
     {
         downloadForResult( activity, requestCode, 0, null );
     }

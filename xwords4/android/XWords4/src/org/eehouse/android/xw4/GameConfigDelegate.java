@@ -68,8 +68,6 @@ public class GameConfigDelegate extends DelegateBase
     private static final String INTENT_FORRESULT_ROWID = "forresult";
 
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
-    private static final int REQUEST_LANG = 1;
-    private static final int REQUEST_DICT = 2;
 
     private Activity m_activity;
     private CheckBox m_joinPublicCheck;
@@ -518,7 +516,7 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    protected void onActivityResult( RequestCode requestCode, int resultCode, Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
             loadGame();
@@ -528,7 +526,7 @@ public class GameConfigDelegate extends DelegateBase
                 configDictSpinner( m_dictSpinner, m_gi.dictLang, dictName );
                 configDictSpinner( m_playerDictSpinner, m_gi.dictLang, dictName );
                 break;
-            case REQUEST_LANG:
+            case REQUEST_LANG_GC:
                 String langName = data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
                 selLangChanged( langName );
                 setLangSpinnerSelection( langName );
@@ -852,7 +850,7 @@ public class GameConfigDelegate extends DelegateBase
 
                         if ( chosen.equals( m_browseText ) ) {
                             DictsDelegate.downloadForResult( m_activity, 
-                                                             REQUEST_DICT,
+                                                             RequestCode.REQUEST_DICT,
                                                              m_gi.dictLang );
                         }
                     }
@@ -885,7 +883,9 @@ public class GameConfigDelegate extends DelegateBase
                             String chosen = 
                                 (String)parentView.getItemAtPosition( position );
                             if ( chosen.equals( m_browseText ) ) {
-                                DictsDelegate.downloadForResult( m_activity, REQUEST_LANG );
+                                DictsDelegate.downloadForResult( m_activity, 
+                                                                 RequestCode
+                                                                 .REQUEST_LANG_GC );
                             } else {
                                 String langName = adapter.getLangAtPosition( position );
                                 selLangChanged( langName );
@@ -1196,14 +1196,14 @@ public class GameConfigDelegate extends DelegateBase
         return DeviceRole.SERVER_STANDALONE == m_giOrig.serverRole;
     }
 
-    public static void editForResult( Activity parent, int requestCode, 
+    public static void editForResult( Activity parent, RequestCode requestCode, 
                                       long rowID )
     {
         Intent intent = new Intent( parent, GameConfigActivity.class );
         intent.setAction( Intent.ACTION_EDIT );
         intent.putExtra( GameUtils.INTENT_KEY_ROWID, rowID );
         intent.putExtra( INTENT_FORRESULT_ROWID, true );
-        parent.startActivityForResult( intent, requestCode );
+        parent.startActivityForResult( intent, requestCode.ordinal() );
     }
 
     private void setConnLabel()

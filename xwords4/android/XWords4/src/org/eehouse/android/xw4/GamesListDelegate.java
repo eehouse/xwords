@@ -82,9 +82,6 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String SAVE_DICTNAMES = "SAVE_DICTNAMES";
     private static final String SAVE_NEXTSOLO = "SAVE_NEXTSOLO";
 
-    private static final int REQUEST_LANG = 1;
-    private static final int CONFIG_GAME = 2;
-
     private static final String RELAYIDS_EXTRA = "relayids";
     private static final String ROWID_EXTRA = "rowid";
     private static final String GAMEID_EXTRA = "gameid";
@@ -620,7 +617,9 @@ public class GamesListDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         // no name, so user must pick
                         if ( null == m_missingDictName ) {
-                            DictsDelegate.downloadForResult( m_activity, REQUEST_LANG,
+                            DictsDelegate.downloadForResult( m_activity, 
+                                                             RequestCode
+                                                             .REQUEST_LANG_GL,
                                                              m_missingDictLang );
                         } else {
                             DwnldDelegate
@@ -1279,12 +1278,12 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, 
+    protected void onActivityResult( RequestCode requestCode, int resultCode, 
                                      Intent data )
     {
         boolean cancelled = Activity.RESULT_CANCELED == resultCode;
         switch ( requestCode ) {
-        case REQUEST_LANG:
+        case REQUEST_LANG_GL:
             if ( !cancelled ) {
                 DbgUtils.logf( "lang need met" );
                 if ( checkWarnNoDict( m_missingDictRowId ) ) {
@@ -2442,7 +2441,8 @@ public class GamesListDelegate extends ListDelegateBase
 
             if ( doConfigure ) {
                 // configure it
-                GameConfigDelegate.editForResult( m_activity, CONFIG_GAME, rowID );
+                GameConfigDelegate.editForResult( m_activity, RequestCode
+                                                  .CONFIG_GAME, rowID );
             } else {
                 // launch it
                 GameUtils.launchGame( m_activity, rowID );

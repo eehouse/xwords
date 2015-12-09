@@ -54,12 +54,12 @@ public class BTInviteDelegate extends InviteDelegate {
     private BTDevsAdapter m_adapter;
 
     public static void launchForResult( Activity activity, int nMissing, 
-                                        int requestCode )
+                                        RequestCode requestCode )
     {
         Assert.assertTrue( 0 < nMissing ); // don't call if nMissing == 0
         Intent intent = new Intent( activity, BTInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
+        activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
     protected BTInviteDelegate( Delegator delegator, Bundle savedInstanceState )

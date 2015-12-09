@@ -52,7 +52,6 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class SMSInviteDelegate extends InviteDelegate {
 
-    private static final int GET_CONTACT = 1;
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
@@ -65,11 +64,11 @@ public class SMSInviteDelegate extends InviteDelegate {
     private Activity m_activity;
 
     public static void launchForResult( Activity activity, int nMissing, 
-                                        int requestCode )
+                                        RequestCode requestCode )
     {
         Intent intent = new Intent( activity, SMSInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
+        activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
     public SMSInviteDelegate( Delegator delegator, Bundle savedInstanceState )
@@ -114,7 +113,8 @@ public class SMSInviteDelegate extends InviteDelegate {
         }
     }
     
-    protected void onActivityResult( int requestCode, int resultCode, 
+    @Override
+    protected void onActivityResult( RequestCode requestCode, int resultCode, 
                                      Intent data )
     {
         // super.onActivityResult( requestCode, resultCode, data );
@@ -167,7 +167,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         Intent intent = new Intent( Intent.ACTION_PICK, 
                                     ContactsContract.Contacts.CONTENT_URI );
         intent.setType( Phone.CONTENT_TYPE );
-        startActivityForResult( intent, GET_CONTACT );
+        startActivityForResult( intent, RequestCode.GET_CONTACT );
     }
 
     protected void clearSelected()

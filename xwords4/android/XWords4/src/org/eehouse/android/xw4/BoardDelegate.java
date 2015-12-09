@@ -69,11 +69,6 @@ public class BoardDelegate extends DelegateBase
 
     public static final String INTENT_KEY_CHAT = "chat";
 
-    private static final int CHAT_REQUEST = 1;
-    private static final int BT_INVITE_RESULT = 2;
-    private static final int SMS_INVITE_RESULT = 3;
-    private static final int RELAY_INVITE_RESULT = 4;
-
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
     private static final String DLG_TITLE = "DLG_TITLE";
@@ -644,7 +639,8 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    @Override
+    protected void onActivityResult( RequestCode requestCode, int resultCode, Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
             InviteMeans missingMeans = null;
@@ -1059,15 +1055,15 @@ public class BoardDelegate extends DelegateBase
                 break;
             case BLUETOOTH:
                 BTInviteDelegate.launchForResult( m_activity, m_nMissing,
-                                                  BT_INVITE_RESULT );
+                                                  RequestCode.BT_INVITE_RESULT );
                 break;
             case SMS:
                 SMSInviteDelegate.launchForResult( m_activity, m_nMissing, 
-                                                   SMS_INVITE_RESULT );
+                                                   RequestCode.SMS_INVITE_RESULT );
                 break;
             case RELAY:
                 RelayInviteDelegate.launchForResult( m_activity, m_nMissing, 
-                                                     RELAY_INVITE_RESULT );
+                                                     RequestCode.RELAY_INVITE_RESULT );
                 break;
             case EMAIL:
             case CLIPBOARD:
@@ -2310,7 +2306,7 @@ public class BoardDelegate extends DelegateBase
         if ( BuildConstants.CHAT_SUPPORTED ) {
             Intent intent = new Intent( m_activity, ChatActivity.class );
             intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
-            startActivityForResult( intent, CHAT_REQUEST );
+            startActivityForResult( intent, RequestCode.CHAT_REQUEST );
         }
     }
 
