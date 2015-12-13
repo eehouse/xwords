@@ -30,12 +30,12 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
+import java.net.HttpURLConnection;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.client.methods.HttpPost;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -260,10 +260,10 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
         @Override protected String doInBackground( Void... unused )
         {
-            HttpPost post = NetUtils.makePost( m_context, "getUpdates" );
+            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "getUpdates" );
             String json = null;
-            if ( null != post ) {
-                json = NetUtils.runPost( post, m_params );
+            if ( null != conn ) {
+                json = NetUtils.runConn( conn, m_params );
             }
             return json;
         }

@@ -46,7 +46,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.apache.http.client.methods.HttpPost;
+import java.net.HttpURLConnection;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -1134,11 +1134,11 @@ public class DictsDelegate extends ListDelegateBase
             // parse less data
             String name = null;
             String proc = String.format( "listDicts?lc=%s", m_lc );
-            HttpPost post = NetUtils.makePost( m_context, proc );
-            if ( null != post ) {
+            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, proc );
+            if ( null != conn ) {
                 JSONObject theOne = null;
                 String langName = null;
-                String json = NetUtils.runPost( post, new JSONObject() );
+                String json = NetUtils.runConn( conn, new JSONObject() );
                 if ( null != json ) {
                     try {
                         JSONObject obj = new JSONObject( json );
@@ -1216,9 +1216,9 @@ public class DictsDelegate extends ListDelegateBase
         public Boolean doInBackground( Void... unused )
         {
             boolean success = false;
-            HttpPost post = NetUtils.makePost( m_context, "listDicts" );
-            if ( null != post ) {
-                String json = NetUtils.runPost( post, new JSONObject() );
+            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "listDicts" );
+            if ( null != conn ) {
+                String json = NetUtils.runConn( conn, new JSONObject() );
                 if ( !isCancelled() ) {
                     if ( null != json ) {
                         post( new Runnable() {

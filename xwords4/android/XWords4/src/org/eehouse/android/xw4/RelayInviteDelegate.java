@@ -41,6 +41,8 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -49,7 +51,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import org.apache.http.client.methods.HttpPost;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -512,9 +514,9 @@ public class RelayInviteDelegate extends InviteDelegate {
                 params.put( "me", DevID.getRelayDevIDInt( m_activity ) );
                 DbgUtils.logf( "sending to server: %s", params.toString() );
 
-                HttpPost post = NetUtils.makePost( m_context, "opponentIDsFor" );
-                if ( null != post ) {
-                    String str = NetUtils.runPost( post, params );
+                HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "opponentIDsFor" );
+                if ( null != conn ) {
+                    String str = NetUtils.runConn( conn, params );
                     DbgUtils.logf( "got json from server: %s", str );
                     reply = new JSONObject( str );
                 }
