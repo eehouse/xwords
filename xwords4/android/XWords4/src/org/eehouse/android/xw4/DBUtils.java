@@ -2075,7 +2075,7 @@ public class DBUtils {
 
     public static void setBoolFor( Context context, String key, boolean value )
     {
-        DbgUtils.logdf( "DBUtils.setBoolFor(key=%s, val=%b)", key, value );
+        // DbgUtils.logdf( "DBUtils.setBoolFor(key=%s, val=%b)", key, value );
         String asStr = String.format( "%b", value );
         setStringFor( context, key, asStr );
     }

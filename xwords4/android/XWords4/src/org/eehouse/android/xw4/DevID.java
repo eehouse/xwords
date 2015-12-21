@@ -103,14 +103,14 @@ public class DevID {
         s_relayDevID = devID;
 
         DBUtils.setBoolFor( context, DEVID_ACK_KEY, true );
-        DbgUtils.printStack();
+        // DbgUtils.printStack();
     }
 
     public static void clearRelayDevID( Context context )
     {
         DbgUtils.logf( "DevID.clearRelayDevID()" );
         DBUtils.setStringFor( context, DEVID_KEY, "" );
-        DbgUtils.printStack();
+        // DbgUtils.printStack();
     }
 
     public static void setGCMDevID( Context context, String devID )
