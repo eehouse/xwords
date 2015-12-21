@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +57,7 @@ import org.eehouse.android.xw4.loc.LocUtils;
 import junit.framework.Assert;
 
 public class BTService extends XWService {
+    private static final String BOGUS_MARSHMALLOW_ADDR = "02:00:00:00:00:00";
 
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
@@ -644,6 +646,29 @@ public class BTService extends XWService {
         return m_addrs.contains( btAddr );
     }
 
+    private static Map<String, String> s_namesToAddrs;
+    private String lookupAddr( String btName )
+    {
+        if ( null == s_namesToAddrs ) {
+            s_namesToAddrs = new HashMap<String, String>();
+        }
+        if ( ! s_namesToAddrs.containsKey( btName ) ) {
+            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+            if ( null != adapter ) {
+                Set<BluetoothDevice> devs = adapter.getBondedDevices();
+                Iterator<BluetoothDevice> iter = devs.iterator();
+                while ( iter.hasNext() ) {
+                    BluetoothDevice dev = iter.next();
+                    s_namesToAddrs.put( dev.getName(), dev.getAddress() );
+                }
+            }
+        }
+
+        String result = s_namesToAddrs.get( btName );
+        DbgUtils.logf( "lookupAddr(%s) => %s", btName, result );
+        return result;
+    }
+
     private void clearDevs( String[] btAddrs )
     {
         if ( null != btAddrs ) {
@@ -1191,9 +1216,14 @@ public class BTService extends XWService {
         @Override
         public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
         {
+            String btAddr = addr.bt_btAddr;
+            if ( BOGUS_MARSHMALLOW_ADDR.equals( btAddr ) ) {
+                btAddr = lookupAddr( addr.bt_hostName );
+            }
+            
             Assert.assertTrue( addr.contains( CommsConnType.COMMS_CONN_BT ) );
-            m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
-                                           addr.bt_btAddr, gameID ) );
+            m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf,
+                                           btAddr, gameID ) );
             return buf.length;
         }
     }
