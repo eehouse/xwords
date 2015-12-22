@@ -141,22 +141,30 @@ public class BTService extends XWService {
             Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
             m_msg = buf; m_btAddr = btAddr; 
             m_gameID = gameID;
+            checkAddr();
         }
         public BTQueueElem( BTCmd cmd, String btAddr, int gameID ) {
             this( cmd );
             Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
             m_btAddr = btAddr;
             m_gameID = gameID;
+            checkAddr();
         }
 
         public BTQueueElem( BTCmd cmd, NetLaunchInfo nli, String btAddr ) {
             this( cmd );
             m_nli = nli;
             m_btAddr = btAddr;
+            checkAddr();
         }
 
         public int incrFailCount() { return ++m_failCount; }
         public boolean failCountExceeded() { return m_failCount >= MAX_SEND_FAIL; }
+
+        private void checkAddr()
+        {
+            Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( m_btAddr ) );
+        }
     }
 
     private BluetoothAdapter m_adapter;
@@ -305,13 +313,14 @@ public class BTService extends XWService {
     }
 
     public static int enqueueFor( Context context, byte[] buf, 
-                                  String targetAddr, int gameID )
+                                  CommsAddrRec targetAddr, int gameID )
     {
         int nSent = -1;
-        if ( null != targetAddr && 0 < targetAddr.length() ) {
+        if ( null != targetAddr ) {
+            String btAddr = getSafeAddr( targetAddr );
             Intent intent = getIntentTo( context, BTAction.SEND );
             intent.putExtra( MSG_KEY, buf );
-            intent.putExtra( ADDR_KEY, targetAddr );
+            intent.putExtra( ADDR_KEY, btAddr );
             intent.putExtra( GAMEID_KEY, gameID );
             context.startService( intent );
             nSent = buf.length;
@@ -657,26 +666,30 @@ public class BTService extends XWService {
     }
 
     private static Map<String, String> s_namesToAddrs;
-    private String lookupAddr( String btName )
+    private static String getSafeAddr( CommsAddrRec addr )
     {
-        if ( null == s_namesToAddrs ) {
-            s_namesToAddrs = new HashMap<String, String>();
-        }
-        if ( ! s_namesToAddrs.containsKey( btName ) ) {
-            BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-            if ( null != adapter ) {
-                Set<BluetoothDevice> devs = adapter.getBondedDevices();
-                Iterator<BluetoothDevice> iter = devs.iterator();
-                while ( iter.hasNext() ) {
-                    BluetoothDevice dev = iter.next();
-                    s_namesToAddrs.put( dev.getName(), dev.getAddress() );
+        String btAddr = addr.bt_btAddr;
+        if ( BOGUS_MARSHMALLOW_ADDR.equals( btAddr ) ) {
+            String btName = addr.bt_hostName;
+            if ( null == s_namesToAddrs ) {
+                s_namesToAddrs = new HashMap<String, String>();
+            }
+            if ( ! s_namesToAddrs.containsKey( btName ) ) {
+                BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+                if ( null != adapter ) {
+                    Set<BluetoothDevice> devs = adapter.getBondedDevices();
+                    Iterator<BluetoothDevice> iter = devs.iterator();
+                    while ( iter.hasNext() ) {
+                        BluetoothDevice dev = iter.next();
+                        s_namesToAddrs.put( dev.getName(), dev.getAddress() );
+                    }
                 }
             }
-        }
 
-        String result = s_namesToAddrs.get( btName );
-        DbgUtils.logf( "lookupAddr(%s) => %s", btName, result );
-        return result;
+            btAddr = s_namesToAddrs.get( btName );
+            DbgUtils.logf( "lookupAddr(%s) => %s", btName, btAddr );
+        }
+        return btAddr;
     }
 
     private void clearDevs( String[] btAddrs )
@@ -1232,10 +1245,7 @@ public class BTService extends XWService {
         @Override
         public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
         {
-            String btAddr = addr.bt_btAddr;
-            if ( BOGUS_MARSHMALLOW_ADDR.equals( btAddr ) ) {
-                btAddr = lookupAddr( addr.bt_hostName );
-            }
+            String btAddr = getSafeAddr( addr );
             
             Assert.assertTrue( addr.contains( CommsConnType.COMMS_CONN_BT ) );
             m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf,
