@@ -572,10 +572,19 @@ tous les chevalets :\n</string>
         public static final int strd_remains_header_fmt=0x7f070009;
         /**  Notifies user of a robot trade move 
  returned by util_getUserString 
+ 
+       ############################################################
+       # :Menus:
+       # Context menu for main games-list screen
+       ############################################################ 
+      
+ title of contextual menu.  Name of the selected game is
+         substituted in. 
  returned by util_getUserString 
  Notifies user of a robot trade move 
 <string name="strd_robot_traded_fmt">exchanged %1$d tiles.</string>
 <string name="strd_robot_traded_fmt">a échangé %1$d jetons.</string>
+ returned by util_getUserString 
        
        ############################################################
        # Board info/error dialog messages
@@ -587,15 +596,6 @@ tous les chevalets :\n</string>
  Notifies user of a normal robot move 
 string name="str_robot_moved">O robô fez esta jogada:\u0020</string
  Notifies user of a robot trade move 
- 
-       ############################################################
-       # :Menus:
-       # Context menu for main games-list screen
-       ############################################################ 
-      
- title of contextual menu.  Name of the selected game is
-         substituted in. 
- returned by util_getUserString 
          */
         public static final int strd_robot_traded_fmt=0x7f070008;
     }
@@ -603,11 +603,6 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
         /**  copyright info 
  <string name="moves_fmt">%1$d torns jugats</string> 
  about dialog stuff 
- copyright info 
-<string name="about_copyright">Copyright (C) 1998-2015 by Eric
-        House. This free/open source software is released under the GNU Public
-        License.</string>
- copyright info 
  <string name="moves_fmt">Bolo zahraných %1$d ťahov</string> 
  When you select the list_item_reset contextual menu, you are
           asked to confirm.  This is the text of the first button
@@ -617,6 +612,11 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
          This is the text of the first button ("Cancel" is the
          second).  
  about dialog stuff 
+ copyright info 
+<string name="about_copyright">Copyright (C) 1998-2015 by Eric
+        House. This free/open source software is released under the GNU Public
+        License.</string>
+ copyright info 
          */
         public static final int about_copyright=0x7f0501bf;
         /**  Another paragraph giving credit for work done other than by
@@ -637,8 +637,6 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
        ########################################################### 
       
  String giving version info, which is substituted in. 
- <string name="moves_fmt">Bylo zahráno %1$d tahů</string> 
- about dialog stuff 
  
        ###########################################################
        # :Dialogs:
@@ -650,6 +648,8 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
  String giving version info, which is substituted in. 
 <string name="about_vers_fmt">Crosswords for Android, Version %1$s,
         rev %2$s, built on %3$s.</string>
+ <string name="moves_fmt">Bylo zahráno %1$d tahů</string> 
+ about dialog stuff 
  
        ###########################################################
        # :Dialogs:
@@ -767,6 +767,7 @@ XLATE-ME
       
  This menu commits the current move as it's been laid out on
          the board 
+ system menu for main board view 
     
        ############################################################
        # :Menus:
@@ -775,7 +776,6 @@ XLATE-ME
       
  This menu commits the current move as it's been laid out on
          the board 
- system menu for main board view 
          */
         public static final int board_menu_done=0x7f0500ef;
         /**  Brings up "About Crosswords" dialog 
@@ -919,9 +919,6 @@ XLATE-ME
          */
         public static final int board_menu_undo_last=0x7f0500f3;
         /**  preference for board size (15x15, 13x13 etc.) 
- preference for board size (15x15, 13x13 etc.) 
-<string name="board_size">Board size</string>
- preference for board size (15x15, 13x13 etc.) 
  default new-game setting for handline phonies (words not
          found in the word list) 
  clarification on above 
@@ -935,11 +932,12 @@ XLATE-ME
          in this file) 
  dictionary used by default for robot players when creating
          new game 
+ preference for board size (15x15, 13x13 etc.) 
+<string name="board_size">Board size</string>
+ preference for board size (15x15, 13x13 etc.) 
          */
         public static final int board_size=0x7f050128;
         /**  Title of submenu 
- Title of submenu 
- Title of submenu 
  Undos the last *committed* turn.  Note that this is different
          from the undo button that undoes or redoes an in-progress
          not-yet-committed turn.  This is disabled for networked
@@ -948,6 +946,8 @@ XLATE-ME
          room for the full board and tray to be shown then hiding the
          tray just "turns it over", i.e. shows tiles with '?'
          characters.
+ Title of submenu 
+ Title of submenu 
          */
         public static final int board_submenu_game=0x7f0500f4;
         /**  The remaining strings (down to the color edit dialog below)
@@ -1068,12 +1068,12 @@ XLATE-ME
          */
         public static final int bt_resend_fmt=0x7f0501f4;
         /**  text of button for adding new player to game 
- text of button for adding new player to game 
-<string name="button_add_player">Add player</string>
- text of button for adding new player to game 
  text for separator above the list of players that's used for
          networked games.  The numbers of local and non-local players
          are substituted for %1$d and %2$d. 
+ text of button for adding new player to game 
+<string name="button_add_player">Add player</string>
+ text of button for adding new player to game 
          */
         public static final int button_add_player=0x7f0500b2;
         /**  The only button available when the above message is displayed 
@@ -1185,9 +1185,6 @@ XLATE-ME
          */
         public static final int button_done_fmt=0x7f0501cc;
         /**  Text of button displayed when downloading is an option 
- Text of button displayed when downloading is an option 
-<string name="button_download">Download</string>
- Text of button displayed when downloading is an option 
  This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. 
@@ -1202,6 +1199,9 @@ XLATE-ME
  If the wordlist disappears mid-game there are no choices,
          just an explanation and this button, after which the game
          closes. 
+ Text of button displayed when downloading is an option 
+<string name="button_download">Download</string>
+ Text of button displayed when downloading is an option 
          */
         public static final int button_download=0x7f05018f;
         /** XLATE-ME
@@ -1282,7 +1282,13 @@ XLATE-ME
 
 
     DO NOT EDIT THIS FILE!!!!
-    It was generated (from res_src/values-cs/strings.xml).
+    It was generated (from res_src/values-sk/strings.xml).
+    Any changes you make to it will be lost.
+
+ Text of menuitem in main games-list screen's menu 
+
+    DO NOT EDIT THIS FILE!!!!
+    It was generated (from res_src/values-nl/strings.xml).
     Any changes you make to it will be lost.
 
 
@@ -1306,7 +1312,7 @@ XLATE-ME
  Text of menuitem in main games-list screen's menu 
 
     DO NOT EDIT THIS FILE!!!!
-    It was generated (from res_src/values-nl/strings.xml).
+    It was generated (from res_src/values-cs/strings.xml).
     Any changes you make to it will be lost.
 
 
@@ -1325,12 +1331,6 @@ XLATE-ME
  Text of button at bottom of main games-list screen and of
          menuitem in main games-list screen's menu.  (The botton can
          be hidden in the same way as the above text.) 
-
-    DO NOT EDIT THIS FILE!!!!
-    It was generated (from res_src/values-sk/strings.xml).
-    Any changes you make to it will be lost.
-
- Text of menuitem in main games-list screen's menu 
          */
         public static final int button_new_game=0x7f050080;
         /**  Games list screen menuitem text for creating a new group 
@@ -1512,6 +1512,21 @@ XLATE-ME
       
  Text for buttons at the bottom of dialogs.  These first are
       in many places.
+ Text of confirmation dialog for above 
+ Second menu item.  Reverts only the colors to their
+         default/original values 
+ Text of confirmation dialog for above 
+
+       ############################################################
+       # :Menus:
+       # Preferences screen menus
+       #
+       # There are two menuitems availble via the menu key from this
+       # screen
+       ############################################################
+      
+ text of first menu item.  Will revert all preferences to
+         their default/original values 
 
         ############################################################
         # Dialogs
@@ -1531,21 +1546,6 @@ XLATE-ME
       
  Text for buttons at the bottom of dialogs.  These first are
       in many places.
- Text of confirmation dialog for above 
- Second menu item.  Reverts only the colors to their
-         default/original values 
- Text of confirmation dialog for above 
-
-       ############################################################
-       # :Menus:
-       # Preferences screen menus
-       #
-       # There are two menuitems availble via the menu key from this
-       # screen
-       ############################################################
-      
- text of first menu item.  Will revert all preferences to
-         their default/original values 
          */
         public static final int button_yes=0x7f050198;
         /** <string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
@@ -1754,9 +1754,6 @@ XLATE-ME
          */
         public static final int confirm_save=0x7f0500cc;
         /**  title of above confirmation dialog 
- title of above confirmation dialog 
-<string name="confirm_save_title">Confirm save</string>
- title of above confirmation dialog 
 
        ############################################################
        # :Menus:
@@ -1782,6 +1779,9 @@ XLATE-ME
          Crosswords and that cannot be uninstalled or moved.
          loc_internal and loc_external are the other possible strings
          in this column. 
+ title of above confirmation dialog 
+<string name="confirm_save_title">Confirm save</string>
+ title of above confirmation dialog 
          */
         public static final int confirm_save_title=0x7f0500cd;
         /**   
@@ -2022,11 +2022,6 @@ XLATE-ME
         public static final int debug_features_summary=0x7f0502da;
         /**  dictionary used by default for human players when creating
          new game 
- dictionary used by default for human players when creating
-         new game 
-<string name="default_dict">Wordlist for humans</string>
- dictionary used by default for human players when creating
-         new game 
  clarification of above 
  sub-preference for dictionaries (soon to be called "word lists") 
  Used to indicate that a preference is not enabled, i.e. not
@@ -2038,6 +2033,11 @@ XLATE-ME
  clarification of the above 
  sub-preference title for editing default player names.
          There's only enabled now, though.
+ dictionary used by default for human players when creating
+         new game 
+<string name="default_dict">Wordlist for humans</string>
+ dictionary used by default for human players when creating
+         new game 
          */
         public static final int default_dict=0x7f050120;
         /**  other 
@@ -2239,14 +2239,6 @@ XLATE-ME
          dialog that sets the selected dictionary as a new-game
          default for robots or human players or both. (See
          key_default_dict and key_default_robodict.) 
- Title of contextual menu item.  If chosen it brings up a
-         dialog that sets the selected dictionary as a new-game
-         default for robots or human players or both. (See
-         key_default_dict and key_default_robodict.) 
- Title of contextual menu item.  If chosen it brings up a
-         dialog that sets the selected dictionary as a new-game
-         default for robots or human players or both. (See
-         key_default_dict and key_default_robodict.) 
  If the query returns no rooms, this message is displayed,
     with the number of players in the game and its language
     substituted. 
@@ -2264,6 +2256,14 @@ XLATE-ME
          dialog.  First is used for single-device games, and second
          for networked games (where players aren't allowed to have
          different wordlists.) 
+ Title of contextual menu item.  If chosen it brings up a
+         dialog that sets the selected dictionary as a new-game
+         default for robots or human players or both. (See
+         key_default_dict and key_default_robodict.) 
+ Title of contextual menu item.  If chosen it brings up a
+         dialog that sets the selected dictionary as a new-game
+         default for robots or human players or both. (See
+         key_default_dict and key_default_robodict.) 
          */
         public static final int dicts_item_select=0x7f0500a3;
         /**  If the dropdown is selected, this is the title displayed
@@ -2288,18 +2288,18 @@ XLATE-ME
         /**  text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. 
- text of item at bottom of dicts choice spinner.  It
-         launches the browser pointed at the site where additional
-         wordlists can be found. 
- text of button at the bottom of the screen.  It launches the
-         browser pointed at the site where additional wordlists can be
-         found. 
  title of popup used to determine how words are handled that
          are not in the wordlist used for the game (or player if using
          different wordlists per player) 
  Three possible choices presented in the popup above 
  title of popup used to select how "smart" (how capable) the
     robot player will be. 
+ text of item at bottom of dicts choice spinner.  It
+         launches the browser pointed at the site where additional
+         wordlists can be found. 
+ text of button at the bottom of the screen.  It launches the
+         browser pointed at the site where additional wordlists can be
+         found. 
          */
         public static final int download_dicts=0x7f05009f;
         /** <string name="download_done">Download finished</string>
@@ -2447,6 +2447,11 @@ XLATE-ME
         /**  if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
          player. 
+ clarification of above 
+ Checkbox that when set keeps the device screen from dimming
+         if the board screen is what's displayed.  This is to allow
+         users to think about a move without having to touch the
+         screen all the time.
  if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
          player. 
@@ -2454,11 +2459,6 @@ XLATE-ME
  if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
          player. 
- clarification of above 
- Checkbox that when set keeps the device screen from dimming
-         if the board screen is what's displayed.  This is to allow
-         users to think about a move without having to touch the
-         screen all the time.
          */
         public static final int explain_robot=0x7f050148;
         /**  explanation of the above 
@@ -2559,11 +2559,11 @@ XLATE-ME
          */
         public static final int forced_consistent=0x7f0500d1;
         /**  Games that have ended are listed with this string 
- Games that have ended are listed with this string 
- Games that have ended are listed with this string 
  Displayed as a "Toast" (mini window briefly displayed) if you
        didn't choose a remote player and I was forced to pick one. I
        always pick the first. 
+ Games that have ended are listed with this string 
+ Games that have ended are listed with this string 
          */
         public static final int gameOver=0x7f050089;
         /**   
@@ -2578,9 +2578,9 @@ XLATE-ME
          named them.) 
  used to create default names of games (when user has not
          named them.) 
-<string name="game_fmt">Game %1$d</string>
  used to create default names of games (when user has not
          named them.) 
+<string name="game_fmt">Game %1$d</string>
  used to create default names of games (when user has not
          named them.) 
          */
@@ -2713,26 +2713,6 @@ XLATE-ME
        ############################################################ 
       
  Brings up the Wordlists (formerly Dictionaries) screen 
-    
-       ############################################################
-       # :Menus:
-       # Main screen (Games list) menu
-       #
-       # One menu is not listed here because it appears elsewhere
-       # and their text is reused: button_new_game.
-       ############################################################ 
-      
- Brings up the Wordlists (formerly Dictionaries) screen 
-    
-       ############################################################
-       # :Menus:
-       # Main screen (Games list) menu
-       #
-       # One menu is not listed here because it appears elsewhere
-       # and their text is reused: button_new_game.
-       ############################################################ 
-      
- Brings up the Wordlists (formerly Dictionaries) screen 
  If you choose the above option and have no networked games
          you get this error message 
  Text of progress indicator shown while check is being conducted 
@@ -2740,6 +2720,26 @@ XLATE-ME
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
          any is downloaded. 
+    
+       ############################################################
+       # :Menus:
+       # Main screen (Games list) menu
+       #
+       # One menu is not listed here because it appears elsewhere
+       # and their text is reused: button_new_game.
+       ############################################################ 
+      
+ Brings up the Wordlists (formerly Dictionaries) screen 
+    
+       ############################################################
+       # :Menus:
+       # Main screen (Games list) menu
+       #
+       # One menu is not listed here because it appears elsewhere
+       # and their text is reused: button_new_game.
+       ############################################################ 
+      
+ Brings up the Wordlists (formerly Dictionaries) screen 
          */
         public static final int gamel_menu_dicts=0x7f05008c;
         /** XLATE-ME
@@ -2786,11 +2786,6 @@ XLATE-ME
         public static final int group_new_games=0x7f05024d;
         /**  Used as the default name for remote players displayed within
          the Game configure screen 
- Used as the default name for remote players displayed within
-         the Game configure screen 
-<string name="guest_name">(Off-device player)</string>
- Used as the default name for remote players displayed within
-         the Game configure screen 
  Final state: game is over. 
  Third state: enough devices have connected in the room to
          form a complete game.  We'll be in this state as long as the
@@ -2809,6 +2804,11 @@ XLATE-ME
          they aren't available yet because the connection is not
          complete.  Displayed in the lists of players found in each
          game listing. 
+ Used as the default name for remote players displayed within
+         the Game configure screen 
+<string name="guest_name">(Off-device player)</string>
+ Used as the default name for remote players displayed within
+         the Game configure screen 
          */
         public static final int guest_name=0x7f0500cb;
         /**  If this preference is checked the "crosshairs" (vertical and
@@ -2912,6 +2912,12 @@ XLATE-ME
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
          
+ When a game has been connected and the relay is notified that
+         a device in the game has deleted its part of the game, this
+         message is posted when you connect your end of it to the
+         relay.  Once this happens there is no way to continue the
+         game so you might as well delete it (unless you're saving it
+         for its history etc.) 
  Partial text of alert posted when phonies_warn or
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
@@ -2922,12 +2928,6 @@ XLATE-ME
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
          
- When a game has been connected and the relay is notified that
-         a device in the game has deleted its part of the game, this
-         message is posted when you connect your end of it to the
-         relay.  Once this happens there is no way to continue the
-         game so you might as well delete it (unless you're saving it
-         for its history etc.) 
          */
         public static final int ids_badwords_fmt=0x7f0500eb;
         /**  text of confirmation dialog shown when user chooses the menu
@@ -2943,9 +2943,6 @@ XLATE-ME
          */
         public static final int ids_endnow=0x7f0501a4;
         /**  Title of generic dialog used to display information 
- Title of generic dialog used to display information 
-<string name="info_title">FYI…</string>
- Title of generic dialog used to display information 
  If the dropdown is selected, this is the title displayed
          above the list of selectable items.  The language the game
          will use is substituted in for "%1$s". 
@@ -2953,6 +2950,9 @@ XLATE-ME
          player will use.  The language the game will use (which
          constrains the choice of wordlists) is substituted in for
          "%1$s". 
+ Title of generic dialog used to display information 
+<string name="info_title">FYI…</string>
+ Title of generic dialog used to display information 
          */
         public static final int info_title=0x7f05019e;
         /**   
@@ -2995,9 +2995,6 @@ XLATE-ME
          */
         public static final int init_autojuggle_sum=0x7f050125;
         /**  default number of minutes on timer for new games 
- default number of minutes on timer for new games 
-<string name="initial_player_minutes">Timer minutes per player</string>
- default number of minutes on timer for new games 
  clarification of the above 
        
        ############################################################
@@ -3006,6 +3003,9 @@ XLATE-ME
        ############################################################
       
  title of this sub-preference 
+ default number of minutes on timer for new games 
+<string name="initial_player_minutes">Timer minutes per player</string>
+ default number of minutes on timer for new games 
          */
         public static final int initial_player_minutes=0x7f050127;
         public static final int invite_choice_bt=0x7f05016c;
@@ -3416,10 +3416,6 @@ XLATE-ME
         public static final int list_group_rename=0x7f050248;
         /**   ############## menu items ############## 
  pulls up dialog to configure the selected game 
-  ############## menu items ############## 
- pulls up dialog to configure the selected game 
-  ############## menu items ############## 
- pulls up dialog to configure the selected game 
  Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
          of the game is substituted for %1$s.  Something else
@@ -3427,6 +3423,10 @@ XLATE-ME
          does not require translation unless the parentheses or
          ordering is wrong for your language.
  Games list screen menuitem text for creating a new group 
+  ############## menu items ############## 
+ pulls up dialog to configure the selected game 
+  ############## menu items ############## 
+ pulls up dialog to configure the selected game 
          */
         public static final int list_item_config=0x7f050093;
         /**  makes a copy of the selected game.  This is currently
@@ -3444,10 +3444,10 @@ XLATE-ME
          */
         public static final int list_item_copy=0x7f050099;
         /**  pulls up dialog to delete the selected game 
- pulls up dialog to delete the selected game 
- pulls up dialog to delete the selected game 
  pulls up dialog to change the group of the selected game 
  pulls up dialog to rename (change name of) the selected game 
+ pulls up dialog to delete the selected game 
+ pulls up dialog to delete the selected game 
          */
         public static final int list_item_delete=0x7f050096;
         /**  pulls up dialog to change the group of the selected game 
@@ -3471,12 +3471,6 @@ XLATE-ME
         /**  pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. 
- pulls up dialog to reset the selected game, that is to remove
-         all moves so that it's the same as a newly created game
-         except for any configuration. 
- pulls up dialog to reset the selected game, that is to remove
-         all moves so that it's the same as a newly created game
-         except for any configuration. 
  Text of confirmation dialog posted when list_item_reset menu
          is selected 
  text within rename dialog (triggered by selecting
@@ -3486,6 +3480,12 @@ XLATE-ME
          list_item_rename) 
  If you try to copy a networked game you get this error
     message. 
+ pulls up dialog to reset the selected game, that is to remove
+         all moves so that it's the same as a newly created game
+         except for any configuration. 
+ pulls up dialog to reset the selected game, that is to remove
+         all moves so that it's the same as a newly created game
+         except for any configuration. 
          */
         public static final int list_item_reset=0x7f050097;
         /**  formatting for last move summary in notifications 
@@ -3785,6 +3785,11 @@ XLATE-ME
        ############################################################
        
  Text of dialog.  Player name is substituted 
+ If substituting an existing same-language wordlist by
+         choosing button_substdict user gets to choose from a list of
+         wordlists.  This is the title of that list. 
+ Text of button allowing user to choose to open with a
+         different (but same-language wordlist) 
  
        ############################################################
        # :Dialogs:
@@ -3808,11 +3813,6 @@ XLATE-ME
        ############################################################
        
  Text of dialog.  Player name is substituted 
- If substituting an existing same-language wordlist by
-         choosing button_substdict user gets to choose from a list of
-         wordlists.  This is the title of that list. 
- Text of button allowing user to choose to open with a
-         different (but same-language wordlist) 
          */
         public static final int msg_ask_password_fmt=0x7f050192;
         /**  When a game has been connected and the relay is notified that
@@ -4309,27 +4309,6 @@ XLATE-ME
        ############################################################
       
  title of alert 
- 
-       ############################################################
-       # :Dialogs:
-       # Missing wordlist alert
-       # 
-       # This alert is displayed when you try to open a game whose
-       # wordlist cannot be found.
-       ############################################################
-      
- title of alert 
-<string name="no_dict_title">Wordlist not found</string>
- 
-       ############################################################
-       # :Dialogs:
-       # Missing wordlist alert
-       # 
-       # This alert is displayed when you try to open a game whose
-       # wordlist cannot be found.
-       ############################################################
-      
- title of alert 
  <string name="summary_thumb_enabled">Display snapshots of games</string> 
  Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
@@ -4452,6 +4431,27 @@ XLATE-ME
          release 
  Another paragraph giving credit for work done other than by
          Eric House and translators 
+ 
+       ############################################################
+       # :Dialogs:
+       # Missing wordlist alert
+       # 
+       # This alert is displayed when you try to open a game whose
+       # wordlist cannot be found.
+       ############################################################
+      
+ title of alert 
+<string name="no_dict_title">Wordlist not found</string>
+ 
+       ############################################################
+       # :Dialogs:
+       # Missing wordlist alert
+       # 
+       # This alert is displayed when you try to open a game whose
+       # wordlist cannot be found.
+       ############################################################
+      
+ title of alert 
          */
         public static final int no_dict_title=0x7f05018a;
         /**  If you click on the Play button without having entered a room
@@ -4990,13 +4990,6 @@ XLATE-ME
         /**  These are the three choices in the popup above whose text is
          phonies_spinner_prompt 
  Don't care if words played are in the wordlist or not 
- These are the three choices in the popup above whose text is
-         phonies_spinner_prompt 
- Don't care if words played are in the wordlist or not 
-<string name="phonies_ignore">Ignore phonies</string>
- These are the three choices in the popup above whose text is
-         phonies_spinner_prompt 
- Don't care if words played are in the wordlist or not 
  If you click on the Play button without having entered a room
          name you get an alert with this error message. 
  This button takes you to the normal Game Configure screen 
@@ -5145,6 +5138,13 @@ XLATE-ME
          might make sense for one to be able to study the board even
          though it's not his turn e.g. while the player whose turn it
          is is temporarily unable to play. 
+ These are the three choices in the popup above whose text is
+         phonies_spinner_prompt 
+ Don't care if words played are in the wordlist or not 
+<string name="phonies_ignore">Ignore phonies</string>
+ These are the three choices in the popup above whose text is
+         phonies_spinner_prompt 
+ Don't care if words played are in the wordlist or not 
          */
         public static final int phonies_ignore=0x7f0500c7;
         /**  title of popup used to determine how words are handled that
@@ -5191,27 +5191,6 @@ XLATE-ME
          */
         public static final int play=0x7f0500ce;
         /**      
-       ############################################################
-       # :Dialogs:
-       # Player edit dialog
-       #
-       # This comes up when you tap on a player within the Game
-       # config screen
-       ############################################################
-      
- dialog title 
-     
-       ############################################################
-       # :Dialogs:
-       # Player edit dialog
-       #
-       # This comes up when you tap on a player within the Game
-       # config screen
-       ############################################################
-      
- dialog title 
-<string name="player_edit_title">Edit player</string>
-     
        ############################################################
        # :Dialogs:
        # Player edit dialog
@@ -5270,14 +5249,30 @@ XLATE-ME
       
  Buttons shown at bottom when board is in exchange mode,
          i.e. after user has picked board_menu_trade menu item 
+     
+       ############################################################
+       # :Dialogs:
+       # Player edit dialog
+       #
+       # This comes up when you tap on a player within the Game
+       # config screen
+       ############################################################
+      
+ dialog title 
+<string name="player_edit_title">Edit player</string>
+     
+       ############################################################
+       # :Dialogs:
+       # Player edit dialog
+       #
+       # This comes up when you tap on a player within the Game
+       # config screen
+       ############################################################
+      
+ dialog title 
          */
         public static final int player_edit_title=0x7f0500d2;
         /**  used to create default player names.  Number between 1 and 4
-         is substituted 
- used to create default player names.  Number between 1 and 4
-         is substituted 
-<string name="player_fmt">Player %1$d</string>
- used to create default player names.  Number between 1 and 4
          is substituted 
  When a move is fetched from the relay a Notification is
     posted.  These are its title, which appears in the top bar of the
@@ -5285,14 +5280,14 @@ XLATE-ME
     down. 
  used to create default player names.  Number between 1 and 4
          is substituted 
+ used to create default player names.  Number between 1 and 4
+         is substituted 
+<string name="player_fmt">Player %1$d</string>
+ used to create default player names.  Number between 1 and 4
+         is substituted 
          */
         public static final int player_fmt=0x7f050194;
         /**  text of lable identifying the field in which player's name is
-         set/displayed 
- text of lable identifying the field in which player's name is
-         set/displayed 
-<string name="player_label">Name:</string>
- text of lable identifying the field in which player's name is
          set/displayed 
  Shown in the main screen when you launch Crosswords from an
          invitation (received in email or messaging app, say) and
@@ -5304,6 +5299,11 @@ XLATE-ME
  Used for a button when informing user that his attempt to
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) 
+ text of lable identifying the field in which player's name is
+         set/displayed 
+<string name="player_label">Name:</string>
+ text of lable identifying the field in which player's name is
+         set/displayed 
          */
         public static final int player_label=0x7f0500d4;
         /**  text for separator above the list of players that's used for
@@ -5450,23 +5450,6 @@ XLATE-ME
        ############################################################
       
  title of this sub-preference 
-
-       ############################################################
-       # :Screens:
-       # Individual Colors preference subscreen (within Appearances
-       # subscreen)
-       ############################################################
-      
- title of this sub-preference 
-<string name="prefs_colors">Individual colors</string>
-
-       ############################################################
-       # :Screens:
-       # Individual Colors preference subscreen (within Appearances
-       # subscreen)
-       ############################################################
-      
- title of this sub-preference 
  clarification of above 
  Checkbox that when set prevents showing a title bar in the
          game board window to save space 
@@ -5487,6 +5470,23 @@ XLATE-ME
        ############################################################
        # :Screens:
        # Appearances subscreen of Preferences screen
+       ############################################################
+      
+ title of this sub-preference 
+
+       ############################################################
+       # :Screens:
+       # Individual Colors preference subscreen (within Appearances
+       # subscreen)
+       ############################################################
+      
+ title of this sub-preference 
+<string name="prefs_colors">Individual colors</string>
+
+       ############################################################
+       # :Screens:
+       # Individual Colors preference subscreen (within Appearances
+       # subscreen)
        ############################################################
       
  title of this sub-preference 
@@ -5665,15 +5665,15 @@ XLATE-ME
         public static final int redir_host=0x7f0502d5;
         /**  Title of dialog used to alert players to relay-related
          problems with the current game. 
+ the color of text, e.g. "2L", shown on a bonus square on the
+         board 
+ the background color of the area outside the board,
+         e.g. between entries in the scoreboard 
  Title of dialog used to alert players to relay-related
          problems with the current game. 
 <string name="relay_alert">Connection problem</string>
  Title of dialog used to alert players to relay-related
          problems with the current game. 
- the color of text, e.g. "2L", shown on a bonus square on the
-         board 
- the background color of the area outside the board,
-         e.g. between entries in the scoreboard 
          */
         public static final int relay_alert=0x7f0500e5;
         /** <string name="relay_alert_title">Message from relay</string>
@@ -5748,6 +5748,10 @@ XLATE-ME
          work to zoom the board in and out (and will not control
          volume) This only applies when the Board screen is
          frontmost. 
+ explanation of the above 
+ If this preference is checked, tiles in the rack will be
+         re-ordered alphabetically whenever tiles are added,
+         i.e. after ever move.
  if this preference is checked, the hardware volume keys will
          work to zoom the board in and out (and will not control
          volume) This only applies when the Board screen is
@@ -5757,10 +5761,6 @@ XLATE-ME
          work to zoom the board in and out (and will not control
          volume) This only applies when the Board screen is
          frontmost. 
- explanation of the above 
- If this preference is checked, tiles in the rack will be
-         re-ordered alphabetically whenever tiles are added,
-         i.e. after ever move.
          */
         public static final int ringer_zoom=0x7f05014e;
         /**  explanation of the above 
@@ -5855,9 +5855,6 @@ XLATE-ME
          */
         public static final int set_pref=0x7f0502c4;
         /**  text of separator marking out other-setting area of the dialog 
- text of separator marking out other-setting area of the dialog 
-<string name="settings_label">Other settings</string>
- text of separator marking out other-setting area of the dialog 
   
  see move_dictf above 
  When the dicts_item_move menu is chosen, this text is used in
@@ -5891,6 +5888,9 @@ XLATE-ME
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %1$s.  Sometimes one of the two
          strings below is appended. 
+ text of separator marking out other-setting area of the dialog 
+<string name="settings_label">Other settings</string>
+ text of separator marking out other-setting area of the dialog 
          */
         public static final int settings_label=0x7f0500bd;
         /**  Checkbox that when set makes taps on the board manipulate an
@@ -5971,15 +5971,15 @@ XLATE-ME
          */
         public static final int square_tiles_summary=0x7f050254;
         /**  Used in formatting moves and history 
+ Used to separate names of players when listing them on one
+    line in a game summary.  The \u0020 is a space in xml. 
+ Used, with remote player's name substituted for %1$s, to
+    indicate that the player is remote. 
  Used in formatting moves and history 
 <string name="str_bonus_all">Bonus for using all tiles: 50\n</string>
  Used to separate names of players when listing them on one
     line in a game summary.  The \u0020 is a space in xml. 
  Used in formatting moves and history 
- Used to separate names of players when listing them on one
-    line in a game summary.  The \u0020 is a space in xml. 
- Used, with remote player's name substituted for %1$s, to
-    indicate that the player is remote. 
          */
         public static final int str_bonus_all=0x7f05010c;
         /**  Using the hint feature is cheating by some players, and it
@@ -6017,6 +6017,8 @@ XLATE-ME
         public static final int str_cant_undo_tileassign=0x7f050185;
         /**  Beginning of the message presented to a user when asking him
          to confirm committing the current turn
+ Used in formatting reports of trades (exchanges of tiles).
+         Number of tiles traded is substituted for %1$d
  Beginning of the message presented to a user when asking him
          to confirm committing the current turn
 <string name="str_commit_confirm">Commit the current move?\n</string>
@@ -6032,8 +6034,6 @@ XLATE-ME
          phony 
  Beginning of the message presented to a user when asking him
          to confirm committing the current turn
- Used in formatting reports of trades (exchanges of tiles).
-         Number of tiles traded is substituted for %1$d
          */
         public static final int str_commit_confirm=0x7f050109;
         /**  Used to format game name plus some other information as the
@@ -6229,6 +6229,11 @@ XLATE-ME
          because the tiles placed are not all in the same row or
          column. 
  error messages 
+ text of dialog shown when the menu item board_menu_undo_last
+         is chosen. 
+ Intro to the paragraph lisiting all of the tiles remaining 
+ First line in the remaining tiles dialog (reached by tapping
+         the number at left end of the scoreboard) 
  error messages 
  
        error messages
@@ -6238,18 +6243,13 @@ XLATE-ME
          column. 
 <string name="str_tiles_not_in_line">All tiles played must be in a
          line.</string>
+ error messages 
  
        error messages
       
  Displayed when you try to commit a turn that is illegal
          because the tiles placed are not all in the same row or
          column. 
- text of dialog shown when the menu item board_menu_undo_last
-         is chosen. 
- Intro to the paragraph lisiting all of the tiles remaining 
- First line in the remaining tiles dialog (reached by tapping
-         the number at left end of the scoreboard) 
- error messages 
          */
         public static final int str_tiles_not_in_line=0x7f05017d;
         /**  Displayed when you try to begin a trade but there are not
@@ -6332,10 +6332,10 @@ XLATE-ME
          */
         public static final int strs_move_down_fmt=0x7f050105;
         /**  Used in formatting game history and move summaries 
+ Used in formatting remote player move summaries 
  Used in formatting game history and move summaries 
 <string name="strs_new_tiles_fmt">New tiles: %1$s</string>
  Used in formatting game history and move summaries 
- Used in formatting remote player move summaries 
          */
         public static final int strs_new_tiles_fmt=0x7f0500ff;
         /**  Used in formatting game history and move summaries 
@@ -6347,13 +6347,13 @@ XLATE-ME
         /**  title for window you get when you select menu with text
          board_menu_game_counts 
 string name="str_robot_moved">El robot ha fet aquesta jugada:</string
-string name="str_robot_moved">Robot provedl tento tah:</string
+string name="str_robot_moved">Robot uskutočnil tento ťah:</string
  title for window you get when you select menu with text
          board_menu_game_counts 
 <string name="strs_values_header_fmt">%1$s counts/values:\n</string>
+string name="str_robot_moved">Robot provedl tento tah:</string
  title for window you get when you select menu with text
          board_menu_game_counts 
-string name="str_robot_moved">Robot uskutočnil tento ťah:</string
          */
         public static final int strs_values_header_fmt=0x7f0500fc;
         /**  Used in formatting exchange move summaries 
@@ -6525,14 +6525,14 @@ string name="str_robot_moved">Robot uskutočnil tento ťah:</string
          */
         public static final int thumb_off=0x7f05025d;
         /**  color of the tiles' background 
- color of the tiles' background 
-<string name="tile_back">Tile background</string>
- color of the tiles' background 
  color of the "crosshairs", lines drawn vertically and
          horizontally through the square the user is currently
          touching in order to guide the fat-fingered (most of us) in
          operations that require accurately selecting a single square
          on the board.
+ color of the tiles' background 
+<string name="tile_back">Tile background</string>
+ color of the tiles' background 
          */
         public static final int tile_back=0x7f05013f;
         /**   
@@ -6656,6 +6656,11 @@ string name="str_robot_moved">Robot uskutočnil tento ťah:</string
        ############################################################
       
  window title 
+ text of checkbox at top of dialog allowing to unlock in-play
+    game to make changes 
+ title for popup list of langugages from which user picks 
+  
+ alternate window title used when game is networked 
    
        ############################################################
        # :Screens:
@@ -6679,11 +6684,6 @@ string name="str_robot_moved">Robot uskutočnil tento ťah:</string
        ############################################################
       
  window title 
- text of checkbox at top of dialog allowing to unlock in-play
-    game to make changes 
- title for popup list of langugages from which user picks 
-  
- alternate window title used when game is networked 
          */
         public static final int title_prefs=0x7f05010f;
         /** XLATE-ME
@@ -6706,11 +6706,6 @@ string name="str_robot_moved">Robot uskutočnil tento ťah:</string
          */
         public static final int title_studyon=0x7f050268;
         /**  title of dialog allowing user to pick tiles "face up".  (This
-         feature is not yet supported on Android.) 
- title of dialog allowing user to pick tiles "face up".  (This
-         feature is not yet supported on Android.) 
-<string name="title_tile_picker">Letter for blank</string>
- title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) 
  
        ###########################################################
@@ -6807,6 +6802,11 @@ string name="str_robot_moved">Robot uskutočnil tento ťah:</string
        ########################################################### 
       
  Title of New user info dialog
+ title of dialog allowing user to pick tiles "face up".  (This
+         feature is not yet supported on Android.) 
+<string name="title_tile_picker">Letter for blank</string>
+ title of dialog allowing user to pick tiles "face up".  (This
+         feature is not yet supported on Android.) 
          */
         public static final int title_tile_picker=0x7f05019f;
         /** <string name="update_dicts_fmt">Updates are available for one or more
@@ -6819,12 +6819,12 @@ string name="str_robot_moved">Robot uskutočnil tento ťah:</string
          */
         public static final int use_defaults=0x7f0502ba;
         /**  text of checkbox controlling whether there's a game timer 
- text of checkbox controlling whether there's a game timer 
-<string name="use_timer">Enable game timer</string>
- text of checkbox controlling whether there's a game timer 
  text of checkbox.  If this checkbox is checked, games created
          for network play will by default have the hint feature
          enabled. 
+ text of checkbox controlling whether there's a game timer 
+<string name="use_timer">Enable game timer</string>
+ text of checkbox controlling whether there's a game timer 
          */
         public static final int use_timer=0x7f0500c0;
         /**  Used to separate names of players when listing them on one
@@ -6904,10 +6904,10 @@ réseau.)</string>
  Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language
+ fill this in other than in English 
  Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language
- fill this in other than in English 
          */
         public static final int xlator=0x7f0501c1;
         public static final int xwords_nfc_mime=0x7f050077;
