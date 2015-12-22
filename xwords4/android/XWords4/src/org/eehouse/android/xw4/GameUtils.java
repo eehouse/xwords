@@ -1078,8 +1078,8 @@ public class GameUtils {
     {
         if ( null != bmr ) {
             Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
-            String msg;
-            int titleID;
+            String msg = null;
+            int titleID = 0;
             if ( null != bmr.m_chat ) {
                 titleID = R.string.notify_chat_title_fmt;
                 if ( null != bmr.m_chatFrom ) {
@@ -1089,13 +1089,16 @@ public class GameUtils {
                 } else {
                     msg = bmr.m_chat;
                 }
-            } else {
+            } else if ( null != bmr.m_lmi ) {
                 titleID = R.string.notify_title_fmt;
-                msg = bmr.m_lmi.format( context );
+                msg = bmr.m_lmi.format( context ); // NPE
             }
-            String title = LocUtils.getString( context, titleID,
-                                               getName( context, rowid ) );
-            Utils.postNotification( context, intent, title, msg, (int)rowid );
+
+            if ( 0 != titleID ) {
+                String title = LocUtils.getString( context, titleID,
+                                                   getName( context, rowid ) );
+                Utils.postNotification( context, intent, title, msg, (int)rowid );
+            }
         } else {
             DbgUtils.logdf( "postMoveNotification(): posting nothing for lack"
                             + " of brm" );
