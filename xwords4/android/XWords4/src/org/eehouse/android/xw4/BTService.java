@@ -677,7 +677,6 @@ public class BTService extends XWService {
             }
 
             btAddr = s_namesToAddrs.get( btName );
-            DbgUtils.logf( "lookupAddr(%s) => %s", btName, btAddr );
         }
         return btAddr;
     }
