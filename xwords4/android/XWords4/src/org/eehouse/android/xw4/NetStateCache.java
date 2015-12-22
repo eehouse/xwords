@@ -69,7 +69,12 @@ public class NetStateCache {
     public static boolean netAvail( Context context )
     {
         initIfNot( context );
-        return s_netAvail || s_onSim;
+        boolean result = s_netAvail || s_onSim;
+        if ( BuildConfig.DEBUG ) {
+            checkSame( context, result );
+        }
+        DbgUtils.logf( "NetStateCache.netAvail() => %b", result );
+        return result;
     }
 
     public static boolean onWifi()
@@ -117,6 +122,21 @@ public class NetStateCache {
         }
     }
 
+    private static void checkSame( Context context, boolean connectedCached )
+    {
+        if ( BuildConfig.DEBUG ) {
+            ConnectivityManager cm =
+                (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            boolean connectedReal = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+            if ( connectedReal != connectedCached ) {
+                DbgUtils.logf( "NetStateCache(): connected: cached: %b; actual: %b",
+                               connectedCached, connectedReal );
+            }
+        }
+    }
+    
     private static class PvtBroadcastReceiver extends BroadcastReceiver {
         private Runnable mNotifyLater;
         private Handler mHandler;
