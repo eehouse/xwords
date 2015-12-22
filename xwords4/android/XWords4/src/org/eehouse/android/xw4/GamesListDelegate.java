@@ -2039,18 +2039,19 @@ public class GamesListDelegate extends ListDelegateBase
             int bits = intent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
             CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
 
+            long newid;
             if ( null == btAddr && null == phone && null == relayID ) {
-                long newid = GameUtils.dupeGame( m_activity, srcRowID );
+                newid = GameUtils.dupeGame( m_activity, srcRowID );
                 DBUtils.setName( m_activity, newid, gameName );
-                launchGame( newid );
             } else {
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
-                long newid = GameUtils.makeNewMultiGame( m_activity, groupID, 
+                newid = GameUtils.makeNewMultiGame( m_activity, groupID, 
                                                          dict, lang,
                                                          addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
                                         relayID );
             }
+            launchGame( newid );
         }
         m_rematchIntent = null;
     }
