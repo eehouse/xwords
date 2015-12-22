@@ -1096,8 +1096,8 @@ static void
 countWords( const XP_UCHAR* XP_UNUSED(word), XP_Bool isLegal, 
             const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
-            const MoveInfo* movei, XP_U16 start, 
-            XP_U16 end,
+            const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
+            XP_U16 XP_UNUSED(end),
 #endif
             void* closure )
 {
