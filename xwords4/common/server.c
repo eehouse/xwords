@@ -2087,7 +2087,7 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
     if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
         XP_U32 hashReceived = stream_getU32( stream );
         success = model_hashMatches( server->vol.model, hashReceived );
-        XP_ASSERT( success );   /* I need to understand when this can fail */
+        // XP_ASSERT( success );   /* I need to understand when this can fail */
         if ( !success ) {
             XP_LOGF( "%s: hash mismatch",__func__);
         }
