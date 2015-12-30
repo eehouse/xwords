@@ -6,7 +6,7 @@ APP_NEW=""
 DO_CLEAN=""
 APP_NEW_PARAMS=""
 NGAMES=""
-UDP_PCT_START=5
+UDP_PCT_START=100
 UDP_PCT_INCR=10
 UPGRADE_ODDS=""
 NROOMS=""
@@ -612,7 +612,7 @@ function usage() {
     echo "    [--seed <int>]                                          \\" >&2
     echo "    [--send-chat <interval-in-seconds>                      \\" >&2
     echo "    [--udp-incr <pct>]                                      \\" >&2
-    echo "    [--udp-start <pct>]                                     \\" >&2
+    echo "    [--udp-start <pct>]      # default: $UDP_PCT_START                 \\" >&2
     echo "    [--undo-pct <int>]                                      \\" >&2
 
     exit 1
