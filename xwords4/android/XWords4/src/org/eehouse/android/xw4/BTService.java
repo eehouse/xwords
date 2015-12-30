@@ -291,6 +291,7 @@ public class BTService extends XWService {
     public static void inviteRemote( Context context, String btAddr, 
                                      NetLaunchInfo nli )
     {
+        Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
         Intent intent = getIntentTo( context, BTAction.INVITE );
         String nliData = nli.toString();
         intent.putExtra( GAMEDATA_KEY, nliData );
@@ -316,16 +317,20 @@ public class BTService extends XWService {
                                   CommsAddrRec targetAddr, int gameID )
     {
         int nSent = -1;
-        if ( null != targetAddr ) {
-            String btAddr = getSafeAddr( targetAddr );
+        Assert.assertNotNull( targetAddr );
+        String btAddr = getSafeAddr( targetAddr );
+        if ( null != btAddr && 0 < btAddr.length() ) {
             Intent intent = getIntentTo( context, BTAction.SEND );
             intent.putExtra( MSG_KEY, buf );
             intent.putExtra( ADDR_KEY, btAddr );
             intent.putExtra( GAMEID_KEY, gameID );
             context.startService( intent );
             nSent = buf.length;
-        } else {
-            DbgUtils.logf( "BTService.enqueueFor(): targetAddr is null" );
+        }
+
+        if ( -1 == nSent ) {
+            DbgUtils.logf( "BTService.enqueueFor(): can't send to %s",
+                           targetAddr.bt_hostName );
         }
         return nSent;
     }
@@ -687,7 +692,6 @@ public class BTService extends XWService {
             }
 
             btAddr = s_namesToAddrs.get( btName );
-            DbgUtils.logf( "lookupAddr(%s) => %s", btName, btAddr );
         }
         return btAddr;
     }
