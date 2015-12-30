@@ -1,6 +1,6 @@
-/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make -j5 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001, 2006-2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2015 by Eric House (xwords@eehouse.org). All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -78,7 +78,9 @@ augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
         hash += (hash << 10);
         hash ^= (hash >> 6);
     }
-    // XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
+#ifdef DEBUG_HASHING
+    XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
+#endif
     return hash;
 }
 
@@ -129,11 +131,15 @@ stack_getHashOld( StackCtxt* stack )
             XP_ASSERT( 0 );
         }
         hash = augmentFor( hash, &entry );
-        // XP_LOGF( "hash after %d: %.8X", nn, (unsigned int)hash );
+#ifdef DEBUG_HASHING
+        XP_LOGF( "%s: hash after %d: %.8X", __func__, nn, (unsigned int)hash );
+#endif
     }
     XP_ASSERT( 0 != hash );
     hash = finishHash( hash );
+#ifdef DEBUG_HASHING
     LOG_RETURNF( "%.8X", (unsigned int)hash );
+#endif
     return hash;
 } /* stack_getHashOld */
 
@@ -146,9 +152,13 @@ stack_getHash( const StackCtxt* stack )
     stream_copyBits( stack->data, 0, stack->top, NULL, &len );
     XP_U8 buf[len];
     stream_copyBits( stack->data, 0, stack->top, buf, &len );
-    // LOG_HEX( buf, len, __func__ );
+#ifdef DEBUG_HASHING
+    LOG_HEX( buf, len, __func__ );
+#endif
     hash = finishHash( augmentHash( 0L, buf, len ) );
-    // LOG_RETURNF( "%.8X", (unsigned int)hash );
+#ifdef DEBUG_HASHING
+    LOG_RETURNF( "%.8X", (unsigned int)hash );
+#endif
     return hash;
 } /* stack_getHash */
 #endif
@@ -308,7 +318,9 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     ++stack->nEntries;
     stack->highWaterMark = stack->nEntries;
     stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
-    // XP_LOGSTREAM( stack->data );
+#ifdef DEBUG_HASHING
+    XP_LOGSTREAM( stack->data );
+#endif
     SET_DIRTY( stack );
 } /* pushEntry */
 
@@ -482,7 +494,9 @@ stack_popEntry( StackCtxt* stack, StackEntry* entry )
         setCacheReadyFor( stack, nn ); /* set cachedPos by side-effect */
         stack->top = stack->cachedPos;
     }
-    // XP_LOGSTREAM( stack->data );
+#ifdef DEBUG_HASHING
+    XP_LOGSTREAM( stack->data );
+#endif
     return found;
 } /* stack_popEntry */
 
