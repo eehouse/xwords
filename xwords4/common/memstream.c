@@ -195,7 +195,7 @@ mem_stream_copyBits( const XWStreamCtxt* p_sctx, XWStreamPos XP_UNUSED(startPos)
         XP_ASSERT( len <= stream->nBytesAllocated );
         XP_MEMCPY( buf, stream->buf, len );
         if ( 0 != BIT_PART(endPos) ) {
-            buf[len-1] &= 1 << BIT_PART(endPos);
+            buf[len-1] &= ~(0xFF << BIT_PART(endPos));
         }
     }
     *lenp = len;
