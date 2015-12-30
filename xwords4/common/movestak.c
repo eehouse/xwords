@@ -147,18 +147,22 @@ stack_getHashOld( StackCtxt* stack )
 XP_U32
 stack_getHash( const StackCtxt* stack )
 {
-    XP_U32 hash;
-    XP_U16 len = 0;
-    stream_copyBits( stack->data, 0, stack->top, NULL, &len );
-    XP_U8 buf[len];
-    stream_copyBits( stack->data, 0, stack->top, buf, &len );
+    XP_U32 hash = 0;
+    if ( !!stack->data ) {
+        XP_U16 len = 0;
+        stream_copyBits( stack->data, 0, stack->top, NULL, &len );
+        if ( 0 < len ) {
+            XP_U8 buf[len];
+            stream_copyBits( stack->data, 0, stack->top, buf, &len );
 #ifdef DEBUG_HASHING
-    LOG_HEX( buf, len, __func__ );
+            LOG_HEX( buf, len, __func__ );
 #endif
-    hash = finishHash( augmentHash( 0L, buf, len ) );
+            hash = finishHash( augmentHash( 0L, buf, len ) );
 #ifdef DEBUG_HASHING
-    LOG_RETURNF( "%.8X", (unsigned int)hash );
+            LOG_RETURNF( "%.8X", (unsigned int)hash );
 #endif
+        }
+    }
     return hash;
 } /* stack_getHash */
 #endif
@@ -260,7 +264,7 @@ stack_copy( const StackCtxt* stack )
 }
 
 static void
-pushEntry( StackCtxt* stack, const StackEntry* entry )
+pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
 {
     XP_U16 ii, bitsPerTile;
     XWStreamPos oldLoc;
@@ -322,7 +326,28 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     XP_LOGSTREAM( stack->data );
 #endif
     SET_DIRTY( stack );
-} /* pushEntry */
+} /* pushEntryImpl */
+
+static void
+pushEntry( StackCtxt* stack, const StackEntry* entry )
+{
+#ifdef DEBUG_HASHING
+    XP_U32 origHash = stack_getHash( stack );
+#endif
+
+    pushEntryImpl( stack, entry );
+
+#ifdef DEBUG_HASHING
+    XP_U32 newHash = stack_getHash( stack );
+    StackEntry lastEntry;
+    if ( stack_popEntry( stack, &lastEntry ) ) {
+        XP_ASSERT( origHash == stack_getHash( stack ) );
+        pushEntryImpl( stack, &lastEntry );
+        XP_ASSERT( newHash == stack_getHash( stack ) );
+        XP_LOGF( "%s: all ok", __func__ );
+    }
+#endif
+}
 
 static void
 readEntry( const StackCtxt* stack, StackEntry* entry )
