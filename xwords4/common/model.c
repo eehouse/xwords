@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2015 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -340,6 +340,56 @@ model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 #endif
         (hash == stack_getHashOld( stack ));
     return matches;
+}
+
+XP_Bool
+model_revertToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
+{
+    XP_U16 nPopped = 0;
+    StackCtxt* stack = model->vol.stack;
+    const XP_U16 nEntries = stack_getNEntries( stack );
+    StackEntry entries[nEntries];
+#ifdef DEBUG
+    XP_U32 hashes[nEntries];
+#endif
+    XP_S16 foundAt = -1;
+
+    for ( XP_U16 ii = 0; ii < nEntries; ++ii ) {
+        XP_U32 thisHash =
+#ifdef DEBUG
+        hashes[ii] =
+#endif
+            stack_getHash( stack );
+        if ( hash == thisHash ) {
+            foundAt = ii;
+            break;
+        }
+        if ( ! stack_popEntry( stack, &entries[ii] ) ) {
+            break;
+        }
+        ++nPopped;
+    }
+
+    for ( XP_S16 ii = nPopped - 1; ii >= 0; --ii ) {
+        stack_redo( stack, &entries[ii] );
+        /* Assert not needed for long */
+        XP_ASSERT( hashes[ii] = stack_getHash( stack ) );
+    }
+
+    XP_Bool found = -1 != foundAt;
+    if ( found ) {
+        XP_LOGF( "%s: undoing %d turns to match hash %X", __func__,
+                 foundAt, hash );
+#ifdef DEBUG
+        XP_Bool success =
+#endif
+            model_undoLatestMoves( model, pool, foundAt, NULL, NULL );
+        XP_ASSERT( success );
+        /* Assert not needed for long */
+        XP_ASSERT( hash == stack_getHash( model->vol.stack ) );
+    }
+
+    return found;
 }
 
 #ifdef STREAM_VERS_BIGBOARD

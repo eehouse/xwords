@@ -2086,11 +2086,17 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
         XP_U32 hashReceived = stream_getU32( stream );
-        success = model_hashMatches( server->vol.model, hashReceived );
+        success = model_hashMatches( server->vol.model, hashReceived )
+            || model_revertToHash( server->vol.model, hashReceived,
+                                   server->pool );
         // XP_ASSERT( success );   /* I need to understand when this can fail */
-        if ( !success ) {
-            XP_LOGF( "%s: hash mismatch",__func__);
+#ifdef DEBUG_HASHING
+        if ( success ) {
+            XP_LOGF( "%s: hash match: %X",__func__, hashReceived );
+        } else {
+            XP_LOGF( "%s: hash mismatch: %X not found",__func__, hashReceived );
         }
+#endif
     }
 #endif
     if ( success ) {
