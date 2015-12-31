@@ -124,8 +124,8 @@ void model_setSize( ModelCtxt* model, XP_U16 boardSize );
 void model_destroy( ModelCtxt* model );
 XP_U32 model_getHash( const ModelCtxt* model, XP_U16 version );
 XP_Bool model_hashMatches( const ModelCtxt* model, XP_U32 hash );
-XP_Bool model_revertToHash( ModelCtxt* model, const XP_U32 hash,
-                            PoolContext* pool );
+XP_Bool model_popToHash( ModelCtxt* model, const XP_U32 hash,
+                         PoolContext* pool );
 
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
 XP_U16 model_getNPlayers( const ModelCtxt* model );

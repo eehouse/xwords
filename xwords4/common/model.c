@@ -343,7 +343,7 @@ model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 }
 
 XP_Bool
-model_revertToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
+model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
 {
     XP_U16 nPopped = 0;
     StackCtxt* stack = model->vol.stack;

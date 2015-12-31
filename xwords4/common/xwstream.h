@@ -49,8 +49,8 @@ typedef struct StreamCtxVTable {
     XP_U32 (*m_stream_getU32)( XWStreamCtxt* dctx );
     XP_U32 (*m_stream_getBits)( XWStreamCtxt* dctx, XP_U16 nBits );
 #if defined HASH_STREAM || defined DEBUG
-    void (*m_stream_copyBits)( const XWStreamCtxt* dctx, XWStreamPos startPos,
-                               XWStreamPos endPos, XP_U8* buf, XP_U16* len );
+    void (*m_stream_copyBits)( const XWStreamCtxt* dctx, XWStreamPos endPos,
+                               XP_U8* buf, XP_U16* len );
 #endif
 
     void (*m_stream_putU8)( XWStreamCtxt* dctx, XP_U8 byt );
@@ -114,8 +114,8 @@ struct XWStreamCtxt {
          (sc)->vtable->m_stream_getBits((sc), (n))
 
 #if defined HASH_STREAM || defined DEBUG
-#define stream_copyBits(sc, s, e, b, l) \
-         (sc)->vtable->m_stream_copyBits((sc), (s), (e), (b), (l))
+#define stream_copyBits(sc, e, b, l) \
+         (sc)->vtable->m_stream_copyBits((sc), (e), (b), (l))
 #endif
 
 #define stream_putU8(sc, b) \

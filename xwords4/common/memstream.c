@@ -186,8 +186,8 @@ mem_stream_getBits( XWStreamCtxt* p_sctx, XP_U16 nBits )
 
 #if defined HASH_STREAM || defined DEBUG
 static void
-mem_stream_copyBits( const XWStreamCtxt* p_sctx, XWStreamPos XP_UNUSED(startPos),
-                     XWStreamPos endPos, XP_U8* buf, XP_U16* lenp )
+mem_stream_copyBits( const XWStreamCtxt* p_sctx, XWStreamPos endPos,
+                     XP_U8* buf, XP_U16* lenp )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     XP_U16 len = BYTE_PART(endPos);

@@ -2087,8 +2087,7 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
     if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
         XP_U32 hashReceived = stream_getU32( stream );
         success = model_hashMatches( server->vol.model, hashReceived )
-            || model_revertToHash( server->vol.model, hashReceived,
-                                   server->pool );
+            || model_popToHash( server->vol.model, hashReceived, server->pool );
         // XP_ASSERT( success );   /* I need to understand when this can fail */
 #ifdef DEBUG_HASHING
         if ( success ) {

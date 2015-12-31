@@ -150,10 +150,10 @@ stack_getHash( const StackCtxt* stack )
     XP_U32 hash = 0;
     if ( !!stack->data ) {
         XP_U16 len = 0;
-        stream_copyBits( stack->data, 0, stack->top, NULL, &len );
+        stream_copyBits( stack->data, stack->top, NULL, &len );
         if ( 0 < len ) {
             XP_U8 buf[len];
-            stream_copyBits( stack->data, 0, stack->top, buf, &len );
+            stream_copyBits( stack->data, stack->top, buf, &len );
 #ifdef DEBUG_HASHING
             LOG_HEX( buf, len, __func__ );
 #endif
