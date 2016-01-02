@@ -1,6 +1,6 @@
-/* -*- compile-command: "cd ..; ../scripts/ndkbuild.sh -j3"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright © 2009 - 2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright © 2009 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -648,7 +648,7 @@ makeDict( MPFORMAL JNIEnv *env, DictMgrCtxt* dictMgr, JNIUtilCtxt* jniutil, jstr
             anddict->super.langName = getStringCopy( MPPARM(mpool) 
                                                      env, jlangname );
 
-            XP_U32 numEdges;
+            XP_U32 numEdges = 0;
             XP_Bool parses = parseDict( anddict, (XP_U8*)anddict->bytes, 
                                         bytesSize, &numEdges );
             if ( !parses || (check && !checkSanity( &anddict->super, 
