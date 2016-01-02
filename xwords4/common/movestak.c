@@ -67,101 +67,13 @@ stack_init( StackCtxt* stack )
        shrunk to fit as soon as we serialize/deserialize anyway. */
 } /* stack_init */
 
-static XP_U32
-augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
-{
-    XP_ASSERT( 0 < len );
-    // see http://en.wikipedia.org/wiki/Jenkins_hash_function
-    XP_U16 ii;
-    for ( ii = 0; ii < len; ++ii ) {
-        hash += *ptr++;
-        hash += (hash << 10);
-        hash ^= (hash >> 6);
-    }
-#ifdef DEBUG_HASHING
-    XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
-#endif
-    return hash;
-}
-
-static XP_U32
-finishHash( XP_U32 hash )
-{
-    hash += (hash << 3);
-    hash ^= (hash >> 11);
-    hash += (hash << 15);
-    return hash;
-}
-
-static XP_U32
-augmentFor( XP_U32 hash, const StackEntry* entry )
-{
-    switch( entry->moveType ) {
-    case ASSIGN_TYPE: {
-        TrayTileSet tiles;
-        sortTiles( &tiles, &entry->u.assign.tiles, 0 );
-        hash = augmentHash( hash, (XP_U8*)&tiles, sizeof(tiles) );
-    }
-        break;
-    case MOVE_TYPE:
-        hash = augmentHash( hash, (XP_U8*)&entry->u.move, 
-                            sizeof(entry->u.move) );
-        break;
-    case TRADE_TYPE:
-        hash = augmentHash( hash, (XP_U8*)&entry->u.trade, 
-                            sizeof(entry->u.trade) );
-        break;
-    case PHONY_TYPE:
-        hash = augmentHash( hash, (XP_U8*)&entry->u.phony, 
-                            sizeof(entry->u.phony) );
-        break;
-    }
-    return hash;
-}
-
-XP_U32
-stack_getHashOld( StackCtxt* stack )
-{
-    XP_U16 nn, nEntries = stack->nEntries;
-    XP_U32 hash = 0L;
-    for ( nn = 0; nn < nEntries; ++nn ) {
-        StackEntry entry;
-        XP_MEMSET( &entry, 0, sizeof(entry) );
-        if ( !stack_getNthEntry( stack, nn, &entry ) ) {
-            XP_ASSERT( 0 );
-        }
-        hash = augmentFor( hash, &entry );
-#ifdef DEBUG_HASHING
-        XP_LOGF( "%s: hash after %d: %.8X", __func__, nn, (unsigned int)hash );
-#endif
-    }
-    XP_ASSERT( 0 != hash );
-    hash = finishHash( hash );
-#ifdef DEBUG_HASHING
-    LOG_RETURNF( "%.8X", (unsigned int)hash );
-#endif
-    return hash;
-} /* stack_getHashOld */
-
 #ifdef STREAM_VERS_HASHSTREAM
 XP_U32
-stack_getHash( const StackCtxt* stack )
+stack_getHash( const StackCtxt* stack, XP_Bool correct )
 {
     XP_U32 hash = 0;
     if ( !!stack->data ) {
-        XP_U16 len = 0;
-        stream_copyBits( stack->data, stack->top, NULL, &len );
-        if ( 0 < len ) {
-            XP_U8 buf[len];
-            stream_copyBits( stack->data, stack->top, buf, &len );
-#ifdef DEBUG_HASHING
-            LOG_HEX( buf, len, __func__ );
-#endif
-            hash = finishHash( augmentHash( 0L, buf, len ) );
-#ifdef DEBUG_HASHING
-            LOG_RETURNF( "%.8X", (unsigned int)hash );
-#endif
-        }
+        hash = stream_getHash( stack->data, stack->top, correct );
     }
     return hash;
 } /* stack_getHash */
@@ -332,7 +244,7 @@ static void
 pushEntry( StackCtxt* stack, const StackEntry* entry )
 {
 #ifdef DEBUG_HASHING
-    XP_U32 origHash = stack_getHash( stack );
+    XP_U32 origHash = stack_getHash( stack, XP_TRUE );
 #endif
 
     pushEntryImpl( stack, entry );
@@ -341,7 +253,7 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     XP_U32 newHash = stack_getHash( stack );
     StackEntry lastEntry;
     if ( stack_popEntry( stack, &lastEntry ) ) {
-        XP_ASSERT( origHash == stack_getHash( stack ) );
+        XP_ASSERT( origHash == stack_getHash( stack, XP_TRUE ) );
         pushEntryImpl( stack, &lastEntry );
         XP_ASSERT( newHash == stack_getHash( stack ) );
         XP_LOGF( "%s: all ok", __func__ );

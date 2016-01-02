@@ -122,7 +122,7 @@ void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );
 
 void model_setSize( ModelCtxt* model, XP_U16 boardSize );
 void model_destroy( ModelCtxt* model );
-XP_U32 model_getHash( const ModelCtxt* model, XP_U16 version );
+XP_U32 model_getHash( const ModelCtxt* model );
 XP_Bool model_hashMatches( const ModelCtxt* model, XP_U32 hash );
 XP_Bool model_popToHash( ModelCtxt* model, const XP_U32 hash,
                          PoolContext* pool );

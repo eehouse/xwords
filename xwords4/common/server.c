@@ -2032,7 +2032,7 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
     XP_U16 version = stream_getVersion( stream );
     if ( STREAM_VERS_BIGBOARD <= version ) {
         XP_ASSERT( version == server->nv.streamVersion );
-        XP_U32 hash = model_getHash( server->vol.model, version );
+        XP_U32 hash = model_getHash( server->vol.model );
 #ifdef DEBUG_HASHING
         XP_LOGF( "%s: adding hash %x", __func__, (unsigned int)hash );
 #endif

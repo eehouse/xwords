@@ -1,6 +1,7 @@
 /* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
 /* 
- * Copyright 1997 - 2000 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 1997 - 2015 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -48,7 +49,7 @@ typedef struct StreamCtxVTable {
     XP_U16 (*m_stream_getU16)( XWStreamCtxt* dctx );
     XP_U32 (*m_stream_getU32)( XWStreamCtxt* dctx );
     XP_U32 (*m_stream_getBits)( XWStreamCtxt* dctx, XP_U16 nBits );
-#if defined HASH_STREAM || defined DEBUG
+#if defined DEBUG
     void (*m_stream_copyBits)( const XWStreamCtxt* dctx, XWStreamPos endPos,
                                XP_U8* buf, XP_U16* len );
 #endif
@@ -73,6 +74,8 @@ typedef struct StreamCtxVTable {
     void (*m_stream_close)( XWStreamCtxt* dctx );
 
     XP_U16 (*m_stream_getSize)( const XWStreamCtxt* dctx );
+    XP_U32 (*m_stream_getHash)( const XWStreamCtxt* dctx, XWStreamPos pos,
+                                XP_Bool correct );
     
     const XP_U8* (*m_stream_getPtr)( const XWStreamCtxt* dctx );
 
@@ -113,7 +116,7 @@ struct XWStreamCtxt {
 #define stream_getBits(sc, n) \
          (sc)->vtable->m_stream_getBits((sc), (n))
 
-#if defined HASH_STREAM || defined DEBUG
+#if defined DEBUG
 #define stream_copyBits(sc, e, b, l) \
          (sc)->vtable->m_stream_copyBits((sc), (e), (b), (l))
 #endif
@@ -153,6 +156,9 @@ struct XWStreamCtxt {
 
 #define stream_getSize(sc) \
          (sc)->vtable->m_stream_getSize((sc))
+
+#define stream_getHash(sc, p, c)                        \
+        (sc)->vtable->m_stream_getHash((sc), (p), (c))
 
 #define stream_getPtr(sc) \
          (sc)->vtable->m_stream_getPtr((sc))
