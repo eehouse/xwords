@@ -231,7 +231,6 @@ p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr
 XP_U32
 augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
 {
-    XP_ASSERT( 0 < len );
     // see http://en.wikipedia.org/wiki/Jenkins_hash_function
     for ( XP_U16 ii = 0; ii < len; ++ii ) {
         hash += *ptr++;
