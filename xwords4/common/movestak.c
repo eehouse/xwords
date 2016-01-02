@@ -244,18 +244,19 @@ static void
 pushEntry( StackCtxt* stack, const StackEntry* entry )
 {
 #ifdef DEBUG_HASHING
-    XP_U32 origHash = stack_getHash( stack, XP_TRUE );
+    XP_Bool correct = XP_TRUE;
+    XP_U32 origHash = stack_getHash( stack, correct );
 #endif
 
     pushEntryImpl( stack, entry );
 
 #ifdef DEBUG_HASHING
-    XP_U32 newHash = stack_getHash( stack );
+    XP_U32 newHash = stack_getHash( stack, XP_TRUE );
     StackEntry lastEntry;
     if ( stack_popEntry( stack, &lastEntry ) ) {
-        XP_ASSERT( origHash == stack_getHash( stack, XP_TRUE ) );
+        XP_ASSERT( origHash == stack_getHash( stack, correct ) );
         pushEntryImpl( stack, &lastEntry );
-        XP_ASSERT( newHash == stack_getHash( stack ) );
+        XP_ASSERT( newHash == stack_getHash( stack, correct ) );
         XP_LOGF( "%s: all ok", __func__ );
     }
 #endif
