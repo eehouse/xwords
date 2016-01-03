@@ -48,7 +48,7 @@ public class NetStateCache {
     private static boolean s_netAvail = false;
     private static boolean s_isWifi;
     private static PvtBroadcastReceiver s_receiver;
-    private static final boolean s_onSim = XWApp.onEmulator();
+    private static final boolean s_onSDKSim = Build.PRODUCT.contains("sdk"); // not genymotion
 
     public static void register( Context context, StateChangedIf proc )
     {
@@ -69,11 +69,23 @@ public class NetStateCache {
     public static boolean netAvail( Context context )
     {
         initIfNot( context );
-        boolean result = s_netAvail || s_onSim;
-        if ( BuildConfig.DEBUG ) {
-            checkSame( context, result );
+
+        // Cache is returning false negatives. Don't trust it.
+        if ( !s_netAvail ) {
+            boolean netAvail = getIsConnected( context );
+            if ( netAvail ) {
+                String msg = "netAvail(): second-guessing successful!!!";
+                DbgUtils.logf( msg );
+                Utils.showToast( context, msg );
+                s_netAvail = true;
+                if ( null != s_receiver ) {
+                    s_receiver.notifyStateChanged( context );
+                }
+            }
         }
-        DbgUtils.logf( "NetStateCache.netAvail() => %b", result );
+
+        boolean result = s_netAvail || s_onSDKSim;
+        DbgUtils.logf( "netAvail() => %b", result );
         return result;
     }
 
@@ -92,6 +104,19 @@ public class NetStateCache {
                 s_receiver = null;
             }
         }
+    }
+
+    private static boolean getIsConnected( Context context )
+    {
+        boolean result = false;
+        NetworkInfo ni = ((ConnectivityManager)
+                          context.getSystemService( Context.CONNECTIVITY_SERVICE ))
+            .getActiveNetworkInfo();
+        if ( null != ni && ni.isConnectedOrConnecting() ) {
+            result = true;
+        }
+        DbgUtils.logf( "NetStateCache.getConnected() => %b", result );
+        return result;
     }
 
     private static void initIfNot( Context context )
@@ -150,7 +175,7 @@ public class NetStateCache {
         }
 
         @Override
-        public void onReceive( final Context context, Intent intent ) 
+        public void onReceive( Context context, Intent intent ) 
         {
             DbgUtils.assertOnUIThread();
 
@@ -180,46 +205,52 @@ public class NetStateCache {
 
                 if ( s_netAvail != netAvail ) {
                     s_netAvail = netAvail; // keep current in case we're asked
-
-                    // We want to wait for WAIT_STABLE_MILLIS of inactivity
-                    // before informing listeners.  So each time there's a
-                    // change, kill any existing timer then set another, which
-                    // will only fire if we go that long without coming
-                    // through here again.
-
-                    if ( null != mNotifyLater ) {
-                        mHandler.removeCallbacks( mNotifyLater );
-                        mNotifyLater = null;
-                    }
-                    if ( mLastStateSent != s_netAvail ) {
-                        mNotifyLater = new Runnable() {
-                                @Override
-                                public void run() {
-                                    Assert.assertTrue( mLastStateSent != s_netAvail );
-                                    mLastStateSent = s_netAvail;
-
-                                    synchronized( s_ifs ) {
-                                        Iterator<StateChangedIf> iter = s_ifs.iterator();
-                                        while ( iter.hasNext() ) {
-                                            iter.next().netAvail( s_netAvail );
-                                        }
-                                    }
-
-                                    if ( s_netAvail ) {
-                                        CommsConnType typ = CommsConnType
-                                            .COMMS_CONN_RELAY;
-                                        GameUtils.resendAllIf( context, typ, 
-                                                               false );
-                                    }
-                                }
-                            };
-                        mHandler.postDelayed( mNotifyLater, WAIT_STABLE_MILLIS );
-                    }
+                    notifyStateChanged( context );
                 } else {
                     DbgUtils.logdf( "NetStateCache.PvtBroadcastReceiver.onReceive:"
                                     + " no change; doing nothing; s_netAvail=%b",
                                     s_netAvail );
                 }
+            }
+        }
+
+        public void notifyStateChanged( final Context context )
+        {
+            // We want to wait for WAIT_STABLE_MILLIS of inactivity
+            // before informing listeners.  So each time there's a
+            // change, kill any existing timer then set another, which
+            // will only fire if we go that long without coming
+            // through here again.
+
+            if ( null != mNotifyLater ) {
+                mHandler.removeCallbacks( mNotifyLater );
+                mNotifyLater = null;
+            }
+            if ( mLastStateSent != s_netAvail ) {
+                mNotifyLater = new Runnable() {
+                        @Override
+                        public void run() {
+                            Assert.assertTrue( mLastStateSent != s_netAvail );
+                            mLastStateSent = s_netAvail;
+
+                            DbgUtils.logf( "NetStateCache.notifyStateChanged(%b)",
+                                           s_netAvail );
+
+                            synchronized( s_ifs ) {
+                                Iterator<StateChangedIf> iter = s_ifs.iterator();
+                                while ( iter.hasNext() ) {
+                                    iter.next().netAvail( s_netAvail );
+                                }
+                            }
+
+                            if ( s_netAvail ) {
+                                CommsConnType typ = CommsConnType
+                                    .COMMS_CONN_RELAY;
+                                GameUtils.resendAllIf( context, typ, false );
+                            }
+                        }
+                    };
+                mHandler.postDelayed( mNotifyLater, WAIT_STABLE_MILLIS );
             }
         }
     } // class PvtBroadcastReceiver

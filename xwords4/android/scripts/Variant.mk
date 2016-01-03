@@ -6,6 +6,9 @@ $(DEST_PATH)/%.java : $(SRC_PATH)/%.java
 		-e "s,\(import org.eehouse.android.\)xw4\(.*\);,\1$(VARIANT)\2;," \
 		< $< > $@
 
+$(DEST_PATH)/icon48x48.png : $(SRC_PATH)/icon48x48.png
+	convert $< -fill red -gravity Center -annotate +0+5 ' Dbg ' $@
+
 $(DEST_PATH)/%.png : $(SRC_PATH)/%.png
 	@cp $< $@
 

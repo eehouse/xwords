@@ -55,7 +55,7 @@
     <!-- extension targets. Uncomment the ones where you want to do custom work
          in between standard targets -->
 
-    <property name="INITIAL_CLIENT_VERS" value="6"/>
+    <property name="INITIAL_CLIENT_VERS" value="7"/>
     <property name="VARIANT_NAME" value="xw4"/>
     <property name="APP_NAME" value="Crosswords"/>
 

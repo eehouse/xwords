@@ -6,7 +6,7 @@ APP_NEW=""
 DO_CLEAN=""
 APP_NEW_PARAMS=""
 NGAMES=""
-UDP_PCT_START=5
+UDP_PCT_START=100
 UDP_PCT_INCR=10
 UPGRADE_ODDS=""
 NROOMS=""
@@ -68,7 +68,7 @@ function cleanup() {
 
 function connName() {
     LOG=$1
-    grep 'got_connect_cmd: connName' $LOG | \
+    grep -a 'got_connect_cmd: connName' $LOG | \
         tail -n 1 | \
         sed 's,^.*connName: \"\(.*\)\" (reconnect=.)$,\1,'
 }
@@ -356,7 +356,7 @@ maybe_resign() {
     if [ "$RESIGN_RATIO" -gt 0 ]; then
         KEY=$1
         LOG=${LOGS[$KEY]}
-        if grep -q XWRELAY_ALLHERE $LOG; then
+        if grep -aq XWRELAY_ALLHERE $LOG; then
             if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
                 echo "making $LOG $(connName $LOG) resign..."
                 kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || /bin/true
@@ -397,14 +397,13 @@ check_game() {
     CONNNAME="$(connName $LOG)"
     OTHERS=""
     if [ -n "$CONNNAME" ]; then
-        if grep -q '\[unused tiles\]' $LOG; then
-            ALL_DONE=TRUE
+        if grep -aq '\[unused tiles\]' $LOG ; then
             for INDX in ${!LOGS[*]}; do
                 [ $INDX -eq $KEY ] && continue
                 ALOG=${LOGS[$INDX]}
                 CONNNAME2="$(connName $ALOG)"
                 if [ "$CONNNAME2" = "$CONNNAME" ]; then
-                    if ! grep -q '\[unused tiles\]' $ALOG; then
+                    if ! grep -aq '\[unused tiles\]' $ALOG; then
                         OTHERS=""
                         break
                     fi
@@ -424,11 +423,11 @@ check_game() {
         done
         echo ""
         # XWRELAY_ERROR_DELETED may be old
-    elif grep -q 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
+    elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
         kill_from_log $LOG || /bin/true
         close_device $KEY $DEADDIR "other resigned"
-    elif grep -q 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
+    elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
         kill_from_log $LOG || /bin/true
         close_device $KEY $DEADDIR "other resigned"
@@ -474,7 +473,7 @@ summarizeTileCounts() {
 	for KEY in ${KEYS[@]}; do
 		local LOG=${LOGS[$KEY]}
 
-		local LINE=$(grep pool_removeTiles $LOG | tail -n 1)
+		local LINE=$(grep -a pool_removeTiles $LOG | tail -n 1)
 		if [ -n "$LINE" ]; then
 			local NUM=$(echo $LINE | sed 's,^.*removeTiles: \(.*\) tiles.*$,\1,')
 			STR="${STR} ${KEY}:${NUM}"
@@ -482,7 +481,7 @@ summarizeTileCounts() {
 	done
 
 	if [ -n "${STR}" ]; then 
-		echo "$(date +%r) tiles left: $STR"
+		echo "** $(date +%r) tiles left: $STR"
 	fi
 }
 
@@ -613,7 +612,7 @@ function usage() {
     echo "    [--seed <int>]                                          \\" >&2
     echo "    [--send-chat <interval-in-seconds>                      \\" >&2
     echo "    [--udp-incr <pct>]                                      \\" >&2
-    echo "    [--udp-start <pct>]                                     \\" >&2
+    echo "    [--udp-start <pct>]      # default: $UDP_PCT_START                 \\" >&2
     echo "    [--undo-pct <int>]                                      \\" >&2
 
     exit 1

@@ -2032,8 +2032,10 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
     XP_U16 version = stream_getVersion( stream );
     if ( STREAM_VERS_BIGBOARD <= version ) {
         XP_ASSERT( version == server->nv.streamVersion );
-        XP_U32 hash = model_getHash( server->vol.model, version );
-        // XP_LOGF( "%s: adding hash %x", __func__, (unsigned int)hash );
+        XP_U32 hash = model_getHash( server->vol.model );
+#ifdef DEBUG_HASHING
+        XP_LOGF( "%s: adding hash %x", __func__, (unsigned int)hash );
+#endif
         stream_putU32( stream, hash );
     }
 #endif
@@ -2084,10 +2086,16 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
         XP_U32 hashReceived = stream_getU32( stream );
-        success = model_hashMatches( server->vol.model, hashReceived );
-        if ( !success ) {
-            XP_LOGF( "%s: hash mismatch",__func__);
+        success = model_hashMatches( server->vol.model, hashReceived )
+            || model_popToHash( server->vol.model, hashReceived, server->pool );
+        // XP_ASSERT( success );   /* I need to understand when this can fail */
+#ifdef DEBUG_HASHING
+        if ( success ) {
+            XP_LOGF( "%s: hash match: %X",__func__, hashReceived );
+        } else {
+            XP_LOGF( "%s: hash mismatch: %X not found",__func__, hashReceived );
         }
+#endif
     }
 #endif
     if ( success ) {

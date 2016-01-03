@@ -554,7 +554,7 @@ secondTimerFired( gpointer data )
     if ( !!game->server && !!game->board ) {
         XP_U16 undoRatio = cGlobals->params->undoRatio;
         if ( 0 != undoRatio ) {
-            if ( (XP_RANDOM() % 100) < undoRatio ) {
+            if ( (XP_RANDOM() % 1000) < undoRatio ) {
                 XP_LOGF( "%s: calling server_handleUndo", __func__ );
                 if ( server_handleUndo( game->server, 1 ) ) {
                     board_draw( game->board );
@@ -2443,8 +2443,8 @@ main( int argc, char** argv )
 #ifdef USE_GLIBLOOP
 	case CMD_UNDOPCT:
             mainParams.undoRatio = atoi( optarg );
-            if ( mainParams.undoRatio < 0 || mainParams.undoRatio > 100 ) {
-                usage(argv[0], "must be 0 <= n <= 100" );
+            if ( mainParams.undoRatio < 0 || mainParams.undoRatio > 1000 ) {
+                usage(argv[0], "must be 0 <= n <= 1000" );
             }
 	    break;
 #endif

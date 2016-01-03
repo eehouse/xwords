@@ -228,6 +228,30 @@ p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr
     *curLoc = curStr;
 } /* replaceStringIfDifferent */
 
+XP_U32
+augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
+{
+    // see http://en.wikipedia.org/wiki/Jenkins_hash_function
+    for ( XP_U16 ii = 0; ii < len; ++ii ) {
+        hash += *ptr++;
+        hash += (hash << 10);
+        hash ^= (hash >> 6);
+    }
+#ifdef DEBUG_HASHING
+    XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
+#endif
+    return hash;
+}
+
+XP_U32
+finishHash( XP_U32 hash )
+{
+    hash += (hash << 3);
+    hash ^= (hash >> 11);
+    hash += (hash << 15);
+    return hash;
+}
+
 /* 
  * A wrapper for printing etc. potentially null strings.
  */
