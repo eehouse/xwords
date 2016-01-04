@@ -319,7 +319,7 @@ model_getHash( const ModelCtxt* model )
 #endif
     StackCtxt* stack = model->vol.stack;
     XP_ASSERT( !!stack );
-    return stack_getHash( stack, XP_FALSE );
+    return stack_getHash( stack, XP_TRUE );
 }
 
 XP_Bool
