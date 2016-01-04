@@ -76,7 +76,9 @@ public class NetStateCache {
             if ( netAvail ) {
                 String msg = "netAvail(): second-guessing successful!!!";
                 DbgUtils.logf( msg );
-                Utils.showToast( context, msg );
+                if ( BuildConfig.DEBUG ) {
+                    Utils.showToast( context, msg );
+                }
                 s_netAvail = true;
                 if ( null != s_receiver ) {
                     s_receiver.notifyStateChanged( context );
