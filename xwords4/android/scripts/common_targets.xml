@@ -69,9 +69,14 @@
         <exec dir="." executable="../scripts/genvers.sh" output="/dev/null" 
               failonerror="true">
           <arg value="${VARIANT_NAME}"/>
+          <arg value="--client-vers"/>
           <arg value="${INITIAL_CLIENT_VERS}" />
+          <arg value="--chat-enabled"/>
           <arg value="${CHAT_ENABLED}" />
+          <arg value="--thumbnail-enabled"/>
           <arg value="${THUMBNAIL_ENABLED}" />
+          <arg value="--vers-outfile" />
+          <arg value="./assets/gitvers.txt" />
         </exec>
     </target>
 
