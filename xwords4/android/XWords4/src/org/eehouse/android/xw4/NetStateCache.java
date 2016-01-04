@@ -66,20 +66,31 @@ public class NetStateCache {
         }
     }
 
+    static long s_lastNetCheck = 0;
     public static boolean netAvail( Context context )
     {
         initIfNot( context );
 
         // Cache is returning false negatives. Don't trust it.
         if ( !s_netAvail ) {
-            boolean netAvail = getIsConnected( context );
-            if ( netAvail ) {
-                String msg = "netAvail(): second-guessing successful!!!";
-                DbgUtils.logf( msg );
-                Utils.showToast( context, msg );
-                s_netAvail = true;
-                if ( null != s_receiver ) {
-                    s_receiver.notifyStateChanged( context );
+            long now = System.currentTimeMillis();
+            if ( now < s_lastNetCheck ) { // time moving backwards?
+                s_lastNetCheck = 0;       // reset
+            }
+            if ( now - s_lastNetCheck > (1000 * 20) ) { // 20 seconds
+                s_lastNetCheck = now;
+            
+                boolean netAvail = getIsConnected( context );
+                if ( netAvail ) {
+                    String msg = "netAvail(): second-guessing successful!!!";
+                    DbgUtils.logf( msg );
+                    if ( BuildConfig.DEBUG ) {
+                        Utils.showToast( context, msg );
+                    }
+                    s_netAvail = true;
+                    if ( null != s_receiver ) {
+                        s_receiver.notifyStateChanged( context );
+                    }
                 }
             }
         }
