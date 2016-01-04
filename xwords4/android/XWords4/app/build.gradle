@@ -76,8 +76,10 @@ dependencies {
 
 task genVers(type: Exec) {
     workingDir '../'
-    commandLine '../scripts/genvers.sh', VARIANT_NAME, 
-        INITIAL_CLIENT_VERS, CHAT_ENABLED, THUMBNAIL_ENABLED
+    commandLine '../scripts/genvers.sh', '--variant', VARIANT_NAME, 
+    '--client-vers', INITIAL_CLIENT_VERS, '--chat-enabled', CHAT_ENABLED,
+    '--thumbnail-enabled', THUMBNAIL_ENABLED,
+    '--vers-outfile', "assets/gitvers.txt"
 }
 
 task mkImages(type: Exec) {
