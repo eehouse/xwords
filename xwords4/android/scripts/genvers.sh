@@ -114,6 +114,7 @@ class BuildConstants {
     public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
     public static final long BUILD_STAMP = $(date +'%s');
     public static final String DBG_TAG = "$DBG_TAG";
+    public static final String VARIANT = "$VARIANT";
 }
 EOF
 

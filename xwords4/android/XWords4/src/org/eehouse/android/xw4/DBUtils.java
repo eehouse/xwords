@@ -1774,10 +1774,15 @@ public class DBUtils {
 
     public static boolean gameDBExists( Context context )
     {
-        String name = DBHelper.getDBName();
-        File sdcardDB = new File( Environment.getExternalStorageDirectory(),
-                                  name );
-        return sdcardDB.exists();
+        String varName = getVariantDBName();
+        boolean exists = new File( Environment.getExternalStorageDirectory(),
+                                   varName ).exists();
+        if ( !exists ) {
+            // try the old one
+            exists = new File( Environment.getExternalStorageDirectory(),
+                               DBHelper.getDBName() ).exists();
+        }
+        return exists;
     }
 
     public static String[] getColumns( SQLiteDatabase db, String name )
@@ -2128,8 +2133,16 @@ public class DBUtils {
     {
         String name = DBHelper.getDBName();
         File gamesDB = context.getDatabasePath( name );
+
+        // Use the variant name EXCEPT where we're copying from sdCard and
+        // only the older name exists.
         File sdcardDB = new File( Environment.getExternalStorageDirectory(),
-                                  name );
+                                  getVariantDBName() );
+        if ( !toSDCard && !sdcardDB.exists() ) {
+            sdcardDB = new File( Environment.getExternalStorageDirectory(),
+                                 name );
+        }
+        
         try {
             File srcDB = toSDCard? gamesDB : sdcardDB;
             if ( srcDB.exists() ) {
@@ -2144,6 +2157,12 @@ public class DBUtils {
         }
     }
 
+    private static String getVariantDBName()
+    {
+        return String.format( "%s_%s", DBHelper.getDBName(),
+                              BuildConstants.VARIANT );
+    }
+    
     // Chat is independent of the GameLock mechanism because it's not
     // touching the SNAPSHOT column.
     private static void saveChatHistory( Context context, long rowid,
