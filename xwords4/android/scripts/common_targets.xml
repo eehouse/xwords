@@ -68,8 +68,9 @@
         </exec>
         <exec dir="." executable="../scripts/genvers.sh" output="/dev/null" 
               failonerror="true">
-          <arg value="${VARIANT_NAME}"/>
-          <arg value="--client-vers"/>
+          <arg value="--variant" />
+          <arg value="${VARIANT_NAME}" />
+          <arg value="--client-vers" />
           <arg value="${INITIAL_CLIENT_VERS}" />
           <arg value="--chat-enabled"/>
           <arg value="${CHAT_ENABLED}" />
