@@ -1,5 +1,6 @@
 # -*-mode: Makefile -*-
-# Copyright 2002 by Eric House (xwords@eehouse.org).  All rights reserved.
+# Copyright 2016 by Eric House (xwords@eehouse.org).  All rights
+# reserved.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -22,8 +23,10 @@ TARGET_TYPE ?= WINCE
 
 include ../Makefile.langcommon
 
+# use sed to strip the bogus utf8 identifier. There must be a better
+# way, e.g. with iconv.
 $(XWLANG)Main.dict.gz: $(XWDICTPATH)/French/ods7.txt
-	cat $< | tr -d '\r' | tr a-z A-Z | grep '^[A-Z]*$$' | gzip >$@
+	cat $< | tr -d '\r' | sed 's,\xEF\xBB\xBF,,' | tr a-z A-Z | gzip >$@
 
 # Everything but creating of the Main.dict file is inherited from the
 # "parent" Makefile.langcommon in the parent directory.
