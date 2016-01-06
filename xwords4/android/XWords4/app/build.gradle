@@ -24,6 +24,28 @@ android {
     applicationVariants.all { variant ->
         renameArtifact(variant)
     }
+    
+    // flavorDimensions "variant", "abi"
+    // productFlavors {
+    //     xw4 {
+    //         dimension "variant"
+    //     }
+    //     xw4dbg {
+    //         dimension "variant"
+    //     }
+    //     armeabiv7a {
+    //         dimension "abi"
+    //     }
+
+    //     armeabi {
+    //         dimension "abi"
+    //     }
+
+    //     x86 {
+    //         dimension "abi"
+    //     }
+        
+    // }
 
     signingConfigs {
         release {
@@ -65,8 +87,6 @@ android {
 
     lintOptions {
         abortOnError false
-    }
-    productFlavors {
     }
 }
 
