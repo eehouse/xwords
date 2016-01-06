@@ -52,6 +52,13 @@ class ExpiringTextView extends TextView {
         }
     }
 
+    public void clearPct()
+    {
+        if ( null != m_delegate ) {
+            m_delegate.clearPct();
+        }
+    }
+
     @Override
     protected void onDraw( Canvas canvas ) 
     {
