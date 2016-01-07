@@ -25,6 +25,7 @@ static void getColumnText( sqlite3_stmt *ppStmt, int iCol, XP_UCHAR* buf,
                            int len );
 #ifdef DEBUG
 static char* sqliteErr2str( int err );
+static void assertPrintResult( sqlite3* pDb, int result, int expect );
 #endif
 
 sqlite3* 
@@ -41,6 +42,7 @@ openGamesDB( const char* dbName )
         "CREATE TABLE games ( "
         "rowid INTEGER PRIMARY KEY AUTOINCREMENT"
         ",game BLOB"
+        ",inviteInfo BLOB"
         ",room VARCHAR(32)"
         ",connvia VARCHAR(32)"
         ",ended INT(1)"
@@ -48,6 +50,7 @@ openGamesDB( const char* dbName )
         ",nmoves INT"
         ",seed INT"
         ",gameid INT"
+        ",ntotal INT(2)"
         ",nmissing INT(2)"
         ")";
     result = sqlite3_exec( pDb, createGamesStr, NULL, NULL, NULL );
@@ -68,31 +71,32 @@ closeGamesDB( sqlite3* pDb )
     XP_LOGF( "%s finished", __func__ );
 }
 
-void
-writeToDB( XWStreamCtxt* stream, void* closure )
+static sqlite3_int64
+writeBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 curRow,
+                 const char* column )
 {
     int result;
-    CommonGlobals* cGlobals = (CommonGlobals*)closure;
-    sqlite3_int64 selRow = cGlobals->selRow;
-    sqlite3* pDb = cGlobals->pDb;
+    /* size includes stream version as header */
     XP_U16 len = stream_getSize( stream );
     char buf[256];
     char* query;
 
     sqlite3_stmt* stmt = NULL;
-    XP_Bool newGame = -1 == selRow;
+    XP_Bool newGame = -1 == curRow;
     if ( newGame ) {         /* new row; need to insert blob first */
-        query = "INSERT INTO games (game) VALUES (?)";
+        const char* fmt = "INSERT INTO games (%s) VALUES (?)";
+        snprintf( buf, sizeof(buf), fmt, column );
+        query = buf;
     } else {
-        const char* fmt = "UPDATE games SET game=? where rowid=%lld";
-        snprintf( buf, sizeof(buf), fmt, selRow );
+        const char* fmt = "UPDATE games SET %s=? where rowid=%lld";
+        snprintf( buf, sizeof(buf), fmt, column, curRow );
         query = buf;
     }
 
-    result = sqlite3_prepare_v2( pDb, query, -1, &stmt, NULL );        
-    XP_ASSERT( SQLITE_OK == result );
-    result = sqlite3_bind_zeroblob( stmt, 1 /*col 0 ??*/, len );
-    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_prepare_v2( pDb, query, -1, &stmt, NULL );
+    assertPrintResult( pDb, result, SQLITE_OK );
+    result = sqlite3_bind_zeroblob( stmt, 1 /*col 0 ??*/, sizeof(XP_U16) + len );
+    assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_step( stmt );
     if ( SQLITE_DONE != result ) {
         XP_LOGF( "%s: sqlite3_step => %s", __func__, sqliteErr2str( result ) );
@@ -101,22 +105,49 @@ writeToDB( XWStreamCtxt* stream, void* closure )
     XP_USE( result );
 
     if ( newGame ) {         /* new row; need to insert blob first */
-        selRow = sqlite3_last_insert_rowid( pDb );
-        XP_LOGF( "%s: new rowid: %lld", __func__, selRow );
-        cGlobals->selRow = selRow;
+        curRow = sqlite3_last_insert_rowid( pDb );
+        XP_LOGF( "%s: new rowid: %lld", __func__, curRow );
     }
 
     sqlite3_blob* blob;
-    result = sqlite3_blob_open( pDb, "main", "games", "game",
-                                selRow, 1 /*flags: writeable*/, &blob );
-    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_blob_open( pDb, "main", "games", column,
+                                curRow, 1 /*flags: writeable*/, &blob );
+    assertPrintResult( pDb, result, SQLITE_OK );
+    XP_U16 strVersion = stream_getVersion( stream );
+    XP_ASSERT( strVersion <= CUR_STREAM_VERS );
+    result = sqlite3_blob_write( blob, &strVersion, sizeof(strVersion), 0 );
+    assertPrintResult( pDb, result, SQLITE_OK );
     const XP_U8* ptr = stream_getPtr( stream );
-    result = sqlite3_blob_write( blob, ptr, len, 0 );
-    XP_ASSERT( SQLITE_OK == result );
+    result = sqlite3_blob_write( blob, ptr, len, sizeof(strVersion) );
+    assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_blob_close( blob );
-    XP_ASSERT( SQLITE_OK == result );
+    assertPrintResult( pDb, result, SQLITE_OK );
     if ( !!stmt ) {
         sqlite3_finalize( stmt );
+    }
+
+    return curRow;
+}
+
+sqlite3_int64
+writeNewGameToDB( XWStreamCtxt* stream, sqlite3* pDb )
+{
+    sqlite3_int64 newRow = writeBlobColumn( stream, pDb, -1, "game" );
+    return newRow;
+}
+
+void
+writeToDB( XWStreamCtxt* stream, void* closure )
+{
+    CommonGlobals* cGlobals = (CommonGlobals*)closure;
+    sqlite3_int64 selRow = cGlobals->selRow;
+    sqlite3* pDb = cGlobals->pDb;
+
+    XP_Bool newGame = -1 == selRow;
+    selRow = writeBlobColumn( stream, pDb, selRow, "game" );
+
+    if ( newGame ) {         /* new row; need to insert blob first */
+        cGlobals->selRow = selRow;
     }
 
     (*cGlobals->onSave)( cGlobals->onSaveClosure, selRow, newGame );
@@ -130,6 +161,7 @@ summarize( CommonGlobals* cGlobals )
     XP_S16 turn = server_getCurrentTurn( cGlobals->game.server );
     XP_U16 seed = 0;
     XP_S16 nMissing = 0;
+    XP_U16 nTotal = cGlobals->gi->nPlayers;
     XP_U32 gameID = cGlobals->gi->gameID;
     XP_ASSERT( 0 != gameID );
     CommsAddrRec addr = {0};
@@ -171,15 +203,15 @@ summarize( CommonGlobals* cGlobals )
     }
 
     const char* fmt = "UPDATE games "
-        " SET room='%s', ended=%d, turn=%d, nmissing=%d, nmoves=%d, seed=%d, gameid=%d, connvia='%s'"
+        " SET room='%s', ended=%d, turn=%d, ntotal=%d, nmissing=%d, nmoves=%d, seed=%d, gameid=%d, connvia='%s'"
         " WHERE rowid=%lld";
     XP_UCHAR buf[256];
-    snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, nMissing, nMoves,
-              seed, gameID, connvia, cGlobals->selRow );
+    snprintf( buf, sizeof(buf), fmt, room, gameOver?1:0, turn, nTotal, nMissing, 
+              nMoves, seed, gameID, connvia, cGlobals->selRow );
     XP_LOGF( "query: %s", buf );
     sqlite3_stmt* stmt = NULL;
     int result = sqlite3_prepare_v2( cGlobals->pDb, buf, -1, &stmt, NULL );        
-    XP_ASSERT( SQLITE_OK == result );
+    assertPrintResult( cGlobals->pDb, result, SQLITE_OK );
     result = sqlite3_step( stmt );
     if ( SQLITE_DONE != result ) {
         XP_LOGF( "sqlite3_step=>%s", sqliteErr2str( result ) );
@@ -198,7 +230,7 @@ listGames( sqlite3* pDb )
     int result = sqlite3_prepare_v2( pDb, 
                                      "SELECT rowid FROM games ORDER BY rowid", 
                                      -1, &ppStmt, NULL );
-    XP_ASSERT( SQLITE_OK == result );
+    assertPrintResult( pDb, result, SQLITE_OK );
     XP_USE( result );
     while ( NULL != ppStmt ) {
         switch( sqlite3_step( ppStmt ) ) {
@@ -226,14 +258,15 @@ XP_Bool
 getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
 {
     XP_Bool success = XP_FALSE;
-    const char* fmt = "SELECT room, ended, turn, nmoves, nmissing, seed, connvia, gameid "
+    const char* fmt = "SELECT room, ended, turn, nmoves, ntotal, nmissing, "
+        "seed, connvia, gameid "
         "FROM games WHERE rowid = %lld";
     XP_UCHAR query[256];
     snprintf( query, sizeof(query), fmt, rowid );
 
     sqlite3_stmt* ppStmt;
     int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-    XP_ASSERT( SQLITE_OK == result );
+    assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_step( ppStmt );
     if ( SQLITE_ROW == result ) {
         success = XP_TRUE;
@@ -241,10 +274,11 @@ getGameInfo( sqlite3* pDb, sqlite3_int64 rowid, GameInfo* gib )
         gib->gameOver = 1 == sqlite3_column_int( ppStmt, 1 );
         gib->turn = sqlite3_column_int( ppStmt, 2 );
         gib->nMoves = sqlite3_column_int( ppStmt, 3 );
-        gib->nMissing = sqlite3_column_int( ppStmt, 4 );
-        gib->seed = sqlite3_column_int( ppStmt, 5 );
-        getColumnText( ppStmt, 6, gib->conn, sizeof(gib->conn) );
-        gib->gameID = sqlite3_column_int( ppStmt, 7 );
+        gib->nTotal = sqlite3_column_int( ppStmt, 4 );
+        gib->nMissing = sqlite3_column_int( ppStmt, 5 );
+        gib->seed = sqlite3_column_int( ppStmt, 6 );
+        getColumnText( ppStmt, 7, gib->conn, sizeof(gib->conn) );
+        gib->gameID = sqlite3_column_int( ppStmt, 8 );
         snprintf( gib->name, sizeof(gib->name), "Game %lld", rowid );
     }
     sqlite3_finalize( ppStmt );
@@ -259,11 +293,11 @@ getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
     *nRowIDs = 0;
 
     char buf[256];
-    snprintf( buf, sizeof(buf), "SELECT rowid from games WHERE gameid = %d LIMIT %d", 
-              gameID, maxRowIDs );
+    snprintf( buf, sizeof(buf), "SELECT rowid from games WHERE gameid = %d "
+              "LIMIT %d", gameID, maxRowIDs );
     sqlite3_stmt *ppStmt;
     int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
-    XP_ASSERT( SQLITE_OK == result );
+    assertPrintResult( pDb, result, SQLITE_OK );
     int ii;
     for ( ii = 0; ii < maxRowIDs; ++ii ) {
         result = sqlite3_step( ppStmt );
@@ -276,24 +310,54 @@ getRowsForGameID( sqlite3* pDb, XP_U32 gameID, sqlite3_int64* rowids,
     sqlite3_finalize( ppStmt );
 }
 
-XP_Bool
-loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
+static XP_Bool
+loadBlobColumn( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid, 
+                const char* column )
 {
     char buf[256];
-    snprintf( buf, sizeof(buf), "SELECT game from games WHERE rowid = %lld", rowid );
+    snprintf( buf, sizeof(buf), "SELECT %s from games WHERE rowid = %lld", 
+              column, rowid );
 
     sqlite3_stmt *ppStmt;
     int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
-    XP_ASSERT( SQLITE_OK == result );
+    assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_step( ppStmt );
     XP_Bool success = SQLITE_ROW == result;
     if ( success ) {
         const void* ptr = sqlite3_column_blob( ppStmt, 0 );
         int size = sqlite3_column_bytes( ppStmt, 0 );
-        stream_putBytes( stream, ptr, size );
+        success = 0 < size;
+        if ( success ) {
+            XP_U16 strVersion;
+            XP_MEMCPY( &strVersion, ptr, sizeof(strVersion) );
+            XP_ASSERT( strVersion <= CUR_STREAM_VERS );
+            stream_setVersion( stream, strVersion );
+            XP_ASSERT( size >= sizeof(strVersion) );
+            stream_putBytes( stream, ptr + sizeof(strVersion), 
+                             size - sizeof(strVersion) );
+        }
     }
     sqlite3_finalize( ppStmt );
     return success;
+}
+
+XP_Bool
+loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
+{
+    return loadBlobColumn( stream, pDb, rowid, "game" );
+}
+
+void
+saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
+{
+    sqlite3_int64 row = writeBlobColumn( stream, pDb, rowid, "inviteInfo" );
+    assert( row == rowid );
+}
+
+XP_Bool
+loadInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid )
+{
+    return loadBlobColumn( stream, pDb, rowid, "inviteInfo" );
 }
 
 void
@@ -303,9 +367,9 @@ deleteGame( sqlite3* pDb, sqlite3_int64 rowid )
     snprintf( query, sizeof(query), "DELETE FROM games WHERE rowid = %lld", rowid );
     sqlite3_stmt* ppStmt;
     int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );        
-    XP_ASSERT( SQLITE_OK == result );
+    assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_step( ppStmt );
-    XP_ASSERT( SQLITE_DONE == result );
+    assertPrintResult( pDb, result, SQLITE_DONE );
     XP_USE( result );
     sqlite3_finalize( ppStmt );
 }
@@ -319,9 +383,9 @@ db_store( sqlite3* pDb, const gchar* key, const gchar* value )
               key, value );
     sqlite3_stmt *ppStmt;
     int result = sqlite3_prepare_v2( pDb, buf, -1, &ppStmt, NULL );
-    XP_ASSERT( SQLITE_OK == result );
+    assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_step( ppStmt );
-    XP_ASSERT( SQLITE_DONE == result );
+    assertPrintResult( pDb, result, SQLITE_DONE );
     XP_USE( result );
     sqlite3_finalize( ppStmt );
 }
@@ -355,9 +419,9 @@ db_remove( sqlite3* pDb, const gchar* key )
     snprintf( query, sizeof(query), "DELETE FROM pairs WHERE key = '%s'", key );
     sqlite3_stmt *ppStmt;
     int result = sqlite3_prepare_v2( pDb, query, -1, &ppStmt, NULL );
-    XP_ASSERT( SQLITE_OK == result );
+    assertPrintResult( pDb, result, SQLITE_OK );
     result = sqlite3_step( ppStmt );
-    XP_ASSERT( SQLITE_DONE == result );
+    assertPrintResult( pDb, result, SQLITE_DONE );
     XP_USE( result );
     sqlite3_finalize( ppStmt );
 }
@@ -413,4 +477,17 @@ sqliteErr2str( int err )
     }
         return "<unknown>";
 }
+
+static void
+assertPrintResult( sqlite3* pDb, int result, int expect )
+{
+    int code = sqlite3_errcode( pDb );
+    XP_ASSERT( code == result ); /* do I need to pass it? */
+    if ( code != expect ) {
+        const char* msg = sqlite3_errmsg( pDb );
+        XP_LOGF( "sqlite3 error: %s", msg );
+        XP_ASSERT(0);
+    }
+}
+
 #endif

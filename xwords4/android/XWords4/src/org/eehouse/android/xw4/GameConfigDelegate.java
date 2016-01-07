@@ -68,8 +68,6 @@ public class GameConfigDelegate extends DelegateBase
     private static final String INTENT_FORRESULT_ROWID = "forresult";
 
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
-    private static final int REQUEST_LANG = 1;
-    private static final int REQUEST_DICT = 2;
 
     private Activity m_activity;
     private CheckBox m_joinPublicCheck;
@@ -94,7 +92,6 @@ public class GameConfigDelegate extends DelegateBase
     private boolean m_forResult;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
-    private GameLock m_gameLock;
     private int m_whichPlayer;
     // private Spinner m_roleSpinner;
     // private Spinner m_connectSpinner;
@@ -509,10 +506,6 @@ public class GameConfigDelegate extends DelegateBase
 
     protected void onPause()
     {
-        if ( null != m_gameLock ) {
-            m_gameLock.unlock();
-            m_gameLock = null;
-        }
         m_giOrig = null;        // flag for onStart and onResume
         super.onPause();
     }
@@ -523,7 +516,7 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    protected void onActivityResult( RequestCode requestCode, int resultCode, Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
             loadGame();
@@ -533,7 +526,7 @@ public class GameConfigDelegate extends DelegateBase
                 configDictSpinner( m_dictSpinner, m_gi.dictLang, dictName );
                 configDictSpinner( m_playerDictSpinner, m_gi.dictLang, dictName );
                 break;
-            case REQUEST_LANG:
+            case REQUEST_LANG_GC:
                 String langName = data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
                 selLangChanged( langName );
                 setLangSpinnerSelection( langName );
@@ -549,10 +542,8 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == m_giOrig ) {
             m_giOrig = new CurGameInfo( m_activity );
 
-            // Lock in case we're going to config.  We *could* re-get the
-            // lock once the user decides to make changes.  PENDING.
-            m_gameLock = new GameLock( m_rowid, true ).lock();
-            int gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, m_gameLock );
+            GameLock gameLock = new GameLock( m_rowid, false ).lock();
+            int gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
             if ( 0 == gamePtr ) {
                 showDictGoneFinish();
             } else {
@@ -564,7 +555,6 @@ public class GameConfigDelegate extends DelegateBase
                         m_gameLockedCheck = 
                             (CheckBox)findViewById( R.id.game_locked_check );
                         m_gameLockedCheck.setVisibility( View.VISIBLE );
-                        m_gameLockedCheck.setChecked( true );
                         m_gameLockedCheck.setOnClickListener( this );
                     }
                     handleLockedChange();
@@ -581,10 +571,13 @@ public class GameConfigDelegate extends DelegateBase
                 } else if ( !localOnlyGame() ) {
                     String relayName = XWPrefs.getDefaultRelayHost( m_activity );
                     int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
-                    XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
+                    XwJNI.comms_getInitialAddr( m_carOrig, relayName, 
+                                                relayPort );
                 }
                 m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
                 XwJNI.game_dispose( gamePtr );
+
+                gameLock.unlock();
 
                 m_car = new CommsAddrRec( m_carOrig );
 
@@ -698,7 +691,7 @@ public class GameConfigDelegate extends DelegateBase
 
     public void onClick( View view ) 
     {
-        if ( null == m_gameLock ) {
+        if ( isFinishing() ) {
             // do nothing; we're on the way out
         } else if ( m_addPlayerButton == view ) {
             int curIndex = m_gi.nPlayers;
@@ -756,7 +749,7 @@ public class GameConfigDelegate extends DelegateBase
     protected boolean onBackPressed()
     {
         boolean consumed = false;
-        if ( null != m_gameLock ) {
+        if ( ! isFinishing() ) {
             if ( m_forResult ) {
                 deleteGame();
             } else {
@@ -778,63 +771,64 @@ public class GameConfigDelegate extends DelegateBase
 
     private void deleteGame()
     {
-        if ( null != m_gameLock ) {
-            DBUtils.deleteGame( m_activity, m_gameLock );
-            m_gameLock.unlock();
-            m_gameLock = null;
-        }
+        GameUtils.deleteGame( m_activity, m_rowid, false );
     }
 
     private void loadPlayersList()
     {
-        m_playerLayout.removeAllViews();
+        if ( !isFinishing() ) {
+            m_playerLayout.removeAllViews();
 
-        String[] names = m_gi.visibleNames( false );
-        // only enable delete if one will remain (or two if networked)
-        boolean canDelete = names.length > 2
-            || (localOnlyGame() && names.length > 1);
-        View.OnClickListener lstnr = new View.OnClickListener() {
-                @Override
-                public void onClick( View view ) {
-                    m_whichPlayer = ((XWListItem)view).getPosition();
-                    showDialog( DlgID.PLAYER_EDIT );
-                }
-            };
+            String[] names = m_gi.visibleNames( false );
+            // only enable delete if one will remain (or two if networked)
+            boolean canDelete = names.length > 2
+                || (localOnlyGame() && names.length > 1);
+            View.OnClickListener lstnr = new View.OnClickListener() {
+                    @Override
+                    public void onClick( View view ) {
+                        m_whichPlayer = ((XWListItem)view).getPosition();
+                        showDialog( DlgID.PLAYER_EDIT );
+                    }
+                };
  
-        boolean localGame = localOnlyGame();
-        for ( int ii = 0; ii < names.length; ++ii ) {
-            final XWListItem view = XWListItem.inflate( m_activity, null );
-            view.setPosition( ii );
-            view.setText( names[ii] );
-            if ( localGame && m_gi.players[ii].isLocal ) {
-                view.setComment( m_gi.dictName(ii) );
+            boolean localGame = localOnlyGame();
+            boolean unlocked = null == m_gameLockedCheck
+                || !m_gameLockedCheck.isChecked();
+            for ( int ii = 0; ii < names.length; ++ii ) {
+                final XWListItem view = XWListItem.inflate( m_activity, null );
+                view.setPosition( ii );
+                view.setText( names[ii] );
+                if ( localGame && m_gi.players[ii].isLocal ) {
+                    view.setComment( m_gi.dictName(ii) );
+                }
+                if ( canDelete ) {
+                    view.setDeleteCallback( this );
+                }
+
+                view.setEnabled( unlocked );
+                view.setOnClickListener( lstnr );
+                m_playerLayout.addView( view );
+
+                View divider = inflate( R.layout.divider_view );
+                m_playerLayout.addView( divider );
             }
-            if ( canDelete ) {
-                view.setDeleteCallback( this );
+
+            m_addPlayerButton
+                .setVisibility( names.length >= CurGameInfo.MAX_NUM_PLAYERS?
+                                View.GONE : View.VISIBLE );
+            m_jugglePlayersButton
+                .setVisibility( names.length <= 1 ?
+                                View.GONE : View.VISIBLE );
+
+            showHideRelayStuff();
+
+            if ( ! localOnlyGame()
+                 && ((0 == m_gi.remoteCount() )
+                     || (m_gi.nPlayers == m_gi.remoteCount()) ) ) {
+                showDialog( DlgID.FORCE_REMOTE );
             }
-
-            view.setOnClickListener( lstnr );
-            m_playerLayout.addView( view );
-
-            View divider = inflate( R.layout.divider_view );
-            m_playerLayout.addView( divider );
+            adjustPlayersLabel();
         }
-
-        m_addPlayerButton
-            .setVisibility( names.length >= CurGameInfo.MAX_NUM_PLAYERS?
-                            View.GONE : View.VISIBLE );
-        m_jugglePlayersButton
-            .setVisibility( names.length <= 1 ?
-                            View.GONE : View.VISIBLE );
-
-        showHideRelayStuff();
-
-        if ( ! localOnlyGame()
-             && ((0 == m_gi.remoteCount() )
-                 || (m_gi.nPlayers == m_gi.remoteCount()) ) ) {
-            showDialog( DlgID.FORCE_REMOTE );
-        }
-        adjustPlayersLabel();
     } // loadPlayersList
 
     private void configDictSpinner( Spinner dictsSpinner, int lang,
@@ -856,7 +850,7 @@ public class GameConfigDelegate extends DelegateBase
 
                         if ( chosen.equals( m_browseText ) ) {
                             DictsDelegate.downloadForResult( m_activity, 
-                                                             REQUEST_DICT,
+                                                             RequestCode.REQUEST_DICT,
                                                              m_gi.dictLang );
                         }
                     }
@@ -885,13 +879,17 @@ public class GameConfigDelegate extends DelegateBase
                     public void onItemSelected(AdapterView<?> parentView, 
                                                View selectedItemView, 
                                                int position, long id ) {
-                        String chosen = 
-                            (String)parentView.getItemAtPosition( position );
-                        if ( chosen.equals( m_browseText ) ) {
-                            DictsDelegate.downloadForResult( m_activity, REQUEST_LANG );
-                        } else {
-                            String langName = adapter.getLangAtPosition( position );
-                            selLangChanged( langName );
+                        if ( ! isFinishing() ) { // not on the way out?
+                            String chosen = 
+                                (String)parentView.getItemAtPosition( position );
+                            if ( chosen.equals( m_browseText ) ) {
+                                DictsDelegate.downloadForResult( m_activity, 
+                                                                 RequestCode
+                                                                 .REQUEST_LANG_GC );
+                            } else {
+                                String langName = adapter.getLangAtPosition( position );
+                                selLangChanged( langName );
+                            }
                         }
                     }
 
@@ -1044,7 +1042,15 @@ public class GameConfigDelegate extends DelegateBase
         m_isLocked = locking;
         for ( int id : s_disabledWhenLocked ) {
             View view = findViewById( id );
-            view.setEnabled( !m_isLocked );
+            view.setEnabled( !locking );
+        }
+
+        int nChildren = m_playerLayout.getChildCount();
+        for ( int ii = 0; ii < nChildren; ++ii ) {
+            View child = m_playerLayout.getChildAt( ii );
+            if ( child instanceof XWListItem ) {
+                ((XWListItem)child).setEnabled( !locking );
+            }
         }
     }
     
@@ -1146,9 +1152,12 @@ public class GameConfigDelegate extends DelegateBase
 
     private void applyChanges( boolean forceNew )
     {
-        if ( null != m_gameLock ) {
-            GameUtils.applyChanges( m_activity, m_gi, m_car, m_gameLock, 
+        if ( !isFinishing() ) {
+            GameLock gameLock = new GameLock( m_rowid, true ).lock();
+            GameUtils.applyChanges( m_activity, m_gi, m_car, gameLock, 
                                     forceNew );
+            DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
+            gameLock.unlock();
         }
     }
 
@@ -1158,8 +1167,6 @@ public class GameConfigDelegate extends DelegateBase
              && 0 == m_car.ip_relay_invite.length() ) {
             showOKOnlyDialog( R.string.no_empty_rooms );            
         } else {
-            m_gameLock.unlock();
-            m_gameLock = null;
             GameUtils.launchGameAndFinish( m_activity, m_rowid );
         }
     }
@@ -1189,14 +1196,14 @@ public class GameConfigDelegate extends DelegateBase
         return DeviceRole.SERVER_STANDALONE == m_giOrig.serverRole;
     }
 
-    public static void editForResult( Activity parent, int requestCode, 
+    public static void editForResult( Activity parent, RequestCode requestCode, 
                                       long rowID )
     {
         Intent intent = new Intent( parent, GameConfigActivity.class );
         intent.setAction( Intent.ACTION_EDIT );
         intent.putExtra( GameUtils.INTENT_KEY_ROWID, rowID );
         intent.putExtra( INTENT_FORRESULT_ROWID, true );
-        parent.startActivityForResult( intent, requestCode );
+        parent.startActivityForResult( intent, requestCode.ordinal() );
     }
 
     private void setConnLabel()

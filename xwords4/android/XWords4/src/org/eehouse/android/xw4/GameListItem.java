@@ -124,7 +124,7 @@ public class GameListItem extends LinearLayout
         ++m_loadingCount;
 
         LoadItemTask task = new LoadItemTask();
-        if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
+        if ( false && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
             // Actually run these in parallel if the OS supports it
             task.executeOnExecutor( AsyncTask.THREAD_POOL_EXECUTOR );
         } else {

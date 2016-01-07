@@ -139,8 +139,11 @@ public class GameListGroup extends ExpiringLinearLayout
     //////////////////////////////////////////////////
     public boolean onLongClick( View view ) 
     {
-        longClicked();
-        return true;
+        boolean handled = ! XWApp.CONTEXT_MENUS_ENABLED;
+        if ( handled ) {
+            longClicked();
+        }
+        return handled;
     }
 
     //////////////////////////////////////////////////

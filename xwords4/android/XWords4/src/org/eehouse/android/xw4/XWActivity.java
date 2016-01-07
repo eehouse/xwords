@@ -23,8 +23,14 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import junit.framework.Assert;
 
@@ -140,6 +146,19 @@ public class XWActivity extends Activity implements Delegator {
     }
 
     @Override
+    public void onCreateContextMenu( ContextMenu menu, View view,
+                                     ContextMenuInfo menuInfo )
+    {
+        m_dlgt.onCreateContextMenu( menu, view, menuInfo );
+    }
+
+    @Override
+    public boolean onContextItemSelected( MenuItem item )
+    {
+        return m_dlgt.onContextItemSelected( item );
+    }
+
+    @Override
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
@@ -161,7 +180,8 @@ public class XWActivity extends Activity implements Delegator {
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data )
     {
-        m_dlgt.onActivityResult( requestCode, resultCode, data );
+        RequestCode rc = RequestCode.values()[requestCode]; 
+        m_dlgt.onActivityResult( rc, resultCode, data );
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -175,5 +195,21 @@ public class XWActivity extends Activity implements Delegator {
     public Bundle getArguments()
     {
         return getIntent().getExtras();
+    }
+
+    public ListView getListView()
+    {
+        ListView view = (ListView)findViewById( android.R.id.list );
+        return view;
+    }
+
+    public void setListAdapter( ListAdapter adapter )
+    { 
+        getListView().setAdapter( adapter );
+    }
+
+    public ListAdapter getListAdapter()
+    {
+        return getListView().getAdapter();
     }
 }

@@ -22,18 +22,20 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.view.ViewGroup;
 
 import junit.framework.Assert;
 
 abstract class InviteDelegate extends ListDelegateBase
-    implements View.OnClickListener {
+    implements View.OnClickListener,
+               ViewGroup.OnHierarchyChangeListener {
 
     public static final String DEVS = "DEVS";
     public static final String COUNTS = "COUNTS";
@@ -44,8 +46,10 @@ abstract class InviteDelegate extends ListDelegateBase
     protected Button m_rescanButton;
     protected Button m_clearButton;
     private Activity m_activity;
+    private ListView m_lv;
+    private View m_ev;
 
-    public InviteDelegate( ListDelegator delegator, Bundle savedInstanceState,
+    public InviteDelegate( Delegator delegator, Bundle savedInstanceState,
                            int layoutID )
     {
         super( delegator, savedInstanceState, layoutID, R.menu.empty );
@@ -67,9 +71,19 @@ abstract class InviteDelegate extends ListDelegateBase
         TextView descView = (TextView)findViewById( desc_id );
         descView.setText( descTxt );
 
+        m_lv = (ListView)findViewById( android.R.id.list );
+        m_ev = findViewById( android.R.id.empty );
+        if ( null != m_lv && null != m_ev ) {
+            m_lv.setOnHierarchyChangeListener( this );
+            showEmptyIfEmpty();
+        }
+
         tryEnable();
     }
 
+    ////////////////////////////////////////
+    // View.OnClickListener
+    ////////////////////////////////////////
     public void onClick( View view ) 
     {
         if ( m_okButton == view ) {
@@ -86,6 +100,24 @@ abstract class InviteDelegate extends ListDelegateBase
         } else if ( m_clearButton == view ) {
             clearSelected();
         }
+    }
+
+    ////////////////////////////////////////
+    // ViewGroup.OnHierarchyChangeListener
+    ////////////////////////////////////////
+    public void onChildViewAdded( View parent, View child )
+    {
+        showEmptyIfEmpty();
+    }
+    public void onChildViewRemoved( View parent, View child )
+    {
+        showEmptyIfEmpty();
+    }
+
+    private void showEmptyIfEmpty()
+    {
+        m_ev.setVisibility( 0 == m_lv.getChildCount()
+                            ? View.VISIBLE : View.GONE );
     }
 
     abstract void tryEnable() ;

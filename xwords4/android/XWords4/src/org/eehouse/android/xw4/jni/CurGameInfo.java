@@ -20,10 +20,11 @@
 
 package org.eehouse.android.xw4.jni;
 
-import java.util.Random;
 import android.content.Context;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DbgUtils;
@@ -211,7 +212,7 @@ public class CurGameInfo {
             || allowPickTiles != other.allowPickTiles
             || phoniesAction != other.phoniesAction;
 
-        if ( !matter && DeviceRole.SERVER_STANDALONE != serverRole ) {
+        if ( !matter ) {
             matter = !dictName.equals( other.dictName );
             for ( int ii = 0; !matter && ii < nPlayers; ++ii ) {
                 LocalPlayer me = players[ii];
@@ -363,15 +364,6 @@ public class CurGameInfo {
         for ( int ii = 0; ii < nPlayersTotal; ++ii ) {
             players[ii].isLocal = ii < nPlayersHere;
             assert( !players[ii].isRobot() );
-        }
-    }
-
-    public void setFirstLocalName( String name ) {
-        for ( int ii = 0; ii < nPlayers; ++ii ) {
-            if ( players[ii].isLocal ) {
-                players[ii].name = name;
-                break;
-            }
         }
     }
 

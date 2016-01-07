@@ -78,12 +78,14 @@ error error error
 int
 getInt( JNIEnv* env, jobject obj, const char* name )
 {
+    // XP_LOGF( "%s(name=%s)", __func__, name );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
     int result = (*env)->GetIntField( env, obj, fid );
     deleteLocalRef( env, cls );
+    // XP_LOGF( "%s(name=%s) => %d", __func__, name, result );
     return result;
 }
 
@@ -113,12 +115,14 @@ getInts( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis 
 void
 setInt( JNIEnv* env, jobject obj, const char* name, int value )
 {
+    // XP_LOGF( "%s(name=%s)", __func__, name );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
     (*env)->SetIntField( env, obj, fid, value );
     deleteLocalRef( env, cls );
+    // XP_LOGF( "%s(name=%s) DONE", __func__, name );
 }
 
 void
@@ -178,6 +182,7 @@ setBools( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis
 bool
 setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
 {
+    // XP_LOGF( "%s(%s)", __func__, name );
     bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
@@ -194,9 +199,31 @@ setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
 }
 
 void
+getStrings( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis )
+{
+    for ( int ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        XP_UCHAR* buf = (XP_UCHAR*)(((uint8_t*)cobj) + si->offset);
+        getString( env, jobj, si->name, buf, si->siz );
+    }
+}
+
+void
+setStrings( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis )
+{
+    for ( int ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        // XP_LOGF( "calling setString(%s)", si->name );
+        XP_UCHAR* val = (XP_UCHAR*)(((uint8_t*)cobj) + si->offset);
+        setString( env, jobj, si->name, val );
+    }
+}
+
+void
 getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
            int bufLen )
 {
+    // XP_LOGF( "%s(%s)", __func__, name );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
@@ -214,6 +241,7 @@ getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
     buf[len] = '\0';
 
     deleteLocalRef( env, cls );
+    // XP_LOGF( "%s(%s) DONE", __func__, name );
 }
 
 XP_UCHAR* 
@@ -403,9 +431,15 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     XP_ASSERT( !!env );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
+#ifdef DEBUG
+    char buf[128] = {0};
+    /* int len = sizeof(buf); */
+    /* getClassName( env, obj, buf, &len ); */
+#endif
     jmethodID mid = (*env)->GetMethodID( env, cls, proc, sig );
     if ( !mid ) {
-        XP_LOGF( "%s: no mid for proc %s, sig %s", __func__, proc, sig );
+        XP_LOGF( "%s: no mid for proc %s, sig %s in object of class %s",
+                 __func__, proc, sig, buf );
     }
     XP_ASSERT( !!mid );
     deleteLocalRef( env, cls );
@@ -703,8 +737,46 @@ android_debugf( const char* format, ... )
 # endif
                                , buf );
 }
-#endif
 
+/* Print an object's class name into buffer.
+ *
+ * NOTE: this must be called in advance of any jni error, because methods on
+ * env can't be called once there's an exception pending.
+ */
+#if 0
+static void
+getClassName( JNIEnv* env, jobject obj, char* out, int* outLen )
+{
+    XP_ASSERT( !!obj );
+    jclass cls1 = (*env)->GetObjectClass( env, obj );
+
+    // First get the class object
+    jmethodID mid = (*env)->GetMethodID( env, cls1, "getClass",
+                                         "()Ljava/lang/Class;" );
+    jobject clsObj = (*env)->CallObjectMethod( env, obj, mid );
+
+    // Now get the class object's class descriptor
+    jclass cls2 = (*env)->GetObjectClass( env, clsObj );
+    // Find the getName() method on the class object
+    mid = (*env)->GetMethodID( env, cls2, "getName", "()Ljava/lang/String;" );
+
+    // Call the getName() to get a jstring object back
+    jstring strObj = (jstring)(*env)->CallObjectMethod( env, clsObj, mid );
+
+    jint slen = (*env)->GetStringUTFLength( env, strObj );
+    if ( slen < *outLen ) {
+        *outLen = slen;
+        (*env)->GetStringUTFRegion( env, strObj, 0, slen, out );
+        out[slen] = '\0';
+    } else {
+        *outLen = 0;
+        out[0] = '\0';
+    }
+    deleteLocalRefs( env, clsObj, cls1, cls2, strObj, DELETE_NO_REF );
+    LOG_RETURNF( "%s", out );
+}
+#endif
+#endif
 
 /* #ifdef DEBUG */
 /* XP_U32 */

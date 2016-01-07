@@ -171,6 +171,12 @@ public class CommonPrefs extends XWPrefs {
         return value;
     }
     
+    public static String getDefaultOriginalPlayerName( Context context,
+                                                       int num )
+    {
+        return LocUtils.getString( context, R.string.player_fmt, num + 1 );
+    }
+
     public static String getDefaultPlayerName( Context context, int num,
                                                boolean force )
     {
@@ -179,8 +185,7 @@ public class CommonPrefs extends XWPrefs {
             result = null;      // be consistent
         }
         if ( force && null == result ) {
-            String fmt = LocUtils.getString( context, R.string.player_fmt );
-            result = String.format( fmt, num + 1 );
+            result = getDefaultOriginalPlayerName( context, num );
         }
         return result;
     }

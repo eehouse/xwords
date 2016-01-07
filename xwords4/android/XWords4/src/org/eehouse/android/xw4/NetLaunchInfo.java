@@ -70,14 +70,17 @@ public class NetLaunchInfo {
     protected boolean isGSM;
     protected int osVers;
 
-    private int m_gameID = 0;
+    private int _conTypes;      // for syncing with the c version only!!
+    private int gameID = 0;
     private CommsConnTypeSet m_addrs;
     private boolean m_valid;
-    private String m_inviteID;
+    private String inviteID;
 
     public NetLaunchInfo()
     {
         m_addrs = new CommsConnTypeSet();
+        // Give it a random number. It may be overwritten, but so what.
+        inviteID = GameUtils.formatGameID( Utils.nextRandomInt() );
     }
 
     public NetLaunchInfo( Context context, String data )
@@ -96,13 +99,13 @@ public class NetLaunchInfo {
     {
         lang = bundle.getInt( MultiService.LANG );
         room = bundle.getString( MultiService.ROOM );
-        m_inviteID = bundle.getString( MultiService.INVITEID );
+        inviteID = bundle.getString( MultiService.INVITEID );
         forceChannel = bundle.getInt( MultiService.FORCECHANNEL );
         dict = bundle.getString( MultiService.DICT );
         gameName = bundle.getString( MultiService.GAMENAME );
         nPlayersT = bundle.getInt( MultiService.NPLAYERST );
         nPlayersH = bundle.getInt( MultiService.NPLAYERSH );
-        m_gameID = bundle.getInt( MultiService.GAMEID );
+        gameID = bundle.getInt( MultiService.GAMEID );
         btName = bundle.getString( MultiService.BT_NAME );
         btAddress = bundle.getString( MultiService.BT_ADDRESS );
 
@@ -139,7 +142,7 @@ public class NetLaunchInfo {
 
                     JSONObject json = new JSONObject( new String( buf ) );
                     room = json.getString( MultiService.ROOM );
-                    m_inviteID = json.getString( MultiService.INVITEID );
+                    inviteID = json.getString( MultiService.INVITEID );
                 } else {
                     String val = data.getQueryParameter( ADDRS_KEY );
                     boolean hasAddrs = null != val;
@@ -163,7 +166,7 @@ public class NetLaunchInfo {
                             break;
                         case COMMS_CONN_RELAY:
                             room = data.getQueryParameter( ROOM_KEY );
-                            m_inviteID = data.getQueryParameter( ID_KEY );
+                            inviteID = data.getQueryParameter( ID_KEY );
                             doAdd = !hasAddrs && null != room;
                             break;
                         case COMMS_CONN_SMS:
@@ -195,7 +198,7 @@ public class NetLaunchInfo {
                     String nh = data.getQueryParameter( HEREPLAYERS_KEY );
                     nPlayersH = nh == null ? 1 : Integer.decode( nh );
                     val = data.getQueryParameter( GID_KEY );
-                    m_gameID = null == val ? 0 : Integer.decode( val );
+                    gameID = null == val ? 0 : Integer.decode( val );
                     val = data.getQueryParameter( FORCECHANNEL_KEY );
                     forceChannel = null == val ? 0 : Integer.decode( val );
                     gameName = data.getQueryParameter( NAME_KEY );
@@ -208,8 +211,8 @@ public class NetLaunchInfo {
         calcValid();
     }
 
-    public NetLaunchInfo( int gamID, String gamNam, int dictLang, 
-                          String dictName, int nPlayers )
+    private NetLaunchInfo( int gamID, String gamNam, int dictLang, 
+                           String dictName, int nPlayers )
     {
         this();
         gameName = gamNam;
@@ -217,7 +220,7 @@ public class NetLaunchInfo {
         lang = dictLang;
         nPlayersT = nPlayers;
         nPlayersH = 1;
-        m_gameID = gamID;
+        gameID = gamID;
     }
 
     public NetLaunchInfo( GameSummary summary, CurGameInfo gi, int numHere, int fc )
@@ -267,9 +270,9 @@ public class NetLaunchInfo {
 
     public String inviteID()
     { 
-        String result = m_inviteID;
+        String result = inviteID;
         if ( null == result ) {
-            result = GameUtils.formatGameID( m_gameID );
+            result = GameUtils.formatGameID( gameID );
             // DbgUtils.logf( "inviteID(): m_inviteID null so substituting %s", result );
         }
         return result;
@@ -277,12 +280,13 @@ public class NetLaunchInfo {
 
     public int gameID()
     { 
-        int result = m_gameID;
+        int result = gameID;
         if ( 0 == result ) {
-            Assert.assertNotNull( m_inviteID );
-            result = Integer.parseInt( m_inviteID, 16 );
-            // DbgUtils.logf( "gameID(): m_gameID -1 so substituting %d", result );
-            m_gameID = result;
+            Assert.assertNotNull( inviteID );
+            DbgUtils.logf( "gameID(): looking at inviteID: %s", inviteID );
+            result = Integer.parseInt( inviteID, 16 );
+            // DbgUtils.logf( "gameID(): gameID -1 so substituting %d", result );
+            gameID = result;
         }
         Assert.assertTrue( 0 != result );
         return result;
@@ -291,7 +295,7 @@ public class NetLaunchInfo {
     public void putSelf( Bundle bundle )
     {
         bundle.putString( MultiService.ROOM, room );
-        bundle.putString( MultiService.INVITEID, m_inviteID );
+        bundle.putString( MultiService.INVITEID, inviteID );
         bundle.putInt( MultiService.LANG, lang );
         bundle.putString( MultiService.DICT, dict );
         bundle.putString( MultiService.GAMENAME, gameName );
@@ -322,7 +326,7 @@ public class NetLaunchInfo {
 
             if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                 obj.put( MultiService.ROOM, room )
-                    .put( MultiService.INVITEID, m_inviteID );
+                    .put( MultiService.INVITEID, inviteID );
             }
 
             if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
@@ -386,7 +390,7 @@ public class NetLaunchInfo {
             gameName = json.optString( MultiService.GAMENAME );
             nPlayersT = json.optInt( MultiService.NPLAYERST, -1 );
             nPlayersH = json.optInt( MultiService.NPLAYERSH, 1 ); // absent ok
-            m_gameID = json.optInt( MultiService.GAMEID, 0 );
+            gameID = json.optInt( MultiService.GAMEID, 0 );
 
             // Try each type
             for ( CommsConnType typ : supported.getTypes() ) {
@@ -402,7 +406,7 @@ public class NetLaunchInfo {
                     break;
                 case COMMS_CONN_RELAY:
                     room = json.getString( MultiService.ROOM );
-                    m_inviteID = json.optString( MultiService.INVITEID );
+                    inviteID = json.optString( MultiService.INVITEID );
                     doAdd = !hasAddrs && !room.isEmpty();
                     break;
                 case COMMS_CONN_SMS:
@@ -437,10 +441,11 @@ public class NetLaunchInfo {
     public Uri makeLaunchUri( Context context )
     {
         int addrs = m_addrs.toInt();
+        String host = LocUtils.getString( context, R.string.invite_host );
+        host = NetUtils.forceHost( host );
         Uri.Builder ub = new Uri.Builder()
             .scheme( "http" )
-            .path( String.format( "//%s%s", 
-                                  LocUtils.getString(context, R.string.invite_host),
+            .path( String.format( "//%s%s", host,
                                   LocUtils.getString(context, R.string.invite_prefix) ) );
         appendInt( ub, LANG_KEY, lang );
         appendInt( ub, TOTPLAYERS_KEY, nPlayersT );
@@ -456,7 +461,7 @@ public class NetLaunchInfo {
 
         if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
             ub.appendQueryParameter( ROOM_KEY, room );
-            ub.appendQueryParameter( ID_KEY, m_inviteID );
+            ub.appendQueryParameter( ID_KEY, inviteID );
         }
         if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
             ub.appendQueryParameter( BTADDR_KEY, btAddress );
@@ -481,7 +486,7 @@ public class NetLaunchInfo {
     public void addRelayInfo( String aRoom, String inviteID )
     {
         room = aRoom;
-        m_inviteID = inviteID;
+        inviteID = inviteID;
         m_addrs.add( CommsConnType.COMMS_CONN_RELAY );
     }
 
@@ -523,6 +528,16 @@ public class NetLaunchInfo {
     public static void putExtras( Intent intent, int gameID, String btAddr )
     {
         Assert.fail();
+    }
+
+    public void freezeAddrs()
+    {
+        _conTypes = m_addrs.toInt();
+    }
+
+    public void unfreezeAddrs()
+    {
+        m_addrs = new CommsConnTypeSet( _conTypes, true );
     }
 
     private boolean hasCommon()

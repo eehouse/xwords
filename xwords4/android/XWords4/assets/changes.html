@@ -13,10 +13,10 @@
 	</style>
   </head>
 <body>
-  <h2>Crosswords 4.4 beta 98 release</h2>
+  <h2>Crosswords 4.4 beta 101 release</h2>
 
-  <p>This release is mostly to get the new Dutch translation out
-  there, and to catch up Catalan and French.</p>
+  <p>This is the second of two releases that together fix stalling
+  issues in network games.</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -26,23 +26,8 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Complete and up-to-date translations into Dutch, French and
-          Catalan. What language is next?</li>
-
-      <li>Allow copying invitation URL to clipboard so you can paste
-          it into any messaging app you like</li>
-
-      <li>Improvements to in-game chat experience (but more are coming)</li>
-
-      <li>Show a "toast" when hint button can't find any moves</li>
-
-      <li>Add SMS to the list of ways you can invite somebody</li>
-
-      <li>When displaying Bluetooth-connected devices to invite, skip
-          stuff like headphones</li>
-      <li>Turn off email invite attachments. They didn't seem to work anyway,
-          and aren't needed on modern Android.</li>
-      <li>Fix very old memory leak</li>
+      <li>Fix to send correctly calculated identifier for game
+      state.</li>
   </ul>
 
   <p>(The full changelog 
@@ -51,8 +36,9 @@
   <h3>Next up</h3>
   <ul>
 	  <li>Offer &quot;Rematch&quot; when game&apos;s over (Easy via
-	  SMS and Bluetooth; harder via the internet/relay)</li>
-      <li>Look into supporting play via peer-to-peer wifi</li>
+	      SMS and Bluetooth; harder via the internet/relay)</li>
+      <li>Take advantage of Marshmallow's new permissions model (where
+      the app only asks for them when it needs them.)
   </ul>
 
   <p>Please let me know

@@ -1588,6 +1588,7 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
 
 static XP_Bool 
 relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
+                         const XP_UCHAR* XP_UNUSED(msgNo),
                          const XP_UCHAR* relayID, void* closure )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;

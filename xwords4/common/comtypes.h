@@ -333,7 +333,7 @@ typedef struct _PlayerDicts {
 #  define XP_UNUSED_BT(x) UNUSED__ ## x __attribute__((unused))
 #endif
 
-#if BT_USE_RFCOMM
+#ifdef BT_USE_RFCOMM
 # define XP_UNUSED_RFCOMM(x) x
 #else
 # define XP_UNUSED_RFCOMM(x) UNUSED__ ## x __attribute__((unused))

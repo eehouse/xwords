@@ -49,7 +49,8 @@ static void gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict );
 #endif
 
 static void
-checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
+checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, 
+                 XP_U16* nPlayersTotal )
 {
     if ( !!gi ) {
         XP_U16 ii, remoteCount = 0;
@@ -87,7 +88,7 @@ makeGameID( XW_UtilCtxt* util )
 void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
-                  CommonPrefs* cp, const TransportProcs* procs
+                  const CommonPrefs* cp, const TransportProcs* procs
 #ifdef SET_GAMESEED
                   ,XP_U16 gameSeed 
 #endif
@@ -226,7 +227,8 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     XP_DEBUGF( "%s: strVersion = 0x%x", __func__, (XP_U16)strVersion );
 
     if ( strVersion > CUR_STREAM_VERS ) {
-        XP_LOGF( "%s: aborting; stream version too new!", __func__ );
+        XP_LOGF( "%s: aborting; stream version too new (%d > %d)!", __func__, 
+                 strVersion, CUR_STREAM_VERS );
     } else {
         do { /* do..while so can break */
             stream_setVersion( stream, strVersion );
@@ -279,6 +281,28 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     }
     return success;
 } /* game_makeFromStream */
+
+void
+game_saveNewGame( MPFORMAL const CurGameInfo* gi, XW_UtilCtxt* util,
+                  const CommonPrefs* cp, XWStreamCtxt* out )
+{
+    XWGame newGame = {0};
+    CurGameInfo newGI = {0};
+    gi_copy( MPPARM(mpool) &newGI, gi );
+
+    game_makeNewGame( MPPARM(mpool) &newGame, &newGI, util, 
+                      NULL, /* DrawCtx*,  */
+                      cp, NULL /* TransportProcs* procs */
+#ifdef SET_GAMESEED
+                      ,0 
+#endif
+                      );
+
+    game_saveToStream( &newGame, &newGI, out, 1 );
+    game_saveSucceeded( &newGame, 1 );
+    game_dispose( &newGame );
+    gi_disposePlayerInfo( MPPARM(mpool) &newGI );
+}
 
 void
 game_saveToStream( const XWGame* game, const CurGameInfo* gi, 

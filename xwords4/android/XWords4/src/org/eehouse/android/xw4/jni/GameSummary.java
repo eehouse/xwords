@@ -131,6 +131,12 @@ public class GameSummary {
         return result;
     }
 
+    public String getRematchName()
+    {
+        return LocUtils.getString( m_context, R.string.rematch_name_fmt, 
+                                   playerNames() );
+    }
+
     public void setRemoteDevs( Context context, String asString )
     {
         if ( null != asString ) {

@@ -57,6 +57,9 @@
           android:icon="@drawable/content_discard__gen"
           android:showAsAction="ifRoom"
           />
+    <item android:id="@+id/games_game_rematch"
+          android:title="@string/button_rematch"
+          />
     <item android:id="@+id/games_game_config"
           android:title="@string/list_item_config"
           android:icon="@drawable/content_edit"

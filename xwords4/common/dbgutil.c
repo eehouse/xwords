@@ -94,9 +94,9 @@ dbg_logstream( const XWStreamCtxt* stream, const char* func, int line )
     if ( !!stream ) {
         XP_U16 len = 0;
         XWStreamPos end = stream_getPos( stream, POS_WRITE );
-        stream_copyBits( stream, 0, end, NULL, &len );
+        stream_copyBits( stream, end, NULL, &len );
         XP_U8 buf[len];
-        stream_copyBits( stream, 0, end, buf, &len );
+        stream_copyBits( stream, end, buf, &len );
         char comment[128];
         XP_SNPRINTF( comment, VSIZE(comment), "%s line %d", func, line );
         LOG_HEX( buf, len, comment );

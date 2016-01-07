@@ -22,24 +22,29 @@ package org.eehouse.android.xw4;
 
 import android.content.Context;
 
+import android.text.TextUtils;
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.net.SocketFactory;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+
+import junit.framework.Assert;
 
 public class NetUtils {
 
@@ -198,47 +203,104 @@ public class NetUtils {
         return msgs;
     } // queryRelay
 
-    protected static HttpPost makePost( Context context, String proc )
+    private static final String FORCE_RELAY_HOST = null;
+    // private static final String FORCE_RELAY_HOST = "eehouse.org";
+    public static String forceHost( String host )
     {
-        String url = String.format( "%s/%s", 
-                                    XWPrefs.getDefaultUpdateUrl( context ),
-                                    proc );
-        HttpPost result;
+        if ( null != FORCE_RELAY_HOST ) {
+            host = FORCE_RELAY_HOST;
+        }
+        return host;
+    }
+
+    protected static HttpURLConnection makeHttpConn( Context context, 
+                                                     String proc )
+    {
+        HttpURLConnection result = null;
         try {
-            result = new HttpPost( url );
-        } catch ( IllegalArgumentException iae ) {
-            DbgUtils.loge( iae );
-            result = null;
+            String url = String.format( "%s/%s", 
+                                        XWPrefs.getDefaultUpdateUrl( context ),
+                                        proc );
+            result = (HttpURLConnection)new URL(url).openConnection();
+        } catch ( java.net.MalformedURLException mue ) {
+            Assert.assertNull( result );
+            DbgUtils.loge( mue );
+        } catch ( java.io.IOException ioe ) {
+            Assert.assertNull( result );
+            DbgUtils.loge( ioe );
         }
         return result;
     }
 
-    protected static String runPost( HttpPost post, JSONObject param )
+    protected static String runConn( HttpURLConnection conn, JSONObject param )
+    {
+        String result = null;
+        Map<String, String> params = new HashMap<String, String>();
+        params.put( k_PARAMS, param.toString() );
+        String paramsString = getPostDataString( params );
+
+        if ( null != paramsString ) { 
+            try {
+                conn.setReadTimeout( 15000 );
+                conn.setConnectTimeout( 15000 );
+                conn.setRequestMethod( "POST" );
+                conn.setDoInput( true );
+                conn.setDoOutput( true );
+                conn.setFixedLengthStreamingMode( paramsString.length() );
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer 
+                    = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                writer.write( paramsString );
+                writer.flush();
+                writer.close();
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                if ( HttpURLConnection.HTTP_OK == responseCode ) {
+                    InputStream is = conn.getInputStream();
+                    BufferedInputStream bis = new BufferedInputStream( is );
+
+                    ByteArrayOutputStream bas = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    for ( ; ; ) {
+                        int nRead = bis.read( buffer );
+                        if ( 0 > nRead ) {
+                            break;
+                        }
+                        bas.write( buffer, 0, nRead );
+                    }
+                    result = new String( bas.toByteArray() );
+                } else {
+                    DbgUtils.logf( "runConn: responseCode: %d", responseCode );
+                }
+            } catch ( java.net.ProtocolException pe ) {
+                DbgUtils.loge( pe );
+            } catch( java.io.IOException ioe ) {
+                DbgUtils.loge( ioe );
+            }
+        }
+
+        return result;
+    }
+
+    private static String getPostDataString( Map<String, String> params ) 
     {
         String result = null;
         try {
-            String jsonStr = param.toString();
-            List<NameValuePair> nvp = new ArrayList<NameValuePair>();
-            nvp.add( new BasicNameValuePair( k_PARAMS, jsonStr ) );
-            post.setEntity( new UrlEncodedFormEntity(nvp) );
-
-            // Execute HTTP Post Request
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpResponse response = httpclient.execute(post);
-            HttpEntity entity = response.getEntity();
-            if ( null != entity ) {
-                result = EntityUtils.toString( entity );
-                if ( 0 == result.length() ) {
-                    result = null;
-                }
+            ArrayList<String> pairs = new ArrayList<String>();
+            // StringBuilder sb = new StringBuilder();
+            String[] pair = { null, null };
+            for ( Map.Entry<String, String> entry : params.entrySet() ){
+                pair[0] = URLEncoder.encode( entry.getKey(), "UTF-8" );
+                pair[1] = URLEncoder.encode( entry.getValue(), "UTF-8" );
+                pairs.add( TextUtils.join( "=", pair ) );
             }
-        } catch( java.io.UnsupportedEncodingException uee ) {
+            result = TextUtils.join( "&", pairs );
+        } catch ( java.io.UnsupportedEncodingException uee ) {
             DbgUtils.loge( uee );
-        } catch( java.net.UnknownHostException uhe ) {
-            DbgUtils.loge( uhe );
-        } catch( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
         }
+
         return result;
     }
 

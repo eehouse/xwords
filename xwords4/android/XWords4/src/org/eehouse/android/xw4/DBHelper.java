@@ -109,7 +109,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String[][] s_summaryColsAndTypes = {
         { "rowid",      "INTEGER PRIMARY KEY AUTOINCREMENT" }
-        ,{ VISID,        "INTEGER" }
+        ,{ VISID,        "INTEGER" } // user-visible ID
         ,{ GAME_NAME,    "TEXT" }
         ,{ NUM_MOVES,   "INTEGER" }
         ,{ TURN,        "INTEGER" }

@@ -120,7 +120,7 @@ void
 XWThreadPool::AddSocket( SockType stype, QueueCallback proc, const AddrInfo* from )
 {
     {
-        int sock = from->socket();
+        int sock = from->getSocket();
         RWWriteLock ml( &m_activeSocketsRWLock );
         SockInfo si;
         si.m_type = stype;
@@ -139,7 +139,7 @@ XWThreadPool::SocketFound( const AddrInfo* addr )
     {
         RWWriteLock ml( &m_activeSocketsRWLock );
 
-        map<int, SockInfo>::iterator iter = m_activeSockets.find( addr->socket() );
+        map<int, SockInfo>::iterator iter = m_activeSockets.find( addr->getSocket() );
         if ( m_activeSockets.end() != iter 
              && iter->second.m_addr.equals( *addr ) ) {
             found = true;
@@ -158,7 +158,7 @@ XWThreadPool::RemoveSocket( const AddrInfo* addr )
 
         size_t prevSize = m_activeSockets.size();
 
-        map<int, SockInfo>::iterator iter = m_activeSockets.find( addr->socket() ); 
+        map<int, SockInfo>::iterator iter = m_activeSockets.find( addr->getSocket() ); 
         if ( m_activeSockets.end() != iter && iter->second.m_addr.equals( *addr ) ) {
             m_activeSockets.erase( iter );
             found = true;
@@ -184,8 +184,8 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
                 ++iter;
             }
         }
-        logf( XW_LOGINFO, "CLOSING socket %d", addr->socket() );
-        close( addr->socket() );
+        logf( XW_LOGINFO, "CLOSING socket %d", addr->getSocket() );
+        close( addr->getSocket() );
 
         /* We always need to interrupt the poll because the socket we're closing
            will be in the list being listened to.  That or we need to drop sockets
@@ -198,7 +198,7 @@ XWThreadPool::CloseSocket( const AddrInfo* addr )
 void
 XWThreadPool::EnqueueKill( const AddrInfo* addr, const char* const why )
 {
-    logf( XW_LOGINFO, "%s(%d) reason: %s", __func__, addr->socket(), why );
+    logf( XW_LOGINFO, "%s(%d) reason: %s", __func__, addr->getSocket(), why );
     if ( addr->isTCP() ) {
         SockInfo si;
         si.m_type = STYPE_UNKNOWN;
@@ -213,7 +213,7 @@ bool
 XWThreadPool::IsCurrent( const AddrInfo* addr )
 {
     bool result = false;
-    int sock = addr->socket();
+    int sock = addr->getSocket();
     if ( -1 != sock ) {
         RWReadLock ml( &m_activeSocketsRWLock );
         map<int, SockInfo>::const_iterator iter = m_activeSockets.find( sock ); 
@@ -240,12 +240,12 @@ void*
 XWThreadPool::real_tpool_main( ThreadInfo* tip )
 {
     logf( XW_LOGINFO, "tpool worker thread starting" );
-    int socket = -1;
+    int sock = -1;
     for ( ; ; ) {
         pthread_mutex_lock( &m_queueMutex );
         tip->recentTime = 0;
 
-        release_socket_locked( socket );
+        release_socket_locked( sock );
 
         while ( !m_timeToDie && m_queue.size() == 0 ) {
             pthread_cond_wait( &m_queueCondVar, &m_queueMutex );
@@ -264,7 +264,7 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
         pthread_mutex_unlock( &m_queueMutex );
 
         if ( gotOne ) {
-            socket = pr.m_info.m_addr.socket();
+            sock = pr.m_info.m_addr.getSocket();
             logf( XW_LOGINFO, "worker thread got socket %d from queue", socket );
             switch ( pr.m_act ) {
             case Q_READ:
@@ -280,7 +280,7 @@ XWThreadPool::real_tpool_main( ThreadInfo* tip )
                 break;
             }
         } else {
-            socket = -1;
+            sock = -1;
         }
     }
     logf( XW_LOGINFO, "tpool worker thread exiting" );
@@ -399,7 +399,7 @@ XWThreadPool::real_listener()
                     SockInfo* sinfo = &sinfos[curfd];
                     const AddrInfo* addr = &sinfo->m_addr;
 
-                    assert( fds[curfd].fd == addr->socket() );
+                    assert( fds[curfd].fd == addr->getSocket() );
                     if ( !SocketFound( addr ) ) {
                         /* no further processing if it's been removed while
                            we've been sleeping in poll */
@@ -462,13 +462,13 @@ XWThreadPool::grab_elem_locked( QueuePr* prp )
     bool found = false;
     deque<QueuePr>::iterator iter;
     for ( iter = m_queue.begin(); !found && iter != m_queue.end(); ++iter ) {
-        int socket = iter->m_info.m_addr.socket();
+        int sock = iter->m_info.m_addr.getSocket();
         /* If NOT found */
-        if ( -1 != socket
-             && m_sockets_in_use.end() == m_sockets_in_use.find( socket ) ) {
+        if ( -1 != sock
+             && m_sockets_in_use.end() == m_sockets_in_use.find( sock ) ) {
             *prp = *iter;
             m_queue.erase( iter ); /* this was a double-free once! */
-            m_sockets_in_use.insert( socket );
+            m_sockets_in_use.insert( sock );
             found = true;
         }
     }
@@ -478,10 +478,10 @@ XWThreadPool::grab_elem_locked( QueuePr* prp )
 } /* grab_elem_locked */
 
 void
-XWThreadPool::release_socket_locked( int socket )
+XWThreadPool::release_socket_locked( int sock )
 {
-    if ( -1 != socket ) {
-        set<int>::iterator iter = m_sockets_in_use.find( socket );
+    if ( -1 != sock ) {
+        set<int>::iterator iter = m_sockets_in_use.find( sock );
         assert( iter != m_sockets_in_use.end() );
         m_sockets_in_use.erase( iter );
     }

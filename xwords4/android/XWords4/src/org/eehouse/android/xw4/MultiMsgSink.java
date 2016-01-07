@@ -21,8 +21,8 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -32,7 +32,9 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 public class MultiMsgSink implements TransportProcs {
     private long m_rowid;
     private Context m_context;
-    private int m_nSent = 0;
+    // Use set to count so message sent over both BT and Relay is counted only
+    // once.
+    private Set<String> m_sentSet = new HashSet<String>();
 
     public MultiMsgSink( Context context, long rowid )
     {
@@ -60,7 +62,7 @@ public class MultiMsgSink implements TransportProcs {
 
     public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
     {
-        return BTService.enqueueFor( m_context, buf, addr.bt_btAddr, gameID );
+        return BTService.enqueueFor( m_context, buf, addr, gameID );
     }
 
     public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
@@ -70,15 +72,15 @@ public class MultiMsgSink implements TransportProcs {
 
     public int numSent()
     {
-        return m_nSent;
+        return m_sentSet.size();
     }
 
     /***** TransportProcs interface *****/
 
     public int getFlags() { return COMMS_XPORT_FLAGS_HASNOCONN; }
 
-    public int transportSend( byte[] buf, CommsAddrRec addr, CommsConnType typ, 
-                              int gameID )
+    public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr, 
+                              CommsConnType typ, int gameID )
     {
         int nSent = -1;
         switch ( typ ) {
@@ -97,6 +99,10 @@ public class MultiMsgSink implements TransportProcs {
         }
         DbgUtils.logf( "MultiMsgSink.transportSend(): sent %d via %s", 
                        nSent, typ.toString() );
+        if ( 0 < nSent ) {
+            DbgUtils.logdf( "MultiMsgSink.transportSend: adding %s", msgNo );
+            m_sentSet.add( msgNo );
+        }
 
         return nSent;
     }
@@ -114,11 +120,16 @@ public class MultiMsgSink implements TransportProcs {
     {
     }
 
-    public boolean relayNoConnProc( byte[] buf, String relayID )
+    public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
     {
         // Assert.fail();
         int nSent = RelayService.sendNoConnPacket( m_context, getRowID(), 
                                                    relayID, buf );
-        return buf.length == nSent;
+        boolean success = buf.length == nSent;
+        if ( success ) {
+            DbgUtils.logdf( "MultiMsgSink.relayNoConnProc: adding %s", msgNo );
+            m_sentSet.add( msgNo );
+        }
+        return success;
     }
 }

@@ -24,7 +24,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Window;
 
-public class DwnldActivity extends XWListActivity {
+public class DwnldActivity extends XWActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 

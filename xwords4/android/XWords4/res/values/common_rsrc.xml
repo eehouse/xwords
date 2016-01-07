@@ -2,7 +2,6 @@
 
 <!-- Resources in this file do not require localization -->
 <resources>
-
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
   <string name="key_show_arrow">key_show_arrow</string>
@@ -10,6 +9,7 @@
   <string name="key_explain_robot">key_explain_robot</string>
   <string name="key_skip_confirm">key_skip_confirm</string>
   <string name="key_disable_nag">key_disable_nag</string>
+  <string name="key_disable_nag_solo">key_disable_nag_solo</string>
   <string name="key_sort_tiles">key_sort_tiles</string>
   <string name="key_peek_other">key_peek_other</string>
   <string name="key_hide_crosshairs">key_hide_crosshairs</string>
@@ -73,6 +73,7 @@
   <string name="key_closed_langs">key_closed_langs</string>
   <string name="key_bt_addrs">key_bt_addrs</string>
   <string name="key_sms_phones">key_sms_phones</string>
+  <string name="key_relay_ids">key_relay_ids</string>
   <string name="key_connstat_data">key_connstat_data</string>
   <string name="key_dev_id">key_dev_id</string>
 
@@ -119,6 +120,7 @@
   <string name="key_enable_dup_invite">key_enable_dup_invite</string>
   <string name="key_enable_nfc_toself">key_enable_nfc_toself</string>
   <string name="key_enable_sms_toself">key_enable_sms_toself</string>
+  <string name="key_enable_relay_toself">key_enable_relay_toself</string>
   <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
   <string name="key_got_langdict">key_got_langdict</string>
@@ -126,6 +128,8 @@
   <string name="key_xlations_enabled">key_xlations_enabled</string>
   <string name="key_invite_multi">key_invite_multi</string>
   <string name="key_notagain_enablepublic">key_notagain_enablepublic</string>
+  <string name="key_na_rematch_two_only">key_notagain_rematch_two_only</string>
+  <string name="key_notagain_dfltname">key_notagain_dfltname</string>
 
   <string name="key_na_comms_bt">key_na_comms_bt</string>
   <string name="key_na_comms_sms">key_na_comms_sms</string>
@@ -263,7 +267,7 @@
     <!--  -->
     <item>DIEC</item>
     <item>:ca:</item>
-    <item>http://mdlc.iec.cat/results.asp?txtEntrada=%2$s</item>
+    <item>http://diccionari.totescrable.cat/cercador/?mot=%2$s</item>
     <!--  -->
     <item>Viccionari</item>
     <item>:ca:</item>

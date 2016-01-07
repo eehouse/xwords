@@ -24,12 +24,16 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 
 
 public class XWService extends Service {
 
     protected static MultiService s_srcMgr = null;
+    private static Set<String> s_seen = new HashSet<String>();
 
     @Override
     public IBinder onBind( Intent intent )
@@ -53,5 +57,21 @@ public class XWService extends Service {
         } else {
             DbgUtils.logf( "XWService.sendResult: dropping %s event", event.toString() );
         }
+    }
+
+    // Check that we aren't already processing an invitation with this
+    // inviteID.
+    protected boolean checkNotDupe( NetLaunchInfo nli )
+    {
+        String inviteID = nli.inviteID();
+        boolean isDupe;
+        synchronized( s_seen ) {
+            isDupe = s_seen.contains( inviteID );
+            if ( !isDupe ) {
+                s_seen.add( inviteID );
+            }
+        }
+        DbgUtils.logf( "XWService.checkNotDupe(%s) => %b", inviteID, !isDupe );
+        return !isDupe;
     }
 }

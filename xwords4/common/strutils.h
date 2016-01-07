@@ -68,6 +68,8 @@ XP_UCHAR* p_copyString( MPFORMAL const XP_UCHAR* instr
 # define copyString( p, in ) p_copyString( in )
 #endif
 
+XP_U32 augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len );
+XP_U32 finishHash( XP_U32 hash );
 
 void p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, 
                                  const XP_UCHAR* newStr

@@ -21,9 +21,16 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 public interface Delegator {
     Activity getActivity();
     Bundle getArguments();
     void finish();
+
+    // For activities with lists
+    void setListAdapter( ListAdapter adapter );
+    ListAdapter getListAdapter();
+    ListView getListView();
 }

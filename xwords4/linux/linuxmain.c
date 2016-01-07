@@ -554,7 +554,7 @@ secondTimerFired( gpointer data )
     if ( !!game->server && !!game->board ) {
         XP_U16 undoRatio = cGlobals->params->undoRatio;
         if ( 0 != undoRatio ) {
-            if ( (XP_RANDOM() % 100) < undoRatio ) {
+            if ( (XP_RANDOM() % 1000) < undoRatio ) {
                 XP_LOGF( "%s: calling server_handleUndo", __func__ );
                 if ( server_handleUndo( game->server, 1 ) ) {
                     board_draw( game->board );
@@ -895,6 +895,19 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
 } /* linShiftFocus */
 #endif
 
+const XP_U32
+linux_getDevIDRelay( LaunchParams* params )
+{
+    XP_U32 result = 0;
+    gchar buf[32];
+    if ( db_fetch( params->pDb, KEY_RDEVID, buf, sizeof(buf) ) ) {
+        sscanf( buf, "%X", &result );
+        XP_LOGF( "%s(): %s => %x", __func__, buf, result );
+    }
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
 const XP_UCHAR*
 linux_getDevID( LaunchParams* params, DevIDType* typ )
 {
@@ -905,6 +918,10 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
     if ( !!params->lDevID ) {
         result = params->lDevID;
         *typ = ID_TYPE_LINUX;
+    } else if ( db_fetch( params->pDb, KEY_RDEVID, params->devIDStore, 
+                          sizeof(params->devIDStore) ) ) {
+        result = params->devIDStore;
+        *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_RELAY;
     } else if ( db_fetch( params->pDb, KEY_LDEVID, params->devIDStore, 
                           sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
@@ -1217,9 +1234,11 @@ linux_reset( void* closure )
 #endif
 
 XP_S16
-linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
-            CommsConnType conType, XP_U32 gameID, void* closure )
+linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* msgNo,
+            const CommsAddrRec* addrRec, CommsConnType conType, XP_U32 gameID, 
+            void* closure )
 {
+    XP_LOGF( "%s(mid=%s)", __func__, msgNo );
     XP_S16 nSent = -1;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;   
 
@@ -2088,7 +2107,7 @@ main( int argc, char** argv )
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
     mainParams.useUdp = true;
-    mainParams.dbName = "xwgames.sql";
+    mainParams.dbName = "xwgames.sqldb";
 
     char* envDictPath = getenv( "XW_DICTDIR" );
     XP_LOGF( "%s: envDictPath=%s", __func__, envDictPath );
@@ -2424,8 +2443,8 @@ main( int argc, char** argv )
 #ifdef USE_GLIBLOOP
 	case CMD_UNDOPCT:
             mainParams.undoRatio = atoi( optarg );
-            if ( mainParams.undoRatio < 0 || mainParams.undoRatio > 100 ) {
-                usage(argv[0], "must be 0 <= n <= 100" );
+            if ( mainParams.undoRatio < 0 || mainParams.undoRatio > 1000 ) {
+                usage(argv[0], "must be 0 <= n <= 1000" );
             }
 	    break;
 #endif

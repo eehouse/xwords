@@ -36,7 +36,6 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class XWListItem extends LinearLayout 
     implements SelectableItem.LongClickHandler, View.OnClickListener {
     private int m_position;
-    private Context m_context;
     private Object m_cached;
     private DeleteCallback m_delCb;
     private boolean m_selected = false;
@@ -58,7 +57,6 @@ public class XWListItem extends LinearLayout
 
     public XWListItem( Context cx, AttributeSet as ) {
         super( cx, as );
-        m_context = cx;
         m_dsdel = new DrawSelDelegate( this );
     }
 

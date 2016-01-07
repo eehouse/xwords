@@ -3,24 +3,60 @@
 set -e -u
 
 STRINGS_HASH=""
+OUT_PATH=""
+VARIANT=""
+CLIENT_VERS_RELAY=""
+CHAT_SUPPORTED=""
+THUMBNAIL_SUPPORTED=""
 
 usage() {
-    echo "usage: $0 <variant> <relay_vers> <chatSupported> <thumbSupported>"
+    echo "usage: $0 --variant <variant> --client-vers <relay_vers> \\"
+	echo "   --chat-enabled <trueOrFalse> --thumbnail-enabled <trueOrFalse> \\"
+	echo "   [--vers-outfile path/to/versout.txt]"
     exit 1
 }
 
-[ $# -eq 4 ] || usage
+while [ $# -gt 0 ]; do
+	echo $1
+	case $1 in
+		--variant)
+			VARIANT=$2
+			shift
+			;;
+		--client-vers)
+			CLIENT_VERS_RELAY=$2
+			shift
+			;;
+		--chat-enabled)
+			CHAT_SUPPORTED=$2
+			shift
+			;;
+		--thumbnail-enabled)
+			THUMBNAIL_SUPPORTED=$2
+			shift
+			;;
+		--vers-outfile)
+			OUT_PATH=$2
+			shift
+			;;
+		*)
+			usage
+			;;
+	esac
+	shift
+done
 
-VARIANT=$1
-CLIENT_VERS_RELAY=$2
-CHAT_SUPPORTED=$3
-THUMBNAIL_SUPPORTED=$4
+[ -n "$VARIANT" -a -n "$CLIENT_VERS_RELAY" -a -n "$CHAT_SUPPORTED" -a -n "$THUMBNAIL_SUPPORTED" ] || usage
 
 BUILD_DIR=$(basename $(pwd))
 cd $(dirname $0)
 cd ../
 
 GITVERSION=$(../scripts/gitversion.sh)
+if [ -n "$OUT_PATH" ]; then
+	echo $GITVERSION > $BUILD_DIR/$OUT_PATH
+	git describe >> $BUILD_DIR/$OUT_PATH
+fi
 
 case $VARIANT in
 	xw4)
@@ -78,6 +114,7 @@ class BuildConstants {
     public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
     public static final long BUILD_STAMP = $(date +'%s');
     public static final String DBG_TAG = "$DBG_TAG";
+    public static final String VARIANT = "$VARIANT";
 }
 EOF
 

@@ -609,7 +609,7 @@ board_getScale( BoardCtxt* board, XP_U16* hScale, XP_U16* vScale )
 #endif
 
 XP_Bool
-board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
+board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp )
 {
     XP_Bool showArrowChanged;
     XP_Bool hideValChanged;
@@ -2127,6 +2127,8 @@ board_requestHint( BoardCtxt* board,
                 }
                 setArrowVisible( board, wasVisible );
             }
+        } else {
+            util_userError( board->util, ERR_NO_HINT_FOUND );
         }
 
         if ( !result ) {

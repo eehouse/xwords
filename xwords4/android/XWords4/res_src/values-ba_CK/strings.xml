@@ -143,14 +143,14 @@
     no( siht ecived )ylno ot:</string>
   <plurals name="confirm_seldeletes_fmt">
     <item quantity="one">Era uoy erus uoy tnaw ot eteled
-      eht %1$d detceles ?emag Siht noitca tonnac eb enodnu.</item>
+      eht detceles ?emag Siht noitca tonnac eb enodnu.</item>
     <item quantity="other">Era uoy erus uoy tnaw ot eteled
       eht %1$d detceles ?semag Siht noitca tonnac eb enodnu.</item>
   </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
   <plurals name="confirm_reset_fmt">
-    <item quantity="one">Era uoy erus uoy tnaw ot teser eht %1$d
+    <item quantity="one">Era uoy erus uoy tnaw ot teser eht
       detceles ?emag\n\ngNitteser( sesare lla sevom dna yna noitcennoc
       noitamrofni.)</item>
     <item quantity="other">Era uoy erus uoy tnaw ot teser eht %1$d
@@ -591,7 +591,7 @@
          because users should not have to do do this EVER. -->
   <string name="board_menu_game_resend">Dneser segassem</string>
   <plurals name="resend_finished_fmt">
-    <item quantity="one">Dneser dehsinif; tnes %1$d egassem.</item>
+    <item quantity="one">Dneser dehsinif; tnes eno egassem.</item>
     <item quantity="other">Dneser dehsinif; tnes %1$d segassem.</item>
   </plurals>
   <!--       
@@ -1024,6 +1024,7 @@
   <string name="invite_choice_email">Liame</string>
   <string name="invite_choice_bt">Htooteulb</string>
   <string name="invite_choice_nfc">CFN (\"Diordna gnimaeb\")</string>
+  <string name="invite_choice_relay">Yaler/tenRetni</string>
   <string name="invite_choice_title">Gnitivni sreyalp: ?woh</string>
   <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
   <!--    via email?</string> -->
@@ -1477,12 +1478,11 @@
        ###########################################################
       -->
   <!-- Welcome dialog title -->
-  <string name="default_name_title">Emoclew</string>
+  <string name="default_name_title">Tluafed reyalp eman</string>
   <!-- Welcome dialog text -->
-  <string name="default_name_message">Sknaht rof gnillatsni
-      !sdrowssorc\n\nLeef eerf ot retne ruoy eman ereh. Ti lliw eb desu
-      nehw gnitaerc wen semag.  uOy( nac egnahc ti retal ni eht \"Wen
-      emag tluafed\" noitces fo Sgnittes.)</string>
+  <string name="default_name_message">Esaelp retne ruoy eman
+    ereh. Ti lliw eb desu nehw gnitaerc wen semag. uOy( nac egnahc ti
+    retal ni eht \"Wen emag tluafed\" noitces fo Sgnittes.)</string>
   <!-- 
        ###########################################################
        # :Dialogs:
@@ -1495,7 +1495,7 @@
   <string name="about_vers_fmt">Sdrowssorc rof ,diordna Noisrev %1$s,
         ver %2$s, tliub no %3$s.</string>
   <!-- copyright info -->
-  <string name="about_copyright">Thgirypoc )C( 5102-8991 yb Cire
+  <string name="about_copyright">Thgirypoc )C( 6102-8991 yb Cire
         Esuoh. Siht nepo/eerf ecruos erawtfos si desaeler rednu eht UNG Cilbup
         Esnecil.</string>
   <!-- Another paragraph in the about dialog -->
@@ -1605,9 +1605,10 @@
   <!--  -->
   <string name="summary_conn">Emag ni yalp</string>
   <!--  -->
-  <string name="new_bt_title">Wen emag aiv Htooteulb</string>
+  <string name="invite_notice_title">Wen emag aiv Noitativni</string>
   <!--  -->
   <string name="new_bt_body_fmt">A reyalp no eht ecived %1$s stnaw ot trats a emag</string>
+  <string name="new_relay_body">Pat ot nepo eht wen emag</string>
   <!--  -->
   <string name="bt_bad_proto_fmt">Eht noisrev fo Sdrowssorc no
     \"%1$s\" si elbitapmocni htiw siht eno rof yalp gnisu
@@ -1642,6 +1643,7 @@
   <string name="bt_invite_title">Htooteulb Noitativni</string>
   <!-- Title of phone number picker during invitation to a game via SMS -->
   <string name="sms_invite_title">SMS Noitativni</string>
+  <string name="relay_invite_title">Yaler Noitativni</string>
   <!--  -->
   <string name="game_btname_title">Htooteulb emag eman</string>
   <!--  -->
@@ -1657,17 +1659,24 @@
   <!--  -->
   <string name="dft_sms_name_fmt">SMS Emag %1$X</string>
   <!--  -->
-  <string name="new_sms_title">Wen emag aiv SMS</string>
-  <!--  -->
   <string name="new_name_body_fmt">%1$s sah detivni uoy ot yalp</string>
   <!--  -->
   <string name="button_sms_add">Tropmi tcatnoc</string>
+  <!--  -->
+  <string name="button_relay_add">Nacs semag</string>
   <!--  -->
   <plurals name="invite_sms_desc_fmt">
     <item quantity="one">Esaelp kcehc eht enohp rebmun uoy tnaw ot
       etivni ot ruoy wen ,emag neht pat \"%2$s\".</item>
     <item quantity="other">Esaelp kcehc eht %1$d enohp srebmun uoy
       tnaw ot etivni ot ruoy wen ,emag neht pat \"%2$s\".</item>
+  </plurals>
+  <!--  -->
+  <plurals name="invite_relay_desc_fmt">
+    <item quantity="one">Esaelp kcehc eht ecived uoy tnaw ot etivni
+      ot ruoy wen ,emag neht pat \"%2$s\".</item>
+    <item quantity="other">Esaelp kcehc eht %1$d secived uoy tnaw ot etivni
+      ot ruoy wen ,emag neht pat \"%2$s\".</item>
   </plurals>
   <!--  -->
   <string name="manual_owner_name">tOn( ni )stcatnoc</string>
@@ -1679,14 +1688,21 @@
     \"Tropmi tcatnoc\" nottub ot dda elpoep uoy tnaw ot ,etivni eht +
     nottub ot retne srebmun yltcerid.</string>
   <!--  -->
-  <string name="get_sms_number">Retne enohp rebmun:</string>
+  <string name="empty_relay_inviter">Siht tsil fo seived si
+    ytpme. Esu eht \"Nacs semag\" nottub ot nacs ruoy dlo semag
+    rof stnenoppo. Esu eht + nottub ot retne ecived SDi yltcerid.</string>
   <!--  -->
-  <plurals name="confirm_clear_fmt">
+  <string name="get_sms_number">Retne enohp rebmun:</string>
+  <string name="get_relay_number">Retne ecived DI:</string>
+  <!--  -->
+  <plurals name="confirm_clear_sms_fmt">
     <item quantity="one">Era uoy erus uoy tnaw ot eteled eht dekcehc
       enohp ?rebmun</item>
     <item quantity="other">Era uoy erus uoy tnaw ot eteled eht
        %1$d dekcehc enohp ?srebmun</item>
   </plurals>
+  <string name="confirm_clear_relay">Era uoy erus uoy tnaw ot eteled eht
+    dekcehc ?]s[ecived</string>
   <!--  -->
   <string name="connect_label_sms">Noitcennoc aiv( )TXet/sms</string>
   <!--  -->
@@ -2042,6 +2058,7 @@
   <string name="title_addrs_pref">Etacinummoc aiv</string>
   <string name="new_game">Wen ecived-eno emag</string>
   <string name="new_game_networked">Wen dekrowten emag</string>
+  <string name="rematch_name_fmt">Hctamer: %1$s</string>
   <string name="new_game_message">Dluow uoy ekil ot etaerc siht emag
     gnisu tluafed ?sgnittes\n\nRo dluow uoy ekil ot erugifnoc ti
     ?tsrif</string>
@@ -2073,6 +2090,8 @@
     noitces fo Ppa )sgnittes.
     </string>
   <string name="waiting_title">Gnitiaw rof sreyalp</string>
+  <!-- Button for alert with title above -->
+  <string name="button_wait">Tiaw</string>
   <string name="invite_stays">sIht( golaid lliw yats pu litnu lla
     etomer sreyalp evah detcennoc. Uoy nac esolc eht emag fi uoy
     tcepxe ti ot ekat a elihw. Yeht lliw llits eb elba ot
@@ -2097,9 +2116,11 @@
     na \"decnavda\" erutaef ni siht esaeler. Fi uoy erew gnisu meht
     dna tnaw meht ,kcab elbane meht won. Uoy nac nrut meht ffo niaga
     ni Sgnittes.</string>
-  <string name="disable_nag_title">Elbasid nrut srednimer</string>
+  <string name="disable_nags_title">Nrut srednimer</string>
+  <string name="disable_nag_title">Elbasid krowten emag srednimer</string>
   <string name="disable_nag_summary">Od ton yfiton em on rettam
     woh gnol ti\'s neeb ym nrut</string>
+  <string name="disable_nag_solo_title">Elbasid olos emag srednimer</string>
   <string name="confirm_get_locdict_fmt">Ruoy ecived si tes pu rof
   %1$s. Dluow uoy ekil ot daolnwod a tsildrow os uoy nac yalp
   Sdrowssorc ni %1$s?</string>
@@ -2120,6 +2141,7 @@
   <string name="board_menu_game_netstats">Krowten stats</string>
   <string name="netstats_title">Emag krowten stats</string>
   <string name="git_rev_title">Ecruos noisrev di</string>
+  <string name="devid_title">Ecived DI no( )yaler</string>
   <string name="relay_port">Yaler emag trop</string>
   <string name="proxy_port">Yaler ecived trop</string>
   <string name="name_dict_fmt">%1$s/%2$s</string>
@@ -2188,16 +2210,17 @@
   <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
   ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
   <string name="str_no_hint_found">Tonnac dnif yna sevom</string>
+  <string name="not_again_rematch_two_only">Eht Hctamer nottub si
+  delbasid ,esuaceb rof won ,yawyna hctamer si detimil ot nosrep-owt
+  semag. I kniht ti\'s erar taht elpoep yalp htiw erom naht owt. Tel
+  em wonk fi I\'m gnorw dna I\'ll yrt redrah ot ekam ti krow.</string>
+  <string name="enable_relay_toself_title">Elbane yaler setivni ot fles</string>
+  <string name="enable_relay_toself_summary">oT( dia gnitset dna )gniggubed</string>
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
     <item quantity="one">Eno egassem tnes</item>
     <item quantity="other">%1$s segassem tnes</item>
   </plurals>
-  <string name="confirm_clear_chat">Era uoy erus uoy tnaw ot eteled
-  lla tahc yrotsih rof siht ?emag\n\nsIht( noitca tonnac eb
-  enodnu.)</string>
-  <!-- EXPERIMENTAL: Shown as toast when user chooses "Copy to
-       clipboard" for invitation -->
   <string name="invite_copied">Noitativni ydaer ot etsap</string>
   <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
        it's by some Android utility -->
@@ -2207,4 +2230,15 @@
   <string name="not_again_clip_expl_fmt">Eht \"%1$s\" noitpo seipoc na
   noitativni LRU ot eht draobpilc. Etsap ti otni eht ppa fo ruoy
   eciohc dna dnes ti ot ruoy dneirf.</string>
+  <string name="confirm_clear_chat">Era uoy erus uoy tnaw ot eteled
+  lla tahc yrotsih rof siht ?emag\n\nsIht( noitca tonnac eb
+  enodnu.)</string>
+  <string name="rel_invite_title">Yaler etivni eltit</string>
+  <string name="fetching_from_relay">Gnihctef semag morf yaler</string>
+  <string name="processing_games">Gnissecorp semag</string>
+  <string name="list_item_select">Tceles</string>
+  <string name="list_item_deselect">Tceles-ed</string>
+  <string name="not_again_dfltname_fmt">Uoy era gnisu eht tluafed
+  reyalp eman \"%1$s\". Dluow uoy ekil ot ezilanosrep htiw ruoy nwo
+  eman erofeb uoy etaerc siht ?emag</string>
 </resources>

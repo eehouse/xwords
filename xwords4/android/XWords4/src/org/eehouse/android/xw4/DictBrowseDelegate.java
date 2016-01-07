@@ -21,7 +21,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.DataSetObserver;
@@ -156,7 +155,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         }
     }
 
-    protected DictBrowseDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected DictBrowseDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.dict_browser );
         m_activity = delegator.getActivity();

@@ -1,4 +1,4 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
  * Copyright 2001 - 2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
@@ -112,6 +112,7 @@ typedef struct _CommsAddrRec {
 } CommsAddrRec;
 
 typedef XP_S16 (*TransportSend)( const XP_U8* buf, XP_U16 len, 
+                                 const XP_UCHAR* msgNo,
                                  const CommsAddrRec* addr,
                                  CommsConnType conType,
                                  XP_U32 gameID, void* closure );
@@ -126,7 +127,8 @@ typedef void (*RelayConndProc)( void* closure, XP_UCHAR* const room,
                                 XP_U16 devOrder, /* 1 means created room, etc. */
                                 XP_Bool allHere, XP_U16 nMissing );
 typedef void (*RelayErrorProc)( void* closure, XWREASON relayErr );
-typedef XP_Bool (*RelayNoConnProc)( const XP_U8* buf, XP_U16 len,
+typedef XP_Bool (*RelayNoConnProc)( const XP_U8* buf, XP_U16 len, 
+                                    const XP_UCHAR* msgNo,
                                     const XP_UCHAR* relayID, void* closure );
 #endif
 
@@ -190,6 +192,9 @@ void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
 void comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], 
                      XP_U16* nRecs );
+XP_Bool comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
+                             XP_UCHAR* buf, XP_U16* lenp );
+
 XP_U16 comms_countPendingPackets( const CommsCtxt* comms );
 
 
@@ -241,11 +246,13 @@ XP_Bool comms_isConnected( const CommsCtxt* const comms );
 CommsConnType addr_getType( const CommsAddrRec* addr );
 void addr_setType( CommsAddrRec* addr, CommsConnType type );
 void addr_addType( CommsAddrRec* addr, CommsConnType type );
+void types_addType( XP_U16* conTypes, CommsConnType type );
 void addr_rmType( CommsAddrRec* addr, CommsConnType type );
 XP_Bool addr_hasType( const CommsAddrRec* addr, CommsConnType type );
+XP_Bool types_hasType( XP_U16 conTypes, CommsConnType type );
 XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp, 
                    XP_U32* state );
-
+XP_Bool types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state );
 
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
