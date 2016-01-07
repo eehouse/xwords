@@ -2600,10 +2600,6 @@
     <item quantity="other">%1$s messages sent</item>
   </plurals>
 
-  <string name="confirm_clear_chat">Are you sure you want to delete
-  all chat history for this game?\n\n(This action cannot be
-  undone.)</string>
-
   <string name="invite_copied">Invitation ready to paste</string>
   <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
        it's by some Android utility -->
