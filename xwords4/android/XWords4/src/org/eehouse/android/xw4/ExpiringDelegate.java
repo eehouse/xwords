@@ -96,11 +96,6 @@ public class ExpiringDelegate {
         }
     }
 
-    public void clearPct()
-    {
-        m_handler.removeCallbacks( m_runnable );
-    }
-
     public void setSelected( boolean selected )
     {
         m_selected = selected;

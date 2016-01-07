@@ -158,13 +158,6 @@ public class GameListItem extends LinearLayout
         }
     }
 
-    @Override
-    protected void onDetachedFromWindow ()
-    {
-        m_name.clearPct();
-        super.onDetachedFromWindow();
-    }
-    
     private void update( boolean expanded, long lastMoveTime, boolean haveTurn,
                          boolean haveTurnLocal )
     {

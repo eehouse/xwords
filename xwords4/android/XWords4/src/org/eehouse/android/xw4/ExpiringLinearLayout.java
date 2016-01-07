@@ -56,13 +56,4 @@ public class ExpiringLinearLayout extends LinearLayout {
             m_delegate.onDraw( canvas );
         }
     }
-
-    @Override
-    protected void onDetachedFromWindow ()
-    {
-        if ( null != m_delegate ) {
-            m_delegate.clearPct();
-        }
-        super.onDetachedFromWindow();
-    }
 }
