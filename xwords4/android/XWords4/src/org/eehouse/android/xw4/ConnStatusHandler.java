@@ -190,8 +190,14 @@ public class ConnStatusHandler {
                                                R.string.connstat_net_fmt,
                                                connTypes.toString( context )));
                 for ( CommsConnType typ : connTypes.getTypes() ) {
-                    sb.append( String.format( "\n\n*** %s ***\n", 
-                                              typ.longName( context ) ) );
+                    String did = "";
+                    if ( BuildConfig.DEBUG
+                         && CommsConnType.COMMS_CONN_RELAY == typ ) {
+                        did = String.format( "(DevID: %d) ", 
+                                             DevID.getRelayDevIDInt(context) );
+                    }
+                    sb.append( String.format( "\n\n*** %s %s***\n", 
+                                              typ.longName( context ), did ) );
                     SuccessRecord record = recordFor( typ, false );
                     tmp = LocUtils.getString( context, record.successNewer? 
                                               R.string.connstat_succ :

@@ -70,4 +70,5 @@ public enum DlgID {
     , DLG_GETDICT
     , GAMES_LIST_NEWGAME
     , CHANGE_CONN
+    , GAMES_LIST_NAME_REMATCH
 }

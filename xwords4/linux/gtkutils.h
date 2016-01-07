@@ -26,7 +26,7 @@
 
 #include "gtkboard.h"
 
-GtkWidget* makeButton( char* text, GCallback func, gpointer data );
+GtkWidget* makeButton( const char* text, GCallback func, gpointer data );
 GtkWidget* makeLabeledField( const char* labelText, GtkWidget** field,
                              const gchar* initialVal );
 

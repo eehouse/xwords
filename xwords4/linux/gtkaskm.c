@@ -74,12 +74,13 @@ gtkaskm( const gchar* message, AskMInfo* infos, int nInfos )
 
     gtk_main();
 
-    if ( !state.cancelled ) {
-        for ( ii = 0; ii < nInfos; ++ii ) {
-            const gchar* txt = gtk_entry_get_text( GTK_ENTRY(fields[ii]) );
-            XP_LOGF( "%s: got text %s", __func__, txt );
-            AskMInfo* info = &infos[ii];
-            *info->result = g_strdup( txt );
+    for ( ii = 0; ii < nInfos; ++ii ) {
+        AskMInfo* info = &infos[ii];
+        if ( !state.cancelled ) {
+            XP_LOGF( "%s: got text %s", __func__, 
+                     gtk_entry_get_text( GTK_ENTRY(fields[ii]) ) );
+        } else {
+            *info->result = NULL;
         }
     }
 

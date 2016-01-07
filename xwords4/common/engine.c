@@ -1096,8 +1096,8 @@ static void
 countWords( const XP_UCHAR* XP_UNUSED(word), XP_Bool isLegal, 
             const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
-            const MoveInfo* movei, XP_U16 start, 
-            XP_U16 end,
+            const MoveInfo* XP_UNUSED(movei), XP_U16 XP_UNUSED(start), 
+            XP_U16 XP_UNUSED(end),
 #endif
             void* closure )
 {
@@ -1141,7 +1141,7 @@ considerScoreWordHasBlanks( EngineCtxt* engine, XP_U16 blanksLeft,
            it is, then go to the expense of filling in a PossibleMove to be
            compared in full */
         if ( 1 == nTiles && 1 < wordCount && !engine->searchHorizontal ) {
-            XP_LOGF( "%s(): dropping", __func__ );
+            // XP_LOGF( "%s(): dropping", __func__ );
         } else if ( scoreQualifies( engine, score ) ) {
             posmove->score = score;
             XP_MEMSET( &posmove->blankVals, 0, sizeof(posmove->blankVals) );

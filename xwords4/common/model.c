@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2015 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -312,34 +312,65 @@ model_destroy( ModelCtxt* model )
 } /* model_destroy */
 
 XP_U32
-model_getHash( const ModelCtxt* model, XP_U16 version )
+model_getHash( const ModelCtxt* model )
 {
 #ifndef STREAM_VERS_HASHSTREAM
     XP_USE(version);
 #endif
     StackCtxt* stack = model->vol.stack;
     XP_ASSERT( !!stack );
-    XP_U32 hash =
-#ifdef STREAM_VERS_HASHSTREAM
-    STREAM_VERS_HASHSTREAM <= version ?
-        stack_getHash( stack ) : 
-#endif
-        stack_getHashOld( stack );
-    /* XP_LOGF( "%s(version=%x)=>%.8X", __func__, version,  */
-    /*          (unsigned int)hash ); */
-    return hash;
+    return stack_getHash( stack, XP_TRUE );
 }
 
 XP_Bool
 model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 {
     StackCtxt* stack = model->vol.stack;
-    XP_Bool matches = 
-#ifdef STREAM_VERS_HASHSTREAM
-        (hash == stack_getHash( stack )) ||
-#endif
-        (hash == stack_getHashOld( stack ));
+    XP_Bool matches = hash == stack_getHash( stack, XP_TRUE )
+        || hash == stack_getHash( stack, XP_FALSE );
     return matches;
+}
+
+XP_Bool
+model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
+{
+    XP_U16 nPopped = 0;
+    StackCtxt* stack = model->vol.stack;
+    const XP_U16 nEntries = stack_getNEntries( stack );
+    StackEntry entries[nEntries];
+    XP_S16 foundAt = -1;
+
+    for ( XP_U16 ii = 0; ii < nEntries; ++ii ) {
+        if ( hash == stack_getHash( stack, XP_TRUE )
+             || hash == stack_getHash( stack, XP_FALSE ) ) {
+            foundAt = ii;
+            break;
+        }
+        if ( ! stack_popEntry( stack, &entries[ii] ) ) {
+            break;
+        }
+        ++nPopped;
+    }
+
+    for ( XP_S16 ii = nPopped - 1; ii >= 0; --ii ) {
+        stack_redo( stack, &entries[ii] );
+    }
+
+    XP_Bool found = -1 != foundAt;
+    if ( found ) {
+        XP_LOGF( "%s: undoing %d turns to match hash %X", __func__,
+                 foundAt, hash );
+#ifdef DEBUG
+        XP_Bool success =
+#endif
+            model_undoLatestMoves( model, pool, foundAt, NULL, NULL );
+        XP_ASSERT( success );
+        /* Assert not needed for long */
+        XP_ASSERT( hash == stack_getHash( model->vol.stack, XP_TRUE )
+                   || hash == stack_getHash( model->vol.stack, XP_FALSE ) );
+    }
+
+    return found;
 }
 
 #ifdef STREAM_VERS_BIGBOARD

@@ -23,7 +23,6 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -53,7 +52,6 @@ import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class SMSInviteDelegate extends InviteDelegate {
 
-    private static final int GET_CONTACT = 1;
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
@@ -66,14 +64,14 @@ public class SMSInviteDelegate extends InviteDelegate {
     private Activity m_activity;
 
     public static void launchForResult( Activity activity, int nMissing, 
-                                        int requestCode )
+                                        RequestCode requestCode )
     {
         Intent intent = new Intent( activity, SMSInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
+        activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
-    public SMSInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    public SMSInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.smsinviter );
         m_activity = delegator.getActivity();
@@ -115,7 +113,8 @@ public class SMSInviteDelegate extends InviteDelegate {
         }
     }
     
-    protected void onActivityResult( int requestCode, int resultCode, 
+    @Override
+    protected void onActivityResult( RequestCode requestCode, int resultCode, 
                                      Intent data )
     {
         // super.onActivityResult( requestCode, resultCode, data );
@@ -168,13 +167,13 @@ public class SMSInviteDelegate extends InviteDelegate {
         Intent intent = new Intent( Intent.ACTION_PICK, 
                                     ContactsContract.Contacts.CONTENT_URI );
         intent.setType( Phone.CONTENT_TYPE );
-        startActivityForResult( intent, GET_CONTACT );
+        startActivityForResult( intent, RequestCode.GET_CONTACT );
     }
 
     protected void clearSelected()
     {
         int count = countChecks();
-        String msg = getQuantityString( R.plurals.confirm_clear_fmt, 
+        String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt, 
                                         count, count );
         showConfirmThen( msg, Action.CLEAR_ACTION );
     }

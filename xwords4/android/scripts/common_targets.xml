@@ -59,17 +59,25 @@
         </exec>
 
         <exec dir="." executable="../scripts/gen_gcmid.sh"
-              output="src/org/eehouse/android/${VARIANT_NAME}/GCMConsts.java"
               logError="true" failonerror="true"
               >
+          <arg value="-v"/>
           <arg value="${VARIANT_NAME}"/>
-          </exec>
+          <arg value="-o"/>
+          <arg value="src/org/eehouse/android/${VARIANT_NAME}/GCMConsts.java"/>
+        </exec>
         <exec dir="." executable="../scripts/genvers.sh" output="/dev/null" 
               failonerror="true">
-          <arg value="${VARIANT_NAME}"/>
+          <arg value="--variant" />
+          <arg value="${VARIANT_NAME}" />
+          <arg value="--client-vers" />
           <arg value="${INITIAL_CLIENT_VERS}" />
+          <arg value="--chat-enabled"/>
           <arg value="${CHAT_ENABLED}" />
+          <arg value="--thumbnail-enabled"/>
           <arg value="${THUMBNAIL_ENABLED}" />
+          <arg value="--vers-outfile" />
+          <arg value="./assets/gitvers.txt" />
         </exec>
     </target>
 
@@ -92,6 +100,8 @@
             <arg value="./libs"/>
             <arg value="--dest-dir"/>
             <arg value="./img_src"/>
+            <arg value="--dest-dir"/>
+            <arg value="./res_src"/>
         </exec>
     </target>
 

@@ -44,7 +44,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     protected void onRegistered( Context context, String regId ) 
     {
         DbgUtils.logf( "GCMIntentService.onRegistered(%s)", regId );
-        XWPrefs.setGCMDevID( context, regId );
+        DevID.setGCMDevID( context, regId );
         notifyRelayService( context, true );
     }
 
@@ -52,7 +52,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     protected void onUnregistered( Context context, String regId ) 
     {
         DbgUtils.logf( "GCMIntentService.onUnregistered(%s)", regId );
-        XWPrefs.clearGCMDevID( context );
+        DevID.clearGCMDevID( context );
         RelayService.devIDChanged();
         notifyRelayService( context, false );
     }
@@ -122,7 +122,7 @@ public class GCMIntentService extends GCMBaseIntentService {
             try {
                 GCMRegistrar.checkDevice( app );
                 // GCMRegistrar.checkManifest( app );
-                String regId = XWPrefs.getGCMDevID( app );
+                String regId = DevID.getGCMDevID( app );
                 if (regId.equals("")) {
                     GCMRegistrar.register( app, GCMConsts.SENDER_ID );
                 }

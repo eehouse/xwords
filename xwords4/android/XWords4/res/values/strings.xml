@@ -163,7 +163,7 @@
 
     <plurals name="confirm_seldeletes_fmt">
       <item quantity="one">Are you sure you want to delete
-      the %1$d selected game? This action cannot be undone.</item>
+      the selected game? This action cannot be undone.</item>
       <item quantity="other">Are you sure you want to delete
       the %1$d selected games? This action cannot be undone.</item>
     </plurals>
@@ -171,7 +171,7 @@
     <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
     <plurals name="confirm_reset_fmt">
-      <item quantity="one">Are you sure you want to reset the %1$d
+      <item quantity="one">Are you sure you want to reset the
       selected game?\n\n(Resetting erases all moves and any connection
       information.)</item>
       <item quantity="other">Are you sure you want to reset the %1$d
@@ -696,7 +696,7 @@
          because users should not have to do do this EVER. -->
     <string name="board_menu_game_resend">Resend messages</string>
     <plurals name="resend_finished_fmt">
-      <item quantity="one">Resend finished; sent %1$d message.</item>
+      <item quantity="one">Resend finished; sent one message.</item>
       <item quantity="other">Resend finished; sent %1$d messages.</item>
     </plurals>
 
@@ -1191,6 +1191,7 @@
 	<string name="invite_choice_email">Email</string>
 	<string name="invite_choice_bt">Bluetooth</string>
 	<string name="invite_choice_nfc">NFC (\"Android beaming\")</string>
+	<string name="invite_choice_relay">Internet/Relay</string>
 	<string name="invite_choice_title">Inviting players: How?</string>
     <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
     <!--    via email?</string> -->
@@ -1719,12 +1720,11 @@
       -->
 
     <!-- Welcome dialog title -->
-    <string name="default_name_title">Welcome</string>
+    <string name="default_name_title">Default player name</string>
     <!-- Welcome dialog text -->
-    <string name="default_name_message">Thanks for installing
-      Crosswords!\n\nFeel free to enter your name here. It will be used
-      when creating new games.  (You can change it later in the \"New
-      game default\" section of Settings.)</string>
+    <string name="default_name_message">Please enter your name
+    here. It will be used when creating new games. (You can change it
+    later in the \"New game default\" section of Settings.)</string>
 
     <!-- 
        ###########################################################
@@ -1738,7 +1738,7 @@
     <string name="about_vers_fmt">Crosswords for Android, Version %1$s,
         rev %2$s, built on %3$s.</string>
     <!-- copyright info -->
-    <string name="about_copyright">Copyright (C) 1998-2015 by Eric
+    <string name="about_copyright">Copyright (C) 1998-2016 by Eric
         House. This free/open source software is released under the GNU Public
         License.</string>
 
@@ -1865,9 +1865,12 @@
       <!--  -->
     <string name="summary_conn">Game in play</string>
       <!--  -->
-    <string name="new_bt_title">New game via Bluetooth</string>
+    <string name="invite_notice_title">New game via Invitation</string>
       <!--  -->
     <string name="new_bt_body_fmt">A player on the device %1$s wants to start a game</string>
+    <string name="new_relay_body">Tap to open the new game</string>
+
+
       <!--  -->
     <string name="bt_bad_proto_fmt">The version of Crosswords on
     \"%1$s\" is incompatible with this one for play using
@@ -1905,6 +1908,7 @@
 	<string name="bt_invite_title">Bluetooth Invitation</string>
     <!-- Title of phone number picker during invitation to a game via SMS -->
 	<string name="sms_invite_title">SMS Invitation</string>
+	<string name="relay_invite_title">Relay Invitation</string>
 
     <!--  -->
     <string name="game_btname_title">Bluetooth game name</string>
@@ -1921,17 +1925,24 @@
     <!--  -->
     <string name="dft_sms_name_fmt">SMS Game %1$X</string>    
     <!--  -->
-    <string name="new_sms_title">New game via SMS</string>
-    <!--  -->
     <string name="new_name_body_fmt">%1$s has invited you to play</string>
     <!--  -->
     <string name="button_sms_add">Import contact</string>
+    <!--  -->
+    <string name="button_relay_add">Scan games</string>
     <!--  -->
     <plurals name="invite_sms_desc_fmt">
       <item quantity="one">Please check the phone number you want to
       invite to your new game, then tap \"%2$s\".</item>
       <item quantity="other">Please check the %1$d phone numbers you
       want to invite to your new game, then tap \"%2$s\".</item>
+    </plurals>
+    <!--  -->
+    <plurals name="invite_relay_desc_fmt">
+      <item quantity="one">Please check the device you want to invite
+      to your new game, then tap \"%2$s\".</item>
+      <item quantity="other">Please check the %1$d devices you want to invite
+      to your new game, then tap \"%2$s\".</item>
     </plurals>
     <!--  -->
     <string name="manual_owner_name">(Not in contacts)</string>
@@ -1943,14 +1954,21 @@
     \"Import contact\" button to add people you want to invite, the +
     button to enter numbers directly.</string>
     <!--  -->
-    <string name="get_sms_number">Enter phone number:</string>
+    <string name="empty_relay_inviter">This list of devies is
+    empty. Use the \"Scan games\" button to scan your old games
+    for opponents. Use the + button to enter device IDs directly.</string>
     <!--  -->
-    <plurals name="confirm_clear_fmt">
+    <string name="get_sms_number">Enter phone number:</string>
+    <string name="get_relay_number">Enter device ID:</string>
+    <!--  -->
+    <plurals name="confirm_clear_sms_fmt">
       <item quantity="one">Are you sure you want to delete the checked
       phone number?</item>
       <item quantity="other">Are you sure you want to delete the
        %1$d checked phone numbers?</item>
     </plurals>
+    <string name="confirm_clear_relay">Are you sure you want to delete the
+    checked device[s]?</string>
     <!--  -->
     <string name="connect_label_sms">Connection (via SMS/text)</string>
     <!--  -->
@@ -2379,6 +2397,7 @@
 
     <string name="new_game">New one-device game</string>
     <string name="new_game_networked">New networked game</string>
+    <string name="rematch_name_fmt">Rematch: %1$s</string>
 
     <string name="new_game_message">Would you like to create this game
     using default settings?\n\nOr would you like to configure it
@@ -2419,6 +2438,8 @@
     </string>
 
     <string name="waiting_title">Waiting for players</string>
+    <!-- Button for alert with title above -->
+    <string name="button_wait">Wait</string>
 
     <string name="invite_stays">(This dialog will stay up until all
     remote players have connected. You can close the game if you
@@ -2450,9 +2471,11 @@
     and want them back, enable them now. You can turn them off again
     in Settings.</string>
 
-    <string name="disable_nag_title">Disable turn reminders</string>
+    <string name="disable_nags_title">Turn reminders</string>
+    <string name="disable_nag_title">Disable network game reminders</string>
     <string name="disable_nag_summary">Do not notify me no matter
     how long it\'s been my turn</string>
+    <string name="disable_nag_solo_title">Disable solo game reminders</string>
 
   <string name="confirm_get_locdict_fmt">Your device is set up for
   %1$s. Would you like to download a wordlist so you can play
@@ -2476,6 +2499,7 @@
   <string name="netstats_title">Game network stats</string>
 
   <string name="git_rev_title">Source version id</string>
+  <string name="devid_title">Device ID (on relay)</string>
   <string name="relay_port">Relay game port</string>
   <string name="proxy_port">Relay device port</string>
   <string name="name_dict_fmt">%1$s/%2$s</string>
@@ -2562,6 +2586,14 @@
 
   <string name="str_no_hint_found">Cannot find any moves</string>
 
+  <string name="not_again_rematch_two_only">The Rematch button is
+  disabled because, for now anyway, rematch is limited to two-person
+  games. I think it\'s rare that people play with more than two. Let
+  me know if I\'m wrong and I\'ll try harder to make it work.</string>
+
+  <string name="enable_relay_toself_title">Enable relay invites to self</string>
+  <string name="enable_relay_toself_summary">(To aid testing and debugging)</string>
+
   <!-- Shown after "resend messages" menuitem chosen -->
   <plurals name="resent_msgs_fmt">
     <item quantity="one">One message sent</item>
@@ -2571,8 +2603,7 @@
   <string name="confirm_clear_chat">Are you sure you want to delete
   all chat history for this game?\n\n(This action cannot be
   undone.)</string>
-  <!-- EXPERIMENTAL: Shown as toast when user chooses "Copy to
-       clipboard" for invitation -->
+
   <string name="invite_copied">Invitation ready to paste</string>
   <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
        it's by some Android utility -->
@@ -2582,4 +2613,19 @@
   <string name="not_again_clip_expl_fmt">The \"%1$s\" option copies an
   invitation URL to the clipboard. Paste it into the app of your
   choice and send it to your friend.</string>
+
+  <string name="confirm_clear_chat">Are you sure you want to delete
+  all chat history for this game?\n\n(This action cannot be
+  undone.)</string>
+
+  <string name="rel_invite_title">Relay invite title</string>
+  <string name="fetching_from_relay">Fetching games from relay</string>
+  <string name="processing_games">Processing games</string>
+
+  <string name="list_item_select">Select</string>
+  <string name="list_item_deselect">De-select</string>
+
+  <string name="not_again_dfltname_fmt">You are using the default
+  player name \"%1$s\". Would you like to personalize with your own
+  name before you create this game?</string>
 </resources>

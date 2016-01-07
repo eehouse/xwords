@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -51,16 +52,21 @@ import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
 
 public class BTService extends XWService {
+    private static final String BOGUS_MARSHMALLOW_ADDR = "02:00:00:00:00:00";
 
     private static final long RESEND_TIMEOUT = 5; // seconds
     private static final int MAX_SEND_FAIL = 3;
 
-    private static final int BT_PROTO = 1; // using jsons instead of lots of fields
+    private static final int BT_PROTO_ORIG = 0;
+    private static final int BT_PROTO_JSONS = 1; // using jsons instead of lots of fields
+    private static final int BT_PROTO_NLI = 2; // using binary/common form of NLI
+    private static final int BT_PROTO = BT_PROTO_JSONS; // change in a release or two
 
     private enum BTAction { _NONE,
                             SCAN,
@@ -105,6 +111,7 @@ public class BTService extends XWService {
         MESG_DECL,
         MESG_GAMEGONE,
         REMOVE_FOR,
+        INVITE_DUP_INVITE,
     };
 
     private class BTQueueElem {
@@ -134,22 +141,30 @@ public class BTService extends XWService {
             Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
             m_msg = buf; m_btAddr = btAddr; 
             m_gameID = gameID;
+            checkAddr();
         }
         public BTQueueElem( BTCmd cmd, String btAddr, int gameID ) {
             this( cmd );
             Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
             m_btAddr = btAddr;
             m_gameID = gameID;
+            checkAddr();
         }
 
         public BTQueueElem( BTCmd cmd, NetLaunchInfo nli, String btAddr ) {
             this( cmd );
             m_nli = nli;
             m_btAddr = btAddr;
+            checkAddr();
         }
 
         public int incrFailCount() { return ++m_failCount; }
         public boolean failCountExceeded() { return m_failCount >= MAX_SEND_FAIL; }
+
+        private void checkAddr()
+        {
+            Assert.assertFalse( BOGUS_MARSHMALLOW_ADDR.equals( m_btAddr ) );
+        }
     }
 
     private BluetoothAdapter m_adapter;
@@ -276,6 +291,7 @@ public class BTService extends XWService {
     public static void inviteRemote( Context context, String btAddr, 
                                      NetLaunchInfo nli )
     {
+        Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
         Intent intent = getIntentTo( context, BTAction.INVITE );
         String nliData = nli.toString();
         intent.putExtra( GAMEDATA_KEY, nliData );
@@ -298,18 +314,23 @@ public class BTService extends XWService {
     }
 
     public static int enqueueFor( Context context, byte[] buf, 
-                                  String targetAddr, int gameID )
+                                  CommsAddrRec targetAddr, int gameID )
     {
         int nSent = -1;
-        if ( null != targetAddr && 0 < targetAddr.length() ) {
+        Assert.assertNotNull( targetAddr );
+        String btAddr = getSafeAddr( targetAddr );
+        if ( null != btAddr && 0 < btAddr.length() ) {
             Intent intent = getIntentTo( context, BTAction.SEND );
             intent.putExtra( MSG_KEY, buf );
-            intent.putExtra( ADDR_KEY, targetAddr );
+            intent.putExtra( ADDR_KEY, btAddr );
             intent.putExtra( GAMEID_KEY, gameID );
             context.startService( intent );
             nSent = buf.length;
-        } else {
-            DbgUtils.logf( "BTService.enqueueFor(): targetAddr is null" );
+        }
+
+        if ( -1 == nSent ) {
+            DbgUtils.logf( "BTService.enqueueFor(): can't send to %s",
+                           targetAddr.bt_hostName );
         }
         return nSent;
     }
@@ -373,12 +394,6 @@ public class BTService extends XWService {
                     String jsonData = intent.getStringExtra( GAMEDATA_KEY );
                     NetLaunchInfo nli = new NetLaunchInfo( this, jsonData );
                     DbgUtils.logf( "onStartCommand: nli: %s", nli.toString() );
-                    // int gameID = intent.getIntExtra( GAMEID_KEY, -1 );
-                    // String btAddr = intent.getStringExtra( ADDR_KEY );
-                    // String gameName = intent.getStringExtra( GAMENAME_KEY );
-                    // int lang = intent.getIntExtra( LANG_KEY, -1 );
-                    // String dict = intent.getStringExtra( DICT_KEY );
-                    // int nPlayersT = intent.getIntExtra( NTO_KEY, -1 );
                     String btAddr = intent.getStringExtra( ADDR_KEY );
                     m_sender.add( new BTQueueElem( BTCmd.INVITE, nli, btAddr ) );
                     break;
@@ -457,42 +472,39 @@ public class BTService extends XWService {
             }
 
             while ( null != m_serverSocket && m_adapter.isEnabled() ) {
-
-                BluetoothSocket socket = null;
-                DataInputStream inStream = null;
-                int nRead = 0;
                 try {
-                    socket = m_serverSocket.accept(); // blocks
+                    BluetoothSocket socket = m_serverSocket.accept(); // blocks
                     addAddr( socket );
-                    inStream = new DataInputStream( socket.getInputStream() );
+                    DataInputStream inStream = 
+                        new DataInputStream( socket.getInputStream() );
 
                     byte proto = inStream.readByte();
-                    if ( proto != BT_PROTO ) {
-                        DataOutputStream os = new DataOutputStream( socket.getOutputStream() );
-                        os.writeByte( BTCmd.BAD_PROTO.ordinal() );
-                        os.flush();
-                        socket.close();
-
-                        sendBadProto( socket );
-                    } else {
-                        byte msg = inStream.readByte();
-                        BTCmd cmd = BTCmd.values()[msg];
+                    BTCmd cmd = BTCmd.values()[inStream.readByte()];
+                    if ( protoOK( proto, cmd ) ) {
                         switch( cmd ) {
                         case PING:
                             receivePing( socket );
                             break;
                         case INVITE:
-                            receiveInvitation( inStream, socket );
+                            receiveInvitation( proto, inStream, socket );
                             break;
                         case MESG_SEND:
                             receiveMessage( inStream, socket );
                             break;
 
                         default:
-                            DbgUtils.logf( "unexpected msg %d", msg );
+                            DbgUtils.logf( "unexpected msg %s", cmd.toString());
                             break;
                         }
                         updateStatusIn( true );
+                    } else {
+                        DataOutputStream os = 
+                            new DataOutputStream( socket.getOutputStream() );
+                        os.writeByte( BTCmd.BAD_PROTO.ordinal() );
+                        os.flush();
+                        socket.close();
+
+                        sendBadProto( socket );
                     }
                 } catch ( IOException ioe ) {
                     DbgUtils.logf( "trying again..." );
@@ -524,6 +536,12 @@ public class BTService extends XWService {
             interrupt();
         }
 
+        private boolean protoOK( byte proto, BTCmd cmd )
+        {
+            boolean ok = proto == BT_PROTO_NLI || proto == BT_PROTO_JSONS;
+            return ok;
+        }
+
         private void receivePing( BluetoothSocket socket ) throws IOException
         {
             DataInputStream inStream = new DataInputStream( socket.getInputStream() );
@@ -539,13 +557,21 @@ public class BTService extends XWService {
             updateStatusOut( true );
         }
 
-        private void receiveInvitation( DataInputStream is,
+        private void receiveInvitation( byte proto, DataInputStream is,
                                         BluetoothSocket socket )
             throws IOException
         {
             BTCmd result;
-            String asJson = is.readUTF();
-            NetLaunchInfo nli = new NetLaunchInfo( BTService.this, asJson );
+            NetLaunchInfo nli;
+            if ( BT_PROTO_JSONS == proto ) {
+                String asJson = is.readUTF();
+                nli = new NetLaunchInfo( BTService.this, asJson );
+            } else {
+                short len = is.readShort();
+                byte[] nliData = new byte[len];
+                is.read( nliData );
+                nli = XwJNI.nliFromStream( nliData );
+            }
 
             BluetoothDevice host = socket.getRemoteDevice();
             addAddr( host );
@@ -642,6 +668,32 @@ public class BTService extends XWService {
     private boolean haveAddr( String btAddr )
     {
         return m_addrs.contains( btAddr );
+    }
+
+    private static Map<String, String> s_namesToAddrs;
+    private static String getSafeAddr( CommsAddrRec addr )
+    {
+        String btAddr = addr.bt_btAddr;
+        if ( BOGUS_MARSHMALLOW_ADDR.equals( btAddr ) ) {
+            String btName = addr.bt_hostName;
+            if ( null == s_namesToAddrs ) {
+                s_namesToAddrs = new HashMap<String, String>();
+            }
+            if ( ! s_namesToAddrs.containsKey( btName ) ) {
+                BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+                if ( null != adapter ) {
+                    Set<BluetoothDevice> devs = adapter.getBondedDevices();
+                    Iterator<BluetoothDevice> iter = devs.iterator();
+                    while ( iter.hasNext() ) {
+                        BluetoothDevice dev = iter.next();
+                        s_namesToAddrs.put( dev.getName(), dev.getAddress() );
+                    }
+                }
+            }
+
+            btAddr = s_namesToAddrs.get( btName );
+        }
+        return btAddr;
     }
 
     private void clearDevs( String[] btAddrs )
@@ -802,7 +854,13 @@ public class BTService extends XWService {
                     BTCmd reply = null;
                     DataOutputStream outStream = connect( socket, BTCmd.INVITE );
                     if ( null != outStream ) {
-                        outStream.writeUTF( elem.m_nli.toString() );
+                        if ( BT_PROTO == BT_PROTO_JSONS ) {
+                            outStream.writeUTF( elem.m_nli.toString() );
+                        } else {
+                            byte[] nliData = XwJNI.nliToStream( elem.m_nli );
+                            outStream.writeShort( nliData.length );
+                            outStream.write( nliData, 0, nliData.length );
+                        }
                         DbgUtils.logf( "<eeh>sending invite for %d players", elem.m_nPlayersH );
                         outStream.flush();
 
@@ -1060,16 +1118,20 @@ public class BTService extends XWService {
                                 String btAddr )
     {
         BTCmd result;
-        if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
-            result = makeGame( nli, btName, btAddr );
+        if ( checkNotDupe( nli ) ) {
+            if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
+                result = makeGame( nli, btName, btAddr );
+            } else {
+                Intent intent = MultiService
+                    .makeMissingDictIntent( this, nli, 
+                                            DictFetchOwner.OWNER_BT );
+                // NetLaunchInfo.putExtras( intent, gameID, btName, btAddr );
+                MultiService.postMissingDictNotification( this, intent, 
+                                                          nli.gameID() );
+                result = BTCmd.INVITE_ACCPT; // ???
+            }
         } else {
-            Intent intent = MultiService
-                .makeMissingDictIntent( this, nli, 
-                                        DictFetchOwner.OWNER_BT );
-            // NetLaunchInfo.putExtras( intent, gameID, btName, btAddr );
-            MultiService.postMissingDictNotification( this, intent, 
-                                                      nli.gameID() );
-            result = BTCmd.INVITE_ACCPT; // ???
+            result = BTCmd.INVITE_DUP_INVITE; // dupe of rematch 
         }
         return result;
     }
@@ -1081,7 +1143,8 @@ public class BTService extends XWService {
         long[] rowids = DBUtils.getRowIDsFor( BTService.this, nli.gameID() );
         if ( null == rowids || 0 == rowids.length ) {
             CommsAddrRec addr = nli.makeAddrRec( BTService.this );
-            long rowid = GameUtils.makeNewMultiGame( BTService.this, nli, m_btMsgSink );
+            long rowid = GameUtils.makeNewMultiGame( BTService.this, nli, 
+                                                     m_btMsgSink, null );
             if ( DBUtils.ROWID_NOTFOUND == rowid ) {
                 result = BTCmd.INVITE_FAILED;
             } else {
@@ -1092,7 +1155,10 @@ public class BTService extends XWService {
                 String body = LocUtils.getString( BTService.this, 
                                                   R.string.new_bt_body_fmt, 
                                                   sender );
-                postNotification( nli.gameID(), R.string.new_bt_title, body, rowid );
+
+                GameUtils.postInvitedNotification( this, nli.gameID(), body, 
+                                                   rowid );
+
                 sendResult( MultiEvent.BT_GAME_CREATED, rowid );
             }
         } else {
@@ -1135,14 +1201,6 @@ public class BTService extends XWService {
     private void sendBadProto( BluetoothSocket socket )
     {
         sendResult( MultiEvent.BAD_PROTO_BT, socket.getRemoteDevice().getName() );
-    }
-
-    private void postNotification( int gameID, int title, String body, 
-                                   long rowid )
-    {
-        Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
-        Utils.postNotification( this, intent, R.string.new_btmove_title, 
-                                body, (int)rowid );
     }
 
     private void updateStatusOut( boolean success )
@@ -1191,9 +1249,11 @@ public class BTService extends XWService {
         @Override
         public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
         {
+            String btAddr = getSafeAddr( addr );
+            
             Assert.assertTrue( addr.contains( CommsConnType.COMMS_CONN_BT ) );
-            m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, 
-                                           addr.bt_btAddr, gameID ) );
+            m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf,
+                                           btAddr, gameID ) );
             return buf.length;
         }
     }

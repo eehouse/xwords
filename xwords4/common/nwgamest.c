@@ -19,6 +19,7 @@
  */
 
 
+#include "comtypes.h"
 #include "nwgamest.h"
 #include "strutils.h"
 #include "LocalizedStrIncludes.h"

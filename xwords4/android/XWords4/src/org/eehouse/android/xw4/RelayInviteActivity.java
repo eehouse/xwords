@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2015 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,12 +20,17 @@
 
 package org.eehouse.android.xw4;
 
-import android.widget.ListAdapter;
-import android.widget.ListView;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
 
-public interface ListDelegator extends Delegator {
-    void setListAdapter( ListAdapter adapter );
-    ListAdapter getListAdapter();
-    ListView getListView();
+public class RelayInviteActivity extends InviteActivity {
+    private RelayInviteDelegate m_dlgt;
 
+    @Override
+    protected void onCreate( Bundle savedInstanceState )
+    {
+        m_dlgt = new RelayInviteDelegate( this, savedInstanceState );
+        super.onCreate( savedInstanceState, m_dlgt );
+    }
 }

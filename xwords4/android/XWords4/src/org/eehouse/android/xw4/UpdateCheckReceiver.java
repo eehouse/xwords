@@ -30,12 +30,12 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
+import java.net.HttpURLConnection;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.client.methods.HttpPost;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -179,7 +179,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_STRINGSHASH, BuildConstants.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
-                DbgUtils.logf( "current update: %s", params.toString() );
+                DbgUtils.logdf( "current update: %s", params.toString() );
                 new UpdateQueryTask( context, params, fromUI, pm, 
                                      packageName, dals ).execute();
             } catch ( org.json.JSONException jse ) {
@@ -260,10 +260,10 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
         @Override protected String doInBackground( Void... unused )
         {
-            HttpPost post = NetUtils.makePost( m_context, "getUpdates" );
+            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "getUpdates" );
             String json = null;
-            if ( null != post ) {
-                json = NetUtils.runPost( post, m_params );
+            if ( null != conn ) {
+                json = NetUtils.runConn( conn, m_params );
             }
             return json;
         }
@@ -271,12 +271,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         @Override protected void onPostExecute( String json )
         {
             if ( null != json ) {
-                makeNotificationsIf( json );
+                makeNotificationsIf( json, m_params );
                 XWPrefs.setHaveCheckedUpgrades( m_context, true );
             }
         }
 
-        private void makeNotificationsIf( String jstr )
+        private void makeNotificationsIf( String jstr, JSONObject params )
         {
             boolean gotOne = false;
             try {
@@ -368,6 +368,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 }
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
+                DbgUtils.logf( "sent: \"%s\"", params.toString() );
+                DbgUtils.logf( "received: \"%s\"", jstr );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.loge( nnfe );
             }

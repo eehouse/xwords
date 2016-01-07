@@ -35,8 +35,9 @@ public class XWApp extends Application {
     public static final boolean BTSUPPORTED = true;
     public static final boolean SMSSUPPORTED = true;
     public static final boolean GCMSUPPORTED = true;
+    public static final boolean REMATCH_SUPPORTED = true;
+    public static final boolean RELAYINVITE_SUPPORTED = false;
     public static final boolean ATTACH_SUPPORTED = false;
-    public static final boolean REMATCH_SUPPORTED = false;
     public static final boolean DEBUG_LOCKS = false;
     public static final boolean LOG_LIFECYLE = false;
     public static final boolean DEBUG_EXP_TIMERS = false;
@@ -44,6 +45,7 @@ public class XWApp extends Application {
     public static final boolean UDP_ENABLED = true;
     public static final boolean SMS_INVITE_ENABLED = true;
     public static final boolean LOCUTILS_ENABLED = false;
+    public static final boolean CONTEXT_MENUS_ENABLED = true;
     
     public static final String SMS_PUBLIC_HEADER = "-XW4";
     public static final int MAX_TRAY_TILES = 7; // comtypes.h
@@ -110,7 +112,8 @@ public class XWApp extends Application {
     public static boolean onEmulator()
     {
         if ( null == s_onEmulator ) {
-            s_onEmulator = new Boolean( "google_sdk".equals(Build.MODEL) );
+            s_onEmulator = new Boolean( "google_sdk".equals(Build.MODEL)
+                                        || Build.PRODUCT.startsWith("vbox") );
         }
         return s_onEmulator;
     }

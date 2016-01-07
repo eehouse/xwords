@@ -1025,10 +1025,18 @@ public class DBUtils {
         public long m_rowid;
         public long m_nextNag;
         public long m_lastMoveMillis;
-        public NeedsNagInfo( long rowid, long nextNag, long lastMove ) {
+        private boolean m_isSolo;
+
+        public NeedsNagInfo( long rowid, long nextNag, long lastMove, 
+                             CurGameInfo.DeviceRole role ) {
             m_rowid = rowid;
             m_nextNag = nextNag;
             m_lastMoveMillis = 1000 * lastMove;
+            m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == role;
+        }
+
+        public boolean isSolo() {
+            return m_isSolo;
         }
     }
 
@@ -1036,7 +1044,8 @@ public class DBUtils {
     {
         NeedsNagInfo[] result = null;
         long now = new Date().getTime(); // in milliseconds
-        String[] columns = { ROW_ID, DBHelper.NEXTNAG, DBHelper.LASTMOVE };
+        String[] columns = { ROW_ID, DBHelper.NEXTNAG, DBHelper.LASTMOVE, 
+                             DBHelper.SERVERROLE };
         // where nextnag > 0 AND nextnag < now
         String selection = 
             String.format( "%s > 0 AND %s < %s", DBHelper.NEXTNAG, 
@@ -1052,11 +1061,14 @@ public class DBUtils {
                 int rowIndex = cursor.getColumnIndex(ROW_ID);
                 int nagIndex = cursor.getColumnIndex( DBHelper.NEXTNAG );
                 int lastMoveIndex = cursor.getColumnIndex( DBHelper.LASTMOVE );
+                int roleIndex = cursor.getColumnIndex( DBHelper.SERVERROLE );
                 for ( int ii = 0; ii < result.length && cursor.moveToNext(); ++ii ) {
                     long rowid = cursor.getLong( rowIndex );
                     long nextNag = cursor.getLong( nagIndex );
                     long lastMove = cursor.getLong( lastMoveIndex );
-                    result[ii] = new NeedsNagInfo( rowid, nextNag, lastMove );
+                    CurGameInfo.DeviceRole role = 
+                        CurGameInfo.DeviceRole.values()[cursor.getInt( roleIndex )];
+                    result[ii] = new NeedsNagInfo( rowid, nextNag, lastMove, role );
                 }
             }
 
@@ -1762,10 +1774,15 @@ public class DBUtils {
 
     public static boolean gameDBExists( Context context )
     {
-        String name = DBHelper.getDBName();
-        File sdcardDB = new File( Environment.getExternalStorageDirectory(),
-                                  name );
-        return sdcardDB.exists();
+        String varName = getVariantDBName();
+        boolean exists = new File( Environment.getExternalStorageDirectory(),
+                                   varName ).exists();
+        if ( !exists ) {
+            // try the old one
+            exists = new File( Environment.getExternalStorageDirectory(),
+                               DBHelper.getDBName() ).exists();
+        }
+        return exists;
     }
 
     public static String[] getColumns( SQLiteDatabase db, String name )
@@ -2044,20 +2061,39 @@ public class DBUtils {
         return dflt;
     }
 
-    // public static void setIntFor( Context context, String key, int value )
-    // {
-    //     String asStr = String.format( "%d", value );
-    //     setStringFor( context, key, asStr );
-    // }
+    public static void setIntFor( Context context, String key, int value )
+    {
+        DbgUtils.logdf( "DBUtils.setIntFor(key=%s, val=%d)", key, value );
+        String asStr = String.format( "%d", value );
+        setStringFor( context, key, asStr );
+    }
 
-    // public static int getIntFor( Context context, String key, int dflt )
-    // {
-    //     String asStr = getStringFor( context, key, null );
-    //     if ( null != asStr ) {
-    //         dflt = Integer.parseInt( asStr );
-    //     }
-    //     return dflt;
-    // }
+    public static int getIntFor( Context context, String key, int dflt )
+    {
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            dflt = Integer.parseInt( asStr );
+        }
+        DbgUtils.logdf( "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
+        return dflt;
+    }
+
+    public static void setBoolFor( Context context, String key, boolean value )
+    {
+        // DbgUtils.logdf( "DBUtils.setBoolFor(key=%s, val=%b)", key, value );
+        String asStr = String.format( "%b", value );
+        setStringFor( context, key, asStr );
+    }
+
+    public static boolean getBoolFor( Context context, String key, boolean dflt )
+    {
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            dflt = Boolean.parseBoolean( asStr );
+        }
+        DbgUtils.logdf( "DBUtils.getBoolFor(key=%s)=>%b", key, dflt );
+        return dflt;
+    }
 
     public static int getIncrementIntFor( Context context, String key, int dflt,
                                           final int incr )
@@ -2097,8 +2133,16 @@ public class DBUtils {
     {
         String name = DBHelper.getDBName();
         File gamesDB = context.getDatabasePath( name );
+
+        // Use the variant name EXCEPT where we're copying from sdCard and
+        // only the older name exists.
         File sdcardDB = new File( Environment.getExternalStorageDirectory(),
-                                  name );
+                                  getVariantDBName() );
+        if ( !toSDCard && !sdcardDB.exists() ) {
+            sdcardDB = new File( Environment.getExternalStorageDirectory(),
+                                 name );
+        }
+        
         try {
             File srcDB = toSDCard? gamesDB : sdcardDB;
             if ( srcDB.exists() ) {
@@ -2113,6 +2157,12 @@ public class DBUtils {
         }
     }
 
+    private static String getVariantDBName()
+    {
+        return String.format( "%s_%s", DBHelper.getDBName(),
+                              BuildConstants.VARIANT );
+    }
+    
     // Chat is independent of the GameLock mechanism because it's not
     // touching the SNAPSHOT column.
     private static void saveChatHistory( Context context, long rowid,

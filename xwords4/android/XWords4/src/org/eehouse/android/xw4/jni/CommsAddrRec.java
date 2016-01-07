@@ -69,6 +69,12 @@ public class CommsAddrRec {
 
         public CommsConnTypeSet() { this(BIT_VECTOR_MASK); }
 
+        public CommsConnTypeSet( int bits, boolean isVector ) 
+        {
+            this( bits | BIT_VECTOR_MASK );
+            Assert.assertTrue( isVector );
+        }
+
         public CommsConnTypeSet( int bits ) 
         {
             boolean isVector = 0 != (BIT_VECTOR_MASK & bits);

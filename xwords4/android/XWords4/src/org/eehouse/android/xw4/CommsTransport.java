@@ -46,6 +46,7 @@ public class CommsTransport implements TransportProcs,
     private SocketChannel m_socketChannel;
     private int m_jniGamePtr;
     private CommsAddrRec m_relayAddr;
+    private String m_useHost;
     private JNIThread m_jniThread;
     private CommsThread m_thread;
     private TransportProcs.TPMsgHandler m_tpHandler;
@@ -86,7 +87,7 @@ public class CommsTransport implements TransportProcs,
                 m_done = false;
                 boolean failed = true;
                 try {   
-                    if ( Build.PRODUCT.contains("sdk") ) {
+                    if ( XWApp.onEmulator() ) {
                         System.setProperty("java.net.preferIPv6Addresses", "false");
                     }
 
@@ -99,8 +100,7 @@ public class CommsTransport implements TransportProcs,
                     DbgUtils.loge( ioe );
                 } catch ( UnresolvedAddressException uae ) {
                     DbgUtils.logf( "bad address: name: %s; port: %s; exception: %s",
-                                   m_relayAddr.ip_relay_hostName, 
-                                   m_relayAddr.ip_relay_port, 
+                                   m_useHost, m_relayAddr.ip_relay_port, 
                                    uae.toString() );
                 }
 
@@ -127,11 +127,11 @@ public class CommsTransport implements TransportProcs,
                                 try {
                                     m_socketChannel = SocketChannel.open();
                                     m_socketChannel.configureBlocking( false );
-                                    DbgUtils.logf( "connecting to %s:%d",
-                                                   m_relayAddr.ip_relay_hostName, 
+                                    DbgUtils.logf( "connecting to %s:%d", 
+                                                   m_useHost, 
                                                    m_relayAddr.ip_relay_port );
                                     InetSocketAddress isa = new 
-                                        InetSocketAddress(m_relayAddr.ip_relay_hostName,
+                                        InetSocketAddress(m_useHost,
                                                           m_relayAddr.ip_relay_port );
                                     m_socketChannel.connect( isa );
                                 } catch ( java.io.IOException ioe ) {
@@ -356,9 +356,11 @@ public class CommsTransport implements TransportProcs,
 
     public int getFlags() { return COMMS_XPORT_FLAGS_NONE; }
 
-    public int transportSend( byte[] buf, CommsAddrRec addr, 
+    public int transportSend( byte[] buf, String msgNo, CommsAddrRec addr, 
                               CommsConnType conType, int gameID )
     {
+        DbgUtils.logdf( "CommsTransport.transportSend(len=%d, typ=%s)", 
+                        buf.length, conType.toString() );
         int nSent = -1;
         Assert.assertNotNull( addr );
         Assert.assertTrue( addr.contains( conType ) );
@@ -366,6 +368,7 @@ public class CommsTransport implements TransportProcs,
         if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY 
              && null == m_relayAddr ) {
             m_relayAddr = new CommsAddrRec( addr );
+            m_useHost = NetUtils.forceHost( m_relayAddr.ip_relay_hostName );
         }
 
         if ( !XWApp.UDP_ENABLED && conType == CommsConnType.COMMS_CONN_RELAY ) {
@@ -385,7 +388,7 @@ public class CommsTransport implements TransportProcs,
         // Keep this while debugging why the resend_all that gets
         // fired on reconnect doesn't unstall a game but a manual
         // resend does.
-        DbgUtils.logf( "transportSend(%d)=>%d", buf.length, nSent );
+        DbgUtils.logdf( "transportSend(%d)=>%d", buf.length, nSent );
         return nSent;
     }
 
@@ -426,7 +429,7 @@ public class CommsTransport implements TransportProcs,
         m_tpHandler.tpmRelayErrorProc( relayErr );
     }
 
-    public boolean relayNoConnProc( byte[] buf, String relayID )
+    public boolean relayNoConnProc( byte[] buf, String msgNo, String relayID )
     {
         Assert.fail();
         return false;
@@ -447,7 +450,7 @@ public class CommsTransport implements TransportProcs,
                                            gameID, buf );
             break;
         case COMMS_CONN_BT:
-            nSent = BTService.enqueueFor( context, buf, addr.bt_btAddr, gameID );
+            nSent = BTService.enqueueFor( context, buf, addr, gameID );
             break;
         default:
             Assert.fail();

@@ -1,9 +1,12 @@
 #!/usr/bin/python
 # Script meant to be installed on eehouse.org.
 
-import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct, random, string
+import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct, random, string, psycopg2
 import mk_for_download, mygit
 import xwconfig
+
+# I'm not checking my key in...
+import mykey
 
 from stat import ST_CTIME
 try:
@@ -49,18 +52,18 @@ k_LANGS = 'langs'
 k_LANGSVERS = 'lvers'
 
 # Version for those sticking with RELEASES
-k_REL_REV = 'android_beta_88'
+k_REL_REV = 'android_beta_98'
 
 # Version for those getting intermediate builds
 
 k_suffix = '.xwd'
-k_filebase = "/var/www/"
+k_filebase = "/var/www/html/"
 k_apkDir = "xw4/android/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
 k_urlbase = "http://eehouse.org"
 k_versions = { 'org.eehouse.android.xw4': {
-        'version' : 76,
-        k_AVERS : 76,
+        'version' : 91,
+        k_AVERS : 91,
         k_URL : k_apkDir + 'XWords4-release_' + k_REL_REV + '.apk',
         },
                }
@@ -107,7 +110,7 @@ def getInternalSum( filePath ):
     filePath = k_filebase + "and_wordlists/" + filePath
     proc = subprocess.Popen(['/usr/bin/perl', 
                              '--',
-                             '/var/www/xw4/dawg2dict.pl', 
+                             k_filebase + 'xw4/dawg2dict.pl', 
                              '-get-sum',
                              '-dict', filePath ],
                             stdout = subprocess.PIPE,
@@ -432,7 +435,56 @@ def getXlate( params, name, stringsHash ):
     logging.debug( "getXlate=>%s" % (json.dumps(result)) )
     return result
 
+def init():
+    try:
+        con = psycopg2.connect(port=mykey.psqlPort, database='xwgames', user='relay',
+                               password=mykey.relayPwd, host='localhost')
+    except psycopg2.DatabaseError, e:
+        print 'Error %s' % e 
+        sys.exit(1)
+    return con
+
 # public
+
+# Give a list of relayIDs, e.g. eehouse.org:56022505:64/2, assumed to
+# represent the caller's position in games, return for each a list of
+# relayIDs representing the other devices in the game.
+def opponentIDsFor( req, params ):
+    # build array of connnames by taking the part before the slash
+    params = json.loads( params )
+    relayIDs = params['relayIDs']
+    me = int(params['me'])
+    connnames = {}
+    for relayID in relayIDs:
+        (connname, index) = string.split(relayID, '/')
+        if connname in connnames:
+            connnames[connname].append(int(index))
+        else:
+            connnames[connname] = [int(index)]
+
+    query = "SELECT connname, devids FROM games WHERE connname in ('%s')" % \
+            string.join(connnames.keys(), '\',\'')
+    con = init()
+    cur = con.cursor()
+    cur.execute(query)
+    results = []
+    for row in cur:
+        connname = row[0]
+        indices = connnames[connname]
+        for index in indices:
+            devids = []
+            for devid in row[1]:
+                if not devid == me:
+                    devids.append(str(devid))
+            if 0 < len(devids):
+                results.append({"%s/%d" % (connname, index) : devids})
+        
+    result = { k_SUCCESS : True,
+               'devIDs' : results,
+               'me' : me,
+    }
+    return result
+
 def getUpdates( req, params ):
     result = { k_SUCCESS : True }
     appResult = None
@@ -475,6 +527,7 @@ def usage():
     print '                    | --test-get-dicts name lang curSum'
     print '                    | --list-apks [path/to/apks]'
     print '                    | --list-dicts'
+    print '                    | --opponent-ids-for'
     print '                    | --clear-shelf'
     sys.exit(-1)
 
@@ -518,6 +571,18 @@ def main():
         if 0 == len(apks): print "No apks in", path
         for apk in apks:
             print apk
+    elif arg == '--opponent-ids-for':
+        ids = ['eehouse.org:55f90207:7/1',
+               'eehouse.org:55f90207:7/2',
+               'eehouse.org:56022505:5/2',
+               'eehouse.org:56022505:6/1',
+               'eehouse.org:56022505:10/1',
+               'eehouse.org:56022505:64/2',
+               'eehouse.org:56022505:64/1',
+        ]
+        params = {'relayIDs' : ids, 'me' : '80713149'}
+        result = opponentIDsFor(None, json.dumps(params))
+        print json.dumps(result)
     else:
         usage()
 

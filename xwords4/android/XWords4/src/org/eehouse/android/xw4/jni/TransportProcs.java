@@ -28,7 +28,7 @@ public interface TransportProcs {
     public static final int COMMS_XPORT_FLAGS_HASNOCONN = 1;
     int getFlags();
 
-    int transportSend( byte[] buf, CommsAddrRec addr, 
+    int transportSend( byte[] buf, String msgNo, CommsAddrRec addr, 
                        CommsConnType conType, int gameID );
 
     enum CommsRelayState { COMMS_RELAYSTATE_UNCONNECTED
@@ -61,7 +61,7 @@ public interface TransportProcs {
     };
     void relayErrorProc( XWRELAY_ERROR relayErr );
 
-    boolean relayNoConnProc( byte[] buf, String relayID );
+    boolean relayNoConnProc( byte[] buf, String msgNo, String relayID );
 
     public interface TPMsgHandler {
         public void tpmRelayConnd( String room, int devOrder, boolean allHere, 

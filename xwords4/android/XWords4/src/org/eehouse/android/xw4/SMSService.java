@@ -74,7 +74,7 @@ public class SMSService extends XWService {
 
     private static final int SMS_PROTO_VERSION_ORIG = 0;
     private static final int SMS_PROTO_VERSION_WITHPORT = 1;
-    private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_ORIG;
+    private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_WITHPORT;
     private static final int MAX_LEN_TEXT = 100;
     private static final int MAX_LEN_BINARY = 100;
     private static final int MAX_MSG_COUNT = 16; // 1.6K enough? Should be....
@@ -508,7 +508,7 @@ public class SMSService extends XWService {
             case INVITE:
                 String nliData = dis.readUTF();
                 NetLaunchInfo nli = new NetLaunchInfo( this, nliData );
-                if ( nli.isValid() ) {
+                if ( nli.isValid() && checkNotDupe( nli ) ) {
                     if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
                         makeForInvite( phone, nli );
                     } else {
@@ -643,16 +643,13 @@ public class SMSService extends XWService {
         String owner = Utils.phoneToContact( this, phone, true );
         String body = LocUtils.getString( this, R.string.new_name_body_fmt, 
                                           owner );
-
-        Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
-        Utils.postNotification( this, intent, R.string.new_sms_title, body, 
-                                (int)rowid );
+        GameUtils.postInvitedNotification( this, gameID, body, rowid );
     }
 
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
         SMSMsgSink sink = new SMSMsgSink( this );
-        long rowid = GameUtils.makeNewMultiGame( this, nli, sink );
+        long rowid = GameUtils.makeNewMultiGame( this, nli, sink, null );
         postNotification( phone, nli.gameID(), rowid );
         ackInvite( phone, nli.gameID() );
     }

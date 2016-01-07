@@ -482,10 +482,16 @@ gtk_newgame_col_set( void* closure, XP_U16 player, NewGameColumn col,
 
     switch ( col ) {
     case NG_COL_NAME:
-    case NG_COL_PASSWD:
-        cp = value.ng_cp? value.ng_cp : "";
+    case NG_COL_PASSWD: {
+        gchar buf[32];
+        cp = !!value.ng_cp ? value.ng_cp : "";
+        if ( NG_COL_NAME == col && '\0' == cp[0] ) {
+            sprintf( buf, "Linuser %d", 1 + player );
+            cp = buf;
+        }
         gtk_entry_set_text( GTK_ENTRY(widget), cp );
         break;
+    }
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
 #endif

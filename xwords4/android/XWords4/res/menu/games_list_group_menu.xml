@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/games_game_select"
+          android:title="@string/list_item_select"
+          />
+    <item android:id="@+id/games_game_deselect"
+          android:title="@string/list_item_deselect"
+          />
+    <item android:id="@+id/games_group_moveup"
+          android:title="@string/list_group_moveup"
+          />
+    <item android:id="@+id/games_group_movedown"
+          android:title="@string/list_group_movedown"
+          />
+    <item android:id="@+id/games_group_delete"
+          android:title="@string/list_group_delete"
+          />
+    <item android:id="@+id/games_group_default"
+          android:title="@string/list_group_default"
+          />
+    <item android:id="@+id/games_group_rename"
+          android:title="@string/list_group_rename"
+          />
+</menu>

@@ -260,7 +260,7 @@ public class GameUtils {
         return result;
     }
 
-    public static String makeDefaultName( Context context, boolean isSolo )
+    public static String makeDefaultName( Context context )
     {
         int count = DBUtils.getIncrementIntFor( context, DBUtils.KEY_NEWGAMECOUNT, 0, 1 );
         return LocUtils.getString( context, R.string.game_fmt, count );
@@ -455,18 +455,20 @@ public class GameUtils {
 
     public static long makeNewMultiGame( Context context, NetLaunchInfo nli )
     {
-        return makeNewMultiGame( context, nli, null );
+        return makeNewMultiGame( context, nli, (MultiMsgSink)null, 
+                                 (UtilCtxt)null );
     }
 
     public static long makeNewMultiGame( Context context, NetLaunchInfo nli,
-                                         MultiMsgSink sink )
+                                         MultiMsgSink sink, UtilCtxt util )
     {
         DbgUtils.logf( "makeNewMultiGame(nli=%s)", nli.toString() );
         CommsAddrRec addr = nli.makeAddrRec( context );
 
-        return makeNewMultiGame( context, sink, DBUtils.GROUPID_UNSPEC, addr, 
-                                 new int[] {nli.lang}, new String[] { nli.dict },
-                                 nli.nPlayersT, nli.nPlayersH, nli.forceChannel,
+        return makeNewMultiGame( context, sink, util, DBUtils.GROUPID_UNSPEC, 
+                                 addr, new int[] {nli.lang}, 
+                                 new String[] { nli.dict }, nli.nPlayersT, 
+                                 nli.nPlayersH, nli.forceChannel,
                                  nli.inviteID(), nli.gameID(), nli.gameName,
                                  false );
     }
@@ -474,35 +476,41 @@ public class GameUtils {
     public static long makeNewMultiGame( Context context, long groupID, 
                                          String gameName )
     {
-        return makeNewMultiGame( context, groupID, (CommsConnTypeSet)null, 
-                                 gameName );
+        return makeNewMultiGame( context, groupID, null, 0, 
+                                 (CommsConnTypeSet)null, gameName );
     }
 
     public static long makeNewMultiGame( Context context, long groupID, 
-                                         CommsConnTypeSet addrSet, String gameName )
+                                         String dict, int lang, 
+                                         CommsConnTypeSet addrSet, 
+                                         String gameName )
     {
         String inviteID = makeRandomID();
-        return makeNewMultiGame( context, groupID, inviteID, addrSet, gameName );
+        return makeNewMultiGame( context, groupID, inviteID, dict, lang, 
+                                 addrSet, gameName );
     }
 
     private static long makeNewMultiGame( Context context, long groupID, 
-                                          String inviteID, CommsConnTypeSet addrSet,
+                                          String inviteID, String dict, 
+                                          int lang, CommsConnTypeSet addrSet,
                                           String gameName )
     {
-        int[] lang = {0};
-        String[] dict = {null};
+        int[] langArray = {lang};
+        String[] dictArray = {dict};
         if ( null == addrSet ) {
             addrSet = XWPrefs.getAddrTypes( context );
         }
         CommsAddrRec addr = new CommsAddrRec( addrSet );
         addr.populate( context );
         int forceChannel = 0;
-        return makeNewMultiGame( context, null, groupID, addr, lang, dict, 2, 1,
+        return makeNewMultiGame( context, (MultiMsgSink)null, (UtilCtxt)null,
+                                 groupID, addr, langArray, dictArray, 2, 1,
                                  forceChannel, inviteID, 0, gameName, true );
     }
 
     private static long makeNewMultiGame( Context context, MultiMsgSink sink, 
-                                          long groupID, CommsAddrRec addr, 
+                                          UtilCtxt util, long groupID, 
+                                          CommsAddrRec addr,
                                           int[] lang, String[] dict, 
                                           int nPlayersT, int nPlayersH, 
                                           int forceChannel, String inviteID,
@@ -535,7 +543,7 @@ public class GameUtils {
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             GameLock lock = new GameLock( rowid, true ).lock();
-            applyChanges( context, sink, gi, addr, inviteID, lock, false );
+            applyChanges( context, sink, gi, util, addr, inviteID, lock, false );
             lock.unlock();
         }
 
@@ -587,9 +595,10 @@ public class GameUtils {
             addr = new CommsAddrRec( null, null );
         }
         String inviteID = GameUtils.formatGameID( gameID );
-        return makeNewMultiGame( context, sink, groupID, addr, langa, dicta, 
-                                 nPlayersT, nPlayersH, forceChannel, 
-                                 inviteID, gameID, gameName, isHost );
+        return makeNewMultiGame( context, sink, (UtilCtxt)null, groupID, addr, 
+                                 langa, dicta, nPlayersT, nPlayersH, 
+                                 forceChannel, inviteID, gameID, gameName,
+                                 isHost );
     }
 
     // @SuppressLint({ "NewApi", "NewApi", "NewApi", "NewApi" })
@@ -987,13 +996,14 @@ public class GameUtils {
                                      CommsAddrRec car, String inviteID, 
                                      GameLock lock, boolean forceNew )
     {
-        applyChanges( context, null, gi, car, inviteID, lock, forceNew );
+        applyChanges( context, (MultiMsgSink)null, gi, (UtilCtxt)null, car, 
+                      inviteID, lock, forceNew );
     }
 
     public static void applyChanges( Context context, MultiMsgSink sink,
-                                     CurGameInfo gi, CommsAddrRec car, 
-                                     String inviteID, GameLock lock, 
-                                     boolean forceNew )
+                                     CurGameInfo gi, UtilCtxt util, 
+                                     CommsAddrRec car, String inviteID, 
+                                     GameLock lock, boolean forceNew )
     {
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
@@ -1020,7 +1030,9 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
+            XwJNI.game_makeNewGame( gamePtr, gi, util, 
+                                    JNIUtilsImpl.get(context), 
+                                    (DrawCtx)null,
                                     cp, sink, dictNames, pairs.m_bytes, 
                                     pairs.m_paths, langName );
         }
@@ -1078,8 +1090,8 @@ public class GameUtils {
     {
         if ( null != bmr ) {
             Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
-            String msg;
-            int titleID;
+            String msg = null;
+            int titleID = 0;
             if ( null != bmr.m_chat ) {
                 titleID = R.string.notify_chat_title_fmt;
                 if ( null != bmr.m_chatFrom ) {
@@ -1089,17 +1101,28 @@ public class GameUtils {
                 } else {
                     msg = bmr.m_chat;
                 }
-            } else {
+            } else if ( null != bmr.m_lmi ) {
                 titleID = R.string.notify_title_fmt;
-                msg = bmr.m_lmi.format( context );
+                msg = bmr.m_lmi.format( context ); // NPE
             }
-            String title = LocUtils.getString( context, titleID,
-                                               getName( context, rowid ) );
-            Utils.postNotification( context, intent, title, msg, (int)rowid );
+
+            if ( 0 != titleID ) {
+                String title = LocUtils.getString( context, titleID,
+                                                   getName( context, rowid ) );
+                Utils.postNotification( context, intent, title, msg, (int)rowid );
+            }
         } else {
             DbgUtils.logdf( "postMoveNotification(): posting nothing for lack"
                             + " of brm" );
         }
+    }
+
+    public static void postInvitedNotification( Context context, int gameID,
+                                                String body, long rowid )
+    {
+        Intent intent = GamesListDelegate.makeGameIDIntent( context, gameID );
+        Utils.postNotification( context, intent, R.string.invite_notice_title,
+                                body, (int)rowid );
     }
     
     private static void tellDied( Context context, GameLock lock, 

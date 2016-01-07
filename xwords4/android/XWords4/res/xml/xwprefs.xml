@@ -231,11 +231,22 @@
                         android:summary="@string/skip_confirm_turn_summary"
                         android:defaultValue="false"
                         />
-    <CheckBoxPreference android:key="@string/key_disable_nag"
-                        android:title="@string/disable_nag_title"
-                        android:summary="@string/disable_nag_summary"
-                        android:defaultValue="false"
-                        />
+
+    <PreferenceScreen android:title="@string/disable_nags_title"
+                      >
+
+      <CheckBoxPreference android:key="@string/key_disable_nag"
+                          android:title="@string/disable_nag_title"
+                          android:summary="@string/disable_nag_summary"
+                          android:defaultValue="false"
+                          />
+      <CheckBoxPreference android:key="@string/key_disable_nag_solo"
+                          android:title="@string/disable_nag_solo_title"
+                          android:summary="@string/disable_nag_summary"
+                          android:defaultValue="true"
+                          />
+    </PreferenceScreen>
+
     <CheckBoxPreference android:key="@string/key_default_loc"
                         android:title="@string/default_loc"
                         android:summary="@string/default_loc_summary"
@@ -394,6 +405,11 @@
 	      android:defaultValue="10998"
 	      android:numeric="decimal"
 	      />
+      <CheckBoxPreference android:key="@string/key_enable_relay_toself"
+                          android:title="@string/enable_relay_toself_title"
+                          android:summary="@string/enable_relay_toself_summary"
+                          android:defaultValue="false"
+                          />
     </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/pref_group_l10n_title"
@@ -454,5 +470,9 @@
 			            android:summary="@string/git_rev"
 			            android:enabled="false"
 			            />
+    <org.eehouse.android.xw4.XWDevIDPreference 
+        android:title="@string/devid_title"
+		android:enabled="false"
+		/>
   </PreferenceScreen>
 </PreferenceScreen>

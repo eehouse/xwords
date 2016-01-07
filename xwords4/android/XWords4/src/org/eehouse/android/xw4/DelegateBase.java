@@ -19,6 +19,8 @@
 
 package org.eehouse.android.xw4;
 
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -76,12 +78,15 @@ public class DelegateBase implements DlgClickNotify,
     protected void onSaveInstanceState( Bundle outState ) {}
     public boolean onPrepareOptionsMenu( Menu menu ) { return false; }
     public boolean onOptionsItemSelected( MenuItem item ) { return false; }
+    public void onCreateContextMenu( ContextMenu menu, View view,
+                                     ContextMenuInfo menuInfo ) {}
+    public boolean onContextItemSelected( MenuItem item ) { return false; }
     protected void onStart() {}
     protected void onStop() {}
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean onBackPressed() { return false; }
-    protected void onActivityResult( int requestCode, int resultCode, 
+    protected void onActivityResult( RequestCode requestCode, int resultCode, 
                                      Intent data ) 
     {
         DbgUtils.logf( "DelegateBase.onActivityResult(): subclass responsibility!!!" );
@@ -174,9 +179,10 @@ public class DelegateBase implements DlgClickNotify,
         return m_activity.getTitle().toString();
     }
 
-    protected void startActivityForResult( Intent intent, int requestCode )
+    protected void startActivityForResult( Intent intent, 
+                                           RequestCode requestCode )
     {
-        m_activity.startActivityForResult( intent, requestCode );
+        m_activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
     protected void setResult( int result, Intent intent )
@@ -429,6 +435,13 @@ public class DelegateBase implements DlgClickNotify,
     protected void showConfirmThen( int msgID, Action action )
     {
         m_dlgDelegate.showConfirmThen( msgID, action );
+    }
+
+    public void showConfirmThen( Runnable onNA, String msg, int posButton, 
+                                 int negButton, Action action, Object... params )
+    {
+        m_dlgDelegate.showConfirmThen( onNA, msg, posButton, negButton, action, 
+                                       params );
     }
 
     protected boolean post( Runnable runnable )

@@ -31,7 +31,7 @@
 // static uint32_t s_prevCreated = 0L;
 
 void
-AddrInfo::construct( int socket, const AddrUnion* saddr, bool isTCP ) 
+AddrInfo::construct( int sock, const AddrUnion* saddr, bool isTCP ) 
 {
     memset( this, 0, sizeof(*this) ); 
         
@@ -42,7 +42,7 @@ AddrInfo::construct( int socket, const AddrUnion* saddr, bool isTCP )
     /* assert( m_created >= s_prevCreated ); */
     /* s_prevCreated = m_created; */
 
-    m_socket = socket;
+    m_socket = sock;
     m_isTCP = isTCP;
     memcpy( &m_saddr, saddr, sizeof(m_saddr) );
     m_isValid = true;

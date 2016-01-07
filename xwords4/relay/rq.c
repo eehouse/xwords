@@ -252,8 +252,8 @@ connect_socket( void )
 
     struct hostent* hostip;
     hostip = gethostbyname( g_host );
-    memcpy( &(to_sock.sin_addr.s_addr), hostip->h_addr_list[0],  
-            sizeof(hostip->h_addr_list[0] ) );
+    memcpy( &(to_sock.sin_addr.s_addr), &hostip->h_addr_list[0],  
+            sizeof(hostip->h_addr_list[0]) );
     
     if ( 0 != connect( sockfd, (const struct sockaddr*)&to_sock, 
                        sizeof(to_sock) ) ) {

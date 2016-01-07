@@ -1243,7 +1243,7 @@
   <!--  -->
   <string name="invite_success">XLATE ME: Invitation received.</string>
   <!--  -->
-  <string name="confirm_clear">XLATE ME: Are you sure you want to delete the
+  <string name="confirm_clear_sms">XLATE ME: Are you sure you want to delete the
     checked phone number[s]?</string>
   <!--  -->
   <string name="get_sms_number">XLATE ME: Enter phone number:</string>
@@ -1266,8 +1266,6 @@
   <string name="new_smsmove_title">XLATE ME: New move via SMS</string>
   <!--  -->
   <string name="new_name_body_fmt">XLATE ME: %1$s has invited you to play</string>
-  <!--  -->
-  <string name="new_sms_title">XLATE ME: New game via SMS</string>
   <!--  -->
   <string name="dft_sms_name_fmt">XLATE ME: SMS Game %1$X</string>
   <!--  -->

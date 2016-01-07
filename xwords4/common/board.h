@@ -157,7 +157,7 @@ XP_Bool board_requestHint( BoardCtxt* board,
 #endif
                            XP_Bool usePrev, XP_Bool* workRemainsP );
 
-XP_Bool board_prefsChanged( BoardCtxt* board, CommonPrefs* cp );
+XP_Bool board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp );
 
 BoardObjectType board_getFocusOwner( BoardCtxt* board );
 

@@ -381,7 +381,7 @@ CookieRef::AlreadyHere( HostID hid, unsigned short seed, const AddrInfo* addr,
                         bool* spotTaken )
 {
     logf( XW_LOGINFO, "%s(hid=%d,seed=%x(%d),socket=%d)", __func__, 
-          hid, seed, seed, addr->socket() );
+          hid, seed, seed, addr->getSocket() );
     bool here = false;
 
     if ( HOST_ID_NONE != hid ) {
@@ -419,7 +419,7 @@ CookieRef::notifyDisconn( const CRefEvent* evt )
 void
 CookieRef::removeSocket( const AddrInfo* addr )
 {
-    logf( XW_LOGINFO, "%s(socket=%d)", __func__, addr->socket() );
+    logf( XW_LOGINFO, "%s(socket=%d)", __func__, addr->getSocket() );
     bool found = false;
     ASSERT_LOCKED();
 
@@ -528,9 +528,9 @@ CookieRef::HasSocket_locked( const AddrInfo* addr )
 
 #ifdef RELAY_HEARTBEAT
 void
-CookieRef::_HandleHeartbeat( HostID id, int socket )
+CookieRef::_HandleHeartbeat( HostID id, int sock )
 {
-    pushHeartbeatEvent( id, socket );
+    pushHeartbeatEvent( id, sock );
     handleEvents();
 } /* HandleHeartbeat */
 
@@ -600,20 +600,20 @@ CookieRef::pushReconnectEvent( int clientVersion, DevID* devID,
 
 #ifdef RELAY_HEARTBEAT
 void
-CookieRef::pushHeartbeatEvent( HostID id, int socket )
+CookieRef::pushHeartbeatEvent( HostID id, int sock )
 {
     CRefEvent evt( XWE_HEARTRCVD );
     evt.u.heart.id = id;
-    evt.u.heart.socket = socket;
+    evt.u.heart.socket = sock;
     m_eventQueue.push_back( evt );
 }
 
 void
-CookieRef::pushHeartFailedEvent( int socket )
+CookieRef::pushHeartFailedEvent( int sock )
 {
     logf( XW_LOGINFO, "%s", __func__ );
     CRefEvent evt( XWE_HEARTFAILED );
-    evt.u.heart.socket = socket;
+    evt.u.heart.socket = sock;
     m_eventQueue.push_back( evt );
 }
 #endif
@@ -1308,7 +1308,7 @@ CookieRef::send_msg( const AddrInfo* addr, HostID hid,
 void
 CookieRef::notifyOthers( const AddrInfo* addr, XWRelayMsg msg, XWREASON why )
 {
-    assert( addr->socket() != 0 );
+    assert( addr->getSocket() != 0 );
 
     ASSERT_LOCKED();
     RWReadLock rrl( &m_socketsRWLock );
@@ -1416,7 +1416,7 @@ CookieRef::disconnectSockets( XWREASON why )
         HostRec* hr = m_sockets[ii];
         if ( !!hr ) {
             const AddrInfo* addr = &hr->m_addr;
-            if ( addr->socket() != 0 ) {
+            if ( addr->getSocket() != 0 ) {
                 disconnectSocket( addr, why );
             } else {
                 assert( 0 );
@@ -1470,8 +1470,8 @@ CookieRef::noteHeartbeat( const CRefEvent* evt )
                connection.  An attack is the most likely explanation.  But:
                now it's happening after a crash and clients reconnect. */
             logf( XW_LOGERROR, "wrong socket record for HostID %x; "
-                  "wanted %d, found %d", id, addr.socket(), 
-                  hr->m_addr.socket() );
+                  "wanted %d, found %d", id, addr.getSocket(), 
+                  hr->m_addr.getSocket() );
         }
     } else {
         logf( XW_LOGERROR, "no socket for HostID %x", id );
@@ -1532,7 +1532,7 @@ CookieRef::printSeeds( const char* caller )
         if ( !!hr ) {
             len += snprintf( &buf[len], sizeof(buf)-len, "[%d]%.4x(%d)/%d/%c ", 
                              ii + 1, hr->m_seed, 
-                             hr->m_seed, hr->m_addr.socket(), 
+                             hr->m_seed, hr->m_addr.getSocket(), 
                              hr->m_ackPending?'a':'A' );
         }
     }
@@ -1594,7 +1594,7 @@ CookieRef::_PrintCookieInfo( string& out )
         HostRec* hr = m_sockets[ii];
         if ( !!hr ) {
             snprintf( buf, sizeof(buf), "  HostID=%d; socket=%d;last hbeat=%ld\n", 
-                      ii + 1, hr->m_addr.socket(), 
+                      ii + 1, hr->m_addr.getSocket(), 
                       hr->m_lastHeartbeat );
             out += buf;
         }
@@ -1623,10 +1623,10 @@ CookieRef::_FormatHostInfo( string* hostIds, string* seeds, string* addrs )
             }
 
             if ( !!addrs ) {
-                int socket = hr->m_addr.socket();
+                int sock = hr->m_addr.getSocket();
                 sockaddr_in name;
                 socklen_t siz = sizeof(name);
-                if ( 0 == getpeername( socket, (struct sockaddr*)&name, &siz) ) {
+                if ( 0 == getpeername( sock, (struct sockaddr*)&name, &siz) ) {
                     char buf[32] = {0};
                     snprintf( buf, sizeof(buf), "%s ", inet_ntoa(name.sin_addr) );
                     *addrs += buf;

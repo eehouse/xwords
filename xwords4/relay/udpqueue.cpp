@@ -108,7 +108,7 @@ UdpQueue::handle( const AddrInfo* addr, QueueCallback cb )
     PartialPacket* packet;
     bool success = true;
 
-    int sock = addr->socket();
+    int sock = addr->getSocket();
 
     // Hang onto this mutex for as long as we may be writing to the packet
     // since having it deleted while in use would be bad.
@@ -157,7 +157,7 @@ UdpQueue::handle( const AddrInfo* addr, const uint8_t* buf, int len,
     int id = ++m_nextID;
     utc->setID( id );
     logf( XW_LOGINFO, "%s: enqueuing packet %d (socket %d, len %d)", 
-          __func__, id, addr->socket(), len );
+          __func__, id, addr->getSocket(), len );
     m_queue.push_back( utc );
 
     pthread_cond_signal( &m_queueCondVar );
@@ -183,7 +183,7 @@ void
 UdpQueue::newSocket( const AddrInfo* addr )
 {
     assert( addr->isTCP() );
-    newSocket( addr->socket() );
+    newSocket( addr->getSocket() );
 }
 
 void* 
@@ -205,7 +205,7 @@ UdpQueue::thread_main()
         if ( 30 > age ) {
             logf( XW_LOGINFO, "%s: dispatching packet %d (socket %d); "
                   "%d seconds old", __func__, utc->getID(), 
-                  utc->addr()->socket(), age );
+                  utc->addr()->getSocket(), age );
             (*utc->cb())( utc );
             utc->logStats();
         } else {

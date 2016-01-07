@@ -66,15 +66,16 @@ and_xport_getFlags( void* closure )
 }
 
 static XP_S16
-and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
-                CommsConnType conType, XP_U32 gameID, void* closure )
+and_xport_send( const XP_U8* buf, XP_U16 len, const XP_UCHAR* msgNo,
+                const CommsAddrRec* addr, CommsConnType conType, 
+                XP_U32 gameID, void* closure )
 {
     jint result = -1;
     LOG_FUNC();
     AndTransportProcs* aprocs = (AndTransportProcs*)closure;
     if ( NULL != aprocs->jxport ) {
         JNIEnv* env = ENVFORME( aprocs->ti );
-        const char* sig = "([BL" PKG_PATH("jni/CommsAddrRec")
+        const char* sig = "([BLjava/lang/String;L" PKG_PATH("jni/CommsAddrRec")
             ";L" PKG_PATH("jni/CommsAddrRec$CommsConnType") ";I)I";
 
         jmethodID mid = getMethodID( env, aprocs->jxport, "transportSend", sig );
@@ -83,14 +84,14 @@ and_xport_send( const XP_U8* buf, XP_U16 len, const CommsAddrRec* addr,
         jobject jaddr = makeJAddr( env, addr );
         jobject jConType = 
             intToJEnum(env, conType, PKG_PATH("jni/CommsAddrRec$CommsConnType"));
+        jstring jMsgNo = !!msgNo ? (*env)->NewStringUTF( env, msgNo ) : NULL;
         result = (*env)->CallIntMethod( env, aprocs->jxport, mid, 
-                                        jbytes, jaddr, jConType, gameID );
-        deleteLocalRefs( env, jaddr, jbytes, jConType, DELETE_NO_REF );
+                                        jbytes, jMsgNo, jaddr, jConType, gameID );
+        deleteLocalRefs( env, jaddr, jbytes, jMsgNo, jConType, DELETE_NO_REF );
     }
     LOG_RETURNF( "%d", result );
     return result;
 }
-
 
 static void
 and_xport_relayStatus( void* closure, CommsRelayState newState )
@@ -126,7 +127,7 @@ and_xport_relayConnd( void* closure, XP_UCHAR* const room, XP_Bool reconnect,
 }
 
 static XP_Bool 
-and_xport_sendNoConn( const XP_U8* buf, XP_U16 len,
+and_xport_sendNoConn( const XP_U8* buf, XP_U16 len, const XP_UCHAR* msgNo,
                       const XP_UCHAR* relayID, void* closure )
 {
     jboolean result = false;
@@ -134,14 +135,15 @@ and_xport_sendNoConn( const XP_U8* buf, XP_U16 len,
     if ( NULL != aprocs && NULL != aprocs->jxport ) {
         JNIEnv* env = ENVFORME( aprocs->ti );
 
-        const char* sig = "([BLjava/lang/String;)Z";
+        const char* sig = "([BLjava/lang/String;Ljava/lang/String;)Z";
         jmethodID mid = getMethodID( env, aprocs->jxport, 
                                      "relayNoConnProc", sig );
         jbyteArray jbytes = makeByteArray( env, len, (jbyte*)buf );
         jstring jRelayID = (*env)->NewStringUTF( env, relayID );
+        jstring jMsgNo = !!msgNo ? (*env)->NewStringUTF( env, msgNo ) : NULL;
         result = (*env)->CallBooleanMethod( env, aprocs->jxport, mid, 
-                                            jbytes, jRelayID );
-        deleteLocalRefs( env, jbytes, jRelayID, DELETE_NO_REF );
+                                            jbytes, jMsgNo, jRelayID );
+        deleteLocalRefs( env, jbytes, jRelayID, jMsgNo, DELETE_NO_REF );
     }
     LOG_RETURNF( "%d", result );
     return result;

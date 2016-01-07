@@ -22,9 +22,9 @@ package org.eehouse.android.xw4.loc;
 import android.os.Bundle;
 import android.view.Menu;
 
-import org.eehouse.android.xw4.XWListActivity;
+import org.eehouse.android.xw4.XWActivity;
 
-public class LocActivity extends XWListActivity {
+public class LocActivity extends XWActivity {
 
     private LocDelegate m_dlgt;
 

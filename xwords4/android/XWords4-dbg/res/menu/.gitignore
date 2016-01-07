@@ -1,10 +1,11 @@
 board_menu.xml
 chat_menu.xml
 dicts_item_menu.xml
-games_list_item_menu.xml
 games_list_menu.xml
 dicts_menu.xml
 studylist.xml
 loc_menu.xml
 empty.xml
 loc_item_menu.xml
+games_list_group_menu.xml
+games_list_game_menu.xml

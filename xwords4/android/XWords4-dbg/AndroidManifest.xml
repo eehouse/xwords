@@ -22,7 +22,7 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4dbg"
-          android:versionCode="91"
+          android:versionCode="95"
           android:versionName="@string/app_version"
           >
 
@@ -70,6 +70,7 @@
   <application android:icon="@drawable/icon48x48"
                android:label="@string/app_name"
                android:name=".XWApp"
+               android:debuggable="true"
                >
 
     <activity android:name="GamesListActivity" 
@@ -105,6 +106,11 @@
               android:theme="@android:style/Theme.Dialog"
               android:configChanges="keyboardHidden|orientation|screenSize"
               android:screenOrientation="sensor"
+              />
+    <activity android:name="RelayInviteActivity"
+			  android:label="@string/relay_invite_title"
+              android:theme="@android:style/Theme.Dialog"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
     <activity android:name="GameConfigActivity"

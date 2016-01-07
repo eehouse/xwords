@@ -21,7 +21,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -69,7 +68,7 @@ public class DwnldDelegate extends ListDelegateBase {
         void gotDictInfo( boolean success, String lc, String name );
     }
 
-    public DwnldDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    public DwnldDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.import_dict );
         m_activity = delegator.getActivity();

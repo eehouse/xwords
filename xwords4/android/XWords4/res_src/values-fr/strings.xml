@@ -2371,9 +2371,6 @@ fois. Ouvrez à nouveau la partie pour réessayer.</string>
     <!--<string name="dft_sms_name_fmt">SMS Game %1$X</string>    -->
     <string name="dft_sms_name_fmt">Partie %1$X par SMS</string>    
     <!--  -->
-    <!--<string name="new_sms_title">New game via SMS</string>-->
-    <string name="new_sms_title">Nouvelle partie par SMS</string>
-    <!--  -->
     <!--<string name="new_name_body_fmt">%1$s has invited you to play</string>-->
     <string name="new_name_body_fmt">%1$s vous a invité à jouer</string>
     <!--  -->
@@ -2411,7 +2408,7 @@ inviter, ou le bouton + pour saisir des numéros directement.</string>
     <!--  -->
     <!--<string name="confirm_clear">Are you sure you want to delete the
     checked phone number[s]?</string>-->
-    <string name="confirm_clear">Êtes-vous sûr de vouloir effacer les numéros
+    <string name="confirm_clear_sms">Êtes-vous sûr de vouloir effacer les numéros
 de téléphone cochés ?</string>
     <!--  -->
     <!--<string name="connect_label_sms">Connection (via SMS/text)</string>-->

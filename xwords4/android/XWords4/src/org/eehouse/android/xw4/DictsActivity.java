@@ -33,7 +33,7 @@ import java.util.HashMap;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class DictsActivity extends XWListActivity {
+public class DictsActivity extends XWActivity {
 
     private static interface SafePopup {
         public void doPopup( Context context, View button, 

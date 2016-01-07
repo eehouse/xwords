@@ -30,6 +30,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.view.View;
+import java.lang.ref.WeakReference;
 import junit.framework.Assert;
 
 public class ExpiringDelegate {
@@ -210,7 +211,7 @@ public class ExpiringDelegate {
                 long nextStartIn = lastStart + onePct - now;
                 // DbgUtils.logf( "pct change %d seconds from now", nextStartIn );
 
-                m_handler.postDelayed( mkRunnable(), 1000 * nextStartIn ); // NPE
+                m_handler.postDelayed( mkRunnable(), 1000 * nextStartIn );
             }
         }
     }
@@ -218,27 +219,39 @@ public class ExpiringDelegate {
     private Runnable mkRunnable()
     {
         if ( null == m_runnable ) {
-            m_runnable = new Runnable() {
-                    public void run() {
+            m_runnable = mkRunnable( this );
+        }
+        return m_runnable;
+    }
+
+    private static Runnable mkRunnable( ExpiringDelegate self )
+    {
+        final WeakReference<ExpiringDelegate> selfRef
+            = new WeakReference<ExpiringDelegate>( self );
+        return new Runnable() {
+                public void run() {
+                    ExpiringDelegate dlgt = selfRef.get();
+                    if ( null != dlgt ) {
                         if ( XWApp.DEBUG_EXP_TIMERS ) {
                             DbgUtils.logf( "ExpiringDelegate: timer fired"
                                            + " for %H", this );
                         }
-                        if ( m_active ) {
-                            figurePct();
-                            if ( m_haveTurnLocal ) {
-                                m_back = null;
-                                setBackground();
+                        if ( dlgt.m_active ) {
+                            dlgt.figurePct();
+                            if ( dlgt.m_haveTurnLocal ) {
+                                dlgt.m_back = null;
+                                dlgt.setBackground();
                             }
                             if ( XWApp.DEBUG_EXP_TIMERS ) {
                                 DbgUtils.logf( "ExpiringDelegate: invalidating"
-                                               + " view %H", m_view );
+                                               + " view %H", dlgt.m_view );
                             }
-                            m_view.invalidate();
+                            dlgt.m_view.invalidate();
                         }
+                    } else {
+                        DbgUtils.logf( "ExpiringDelegate.run(): reference gc'd" );
                     }
-                };
-        }
-        return m_runnable;
+                }
+            };
     }
 }

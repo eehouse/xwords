@@ -451,7 +451,7 @@ un2vli( int nn, uint8_t* buf )
 
 #ifdef RELAY_HEARTBEAT
 static bool
-processHeartbeat( uint8_t* buf, int bufLen, int socket )
+processHeartbeat( uint8_t* buf, int bufLen, int sock )
 {
     uint8_t* end = buf + bufLen;
     CookieID cookieID; 
@@ -464,8 +464,8 @@ processHeartbeat( uint8_t* buf, int bufLen, int socket )
               cookieID, hostID );
 
         {
-            SafeCref scr( socket );
-            success = scr.HandleHeartbeat( hostID, socket );
+            SafeCref scr( sock );
+            success = scr.HandleHeartbeat( hostID, sock );
         }
     }
     return success;
@@ -597,12 +597,12 @@ get_addr_info_if( const AddrInfo* addr, int* sockp,
 {
     bool current = addr->isCurrent();
     if ( current ) {
-        int socket = addr->socket();
-        assert( g_udpsock == socket || socket == -1 );
-        if ( -1 == socket ) {
-            socket = g_udpsock;
+        int sock = addr->getSocket();
+        assert( g_udpsock == sock || sock == -1 );
+        if ( -1 == sock ) {
+            sock = g_udpsock;
         }
-        *sockp = socket;
+        *sockp = sock;
         *dest_addr = addr->sockaddr();
     }
     return current;
@@ -610,9 +610,9 @@ get_addr_info_if( const AddrInfo* addr, int* sockp,
 
 static ssize_t
 send_packet_via_udp_impl( vector<uint8_t>& packet, 
-                          int socket, const struct sockaddr* dest_addr )
+                          int sock, const struct sockaddr* dest_addr )
 {
-    ssize_t nSent = sendto( socket, packet.data(), packet.size(), 0 /*flags*/,
+    ssize_t nSent = sendto( sock, packet.data(), packet.size(), 0 /*flags*/,
                             dest_addr, sizeof(*dest_addr) );
     if ( 0 > nSent ) {
         logf( XW_LOGERROR, "%s: sendmsg->errno %d (%s)", __func__, errno, 
@@ -630,13 +630,13 @@ send_packet_via_udp_impl( vector<uint8_t>& packet,
 }
 
 static ssize_t
-send_via_udp_impl( int socket, const struct sockaddr* dest_addr, 
+send_via_udp_impl( int sock, const struct sockaddr* dest_addr, 
                    uint32_t* packetIDP, XWRelayReg cmd, va_list& app )
 {
     vector<uint8_t> packet;
     assemble_packet( packet, packetIDP, cmd, app );
 
-    ssize_t nSent = send_packet_via_udp_impl( packet, socket, dest_addr );
+    ssize_t nSent = send_packet_via_udp_impl( packet, sock, dest_addr );
 #ifdef LOG_UDP_PACKETS
     gchar* b64 = g_base64_encode( (uint8_t*)dest_addr, 
                                   sizeof(*dest_addr) );
@@ -654,12 +654,12 @@ static ssize_t
 send_via_udp( const AddrInfo* addr, uint32_t* packetIDP, XWRelayReg cmd, ... )
 {
     ssize_t result = 0;
-    int socket;
+    int sock;
     const struct sockaddr* dest_addr;
-    if ( get_addr_info_if( addr, &socket, &dest_addr ) ) {
+    if ( get_addr_info_if( addr, &sock, &dest_addr ) ) {
         va_list ap;
         va_start( ap, cmd );
-        result = send_via_udp_impl( socket, dest_addr, packetIDP, cmd, ap );
+        result = send_via_udp_impl( sock, dest_addr, packetIDP, cmd, ap );
         va_end( ap );
     } else {
         logf( XW_LOGINFO, "%s: not sending to out-of-date address (token=%x)", __func__, 
@@ -669,12 +669,12 @@ send_via_udp( const AddrInfo* addr, uint32_t* packetIDP, XWRelayReg cmd, ... )
 }
 
 static ssize_t
-send_via_udp( int socket, const struct sockaddr* dest_addr, 
+send_via_udp( int sock, const struct sockaddr* dest_addr, 
               uint32_t* packetIDP, XWRelayReg cmd, ... )
 {
     va_list ap;
     va_start( ap, cmd );
-    ssize_t result = send_via_udp_impl( socket, dest_addr, packetIDP, 
+    ssize_t result = send_via_udp_impl( sock, dest_addr, packetIDP, 
                                         cmd, ap );
     va_end( ap );
     return result;
@@ -715,17 +715,18 @@ send_with_length_unsafe( const AddrInfo* addr, const uint8_t* buf,
 {
     assert( !!addr );
     bool ok = false;
+    int sock = -1;              // UDP case, if we wind up logging
 
     if ( addr->isTCP() ) {
-        int socket = addr->socket();
+        sock = addr->getSocket();
         if ( addr->isCurrent() ) {
             unsigned short len = htons( bufLen );
-            ssize_t nSent = send( socket, &len, sizeof(len), 0 );
+            ssize_t nSent = send( sock, &len, sizeof(len), 0 );
             if ( nSent == sizeof(len) ) {
-                nSent = send( socket, buf, bufLen, 0 );
+                nSent = send( sock, buf, bufLen, 0 );
                 if ( nSent == ssize_t(bufLen) ) {
                     logf( XW_LOGINFO, "%s: sent %d bytes on socket %d", __func__, 
-                          nSent, socket );
+                          nSent, sock );
                     ok = true;
                 } else {
                     logf( XW_LOGERROR, "%s: send failed: %s (errno=%d)", __func__, 
@@ -734,7 +735,7 @@ send_with_length_unsafe( const AddrInfo* addr, const uint8_t* buf,
             }
         } else {
             logf( XW_LOGINFO, "%s: dropping packet: socket %d reused", 
-                  __func__, socket );
+                  __func__, sock );
         }
         if ( NULL != packetIDP ) {
             *packetIDP = UDPAckTrack::PACKETID_NONE;
@@ -744,7 +745,7 @@ send_with_length_unsafe( const AddrInfo* addr, const uint8_t* buf,
     }
 
     if ( !ok ) {
-        logf( XW_LOGERROR, "%s(socket=%d) failed", __func__, socket );
+        logf( XW_LOGERROR, "%s(socket=%d) failed", __func__, sock ); // getting this
     }
 
     return ok;
@@ -798,10 +799,10 @@ post_or_store( DevIDRelay devid, vector<uint8_t>& packet, uint32_t packetID,
     bool sent = false;
     if ( canSendNow ) {
         AddrInfo addr( addru );
-        int socket;
+        int sock;
         const struct sockaddr* dest_addr;
-        if ( get_addr_info_if( &addr, &socket, &dest_addr ) ) {
-            sent = 0 < send_packet_via_udp_impl( packet, socket, dest_addr );
+        if ( get_addr_info_if( &addr, &sock, &dest_addr ) ) {
+            sent = 0 < send_packet_via_udp_impl( packet, sock, dest_addr );
 
             if ( sent ) {
                 MsgClosure* mc = new MsgClosure( devid, &packet,
@@ -1022,7 +1023,7 @@ processDisconnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
 static void
 killSocket( const AddrInfo* addr )
 {
-    logf( XW_LOGINFO, "%s(addr.socket=%d)", __func__, addr->socket() );
+    logf( XW_LOGINFO, "%s(addr.socket=%d)", __func__, addr->getSocket() );
     CRefMgr::Get()->RemoveSocketRefs( addr );
 }
 
@@ -1105,7 +1106,7 @@ processMessage( const uint8_t* buf, int bufLen, const AddrInfo* addr )
         break;
 #ifdef RELAY_HEARTBEAT
     case XWRELAY_HEARTBEAT:
-        success = processHeartbeat( buf + 1, bufLen - 1, socket );
+        success = processHeartbeat( buf + 1, bufLen - 1, sock );
         break;
 #endif
     case XWRELAY_MSG_TORELAY:
@@ -1329,7 +1330,7 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
         memcpy( &out[0], &tmp, sizeof(tmp) );
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
-        ssize_t nwritten = write( addr->socket(), &out[0], out.size() );
+        ssize_t nwritten = write( addr->getSocket(), &out[0], out.size() );
         logf( XW_LOGVERBOSE0, "%s: wrote %d bytes", __func__, nwritten );
         if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
@@ -1472,7 +1473,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
 
     if ( len > 0 ) {
         assert( addr->isTCP() );
-        int socket = addr->socket();
+        int sock = addr->getSocket();
         const uint8_t* bufp = utc->buf();
         const uint8_t* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
@@ -1492,10 +1493,10 @@ proxy_thread_proc( UdpThreadClosure* utc )
                     DBMgr::Get()->PublicRooms( lang, nPlayers, &nNames, names );
                     unsigned short netshort = htons( names.size()
                                                      + sizeof(unsigned short) );
-                    write( socket, &netshort, sizeof(netshort) );
+                    write( sock, &netshort, sizeof(netshort) );
                     netshort = htons( (unsigned short)nNames );
-                    write( socket, &netshort, sizeof(netshort) );
-                    write( socket, names.c_str(), names.size() );
+                    write( sock, &netshort, sizeof(netshort) );
+                    write( sock, names.c_str(), names.size() );
                 }
                 break;
             case PRX_HAS_MSGS:
@@ -1506,7 +1507,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
                 break;          /* PRX_HAS_MSGS */
 
             case PRX_PUT_MSGS:
-                handleProxyMsgs( socket, addr, bufp, end );
+                handleProxyMsgs( sock, addr, bufp, end );
                 break;
 
             case PRX_DEVICE_GONE: {
@@ -1533,11 +1534,11 @@ proxy_thread_proc( UdpThreadClosure* utc )
                     }
                 }
                 int olen = 0;        /* return a 0-length message */
-                write( socket, &olen, sizeof(olen) );
+                write( sock, &olen, sizeof(olen) );
                 break;          /* PRX_DEVICE_GONE */
             }
             default:
-                logf( XW_LOGERROR, "unexpected command %d", __func__, cmd );
+                logf( XW_LOGERROR, "%s: unexpected command %d", __func__, cmd );
                 break;
             }
         }
@@ -1645,12 +1646,12 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
             success = send_msg_via_udp( addr, msg.token(), msg.msg.data(), 
                                         msg.msg.size(), &packetID );
         } else {
-            int socket;
+            int sock;
             const struct sockaddr* dest_addr;
-            if ( get_addr_info_if( addr, &socket, &dest_addr ) ) {
+            if ( get_addr_info_if( addr, &sock, &dest_addr ) ) {
                 vector<uint8_t> newPacket;
                 assemble_packet( newPacket, &packetID, msg.msg );
-                success = 0 < send_packet_via_udp_impl( newPacket, socket, 
+                success = 0 < send_packet_via_udp_impl( newPacket, sock, 
                                                         dest_addr );
             }
         }
