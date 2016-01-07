@@ -94,18 +94,15 @@
     
     <activity android:name="BTInviteActivity"
 			  android:label="@string/bt_invite_title"
-              android:theme="@android:style/Theme.Dialog"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
     <activity android:name="SMSInviteActivity"
 			  android:label="@string/sms_invite_title"
-              android:theme="@android:style/Theme.Dialog"
               android:configChanges="keyboardHidden|orientation|screenSize"
               android:screenOrientation="sensor"
               />
     <activity android:name="RelayInviteActivity"
 			  android:label="@string/relay_invite_title"
-              android:theme="@android:style/Theme.Dialog"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
