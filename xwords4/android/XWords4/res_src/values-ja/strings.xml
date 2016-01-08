@@ -277,8 +277,7 @@
     <string name="strd_turn_score_fmt">順番のスコア: %1$d\n</string>
 
     <plurals name="strd_remains_header_fmt">
-	<item quantity="one">%1$d のタイルがプールに残っています。</item>
-	<item quantity="other"/>
+	<item quantity="other">%1$d のタイルがプールに残っています。</item>
 </plurals>
     <plurals name="strd_remains_expl_fmt">
 	<item quantity="one">%1$d のタイルがプールとすべてのトレイに残っています:\n</item>
@@ -840,7 +839,7 @@
 
     <string name="button_go_settings">起動設定</string>
 
-    <string name="pct_suffix">" pct."</string>
+    <string name="pct_suffix">" %."</string>
 
     <string name="menu_rateme">クロスワードを評価</string>
     <string name="no_market">Google Play アプリが見つかりません</string>
