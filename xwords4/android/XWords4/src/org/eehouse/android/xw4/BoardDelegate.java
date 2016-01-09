@@ -1103,7 +1103,7 @@ public class BoardDelegate extends DelegateBase
                 } else if ( InviteMeans.CLIPBOARD == means ) {
                     GameUtils.inviteURLToClip( m_activity, nli );
                 }
-                DBUtils.recordInviteSent( m_activity, m_rowid, means );
+                recordInviteSent( means, null );
 
                 break;
             default:
@@ -2445,8 +2445,7 @@ public class BoardDelegate extends DelegateBase
                     break;
                 }
 
-                DBUtils.recordInviteSent( m_activity, m_rowid,
-                                          m_missingMeans, dev );
+                recordInviteSent( m_missingMeans, dev );
             }
             m_missingDevs = null;
             m_missingCounts = null;
@@ -2692,16 +2691,24 @@ public class BoardDelegate extends DelegateBase
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
             if ( null != value ) {
                 SMSService.inviteRemote( m_activity, value, nli );
+                recordInviteSent( InviteMeans.SMS, value );
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
             if ( null != value ) {
                 BTService.inviteRemote( m_activity, value, nli );
+                recordInviteSent( InviteMeans.BLUETOOTH, value );
             }
             value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
             if ( null != value ) {
                 RelayService.inviteRemote( m_activity, 0, value, nli );
+                recordInviteSent( InviteMeans.RELAY, value );
             }
         }
+    }
+
+    private void recordInviteSent( InviteMeans means, String dev )
+    {
+        DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
     }
 
     private static void noteSkip()

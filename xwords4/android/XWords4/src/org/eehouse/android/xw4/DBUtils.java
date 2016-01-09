@@ -497,13 +497,6 @@ public class DBUtils {
         return result;
     }
 
-    // Only record the most recent for a given recipient! Or not. If I send to K via SMS
-    public static void recordInviteSent( Context context, long rowid,
-                                         InviteMeans means )
-    {
-        recordInviteSent( context, rowid, means, null );
-    }
-    
     public static void recordInviteSent( Context context, long rowid,
                                          InviteMeans means, String target )
     {
