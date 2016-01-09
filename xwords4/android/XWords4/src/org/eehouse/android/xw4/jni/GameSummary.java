@@ -27,6 +27,7 @@ import java.util.Iterator;
 import junit.framework.Assert;
 import org.json.JSONObject;
 
+import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
@@ -196,15 +197,26 @@ public class GameSummary {
 
     // FIXME: should report based on whatever conType is giving us a
     // successful connection.
-    public String summarizeRole()
+    public String summarizeRole( long rowid )
     {
         String result = null;
         if ( isMultiGame() ) {
             int fmtID = 0;
 
+            int missing = countMissing();
+            if ( 0 < missing ) {
+                DBUtils.SentInvitesInfo si = DBUtils.getInvitesFor( m_context,
+                                                                    rowid );
+                if ( si.getPlayerCount() >= missing ) {
+                    result = LocUtils.getString( m_context,
+                                                 R.string.summary_invites_out );
+                }
+            }
+            
             // If we're using relay to connect, get status from that
-            if ( conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
-                if ( anyMissing() ) {
+            if ( null == result
+                 && conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                if ( 0 < missing ) {
                     if ( null == relayID || 0 == relayID.length() ) {
                         fmtID = R.string.summary_relay_conf_fmt;
                     } else {
@@ -222,7 +234,7 @@ public class GameSummary {
             if ( null == result ) {
                 if ( conTypes.contains( CommsConnType.COMMS_CONN_BT )
                      || ( conTypes.contains( CommsConnType.COMMS_CONN_SMS))){
-                    if ( anyMissing() ) {
+                    if ( 0 < missing ) {
                         if ( DeviceRole.SERVER_ISSERVER == serverRole ) {
                             fmtID = R.string.summary_wait_host;
                         } else {
@@ -277,16 +289,20 @@ public class GameSummary {
         return result;
     }
 
-    public boolean anyMissing()
+    private int countMissing()
     {
-        boolean missing = false;
+        int result = 0;
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             if ( !isLocal(ii) && (0 != ((1 << ii) & missingPlayers) ) ) {
-                missing = true;
-                break;
+                ++result;
             }
         }
-        return missing;
+        return result;
+    }
+    
+    public boolean anyMissing()
+    {
+        return 0 < countMissing();
     }
 
     public int giflags() {

@@ -52,6 +52,7 @@
   <string name="summary_relay_conn_fmt">Emag ni yalp ni moor \"%1$s\"</string>
   <!-- Final state: game is over. -->
   <string name="summary_relay_gameover_fmt">Emag revo ni moor \"%1$s\"</string>
+  <string name="summary_invites_out">Sreyalp detivni</string>
   <!-- Games that have ended are listed with this string -->
   <string name="gameOver">Emag revo</string>
   <!-- Otherwise they're listed with this to give some indication of

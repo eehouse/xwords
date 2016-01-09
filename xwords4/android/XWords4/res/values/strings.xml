@@ -59,6 +59,8 @@
     <!-- Final state: game is over. -->
     <string name="summary_relay_gameover_fmt">Game over in room \"%1$s\"</string>
 
+    <string name="summary_invites_out">Players invited</string>
+
     <!-- Games that have ended are listed with this string -->
     <string name="gameOver">Game over</string>
     <!-- Otherwise they're listed with this to give some indication of

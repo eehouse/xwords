@@ -320,7 +320,7 @@ public class GameListItem extends LinearLayout
                     }
                 } );
 
-            String roleSummary = summary.summarizeRole();
+            String roleSummary = summary.summarizeRole( m_rowid );
             if ( null != roleSummary ) {
                 m_role.setText( roleSummary );
             } else {
