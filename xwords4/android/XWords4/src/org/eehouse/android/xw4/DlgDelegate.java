@@ -138,6 +138,8 @@ public class DlgDelegate {
     private static final String STATE_KEYF = "STATE_%d";
 
     public interface DlgClickNotify {
+        // These are stored in the INVITES table. Don't change order
+        // gratuitously
         public static enum InviteMeans {
             SMS, EMAIL, NFC, BLUETOOTH, CLIPBOARD, RELAY,
         };

@@ -464,6 +464,12 @@
       sreyalp. Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa
       uoy nevah\'t ?ydaerla</item>
   </plurals>
+  <plurals name="invite_sent_fmt">
+    <item quantity="one">Uoy evah ydaerla detivni a etomer reyalp ot
+      siht emag. Ew era gnitiaw rof reh/mih ot tcennoc kcab.</item>
+    <item quantity="other">Uoy evah ydaerla detivni %1$d sreyalp ot
+      siht emag. Ew era gnitiaw rof meht ot tcennoc kcab.</item>
+  </plurals>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">Ro tsuj Pat ot Etivni -- fi eht rehto
     ecived osla sah Diordna Gnimaeb dna si ybraen.</string>
@@ -1009,6 +1015,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">Etivni won</string>
+  <string name="newgame_invite_more">Erom ofni</string>
   <string name="newgame_drop_relay">Pord Yaler</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
@@ -2091,11 +2098,13 @@
     </string>
   <string name="waiting_title">Gnitiaw rof sreyalp</string>
   <!-- Button for alert with title above -->
+  <string name="waiting_invite_title">Gnitiaw rof esnopser</string>
+  <!-- Button for alert with title above -->
   <string name="button_wait">Tiaw</string>
   <string name="invite_stays">sIht( golaid lliw yats pu litnu lla
     etomer sreyalp evah detcennoc. Uoy nac esolc eht emag fi uoy
-    tcepxe ti ot ekat a elihw. Yeht lliw llits eb elba ot
-    tcennoc.)</string>
+    tcepxe ti ot ekat a elihw. Etomer sreyalp lliw llits eb elba ot
+    ,tcennoc dna uoy lliw eb deifiton nehw yeht od.)</string>
   <string name="nfc_just_tap">Ot etivni aiv CFN tsuj hcuot eht kcab
     fo siht ecived tsniaga eht eno uoy tnaw ot yna—etivni emit eht
     emag si nepo.</string>

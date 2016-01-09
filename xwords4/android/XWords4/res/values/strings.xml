@@ -545,6 +545,12 @@
       players. Would you like to invite someone to join -- assuming
       you haven\'t already?</item>
     </plurals>
+    <plurals name="invite_sent_fmt">
+      <item quantity="one">You have already invited a remote player to
+      this game. We are waiting for him/her to connect back.</item>
+      <item quantity="other">You have already invited %1$d players to
+      this game. We are waiting for them to connect back.</item>
+    </plurals>
 
     <!-- Appended to message above if local device has NFC available -->
     <string name="invite_if_nfc">Or just Tap to Invite -- if the other
@@ -1173,6 +1179,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
     <string name="newgame_invite">Invite now</string>
+    <string name="newgame_invite_more">More info</string>
     <string name="newgame_drop_relay">Drop Relay</string>
 
     <!-- section separator (white-on-gray bar) for third section:
@@ -2439,12 +2446,14 @@
 
     <string name="waiting_title">Waiting for players</string>
     <!-- Button for alert with title above -->
+    <string name="waiting_invite_title">Waiting for response</string>
+    <!-- Button for alert with title above -->
     <string name="button_wait">Wait</string>
 
     <string name="invite_stays">(This dialog will stay up until all
     remote players have connected. You can close the game if you
-    expect it to take a while. They will still be able to
-    connect.)</string>
+    expect it to take a while. Remote players will still be able to
+    connect, and you will be notified when they do.)</string>
 
     <string name="nfc_just_tap">To invite via NFC just touch the back
     of this device against the one you want to invite—any time the

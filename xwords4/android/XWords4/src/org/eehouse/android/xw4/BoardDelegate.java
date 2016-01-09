@@ -96,6 +96,7 @@ public class BoardDelegate extends DelegateBase
     private View m_tradeButtons;
     private Button m_exchCommmitButton;
     private Button m_exchCancelButton;
+    private DBUtils.SentInvitesInfo m_sentInfo;
 
     private ArrayList<String> m_pendingChats;
 
@@ -431,7 +432,15 @@ public class BoardDelegate extends DelegateBase
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
-                            if ( m_relayConnected ||
+                            if ( null != m_sentInfo
+                                 && m_sentInfo.getPlayerCount() >= m_nMissing ) {
+                                // PENDING: probably want a new dialog here
+                                // that includes "resend" and "new invitation"
+                                // buttons, the latter allowing to address it
+                                // differently. Might also want option to
+                                // delete game here too.
+                                showOKOnlyDialog( m_sentInfo.getAsText() );
+                            } else if ( m_relayConnected ||
                                  ! m_connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
                                 showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
                             } else {
@@ -504,21 +513,33 @@ public class BoardDelegate extends DelegateBase
                         buttonTxt = R.string.newgame_drop_relay;
                     }
                 } else {
-                    titleID = R.string.waiting_title;
-                    message = getQuantityString( R.plurals.invite_msg_fmt, 
-                                                 m_nMissing, m_nMissing );
-
-                    String ps = null;
-                    if ( m_nMissing > 1 ) {
-                        ps = getString( R.string.invite_multiple );
+                    m_sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
+                    int nSent = m_sentInfo.getPlayerCount();
+                    boolean haveSent = nSent >= m_nMissing;
+                    if ( haveSent ) {
+                        titleID = R.string.waiting_invite_title;
+                        message = getQuantityString( R.plurals.invite_sent_fmt, 
+                                                     nSent, nSent );
+                        buttonTxt = R.string.newgame_invite_more;
                     } else {
-                        boolean[] avail = NFCUtils.nfcAvail( m_activity );
-                        if ( avail[1] ) {
-                            ps = getString( R.string.invite_if_nfc );
-                        }
+                        titleID = R.string.waiting_title;
+                        message = getQuantityString( R.plurals.invite_msg_fmt, 
+                                                     m_nMissing, m_nMissing );
                     }
-                    if ( null != ps ) {
-                        message += "\n\n" + ps;
+
+                    if ( ! haveSent ) {
+                        String ps = null;
+                        if ( m_nMissing > 1 ) {
+                            ps = getString( R.string.invite_multiple );
+                        } else {
+                            boolean[] avail = NFCUtils.nfcAvail( m_activity );
+                            if ( avail[1] ) {
+                                ps = getString( R.string.invite_if_nfc );
+                            }
+                        }
+                        if ( null != ps ) {
+                            message += "\n\n" + ps;
+                        }
                     }
 
                     message += "\n\n" + getString( R.string.invite_stays );
@@ -2416,6 +2437,9 @@ public class BoardDelegate extends DelegateBase
                     }
                     break;
                 }
+
+                DBUtils.recordInviteSent( m_activity, m_rowid,
+                                          m_missingMeans, dev );
             }
             m_missingDevs = null;
             m_missingCounts = null;

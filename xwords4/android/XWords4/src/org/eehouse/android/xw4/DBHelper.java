@@ -41,8 +41,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_STUDYLIST = "study";
     public static final String TABLE_NAME_LOC = "loc";
     public static final String TABLE_NAME_PAIRS = "pairs";
+    public static final String TABLE_NAME_INVITES = "invites";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 24;
+    private static final int DB_VERSION = 25;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -104,6 +105,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String BLESSED = "BLESSED";
     public static final String XLATION = "XLATION";
 
+    public static final String ROW = "ROW";
+    public static final String MEANS = "MEANS";
+    public static final String TARGET = "TARGET";
+    public static final String TIMESTAMP = "TIMESTAMP";
 
     private Context m_context;
 
@@ -194,6 +199,13 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ "UNIQUE", "(" + KEY + ")" }
     };
 
+    private static final String[][] s_invitesSchema = {
+        { ROW, "INTEGER" }
+        ,{ TARGET, "TEXT" }
+        ,{ MEANS, "INTEGER" }
+        ,{ TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" }
+    };
+
     public DBHelper( Context context )
     {
         super( context, DB_NAME, null, DB_VERSION );
@@ -217,6 +229,7 @@ public class DBHelper extends SQLiteOpenHelper {
         createStudyTable( db );
         createLocTable( db );
         createPairsTable( db );
+        createInvitesTable( db );
     }
 
     @Override
@@ -283,6 +296,9 @@ public class DBHelper extends SQLiteOpenHelper {
             if ( !madeSumTable ) {
                 addSumColumn( db, EXTRAS );
             }
+        case 24:
+            createInvitesTable( db );
+            
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
@@ -379,6 +395,11 @@ public class DBHelper extends SQLiteOpenHelper {
     private void createPairsTable( SQLiteDatabase db )
     {
         createTable( db, TABLE_NAME_PAIRS, s_pairsSchema );
+    }
+
+    private void createInvitesTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_INVITES, s_invitesSchema );
     }
 
     // Move all existing games to the row previously named "cur games'

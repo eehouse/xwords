@@ -34,6 +34,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
 
+import java.sql.Timestamp;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,10 +54,11 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
-import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DBUtils {
@@ -424,6 +427,84 @@ public class DBUtils {
             db.close();
         }
         return result;
+    }
+
+    public static class SentInvitesInfo {
+        public long m_rowid;
+        private int m_count = 0;
+        private InviteMeans m_means;
+        private String m_target;
+        private Timestamp m_timestamp;
+
+        private SentInvitesInfo( long rowID ) {
+            m_rowid = rowID;
+        }
+
+        private void addEntry( InviteMeans means, String target, Timestamp ts )
+        {
+            Assert.assertTrue( 0 == m_count );
+            ++m_count;
+            m_means = means;
+            m_target = target;
+            m_timestamp = ts;
+        }
+        
+        public int getPlayerCount() {
+            return m_count;
+        }
+
+        public String getAsText() {
+            return String.format( "Invite sent to dev %s via %s on %s", m_target,
+                                  m_means.toString(), m_timestamp.toString() );
+        }
+    }
+
+    public static SentInvitesInfo getInvitesFor( Context context, long rowid )
+    {
+        SentInvitesInfo result = new SentInvitesInfo( rowid );
+
+        String[] columns = { DBHelper.MEANS, DBHelper.TIMESTAMP, DBHelper.TARGET }; 
+        String selection = String.format( "%s = %d", DBHelper.ROW, rowid );
+        
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_INVITES, columns, 
+                                      selection, null, null, null, null );
+            if ( 0 < cursor.getCount() ) {
+                int indxMns = cursor.getColumnIndex( DBHelper.MEANS );
+                int indxTS = cursor.getColumnIndex( DBHelper.TIMESTAMP );
+                int indxTrgt = cursor.getColumnIndex( DBHelper.TARGET );
+                
+                while ( cursor.moveToNext() ) {
+                    InviteMeans means = InviteMeans.values()[cursor.getInt( indxMns )];
+                    Timestamp ts = Timestamp.valueOf(cursor.getString(indxTS));
+                    String target = cursor.getString( indxTrgt );
+                    result.addEntry( means, target, ts );
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+        
+        return result;
+    }
+
+    // Only record the most recent for a given recipient! Or not. If I send to K via SMS
+    public static void recordInviteSent( Context context, long rowid,
+                                         InviteMeans means, String target )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.ROW, rowid );
+        values.put( DBHelper.MEANS, means.ordinal() );
+        values.put( DBHelper.TARGET, target );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.insert( DBHelper.TABLE_NAME_INVITES, null, values );
+            db.close();
+        }
+
     }
 
     private static void setInt( long rowid, String column, int value )
@@ -938,11 +1019,17 @@ public class DBUtils {
     public static void deleteGame( Context context, GameLock lock )
     {
         Assert.assertTrue( lock.canWrite() );
-        String selection = String.format( ROW_ID_FMT, lock.getRowid() );
+        String selSummaries = String.format( ROW_ID_FMT, lock.getRowid() );
+        String selInvites = String.format( "%s=%d", DBHelper.ROW, lock.getRowid() );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
+            db.delete( DBHelper.TABLE_NAME_SUM, selSummaries, null );
+
+            // Delete invitations too
+            db.delete( DBHelper.TABLE_NAME_INVITES, selInvites, null );
+            
             db.close();
         }
         notifyListeners( lock.getRowid(), GameChangeType.GAME_DELETED );

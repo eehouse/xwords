@@ -464,6 +464,12 @@
       PLAYERS. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
       YOU HAVEN\'T ALREADY?</item>
   </plurals>
+  <plurals name="invite_sent_fmt">
+    <item quantity="one">YOU HAVE ALREADY INVITED A REMOTE PLAYER TO
+      THIS GAME. WE ARE WAITING FOR HIM/HER TO CONNECT BACK.</item>
+    <item quantity="other">YOU HAVE ALREADY INVITED %1$d PLAYERS TO
+      THIS GAME. WE ARE WAITING FOR THEM TO CONNECT BACK.</item>
+  </plurals>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">OR JUST TAP TO INVITE -- IF THE OTHER
     DEVICE ALSO HAS ANDROID BEAMING AND IS NEARBY.</string>
@@ -1009,6 +1015,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">INVITE NOW</string>
+  <string name="newgame_invite_more">MORE INFO</string>
   <string name="newgame_drop_relay">DROP RELAY</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
@@ -2091,11 +2098,13 @@
     </string>
   <string name="waiting_title">WAITING FOR PLAYERS</string>
   <!-- Button for alert with title above -->
+  <string name="waiting_invite_title">WAITING FOR RESPONSE</string>
+  <!-- Button for alert with title above -->
   <string name="button_wait">WAIT</string>
   <string name="invite_stays">(THIS DIALOG WILL STAY UP UNTIL ALL
     REMOTE PLAYERS HAVE CONNECTED. YOU CAN CLOSE THE GAME IF YOU
-    EXPECT IT TO TAKE A WHILE. THEY WILL STILL BE ABLE TO
-    CONNECT.)</string>
+    EXPECT IT TO TAKE A WHILE. REMOTE PLAYERS WILL STILL BE ABLE TO
+    CONNECT, AND YOU WILL BE NOTIFIED WHEN THEY DO.)</string>
   <string name="nfc_just_tap">TO INVITE VIA NFC JUST TOUCH THE BACK
     OF THIS DEVICE AGAINST THE ONE YOU WANT TO INVITE—ANY TIME THE
     GAME IS OPEN.</string>
