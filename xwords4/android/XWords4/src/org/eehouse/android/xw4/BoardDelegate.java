@@ -432,15 +432,7 @@ public class BoardDelegate extends DelegateBase
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
-                            if ( null != m_sentInfo
-                                 && m_sentInfo.getPlayerCount() >= m_nMissing ) {
-                                // PENDING: probably want a new dialog here
-                                // that includes "resend" and "new invitation"
-                                // buttons, the latter allowing to address it
-                                // differently. Might also want option to
-                                // delete game here too.
-                                showOKOnlyDialog( m_sentInfo.getAsText() );
-                            } else if ( m_relayConnected ||
+                            if ( m_relayConnected ||
                                  ! m_connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
                                 showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
                             } else {
@@ -448,16 +440,24 @@ public class BoardDelegate extends DelegateBase
                             }
                         }
                     };
-                OnClickListener lstnr2 = new OnClickListener() {
+                OnClickListener lstnrWait = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
                             finish();
                         }
                     };
+                OnClickListener lstnrMore = new OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            showOKOnlyDialog( m_sentInfo.getAsText() );
+                        }
+                    };
+                
                 dialog = ab.setTitle( "foo" )
                     .setMessage( "" )
                     .setPositiveButton( "", lstnr )
-                    .setNegativeButton( R.string.button_wait, lstnr2 )
+                    .setNegativeButton( R.string.button_wait, lstnrWait )
+                    .setNeutralButton( R.string.newgame_invite_more, lstnrMore )
                     .setOnCancelListener( new OnCancelListener() {
                             public void onCancel( DialogInterface dialog ) {
                                 finish();
@@ -486,18 +486,19 @@ public class BoardDelegate extends DelegateBase
             AlertDialog ad = (AlertDialog)dialog;
             String message;
             int titleID;
-            boolean nukeButton = false;
+            boolean nukePosButton = false;
+            boolean nukeNeutButton = true;
             int buttonTxt = R.string.newgame_invite;
             if ( m_summary.hasRematchInfo() ) {
                 titleID = R.string.info_title;;
                 message = getString( R.string.rematch_msg );
-                nukeButton = true;
+                nukePosButton = true;
             } else { 
                 if ( !m_relayConnected ) {
                     titleID = R.string.seeking_relay;
                     // If relay is only means, don't allow at all
                     boolean relayOnly = 1 >= m_connTypes.size();
-                    nukeButton = relayOnly;
+                    nukePosButton = relayOnly;
                     message = getString( R.string.no_relay_conn );
                     if ( NetStateCache.netAvail( m_activity )
                          && NetStateCache.onWifi() ) {
@@ -520,7 +521,8 @@ public class BoardDelegate extends DelegateBase
                         titleID = R.string.waiting_invite_title;
                         message = getQuantityString( R.plurals.invite_sent_fmt, 
                                                      nSent, nSent );
-                        buttonTxt = R.string.newgame_invite_more;
+                        buttonTxt = R.string.button_reinvite;
+                        nukeNeutButton = false;
                     } else {
                         titleID = R.string.waiting_title;
                         message = getQuantityString( R.plurals.invite_msg_fmt, 
@@ -549,11 +551,14 @@ public class BoardDelegate extends DelegateBase
             ad.setMessage( message );
             ad.setTitle( titleID );
 
-            Button posButton = ad.getButton( AlertDialog.BUTTON_POSITIVE );
-            posButton.setVisibility( nukeButton ? View.GONE : View.VISIBLE );
-            if ( !nukeButton ) {
-                posButton.setText( buttonTxt );
+            Button button = ad.getButton( AlertDialog.BUTTON_POSITIVE );
+            button.setVisibility( nukePosButton ? View.GONE : View.VISIBLE );
+            if ( !nukePosButton ) {
+                button.setText( buttonTxt );
             }
+            button = ad.getButton( AlertDialog.BUTTON_NEUTRAL );
+            button.setVisibility( nukeNeutButton ? View.GONE : View.VISIBLE );
+            
             break;
         default:
             super.prepareDialog( dlgID, dialog );
@@ -1098,6 +1103,8 @@ public class BoardDelegate extends DelegateBase
                 } else if ( InviteMeans.CLIPBOARD == means ) {
                     GameUtils.inviteURLToClip( m_activity, nli );
                 }
+                DBUtils.recordInviteSent( m_activity, m_rowid, means );
+
                 break;
             default:
                 Assert.fail();

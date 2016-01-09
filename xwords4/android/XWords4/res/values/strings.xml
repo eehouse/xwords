@@ -2451,6 +2451,7 @@
     <string name="waiting_invite_title">Waiting for response</string>
     <!-- Button for alert with title above -->
     <string name="button_wait">Wait</string>
+    <string name="button_reinvite">Re-invite</string>
 
     <string name="invite_stays">(This dialog will stay up until all
     remote players have connected. You can close the game if you

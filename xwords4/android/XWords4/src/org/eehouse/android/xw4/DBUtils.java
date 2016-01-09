@@ -432,21 +432,23 @@ public class DBUtils {
     public static class SentInvitesInfo {
         public long m_rowid;
         private int m_count = 0;
-        private InviteMeans m_means;
-        private String m_target;
-        private Timestamp m_timestamp;
+        private ArrayList<InviteMeans> m_means;
+        private ArrayList<String> m_target;
+        private ArrayList<Timestamp> m_timestamp;
 
         private SentInvitesInfo( long rowID ) {
             m_rowid = rowID;
+            m_means = new ArrayList<InviteMeans>();
+            m_target = new ArrayList<String>();
+            m_timestamp = new ArrayList<Timestamp>();
         }
 
         private void addEntry( InviteMeans means, String target, Timestamp ts )
         {
-            Assert.assertTrue( 0 == m_count );
             ++m_count;
-            m_means = means;
-            m_target = target;
-            m_timestamp = ts;
+            m_means.add( means );
+            m_target.add( target );
+            m_timestamp.add( ts );
         }
         
         public int getPlayerCount() {
@@ -454,8 +456,13 @@ public class DBUtils {
         }
 
         public String getAsText() {
-            return String.format( "Invite sent to dev %s via %s on %s", m_target,
-                                  m_means.toString(), m_timestamp.toString() );
+            String[] strs = new String[m_count];
+            for ( int ii = 0; ii < m_count; ++ii ) {
+                strs[ii] = String.format( "Invite sent to dev %s via %s on %s",
+                                          m_target.get(ii), m_means.get(ii).toString(),
+                                          m_timestamp.get(ii).toString() );
+            }
+            return TextUtils.join( "\n\n", strs );
         }
     }
 
@@ -465,11 +472,12 @@ public class DBUtils {
 
         String[] columns = { DBHelper.MEANS, DBHelper.TIMESTAMP, DBHelper.TARGET }; 
         String selection = String.format( "%s = %d", DBHelper.ROW, rowid );
+        String orderBy = DBHelper.TIMESTAMP + " DESC";
         
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
             Cursor cursor = db.query( DBHelper.TABLE_NAME_INVITES, columns, 
-                                      selection, null, null, null, null );
+                                      selection, null, null, null, orderBy );
             if ( 0 < cursor.getCount() ) {
                 int indxMns = cursor.getColumnIndex( DBHelper.MEANS );
                 int indxTS = cursor.getColumnIndex( DBHelper.TIMESTAMP );
@@ -491,12 +499,20 @@ public class DBUtils {
 
     // Only record the most recent for a given recipient! Or not. If I send to K via SMS
     public static void recordInviteSent( Context context, long rowid,
+                                         InviteMeans means )
+    {
+        recordInviteSent( context, rowid, means, null );
+    }
+    
+    public static void recordInviteSent( Context context, long rowid,
                                          InviteMeans means, String target )
     {
         ContentValues values = new ContentValues();
         values.put( DBHelper.ROW, rowid );
         values.put( DBHelper.MEANS, means.ordinal() );
-        values.put( DBHelper.TARGET, target );
+        if ( null != target ) {
+            values.put( DBHelper.TARGET, target );
+        }
 
         initDB( context );
         synchronized( s_dbHelper ) {
