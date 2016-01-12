@@ -70,7 +70,8 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CONTYPE = "CONTYPE";
     public static final String SERVERROLE = "SERVERROLE";
     public static final String ROOMNAME = "ROOMNAME";
-    public static final String INVITEID = "INVITEID";
+    // written but never read; can go away
+    // public static final String INVITEID = "INVITEID";
     public static final String RELAYID = "RELAYID";
     public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE"; // unused -- so far
@@ -126,7 +127,6 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ SERVERROLE,   "INTEGER" }
         ,{ CONTYPE,      "INTEGER" }
         ,{ ROOMNAME,     "TEXT" }
-        ,{ INVITEID,     "TEXT" }
         ,{ RELAYID,      "TEXT" }
         ,{ SEED,         "INTEGER" }
         ,{ DICTLANG,     "INTEGER" }
@@ -254,7 +254,6 @@ public class DBHelper extends SQLiteOpenHelper {
         case 9:
             addSumColumn( db, DICTLIST );
         case 10:
-            addSumColumn( db, INVITEID );
         case 11:
             addSumColumn( db, REMOTEDEVS );
         case 12:

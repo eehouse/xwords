@@ -272,12 +272,6 @@ public class DBUtils {
     public static void saveSummary( Context context, GameLock lock,
                                     GameSummary summary )
     {
-        saveSummary( context, lock, summary, null );
-    }
-
-    public static void saveSummary( Context context, GameLock lock,
-                                    GameSummary summary, String inviteID )
-    {
         boolean needsTimer = false;
         Assert.assertTrue( lock.canWrite() );
         long rowid = lock.getRowid();
@@ -305,9 +299,6 @@ public class DBUtils {
             values.put( DBHelper.NEXTNAG, nextNag );
                 
             values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
-            if ( null != inviteID ) {
-                values.put( DBHelper.INVITEID, inviteID );
-            }
 
             if ( null != summary.scores ) {
                 StringBuffer sb = new StringBuffer();

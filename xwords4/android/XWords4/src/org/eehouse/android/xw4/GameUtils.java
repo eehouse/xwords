@@ -543,7 +543,7 @@ public class GameUtils {
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             GameLock lock = new GameLock( rowid, true ).lock();
-            applyChanges( context, sink, gi, util, addr, inviteID, lock, false );
+            applyChanges( context, sink, gi, util, addr, lock, false );
             lock.unlock();
         }
 
@@ -986,24 +986,17 @@ public class GameUtils {
     } // replaceDicts
 
     public static void applyChanges( Context context, CurGameInfo gi, 
-                                     CommsAddrRec car, GameLock lock, 
+                                     CommsAddrRec car, GameLock lock,
                                      boolean forceNew )
     {
-        applyChanges( context, gi, car, null, lock, forceNew );
-    }
-
-    public static void applyChanges( Context context, CurGameInfo gi, 
-                                     CommsAddrRec car, String inviteID, 
-                                     GameLock lock, boolean forceNew )
-    {
         applyChanges( context, (MultiMsgSink)null, gi, (UtilCtxt)null, car, 
-                      inviteID, lock, forceNew );
+                      lock, forceNew );
     }
 
     public static void applyChanges( Context context, MultiMsgSink sink,
                                      CurGameInfo gi, UtilCtxt util, 
-                                     CommsAddrRec car, String inviteID, 
-                                     GameLock lock, boolean forceNew )
+                                     CommsAddrRec car, GameLock lock,
+                                     boolean forceNew )
     {
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
@@ -1049,7 +1042,7 @@ public class GameUtils {
 
         GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
-        DBUtils.saveSummary( context, lock, summary, inviteID );
+        DBUtils.saveSummary( context, lock, summary );
 
         XwJNI.game_dispose( gamePtr );
     } // applyChanges
