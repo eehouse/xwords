@@ -471,6 +471,10 @@
     <item quantity="other">YOU HAVE ALREADY INVITED %1$d PLAYERS TO
       THIS GAME. WE ARE WAITING FOR THEM TO CONNECT BACK.</item>
   </plurals>
+  <string name="invited_msg">THIS GAME WAS CREATED FROM AN
+    INVITATION YOU RECEIVED. AS SOON AS IT IS ABLE TO CONNECT TO THE
+    SENDER AND ANY OTHER INVITEES HAVE ARRIVED PLAY WILL
+    BEGIN.</string>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">OR JUST TAP TO INVITE -- IF THE OTHER
     DEVICE ALSO HAS ANDROID BEAMING AND IS NEARBY.</string>

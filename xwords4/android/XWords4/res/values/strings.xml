@@ -553,6 +553,10 @@
       <item quantity="other">You have already invited %1$d players to
       this game. We are waiting for them to connect back.</item>
     </plurals>
+    <string name="invited_msg">This game was created from an
+    invitation you received. As soon as it is able to connect to the
+    sender and any other invitees have arrived play will
+    begin.</string>
 
     <!-- Appended to message above if local device has NFC available -->
     <string name="invite_if_nfc">Or just Tap to Invite -- if the other

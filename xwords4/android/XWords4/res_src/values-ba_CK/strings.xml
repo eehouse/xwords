@@ -471,6 +471,10 @@
     <item quantity="other">Uoy evah ydaerla detivni %1$d sreyalp ot
       siht emag. Ew era gnitiaw rof meht ot tcennoc kcab.</item>
   </plurals>
+  <string name="invited_msg">Siht emag saw detaerc morf na
+    noitativni uoy deviecer. Sa noos sa ti si elba ot tcennoc ot eht
+    rednes dna yna rehto seetivni evah devirra yalp lliw
+    nigeb.</string>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">Ro tsuj Pat ot Etivni -- fi eht rehto
     ecived osla sah Diordna Gnimaeb dna si ybraen.</string>

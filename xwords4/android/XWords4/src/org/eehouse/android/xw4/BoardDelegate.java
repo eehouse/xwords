@@ -486,19 +486,19 @@ public class BoardDelegate extends DelegateBase
             AlertDialog ad = (AlertDialog)dialog;
             String message;
             int titleID;
-            boolean nukePosButton = false;
+            boolean nukeInviteButton = false;
             boolean nukeNeutButton = true;
             int buttonTxt = R.string.newgame_invite;
             if ( m_summary.hasRematchInfo() ) {
                 titleID = R.string.info_title;;
                 message = getString( R.string.rematch_msg );
-                nukePosButton = true;
+                nukeInviteButton = true;
             } else { 
                 if ( !m_relayConnected ) {
                     titleID = R.string.seeking_relay;
                     // If relay is only means, don't allow at all
                     boolean relayOnly = 1 >= m_connTypes.size();
-                    nukePosButton = relayOnly;
+                    nukeInviteButton = relayOnly;
                     message = getString( R.string.no_relay_conn );
                     if ( NetStateCache.netAvail( m_activity )
                          && NetStateCache.onWifi() ) {
@@ -523,13 +523,17 @@ public class BoardDelegate extends DelegateBase
                                                      nSent, nSent );
                         buttonTxt = R.string.button_reinvite;
                         nukeNeutButton = false;
+                    } else if ( DeviceRole.SERVER_ISCLIENT == m_gi.serverRole ) {
+                        message = getString( R.string.invited_msg );
+                        titleID = R.string.waiting_title;
+                        nukeInviteButton = true;
                     } else {
                         titleID = R.string.waiting_title;
                         message = getQuantityString( R.plurals.invite_msg_fmt, 
                                                      m_nMissing, m_nMissing );
                     }
 
-                    if ( ! haveSent ) {
+                    if ( ! haveSent && ! nukeInviteButton ) {
                         String ps = null;
                         if ( m_nMissing > 1 ) {
                             ps = getString( R.string.invite_multiple );
@@ -552,8 +556,8 @@ public class BoardDelegate extends DelegateBase
             ad.setTitle( titleID );
 
             Button button = ad.getButton( AlertDialog.BUTTON_POSITIVE );
-            button.setVisibility( nukePosButton ? View.GONE : View.VISIBLE );
-            if ( !nukePosButton ) {
+            button.setVisibility( nukeInviteButton ? View.GONE : View.VISIBLE );
+            if ( !nukeInviteButton ) {
                 button.setText( buttonTxt );
             }
             button = ad.getButton( AlertDialog.BUTTON_NEUTRAL );
