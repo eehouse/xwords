@@ -469,8 +469,8 @@ public class GameUtils {
                                  addr, new int[] {nli.lang}, 
                                  new String[] { nli.dict }, nli.nPlayersT, 
                                  nli.nPlayersH, nli.forceChannel,
-                                 nli.inviteID(), nli.gameID(), nli.gameName,
-                                 false );
+                                 nli.inviteID(), nli.gameID(),
+                                 nli.gameName, false );
     }
 
     public static long makeNewMultiGame( Context context, long groupID, 

@@ -2045,9 +2045,8 @@ public class GamesListDelegate extends ListDelegateBase
                 DBUtils.setName( m_activity, newid, gameName );
             } else {
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
-                newid = GameUtils.makeNewMultiGame( m_activity, groupID, 
-                                                         dict, lang,
-                                                         addrs, gameName );
+                newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
+                                                    lang, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
                                         relayID );
             }

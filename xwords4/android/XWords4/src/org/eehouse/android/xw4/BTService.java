@@ -271,23 +271,6 @@ public class BTService extends XWService {
         context.startService( intent );
     } 
 
-    // public static void inviteRemote( Context context, String btAddr, 
-    //                                  int gameID, String initialName, int lang, 
-    //                                  String dict, int nPlayersT, int nPlayersH )
-    // {
-    //     Intent intent = getIntentTo( context, INVITE );
-    //     intent.putExtra( GAMEID_KEY, gameID );
-    //     intent.putExtra( ADDR_KEY, btAddr );
-    //     Assert.assertNotNull( initialName );
-    //     intent.putExtra( GAMENAME_KEY, initialName );
-    //     intent.putExtra( LANG_KEY, lang );
-    //     intent.putExtra( DICT_KEY, dict );
-    //     intent.putExtra( NTO_KEY, nPlayersT );
-    //     intent.putExtra( NHE_KEY, nPlayersH );
-
-    //     context.startService( intent );
-    // }
-
     public static void inviteRemote( Context context, String btAddr, 
                                      NetLaunchInfo nli )
     {
