@@ -159,7 +159,7 @@ public class MultiService {
     // resend the intent, but only if the dict it names is here.  (If
     // it's not, we may need to try again later, e.g. because our cue
     // was a focus gain.)
-    static boolean returnOnDownload( Context context, Intent intent )
+    public static boolean returnOnDownload( Context context, Intent intent )
     {
         boolean downloaded = isMissingDictIntent( intent );
         if ( downloaded ) {
