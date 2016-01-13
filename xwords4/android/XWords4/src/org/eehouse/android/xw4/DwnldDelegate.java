@@ -391,6 +391,15 @@ public class DwnldDelegate extends ListDelegateBase {
         downloadDictInBack( context, uri, name, lstnr );
     }
 
+    public static void downloadDictInBack( Context context, Uri uri,
+                                           String name, 
+                                           DownloadFinishedListener lstnr )
+    {
+        Uri[] uris = new Uri[] { uri };
+        String[] names = new String[] { name };
+        downloadDictsInBack( context, uris, names, lstnr );
+    }
+
     public static void downloadDictsInBack( Context context, Uri[] uris,
                                             String[] names, 
                                             DownloadFinishedListener lstnr )
@@ -404,15 +413,6 @@ public class DwnldDelegate extends ListDelegateBase {
         Intent intent = new Intent( context, DwnldActivity.class );
         intent.putExtra( DICTS_EXTRA, uris ); // uris implement Parcelable
         context.startActivity( intent );
-    }
-
-    public static void downloadDictInBack( Context context, Uri uri,
-                                           String name, 
-                                           DownloadFinishedListener lstnr )
-    {
-        Uri[] uris = new Uri[] { uri };
-        String[] names = new String[] { name };
-        downloadDictsInBack( context, uris, names, lstnr );
     }
 
     public static Intent makeAppDownloadIntent( Context context, String url )
