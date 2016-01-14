@@ -422,10 +422,10 @@ public class DBUtils {
 
     public static class SentInvitesInfo {
         public long m_rowid;
-        private int m_count = 0;
         private ArrayList<InviteMeans> m_means;
         private ArrayList<String> m_target;
         private ArrayList<Timestamp> m_timestamp;
+        private int m_cachedCount = 0;
 
         private SentInvitesInfo( long rowID ) {
             m_rowid = rowID;
@@ -436,22 +436,84 @@ public class DBUtils {
 
         private void addEntry( InviteMeans means, String target, Timestamp ts )
         {
-            ++m_count;
             m_means.add( means );
             m_target.add( target );
             m_timestamp.add( ts );
-        }
-        
-        public int getPlayerCount() {
-            return m_count;
+            m_cachedCount = -1;
         }
 
-        public String getAsText() {
-            String[] strs = new String[m_count];
-            for ( int ii = 0; ii < m_count; ++ii ) {
-                strs[ii] = String.format( "Invite sent to dev %s via %s on %s",
-                                          m_target.get(ii), m_means.get(ii).toString(),
-                                          m_timestamp.get(ii).toString() );
+        // There will be lots of duplicates, but we can't detect them all. BUT
+        // if means and target are the same it's definitely a dup. So count
+        // them all and return the largest number we have. 99% of the time we
+        // care only that it's non-0.
+        public int getMinPlayerCount() {
+            if ( -1 == m_cachedCount ) {
+                DbgUtils.logf( "getMinPlayerCount(%H)", this );
+                int count = m_timestamp.size();
+                Map<InviteMeans, Set<String>> hashes
+                    = new HashMap<InviteMeans, Set<String>>();
+                int fakeCount = 0; // make all null-targets count for one
+                for ( int ii = 0; ii < count; ++ii ) {
+                    InviteMeans means = m_means.get(ii);
+                    Set<String> devs;
+                    if ( ! hashes.containsKey( means ) ) {
+                        DbgUtils.logf( "creating new hash for means %s", means.toString() );
+                        devs = new HashSet<String>();
+                        hashes.put( means, devs );
+                    }
+                    devs = hashes.get( means );
+                    String target = m_target.get( ii );
+                    if ( null == target ) {
+                        target = String.format( "%d", ++fakeCount );
+                    }
+                    devs.add( target );
+                    DbgUtils.logf( "added target %s for means %s", target, means.toString() );
+                }
+
+                // Now find the max
+                m_cachedCount = 0;
+                for ( InviteMeans means : InviteMeans.values() ) {
+                    if ( hashes.containsKey( means ) ) {
+                        int siz = hashes.get( means ).size();
+                        m_cachedCount += siz;
+                        DbgUtils.logf( "counting: means %s has unique count of %d",
+                                       means.toString(), siz );
+                    }
+                }
+            }
+            DbgUtils.logf( "getMinPlayerCount(%H) => %d", this, m_cachedCount );
+            return m_cachedCount;
+        }
+
+        public String getAsText( Context context )
+        {
+            int count = m_timestamp.size();
+            String[] strs = new String[count];
+            for ( int ii = 0; ii < count; ++ii ) {
+                InviteMeans means = m_means.get(ii);
+                String target = m_target.get(ii);
+                String timestamp = m_timestamp.get(ii).toString();
+                String msg;
+
+                switch ( means ) {
+                case SMS:
+                    msg = LocUtils.getString( context, R.string.invit_expl_sms_fmt,
+                                              target, timestamp );
+                    break;
+                case BLUETOOTH:
+                    msg = LocUtils.getString( context, R.string.invit_expl_bt_fmt,
+                                              target, timestamp );
+                    break;
+                case RELAY:
+                    msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,
+                                              timestamp );
+                    break;
+                default:
+                    msg = LocUtils.getString( context, R.string.invit_expl_notarget_fmt,
+                                              means.toString(), timestamp );
+
+                }
+                strs[ii] = msg;
             }
             return TextUtils.join( "\n\n", strs );
         }

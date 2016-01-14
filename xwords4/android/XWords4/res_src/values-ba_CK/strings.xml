@@ -467,9 +467,13 @@
   </plurals>
   <plurals name="invite_sent_fmt">
     <item quantity="one">Uoy evah ydaerla detivni a etomer reyalp ot
-      siht emag. Ew era gnitiaw rof reh/mih ot tcennoc kcab.</item>
-    <item quantity="other">Uoy evah ydaerla detivni %1$d sreyalp ot
-      siht emag. Ew era gnitiaw rof meht ot tcennoc kcab.</item>
+      siht emag. Ew era gnitiaw rof reh/mih ot dnopser. Esaelp
+      esu eht etivni-er nottub fi uoy kniht eht noitativni did ton og
+      tuo.</item>
+    <item quantity="other">Uoy evah ydaerla tnes %1$d euqinu
+      snoitativni rof siht emag. Ew era gnitiaw rof %2$d fo eht
+      stneipicer ot dnopser. Esaelp esu eht etivni-er nottub fi uoy
+      kniht eht snoitativni did ton og tuo.</item>
   </plurals>
   <string name="invited_msg">Siht emag saw detaerc morf na
     noitativni uoy deviecer. Sa noos sa ti si elba ot tcennoc ot eht
@@ -493,6 +497,14 @@
     etomer sreyalp. Uoy nod\'t evah ot etivni meht lla ta ,ecno tub
     siht trela lliw ton eb dessimsid litnu ydobyreve sah neeb detivni
     dna lla snoitativni evah neeb detpecca.)</string>
+  <string name="invit_expl_sms_fmt">Etivni tnes aiv SMS ot enohp
+    rebmun %1$s no %2$s</string>
+  <string name="invit_expl_bt_fmt">Etivni tnes aiv Htooteulb ot
+    deriap ecived %1$s no %2$s</string>
+  <string name="invit_expl_relay_fmt">Etivni dedrawrof yb eht yaler
+    ot rehtona ecived no %1$s</string>
+  <string name="invit_expl_notarget_fmt">Etivni tnes aiv %1$s no
+    %2$s. Tneipicer nwonknu.</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->

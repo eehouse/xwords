@@ -449,7 +449,7 @@ public class BoardDelegate extends DelegateBase
                 OnClickListener lstnrMore = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
-                            showOKOnlyDialog( m_sentInfo.getAsText() );
+                            showOKOnlyDialog( m_sentInfo.getAsText( m_activity ) );
                         }
                     };
                 
@@ -515,12 +515,12 @@ public class BoardDelegate extends DelegateBase
                     }
                 } else {
                     m_sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
-                    int nSent = m_sentInfo.getPlayerCount();
+                    int nSent = m_sentInfo.getMinPlayerCount();
                     boolean haveSent = nSent >= m_nMissing;
                     if ( haveSent ) {
                         titleID = R.string.waiting_invite_title;
                         message = getQuantityString( R.plurals.invite_sent_fmt, 
-                                                     nSent, nSent );
+                                                     nSent, nSent, m_nMissing );
                         buttonTxt = R.string.button_reinvite;
                         nukeNeutButton = false;
                     } else if ( DeviceRole.SERVER_ISCLIENT == m_gi.serverRole ) {

@@ -549,9 +549,13 @@
     </plurals>
     <plurals name="invite_sent_fmt">
       <item quantity="one">You have already invited a remote player to
-      this game. We are waiting for him/her to connect back.</item>
-      <item quantity="other">You have already invited %1$d players to
-      this game. We are waiting for them to connect back.</item>
+      this game. We are waiting for him/her to respond. Please
+      use the re-invite button if you think the invitation did not go
+      out.</item>
+      <item quantity="other">You have already sent %1$d unique
+      invitations for this game. We are waiting for %2$d of the
+      recipients to respond. Please use the re-invite button if you
+      think the invitations did not go out.</item>
     </plurals>
     <string name="invited_msg">This game was created from an
     invitation you received. As soon as it is able to connect to the
@@ -578,6 +582,15 @@
     remote players. You don\'t have to invite them all at once, but
     this alert will not be dismissed until everybody has been invited
     and all invitations have been accepted.)</string>
+
+    <string name="invit_expl_sms_fmt">Invite sent via SMS to phone
+    number %1$s on %2$s</string>
+    <string name="invit_expl_bt_fmt">Invite sent via Bluetooth to
+    paired device %1$s on %2$s</string>
+    <string name="invit_expl_relay_fmt">Invite forwarded by the relay
+    to another device on %1$s</string>
+    <string name="invit_expl_notarget_fmt">Invite sent via %1$s on
+    %2$s. Recipient unknown.</string>
 
     <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points

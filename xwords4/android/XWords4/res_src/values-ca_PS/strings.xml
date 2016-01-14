@@ -467,9 +467,13 @@
   </plurals>
   <plurals name="invite_sent_fmt">
     <item quantity="one">YOU HAVE ALREADY INVITED A REMOTE PLAYER TO
-      THIS GAME. WE ARE WAITING FOR HIM/HER TO CONNECT BACK.</item>
-    <item quantity="other">YOU HAVE ALREADY INVITED %1$d PLAYERS TO
-      THIS GAME. WE ARE WAITING FOR THEM TO CONNECT BACK.</item>
+      THIS GAME. WE ARE WAITING FOR HIM/HER TO RESPOND. PLEASE
+      USE THE RE-INVITE BUTTON IF YOU THINK THE INVITATION DID NOT GO
+      OUT.</item>
+    <item quantity="other">YOU HAVE ALREADY SENT %1$d UNIQUE
+      INVITATIONS FOR THIS GAME. WE ARE WAITING FOR %2$d OF THE
+      RECIPIENTS TO RESPOND. PLEASE USE THE RE-INVITE BUTTON IF YOU
+      THINK THE INVITATIONS DID NOT GO OUT.</item>
   </plurals>
   <string name="invited_msg">THIS GAME WAS CREATED FROM AN
     INVITATION YOU RECEIVED. AS SOON AS IT IS ABLE TO CONNECT TO THE
@@ -493,6 +497,14 @@
     REMOTE PLAYERS. YOU DON\'T HAVE TO INVITE THEM ALL AT ONCE, BUT
     THIS ALERT WILL NOT BE DISMISSED UNTIL EVERYBODY HAS BEEN INVITED
     AND ALL INVITATIONS HAVE BEEN ACCEPTED.)</string>
+  <string name="invit_expl_sms_fmt">INVITE SENT VIA SMS TO PHONE
+    NUMBER %1$s ON %2$s</string>
+  <string name="invit_expl_bt_fmt">INVITE SENT VIA BLUETOOTH TO
+    PAIRED DEVICE %1$s ON %2$s</string>
+  <string name="invit_expl_relay_fmt">INVITE FORWARDED BY THE RELAY
+    TO ANOTHER DEVICE ON %1$s</string>
+  <string name="invit_expl_notarget_fmt">INVITE SENT VIA %1$s ON
+    %2$s. RECIPIENT UNKNOWN.</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->

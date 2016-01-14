@@ -207,7 +207,7 @@ public class GameSummary {
             if ( 0 < missing ) {
                 DBUtils.SentInvitesInfo si = DBUtils.getInvitesFor( m_context,
                                                                     rowid );
-                if ( si.getPlayerCount() >= missing ) {
+                if ( si.getMinPlayerCount() >= missing ) {
                     result = LocUtils.getString( m_context,
                                                  R.string.summary_invites_out );
                 }
