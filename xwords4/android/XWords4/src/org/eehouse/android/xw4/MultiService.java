@@ -26,6 +26,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class MultiService {
@@ -43,7 +45,7 @@ public class MultiService {
     public static final String OWNER = "OWNER";
     public static final String BT_NAME = "BT_NAME";
     public static final String BT_ADDRESS = "BT_ADDRESS";
-    public static final String NLI_DATA = "nli";
+    private static final String NLI_DATA = "nli";
 
     public enum DictFetchOwner { _NONE,
                                  OWNER_SMS,
@@ -126,6 +128,15 @@ public class MultiService {
         boolean result = null != action && action.equals( ACTION_FETCH_DICT );
         // DbgUtils.logf( "isMissingDictIntent() => %b", result );
         return result;
+    }
+
+    public static NetLaunchInfo getMissingDictData( Context context,
+                                                    Intent intent )
+    {
+        Assert.assertTrue( isMissingDictIntent( intent ) );
+        String nliData = intent.getStringExtra( NLI_DATA );
+        NetLaunchInfo nli = new NetLaunchInfo( context, nliData );
+        return nli;
     }
 
     public static Dialog missingDictDialog( Context context, Intent intent,

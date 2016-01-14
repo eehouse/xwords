@@ -56,6 +56,7 @@ import java.util.Set;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.GameUtils.BackMoveResult;
+import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
@@ -348,20 +349,15 @@ public class SMSService extends XWService {
                     inviteRemote( phone, intent.getStringExtra( GAMEDATA_STR ) );
                     break;
                 case ADDED_MISSING:
+                    NetLaunchInfo nli
+                        = MultiService.getMissingDictData( this, intent );
                     phone = intent.getStringExtra( PHONE );
-                    int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-                    String gameName = intent.getStringExtra( MultiService.GAMENAME );
-                    int lang = intent.getIntExtra( MultiService.LANG, -1 );
-                    String dict = intent.getStringExtra( MultiService.DICT );
-                    int nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
-                    int nPlayersH = intent.getIntExtra( MultiService.NPLAYERSH, -1 );
-                    makeForInvite( phone, gameID, gameName, lang, dict, 
-                                   nPlayersT, nPlayersH, 1 );
+                    makeForInvite( phone, nli );
                     break;
                 case SEND:
                     phone = intent.getStringExtra( PHONE );
                     byte[] bytes = intent.getByteArrayExtra( BINBUFFER );
-                    gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+                    int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
                     sendPacket( phone, gameID, bytes );
                     break;
                 case REMOVE:
@@ -512,18 +508,11 @@ public class SMSService extends XWService {
                     if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
                         makeForInvite( phone, nli );
                     } else {
-                        Assert.fail();
-                        // Intent intent = MultiService
-                        //     .makeMissingDictIntent( this, gameName, lang, dict, 
-                        //                             nPlayersT, nPlayersH );
-                        // intent.putExtra( PHONE, phone );
-                        // intent.putExtra( MultiService.OWNER, 
-                        //                  MultiService.OWNER_SMS );
-                        // intent.putExtra( MultiService.INVITER, 
-                        //                  Utils.phoneToContact( this, phone, true ) );
-                        // intent.putExtra( MultiService.GAMEID, gameID );
-                        // MultiService.postMissingDictNotification( this, intent, 
-                        //                                           gameID );
+                        Intent intent = MultiService
+                            .makeMissingDictIntent( this, nli, 
+                                                    DictFetchOwner.OWNER_SMS );
+                        MultiService.postMissingDictNotification( this, intent, 
+                                                                  nli.gameID() );
                     }
                 } else {
                     DbgUtils.logf( "invalid nli from: %s", nliData );

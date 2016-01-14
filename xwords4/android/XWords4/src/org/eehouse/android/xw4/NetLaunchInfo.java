@@ -88,13 +88,6 @@ public class NetLaunchInfo {
         init( context, data );
     }
 
-    public NetLaunchInfo( Context context, Intent intent )
-    {
-        String data = intent.getStringExtra( MultiService.NLI_DATA );
-        Assert.assertNotNull( data );
-        init( context, data );
-    }
-
     private NetLaunchInfo( Bundle bundle )
     {
         lang = bundle.getInt( MultiService.LANG );

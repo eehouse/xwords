@@ -1986,7 +1986,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         NetLaunchInfo nli = null;
         if ( MultiService.isMissingDictIntent( intent ) ) {
-            nli = new NetLaunchInfo( m_activity, intent );
+            nli = MultiService.getMissingDictData( m_activity, intent );
         } else {
             Uri data = intent.getData();
             if ( null != data ) {
