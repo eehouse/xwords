@@ -1324,6 +1324,8 @@ public class BoardDelegate extends DelegateBase
         }
         if ( null != data ) {
             removeDialog( DlgID.CONFIRM_THEN );
+
+            recordInviteSent( InviteMeans.NFC, null );
         }
         return data;
     }
