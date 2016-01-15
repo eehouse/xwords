@@ -1283,6 +1283,7 @@
     device, and the body that appears when you pull the notifications
     down. -->
   <string name="notify_title_fmt">MOVE IN GAME %1$s</string>
+  <string name="notify_title_turn_fmt">YOUR TURN IN GAME %1$s</string>
   <string name="notify_chat_title_fmt">CHAT MESSAGE IN GAME %1$s</string>
   <string name="notify_chat_body_fmt">%1$s: %2$s</string>
   <!--
@@ -2237,10 +2238,10 @@
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
   <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
-  <string name="not_again_rematch_two_only">THE REMATCH BUTTON IS
-  DISABLED BECAUSE, FOR NOW ANYWAY, REMATCH IS LIMITED TO TWO-PERSON
-  GAMES. I THINK IT\'S RARE THAT PEOPLE PLAY WITH MORE THAN TWO. LET
-  ME KNOW IF I\'M WRONG AND I\'LL TRY HARDER TO MAKE IT WORK.</string>
+  <string name="not_again_rematch_two_only">REMATCH IS LIMITED TO
+  TWO-PERSON GAMES, AT LEAST FOR NOW, BECAUSE IT\'S HARDER WITH MORE
+  DEVICES AND I THINK IT\'S RARE THAT PEOPLE PLAY WITH MORE THAN
+  TWO. LET ME KNOW IF I\'M WRONG AND I\'LL UP THE PRIORITY.</string>
   <string name="enable_relay_toself_title">ENABLE RELAY INVITES TO SELF</string>
   <string name="enable_relay_toself_summary">(TO AID TESTING AND DEBUGGING)</string>
   <!-- Shown after "resend messages" menuitem chosen -->

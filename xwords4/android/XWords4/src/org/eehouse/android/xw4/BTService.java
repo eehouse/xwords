@@ -595,6 +595,7 @@ public class BTService extends XWService {
                     CommsAddrRec addr = new CommsAddrRec( host.getName(), 
                                                           host.getAddress() );
 
+                    boolean[] isLocalP = new boolean[1];
                     for ( long rowid : rowids ) {
                         boolean consumed = 
                             BoardDelegate.feedMessage( rowid, buffer, addr );
@@ -603,10 +604,12 @@ public class BTService extends XWService {
                                 new GameUtils.BackMoveResult();
                             if ( GameUtils.feedMessage( BTService.this, rowid, 
                                                         buffer, addr, 
-                                                        m_btMsgSink, bmr ) ) {
+                                                        m_btMsgSink, bmr,
+                                                        isLocalP ) ) {
                                 consumed = true;
                                 GameUtils.postMoveNotification( BTService.this,
-                                                                rowid, bmr );
+                                                                rowid, bmr,
+                                                                isLocalP[0] );
                             }
                         }
                         if ( !consumed ) {

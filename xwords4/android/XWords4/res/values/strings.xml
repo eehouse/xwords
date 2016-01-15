@@ -1496,6 +1496,7 @@
     device, and the body that appears when you pull the notifications
     down. -->
     <string name="notify_title_fmt">Move in game %1$s</string>
+    <string name="notify_title_turn_fmt">Your turn in game %1$s</string>
     <string name="notify_chat_title_fmt">Chat message in game %1$s</string>
     <string name="notify_chat_body_fmt">%1$s: %2$s</string>
     <!--
@@ -2615,10 +2616,10 @@
 
   <string name="str_no_hint_found">Cannot find any moves</string>
 
-  <string name="not_again_rematch_two_only">The Rematch button is
-  disabled because, for now anyway, rematch is limited to two-person
-  games. I think it\'s rare that people play with more than two. Let
-  me know if I\'m wrong and I\'ll try harder to make it work.</string>
+  <string name="not_again_rematch_two_only">Rematch is limited to
+  two-person games, at least for now, because it\'s harder with more
+  devices and I think it\'s rare that people play with more than
+  two. Let me know if I\'m wrong and I\'ll up the priority.</string>
 
   <string name="enable_relay_toself_title">Enable relay invites to self</string>
   <string name="enable_relay_toself_summary">(To aid testing and debugging)</string>

@@ -718,6 +718,7 @@ public class SMSService extends XWService {
         if ( null == rowids || 0 == rowids.length ) {
             sendDiedPacket( addr.sms_phone, gameID );
         } else {
+            boolean[] isLocalP = new boolean[1];
             for ( long rowid : rowids ) {
                 if ( BoardDelegate.feedMessage( rowid, msg, addr ) ) {
                     // do nothing
@@ -725,8 +726,9 @@ public class SMSService extends XWService {
                     SMSMsgSink sink = new SMSMsgSink( this );
                     BackMoveResult bmr = new BackMoveResult();
                     if ( GameUtils.feedMessage( this, rowid, msg, addr, 
-                                                sink, bmr ) ) {
-                        GameUtils.postMoveNotification( this, rowid, bmr );
+                                                sink, bmr, isLocalP ) ) {
+                        GameUtils.postMoveNotification( this, rowid, bmr,
+                                                        isLocalP[0] );
                     }
                 }
             }

@@ -875,7 +875,8 @@ public class GameUtils {
 
     public static boolean feedMessages( Context context, long rowid,
                                         byte[][] msgs, CommsAddrRec ret,
-                                        MultiMsgSink sink, BackMoveResult bmr )
+                                        MultiMsgSink sink, BackMoveResult bmr,
+                                        boolean[] isLocalOut )
     {
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
@@ -920,7 +921,12 @@ public class GameUtils {
                     }
 
                     saveGame( context, gamePtr, gi, lock, false );
-                    summarizeAndClose( context, lock, gamePtr, gi );
+                    GameSummary summary = summarizeAndClose( context, lock,
+                                                             gamePtr, gi );
+                    if ( null != isLocalOut ) {
+                        isLocalOut[0] = 0 <= summary.turn
+                            && gi.players[summary.turn].isLocal;
+                    }
 
                     int flags = setFromFeedImpl( feedImpl );
                     if ( GameSummary.MSG_FLAGS_NONE != flags ) {
@@ -937,12 +943,12 @@ public class GameUtils {
 
     public static boolean feedMessage( Context context, long rowid, byte[] msg,
                                        CommsAddrRec ret, MultiMsgSink sink,
-                                       BackMoveResult bmr )
+                                       BackMoveResult bmr, boolean[] isLocalOut )
     {
         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         byte[][] msgs = new byte[1][];
         msgs[0] = msg;
-        return feedMessages( context, rowid, msgs, ret, sink, bmr );
+        return feedMessages( context, rowid, msgs, ret, sink, bmr, isLocalOut );
     }
 
     // This *must* involve a reset if the language is changing!!!
@@ -1079,7 +1085,8 @@ public class GameUtils {
     }
 
     public static void postMoveNotification( Context context, long rowid, 
-                                             BackMoveResult bmr )
+                                             BackMoveResult bmr,
+                                             boolean isTurnNow )
     {
         if ( null != bmr ) {
             Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
@@ -1095,8 +1102,12 @@ public class GameUtils {
                     msg = bmr.m_chat;
                 }
             } else if ( null != bmr.m_lmi ) {
-                titleID = R.string.notify_title_fmt;
-                msg = bmr.m_lmi.format( context ); // NPE
+                if ( isTurnNow ) {
+                    titleID = R.string.notify_title_turn_fmt;
+                } else {
+                    titleID = R.string.notify_title_fmt;
+                }
+                msg = bmr.m_lmi.format( context );
             }
 
             if ( 0 != titleID ) {

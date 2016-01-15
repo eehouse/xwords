@@ -1283,6 +1283,7 @@
     device, and the body that appears when you pull the notifications
     down. -->
   <string name="notify_title_fmt">Evom ni emag %1$s</string>
+  <string name="notify_title_turn_fmt">Ruoy nrut ni emag %1$s</string>
   <string name="notify_chat_title_fmt">Tahc egassem ni emag %1$s</string>
   <string name="notify_chat_body_fmt">%1$s: %2$s</string>
   <!--
@@ -2237,10 +2238,10 @@
   <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
   ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
   <string name="str_no_hint_found">Tonnac dnif yna sevom</string>
-  <string name="not_again_rematch_two_only">Eht Hctamer nottub si
-  delbasid ,esuaceb rof won ,yawyna hctamer si detimil ot nosrep-owt
-  semag. I kniht ti\'s erar taht elpoep yalp htiw erom naht owt. Tel
-  em wonk fi I\'m gnorw dna I\'ll yrt redrah ot ekam ti krow.</string>
+  <string name="not_again_rematch_two_only">Hctamer si detimil ot
+  nosrep-owt ,semag ta tsael rof ,won esuaceb ti\'s redrah htiw erom
+  secived dna I kniht ti\'s erar taht elpoep yalp htiw erom naht
+  owt. Tel em wonk fi I\'m gnorw dna I\'ll pu eht ytiroirp.</string>
   <string name="enable_relay_toself_title">Elbane yaler setivni ot fles</string>
   <string name="enable_relay_toself_summary">oT( dia gnitset dna )gniggubed</string>
   <!-- Shown after "resend messages" menuitem chosen -->
