@@ -102,6 +102,12 @@ public class GameListItem extends LinearLayout
             } );
     }
 
+    public GameSummary getSummary()
+    {
+        Assert.assertNotNull( m_summary );
+        return m_summary;
+    }
+
     private void init( Handler handler, long rowid, int fieldID, 
                        SelectableItem cb )
     {

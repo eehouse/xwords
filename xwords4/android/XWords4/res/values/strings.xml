@@ -2043,6 +2043,9 @@
     <!--  -->
     <string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>
+    <!-- First line of debug-only Invites list dialog -->
+    <string name="invites_net_fmt">Invitations sent for game connected via
+    %1$s:</string>
     <!--  -->
     <string name="connstat_succ">successful</string>
     <!--  -->
