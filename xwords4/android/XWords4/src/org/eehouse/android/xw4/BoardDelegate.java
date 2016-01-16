@@ -53,6 +53,7 @@ import java.util.concurrent.Semaphore;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.jni.*;
@@ -96,7 +97,7 @@ public class BoardDelegate extends DelegateBase
     private View m_tradeButtons;
     private Button m_exchCommmitButton;
     private Button m_exchCancelButton;
-    private DBUtils.SentInvitesInfo m_sentInfo;
+    private SentInvitesInfo m_sentInfo;
 
     private ArrayList<String> m_pendingChats;
 
@@ -842,6 +843,7 @@ public class BoardDelegate extends DelegateBase
 
         enable = enable && BuildConfig.DEBUG;
         Utils.setItemVisible( menu, R.id.board_menu_game_netstats, enable );
+        Utils.setItemVisible( menu, R.id.board_menu_game_invites, enable );
                               
         enable = XWPrefs.getStudyEnabled( m_activity );
         Utils.setItemVisible( menu, R.id.games_menu_study, enable );
@@ -920,6 +922,10 @@ public class BoardDelegate extends DelegateBase
             break;
         case R.id.board_menu_game_netstats:
             m_jniThread.handle( JNICmd.CMD_NETSTATS, R.string.netstats_title );
+            break;
+        case R.id.board_menu_game_invites:
+            SentInvitesInfo sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
+            showOKOnlyDialog( sentInfo.getAsText( m_activity ) );
             break;
         case R.id.board_menu_undo_current:
             cmd = JNICmd.CMD_UNDO_CUR;

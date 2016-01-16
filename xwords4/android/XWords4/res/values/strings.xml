@@ -2526,6 +2526,7 @@
   <string name="title_send_data_sms">Send SMS as data</string>
   <string name="summary_send_data_sms">(GSM phones only)</string>
   <string name="board_menu_game_netstats">Network stats</string>
+  <string name="board_menu_game_showInvites">Show invites</string>
   <string name="netstats_title">Game network stats</string>
 
   <string name="git_rev_title">Source version id</string>

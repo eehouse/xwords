@@ -2167,6 +2167,7 @@
   <string name="title_send_data_sms">Dnes SMS sa atad</string>
   <string name="summary_send_data_sms">mSG( senohp )ylno</string>
   <string name="board_menu_game_netstats">Krowten stats</string>
+  <string name="board_menu_game_showInvites">Wohs setivni</string>
   <string name="netstats_title">Emag krowten stats</string>
   <string name="git_rev_title">Ecruos noisrev di</string>
   <string name="devid_title">Ecived DI no( )yaler</string>
