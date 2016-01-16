@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -87,7 +87,7 @@ public class BoardDelegate extends DelegateBase
     private GameLock m_gameLock;
     private CurGameInfo m_gi;
     private GameSummary m_summary;
-    private boolean m_relayConnected;
+    private boolean m_relayMissing;
     private CommsTransport m_xport;
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
@@ -140,7 +140,6 @@ public class BoardDelegate extends DelegateBase
     private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
-    private boolean m_rematchInvitesSent = false;
 
     private static Set<BoardDelegate> s_this = new HashSet<BoardDelegate>();
 
@@ -433,9 +432,14 @@ public class BoardDelegate extends DelegateBase
                 lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
-                            if ( m_relayConnected ||
+                            if ( !m_relayMissing ||
                                  ! m_connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
-                                showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
+                                Assert.assertTrue( 0 < m_nMissing );
+                                if ( m_summary.hasRematchInfo() ) {
+                                    tryRematchInvites( true );
+                                } else {                                
+                                    showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
+                                }
                             } else {
                                 askDropRelay();
                             }
@@ -490,67 +494,67 @@ public class BoardDelegate extends DelegateBase
             boolean nukeInviteButton = false;
             boolean nukeNeutButton = true;
             int buttonTxt = R.string.newgame_invite;
-            if ( m_summary.hasRematchInfo() ) {
-                titleID = R.string.info_title;;
-                message = getString( R.string.rematch_msg );
-                nukeInviteButton = true;
-            } else { 
-                if ( !m_relayConnected ) {
-                    titleID = R.string.seeking_relay;
-                    // If relay is only means, don't allow at all
-                    boolean relayOnly = 1 >= m_connTypes.size();
-                    nukeInviteButton = relayOnly;
-                    message = getString( R.string.no_relay_conn );
-                    if ( NetStateCache.netAvail( m_activity )
-                         && NetStateCache.onWifi() ) {
-                        message += getString( R.string.wifi_warning );
-                    }
-                    if ( !relayOnly ) {
-                        CommsConnTypeSet without = (CommsConnTypeSet)
-                            m_connTypes.clone();
-                        without.remove( CommsConnType.COMMS_CONN_RELAY );
-                        message += "\n\n" 
-                            + getString( R.string.drop_relay_warning_fmt, 
-                                         without.toString( m_activity ) );
-                        buttonTxt = R.string.newgame_drop_relay;
-                    }
-                } else {
-                    m_sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
-                    int nSent = m_sentInfo.getMinPlayerCount();
-                    boolean haveSent = nSent >= m_nMissing;
-                    if ( haveSent ) {
+            if ( m_relayMissing ) {
+                titleID = R.string.seeking_relay;
+                // If relay is only means, don't allow at all
+                boolean relayOnly = 1 >= m_connTypes.size();
+                nukeInviteButton = relayOnly;
+                message = getString( R.string.no_relay_conn );
+                if ( NetStateCache.netAvail( m_activity )
+                     && NetStateCache.onWifi() ) {
+                    message += getString( R.string.wifi_warning );
+                }
+                if ( !relayOnly ) {
+                    CommsConnTypeSet without = (CommsConnTypeSet)
+                        m_connTypes.clone();
+                    without.remove( CommsConnType.COMMS_CONN_RELAY );
+                    message += "\n\n" 
+                        + getString( R.string.drop_relay_warning_fmt, 
+                                     without.toString( m_activity ) );
+                    buttonTxt = R.string.newgame_drop_relay;
+                }
+            } else {
+                m_sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
+                int nSent = m_sentInfo.getMinPlayerCount();
+                boolean invitesSent = nSent >= m_nMissing;
+                if ( invitesSent ) {
+                    if ( m_summary.hasRematchInfo() ) {
+                        titleID = R.string.waiting_rematch_title;
+                        message = getString( R.string.rematch_msg );
+                    } else {
                         titleID = R.string.waiting_invite_title;
                         message = getQuantityString( R.plurals.invite_sent_fmt, 
                                                      nSent, nSent, m_nMissing );
-                        buttonTxt = R.string.button_reinvite;
-                        nukeNeutButton = false;
-                    } else if ( DeviceRole.SERVER_ISCLIENT == m_gi.serverRole ) {
-                        message = getString( R.string.invited_msg );
-                        titleID = R.string.waiting_title;
-                        nukeInviteButton = true;
-                    } else {
-                        titleID = R.string.waiting_title;
-                        message = getQuantityString( R.plurals.invite_msg_fmt, 
-                                                     m_nMissing, m_nMissing );
                     }
-
-                    if ( ! haveSent && ! nukeInviteButton ) {
-                        String ps = null;
-                        if ( m_nMissing > 1 ) {
-                            ps = getString( R.string.invite_multiple );
-                        } else {
-                            boolean[] avail = NFCUtils.nfcAvail( m_activity );
-                            if ( avail[1] ) {
-                                ps = getString( R.string.invite_if_nfc );
-                            }
-                        }
-                        if ( null != ps ) {
-                            message += "\n\n" + ps;
-                        }
-                    }
-
-                    message += "\n\n" + getString( R.string.invite_stays );
+                    buttonTxt = R.string.button_reinvite;
+                    nukeNeutButton = false;
+                } else if ( DeviceRole.SERVER_ISCLIENT == m_gi.serverRole ) {
+                    Assert.assertFalse( m_summary.hasRematchInfo() );
+                    message = getString( R.string.invited_msg );
+                    titleID = R.string.waiting_title;
+                    nukeInviteButton = true;
+                } else {
+                    titleID = R.string.waiting_title;
+                    message = getQuantityString( R.plurals.invite_msg_fmt, 
+                                                 m_nMissing, m_nMissing );
                 }
+
+                if ( ! invitesSent && ! nukeInviteButton ) {
+                    String ps = null;
+                    if ( m_nMissing > 1 ) {
+                        ps = getString( R.string.invite_multiple );
+                    } else {
+                        boolean[] avail = NFCUtils.nfcAvail( m_activity );
+                        if ( avail[1] ) {
+                            ps = getString( R.string.invite_if_nfc );
+                        }
+                    }
+                    if ( null != ps ) {
+                        message += "\n\n" + ps;
+                    }
+                }
+
+                message += "\n\n" + getString( R.string.invite_stays );
             }
 
             ad.setMessage( message );
@@ -719,7 +723,7 @@ public class BoardDelegate extends DelegateBase
                 setBackgroundColor();
                 setKeepScreenOn();
             } else if ( ! isFinishing() ) {
-                if ( !m_relayConnected || 0 < m_nMissing ) {
+                if ( m_relayMissing || 0 < m_nMissing ) {
                     showDialog( DlgID.DLG_INVITE );
                 }
             }
@@ -1105,7 +1109,7 @@ public class BoardDelegate extends DelegateBase
             case CLIPBOARD:
                 NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1,
                                                        1 + m_nGuestDevs );
-                if ( !m_relayConnected ) {
+                if ( m_relayMissing ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
                 }
                 if ( InviteMeans.EMAIL == means ) {
@@ -1516,7 +1520,7 @@ public class BoardDelegate extends DelegateBase
             }
         } else if ( nMissing > 0 ) {
             if ( m_summary.hasRematchInfo() ) {
-                tryRematchInvites();
+                tryRematchInvites( false );
             } else {
                 if ( !m_haveInvited ) {
                     m_haveInvited = true;
@@ -1859,7 +1863,7 @@ public class BoardDelegate extends DelegateBase
             m_nGuestDevs = nDevs;
 
             // If we might have put up an alert earlier, take it down
-            dismissInviteAlert( nMissing, m_relayConnected );
+            dismissInviteAlert( nMissing, !m_relayMissing );
 
             m_nMissing = nMissing; // will be 0 unless isServer is true
 
@@ -2018,7 +2022,7 @@ public class BoardDelegate extends DelegateBase
                     String langName = m_gi.langName();
 
                     m_summary = DBUtils.getSummary( m_activity, m_gameLock );
-                    m_relayConnected = !m_summary.relayConnectPending();
+                    m_relayMissing = m_summary.relayConnectPending();
 
                     setThis( this );
 
@@ -2180,10 +2184,10 @@ public class BoardDelegate extends DelegateBase
     {
         runOnUiThread( new Runnable() {
                 public void run() {
-                    if ( !m_relayConnected && connected ) {
-                        m_relayConnected = true;
+                    if ( m_relayMissing && connected ) {
+                        m_relayMissing = false;
                     }
-                    if ( 0 == nMissing || m_relayConnected ) {
+                    if ( 0 == nMissing || !m_relayMissing ) {
                         dismissDialog( DlgID.DLG_INVITE );
                     } 
                 }
@@ -2411,7 +2415,7 @@ public class BoardDelegate extends DelegateBase
     private void tryInvites()
     {
         if ( 0 < m_nMissing && m_summary.hasRematchInfo() ) {
-            tryRematchInvites();
+            tryRematchInvites( false );
         } else if ( null != m_missingDevs ) {
             Assert.assertNotNull( m_missingMeans );
             String gameName = GameUtils.getName( m_activity, m_rowid );
@@ -2424,7 +2428,7 @@ public class BoardDelegate extends DelegateBase
                 int forceChannel = ii + m_nGuestDevs + 1;
                 NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 
                                                        nPlayers, forceChannel );
-                if ( !m_relayConnected ) {
+                if ( m_relayMissing ) {
                     nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
                 }
 
@@ -2688,34 +2692,41 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void tryRematchInvites()
+    private void tryRematchInvites( boolean force )
     {
-        if ( XWApp.REMATCH_SUPPORTED && !m_rematchInvitesSent ) {
-            m_rematchInvitesSent = true;
-
-            Assert.assertNotNull( m_summary );
-            Assert.assertNotNull( m_gi );
-            // only supports a single invite for now!
-            int numHere = 1;
-            int forceChannel = 1;
-            NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere, 
-                                                   forceChannel );
-
-            String value;
-            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
-            if ( null != value ) {
-                SMSService.inviteRemote( m_activity, value, nli );
-                recordInviteSent( InviteMeans.SMS, value );
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            if ( !force ) {
+                SentInvitesInfo info = DBUtils.getInvitesFor( m_activity, m_rowid );
+                force = 0 == info.getMinPlayerCount();
             }
-            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
-            if ( null != value ) {
-                BTService.inviteRemote( m_activity, value, nli );
-                recordInviteSent( InviteMeans.BLUETOOTH, value );
-            }
-            value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
-            if ( null != value ) {
-                RelayService.inviteRemote( m_activity, 0, value, nli );
-                recordInviteSent( InviteMeans.RELAY, value );
+
+            if ( force ) {
+                Assert.assertNotNull( m_summary );
+                Assert.assertNotNull( m_gi );
+                // only supports a single invite for now!
+                int numHere = 1;
+                int forceChannel = 1;
+                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere, 
+                                                       forceChannel );
+
+                String value;
+                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
+                if ( null != value ) {
+                    SMSService.inviteRemote( m_activity, value, nli );
+                    recordInviteSent( InviteMeans.SMS, value );
+                }
+                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
+                if ( null != value ) {
+                    BTService.inviteRemote( m_activity, value, nli );
+                    recordInviteSent( InviteMeans.BLUETOOTH, value );
+                }
+                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
+                if ( null != value ) {
+                    RelayService.inviteRemote( m_activity, 0, value, nli );
+                    recordInviteSent( InviteMeans.RELAY, value );
+                }
+
+                showToast( R.string.rematch_sent_toast );
             }
         }
     }

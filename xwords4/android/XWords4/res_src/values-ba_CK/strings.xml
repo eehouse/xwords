@@ -2120,6 +2120,7 @@
   <string name="waiting_title">Gnitiaw rof sreyalp</string>
   <!-- Button for alert with title above -->
   <string name="waiting_invite_title">Gnitiaw rof esnopser</string>
+  <string name="waiting_rematch_title">Hctamer ni ssergorp</string>
   <!-- Button for alert with title above -->
   <string name="button_wait">Tiaw</string>
   <string name="button_reinvite">Etivni-er</string>
@@ -2139,10 +2140,10 @@
     tide ot evig ti a yaw ot ?tcennoc</string>
   <string name="button_edit">Tide</string>
   <string name="button_discard_changes">Dracsid segnahc</string>
-  <string name="rematch_msg">Gniussi hctamer noitativni. Uoy lliw
-    ees siht egassem litnu ti sah neeb detpecca.\n\nUoy od ton deen ot
-    peek siht emag nepo elihw gnitiaw. Uoy lliw eb deifiton nehw eht
-    emag si ydaer ot yalp.</string>
+  <string name="rematch_sent_toast">Hctamer snoitativni tnes</string>
+  <string name="rematch_msg">Siht emag si gnitsoh a ,hctamer dna sah
+    tnes na noitativni. Uoy lliw ees siht egassem litnu ti sah neeb
+    detpecca.</string>
   <string name="not_again_enablepublic">Cilbup smoor evah neeb edam
     na \"decnavda\" erutaef ni siht esaeler. Fi uoy erew gnisu meht
     dna tnaw meht ,kcab elbane meht won. Uoy nac nrut meht ffo niaga

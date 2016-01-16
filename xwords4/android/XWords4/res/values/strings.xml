@@ -2470,6 +2470,7 @@
     <string name="waiting_title">Waiting for players</string>
     <!-- Button for alert with title above -->
     <string name="waiting_invite_title">Waiting for response</string>
+    <string name="waiting_rematch_title">Rematch in progress</string>
     <!-- Button for alert with title above -->
     <string name="button_wait">Wait</string>
     <string name="button_reinvite">Re-invite</string>
@@ -2494,10 +2495,10 @@
     <string name="button_edit">Edit</string>
     <string name="button_discard_changes">Discard changes</string>
 
-    <string name="rematch_msg">Issuing rematch invitation. You will
-    see this message until it has been accepted.\n\nYou do not need to
-    keep this game open while waiting. You will be notified when the
-    game is ready to play.</string>
+    <string name="rematch_sent_toast">Rematch invitations sent</string>
+    <string name="rematch_msg">This game is hosting a rematch, and has
+    sent an invitation. You will see this message until it has been
+    accepted.</string>
 
     <string name="not_again_enablepublic">Public rooms have been made
     an \"advanced\" feature in this release. If you were using them

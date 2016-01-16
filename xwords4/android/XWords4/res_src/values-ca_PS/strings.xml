@@ -2120,6 +2120,7 @@
   <string name="waiting_title">WAITING FOR PLAYERS</string>
   <!-- Button for alert with title above -->
   <string name="waiting_invite_title">WAITING FOR RESPONSE</string>
+  <string name="waiting_rematch_title">REMATCH IN PROGRESS</string>
   <!-- Button for alert with title above -->
   <string name="button_wait">WAIT</string>
   <string name="button_reinvite">RE-INVITE</string>
@@ -2139,10 +2140,10 @@
     EDIT TO GIVE IT A WAY TO CONNECT?</string>
   <string name="button_edit">EDIT</string>
   <string name="button_discard_changes">DISCARD CHANGES</string>
-  <string name="rematch_msg">ISSUING REMATCH INVITATION. YOU WILL
-    SEE THIS MESSAGE UNTIL IT HAS BEEN ACCEPTED.\n\nYOU DO NOT NEED TO
-    KEEP THIS GAME OPEN WHILE WAITING. YOU WILL BE NOTIFIED WHEN THE
-    GAME IS READY TO PLAY.</string>
+  <string name="rematch_sent_toast">REMATCH INVITATIONS SENT</string>
+  <string name="rematch_msg">THIS GAME IS HOSTING A REMATCH, AND HAS
+    SENT AN INVITATION. YOU WILL SEE THIS MESSAGE UNTIL IT HAS BEEN
+    ACCEPTED.</string>
   <string name="not_again_enablepublic">PUBLIC ROOMS HAVE BEEN MADE
     AN \"ADVANCED\" FEATURE IN THIS RELEASE. IF YOU WERE USING THEM
     AND WANT THEM BACK, ENABLE THEM NOW. YOU CAN TURN THEM OFF AGAIN
