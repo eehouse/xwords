@@ -586,7 +586,7 @@
     <string name="invit_expl_sms_fmt">Invite sent via SMS to phone
     number %1$s on %2$s</string>
     <string name="invit_expl_bt_fmt">Invite sent via Bluetooth to
-    paired device %1$s on %2$s</string>
+    paired device \"%1$s\" on %2$s</string>
     <string name="invit_expl_relay_fmt">Invite forwarded by the relay
     to another device on %1$s</string>
     <string name="invit_expl_notarget_fmt">Invite sent via %1$s on

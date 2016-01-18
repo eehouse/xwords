@@ -465,9 +465,10 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.launchLookup( words, lang, !studyOn );
     }
 
-    protected void showInviteChoicesThen( Action action )
+    protected void showInviteChoicesThen( Action action,
+                                          DBUtils.SentInvitesInfo info )
     {
-        m_dlgDelegate.showInviteChoicesThen( action );
+        m_dlgDelegate.showInviteChoicesThen( action, info );
     }
 
     protected void showOKOnlyDialogThen( String msg, Action action )

@@ -500,7 +500,7 @@
   <string name="invit_expl_sms_fmt">INVITE SENT VIA SMS TO PHONE
     NUMBER %1$s ON %2$s</string>
   <string name="invit_expl_bt_fmt">INVITE SENT VIA BLUETOOTH TO
-    PAIRED DEVICE %1$s ON %2$s</string>
+    PAIRED DEVICE \"%1$s\" ON %2$s</string>
   <string name="invit_expl_relay_fmt">INVITE FORWARDED BY THE RELAY
     TO ANOTHER DEVICE ON %1$s</string>
   <string name="invit_expl_notarget_fmt">INVITE SENT VIA %1$s ON

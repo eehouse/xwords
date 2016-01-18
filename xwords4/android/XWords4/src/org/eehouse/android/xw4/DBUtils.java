@@ -423,23 +423,39 @@ public class DBUtils {
     public static class SentInvitesInfo {
         public long m_rowid;
         private ArrayList<InviteMeans> m_means;
-        private ArrayList<String> m_target;
-        private ArrayList<Timestamp> m_timestamp;
+        private ArrayList<String> m_targets;
+        private ArrayList<Timestamp> m_timestamps;
         private int m_cachedCount = 0;
 
         private SentInvitesInfo( long rowID ) {
             m_rowid = rowID;
             m_means = new ArrayList<InviteMeans>();
-            m_target = new ArrayList<String>();
-            m_timestamp = new ArrayList<Timestamp>();
+            m_targets = new ArrayList<String>();
+            m_timestamps = new ArrayList<Timestamp>();
         }
 
         private void addEntry( InviteMeans means, String target, Timestamp ts )
         {
             m_means.add( means );
-            m_target.add( target );
-            m_timestamp.add( ts );
+            m_targets.add( target );
+            m_timestamps.add( ts );
             m_cachedCount = -1;
+        }
+
+        public InviteMeans getLastMeans()
+        {
+            return 0 < m_means.size() ? m_means.get(0) : null;
+        }
+
+        public String getLastDev( InviteMeans means )
+        {
+            String result = null;
+            for ( int ii = 0; null == result && ii < m_means.size(); ++ii ) {
+                if ( means == m_means.get( ii ) ) {
+                    result = m_targets.get( ii );
+                }
+            }
+            return result;
         }
 
         // There will be lots of duplicates, but we can't detect them all. BUT
@@ -449,7 +465,7 @@ public class DBUtils {
         public int getMinPlayerCount() {
             if ( -1 == m_cachedCount ) {
                 DbgUtils.logf( "getMinPlayerCount(%H)", this );
-                int count = m_timestamp.size();
+                int count = m_timestamps.size();
                 Map<InviteMeans, Set<String>> hashes
                     = new HashMap<InviteMeans, Set<String>>();
                 int fakeCount = 0; // make all null-targets count for one
@@ -462,7 +478,7 @@ public class DBUtils {
                         hashes.put( means, devs );
                     }
                     devs = hashes.get( means );
-                    String target = m_target.get( ii );
+                    String target = m_targets.get( ii );
                     if ( null == target ) {
                         target = String.format( "%d", ++fakeCount );
                     }
@@ -487,12 +503,12 @@ public class DBUtils {
 
         public String getAsText( Context context )
         {
-            int count = m_timestamp.size();
+            int count = m_timestamps.size();
             String[] strs = new String[count];
             for ( int ii = 0; ii < count; ++ii ) {
                 InviteMeans means = m_means.get(ii);
-                String target = m_target.get(ii);
-                String timestamp = m_timestamp.get(ii).toString();
+                String target = m_targets.get(ii);
+                String timestamp = m_timestamps.get(ii).toString();
                 String msg;
 
                 switch ( means ) {
@@ -501,8 +517,9 @@ public class DBUtils {
                                               target, timestamp );
                     break;
                 case BLUETOOTH:
+                    String devName = BTService.nameForAddr( target );
                     msg = LocUtils.getString( context, R.string.invit_expl_bt_fmt,
-                                              target, timestamp );
+                                              devName, timestamp );
                     break;
                 case RELAY:
                     msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,

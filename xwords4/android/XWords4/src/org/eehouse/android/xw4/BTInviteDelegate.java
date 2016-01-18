@@ -44,6 +44,8 @@ import java.util.Iterator;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 
 public class BTInviteDelegate extends InviteDelegate {
 
@@ -53,12 +55,17 @@ public class BTInviteDelegate extends InviteDelegate {
     private boolean m_setChecked;
     private BTDevsAdapter m_adapter;
 
-    public static void launchForResult( Activity activity, int nMissing, 
+    public static void launchForResult( Activity activity, int nMissing,
+                                        SentInvitesInfo info,
                                         RequestCode requestCode )
     {
         Assert.assertTrue( 0 < nMissing ); // don't call if nMissing == 0
         Intent intent = new Intent( activity, BTInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
+        if ( null != info ) {
+            String lastDev = info.getLastDev( InviteMeans.BLUETOOTH );
+            intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
+        }
         activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
@@ -238,6 +245,9 @@ public class BTInviteDelegate extends InviteDelegate {
             box.setOnCheckedChangeListener( listener );
 
             if ( m_setChecked || m_checked.contains( btAddr ) ) {
+                box.setChecked( true );
+            } else if ( null != m_lastDev && m_lastDev.equals( btAddr ) ) {
+                m_lastDev = null;
                 box.setChecked( true );
             }
             return layout;

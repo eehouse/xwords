@@ -47,6 +47,7 @@ import java.util.Iterator;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 
 public class DlgDelegate {
 
@@ -391,13 +392,14 @@ public class DlgDelegate {
         showDialog( DlgID.CONFIRM_THEN );
     }
 
-    public void showInviteChoicesThen( final Action action )
+    public void showInviteChoicesThen( final Action action,
+                                       SentInvitesInfo info )
     {
         if ( (XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS( m_activity ))
              || XWPrefs.getNFCToSelfEnabled( m_activity )
              || NFCUtils.nfcAvail( m_activity )[0]
              || BTService.BTAvailable() ) {
-            DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN, action );
+            DlgState state = new DlgState( DlgID.INVITE_CHOICES_THEN, action, info );
             addState( state );
             showDialog( DlgID.INVITE_CHOICES_THEN );
         } else {
@@ -616,6 +618,12 @@ public class DlgDelegate {
         final ArrayList<DlgClickNotify.InviteMeans> means = 
             new ArrayList<DlgClickNotify.InviteMeans>();
         ArrayList<String> items = new ArrayList<String>();
+        DlgClickNotify.InviteMeans lastMeans = null;
+        if ( null != state.m_params
+             && state.m_params[0] instanceof SentInvitesInfo ) {
+            lastMeans =((SentInvitesInfo)state.m_params[0]).getLastMeans();
+        }
+        
         if ( XWApp.SMS_INVITE_ENABLED && Utils.deviceSupportsSMS(m_activity) ) {
             items.add( getString( R.string.invite_choice_sms ) );
             means.add( DlgClickNotify.InviteMeans.SMS );
@@ -640,22 +648,27 @@ public class DlgDelegate {
         means.add( DlgClickNotify.InviteMeans.CLIPBOARD );
 
         final int[] sel = { -1 };
+        if ( null != lastMeans ) {
+            for ( int ii = 0; ii < means.size(); ++ii ) {
+                if ( lastMeans == means.get(ii) ) {
+                    sel[0] = ii;
+                    break;
+                }
+            }
+        }
+
         OnClickListener selChanged = new OnClickListener() {
                 public void onClick( DialogInterface dlg, int view ) {
-                    // First time through, enable the button
-                    if ( -1 == sel[0] ) {
-                        ((AlertDialog)dlg)
-                            .getButton( AlertDialog.BUTTON_POSITIVE )
-                            .setEnabled( true );
-                    }
                     sel[0] = view;
-
                     if ( view == clipPos ) {
                         String msg = 
                             getString( R.string.not_again_clip_expl_fmt,
                                        getString(R.string.slmenu_copy_sel) );
                         showNotAgainDlgThen( msg, R.string.key_na_clip_expl );
                     }
+                    Button button = ((AlertDialog)dlg)
+                        .getButton( AlertDialog.BUTTON_POSITIVE );
+                    button.setEnabled( true );
                 }
             };
         OnClickListener okClicked = new OnClickListener() {
@@ -672,7 +685,7 @@ public class DlgDelegate {
 
         AlertDialog.Builder builder = LocUtils.makeAlertBuilder( m_activity )
             .setTitle( R.string.invite_choice_title )
-            .setSingleChoiceItems( items.toArray( new String[items.size()] ), 
+            .setSingleChoiceItems( items.toArray( new String[items.size()] ),
                                    sel[0], selChanged )
             .setPositiveButton( android.R.string.ok, okClicked )
             .setNegativeButton( android.R.string.cancel, null );
@@ -685,7 +698,8 @@ public class DlgDelegate {
         AlertDialog ad = (AlertDialog)dialog;
         Button button = ad.getButton( AlertDialog.BUTTON_POSITIVE );
         if ( null != button ) {
-            button.setEnabled( false );
+            long[] ids = ad.getListView().getCheckedItemIds();
+            button.setEnabled( 1 == ids.length );
         }
     }
 

@@ -500,7 +500,7 @@
   <string name="invit_expl_sms_fmt">Etivni tnes aiv SMS ot enohp
     rebmun %1$s no %2$s</string>
   <string name="invit_expl_bt_fmt">Etivni tnes aiv Htooteulb ot
-    deriap ecived %1$s no %2$s</string>
+    deriap ecived \"%1$s\" no %2$s</string>
   <string name="invit_expl_relay_fmt">Etivni dedrawrof yb eht yaler
     ot rehtona ecived no %1$s</string>
   <string name="invit_expl_notarget_fmt">Etivni tnes aiv %1$s no

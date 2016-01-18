@@ -438,7 +438,8 @@ public class BoardDelegate extends DelegateBase
                                 if ( m_summary.hasRematchInfo() ) {
                                     tryRematchInvites( true );
                                 } else {                                
-                                    showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
+                                    showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION,
+                                                           m_sentInfo );
                                 }
                             } else {
                                 askDropRelay();
@@ -1083,6 +1084,8 @@ public class BoardDelegate extends DelegateBase
                                   Object[] params )
     {
         if ( action == Action.LAUNCH_INVITE_ACTION ) {
+            SentInvitesInfo info = params[0] instanceof SentInvitesInfo
+                ? (SentInvitesInfo)params[0] : null;
             switch( means ) {
             case NFC:
                 if ( XWPrefs.getNFCToSelfEnabled( m_activity ) ) {
@@ -1094,11 +1097,11 @@ public class BoardDelegate extends DelegateBase
                 }
                 break;
             case BLUETOOTH:
-                BTInviteDelegate.launchForResult( m_activity, m_nMissing,
+                BTInviteDelegate.launchForResult( m_activity, m_nMissing, info,
                                                   RequestCode.BT_INVITE_RESULT );
                 break;
             case SMS:
-                SMSInviteDelegate.launchForResult( m_activity, m_nMissing, 
+                SMSInviteDelegate.launchForResult( m_activity, m_nMissing, info,
                                                    RequestCode.SMS_INVITE_RESULT );
                 break;
             case RELAY:
@@ -2422,7 +2425,6 @@ public class BoardDelegate extends DelegateBase
             m_invitesPending = m_missingDevs.length;
             for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
                 String dev = m_missingDevs[ii];
-                String devName = dev; 
                 int nPlayers = m_missingCounts[ii];
                 Assert.assertTrue( 0 <= m_nGuestDevs );
                 int forceChannel = ii + m_nGuestDevs + 1;
@@ -2436,8 +2438,7 @@ public class BoardDelegate extends DelegateBase
                 case BLUETOOTH:
                     if ( ! m_progressShown ) {
                         m_progressShown = true;
-                        devName = BTService.nameForAddr( dev );
-                        String progMsg = devName;
+                        String progMsg = BTService.nameForAddr( dev );
                         progMsg = getString( R.string.invite_progress_fmt, progMsg );
                         startProgress( R.string.invite_progress_title, progMsg,
                                        new OnCancelListener() {
@@ -2463,7 +2464,7 @@ public class BoardDelegate extends DelegateBase
                     break;
                 }
 
-                recordInviteSent( m_missingMeans, devName );
+                recordInviteSent( m_missingMeans, dev );
             }
             m_missingDevs = null;
             m_missingCounts = null;
