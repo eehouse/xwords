@@ -185,11 +185,24 @@ public class BTInviteDelegate extends InviteDelegate {
     private class BTDevsAdapter extends XWListAdapter {
         private String[] m_devAddrs;
         private String[] m_devNames;
+        private LinearLayout[] m_views;
+
         public BTDevsAdapter( String[] btAddrs, String[] btNames )
         {
             super( null == btAddrs? 0 : btAddrs.length );
             m_devAddrs = btAddrs;
             m_devNames = btNames;
+            m_views = new LinearLayout[getCount()];
+        }
+
+        public void clearCheckedExcept( CompoundButton buttonView )
+        {
+            for ( LinearLayout layout : m_views ) {
+                if ( null != layout ) {
+                    CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
+                    box.setChecked( box.equals(buttonView) );
+                }
+            }
         }
 
         public Object getItem( int position ) { return m_devNames[position]; }
@@ -233,6 +246,11 @@ public class BTInviteDelegate extends InviteDelegate {
                                                   boolean isChecked )
                     {
                         if ( isChecked ) {
+                            if ( 1 == m_nMissing && 1 == m_checked.size() ) {
+                                m_checked.clear();
+                                m_adapter.clearCheckedExcept( buttonView );
+                            }
+                            
                             m_checked.add( btAddr );
                         } else {
                             m_checked.remove( btAddr );
@@ -250,6 +268,7 @@ public class BTInviteDelegate extends InviteDelegate {
                 m_lastDev = null;
                 box.setChecked( true );
             }
+            m_views[position] = layout;
             return layout;
         }
 
