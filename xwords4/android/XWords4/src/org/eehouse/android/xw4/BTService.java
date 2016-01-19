@@ -129,13 +129,7 @@ public class BTService extends XWService {
         NetLaunchInfo m_nli;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; m_failCount = 0; }
-        // public BTQueueElem( BTCmd cmd, String btAddr, 
-        //                     int gameID, String gameName, int lang, 
-        //                     String dict, int nPlayersT, int nPlayersH ) {
-        //     this( cmd, null, btAddr, gameID );
-        //     m_lang = lang; m_dict = dict; m_nPlayersT = nPlayersT; 
-        //     m_nPlayersH = nPlayersH; m_gameName = gameName;
-        // }
+
         public BTQueueElem( BTCmd cmd, byte[] buf, String btAddr, int gameID ) {
             this( cmd );
             Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
@@ -1235,13 +1229,17 @@ public class BTService extends XWService {
         @Override
         public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
         {
+            int nSent = -1;
             String btAddr = getSafeAddr( addr );
-            
-            Assert.assertTrue( addr.contains( CommsConnType.COMMS_CONN_BT ) );
-            m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf,
-                                           btAddr, gameID ) );
-            return buf.length;
+            if ( null != btAddr && 0 < btAddr.length() ) {
+                m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, btAddr,
+                                               gameID ) );
+                nSent = buf.length;
+            } else {
+                DbgUtils.logf( "sendViaBluetooth(): no addr for dev %s",
+                               addr.bt_hostName );
+            }
+            return nSent;
         }
     }
-
 }
