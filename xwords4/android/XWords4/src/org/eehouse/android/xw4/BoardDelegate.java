@@ -839,14 +839,14 @@ public class BoardDelegate extends DelegateBase
         enable = m_gameOver && rematchSupported( false );
         Utils.setItemVisible( menu, R.id.board_menu_rematch, enable );
 
-        enable = null != m_gi
+        boolean netGame = null != m_gi
             && DeviceRole.SERVER_STANDALONE != m_gi.serverRole;
-        Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, enable );
-        Utils.setItemVisible( menu, R.id.board_menu_game_resend, 
-                              enable && null != m_gsi && 
-                              0 < m_gsi.nPendingMessages );
+        Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, netGame );
+        enable = netGame && null != m_gsi && 0 < m_gsi.nPendingMessages;
+        Utils.setItemVisible( menu, R.id.board_menu_game_resend,  enable );
 
-        enable = enable && BuildConfig.DEBUG;
+        enable = netGame && (BuildConfig.DEBUG
+                             || XWPrefs.getDebugEnabled( m_activity ) );
         Utils.setItemVisible( menu, R.id.board_menu_game_netstats, enable );
         Utils.setItemVisible( menu, R.id.board_menu_game_invites, enable );
                               

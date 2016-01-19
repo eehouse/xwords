@@ -1555,7 +1555,8 @@ public class GamesListDelegate extends ListDelegateBase
                                                          item.getRowID() );
                 Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
 
-                enable = BuildConfig.DEBUG && item.getSummary().isMultiGame();
+                enable = item.getSummary().isMultiGame()
+                    && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
                 Utils.setItemVisible( menu, R.id.games_game_invites, enable );
             }
         }
