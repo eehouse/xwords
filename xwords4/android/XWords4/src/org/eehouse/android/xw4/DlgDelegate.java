@@ -283,9 +283,9 @@ public class DlgDelegate {
     // Puts up alert asking to choose a reason to enable SMS, and on dismiss
     // calls dlgButtonClicked with the action and in params a Boolean
     // indicating whether enabling is now ok.
-    public void showSMSEnableDialog( Action action )
+    public void showSMSEnableDialog( Action action, Object... params )
     {
-        DlgState state = new DlgState( DlgID.DIALOG_ENABLESMS, action );
+        DlgState state = new DlgState( DlgID.DIALOG_ENABLESMS, action, params );
         addState( state );
         showDialog( DlgID.DIALOG_ENABLESMS );
     }
@@ -367,6 +367,12 @@ public class DlgDelegate {
     public void showConfirmThen( int msg, int posButton, int negButton, Action action )
     {
         showConfirmThen( null, getString(msg), posButton, negButton, action, null );
+    }
+
+    public void showConfirmThen( int msg, int posButton, int negButton, Action action,
+                                 Object... params )
+    {
+        showConfirmThen( null, getString(msg), posButton, negButton, action, params );
     }
 
     public void showConfirmThen( int msg, int posButton, Action action,
@@ -643,7 +649,6 @@ public class DlgDelegate {
             items.add( getString( R.string.invite_choice_relay ) );
             means.add( DlgClickNotify.InviteMeans.RELAY );
         }
-        final int clipPos = means.size();
         items.add( getString( R.string.slmenu_copy_sel ) );
         means.add( DlgClickNotify.InviteMeans.CLIPBOARD );
 
@@ -660,11 +665,21 @@ public class DlgDelegate {
         OnClickListener selChanged = new OnClickListener() {
                 public void onClick( DialogInterface dlg, int view ) {
                     sel[0] = view;
-                    if ( view == clipPos ) {
+                    switch ( means.get(view) ) {
+                    case CLIPBOARD:
                         String msg = 
                             getString( R.string.not_again_clip_expl_fmt,
                                        getString(R.string.slmenu_copy_sel) );
                         showNotAgainDlgThen( msg, R.string.key_na_clip_expl );
+                        break;
+                    case SMS:
+                        if ( ! XWPrefs.getSMSEnabled( m_activity ) ) {
+                            showConfirmThen( R.string.warn_sms_disabled,
+                                             R.string.button_enable_sms,
+                                             R.string.button_later,
+                                             Action.ENABLE_SMS_ASK );
+                        }
+                        break;
                     }
                     Button button = ((AlertDialog)dlg)
                         .getButton( AlertDialog.BUTTON_POSITIVE );
@@ -731,10 +746,9 @@ public class DlgDelegate {
                         layout.findViewById( R.id.confirm_sms_reasons );
                     boolean enabled = 0 < reasons.getSelectedItemPosition();
                     Assert.assertTrue( enabled );
-                    Object[] params = { new Boolean(enabled), };
                     m_clickCallback.dlgButtonClicked( state.m_action, 
                                                       AlertDialog.BUTTON_POSITIVE,
-                                                      params );
+                                                      state.m_params );
                 }
             };
 

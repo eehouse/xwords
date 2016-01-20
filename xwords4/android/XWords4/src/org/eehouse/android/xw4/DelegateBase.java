@@ -426,6 +426,12 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action );
     }
 
+    protected void showConfirmThen( int msg, int posButton, int negButton,
+                                    Action action, Object... params )
+    {
+        m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action, params );
+    }
+
     protected void showConfirmThen( int msg, int posButton, Action action, 
                                     Object... params )
     {
@@ -513,9 +519,9 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showDictGoneFinish();
     }
 
-    protected void showSMSEnableDialog( Action action )
+    protected void showSMSEnableDialog( Action action, Object... params )
     {
-        m_dlgDelegate.showSMSEnableDialog( action );
+        m_dlgDelegate.showSMSEnableDialog( action, params );
     }
     
     //////////////////////////////////////////////////
@@ -566,14 +572,11 @@ public class DelegateBase implements DlgClickNotify,
         if ( AlertDialog.BUTTON_POSITIVE == button ) {
             switch( action ) {
             case ENABLE_SMS_ASK:
-                showSMSEnableDialog( Action.ENABLE_SMS_DO );
+                showSMSEnableDialog( Action.ENABLE_SMS_DO, params );
                 handled = true;
                 break;
             case ENABLE_SMS_DO:
-                boolean enabled = (Boolean)params[0];
-                if ( enabled ) {
-                    XWPrefs.setSMSEnabled( m_activity, true );
-                }
+                XWPrefs.setSMSEnabled( m_activity, true );
                 break;
             case ENABLE_BT_DO:
                 BTService.enable();

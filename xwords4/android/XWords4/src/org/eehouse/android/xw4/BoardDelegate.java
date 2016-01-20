@@ -992,7 +992,8 @@ public class BoardDelegate extends DelegateBase
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which,
+                                  final Object[] params )
     {
         boolean handled = false;
         if ( AlertDialog.BUTTON_POSITIVE == which ) {
@@ -1066,6 +1067,17 @@ public class BoardDelegate extends DelegateBase
             case DELETE_AND_EXIT:
                 deleteAndClose();
                 break;
+
+            case ENABLE_SMS_DO:
+                handled = false; // so super gets called, before
+                                 // retrySMSInvites
+                post( new Runnable() {
+                        public void run() {
+                            retrySMSInvites( params );
+                        }
+                    } );
+                break;
+                
             default:
                 handled = false;
             }
@@ -2451,7 +2463,8 @@ public class BoardDelegate extends DelegateBase
                     BTService.inviteRemote( m_activity, dev, nli );
                     break;
                 case SMS:
-                    SMSService.inviteRemote( m_activity, dev, nli );
+                    sendSMSInviteIf( dev, nli, true );
+                    dev = null; // don't record send a second time
                     break;
                 case RELAY:
                     try {
@@ -2464,7 +2477,9 @@ public class BoardDelegate extends DelegateBase
                     break;
                 }
 
-                recordInviteSent( m_missingMeans, dev );
+                if ( null != dev ) {
+                    recordInviteSent( m_missingMeans, dev );
+                }
             }
             m_missingDevs = null;
             m_missingCounts = null;
@@ -2713,8 +2728,7 @@ public class BoardDelegate extends DelegateBase
                 String value;
                 value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
                 if ( null != value ) {
-                    SMSService.inviteRemote( m_activity, value, nli );
-                    recordInviteSent( InviteMeans.SMS, value );
+                    sendSMSInviteIf( value, nli, true );
                 }
                 value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
                 if ( null != value ) {
@@ -2732,6 +2746,32 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    private void sendSMSInviteIf( String phone, NetLaunchInfo nli,
+                                  boolean askOk )
+    {
+        if ( XWPrefs.getSMSEnabled( m_activity ) ) {
+            SMSService.inviteRemote( m_activity, phone, nli );
+            recordInviteSent( InviteMeans.SMS, phone );
+        } else if ( askOk ) {
+            showConfirmThen( R.string.warn_sms_disabled,
+                             R.string.button_enable_sms,
+                             R.string.button_later,
+                             Action.ENABLE_SMS_ASK, nli, phone );
+        }
+    }
+
+    private void retrySMSInvites( Object[] params )
+    {
+        if ( null != params && 2 == params.length 
+             && params[0] instanceof NetLaunchInfo
+             && params[1] instanceof String ) {
+            sendSMSInviteIf( (String)params[1], (NetLaunchInfo)params[0],
+                             false );
+        } else {
+            DbgUtils.logf( "retrySMSInvites: tests failed" );
+        }
+    }
+    
     private void recordInviteSent( InviteMeans means, String dev )
     {
         DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
