@@ -291,7 +291,15 @@ public class DBUtils {
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
-            values.put( DBHelper.EXTRAS, summary.getExtras() );
+
+            // Don't overwrite extras! Sometimes this method is called from
+            // JNIThread which has created the summary from common code that
+            // doesn't know about Android additions. Leave those unset to
+            // avoid overwriting.
+            String extras = summary.getExtras();
+            if ( null != extras ) {
+                values.put( DBHelper.EXTRAS, summary.getExtras() );
+            }
             long nextNag = summary.nextTurnIsLocal() ?
                 NagTurnReceiver.figureNextNag( context, 
                                                1000*(long)summary.lastMoveTime )
