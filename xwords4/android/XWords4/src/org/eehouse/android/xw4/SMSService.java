@@ -637,22 +637,11 @@ public class SMSService extends XWService {
 
     private void makeForInvite( String phone, NetLaunchInfo nli )
     {
-        SMSMsgSink sink = new SMSMsgSink( this );
-        long rowid = GameUtils.makeNewMultiGame( this, nli, sink, null );
+        long rowid = GameUtils.makeNewMultiGame( this, nli,
+                                                 new SMSMsgSink( this ),
+                                                 getUtilCtxt() );
         postNotification( phone, nli.gameID(), rowid );
         ackInvite( phone, nli.gameID() );
-    }
-
-    private void makeForInvite( String phone, int gameID, String gameName, 
-                                int lang, String dict, int nPlayersT, 
-                                int nPlayersH, int forceChannel )
-    {
-        long rowid = 
-            GameUtils.makeNewGame( this, gameID, new CommsAddrRec( phone ), 
-                                   lang, dict, nPlayersT, nPlayersH, 
-                                   forceChannel, gameName );
-        postNotification( phone, gameID, rowid );
-        ackInvite( phone, gameID );
     }
 
     private PendingIntent makeStatusIntent( String msg )

@@ -53,8 +53,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
-import org.eehouse.android.xw4.jni.UtilCtxt;
-import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -256,8 +254,8 @@ public class RelayService extends XWService
             // make the initial connection -- needs access to util. That
             // should be fixable -- eventually.
             RelayMsgSink sink = new RelayMsgSink();
-            UtilCtxt util = new UtilCtxtImpl( this );
-            long rowid = GameUtils.makeNewMultiGame( this, nli, sink, util );
+            long rowid = GameUtils.makeNewMultiGame( this, nli, sink,
+                                                     getUtilCtxt() );
             if ( DBUtils.ROWID_NOTFOUND != rowid ) {
                 if ( null != nli.gameName && 0 < nli.gameName.length() ) {
                     DBUtils.setName( this, rowid, nli.gameName );
