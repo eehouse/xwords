@@ -382,7 +382,9 @@ DBMgr::RegisterDevice( const DevID* host, int clientVersion,
         // coming from random, but test with increasing values initially to make
         // sure duplicates are detected.
         const char* devidStr = host->m_devIDString.c_str();
-        for ( bool success = false, ii = 0; !success; ++ii ) {
+        int ii;
+        bool success;
+        for ( success = false, ii = 0; !success; ++ii ) {
             assert( 10 > ii );  // better to check that we're looping BECAUSE
                                 // of uniqueness problem.
             do {
