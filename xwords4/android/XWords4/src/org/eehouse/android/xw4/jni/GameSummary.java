@@ -461,7 +461,7 @@ public class GameSummary {
                     break;
                 }
             }
-            DbgUtils.logf( "hasRematchInfo() => %b", found );
+            // DbgUtils.logf( "hasRematchInfo() => %b", found );
         }
         return found;
     }
