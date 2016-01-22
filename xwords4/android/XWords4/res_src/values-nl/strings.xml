@@ -16,16 +16,16 @@
   </plurals>
   <string name="button_delete">Verwijder</string>
   <string name="button_reset">Reset</string>
-  <string name="gamel_menu_dicts">Woordenlijsten</string>
-  <string name="menu_prefs">Instellingen</string>
+  <string name="gamel_menu_dicts">Woordenlijsten…</string>
+  <string name="menu_prefs">Instellingen…</string>
   <string name="gamel_menu_checkmoves">Zoek naar nieuwe zetten</string>
-  <string name="msgs_progress">Zoeken naar nieuwe zetten</string>
+  <string name="msgs_progress">Zoeken naar nieuwe zetten…</string>
   <string name="no_games_to_refresh">Geen spellen gevonden die via de relay verbinden.</string>
-  <string name="board_menu_file_about">Over Crosswords</string>
+  <string name="board_menu_file_about">Over Crosswords…</string>
   <string name="game_item_menu_title_fmt">\"%1$s\" acties:</string>
-  <string name="list_item_config">Spelinstellingen</string>
-  <string name="list_item_rename">Hernoem</string>
-  <string name="list_item_move">Verplaats naar groep</string>
+  <string name="list_item_config">Spelinstellingen…</string>
+  <string name="list_item_rename">Hernoem…</string>
+  <string name="list_item_move">Verplaats naar groep…</string>
   <string name="list_item_delete">Verwijder spel</string>
   <string name="list_item_reset">Reset</string>
   <string name="list_item_new_from">Nieuw spel gebaseerd op</string>
@@ -43,7 +43,7 @@
     <item quantity="other">Weet je zeker dat je %1$d geselecteerde spellen wilt resetten?\n\n(Resetten verwijderd alle zetten en verbindingsinformatie.)</item>
   </plurals>
   <string name="title_dicts_list">Crosswords Woordenlijsten</string>
-  <string name="download_dicts">Meer downloaden</string>
+  <string name="download_dicts">Meer downloaden…</string>
   <string name="loc_builtin">Ingebouwd</string>
   <string name="loc_downloads">Downloads</string>
   <string name="dicts_item_move">Verander opslaglocatie</string>
@@ -107,7 +107,7 @@
   <string name="password_label">Wachtwoord</string>
   <string name="button_trade_commit">Bevestig wisselen</string>
   <string name="button_trade_cancel">Annuleer wisselen</string>
-  <string name="entering_trade">Druk op letters om ze te selecteren</string>
+  <string name="entering_trade">Druk op letters om ze te selecteren…</string>
   <string name="bonus_l2x_summary">2L</string>
   <string name="bonus_w2x_summary">2W</string>
   <string name="bonus_l3x_summary">3L</string>
@@ -145,9 +145,9 @@
   <string name="board_menu_tray_show">Toon rek</string>
   <string name="board_menu_undo_last">Maak laatste zet ongedaan</string>
   <string name="board_submenu_game">Spel -&gt;</string>
-  <string name="board_menu_game_counts">Tellingen en waarden</string>
-  <string name="board_menu_game_left">Letters over</string>
-  <string name="board_menu_game_history">Spelgeschiedenis</string>
+  <string name="board_menu_game_counts">Tellingen en waarden…</string>
+  <string name="board_menu_game_left">Letters over…</string>
+  <string name="board_menu_game_history">Spelgeschiedenis…</string>
   <string name="board_menu_game_final">Eindscores</string>
   <string name="board_menu_game_resign">Opgeven</string>
   <string name="board_menu_game_resend">Verstuur berichten opnieuw</string>
@@ -155,7 +155,7 @@
     <item quantity="one">Opnieuw versturen voltooid; %1$d bericht verstuurd.</item>
     <item quantity="other">Opnieuw versturen voltooid; %1$d berichten verstuurd.</item>
   </plurals>
-  <string name="str_robot_moved_fmt">"De robot %1$s maakte de volgende zet: "</string>
+  <string name="str_robot_moved_fmt">"De robot %1$s deed de volgende zet: "</string>
   <plurals name="strd_robot_traded_fmt">
 	<item quantity="one">heeft een letter geruild.</item>
 	<item quantity="other">heeft %1$d letters geruild.</item>
@@ -173,7 +173,7 @@
   <string name="strs_tray_at_start_fmt">Rek bij start: %1$s\n</string>
   <string name="strss_traded_for_fmt">%1$s ingeruild voor %2$s.</string>
   <string name="str_phony_rejected">Fout woord in laatste beurt; beurt verloren!</string>
-  <string name="str_commit_confirm">Deze zet maken?\n</string>
+  <string name="str_commit_confirm">Deze zet doen?\n</string>
   <string name="str_nonlocal_name_fmt">%1$s (op afstand)</string>
   <string name="vs_join">" tegen "</string>
   <string name="str_bonus_all">Bonus voor het gebruiken van alle letters: 50\n</string>
@@ -201,7 +201,7 @@
   <string name="pref_player3_name">Derde speler</string>
   <string name="pref_player4_name">Vierde speler</string>
   <string name="pref_human_name">Menselijke speler</string>
-  <string name="tell_unused">Nog niet in gebruik</string>
+  <string name="tell_unused">Nog niet in gebruik…</string>
   <string name="prefs_dicts">Woordenlijsten</string>
   <string name="prefs_dicts_summary">Standaard woordenlijsten</string>
   <string name="default_dict">Woordenlijst voor mensen</string>
@@ -313,7 +313,7 @@
   <string name="str_cant_hint_while_disabled">De hint functie is in dit spel uitgeschakeld. Schakel het voor nieuwe spellen in bij Instellingen.</string>
   <string name="str_reg_unexpected_user">Verzoek tot registreren van een onverwachte gebruiken geweigerd.</string>
   <string name="str_server_dict_wins">Conflict tussen woordenlijsten van Host en Gast; Host wint.</string>
-  <string name="downloading_dict_fmt">%1$s downloaden</string>
+  <string name="downloading_dict_fmt">%1$s downloaden…</string>
   <string name="no_dict_title">Woordenlijst niet gevonden</string>
   <string name="no_dict_finish">Een woordenlijst gebruikt door dit spel is niet meer beschikbaar. (Meestal betekend dit dat de lijst op een SD kaart staat welke niet langer beschikbaar is.)</string>
   <string name="button_close_game">Sluit spel</string>
@@ -339,7 +339,7 @@
   <string name="history_title">Spelgeschiedenis</string>
   <string name="finalscores_title">Eindscores</string>
   <string name="ids_endnow">Weet je zeker dat je op wilt geven?</string>
-  <string name="query_title">Een vraag</string>
+  <string name="query_title">Een vraag…</string>
   <string name="newbie_title">Een tip</string>
   <string name="button_notagain">Niet opnieuw tonen</string>
   <string name="not_again_sync">Deze actie vraagt de relay of er nog nieuwe zetten of berichten zijn voor spellen via een netwerk en dit aangeven. Als je een afgegeven spel opent zal deze verbinden en synchroniseren. (In een latere versie zullen deze zetten automatisch in de achtergrond gedownload worden.)</string>
@@ -463,7 +463,7 @@
   <string name="menu_chat">Chat</string>
   <string name="menu_toggle_values">Schakel waardes in/uit</string>
   <string name="board_menu_dict">Bekijk woordenlijst</string>
-  <string name="game_list_tmp">Samenvatting spel opbouwen</string>
+  <string name="game_list_tmp">Samenvatting spel opbouwen…</string>
   <string name="connstat_net_noaddr">Dit netwerk spel heeft geen manier om te verbinden en zal nooit speelbaar worden.\n\n(Het was waarschijnlijk gemaakt via een uitnodiging die geen verbindingsmanier specificeert die jouw apparaat ondersteund.)</string>
   <string name="connstat_net_fmt">Netwerkstatus voor spel verbonden via %1$s:</string>
   <string name="connstat_succ">succesvol</string>
@@ -561,7 +561,7 @@
   <string name="add_to_study_fmt">Voeg %1$s aan studielijst toe</string>
   <string name="title_studyon">Schakel studielijsten in</string>
   <string name="summary_studyon">Bied een lijst van te onthouden woorden te tonen of aan toe te voegen</string>
-  <string name="gamel_menu_study">Studielijst</string>
+  <string name="gamel_menu_study">Studielijst…</string>
   <string name="slmenu_copy_sel">Kopieer naar kladblok</string>
   <string name="slmenu_clear_sel">Verwijder geselecteerd</string>
   <plurals name="confirm_studylist_clear_fmt">
@@ -621,8 +621,8 @@
   <string name="loc_item_copy_bless">Kopieer officieel</string>
   <string name="loc_fmts_mismatch">Foute vertalen: een vertaalde zin moet dezelfde formaat specificaties (bijv. %1$s) hebben als het origineel.</string>
   <string name="not_again_fmt_expl">Deze zin heeft speciale formaat specificaties (bijv. %1$s). Zorg ervoor dat jouw vertaling dezelfde specificaties heeft als het origineel.\n\n(Je kan niet opslaan tenzij dat het geval is.)</string>
-  <string name="remote_empty">Woordenlijst informatie van server ophalen</string>
-  <string name="remote_digesting">Woordenlijst informatie verwerken</string>
+  <string name="remote_empty">Woordenlijstinformatie van server ophalen…</string>
+  <string name="remote_digesting">Woordenlijstinformatie verwerken…</string>
   <string name="remote_no_net">Kon woordenlijstinformatie niet van server ophalen.</string>
   <string name="getinfo">Verkrijg informatie</string>
   <string name="delete_dicts">Verwijder woordenlijst[en]</string>
