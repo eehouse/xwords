@@ -136,7 +136,12 @@ public class Utils {
 
     public static void showToast( Context context, String msg )
     {
-        Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
+        // Make this safe to call from non-looper threads
+        try {
+            Toast.makeText( context, msg, Toast.LENGTH_SHORT).show();
+        } catch ( java.lang.RuntimeException re ) {
+            DbgUtils.loge( re );
+        }
     }
 
     public static void showToast( Context context, int id )

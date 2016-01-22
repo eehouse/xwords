@@ -469,8 +469,8 @@ public class GameUtils {
                                  addr, new int[] {nli.lang}, 
                                  new String[] { nli.dict }, nli.nPlayersT, 
                                  nli.nPlayersH, nli.forceChannel,
-                                 nli.inviteID(), nli.gameID(), nli.gameName,
-                                 false );
+                                 nli.inviteID(), nli.gameID(),
+                                 nli.gameName, false );
     }
 
     public static long makeNewMultiGame( Context context, long groupID, 
@@ -543,7 +543,7 @@ public class GameUtils {
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             GameLock lock = new GameLock( rowid, true ).lock();
-            applyChanges( context, sink, gi, util, addr, inviteID, lock, false );
+            applyChanges( context, sink, gi, util, addr, lock, false );
             lock.unlock();
         }
 
@@ -875,7 +875,8 @@ public class GameUtils {
 
     public static boolean feedMessages( Context context, long rowid,
                                         byte[][] msgs, CommsAddrRec ret,
-                                        MultiMsgSink sink, BackMoveResult bmr )
+                                        MultiMsgSink sink, BackMoveResult bmr,
+                                        boolean[] isLocalOut )
     {
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
@@ -920,7 +921,12 @@ public class GameUtils {
                     }
 
                     saveGame( context, gamePtr, gi, lock, false );
-                    summarizeAndClose( context, lock, gamePtr, gi );
+                    GameSummary summary = summarizeAndClose( context, lock,
+                                                             gamePtr, gi );
+                    if ( null != isLocalOut ) {
+                        isLocalOut[0] = 0 <= summary.turn
+                            && gi.players[summary.turn].isLocal;
+                    }
 
                     int flags = setFromFeedImpl( feedImpl );
                     if ( GameSummary.MSG_FLAGS_NONE != flags ) {
@@ -937,12 +943,12 @@ public class GameUtils {
 
     public static boolean feedMessage( Context context, long rowid, byte[] msg,
                                        CommsAddrRec ret, MultiMsgSink sink,
-                                       BackMoveResult bmr )
+                                       BackMoveResult bmr, boolean[] isLocalOut )
     {
         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         byte[][] msgs = new byte[1][];
         msgs[0] = msg;
-        return feedMessages( context, rowid, msgs, ret, sink, bmr );
+        return feedMessages( context, rowid, msgs, ret, sink, bmr, isLocalOut );
     }
 
     // This *must* involve a reset if the language is changing!!!
@@ -986,24 +992,17 @@ public class GameUtils {
     } // replaceDicts
 
     public static void applyChanges( Context context, CurGameInfo gi, 
-                                     CommsAddrRec car, GameLock lock, 
+                                     CommsAddrRec car, GameLock lock,
                                      boolean forceNew )
     {
-        applyChanges( context, gi, car, null, lock, forceNew );
-    }
-
-    public static void applyChanges( Context context, CurGameInfo gi, 
-                                     CommsAddrRec car, String inviteID, 
-                                     GameLock lock, boolean forceNew )
-    {
         applyChanges( context, (MultiMsgSink)null, gi, (UtilCtxt)null, car, 
-                      inviteID, lock, forceNew );
+                      lock, forceNew );
     }
 
     public static void applyChanges( Context context, MultiMsgSink sink,
                                      CurGameInfo gi, UtilCtxt util, 
-                                     CommsAddrRec car, String inviteID, 
-                                     GameLock lock, boolean forceNew )
+                                     CommsAddrRec car, GameLock lock,
+                                     boolean forceNew )
     {
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
@@ -1049,7 +1048,7 @@ public class GameUtils {
 
         GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
-        DBUtils.saveSummary( context, lock, summary, inviteID );
+        DBUtils.saveSummary( context, lock, summary );
 
         XwJNI.game_dispose( gamePtr );
     } // applyChanges
@@ -1086,7 +1085,8 @@ public class GameUtils {
     }
 
     public static void postMoveNotification( Context context, long rowid, 
-                                             BackMoveResult bmr )
+                                             BackMoveResult bmr,
+                                             boolean isTurnNow )
     {
         if ( null != bmr ) {
             Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
@@ -1102,8 +1102,12 @@ public class GameUtils {
                     msg = bmr.m_chat;
                 }
             } else if ( null != bmr.m_lmi ) {
-                titleID = R.string.notify_title_fmt;
-                msg = bmr.m_lmi.format( context ); // NPE
+                if ( isTurnNow ) {
+                    titleID = R.string.notify_title_turn_fmt;
+                } else {
+                    titleID = R.string.notify_title_fmt;
+                }
+                msg = bmr.m_lmi.format( context );
             }
 
             if ( 0 != titleID ) {

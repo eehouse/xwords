@@ -53,8 +53,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
-import org.eehouse.android.xw4.jni.UtilCtxt;
-import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -256,8 +254,8 @@ public class RelayService extends XWService
             // make the initial connection -- needs access to util. That
             // should be fixable -- eventually.
             RelayMsgSink sink = new RelayMsgSink();
-            UtilCtxt util = new UtilCtxtImpl( this );
-            long rowid = GameUtils.makeNewMultiGame( this, nli, sink, util );
+            long rowid = GameUtils.makeNewMultiGame( this, nli, sink,
+                                                     getUtilCtxt() );
             if ( DBUtils.ROWID_NOTFOUND != rowid ) {
                 if ( null != nli.gameName && 0 < nli.gameName.length() ) {
                     DBUtils.setName( this, rowid, nli.gameName );
@@ -452,7 +450,8 @@ public class RelayService extends XWService
         startService( this ); // bad name: will *stop* threads too
     }
 
-    private void setupNotifications( String[] relayIDs, BackMoveResult[] bmrs )
+    private void setupNotifications( String[] relayIDs, BackMoveResult[] bmrs,
+                                     ArrayList<Boolean> locals )
     {
         for ( int ii = 0; ii < relayIDs.length; ++ii ) {
             String relayID = relayIDs[ii];
@@ -460,7 +459,8 @@ public class RelayService extends XWService
             long[] rowids = DBUtils.getRowIDsFor( this, relayID );
             if ( null != rowids ) {
                 for ( long rowid : rowids ) {
-                    GameUtils.postMoveNotification( this, rowid, bmr );
+                    GameUtils.postMoveNotification( this, rowid, bmr,
+                                                    locals.get(ii) );
                 }
             }
         }
@@ -993,9 +993,10 @@ public class RelayService extends XWService
             RelayMsgSink sink = new RelayMsgSink();
             sink.setRowID( rowid );
             BackMoveResult bmr = new BackMoveResult();
+            boolean[] isLocalP = new boolean[1];
             if ( GameUtils.feedMessage( this, rowid, msg, s_addr, 
-                                        sink, bmr ) ) {
-                GameUtils.postMoveNotification( this, rowid, bmr );
+                                        sink, bmr, isLocalP ) ) {
+                GameUtils.postMoveNotification( this, rowid, bmr, isLocalP[0] );
             } else {
                 DbgUtils.logdf( "feedMessage(): background dropped it" );
             }
@@ -1018,9 +1019,11 @@ public class RelayService extends XWService
             RelayMsgSink sink = new RelayMsgSink();
             int nameCount = relayIDs.length;
             ArrayList<String> idsWMsgs = new ArrayList<String>( nameCount );
+            ArrayList<Boolean> isLocals = new ArrayList<Boolean>( nameCount );
             ArrayList<BackMoveResult> bmrs = 
                 new ArrayList<BackMoveResult>( nameCount );
 
+            boolean[] isLocalP = new boolean[1];
             for ( int ii = 0; ii < nameCount; ++ii ) {
                 byte[][] forOne = msgs[ii];
 
@@ -1028,12 +1031,15 @@ public class RelayService extends XWService
                 if ( null != forOne ) {
                     BackMoveResult bmr = new BackMoveResult();
                     sink.setRowID( rowIDs[ii] );
+                    // since BoardDelegate.feedMessages can't know:
+                    isLocalP[0] = false;
                     if ( BoardDelegate.feedMessages( rowIDs[ii], forOne, s_addr )
                          || GameUtils.feedMessages( this, rowIDs[ii],
                                                     forOne, s_addr,
-                                                    sink, bmr ) ) {
+                                                    sink, bmr, isLocalP ) ) {
                         idsWMsgs.add( relayIDs[ii] );
                         bmrs.add( bmr );
+                        isLocals.add( isLocalP[0] );
                     } else {
                         DbgUtils.logf( "RelayService.process(): message for %s (rowid %d)"
                                        + " not consumed", relayIDs[ii], rowIDs[ii] );
@@ -1045,7 +1051,7 @@ public class RelayService extends XWService
                 idsWMsgs.toArray( tmp );
                 BackMoveResult[] bmrsa = new BackMoveResult[bmrs.size()];
                 bmrs.toArray( bmrsa );
-                setupNotifications( tmp, bmrsa );
+                setupNotifications( tmp, bmrsa, isLocals );
             }
             sink.send( this );
         }

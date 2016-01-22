@@ -44,21 +44,28 @@ import java.util.Iterator;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 
 public class BTInviteDelegate extends InviteDelegate {
 
     private Activity m_activity;
-    private Set<String> m_checked;
+    private Set<LinearLayout> m_checked;
     private Map<String, Integer> m_counts;
     private boolean m_setChecked;
     private BTDevsAdapter m_adapter;
 
-    public static void launchForResult( Activity activity, int nMissing, 
+    public static void launchForResult( Activity activity, int nMissing,
+                                        SentInvitesInfo info,
                                         RequestCode requestCode )
     {
         Assert.assertTrue( 0 < nMissing ); // don't call if nMissing == 0
         Intent intent = new Intent( activity, BTInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
+        if ( null != info ) {
+            String lastDev = info.getLastDev( InviteMeans.BLUETOOTH );
+            intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
+        }
         activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
@@ -71,7 +78,7 @@ public class BTInviteDelegate extends InviteDelegate {
     @Override
     protected void init( Bundle savedInstanceState )
     {
-        m_checked = new HashSet<String>();
+        m_checked = new HashSet<LinearLayout>();
         m_counts = new HashMap<String, Integer>();
 
         String msg = getString( R.string.bt_pick_addall_button );
@@ -149,9 +156,11 @@ public class BTInviteDelegate extends InviteDelegate {
         }
 
         int nxt = 0;
-        for ( Iterator<String> iter = m_checked.iterator();
+        for ( Iterator<LinearLayout> iter = m_checked.iterator();
               iter.hasNext(); ) {
-            String btAddr = iter.next();
+            LinearLayout layout = iter.next();
+            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
+            String btAddr = (String)box.getTag();
             devs[nxt] = btAddr;
             if ( null != counts ) {
                 counts[nxt] = m_counts.get( btAddr );
@@ -178,6 +187,7 @@ public class BTInviteDelegate extends InviteDelegate {
     private class BTDevsAdapter extends XWListAdapter {
         private String[] m_devAddrs;
         private String[] m_devNames;
+
         public BTDevsAdapter( String[] btAddrs, String[] btNames )
         {
             super( null == btAddrs? 0 : btAddrs.length );
@@ -189,7 +199,7 @@ public class BTInviteDelegate extends InviteDelegate {
 
         public View getView( int position, View convertView, ViewGroup parent ) {
             final String btAddr = m_devAddrs[position];
-            LinearLayout layout = (LinearLayout)inflate( R.layout.btinviter_item );
+            final LinearLayout layout = (LinearLayout)inflate( R.layout.btinviter_item );
             CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
             box.setText( m_devNames[position] );
             box.setTag( btAddr );
@@ -223,12 +233,19 @@ public class BTInviteDelegate extends InviteDelegate {
             CompoundButton.OnCheckedChangeListener listener = 
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton buttonView, 
-                                                  boolean isChecked )
-                    {
+                                                  boolean isChecked ) {
                         if ( isChecked ) {
-                            m_checked.add( btAddr );
+                            if ( 1 == m_nMissing && 1 == m_checked.size() ) {
+                                LinearLayout checked = m_checked.iterator().next();
+                                CheckBox box = (CheckBox)checked
+                                    .findViewById( R.id.inviter_check );
+                                box.setChecked( false );
+                                m_checked.clear();
+                            }
+                            
+                            m_checked.add( layout );
                         } else {
-                            m_checked.remove( btAddr );
+                            m_checked.remove( layout );
                             // User's now making changes; don't check new views
                             m_setChecked = false;
                         }
@@ -237,7 +254,10 @@ public class BTInviteDelegate extends InviteDelegate {
                 };
             box.setOnCheckedChangeListener( listener );
 
-            if ( m_setChecked || m_checked.contains( btAddr ) ) {
+            if ( m_setChecked || m_checked.contains( layout ) ) {
+                box.setChecked( true );
+            } else if ( null != m_lastDev && m_lastDev.equals( btAddr ) ) {
+                m_lastDev = null;
                 box.setChecked( true );
             }
             return layout;

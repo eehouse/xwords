@@ -304,7 +304,10 @@ public class DictUtils {
 
     public static void deleteDict( Context context, String name )
     {
-        deleteDict( context, name, getDictLoc( context, name ) );
+        DictLoc loc = getDictLoc( context, name );
+        if ( null != loc ) {
+            deleteDict( context, name, getDictLoc(context, name) );
+        }
     }
 
     private static byte[] openDict( Context context, String name, DictLoc loc )

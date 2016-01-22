@@ -26,6 +26,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class MultiService {
@@ -43,7 +45,7 @@ public class MultiService {
     public static final String OWNER = "OWNER";
     public static final String BT_NAME = "BT_NAME";
     public static final String BT_ADDRESS = "BT_ADDRESS";
-    public static final String NLI_DATA = "nli";
+    private static final String NLI_DATA = "nli";
 
     public enum DictFetchOwner { _NONE,
                                  OWNER_SMS,
@@ -128,6 +130,15 @@ public class MultiService {
         return result;
     }
 
+    public static NetLaunchInfo getMissingDictData( Context context,
+                                                    Intent intent )
+    {
+        Assert.assertTrue( isMissingDictIntent( intent ) );
+        String nliData = intent.getStringExtra( NLI_DATA );
+        NetLaunchInfo nli = new NetLaunchInfo( context, nliData );
+        return nli;
+    }
+
     public static Dialog missingDictDialog( Context context, Intent intent,
                                             OnClickListener onDownload,
                                             OnClickListener onDecline )
@@ -159,7 +170,7 @@ public class MultiService {
     // resend the intent, but only if the dict it names is here.  (If
     // it's not, we may need to try again later, e.g. because our cue
     // was a focus gain.)
-    static boolean returnOnDownload( Context context, Intent intent )
+    public static boolean returnOnDownload( Context context, Intent intent )
     {
         boolean downloaded = isMissingDictIntent( intent );
         if ( downloaded ) {

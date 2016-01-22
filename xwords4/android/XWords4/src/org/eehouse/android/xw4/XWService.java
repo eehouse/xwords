@@ -28,12 +28,15 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eehouse.android.xw4.MultiService.MultiEvent;
-
+import org.eehouse.android.xw4.jni.UtilCtxt;
+import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 
 public class XWService extends Service {
 
     protected static MultiService s_srcMgr = null;
     private static Set<String> s_seen = new HashSet<String>();
+
+    private UtilCtxt m_utilCtxt;
 
     @Override
     public IBinder onBind( Intent intent )
@@ -73,5 +76,13 @@ public class XWService extends Service {
         }
         DbgUtils.logf( "XWService.checkNotDupe(%s) => %b", inviteID, !isDupe );
         return !isDupe;
+    }
+
+    protected UtilCtxt getUtilCtxt()
+    {
+        if ( null == m_utilCtxt ) {
+            m_utilCtxt = new UtilCtxtImpl( this );
+        }
+        return m_utilCtxt;
     }
 }
