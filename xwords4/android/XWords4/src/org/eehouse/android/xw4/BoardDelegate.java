@@ -338,8 +338,7 @@ public class BoardDelegate extends DelegateBase
                         lstnr = new OnClickListener() {
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
-                                    showNotAgainDlgThen( R.string.
-                                                         not_again_lookup, 
+                                    showNotAgainDlgThen( R.string.not_again_lookup, 
                                                          R.string.
                                                          key_na_lookup, 
                                                          Action.LOOKUP_ACTION );
@@ -876,7 +875,7 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_trade:
             String msg = getString( R.string.not_again_trading );
             int strID = ABUtils.haveActionBar() ? R.string.not_again_trading_menu
-                : R.string. not_again_trading_buttons;
+                : R.string.not_again_trading_buttons;
             msg += getString( strID );
             showNotAgainDlgThen( msg, R.string.key_notagain_trading,
                                  Action.START_TRADE_ACTION );

@@ -358,10 +358,9 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                         int nAdded = LocUtils.addXlations( m_context, data );
                         if ( 0 < nAdded ) {
                             gotOne = true;
-                            String msg = 
-                                LocUtils.getQuantityString( m_context, R.plurals
-                                                            .new_xlations_fmt, 
-                                                            nAdded, nAdded );
+                            String msg = LocUtils
+                                .getQuantityString( m_context, R.plurals.new_xlations_fmt, 
+                                                    nAdded, nAdded );
                             Utils.showToast( m_context, msg );
                         }
                     }
