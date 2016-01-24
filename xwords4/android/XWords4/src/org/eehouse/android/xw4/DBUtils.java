@@ -34,6 +34,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
 
+import java.sql.Timestamp;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,10 +54,11 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
-import org.eehouse.android.xw4.DictUtils.DictLoc;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DBUtils {
@@ -269,12 +272,6 @@ public class DBUtils {
     public static void saveSummary( Context context, GameLock lock,
                                     GameSummary summary )
     {
-        saveSummary( context, lock, summary, null );
-    }
-
-    public static void saveSummary( Context context, GameLock lock,
-                                    GameSummary summary, String inviteID )
-    {
         boolean needsTimer = false;
         Assert.assertTrue( lock.canWrite() );
         long rowid = lock.getRowid();
@@ -294,7 +291,15 @@ public class DBUtils {
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
-            values.put( DBHelper.EXTRAS, summary.getExtras() );
+
+            // Don't overwrite extras! Sometimes this method is called from
+            // JNIThread which has created the summary from common code that
+            // doesn't know about Android additions. Leave those unset to
+            // avoid overwriting.
+            String extras = summary.getExtras();
+            if ( null != extras ) {
+                values.put( DBHelper.EXTRAS, summary.getExtras() );
+            }
             long nextNag = summary.nextTurnIsLocal() ?
                 NagTurnReceiver.figureNextNag( context, 
                                                1000*(long)summary.lastMoveTime )
@@ -302,9 +307,6 @@ public class DBUtils {
             values.put( DBHelper.NEXTNAG, nextNag );
                 
             values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
-            if ( null != inviteID ) {
-                values.put( DBHelper.INVITEID, inviteID );
-            }
 
             if ( null != summary.scores ) {
                 StringBuffer sb = new StringBuffer();
@@ -424,6 +426,172 @@ public class DBUtils {
             db.close();
         }
         return result;
+    }
+
+    public static class SentInvitesInfo {
+        public long m_rowid;
+        private ArrayList<InviteMeans> m_means;
+        private ArrayList<String> m_targets;
+        private ArrayList<Timestamp> m_timestamps;
+        private int m_cachedCount = 0;
+
+        private SentInvitesInfo( long rowID ) {
+            m_rowid = rowID;
+            m_means = new ArrayList<InviteMeans>();
+            m_targets = new ArrayList<String>();
+            m_timestamps = new ArrayList<Timestamp>();
+        }
+
+        private void addEntry( InviteMeans means, String target, Timestamp ts )
+        {
+            m_means.add( means );
+            m_targets.add( target );
+            m_timestamps.add( ts );
+            m_cachedCount = -1;
+        }
+
+        public InviteMeans getLastMeans()
+        {
+            return 0 < m_means.size() ? m_means.get(0) : null;
+        }
+
+        public String getLastDev( InviteMeans means )
+        {
+            String result = null;
+            for ( int ii = 0; null == result && ii < m_means.size(); ++ii ) {
+                if ( means == m_means.get( ii ) ) {
+                    result = m_targets.get( ii );
+                }
+            }
+            return result;
+        }
+
+        // There will be lots of duplicates, but we can't detect them all. BUT
+        // if means and target are the same it's definitely a dup. So count
+        // them all and return the largest number we have. 99% of the time we
+        // care only that it's non-0.
+        public int getMinPlayerCount() {
+            if ( -1 == m_cachedCount ) {
+                DbgUtils.logf( "getMinPlayerCount(%H)", this );
+                int count = m_timestamps.size();
+                Map<InviteMeans, Set<String>> hashes
+                    = new HashMap<InviteMeans, Set<String>>();
+                int fakeCount = 0; // make all null-targets count for one
+                for ( int ii = 0; ii < count; ++ii ) {
+                    InviteMeans means = m_means.get(ii);
+                    Set<String> devs;
+                    if ( ! hashes.containsKey( means ) ) {
+                        DbgUtils.logf( "creating new hash for means %s", means.toString() );
+                        devs = new HashSet<String>();
+                        hashes.put( means, devs );
+                    }
+                    devs = hashes.get( means );
+                    String target = m_targets.get( ii );
+                    if ( null == target ) {
+                        target = String.format( "%d", ++fakeCount );
+                    }
+                    devs.add( target );
+                    DbgUtils.logf( "added target %s for means %s", target, means.toString() );
+                }
+
+                // Now find the max
+                m_cachedCount = 0;
+                for ( InviteMeans means : InviteMeans.values() ) {
+                    if ( hashes.containsKey( means ) ) {
+                        int siz = hashes.get( means ).size();
+                        m_cachedCount += siz;
+                        DbgUtils.logf( "counting: means %s has unique count of %d",
+                                       means.toString(), siz );
+                    }
+                }
+            }
+            DbgUtils.logf( "getMinPlayerCount(%H) => %d", this, m_cachedCount );
+            return m_cachedCount;
+        }
+
+        public String getAsText( Context context )
+        {
+            int count = m_timestamps.size();
+            String[] strs = new String[count];
+            for ( int ii = 0; ii < count; ++ii ) {
+                InviteMeans means = m_means.get(ii);
+                String target = m_targets.get(ii);
+                String timestamp = m_timestamps.get(ii).toString();
+                String msg;
+
+                switch ( means ) {
+                case SMS:
+                    msg = LocUtils.getString( context, R.string.invit_expl_sms_fmt,
+                                              target, timestamp );
+                    break;
+                case BLUETOOTH:
+                    String devName = BTService.nameForAddr( target );
+                    msg = LocUtils.getString( context, R.string.invit_expl_bt_fmt,
+                                              devName, timestamp );
+                    break;
+                case RELAY:
+                    msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,
+                                              timestamp );
+                    break;
+                default:
+                    msg = LocUtils.getString( context, R.string.invit_expl_notarget_fmt,
+                                              means.toString(), timestamp );
+
+                }
+                strs[ii] = msg;
+            }
+            return TextUtils.join( "\n\n", strs );
+        }
+    }
+
+    public static SentInvitesInfo getInvitesFor( Context context, long rowid )
+    {
+        SentInvitesInfo result = new SentInvitesInfo( rowid );
+
+        String[] columns = { DBHelper.MEANS, DBHelper.TIMESTAMP, DBHelper.TARGET }; 
+        String selection = String.format( "%s = %d", DBHelper.ROW, rowid );
+        String orderBy = DBHelper.TIMESTAMP + " DESC";
+        
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_INVITES, columns, 
+                                      selection, null, null, null, orderBy );
+            if ( 0 < cursor.getCount() ) {
+                int indxMns = cursor.getColumnIndex( DBHelper.MEANS );
+                int indxTS = cursor.getColumnIndex( DBHelper.TIMESTAMP );
+                int indxTrgt = cursor.getColumnIndex( DBHelper.TARGET );
+                
+                while ( cursor.moveToNext() ) {
+                    InviteMeans means = InviteMeans.values()[cursor.getInt( indxMns )];
+                    Timestamp ts = Timestamp.valueOf(cursor.getString(indxTS));
+                    String target = cursor.getString( indxTrgt );
+                    result.addEntry( means, target, ts );
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+        
+        return result;
+    }
+
+    public static void recordInviteSent( Context context, long rowid,
+                                         InviteMeans means, String target )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.ROW, rowid );
+        values.put( DBHelper.MEANS, means.ordinal() );
+        if ( null != target ) {
+            values.put( DBHelper.TARGET, target );
+        }
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.insert( DBHelper.TABLE_NAME_INVITES, null, values );
+            db.close();
+        }
+
     }
 
     private static void setInt( long rowid, String column, int value )
@@ -938,11 +1106,17 @@ public class DBUtils {
     public static void deleteGame( Context context, GameLock lock )
     {
         Assert.assertTrue( lock.canWrite() );
-        String selection = String.format( ROW_ID_FMT, lock.getRowid() );
+        String selSummaries = String.format( ROW_ID_FMT, lock.getRowid() );
+        String selInvites = String.format( "%s=%d", DBHelper.ROW, lock.getRowid() );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
+            db.delete( DBHelper.TABLE_NAME_SUM, selSummaries, null );
+
+            // Delete invitations too
+            db.delete( DBHelper.TABLE_NAME_INVITES, selInvites, null );
+            
             db.close();
         }
         notifyListeners( lock.getRowid(), GameChangeType.GAME_DELETED );

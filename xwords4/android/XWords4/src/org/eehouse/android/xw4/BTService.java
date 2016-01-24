@@ -129,13 +129,7 @@ public class BTService extends XWService {
         NetLaunchInfo m_nli;
 
         public BTQueueElem( BTCmd cmd ) { m_cmd = cmd; m_failCount = 0; }
-        // public BTQueueElem( BTCmd cmd, String btAddr, 
-        //                     int gameID, String gameName, int lang, 
-        //                     String dict, int nPlayersT, int nPlayersH ) {
-        //     this( cmd, null, btAddr, gameID );
-        //     m_lang = lang; m_dict = dict; m_nPlayersT = nPlayersT; 
-        //     m_nPlayersH = nPlayersH; m_gameName = gameName;
-        // }
+
         public BTQueueElem( BTCmd cmd, byte[] buf, String btAddr, int gameID ) {
             this( cmd );
             Assert.assertTrue( null != btAddr && 0 < btAddr.length() );
@@ -270,23 +264,6 @@ public class BTService extends XWService {
         intent.putExtra( GAMEID_KEY, gameID );
         context.startService( intent );
     } 
-
-    // public static void inviteRemote( Context context, String btAddr, 
-    //                                  int gameID, String initialName, int lang, 
-    //                                  String dict, int nPlayersT, int nPlayersH )
-    // {
-    //     Intent intent = getIntentTo( context, INVITE );
-    //     intent.putExtra( GAMEID_KEY, gameID );
-    //     intent.putExtra( ADDR_KEY, btAddr );
-    //     Assert.assertNotNull( initialName );
-    //     intent.putExtra( GAMENAME_KEY, initialName );
-    //     intent.putExtra( LANG_KEY, lang );
-    //     intent.putExtra( DICT_KEY, dict );
-    //     intent.putExtra( NTO_KEY, nPlayersT );
-    //     intent.putExtra( NHE_KEY, nPlayersH );
-
-    //     context.startService( intent );
-    // }
 
     public static void inviteRemote( Context context, String btAddr, 
                                      NetLaunchInfo nli )
@@ -612,6 +589,7 @@ public class BTService extends XWService {
                     CommsAddrRec addr = new CommsAddrRec( host.getName(), 
                                                           host.getAddress() );
 
+                    boolean[] isLocalP = new boolean[1];
                     for ( long rowid : rowids ) {
                         boolean consumed = 
                             BoardDelegate.feedMessage( rowid, buffer, addr );
@@ -620,10 +598,12 @@ public class BTService extends XWService {
                                 new GameUtils.BackMoveResult();
                             if ( GameUtils.feedMessage( BTService.this, rowid, 
                                                         buffer, addr, 
-                                                        m_btMsgSink, bmr ) ) {
+                                                        m_btMsgSink, bmr,
+                                                        isLocalP ) ) {
                                 consumed = true;
                                 GameUtils.postMoveNotification( BTService.this,
-                                                                rowid, bmr );
+                                                                rowid, bmr,
+                                                                isLocalP[0] );
                             }
                         }
                         if ( !consumed ) {
@@ -1144,7 +1124,8 @@ public class BTService extends XWService {
         if ( null == rowids || 0 == rowids.length ) {
             CommsAddrRec addr = nli.makeAddrRec( BTService.this );
             long rowid = GameUtils.makeNewMultiGame( BTService.this, nli, 
-                                                     m_btMsgSink, null );
+                                                     m_btMsgSink,
+                                                     getUtilCtxt() );
             if ( DBUtils.ROWID_NOTFOUND == rowid ) {
                 result = BTCmd.INVITE_FAILED;
             } else {
@@ -1249,13 +1230,17 @@ public class BTService extends XWService {
         @Override
         public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
         {
+            int nSent = -1;
             String btAddr = getSafeAddr( addr );
-            
-            Assert.assertTrue( addr.contains( CommsConnType.COMMS_CONN_BT ) );
-            m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf,
-                                           btAddr, gameID ) );
-            return buf.length;
+            if ( null != btAddr && 0 < btAddr.length() ) {
+                m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, btAddr,
+                                               gameID ) );
+                nSent = buf.length;
+            } else {
+                DbgUtils.logf( "sendViaBluetooth(): no addr for dev %s",
+                               addr.bt_hostName );
+            }
+            return nSent;
         }
     }
-
 }

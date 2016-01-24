@@ -52,6 +52,7 @@
   <string name="summary_relay_conn_fmt">GAME IN PLAY IN ROOM \"%1$s\"</string>
   <!-- Final state: game is over. -->
   <string name="summary_relay_gameover_fmt">GAME OVER IN ROOM \"%1$s\"</string>
+  <string name="summary_invites_out">PLAYERS INVITED</string>
   <!-- Games that have ended are listed with this string -->
   <string name="gameOver">GAME OVER</string>
   <!-- Otherwise they're listed with this to give some indication of
@@ -464,6 +465,20 @@
       PLAYERS. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
       YOU HAVEN\'T ALREADY?</item>
   </plurals>
+  <plurals name="invite_sent_fmt">
+    <item quantity="one">YOU HAVE ALREADY INVITED A REMOTE PLAYER TO
+      THIS GAME. WE ARE WAITING FOR HIM/HER TO RESPOND. PLEASE
+      USE THE RE-INVITE BUTTON IF YOU THINK THE INVITATION DID NOT GO
+      OUT.</item>
+    <item quantity="other">YOU HAVE ALREADY SENT %1$d UNIQUE
+      INVITATIONS FOR THIS GAME. WE ARE WAITING FOR %2$d OF THE
+      RECIPIENTS TO RESPOND. PLEASE USE THE RE-INVITE BUTTON IF YOU
+      THINK THE INVITATIONS DID NOT GO OUT.</item>
+  </plurals>
+  <string name="invited_msg">THIS GAME WAS CREATED FROM AN
+    INVITATION YOU RECEIVED. AS SOON AS IT IS ABLE TO CONNECT TO THE
+    SENDER AND ANY OTHER INVITEES HAVE ARRIVED PLAY WILL
+    BEGIN.</string>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">OR JUST TAP TO INVITE -- IF THE OTHER
     DEVICE ALSO HAS ANDROID BEAMING AND IS NEARBY.</string>
@@ -482,6 +497,14 @@
     REMOTE PLAYERS. YOU DON\'T HAVE TO INVITE THEM ALL AT ONCE, BUT
     THIS ALERT WILL NOT BE DISMISSED UNTIL EVERYBODY HAS BEEN INVITED
     AND ALL INVITATIONS HAVE BEEN ACCEPTED.)</string>
+  <string name="invit_expl_sms_fmt">INVITE SENT VIA SMS TO PHONE
+    NUMBER %1$s ON %2$s</string>
+  <string name="invit_expl_bt_fmt">INVITE SENT VIA BLUETOOTH TO
+    PAIRED DEVICE \"%1$s\" ON %2$s</string>
+  <string name="invit_expl_relay_fmt">INVITE FORWARDED BY THE RELAY
+    TO ANOTHER DEVICE ON %1$s</string>
+  <string name="invit_expl_notarget_fmt">INVITE SENT VIA %1$s ON
+    %2$s. RECIPIENT UNKNOWN.</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -1009,6 +1032,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">INVITE NOW</string>
+  <string name="newgame_invite_more">MORE INFO</string>
   <string name="newgame_drop_relay">DROP RELAY</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
@@ -1259,6 +1283,7 @@
     device, and the body that appears when you pull the notifications
     down. -->
   <string name="notify_title_fmt">MOVE IN GAME %1$s</string>
+  <string name="notify_title_turn_fmt">YOUR TURN IN GAME %1$s</string>
   <string name="notify_chat_title_fmt">CHAT MESSAGE IN GAME %1$s</string>
   <string name="notify_chat_body_fmt">%1$s: %2$s</string>
   <!--
@@ -1741,6 +1766,9 @@
   <!--  -->
   <string name="connstat_net_fmt">NETWORK STATUS FOR GAME CONNECTED VIA
     %1$s:</string>
+  <!-- First line of debug-only Invites list dialog -->
+  <string name="invites_net_fmt">INVITATIONS SENT FOR GAME CONNECTED VIA
+    %1$s:</string>
   <!--  -->
   <string name="connstat_succ">SUCCESSFUL</string>
   <!--  -->
@@ -2091,11 +2119,15 @@
     </string>
   <string name="waiting_title">WAITING FOR PLAYERS</string>
   <!-- Button for alert with title above -->
+  <string name="waiting_invite_title">WAITING FOR RESPONSE</string>
+  <string name="waiting_rematch_title">REMATCH IN PROGRESS</string>
+  <!-- Button for alert with title above -->
   <string name="button_wait">WAIT</string>
+  <string name="button_reinvite">RE-INVITE</string>
   <string name="invite_stays">(THIS DIALOG WILL STAY UP UNTIL ALL
     REMOTE PLAYERS HAVE CONNECTED. YOU CAN CLOSE THE GAME IF YOU
-    EXPECT IT TO TAKE A WHILE. THEY WILL STILL BE ABLE TO
-    CONNECT.)</string>
+    EXPECT IT TO TAKE A WHILE. REMOTE PLAYERS WILL STILL BE ABLE TO
+    CONNECT, AND YOU WILL BE NOTIFIED WHEN THEY DO.)</string>
   <string name="nfc_just_tap">TO INVITE VIA NFC JUST TOUCH THE BACK
     OF THIS DEVICE AGAINST THE ONE YOU WANT TO INVITE—ANY TIME THE
     GAME IS OPEN.</string>
@@ -2108,10 +2140,10 @@
     EDIT TO GIVE IT A WAY TO CONNECT?</string>
   <string name="button_edit">EDIT</string>
   <string name="button_discard_changes">DISCARD CHANGES</string>
-  <string name="rematch_msg">ISSUING REMATCH INVITATION. YOU WILL
-    SEE THIS MESSAGE UNTIL IT HAS BEEN ACCEPTED.\n\nYOU DO NOT NEED TO
-    KEEP THIS GAME OPEN WHILE WAITING. YOU WILL BE NOTIFIED WHEN THE
-    GAME IS READY TO PLAY.</string>
+  <string name="rematch_sent_toast">REMATCH INVITATIONS SENT</string>
+  <string name="rematch_msg">THIS GAME IS HOSTING A REMATCH, AND HAS
+    SENT AN INVITATION. YOU WILL SEE THIS MESSAGE UNTIL IT HAS BEEN
+    ACCEPTED.</string>
   <string name="not_again_enablepublic">PUBLIC ROOMS HAVE BEEN MADE
     AN \"ADVANCED\" FEATURE IN THIS RELEASE. IF YOU WERE USING THEM
     AND WANT THEM BACK, ENABLE THEM NOW. YOU CAN TURN THEM OFF AGAIN
@@ -2139,6 +2171,7 @@
   <string name="title_send_data_sms">SEND SMS AS DATA</string>
   <string name="summary_send_data_sms">(GSM PHONES ONLY)</string>
   <string name="board_menu_game_netstats">NETWORK STATS</string>
+  <string name="board_menu_game_showInvites">SHOW INVITES</string>
   <string name="netstats_title">GAME NETWORK STATS</string>
   <string name="git_rev_title">SOURCE VERSION ID</string>
   <string name="devid_title">DEVICE ID (ON RELAY)</string>
@@ -2210,10 +2243,10 @@
   <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
   NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
   <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
-  <string name="not_again_rematch_two_only">THE REMATCH BUTTON IS
-  DISABLED BECAUSE, FOR NOW ANYWAY, REMATCH IS LIMITED TO TWO-PERSON
-  GAMES. I THINK IT\'S RARE THAT PEOPLE PLAY WITH MORE THAN TWO. LET
-  ME KNOW IF I\'M WRONG AND I\'LL TRY HARDER TO MAKE IT WORK.</string>
+  <string name="not_again_rematch_two_only">REMATCH IS LIMITED TO
+  TWO-PERSON GAMES, AT LEAST FOR NOW, BECAUSE IT\'S HARDER WITH MORE
+  DEVICES AND I THINK IT\'S RARE THAT PEOPLE PLAY WITH MORE THAN
+  TWO. LET ME KNOW IF I\'M WRONG AND I\'LL UP THE PRIORITY.</string>
   <string name="enable_relay_toself_title">ENABLE RELAY INVITES TO SELF</string>
   <string name="enable_relay_toself_summary">(TO AID TESTING AND DEBUGGING)</string>
   <!-- Shown after "resend messages" menuitem chosen -->

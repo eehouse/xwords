@@ -60,14 +60,15 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DBUtils.GameChangeType;
 import org.eehouse.android.xw4.DBUtils.GameGroupInfo;
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DlgDelegate.ActionPair;
+import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
+import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
-import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
-import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 
 public class GamesListDelegate extends ListDelegateBase
     implements OnItemLongClickListener,
@@ -1517,21 +1518,22 @@ public class GamesListDelegate extends ListDelegateBase
     public void onCreateContextMenu( ContextMenu menu, View view, 
                                      ContextMenuInfo menuInfo )
     {
+        boolean enable;
         super.onCreateContextMenu( menu, view, menuInfo );
 
         int id = 0;
         boolean selected = false;
-        long gameRowID = 0;
+        GameListItem item = null;
         AdapterView.AdapterContextMenuInfo info
             = (AdapterView.AdapterContextMenuInfo)menuInfo;
         View targetView = info.targetView;
         DbgUtils.logf( "onCreateContextMenu(t=%s)", 
                        targetView.getClass().getName() );
         if ( targetView instanceof GameListItem ) {
+            item = (GameListItem)targetView;
             id = R.menu.games_list_game_menu;
 
-            gameRowID = ((GameListItem)targetView).getRowID();
-            selected = m_selGames.contains( gameRowID ); 
+            selected = m_selGames.contains( item.getRowID() );
         } else if ( targetView instanceof GameListGroup ) {
             id = R.menu.games_list_group_menu;
 
@@ -1548,12 +1550,17 @@ public class GamesListDelegate extends ListDelegateBase
                 ? R.id.games_game_select : R.id.games_game_deselect;
             Utils.setItemVisible( menu, hideId, false );
 
-            if ( 0 != gameRowID ) {
-                boolean enable = BoardDelegate.rematchSupported( m_activity, 
-                                                                 gameRowID );
+            if ( null != item ) {
+                enable = BoardDelegate.rematchSupported( m_activity, 
+                                                         item.getRowID() );
                 Utils.setItemVisible( menu, R.id.games_game_rematch, enable );
+
+                enable = item.getSummary().isMultiGame()
+                    && (BuildConfig.DEBUG || XWPrefs.getDebugEnabled( m_activity ));
+                Utils.setItemVisible( menu, R.id.games_game_invites, enable );
             }
         }
+
     }
 
     public boolean onContextItemSelected( MenuItem item ) 
@@ -1714,6 +1721,21 @@ public class GamesListDelegate extends ListDelegateBase
             m_rowid = selRowIDs[0];
             showDialog( DlgID.RENAME_GAME );
             break;
+
+            // DEBUG only
+        case R.id.games_game_invites:
+            msg = DBUtils.getSummary( m_activity, selRowIDs[0] )
+                .conTypes.toString( m_activity );
+            msg = getString( R.string.invites_net_fmt, msg );
+            
+            SentInvitesInfo info = DBUtils.getInvitesFor( m_activity,
+                                                          selRowIDs[0] );
+            if ( null != info ) {
+                msg += "\n\n" + info.getAsText( m_activity );
+            }
+            showOKOnlyDialog( msg );
+            break;
+            
         default:
             handled = false;
         }
@@ -1986,7 +2008,7 @@ public class GamesListDelegate extends ListDelegateBase
     {
         NetLaunchInfo nli = null;
         if ( MultiService.isMissingDictIntent( intent ) ) {
-            nli = new NetLaunchInfo( m_activity, intent );
+            nli = MultiService.getMissingDictData( m_activity, intent );
         } else {
             Uri data = intent.getData();
             if ( null != data ) {
@@ -2045,9 +2067,8 @@ public class GamesListDelegate extends ListDelegateBase
                 DBUtils.setName( m_activity, newid, gameName );
             } else {
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
-                newid = GameUtils.makeNewMultiGame( m_activity, groupID, 
-                                                         dict, lang,
-                                                         addrs, gameName );
+                newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
+                                                    lang, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
                                         relayID );
             }

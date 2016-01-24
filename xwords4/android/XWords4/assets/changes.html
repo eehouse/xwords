@@ -13,10 +13,15 @@
 	</style>
   </head>
 <body>
-  <h2>Crosswords 4.4 beta 101 release</h2>
+  <h2>Crosswords 4.4 beta 102 release</h2>
 
-  <p>This is the second of two releases that together fix stalling
-  issues in network games.</p>
+  <p>This release introduces "Rematch", a way to create new games from
+  existing ones that short-circuits all the configuration and
+  invitation nonsense. (Nonsense, anyway, after the first time.)
+  Invitations are cleaned up. And it is the second of two releases
+  that together fix stalling issues in network games. </p>
+
+  <p>I hope you like it!</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -26,8 +31,40 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Fix to send correctly calculated identifier for game
-      state.</li>
+      <li>Rematch option allows creating a new game with the same
+          opponents, and takes care of sending invitations to the
+          remote device</li>
+      
+      <li>Improve how invitations are created and sent, including
+          making it easier to resend when necessary</li>
+
+      <li>Finish fixing problem with moves being dropped</li>
+
+      <li>Make it easier to "discover" and enable play-via-SMS (GSM
+          phones only)</li>
+
+      <li>Fix memory leak that caused crashes if you opened a lot of
+          games in a short period</li>
+
+      <li>Ask player for name the first time it's needed rather than
+          when newly installed game first opened</li>
+
+      <li>Fix occasional failure to refresh thumbnails</li>
+
+      <li>Don't allow removing players when game is locked (in Game
+          Config screen)</li>
+
+      <li>Put back long-tap (a.k.a. "context") menus in Games List
+          screen. Because I like them</li>
+
+      <li>No reminders in robot games by default</li>
+
+      <li>Tweaks to Chat screen, and confirm before deleting chat
+          history</li>
+
+      <li>Tweak notifications to make them more useful</li>
+      
+      <li>Other minor bug fixes</li>
   </ul>
 
   <p>(The full changelog 
@@ -35,8 +72,6 @@
 
   <h3>Next up</h3>
   <ul>
-	  <li>Offer &quot;Rematch&quot; when game&apos;s over (Easy via
-	      SMS and Bluetooth; harder via the internet/relay)</li>
       <li>Take advantage of Marshmallow's new permissions model (where
       the app only asks for them when it needs them.)
   </ul>

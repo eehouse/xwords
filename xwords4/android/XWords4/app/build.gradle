@@ -21,9 +21,9 @@ android {
     }
 
     // Rename all output artifacts to include version information
-    applicationVariants.all { variant ->
-        renameArtifact(variant)
-    }
+    // applicationVariants.all { variant ->
+    //     renameArtifact(variant)
+    // }
     
     // flavorDimensions "variant", "abi"
     // productFlavors {
@@ -185,25 +185,25 @@ tasks.whenTaskAdded { theTask ->
     }
 }
 
-def getVersionName() {
-    try {
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', 'describe', '--dirty'
-            standardOutput = stdout
-        }
-        return stdout.toString().trim()
-    }
-    catch (ignored) {
-        return null;
-    }
-}
+// def getVersionName() {
+//     try {
+//         def stdout = new ByteArrayOutputStream()
+//         exec {
+//             commandLine 'git', 'describe', '--dirty'
+//             standardOutput = stdout
+//         }
+//         return stdout.toString().trim()
+//     }
+//     catch (ignored) {
+//         return null;
+//     }
+// }
 
-def renameArtifact(variant) {
-    variant.outputs.each { output ->
-        def name = String.format( "XWords4-%s-%s.apk", variant.name,
-                                  getVersionName() )
-        output.outputFile = new File( (String)output.outputFile.parent, 
-                                      (String)name )
-    }
-}
+// def renameArtifact(variant) {
+//     variant.outputs.each { output ->
+//         def name = String.format( "XWords4-%s-%s.apk", variant.name,
+//                                   getVersionName() )
+//         output.outputFile = new File( (String)output.outputFile.parent, 
+//                                       (String)name )
+//     }
+// }

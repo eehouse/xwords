@@ -52,6 +52,7 @@
   <string name="summary_relay_conn_fmt">Emag ni yalp ni moor \"%1$s\"</string>
   <!-- Final state: game is over. -->
   <string name="summary_relay_gameover_fmt">Emag revo ni moor \"%1$s\"</string>
+  <string name="summary_invites_out">Sreyalp detivni</string>
   <!-- Games that have ended are listed with this string -->
   <string name="gameOver">Emag revo</string>
   <!-- Otherwise they're listed with this to give some indication of
@@ -464,6 +465,20 @@
       sreyalp. Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa
       uoy nevah\'t ?ydaerla</item>
   </plurals>
+  <plurals name="invite_sent_fmt">
+    <item quantity="one">Uoy evah ydaerla detivni a etomer reyalp ot
+      siht emag. Ew era gnitiaw rof reh/mih ot dnopser. Esaelp
+      esu eht etivni-er nottub fi uoy kniht eht noitativni did ton og
+      tuo.</item>
+    <item quantity="other">Uoy evah ydaerla tnes %1$d euqinu
+      snoitativni rof siht emag. Ew era gnitiaw rof %2$d fo eht
+      stneipicer ot dnopser. Esaelp esu eht etivni-er nottub fi uoy
+      kniht eht snoitativni did ton og tuo.</item>
+  </plurals>
+  <string name="invited_msg">Siht emag saw detaerc morf na
+    noitativni uoy deviecer. Sa noos sa ti si elba ot tcennoc ot eht
+    rednes dna yna rehto seetivni evah devirra yalp lliw
+    nigeb.</string>
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">Ro tsuj Pat ot Etivni -- fi eht rehto
     ecived osla sah Diordna Gnimaeb dna si ybraen.</string>
@@ -482,6 +497,14 @@
     etomer sreyalp. Uoy nod\'t evah ot etivni meht lla ta ,ecno tub
     siht trela lliw ton eb dessimsid litnu ydobyreve sah neeb detivni
     dna lla snoitativni evah neeb detpecca.)</string>
+  <string name="invit_expl_sms_fmt">Etivni tnes aiv SMS ot enohp
+    rebmun %1$s no %2$s</string>
+  <string name="invit_expl_bt_fmt">Etivni tnes aiv Htooteulb ot
+    deriap ecived \"%1$s\" no %2$s</string>
+  <string name="invit_expl_relay_fmt">Etivni dedrawrof yb eht yaler
+    ot rehtona ecived no %1$s</string>
+  <string name="invit_expl_notarget_fmt">Etivni tnes aiv %1$s no
+    %2$s. Tneipicer nwonknu.</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -1009,6 +1032,7 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">Etivni won</string>
+  <string name="newgame_invite_more">Erom ofni</string>
   <string name="newgame_drop_relay">Pord Yaler</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
@@ -1259,6 +1283,7 @@
     device, and the body that appears when you pull the notifications
     down. -->
   <string name="notify_title_fmt">Evom ni emag %1$s</string>
+  <string name="notify_title_turn_fmt">Ruoy nrut ni emag %1$s</string>
   <string name="notify_chat_title_fmt">Tahc egassem ni emag %1$s</string>
   <string name="notify_chat_body_fmt">%1$s: %2$s</string>
   <!--
@@ -1741,6 +1766,9 @@
   <!--  -->
   <string name="connstat_net_fmt">Krowten sutats rof emag detcennoc aiv
     %1$s:</string>
+  <!-- First line of debug-only Invites list dialog -->
+  <string name="invites_net_fmt">Snoitativni tnes rof emag detcennoc aiv
+    %1$s:</string>
   <!--  -->
   <string name="connstat_succ">lufsseccus</string>
   <!--  -->
@@ -2091,11 +2119,15 @@
     </string>
   <string name="waiting_title">Gnitiaw rof sreyalp</string>
   <!-- Button for alert with title above -->
+  <string name="waiting_invite_title">Gnitiaw rof esnopser</string>
+  <string name="waiting_rematch_title">Hctamer ni ssergorp</string>
+  <!-- Button for alert with title above -->
   <string name="button_wait">Tiaw</string>
+  <string name="button_reinvite">Etivni-er</string>
   <string name="invite_stays">sIht( golaid lliw yats pu litnu lla
     etomer sreyalp evah detcennoc. Uoy nac esolc eht emag fi uoy
-    tcepxe ti ot ekat a elihw. Yeht lliw llits eb elba ot
-    tcennoc.)</string>
+    tcepxe ti ot ekat a elihw. Etomer sreyalp lliw llits eb elba ot
+    ,tcennoc dna uoy lliw eb deifiton nehw yeht od.)</string>
   <string name="nfc_just_tap">Ot etivni aiv CFN tsuj hcuot eht kcab
     fo siht ecived tsniaga eht eno uoy tnaw ot yna—etivni emit eht
     emag si nepo.</string>
@@ -2108,10 +2140,10 @@
     tide ot evig ti a yaw ot ?tcennoc</string>
   <string name="button_edit">Tide</string>
   <string name="button_discard_changes">Dracsid segnahc</string>
-  <string name="rematch_msg">Gniussi hctamer noitativni. Uoy lliw
-    ees siht egassem litnu ti sah neeb detpecca.\n\nUoy od ton deen ot
-    peek siht emag nepo elihw gnitiaw. Uoy lliw eb deifiton nehw eht
-    emag si ydaer ot yalp.</string>
+  <string name="rematch_sent_toast">Hctamer snoitativni tnes</string>
+  <string name="rematch_msg">Siht emag si gnitsoh a ,hctamer dna sah
+    tnes na noitativni. Uoy lliw ees siht egassem litnu ti sah neeb
+    detpecca.</string>
   <string name="not_again_enablepublic">Cilbup smoor evah neeb edam
     na \"decnavda\" erutaef ni siht esaeler. Fi uoy erew gnisu meht
     dna tnaw meht ,kcab elbane meht won. Uoy nac nrut meht ffo niaga
@@ -2139,6 +2171,7 @@
   <string name="title_send_data_sms">Dnes SMS sa atad</string>
   <string name="summary_send_data_sms">mSG( senohp )ylno</string>
   <string name="board_menu_game_netstats">Krowten stats</string>
+  <string name="board_menu_game_showInvites">Wohs setivni</string>
   <string name="netstats_title">Emag krowten stats</string>
   <string name="git_rev_title">Ecruos noisrev di</string>
   <string name="devid_title">Ecived DI no( )yaler</string>
@@ -2210,10 +2243,10 @@
   <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
   ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
   <string name="str_no_hint_found">Tonnac dnif yna sevom</string>
-  <string name="not_again_rematch_two_only">Eht Hctamer nottub si
-  delbasid ,esuaceb rof won ,yawyna hctamer si detimil ot nosrep-owt
-  semag. I kniht ti\'s erar taht elpoep yalp htiw erom naht owt. Tel
-  em wonk fi I\'m gnorw dna I\'ll yrt redrah ot ekam ti krow.</string>
+  <string name="not_again_rematch_two_only">Hctamer si detimil ot
+  nosrep-owt ,semag ta tsael rof ,won esuaceb ti\'s redrah htiw erom
+  secived dna I kniht ti\'s erar taht elpoep yalp htiw erom naht
+  owt. Tel em wonk fi I\'m gnorw dna I\'ll pu eht ytiroirp.</string>
   <string name="enable_relay_toself_title">Elbane yaler setivni ot fles</string>
   <string name="enable_relay_toself_summary">oT( dia gnitset dna )gniggubed</string>
   <!-- Shown after "resend messages" menuitem chosen -->

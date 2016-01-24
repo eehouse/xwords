@@ -40,8 +40,10 @@ abstract class InviteDelegate extends ListDelegateBase
     public static final String DEVS = "DEVS";
     public static final String COUNTS = "COUNTS";
     protected static final String INTENT_KEY_NMISSING = "NMISSING";
+    protected static final String INTENT_KEY_LASTDEV = "LDEV";
 
     protected int m_nMissing;
+    protected String m_lastDev;
     protected Button m_okButton;
     protected Button m_rescanButton;
     protected Button m_clearButton;
@@ -56,6 +58,7 @@ abstract class InviteDelegate extends ListDelegateBase
         m_activity = delegator.getActivity();
         Intent intent = getIntent();
         m_nMissing = intent.getIntExtra( INTENT_KEY_NMISSING, -1 );
+        m_lastDev = intent.getStringExtra( INTENT_KEY_LASTDEV );
     }
 
     protected void init( int button_invite, int button_rescan, 

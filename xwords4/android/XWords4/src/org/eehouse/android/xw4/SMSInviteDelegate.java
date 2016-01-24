@@ -49,6 +49,7 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 
 public class SMSInviteDelegate extends InviteDelegate {
 
@@ -63,11 +64,16 @@ public class SMSInviteDelegate extends InviteDelegate {
     private boolean m_immobileConfirmed;
     private Activity m_activity;
 
-    public static void launchForResult( Activity activity, int nMissing, 
+    public static void launchForResult( Activity activity, int nMissing,
+                                        SentInvitesInfo info,
                                         RequestCode requestCode )
     {
         Intent intent = new Intent( activity, SMSInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
+        if ( null != info ) {
+            String lastDev = info.getLastDev( InviteMeans.SMS );
+            intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
+        }
         activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
@@ -327,7 +333,8 @@ public class SMSInviteDelegate extends InviteDelegate {
 
         m_phoneRecs = new ArrayList<PhoneRec>(phones.length);
         for ( String phone : phones ) {
-            PhoneRec rec = new PhoneRec( phone );
+            boolean matches = phone.equals( m_lastDev );
+            PhoneRec rec = new PhoneRec( null, phone, matches );
             m_phoneRecs.add( rec );
         }
     }
@@ -369,6 +376,24 @@ public class SMSInviteDelegate extends InviteDelegate {
         saveAndRebuild();
     }
 
+    private void clearIfSingle()
+    {
+        if ( 1 == m_nMissing ) {
+            int count = m_adapter.getCount();
+            for ( int ii = count - 1; ii >= 0; --ii ) {
+                PhoneRec rec = m_phoneRecs.get( ii );
+                if ( rec.m_isChecked ) {
+                    rec.m_isChecked = false;
+                }
+            }
+            post( new Runnable() {
+                    public void run() {
+                        rebuildList( false );
+                    }
+                } );
+        }
+    }
+
     private class PhoneRec {
         public String m_phone;
         public String m_name;
@@ -383,7 +408,7 @@ public class SMSInviteDelegate extends InviteDelegate {
             this( null, phone, false );
         }
 
-        public PhoneRec( String name, String phone, boolean checked )
+        private PhoneRec( String name, String phone, boolean checked )
         {
             m_phone = phone;
             m_isChecked = checked;
@@ -424,6 +449,7 @@ public class SMSInviteDelegate extends InviteDelegate {
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton bv, 
                                                   boolean isChecked ) {
+                        clearIfSingle();
                         m_phoneRecs.get(position).m_isChecked = isChecked;
                         tryEnable();
                     }
