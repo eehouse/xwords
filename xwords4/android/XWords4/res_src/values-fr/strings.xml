@@ -3495,7 +3495,6 @@ pour la langue</string>
   <string name="devid_title">Identifiant de périphérique (sur le relai)</string>
   <string name="enable_relay_toself_summary">(Pour aider à tester et corriger les bugs)</string>
 
-  <string name="rel_invite_title"/>
   <string name="fetching_from_relay">Récupération des parties du relai</string>
   <string name="processing_games">Traitement des parties</string>
 
@@ -3503,6 +3502,5 @@ pour la langue</string>
   <string name="list_item_deselect">Déselectionner</string>
 
   <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur \"%1$s\". Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie ?</string>
-<string name="button_wait"></string>
 
     </resources>
