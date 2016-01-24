@@ -566,13 +566,6 @@
     <string name="invite_if_nfc">Or just Tap to Invite -- if the other
     device also has Android Beaming and is nearby.</string>
 
-      <!-- Toast shown when players are missing, same time as above
-           but more subtle.  -->
-      <plurals name="players_miss_fmt">
-        <item quantity="one">%1$d player missing</item>
-        <item quantity="other">%1$d players missing</item>
-      </plurals>
-
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing

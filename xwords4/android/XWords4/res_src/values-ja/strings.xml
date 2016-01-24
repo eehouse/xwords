@@ -193,11 +193,6 @@
 
     <string name="invite_if_nfc">またはタップして招待します -- 他のデバイスにも Android ビームがあり、近くにいる場合。</string>
 
-      <plurals name="players_miss_fmt">
-	<item quantity="one">%1$d プレイヤーが見つかりません</item>
-	<item quantity="other"/>
-</plurals>
-
     <string name="invite_multiple">" (複数のリモートプレイヤーを期待している場合。一度にみんなを招待する必要はありませんが、招待されたみんなが招待状を受け入れるまで、このアラートは消えません)"</string>
 
     <string name="pts">ﾎﾟｲﾝﾄ</string>

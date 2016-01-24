@@ -85,30 +85,31 @@ public final class R {
         public static final int add_player=0x7f0a0030;
         public static final int advertise_new_room_check=0x7f0a0037;
         public static final int blessed_label=0x7f0a0057;
-        public static final int board_menu_chat=0x7f0a009f;
-        public static final int board_menu_dict=0x7f0a009b;
+        public static final int board_menu_chat=0x7f0a00a0;
+        public static final int board_menu_dict=0x7f0a009c;
         public static final int board_menu_done=0x7f0a0086;
         public static final int board_menu_file_prefs=0x7f0a0093;
-        public static final int board_menu_flip=0x7f0a009d;
+        public static final int board_menu_flip=0x7f0a009e;
         public static final int board_menu_game_counts=0x7f0a008c;
         public static final int board_menu_game_history=0x7f0a008e;
+        public static final int board_menu_game_invites=0x7f0a0095;
         public static final int board_menu_game_left=0x7f0a008d;
         public static final int board_menu_game_netstats=0x7f0a0094;
         public static final int board_menu_game_resend=0x7f0a0090;
         public static final int board_menu_game_resign=0x7f0a008f;
-        public static final int board_menu_hint_next=0x7f0a0099;
-        public static final int board_menu_hint_prev=0x7f0a0098;
-        public static final int board_menu_invite=0x7f0a0095;
-        public static final int board_menu_juggle=0x7f0a009c;
+        public static final int board_menu_hint_next=0x7f0a009a;
+        public static final int board_menu_hint_prev=0x7f0a0099;
+        public static final int board_menu_invite=0x7f0a0096;
+        public static final int board_menu_juggle=0x7f0a009d;
         public static final int board_menu_rematch=0x7f0a0085;
-        public static final int board_menu_toggle=0x7f0a00a0;
+        public static final int board_menu_toggle=0x7f0a00a1;
         public static final int board_menu_trade=0x7f0a0087;
         public static final int board_menu_trade_cancel=0x7f0a0088;
         public static final int board_menu_trade_commit=0x7f0a0089;
         public static final int board_menu_tray=0x7f0a008b;
-        public static final int board_menu_undo_current=0x7f0a009a;
+        public static final int board_menu_undo_current=0x7f0a009b;
         public static final int board_menu_undo_last=0x7f0a008a;
-        public static final int board_menu_zoom=0x7f0a009e;
+        public static final int board_menu_zoom=0x7f0a009f;
         public static final int board_root=0x7f0a0002;
         public static final int board_view=0x7f0a0003;
         public static final int boardsize_spinner=0x7f0a0043;
@@ -124,8 +125,8 @@ public final class R {
         public static final int chat_button=0x7f0a0080;
         public static final int chat_edit=0x7f0a0011;
         public static final int chat_history=0x7f0a0010;
-        public static final int chat_menu_clear=0x7f0a00a2;
-        public static final int chat_menu_send=0x7f0a00a1;
+        public static final int chat_menu_clear=0x7f0a00a3;
+        public static final int chat_menu_send=0x7f0a00a2;
         public static final int checkbox=0x7f0a0051;
         public static final int color_display_sample=0x7f0a0012;
         public static final int color_edit_sample=0x7f0a0013;
@@ -140,11 +141,11 @@ public final class R {
         public static final int dict_label=0x7f0a0069;
         public static final int dict_spinner=0x7f0a002d;
         public static final int dictlist_button=0x7f0a007f;
-        public static final int dicts_delete=0x7f0a00a5;
-        public static final int dicts_deselect_all=0x7f0a00a4;
-        public static final int dicts_download=0x7f0a00a3;
-        public static final int dicts_move=0x7f0a00a6;
-        public static final int dicts_select=0x7f0a00a7;
+        public static final int dicts_delete=0x7f0a00a6;
+        public static final int dicts_deselect_all=0x7f0a00a5;
+        public static final int dicts_download=0x7f0a00a4;
+        public static final int dicts_move=0x7f0a00a7;
+        public static final int dicts_select=0x7f0a00a8;
         public static final int divider=0x7f0a0024;
         public static final int download_button=0x7f0a0073;
         public static final int dwnld_message=0x7f0a004f;
@@ -163,38 +164,39 @@ public final class R {
         public static final int game_locked_check=0x7f0a0028;
         public static final int game_name=0x7f0a0046;
         public static final int gamel_menu_checkmoves=0x7f0a0092;
-        public static final int games_game_config=0x7f0a00aa;
-        public static final int games_game_copy=0x7f0a00af;
-        public static final int games_game_delete=0x7f0a00a8;
-        public static final int games_game_deselect=0x7f0a00b1;
-        public static final int games_game_move=0x7f0a00ab;
-        public static final int games_game_new_from=0x7f0a00ad;
-        public static final int games_game_rematch=0x7f0a00a9;
-        public static final int games_game_rename=0x7f0a00ae;
-        public static final int games_game_reset=0x7f0a00ac;
-        public static final int games_game_select=0x7f0a00b0;
-        public static final int games_group_default=0x7f0a00b5;
-        public static final int games_group_delete=0x7f0a00b4;
-        public static final int games_group_movedown=0x7f0a00b3;
-        public static final int games_group_moveup=0x7f0a00b2;
-        public static final int games_group_rename=0x7f0a00b6;
-        public static final int games_menu_about=0x7f0a00be;
-        public static final int games_menu_checkmoves=0x7f0a00c0;
-        public static final int games_menu_checkupdates=0x7f0a00c1;
-        public static final int games_menu_dicts=0x7f0a00bc;
-        public static final int games_menu_email=0x7f0a00bd;
-        public static final int games_menu_loaddb=0x7f0a00c3;
-        public static final int games_menu_newgame_net=0x7f0a00b8;
-        public static final int games_menu_newgame_solo=0x7f0a00b7;
-        public static final int games_menu_newgroup=0x7f0a00b9;
-        public static final int games_menu_prefs=0x7f0a00ba;
-        public static final int games_menu_rateme=0x7f0a00bb;
-        public static final int games_menu_resend=0x7f0a00bf;
-        public static final int games_menu_storedb=0x7f0a00c2;
+        public static final int games_game_config=0x7f0a00ab;
+        public static final int games_game_copy=0x7f0a00b0;
+        public static final int games_game_delete=0x7f0a00a9;
+        public static final int games_game_deselect=0x7f0a00b2;
+        public static final int games_game_invites=0x7f0a00b3;
+        public static final int games_game_move=0x7f0a00ac;
+        public static final int games_game_new_from=0x7f0a00ae;
+        public static final int games_game_rematch=0x7f0a00aa;
+        public static final int games_game_rename=0x7f0a00af;
+        public static final int games_game_reset=0x7f0a00ad;
+        public static final int games_game_select=0x7f0a00b1;
+        public static final int games_group_default=0x7f0a00b7;
+        public static final int games_group_delete=0x7f0a00b6;
+        public static final int games_group_movedown=0x7f0a00b5;
+        public static final int games_group_moveup=0x7f0a00b4;
+        public static final int games_group_rename=0x7f0a00b8;
+        public static final int games_menu_about=0x7f0a00c0;
+        public static final int games_menu_checkmoves=0x7f0a00c2;
+        public static final int games_menu_checkupdates=0x7f0a00c3;
+        public static final int games_menu_dicts=0x7f0a00be;
+        public static final int games_menu_email=0x7f0a00bf;
+        public static final int games_menu_loaddb=0x7f0a00c5;
+        public static final int games_menu_newgame_net=0x7f0a00ba;
+        public static final int games_menu_newgame_solo=0x7f0a00b9;
+        public static final int games_menu_newgroup=0x7f0a00bb;
+        public static final int games_menu_prefs=0x7f0a00bc;
+        public static final int games_menu_rateme=0x7f0a00bd;
+        public static final int games_menu_resend=0x7f0a00c1;
+        public static final int games_menu_storedb=0x7f0a00c4;
         public static final int games_menu_study=0x7f0a0091;
         public static final int group_done=0x7f0a0084;
-        public static final int group_exchange=0x7f0a0096;
-        public static final int group_hint=0x7f0a0097;
+        public static final int group_exchange=0x7f0a0097;
+        public static final int group_hint=0x7f0a0098;
         public static final int hideable=0x7f0a004b;
         public static final int hints_allowed=0x7f0a003c;
         public static final int invite_desc=0x7f0a0009;
@@ -206,10 +208,10 @@ public final class R {
         public static final int label=0x7f0a0025;
         public static final int lang_separator=0x7f0a002b;
         public static final int lang_spinner=0x7f0a002c;
-        public static final int loc_item_check=0x7f0a00c5;
-        public static final int loc_item_clear=0x7f0a00c4;
-        public static final int loc_item_copy_bless=0x7f0a00c7;
-        public static final int loc_item_copy_eng=0x7f0a00c6;
+        public static final int loc_item_check=0x7f0a00c7;
+        public static final int loc_item_clear=0x7f0a00c6;
+        public static final int loc_item_copy_bless=0x7f0a00c9;
+        public static final int loc_item_copy_eng=0x7f0a00c8;
         public static final int loc_search_button=0x7f0a005e;
         public static final int loc_search_field=0x7f0a005d;
         public static final int local_label=0x7f0a0059;
@@ -257,11 +259,11 @@ public final class R {
         public static final int seek_red=0x7f0a0014;
         public static final int show_remote=0x7f0a001e;
         public static final int shuffle_button=0x7f0a007d;
-        public static final int slmenu_clear_sel=0x7f0a00cc;
-        public static final int slmenu_copy_sel=0x7f0a00cb;
-        public static final int slmenu_deselect_all=0x7f0a00ca;
-        public static final int slmenu_lookup_sel=0x7f0a00c8;
-        public static final int slmenu_select_all=0x7f0a00c9;
+        public static final int slmenu_clear_sel=0x7f0a00ce;
+        public static final int slmenu_copy_sel=0x7f0a00cd;
+        public static final int slmenu_deselect_all=0x7f0a00cc;
+        public static final int slmenu_lookup_sel=0x7f0a00ca;
+        public static final int slmenu_select_all=0x7f0a00cb;
         public static final int smart_robot=0x7f0a0040;
         public static final int state=0x7f0a004d;
         public static final int summary=0x7f0a0060;
@@ -428,6 +430,7 @@ fait ?</string>
         /**   
          */
         public static final int invite_relay_desc_fmt=0x7f07000e;
+        public static final int invite_sent_fmt=0x7f070005;
         /**   
   
 <string name="invite_sms_desc_fmt">Please check the %1$d phone
@@ -511,14 +514,6 @@ relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>
 <string name="paste_done_fmt">%1$d mots copiés</string>
          */
         public static final int paste_done_fmt=0x7f070014;
-        /**  Toast shown when players are missing, same time as above
-           but more subtle.  
- Toast shown when players are missing, same time as above
-           but more subtle.  
-<string name="players_miss_fmt">%1$d player[s] missing</string>
-<string name="players_miss_fmt">%1$d joueur[s] manquant[s]</string>
-         */
-        public static final int players_miss_fmt=0x7f070005;
         /**  Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) 
  Text of dialog asking user to confirm a move that exchanges
@@ -574,14 +569,6 @@ tous les chevalets :\n</string>
         /**  copyright info 
  <string name="moves_fmt">%1$d torns jugats</string> 
  about dialog stuff 
- <string name="moves_fmt">Bolo zahraných %1$d ťahov</string> 
- When you select the list_item_reset contextual menu, you are
-          asked to confirm.  This is the text of the first button
-          ("Cancel" is the second).  
- When you select the gamel_menu_delete_all menuitem or
-         list_item_delete contextual menu, you are asked to confirm.
-         This is the text of the first button ("Cancel" is the
-         second).  
  about dialog stuff 
  copyright info 
 <string name="about_copyright">Copyright (C) 1998-2015 by Eric
@@ -589,7 +576,7 @@ tous les chevalets :\n</string>
         License.</string>
  copyright info 
          */
-        public static final int about_copyright=0x7f0501c5;
+        public static final int about_copyright=0x7f0501cd;
         /**  Another paragraph giving credit for work done other than by
          Eric House and translators 
  Another paragraph giving credit for work done other than by
@@ -598,7 +585,7 @@ tous les chevalets :\n</string>
  Another paragraph giving credit for work done other than by
          Eric House and translators 
          */
-        public static final int about_credits=0x7f0501c8;
+        public static final int about_credits=0x7f0501d0;
         /**  
        ###########################################################
        # :Dialogs:
@@ -631,7 +618,7 @@ tous les chevalets :\n</string>
       
  String giving version info, which is substituted in. 
          */
-        public static final int about_vers_fmt=0x7f0501c4;
+        public static final int about_vers_fmt=0x7f0501cc;
         /**  Another paragraph in the about dialog 
  Another paragraph in the about dialog 
 <string name="about_web">For a manual or sourcecode see:
@@ -640,42 +627,42 @@ tous les chevalets :\n</string>
     xwords@eehouse.org.</string>
  Another paragraph in the about dialog 
          */
-        public static final int about_web=0x7f0501c6;
+        public static final int about_web=0x7f0501ce;
         /** <string name="add_done_fmt">%1$s added to %2$s studylist</string>
          */
-        public static final int add_done_fmt=0x7f050278;
+        public static final int add_done_fmt=0x7f050281;
         /** <string name="add_to_study_fmt">Add %1$s to studylist</string>
          */
-        public static final int add_to_study_fmt=0x7f050272;
+        public static final int add_to_study_fmt=0x7f05027b;
         /**  Debugging stuff. Localize if you think your langauge users will
        care. 
 XLATE-ME
 <string name="advanced">For debugging</string>
          */
-        public static final int advanced=0x7f0502e1;
+        public static final int advanced=0x7f0502ee;
         /**  This button takes you to the normal Game Configure screen 
  This button takes you to the normal Game Configure screen 
 <string name="advanced_config">Advanced game settings</string>
  This button takes you to the normal Game Configure screen 
          */
-        public static final int advanced_config=0x7f050181;
+        public static final int advanced_config=0x7f050188;
         /** XLATE-ME
 <string name="advanced_summary">You should never need these...</string>
          */
-        public static final int advanced_summary=0x7f0502e2;
+        public static final int advanced_summary=0x7f0502ef;
         /**   
   
 <string name="alert_empty_dict_fmt">The wordlist %1$s contains only
       tile information.  There are no words to browse.</string>
   
          */
-        public static final int alert_empty_dict_fmt=0x7f0501e3;
+        public static final int alert_empty_dict_fmt=0x7f0501eb;
         public static final int app_name=0x7f050081;
         /** <string name="app_not_found_fmt">Unable to connect to Crosswords
 	on the device %1$s.  Please check that the device is within range
 	and that Crosswords is installed on it.</string>
          */
-        public static final int app_not_found_fmt=0x7f0502bd;
+        public static final int app_not_found_fmt=0x7f0502c6;
         public static final int app_version=0x7f050000;
         /**  the background color of the area outside the board,
          e.g. between entries in the scoreboard 
@@ -685,7 +672,7 @@ XLATE-ME
  the background color of the area outside the board,
          e.g. between entries in the scoreboard 
          */
-        public static final int background=0x7f050146;
+        public static final int background=0x7f05014c;
         /**  Appended to the above in the phonies_warn case.  User may
          ignore the warning 
  Appended to the above in the phonies_warn case.  User may
@@ -695,7 +682,7 @@ XLATE-ME
  Appended to the above in the phonies_warn case.  User may
          ignore the warning 
          */
-        public static final int badwords_accept=0x7f0500f1;
+        public static final int badwords_accept=0x7f0500f7;
         /**  Appended to the above in the phonies_disallow case.  User has
          lost his turn. 
  Appended to the above in the phonies_disallow case.  User has
@@ -704,22 +691,22 @@ XLATE-ME
  Appended to the above in the phonies_disallow case.  User has
          lost his turn. 
          */
-        public static final int badwords_lost=0x7f0500f2;
+        public static final int badwords_lost=0x7f0500f8;
         /**  title of the dialog in which the above is posted. 
  title of the dialog in which the above is posted. 
 <string name="badwords_title">Illegal word[s]</string>
  title of the dialog in which the above is posted. 
          */
-        public static final int badwords_title=0x7f0500f3;
+        public static final int badwords_title=0x7f0500f9;
         /** <string name="blue">Blue</string>
          */
-        public static final int blue=0x7f05014a;
+        public static final int blue=0x7f050150;
         /**  board menu for small devices only 
  board menu for small devices only 
 <string name="board_menu_dict">Browse wordlist</string>
  board menu for small devices only 
          */
-        public static final int board_menu_dict=0x7f05021e;
+        public static final int board_menu_dict=0x7f050226;
         /**     
        ############################################################
        # :Menus:
@@ -748,18 +735,18 @@ XLATE-ME
  This menu commits the current move as it's been laid out on
          the board 
          */
-        public static final int board_menu_done=0x7f0500f4;
+        public static final int board_menu_done=0x7f0500fa;
         /**  Brings up "About Crosswords" dialog 
  Brings up "About Crosswords" dialog 
  Brings up "About Crosswords" dialog 
          */
-        public static final int board_menu_file_about=0x7f050096;
+        public static final int board_menu_file_about=0x7f050097;
         /**   
   
 <string name="board_menu_file_email">Email author</string>
   
          */
-        public static final int board_menu_file_email=0x7f0501e8;
+        public static final int board_menu_file_email=0x7f0501f0;
         /**  menu on Game submenu: brings up dialog listing all tiles in
          the language of the game along with how many of each there
          are and how many points each is worth.  This display is the
@@ -774,7 +761,7 @@ XLATE-ME
          are and how many points each is worth.  This display is the
          same throughout the game. 
          */
-        public static final int board_menu_game_counts=0x7f0500fa;
+        public static final int board_menu_game_counts=0x7f050100;
         /**  Brings up explanation of the game's final score.  If the game
          is not yet over, gives you a choice whether to end it now,
          and if you decline does nothing. 
@@ -786,13 +773,13 @@ XLATE-ME
          is not yet over, gives you a choice whether to end it now,
          and if you decline does nothing. 
          */
-        public static final int board_menu_game_final=0x7f0500fd;
+        public static final int board_menu_game_final=0x7f050103;
         /**  Brings up listing of all moves played so far this game.  
  Brings up listing of all moves played so far this game.  
 <string name="board_menu_game_history">Game history…</string>
  Brings up listing of all moves played so far this game.  
          */
-        public static final int board_menu_game_history=0x7f0500fc;
+        public static final int board_menu_game_history=0x7f050102;
         /**  menu on Game submenu: brings up dialog listing all tiles not
          yet played and not in the rack of the player whose rack is
          visible (whose turn it is, generally).  This display will
@@ -810,11 +797,11 @@ XLATE-ME
          change as tiles are used and depending on what player is
          asking. 
          */
-        public static final int board_menu_game_left=0x7f0500fb;
+        public static final int board_menu_game_left=0x7f050101;
         /** XLATE-ME
 <string name="board_menu_game_netstats">Network stats</string>
          */
-        public static final int board_menu_game_netstats=0x7f0502ec;
+        public static final int board_menu_game_netstats=0x7f0502f9;
         /**  Meaningful only for networked games, this menu causes all
          messages that have not yet been acknowledged by a remote
          device in the game to be resent.  Eventually I hope to be
@@ -832,19 +819,20 @@ XLATE-ME
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. 
          */
-        public static final int board_menu_game_resend=0x7f0500ff;
+        public static final int board_menu_game_resend=0x7f050105;
         /** <string name="board_menu_game_resign">Resign</string>
          */
-        public static final int board_menu_game_resign=0x7f0500fe;
+        public static final int board_menu_game_resign=0x7f050104;
+        public static final int board_menu_game_showInvites=0x7f0502fa;
         /** <string name="board_menu_invite">Invite</string>
          */
-        public static final int board_menu_invite=0x7f05026b;
+        public static final int board_menu_invite=0x7f050274;
         /**   
   
 <string name="board_menu_pass">Pass</string>
   
          */
-        public static final int board_menu_pass=0x7f0501d4;
+        public static final int board_menu_pass=0x7f0501dc;
         /**  This menu begins an exchange of tiles: puts the board into
          trade mode. 
  This menu begins an exchange of tiles: puts the board into
@@ -852,7 +840,7 @@ XLATE-ME
  This menu begins an exchange of tiles: puts the board into
          trade mode. 
          */
-        public static final int board_menu_trade=0x7f0500f5;
+        public static final int board_menu_trade=0x7f0500fb;
         /**  hide and shows the tray.  On devices where there is enough
          room for the full board and tray to be shown then hiding the
          tray just "turns it over", i.e. shows tiles with '?'
@@ -866,14 +854,14 @@ XLATE-ME
          tray just "turns it over", i.e. shows tiles with '?'
          characters.
          */
-        public static final int board_menu_tray_hide=0x7f0500f6;
-        public static final int board_menu_tray_show=0x7f0500f7;
+        public static final int board_menu_tray_hide=0x7f0500fc;
+        public static final int board_menu_tray_show=0x7f0500fd;
         /**   
   
 <string name="board_menu_undo_current">Undo/Redo</string>
   
          */
-        public static final int board_menu_undo_current=0x7f050218;
+        public static final int board_menu_undo_current=0x7f050220;
         /**  Undos the last *committed* turn.  Note that this is different
          from the undo button that undoes or redoes an in-progress
          not-yet-committed turn.  This is disabled for networked
@@ -888,7 +876,7 @@ XLATE-ME
          not-yet-committed turn.  This is disabled for networked
          games.
          */
-        public static final int board_menu_undo_last=0x7f0500f8;
+        public static final int board_menu_undo_last=0x7f0500fe;
         /**  preference for board size (15x15, 13x13 etc.) 
  default new-game setting for handline phonies (words not
          found in the word list) 
@@ -907,7 +895,7 @@ XLATE-ME
 <string name="board_size">Board size</string>
  preference for board size (15x15, 13x13 etc.) 
          */
-        public static final int board_size=0x7f05012d;
+        public static final int board_size=0x7f050133;
         /**  Title of submenu 
  Undos the last *committed* turn.  Note that this is different
          from the undo button that undoes or redoes an in-progress
@@ -920,7 +908,7 @@ XLATE-ME
  Title of submenu 
  Title of submenu 
          */
-        public static final int board_submenu_game=0x7f0500f9;
+        public static final int board_submenu_game=0x7f0500ff;
         /**  The remaining strings (down to the color edit dialog below)
          are showns as the names of editable colors and as the the
          title of the color editor that comes up when the name is
@@ -938,7 +926,7 @@ XLATE-ME
          tapped. 
  (color for) double-letter bonus squares on the board 
          */
-        public static final int bonus_l2x=0x7f05013f;
+        public static final int bonus_l2x=0x7f050145;
         /**  Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter 
  Bonus value hint that's displayed in gray text in the colored
@@ -946,13 +934,13 @@ XLATE-ME
  Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-letter 
          */
-        public static final int bonus_l2x_summary=0x7f0500e1;
+        public static final int bonus_l2x_summary=0x7f0500e2;
         /**  (color for) triple-letter bonus squares on the board 
  (color for) triple-letter bonus squares on the board 
 <string name="bonus_l3x">Triple letter</string>
  (color for) triple-letter bonus squares on the board 
          */
-        public static final int bonus_l3x=0x7f050140;
+        public static final int bonus_l3x=0x7f050146;
         /**  Bonus value hint that's displayed in gray text in the colored
          bonus square. Triple-letter 
  Bonus value hint that's displayed in gray text in the colored
@@ -960,13 +948,13 @@ XLATE-ME
  Bonus value hint that's displayed in gray text in the colored
          bonus square. Triple-letter 
          */
-        public static final int bonus_l3x_summary=0x7f0500e3;
+        public static final int bonus_l3x_summary=0x7f0500e4;
         /**  (color for) double-word squares on the board 
  (color for) double-word squares on the board 
 <string name="bonus_w2x">Double word</string>
  (color for) double-word squares on the board 
          */
-        public static final int bonus_w2x=0x7f050141;
+        public static final int bonus_w2x=0x7f050147;
         /**  Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-word 
  Bonus value hint that's displayed in gray text in the colored
@@ -974,13 +962,13 @@ XLATE-ME
  Bonus value hint that's displayed in gray text in the colored
          bonus square. Double-word 
          */
-        public static final int bonus_w2x_summary=0x7f0500e2;
+        public static final int bonus_w2x_summary=0x7f0500e3;
         /**  (color for) triple-word squares on the board 
  (color for) triple-word squares on the board 
 <string name="bonus_w3x">Triple word</string>
  (color for) triple-word squares on the board 
          */
-        public static final int bonus_w3x=0x7f050142;
+        public static final int bonus_w3x=0x7f050148;
         /**  Bonus value hint that's displayed in gray text in the colored
          bonus square. Triple-word 
  Bonus value hint that's displayed in gray text in the colored
@@ -988,7 +976,7 @@ XLATE-ME
  Bonus value hint that's displayed in gray text in the colored
          bonus square. Triple-word 
          */
-        public static final int bonus_w3x_summary=0x7f0500e4;
+        public static final int bonus_w3x_summary=0x7f0500e5;
         /**   
   
 <string name="bt_bad_proto_fmt">The version of Crosswords on
@@ -997,38 +985,38 @@ XLATE-ME
     continue.</string>
   
          */
-        public static final int bt_bad_proto_fmt=0x7f0501f7;
+        public static final int bt_bad_proto_fmt=0x7f0501ff;
         /**   
   
 <string name="bt_fail_fmt">Bluetooth sends to %1$s have failed too many
         times. Re-open the game to try again.</string>
   
          */
-        public static final int bt_fail_fmt=0x7f0501fc;
+        public static final int bt_fail_fmt=0x7f050204;
         /**  Title of device picker during invitation to a game via Bluetooth 
  Title of device picker during invitation to a game via Bluetooth 
 <string name="bt_invite_title">Bluetooth Invitation</string>
          */
-        public static final int bt_invite_title=0x7f0501fe;
+        public static final int bt_invite_title=0x7f050206;
         /** <string name="bt_no_devs">You currently have no paired Bluetooth
 	devices. Would you like to open the Android Settings Panel to add
 	one or more?\n\n(You may also need to open it on the device you
 	want to pair with.)</string>
          */
-        public static final int bt_no_devs=0x7f0502bc;
+        public static final int bt_no_devs=0x7f0502c5;
         /**  <string name="newgame_enable_bt">Turn Bluetooth on</string> 
  In the Bluetooth invite device dialog 
  In the Bluetooth invite device dialog 
 <string name="bt_pick_addall_button">Add all Paired</string>
          */
-        public static final int bt_pick_addall_button=0x7f0501ec;
+        public static final int bt_pick_addall_button=0x7f0501f4;
         /**   
   
 <string name="bt_pick_clear_button">Remove checked</string>
   
   
          */
-        public static final int bt_pick_clear_button=0x7f0501ed;
+        public static final int bt_pick_clear_button=0x7f0501f5;
         /**   
   
 <string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry %3$d in
@@ -1038,7 +1026,7 @@ XLATE-ME
   
   
          */
-        public static final int bt_resend_fmt=0x7f0501fb;
+        public static final int bt_resend_fmt=0x7f050203;
         /**  text of button for adding new player to game 
  text for separator above the list of players that's used for
          networked games.  The numbers of local and non-local players
@@ -1047,22 +1035,22 @@ XLATE-ME
 <string name="button_add_player">Add player</string>
  text of button for adding new player to game 
          */
-        public static final int button_add_player=0x7f0500b7;
+        public static final int button_add_player=0x7f0500b8;
         /**  The only button available when the above message is displayed 
  The only button available when the above message is displayed 
 <string name="button_close_game">Close game</string>
  The only button available when the above message is displayed 
          */
-        public static final int button_close_game=0x7f050192;
+        public static final int button_close_game=0x7f050199;
         /** <string name="button_decline">Decline</string>
          */
-        public static final int button_decline=0x7f05024b;
+        public static final int button_decline=0x7f050254;
         /**   
   
   
   
          */
-        public static final int button_default_both=0x7f0500ad;
+        public static final int button_default_both=0x7f0500ae;
         /**  These three strings are the text for three buttons giving
          choices in respose to the dialog launched in response to the
          dicts_item_select menu (see dicts_item_select above.) 
@@ -1100,12 +1088,20 @@ XLATE-ME
          choices in respose to the dialog launched in response to the
          dicts_item_select menu (see dicts_item_select above.) 
          */
-        public static final int button_default_human=0x7f0500ab;
+        public static final int button_default_human=0x7f0500ac;
         /**   
   
          */
-        public static final int button_default_robot=0x7f0500ac;
+        public static final int button_default_robot=0x7f0500ad;
         /**  When you select the gamel_menu_delete_all menuitem or
+         list_item_delete contextual menu, you are asked to confirm.
+         This is the text of the first button ("Cancel" is the
+         second).  
+ <string name="moves_fmt">Bolo zahraných %1$d ťahov</string> 
+ When you select the list_item_reset contextual menu, you are
+          asked to confirm.  This is the text of the first button
+          ("Cancel" is the second).  
+ When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the
          second).  
@@ -1122,7 +1118,7 @@ XLATE-ME
          This is the text of the first button ("Cancel" is the
          second).  
          */
-        public static final int button_delete=0x7f05008f;
+        public static final int button_delete=0x7f050090;
         /**  Used for button in dialog put up with the relay says the
          remote partner of this game has deleted it.  Ok, meaning
          "don't discard", is the other option.  This same button is
@@ -1143,23 +1139,23 @@ XLATE-ME
          the other option, for discarding changes that would otherwise
          reset a game. 
          */
-        public static final int button_discard=0x7f0501a1;
+        public static final int button_discard=0x7f0501a9;
         /** XLATE-ME
 <string name="button_discard_changes">Discard changes</string>
          */
-        public static final int button_discard_changes=0x7f0502d9;
+        public static final int button_discard_changes=0x7f0502e5;
         /**   
   
 <string name="button_done">Done</string>
   
          */
-        public static final int button_done=0x7f0501d1;
+        public static final int button_done=0x7f0501d9;
         /**   
   
 <string name="button_done_fmt">Done with %1$s</string>
   
          */
-        public static final int button_done_fmt=0x7f0501d2;
+        public static final int button_done_fmt=0x7f0501da;
         /**  Text of button displayed when downloading is an option 
  This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
@@ -1179,37 +1175,37 @@ XLATE-ME
 <string name="button_download">Download</string>
  Text of button displayed when downloading is an option 
          */
-        public static final int button_download=0x7f050195;
+        public static final int button_download=0x7f05019c;
         /** XLATE-ME
 <string name="button_edit">Edit</string>
          */
-        public static final int button_edit=0x7f0502d8;
-        public static final int button_enable=0x7f05031b;
+        public static final int button_edit=0x7f0502e4;
+        public static final int button_enable=0x7f050329;
         /** XLATE-ME
 <string name="button_enable_bt">Enable Bluetooth</string>
          */
-        public static final int button_enable_bt=0x7f050236;
+        public static final int button_enable_bt=0x7f05023f;
         /** XLATE-ME
 <string name="button_enable_sms">Enable SMS</string>
          */
-        public static final int button_enable_sms=0x7f050235;
-        public static final int button_go_settings=0x7f05026d;
+        public static final int button_enable_sms=0x7f05023e;
+        public static final int button_go_settings=0x7f050276;
         /**   
   
 <string name="button_invite">Invite checked</string>
   
          */
-        public static final int button_invite=0x7f0501fd;
+        public static final int button_invite=0x7f050205;
         /**  text of button to juggle (randomly rearrange order of) players 
  text of button to juggle (randomly rearrange order of) players 
 <string name="button_juggle_players">Shuffle players</string>
  text of button to juggle (randomly rearrange order of) players 
          */
-        public static final int button_juggle_players=0x7f0500b8;
+        public static final int button_juggle_players=0x7f0500b9;
         /** XLATE-ME
 <string name="button_later">Later</string>
          */
-        public static final int button_later=0x7f050237;
+        public static final int button_later=0x7f050240;
         /**  New strings that need to be documented and found a home
          above. 
  New strings that need to be documented and found a home
@@ -1218,25 +1214,25 @@ XLATE-ME
  New strings that need to be documented and found a home
          above. 
          */
-        public static final int button_lookup=0x7f0501cb;
+        public static final int button_lookup=0x7f0501d3;
         /**   
   
 <string name="button_lookup_fmt">Look up %1$s</string>
   
          */
-        public static final int button_lookup_fmt=0x7f0501cd;
+        public static final int button_lookup_fmt=0x7f0501d5;
         /** <string name="button_lookup_study">Look up/study words</string>
          */
-        public static final int button_lookup_study=0x7f0501cc;
+        public static final int button_lookup_study=0x7f0501d4;
         /** <string name="button_lookup_study_fmt">Look up/study %1$s</string>
          */
-        public static final int button_lookup_study_fmt=0x7f0501ce;
+        public static final int button_lookup_study_fmt=0x7f0501d6;
         /**   
   
 <string name="button_move">Move</string>
   
          */
-        public static final int button_move=0x7f0501d6;
+        public static final int button_move=0x7f0501de;
         /**  What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
          zero-width, so it should do the trick:
@@ -1254,6 +1250,11 @@ XLATE-ME
 
     DO NOT EDIT THIS FILE!!!!
     It was generated (from res_src/values-ca/strings.xml).
+    Any changes you make to it will be lost.
+
+
+    DO NOT EDIT THIS FILE!!!!
+    It was generated (from res_src/values-ja/strings.xml).
     Any changes you make to it will be lost.
 
 
@@ -1315,10 +1316,10 @@ XLATE-ME
         public static final int button_new_group=0x7f050086;
         /** <string name="button_newgroup">New group</string>
          */
-        public static final int button_newgroup=0x7f0501d7;
+        public static final int button_newgroup=0x7f0501df;
         /** <string name="button_no">No</string>  
          */
-        public static final int button_no=0x7f05019f;
+        public static final int button_no=0x7f0501a7;
         /**  Text for button in new-user-info dialog with title just
          above.  
  Text for button in new-user-info dialog with title just
@@ -1327,13 +1328,14 @@ XLATE-ME
  Text for button in new-user-info dialog with title just
          above.  
          */
-        public static final int button_notagain=0x7f0501ad;
+        public static final int button_notagain=0x7f0501b5;
         /** <string name="button_reconnect">Reconnect</string>
          */
-        public static final int button_reconnect=0x7f05025d;
+        public static final int button_reconnect=0x7f050266;
+        public static final int button_reinvite=0x7f0502df;
         /**   
          */
-        public static final int button_relay_add=0x7f050209;
+        public static final int button_relay_add=0x7f050211;
         /**  Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
          just ended. 
@@ -1345,7 +1347,7 @@ XLATE-ME
          game with the same players and parameters as the one that
          just ended. 
          */
-        public static final int button_rematch=0x7f05025c;
+        public static final int button_rematch=0x7f050265;
         /**  When you select the list_item_reset contextual menu, you are
           asked to confirm.  This is the text of the first button
           ("Cancel" is the second).  
@@ -1356,7 +1358,7 @@ XLATE-ME
           asked to confirm.  This is the text of the first button
           ("Cancel" is the second).  
          */
-        public static final int button_reset=0x7f050090;
+        public static final int button_reset=0x7f050091;
         /**  Used for a button when informing user that his attempt to
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) 
@@ -1368,7 +1370,7 @@ XLATE-ME
          connect to the relay failed because the room named does not
          exist.  (I believe this no longer occurs.) 
          */
-        public static final int button_retry=0x7f0501a2;
+        public static final int button_retry=0x7f0501aa;
         /** 
        ############################################################
        # :Menus:
@@ -1404,7 +1406,7 @@ XLATE-ME
  text of first menu item.  Will revert all preferences to
          their default/original values 
          */
-        public static final int button_revert_all=0x7f050115;
+        public static final int button_revert_all=0x7f05011b;
         /**  Second menu item.  Reverts only the colors to their
          default/original values 
  Second menu item.  Reverts only the colors to their
@@ -1413,26 +1415,26 @@ XLATE-ME
  Second menu item.  Reverts only the colors to their
          default/original values 
          */
-        public static final int button_revert_colors=0x7f050117;
+        public static final int button_revert_colors=0x7f05011d;
         /**  Used in Game config dialog to confirm saving changes that reset a game 
  Used in Game config dialog to confirm saving changes that reset a game 
 <string name="button_save">Save</string>
  Used in Game config dialog to confirm saving changes that reset a game 
          */
-        public static final int button_save=0x7f0501a0;
+        public static final int button_save=0x7f0501a8;
         /**   
   
 <string name="button_search">Find</string>
   
          */
-        public static final int button_search=0x7f0501d8;
+        public static final int button_search=0x7f0501e0;
         /**   
   
 <string name="button_sms_add">Import contact</string>
   
   
          */
-        public static final int button_sms_add=0x7f050208;
+        public static final int button_sms_add=0x7f050210;
         /**  Text of button allowing user to choose to open with a
          different (but same-language wordlist) 
  Text of button allowing user to choose to open with a
@@ -1441,10 +1443,10 @@ XLATE-ME
  Text of button allowing user to choose to open with a
          different (but same-language wordlist) 
          */
-        public static final int button_substdict=0x7f050196;
+        public static final int button_substdict=0x7f05019d;
         /** <string name="button_trade_cancel">Cancel trade</string>
          */
-        public static final int button_trade_cancel=0x7f0500df;
+        public static final int button_trade_cancel=0x7f0500e0;
         /** 
        ############################################################
        # :Screens:
@@ -1483,10 +1485,10 @@ XLATE-ME
  Buttons shown at bottom when board is in exchange mode,
          i.e. after user has picked board_menu_trade menu item 
          */
-        public static final int button_trade_commit=0x7f0500de;
+        public static final int button_trade_commit=0x7f0500df;
         /**  Button for alert with title above 
          */
-        public static final int button_wait=0x7f0502d3;
+        public static final int button_wait=0x7f0502de;
         /** 
         ############################################################
         # Dialogs
@@ -1529,14 +1531,14 @@ XLATE-ME
  Text for buttons at the bottom of dialogs.  These first are
       in many places.
          */
-        public static final int button_yes=0x7f05019e;
+        public static final int button_yes=0x7f0501a6;
         /** <string name="cannot_delete_default_group_fmt">The group for new games, %1$s, 
     cannot be deleted.</string>
          */
-        public static final int cannot_delete_default_group_fmt=0x7f05025b;
+        public static final int cannot_delete_default_group_fmt=0x7f050264;
         /** <string name="change_group">Move selected games to:</string>
          */
-        public static final int change_group=0x7f050260;
+        public static final int change_group=0x7f050269;
         /**  text of button in About Crosswords dialog summoning above
          dialog 
  text of button in About Crosswords dialog summoning above
@@ -1545,7 +1547,7 @@ XLATE-ME
  text of button in About Crosswords dialog summoning above
          dialog 
          */
-        public static final int changes_button=0x7f0501ca;
+        public static final int changes_button=0x7f0501d2;
         /**  text of dialog showing the set of changes made since the last
          release 
  text of dialog showing the set of changes made since the last
@@ -1554,13 +1556,13 @@ XLATE-ME
  text of dialog showing the set of changes made since the last
          release 
          */
-        public static final int changes_title=0x7f0501c9;
+        public static final int changes_title=0x7f0501d1;
         /**  Prefix for local messages 
  Prefix for local messages 
 <string name="chat_local_id">Me:\u0020</string>
  Prefix for local messages 
          */
-        public static final int chat_local_id=0x7f05017c;
+        public static final int chat_local_id=0x7f050183;
         /** 
        ############################################################
        # :Menus:
@@ -1593,13 +1595,13 @@ XLATE-ME
          other devices in the game: no "clear chat" message is
          transmitted. 
          */
-        public static final int chat_menu_clear=0x7f05017f;
+        public static final int chat_menu_clear=0x7f050186;
         /**  Prefix for remote messages 
  Prefix for remote messages 
 <string name="chat_other_id">Not me:\u0020</string>
  Prefix for remote messages 
          */
-        public static final int chat_other_id=0x7f05017d;
+        public static final int chat_other_id=0x7f050184;
         /**  Text on the button that causes the contents of the
          message-composition field to be sent. 
  Text on the button that causes the contents of the
@@ -1608,7 +1610,7 @@ XLATE-ME
  Text on the button that causes the contents of the
          message-composition field to be sent. 
          */
-        public static final int chat_send=0x7f05017e;
+        public static final int chat_send=0x7f050185;
         /**  ############################################################
          # :Screens:
          # Chat screen
@@ -1652,20 +1654,20 @@ XLATE-ME
  title of the chat screen.  The name of the current game is
          substituted for %s. 
          */
-        public static final int chat_title_fmt=0x7f05017b;
+        public static final int chat_title_fmt=0x7f050182;
         /** <string name="checking_for_fmt">Checking for wordlists in %1$s…</string>
          */
-        public static final int checking_for_fmt=0x7f050312;
+        public static final int checking_for_fmt=0x7f050320;
         /** <string name="checking_title">Checking</string>
          */
-        public static final int checking_title=0x7f050311;
+        public static final int checking_title=0x7f05031f;
         /** <string name="checkupdates_none_found">Everything is up-to-date.</string>
          */
-        public static final int checkupdates_none_found=0x7f050239;
+        public static final int checkupdates_none_found=0x7f050242;
         /**  EXPERIMENTAL: "label" for invite on clipboard. If it's shown
        it's by some Android utility 
          */
-        public static final int clip_label=0x7f050324;
+        public static final int clip_label=0x7f050332;
         /**  color of the "crosshairs", lines drawn vertically and
          horizontally through the square the user is currently
          touching in order to guide the fat-fingered (most of us) in
@@ -1683,15 +1685,15 @@ XLATE-ME
          operations that require accurately selecting a single square
          on the board.
          */
-        public static final int clr_crosshairs=0x7f050143;
+        public static final int clr_crosshairs=0x7f050149;
         /** XLATE-ME
 <string name="config_no_connvia">This game has no way to connect
     and cannot be saved. Would you like to discard your changes, or
     edit to give it a way to connect?</string>
          */
-        public static final int config_no_connvia=0x7f0502d7;
-        public static final int confirm_clear_chat=0x7f050326;
-        public static final int confirm_clear_relay=0x7f050210;
+        public static final int config_no_connvia=0x7f0502e3;
+        public static final int confirm_clear_chat=0x7f050334;
+        public static final int confirm_clear_relay=0x7f050218;
         /**  Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is the last in its language.  The name
@@ -1701,29 +1703,29 @@ XLATE-ME
          wordlist to be deleted is the last in its language.  The name
          of the language is substituted for %1$s. 
          */
-        public static final int confirm_deleteonly_dicts_fmt=0x7f0500a9;
-        public static final int confirm_drop_relay=0x7f050317;
-        public static final int confirm_drop_relay_bt=0x7f050319;
-        public static final int confirm_drop_relay_sms=0x7f05031a;
+        public static final int confirm_deleteonly_dicts_fmt=0x7f0500aa;
+        public static final int confirm_drop_relay=0x7f050325;
+        public static final int confirm_drop_relay_bt=0x7f050327;
+        public static final int confirm_drop_relay_sms=0x7f050328;
         /** <string name="confirm_get_locdict_fmt">Your device is set up for
   %1$s. Would you like to download a wordlist so you can play
   Crosswords in %1$s?</string>
          */
-        public static final int confirm_get_locdict_fmt=0x7f0502e0;
+        public static final int confirm_get_locdict_fmt=0x7f0502ed;
         /**  Text of confirmation dialog for above 
  Text of confirmation dialog for above 
 <string name="confirm_revert_all">Are you sure you want to restore
       all settings to their original values?</string>
  Text of confirmation dialog for above 
          */
-        public static final int confirm_revert_all=0x7f050118;
+        public static final int confirm_revert_all=0x7f05011e;
         /**  Text of confirmation dialog for above 
  Text of confirmation dialog for above 
 <string name="confirm_revert_colors">Are you sure you want to
       restore all color settings to their original values?</string>
  Text of confirmation dialog for above 
          */
-        public static final int confirm_revert_colors=0x7f050116;
+        public static final int confirm_revert_colors=0x7f05011c;
         /**  title of confirmation dialog put up when user has unlocked an
          in-progress game and wants to save changes (has hit the
          play button). 
@@ -1737,7 +1739,7 @@ XLATE-ME
          in-progress game and wants to save changes (has hit the
          play button). 
          */
-        public static final int confirm_save=0x7f0500d1;
+        public static final int confirm_save=0x7f0500d2;
         /**  title of above confirmation dialog 
 
        ############################################################
@@ -1768,7 +1770,7 @@ XLATE-ME
 <string name="confirm_save_title">Confirm save</string>
  title of above confirmation dialog 
          */
-        public static final int confirm_save_title=0x7f0500d2;
+        public static final int confirm_save_title=0x7f0500d3;
         /**   
   
 <string name="confirm_sms_expl">Warning: This feature is meant for
@@ -1779,37 +1781,37 @@ XLATE-ME
     enabled?</string>
   
          */
-        public static final int confirm_sms_expl=0x7f05022e;
+        public static final int confirm_sms_expl=0x7f050237;
         /**   
   
 <string name="confirm_sms_leave">No: leave disabled</string>
   
          */
-        public static final int confirm_sms_leave=0x7f050230;
+        public static final int confirm_sms_leave=0x7f050239;
         /**   
   
 <string name="confirm_sms_prompt">Enable play via SMS?</string>
   
          */
-        public static final int confirm_sms_prompt=0x7f05022f;
+        public static final int confirm_sms_prompt=0x7f050238;
         /**   
   
 <string name="confirm_sms_title">Confirm your SMS plan</string>
   
          */
-        public static final int confirm_sms_title=0x7f05022d;
+        public static final int confirm_sms_title=0x7f050236;
         /**   
   
 <string name="confirm_sms_unlimited">Yes: I have unlimited texting</string>
   
          */
-        public static final int confirm_sms_unlimited=0x7f050231;
+        public static final int confirm_sms_unlimited=0x7f05023a;
         /**   
   
 <string name="confirm_sms_willpay">Yes: I\'ll pay all carrier charges</string>
   
          */
-        public static final int confirm_sms_willpay=0x7f050232;
+        public static final int confirm_sms_willpay=0x7f05023b;
         /**  text of dialog shown when the menu item board_menu_undo_last
          is chosen. 
  text of dialog shown when the menu item board_menu_undo_last
@@ -1822,16 +1824,16 @@ XLATE-ME
  text of dialog shown when the menu item board_menu_undo_last
          is chosen. 
          */
-        public static final int confirm_undo_last=0x7f050113;
+        public static final int confirm_undo_last=0x7f050119;
         /** <string name="connect_daily">Once every day</string>
          */
-        public static final int connect_daily=0x7f050162;
+        public static final int connect_daily=0x7f050168;
         /** <string name="connect_fifteen_mins">Every 15 minutes</string>
          */
-        public static final int connect_fifteen_mins=0x7f05015e;
+        public static final int connect_fifteen_mins=0x7f050164;
         /** <string name="connect_five_mins">Every 5 minutes</string>
          */
-        public static final int connect_five_mins=0x7f05015d;
+        public static final int connect_five_mins=0x7f050163;
         /**        
        ############################################################
        # :Screens:
@@ -1867,12 +1869,12 @@ XLATE-ME
          new moves available and fetches them.  This controls how
          frequently that check is done. 
          */
-        public static final int connect_frequency=0x7f05015b;
+        public static final int connect_frequency=0x7f050161;
         /**  text of separator marking out the connection area of the dialog 
 XLATE-ME
 <string name="connect_label_fmt">Connection (via %1$s)</string>
          */
-        public static final int connect_label_fmt=0x7f0500bb;
+        public static final int connect_label_fmt=0x7f0500bc;
         /**   
   
   
@@ -1882,7 +1884,7 @@ XLATE-ME
 <string name="connect_label_sms">Connection (via SMS/text)</string>
   
          */
-        public static final int connect_label_sms=0x7f050211;
+        public static final int connect_label_sms=0x7f050219;
         /**  These are the possible values for the connect_frequency
          setting presented as a drop-down list. 
  These are the possible values for the connect_frequency
@@ -1891,83 +1893,83 @@ XLATE-ME
  These are the possible values for the connect_frequency
          setting presented as a drop-down list. 
          */
-        public static final int connect_never=0x7f05015c;
+        public static final int connect_never=0x7f050162;
         /** <string name="connect_one_hour">Every hour</string>
          */
-        public static final int connect_one_hour=0x7f050160;
+        public static final int connect_one_hour=0x7f050166;
         /** <string name="connect_six_hours">Every six hours</string>
          */
-        public static final int connect_six_hours=0x7f050161;
+        public static final int connect_six_hours=0x7f050167;
         /** <string name="connect_thirty_mins">Every 30 minutes</string>
          */
-        public static final int connect_thirty_mins=0x7f05015f;
+        public static final int connect_thirty_mins=0x7f050165;
         /** XLATE-ME
 <string name="connection_via_label">Change Communicate via</string>
          */
-        public static final int connection_via_label=0x7f0502cf;
+        public static final int connection_via_label=0x7f0502d8;
         /**   
   
 <string name="connstat_lastother_succ_fmt">(Last failure was %1$s)</string>
   
          */
-        public static final int connstat_lastother_succ_fmt=0x7f050225;
+        public static final int connstat_lastother_succ_fmt=0x7f05022e;
         /**   
   
 <string name="connstat_lastother_unsucc_fmt">(Last successful send was
     %1$s)</string>
   
          */
-        public static final int connstat_lastother_unsucc_fmt=0x7f050226;
+        public static final int connstat_lastother_unsucc_fmt=0x7f05022f;
         /**   
   
 <string name="connstat_lastreceipt_fmt">Last receipt was %1$s</string>
   
          */
-        public static final int connstat_lastreceipt_fmt=0x7f050227;
+        public static final int connstat_lastreceipt_fmt=0x7f050230;
         /**   
   
 <string name="connstat_lastsend_fmt">Last send was %1$s (%2$s)</string>
   
          */
-        public static final int connstat_lastsend_fmt=0x7f050224;
+        public static final int connstat_lastsend_fmt=0x7f05022d;
         /**   
   
 <string name="connstat_net_fmt">Network status for game connected via
     %1$s:</string>
   
          */
-        public static final int connstat_net_fmt=0x7f050221;
-        public static final int connstat_net_noaddr=0x7f050220;
+        public static final int connstat_net_fmt=0x7f050229;
+        public static final int connstat_net_noaddr=0x7f050228;
         /**   
   
 <string name="connstat_noreceipt">No messages have been received.</string>
   
          */
-        public static final int connstat_noreceipt=0x7f050228;
+        public static final int connstat_noreceipt=0x7f050231;
         /**   
   
 <string name="connstat_relay">internet/relay</string>
   
          */
-        public static final int connstat_relay=0x7f050229;
+        public static final int connstat_relay=0x7f050232;
         /**   
   
 <string name="connstat_sms">sms/texting</string>
   
          */
-        public static final int connstat_sms=0x7f05022a;
+        public static final int connstat_sms=0x7f050233;
         /**   
   
 <string name="connstat_succ">successful</string>
   
          */
-        public static final int connstat_succ=0x7f050222;
+        public static final int connstat_succ=0x7f05022b;
         /**   
   
 <string name="connstat_unsucc">unsuccessful</string>
   
          */
-        public static final int connstat_unsucc=0x7f050223;
+        public static final int connstat_unsucc=0x7f05022c;
         /**  title of dialog brought up in response to the
          board_menu_game_counts menu.  The dialog lists all tiles in
          the language being used for the game together with how many
@@ -1982,31 +1984,31 @@ XLATE-ME
          the language being used for the game together with how many
          of each there are are and how many points each is worth. 
          */
-        public static final int counts_values_title=0x7f0501a7;
+        public static final int counts_values_title=0x7f0501af;
         /** <string name="cur_menu_marker_fmt">%1$s (in use)</string>
          */
-        public static final int cur_menu_marker_fmt=0x7f05026a;
+        public static final int cur_menu_marker_fmt=0x7f050273;
         /**   
   
 <string name="cur_tiles_fmt">Tile picker\n(so far: %1$s)</string>
   
          */
-        public static final int cur_tiles_fmt=0x7f0501dc;
+        public static final int cur_tiles_fmt=0x7f0501e4;
         /** <string name="data_gsm_only">SMS Data is only available on GSM phones.</string>
          */
-        public static final int data_gsm_only=0x7f050287;
+        public static final int data_gsm_only=0x7f050290;
         /**  <string name="db_store_done">SD card write complete.</string> 
          */
-        public static final int db_store_done=0x7f050313;
+        public static final int db_store_done=0x7f050321;
         /** XLATE-ME
 <string name="debug_features">Enable debug features</string>
          */
-        public static final int debug_features=0x7f0502e8;
+        public static final int debug_features=0x7f0502f5;
         /** XLATE-ME
 <string name="debug_features_summary">Menuitems etc. (release builds
   only)</string>
          */
-        public static final int debug_features_summary=0x7f0502e9;
+        public static final int debug_features_summary=0x7f0502f6;
         /**  dictionary used by default for human players when creating
          new game 
  clarification of above 
@@ -2026,7 +2028,7 @@ XLATE-ME
  dictionary used by default for human players when creating
          new game 
          */
-        public static final int default_dict=0x7f050125;
+        public static final int default_dict=0x7f05012b;
         /**  other 
          */
         public static final int default_host=0x7f05007b;
@@ -2034,13 +2036,13 @@ XLATE-ME
  label within default wordlists in app preferences 
 <string name="default_language">Default language</string>
          */
-        public static final int default_language=0x7f0502be;
+        public static final int default_language=0x7f0502c7;
         /** <string name="default_loc">Store wordlists internally</string> 
          */
-        public static final int default_loc=0x7f05024e;
+        public static final int default_loc=0x7f050257;
         /** <string name="default_loc_summary">(Not in external/sdcard memory)</string>
          */
-        public static final int default_loc_summary=0x7f05024f;
+        public static final int default_loc_summary=0x7f050258;
         /**  Welcome dialog text 
  Welcome dialog text 
 <string name="default_name_message">Thanks for installing
@@ -2049,7 +2051,7 @@ XLATE-ME
       game default\" section of Settings.)</string>
  Welcome dialog text 
          */
-        public static final int default_name_message=0x7f0501c3;
+        public static final int default_name_message=0x7f0501cb;
         /** 
        ###########################################################
        # :Dialogs:
@@ -2091,7 +2093,7 @@ XLATE-ME
       
  Welcome dialog title 
          */
-        public static final int default_name_title=0x7f0501c2;
+        public static final int default_name_title=0x7f0501ca;
         /**  default new-game setting for handline phonies (words not
          found in the word list) 
  default new-game setting for handline phonies (words not
@@ -2100,7 +2102,7 @@ XLATE-ME
  default new-game setting for handline phonies (words not
          found in the word list) 
          */
-        public static final int default_phonies=0x7f05012b;
+        public static final int default_phonies=0x7f050131;
         /**  dictionary used by default for robot players when creating
          new game 
  dictionary used by default for robot players when creating
@@ -2109,12 +2111,12 @@ XLATE-ME
  dictionary used by default for robot players when creating
          new game 
          */
-        public static final int default_robodict=0x7f050126;
+        public static final int default_robodict=0x7f05012c;
         public static final int default_update_url=0x7f050080;
         /** <string name="delete_dicts">Delete wordlist[s]</string>
          */
-        public static final int delete_dicts=0x7f0502a9;
-        public static final int devid_title=0x7f0502ef;
+        public static final int delete_dicts=0x7f0502b2;
+        public static final int devid_title=0x7f0502fd;
         /**   
  <string name="sms_disabled">Playing via SMS is currently disabled. 
  You can enable it in Settings->Network game settings.</string> 
@@ -2125,7 +2127,7 @@ XLATE-ME
   
   
          */
-        public static final int dft_sms_name_fmt=0x7f050206;
+        public static final int dft_sms_name_fmt=0x7f05020e;
         /**   
   
 <string name="dict_browse_nowords_fmt">No word in %1$s starts with
@@ -2134,14 +2136,14 @@ XLATE-ME
   
   
          */
-        public static final int dict_browse_nowords_fmt=0x7f0501e0;
+        public static final int dict_browse_nowords_fmt=0x7f0501e8;
         /**   
   
 <string name="dict_browse_title1_fmt">%1$s (%2$d words using %3$d
       tiles)</string>
 <string name="dict_browse_title1_fmt">%1$s (%2$d mots utilisant %3$d jetons)</string>
          */
-        public static final int dict_browse_title1_fmt=0x7f0501df;
+        public static final int dict_browse_title1_fmt=0x7f0501e7;
         /**   
   
 <string name="dict_browse_title_fmt">%1$s (%2$d words using %3$d-%4$d
@@ -2149,18 +2151,18 @@ XLATE-ME
 <string name="dict_browse_title_fmt">%1$s (%2$d mots utilisant de %3$d à
 %4$d jetons)</string>
          */
-        public static final int dict_browse_title_fmt=0x7f0501de;
+        public static final int dict_browse_title_fmt=0x7f0501e6;
         /** <string name="dict_desc_fmt">%1$s (%2$s/%3$d words)</string>
          */
-        public static final int dict_desc_fmt=0x7f0502b0;
+        public static final int dict_desc_fmt=0x7f0502b9;
         /** XLATE-ME
 <string name="dict_host">Wordlist download URL</string>
          */
-        public static final int dict_host=0x7f0502e5;
+        public static final int dict_host=0x7f0502f2;
         /** <string name="dict_info_fmt">Number of words: %1$d\nDownload size:
     %2$dK\nNote: %3$s</string>
          */
-        public static final int dict_info_fmt=0x7f0502ad;
+        public static final int dict_info_fmt=0x7f0502b6;
         /**  label for dropdown by which wordlist is chosen that this
          player will use.  The language the game will use (which
          constrains the choice of wordlists) is substituted in for
@@ -2175,10 +2177,10 @@ XLATE-ME
          constrains the choice of wordlists) is substituted in for
          "%s". 
          */
-        public static final int dict_lang_label_fmt=0x7f0500da;
+        public static final int dict_lang_label_fmt=0x7f0500db;
         /** <string name="dict_on_server">Tap to download</string>
          */
-        public static final int dict_on_server=0x7f0502af;
+        public static final int dict_on_server=0x7f0502b8;
         /** string name="invite_mime">text/plain</string
          */
         public static final int dict_url=0x7f05007f;
@@ -2222,7 +2224,7 @@ XLATE-ME
          only one possible storage location, e.g. if the device has no
          SD card slot. 
          */
-        public static final int dicts_item_move=0x7f0500a7;
+        public static final int dicts_item_move=0x7f0500a8;
         /**  Title of contextual menu item.  If chosen it brings up a
          dialog that sets the selected dictionary as a new-game
          default for robots or human players or both. (See
@@ -2253,7 +2255,7 @@ XLATE-ME
          default for robots or human players or both. (See
          key_default_dict and key_default_robodict.) 
          */
-        public static final int dicts_item_select=0x7f0500a8;
+        public static final int dicts_item_select=0x7f0500a9;
         /**  If the dropdown is selected, this is the title displayed
          above the list of selectable items.  The language the game
          will use is substituted in for "%1$s". 
@@ -2265,16 +2267,16 @@ XLATE-ME
          above the list of selectable items.  The language the game
          will use is substituted in for "%s". 
          */
-        public static final int dicts_list_prompt_fmt=0x7f0500db;
-        public static final int disable_nag_solo_title=0x7f0502df;
+        public static final int dicts_list_prompt_fmt=0x7f0500dc;
+        public static final int disable_nag_solo_title=0x7f0502ec;
         /** <string name="disable_nag_summary">Do not notify me no matter
     how long it\'s been my turn</string>
          */
-        public static final int disable_nag_summary=0x7f0502de;
+        public static final int disable_nag_summary=0x7f0502eb;
         /** <string name="disable_nag_title">Disable turn reminders</string>
          */
-        public static final int disable_nag_title=0x7f0502dd;
-        public static final int disable_nags_title=0x7f0502dc;
+        public static final int disable_nag_title=0x7f0502ea;
+        public static final int disable_nags_title=0x7f0502e9;
         /**  text of item at bottom of dicts choice spinner.  It
          launches the browser pointed at the site where additional
          wordlists can be found. 
@@ -2291,26 +2293,26 @@ XLATE-ME
          browser pointed at the site where additional wordlists can be
          found. 
          */
-        public static final int download_dicts=0x7f0500a4;
+        public static final int download_dicts=0x7f0500a5;
         /** <string name="download_done">Download finished</string>
          */
-        public static final int download_done=0x7f05024c;
+        public static final int download_done=0x7f050255;
         /** <string name="download_failed">Download unsuccessful</string>
          */
-        public static final int download_failed=0x7f05024d;
+        public static final int download_failed=0x7f050256;
         /** <string name="download_path_title">Downloads Directory</string>
          */
-        public static final int download_path_title=0x7f050250;
+        public static final int download_path_title=0x7f050259;
         /** <string name="downloading_dict_fmt">Downloading %1$s…</string>
          */
-        public static final int downloading_dict_fmt=0x7f05018f;
-        public static final int drop_relay_warning_fmt=0x7f050316;
+        public static final int downloading_dict_fmt=0x7f050196;
+        public static final int drop_relay_warning_fmt=0x7f050324;
         /**  <string name="summary_thumb_enabled">Display snapshots of games</string> 
  <string name="summary_thumb_enabled">Display snapshots of games</string> 
 <string name="dropped_dupe">Invitation received but ignored: it
     has already been used to create a game.</string>
          */
-        public static final int dropped_dupe=0x7f050269;
+        public static final int dropped_dupe=0x7f050272;
         /**  Shown in the main screen when you launch Crosswords from an
          invitation (received in email or messaging app, say) and
          there's already a game running that matches that invitation.
@@ -2336,13 +2338,13 @@ XLATE-ME
          the same room name over and over so they'll get this warning
          and it's harmless to ignore it. 
          */
-        public static final int dup_game_query_fmt=0x7f0501a3;
+        public static final int dup_game_query_fmt=0x7f0501ab;
         /**   
   
 <string name="email_author_chooser">Send comment via</string>
   
          */
-        public static final int email_author_chooser=0x7f0501ea;
+        public static final int email_author_chooser=0x7f0501f2;
         /**  Nor is my email address 
          */
         public static final int email_author_email=0x7f05007a;
@@ -2351,22 +2353,22 @@ XLATE-ME
  Should not be translated 
   
          */
-        public static final int email_author_subject=0x7f0501e9;
+        public static final int email_author_subject=0x7f0501f1;
         /**   
   
  Should not be translated 
   
          */
-        public static final int email_body_rev_fmt=0x7f0501eb;
+        public static final int email_body_rev_fmt=0x7f0501f3;
         /**  color of empty squares on the board (that are not bonus squares) 
  color of empty squares on the board (that are not bonus squares) 
 <string name="empty">Empty cell/background</string>
  color of empty squares on the board (that are not bonus squares) 
          */
-        public static final int empty=0x7f050145;
+        public static final int empty=0x7f05014b;
         /**   
          */
-        public static final int empty_relay_inviter=0x7f05020d;
+        public static final int empty_relay_inviter=0x7f050215;
         /**  Shows in SMS Invite dialog when no phone numbers have been saved previously 
  Shows in SMS Invite dialog when no phone numbers have been saved previously 
 <string name="empty_sms_inviter">This phone list is empty. Use the
@@ -2374,71 +2376,71 @@ XLATE-ME
     button to enter numbers directly.</string>
   
          */
-        public static final int empty_sms_inviter=0x7f05020c;
+        public static final int empty_sms_inviter=0x7f050214;
         /** XLATE-ME
 <string name="enable_dupes_summary">Accept invitations more than once</string>
          */
-        public static final int enable_dupes_summary=0x7f0502f7;
+        public static final int enable_dupes_summary=0x7f050305;
         /** XLATE-ME
 <string name="enable_dupes_title">Accept duplicate invites</string>
          */
-        public static final int enable_dupes_title=0x7f0502f5;
+        public static final int enable_dupes_title=0x7f050303;
         /** <string name="enable_nfc">NFC is turned off on this device. You
     can use the Android Settings app to turn it on .</string>
          */
-        public static final int enable_nfc=0x7f05026c;
+        public static final int enable_nfc=0x7f050275;
         /** XLATE-ME
 <string name="enable_nfc_toself_summary">Fake invitation to aid debugging</string>
          */
-        public static final int enable_nfc_toself_summary=0x7f0502fa;
+        public static final int enable_nfc_toself_summary=0x7f050308;
         /** XLATE-ME
 <string name="enable_nfc_toself_title">Enable NFC to self</string>
          */
-        public static final int enable_nfc_toself_title=0x7f0502f9;
+        public static final int enable_nfc_toself_title=0x7f050307;
         /** XLATE-ME
 <string name="enable_pubroom_summary">Rooms others can see and join</string>
          */
-        public static final int enable_pubroom_summary=0x7f0502ce;
+        public static final int enable_pubroom_summary=0x7f0502d7;
         /** XLATE-ME
 <string name="enable_pubroom_title">Enable public rooms</string>
          */
-        public static final int enable_pubroom_title=0x7f0502cd;
-        public static final int enable_relay_toself_summary=0x7f050322;
-        public static final int enable_relay_toself_title=0x7f050321;
+        public static final int enable_pubroom_title=0x7f0502d6;
+        public static final int enable_relay_toself_summary=0x7f050330;
+        public static final int enable_relay_toself_title=0x7f05032f;
         /**   
   
 <string name="enable_sms">Allow games via SMS</string>
   
   
          */
-        public static final int enable_sms=0x7f05022b;
+        public static final int enable_sms=0x7f050234;
         /**   
   
 <string name="enable_sms_summary">Only if you have unlimited texting!</string>
   
          */
-        public static final int enable_sms_summary=0x7f05022c;
+        public static final int enable_sms_summary=0x7f050235;
         /** XLATE-ME
 <string name="enable_sms_toself_summary">Skip radio when phone numbers same</string>
          */
-        public static final int enable_sms_toself_summary=0x7f0502fc;
+        public static final int enable_sms_toself_summary=0x7f05030a;
         /** XLATE-ME
 <string name="enable_sms_toself_title">Short-circuit SMS to self</string>
          */
-        public static final int enable_sms_toself_title=0x7f0502fb;
+        public static final int enable_sms_toself_title=0x7f050309;
         /** <string name="entering_trade">Tap tiles to select…</string>
          */
-        public static final int entering_trade=0x7f0500e0;
+        public static final int entering_trade=0x7f0500e1;
         /** XLATE-ME
 <string name="err_dup_invite_fmt">Duplicate invitation rejected:
     device \"%1$s\" has already accepted an invitation to this
     game.</string>
          */
-        public static final int err_dup_invite_fmt=0x7f0502c8;
+        public static final int err_dup_invite_fmt=0x7f0502d1;
         /** XLATE-ME
 <string name="expl_update_url">Update checks URL</string>
          */
-        public static final int expl_update_url=0x7f050306;
+        public static final int expl_update_url=0x7f050314;
         /**  if this preference is checked, a dialog will be posted every
          time a robot makes a move or a move is received from a remote
          player. 
@@ -2455,15 +2457,15 @@ XLATE-ME
          time a robot makes a move or a move is received from a remote
          player. 
          */
-        public static final int explain_robot=0x7f05014d;
+        public static final int explain_robot=0x7f050153;
         /**  explanation of the above 
  explanation of the above 
 <string name="explain_robot_summary">Display score summary after
         every robot or remote turn</string>
  explanation of the above 
          */
-        public static final int explain_robot_summary=0x7f05014e;
-        public static final int fetching_from_relay=0x7f050328;
+        public static final int explain_robot_summary=0x7f050154;
+        public static final int fetching_from_relay=0x7f050336;
         /**  title of dialog brought up in response to the
          board_menu_game_final menu.  The dialog displays the final
          score and an accounting of it (including subtractions for
@@ -2481,7 +2483,7 @@ XLATE-ME
          running out the game timer if there is one.)
      
          */
-        public static final int finalscores_title=0x7f0501a9;
+        public static final int finalscores_title=0x7f0501b1;
         /**  Explanatory text appears in the dialog 
  Explanatory text appears in the dialog 
 <string name="force_expl">In a multi-device game there must be at
@@ -2489,17 +2491,17 @@ XLATE-ME
     check off-device players.</string>
  Explanatory text appears in the dialog 
          */
-        public static final int force_expl=0x7f0500d5;
+        public static final int force_expl=0x7f0500d6;
         /** XLATE-ME
 <string name="force_radio_title">Pretend to have radio</string>
          */
-        public static final int force_radio_title=0x7f0502fd;
+        public static final int force_radio_title=0x7f05030b;
         /** <string name="force_tablet_summary">Even if my screen is too small</string>
          */
-        public static final int force_tablet_summary=0x7f0502b4;
+        public static final int force_tablet_summary=0x7f0502bd;
         /** <string name="force_tablet_title">Force tablet layout</string>
          */
-        public static final int force_tablet_title=0x7f0502b3;
+        public static final int force_tablet_title=0x7f0502bc;
         /**      
        ############################################################
        # :Dialogs:
@@ -2541,7 +2543,7 @@ XLATE-ME
        
  title of this dialog 
          */
-        public static final int force_title=0x7f0500d4;
+        public static final int force_title=0x7f0500d5;
         /**  Displayed as a "Toast" (mini window briefly displayed) if you
        didn't choose a remote player and I was forced to pick one. I
        always pick the first. 
@@ -2553,7 +2555,7 @@ XLATE-ME
        didn't choose a remote player and I was forced to pick one. I
        always pick the first. 
          */
-        public static final int forced_consistent=0x7f0500d6;
+        public static final int forced_consistent=0x7f0500d7;
         /**  Games that have ended are listed with this string 
  Displayed as a "Toast" (mini window briefly displayed) if you
        didn't choose a remote player and I was forced to pick one. I
@@ -2561,7 +2563,7 @@ XLATE-ME
  Games that have ended are listed with this string 
  Games that have ended are listed with this string 
          */
-        public static final int gameOver=0x7f05008e;
+        public static final int gameOver=0x7f05008f;
         /**   
   
 <string name="game_btname_title">Bluetooth game name</string>
@@ -2569,7 +2571,7 @@ XLATE-ME
   
   
          */
-        public static final int game_btname_title=0x7f050201;
+        public static final int game_btname_title=0x7f050209;
         /**  used to create default names of games (when user has not
          named them.) 
  used to create default names of games (when user has not
@@ -2580,7 +2582,7 @@ XLATE-ME
  used to create default names of games (when user has not
          named them.) 
          */
-        public static final int game_fmt=0x7f050199;
+        public static final int game_fmt=0x7f0501a0;
         /**  
        ############################################################
        # :Menus:
@@ -2606,13 +2608,13 @@ XLATE-ME
  title of contextual menu.  Name of the selected game is
          substituted in. 
          */
-        public static final int game_item_menu_title_fmt=0x7f050097;
+        public static final int game_item_menu_title_fmt=0x7f050098;
         /**   
   
 <string name="game_list_tmp">Building game summary…</string>
   
          */
-        public static final int game_list_tmp=0x7f05021f;
+        public static final int game_list_tmp=0x7f050227;
         /**  text of checkbox at top of dialog allowing to unlock in-play
     game to make changes 
  text of checkbox at top of dialog allowing to unlock in-play
@@ -2621,55 +2623,55 @@ XLATE-ME
  text of checkbox at top of dialog allowing to unlock in-play
     game to make changes 
          */
-        public static final int game_locked=0x7f0500b4;
+        public static final int game_locked=0x7f0500b5;
         /** <string name="game_name_group_title">Name group</string>
          */
-        public static final int game_name_group_title=0x7f05025a;
+        public static final int game_name_group_title=0x7f050263;
         /**   
 XLATE-ME
 <string name="game_name_label">New game name:</string>
          */
-        public static final int game_name_label=0x7f050203;
+        public static final int game_name_label=0x7f05020b;
         /**   
 XLATE-ME
 <string name="game_name_title">Name your game</string>
          */
-        public static final int game_name_title=0x7f050202;
+        public static final int game_name_title=0x7f05020a;
         /**   
   
   
          */
-        public static final int game_rename_title=0x7f0500a0;
+        public static final int game_rename_title=0x7f0500a1;
         /**  Put nothing in the summary space, so it just reads "Game 2" 
  Put nothing in the summary space, so it just reads "Game 2" 
 <string name="game_summary_field_empty">\u003CNothing\u003E</string>
  Put nothing in the summary space, so it just reads "Game 2" 
          */
-        public static final int game_summary_field_empty=0x7f050131;
+        public static final int game_summary_field_empty=0x7f050137;
         /** XLATE-ME
 <string name="game_summary_field_gameid">gameid</string>
          */
-        public static final int game_summary_field_gameid=0x7f050304;
+        public static final int game_summary_field_gameid=0x7f050312;
         /**  Put the language there, so it reads "Game 2 (English)" 
  Put the language there, so it reads "Game 2 (English)" 
 <string name="game_summary_field_language">Game language\u200C</string>
  Put the language there, so it reads "Game 2 (English)" 
          */
-        public static final int game_summary_field_language=0x7f050132;
+        public static final int game_summary_field_language=0x7f050138;
         /** XLATE-ME
 <string name="game_summary_field_npackets">Pending packet count</string>
          */
-        public static final int game_summary_field_npackets=0x7f050305;
+        public static final int game_summary_field_npackets=0x7f050313;
         /**  List names of opponents (summarized), e.g. "Game 2 (vs Kati)" 
  List names of opponents (summarized), e.g. "Game 2 (vs Kati)" 
 <string name="game_summary_field_opponents">Opponent name[s]</string>
  List names of opponents (summarized), e.g. "Game 2 (vs Kati)" 
          */
-        public static final int game_summary_field_opponents=0x7f050133;
+        public static final int game_summary_field_opponents=0x7f050139;
         /** XLATE-ME
 <string name="game_summary_field_rowid">rowid</string>
          */
-        public static final int game_summary_field_rowid=0x7f050303;
+        public static final int game_summary_field_rowid=0x7f050311;
         /**  List the state of the game, "Game over" or "10 moves made"
          etc. 
  List the state of the game, "Game over" or "10 moves made"
@@ -2678,7 +2680,7 @@ XLATE-ME
  List the state of the game, "Game over" or "10 moves made"
          etc. 
          */
-        public static final int game_summary_field_state=0x7f050134;
+        public static final int game_summary_field_state=0x7f05013a;
         /**  Regardless of the setting of the connect_frequency
          preference, checks the relay immediately for any moves for
          networked games on this device and posts a notification if
@@ -2692,13 +2694,13 @@ XLATE-ME
          networked games on this device and posts a notification if
          any is downloaded. 
          */
-        public static final int gamel_menu_checkmoves=0x7f050093;
+        public static final int gamel_menu_checkmoves=0x7f050094;
         /**   
   
 <string name="gamel_menu_checkupdates">Check for updates</string>
   
          */
-        public static final int gamel_menu_checkupdates=0x7f050238;
+        public static final int gamel_menu_checkupdates=0x7f050241;
         /**     
        ############################################################
        # :Menus:
@@ -2737,50 +2739,50 @@ XLATE-ME
       
  Brings up the Wordlists (formerly Dictionaries) screen 
          */
-        public static final int gamel_menu_dicts=0x7f050091;
+        public static final int gamel_menu_dicts=0x7f050092;
         /** XLATE-ME
 <string name="gamel_menu_loaddb">Load DB from SD card</string>
          */
-        public static final int gamel_menu_loaddb=0x7f0502f4;
+        public static final int gamel_menu_loaddb=0x7f050302;
         /** XLATE-ME
 <string name="name_dict_fmt">%1$s/%2$s</string>
 XLATE-ME
 <string name="gamel_menu_storedb">Write DB to SD card</string>
          */
-        public static final int gamel_menu_storedb=0x7f0502f3;
+        public static final int gamel_menu_storedb=0x7f050301;
         /** <string name="gamel_menu_study">Studylist…</string>
          */
-        public static final int gamel_menu_study=0x7f050275;
-        public static final int get_relay_number=0x7f05020f;
+        public static final int gamel_menu_study=0x7f05027e;
+        public static final int get_relay_number=0x7f050217;
         /**   
   
 <string name="get_sms_number">Enter phone number:</string>
   
          */
-        public static final int get_sms_number=0x7f05020e;
+        public static final int get_sms_number=0x7f050216;
         /** <string name="getinfo">Get info</string>
          */
-        public static final int getinfo=0x7f0502a8;
+        public static final int getinfo=0x7f0502b1;
         public static final int git_rev=0x7f050082;
         /** XLATE-ME
 <string name="git_rev_title">Source version id</string>
          */
-        public static final int git_rev_title=0x7f0502ee;
+        public static final int git_rev_title=0x7f0502fc;
         /** <string name="got_langdict_summary">Don\'t try a second time</string>
          */
-        public static final int got_langdict_summary=0x7f050308;
+        public static final int got_langdict_summary=0x7f050316;
         /** <string name="got_langdict_title">Fetch default wordlist for language</string>
          */
-        public static final int got_langdict_title=0x7f050307;
+        public static final int got_langdict_title=0x7f050315;
         /** <string name="green">Green</string>
          */
-        public static final int green=0x7f050149;
+        public static final int green=0x7f05014f;
         /** <string name="group_cur_games">My games</string>
          */
-        public static final int group_cur_games=0x7f050257;
+        public static final int group_cur_games=0x7f050260;
         /** <string name="group_new_games">New games</string>
          */
-        public static final int group_new_games=0x7f050258;
+        public static final int group_new_games=0x7f050261;
         /**  Used as the default name for remote players displayed within
          the Game configure screen 
  Final state: game is over. 
@@ -2807,7 +2809,7 @@ XLATE-ME
  Used as the default name for remote players displayed within
          the Game configure screen 
          */
-        public static final int guest_name=0x7f0500d0;
+        public static final int guest_name=0x7f0500d1;
         /**  If this preference is checked the "crosshairs" (vertical and
          horzontal lines through the cell your finger is on that help
          you tell where the app thinks you're actually tapping) will
@@ -2831,25 +2833,25 @@ XLATE-ME
          large enough screens that they always know where they're
          tapping. 
          */
-        public static final int hide_crosshairs=0x7f050157;
+        public static final int hide_crosshairs=0x7f05015d;
         /**  explanation of the above 
  explanation of the above 
 <string name="hide_crosshairs_summary">Do not visually indicate which board cell is touched</string>
  explanation of the above 
          */
-        public static final int hide_crosshairs_summary=0x7f050158;
+        public static final int hide_crosshairs_summary=0x7f05015e;
         /**  clarification of above 
 XLATE-ME
 <string name="hide_newgames_summary">Hiding the newgame buttons in
         the main screen makes more games visible</string>
          */
-        public static final int hide_newgames_summary=0x7f050138;
+        public static final int hide_newgames_summary=0x7f05013e;
         /**  Checkbox that when set prevents showing the newgame buttons
          on the main screen to save space 
 XLATE-ME
 <string name="hide_newgames_title">Hide newgame buttons</string>
          */
-        public static final int hide_newgames_title=0x7f050137;
+        public static final int hide_newgames_title=0x7f05013d;
         /**  Checkbox that when set prevents showing a title bar in the
          game board window to save space 
  Checkbox that when set prevents showing a title bar in the
@@ -2858,14 +2860,14 @@ XLATE-ME
  Checkbox that when set prevents showing a title bar in the
          game board window to save space 
          */
-        public static final int hide_title=0x7f050135;
+        public static final int hide_title=0x7f05013b;
         /**  clarification of above 
  clarification of above 
 <string name="hide_title_summary">Hiding the game name lets the
         board be slightly larger</string>
  clarification of above 
          */
-        public static final int hide_title_summary=0x7f050136;
+        public static final int hide_title_summary=0x7f05013c;
         /**  text of checkbox.  If this checkbox is checked, buttons will
          appear by which the user can get high- and low-scoring moves
          generated based on his tray.  Can be used to cheat.  
@@ -2877,7 +2879,7 @@ XLATE-ME
          appear by which the user can get high- and low-scoring moves
          generated based on his tray.  Can be used to cheat.  
          */
-        public static final int hints_allowed=0x7f0500c3;
+        public static final int hints_allowed=0x7f0500c4;
         /**  clarification on hints_allowed, whether new games will
          default to having the hint feature enabled(string elsewhere
          in this file) 
@@ -2889,7 +2891,7 @@ XLATE-ME
          default to having the hint feature enabled(string elsewhere
          in this file) 
          */
-        public static final int hints_allowed_sum=0x7f050127;
+        public static final int hints_allowed_sum=0x7f05012d;
         /**  title of dialog brought up in response to the
          board_menu_game_history menu.  A full history of the game up
          to the last turn is displayed, though details about what's in
@@ -2904,7 +2906,7 @@ XLATE-ME
          to the last turn is displayed, though details about what's in
          players' racks is left out if the game is not yet over. 
          */
-        public static final int history_title=0x7f0501a8;
+        public static final int history_title=0x7f0501b0;
         /**  Partial text of alert posted when phonies_warn or
          phonies_disallow is the current setting and a "phony" is
          played.  One of the two following strings will be appended
@@ -2926,7 +2928,7 @@ XLATE-ME
          played.  One of the two following strings will be appended
          
          */
-        public static final int ids_badwords_fmt=0x7f0500f0;
+        public static final int ids_badwords_fmt=0x7f0500f6;
         /**  text of confirmation dialog shown when user chooses the menu
          item with text board_menu_game_final and the game is not over
          
@@ -2938,7 +2940,7 @@ XLATE-ME
          item with text board_menu_game_final and the game is not over
          
          */
-        public static final int ids_endnow=0x7f0501aa;
+        public static final int ids_endnow=0x7f0501b2;
         /**  Title of generic dialog used to display information 
  If the dropdown is selected, this is the title displayed
          above the list of selectable items.  The language the game
@@ -2951,7 +2953,7 @@ XLATE-ME
 <string name="info_title">FYI…</string>
  Title of generic dialog used to display information 
          */
-        public static final int info_title=0x7f0501a4;
+        public static final int info_title=0x7f0501ac;
         /**   
   
 <string name="inform_dict_diffdict_fmt">You are using the wordlist
@@ -2959,7 +2961,7 @@ XLATE-ME
     too?</string>
   
          */
-        public static final int inform_dict_diffdict_fmt=0x7f050243;
+        public static final int inform_dict_diffdict_fmt=0x7f05024c;
         /**   
   
 <string name="inform_dict_diffversion_fmt">You and the host of this
@@ -2968,14 +2970,14 @@ XLATE-ME
  Used in formatting final scores display 
   
          */
-        public static final int inform_dict_diffversion_fmt=0x7f050241;
+        public static final int inform_dict_diffversion_fmt=0x7f05024a;
         /** <string name="inform_dict_download">\u0020(You will have to download it
     first.)</string>
          */
-        public static final int inform_dict_download=0x7f050244;
+        public static final int inform_dict_download=0x7f05024d;
         /** <string name="inform_dict_title">Wordlist mismatch</string>
          */
-        public static final int inform_dict_title=0x7f050242;
+        public static final int inform_dict_title=0x7f05024b;
         /**  Will new games, on default, randomly rearrange the start
          order of players. 
  Will new games, on default, randomly rearrange the start
@@ -2984,13 +2986,13 @@ XLATE-ME
  Will new games, on default, randomly rearrange the start
          order of players. 
          */
-        public static final int init_autojuggle=0x7f050129;
+        public static final int init_autojuggle=0x7f05012f;
         /**  clarification on above 
  clarification on above 
 <string name="init_autojuggle_sum">Randomly, for new games</string>
  clarification on above 
          */
-        public static final int init_autojuggle_sum=0x7f05012a;
+        public static final int init_autojuggle_sum=0x7f050130;
         /**  default number of minutes on timer for new games 
  clarification of the above 
        
@@ -3004,15 +3006,19 @@ XLATE-ME
 <string name="initial_player_minutes">Timer minutes per player</string>
  default number of minutes on timer for new games 
          */
-        public static final int initial_player_minutes=0x7f05012c;
-        public static final int invite_choice_bt=0x7f050171;
-        public static final int invite_choice_email=0x7f050170;
+        public static final int initial_player_minutes=0x7f050132;
+        public static final int invit_expl_bt_fmt=0x7f0500eb;
+        public static final int invit_expl_notarget_fmt=0x7f0500ed;
+        public static final int invit_expl_relay_fmt=0x7f0500ec;
+        public static final int invit_expl_sms_fmt=0x7f0500ea;
+        public static final int invite_choice_bt=0x7f050178;
+        public static final int invite_choice_email=0x7f050177;
         /** <string name="invite_choice_email">Email</string>
 <string name="invite_choice_bt">Bluetooth</string>
 <string name="invite_choice_nfc">NFC (\"Android beaming\")</string>
          */
-        public static final int invite_choice_nfc=0x7f050172;
-        public static final int invite_choice_relay=0x7f050173;
+        public static final int invite_choice_nfc=0x7f050179;
+        public static final int invite_choice_relay=0x7f05017a;
         /**  EXPLAIN ME 
  <string name="bt_disabled">Bluetooth is not available.  This may 
    mean that your device doesn\'t support it, or that it\'s been 
@@ -3025,11 +3031,11 @@ XLATE-ME
          explanation/guidance. 
 <string name="invite_choice_sms">SMS (texting)</string>
          */
-        public static final int invite_choice_sms=0x7f05016f;
+        public static final int invite_choice_sms=0x7f050176;
         /** <string name="invite_choice_title">Inviting players: How?</string>
          */
-        public static final int invite_choice_title=0x7f050174;
-        public static final int invite_chooser_email=0x7f050179;
+        public static final int invite_choice_title=0x7f05017b;
+        public static final int invite_chooser_email=0x7f050180;
         /**  When I've created the invitation, in text or html, I ask
          Android to launch an app that can send it, typically an email
          or messaging app.  Android then asks the user to choose which
@@ -3050,27 +3056,27 @@ XLATE-ME
          to have launched.  This string is passed to Android and used
          as the title of the dialog that presents that choice. 
          */
-        public static final int invite_chooser_fmt=0x7f050178;
+        public static final int invite_chooser_fmt=0x7f05017f;
         /** <string name="invite_chooser_email">email</string>
 <string name="invite_chooser_sms">sms</string>
          */
-        public static final int invite_chooser_sms=0x7f05017a;
-        public static final int invite_copied=0x7f050323;
+        public static final int invite_chooser_sms=0x7f050181;
+        public static final int invite_copied=0x7f050331;
         /** <string name="invite_dict_missing_body_fmt">%1$s has invited you to
     play Crosswords using the wordlist %2$s (for play in %3$s), but it
     is not installed.  Would you like to download the wordlist or
     decline the invitation?</string>
          */
-        public static final int invite_dict_missing_body_fmt=0x7f050249;
+        public static final int invite_dict_missing_body_fmt=0x7f050252;
         /** <string name="invite_dict_missing_body_noname_fmt">You have been
     invited to play Crosswords using the wordlist %2$s (for play in
     %3$s), but it is not installed.  Would you like to download the
     wordlist?</string>
          */
-        public static final int invite_dict_missing_body_noname_fmt=0x7f05024a;
+        public static final int invite_dict_missing_body_noname_fmt=0x7f050253;
         /** <string name="invite_dict_missing_title">Missing wordlist</string>
          */
-        public static final int invite_dict_missing_title=0x7f050248;
+        public static final int invite_dict_missing_title=0x7f050251;
         public static final int invite_host=0x7f05007d;
         /**  This is the body of the html version of the invitation. A URL
          is created with parameters describing the game and
@@ -3097,22 +3103,22 @@ XLATE-ME
          encodings for the greater-than and less-than symbols which
          are not legal in xml strings.)
          */
-        public static final int invite_htm_fmt=0x7f050176;
+        public static final int invite_htm_fmt=0x7f05017d;
         /**  Appended to message above if local device has NFC available 
  Appended to message above if local device has NFC available 
 <string name="invite_if_nfc">(Or just Tap to Invite - if the
         other device also has Android Beaming and is nearby.)</string>
          */
-        public static final int invite_if_nfc=0x7f0500e6;
+        public static final int invite_if_nfc=0x7f0500e8;
         public static final int invite_mime=0x7f05007e;
         /** XLATE-ME
 <string name="invite_multi_summary">Invite more than one player per remote device</string>
          */
-        public static final int invite_multi_summary=0x7f0502cc;
+        public static final int invite_multi_summary=0x7f0502d5;
         /** XLATE-ME
 <string name="invite_multi_title">Invite multiple</string>
          */
-        public static final int invite_multi_title=0x7f0502cb;
+        public static final int invite_multi_title=0x7f0502d4;
         /**  Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
@@ -3142,27 +3148,27 @@ XLATE-ME
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. 
          */
-        public static final int invite_multiple=0x7f0500e7;
+        public static final int invite_multiple=0x7f0500e9;
         /**   
   
          */
-        public static final int invite_notice_title=0x7f0501f4;
+        public static final int invite_notice_title=0x7f0501fc;
         public static final int invite_prefix=0x7f050084;
         /** <string name="invite_progress_fmt">Sending invitation to Crosswords on %1$s</string>
          */
-        public static final int invite_progress_fmt=0x7f0501ef;
+        public static final int invite_progress_fmt=0x7f0501f7;
         /**   
   
 <string name="invite_progress_title">Connecting...</string>
          */
-        public static final int invite_progress_title=0x7f0501ee;
+        public static final int invite_progress_title=0x7f0501f6;
         /** XLATE-ME
 <string name="invite_stays">(This dialog will stay up until all
     remote players have connected. You can close the game if you
     expect it to take a while. They will still be able to
     connect.)</string>
          */
-        public static final int invite_stays=0x7f0502d4;
+        public static final int invite_stays=0x7f0502e0;
         /**  <string name="sms_or_email">Send invitation using SMS (texting) or 
     via email?</string> 
  <string name="nfc_or_email">Send invitation using NFC (Android 
@@ -3194,7 +3200,7 @@ XLATE-ME
  This is the subject line of the email/text sent to invite
          someone to join a game. 
          */
-        public static final int invite_subject_fmt=0x7f050175;
+        public static final int invite_subject_fmt=0x7f05017c;
         /**  This is the body of the text version of the invitation. A URL
          is created with parameters describing the game and
          substituted for "%1$s".
@@ -3207,7 +3213,11 @@ XLATE-ME
          is created with parameters describing the game and
          substituted for "%1$s".
          */
-        public static final int invite_txt_fmt=0x7f050177;
+        public static final int invite_txt_fmt=0x7f05017e;
+        public static final int invited_msg=0x7f0500e7;
+        /**  First line of debug-only Invites list dialog 
+         */
+        public static final int invites_net_fmt=0x7f05022a;
         /**  text of checkbox asking if user wants to search for open
     public rooms 
  text of checkbox asking if user wants to search for open
@@ -3217,7 +3227,7 @@ XLATE-ME
  text of checkbox asking if user wants to search for open
     public rooms 
          */
-        public static final int join_room=0x7f0500bc;
+        public static final int join_room=0x7f0500bd;
         /**  Checkbox that when set keeps the device screen from dimming
          if the board screen is what's displayed.  This is to allow
          users to think about a move without having to touch the
@@ -3232,13 +3242,13 @@ XLATE-ME
          users to think about a move without having to touch the
          screen all the time.
          */
-        public static final int keep_screenon=0x7f05013b;
+        public static final int keep_screenon=0x7f050141;
         /**  clarification of above 
  clarification of above 
 <string name="keep_screenon_summary">Keep board screen on 10 mins</string>
  clarification of above 
          */
-        public static final int keep_screenon_summary=0x7f05013c;
+        public static final int keep_screenon_summary=0x7f050142;
         public static final int key_addrs_pref=0x7f05003e;
         public static final int key_background=0x7f05001a;
         public static final int key_board_size=0x7f050029;
@@ -3254,7 +3264,7 @@ XLATE-ME
  the color of text, e.g. "2L", shown on a bonus square on the
          board 
          */
-        public static final int key_bonushint=0x7f050147;
+        public static final int key_bonushint=0x7f05014d;
         public static final int key_bt_addrs=0x7f050040;
         /**  database keys whose entries aren't visible prefs 
          */
@@ -3389,45 +3399,45 @@ XLATE-ME
          for networked games (where players aren't allowed to have
          different wordlists.) 
          */
-        public static final int lang_label=0x7f0500b9;
-        public static final int lang_name_arabic=0x7f050292;
-        public static final int lang_name_catalan=0x7f050299;
-        public static final int lang_name_czech=0x7f05029c;
-        public static final int lang_name_danish=0x7f050296;
-        public static final int lang_name_dutch=0x7f050298;
-        public static final int lang_name_english=0x7f05028e;
-        public static final int lang_name_french=0x7f05028f;
-        public static final int lang_name_german=0x7f050290;
-        public static final int lang_name_greek=0x7f05029d;
-        public static final int lang_name_italian=0x7f050297;
-        public static final int lang_name_polish=0x7f050295;
-        public static final int lang_name_portuguese=0x7f05029a;
-        public static final int lang_name_russian=0x7f05029b;
-        public static final int lang_name_slovak=0x7f05029e;
-        public static final int lang_name_spanish=0x7f050293;
-        public static final int lang_name_swedish=0x7f050294;
-        public static final int lang_name_turkish=0x7f050291;
+        public static final int lang_label=0x7f0500ba;
+        public static final int lang_name_arabic=0x7f05029b;
+        public static final int lang_name_catalan=0x7f0502a2;
+        public static final int lang_name_czech=0x7f0502a5;
+        public static final int lang_name_danish=0x7f05029f;
+        public static final int lang_name_dutch=0x7f0502a1;
+        public static final int lang_name_english=0x7f050297;
+        public static final int lang_name_french=0x7f050298;
+        public static final int lang_name_german=0x7f050299;
+        public static final int lang_name_greek=0x7f0502a6;
+        public static final int lang_name_italian=0x7f0502a0;
+        public static final int lang_name_polish=0x7f05029e;
+        public static final int lang_name_portuguese=0x7f0502a3;
+        public static final int lang_name_russian=0x7f0502a4;
+        public static final int lang_name_slovak=0x7f0502a7;
+        public static final int lang_name_spanish=0x7f05029c;
+        public static final int lang_name_swedish=0x7f05029d;
+        public static final int lang_name_turkish=0x7f05029a;
         /** <string name="lang_unknown">Unknown</string>
          */
-        public static final int lang_unknown=0x7f0502b1;
+        public static final int lang_unknown=0x7f0502ba;
         /** <string name="langdict_label">Game language/wordlist</string>
          */
-        public static final int langdict_label=0x7f0500ba;
+        public static final int langdict_label=0x7f0500bb;
         /** <string name="list_group_default">Put new games here</string>
          */
-        public static final int list_group_default=0x7f050254;
+        public static final int list_group_default=0x7f05025d;
         /** <string name="list_group_delete">Delete group</string>
          */
-        public static final int list_group_delete=0x7f050252;
+        public static final int list_group_delete=0x7f05025b;
         /** <string name="list_group_movedown">Move down</string>
          */
-        public static final int list_group_movedown=0x7f050256;
+        public static final int list_group_movedown=0x7f05025f;
         /** <string name="list_group_moveup">Move up</string>
          */
-        public static final int list_group_moveup=0x7f050255;
+        public static final int list_group_moveup=0x7f05025e;
         /** <string name="list_group_rename">Rename</string>
          */
-        public static final int list_group_rename=0x7f050253;
+        public static final int list_group_rename=0x7f05025c;
         /**   ############## menu items ############## 
  pulls up dialog to configure the selected game 
  Used to format game name plus some other information as the
@@ -3442,7 +3452,7 @@ XLATE-ME
   ############## menu items ############## 
  pulls up dialog to configure the selected game 
          */
-        public static final int list_item_config=0x7f050098;
+        public static final int list_item_config=0x7f050099;
         /**  makes a copy of the selected game.  This is currently
          disabled for networked games since there would be problems if
          two identically configured games started trying to talk to a
@@ -3456,20 +3466,20 @@ XLATE-ME
          two identically configured games started trying to talk to a
          remote game that expected there was only one of them. 
          */
-        public static final int list_item_copy=0x7f05009e;
+        public static final int list_item_copy=0x7f05009f;
         /**  pulls up dialog to delete the selected game 
  pulls up dialog to change the group of the selected game 
  pulls up dialog to rename (change name of) the selected game 
  pulls up dialog to delete the selected game 
  pulls up dialog to delete the selected game 
          */
-        public static final int list_item_delete=0x7f05009b;
-        public static final int list_item_deselect=0x7f05032b;
+        public static final int list_item_delete=0x7f05009c;
+        public static final int list_item_deselect=0x7f050339;
         /**  pulls up dialog to change the group of the selected game 
  pulls up dialog to change the group of the selected game 
  pulls up dialog to change the group of the selected game 
          */
-        public static final int list_item_move=0x7f05009a;
+        public static final int list_item_move=0x7f05009b;
         /**  creates a new game with all configuation copied from the
          selected game 
  creates a new game with all configuation copied from the
@@ -3477,12 +3487,12 @@ XLATE-ME
  creates a new game with all configuation copied from the
          selected game 
          */
-        public static final int list_item_new_from=0x7f05009d;
+        public static final int list_item_new_from=0x7f05009e;
         /**  pulls up dialog to rename (change name of) the selected game 
  pulls up dialog to rename (change name of) the selected game 
  pulls up dialog to rename (change name of) the selected game 
          */
-        public static final int list_item_rename=0x7f050099;
+        public static final int list_item_rename=0x7f05009a;
         /**  pulls up dialog to reset the selected game, that is to remove
          all moves so that it's the same as a newly created game
          except for any configuration. 
@@ -3502,19 +3512,19 @@ XLATE-ME
          all moves so that it's the same as a newly created game
          except for any configuration. 
          */
-        public static final int list_item_reset=0x7f05009c;
-        public static final int list_item_select=0x7f05032a;
+        public static final int list_item_reset=0x7f05009d;
+        public static final int list_item_select=0x7f050338;
         /**  formatting for last move summary in notifications 
  formatting for last move summary in notifications 
 <string name="lmi_pass_fmt">%1$s passed (0 points)</string>
          */
-        public static final int lmi_pass_fmt=0x7f0502b9;
+        public static final int lmi_pass_fmt=0x7f0502c2;
         /** <string name="lmi_phony_fmt">%1$s lost a turn</string>
          */
-        public static final int lmi_phony_fmt=0x7f0502ba;
+        public static final int lmi_phony_fmt=0x7f0502c3;
         /** <string name="lmi_tiles_fmt">Tiles assigned to %1$s</string>
          */
-        public static final int lmi_tiles_fmt=0x7f0502bb;
+        public static final int lmi_tiles_fmt=0x7f0502c4;
         /**  One of the strings used in the right column of the list of
          installed wordlists to describe those that are part of
          Crosswords and that cannot be uninstalled or moved.
@@ -3531,7 +3541,7 @@ XLATE-ME
          loc_internal and loc_external are the other possible strings
          in this column. 
          */
-        public static final int loc_builtin=0x7f0500a5;
+        public static final int loc_builtin=0x7f0500a6;
         /**  Used to describe wordlists that are in the Downloads
          directory.  Currently I don't look there so this is unused,
          but I will eventually do so.  This should be the same name as
@@ -3548,63 +3558,63 @@ XLATE-ME
          the built-in Android web browser uses for the directory where
          it saves files it downloads. 
          */
-        public static final int loc_downloads=0x7f0500a6;
+        public static final int loc_downloads=0x7f0500a7;
         /**   
   
   
          */
-        public static final int loc_external=0x7f0500b0;
+        public static final int loc_external=0x7f0500b1;
         /** <string name="loc_filters_all">All</string>
          */
-        public static final int loc_filters_all=0x7f05028a;
+        public static final int loc_filters_all=0x7f050293;
         /** <string name="loc_filters_menu">Latest menu</string>
          */
-        public static final int loc_filters_menu=0x7f05028c;
+        public static final int loc_filters_menu=0x7f050295;
         /** <string name="loc_filters_modified">Modified by me</string>
          */
-        public static final int loc_filters_modified=0x7f05028d;
+        public static final int loc_filters_modified=0x7f050296;
         /** <string name="loc_filters_prompt">Filter by:</string>
          */
-        public static final int loc_filters_prompt=0x7f050288;
+        public static final int loc_filters_prompt=0x7f050291;
         /** <string name="loc_filters_screen">Latest screen</string>
          */
-        public static final int loc_filters_screen=0x7f05028b;
+        public static final int loc_filters_screen=0x7f050294;
         /** <string name="loc_fmts_mismatch">Illegal translation: a translated
     string must have the same format specifiers (e.g. %1$s) as the
     original.</string>
          */
-        public static final int loc_fmts_mismatch=0x7f0502a3;
+        public static final int loc_fmts_mismatch=0x7f0502ac;
         /**  see move_dictf above 
  see move_dictf above 
  see move_dictf above 
          */
-        public static final int loc_internal=0x7f0500af;
+        public static final int loc_internal=0x7f0500b0;
         /** <string name="loc_item_check">Check</string>
          */
-        public static final int loc_item_check=0x7f0502a0;
+        public static final int loc_item_check=0x7f0502a9;
         /**  for loc item edit menu 
  for loc item edit menu 
 <string name="loc_item_clear">Clear</string>
          */
-        public static final int loc_item_clear=0x7f05029f;
+        public static final int loc_item_clear=0x7f0502a8;
         /** <string name="loc_item_copy_bless">Copy official</string>
          */
-        public static final int loc_item_copy_bless=0x7f0502a2;
+        public static final int loc_item_copy_bless=0x7f0502ab;
         /** <string name="loc_item_copy_eng">Copy English</string>
          */
-        public static final int loc_item_copy_eng=0x7f0502a1;
+        public static final int loc_item_copy_eng=0x7f0502aa;
         /** <string name="loc_lang_blessed">%1$s (official)</string>
          */
-        public static final int loc_lang_blessed=0x7f050283;
+        public static final int loc_lang_blessed=0x7f05028c;
         /** <string name="loc_lang_local">%1$s (yours)</string>
          */
-        public static final int loc_lang_local=0x7f050284;
+        public static final int loc_lang_local=0x7f05028d;
         /** <string name="loc_menu_xlate">Translate</string>
          */
-        public static final int loc_menu_xlate=0x7f050282;
+        public static final int loc_menu_xlate=0x7f05028b;
         /** <string name="loc_search_prompt">Search for:</string>
          */
-        public static final int loc_search_prompt=0x7f050289;
+        public static final int loc_search_prompt=0x7f050292;
         /**  This is the "hint" printed in light text in the empty player
          name field 
  ############################################################
@@ -3651,107 +3661,107 @@ XLATE-ME
  This is the "hint" printed in light text in the empty player
          name field 
          */
-        public static final int local_name_hint=0x7f050180;
+        public static final int local_name_hint=0x7f050187;
         /** XLATE-ME
 <string name="logging_on">Enable logging</string>
          */
-        public static final int logging_on=0x7f0502e6;
+        public static final int logging_on=0x7f0502f3;
         /** XLATE-ME
 <string name="logging_on_summary">(release builds only)</string>
          */
-        public static final int logging_on_summary=0x7f0502e7;
+        public static final int logging_on_summary=0x7f0502f4;
         /** <string name="lookup_title">Word lookup</string>
          */
-        public static final int lookup_title=0x7f05027e;
+        public static final int lookup_title=0x7f050287;
         /**   
   
 <string name="manual_owner_name">(Not in contacts)</string>
   
   
          */
-        public static final int manual_owner_name=0x7f05020a;
+        public static final int manual_owner_name=0x7f050212;
         /**   
   
 <string name="max_len">Max length</string>
   
          */
-        public static final int max_len=0x7f0501e5;
+        public static final int max_len=0x7f0501ed;
         /**   
   
 <string name="menu_chat">Chat</string>
   
          */
-        public static final int menu_chat=0x7f05021c;
+        public static final int menu_chat=0x7f050224;
         /**   
   
 <string name="menu_flip">Flip board</string>
   
          */
-        public static final int menu_flip=0x7f05021a;
+        public static final int menu_flip=0x7f050222;
         /**   
   
 <string name="menu_hint_next">Next hint</string>
   
          */
-        public static final int menu_hint_next=0x7f050217;
+        public static final int menu_hint_next=0x7f05021f;
         /**   
   
 <string name="menu_hint_prev">Prev hint</string>
   
          */
-        public static final int menu_hint_prev=0x7f050216;
+        public static final int menu_hint_prev=0x7f05021e;
         /**   
   
 <string name="menu_juggle">Juggle rack</string>
   
          */
-        public static final int menu_juggle=0x7f050219;
+        public static final int menu_juggle=0x7f050221;
         /**  text of menu that brings up the Settings (preferences) dialog 
  text of menu that brings up the Settings (preferences) dialog 
  text of menu that brings up the Settings (preferences) dialog 
          */
-        public static final int menu_prefs=0x7f050092;
+        public static final int menu_prefs=0x7f050093;
         /** <string name="menu_rateme">Rate Crosswords</string>
          */
-        public static final int menu_rateme=0x7f050270;
+        public static final int menu_rateme=0x7f050279;
         /**   
   
 <string name="menu_toggle_values">Toggle values</string>
   
          */
-        public static final int menu_toggle_values=0x7f05021d;
+        public static final int menu_toggle_values=0x7f050225;
         /**   
   
 <string name="menu_zoom">Zoom in/out</string>
   
          */
-        public static final int menu_zoom=0x7f05021b;
+        public static final int menu_zoom=0x7f050223;
         /**   
   
 <string name="min_len">Min length</string>
   
          */
-        public static final int min_len=0x7f0501e4;
+        public static final int min_len=0x7f0501ec;
         /**  label for the field used to set the timer's inital value 
  label for the field used to set the timer's inital value 
 <string name="minutes_label">Minutes per player</string>
  label for the field used to set the timer's inital value 
          */
-        public static final int minutes_label=0x7f0500c6;
+        public static final int minutes_label=0x7f0500c7;
         /**  body of notification shown when invitation requires a
 	     wordslist that's not installed 
  body of notification shown when invitation requires a
 	     wordslist that's not installed 
 <string name="missing_dict_detail">Tap to download missing wordlist</string>
          */
-        public static final int missing_dict_detail=0x7f050247;
+        public static final int missing_dict_detail=0x7f050250;
         /**  Title of notification shown when invitation requires a
 	     wordslist that's not installed 
  Title of notification shown when invitation requires a
 	     wordslist that's not installed 
 <string name="missing_dict_title">Game invitation pending</string>
          */
-        public static final int missing_dict_title=0x7f050246;
+        public static final int missing_dict_title=0x7f05024f;
         /**  Used as a substitute for the names of remote players when
          they aren't available yet because the connection is not
          complete.  Displayed in the lists of players found in each
@@ -3790,7 +3800,7 @@ XLATE-ME
          loc_internal are substitued for %2$s and %3$s (or vice-versa,
          depending on the current location of the wordlist.)
          */
-        public static final int move_dict_fmt=0x7f0500ae;
+        public static final int move_dict_fmt=0x7f0500af;
         /**  
        ############################################################
        # :Dialogs:
@@ -3831,7 +3841,7 @@ XLATE-ME
        
  Text of dialog.  Player name is substituted 
          */
-        public static final int msg_ask_password_fmt=0x7f050198;
+        public static final int msg_ask_password_fmt=0x7f05019f;
         /**  When a game has been connected and the relay is notified that
          a device in the game has deleted its part of the game, this
          message is posted when you connect your end of it to the
@@ -3854,27 +3864,27 @@ XLATE-ME
          game so you might as well delete it (unless you're saving it
          for its history etc.) 
          */
-        public static final int msg_dev_deleted=0x7f0500ef;
+        public static final int msg_dev_deleted=0x7f0500f5;
         /**  (I believe this can no longer occur) 
  (I believe this can no longer occur) 
 <string name="msg_dup_room">Another host has already registered a
          room using that name.  Rename yours or retry later.</string>
  (I believe this can no longer occur) 
          */
-        public static final int msg_dup_room=0x7f0500ed;
+        public static final int msg_dup_room=0x7f0500f3;
         /**  (I believe this can no longer occur) 
  (I believe this can no longer occur) 
 <string name="msg_lost_other">The relay has lost contact with
          another device in this game.</string>
  (I believe this can no longer occur) 
          */
-        public static final int msg_lost_other=0x7f0500ee;
+        public static final int msg_lost_other=0x7f0500f4;
         /**  (I believe this can no longer occur) 
  (I believe this can no longer occur) 
 <string name="msg_no_room">No host has registered a room by that name.</string>
  (I believe this can no longer occur) 
          */
-        public static final int msg_no_room=0x7f0500ec;
+        public static final int msg_no_room=0x7f0500f2;
         /**  Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. 
@@ -3893,41 +3903,41 @@ XLATE-ME
          that all expected players have registered.  At this point
          play can begin. 
          */
-        public static final int msg_relay_all_here_fmt=0x7f0500e9;
+        public static final int msg_relay_all_here_fmt=0x7f0500ef;
         /**  (I believe this can no longer occur) 
  (I believe this can no longer occur) 
 <string name="msg_too_many">You are providing more players than
          the host expects.</string>
  (I believe this can no longer occur) 
          */
-        public static final int msg_too_many=0x7f0500eb;
+        public static final int msg_too_many=0x7f0500f1;
         /**  Text of progress indicator shown while check is being conducted 
  Text of progress indicator shown while check is being conducted 
  Text of progress indicator shown while check is being conducted 
          */
-        public static final int msgs_progress=0x7f050094;
+        public static final int msgs_progress=0x7f050095;
         /** <string name="nag_body_fmt">%1$s moved more than %2$s ago.</string>
          */
-        public static final int nag_body_fmt=0x7f0502b6;
+        public static final int nag_body_fmt=0x7f0502bf;
         /** XLATE-ME
 <string name="nag_intervals">Reminder intervals (minutes1,minutes2,...)</string>
          */
-        public static final int nag_intervals=0x7f0502f8;
+        public static final int nag_intervals=0x7f050306;
         /**  Nagging: title of notification reminder message 
  Nagging: title of notification reminder message 
 <string name="nag_title">Reminder: It\'s your turn</string>
          */
-        public static final int nag_title=0x7f0502b5;
+        public static final int nag_title=0x7f0502be;
         /**  above is inserted in this the last time I warn 
  above is inserted in this the last time I warn 
 <string name="nag_warn_last_fmt">Last warning: %1$s</string>
          */
-        public static final int nag_warn_last_fmt=0x7f0502b7;
+        public static final int nag_warn_last_fmt=0x7f0502c0;
         /** XLATE-ME
 <string name="name_copy_fmt">%1$s copy</string>
          */
-        public static final int name_copy_fmt=0x7f050204;
-        public static final int name_dict_fmt=0x7f0502f2;
+        public static final int name_copy_fmt=0x7f05020c;
+        public static final int name_dict_fmt=0x7f050300;
         public static final int nbs_port=0x7f050083;
         /**  text of checkbox.  If this checkbox is checked, games created
          for network play will by default have the hint feature
@@ -3940,7 +3950,7 @@ XLATE-ME
          for network play will by default have the hint feature
          enabled. 
          */
-        public static final int nethints_allowed=0x7f0500c4;
+        public static final int nethints_allowed=0x7f0500c5;
         /**  clarification on hints_allowed, whether new NETWORKED games
          will default to having the hint feature enabled(string
          elsewhere in this file) 
@@ -3952,41 +3962,41 @@ XLATE-ME
          will default to having the hint feature enabled(string
          elsewhere in this file) 
          */
-        public static final int nethints_allowed_sum=0x7f050128;
+        public static final int nethints_allowed_sum=0x7f05012e;
         /** XLATE-ME
 <string name="netstats_title">Game network stats</string>
          */
-        public static final int netstats_title=0x7f0502ed;
+        public static final int netstats_title=0x7f0502fb;
         /** XLATE-ME
 <string name="network_advanced_summary">For experienced players</string>
          */
-        public static final int network_advanced_summary=0x7f0502ca;
+        public static final int network_advanced_summary=0x7f0502d3;
         /** XLATE-ME
 <string name="network_advanced_title">Advanced</string>
          */
-        public static final int network_advanced_title=0x7f0502c9;
+        public static final int network_advanced_title=0x7f0502d2;
         /** <string name="network_behavior">Network game settings</string>
          */
-        public static final int network_behavior=0x7f050159;
+        public static final int network_behavior=0x7f05015f;
         /**  explanation of the above 
  explanation of the above 
 <string name="network_behavior_summary">Settings that apply to
         networked games</string>
  explanation of the above 
          */
-        public static final int network_behavior_summary=0x7f05015a;
+        public static final int network_behavior_summary=0x7f050160;
         /**   
   
 <string name="new_app_avail">Tap to download and install</string>
   
          */
-        public static final int new_app_avail=0x7f05023d;
+        public static final int new_app_avail=0x7f050246;
         /**   
   
 <string name="new_app_avail_fmt">New version of %1$s</string>
   
          */
-        public static final int new_app_avail_fmt=0x7f05023c;
+        public static final int new_app_avail_fmt=0x7f050245;
         /**   
   
 <string name="new_bt_title">New game via Bluetooth</string>
@@ -3995,67 +4005,67 @@ XLATE-ME
   
   
          */
-        public static final int new_bt_body_fmt=0x7f0501f5;
+        public static final int new_bt_body_fmt=0x7f0501fd;
         /**   
   
          */
-        public static final int new_btmove_title=0x7f0501f9;
+        public static final int new_btmove_title=0x7f050201;
         /**   
   
 <string name="new_dict_avail">New wordlist available</string>
   
          */
-        public static final int new_dict_avail=0x7f05023a;
+        public static final int new_dict_avail=0x7f050243;
         /**   
   
 <string name="new_dict_avail_fmt">Tap to update %1$s</string>
   
          */
-        public static final int new_dict_avail_fmt=0x7f05023b;
+        public static final int new_dict_avail_fmt=0x7f050244;
         /** XLATE-ME
 <string name="new_game">New one-device game</string>
          */
-        public static final int new_game=0x7f0502c0;
+        public static final int new_game=0x7f0502c9;
         /** XLATE-ME
 <string name="new_game_message">Would you like to create this game
     using default settings?\n\nOr would you like to configure it
     first?</string>
          */
-        public static final int new_game_message=0x7f0502c3;
+        public static final int new_game_message=0x7f0502cc;
         /** XLATE-ME
 <string name="new_game_message_net">(You will have a chance to
     invite other players when it is open.)</string>
          */
-        public static final int new_game_message_net=0x7f0502c5;
+        public static final int new_game_message_net=0x7f0502ce;
         /** XLATE-ME
 <string name="new_game_message_nodflt">This game must be
     configured before it can be opened.</string>
          */
-        public static final int new_game_message_nodflt=0x7f0502c4;
+        public static final int new_game_message_nodflt=0x7f0502cd;
         /** XLATE-ME
 <string name="new_game_networked">New networked game</string>
          */
-        public static final int new_game_networked=0x7f0502c1;
+        public static final int new_game_networked=0x7f0502ca;
         /**   
   
   
 <string name="new_move_body">One or more moves has arrived</string>
   
          */
-        public static final int new_move_body=0x7f0501fa;
+        public static final int new_move_body=0x7f050202;
         /**   
   
 <string name="new_name_body_fmt">%1$s has invited you to play</string>
   
          */
-        public static final int new_name_body_fmt=0x7f050207;
-        public static final int new_relay_body=0x7f0501f6;
+        public static final int new_name_body_fmt=0x7f05020f;
+        public static final int new_relay_body=0x7f0501fe;
         /**  hint (text shown when field is empty) for room name field 
  hint (text shown when field is empty) for room name field 
 <string name="new_room_hint">Room name</string>
  hint (text shown when field is empty) for room name field 
          */
-        public static final int new_room_hint=0x7f0500bd;
+        public static final int new_room_hint=0x7f0500be;
         /** 
        ###########################################################
        # :Dialogs:
@@ -4091,7 +4101,7 @@ XLATE-ME
       
  Title of New user info dialog
          */
-        public static final int newbie_title=0x7f0501ac;
+        public static final int newbie_title=0x7f0501b4;
         /**  section separator (white-on-gray bar) for third section:
          bluetooth games 
  section separator (white-on-gray bar) for third section:
@@ -4100,15 +4110,15 @@ XLATE-ME
  section separator (white-on-gray bar) for third section:
          bluetooth games 
          */
-        public static final int newgame_bt_header=0x7f05016e;
+        public static final int newgame_bt_header=0x7f050175;
         /**  Text of second of two buttons for new standalone games.  Tap
     this and you'll get taken to the "Game configure" screen 
  Text of second of two buttons for new standalone games.  Tap
     this and you'll get taken to the "Game configure" screen 
 <string name="newgame_configure_first">Configure first</string>
          */
-        public static final int newgame_configure_first=0x7f050169;
-        public static final int newgame_drop_relay=0x7f05016d;
+        public static final int newgame_configure_first=0x7f05016f;
+        public static final int newgame_drop_relay=0x7f050174;
         /**  Text of first of two buttons for new networked games.  Tap
          this and a game will be created, but you probably won't see
          it immediately because an email or messaging app will be
@@ -4123,7 +4133,8 @@ XLATE-ME
          it immediately because an email or messaging app will be
          launched to send your invitation. 
          */
-        public static final int newgame_invite=0x7f05016c;
+        public static final int newgame_invite=0x7f050172;
+        public static final int newgame_invite_more=0x7f050173;
         /**  Text of first of two buttons for new standalone games.  Tap
          this and a new game will be created and opened.  If the first
          player is a robot it will immediately take its turn.
@@ -4135,7 +4146,7 @@ XLATE-ME
          this and a new game will be created and opened.  If the first
          player is a robot it will immediately take its turn.
          */
-        public static final int newgame_local=0x7f050168;
+        public static final int newgame_local=0x7f05016e;
         /**  This is one of two descriptions on this screen.  It explains
          what standalone games are and describes the two buttons used
          to create them.  The name of the language of the default
@@ -4154,7 +4165,7 @@ XLATE-ME
          to create them.  The name of the language of the default
          wordlist is substituted in for %1$s. 
          */
-        public static final int newgame_local_desc_fmt=0x7f050167;
+        public static final int newgame_local_desc_fmt=0x7f05016d;
         /**  ############################################################
          # :Screens:
          # New game screen
@@ -4193,7 +4204,7 @@ XLATE-ME
  section separator (white-on-gray bar) for first section:
          standalone games 
          */
-        public static final int newgame_local_header=0x7f050166;
+        public static final int newgame_local_header=0x7f05016c;
         /**  This is the second of two descriptions on this screen.  It
          explains what networked games are and describes the two
          buttons used to create them. 
@@ -4210,7 +4221,7 @@ XLATE-ME
          explains what networked games are and describes the two
          buttons used to create them. 
          */
-        public static final int newgame_networked_desc=0x7f05016b;
+        public static final int newgame_networked_desc=0x7f050171;
         /**  section separator (white-on-gray bar) for second section:
          networked games 
  section separator (white-on-gray bar) for second section:
@@ -4219,7 +4230,7 @@ XLATE-ME
  section separator (white-on-gray bar) for second section:
          networked games 
          */
-        public static final int newgame_networked_header=0x7f05016a;
+        public static final int newgame_networked_header=0x7f050170;
         /**   
   
 <string name="newgame_sms_header">New SMS Game</string>
@@ -4227,16 +4238,16 @@ XLATE-ME
   
   
          */
-        public static final int newgame_sms_header=0x7f050205;
+        public static final int newgame_sms_header=0x7f05020d;
         /** <string name="newgroup_label">Name your new group:</string>
          */
-        public static final int newgroup_label=0x7f050251;
+        public static final int newgroup_label=0x7f05025a;
         /** XLATE-ME
 <string name="nfc_just_tap">To invite via NFC just touch the back
     of this device against the one you want to invite—any time the
     game is open.</string>
          */
-        public static final int nfc_just_tap=0x7f0502d5;
+        public static final int nfc_just_tap=0x7f0502e1;
         /** XLATE-ME
 <string name="radio_name_gsm">GSM</string>
 XLATE-ME
@@ -4244,7 +4255,7 @@ XLATE-ME
 XLATE-ME
 <string name="nfc_to_self">Send via NFC to self?</string>
          */
-        public static final int nfc_to_self=0x7f050302;
+        public static final int nfc_to_self=0x7f050310;
         /**  Title of dialog for renaming game (triggered by selecting
          list_item_rename) 
  If you try to copy a networked game you get this error
@@ -4258,7 +4269,7 @@ XLATE-ME
  If you try to copy a networked game you get this error
     message. 
          */
-        public static final int no_copy_network=0x7f05009f;
+        public static final int no_copy_network=0x7f0500a0;
         /**  If the wordlist disappears mid-game there are no choices,
          just an explanation and this button, after which the game
          closes. 
@@ -4272,7 +4283,7 @@ XLATE-ME
          just an explanation and this button, after which the game
          closes. 
          */
-        public static final int no_dict_finish=0x7f050191;
+        public static final int no_dict_finish=0x7f050198;
         /**  If the missing wordlist is discovered when trying to open the
          game, we have more options.  If there's another wordlist in
          the same language, we can offer to substitute without needing
@@ -4297,7 +4308,7 @@ XLATE-ME
          takes wordlist name and language substituted in for %1$ and
          %2$ 
          */
-        public static final int no_dict_fmt=0x7f050193;
+        public static final int no_dict_fmt=0x7f05019a;
         /**  This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. 
@@ -4313,7 +4324,7 @@ XLATE-ME
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. 
          */
-        public static final int no_dict_subst_fmt=0x7f050194;
+        public static final int no_dict_subst_fmt=0x7f05019b;
         /**  
        ############################################################
        # :Dialogs:
@@ -4467,7 +4478,7 @@ XLATE-ME
       
  title of alert 
          */
-        public static final int no_dict_title=0x7f050190;
+        public static final int no_dict_title=0x7f050197;
         /**  If you click on the Play button without having entered a room
          name you get an alert with this error message. 
  If you click on the Play button without having entered a room
@@ -4477,7 +4488,7 @@ XLATE-ME
  If you click on the Play button without having entered a room
          name you get an alert with this error message. 
          */
-        public static final int no_empty_rooms=0x7f050182;
+        public static final int no_empty_rooms=0x7f050189;
         /**  If you choose the above option and have no networked games
          you get this error message 
  If you choose the above option and have no networked games
@@ -4485,10 +4496,10 @@ XLATE-ME
  If you choose the above option and have no networked games
          you get this error message 
          */
-        public static final int no_games_to_refresh=0x7f050095;
+        public static final int no_games_to_refresh=0x7f050096;
         /** <string name="no_market">Google Play app not found</string>
          */
-        public static final int no_market=0x7f050271;
+        public static final int no_market=0x7f05027a;
         /**  displayed when you long-tap a scoreboard entry and there's no
          most recent score to show 
  displayed when you long-tap a scoreboard entry and there's no
@@ -4497,7 +4508,7 @@ XLATE-ME
  displayed when you long-tap a scoreboard entry and there's no
          most recent score to show 
          */
-        public static final int no_moves_made=0x7f0500e5;
+        public static final int no_moves_made=0x7f0500e6;
         /**  If the query returns no rooms, this message is displayed,
     with the number of players in the game and its language
     substituted. 
@@ -4511,8 +4522,8 @@ XLATE-ME
     with the number of players in the game and its language
     substituted. 
          */
-        public static final int no_name_found_fmt=0x7f0500c1;
-        public static final int no_relay_conn=0x7f050315;
+        public static final int no_name_found_fmt=0x7f0500c2;
+        public static final int no_relay_conn=0x7f050323;
         /**  This is not currently shown 
  <string name="not_again_dicts">Crosswords wordlists, which are 
    just compressed lists of words plus tile information, determine 
@@ -4554,25 +4565,25 @@ XLATE-ME
          figuring out how to play and when you tap an empty cell the
          arrow appears.  This explains it. 
          */
-        public static final int not_again_arrow=0x7f0501bf;
+        public static final int not_again_arrow=0x7f0501c7;
         /** <string name="not_again_backclears">The back button clears any
     selection instead of exiting. Hit it again to exit the
     app.</string>
          */
-        public static final int not_again_backclears=0x7f050264;
+        public static final int not_again_backclears=0x7f05026d;
         /**   
   
 <string name="not_again_browse">This button opens the wordlist
       browser on the current player\'s wordlist.</string>
   
          */
-        public static final int not_again_browse=0x7f0501e1;
+        public static final int not_again_browse=0x7f0501e9;
         /**   
   
 <string name="not_again_browseall">This button opens the wordlist
       browser on the wordlist of your choice.</string>
          */
-        public static final int not_again_browseall=0x7f0501e2;
+        public static final int not_again_browseall=0x7f0501ea;
         /**  Shown when you tap the chat button on the toolbar of the
          main Board screen 
  Shown when you tap the chat button on the toolbar of the
@@ -4583,14 +4594,14 @@ XLATE-ME
  Shown when you tap the chat button on the toolbar of the
          main Board screen 
          */
-        public static final int not_again_chat=0x7f0501b8;
+        public static final int not_again_chat=0x7f0501c0;
         /**  EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
        when chosen 
          */
-        public static final int not_again_clip_expl_fmt=0x7f050325;
-        public static final int not_again_comms_bt=0x7f05031e;
-        public static final int not_again_comms_relay=0x7f05031c;
-        public static final int not_again_comms_sms=0x7f05031d;
+        public static final int not_again_clip_expl_fmt=0x7f050333;
+        public static final int not_again_comms_bt=0x7f05032c;
+        public static final int not_again_comms_relay=0x7f05032a;
+        public static final int not_again_comms_sms=0x7f05032b;
         /**  This is shown in the Board screen when you successfully
          connecting a game to the relay and are the last device in the
          game to do so, i.e. the game is now complete and you should
@@ -4608,7 +4619,7 @@ XLATE-ME
          game to do so, i.e. the game is now complete and you should
          expect play to begin. 
          */
-        public static final int not_again_conndall=0x7f0501be;
+        public static final int not_again_conndall=0x7f0501c6;
         /**  This is shown in the Board screen when you successfully
          connect a game to the relay and are the first device in the
          game to do so. 
@@ -4623,7 +4634,7 @@ XLATE-ME
          connect a game to the relay and are the first device in the
          game to do so. 
          */
-        public static final int not_again_conndfirst=0x7f0501bc;
+        public static final int not_again_conndfirst=0x7f0501c4;
         /**  This is shown in the Board screen when you successfully
          connecting a game to the relay and are not the first device
          in the game but not the last either.  So it will only occur
@@ -4640,8 +4651,8 @@ XLATE-ME
          in the game but not the last either.  So it will only occur
          for games with more than two devices, which are rare. 
          */
-        public static final int not_again_conndmid=0x7f0501bd;
-        public static final int not_again_dfltname_fmt=0x7f05032c;
+        public static final int not_again_conndmid=0x7f0501c5;
+        public static final int not_again_dfltname_fmt=0x7f05033a;
         /** <string name="not_again_dicts">This screen lets you install new
     wordslists and view the ones you already have.\n\nWhat wordlists
     you have installed determines:\n• What languages you can play
@@ -4649,7 +4660,7 @@ XLATE-ME
     legal.\n\nCheck the \"Show downloadable\" box at the top to see
     what\'s available.</string>
          */
-        public static final int not_again_dicts=0x7f0502b2;
+        public static final int not_again_dicts=0x7f0502bb;
         /**  This is shown when you choose the board_menu_done menu item.
          It's to let you know that there's a shortcut that does almost
          the same thing. 
@@ -4663,14 +4674,14 @@ XLATE-ME
          It's to let you know that there's a shortcut that does almost
          the same thing. 
          */
-        public static final int not_again_done=0x7f0501ba;
+        public static final int not_again_done=0x7f0501c2;
         /** XLATE-ME
 <string name="not_again_enablepublic">Public rooms have been made
     an \"advanced\" feature in this release. If you were using them
     and want them back, enable them now. You can turn them off again
     in Settings.</string>
          */
-        public static final int not_again_enablepublic=0x7f0502db;
+        public static final int not_again_enablepublic=0x7f0502e8;
         /**  Shown when you tap the flip button on the toolbar of the main
          Board screen 
  Shown when you tap the flip button on the toolbar of the main
@@ -4680,13 +4691,13 @@ XLATE-ME
  Shown when you tap the flip button on the toolbar of the main
          Board screen 
          */
-        public static final int not_again_flip=0x7f0501b5;
+        public static final int not_again_flip=0x7f0501bd;
         /** <string name="not_again_fmt_expl">This string has special format
     specifiers (e.g. %1$s). Please be sure that your translation has
     the same ones as the original.\n\n(You will not be able to save it
     unless it does.)</string>
          */
-        public static final int not_again_fmt_expl=0x7f0502a4;
+        public static final int not_again_fmt_expl=0x7f0502ad;
         /** XLATE-ME
 <string name="not_again_hidenewgamebuttons">These two buttons do
     the same thing as the first two items in this window\'s Action Bar
@@ -4695,7 +4706,7 @@ XLATE-ME
     section of App settings).
     </string>
          */
-        public static final int not_again_hidenewgamebuttons=0x7f0502d1;
+        public static final int not_again_hidenewgamebuttons=0x7f0502da;
         /**  Shown when you tap the next hint button on the toolbar of the
          main Board screen 
  Shown when you tap the next hint button on the toolbar of the
@@ -4706,7 +4717,7 @@ XLATE-ME
  Shown when you tap the next hint button on the toolbar of the
          main Board screen 
          */
-        public static final int not_again_hintnext=0x7f0501b3;
+        public static final int not_again_hintnext=0x7f0501bb;
         /**  Currently not used 
  <string name="not_again_newgame">The new game you have created has 
    two players. Player 1 is a robot; Player 2 is you. Tap the game 
@@ -4732,7 +4743,7 @@ XLATE-ME
  Shown when you tap the Previous Hint button on the toolbar of
          the main Board screen 
          */
-        public static final int not_again_hintprev=0x7f0501b2;
+        public static final int not_again_hintprev=0x7f0501ba;
         /**  Shown when you tap the juggle button on the toolbar of the
          main Board screen 
  Shown when you tap the juggle button on the toolbar of the
@@ -4742,14 +4753,14 @@ XLATE-ME
  Shown when you tap the juggle button on the toolbar of the
          main Board screen 
          */
-        public static final int not_again_juggle=0x7f0501b4;
+        public static final int not_again_juggle=0x7f0501bc;
         /**   
   
 <string name="not_again_lookup">This button lets you look up,
       online, the words just played.</string>
   
          */
-        public static final int not_again_lookup=0x7f0501d5;
+        public static final int not_again_lookup=0x7f0501dd;
         /**  Shown when you first pick the list_item_new_from menuitem 
  Shown when you first pick the list_item_new_from menuitem 
 <string name="not_again_newfrom">Create a new ready-to-play game
@@ -4757,19 +4768,19 @@ XLATE-ME
       as a template.</string>
  Shown when you first pick the list_item_new_from menuitem 
          */
-        public static final int not_again_newfrom=0x7f0501c1;
+        public static final int not_again_newfrom=0x7f0501c9;
         /** <string name="not_again_newselect">Tapping a game opens it.\n\nYou
     can instead tap the icons at the left to select or deselect games,
     then act on selected games, e.g. to delete them, using the menu or
     \"Actionbar.\"</string>
          */
-        public static final int not_again_newselect=0x7f050263;
-        public static final int not_again_rematch_two_only=0x7f050320;
+        public static final int not_again_newselect=0x7f05026c;
+        public static final int not_again_rematch_two_only=0x7f05032e;
         /** <string name="not_again_studycopy">The selected words will be
     copied to the system clipboard. You can then paste them into any
     app that supports pasting text, e.g. an email app.</string>
          */
-        public static final int not_again_studycopy=0x7f05027d;
+        public static final int not_again_studycopy=0x7f050286;
         /**  The following strings (all whose names start with
          "not_again") appear in the New user info dialog.
       
@@ -4788,7 +4799,7 @@ XLATE-ME
       
  shown when user chooses the gamel_menu_checkmoves menu 
          */
-        public static final int not_again_sync=0x7f0501ae;
+        public static final int not_again_sync=0x7f0501b6;
         /**  Shown when the user chooses the "board_menu_trade" menu 
  Shown when the user chooses the "board_menu_trade" menu 
 <string name="not_again_trading">You are entering tile-exchange
@@ -4796,15 +4807,15 @@ XLATE-ME
       exchanged.\n\n</string>
  Shown when the user chooses the "board_menu_trade" menu 
          */
-        public static final int not_again_trading=0x7f0501af;
+        public static final int not_again_trading=0x7f0501b7;
         /** <string name="not_again_trading_buttons">Use the buttons to
       commit your turn or exit exchange mode.</string>
          */
-        public static final int not_again_trading_buttons=0x7f0501b0;
+        public static final int not_again_trading_buttons=0x7f0501b8;
         /** <string name="not_again_trading_menu">Use the menu or action bar
       to commit your turn or exit exchange mode.</string>
          */
-        public static final int not_again_trading_menu=0x7f0501b1;
+        public static final int not_again_trading_menu=0x7f0501b9;
         /**  Shown when the board screen is visible and it's just become
          another players turn. The idea is to give a hint about how to
          find out about recent moves. 
@@ -4819,7 +4830,7 @@ XLATE-ME
          another players turn. The idea is to give a hint about how to
          find out about recent moves. 
          */
-        public static final int not_again_turnchanged=0x7f0501c0;
+        public static final int not_again_turnchanged=0x7f0501c8;
         /**  Shown when you tap the undo/redo button on the toolbar of the
          main Board screen 
  Shown when you tap the undo/redo button on the toolbar of the
@@ -4829,7 +4840,7 @@ XLATE-ME
  Shown when you tap the undo/redo button on the toolbar of the
          main Board screen 
          */
-        public static final int not_again_undo=0x7f0501b7;
+        public static final int not_again_undo=0x7f0501bf;
         /**  Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  
  Shown in the Game configure screen when the game_locked
@@ -4841,7 +4852,7 @@ XLATE-ME
  Shown in the Game configure screen when the game_locked
          checkbox is checked and you uncheck it.  
          */
-        public static final int not_again_unlock=0x7f0501bb;
+        public static final int not_again_unlock=0x7f0501c3;
         /**  Shown when you tap the values button on the toolbar of the
          main Board screen.  This is intended to allow players to
          remind themselves how much played tiles are worth while
@@ -4858,7 +4869,7 @@ XLATE-ME
          remind themselves how much played tiles are worth while
          planning a move. 
          */
-        public static final int not_again_values=0x7f0501b9;
+        public static final int not_again_values=0x7f0501c1;
         /**  Shown when you tap the zoom (+/-) button on the toolbar of
          the main Board screen 
  Shown when you tap the zoom (+/-) button on the toolbar of
@@ -4869,12 +4880,12 @@ XLATE-ME
  Shown when you tap the zoom (+/-) button on the toolbar of
          the main Board screen 
          */
-        public static final int not_again_zoom=0x7f0501b6;
+        public static final int not_again_zoom=0x7f0501be;
         /** <string name="note_none">(None)</string>
          */
-        public static final int note_none=0x7f0502ae;
-        public static final int notify_chat_body_fmt=0x7f05019d;
-        public static final int notify_chat_title_fmt=0x7f05019c;
+        public static final int note_none=0x7f0502b7;
+        public static final int notify_chat_body_fmt=0x7f0501a5;
+        public static final int notify_chat_title_fmt=0x7f0501a4;
         /**  This text is displayed as the "summary" for both of the
          notify choices above, as extra information.  (There could be
          different strings if it makes more sense in your language.)
@@ -4889,7 +4900,7 @@ XLATE-ME
          different strings if it makes more sense in your language.)
          
          */
-        public static final int notify_other_summary=0x7f050165;
+        public static final int notify_other_summary=0x7f05016b;
         /**  When one or more new moves is found, should I play a
          notification sound 
  When one or more new moves is found, should I play a
@@ -4898,7 +4909,7 @@ XLATE-ME
  When one or more new moves is found, should I play a
          notification sound 
          */
-        public static final int notify_sound=0x7f050163;
+        public static final int notify_sound=0x7f050169;
         /**  When a move is fetched from the relay a Notification is
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
@@ -4909,7 +4920,8 @@ XLATE-ME
     down. 
 <string name="notify_title_fmt">Move in game %1$s</string>
          */
-        public static final int notify_title_fmt=0x7f05019b;
+        public static final int notify_title_fmt=0x7f0501a2;
+        public static final int notify_title_turn_fmt=0x7f0501a3;
         /**  When one or more new moves is found, should I vibrate the
          device 
  When one or more new moves is found, should I vibrate the
@@ -4918,11 +4930,11 @@ XLATE-ME
  When one or more new moves is found, should I vibrate the
          device 
          */
-        public static final int notify_vibrate=0x7f050164;
+        public static final int notify_vibrate=0x7f05016a;
         /** XLATE-ME
 <string name="nplayers_prompt">Number on this device</string>
          */
-        public static final int nplayers_prompt=0x7f0502c7;
+        public static final int nplayers_prompt=0x7f0502d0;
         /**  text of label identifying the field where human players can
          enter an option password.  The label and field disappear when
          the robot player checkbox is checked because it makes no
@@ -4946,14 +4958,14 @@ XLATE-ME
          player on a device, so they are infrequently used in network
          games as well. 
          */
-        public static final int password_label=0x7f0500dd;
+        public static final int password_label=0x7f0500de;
         /**  <string name="not_again_sms_ready">You have NFC enabled. That 
  means that any time a board that\'s missing a player is open, you 
  can tap a nearby person\'s device to invite him/her to 
  play &#8211; if he/she is also using NFC.</string> 
 <string name="pct_suffix">\u0020pct.</string>
          */
-        public static final int pct_suffix=0x7f05026f;
+        public static final int pct_suffix=0x7f050278;
         /**  If this preference is checked, tapping on the scoreboard
          entry for any player reveals that player's tiles and any
          pending move (after asking for his password if one is set.)
@@ -4980,20 +4992,20 @@ XLATE-ME
          though it's not his turn e.g. while the player whose turn it
          is is temporarily unable to play. 
          */
-        public static final int peek_other=0x7f050155;
+        public static final int peek_other=0x7f05015b;
         /**  explanation of the above 
  explanation of the above 
 <string name="peek_other_summary">Tapping on scoreboard name shows
         that player\'s tiles</string>
  explanation of the above 
          */
-        public static final int peek_other_summary=0x7f050156;
+        public static final int peek_other_summary=0x7f05015c;
         /**   
   
 <string name="phone_label">Connected number[s]:</string>
   
          */
-        public static final int phone_label=0x7f050212;
+        public static final int phone_label=0x7f05021a;
         /**  Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. 
  Don't warn, but simply force to skip turn (give 0 points)
@@ -5002,7 +5014,7 @@ XLATE-ME
  Don't warn, but simply force to skip turn (give 0 points)
          when user attempts to play word not in the wordlist. 
          */
-        public static final int phonies_disallow=0x7f0500ce;
+        public static final int phonies_disallow=0x7f0500cf;
         /**  These are the three choices in the popup above whose text is
          phonies_spinner_prompt 
  Don't care if words played are in the wordlist or not 
@@ -5162,7 +5174,7 @@ XLATE-ME
          phonies_spinner_prompt 
  Don't care if words played are in the wordlist or not 
          */
-        public static final int phonies_ignore=0x7f0500cc;
+        public static final int phonies_ignore=0x7f0500cd;
         /**  title of popup used to determine how words are handled that
          are not in the wordlist used for the game (or player if using
          different wordlists per player) 
@@ -5175,7 +5187,7 @@ XLATE-ME
          are not in the wordlist used for the game (or player if using
          different wordlists per player) 
          */
-        public static final int phonies_spinner_prompt=0x7f0500cb;
+        public static final int phonies_spinner_prompt=0x7f0500cc;
         /**  warn player when word played is not in the wordlist, but
          allow him to play it. 
  warn player when word played is not in the wordlist, but
@@ -5184,19 +5196,19 @@ XLATE-ME
  warn player when word played is not in the wordlist, but
          allow him to play it. 
          */
-        public static final int phonies_warn=0x7f0500cd;
+        public static final int phonies_warn=0x7f0500ce;
         /**   
   
 <string name="pick_faceup">Pick tiles face-up</string>
   
          */
-        public static final int pick_faceup=0x7f0501dd;
+        public static final int pick_faceup=0x7f0501e5;
         /**   
   
 <string name="pick_url_title_fmt">Look up %1$s at</string>
   
          */
-        public static final int pick_url_title_fmt=0x7f0501d3;
+        public static final int pick_url_title_fmt=0x7f0501db;
         /**  Text of button at bottom.  Press it and you exit this
          configure screen and open the game into the Board screen 
  Text of button at bottom.  Press it and you exit this
@@ -5205,7 +5217,7 @@ XLATE-ME
  Text of button at bottom.  Press it and you exit this
          configure screen and open the game into the Board screen 
          */
-        public static final int play=0x7f0500d3;
+        public static final int play=0x7f0500d4;
         /**      
        ############################################################
        # :Dialogs:
@@ -5233,8 +5245,6 @@ XLATE-ME
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. 
- Toast shown when players are missing, same time as above
-           but more subtle.  
  If a networked game is opened and is not complete, i.e. if it
          is listed as expecting remote players who have not yet shown
          up, then the most likely explanation is that none has been
@@ -5287,7 +5297,7 @@ XLATE-ME
       
  dialog title 
          */
-        public static final int player_edit_title=0x7f0500d7;
+        public static final int player_edit_title=0x7f0500d8;
         /**  used to create default player names.  Number between 1 and 4
          is substituted 
  When a move is fetched from the relay a Notification is
@@ -5302,7 +5312,7 @@ XLATE-ME
  used to create default player names.  Number between 1 and 4
          is substituted 
          */
-        public static final int player_fmt=0x7f05019a;
+        public static final int player_fmt=0x7f0501a1;
         /**  text of lable identifying the field in which player's name is
          set/displayed 
  Shown in the main screen when you launch Crosswords from an
@@ -5321,7 +5331,7 @@ XLATE-ME
  text of lable identifying the field in which player's name is
          set/displayed 
          */
-        public static final int player_label=0x7f0500d9;
+        public static final int player_label=0x7f0500da;
         /**  text for separator above the list of players that's used for
          networked games.  The numbers of local and non-local players
          are substituted for %1$d and %2$d. 
@@ -5334,7 +5344,7 @@ XLATE-ME
          networked games.  The numbers of local and non-local players
          are substituted for %1$d and %2$d. 
          */
-        public static final int players_label_host_fmt=0x7f0500b6;
+        public static final int players_label_host_fmt=0x7f0500b7;
         /**  text for separator above the list of players that's used for
          non-networked games 
  text for separator above the list of players that's used for
@@ -5343,60 +5353,60 @@ XLATE-ME
  text for separator above the list of players that's used for
          non-networked games 
          */
-        public static final int players_label_standalone=0x7f0500b5;
+        public static final int players_label_standalone=0x7f0500b6;
         /** <string name="pref_group_l10n_summary">Prefs related to in-app localization</string>
          */
-        public static final int pref_group_l10n_summary=0x7f05030e;
+        public static final int pref_group_l10n_summary=0x7f05031c;
         /** <string name="pref_group_l10n_title">Localization Stuff</string>
          */
-        public static final int pref_group_l10n_title=0x7f05030d;
+        public static final int pref_group_l10n_title=0x7f05031b;
         /** <string name="pref_group_relay_summary">Prefs related to play via internet/relay</string>
          */
-        public static final int pref_group_relay_summary=0x7f05030c;
+        public static final int pref_group_relay_summary=0x7f05031a;
         /** <string name="pref_group_relay_title">Relay Stuff</string>
          */
-        public static final int pref_group_relay_title=0x7f05030b;
+        public static final int pref_group_relay_title=0x7f050319;
         /** <string name="pref_group_sms_summary">Prefs related to play-via-sms</string>
          */
-        public static final int pref_group_sms_summary=0x7f05030a;
+        public static final int pref_group_sms_summary=0x7f050318;
         /** <string name="pref_group_sms_title">SMS Stuff</string>
          */
-        public static final int pref_group_sms_title=0x7f050309;
+        public static final int pref_group_sms_title=0x7f050317;
         /**  Label for the first "human player" name preference 
  Label for the first "human player" name preference 
 <string name="pref_human_name">Human player</string>
          */
-        public static final int pref_human_name=0x7f050121;
+        public static final int pref_human_name=0x7f050127;
         /** <string name="pref_item_update_summary">Get intermediate builds</string>
          */
-        public static final int pref_item_update_summary=0x7f050310;
+        public static final int pref_item_update_summary=0x7f05031e;
         /** <string name="pref_item_update_title">Update between releases</string>
          */
-        public static final int pref_item_update_title=0x7f05030f;
+        public static final int pref_item_update_title=0x7f05031d;
         /**  Label for the first player color preference 
  Label for the first player color preference 
 <string name="pref_player1_name">First player</string>
  Label for the first "player name" preference 
          */
-        public static final int pref_player1_name=0x7f05011d;
+        public static final int pref_player1_name=0x7f050123;
         /**  Label for the second player color preference 
  Label for the second player color preference 
 <string name="pref_player2_name">Second player</string>
  Label for the second "player name" preference (unused)
          */
-        public static final int pref_player2_name=0x7f05011e;
+        public static final int pref_player2_name=0x7f050124;
         /**  Label for the third player color preference 
  Label for the third player color preference 
 <string name="pref_player3_name">Third player</string>
  Label for the third "player name" preference (unused) 
          */
-        public static final int pref_player3_name=0x7f05011f;
+        public static final int pref_player3_name=0x7f050125;
         /**  Label for the fourth player color preference 
  Label for the fourth player color preference 
 <string name="pref_player4_name">Fourth player</string>
  Label for the fourth "player name" preference (unused)
          */
-        public static final int pref_player4_name=0x7f050120;
+        public static final int pref_player4_name=0x7f050126;
         /** 
        ############################################################
        # :Screens:
@@ -5420,14 +5430,14 @@ XLATE-ME
       
  title of this sub-preference 
          */
-        public static final int prefs_appearance=0x7f05012e;
+        public static final int prefs_appearance=0x7f050134;
         /**  clarification of the above 
  clarification of the above 
 <string name="prefs_appearance_summary">Settings controlling
         appearance</string>
  clarification of the above 
          */
-        public static final int prefs_appearance_summary=0x7f05012f;
+        public static final int prefs_appearance_summary=0x7f050135;
         /**        
        ############################################################
        # :Screens:
@@ -5451,13 +5461,13 @@ XLATE-ME
       
  title of this sub-preference 
          */
-        public static final int prefs_behavior=0x7f05014b;
+        public static final int prefs_behavior=0x7f050151;
         /**  clarification of the above 
  clarification of the above 
 <string name="prefs_behavior_summary">Settings controlling app behavior</string>
  clarification of the above 
          */
-        public static final int prefs_behavior_summary=0x7f05014c;
+        public static final int prefs_behavior_summary=0x7f050152;
         /** 
        ############################################################
        # :Screens:
@@ -5507,13 +5517,13 @@ XLATE-ME
       
  title of this sub-preference 
          */
-        public static final int prefs_colors=0x7f05013d;
+        public static final int prefs_colors=0x7f050143;
         /**  clarification of the above 
  clarification of the above 
 <string name="prefs_colors_summary">Edit colors used on the board</string>
  clarification of the above 
          */
-        public static final int prefs_colors_summary=0x7f05013e;
+        public static final int prefs_colors_summary=0x7f050144;
         /**        
        ############################################################
        # :Screens:
@@ -5537,26 +5547,26 @@ XLATE-ME
       
  title of this sub-preference 
          */
-        public static final int prefs_defaults=0x7f050119;
+        public static final int prefs_defaults=0x7f05011f;
         /**  clarification of the above 
  clarification of the above 
 <string name="prefs_defaults_summary">Default settings for new
         games</string>
  clarification of the above 
          */
-        public static final int prefs_defaults_summary=0x7f05011a;
+        public static final int prefs_defaults_summary=0x7f050120;
         /**  sub-preference for dictionaries (soon to be called "word lists") 
  sub-preference for dictionaries (soon to be called "word lists") 
 <string name="prefs_dicts">Wordlists</string>
  sub-preference for dictionaries (soon to be called "word lists") 
          */
-        public static final int prefs_dicts=0x7f050123;
+        public static final int prefs_dicts=0x7f050129;
         /**  clarification of above 
  clarification of above 
 <string name="prefs_dicts_summary">Default wordlists</string>
  clarification of above 
          */
-        public static final int prefs_dicts_summary=0x7f050124;
+        public static final int prefs_dicts_summary=0x7f05012a;
         /**  sub-preference title for editing default player names.
          There's only enabled now, though.
  sub-preference title for editing default player names.
@@ -5565,38 +5575,38 @@ XLATE-ME
  sub-preference title for editing default player names.
          There's only enabled now, though.
          */
-        public static final int prefs_names=0x7f05011b;
+        public static final int prefs_names=0x7f050121;
         /**  clarification of the above 
  clarification of the above 
 <string name="prefs_names_summary">Default player names</string>
  clarification of the above 
          */
-        public static final int prefs_names_summary=0x7f05011c;
+        public static final int prefs_names_summary=0x7f050122;
         /**  Used when prev player's name can't be looked up 
  Used when prev player's name can't be looked up 
 <string name="prev_player">Your opponent</string>
          */
-        public static final int prev_player=0x7f0502b8;
-        public static final int processing_games=0x7f050329;
+        public static final int prev_player=0x7f0502c1;
+        public static final int processing_games=0x7f050337;
         /** <string name="progress_title">Downloading</string>
          */
-        public static final int progress_title=0x7f0502ac;
+        public static final int progress_title=0x7f0502b5;
         /**   
   
 <string name="prompt_max_len">Words no longer than</string>
   
          */
-        public static final int prompt_max_len=0x7f0501e7;
+        public static final int prompt_max_len=0x7f0501ef;
         /**   
   
 <string name="prompt_min_len">Words no shorter than</string>
   
          */
-        public static final int prompt_min_len=0x7f0501e6;
+        public static final int prompt_min_len=0x7f0501ee;
         /** XLATE-ME
 <string name="proxy_port">Relay device port</string>
          */
-        public static final int proxy_port=0x7f0502f1;
+        public static final int proxy_port=0x7f0502ff;
         /**  Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. 
@@ -5604,7 +5614,7 @@ XLATE-ME
          tray in place of the first tile placed along with the points
          the current move would earn if committed. 
          */
-        public static final int pts=0x7f0500e8;
+        public static final int pts=0x7f0500ee;
         /**  If you check the join_room checkbox Crosswords queries the
     relay.  This is the text of the progress indicator displayed what
     that's going on.  (It's often visible for only a very short
@@ -5620,7 +5630,7 @@ XLATE-ME
     that's going on.  (It's often visible for only a very short
     time.)
          */
-        public static final int public_names_progress_fmt=0x7f0500c0;
+        public static final int public_names_progress_fmt=0x7f0500c1;
         /**  Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"
  Title for generic dialog asking a question, usually in the
@@ -5629,17 +5639,17 @@ XLATE-ME
  Title for generic dialog asking a question, usually in the
          middle of a game, like "do you want to commit this move?"
          */
-        public static final int query_title=0x7f0501ab;
-        public static final int radio_name_cdma=0x7f050301;
-        public static final int radio_name_gsm=0x7f050300;
+        public static final int query_title=0x7f0501b3;
+        public static final int radio_name_cdma=0x7f05030f;
+        public static final int radio_name_gsm=0x7f05030e;
         /** XLATE-ME
 <string name="radio_name_real">Don\'t pretend</string>
          */
-        public static final int radio_name_real=0x7f0502fe;
+        public static final int radio_name_real=0x7f05030c;
         /** XLATE-ME
 <string name="radio_name_tablet">Tablet/no radio</string>
          */
-        public static final int radio_name_tablet=0x7f0502ff;
+        public static final int radio_name_tablet=0x7f05030d;
         /**        
        ############################################################
        # :Dialogs:
@@ -5675,12 +5685,12 @@ XLATE-ME
  Names of the three colors by which colors can be edited in
          the color preferences dialog 
          */
-        public static final int red=0x7f050148;
+        public static final int red=0x7f05014e;
         /** XLATE-ME
 <string name="redir_host">Invite redirect host</string>
          */
-        public static final int redir_host=0x7f0502e4;
-        public static final int rel_invite_title=0x7f050327;
+        public static final int redir_host=0x7f0502f1;
+        public static final int rel_invite_title=0x7f050335;
         /**  Title of dialog used to alert players to relay-related
          problems with the current game. 
  the color of text, e.g. "2L", shown on a bonus square on the
@@ -5693,39 +5703,40 @@ XLATE-ME
  Title of dialog used to alert players to relay-related
          problems with the current game. 
          */
-        public static final int relay_alert=0x7f0500ea;
+        public static final int relay_alert=0x7f0500f0;
         /** <string name="relay_alert_title">Message from relay</string>
          */
-        public static final int relay_alert_title=0x7f050262;
+        public static final int relay_alert_title=0x7f05026b;
         /** XLATE-ME
 <string name="relay_host">Relay host</string>
          */
-        public static final int relay_host=0x7f0502e3;
-        public static final int relay_invite_title=0x7f050200;
+        public static final int relay_host=0x7f0502f0;
+        public static final int relay_invite_title=0x7f050208;
         /** XLATE-ME
 <string name="relay_port">Relay game port</string>
          */
-        public static final int relay_port=0x7f0502f0;
+        public static final int relay_port=0x7f0502fe;
         /**  Shown in toast when relaunching after switching dicts 
  Shown in toast when relaunching after switching dicts 
 <string name="reload_new_dict_fmt">Reloading game with %1$s</string>
  Shown in toast when relaunching after switching dicts 
          */
-        public static final int reload_new_dict_fmt=0x7f050245;
+        public static final int reload_new_dict_fmt=0x7f05024e;
         /** XLATE-ME
 <string name="rematch_msg">Issuing rematch invitation. You will
     see this message until it has been accepted.\n\nYou do not need to
     keep this game open while waiting. You will be notified when the
     game is ready to play.</string>
          */
-        public static final int rematch_msg=0x7f0502da;
-        public static final int rematch_name_fmt=0x7f0502c2;
+        public static final int rematch_msg=0x7f0502e7;
+        public static final int rematch_name_fmt=0x7f0502cb;
+        public static final int rematch_sent_toast=0x7f0502e6;
         /** <string name="remote_digesting">Processing wordlist information…</string>
          */
-        public static final int remote_digesting=0x7f0502a6;
+        public static final int remote_digesting=0x7f0502af;
         /** <string name="remote_empty">Fetching wordlist information from server…</string>
          */
-        public static final int remote_empty=0x7f0502a5;
+        public static final int remote_empty=0x7f0502ae;
         /**  checkbox determining of this player is on this device or
          remote.  If remote, then the rest of the fields disappear
          (since they will be set by the remote device.) 
@@ -5737,20 +5748,20 @@ XLATE-ME
          remote.  If remote, then the rest of the fields disappear
          (since they will be set by the remote device.) 
          */
-        public static final int remote_label=0x7f0500d8;
+        public static final int remote_label=0x7f0500d9;
         /** <string name="remote_no_net">Unable to fetch wordlist information
         from server.</string>
          */
-        public static final int remote_no_net=0x7f0502a7;
+        public static final int remote_no_net=0x7f0502b0;
         /**   
   
 <string name="remote_undone">Remote device undid a turn.</string>
   
          */
-        public static final int remote_undone=0x7f050215;
+        public static final int remote_undone=0x7f05021d;
         /** <string name="rename_group_label">Change the name of this group to:</string>
          */
-        public static final int rename_group_label=0x7f050259;
+        public static final int rename_group_label=0x7f050262;
         /**  text within rename dialog (triggered by selecting
          list_item_rename) 
  text within rename dialog (triggered by selecting
@@ -5758,12 +5769,12 @@ XLATE-ME
  text within rename dialog (triggered by selecting
          list_item_rename) 
          */
-        public static final int rename_label=0x7f0500a1;
+        public static final int rename_label=0x7f0500a2;
         /** XLATE-ME
 <string name="rename_label_caveat">Change the name of this game
     (on this device only) to:</string>
          */
-        public static final int rename_label_caveat=0x7f0500a2;
+        public static final int rename_label_caveat=0x7f0500a3;
         /**  if this preference is checked, the hardware volume keys will
          work to zoom the board in and out (and will not control
          volume) This only applies when the Board screen is
@@ -5782,19 +5793,19 @@ XLATE-ME
          volume) This only applies when the Board screen is
          frontmost. 
          */
-        public static final int ringer_zoom=0x7f050153;
+        public static final int ringer_zoom=0x7f050159;
         /**  explanation of the above 
  explanation of the above 
 <string name="ringer_zoom_summary">Zoom board using volume keys</string>
  explanation of the above 
          */
-        public static final int ringer_zoom_summary=0x7f050154;
+        public static final int ringer_zoom_summary=0x7f05015a;
         /**  checkbox determining if player is robot/automated or human 
  checkbox determining if player is robot/automated or human 
 <string name="robot_label">Robot player</string>
  checkbox determining if player is robot/automated or human 
          */
-        public static final int robot_label=0x7f0500dc;
+        public static final int robot_label=0x7f0500dd;
         /**  Used to format robot player names in the lists of players
          found in each game listing 
  Used to format game name plus some other information as the
@@ -5812,13 +5823,13 @@ XLATE-ME
 <string name="robot_smart">Smart robot</string>
  Three possible choices presented in the popup above 
          */
-        public static final int robot_smart=0x7f0500c8;
+        public static final int robot_smart=0x7f0500c9;
         /** <string name="robot_smarter">Smarter robot</string>
          */
-        public static final int robot_smarter=0x7f0500c9;
+        public static final int robot_smarter=0x7f0500ca;
         /** <string name="robot_smartest">Smartest robot</string>
          */
-        public static final int robot_smartest=0x7f0500ca;
+        public static final int robot_smartest=0x7f0500cb;
         /**  title of popup used to select how "smart" (how capable) the
     robot player will be. 
  title of popup used to select how "smart" (how capable) the
@@ -5827,29 +5838,29 @@ XLATE-ME
  title of popup used to select how "smart" (how capable) the
     robot player will be. 
          */
-        public static final int robot_spinner_prompt=0x7f0500c7;
+        public static final int robot_spinner_prompt=0x7f0500c8;
         /**  text of checkbox 
  text of checkbox 
 <string name="room_public">Make new room public</string>
  text of checkbox 
          */
-        public static final int room_public=0x7f0500be;
+        public static final int room_public=0x7f0500bf;
         /**  title for popup of public rooms found on server 
  title for popup of public rooms found on server 
 <string name="room_public_prompt">Select public room</string>
  title for popup of public rooms found on server 
          */
-        public static final int room_public_prompt=0x7f0500bf;
-        public static final int seeking_relay=0x7f050314;
+        public static final int room_public_prompt=0x7f0500c0;
+        public static final int seeking_relay=0x7f050322;
         /** <string name="sel_games_fmt">Games: %1$d</string>
          */
-        public static final int sel_games_fmt=0x7f050265;
+        public static final int sel_games_fmt=0x7f05026e;
         /** <string name="sel_groups_fmt">Groups: %1$d</string>
          */
-        public static final int sel_groups_fmt=0x7f050266;
+        public static final int sel_groups_fmt=0x7f05026f;
         /** <string name="sel_items_fmt">Selected: %1$d</string>
          */
-        public static final int sel_items_fmt=0x7f050281;
+        public static final int sel_items_fmt=0x7f05028a;
         /** 
        ############################################################
        # :Dialogs:
@@ -5869,11 +5880,11 @@ XLATE-ME
          up when the dicts_item_select menuitem is chosen.  The
          possible answers are the three button text strings below. 
          */
-        public static final int set_default_message_fmt=0x7f0500aa;
+        public static final int set_default_message_fmt=0x7f0500ab;
         /** XLATE-ME
 <string name="set_pref">Hide buttons</string>
          */
-        public static final int set_pref=0x7f0502d0;
+        public static final int set_pref=0x7f0502d9;
         /**  text of separator marking out other-setting area of the dialog 
   
  see move_dictf above 
@@ -5912,7 +5923,7 @@ XLATE-ME
 <string name="settings_label">Other settings</string>
  text of separator marking out other-setting area of the dialog 
          */
-        public static final int settings_label=0x7f0500c2;
+        public static final int settings_label=0x7f0500c3;
         /**  Checkbox that when set makes taps on the board manipulate an
          arrow that then directs where tiles go when tapped in the
          tray. 
@@ -5924,20 +5935,20 @@ XLATE-ME
          arrow that then directs where tiles go when tapped in the
          tray. 
          */
-        public static final int show_arrow=0x7f050139;
+        public static final int show_arrow=0x7f05013f;
         /**  clarification of above 
  clarification of above 
 <string name="show_arrow_summary">Tapped rack tiles land on this
         arrow when it is visible</string>
  clarification of above 
          */
-        public static final int show_arrow_summary=0x7f05013a;
+        public static final int show_arrow_summary=0x7f050140;
         /** <string name="show_remote">Show downloadable</string>
          */
-        public static final int show_remote=0x7f0502aa;
+        public static final int show_remote=0x7f0502b3;
         /** <string name="show_wordlist_browser">Wordlist browser</string>
          */
-        public static final int show_wordlist_browser=0x7f050261;
+        public static final int show_wordlist_browser=0x7f05026a;
         /**  If this preference is checked, the user will not be asked to
          confirm after selecting the "Turn done" menu (or tapping the
          points display at the right end of the tray) 
@@ -5949,47 +5960,47 @@ XLATE-ME
          confirm after selecting the "Turn done" menu (or tapping the
          points display at the right end of the tray) 
          */
-        public static final int skip_confirm_turn=0x7f05014f;
+        public static final int skip_confirm_turn=0x7f050155;
         /**  explanation of the above 
  explanation of the above 
 <string name="skip_confirm_turn_summary">Do NOT display score
         summary after every human turn</string>
  explanation of the above 
          */
-        public static final int skip_confirm_turn_summary=0x7f050150;
+        public static final int skip_confirm_turn_summary=0x7f050156;
         /** <string name="slmenu_clear_sel">Delete selected</string>
          */
-        public static final int slmenu_clear_sel=0x7f050277;
+        public static final int slmenu_clear_sel=0x7f050280;
         /** <string name="slmenu_copy_sel">Copy to clipboard</string>
          */
-        public static final int slmenu_copy_sel=0x7f050276;
+        public static final int slmenu_copy_sel=0x7f05027f;
         /** <string name="slmenu_deselect_all">Unselect all</string>
          */
-        public static final int slmenu_deselect_all=0x7f050280;
+        public static final int slmenu_deselect_all=0x7f050289;
         /** <string name="slmenu_select_all">Select all</string>
          */
-        public static final int slmenu_select_all=0x7f05027f;
+        public static final int slmenu_select_all=0x7f050288;
         /** XLATE-ME
 <string name="sms_bad_proto_fmt">The version of Crosswords on the
     phone with number \"%1$s\" is incompatible with this one for play
     using SMS. One of you may need to upgrade before you can
     continue.</string>
          */
-        public static final int sms_bad_proto_fmt=0x7f0501f8;
+        public static final int sms_bad_proto_fmt=0x7f050200;
         /**  Title of phone number picker during invitation to a game via SMS 
  Title of phone number picker during invitation to a game via SMS 
 <string name="sms_invite_title">SMS Invitation</string>
          */
-        public static final int sms_invite_title=0x7f0501ff;
+        public static final int sms_invite_title=0x7f050207;
         /** <string name="sms_ready_text">Tap the receiving device now</string>
          */
-        public static final int sms_ready_text=0x7f05026e;
+        public static final int sms_ready_text=0x7f050277;
         /** <string name="square_tiles">Square rack tiles</string>
          */
-        public static final int square_tiles=0x7f05025e;
+        public static final int square_tiles=0x7f050267;
         /** <string name="square_tiles_summary">Even if they can be taller</string>
          */
-        public static final int square_tiles_summary=0x7f05025f;
+        public static final int square_tiles_summary=0x7f050268;
         /**  Used in formatting moves and history 
  Used to separate names of players when listing them on one
     line in a game summary.  The \u0020 is a space in xml. 
@@ -6001,7 +6012,7 @@ XLATE-ME
     line in a game summary.  The \u0020 is a space in xml. 
  Used in formatting moves and history 
          */
-        public static final int str_bonus_all=0x7f050111;
+        public static final int str_bonus_all=0x7f050117;
         /**  Using the hint feature is cheating by some players, and it
          can be disabled via the hints_allowed preference.  I should
          be disabling the buttons in this case, but if I don't and you
@@ -6018,7 +6029,7 @@ XLATE-ME
          be disabling the buttons in this case, but if I don't and you
          try to get a hint you'll get this message instead.
          */
-        public static final int str_cant_hint_while_disabled=0x7f05018c;
+        public static final int str_cant_hint_while_disabled=0x7f050193;
         /**  Displayed if you try to use the undo menuitem or button and
          there are no tiles on the board (no move has yet been made.)
          [If I'm being clever and disabling those features in this
@@ -6034,7 +6045,7 @@ XLATE-ME
          [If I'm being clever and disabling those features in this
          case there may be no way to see this.] 
          */
-        public static final int str_cant_undo_tileassign=0x7f05018b;
+        public static final int str_cant_undo_tileassign=0x7f050192;
         /**  Beginning of the message presented to a user when asking him
          to confirm committing the current turn
  Used in formatting reports of trades (exchanges of tiles).
@@ -6055,7 +6066,7 @@ XLATE-ME
  Beginning of the message presented to a user when asking him
          to confirm committing the current turn
          */
-        public static final int str_commit_confirm=0x7f05010e;
+        public static final int str_commit_confirm=0x7f050114;
         /**  Used to format game name plus some other information as the
          one-line summary for each game in the main screen.  The name
          of the game is substituted for %1$s.  Something else
@@ -6076,8 +6087,8 @@ XLATE-ME
          because there is empty space between some of the tiles
          placed, i.e. they do not form a single word. 
          */
-        public static final int str_no_empties_in_turn=0x7f050184;
-        public static final int str_no_hint_found=0x7f05031f;
+        public static final int str_no_empties_in_turn=0x7f05018b;
+        public static final int str_no_hint_found=0x7f05032d;
         /**  Same as above, but used when you try to show tiles belonging
          to a player on another device (a remote player.) 
  Same as above, but used when you try to show tiles belonging
@@ -6087,7 +6098,7 @@ XLATE-ME
  Same as above, but used when you try to show tiles belonging
          to a player on another device (a remote player.) 
          */
-        public static final int str_no_peek_remote_tiles=0x7f050189;
+        public static final int str_no_peek_remote_tiles=0x7f050190;
         /**  Displayed when you try to reveal a robot player's tiles,
          either by tapping on its "hidden" rack (marked by "?"
          characters) or by tapping on its scoreboard entry.  (The
@@ -6109,7 +6120,7 @@ XLATE-ME
          controlled by the peek_other preference and is disabled by
          default.)
          */
-        public static final int str_no_peek_robot_tiles=0x7f050188;
+        public static final int str_no_peek_robot_tiles=0x7f05018f;
         /**  Used, with remote player's name substituted for %1$s, to
     indicate that the player is remote. 
  Used, with remote player's name substituted for %1$s, to
@@ -6118,7 +6129,7 @@ XLATE-ME
  Used, with remote player's name substituted for %s, to
     indicate that the player is remote. 
          */
-        public static final int str_nonlocal_name_fmt=0x7f05010f;
+        public static final int str_nonlocal_name_fmt=0x7f050115;
         /**  Displyed when you try to commit a move and it's not your
          turn. 
  Displyed when you try to commit a move and it's not your
@@ -6128,12 +6139,12 @@ XLATE-ME
  Displyed when you try to commit a move and it's not your
          turn. 
          */
-        public static final int str_not_your_turn=0x7f050187;
+        public static final int str_not_your_turn=0x7f05018e;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
 <string name="str_pass">pass\n</string>
          */
-        public static final int str_pass=0x7f050108;
+        public static final int str_pass=0x7f05010e;
         /**  Used to alert user to loss of turn when a move is made and
          phonies is set to lose turn when word used not in wordlist
          
@@ -6145,10 +6156,10 @@ XLATE-ME
          phonies is set to lose turn when word used not in wordlist
          
          */
-        public static final int str_phony_rejected=0x7f05010d;
+        public static final int str_phony_rejected=0x7f050113;
         /** <string name="str_placer_fmt" formatted="false">[#%d] %s: %d</string>
          */
-        public static final int str_placer_fmt=0x7f050240;
+        public static final int str_placer_fmt=0x7f050249;
         /**  Shown when using the the Game configure screen to configure a
          networked game and you try to make all players local. 
  Shown when using the the Game configure screen to configure a
@@ -6158,7 +6169,7 @@ XLATE-ME
  Shown when using the the Game configure screen to configure a
          networked game and you try to make all players local. 
          */
-        public static final int str_reg_server_sans_remote=0x7f0500cf;
+        public static final int str_reg_server_sans_remote=0x7f0500d0;
         /**  This error message is shown when a remote device tries to
          join a game and is providing more players than that game
          expects.  I do not believe it is possible to see this message
@@ -6180,17 +6191,17 @@ XLATE-ME
          many players are expected and only connects devices where the
          numbers match. 
          */
-        public static final int str_reg_unexpected_user=0x7f05018d;
+        public static final int str_reg_unexpected_user=0x7f050194;
         /**  Used in formatting remote player move summaries 
  Used in formatting remote player move summaries 
 <string name="str_remote_moved_fmt">Remote player %1$s made this
     move:\u0020</string>
  Used in formatting remote player move summaries 
          */
-        public static final int str_remote_moved_fmt=0x7f050106;
+        public static final int str_remote_moved_fmt=0x7f05010c;
         /** <string name="str_resigned_fmt" formatted="false">[Resigned] %s: %d</string>
          */
-        public static final int str_resigned_fmt=0x7f05023f;
+        public static final int str_resigned_fmt=0x7f050248;
         /**        
        ############################################################
        # Board info/error dialog messages
@@ -6211,7 +6222,7 @@ XLATE-ME
  Notifies user of a normal robot move 
 <string name="str_robot_moved_fmt">The robot %1$s made this move:\u0020</string>
          */
-        public static final int str_robot_moved_fmt=0x7f050100;
+        public static final int str_robot_moved_fmt=0x7f050106;
         /**  Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. 
@@ -6224,7 +6235,7 @@ XLATE-ME
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. 
          */
-        public static final int str_server_dict_wins=0x7f05018e;
+        public static final int str_server_dict_wins=0x7f050195;
         /**  Displayed when you try to commit a turn that is illegal
          because tiles played do not touch other tiles already on the
          board (or the middle/star square in the case of the initial
@@ -6241,7 +6252,7 @@ XLATE-ME
          board (or the middle/star square in the case of the initial
          move.) 
          */
-        public static final int str_tiles_must_contact=0x7f050186;
+        public static final int str_tiles_must_contact=0x7f05018d;
         /**  
        error messages
       
@@ -6271,7 +6282,7 @@ XLATE-ME
          because the tiles placed are not all in the same row or
          column. 
          */
-        public static final int str_tiles_not_in_line=0x7f050183;
+        public static final int str_tiles_not_in_line=0x7f05018a;
         /**  Displayed when you try to begin a trade but there are not
          seven or more tiles in the pool.  The rules don't allow
          trading in this case. 
@@ -6284,7 +6295,7 @@ XLATE-ME
          seven or more tiles in the pool.  The rules don't allow
          trading in this case. 
          */
-        public static final int str_too_few_tiles_left_to_trade=0x7f05018a;
+        public static final int str_too_few_tiles_left_to_trade=0x7f050191;
         /**  Displayed when you try to commit the first move of the game
          and are playing a single tile.  The first move must include
          two or more tiles. 
@@ -6297,12 +6308,12 @@ XLATE-ME
          and are playing a single tile.  The first move must include
          two or more tiles. 
          */
-        public static final int str_two_tiles_first_move=0x7f050185;
+        public static final int str_two_tiles_first_move=0x7f05018c;
         /**  Used in formatting final scores display 
  Used in formatting final scores display 
 <string name="str_winner_fmt" formatted="false">[Winner] %s: %d</string>
          */
-        public static final int str_winner_fmt=0x7f05023e;
+        public static final int str_winner_fmt=0x7f050247;
         /**  Used in formatting game history (not move summaries since
          information about the current rack is hidden then) 
  Used in formatting game history (not move summaries since
@@ -6311,19 +6322,19 @@ XLATE-ME
  Used in formatting game history (not move summaries since
          information about the current rack is hidden then) 
          */
-        public static final int strd_cumulative_score_fmt=0x7f050105;
+        public static final int strd_cumulative_score_fmt=0x7f05010b;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
 <string name="strd_remaining_tiles_add_fmt">+ %1$d [all remaining tiles]</string>
  Used in formatting game history and move summaries 
          */
-        public static final int strd_remaining_tiles_add_fmt=0x7f050102;
+        public static final int strd_remaining_tiles_add_fmt=0x7f050108;
         /**  I don't know how this is used. :-) 
  I don't know how this is used. :-) 
 <string name="strd_time_penalty_sub_fmt"> - %1$d [time]</string>
  I don't know how this is used. :-) 
          */
-        public static final int strd_time_penalty_sub_fmt=0x7f050107;
+        public static final int strd_time_penalty_sub_fmt=0x7f05010d;
         /**  Used in formatting moves and history.  The total score for
          one turn is substituted for %1$d.
  Used in formatting moves and history.  The total score for
@@ -6332,38 +6343,38 @@ XLATE-ME
  Used in formatting moves and history.  The total score for
          one turn is substituted for %d.
          */
-        public static final int strd_turn_score_fmt=0x7f050112;
+        public static final int strd_turn_score_fmt=0x7f050118;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
 <string name="strd_unused_tiles_sub_fmt">- %1$d [unused tiles]</string>
  Used in formatting game history and move summaries 
          */
-        public static final int strd_unused_tiles_sub_fmt=0x7f050103;
+        public static final int strd_unused_tiles_sub_fmt=0x7f050109;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
 <string name="strs_move_across_fmt">move (from %1$s across)\n</string>
  Used in formatting game history and move summaries 
          */
-        public static final int strs_move_across_fmt=0x7f050109;
+        public static final int strs_move_across_fmt=0x7f05010f;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
 <string name="strs_move_down_fmt">move (from %1$s down)\n</string>
  Used in formatting game history and move summaries 
          */
-        public static final int strs_move_down_fmt=0x7f05010a;
+        public static final int strs_move_down_fmt=0x7f050110;
         /**  Used in formatting game history and move summaries 
  Used in formatting remote player move summaries 
  Used in formatting game history and move summaries 
 <string name="strs_new_tiles_fmt">New tiles: %1$s</string>
  Used in formatting game history and move summaries 
          */
-        public static final int strs_new_tiles_fmt=0x7f050104;
+        public static final int strs_new_tiles_fmt=0x7f05010a;
         /**  Used in formatting game history and move summaries 
  Used in formatting game history and move summaries 
 <string name="strs_tray_at_start_fmt">Rack at start: %1$s\n</string>
  Used in formatting game history and move summaries 
          */
-        public static final int strs_tray_at_start_fmt=0x7f05010b;
+        public static final int strs_tray_at_start_fmt=0x7f050111;
         /**  title for window you get when you select menu with text
          board_menu_game_counts 
 string name="str_robot_moved">El robot ha fet aquesta jugada:</string
@@ -6386,27 +6397,27 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
  title for window you get when you select menu with text
          board_menu_game_counts 
          */
-        public static final int strs_values_header_fmt=0x7f050101;
+        public static final int strs_values_header_fmt=0x7f050107;
         /**  Used in formatting exchange move summaries 
  Used in formatting exchange move summaries 
 <string name="strss_traded_for_fmt">Exchanged %1$s for %2$s.</string>
  Used in formatting exchange move summaries 
          */
-        public static final int strss_traded_for_fmt=0x7f05010c;
+        public static final int strss_traded_for_fmt=0x7f050112;
         /** <string name="study_langpick">Your words for:</string>
          */
-        public static final int study_langpick=0x7f05027a;
+        public static final int study_langpick=0x7f050283;
         /** <string name="study_no_lang_fmt">You have not yet saved any words
     into a studylist for %1$s.</string>
          */
-        public static final int study_no_lang_fmt=0x7f05027b;
+        public static final int study_no_lang_fmt=0x7f050284;
         /** <string name="study_no_lists">You have not yet saved any words
     into a studylist.</string>
          */
-        public static final int study_no_lists=0x7f05027c;
+        public static final int study_no_lists=0x7f050285;
         /** <string name="studylist_title_fmt">Studylist for %1$s</string>
          */
-        public static final int studylist_title_fmt=0x7f050279;
+        public static final int studylist_title_fmt=0x7f050282;
         /**  If substituting an existing same-language wordlist by
          choosing button_substdict user gets to choose from a list of
          wordlists.  This is the title of that list. 
@@ -6418,19 +6429,19 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
          choosing button_substdict user gets to choose from a list of
          wordlists.  This is the title of that list. 
          */
-        public static final int subst_dict_title=0x7f050197;
+        public static final int subst_dict_title=0x7f05019e;
         /**   
   
 <string name="summary_conn">Game in play</string>
   
          */
-        public static final int summary_conn=0x7f0501f3;
+        public static final int summary_conn=0x7f0501fb;
         /**   
   
 <string name="summary_conn_sms_fmt">Game in play with %1$s</string>
   
          */
-        public static final int summary_conn_sms_fmt=0x7f050213;
+        public static final int summary_conn_sms_fmt=0x7f05021b;
         /**  Preference to control what's listed next to game name in the
          first line of a game summary in the main games-list screen,
          e.g., if the option is "Game Language", "English" in the
@@ -6454,13 +6465,14 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
          The following strings beginning with "game_summary_field_" are
          possible values 
          */
-        public static final int summary_field=0x7f050130;
+        public static final int summary_field=0x7f050136;
         /**   
   
 <string name="summary_gameover">Game over\u200C</string>
   
          */
-        public static final int summary_gameover=0x7f0501f2;
+        public static final int summary_gameover=0x7f0501fa;
+        public static final int summary_invites_out=0x7f05008e;
         /**  The display of each networked game includes one of three
          states it can be in in the process of connecting to the
          relay.  These next three strings are used to create those
@@ -6514,27 +6526,27 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
         /** XLATE-ME
 <string name="summary_send_data_sms">(GSM phones only)</string>
          */
-        public static final int summary_send_data_sms=0x7f0502eb;
+        public static final int summary_send_data_sms=0x7f0502f8;
         /**  explanation of the above 
  explanation of the above 
 <string name="summary_sort_tiles">Sort racks whenever new tiles
       are added</string>
  explanation of the above 
          */
-        public static final int summary_sort_tiles=0x7f050152;
+        public static final int summary_sort_tiles=0x7f050158;
         /** <string name="summary_studyon">Offer to add to and display lists
     of words to remember</string>
          */
-        public static final int summary_studyon=0x7f050274;
+        public static final int summary_studyon=0x7f05027d;
         /** <string name="summary_thumbsize">Thumbnail size</string>
          */
-        public static final int summary_thumbsize=0x7f050267;
+        public static final int summary_thumbsize=0x7f050270;
         /**   
   
 <string name="summary_wait_guest">Unconnected</string>
   
          */
-        public static final int summary_wait_guest=0x7f0501f1;
+        public static final int summary_wait_guest=0x7f0501f9;
         /**   
   
 <string name="summary_wait_host">Waiting for connection[s]</string>
@@ -6542,7 +6554,7 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
   
   
          */
-        public static final int summary_wait_host=0x7f0501f0;
+        public static final int summary_wait_host=0x7f0501f8;
         /**  Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. 
  Used to indicate that a preference is not enabled, i.e. not
@@ -6551,10 +6563,10 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
  Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. 
          */
-        public static final int tell_unused=0x7f050122;
+        public static final int tell_unused=0x7f050128;
         /** <string name="thumb_off">Disabled</string>
          */
-        public static final int thumb_off=0x7f050268;
+        public static final int thumb_off=0x7f050271;
         /**  color of the tiles' background 
  color of the "crosshairs", lines drawn vertically and
          horizontally through the square the user is currently
@@ -6565,19 +6577,19 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
 <string name="tile_back">Tile background</string>
  color of the tiles' background 
          */
-        public static final int tile_back=0x7f050144;
+        public static final int tile_back=0x7f05014a;
         /**   
   
 <string name="tilepick_all">Pick for me</string>
   
          */
-        public static final int tilepick_all=0x7f0501db;
+        public static final int tilepick_all=0x7f0501e3;
         /**   
   
 <string name="tilepick_undo">Undo last\u200C</string>
   
          */
-        public static final int tilepick_undo=0x7f0501da;
+        public static final int tilepick_undo=0x7f0501e2;
         /**  title of dialog brought up in response to the
          board_menu_game_left menu. The dialog lists all tiles
          remaining in the pool, i.e. not on the board or in the rack
@@ -6592,14 +6604,14 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
          remaining in the pool, i.e. not on the board or in the rack
          of the player whose turn it is. 
          */
-        public static final int tiles_left_title=0x7f0501a6;
+        public static final int tiles_left_title=0x7f0501ae;
         /**  Title of preference in which you select which addressing
 	     modes network games will use to communicate 
  Title of preference in which you select which addressing
 	     modes network games will use to communicate 
 <string name="title_addrs_pref">Communicate via</string>
          */
-        public static final int title_addrs_pref=0x7f0502bf;
+        public static final int title_addrs_pref=0x7f0502c8;
         /** 
        ############################################################
        # :Screens:
@@ -6628,7 +6640,7 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
       
  window title 
          */
-        public static final int title_dicts_list=0x7f0500a3;
+        public static final int title_dicts_list=0x7f0500a4;
         /**  
        ############################################################
        # :Screens:
@@ -6652,13 +6664,13 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
       
  window title (game name substituted for %s) 
          */
-        public static final int title_game_config_fmt=0x7f0500b1;
+        public static final int title_game_config_fmt=0x7f0500b2;
         /**  alternate window title used when game is networked 
  alternate window title used when game is networked 
 <string name="title_gamenet_config_fmt">%1$s settings (networked)</string>  
  alternate window title used when game is networked 
          */
-        public static final int title_gamenet_config_fmt=0x7f0500b2;
+        public static final int title_gamenet_config_fmt=0x7f0500b3;
         /**  title for popup list of langugages from which user picks 
  title for popup list of langugages from which user picks 
 <string name="title_langs_list">Languages (based on installed
@@ -6666,16 +6678,16 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
   
  title for popup list of langugages from which user picks 
          */
-        public static final int title_langs_list=0x7f0500b3;
+        public static final int title_langs_list=0x7f0500b4;
         /**   
   
 <string name="title_lookup">Tap to look up</string>
   
          */
-        public static final int title_lookup=0x7f0501cf;
+        public static final int title_lookup=0x7f0501d7;
         /** <string name="title_lookup_study">Tap to look up or study</string>
          */
-        public static final int title_lookup_study=0x7f0501d0;
+        public static final int title_lookup_study=0x7f0501d8;
         /**    
        ############################################################
        # :Screens:
@@ -6716,11 +6728,11 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
       
  window title 
          */
-        public static final int title_prefs=0x7f050114;
+        public static final int title_prefs=0x7f05011a;
         /** XLATE-ME
 <string name="title_send_data_sms">Send SMS as data</string>
          */
-        public static final int title_send_data_sms=0x7f0502ea;
+        public static final int title_send_data_sms=0x7f0502f7;
         /**  If this preference is checked, tiles in the rack will be
          re-ordered alphabetically whenever tiles are added,
          i.e. after ever move.
@@ -6732,10 +6744,10 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
          re-ordered alphabetically whenever tiles are added,
          i.e. after ever move.
          */
-        public static final int title_sort_tiles=0x7f050151;
+        public static final int title_sort_tiles=0x7f050157;
         /** <string name="title_studyon">Enable studylists</string>
          */
-        public static final int title_studyon=0x7f050273;
+        public static final int title_studyon=0x7f05027c;
         /**  title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) 
  
@@ -6839,16 +6851,16 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
  title of dialog allowing user to pick tiles "face up".  (This
          feature is not yet supported on Android.) 
          */
-        public static final int title_tile_picker=0x7f0501a5;
+        public static final int title_tile_picker=0x7f0501ad;
         /** <string name="update_dicts_fmt">Updates are available for one or more
     installed wordlists. Would you like to download the new
     version[s] of %1$s now?</string>
          */
-        public static final int update_dicts_fmt=0x7f0502ab;
+        public static final int update_dicts_fmt=0x7f0502b4;
         /** XLATE-ME
 <string name="use_defaults">Use defaults</string>
          */
-        public static final int use_defaults=0x7f0502c6;
+        public static final int use_defaults=0x7f0502cf;
         /**  text of checkbox controlling whether there's a game timer 
  text of checkbox.  If this checkbox is checked, games created
          for network play will by default have the hint feature
@@ -6857,39 +6869,43 @@ string name="str_robot_moved">O robô fez esta jogada:\u0020</string
 <string name="use_timer">Enable game timer</string>
  text of checkbox controlling whether there's a game timer 
          */
-        public static final int use_timer=0x7f0500c5;
+        public static final int use_timer=0x7f0500c6;
         /**  Used to separate names of players when listing them on one
     line in a game summary.  The \u0020 is a space in xml. 
  Used to separate names of players when listing them on one
     line in a game summary.  The \u0020 is a space in xml. 
 <string name="vs_join">\u0020vs.\u0020</string>
          */
-        public static final int vs_join=0x7f050110;
+        public static final int vs_join=0x7f050116;
+        /**  Button for alert with title above 
+         */
+        public static final int waiting_invite_title=0x7f0502dc;
+        public static final int waiting_rematch_title=0x7f0502dd;
         /** XLATE-ME
 <string name="waiting_title">Waiting for players</string>
          */
-        public static final int waiting_title=0x7f0502d2;
+        public static final int waiting_title=0x7f0502db;
         /** XLATE-ME
 <string name="warn_bt_disabled">Bluetooth is currently off on this
     device. No moves will be sent via Bluetooth.\n\nYou can enable
     Bluetooth now, or later.
     </string>
          */
-        public static final int warn_bt_disabled=0x7f050234;
+        public static final int warn_bt_disabled=0x7f05023d;
         /** XLATE-ME
 <string name="warn_no_comms">Every networked game must have at
     least one way of communicating. If you have no default connection
     options every new networked game will have to be configured
     manually.</string>
          */
-        public static final int warn_no_comms=0x7f0502d6;
+        public static final int warn_no_comms=0x7f0502e2;
         /**   
   
 <string name="warn_nomobile_fmt">The number %1$s for %2$s is not
     a \"mobile\" number. Import anyway?</string>
   
          */
-        public static final int warn_nomobile_fmt=0x7f05020b;
+        public static final int warn_nomobile_fmt=0x7f050213;
         /**   
   
 <string name="warn_sms_disabled">Play via SMS is currently
@@ -6902,31 +6918,31 @@ activer les parties par SMS, allez dans Paramètres->Paramètres des parties en
 réseau.)</string>
   
          */
-        public static final int warn_sms_disabled=0x7f050233;
+        public static final int warn_sms_disabled=0x7f05023c;
         /**   
   
 <string name="warn_unlimited">Are you certain this number is on an
     account with unlimited texting?  Click cancel if you are not.</string>
   
          */
-        public static final int warn_unlimited=0x7f050214;
-        public static final int wifi_warning=0x7f050318;
+        public static final int warn_unlimited=0x7f05021c;
+        public static final int wifi_warning=0x7f050326;
         /**   
   
 <string name="word_search_hint">First letters</string>
   
          */
-        public static final int word_search_hint=0x7f0501d9;
+        public static final int word_search_hint=0x7f0501e1;
         /** <string name="xlations_enabled_summary">Add option to every screen menu</string>
          */
-        public static final int xlations_enabled_summary=0x7f050286;
+        public static final int xlations_enabled_summary=0x7f05028f;
         /** <string name="xlations_enabled_title">Enable local translating</string>
          */
-        public static final int xlations_enabled_title=0x7f050285;
+        public static final int xlations_enabled_title=0x7f05028e;
         /** XLATE-ME
 <string name="xlations_locale">Fake locale for translation</string>
          */
-        public static final int xlations_locale=0x7f0502f6;
+        public static final int xlations_locale=0x7f050304;
         /**  Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language
@@ -6940,7 +6956,7 @@ réseau.)</string>
          translator/creator of the strings.xml file for this
          language
          */
-        public static final int xlator=0x7f0501c7;
+        public static final int xlator=0x7f0501cf;
         public static final int xwords_nfc_mime=0x7f05007c;
     }
     public static final class style {

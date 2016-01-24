@@ -615,15 +615,6 @@ fait ?</item>
     <string name="invite_if_nfc">(ou toucher pour inviter -- si un autre
 périphérique a aussi Android Beam et est proche.)</string>
 
-      <!-- Toast shown when players are missing, same time as above
-           but more subtle.  -->
-      <!--<string name="players_miss_fmt">%1$d player[s] missing</string>-->
-      <!--<string name="players_miss_fmt">%1$d joueur[s] manquant[s]</string>-->
-      <plurals name="players_miss_fmt">
-        <item quantity="one">%1$d joueur manquant</item>
-        <item quantity="other">%1$d joueurs manquants</item>
-    </plurals>
-
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing

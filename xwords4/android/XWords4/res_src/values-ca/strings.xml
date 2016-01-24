@@ -299,11 +299,6 @@
 
     <string name="invite_if_nfc">O simplement toqueu per a convidar, si l\'altre aparell també té Android Beaming i és a prop.</string>
 
-    <plurals name="players_miss_fmt">
-	  <item quantity="one">Manca %1$d jugador</item>
-	  <item quantity="other">Manquen %1$d jugadors</item>
-    </plurals>
-
     <string name="invite_multiple">" (Esteu esperant més d\'un jugador remot. No els heu de convidar a tots a la vegada, però aquest avís no desapareixerà fins que hàgiu convidat a tothom i totes les invitacions s\'hagin acceptat.)"</string>
 
     <string name="msg_relay_all_here_fmt">Tots els jugadors són a la sala «%1$s».</string>

@@ -422,9 +422,7 @@
   <string name="invite_multiple">XLATE ME: \u0020(You are expecting multiple
       remote players.  Be sure to address your invitation to
       that many people.)</string>
-  <!-- Toast shown when players are missing, same time as above
-           but more subtle.  -->
-  <string name="players_miss_fmt">XLATE ME: %1$d player[s] missing</string>
+
   <!-- If a networked game is opened and is not complete, i.e. if it
          is listed as expecting remote players who have not yet shown
          up, then the most likely explanation is that none has been

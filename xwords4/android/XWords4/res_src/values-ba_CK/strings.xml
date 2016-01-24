@@ -482,12 +482,6 @@
   <!-- Appended to message above if local device has NFC available -->
   <string name="invite_if_nfc">Ro tsuj Pat ot Etivni -- fi eht rehto
     ecived osla sah Diordna Gnimaeb dna si ybraen.</string>
-  <!-- Toast shown when players are missing, same time as above
-           but more subtle.  -->
-  <plurals name="players_miss_fmt">
-    <item quantity="one">%1$d reyalp gnissim</item>
-    <item quantity="other">%1$d sreyalp gnissim</item>
-  </plurals>
   <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
