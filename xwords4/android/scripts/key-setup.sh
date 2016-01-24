@@ -7,9 +7,15 @@ if [ $1 = 'debug' ]; then
 	HOMELOC=~/.android/debug.keystore
 	HERELOC=$(pwd)/$(dirname $0)/debug.keystore
 
-	if [ -L $HOMELOC ]; then 
-		if cmp $(readlink $HOMELOC) $HERELOC; then
-			exit 0
+	if [ -L $HOMELOC ]; then
+		if [ -e $(readlink $HOMELOC) ]; then
+			if cmp $(readlink $HOMELOC) $HERELOC; then
+				exit 0
+			fi
+		else
+			echo "ERROR: link $HOMELOC no longer valid"
+			echo "maybe: \"rm $HOMELOC ???"
+			exit 1
 		fi
 	elif [ -e $HOMELOC ]; then
 		cat << EOF
