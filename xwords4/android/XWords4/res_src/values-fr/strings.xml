@@ -3503,6 +3503,8 @@ pour la langue</string>
   <string name="list_item_deselect">Déselectionner</string>
 
   <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur \"%1$s\". Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie ?</string>
-<string name="button_wait"></string>
+<string name="button_wait">Attendre</string>
 
-    </resources>
+    <string name="not_again_rematch_two_only">Le bouton revanche est désactivé parce que, pour l\'instant en tout cas, les revanches sont limitées à deux adversaires. Je pense qu\'il est rare que les gens jouent à plus de deux. Faite-moi savoir si je me trompe, et j\'essaierai de le faire fonctionner.</string>
+
+  </resources>
