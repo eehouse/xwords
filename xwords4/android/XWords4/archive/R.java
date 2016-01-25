@@ -4497,6 +4497,7 @@ XLATE-ME
          you get this error message 
          */
         public static final int no_games_to_refresh=0x7f050096;
+        public static final int no_invites=0x7f05033b;
         /** <string name="no_market">Google Play app not found</string>
          */
         public static final int no_market=0x7f05027a;

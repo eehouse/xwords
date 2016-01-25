@@ -2652,4 +2652,6 @@
   <string name="not_again_dfltname_fmt">You are using the default
   player name \"%1$s\". Would you like to personalize with your own
   name before you create this game?</string>
+
+  <string name="no_invites">This game has sent no invitations</string>
 </resources>

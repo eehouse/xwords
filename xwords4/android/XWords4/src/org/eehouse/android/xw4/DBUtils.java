@@ -511,37 +511,44 @@ public class DBUtils {
 
         public String getAsText( Context context )
         {
+            String result;
             int count = m_timestamps.size();
-            String[] strs = new String[count];
-            for ( int ii = 0; ii < count; ++ii ) {
-                InviteMeans means = m_means.get(ii);
-                String target = m_targets.get(ii);
-                String timestamp = m_timestamps.get(ii).toString();
-                String msg;
+            if ( 0 == count ) {
+                result = LocUtils.getString( context, R.string.no_invites );
+            } else {
+                String[] strs = new String[count];
+                for ( int ii = 0; ii < count; ++ii ) {
+                    InviteMeans means = m_means.get(ii);
+                    String target = m_targets.get(ii);
+                    String timestamp = m_timestamps.get(ii).toString();
+                    String msg;
 
-                switch ( means ) {
-                case SMS:
-                    msg = LocUtils.getString( context, R.string.invit_expl_sms_fmt,
-                                              target, timestamp );
-                    break;
-                case BLUETOOTH:
-                    String devName = BTService.nameForAddr( target );
-                    msg = LocUtils.getString( context, R.string.invit_expl_bt_fmt,
-                                              devName, timestamp );
-                    break;
-                case RELAY:
-                    msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,
-                                              timestamp );
-                    break;
-                default:
-                    msg = LocUtils.getString( context, R.string.invit_expl_notarget_fmt,
-                                              means.toString(), timestamp );
+                    switch ( means ) {
+                    case SMS:
+                        msg = LocUtils.getString( context, R.string.invit_expl_sms_fmt,
+                                                  target, timestamp );
+                        break;
+                    case BLUETOOTH:
+                        String devName = BTService.nameForAddr( target );
+                        msg = LocUtils.getString( context, R.string.invit_expl_bt_fmt,
+                                                  devName, timestamp );
+                        break;
+                    case RELAY:
+                        msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,
+                                                  timestamp );
+                        break;
+                    default:
+                        msg = LocUtils.getString( context, R.string.invit_expl_notarget_fmt,
+                                                  means.toString(), timestamp );
 
+                    }
+                    strs[ii] = msg;
                 }
-                strs[ii] = msg;
+                result = TextUtils.join( "\n\n", strs );
             }
-            return TextUtils.join( "\n\n", strs );
+            return result;
         }
+        
     }
 
     public static SentInvitesInfo getInvitesFor( Context context, long rowid )
