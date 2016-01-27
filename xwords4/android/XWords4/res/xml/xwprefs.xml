@@ -12,41 +12,41 @@
                       >
 
       <org.eehouse.android.xw4.XWEditTextPreference 
-	     android:key="@string/key_player1_name"
-	     android:title="@string/pref_human_name"
-         android:capitalize="words"
-	     android:defaultValue=""
-	     />
+          android:key="@string/key_player1_name"
+          android:title="@string/pref_human_name"
+          android:capitalize="words"
+          android:defaultValue=""
+          />
       <org.eehouse.android.xw4.XWEditTextPreference 
-	     android:key="@string/key_robot_name"
-	     android:title="@string/robot_label" 
-         android:capitalize="words"
-		 android:defaultValue="@string/button_default_robot"
-	     />
+          android:key="@string/key_robot_name"
+          android:title="@string/robot_label" 
+          android:capitalize="words"
+          android:defaultValue="@string/button_default_robot"
+          />
     </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/prefs_dicts"
                       android:summary="@string/prefs_dicts_summary"
                       >
 
-	  <!-- entries provided programatically -->
+      <!-- entries provided programatically -->
       <org.eehouse.android.xw4.LangListPreference
-		  android:key="@string/key_default_language"
-		  android:title="@string/default_language"
-		  android:defaultValue="@string/lang_name_english"
-		  />
+          android:key="@string/key_default_language"
+          android:title="@string/default_language"
+          android:defaultValue="@string/lang_name_english"
+          />
 
       <org.eehouse.android.xw4.DictListPreference 
-         android:key="@string/key_default_dict"
-         android:title="@string/default_dict"
-         android:defaultValue="CollegeEng_2to8"
-         />
+          android:key="@string/key_default_dict"
+          android:title="@string/default_dict"
+          android:defaultValue="CollegeEng_2to8"
+          />
 
       <org.eehouse.android.xw4.DictListPreference 
-         android:key="@string/key_default_robodict"
-         android:title="@string/default_robodict"
-         android:defaultValue="Top5000"
-         />
+          android:key="@string/key_default_robodict"
+          android:title="@string/default_robodict"
+          android:defaultValue="Top5000"
+          />
     </PreferenceScreen>
 
     <CheckBoxPreference android:key="@string/key_init_hintsallowed"
@@ -68,12 +68,12 @@
                         />
 
     <org.eehouse.android.xw4.XWListPreference
-	   android:key="@string/key_default_phonies"
-	   android:title="@string/default_phonies"
-	   android:entries="@array/phony_names"
-	   android:entryValues="@array/phony_names"
-	   android:defaultValue="@string/phonies_warn"
-	   />
+        android:key="@string/key_default_phonies"
+        android:title="@string/default_phonies"
+        android:entries="@array/phony_names"
+        android:entryValues="@array/phony_names"
+        android:defaultValue="@string/phonies_warn"
+        />
 
     <CheckBoxPreference android:key="@string/key_default_timerenabled"
                         android:title="@string/use_timer"
@@ -81,19 +81,19 @@
                         />
 
     <org.eehouse.android.xw4.XWEditTextPreference
-	   android:key="@string/key_initial_player_minutes"
-	   android:title="@string/initial_player_minutes"
-	   android:defaultValue="25"
-	   android:numeric="decimal"
-	   />
+        android:key="@string/key_initial_player_minutes"
+        android:title="@string/initial_player_minutes"
+        android:defaultValue="25"
+        android:numeric="decimal"
+        />
 
     <org.eehouse.android.xw4.XWListPreference 
-	   android:key="@string/key_board_size"
-	   android:title="@string/board_size"
-	   android:entries="@array/board_sizes"
-	   android:entryValues="@array/board_sizes"
-	   android:defaultValue="15x15"
-	   />
+        android:key="@string/key_board_size"
+        android:title="@string/board_size"
+        android:entries="@array/board_sizes"
+        android:entryValues="@array/board_sizes"
+        android:defaultValue="15x15"
+        />
 
   </PreferenceScreen>
 
@@ -109,12 +109,12 @@
         />
 
     <org.eehouse.android.xw4.XWSumListPreference 
-       android:key="@string/key_summary_field"
-       android:title="@string/summary_field"
-	   android:entries="@array/game_summary_values"
-	   android:entryValues="@array/game_summary_values"
-       android:defaultValue="@string/game_summary_field_opponents"
-       />
+        android:key="@string/key_summary_field"
+        android:title="@string/summary_field"
+        android:entries="@array/game_summary_values"
+        android:entryValues="@array/game_summary_values"
+        android:defaultValue="@string/game_summary_field_opponents"
+        />
 
     <CheckBoxPreference android:key="@string/key_hide_title"
                         android:title="@string/hide_title"
@@ -146,74 +146,74 @@
                       android:summary="@string/prefs_colors_summary"
                       >
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_player0"
-         android:title="@string/pref_player1_name"
-         android:defaultValue="0x000000"
-         />
+          android:key="@string/key_player0"
+          android:title="@string/pref_player1_name"
+          android:defaultValue="0x000000"
+          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_player1"
-         android:title="@string/pref_player2_name"
-         android:defaultValue="0xFF0000"
-         />
+          android:key="@string/key_player1"
+          android:title="@string/pref_player2_name"
+          android:defaultValue="0xFF0000"
+          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_player2"
-         android:title="@string/pref_player3_name"
-         android:defaultValue="0x0000FF"
-         />
+          android:key="@string/key_player2"
+          android:title="@string/pref_player3_name"
+          android:defaultValue="0x0000FF"
+          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_player3"
-         android:title="@string/pref_player4_name"
-         android:defaultValue="0x008F00"
-         />
+          android:key="@string/key_player3"
+          android:title="@string/pref_player4_name"
+          android:defaultValue="0x008F00"
+          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_bonus_l2x"
-         android:title="@string/bonus_l2x"
-         android:defaultValue="0xAFAF00"
-         />
+          android:key="@string/key_bonus_l2x"
+          android:title="@string/bonus_l2x"
+          android:defaultValue="0xAFAF00"
+          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_bonus_l3x"
-         android:title="@string/bonus_l3x"
-         android:defaultValue="0x00AFAF"
-         />
+          android:key="@string/key_bonus_l3x"
+          android:title="@string/bonus_l3x"
+          android:defaultValue="0x00AFAF"
+          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_bonus_w2x"
-         android:title="@string/bonus_w2x"
-         android:defaultValue="0xAF00AF"
-         />
+          android:key="@string/key_bonus_w2x"
+          android:title="@string/bonus_w2x"
+          android:defaultValue="0xAF00AF"
+          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_bonus_w3x"
-         android:title="@string/bonus_w3x"
-         android:defaultValue="0xAFAFAF"
-         />
+          android:key="@string/key_bonus_w3x"
+          android:title="@string/bonus_w3x"
+          android:defaultValue="0xAFAFAF"
+          />
 
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_clr_crosshairs"
-         android:title="@string/clr_crosshairs"
-         android:defaultValue="0x7070FF"
-         />
+          android:key="@string/key_clr_crosshairs"
+          android:title="@string/clr_crosshairs"
+          android:defaultValue="0x7070FF"
+          />
 
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_clr_bonushint"
-         android:title="@string/key_bonushint"
-         android:defaultValue="0x7F7F7F"
-         />
+          android:key="@string/key_clr_bonushint"
+          android:title="@string/key_bonushint"
+          android:defaultValue="0x7F7F7F"
+          />
 
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_tile_back"
-         android:title="@string/tile_back"
-         android:defaultValue="0xFFFF99"
-         />
+          android:key="@string/key_tile_back"
+          android:title="@string/tile_back"
+          android:defaultValue="0xFFFF99"
+          />
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_empty"
-         android:title="@string/empty"
-         android:defaultValue="0xFFFFFF"
-         />
+          android:key="@string/key_empty"
+          android:title="@string/empty"
+          android:defaultValue="0xFFFFFF"
+          />
 
       <org.eehouse.android.xw4.EditColorPreference
-         android:key="@string/key_background"
-         android:title="@string/background"
-         android:defaultValue="0xFFFFFF"
-         />
+          android:key="@string/key_background"
+          android:title="@string/background"
+          android:defaultValue="0xFFFFFF"
+          />
     </PreferenceScreen>
 
   </PreferenceScreen>
@@ -290,18 +290,18 @@
         android:defaultValue="false"
         />
 
-	<org.eehouse.android.xw4.XWConnAddrPreference
-       android:key="@string/key_addrs_pref"
-       android:title="@string/title_addrs_pref"
-	   />
+    <org.eehouse.android.xw4.XWConnAddrPreference
+        android:key="@string/key_addrs_pref"
+        android:title="@string/title_addrs_pref"
+        />
 
     <org.eehouse.android.xw4.PollListPreference
-       android:key="@string/key_connect_frequency"
-       android:title="@string/connect_frequency"
-       android:entries="@array/connect_frequencies"
-       android:entryValues="@array/connect_frequencies_values"
-       android:defaultValue="900"
-       />
+        android:key="@string/key_connect_frequency"
+        android:title="@string/connect_frequency"
+        android:entries="@array/connect_frequencies"
+        android:entryValues="@array/connect_frequencies_values"
+        android:defaultValue="900"
+        />
 
     <CheckBoxPreference android:key="@string/key_notify_sound"
                         android:title="@string/notify_sound"
@@ -321,12 +321,12 @@
                           android:title="@string/enable_pubroom_title"
                           android:summary="@string/enable_pubroom_summary"
                           android:defaultValue="false"
-	                      />
+                          />
       <CheckBoxPreference android:key="@string/key_invite_multi"
                           android:title="@string/invite_multi_title"
                           android:summary="@string/invite_multi_summary"
                           android:defaultValue="false"
-	                      />
+                          />
     </PreferenceScreen>
 
   </PreferenceScreen>
@@ -336,10 +336,10 @@
                     >
 
     <CheckBoxPreference android:key="@string/key_logging_on"
-			            android:title="@string/logging_on"
-			            android:summary="@string/logging_on_summary"
-			            android:defaultValue="false"
-			            />
+                        android:title="@string/logging_on"
+                        android:summary="@string/logging_on_summary"
+                        android:defaultValue="false"
+                        />
     <CheckBoxPreference android:key="@string/key_enable_debug"
                         android:title="@string/debug_features"
                         android:summary="@string/debug_features_summary"
@@ -347,9 +347,9 @@
                         />
 
     <org.eehouse.android.xw4.XWEditTextPreference 
-		android:key="@string/key_nag_intervals"
-		android:title="@string/nag_intervals"
-		/>
+        android:key="@string/key_nag_intervals"
+        android:title="@string/nag_intervals"
+        />
 
     <CheckBoxPreference android:key="@string/key_enable_dup_invite"
                         android:title="@string/enable_dupes_title"
@@ -372,39 +372,39 @@
                           android:defaultValue="false"
                           />
       <org.eehouse.android.xw4.XWListPreference
-		  android:key="@string/key_force_radio"
+          android:key="@string/key_force_radio"
           android:title="@string/force_radio_title"
-	      android:entries="@array/force_radio_names"
-	      android:entryValues="@array/force_radio_names"
-		  android:defaultValue="@string/radio_name_real"
-		  />
+          android:entries="@array/force_radio_names"
+          android:entryValues="@array/force_radio_names"
+          android:defaultValue="@string/radio_name_real"
+          />
 
       <CheckBoxPreference android:key="@string/key_show_sms"
-			              android:title="Show SMS sends, receives"
-			              android:defaultValue="false"
-			              />
+                          android:title="Show SMS sends, receives"
+                          android:defaultValue="false"
+                          />
     </PreferenceScreen>
 
     <PreferenceScreen android:title="@string/pref_group_relay_title"
                       android:summary="@string/pref_group_relay_summary"
                       >
       <org.eehouse.android.xw4.XWEditTextPreference 
-	      android:key="@string/key_relay_host"
-	      android:title="@string/relay_host"
-	      android:defaultValue="@string/default_host"
-	      />
+          android:key="@string/key_relay_host"
+          android:title="@string/relay_host"
+          android:defaultValue="@string/default_host"
+          />
       <org.eehouse.android.xw4.XWEditTextPreference
-	      android:key="@string/key_relay_port"
-	      android:title="@string/relay_port"
-	      android:defaultValue="10997"
-	      android:numeric="decimal"
-	      />
+          android:key="@string/key_relay_port"
+          android:title="@string/relay_port"
+          android:defaultValue="10997"
+          android:numeric="decimal"
+          />
       <org.eehouse.android.xw4.XWEditTextPreference
-	      android:key="@string/key_proxy_port"
-	      android:title="@string/proxy_port"
-	      android:defaultValue="10998"
-	      android:numeric="decimal"
-	      />
+          android:key="@string/key_proxy_port"
+          android:title="@string/proxy_port"
+          android:defaultValue="10998"
+          android:numeric="decimal"
+          />
       <CheckBoxPreference android:key="@string/key_enable_relay_toself"
                           android:title="@string/enable_relay_toself_title"
                           android:summary="@string/enable_relay_toself_summary"
@@ -416,21 +416,21 @@
                       android:summary="@string/pref_group_l10n_summary"
                       >
       <CheckBoxPreference android:key="@string/key_got_langdict"
-			              android:title="@string/got_langdict_title"
-			              android:summary="@string/got_langdict_summary"
-			              android:defaultValue="false"
-			              />
+                          android:title="@string/got_langdict_title"
+                          android:summary="@string/got_langdict_summary"
+                          android:defaultValue="false"
+                          />
 
       <org.eehouse.android.xw4.XWEditTextPreference 
-	      android:key="@string/key_xlations_locale"
-	      android:title="@string/xlations_locale"
-	      />
+          android:key="@string/key_xlations_locale"
+          android:title="@string/xlations_locale"
+          />
 
       <CheckBoxPreference android:key="@string/key_xlations_enabled"
                           android:title="@string/xlations_enabled_title"
                           android:summary="@string/xlations_enabled_summary"
                           android:defaultValue="false"
-	                      />
+                          />
 
     </PreferenceScreen>
 
@@ -438,7 +438,7 @@
                         android:title="@string/force_tablet_title"
                         android:summary="@string/force_tablet_summary"
                         android:defaultValue="false"
-	                    />
+                        />
 
     <!-- For broken devices like my Blaze 4G that report a download
          directory that doesn't exist, allow users to set it.  Mine:
@@ -450,16 +450,16 @@
         />
 
     <org.eehouse.android.xw4.XWEditTextPreference
-	   android:key="@string/key_dict_host"
-	   android:title="@string/dict_host"
-	   android:defaultValue="@string/dict_url"
-	   />
+        android:key="@string/key_dict_host"
+        android:title="@string/dict_host"
+        android:defaultValue="@string/dict_url"
+        />
 
     <org.eehouse.android.xw4.XWEditTextPreference
-	   android:key="@string/key_update_url"
-	   android:title="@string/expl_update_url"
-	   android:defaultValue="@string/default_update_url"
-	   />
+        android:key="@string/key_update_url"
+        android:title="@string/expl_update_url"
+        android:defaultValue="@string/default_update_url"
+        />
     <CheckBoxPreference android:key="@string/key_update_prerel"
                         android:title="@string/pref_item_update_title"
                         android:summary="@string/pref_item_update_summary"
@@ -467,12 +467,12 @@
                         />
 
     <EditTextPreference android:title="@string/git_rev_title"
-			            android:summary="@string/git_rev"
-			            android:enabled="false"
-			            />
+                        android:summary="@string/git_rev"
+                        android:enabled="false"
+                        />
     <org.eehouse.android.xw4.XWDevIDPreference 
         android:title="@string/devid_title"
-		android:enabled="false"
-		/>
+        android:enabled="false"
+        />
   </PreferenceScreen>
 </PreferenceScreen>
