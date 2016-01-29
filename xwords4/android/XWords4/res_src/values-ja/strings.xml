@@ -314,7 +314,7 @@
 
     <string name="nethints_allowed_sum">2 デバイス用のゲームのヒントを有効にします</string>
 
-    <string name="init_autojuggle">プレイヤーを両立</string>
+    <string name="init_autojuggle">プレイヤーをシャッフル</string>
     <string name="init_autojuggle_sum">新しいゲームで、ランダムに</string>
 
     <string name="default_phonies">偽物の扱い</string>
@@ -326,7 +326,7 @@
     <string name="prefs_appearance">外観</string>
     <string name="prefs_appearance_summary">外観をコントロールする設定</string>
 
-    <string name="summary_field">ゲームのリストに含めます</string>
+    <string name="summary_field">ゲームのリストに含める</string>
 
     <string name="game_summary_field_empty">&lt;なし&gt;</string>
     <string name="game_summary_field_language">ゲームの言語</string>
@@ -375,7 +375,7 @@
     <string name="explain_robot_summary">すべてのロボットやリモートの順番の後で、スコアの要約を表示します</string>
 
     <string name="skip_confirm_turn">確認の順番をスキップ</string>
-    <string name="skip_confirm_turn_summary">人間の順番の後で、スコアを概要を表示しません</string>
+    <string name="skip_confirm_turn_summary">人間の順番の後は、スコアの概要を表示しません</string>
 
     <string name="title_sort_tiles">新しいタイルを並べ替え</string>
     <string name="summary_sort_tiles">新しいタイルを追加した場合、ラックを並べ替えます</string>
@@ -630,7 +630,7 @@
       <string name="prompt_min_len">単語はこれより短くできません</string>
       <string name="prompt_max_len">単語はこれより長くできません</string>
 
-      <string name="board_menu_file_email">メール作者</string>
+      <string name="board_menu_file_email">作者にメール</string>
       <string name="email_author_subject">クロスワードについてのコメント</string>
       <string name="email_author_chooser">コメントを次で送信</string>
 
@@ -697,7 +697,7 @@
 
     <string name="board_menu_undo_current">元に戻す/やり直し</string>
 
-    <string name="menu_juggle">ラックをジャグリング</string>
+    <string name="menu_juggle">ラックをシャッフル</string>
 
     <string name="menu_flip">ボードをフリップ</string>
     <string name="menu_zoom">ズームイン/ズームアウト</string>
@@ -810,7 +810,7 @@
 
     <string name="button_reconnect">再接続</string>
 
-    <string name="square_tiles">正方形 ラック タイル</string>
+    <string name="square_tiles">正方形のラック タイル</string>
     <string name="square_tiles_summary">高くできる場合でも</string>
 
     <string name="change_group">選択したゲームを移動する先:</string>
@@ -1047,9 +1047,9 @@
   <string name="gamel_menu_loaddb">SD カードからゲームをロード</string>
   <string name="enable_dupes_title">重複する招待を受け入れる</string>
   <string name="xlations_locale">翻訳の擬似地域</string>
-  <string name="enable_dupes_summary">2 回以上の招待を受け入れる</string>
+  <string name="enable_dupes_summary">2 回以上の招待を受け入れます</string>
   <string name="nag_intervals">リマインダーの間隔 (分1、分2、...)</string>
-  <string name="enable_nfc_toself_title">自分に NFC を有効にする</string>
+  <string name="enable_nfc_toself_title">自分への NFC を有効にする</string>
   <string name="enable_nfc_toself_summary">デバッグを支援するための擬似招待状</string>
   <string name="enable_sms_toself_title">自分に SMS を短絡させる</string>
   <string name="enable_sms_toself_summary">電話番号が同じときに無線をスキップします</string>
@@ -1147,7 +1147,7 @@
   <string name="enable_relay_toself_title">自分へのリレーの招待を有効にする</string>
   <string name="enable_relay_toself_summary">(テストとデバッグの支援用)</string>
 
-  <string name="rel_invite_title">リレー招待タイトル</string>
+  <string name="rel_invite_title">招待タイトルのリレー</string>
   <string name="fetching_from_relay">リレーからゲームを取得中</string>
   <string name="processing_games">ゲームの処理中</string>
 

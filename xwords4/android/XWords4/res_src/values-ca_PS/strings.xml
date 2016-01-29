@@ -1707,9 +1707,9 @@
     \"IMPORT CONTACT\" BUTTON TO ADD PEOPLE YOU WANT TO INVITE, THE +
     BUTTON TO ENTER NUMBERS DIRECTLY.</string>
   <!--  -->
-  <string name="empty_relay_inviter">THIS LIST OF DEVIES IS
+  <string name="empty_relay_inviter">THIS LIST OF DEVICES IS
     EMPTY. USE THE \"SCAN GAMES\" BUTTON TO SCAN YOUR OLD GAMES
-    FOR OPPONENTS. USE THE + BUTTON TO ENTER DEVICE IDS DIRECTLY.</string>
+    FOR OPPONENTS. USE THE \"+\" BUTTON TO ENTER DEVICE IDS DIRECTLY.</string>
   <!--  -->
   <string name="get_sms_number">ENTER PHONE NUMBER:</string>
   <string name="get_relay_number">ENTER DEVICE ID:</string>

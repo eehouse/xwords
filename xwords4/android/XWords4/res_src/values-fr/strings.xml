@@ -3464,24 +3464,23 @@ pour la langue</string>
 
   <string name="confirm_clear_chat">Êtes-vous sûr de vouloir effacer tout l\'historique de discussion pour cette partie ?\n\n(Cette action ne peut pas être annulée.)</string>
 
-<string name="invite_choice_relay">Internet/Relai</string>
-	<string name="invite_notice_title">Nouvelle partie via une invitation</string>
-      <string name="new_relay_body">Touchez pour commencer la nouvelle partie</string>
+  <string name="invite_choice_relay">Internet/Relai</string>
+  <string name="invite_notice_title">Nouvelle partie via une invitation</string>
+  <string name="new_relay_body">Touchez pour commencer la nouvelle partie</string>
 
+  <string name="relay_invite_title">Invitation par relai</string>
 
-      <string name="relay_invite_title">Invitation par relai</string>
-
-    <string name="button_relay_add">Parcourir les parties</string>
-    <plurals name="invite_relay_desc_fmt">
+  <string name="button_relay_add">Parcourir les parties</string>
+  <plurals name="invite_relay_desc_fmt">
 	<item quantity="one">Cochez le périphérique que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
 	<item quantity="other">Cochez les %1$d périphériques que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
-</plurals>
-    <string name="get_relay_number">Saisissez l\'identifiant de périphérique :</string>
-    <plurals name="confirm_clear_sms_fmt">
+  </plurals>
+  <string name="get_relay_number">Saisissez l\'identifiant de périphérique :</string>
+  <plurals name="confirm_clear_sms_fmt">
 	<item quantity="one">Êtes-vous sûr de vouloir effacer le numéro de téléphone coché ?</item>
 	<item quantity="other">Êtes-vous sûr de vouloir effacer les %1$d numéros de téléphone cochés ?</item>
-</plurals>
-    <string name="disable_nag_solo_title">Désactiver les rappels de parties en solo</string>
+  </plurals>
+  <string name="disable_nag_solo_title">Désactiver les rappels de parties en solo</string>
 
   <string name="devid_title">Identifiant de périphérique (sur le relai)</string>
   <string name="enable_relay_toself_summary">(Pour aider à tester et corriger les bugs)</string>
@@ -3493,5 +3492,8 @@ pour la langue</string>
   <string name="list_item_deselect">Déselectionner</string>
 
   <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur \"%1$s\". Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie ?</string>
+  <string name="button_wait">Attendre</string>
+
+  <string name="not_again_rematch_two_only">Le bouton revanche est désactivé parce que, pour l\'instant en tout cas, les revanches sont limitées à deux adversaires. Je pense qu\'il est rare que les gens jouent à plus de deux. Faite-moi savoir si je me trompe, et j\'essaierai de le faire fonctionner.</string>
 
 </resources>
