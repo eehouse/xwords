@@ -472,7 +472,6 @@ public class DBUtils {
         // care only that it's non-0.
         public int getMinPlayerCount() {
             if ( -1 == m_cachedCount ) {
-                DbgUtils.logf( "getMinPlayerCount(%H)", this );
                 int count = m_timestamps.size();
                 Map<InviteMeans, Set<String>> hashes
                     = new HashMap<InviteMeans, Set<String>>();
@@ -481,7 +480,6 @@ public class DBUtils {
                     InviteMeans means = m_means.get(ii);
                     Set<String> devs;
                     if ( ! hashes.containsKey( means ) ) {
-                        DbgUtils.logf( "creating new hash for means %s", means.toString() );
                         devs = new HashSet<String>();
                         hashes.put( means, devs );
                     }
@@ -491,7 +489,6 @@ public class DBUtils {
                         target = String.format( "%d", ++fakeCount );
                     }
                     devs.add( target );
-                    DbgUtils.logf( "added target %s for means %s", target, means.toString() );
                 }
 
                 // Now find the max
@@ -500,12 +497,9 @@ public class DBUtils {
                     if ( hashes.containsKey( means ) ) {
                         int siz = hashes.get( means ).size();
                         m_cachedCount += siz;
-                        DbgUtils.logf( "counting: means %s has unique count of %d",
-                                       means.toString(), siz );
                     }
                 }
             }
-            DbgUtils.logf( "getMinPlayerCount(%H) => %d", this, m_cachedCount );
             return m_cachedCount;
         }
 
@@ -2244,7 +2238,7 @@ public class DBUtils {
 
     public static void setIntFor( Context context, String key, int value )
     {
-        DbgUtils.logdf( "DBUtils.setIntFor(key=%s, val=%d)", key, value );
+        // DbgUtils.logdf( "DBUtils.setIntFor(key=%s, val=%d)", key, value );
         String asStr = String.format( "%d", value );
         setStringFor( context, key, asStr );
     }
@@ -2255,7 +2249,7 @@ public class DBUtils {
         if ( null != asStr ) {
             dflt = Integer.parseInt( asStr );
         }
-        DbgUtils.logdf( "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
+        // DbgUtils.logdf( "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
         return dflt;
     }
 
@@ -2272,7 +2266,7 @@ public class DBUtils {
         if ( null != asStr ) {
             dflt = Boolean.parseBoolean( asStr );
         }
-        DbgUtils.logdf( "DBUtils.getBoolFor(key=%s)=>%b", key, dflt );
+        // DbgUtils.logdf( "DBUtils.getBoolFor(key=%s)=>%b", key, dflt );
         return dflt;
     }
 
@@ -2288,7 +2282,7 @@ public class DBUtils {
             };
         String newVal = getModStringFor( context, key, proc );
         int asInt = Integer.parseInt( newVal );
-        DbgUtils.logf( "getIncrementIntFor(%s) => %d", key, asInt );
+        // DbgUtils.logf( "getIncrementIntFor(%s) => %d", key, asInt );
         return asInt;
     }
 

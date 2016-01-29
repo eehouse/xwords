@@ -1974,9 +1974,9 @@
     \"Import contact\" button to add people you want to invite, the +
     button to enter numbers directly.</string>
     <!--  -->
-    <string name="empty_relay_inviter">This list of devies is
+    <string name="empty_relay_inviter">This list of devices is
     empty. Use the \"Scan games\" button to scan your old games
-    for opponents. Use the + button to enter device IDs directly.</string>
+    for opponents. Use the \"+\" button to enter device IDs directly.</string>
     <!--  -->
     <string name="get_sms_number">Enter phone number:</string>
     <string name="get_relay_number">Enter device ID:</string>

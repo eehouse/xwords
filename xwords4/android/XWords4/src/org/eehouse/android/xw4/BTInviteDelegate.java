@@ -64,7 +64,9 @@ public class BTInviteDelegate extends InviteDelegate {
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
         if ( null != info ) {
             String lastDev = info.getLastDev( InviteMeans.BLUETOOTH );
-            intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
+            if ( null != lastDev ) {
+                intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
+            }
         }
         activity.startActivityForResult( intent, requestCode.ordinal() );
     }
