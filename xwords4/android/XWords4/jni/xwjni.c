@@ -109,8 +109,10 @@ map_thread( EnvThreadInfo* ti, JNIEnv* env )
         XP_ASSERT( !!firstEmpty );
         firstEmpty->owner = self;
         firstEmpty->env = env;
-        /* XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__, */
-        /*          firstEmpty - ti->entries, env, (int)self ); */
+#ifdef LOG_MAPPING
+        XP_LOGF( "%s: entry %d: mapped env %p to thread %x", __func__,
+                 firstEmpty - ti->entries, env, (int)self );
+#endif
     }
 
     pthread_mutex_unlock( &ti->mtxThreads );
@@ -134,6 +136,11 @@ map_remove( EnvThreadInfo* ti, JNIEnv* env )
         found = env == ti->entries[ii].env;
         if ( found ) {
             XP_ASSERT( pthread_self() == ti->entries[ii].owner );
+#ifdef LOG_MAPPING
+            XP_LOGF( "%s: UNMAPPED env %p to thread %x", __func__,
+                     ti->entries[ii].env,
+                     (int)ti->entries[ii].owner );
+#endif   
             ti->entries[ii].env = NULL;
             ti->entries[ii].owner = 0;
         }

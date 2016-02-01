@@ -44,7 +44,6 @@ public class CommsTransport implements TransportProcs,
                                        NetStateCache.StateChangedIf {
     private Selector m_selector;
     private SocketChannel m_socketChannel;
-    private int m_jniGamePtr;
     private CommsAddrRec m_relayAddr;
     private String m_useHost;
     private JNIThread m_jniThread;
@@ -64,11 +63,9 @@ public class CommsTransport implements TransportProcs,
     private byte[] m_packetIn;
     private int m_haveLen = -1;
 
-    public CommsTransport( int jniGamePtr, Context context, 
-                           TransportProcs.TPMsgHandler handler,
+    public CommsTransport( Context context, TransportProcs.TPMsgHandler handler,
                            long rowid, DeviceRole role )
     {
-        m_jniGamePtr = jniGamePtr;
         m_context = context;
         m_tpHandler = handler;
         m_rowid = rowid;

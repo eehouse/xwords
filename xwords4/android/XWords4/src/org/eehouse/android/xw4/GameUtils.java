@@ -44,11 +44,12 @@ import org.json.JSONObject;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameUtils {
 
@@ -107,23 +108,23 @@ public class GameUtils {
 
         // loadMakeGame, if making a new game, will add comms as long
         // as DeviceRole.SERVER_STANDALONE != gi.serverRole
-        int gamePtr = loadMakeGame( context, gi, lockSrc );
+        GamePtr gamePtr = loadMakeGame( context, gi, lockSrc );
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         
-        if ( XwJNI.game_hasComms( gamePtr ) ) {
+        if ( XwJNI.game_hasComms( gamePtr.ptr() ) ) {
             addr = new CommsAddrRec();
-            XwJNI.comms_getAddr( gamePtr, addr );
+            XwJNI.comms_getAddr( gamePtr.ptr(), addr );
             if ( 0 == addr.conTypes.size() ) {
                 String relayName = XWPrefs.getDefaultRelayHost( context );
                 int relayPort = XWPrefs.getDefaultRelayPort( context );
                 XwJNI.comms_getInitialAddr( addr, relayName, relayPort );
             }
         }
-        XwJNI.game_dispose( gamePtr );
-
+        gamePtr.release();
+        
         gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get( context ), 
+        XwJNI.game_makeNewGame( gamePtr.ptr(), gi, JNIUtilsImpl.get( context ), 
                                 CommonPrefs.get( context ), dictNames,
                                 pairs.m_bytes,  pairs.m_paths, gi.langName() );
                                 
@@ -132,7 +133,7 @@ public class GameUtils {
         }
 
         if ( null != addr ) {
-            XwJNI.comms_setAddr( gamePtr, addr );
+            XwJNI.comms_setAddr( gamePtr.ptr(), addr );
         }
 
         if ( null == lockDest ) {
@@ -178,15 +179,16 @@ public class GameUtils {
     }
 
     private static GameSummary summarizeAndClose( Context context, 
-                                                  GameLock lock, int gamePtr, 
+                                                  GameLock lock,
+                                                  GamePtr gamePtr, 
                                                   CurGameInfo gi )
     {
         GameSummary summary = new GameSummary( context, gi );
-        XwJNI.game_summarize( gamePtr, summary );
+        XwJNI.game_summarize( gamePtr.ptr(), summary );
 
         DBUtils.saveSummary( context, lock, summary );
 
-        XwJNI.game_dispose( gamePtr );
+        gamePtr.release();
         return summary;
     }
 
@@ -194,8 +196,8 @@ public class GameUtils {
     {
         GameSummary result = null;
         CurGameInfo gi = new CurGameInfo( context );
-        int gamePtr = loadMakeGame( context, gi, lock );
-        if ( 0 < gamePtr ) {
+        GamePtr gamePtr = loadMakeGame( context, gi, lock );
+        if ( null != gamePtr ) {
             result = summarizeAndClose( context, lock, gamePtr, gi );
         }
         return result;
@@ -266,23 +268,23 @@ public class GameUtils {
         return LocUtils.getString( context, R.string.game_fmt, count );
     }
 
-    public static int loadMakeGame( Context context, CurGameInfo gi, 
-                                    TransportProcs tp, GameLock lock )
+    public static GamePtr loadMakeGame( Context context, CurGameInfo gi, 
+                                        TransportProcs tp, GameLock lock )
     {
         return loadMakeGame( context, gi, null, tp, lock );
     }
 
-    public static int loadMakeGame( Context context, CurGameInfo gi, 
+    public static GamePtr loadMakeGame( Context context, CurGameInfo gi, 
                                     GameLock lock )
     {
         return loadMakeGame( context, gi, null, null, lock );
     }
 
-    public static int loadMakeGame( Context context, CurGameInfo gi, 
-                                    UtilCtxt util, TransportProcs tp, 
-                                    GameLock lock )
+    public static GamePtr loadMakeGame( Context context, CurGameInfo gi, 
+                                        UtilCtxt util, TransportProcs tp, 
+                                        GameLock lock )
     {
-        int gamePtr = 0;
+        GamePtr gamePtr = null;
 
         byte[] stream = savedGame( context, lock );
         if ( null == stream ) {
@@ -299,14 +301,14 @@ public class GameUtils {
 
                 String langName = gi.langName();
                 boolean madeGame = 
-                    XwJNI.game_makeFromStream( gamePtr, stream, gi, 
+                    XwJNI.game_makeFromStream( gamePtr.ptr(), stream, gi, 
                                                dictNames, pairs.m_bytes, 
                                                pairs.m_paths, langName,
                                                util, JNIUtilsImpl.get( context ), 
                                                CommonPrefs.get(context),
                                                tp);
                 if ( !madeGame ) {
-                    XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
+                    XwJNI.game_makeNewGame( gamePtr.ptr(), gi, JNIUtilsImpl.get(context), 
                                             CommonPrefs.get(context), dictNames,
                                             pairs.m_bytes, pairs.m_paths, 
                                             langName );
@@ -322,19 +324,18 @@ public class GameUtils {
         GameLock lock = new GameLock( rowid, false );
         if ( lock.tryLock() ) {
             CurGameInfo gi = new CurGameInfo( activity );
-            int gamePtr = loadMakeGame( activity, gi, lock );
-            if ( 0 != gamePtr ) {
+            GamePtr gamePtr = loadMakeGame( activity, gi, lock );
+            if ( null != gamePtr ) {
                 thumb = takeSnapshot( activity, gamePtr, gi );
-                XwJNI.game_dispose( gamePtr );
+                gamePtr.release();
                 DBUtils.saveThumbnail( activity, lock, thumb );
             }
-
             lock.unlock();
         }
         return thumb;
     }
 
-    public static Bitmap takeSnapshot( Context context, int gamePtr, 
+    public static Bitmap takeSnapshot( Context context, GamePtr gamePtr, 
                                        CurGameInfo gi )
     {
         Bitmap thumb = null;
@@ -361,13 +362,13 @@ public class GameUtils {
                     thumb = Bitmap.createBitmap( size, size, 
                                                  Bitmap.Config.ARGB_8888 );
 
-                    XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
+                    XwJNI.board_figureLayout( gamePtr.ptr(), gi, 0, 0, size, size,
                                               0, 0, 0, 20, 20, false, null );
 
                     ThumbCanvas canvas = new ThumbCanvas( context, thumb );
-                    XwJNI.board_setDraw( gamePtr, canvas );
-                    XwJNI.board_invalAll( gamePtr );
-                    XwJNI.board_draw( gamePtr );
+                    XwJNI.board_setDraw( gamePtr.ptr(), canvas );
+                    XwJNI.board_invalAll( gamePtr.ptr() );
+                    XwJNI.board_draw( gamePtr.ptr() );
                 }
             }
         }
@@ -400,18 +401,18 @@ public class GameUtils {
         }
     }
 
-    public static long saveGame( Context context, int gamePtr, 
+    public static long saveGame( Context context, GamePtr gamePtr, 
                                  CurGameInfo gi, GameLock lock,
                                  boolean setCreate )
     {
-        byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
+        byte[] stream = XwJNI.game_saveToStream( gamePtr.ptr(), gi );
         return saveGame( context, stream, lock, setCreate );
     }
 
-    public static long saveNewGame( Context context, int gamePtr,
+    public static long saveNewGame( Context context, GamePtr gamePtr,
                                     CurGameInfo gi, long groupID )
     {
-        byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
+        byte[] stream = XwJNI.game_saveToStream( gamePtr.ptr(), gi );
         GameLock lock = DBUtils.saveNewGame( context, stream, groupID, null );
         long rowid = lock.getRowid();
         lock.unlock();
@@ -890,19 +891,19 @@ public class GameUtils {
             if ( null != lock ) {
                 CurGameInfo gi = new CurGameInfo( context );
                 FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
-                int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
-                if ( 0 != gamePtr ) {
-                    XwJNI.comms_resendAll( gamePtr, false, false );
+                GamePtr gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
+                if ( null != gamePtr ) {
+                    XwJNI.comms_resendAll( gamePtr.ptr(), false, false );
 
                     for ( byte[] msg : msgs ) {
                         Assert.assertNotNull( ret );
-                        draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
+                        draw = XwJNI.game_receiveMessage( gamePtr.ptr(), msg, ret )
                             || draw;
                     }
-                    XwJNI.comms_ackAny( gamePtr );
+                    XwJNI.comms_ackAny( gamePtr.ptr() );
 
                     // update gi to reflect changes due to messages
-                    XwJNI.game_getGi( gamePtr, gi );
+                    XwJNI.game_getGi( gamePtr.ptr(), gi );
 
                     if ( draw && XWPrefs.getThumbEnabled( context ) ) {
                         Bitmap bitmap = takeSnapshot( context, gamePtr, gi );
@@ -915,7 +916,7 @@ public class GameUtils {
                             bmr.m_chatFrom = feedImpl.m_chatFrom;
                         } else {
                             LastMoveInfo lmi = new LastMoveInfo();
-                            XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
+                            XwJNI.model_getPlayersLastScore( gamePtr.ptr(), -1, lmi );
                             bmr.m_lmi = lmi;
                         }
                     }
@@ -971,8 +972,8 @@ public class GameUtils {
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, 
                                                              dictNames );
         
-            int gamePtr = XwJNI.initJNI( rowid );
-            XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
+            GamePtr gamePtr = XwJNI.initJNI( rowid );
+            XwJNI.game_makeFromStream( gamePtr.ptr(), stream, gi, dictNames, 
                                        pairs.m_bytes, pairs.m_paths,
                                        gi.langName(), 
                                        JNIUtilsImpl.get(context), 
@@ -1011,7 +1012,7 @@ public class GameUtils {
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         String langName = gi.langName();
-        int gamePtr = XwJNI.initJNI( lock.getRowid() );
+        GamePtr gamePtr = XwJNI.initJNI( lock.getRowid() );
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );
 
@@ -1020,7 +1021,7 @@ public class GameUtils {
         } else {
             byte[] stream = savedGame( context, lock );
             // Will fail if there's nothing in the stream but a gi.
-            madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
+            madeGame = XwJNI.game_makeFromStream( gamePtr.ptr(), stream, 
                                                   new CurGameInfo(context), 
                                                   dictNames, pairs.m_bytes,
                                                   pairs.m_paths, langName,
@@ -1029,7 +1030,7 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, util, 
+            XwJNI.game_makeNewGame( gamePtr.ptr(), gi, util, 
                                     JNIUtilsImpl.get(context), 
                                     (DrawCtx)null,
                                     cp, sink, dictNames, pairs.m_bytes, 
@@ -1037,20 +1038,19 @@ public class GameUtils {
         }
 
         if ( null != car ) {
-            XwJNI.comms_setAddr( gamePtr, car );
+            XwJNI.comms_setAddr( gamePtr.ptr(), car );
         }
 
         if ( null != sink ) {
-            JNIThread.tryConnectClient( gamePtr, gi );
+            JNIThread.tryConnectClient( gamePtr.ptr(), gi );
         }
 
         saveGame( context, gamePtr, gi, lock, false );
 
         GameSummary summary = new GameSummary( context, gi );
-        XwJNI.game_summarize( gamePtr, summary );
+        XwJNI.game_summarize( gamePtr.ptr(), summary );
+        gamePtr.release();
         DBUtils.saveSummary( context, lock, summary );
-
-        XwJNI.game_dispose( gamePtr );
     } // applyChanges
 
     public static void doConfig( Activity activity, long rowid, Class clazz )
@@ -1216,9 +1216,10 @@ public class GameUtils {
                 if ( lock.tryLock() ) {
                     CurGameInfo gi = new CurGameInfo( m_context );
                     m_sink = new MultiMsgSink( m_context, rowid );
-                    int gamePtr = loadMakeGame( m_context, gi, m_sink, lock );
-                    if ( 0 != gamePtr ) {
-                        XwJNI.comms_resendAll( gamePtr, true, false );
+                    GamePtr gamePtr = loadMakeGame( m_context, gi, m_sink, lock );
+                    if ( null != gamePtr ) {
+                        XwJNI.comms_resendAll( gamePtr.ptr(), true, false );
+                        gamePtr.release();
                     }
                     lock.unlock();
                 } else {

@@ -61,6 +61,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.JNIThread.*;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -83,7 +84,7 @@ public class BoardDelegate extends DelegateBase
 
     private Activity m_activity;
     private BoardView m_view;
-    private int m_jniGamePtr;
+    private GamePtr m_jniGamePtr;
     private GameLock m_gameLock;
     private CurGameInfo m_gi;
     private GameSummary m_summary;
@@ -865,8 +866,8 @@ public class BoardDelegate extends DelegateBase
         int id = item.getItemId();
         switch ( id ) {
         case R.id.board_menu_done:
-            int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr, 
-                                                  m_view.getCurPlayer() );
+            int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr.ptr(), 
+                                                        m_view.getCurPlayer() );
             if ( XWApp.MAX_TRAY_TILES > nTiles ) {
                 showNotAgainDlgThen( R.string.not_again_done, 
                                      R.string.key_notagain_done, 
@@ -1415,9 +1416,9 @@ public class BoardDelegate extends DelegateBase
 
     private void dropRelayAndRestart() {
         CommsAddrRec addr = new CommsAddrRec();
-        XwJNI.comms_getAddr( m_jniGamePtr, addr );
+        XwJNI.comms_getAddr( m_jniGamePtr.ptr(), addr );
         addr.remove( CommsConnType.COMMS_CONN_RELAY );
-        XwJNI.comms_setAddr( m_jniGamePtr, addr );
+        XwJNI.comms_setAddr( m_jniGamePtr.ptr(), addr );
 
         finish();
 
@@ -1642,7 +1643,7 @@ public class BoardDelegate extends DelegateBase
         public void playerScoreHeld( int player )
         {
             LastMoveInfo lmi = new LastMoveInfo();
-            XwJNI.model_getPlayersLastScore( m_jniGamePtr, player, lmi );
+            XwJNI.model_getPlayersLastScore( m_jniGamePtr.ptr(), player, lmi );
             String expl = lmi.format( m_activity );
             if ( null == expl || 0 == expl.length() ) {
                 expl = getString( R.string.no_moves_made );
@@ -2017,7 +2018,7 @@ public class BoardDelegate extends DelegateBase
 
     private void loadGame( boolean isStart )
     {
-        if ( 0 == m_jniGamePtr ) {
+        if ( null == m_jniGamePtr ) {
             try {
                 String gameName = DBUtils.getName( m_activity, m_rowid );
                 String[] dictNames = GameUtils.dictNames( m_activity, m_rowid );
@@ -2043,19 +2044,19 @@ public class BoardDelegate extends DelegateBase
                     m_jniGamePtr = XwJNI.initJNI( m_rowid );
 
                     if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                        m_xport = new CommsTransport( m_jniGamePtr, m_activity, this, 
-                                                      m_rowid, m_gi.serverRole );
+                        m_xport = new CommsTransport( m_activity, this, m_rowid,
+                                                      m_gi.serverRole );
                     }
 
                     CommonPrefs cp = CommonPrefs.get( m_activity );
                     if ( null == stream ||
-                         ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+                         ! XwJNI.game_makeFromStream( m_jniGamePtr.ptr(), stream, 
                                                       m_gi, dictNames, 
                                                       pairs.m_bytes, 
                                                       pairs.m_paths, langName, 
                                                       m_utils, m_jniu, 
                                                       null, cp, m_xport ) ) {
-                        XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
+                        XwJNI.game_makeNewGame( m_jniGamePtr.ptr(), m_gi, m_utils, 
                                                 m_jniu, null, cp, m_xport, 
                                                 dictNames, pairs.m_bytes, 
                                                 pairs.m_paths, langName );
@@ -2212,7 +2213,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( null != m_connTypes
              && m_connTypes.contains( CommsConnType.COMMS_CONN_BT ) ) {
-            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
+            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr.ptr() );
             for ( CommsAddrRec addr : addrs ) {
                 if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
                     BTService.pingHost( m_activity, addr.bt_btAddr,
@@ -2370,7 +2371,7 @@ public class BoardDelegate extends DelegateBase
 
     private void waitCloseGame( boolean save ) 
     {
-        if ( 0 != m_jniGamePtr ) {
+        if ( null != m_jniGamePtr ) {
             if ( null != m_xport ) {
                 m_xport.waitToStop();
                 m_xport = null;
@@ -2394,8 +2395,8 @@ public class BoardDelegate extends DelegateBase
                 DBUtils.saveThumbnail( m_activity, m_gameLock, thumb );
             }
 
-            XwJNI.game_dispose( m_jniGamePtr );
-            m_jniGamePtr = 0;
+            m_jniGamePtr.release();
+            m_jniGamePtr = null;
             m_gi = null;
 
             m_gameLock.unlock();
@@ -2638,7 +2639,7 @@ public class BoardDelegate extends DelegateBase
 
     private static boolean doRematchIf( Activity activity, DelegateBase dlgt, 
                                         long rowid, GameSummary summary, 
-                                        CurGameInfo gi, int jniGamePtr )
+                                        CurGameInfo gi, GamePtr jniGamePtr )
     {
         boolean success = false;
         if ( XWApp.REMATCH_SUPPORTED ) {
@@ -2656,7 +2657,7 @@ public class BoardDelegate extends DelegateBase
                 }
                 doIt = false;
             } else {
-                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
+                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr.ptr() );
                 for ( int ii = 0; ii < addrs.length; ++ii ) {
                     CommsAddrRec addr = addrs[ii];
                     if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
@@ -2669,7 +2670,7 @@ public class BoardDelegate extends DelegateBase
                     }
                     if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                         Assert.assertNull( relayID );
-                        relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
+                        relayID = XwJNI.comms_formatRelayID( jniGamePtr.ptr(), ii );
                     }
                 }
             }
@@ -2696,11 +2697,11 @@ public class BoardDelegate extends DelegateBase
         if ( lock.tryLock() ) {
             GameSummary summary = DBUtils.getSummary( activity, lock );
             CurGameInfo gi = new CurGameInfo( activity );
-            int gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+            GamePtr gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
 
             doRematchIf( activity, null, rowID, summary, gi, gamePtr );
 
-            XwJNI.game_dispose( gamePtr );
+            gamePtr.release();
             lock.unlock();
         } else {
             DbgUtils.logf( "setupRematchFor(): unable to lock game" );

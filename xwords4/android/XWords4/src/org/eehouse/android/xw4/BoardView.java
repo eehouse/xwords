@@ -58,7 +58,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private int m_defaultFontHt;
     private int m_mediumFontHt;
     private Runnable m_invalidator;
-    private int m_jniGamePtr;
+    private XwJNI.GamePtr m_jniGamePtr;
     private CurGameInfo m_gi;
     private boolean m_isSolo;
     private int m_layoutWidth;
@@ -270,7 +270,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     // BoardHandler interface implementation
     public void startHandling( Activity parent, JNIThread thread, 
-                               int gamePtr, CurGameInfo gi, 
+                               XwJNI.GamePtr gamePtr, CurGameInfo gi, 
                                CommsConnTypeSet connTypes ) 
     {
         m_parent = parent;
@@ -298,7 +298,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     public void stopHandling()
     {
         m_jniThread = null;
-        m_jniGamePtr = 0;
+        m_jniGamePtr = null;
         if ( null != m_canvas ) {
             m_canvas.setJNIThread( null );
         }
@@ -309,7 +309,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     {
         boolean drew;
         synchronized( this ) {
-            if ( !XwJNI.board_draw( m_jniGamePtr ) ) {
+            if ( !XwJNI.board_draw( m_jniGamePtr.ptr() ) ) {
                 DbgUtils.logf( "doJNIDraw: draw not complete" );
             }
         }

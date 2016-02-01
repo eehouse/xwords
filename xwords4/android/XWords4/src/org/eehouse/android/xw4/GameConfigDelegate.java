@@ -543,12 +543,12 @@ public class GameConfigDelegate extends DelegateBase
             m_giOrig = new CurGameInfo( m_activity );
 
             GameLock gameLock = new GameLock( m_rowid, false ).lock();
-            int gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
-            if ( 0 == gamePtr ) {
+            XwJNI.GamePtr gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
+            if ( null == gamePtr ) {
                 showDictGoneFinish();
             } else {
-                m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
-                    || XwJNI.comms_isConnected( gamePtr );
+                m_gameStarted = XwJNI.model_getNMoves( gamePtr.ptr() ) > 0
+                    || XwJNI.comms_isConnected( gamePtr.ptr() );
 
                 if ( m_gameStarted ) {
                     if ( null == m_gameLockedCheck ) {
@@ -565,9 +565,9 @@ public class GameConfigDelegate extends DelegateBase
                 }
 
                 m_carOrig = new CommsAddrRec();
-                if ( XwJNI.game_hasComms( gamePtr ) ) {
-                    XwJNI.comms_getAddr( gamePtr, m_carOrig );
-                    m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
+                if ( XwJNI.game_hasComms( gamePtr.ptr() ) ) {
+                    XwJNI.comms_getAddr( gamePtr.ptr(), m_carOrig );
+                    m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr.ptr() );
                 } else if ( !localOnlyGame() ) {
                     String relayName = XWPrefs.getDefaultRelayHost( m_activity );
                     int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
@@ -575,7 +575,7 @@ public class GameConfigDelegate extends DelegateBase
                                                 relayPort );
                 }
                 m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
-                XwJNI.game_dispose( gamePtr );
+                gamePtr.release();
 
                 gameLock.unlock();
 

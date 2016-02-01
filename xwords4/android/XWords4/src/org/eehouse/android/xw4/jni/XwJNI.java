@@ -22,6 +22,8 @@ package org.eehouse.android.xw4.jni;
 
 import android.graphics.Rect;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.NetLaunchInfo;
 import org.eehouse.android.xw4.Utils;
@@ -29,6 +31,31 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 // Collection of native methods and a bit of state
 public class XwJNI {
+
+    public static class GamePtr {
+        private int m_ptr = 0;
+
+        private GamePtr( int ptr ) { m_ptr = ptr; }
+
+        public int ptr() { Assert.assertTrue( 0 != m_ptr ); return m_ptr; }
+
+        // Force (via an assert in finalize() below) that this is called. It's
+        // better if jni stuff isn't being done on the finalizer thread
+        public void release()
+        {
+            if ( 0 != m_ptr ) {
+                game_dispose( ptr() );
+                m_ptr = 0;
+            }
+        }
+
+        // @Override
+        public void finalize() throws java.lang.Throwable
+        {
+            Assert.assertTrue( 0 == m_ptr );
+            super.finalize();
+        }
+    }
 
     private static XwJNI s_JNI = null;
     private static XwJNI getJNI()
@@ -102,14 +129,16 @@ public class XwJNI {
     public static native String comms_getUUID();
 
     // Game methods
-    public static int initJNI( long rowid )
+    public static GamePtr initJNI( long rowid )
     {
         int seed = Utils.nextRandomInt();
         String tag = String.format( "%d", rowid );
-        return initJNI( getJNI().m_ptr, seed, tag );
+        int ptr = initJNI( getJNI().m_ptr, seed, tag );
+        GamePtr result = 0 == ptr ? null : new GamePtr( ptr );
+        return result;
     }
 
-    public static int initJNI()
+    public static GamePtr initJNI()
     {
         return initJNI( 0 );
     }
@@ -214,7 +243,7 @@ public class XwJNI {
     //                                               String dictName, 
     //                                               byte[] dictBytes, 
     //                                               String dictPath ); 
-    public static native void game_dispose( int gamePtr );
+    private static native void game_dispose( int gamePtr );
 
     // Board methods
     public static native void board_setDraw( int gamePtr, DrawCtx draw );
