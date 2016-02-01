@@ -76,7 +76,7 @@ for PACK_UNSIGNED in $FILES; do
     echo "base: $PACK_SIGNED" >&2
     PACK_SIGNED=${PACK_SIGNED/-unsigned}
     echo "signed: $PACK_SIGNED" >&2
-    jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore ~/.keystore $PACK_UNSIGNED mykey
+    jarsigner -verbose -digestalg SHA1 -keystore ~/.keystore $PACK_UNSIGNED mykey
     rm -f $PACK_SIGNED
     zipalign -v 4 $PACK_UNSIGNED $PACK_SIGNED
     [ -n "$XW_WWW_PATH" ] && cp $PACK_SIGNED $XW_WWW_PATH
