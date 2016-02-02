@@ -866,7 +866,7 @@ public class BoardDelegate extends DelegateBase
         int id = item.getItemId();
         switch ( id ) {
         case R.id.board_menu_done:
-            int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr.ptr(), 
+            int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr, 
                                                         m_view.getCurPlayer() );
             if ( XWApp.MAX_TRAY_TILES > nTiles ) {
                 showNotAgainDlgThen( R.string.not_again_done, 
@@ -1416,9 +1416,9 @@ public class BoardDelegate extends DelegateBase
 
     private void dropRelayAndRestart() {
         CommsAddrRec addr = new CommsAddrRec();
-        XwJNI.comms_getAddr( m_jniGamePtr.ptr(), addr );
+        XwJNI.comms_getAddr( m_jniGamePtr, addr );
         addr.remove( CommsConnType.COMMS_CONN_RELAY );
-        XwJNI.comms_setAddr( m_jniGamePtr.ptr(), addr );
+        XwJNI.comms_setAddr( m_jniGamePtr, addr );
 
         finish();
 
@@ -1643,7 +1643,7 @@ public class BoardDelegate extends DelegateBase
         public void playerScoreHeld( int player )
         {
             LastMoveInfo lmi = new LastMoveInfo();
-            XwJNI.model_getPlayersLastScore( m_jniGamePtr.ptr(), player, lmi );
+            XwJNI.model_getPlayersLastScore( m_jniGamePtr, player, lmi );
             String expl = lmi.format( m_activity );
             if ( null == expl || 0 == expl.length() ) {
                 expl = getString( R.string.no_moves_made );
@@ -2050,13 +2050,13 @@ public class BoardDelegate extends DelegateBase
 
                     CommonPrefs cp = CommonPrefs.get( m_activity );
                     if ( null == stream ||
-                         ! XwJNI.game_makeFromStream( m_jniGamePtr.ptr(), stream, 
+                         ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
                                                       m_gi, dictNames, 
                                                       pairs.m_bytes, 
                                                       pairs.m_paths, langName, 
                                                       m_utils, m_jniu, 
                                                       null, cp, m_xport ) ) {
-                        XwJNI.game_makeNewGame( m_jniGamePtr.ptr(), m_gi, m_utils, 
+                        XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
                                                 m_jniu, null, cp, m_xport, 
                                                 dictNames, pairs.m_bytes, 
                                                 pairs.m_paths, langName );
@@ -2213,7 +2213,7 @@ public class BoardDelegate extends DelegateBase
     {
         if ( null != m_connTypes
              && m_connTypes.contains( CommsConnType.COMMS_CONN_BT ) ) {
-            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr.ptr() );
+            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
             for ( CommsAddrRec addr : addrs ) {
                 if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
                     BTService.pingHost( m_activity, addr.bt_btAddr,
@@ -2657,7 +2657,7 @@ public class BoardDelegate extends DelegateBase
                 }
                 doIt = false;
             } else {
-                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr.ptr() );
+                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
                 for ( int ii = 0; ii < addrs.length; ++ii ) {
                     CommsAddrRec addr = addrs[ii];
                     if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
@@ -2670,7 +2670,7 @@ public class BoardDelegate extends DelegateBase
                     }
                     if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
                         Assert.assertNull( relayID );
-                        relayID = XwJNI.comms_formatRelayID( jniGamePtr.ptr(), ii );
+                        relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
                     }
                 }
             }

@@ -112,9 +112,9 @@ public class GameUtils {
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         
-        if ( XwJNI.game_hasComms( gamePtr.ptr() ) ) {
+        if ( XwJNI.game_hasComms( gamePtr ) ) {
             addr = new CommsAddrRec();
-            XwJNI.comms_getAddr( gamePtr.ptr(), addr );
+            XwJNI.comms_getAddr( gamePtr, addr );
             if ( 0 == addr.conTypes.size() ) {
                 String relayName = XWPrefs.getDefaultRelayHost( context );
                 int relayPort = XWPrefs.getDefaultRelayPort( context );
@@ -124,7 +124,7 @@ public class GameUtils {
         gamePtr.release();
         
         gamePtr = XwJNI.initJNI();
-        XwJNI.game_makeNewGame( gamePtr.ptr(), gi, JNIUtilsImpl.get( context ), 
+        XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get( context ), 
                                 CommonPrefs.get( context ), dictNames,
                                 pairs.m_bytes,  pairs.m_paths, gi.langName() );
                                 
@@ -133,7 +133,7 @@ public class GameUtils {
         }
 
         if ( null != addr ) {
-            XwJNI.comms_setAddr( gamePtr.ptr(), addr );
+            XwJNI.comms_setAddr( gamePtr, addr );
         }
 
         if ( null == lockDest ) {
@@ -184,7 +184,7 @@ public class GameUtils {
                                                   CurGameInfo gi )
     {
         GameSummary summary = new GameSummary( context, gi );
-        XwJNI.game_summarize( gamePtr.ptr(), summary );
+        XwJNI.game_summarize( gamePtr, summary );
 
         DBUtils.saveSummary( context, lock, summary );
 
@@ -301,14 +301,14 @@ public class GameUtils {
 
                 String langName = gi.langName();
                 boolean madeGame = 
-                    XwJNI.game_makeFromStream( gamePtr.ptr(), stream, gi, 
+                    XwJNI.game_makeFromStream( gamePtr, stream, gi, 
                                                dictNames, pairs.m_bytes, 
                                                pairs.m_paths, langName,
                                                util, JNIUtilsImpl.get( context ), 
                                                CommonPrefs.get(context),
                                                tp);
                 if ( !madeGame ) {
-                    XwJNI.game_makeNewGame( gamePtr.ptr(), gi, JNIUtilsImpl.get(context), 
+                    XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
                                             CommonPrefs.get(context), dictNames,
                                             pairs.m_bytes, pairs.m_paths, 
                                             langName );
@@ -362,13 +362,13 @@ public class GameUtils {
                     thumb = Bitmap.createBitmap( size, size, 
                                                  Bitmap.Config.ARGB_8888 );
 
-                    XwJNI.board_figureLayout( gamePtr.ptr(), gi, 0, 0, size, size,
+                    XwJNI.board_figureLayout( gamePtr, gi, 0, 0, size, size,
                                               0, 0, 0, 20, 20, false, null );
 
                     ThumbCanvas canvas = new ThumbCanvas( context, thumb );
-                    XwJNI.board_setDraw( gamePtr.ptr(), canvas );
-                    XwJNI.board_invalAll( gamePtr.ptr() );
-                    XwJNI.board_draw( gamePtr.ptr() );
+                    XwJNI.board_setDraw( gamePtr, canvas );
+                    XwJNI.board_invalAll( gamePtr );
+                    XwJNI.board_draw( gamePtr );
                 }
             }
         }
@@ -407,14 +407,14 @@ public class GameUtils {
                                  CurGameInfo gi, GameLock lock,
                                  boolean setCreate )
     {
-        byte[] stream = XwJNI.game_saveToStream( gamePtr.ptr(), gi );
+        byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
         return saveGame( context, stream, lock, setCreate );
     }
 
     public static long saveNewGame( Context context, GamePtr gamePtr,
                                     CurGameInfo gi, long groupID )
     {
-        byte[] stream = XwJNI.game_saveToStream( gamePtr.ptr(), gi );
+        byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
         GameLock lock = DBUtils.saveNewGame( context, stream, groupID, null );
         long rowid = lock.getRowid();
         lock.unlock();
@@ -895,17 +895,17 @@ public class GameUtils {
                 FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
                 GamePtr gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
                 if ( null != gamePtr ) {
-                    XwJNI.comms_resendAll( gamePtr.ptr(), false, false );
+                    XwJNI.comms_resendAll( gamePtr, false, false );
 
                     for ( byte[] msg : msgs ) {
                         Assert.assertNotNull( ret );
-                        draw = XwJNI.game_receiveMessage( gamePtr.ptr(), msg, ret )
+                        draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
                             || draw;
                     }
-                    XwJNI.comms_ackAny( gamePtr.ptr() );
+                    XwJNI.comms_ackAny( gamePtr );
 
                     // update gi to reflect changes due to messages
-                    XwJNI.game_getGi( gamePtr.ptr(), gi );
+                    XwJNI.game_getGi( gamePtr, gi );
 
                     if ( draw && XWPrefs.getThumbEnabled( context ) ) {
                         Bitmap bitmap = takeSnapshot( context, gamePtr, gi );
@@ -918,7 +918,7 @@ public class GameUtils {
                             bmr.m_chatFrom = feedImpl.m_chatFrom;
                         } else {
                             LastMoveInfo lmi = new LastMoveInfo();
-                            XwJNI.model_getPlayersLastScore( gamePtr.ptr(), -1, lmi );
+                            XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
                             bmr.m_lmi = lmi;
                         }
                     }
@@ -975,7 +975,7 @@ public class GameUtils {
                                                              dictNames );
         
             GamePtr gamePtr = XwJNI.initJNI( rowid );
-            XwJNI.game_makeFromStream( gamePtr.ptr(), stream, gi, dictNames, 
+            XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
                                        pairs.m_bytes, pairs.m_paths,
                                        gi.langName(), 
                                        JNIUtilsImpl.get(context), 
@@ -1023,7 +1023,7 @@ public class GameUtils {
         } else {
             byte[] stream = savedGame( context, lock );
             // Will fail if there's nothing in the stream but a gi.
-            madeGame = XwJNI.game_makeFromStream( gamePtr.ptr(), stream, 
+            madeGame = XwJNI.game_makeFromStream( gamePtr, stream, 
                                                   new CurGameInfo(context), 
                                                   dictNames, pairs.m_bytes,
                                                   pairs.m_paths, langName,
@@ -1032,7 +1032,7 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr.ptr(), gi, util, 
+            XwJNI.game_makeNewGame( gamePtr, gi, util, 
                                     JNIUtilsImpl.get(context), 
                                     (DrawCtx)null,
                                     cp, sink, dictNames, pairs.m_bytes, 
@@ -1040,17 +1040,17 @@ public class GameUtils {
         }
 
         if ( null != car ) {
-            XwJNI.comms_setAddr( gamePtr.ptr(), car );
+            XwJNI.comms_setAddr( gamePtr, car );
         }
 
         if ( null != sink ) {
-            JNIThread.tryConnectClient( gamePtr.ptr(), gi );
+            JNIThread.tryConnectClient( gamePtr, gi );
         }
 
         saveGame( context, gamePtr, gi, lock, false );
 
         GameSummary summary = new GameSummary( context, gi );
-        XwJNI.game_summarize( gamePtr.ptr(), summary );
+        XwJNI.game_summarize( gamePtr, summary );
         gamePtr.release();
         DBUtils.saveSummary( context, lock, summary );
     } // applyChanges
@@ -1222,7 +1222,7 @@ public class GameUtils {
                     m_sink = new MultiMsgSink( m_context, rowid );
                     GamePtr gamePtr = loadMakeGame( m_context, gi, m_sink, lock );
                     if ( null != gamePtr ) {
-                        int nSent = XwJNI.comms_resendAll( gamePtr.ptr(), true,
+                        int nSent = XwJNI.comms_resendAll( gamePtr, true,
                                                            m_filter, false );
                         gamePtr.release();
                         DbgUtils.logdf( "ResendTask.doInBackground(): sent %d "

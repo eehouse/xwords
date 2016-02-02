@@ -62,7 +62,7 @@ typedef struct _JNIGlobalState {
     MPSLOT
 } JNIGlobalState;
 
-// #define GAMEPTR_IS_OBJECT 1
+#define GAMEPTR_IS_OBJECT
 #ifdef GAMEPTR_IS_OBJECT
 typedef jobject GamePtrType;
 #else
@@ -190,10 +190,7 @@ getState( JNIEnv* env, GamePtrType gamePtr )
     XP_ASSERT( NULL != gamePtr );
     jmethodID mid = getMethodID( env, gamePtr, "ptr", "()I" );
     XP_ASSERT( !!mid );
-    JNIState* state = (JNIState*)(*env)->CallIntMethod( env, gamePtr, mid );
-    
-    LOG_RETURNF( "%p", state );
-    return state;
+    return (JNIState*)(*env)->CallIntMethod( env, gamePtr, mid );
 }
 #else
 # define getState( env, gamePtr ) ((JNIState*)(gamePtr))
