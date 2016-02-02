@@ -193,7 +193,7 @@ static XP_Bool channelToAddress( CommsCtxt* comms, XP_PlayerAddr channelNo,
                                  const CommsAddrRec** addr );
 static AddressRecord* getRecordFor( CommsCtxt* comms, const CommsAddrRec* addr,
                                     XP_PlayerAddr channelNo, XP_Bool maskChnl );
-static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem );
+static XP_S16 sendMsg( CommsCtxt* comms, MsgQueueElem* elem, CommsConnType filter );
 static MsgQueueElem* addToQueue( CommsCtxt* comms, MsgQueueElem* newMsgElem );
 static XP_Bool elems_same( const MsgQueueElem* e1, const MsgQueueElem* e2 ) ;
 static void freeElem( const CommsCtxt* comms, MsgQueueElem* elem );
@@ -778,7 +778,7 @@ sendConnect( CommsCtxt* comms, XP_Bool breakExisting )
         case COMMS_CONN_IP_DIRECT:
             /* This will only work on host side when there's a single guest! */
             (void)send_via_bt_or_ip( comms, BTIPMSG_RESET, CHANNEL_NONE, typ, NULL, 0, NULL );
-            (void)comms_resendAll( comms, XP_FALSE );
+            (void)comms_resendAll( comms, COMMS_CONN_NONE, XP_FALSE );
             break;
 #endif
         default:
@@ -1181,7 +1181,7 @@ comms_send( CommsCtxt* comms, XWStreamCtxt* stream )
         if ( NULL != elem ) {
             elem = addToQueue( comms, elem );
             printQueue( comms );
-            result = sendMsg( comms, elem );
+            result = sendMsg( comms, elem, COMMS_CONN_NONE );
         }
     }
     return result;
@@ -1362,7 +1362,7 @@ gameID( const CommsCtxt* comms )
 }
 
 static XP_S16
-sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
+sendMsg( CommsCtxt* comms, MsgQueueElem* elem, const CommsConnType filter )
 {
     XP_S16 result = -1;
     XP_PlayerAddr channelNo = elem->channelNo;
@@ -1379,6 +1379,9 @@ sendMsg( CommsCtxt* comms, MsgQueueElem* elem )
         if ( comms_getAddrDisabled( comms, typ, XP_TRUE ) ) {
             XP_LOGF( "%s: dropping message because %s disabled", __func__, 
                      ConnType2Str( typ ) );
+        } else if ( COMMS_CONN_NONE != filter && filter != typ ) {
+            XP_LOGF( "%s: dropping message because not of type %s", __func__,
+                     ConnType2Str( filter ) );
         } else {
             XP_LOGF( TAGFMT() "sending msg with sum %s using typ %s", TAGPRMS,
                      elem->checksum, ConnType2Str(typ) );
@@ -1468,7 +1471,7 @@ send_ack( CommsCtxt* comms )
 }
 
 XP_S16
-comms_resendAll( CommsCtxt* comms, XP_Bool force )
+comms_resendAll( CommsCtxt* comms, CommsConnType filter, XP_Bool force )
 {
     XP_S16 count = 0;
     XP_Bool success = XP_TRUE;
@@ -1484,7 +1487,7 @@ comms_resendAll( CommsCtxt* comms, XP_Bool force )
         MsgQueueElem* msg;
 
         for ( msg = comms->msgQueueHead; !!msg; msg = msg->next ) {
-            XP_S16 len = sendMsg( comms, msg );
+            XP_S16 len = sendMsg( comms, msg, filter );
             if ( 0 > len ) {
                 success = XP_FALSE;
                 break;
@@ -1664,7 +1667,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
         break;
     case XWRELAY_RECONNECT_RESP:
         got_connect_cmd( comms, stream, XP_TRUE );
-        comms_resendAll( comms, XP_FALSE );
+        comms_resendAll( comms, COMMS_CONN_NONE, XP_FALSE );
         break;
 
     case XWRELAY_ALLHERE:
@@ -1709,7 +1712,7 @@ relayPreProcess( CommsCtxt* comms, XWStreamCtxt* stream, XWHostID* senderID )
            on RECONNECTED, so removing the test for now to fix recon
            problems on android. */
         /* if ( COMMS_RELAYSTATE_RECONNECTED != comms->rr.relayState ) { */
-        comms_resendAll( comms, XP_FALSE );
+        comms_resendAll( comms, COMMS_CONN_NONE, XP_FALSE );
         /* } */
         if ( XWRELAY_ALLHERE == cmd ) { /* initial connect? */
             (*comms->procs.rconnd)( comms->procs.closure, 
@@ -2341,7 +2344,7 @@ sendEmptyMsg( CommsCtxt* comms, AddressRecord* rec )
                                          0 /*rec? rec->lastMsgRcd : 0*/,
                                          rec, 
                                          rec? rec->channelNo : 0, NULL );
-    (void)sendMsg( comms, elem );
+    (void)sendMsg( comms, elem, COMMS_CONN_NONE );
     freeElem( comms, elem );
 } /* sendEmptyMsg */
 #endif

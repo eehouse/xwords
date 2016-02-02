@@ -1182,7 +1182,7 @@ handle_resend( GtkWidget* XP_UNUSED(widget), GtkGameGlobals* globals )
 {
     CommsCtxt* comms = globals->cGlobals.game.comms;
     if ( comms != NULL ) {
-        comms_resendAll( comms, XP_TRUE );
+        comms_resendAll( comms, COMMS_CONN_NONE, XP_TRUE );
     }
 } /* handle_resend */
 
@@ -2518,7 +2518,7 @@ gtk_socket_added( void* closure, int newSock, GIOFunc proc )
     CommsAddrRec addr;
     comms_getAddr( comms, &addr );
     if ( (comms != NULL) && (addr_hasType( &addr, COMMS_CONN_BT) ) ) {
-        comms_resendAll( comms, XP_FALSE );
+        comms_resendAll( comms, COMMS_CONN_NONE, XP_FALSE );
     }
     LOG_RETURN_VOID();
 } /* gtk_socket_changed */
@@ -2807,7 +2807,8 @@ loadGameNoDraw( GtkGameGlobals* globals, LaunchParams* params,
             XP_LOGF( "%s: game loaded", __func__ );
 #ifndef XWFEATURE_STANDALONE_ONLY
             if ( !!globals->cGlobals.game.comms ) {
-                comms_resendAll( globals->cGlobals.game.comms, XP_FALSE );
+                comms_resendAll( globals->cGlobals.game.comms, COMMS_CONN_NONE,
+                                 XP_FALSE );
             }
 #endif
         }

@@ -1805,19 +1805,24 @@ Java_org_eehouse_android_xw4_jni_XwJNI_game_1changeDict
 
 JNIEXPORT jint JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_comms_1resendAll
-( JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean force, jboolean thenAck )
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jboolean force, jobject jFilter,
+  jboolean thenAck )
 {
+    LOG_FUNC();
     jint result;
     XWJNI_START();
     CommsCtxt* comms = state->game.comms;
     XP_ASSERT( !!comms );
-    result = comms_resendAll( comms, force );
+    CommsConnType filter =
+        NULL == jFilter ? COMMS_CONN_NONE : jEnumToInt( env, jFilter );
+    result = comms_resendAll( comms, filter, force );
     if ( thenAck ) {
 #ifdef XWFEATURE_COMMSACK
         comms_ackAny( comms );
 #endif
     }
     XWJNI_END();
+    LOG_RETURNF( "%d", result );
     return result;
 }
 

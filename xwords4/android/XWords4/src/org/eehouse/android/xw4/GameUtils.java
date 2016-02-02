@@ -1218,7 +1218,7 @@ public class GameUtils {
                     m_sink = new MultiMsgSink( m_context, rowid );
                     GamePtr gamePtr = loadMakeGame( m_context, gi, m_sink, lock );
                     if ( null != gamePtr ) {
-                        XwJNI.comms_resendAll( gamePtr.ptr(), true, false );
+                        XwJNI.comms_resendAll( gamePtr.ptr(), true, m_filter, false );
                         gamePtr.release();
                     }
                     lock.unlock();

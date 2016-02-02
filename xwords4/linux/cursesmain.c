@@ -585,7 +585,8 @@ static XP_Bool
 handleResend( CursesAppGlobals* globals )
 {
     if ( !!globals->cGlobals.game.comms ) {
-        comms_resendAll( globals->cGlobals.game.comms, XP_TRUE );
+        comms_resendAll( globals->cGlobals.game.comms, COMMS_CONN_NONE,
+                         XP_TRUE );
     }
     return XP_TRUE;
 }

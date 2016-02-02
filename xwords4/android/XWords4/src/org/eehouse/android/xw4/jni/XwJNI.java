@@ -362,7 +362,12 @@ public class XwJNI {
     public static native CommsAddrRec[] comms_getAddrs( int gamePtr );
     public static native void comms_setAddr( int gamePtr, CommsAddrRec addr );
     public static native int comms_resendAll( int gamePtr, boolean force,
+                                              CommsConnType filter,
                                               boolean andAck );
+    public static int comms_resendAll( int gamePtr, boolean force,
+                                       boolean andAck ) {
+        return comms_resendAll( gamePtr, force, null, andAck );
+    }
     public static native void comms_ackAny( int gamePtr );
     public static native void comms_transportFailed( int gamePtr, 
                                                      CommsConnType failed );
