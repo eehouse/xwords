@@ -61,7 +61,7 @@ public class GameUtils {
     // back up.  The length of the array determines the number of times in the
     // interval we'll do a send.
     private static long[] s_sendTimes = {0,0,0,0};
-    private static final long RESEND_INTERVAL_SECS = 60 * 60; // 1 hour
+    private static final long RESEND_INTERVAL_SECS = 60 * 5; // 5 minutes
 
     public static class NoSuchGameException extends RuntimeException {
         public NoSuchGameException() {
@@ -379,17 +379,14 @@ public class GameUtils {
                                     boolean force )
     {
         final boolean showUI = force;
+        long now = Utils.getCurSeconds();
 
         if ( !force ) {
-            long now = Utils.getCurSeconds();
             long oldest = s_sendTimes[s_sendTimes.length - 1];
-            if ( RESEND_INTERVAL_SECS < (now - oldest) ) {
-                System.arraycopy( s_sendTimes, 0, /* src */ 
-                                  s_sendTimes, 1, /* dest */
-                                  s_sendTimes.length - 1 );
-                s_sendTimes[0] = now;
-                force = true;
-            }
+            long age = now - oldest;
+            force = RESEND_INTERVAL_SECS < age;
+            DbgUtils.logdf( "resendAllIf(): based on last send age of %d sec, doit = %b",
+                            age, force );
         }
 
         if ( force ) {
@@ -397,6 +394,11 @@ public class GameUtils {
                 DBUtils.getGamesWithSendsPending( context );
             if ( 0 < games.size() ) {
                 new ResendTask( context, games, filter, showUI ).execute();
+
+                System.arraycopy( s_sendTimes, 0, /* src */
+                                  s_sendTimes, 1, /* dest */
+                                  s_sendTimes.length - 1 );
+                s_sendTimes[0] = now;
             }
         }
     }
@@ -1205,6 +1207,8 @@ public class GameUtils {
             Iterator<Long> iter = m_games.keySet().iterator();
             while ( iter.hasNext() ) {
                 long rowid = iter.next();
+
+                // If we're looking for a specific type, check
                 if ( null != m_filter ) {
                     CommsConnTypeSet gameSet = m_games.get( rowid );
                     if ( gameSet != null && ! gameSet.contains( m_filter ) ) {
@@ -1218,8 +1222,14 @@ public class GameUtils {
                     m_sink = new MultiMsgSink( m_context, rowid );
                     GamePtr gamePtr = loadMakeGame( m_context, gi, m_sink, lock );
                     if ( null != gamePtr ) {
-                        XwJNI.comms_resendAll( gamePtr.ptr(), true, m_filter, false );
+                        int nSent = XwJNI.comms_resendAll( gamePtr.ptr(), true,
+                                                           m_filter, false );
                         gamePtr.release();
+                        DbgUtils.logdf( "ResendTask.doInBackground(): sent %d "
+                                        + "messages for rowid %d", nSent, rowid );
+                    } else {
+                        DbgUtils.logdf( "ResendTask.doInBackground(): loadMakeGame()"
+                                        + " failed for rowid %d", rowid );
                     }
                     lock.unlock();
                 } else {
