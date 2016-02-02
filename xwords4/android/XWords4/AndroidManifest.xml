@@ -220,10 +220,10 @@
 
     <receiver android:name="BTReceiver">
       <intent-filter>
-        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
+        <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
       </intent-filter>
       <intent-filter>
-        <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
+        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
       </intent-filter>
     </receiver>
 

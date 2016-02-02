@@ -32,9 +32,10 @@ public class BTReceiver extends BroadcastReceiver {
     public void onReceive( Context context, Intent intent )
     {
         if ( XWApp.BTSUPPORTED ) {
-            DbgUtils.logf( "BTReceiver.onReceive()" );
             String action = intent.getAction();
-            DbgUtils.logf( "BTReceiver.onReceive(action=%s)", action );
+            DbgUtils.logdf( "BTReceiver.onReceive(action=%s, intent=%s)",
+                            action, intent.toString() );
+
             if ( action.equals( BluetoothDevice.ACTION_ACL_CONNECTED ) ) {
                 BTService.startService( context );
             } else if ( action.equals( BluetoothAdapter.ACTION_STATE_CHANGED ) ) {

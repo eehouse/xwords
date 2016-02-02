@@ -92,7 +92,7 @@ public class NetStateCache {
         }
 
         boolean result = s_netAvail || s_onSDKSim;
-        DbgUtils.logf( "netAvail() => %b", result );
+        DbgUtils.logdf( "netAvail() => %b", result );
         return result;
     }
 
