@@ -1231,14 +1231,18 @@ public class BTService extends XWService {
         public int sendViaBluetooth( byte[] buf, int gameID, CommsAddrRec addr )
         {
             int nSent = -1;
-            String btAddr = getSafeAddr( addr );
-            if ( null != btAddr && 0 < btAddr.length() ) {
-                m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, btAddr,
-                                               gameID ) );
-                nSent = buf.length;
+            if ( null == m_sender ) {
+                DbgUtils.logf( "sendViaBluetooth(): no send thread" );
             } else {
-                DbgUtils.logf( "sendViaBluetooth(): no addr for dev %s",
-                               addr.bt_hostName );
+                String btAddr = getSafeAddr( addr );
+                if ( null != btAddr && 0 < btAddr.length() ) {
+                    m_sender.add( new BTQueueElem( BTCmd.MESG_SEND, buf, btAddr,
+                                                   gameID ) );
+                    nSent = buf.length;
+                } else {
+                    DbgUtils.logf( "sendViaBluetooth(): no addr for dev %s",
+                                   addr.bt_hostName );
+                }
             }
             return nSent;
         }
