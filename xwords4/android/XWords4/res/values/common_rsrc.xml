@@ -255,7 +255,7 @@
     <!--  -->
     <item>TheFreeDictionary.com</item>
     <item>:en:es:de:</item>
-    <item>http://%1$s.thefreedictionary.com/_/dict.aspx?word=%2$s</item>
+    <item>http://thefreedictionary.com/%2$s</item>
     <!--  -->
     <item>Larousse.com</item>
     <item>:fr:</item>
