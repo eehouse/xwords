@@ -2017,7 +2017,7 @@
   <string name="dict_info_fmt">NUMBER OF WORDS: %1$d\nDOWNLOAD SIZE:
     %2$dK\nNOTE: %3$s</string>
   <string name="note_none">(NONE)</string>
-  <string name="dict_on_server">TAP TO DOWNLOAD</string>
+  <string name="dict_on_server">TAP FOR DETAILS</string>
   <plurals name="lang_name_fmt">
     <item quantity="one">%1$s (%2$d WORDLIST)</item>
     <item quantity="other">%1$s (%2$d WORDLISTS)</item>
