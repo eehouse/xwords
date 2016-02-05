@@ -253,12 +253,8 @@
     <item>:en:</item>
     <item>http://dictionary.com/browse/%2$s</item> -->
     <!--  -->
-    <item>TheFreeDictionary.com (FIXED!)</item>
-    <item>:en:es:de:</item>
-    <item>http://%1$s.thefreedictionary.com/%2$s</item>
-    <!--  -->
     <item>TheFreeDictionary.com</item>
-    <item>:it:nl:pt:pl:</item>
+    <item>:en:es:de:it:nl:pt:pl:</item>
     <item>http://%1$s.thefreedictionary.com/%2$s</item>
     <!--  -->
     <item>Larousse.com</item>
