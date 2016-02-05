@@ -3725,6 +3725,14 @@ boardTilesChanged( void* p_board, XP_U16 turn, XP_S16 index1, XP_S16 index2 )
     BoardCtxt* board = (BoardCtxt*)p_board;
     if ( turn == board->selPlayer ) {
         invalTrayTilesBetween( board, index1, index2 );
+
+        /* If we're changing the set of ignored tiles, reset the engine */
+        XP_U16 divLoc = model_getDividerLoc( board->model, turn );
+        if ( index1 < divLoc && index2 < divLoc ) {
+            /* both below; no need to reset */
+        } else if ( index1 < divLoc || index2 < divLoc ) {
+            board_resetEngine( board );
+        }
     }
 } /* boardTilesChanged */
 
