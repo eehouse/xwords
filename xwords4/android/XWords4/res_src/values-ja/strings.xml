@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources><string name="button_new_game">ゲームを追加</string>
     <string name="button_new_group">グループを追加</string>
 
@@ -931,7 +931,7 @@
 
     <string name="dict_info_fmt">単語の数: %1$d\nダウンロード サイズ: %2$dK\n注: %3$s</string>
     <string name="note_none">(なし)</string>
-    <string name="dict_on_server">タップするとダウンロード</string>
+    <string name="dict_on_server">詳細はタップしてください</string>
     <plurals name="lang_name_fmt">
 	<item quantity="one">%1$s (%2$d 単語リスト)</item>
 	<item quantity="other"/>
@@ -1008,7 +1008,7 @@
 
     <string name="waiting_title">プレイヤーを待っています</string>
 
-    <string name="invite_stays">(このダイアログはすべてリモート プレイヤーが接続するまで表示されます。しばらく時間がかかることが予想される場合は、ゲームを閉じることができます。彼らはそれでも接続できます。)</string>
+    <string name="invite_stays">(このダイアログはすべてリモート プレイヤーが接続するまで表示されます。しばらく時間がかかることが予想される場合は、ゲームを閉じることができます。それでも彼らは接続することができ、接続すると通知されます。)</string>
 
     <string name="nfc_just_tap">NFC 経由で招待するには、招待したい人に対してこのデバイスの背面をタッチしてください —随時ゲームが開かれます。</string>
 
@@ -1018,7 +1018,7 @@
     <string name="button_edit">編集</string>
     <string name="button_discard_changes">変更を破棄</string>
 
-    <string name="rematch_msg">再戦の招待状を発行しています。それが受け入れられるまで、このメッセージが表示されます。\n\n待っている間、このゲームを開いたままにする必要はありません。ゲームをプレイする準備ができたときに通知されます。</string>
+    <string name="rematch_msg">このゲームは再戦をホストしていて、招待状を送信しました。それが受け入れられるまで、このメッセージが表示されます。</string>
 
     <string name="disable_nag_title">ネットワークゲーム リマインダーを無効にする</string>
     <string name="disable_nag_summary">私の番がどんなに長くても通知しません</string>
@@ -1127,7 +1127,7 @@
 	<item quantity="one">あなたの新しいゲームに招待するデバイスをチェックして、\"%2$s\" をタップしてください。</item>
 	<item quantity="other"/>
 </plurals>
-    <string name="empty_relay_inviter">このデバイスのリストは空です。\"ゲームをスキャン\" ボタンを使用すると、相手のあなたの古いゲームをスキャンします。デバイス ID を直接入力するには + ボタンを使用します。</string>
+    <string name="empty_relay_inviter">このデバイスのリストは空です。\"ゲームをスキャン\" ボタンを使用すると、相手のあなたの古いゲームをスキャンします。デバイス ID を直接入力するには \"+\" ボタンを使用します。</string>
     <string name="get_relay_number">デバイス ID を入力します:</string>
     <plurals name="confirm_clear_sms_fmt">
 	<item quantity="one">チェックした電話番号を削除してもよろしいですか?</item>
@@ -1142,7 +1142,7 @@
     <string name="disable_nag_solo_title">一人ゲーム リマインダーを無効にする</string>
 
   <string name="devid_title">デバイス ID (リレー上の)</string>
-  <string name="not_again_rematch_two_only">今のところ、再戦は二人ゲームに限定しているため、再戦ボタンは無効です。三人以上で遊ぶことはまれだと考えています。私が間違っているようであれば、動作させるために一生懸命やってみますのでお知らせください。</string>
+  <string name="not_again_rematch_two_only">デバイスが増えると難しく、三人以上で遊ぶことはまれだと考えているので、今のところ、再戦は二人ゲームに限定しています。私が間違っているようであれば、優先順位を上げますのでお知らせください。</string>
 
   <string name="enable_relay_toself_title">自分へのリレーの招待を有効にする</string>
   <string name="enable_relay_toself_summary">(テストとデバッグの支援用)</string>
@@ -1155,4 +1155,27 @@
   <string name="list_item_deselect">選択解除</string>
 
   <string name="not_again_dfltname_fmt">デフォルト プレイヤー名 \"%1$s\" を使用しています。ゲームを作成する前に、独自の名前でパーソナル化しますか?</string>
+<string name="summary_invites_out">プレイヤーを招待しました</string>
+
+    <plurals name="invite_sent_fmt">
+	<item quantity="one">すでにこのゲームにリモート プレイヤーを招待しています。私たちは彼/彼女が対応するのを待っています。招待状が送られていないと思う場合は、再招待ボタンを使用してください。</item>
+	<item quantity="other"/>
+</plurals>
+    <string name="invited_msg">このゲームは、あなたが受け取った招待状から作成されました。送信者に接続して、他の参加者が到着すると、すぐにプレイが開始されます。</string>
+
+    <string name="invit_expl_sms_fmt">%2$s の電話番号 %1$s に SMS 経由で招待を送信しました</string>
+    <string name="invit_expl_bt_fmt">%2$s で、ペアのデバイス \"%1$s\" に Bluetooth 経由で招待を送信しました</string>
+    <string name="invit_expl_relay_fmt">%1$s で他のデバイスにリレーによって招待を転送しました</string>
+    <string name="invit_expl_notarget_fmt">%2$s で %1$s 経由で招待を送信しました。不明な受信者。</string>
+
+    <string name="newgame_invite_more">情報をもっと見る</string>
+    <string name="notify_title_turn_fmt">ゲーム %1$s で自分の順番</string>
+    <string name="invites_net_fmt">%1$s を介して接続されているゲームに招待状を送信しました:</string>
+    <string name="waiting_invite_title">応答を待っています</string>
+    <string name="waiting_rematch_title">進行中の再戦</string>
+    <string name="button_reinvite">再招待</string>
+
+    <string name="rematch_sent_toast">再戦の招待状を送信しました</string>
+    <string name="board_menu_game_showInvites">招待を表示</string>
+  <string name="no_invites">このゲームは招待状を送信していません</string>
 </resources>
