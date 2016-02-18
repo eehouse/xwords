@@ -422,13 +422,51 @@ handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
         util_remSelected( board->util );
     } else if ( --rectNum >= 0 ) {
         XP_Bool canSwitch = board->gameOver || board->allowPeek;
-        board_selectPlayer( board, rectNum, canSwitch );
+        if ( canSwitch ) {
+            board_selectPlayer( board, rectNum, canSwitch );
+        } else {
+            penTimerFiredScore( board );
+        }
     } else {
         result = XP_FALSE;
     }
     return result;
 } /* handlePenUpScore */
 #endif
+
+void
+penTimerFiredScore( const BoardCtxt* board )
+{
+    XP_S16 scoreIndex = figureScoreRectTapped( board, board->penDownX, 
+                                               board->penDownY );
+    /* I've seen this assert fire on simulator.  No log is kept so I can't
+       tell why, but might want to test and do nothing in this case.  */
+    /* XP_ASSERT( player >= 0 ); */
+    if ( scoreIndex > CURSOR_LOC_REM ) {
+        XP_U16 player = scoreIndex - 1;
+#ifdef XWFEATURE_MINIWIN
+        const XP_UCHAR* format;
+        XP_UCHAR scoreExpl[48];
+        XP_U16 explLen;
+        LocalPlayer* lp = &board->gi->players[player];
+        format = util_getUserString( board->util, lp->isLocal? 
+                                     STR_LOCAL_NAME: STR_NONLOCAL_NAME );
+        XP_SNPRINTF( buf, sizeof(buf), format, emptyStringIfNull(lp->name) );
+
+        explLen = sizeof(scoreExpl);
+        if ( model_getPlayersLastScore( board->model, player, scoreExpl, 
+                                        &explLen ) ) {
+            XP_STRCAT( buf, XP_CR );
+            XP_ASSERT( XP_STRLEN(buf) + explLen < sizeof(buf) );
+            XP_STRCAT( buf, scoreExpl );
+        }
+        text = buf;
+#else
+        util_playerScoreHeld( board->util, player );
+#endif
+    }
+
+}
 
 #ifdef KEYBOARD_NAV
 static XP_Key
