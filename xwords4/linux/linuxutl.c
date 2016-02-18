@@ -583,6 +583,9 @@ formatLMI( const LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16 len )
 {
     const XP_UCHAR* name = lmi->name;
     switch( lmi->moveType ) {
+    case ASSIGN_TYPE:
+        XP_SNPRINTF( buf, len, "Tiles assigned to %s", name );
+        break;
     case MOVE_TYPE:
         if ( 0 == lmi->nTiles ) {
             XP_SNPRINTF( buf, len, "%s passed", name );
