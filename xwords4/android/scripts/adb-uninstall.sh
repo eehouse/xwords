@@ -77,7 +77,7 @@ done
 # No packages specified? Use all we know about!
 if [ 0 = "${#PACKAGES[*]}" ]; then
 	echo "no apks specified; assuming all" >&2
-	for f in $(find . -name '*.apk'); do
+	for f in $(find $WD -name '*.apk'); do
 		PACK=$(getPackage $f)
 		PACKAGES[$PACK]=1
 	done
@@ -93,7 +93,7 @@ fi
 for PACKAGE in "${!PACKAGES[@]}"; do
 	for SERIAL in "${!SERIALS[@]}"; do
 		CMD="adb -s $SERIAL shell pm uninstall $PACKAGE"
-		echo "uninstall command: $CMD" >&2
+		echo "$CMD" >&2
 		[ -z "$DRYRUN" ] && $CMD
 	done
 done
