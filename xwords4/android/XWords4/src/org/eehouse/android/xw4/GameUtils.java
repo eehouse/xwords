@@ -470,7 +470,7 @@ public class GameUtils {
 
         return makeNewMultiGame( context, sink, util, DBUtils.GROUPID_UNSPEC, 
                                  addr, new int[] {nli.lang}, 
-                                 new String[] { nli.dict }, nli.nPlayersT, 
+                                 new String[] { nli.dict }, null, nli.nPlayersT, 
                                  nli.nPlayersH, nli.forceChannel,
                                  nli.inviteID(), nli.gameID(),
                                  nli.gameName, false );
@@ -479,23 +479,24 @@ public class GameUtils {
     public static long makeNewMultiGame( Context context, long groupID, 
                                          String gameName )
     {
-        return makeNewMultiGame( context, groupID, null, 0, 
+        return makeNewMultiGame( context, groupID, null, 0, null,
                                  (CommsConnTypeSet)null, gameName );
     }
 
     public static long makeNewMultiGame( Context context, long groupID, 
-                                         String dict, int lang, 
+                                         String dict, int lang, String jsonData,
                                          CommsConnTypeSet addrSet, 
                                          String gameName )
     {
         String inviteID = makeRandomID();
         return makeNewMultiGame( context, groupID, inviteID, dict, lang, 
-                                 addrSet, gameName );
+                                 jsonData, addrSet, gameName );
     }
 
     private static long makeNewMultiGame( Context context, long groupID, 
                                           String inviteID, String dict, 
-                                          int lang, CommsConnTypeSet addrSet,
+                                          int lang, String jsonData,
+                                          CommsConnTypeSet addrSet,
                                           String gameName )
     {
         int[] langArray = {lang};
@@ -507,14 +508,16 @@ public class GameUtils {
         addr.populate( context );
         int forceChannel = 0;
         return makeNewMultiGame( context, (MultiMsgSink)null, (UtilCtxt)null,
-                                 groupID, addr, langArray, dictArray, 2, 1,
-                                 forceChannel, inviteID, 0, gameName, true );
+                                 groupID, addr, langArray, dictArray, jsonData,
+                                 2, 1, forceChannel, inviteID, 0, gameName,
+                                 true );
     }
 
     private static long makeNewMultiGame( Context context, MultiMsgSink sink, 
                                           UtilCtxt util, long groupID, 
                                           CommsAddrRec addr,
-                                          int[] lang, String[] dict, 
+                                          int[] lang, String[] dict,
+                                          String jsonData, 
                                           int nPlayersT, int nPlayersH, 
                                           int forceChannel, String inviteID,
                                           int gameID, String gameName, 
@@ -524,6 +527,7 @@ public class GameUtils {
 
         Assert.assertNotNull( inviteID );
         CurGameInfo gi = new CurGameInfo( context, inviteID );
+        gi.setFrom( jsonData );
         gi.setLang( lang[0], dict[0] );
         gi.forceChannel = forceChannel;
         lang[0] = gi.dictLang;
@@ -599,7 +603,7 @@ public class GameUtils {
         }
         String inviteID = GameUtils.formatGameID( gameID );
         return makeNewMultiGame( context, sink, (UtilCtxt)null, groupID, addr, 
-                                 langa, dicta, nPlayersT, nPlayersH, 
+                                 langa, dicta, null, nPlayersT, nPlayersH, 
                                  forceChannel, inviteID, gameID, gameName,
                                  isHost );
     }

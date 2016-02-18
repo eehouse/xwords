@@ -2679,8 +2679,7 @@ public class BoardDelegate extends DelegateBase
                 CommsConnTypeSet connTypes = summary.conTypes;
                 String newName = summary.getRematchName();
                 Intent intent = GamesListDelegate
-                    .makeRematchIntent( activity, rowid, gi.dictName, 
-                                        gi.dictLang, connTypes, btAddr, 
+                    .makeRematchIntent( activity, rowid, gi, connTypes, btAddr, 
                                         phone, relayID, newName );
                 if ( null != intent ) {
                     activity.startActivity( intent );

@@ -89,6 +89,7 @@ public class GamesListDelegate extends ListDelegateBase
     private static final String REMATCH_ROWID_EXTRA = "rm_rowid";
     private static final String REMATCH_DICT_EXTRA = "rm_dict";
     private static final String REMATCH_LANG_EXTRA = "rm_lang";
+    private static final String REMATCH_PREFS_EXTRA = "rm_prefs";
     private static final String REMATCH_NEWNAME_EXTRA = "rm_nnm";
     private static final String REMATCH_ADDRS_EXTRA = "rm_addrs";
     private static final String REMATCH_BTADDR_EXTRA = "rm_btaddr";
@@ -2058,6 +2059,7 @@ public class GamesListDelegate extends ListDelegateBase
             String relayID = intent.getStringExtra( REMATCH_RELAYID_EXTRA );
             String dict = intent.getStringExtra( REMATCH_DICT_EXTRA );
             int lang = intent.getIntExtra( REMATCH_LANG_EXTRA, -1 );
+            String json = intent.getStringExtra( REMATCH_PREFS_EXTRA );
             int bits = intent.getIntExtra( REMATCH_ADDRS_EXTRA, -1 );
             CommsConnTypeSet addrs = new CommsConnTypeSet( bits );
 
@@ -2068,7 +2070,7 @@ public class GamesListDelegate extends ListDelegateBase
             } else {
                 long groupID = DBUtils.getGroupForGame( m_activity, srcRowID );
                 newid = GameUtils.makeNewMultiGame( m_activity, groupID, dict,
-                                                    lang, addrs, gameName );
+                                                    lang, json, addrs, gameName );
                 DBUtils.addRematchInfo( m_activity, newid, btAddr, phone, 
                                         relayID );
             }
@@ -2508,7 +2510,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     public static Intent makeRematchIntent( Context context, long rowid,
-                                            String dict, int lang,
+                                            CurGameInfo gi,
                                             CommsConnTypeSet addrTypes, 
                                             String btAddr, String phone,
                                             String relayID, String newName )
@@ -2517,8 +2519,9 @@ public class GamesListDelegate extends ListDelegateBase
         if ( XWApp.REMATCH_SUPPORTED ) {
             intent = makeSelfIntent( context );
             intent.putExtra( REMATCH_ROWID_EXTRA, rowid );
-            intent.putExtra( REMATCH_DICT_EXTRA, dict );
-            intent.putExtra( REMATCH_LANG_EXTRA, lang );
+            intent.putExtra( REMATCH_DICT_EXTRA, gi.dictName );
+            intent.putExtra( REMATCH_LANG_EXTRA, gi.dictLang );
+            intent.putExtra( REMATCH_PREFS_EXTRA, gi.getJSONData() );
             intent.putExtra( REMATCH_NEWNAME_EXTRA, newName );
 
             if ( null != addrTypes ) {

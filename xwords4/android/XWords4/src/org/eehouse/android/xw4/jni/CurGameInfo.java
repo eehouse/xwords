@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import junit.framework.Assert;
+import org.json.JSONObject;
 
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DictUtils;
@@ -36,6 +37,12 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class CurGameInfo {
 
     public static final int MAX_NUM_PLAYERS = 4;
+
+    private static final String BOARD_SIZE = "BOARD_SIZE";
+    private static final String NO_HINTS = "NO_HINTS";
+    private static final String TIMER = "TIMER";
+    private static final String ALLOW_PICK = "ALLOW_PICK";
+    private static final String PHONIES = "PHONIES";
 
     public enum XWPhoniesChoice { PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW };
     public enum DeviceRole { SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT };
@@ -140,6 +147,42 @@ public class CurGameInfo {
         int ii;
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
             players[ii] = new LocalPlayer( src.players[ii] );
+        }
+    }
+
+    public String getJSONData()
+    {
+        String jsonData = null;
+        try {
+            JSONObject obj = new JSONObject()
+                .put( BOARD_SIZE, boardSize )
+                .put( NO_HINTS, hintsNotAllowed )
+                .put( TIMER, timerEnabled )
+                .put( ALLOW_PICK, allowPickTiles )
+                .put( PHONIES, phoniesAction.ordinal() )
+                ;
+            jsonData = obj.toString();
+        } catch ( org.json.JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
+
+        return jsonData;
+    }
+
+    public void setFrom( String jsonData )
+    {
+        if ( null != jsonData ) {
+            try {
+                JSONObject obj = new JSONObject( jsonData );
+                boardSize = obj.optInt( BOARD_SIZE, boardSize );
+                hintsNotAllowed = obj.optBoolean( NO_HINTS, hintsNotAllowed );
+                timerEnabled = obj.optBoolean( TIMER, timerEnabled );
+                allowPickTiles = obj.optBoolean( ALLOW_PICK, allowPickTiles );
+                int tmp = obj.optInt( PHONIES, phoniesAction.ordinal() );
+                phoniesAction = XWPhoniesChoice.values()[tmp];
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
         }
     }
 
