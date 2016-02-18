@@ -42,7 +42,7 @@ public class MultiService {
     public static final String NPLAYERST = "NPLAYERST";
     public static final String NPLAYERSH = "NPLAYERSH";
     public static final String INVITER = "INVITER";
-    public static final String OWNER = "OWNER";
+    private static final String OWNER = "OWNER";
     public static final String BT_NAME = "BT_NAME";
     public static final String BT_ADDRESS = "BT_ADDRESS";
     private static final String NLI_DATA = "nli";
