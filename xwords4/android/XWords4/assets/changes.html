@@ -13,11 +13,10 @@
 	</style>
   </head>
 <body>
-  <h2>Crosswords 4.4.104 release</h2>
+  <h2>Crosswords 4.4.105 release</h2>
 
-  <p>This is a quick release to fix in-game TheFreeDictionary.com
-      lookups. I'm leaving the list below, from the previous release,
-      intact. </p>
+  <p>This release fixes a problem with rematches not preserving game
+      settings like "Allow hints."</p>
 
   <div id="survey">
 	<p>Please <a href="https://www.surveymonkey.com/s/GX3XLHR">take
@@ -27,45 +26,11 @@
 
   <h3>New with this release</h3>
   <ul>
-      <li>Rematch option allows creating a new game with the same
-          opponents, and takes care of sending invitations to the
-          remote device</li>
-      
-      <li>Improve how invitations are created and sent, including
-          making it easier to resend when necessary</li>
-
-      <li>Finish fixing problem with moves being dropped</li>
-
-      <li>Add Japanese translation; update Catalan, Dutch, and French
-          (Thanks to Weblate and the translators!)</li>
-
-      <li>Make it easier to "discover" and enable play-via-SMS (GSM
-          phones only)</li>
-
-      <li>Fix memory leak that caused crashes if you opened a lot of
-          games in a short period</li>
-
-      <li>Ask player for name the first time it's needed rather than
-          when newly installed game first opened</li>
-
-      <li>Fix occasional failure to refresh thumbnails</li>
-
-      <li>Fix TheFreeDictionary.com in-game word lookup</li>
-
-      <li>Don't allow removing players when game is locked (in Game
-          Config screen)</li>
-
-      <li>Put back long-tap (a.k.a. "context") menus in Games List
-          screen. Because I like them</li>
-
-      <li>No reminders in robot games by default</li>
-
-      <li>Tweaks to Chat screen, and confirm before deleting chat
-          history</li>
-
-      <li>Tweak notifications to make them more useful</li>
-      
-      <li>Other minor bug fixes</li>
+      <li>When creating a game to rematch, preserve the original's
+          settings for hints, board size, timer and phonies</li>
+      <li>Fix tiles left of tray divider sometimes being included in hints</li>
+      <li>Unless "View tiles out-of-turn" is enabled, show summary of
+          last move when scoreboard entry is tapped</li>
   </ul>
 
   <p>(The full changelog 
