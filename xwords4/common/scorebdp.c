@@ -423,7 +423,7 @@ handlePenUpScore( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
     } else if ( --rectNum >= 0 ) {
         XP_Bool canSwitch = board->gameOver || board->allowPeek;
         if ( canSwitch ) {
-            board_selectPlayer( board, rectNum, canSwitch );
+            board_selectPlayer( board, rectNum, XP_TRUE );
         } else {
             penTimerFiredScore( board );
         }
