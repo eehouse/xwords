@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.preference.PreferenceManager;
@@ -63,10 +64,14 @@ public class DbgUtils {
     public static void logf( String msg ) 
     {
         if ( s_doLog ) {
-            s_time.setToNow();
-            String time = s_time.format("[%H:%M:%S]");
+            String time = "";
+            // No need for timestamp on marshmallow, as the OS provides it
+            if ( Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1 ) {
+                s_time.setToNow();
+                time = s_time.format("[%H:%M:%S]-");
+            }
             long id = Thread.currentThread().getId();
-            Log.d( TAG, time + "-" + id + "-" + msg );
+            Log.d( TAG, time + id + "-" + msg );
         }
     } // logf
 
