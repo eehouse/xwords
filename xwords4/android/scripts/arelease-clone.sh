@@ -5,7 +5,7 @@ set -e -u
 usage () {
     echo "usage: $(basename $0) [--tag tagname | --branch branchname] [--variant variant]"
     echo "   # (uses current branch as default)"
-    exit 0
+    exit 1
 }
 
 TAG=""
