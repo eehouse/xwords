@@ -214,7 +214,7 @@ public class Utils {
                                          PendingIntent.FLAG_ONE_SHOT );
 
         Notification notification = 
-            new Notification( R.drawable.icon48x48, title,
+            new Notification( R.drawable.notify, title,
                               System.currentTimeMillis() );
 
         notification.flags |= Notification.FLAG_AUTO_CANCEL;
