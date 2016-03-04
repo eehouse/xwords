@@ -123,7 +123,7 @@ public class GCMIntentService extends GCMBaseIntentService {
                 GCMRegistrar.checkDevice( app );
                 // GCMRegistrar.checkManifest( app );
                 String regId = DevID.getGCMDevID( app );
-                if (regId.equals("")) {
+                if ( regId.equals("") ) {
                     GCMRegistrar.register( app, GCMConsts.SENDER_ID );
                 }
             } catch ( UnsupportedOperationException uoe ) {
