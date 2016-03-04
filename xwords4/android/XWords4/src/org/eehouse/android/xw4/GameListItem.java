@@ -59,7 +59,7 @@ public class GameListItem extends LinearLayout
     private View m_hideable;
     private ImageView m_thumb;
     private ExpiringTextView m_name;
-    private View m_viewUnloaded;
+    private TextView m_viewUnloaded;
     private View m_viewLoaded;
     private LinearLayout m_list;
     private TextView m_state;
@@ -129,13 +129,7 @@ public class GameListItem extends LinearLayout
         // as we're back on the UI thread.
         ++m_loadingCount;
 
-        LoadItemTask task = new LoadItemTask();
-        if ( false && Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ) {
-            // Actually run these in parallel if the OS supports it
-            task.executeOnExecutor( AsyncTask.THREAD_POOL_EXECUTOR );
-        } else {
-            task.execute();
-        }
+        new LoadItemTask().execute();
     }
 
     public void invalName()
@@ -195,7 +189,7 @@ public class GameListItem extends LinearLayout
         m_name = (ExpiringTextView)findViewById( R.id.game_name );
         m_expandButton = (ImageButton)findViewById( R.id.expander );
         m_expandButton.setOnClickListener( this );
-        m_viewUnloaded = findViewById( R.id.view_unloaded );
+        m_viewUnloaded = (TextView)findViewById( R.id.view_unloaded );
         m_viewLoaded = findViewById( R.id.view_loaded );
         m_list = (LinearLayout)findViewById( R.id.player_list );
         m_state = (TextView)findViewById( R.id.state );
@@ -371,6 +365,11 @@ public class GameListItem extends LinearLayout
 
                 setData( summary, expanded );
                 setLoaded( null != m_summary );
+                if ( null == summary ) {
+                    m_viewUnloaded
+                        .setText( LocUtils.getString( m_context, 
+                                                      R.string.summary_busy ) );
+                }
                 synchronized( s_invalRows ) {
                     s_invalRows.remove( m_rowid );
                 }
