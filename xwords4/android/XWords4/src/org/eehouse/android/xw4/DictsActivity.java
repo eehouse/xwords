@@ -51,13 +51,6 @@ public class DictsActivity extends XWActivity {
         super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
-    @Override
-    public void onBackPressed() {
-        if ( !m_dlgt.onBackPressed() ) {
-            super.onBackPressed();
-        }
-    }
-
     private static class SafePopupImpl implements SafePopup {
         public void doPopup( final Context context, View button, 
                              String curDict, int lang ) {
