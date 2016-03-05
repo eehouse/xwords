@@ -508,7 +508,9 @@ freeGameGlobals( gpointer data )
     LOG_FUNC();
     GtkGameGlobals* globals = (GtkGameGlobals*)data;
     GtkAppGlobals* apg = globals->apg;
-    recordClosed( apg, globals );
+    if ( !!apg ) {
+        recordClosed( apg, globals );
+    }
     freeGlobals( globals );
     return 0;                   /* don't run again */
 }
