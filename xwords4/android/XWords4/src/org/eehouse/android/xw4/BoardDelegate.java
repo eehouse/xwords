@@ -1983,13 +1983,14 @@ public class BoardDelegate extends DelegateBase
         // and may stack dialogs on top of this one.  Including later
         // chat-messages.
         @Override
-        public void showChat( final String msg, String fromPlayer )
+        public void showChat( final String msg, final int fromIndx,
+                              String fromPlayer )
         {
             if ( BuildConstants.CHAT_SUPPORTED ) {
                 post( new Runnable() {
                         public void run() {
-                            DBUtils.appendChatHistory( m_activity,
-                                                       m_rowid, msg, false );
+                            DBUtils.appendChatHistory( m_activity, m_rowid, msg,
+                                                       fromIndx );
                             startChatActivity();
                         }
                     } );
@@ -2363,9 +2364,11 @@ public class BoardDelegate extends DelegateBase
     private void startChatActivity()
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            Intent intent = new Intent( m_activity, ChatActivity.class );
-            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
-            startActivityForResult( intent, RequestCode.CHAT_REQUEST );
+            int curPlayer = XwJNI.board_getSelPlayer( m_jniGamePtr );
+            String[] names = m_gi.playerNames();
+            boolean[] locs = m_gi.playersLocal(); // to convert old histories
+            ChatDelegate.startForResult( m_activity, RequestCode.CHAT_REQUEST,
+                                         m_rowid, curPlayer, names, locs );
         }
     }
 

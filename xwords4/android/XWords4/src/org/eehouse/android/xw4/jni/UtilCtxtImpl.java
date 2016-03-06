@@ -293,7 +293,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     // These need to go into some sort of chat DB, not dropped.
-    public void showChat( String msg, String fromPlayer )
+    public void showChat( String msg, int fromIndx, String fromName )
     {
         subclassOverride( "showChat" );
     }

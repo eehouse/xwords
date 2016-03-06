@@ -1127,6 +1127,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1getTrayVisState
     return result;
 }
 
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1getSelPlayer
+(JNIEnv* env, jclass C, GamePtrType gamePtr)
+{
+    jint result;
+    XWJNI_START();
+    result = board_getSelPlayer( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
 JNIEXPORT jboolean JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_board_1hideTray
 (JNIEnv* env, jclass C, GamePtrType gamePtr)

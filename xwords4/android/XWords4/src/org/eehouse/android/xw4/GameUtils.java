@@ -862,9 +862,9 @@ public class GameUtils {
             m_gameOver = false;
         }
         @Override
-        public void showChat( String msg, String fromName )
+        public void showChat( String msg, int fromIndx, String fromName )
         {
-            DBUtils.appendChatHistory( m_context, m_rowid, msg, false );
+            DBUtils.appendChatHistory( m_context, m_rowid, msg, fromIndx );
             m_gotChat = true;
             m_chatFrom = fromName;
             m_chat = msg;

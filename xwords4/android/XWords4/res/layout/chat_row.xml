@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android">
+  <TextView android:id="@+id/chat_row_name" 
+            android:layout_height="wrap_content"
+            />
+  <TextView android:id="@+id/chat_row_text" 
+            android:layout_height="wrap_content"
+            />
+</TableRow>

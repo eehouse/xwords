@@ -146,7 +146,7 @@ public interface UtilCtxt {
     boolean warnIllegalWord( String dict, String[] words, int turn, 
                              boolean turnLost );
 
-    void showChat( String msg, String fromPlayer );
+    void showChat( String msg, int fromIndx, String fromName );
 
     boolean phoneNumbersSame( String num1, String num2 );
 }

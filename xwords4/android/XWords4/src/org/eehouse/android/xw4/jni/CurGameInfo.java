@@ -295,6 +295,24 @@ public class CurGameInfo {
         return !consistent;
     }
 
+    public String[] playerNames()
+    {
+        String[] names = new String[nPlayers];
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            names[ii] = players[ii].name;
+        }
+        return names;
+    }
+
+    public boolean[] playersLocal()
+    {
+        boolean[] locs = new boolean[nPlayers];
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            locs[ii] = players[ii].isLocal;
+        }
+        return locs;
+    }
+
     public String[] visibleNames( boolean withDicts )
     {
         String nameFmt = withDicts?

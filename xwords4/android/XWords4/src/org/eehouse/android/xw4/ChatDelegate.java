@@ -30,15 +30,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
+
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class ChatDelegate extends DelegateBase {
 
+    private static final String INTENT_KEY_PLAYER = "intent_key_player";
+    private static final String INTENT_KEY_NAMES = "intent_key_names";
+    private static final String INTENT_KEY_LOCS = "intent_key_locs";
+    
     private long m_rowid;
+    private int m_curPlayer;
     private Activity m_activity;
     private EditText mEdit;
 
@@ -63,20 +71,25 @@ public class ChatDelegate extends DelegateBase {
                                                int before, int count ) {}
                 } );
 
-            m_rowid = getIntent().getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+            Intent intent = getIntent();
+            m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
+            m_curPlayer = intent.getIntExtra( INTENT_KEY_PLAYER, -1 );
+            String[] names = intent.getStringArrayExtra( INTENT_KEY_NAMES );
+            boolean[] locals = intent.getBooleanArrayExtra( INTENT_KEY_LOCS );
      
-            DBUtils.HistoryPair[] pairs = DBUtils.getChatHistory( m_activity, m_rowid );
+            DBUtils.HistoryPair[] pairs
+                = DBUtils.getChatHistory( m_activity, m_rowid, locals );
             if ( null != pairs ) {
-                LinearLayout layout = (LinearLayout)
+                TableLayout layout = (TableLayout)
                     findViewById( R.id.chat_history );
 
                 for ( DBUtils.HistoryPair pair : pairs ) {
-                    TextView view = (TextView)
-                        inflate( pair.sourceLocal
-                                 ? R.layout.chat_history_local
-                                 : R.layout.chat_history_remote );
+                    TableRow row = (TableRow)inflate( R.layout.chat_row );
+                    TextView view = (TextView)row.findViewById( R.id.chat_row_text );
                     view.setText( pair.msg );
-                    layout.addView( view );
+                    view = (TextView)row.findViewById( R.id.chat_row_name );
+                    view.setText( names[pair.playerIndx] );
+                    layout.addView( row );
                 }
             }
 
@@ -121,7 +134,7 @@ public class ChatDelegate extends DelegateBase {
             if ( null == text || text.length() == 0 ) {
                 setResult( Activity.RESULT_CANCELED );
             } else {
-                DBUtils.appendChatHistory( m_activity, m_rowid, text, true );
+                DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer );
 
                 Intent result = new Intent();
                 result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
@@ -143,13 +156,27 @@ public class ChatDelegate extends DelegateBase {
         case CLEAR_ACTION:
             if ( AlertDialog.BUTTON_POSITIVE == which ) {
                 DBUtils.clearChatHistory( m_activity, m_rowid );
-                LinearLayout layout = 
-                    (LinearLayout)findViewById( R.id.chat_history );
+                TableLayout layout = 
+                    (TableLayout)findViewById( R.id.chat_history );
                 layout.removeAllViews();
             }
             break;
         default:
             super.dlgButtonClicked( action, which, params );
         }
+    }
+
+
+    public static void startForResult( Activity parent, RequestCode requestCode,
+                                       long rowID, int curPlayer, 
+                                       String[] names, boolean[] locs )
+    {
+        Assert.assertFalse( -1 == curPlayer );
+        Intent intent = new Intent( parent, ChatActivity.class );
+        intent.putExtra( GameUtils.INTENT_KEY_ROWID, rowID );
+        intent.putExtra( INTENT_KEY_PLAYER, curPlayer );
+        intent.putExtra( INTENT_KEY_NAMES, names );
+        intent.putExtra( INTENT_KEY_LOCS, locs );
+        parent.startActivityForResult( intent, requestCode.ordinal() );
     }
 }

@@ -96,13 +96,13 @@ public class DBUtils {
     }
 
     public static class HistoryPair {
-        private HistoryPair( String p_msg, boolean p_sourceLocal )
+        private HistoryPair( String p_msg, int p_playerIndx )
         {
             msg = p_msg;
-            sourceLocal = p_sourceLocal;
+            playerIndx = p_playerIndx;
         }
         String msg;
-        boolean sourceLocal;
+        int playerIndx;
     }
 
     public static class DictBrowseState {
@@ -1176,21 +1176,83 @@ public class DBUtils {
         updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
     }
 
-    public static HistoryPair[] getChatHistory( Context context, long rowid )
+    private static HistoryPair[] convertChatString( Context context, long rowid,
+                                                    boolean[] playersLocal )
+    {
+        HistoryPair[] result = null;
+        String oldHistory = getChatHistoryStr( context, rowid );
+        if ( null != oldHistory ) {
+            ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
+            ArrayList<HistoryPair> pairs = new ArrayList<HistoryPair>();
+            String localPrefix = LocUtils.getString( context, R.string.chat_local_id );
+            String rmtPrefix = LocUtils.getString( context, R.string.chat_other_id );
+            String[] msgs = oldHistory.split( "\n" );
+            int localPlayerIndx = -1;
+            int remotePlayerIndx = -1;
+            for ( int ii = playersLocal.length - 1; ii >= 0; --ii ) {
+                if ( playersLocal[ii] ) {
+                    localPlayerIndx = ii;
+                } else {
+                    remotePlayerIndx = ii;
+                }
+            }
+            for ( String msg : msgs ) {
+                int indx = -1;
+                String prefix = null;
+                if ( msg.startsWith( localPrefix ) ) {
+                    prefix = localPrefix;
+                    indx = localPlayerIndx;
+                } else if ( msg.startsWith( rmtPrefix ) ) {
+                    prefix = rmtPrefix;
+                    indx = remotePlayerIndx;
+                }
+                if ( -1 != indx ) {
+                    DbgUtils.logf( "removing substring %s; was: %s", prefix, msg );
+                    msg = msg.substring( prefix.length(), msg.length() );
+                    DbgUtils.logf( "removED substring; now %s", msg );
+                    valuess.add( cvForChat( rowid, msg, indx ) );
+
+                    HistoryPair pair = new HistoryPair(msg, indx );
+                    pairs.add( pair );
+                }
+            }
+            result = pairs.toArray( new HistoryPair[pairs.size()] );
+
+            appendChatHistory( context, valuess );
+            // saveChatHistory( context, rowid, null );
+        }
+        return result;
+    }
+
+    public static HistoryPair[] getChatHistory( Context context, long rowid,
+                                                boolean[] playersLocal )
     {
         HistoryPair[] result = null;
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            final String localPrefix =
-                LocUtils.getString( context, R.string.chat_local_id );
-            String history = getChatHistoryStr( context, rowid );
-            if ( null != history ) {
-                String[] msgs = history.split( "\n" );
-                result = new HistoryPair[msgs.length];
-                for ( int ii = 0; ii < result.length; ++ii ) {
-                    String msg = msgs[ii];
-                    boolean isLocal = msg.startsWith( localPrefix );
-                    result[ii] = new HistoryPair( msg, isLocal );
+            String[] columns = { DBHelper.SENDER, DBHelper.MESSAGE };
+            String selection = String.format( "%s=%d", DBHelper.ROW, rowid );
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+                Cursor cursor = db.query( DBHelper.TABLE_NAME_CHAT, columns, 
+                                          selection, null, null, null, null );
+                if ( 0 < cursor.getCount() ) {
+                    result = new HistoryPair[cursor.getCount()];
+                    int msgIndex = cursor.getColumnIndex( DBHelper.MESSAGE );
+                    int plyrIndex = cursor.getColumnIndex( DBHelper.SENDER );
+                    for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                        String msg = cursor.getString( msgIndex );
+                        int plyr = cursor.getInt( plyrIndex );
+                        HistoryPair pair = new HistoryPair(msg, plyr );
+                        result[ii] = pair;
+                    }
                 }
+                cursor.close();
+                db.close();
+            }
+                
+            if ( null == result ) {
+                result = convertChatString( context, rowid, playersLocal );
             }
         }
         return result;
@@ -1674,26 +1736,49 @@ public class DBUtils {
         return result;
     }
 
-    public static void appendChatHistory( Context context, long rowid,
-                                          String msg, boolean local )
+    private static void appendChatHistory( Context context, 
+                                           ArrayList<ContentValues> valuess )
     {
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            Assert.assertNotNull( msg );
-            int id = local ? R.string.chat_local_id : R.string.chat_other_id;
-            msg = LocUtils.getString( context, id ) + msg;
-
-            String cur = getChatHistoryStr( context, rowid );
-            if ( null != cur ) {
-                msg = cur + "\n" + msg;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            for ( ContentValues values : valuess ) {
+                db.insert( DBHelper.TABLE_NAME_CHAT, null, values );
             }
-
-            saveChatHistory( context, rowid, msg );
+            db.close();
         }
+    }
+
+    private static ContentValues cvForChat( long rowid, String msg, int plyr )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.ROW, rowid );
+        values.put( DBHelper.MESSAGE, msg );
+        values.put( DBHelper.SENDER, plyr );
+        return values;
+    }
+
+    public static void appendChatHistory( Context context, long rowid,
+                                          String msg, int fromPlayer )
+    {
+        Assert.assertNotNull( msg );
+        Assert.assertFalse( -1 == fromPlayer );
+        ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
+        valuess.add( cvForChat( rowid, msg, fromPlayer ) );
+        appendChatHistory( context, valuess );
+        DbgUtils.logf( "appendChatHistory: inserted %s from player %d", 
+                       msg, fromPlayer );
     } // appendChatHistory
 
     public static void clearChatHistory( Context context, long rowid )
     {
-        saveChatHistory( context, rowid, null );
+        String selection = String.format( "%s = %d", DBHelper.ROW, rowid );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.delete( DBHelper.TABLE_NAME_CHAT, selection, null );
+            db.close();
+        }
     }
 
     public static void setDBChangeListener( DBChangeListener listener )
