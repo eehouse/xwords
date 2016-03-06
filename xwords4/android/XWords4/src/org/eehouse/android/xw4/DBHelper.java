@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009-2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -42,8 +42,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_LOC = "loc";
     public static final String TABLE_NAME_PAIRS = "pairs";
     public static final String TABLE_NAME_INVITES = "invites";
+    public static final String TABLE_NAME_CHAT = "chat";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 25;
+    private static final int DB_VERSION = 26;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -110,6 +111,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String MEANS = "MEANS";
     public static final String TARGET = "TARGET";
     public static final String TIMESTAMP = "TIMESTAMP";
+
+    public static final String SENDER = "SENDER";
+    public static final String MESSAGE = "MESSAGE";
 
     private Context m_context;
 
@@ -206,6 +210,12 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" }
     };
 
+    private static final String[][] s_chatsSchema = {
+        { ROW, "INTEGER" }
+        ,{ SENDER, "INTEGER" }
+        ,{ MESSAGE, "TEXT" }
+    };
+
     public DBHelper( Context context )
     {
         super( context, DB_NAME, null, DB_VERSION );
@@ -230,6 +240,7 @@ public class DBHelper extends SQLiteOpenHelper {
         createLocTable( db );
         createPairsTable( db );
         createInvitesTable( db );
+        createChatsTable( db );
     }
 
     @Override
@@ -297,6 +308,8 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         case 24:
             createInvitesTable( db );
+        case 25:
+            createChatsTable( db );
             
             break;
         default:
@@ -399,6 +412,11 @@ public class DBHelper extends SQLiteOpenHelper {
     private void createInvitesTable( SQLiteDatabase db )
     {
         createTable( db, TABLE_NAME_INVITES, s_invitesSchema );
+    }
+
+    private void createChatsTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_CHAT, s_chatsSchema );
     }
 
     // Move all existing games to the row previously named "cur games'
