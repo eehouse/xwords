@@ -1884,6 +1884,12 @@ board_get_flipped( const BoardCtxt* board )
     return board->isFlipped;
 }
 
+XP_U16
+board_getSelPlayer( const BoardCtxt* board )
+{
+    return board->selPlayer;
+}
+
 XP_Bool
 board_flip( BoardCtxt* board )
 {

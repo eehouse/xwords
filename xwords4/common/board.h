@@ -117,7 +117,6 @@ void board_setTimerLoc( BoardCtxt* board,
 void board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
                        XP_U16 trayWidth, XP_U16 trayHeight );
 
-
 /* Vertical scroll support; offset is in rows, not pixels */
 XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset );
 XP_U16 board_getYOffset( const BoardCtxt* board );
@@ -150,6 +149,8 @@ XP_Bool board_get_showValues( const BoardCtxt* board );
 XP_Bool board_toggle_showValues( BoardCtxt* board );
 XP_Bool board_replaceTiles( BoardCtxt* board );
 XP_Bool board_redoReplacedTiles( BoardCtxt* board );
+
+XP_U16 board_getSelPlayer(const BoardCtxt* board );
 
 XP_Bool board_requestHint( BoardCtxt* board, 
 #ifdef XWFEATURE_SEARCHLIMIT
