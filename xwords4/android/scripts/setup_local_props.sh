@@ -2,7 +2,7 @@
 
 set -u -e
 
-TARGET="android-22"
+TARGET="android-19"
 
 usage() {
     echo "usage: $0 [--target TARGET]"

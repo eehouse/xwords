@@ -66,7 +66,7 @@ public class DbgUtils {
         if ( s_doLog ) {
             String time = "";
             // No need for timestamp on marshmallow, as the OS provides it
-            if ( Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1 ) {
+            if ( true /*Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1*/ ) {
                 s_time.setToNow();
                 time = s_time.format("[%H:%M:%S]-");
             }

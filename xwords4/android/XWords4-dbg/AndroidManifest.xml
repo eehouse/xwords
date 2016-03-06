@@ -13,7 +13,7 @@
   <!-- BE SURE TO MODIFY project.properties AND the variable TARGET in
        ../scripts/setup_local_props.sh if targetSdkVersion changes!!!
        -->
-  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="22" />
+  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="19" />
 
   <supports-screens android:resizeable="true"
                     android:smallScreens="true"
