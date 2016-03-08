@@ -85,6 +85,9 @@ public class ChatDelegate extends DelegateBase {
 
                 for ( DBUtils.HistoryPair pair : pairs ) {
                     TableRow row = (TableRow)inflate( R.layout.chat_row );
+                    if ( m_curPlayer == pair.playerIndx ) {
+                        row.setBackgroundColor(0xFF202020);
+                    }
                     TextView view = (TextView)row.findViewById( R.id.chat_row_text );
                     view.setText( pair.msg );
                     view = (TextView)row.findViewById( R.id.chat_row_name );
