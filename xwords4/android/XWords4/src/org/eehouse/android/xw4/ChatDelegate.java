@@ -28,6 +28,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View.OnLayoutChangeListener;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -38,6 +39,7 @@ import android.widget.TextView;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.jni.JNIThread;
 
 public class ChatDelegate extends DelegateBase {
 
@@ -47,8 +49,11 @@ public class ChatDelegate extends DelegateBase {
     
     private long m_rowid;
     private int m_curPlayer;
+    private String[] m_names;
     private Activity m_activity;
-    private EditText mEdit;
+    private EditText m_edit;
+    private TableLayout m_layout;
+    private ScrollView m_scroll;
 
     public ChatDelegate( Delegator delegator, Bundle savedInstanceState )
     {
@@ -60,8 +65,8 @@ public class ChatDelegate extends DelegateBase {
     protected void init( Bundle savedInstanceState ) 
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            mEdit = (EditText)findViewById( R.id.chat_edit );
-            mEdit.addTextChangedListener( new TextWatcher() {
+            m_edit = (EditText)findViewById( R.id.chat_edit );
+            m_edit.addTextChangedListener( new TextWatcher() {
                     public void afterTextChanged( Editable s ) {
                         invalidateOptionsMenuIf();
                     }
@@ -74,35 +79,28 @@ public class ChatDelegate extends DelegateBase {
             Intent intent = getIntent();
             m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
             m_curPlayer = intent.getIntExtra( INTENT_KEY_PLAYER, -1 );
-            String[] names = intent.getStringArrayExtra( INTENT_KEY_NAMES );
+            m_names = intent.getStringArrayExtra( INTENT_KEY_NAMES );
             boolean[] locals = intent.getBooleanArrayExtra( INTENT_KEY_LOCS );
+
+            m_scroll = (ScrollView)findViewById( R.id.scroll );
+            m_layout = (TableLayout)findViewById( R.id.chat_history );
+            m_layout.addOnLayoutChangeListener( new OnLayoutChangeListener() {
+                    @Override
+                    public void onLayoutChange( View vv, int ll, int tt, int rr, 
+                                                int bb, int ol, int ot, 
+                                                int or, int ob ) {
+                        scrollDown();
+                    }
+                });
      
             DBUtils.HistoryPair[] pairs
                 = DBUtils.getChatHistory( m_activity, m_rowid, locals );
             if ( null != pairs ) {
-                TableLayout layout = (TableLayout)
-                    findViewById( R.id.chat_history );
-
                 for ( DBUtils.HistoryPair pair : pairs ) {
-                    TableRow row = (TableRow)inflate( R.layout.chat_row );
-                    if ( m_curPlayer == pair.playerIndx ) {
-                        row.setBackgroundColor(0xFF202020);
-                    }
-                    TextView view = (TextView)row.findViewById( R.id.chat_row_text );
-                    view.setText( pair.msg );
-                    view = (TextView)row.findViewById( R.id.chat_row_name );
-                    view.setText( names[pair.playerIndx] );
-                    layout.addView( row );
+                    addRow( pair.msg, pair.playerIndx );
                 }
             }
-
-            final ScrollView scroll = (ScrollView)findViewById( R.id.scroll );
-            scroll.post(new Runnable() {            
-                    @Override
-                    public void run() {
-                        scroll.fullScroll(View.FOCUS_DOWN);              
-                    }
-                });
+            // scrollDown();
 
             String title = getString( R.string.chat_title_fmt, 
                                       GameUtils.getName( m_activity, m_rowid ) );
@@ -113,10 +111,35 @@ public class ChatDelegate extends DelegateBase {
         }
     }
 
+    private void addRow( String msg, int playerIndx )
+    {
+        TableRow row = (TableRow)inflate( R.layout.chat_row );
+        if ( m_curPlayer == playerIndx ) {
+            row.setBackgroundColor(0xFF202020);
+        }
+        TextView view = (TextView)row.findViewById( R.id.chat_row_text );
+        view.setText( msg );
+        view = (TextView)row.findViewById( R.id.chat_row_name );
+        view.setText( m_names[playerIndx] );
+        m_layout.addView( row );
+
+        scrollDown();
+    }
+
+    private void scrollDown()
+    {
+        m_scroll.post( new Runnable() {
+                @Override
+                public void run() {
+                    m_scroll.fullScroll( View.FOCUS_DOWN );
+                }
+            });
+    }
+
     @Override
     public boolean onPrepareOptionsMenu( Menu menu )
     {
-        String text = mEdit.getText().toString();
+        String text = m_edit.getText().toString();
         boolean haveText = null != text && 0 < text.length();
         Utils.setItemVisible( menu, R.id.chat_menu_send, haveText );
         return true;
@@ -133,17 +156,26 @@ public class ChatDelegate extends DelegateBase {
             }
             break;
         case R.id.chat_menu_send:
-            String text = mEdit.getText().toString();
+            String text = m_edit.getText().toString();
             if ( null == text || text.length() == 0 ) {
                 setResult( Activity.RESULT_CANCELED );
+                finish();
             } else {
                 DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer );
+                addRow( text, m_curPlayer );
+                m_edit.setText( null );
 
-                Intent result = new Intent();
-                result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
-                setResult( Activity.RESULT_OK, result );
+                JNIThread jniThread = JNIThread.getCurrent();
+                if ( null != jniThread ) {
+                    jniThread.handle( JNIThread.JNICmd.CMD_SENDCHAT, text );
+                } else {
+                    Intent result = new Intent();
+                    result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
+                    setResult( Activity.RESULT_OK, result );
+                    finish();
+                }
             }
-            finish();
+            // finish();
             break;
         default:
             handled = false;

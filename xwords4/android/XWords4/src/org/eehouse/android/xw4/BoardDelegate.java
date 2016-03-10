@@ -622,9 +622,7 @@ public class BoardDelegate extends DelegateBase
 
     protected void onPause()
     {
-        m_handler = null;
-        ConnStatusHandler.setHandler( null );
-        waitCloseGame( true );
+        closeIfFinishing( false );
         super.onPause();
     }
 
@@ -645,6 +643,7 @@ public class BoardDelegate extends DelegateBase
     @Override
     protected void onDestroy()
     {
+        closeIfFinishing( true );
         GamesListDelegate.boardDestroyed( m_rowid );
         super.onDestroy();
     }
@@ -2369,6 +2368,20 @@ public class BoardDelegate extends DelegateBase
             boolean[] locs = m_gi.playersLocal(); // to convert old histories
             ChatDelegate.startForResult( m_activity, RequestCode.CHAT_REQUEST,
                                          m_rowid, curPlayer, names, locs );
+        }
+    }
+
+    private void closeIfFinishing( boolean force )
+    {
+        if ( null == m_handler ) {
+            // DbgUtils.logf( "closeIfFinishing(): already closed" );
+        } else if ( force || isFinishing() ) {
+            // DbgUtils.logf( "closeIfFinishing: closing rowid %d", m_rowid );
+            m_handler = null;
+            ConnStatusHandler.setHandler( null );
+            waitCloseGame( true );
+        } else {
+            // DbgUtils.logf( "closeIfFinishing(): not finishing (yet)" );
         }
     }
 

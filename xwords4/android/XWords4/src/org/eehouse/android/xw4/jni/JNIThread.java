@@ -31,6 +31,8 @@ import java.lang.InterruptedException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.DBUtils;
@@ -48,6 +50,21 @@ import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import junit.framework.Assert;
 
 public class JNIThread extends Thread {
+
+    private static Set<JNIThread> s_curThreads = new HashSet<JNIThread>();
+
+    public static JNIThread getCurrent() {
+        JNIThread result = null;
+        synchronized( s_curThreads ) {
+            // DbgUtils.logf( "JNIThread.getCurrent(): have %d threads", 
+            //                s_curThreads.size() );
+            if ( 1 == s_curThreads.size() ) {
+                result = s_curThreads.iterator().next();
+            }
+        }
+        // DbgUtils.logf( "JNIThread.getCurrent() => %H", result );
+        return result;
+    }
 
     public enum JNICmd { CMD_NONE,
             // CMD_RUN,
@@ -160,6 +177,11 @@ public class JNIThread extends Thread {
                       SyncedDraw drawer, GameLock lock, Context context, 
                       Handler handler ) 
     {
+        synchronized( s_curThreads ) {
+            s_curThreads.add( this );
+            // DbgUtils.logf( "JNIThread(): added %H; now %d threads", this, s_curThreads.size() );
+        }
+
         m_jniGamePtr = gamePtr;
         m_gameAtStart = gameAtStart;
         m_gi = gi;
@@ -187,6 +209,12 @@ public class JNIThread extends Thread {
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
             DbgUtils.loge( ie );
+        }
+
+        synchronized( s_curThreads ) {
+            Assert.assertTrue( s_curThreads.contains( this ) );
+            s_curThreads.remove( this );
+            // DbgUtils.logf( "waitToStop: removed %H; now %d threads", this, s_curThreads.size() );
         }
     }
 
