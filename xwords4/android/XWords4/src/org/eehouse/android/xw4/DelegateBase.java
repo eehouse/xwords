@@ -223,7 +223,11 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void finish()
     {
-        m_activity.finish();
+        if ( m_activity instanceof FragActivity ) {
+            ((FragActivity)m_activity).finishFragment();
+        } else {
+            m_activity.finish();
+        }
     }
 
     protected String getString( int resID, Object... params )

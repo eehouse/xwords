@@ -124,6 +124,11 @@ public class FragActivity extends FragmentActivity
     //     // addFragment( dbf );
     // }
 
+    protected void finishFragment()
+    {
+        popFragment( null );
+    }
+
     protected void popFragment( Fragment frag )
     {
         getSupportFragmentManager().popBackStack();
