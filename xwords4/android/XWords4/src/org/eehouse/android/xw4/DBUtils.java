@@ -1107,8 +1107,9 @@ public class DBUtils {
     public static void deleteGame( Context context, GameLock lock )
     {
         Assert.assertTrue( lock.canWrite() );
-        String selSummaries = String.format( ROW_ID_FMT, lock.getRowid() );
-        String selInvites = String.format( "%s=%d", DBHelper.ROW, lock.getRowid() );
+        long rowid = lock.getRowid();
+        String selSummaries = String.format( ROW_ID_FMT, rowid );
+        String selInvites = String.format( "%s=%d", DBHelper.ROW, rowid );
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -1117,6 +1118,9 @@ public class DBUtils {
 
             // Delete invitations too
             db.delete( DBHelper.TABLE_NAME_INVITES, selInvites, null );
+
+            // Delete chats too -- same sel as for invites
+            db.delete( DBHelper.TABLE_NAME_CHAT, selInvites, null );
             
             db.close();
         }
@@ -1766,7 +1770,7 @@ public class DBUtils {
         ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
         valuess.add( cvForChat( rowid, msg, fromPlayer ) );
         appendChatHistory( context, valuess );
-        DbgUtils.logf( "appendChatHistory: inserted %s from player %d", 
+        DbgUtils.logf( "appendChatHistory: inserted \"%s\" from player %d", 
                        msg, fromPlayer );
     } // appendChatHistory
 
