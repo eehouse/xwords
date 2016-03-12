@@ -37,13 +37,13 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onError( Context context, String error ) 
     {
-        DbgUtils.logf("GCMIntentService.onError(%s)", error );
+        DbgUtils.logdf("GCMIntentService.onError(%s)", error );
     }
 
     @Override
     protected void onRegistered( Context context, String regId ) 
     {
-        DbgUtils.logf( "GCMIntentService.onRegistered(%s)", regId );
+        DbgUtils.logdf( "GCMIntentService.onRegistered(%s)", regId );
         DevID.setGCMDevID( context, regId );
         notifyRelayService( context, true );
     }
@@ -51,7 +51,7 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onUnregistered( Context context, String regId ) 
     {
-        DbgUtils.logf( "GCMIntentService.onUnregistered(%s)", regId );
+        DbgUtils.logdf( "GCMIntentService.onUnregistered(%s)", regId );
         DevID.clearGCMDevID( context );
         RelayService.devIDChanged();
         notifyRelayService( context, false );
@@ -60,13 +60,13 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onMessage( Context context, Intent intent ) 
     {
-        DbgUtils.logf( "GCMIntentService.onMessage()" );
+        DbgUtils.logdf( "GCMIntentService.onMessage()" );
         notifyRelayService( context, true );
 
         String value;
         boolean ignoreIt = XWApp.GCM_IGNORED;
         if ( ignoreIt ) {
-            DbgUtils.logf( "received GCM but ignoring it" );
+            DbgUtils.logdf( "received GCM but ignoring it" );
         } else {
             value = intent.getStringExtra( "checkUpdates" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
