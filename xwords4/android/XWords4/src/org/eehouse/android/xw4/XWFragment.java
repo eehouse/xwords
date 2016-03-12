@@ -35,12 +35,13 @@ import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class XWFragment extends Fragment {
+public class XWFragment extends Fragment implements Delegator {
 
     private DelegateBase m_dlgt;
 
     public void onCreate( DelegateBase dlgt, Bundle sis )
     {
+        DbgUtils.logdf( "%s.onCreate() called", this.getClass().getName() );
         super.onCreate( sis );
         m_dlgt = dlgt;
     }
@@ -49,14 +50,14 @@ public class XWFragment extends Fragment {
     public View onCreateView( LayoutInflater inflater, ViewGroup container, 
                               Bundle savedInstanceState ) 
     {
-        DbgUtils.logf( "%s.onCreateView() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onCreateView() called", this.getClass().getName() );
         return m_dlgt.inflateView( inflater, container );
     }
 
     @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
-        DbgUtils.logf( "%s.onActivityCreated() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onActivityCreated() called", this.getClass().getName() );
         m_dlgt.init( savedInstanceState );
         super.onActivityCreated( savedInstanceState );
     }
@@ -64,7 +65,7 @@ public class XWFragment extends Fragment {
     @Override
     public void onPause()
     {
-        DbgUtils.logf( "%s.onPause() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onPause() called", this.getClass().getName() );
         m_dlgt.onPause();
         super.onPause();
     }
@@ -79,7 +80,7 @@ public class XWFragment extends Fragment {
     @Override
     public void onStart()
     {
-        DbgUtils.logf( "%s.onStart() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onStart() called", this.getClass().getName() );
         super.onStart();
         m_dlgt.onStart();
     }
@@ -87,7 +88,7 @@ public class XWFragment extends Fragment {
     @Override
     public void onStop()
     {
-        DbgUtils.logf( "%s.onStop() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onStop() called", this.getClass().getName() );
         m_dlgt.onStop();
         super.onStop();
     }
@@ -122,9 +123,21 @@ public class XWFragment extends Fragment {
         Assert.fail();
     }
 
-    public void setListAdapter( ListAdapter adapter ) {}
-    public ListAdapter getListAdapter() { return null; }
-    public ListView getListView() { return null; }
+    public ListView getListView()
+    {
+        ListView view = (ListView)m_dlgt.findViewById( android.R.id.list );
+        return view;
+    }
+
+    public void setListAdapter( ListAdapter adapter )
+    { 
+        getListView().setAdapter( adapter );
+    }
+
+    public ListAdapter getListAdapter()
+    {
+        return getListView().getAdapter();
+    }
 }
 
 

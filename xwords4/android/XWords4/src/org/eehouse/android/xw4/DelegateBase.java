@@ -96,6 +96,7 @@ public class DelegateBase implements DlgClickNotify,
         int layoutID = getLayoutID();
         if ( 0 < layoutID ) {
             view = inflater.inflate( layoutID, container, false );
+            LocUtils.xlateView( m_activity, view );
             setContentView( view );
         }
         return view;

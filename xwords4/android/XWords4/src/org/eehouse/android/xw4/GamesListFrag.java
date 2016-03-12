@@ -58,15 +58,6 @@ public class GamesListFrag extends XWFragment implements GamesListDelegator {
     }
 
     @Override
-    public View onCreateView( LayoutInflater inflater, ViewGroup container, 
-                              Bundle savedInstanceState ) 
-    {
-        View root = inflater.inflate( R.layout.game_list, container, false );
-        LocUtils.xlateView( getActivity(), root );
-        return root;
-    }
-
-    @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
         super.onActivityCreated( savedInstanceState );
