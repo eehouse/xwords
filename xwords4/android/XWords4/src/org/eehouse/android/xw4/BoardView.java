@@ -21,23 +21,25 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.view.View;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Paint.FontMetricsInt;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.content.Context;
-import android.util.AttributeSet;
-import org.eehouse.android.xw4.jni.*;
-import android.view.MotionEvent;
 import android.graphics.drawable.Drawable;
-import android.content.res.Resources;
-import android.graphics.Paint.FontMetricsInt;
 import android.os.Build;
-import java.nio.IntBuffer;
+import android.util.AttributeSet;
 import android.util.FloatMath;
+import android.view.MotionEvent;
+import android.view.View;
+import java.nio.IntBuffer;
+import java.util.Set;
+
+import org.eehouse.android.xw4.jni.*;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 import junit.framework.Assert;
 
@@ -46,15 +48,19 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private static final float MIN_FONT_DIPS = 10.0f;
     private static final int MULTI_INACTIVE = -1;
 
+    private static boolean s_isFirstDraw;
+    private static int s_curGameID;
     private static Bitmap s_bitmap;    // the board
+
     private static final int PINCH_THRESHOLD = 40;
 
     private Context m_context;
     private int m_defaultFontHt;
     private int m_mediumFontHt;
     private Runnable m_invalidator;
-    private int m_jniGamePtr;
+    private XwJNI.GamePtr m_jniGamePtr;
     private CurGameInfo m_gi;
+    private boolean m_isSolo;
     private int m_layoutWidth;
     private int m_layoutHeight;
     private BoardCanvas m_canvas;    // owns the bitmap
@@ -62,8 +68,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private Activity m_parent;
     private boolean m_measuredFromDims = false;
     private BoardDims m_dims;
-    private CommsAddrRec.CommsConnType m_connType = 
-        CommsAddrRec.CommsConnType.COMMS_CONN_NONE;
+    private CommsConnTypeSet m_connTypes = null;
 
     private int m_lastSpacing = MULTI_INACTIVE;
 
@@ -194,7 +199,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( layoutBoardOnce() && m_measuredFromDims ) {
                 canvas.drawBitmap( s_bitmap, 0, 0, new Paint() );
                 ConnStatusHandler.draw( m_context, canvas, getResources(), 
-                                        0, 0, m_connType );
+                                        m_connTypes, m_isSolo );
             } else {
                 DbgUtils.logf( "board not laid out yet" );
             }
@@ -241,6 +246,10 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( null == s_bitmap ) {
                 s_bitmap = Bitmap.createBitmap( bmWidth, bmHeight,
                                                 Bitmap.Config.ARGB_8888 );
+            } else if ( s_isFirstDraw ) {
+                // clear so prev game doesn't seem to appear briefly.  Color
+                // doesn't seem to matter....
+                s_bitmap.eraseColor( 0 );
             }
             if ( null == m_canvas ) {
                 m_canvas = new BoardCanvas( m_parent, s_bitmap, m_jniThread, 
@@ -261,16 +270,20 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     // BoardHandler interface implementation
     public void startHandling( Activity parent, JNIThread thread, 
-                               int gamePtr, CurGameInfo gi, 
-                               CommsAddrRec.CommsConnType connType ) 
+                               XwJNI.GamePtr gamePtr, CurGameInfo gi, 
+                               CommsConnTypeSet connTypes ) 
     {
         m_parent = parent;
         m_jniThread = thread;
         m_jniGamePtr = gamePtr;
         m_gi = gi;
-        m_connType = connType;
+        m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole;
+        m_connTypes = connTypes;
         m_layoutWidth = 0;
         m_layoutHeight = 0;
+
+        s_isFirstDraw = s_curGameID != gi.gameID;
+        s_curGameID = gi.gameID;
 
         // Set the jni layout if we already have one
         if ( null != m_dims ) {
@@ -285,7 +298,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     public void stopHandling()
     {
         m_jniThread = null;
-        m_jniGamePtr = 0;
+        m_jniGamePtr = null;
         if ( null != m_canvas ) {
             m_canvas.setJNIThread( null );
         }

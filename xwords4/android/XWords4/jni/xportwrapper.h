@@ -23,9 +23,12 @@
 
 #include <jni.h>
 
+#include "andglobals.h"
+
 #include "comms.h"
 
-TransportProcs* makeXportProcs( MPFORMAL JNIEnv** env, jobject jxport );
+TransportProcs* makeXportProcs( MPFORMAL EnvThreadInfo* ti, jobject jxport );
+
 void destroyXportProcs( TransportProcs** xport );
 
 #endif

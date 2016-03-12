@@ -585,7 +585,8 @@ static XP_Bool
 handleResend( CursesAppGlobals* globals )
 {
     if ( !!globals->cGlobals.game.comms ) {
-        comms_resendAll( globals->cGlobals.game.comms, XP_TRUE );
+        comms_resendAll( globals->cGlobals.game.comms, COMMS_CONN_NONE,
+                         XP_TRUE );
     }
     return XP_TRUE;
 }
@@ -972,7 +973,7 @@ SIGINTTERM_handler( int XP_UNUSED(signal) )
 }
 
 static void
-cursesListenOnSocket( CursesAppGlobals* globals, int newSock
+cursesListenOnSocket( void* closure, int newSock
 #ifdef USE_GLIBLOOP
                       , GIOFunc func 
 #endif
@@ -981,15 +982,10 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock
 #ifdef USE_GLIBLOOP
     GIOChannel* channel = g_io_channel_unix_new( newSock );
     XP_LOGF( "%s: created channel %p for socket %d", __func__, channel, newSock );
-    guint watch = g_io_add_watch( channel, 
-                                  G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
-                                  func, globals );
-
-    SourceData* data = g_malloc( sizeof(*data) );
-    data->channel = channel;
-    data->watch = watch;
-    globals->sources = g_list_append( globals->sources, data );
-
+    XP_ASSERT( !!func );
+    (void)g_io_add_watch( channel, 
+                          G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
+                          func, closure );
 #else
     XP_ASSERT( globals->fdCount+1 < FD_MAX );
 
@@ -1004,127 +1000,20 @@ cursesListenOnSocket( CursesAppGlobals* globals, int newSock
 } /* cursesListenOnSocket */
 
 static void
-curses_stop_listening( CursesAppGlobals* globals, int sock )
+curses_socket_added( void* closure, int newSock, GIOFunc func )
 {
-#ifdef USE_GLIBLOOP
-    GList* sources = globals->sources;
-    while ( !!sources ) {
-        SourceData* data = sources->data;
-        gint fd = g_io_channel_unix_get_fd( data->channel );
-        if ( fd == sock ) {
-            g_io_channel_unref( data->channel );
-            XP_LOGF( "%s: unreffing channel %p", __func__, data->channel );
-            g_free( data );
-            globals->sources = g_list_remove_link( globals->sources, sources );
-            break;
-        }
-        sources = sources->next;
-    }
-    
-#else
-    int count = globals->fdCount;
-    int i;
-    bool found = false;
-
-    for ( i = 0; i < count; ++i ) {
-        if ( globals->fdArray[i].fd == sock ) {
-            found = true;
-        } else if ( found ) {
-            globals->fdArray[i-1].fd = globals->fdArray[i].fd;
-        }
-    }
-
-    assert( found );
-    --globals->fdCount;
-#endif
-} /* curses_stop_listening */
-
-#ifdef USE_GLIBLOOP
-static gboolean
-data_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
-{
-    gboolean keep = TRUE;
-    if ( 0 != ((G_IO_HUP|G_IO_ERR|G_IO_NVAL) & condition) ) {
-        XP_LOGF( "%s: got error condition; returning FALSE", __func__ );
-        keep = FALSE;
-    } else if ( 0 != (G_IO_IN & condition) ) {
-        CursesAppGlobals* globals = (CursesAppGlobals*)data;
-        int fd = g_io_channel_unix_get_fd( source );
-        unsigned char buf[1024];
-        int nBytes;
-        // CommsAddrRec addrRec;
-        CommsAddrRec* addrp = NULL;
-
-        /* It's a normal data socket */
-        switch ( globals->cGlobals.params->conType ) {
-#ifdef XWFEATURE_RELAY
-        case COMMS_CONN_RELAY:
-            nBytes = linux_relay_receive( &globals->cGlobals, buf, 
-                                          sizeof(buf) );
-            break;
-#endif
-#ifdef XWFEATURE_SMS
-        case COMMS_CONN_SMS:
-            XP_ASSERT(0);
-            /* addrp = &addrRec; */
-            /* nBytes = linux_sms_receive( &globals->cGlobals, fd, */
-            /*                             buf, sizeof(buf), addrp ); */
-            break;
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-        case COMMS_CONN_BT:
-            nBytes = linux_bt_receive( fd, buf, sizeof(buf) );
-            break;
-#endif
-        default:
-            XP_ASSERT( 0 ); /* fired */
-        }
-
-        if ( nBytes != -1 ) {
-            XWStreamCtxt* inboundS;
-            XP_Bool redraw = XP_FALSE;
-
-            inboundS = stream_from_msgbuf( &globals->cGlobals, buf, nBytes );
-            if ( !!inboundS ) {
-                if ( comms_checkIncomingStream( globals->cGlobals.game.comms,
-                                                inboundS, addrp ) ) {
-                    redraw = server_receiveMessage( globals->cGlobals.game.server, 
-                                                    inboundS );
-                }
-                stream_destroy( inboundS );
-            }
-                
-            /* if there's something to draw resulting from the
-               message, we need to give the main loop time to reflect
-               that on the screen before giving the server another
-               shot.  So just call the idle proc. */
-            if ( redraw ) {
-                curses_util_requestTime( globals->cGlobals.util );
-            }
-        }
-    }
-    return keep;
-} /* data_socket_proc */
-#endif
-
-static void
-curses_socket_changed( void* closure, int oldSock, int newSock,
-                       void** XP_UNUSED(storage) )
-{
-    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
-    if ( oldSock != -1 ) {
-        curses_stop_listening( globals, oldSock );
-    }
+    // CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     if ( newSock != -1 ) {
-        cursesListenOnSocket( globals, newSock
+        cursesListenOnSocket( closure, newSock
 #ifdef USE_GLIBLOOP
-                              , data_socket_proc 
+                              , func
 #endif
                               );
     }
 
 #ifdef XWFEATURE_RELAY
-    globals->cGlobals.relaySocket = newSock;
+    /* XP_ASSERT( !globals->cGlobals.relaySocket ); */
+    /* globals->cGlobals.relaySocket = newSock; */
 #endif
 } /* curses_socket_changed */
 
@@ -1249,137 +1138,137 @@ fireCursesTimer( CursesAppGlobals* globals )
  * Ok, so this doesn't block yet.... 
  */
 #ifndef USE_GLIBLOOP
-static XP_Bool
-blocking_gotEvent( CursesAppGlobals* globals, int* ch )
-{
-    XP_Bool result = XP_FALSE;
-    int numEvents, ii;
-    short fdIndex;
-    XP_Bool redraw = XP_FALSE;
+/* static XP_Bool */
+/* blocking_gotEvent( CursesAppGlobals* globals, int* ch ) */
+/* { */
+/*     XP_Bool result = XP_FALSE; */
+/*     int numEvents, ii; */
+/*     short fdIndex; */
+/*     XP_Bool redraw = XP_FALSE; */
 
-    int timeout = figureTimeout( globals );
-    numEvents = poll( globals->fdArray, globals->fdCount, timeout );
+/*     int timeout = figureTimeout( globals ); */
+/*     numEvents = poll( globals->fdArray, globals->fdCount, timeout ); */
 
-    if ( timeout != INFINITE_TIMEOUT && numEvents == 0 ) {
-#ifdef XWFEATURE_RELAY
-        fireCursesTimer( globals );
-#endif
-    } else if ( numEvents > 0 ) {
+/*     if ( timeout != INFINITE_TIMEOUT && numEvents == 0 ) { */
+/* #ifdef XWFEATURE_RELAY */
+/*         fireCursesTimer( globals ); */
+/* #endif */
+/*     } else if ( numEvents > 0 ) { */
 	
-        /* stdin first */
-        if ( (globals->fdArray[FD_STDIN].revents & POLLIN) != 0 ) {
-            int evtCh = wgetch(globals->mainWin);
-            XP_LOGF( "%s: got key: %x", __func__, evtCh );
-            *ch = evtCh;
-            result = XP_TRUE;
-            --numEvents;
-        }
-        if ( (globals->fdArray[FD_STDIN].revents & ~POLLIN ) ) {
-            XP_LOGF( "some other events set on stdin" );
-        }
+/*         /\* stdin first *\/ */
+/*         if ( (globals->fdArray[FD_STDIN].revents & POLLIN) != 0 ) { */
+/*             int evtCh = wgetch(globals->mainWin); */
+/*             XP_LOGF( "%s: got key: %x", __func__, evtCh ); */
+/*             *ch = evtCh; */
+/*             result = XP_TRUE; */
+/*             --numEvents; */
+/*         } */
+/*         if ( (globals->fdArray[FD_STDIN].revents & ~POLLIN ) ) { */
+/*             XP_LOGF( "some other events set on stdin" ); */
+/*         } */
 
-        if ( (globals->fdArray[FD_TIMEEVT].revents & POLLIN) != 0 ) {
-            char ch;
-            if ( 1 != read(globals->fdArray[FD_TIMEEVT].fd, &ch, 1 ) ) {
-                XP_ASSERT(0);
-            }
-        }
+/*         if ( (globals->fdArray[FD_TIMEEVT].revents & POLLIN) != 0 ) { */
+/*             char ch; */
+/*             if ( 1 != read(globals->fdArray[FD_TIMEEVT].fd, &ch, 1 ) ) { */
+/*                 XP_ASSERT(0); */
+/*             } */
+/*         } */
 
-        fdIndex = FD_FIRSTSOCKET;
+/*         fdIndex = FD_FIRSTSOCKET; */
 
-        if ( numEvents > 0 ) {
-            if ( (globals->fdArray[fdIndex].revents & ~POLLIN ) ) {
-                XP_LOGF( "some other events set on socket %d", 
-                         globals->fdArray[fdIndex].fd  );
-            }
+/*         if ( numEvents > 0 ) { */
+/*             if ( (globals->fdArray[fdIndex].revents & ~POLLIN ) ) { */
+/*                 XP_LOGF( "some other events set on socket %d",  */
+/*                          globals->fdArray[fdIndex].fd  ); */
+/*             } */
 
-            if ( (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) {
+/*             if ( (globals->fdArray[fdIndex].revents & POLLIN) != 0 ) { */
 
-                --numEvents;
+/*                 --numEvents; */
 
-                if ( globals->fdArray[fdIndex].fd 
-                     == globals->csInfo.server.serverSocket ) {
-                    /* It's the listening socket: call platform's accept()
-                       wrapper */
-                    (*globals->cGlobals.acceptor)( globals->fdArray[fdIndex].fd, 
-                                                   globals );
-                } else {
-#ifndef XWFEATURE_STANDALONE_ONLY
-                    unsigned char buf[1024];
-                    int nBytes;
-                    CommsAddrRec addrRec;
-                    CommsAddrRec* addrp = NULL;
+/*                 if ( globals->fdArray[fdIndex].fd  */
+/*                      == globals->csInfo.server.serverSocket ) { */
+/*                     /\* It's the listening socket: call platform's accept() */
+/*                        wrapper *\/ */
+/*                     (*globals->cGlobals.acceptor)( globals->fdArray[fdIndex].fd,  */
+/*                                                    globals ); */
+/*                 } else { */
+/* #ifndef XWFEATURE_STANDALONE_ONLY */
+/*                     unsigned char buf[1024]; */
+/*                     int nBytes; */
+/*                     CommsAddrRec addrRec; */
+/*                     CommsAddrRec* addrp = NULL; */
 
-                    /* It's a normal data socket */
-                    switch ( globals->cGlobals.params->conType ) {
-#ifdef XWFEATURE_RELAY
-                    case COMMS_CONN_RELAY:
-                        nBytes = linux_relay_receive( &globals->cGlobals, buf, 
-                                                      sizeof(buf) );
-                        break;
-#endif
-#ifdef XWFEATURE_SMS
-                    case COMMS_CONN_SMS:
-                        addrp = &addrRec;
-                        nBytes = linux_sms_receive( &globals->cGlobals, 
-                                                    globals->fdArray[fdIndex].fd,
-                                                    buf, sizeof(buf), addrp );
-                        break;
-#endif
-#ifdef XWFEATURE_BLUETOOTH
-                    case COMMS_CONN_BT:
-                        nBytes = linux_bt_receive( globals->fdArray[fdIndex].fd, 
-                                                   buf, sizeof(buf) );
-                        break;
-#endif
-                    default:
-                        XP_ASSERT( 0 ); /* fired */
-                    }
+/*                     /\* It's a normal data socket *\/ */
+/*                     switch ( globals->cGlobals.params->conType ) { */
+/* #ifdef XWFEATURE_RELAY */
+/*                     case COMMS_CONN_RELAY: */
+/*                         nBytes = linux_relay_receive( &globals->cGlobals, buf,  */
+/*                                                       sizeof(buf) ); */
+/*                         break; */
+/* #endif */
+/* #ifdef XWFEATURE_SMS */
+/*                     case COMMS_CONN_SMS: */
+/*                         addrp = &addrRec; */
+/*                         nBytes = linux_sms_receive( &globals->cGlobals,  */
+/*                                                     globals->fdArray[fdIndex].fd, */
+/*                                                     buf, sizeof(buf), addrp ); */
+/*                         break; */
+/* #endif */
+/* #ifdef XWFEATURE_BLUETOOTH */
+/*                     case COMMS_CONN_BT: */
+/*                         nBytes = linux_bt_receive( globals->fdArray[fdIndex].fd,  */
+/*                                                    buf, sizeof(buf) ); */
+/*                         break; */
+/* #endif */
+/*                     default: */
+/*                         XP_ASSERT( 0 ); /\* fired *\/ */
+/*                     } */
 
-                    if ( nBytes != -1 ) {
-                        XWStreamCtxt* inboundS;
-                        redraw = XP_FALSE;
+/*                     if ( nBytes != -1 ) { */
+/*                         XWStreamCtxt* inboundS; */
+/*                         redraw = XP_FALSE; */
 
-                        inboundS = stream_from_msgbuf( &globals->cGlobals, 
-                                                       buf, nBytes );
-                        if ( !!inboundS ) {
-                            if ( comms_checkIncomingStream(
-                                                           globals->cGlobals.game.comms,
-                                                           inboundS, addrp ) ) {
-                                redraw = server_receiveMessage( 
-                                                               globals->cGlobals.game.server, inboundS );
-                            }
-                            stream_destroy( inboundS );
-                        }
+/*                         inboundS = stream_from_msgbuf( &globals->cGlobals,  */
+/*                                                        buf, nBytes ); */
+/*                         if ( !!inboundS ) { */
+/*                             if ( comms_checkIncomingStream( */
+/*                                                            globals->cGlobals.game.comms, */
+/*                                                            inboundS, addrp ) ) { */
+/*                                 redraw = server_receiveMessage(  */
+/*                                                                globals->cGlobals.game.server, inboundS ); */
+/*                             } */
+/*                             stream_destroy( inboundS ); */
+/*                         } */
                 
-                        /* if there's something to draw resulting from the
-                           message, we need to give the main loop time to reflect
-                           that on the screen before giving the server another
-                           shot.  So just call the idle proc. */
-                        if ( redraw ) {
-                            curses_util_requestTime(globals->cGlobals.params->util);
-                        }
-                    }
-#else
-                    XP_ASSERT(0);   /* no socket activity in standalone game! */
-#endif                          /* #ifndef XWFEATURE_STANDALONE_ONLY */
-                }
-                ++fdIndex;
-            }
-        }
+/*                         /\* if there's something to draw resulting from the */
+/*                            message, we need to give the main loop time to reflect */
+/*                            that on the screen before giving the server another */
+/*                            shot.  So just call the idle proc. *\/ */
+/*                         if ( redraw ) { */
+/*                             curses_util_requestTime(globals->cGlobals.params->util); */
+/*                         } */
+/*                     } */
+/* #else */
+/*                     XP_ASSERT(0);   /\* no socket activity in standalone game! *\/ */
+/* #endif                          /\* #ifndef XWFEATURE_STANDALONE_ONLY *\/ */
+/*                 } */
+/*                 ++fdIndex; */
+/*             } */
+/*         } */
 
-        for ( ii = 0; ii < 5; ++ii ) {
-            redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw;
-        }
-        if ( redraw ) {
-            /* messages change a lot */
-            board_invalAll( globals->cGlobals.game.board );
-            board_draw( globals->cGlobals.game.board );
-        }
-        saveGame( globals->cGlobals );
-    }
-    return result;
-} /* blocking_gotEvent */
+/*         for ( ii = 0; ii < 5; ++ii ) { */
+/*             redraw = server_do( globals->cGlobals.game.server, NULL ) || redraw; */
+/*         } */
+/*         if ( redraw ) { */
+/*             /\* messages change a lot *\/ */
+/*             board_invalAll( globals->cGlobals.game.board ); */
+/*             board_draw( globals->cGlobals.game.board ); */
+/*         } */
+/*         saveGame( globals->cGlobals ); */
+/*     } */
+/*     return result; */
+/* } /\* blocking_gotEvent *\/ */
 #endif
 
 static void
@@ -1540,14 +1429,21 @@ curses_util_makeStreamFromAddr(XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 #ifdef XWFEATURE_CHAT
 static void
 curses_util_showChat( XW_UtilCtxt* uc, 
-                      const XP_UCHAR* const XP_UNUSED_DBG(msg) )
+                      const XP_UCHAR* const XP_UNUSED_DBG(msg),
+                      XP_S16 XP_UNUSED_DBG(from) )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     globals->nChatsSent = 0;
-    XP_LOGF( "%s: got \"%s\"", __func__, msg );
+# ifdef DEBUG
+    const XP_UCHAR* name = "<unknown>";
+    if ( 0 <= from ) {
+        CommonGlobals* cGlobals = &globals->cGlobals;
+        name = cGlobals->gi->players[from].name;
+    }
+    XP_LOGF( "%s: got \"%s\" from %s", __func__, msg, name );
+# endif
 }
 #endif
-
 
 static void
 setupCursesUtilCallbacks( CursesAppGlobals* globals, XW_UtilCtxt* util )
@@ -1693,6 +1589,7 @@ positionSizeStuff( CursesAppGlobals* globals, int width, int height )
 
 static XP_Bool 
 relay_sendNoConn_curses( const XP_U8* msg, XP_U16 len,
+                         const XP_UCHAR* XP_UNUSED(msgNo),
                          const XP_UCHAR* relayID, void* closure )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
@@ -1764,7 +1661,8 @@ curses_getFlags( void* XP_UNUSED(closure) )
 #endif
 
 static void
-cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
+cursesGotBuf( void* closure, const CommsAddrRec* addr, 
+              const XP_U8* buf, XP_U16 len )
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)closure;
     XP_U32 clientToken;
@@ -1776,9 +1674,9 @@ cursesGotBuf( void* closure, const XP_U8* buf, XP_U16 len )
     sqlite3_int64 ignore;
     XP_U16 seed;
     rowidFromToken( XP_NTOHL( clientToken ), &ignore, &seed );
-    XP_ASSERT( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) );
+    // XP_ASSERT( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) );
     if ( seed == comms_getChannelSeed( globals->cGlobals.game.comms ) ) {
-        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, NULL );
+        gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, addr );
     } else {
         XP_LOGF( "%s: dropping packet; meant for a different device",
                  __func__ );
@@ -1859,44 +1757,6 @@ cursesErrorMsgRcvd( void* closure, const XP_UCHAR* msg )
     }
 }
 
-
-static gboolean
-curses_app_socket_proc( GIOChannel* source, GIOCondition condition, 
-                        gpointer data )
-{
-    if ( 0 != (G_IO_IN & condition) ) {
-        CursesAppGlobals* globals = (CursesAppGlobals*)data;
-        int socket = g_io_channel_unix_get_fd( source );
-        GList* iter;
-        for ( iter = globals->sources; !!iter; iter = iter->next ) {
-            SourceData* sd = (SourceData*)iter->data;
-            if ( sd->channel == source ) {
-                (*sd->proc)( sd->procClosure, socket );
-                break;
-            }
-        }
-        XP_ASSERT( !!iter );    /* didn't fail to find it */
-    }
-    return TRUE;
-}
-
-static void
-cursesUDPSocketChanged( void* closure, int newSock, int XP_UNUSED(oldSock), 
-                        SockReceiver proc, void* procClosure )
-{
-    CursesAppGlobals* globals = (CursesAppGlobals*)closure;
-
-    SourceData* sd = g_malloc( sizeof(*sd) );
-    sd->channel = g_io_channel_unix_new( newSock );
-    XP_LOGF( "%s: created channel %p for socket %d", __func__, sd->channel, newSock );
-    sd->watch = g_io_add_watch( sd->channel, 
-                                G_IO_IN | G_IO_ERR | G_IO_HUP | G_IO_NVAL,
-                                curses_app_socket_proc, globals );
-    sd->proc = proc;
-    sd->procClosure = procClosure;
-    globals->sources = g_list_append( globals->sources, sd );
-}
-
 static gboolean
 chatsTimerFired( gpointer data )
 {
@@ -1919,11 +1779,54 @@ chatsTimerFired( gpointer data )
                   comms_getChannelSeed( game->comms ),
                   timp->tm_hour, timp->tm_min, timp->tm_sec );
         XP_LOGF( "%s: sending \"%s\"", __func__, msg );
-        server_sendChat( game->server, msg );
+        board_sendChat( game->board, msg );
         ++globals->nChatsSent;
     }
 
     return TRUE;
+}
+
+/* static XP_U16 */
+/* feedBufferCurses( CommonGlobals* cGlobals, sqlite3_int64 rowid,  */
+/*                   const XP_U8* buf, XP_U16 len, const CommsAddrRec* from ) */
+/* { */
+/*     gameGotBuf( cGlobals, XP_TRUE, buf, len, from ); */
+
+/*     /\* GtkGameGlobals* globals = findOpenGame( apg, rowid ); *\/ */
+
+/*     /\* if ( !!globals ) { *\/ */
+/*     /\*     gameGotBuf( &globals->cGlobals, XP_TRUE, buf, len, from ); *\/ */
+/*     /\*     seed = comms_getChannelSeed( globals->cGlobals.game.comms ); *\/ */
+/*     /\* } else { *\/ */
+/*     /\*     GtkGameGlobals tmpGlobals; *\/ */
+/*     /\*     if ( loadGameNoDraw( &tmpGlobals, apg->params, rowid ) ) { *\/ */
+/*     /\*         gameGotBuf( &tmpGlobals.cGlobals, XP_FALSE, buf, len, from ); *\/ */
+/*     /\*         seed = comms_getChannelSeed( tmpGlobals.cGlobals.game.comms ); *\/ */
+/*     /\*         saveGame( &tmpGlobals.cGlobals ); *\/ */
+/*     /\*     } *\/ */
+/*     /\*     freeGlobals( &tmpGlobals ); *\/ */
+/*     /\* } *\/ */
+/*     /\* return seed; *\/ */
+/* } */
+
+static void
+smsMsgReceivedCurses( void* closure, const CommsAddrRec* from, 
+                      XP_U32 XP_UNUSED(gameID),
+                      const XP_U8* buf, XP_U16 len )
+{
+    LOG_FUNC();
+    CommonGlobals* cGlobals = (CommonGlobals*)closure;
+    gameGotBuf( cGlobals, XP_TRUE, buf, len, from );
+    LOG_RETURN_VOID();
+    /* LaunchParams* params =  cGlobals->params; */
+
+    /* sqlite3_int64 rowids[4]; */
+    /* int nRowIDs = VSIZE(rowids); */
+    /* getRowsForGameID( params->pDb, gameID, rowids, &nRowIDs ); */
+    /* for ( int ii = 0; ii < nRowIDs; ++ii ) { */
+    /*     gameGotBuf( cGlobals, XP_TRUE, buf, len, from ); */
+    /*     // feedBufferCurses( cGlobals, rowids[ii], buf, len, from ); */
+    /* } */
 }
 
 void
@@ -1944,8 +1847,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     g_globals.cGlobals.relaySocket = -1;
 #endif
 
-    g_globals.cGlobals.socketChanged = curses_socket_changed;
-    g_globals.cGlobals.socketChangedClosure = &g_globals;
+    g_globals.cGlobals.socketAdded = curses_socket_added;
+    g_globals.cGlobals.socketAddedClosure = &g_globals;
     g_globals.cGlobals.onSave = curses_onGameSaved;
     g_globals.cGlobals.onSaveClosure = &g_globals;
 
@@ -1971,7 +1874,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
     initFromParams( &g_globals.cGlobals, params );
 
 #ifdef XWFEATURE_RELAY
-    if ( params->conType == COMMS_CONN_RELAY ) {
+    if ( addr_hasType( &params->addr, COMMS_CONN_RELAY ) ) {
         g_globals.cGlobals.defaultServerName
             = params->connInfo.relay.relayName;
     }
@@ -2055,7 +1958,7 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                 .msgNoticeReceived = cursesNoticeRcvd,
                 .devIDReceived = cursesDevIDReceived,
                 .msgErrorMsg = cursesErrorMsgRcvd,
-                .socketChanged = cursesUDPSocketChanged,
+                .socketAdded = curses_socket_added,
             };
 
             relaycon_init( params, &procs, &g_globals,
@@ -2064,6 +1967,33 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
             linux_doInitialReg( params, idIsNew );
         }
+
+#ifdef XWFEATURE_SMS
+        gchar buf[32];
+        const gchar* myPhone = params->connInfo.sms.phone;
+        if ( !!myPhone ) {
+            db_store( params->pDb, KEY_SMSPHONE, myPhone );
+        } else if ( !myPhone && db_fetch( params->pDb, KEY_SMSPHONE, buf, VSIZE(buf) ) ) {
+            params->connInfo.sms.phone = myPhone = buf;
+        }
+        XP_U16 myPort = params->connInfo.sms.port;
+        gchar portbuf[8];
+        if ( 0 < myPort ) {
+            sprintf( portbuf, "%d", myPort );
+            db_store( params->pDb, KEY_SMSPORT, portbuf );
+        } else if ( db_fetch( params->pDb, KEY_SMSPORT, portbuf, VSIZE(portbuf) ) ) {
+            params->connInfo.sms.port = myPort = atoi( portbuf );
+        }
+
+        if ( !!myPhone && myPhone[0] && myPort ) {
+            SMSProcs smsProcs = {
+                .socketAdded = curses_socket_added,
+                .inviteReceived = NULL,
+                .msgReceived = smsMsgReceivedCurses,
+            };
+            linux_sms_init( params, myPhone, myPort, &smsProcs, &g_globals.cGlobals );
+        }
+#endif
 
         XWStreamCtxt* stream = NULL;
         if ( !!params->dbName ) {
@@ -2074,6 +2004,9 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
                                           &g_globals.cGlobals, CHANNEL_NONE,
                                           NULL );
                 sqlite3_int64 selRow = *(sqlite3_int64*)games->data;
+                /* XP_UCHAR buf[32]; */
+                /* XP_SNPRINTF( buf, sizeof(buf), "%lld", selRow ); */
+                mpool_setTag( MEMPOOL params->dbName );
                 if ( loadGame( stream, params->pDb, selRow ) ) {
                     g_globals.cGlobals.selRow = selRow;
                 } else {
@@ -2084,10 +2017,14 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
             }
                 
         } else if ( !!params->fileName && file_exists( params->fileName ) ) {
+            mpool_setTag( MEMPOOL "file" );
             stream = streamFromFile( &g_globals.cGlobals, params->fileName, 
                                      &g_globals );
 #ifdef USE_SQLITE
         } else if ( !!params->dbFileName && file_exists( params->dbFileName ) ) {
+            XP_UCHAR buf[32];
+            XP_SNPRINTF( buf, sizeof(buf), "%d", params->dbFileID );
+            mpool_setTag( MEMPOOL buf );
             stream = streamFromDB( &g_globals.cGlobals, &g_globals );
 #endif
         }
@@ -2119,7 +2056,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         if ( !opened ) {
             game_makeNewGame( MEMPOOL &cGlobals->game, cGlobals->gi,
                               cGlobals->util, (DrawCtx*)g_globals.draw,
-                              &g_globals.cGlobals.cp, &procs, params->gameSeed );
+                              &g_globals.cGlobals.cp, &procs, 
+                              params->gameSeed );
             g_globals.cGlobals.selRow = -1;
             saveGame( &g_globals.cGlobals );
         }
@@ -2128,34 +2066,50 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         if ( cGlobals->game.comms ) {
             CommsAddrRec addr = {0};
 
-            if ( 0 ) {
+            CommsConnType typ;
+            for ( XP_U32 st = 0; addr_iter( &params->addr, &typ, &st ); ) {
+                switch( typ ) {
 # ifdef XWFEATURE_RELAY
-            } else if ( params->conType == COMMS_CONN_RELAY ) {
-                addr.conType = COMMS_CONN_RELAY;
-                addr.u.ip_relay.ipAddr = 0;       /* ??? */
-                addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
-                addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
-                addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-                XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
-                            sizeof(addr.u.ip_relay.hostName) - 1 );
-                XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
-                            sizeof(addr.u.ip_relay.invite) - 1 );
+                case COMMS_CONN_RELAY:
+                    addr_addType( &addr, COMMS_CONN_RELAY );
+                    addr.u.ip_relay.ipAddr = 0;       /* ??? */
+                    addr.u.ip_relay.port = params->connInfo.relay.defaultSendPort;
+                    addr.u.ip_relay.seeksPublicRoom = params->connInfo.relay.seeksPublicRoom;
+                    addr.u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
+                    XP_STRNCPY( addr.u.ip_relay.hostName, params->connInfo.relay.relayName,
+                                sizeof(addr.u.ip_relay.hostName) - 1 );
+                    XP_STRNCPY( addr.u.ip_relay.invite, params->connInfo.relay.invite,
+                                sizeof(addr.u.ip_relay.invite) - 1 );
+                    break;
 # endif
 # ifdef XWFEATURE_SMS
-            } else if ( params->conType == COMMS_CONN_SMS ) {
-                addr.conType = COMMS_CONN_SMS;
-                XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone,
-                            sizeof(addr.u.sms.phone) - 1 );
-                addr.u.sms.port = params->connInfo.sms.port;
+                case COMMS_CONN_SMS:
+                    addr_addType( &addr, COMMS_CONN_SMS );
+                    XP_STRNCPY( addr.u.sms.phone, params->connInfo.sms.phone,
+                                sizeof(addr.u.sms.phone) - 1 );
+                    addr.u.sms.port = params->connInfo.sms.port;
+                    break;
 # endif
 # ifdef XWFEATURE_BLUETOOTH
-            } else if ( params->conType == COMMS_CONN_BT ) {
-                addr.conType = COMMS_CONN_BT;
-                XP_ASSERT( sizeof(addr.u.bt.btAddr) 
-                           >= sizeof(params->connInfo.bt.hostAddr));
-                XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                           sizeof(params->connInfo.bt.hostAddr) );
+                case COMMS_CONN_BT:
+                    addr_addType( &addr, COMMS_CONN_BT );
+                    XP_ASSERT( sizeof(addr.u.bt.btAddr) 
+                               >= sizeof(params->connInfo.bt.hostAddr));
+                    XP_MEMCPY( &addr.u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                               sizeof(params->connInfo.bt.hostAddr) );
+                    break;
 # endif
+#ifdef XWFEATURE_DIRECTIP
+                case COMMS_CONN_IP_DIRECT:
+                    addr_addType( &addr, COMMS_CONN_IP_DIRECT );
+                    XP_MEMCPY( addr.u.ip.hostName_ip, &params->connInfo.ip.hostName,
+                               sizeof(addr.u.ip.hostName_ip) );
+                    addr.u.ip.port_ip = params->connInfo.ip.hostPort;
+                    break;
+#endif
+                default:
+                    break;
+                }
             }
             comms_setAddr( cGlobals->game.comms, &addr );
         }
@@ -2167,18 +2121,13 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
 
 #ifndef XWFEATURE_STANDALONE_ONLY
         /* send any events that need to get off before the event loop begins */
-        if ( !isServer ) {
-            if ( 1 /* stream_open( params->info.clientInfo.stream )  */) {
-                server_initClientConnection( cGlobals->game.server, 
-                                             mem_stream_make( MEMPOOL
-                                                              params->vtMgr,
-                                                              cGlobals,
-                                                              (XP_PlayerAddr)0,
-                                                              sendOnClose ) );
-            } else {
-                cursesUserError( &g_globals, "Unable to open connection to server");
-                exit( 0 );
-            }
+        if ( !!cGlobals->game.comms && !isServer ) {
+            (void)server_initClientConnection( cGlobals->game.server, 
+                                               mem_stream_make( MEMPOOL
+                                                                params->vtMgr,
+                                                                cGlobals,
+                                                                (XP_PlayerAddr)0,
+                                                                sendOnClose ) );
         }
 #endif
 
@@ -2236,6 +2185,8 @@ cursesmain( XP_Bool isServer, LaunchParams* params )
         closeGamesDB( g_globals.cGlobals.pDb );
     }
     relaycon_cleanup( params );
+
+    linux_sms_cleanup( params );
 
     linux_util_vt_destroy( g_globals.cGlobals.util );
 } /* cursesmain */

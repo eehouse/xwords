@@ -1,4 +1,4 @@
-/* -*-mode: C; compile-command: "cd ..; ../scripts/ndkbuild.sh -j3"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
  * Copyright © 2009-2010 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
@@ -41,8 +41,7 @@ XP_U32
 and_ntohl(XP_U32 ll)
 {
     XP_U32 result = 0L;
-    int ii;
-    for ( ii = 0; ii < 4; ++ii ) {
+    for ( int ii = 0; ii < 4; ++ii ) {
         result <<= 8;
         result |= ll & 0x000000FF;
         ll >>= 8;
@@ -79,20 +78,21 @@ error error error
 int
 getInt( JNIEnv* env, jobject obj, const char* name )
 {
+    // XP_LOGF( "%s(name=%s)", __func__, name );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
     int result = (*env)->GetIntField( env, obj, fid );
     deleteLocalRef( env, cls );
+    // XP_LOGF( "%s(name=%s) => %d", __func__, name, result );
     return result;
 }
 
 void
 getInts( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis )
 {
-    int ii;
-    for ( ii = 0; ii < nSis; ++ii ) {
+    for ( int ii = 0; ii < nSis; ++ii ) {
         const SetInfo* si = &sis[ii];
         uint8_t* ptr = ((uint8_t*)cobj) + si->offset;
         int val = getInt( env, jobj, si->name );
@@ -115,19 +115,20 @@ getInts( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis 
 void
 setInt( JNIEnv* env, jobject obj, const char* name, int value )
 {
+    // XP_LOGF( "%s(name=%s)", __func__, name );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "I");
     XP_ASSERT( !!fid );
     (*env)->SetIntField( env, obj, fid, value );
     deleteLocalRef( env, cls );
+    // XP_LOGF( "%s(name=%s) DONE", __func__, name );
 }
 
 void
 setInts( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis )
 {
-    int ii;
-    for ( ii = 0; ii < nSis; ++ii ) {
+    for ( int ii = 0; ii < nSis; ++ii ) {
         const SetInfo* si = &sis[ii];
         uint8_t* ptr = ((uint8_t*)cobj) + si->offset;
         int val;
@@ -169,8 +170,7 @@ setBool( JNIEnv* env, jobject obj, const char* name, bool value )
 void
 setBools( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis )
 {
-    int ii;
-    for ( ii = 0; ii < nSis; ++ii ) {
+    for ( int ii = 0; ii < nSis; ++ii ) {
         const SetInfo* si = &sis[ii];
         XP_Bool val = *(XP_Bool*)(((uint8_t*)cobj)+si->offset);
         setBool( env, jobj, si->name, val );
@@ -182,6 +182,7 @@ setBools( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis
 bool
 setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
 {
+    // XP_LOGF( "%s(%s)", __func__, name );
     bool success = false;
     jclass cls = (*env)->GetObjectClass( env, obj );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
@@ -198,9 +199,31 @@ setString( JNIEnv* env, jobject obj, const char* name, const XP_UCHAR* value )
 }
 
 void
+getStrings( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis )
+{
+    for ( int ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        XP_UCHAR* buf = (XP_UCHAR*)(((uint8_t*)cobj) + si->offset);
+        getString( env, jobj, si->name, buf, si->siz );
+    }
+}
+
+void
+setStrings( JNIEnv* env, jobject jobj, void* cobj, const SetInfo* sis, XP_U16 nSis )
+{
+    for ( int ii = 0; ii < nSis; ++ii ) {
+        const SetInfo* si = &sis[ii];
+        // XP_LOGF( "calling setString(%s)", si->name );
+        XP_UCHAR* val = (XP_UCHAR*)(((uint8_t*)cobj) + si->offset);
+        setString( env, jobj, si->name, val );
+    }
+}
+
+void
 getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
            int bufLen )
 {
+    // XP_LOGF( "%s(%s)", __func__, name );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
     jfieldID fid = (*env)->GetFieldID( env, cls, name, "Ljava/lang/String;" );
@@ -218,6 +241,7 @@ getString( JNIEnv* env, jobject obj, const char* name, XP_UCHAR* buf,
     buf[len] = '\0';
 
     deleteLocalRef( env, cls );
+    // XP_LOGF( "%s(%s) DONE", __func__, name );
 }
 
 XP_UCHAR* 
@@ -278,8 +302,7 @@ getBool( JNIEnv* env, jobject obj, const char* name )
 void
 getBools( JNIEnv* env, void* cobj, jobject jobj, const SetInfo* sis, XP_U16 nSis )
 {
-    int ii;
-    for ( ii = 0; ii < nSis; ++ii ) {
+    for ( int ii = 0; ii < nSis; ++ii ) {
         const SetInfo* si = &sis[ii];
         XP_Bool val = getBool( env, jobj, si->name );
         *(XP_Bool*)(((uint8_t*)cobj)+si->offset) = val;
@@ -380,8 +403,7 @@ makeStringArray( JNIEnv *env, int siz, const XP_UCHAR** vals )
     jobjectArray jarray = (*env)->NewObjectArray( env, siz, clas, empty );
     deleteLocalRefs( env, clas, empty, DELETE_NO_REF );
 
-    int ii;
-    for ( ii = 0; !!vals && ii < siz; ++ii ) {    
+    for ( int ii = 0; !!vals && ii < siz; ++ii ) {    
         jstring jstr = (*env)->NewStringUTF( env, vals[ii] );
         (*env)->SetObjectArrayElement( env, jarray, ii, jstr );
         deleteLocalRef( env, jstr );
@@ -409,9 +431,15 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
     XP_ASSERT( !!env );
     jclass cls = (*env)->GetObjectClass( env, obj );
     XP_ASSERT( !!cls );
+#ifdef DEBUG
+    char buf[128] = {0};
+    /* int len = sizeof(buf); */
+    /* getClassName( env, obj, buf, &len ); */
+#endif
     jmethodID mid = (*env)->GetMethodID( env, cls, proc, sig );
     if ( !mid ) {
-        XP_LOGF( "%s: no mid for proc %s, sig %s", __func__, proc, sig );
+        XP_LOGF( "%s: no mid for proc %s, sig %s in object of class %s",
+                 __func__, proc, sig, buf );
     }
     XP_ASSERT( !!mid );
     deleteLocalRef( env, cls );
@@ -419,74 +447,141 @@ getMethodID( JNIEnv* env, jobject obj, const char* proc, const char* sig )
 }
 
 void
+setTypeSetFieldIn( JNIEnv* env, const CommsAddrRec* addr, jobject jTarget, 
+                   const char* fieldName )
+{
+    jobject jtypset = addrTypesToJ( env, addr );
+    XP_ASSERT( !!jtypset );
+    jclass cls = (*env)->GetObjectClass( env, jTarget );
+    XP_ASSERT( !!cls );
+    jfieldID fid = (*env)->GetFieldID( env, cls, fieldName, //"conTypes", 
+                                       "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
+    XP_ASSERT( !!fid );
+    (*env)->SetObjectField( env, jTarget, fid, jtypset );
+    deleteLocalRef( env, jtypset );
+}
+
+/* Copy C object data into Java object */
+void
 setJAddrRec( JNIEnv* env, jobject jaddr, const CommsAddrRec* addr )
 {
     XP_ASSERT( !!addr );
-    intToJenumField( env, jaddr, addr->conType, "conType",
-                     PKG_PATH("jni/CommsAddrRec$CommsConnType") );
+    setTypeSetFieldIn( env, addr, jaddr, "conTypes" );
 
-    switch ( addr->conType ) {
-    case COMMS_CONN_NONE:
-        break;
-    case COMMS_CONN_RELAY:
-        setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
-        setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
-        setString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite );
-        setBool( env, jaddr, "ip_relay_seeksPublicRoom",
-                 addr->u.ip_relay.seeksPublicRoom );
-        setBool( env, jaddr, "ip_relay_advertiseRoom",
-                 addr->u.ip_relay.advertiseRoom );
-        break;
-    case COMMS_CONN_SMS:
-        setString( env, jaddr, "sms_phone", addr->u.sms.phone );
-        setInt( env, jaddr, "sms_port", addr->u.sms.port );
-        break;
-    case COMMS_CONN_BT:
-        setString( env, jaddr, "bt_hostName", addr->u.bt.hostName );
-        setString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars );
-        break;
-    default:
-        XP_ASSERT(0);
+    CommsConnType typ;
+    for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
+        switch ( typ ) {
+        case COMMS_CONN_NONE:
+            break;
+        case COMMS_CONN_RELAY:
+            setInt( env, jaddr, "ip_relay_port", addr->u.ip_relay.port );
+            setString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName );
+            setString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite );
+            setBool( env, jaddr, "ip_relay_seeksPublicRoom",
+                     addr->u.ip_relay.seeksPublicRoom );
+            setBool( env, jaddr, "ip_relay_advertiseRoom",
+                     addr->u.ip_relay.advertiseRoom );
+            break;
+        case COMMS_CONN_SMS:
+            setString( env, jaddr, "sms_phone", addr->u.sms.phone );
+            setInt( env, jaddr, "sms_port", addr->u.sms.port );
+            break;
+        case COMMS_CONN_BT:
+            setString( env, jaddr, "bt_hostName", addr->u.bt.hostName );
+            setString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars );
+            break;
+        default:
+            XP_ASSERT(0);
+        }
     }
 }
 
+jobject
+addrTypesToJ( JNIEnv* env, const CommsAddrRec* addr )
+{
+    XP_ASSERT( !!addr );
+    jclass cls = 
+        (*env)->FindClass( env, PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") );
+    XP_ASSERT( !!cls );
+    jmethodID initId = (*env)->GetMethodID( env, cls, "<init>", "()V" );
+    XP_ASSERT( !!initId );
+    jobject result = (*env)->NewObject( env, cls, initId );
+    XP_ASSERT( !!result );
+
+    jmethodID mid2 = getMethodID( env, result, "add", 
+                                  "(Ljava/lang/Object;)Z" );
+    XP_ASSERT( !!mid2 );
+    CommsConnType typ;
+    /* far as it gets */
+    for ( XP_U32 st = 0; addr_iter( addr, &typ, &st ); ) {
+        jobject jtyp = intToJEnum( env, typ, 
+                                   PKG_PATH("jni/CommsAddrRec$CommsConnType") );
+        XP_ASSERT( !!jtyp );
+        (*env)->CallBooleanMethod( env, result, mid2, jtyp );
+        deleteLocalRef( env, jtyp );
+    }
+    deleteLocalRef( env, cls );
+    return result;
+}
+
+/* Writes a java version of CommsAddrRec into a C one */
 void
 getJAddrRec( JNIEnv* env, CommsAddrRec* addr, jobject jaddr )
 {
-    addr->conType =
-        jenumFieldToInt( env, jaddr, "conType",
-                         PKG_PATH("jni/CommsAddrRec$CommsConnType") );
+    /* Iterate over types in the set in jaddr, and for each call
+       addr_addType() and then copy in the types. */
+    // LOG_FUNC();
+    jclass cls = (*env)->GetObjectClass( env, jaddr );
+    XP_ASSERT( !!cls );
+    jfieldID fid = (*env)->GetFieldID( env, cls, "conTypes", 
+                                       "L" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";" );
+    XP_ASSERT( !!fid );         /* failed */
+    jobject jtypeset = (*env)->GetObjectField( env, jaddr, fid );
+    XP_ASSERT( !!jtypeset );
+    jmethodID mid = getMethodID( env, jtypeset, "getTypes", 
+                                 "()[L" PKG_PATH("jni/CommsAddrRec$CommsConnType;") );
+    XP_ASSERT( !!mid );
+    jobject jtypesarr = (*env)->CallObjectMethod( env, jtypeset, mid );
+    XP_ASSERT( !!jtypesarr );
+    jsize len = (*env)->GetArrayLength( env, jtypesarr );
+    for ( int ii = 0; ii < len; ++ii ) {
+        jobject jtype = (*env)->GetObjectArrayElement( env, jtypesarr, ii );
+        jint asInt = jEnumToInt( env, jtype );
+        deleteLocalRef( env, jtype );
+        CommsConnType typ = (CommsConnType)asInt;
 
-    switch ( addr->conType ) {
-    case COMMS_CONN_NONE:
-        break;
-    case COMMS_CONN_RELAY:
-        addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
-        getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
-                   VSIZE(addr->u.ip_relay.hostName) );
-        getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
-                   VSIZE(addr->u.ip_relay.invite) );
-        addr->u.ip_relay.seeksPublicRoom =
-            getBool( env, jaddr, "ip_relay_seeksPublicRoom" );
-        addr->u.ip_relay.advertiseRoom =
-            getBool( env, jaddr, "ip_relay_advertiseRoom" );
+        addr_addType( addr, typ );
 
-        break;
-    case COMMS_CONN_SMS:
-        getString( env, jaddr, "sms_phone", addr->u.sms.phone,
-                   VSIZE(addr->u.sms.phone) );
-        XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
-        addr->u.sms.port = getInt( env, jaddr, "sms_port" );
-        break;
-    case COMMS_CONN_BT:
-        getString( env, jaddr, "bt_hostName", addr->u.bt.hostName,
-                   VSIZE(addr->u.bt.hostName) );
-        getString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars,
-                   VSIZE(addr->u.bt.btAddr.chars) );
-        break;
-    default:
-        XP_ASSERT(0);
+        switch ( typ ) {
+        case COMMS_CONN_RELAY:
+            addr->u.ip_relay.port = getInt( env, jaddr, "ip_relay_port" );
+            getString( env, jaddr, "ip_relay_hostName", addr->u.ip_relay.hostName,
+                       VSIZE(addr->u.ip_relay.hostName) );
+            getString( env, jaddr, "ip_relay_invite", addr->u.ip_relay.invite,
+                       VSIZE(addr->u.ip_relay.invite) );
+            addr->u.ip_relay.seeksPublicRoom =
+                getBool( env, jaddr, "ip_relay_seeksPublicRoom" );
+            addr->u.ip_relay.advertiseRoom =
+                getBool( env, jaddr, "ip_relay_advertiseRoom" );
+
+            break;
+        case COMMS_CONN_SMS:
+            getString( env, jaddr, "sms_phone", addr->u.sms.phone,
+                       VSIZE(addr->u.sms.phone) );
+            // XP_LOGF( "%s: got SMS; phone=%s", __func__, addr->u.sms.phone );
+            addr->u.sms.port = getInt( env, jaddr, "sms_port" );
+            break;
+        case COMMS_CONN_BT:
+            getString( env, jaddr, "bt_hostName", addr->u.bt.hostName,
+                       VSIZE(addr->u.bt.hostName) );
+            getString( env, jaddr, "bt_btAddr", addr->u.bt.btAddr.chars,
+                       VSIZE(addr->u.bt.btAddr.chars) );
+            break;
+        default:
+            XP_ASSERT(0);
+        }
     }
+    deleteLocalRefs( env, cls, jtypeset, jtypesarr, DELETE_NO_REF );
 }
 
 jint
@@ -598,10 +693,10 @@ void deleteLocalRef( JNIEnv* env, jobject jobj )
 }
 
 void
-deleteLocalRefs( JNIEnv* env, jobject jobj, ... )
+deleteLocalRefs( JNIEnv* env, ... )
 {
     va_list ap;
-    va_start( ap, jobj );
+    va_start( ap, env );
     for ( ; ; ) {
         jobject jnext = va_arg( ap, jobject );
         if ( DELETE_NO_REF == jnext ) {
@@ -634,10 +729,54 @@ android_debugf( const char* format, ... )
         va_end(ap);
     }
     
-    (void)__android_log_write( ANDROID_LOG_DEBUG, "xw4", buf );
+    (void)__android_log_write( ANDROID_LOG_DEBUG, 
+# if defined VARIANT_xw4
+                               "xw4"
+# elif defined VARIANT_xw4dbg
+                               "x4bg"
+# endif
+                               , buf );
+}
+
+/* Print an object's class name into buffer.
+ *
+ * NOTE: this must be called in advance of any jni error, because methods on
+ * env can't be called once there's an exception pending.
+ */
+#if 0
+static void
+getClassName( JNIEnv* env, jobject obj, char* out, int* outLen )
+{
+    XP_ASSERT( !!obj );
+    jclass cls1 = (*env)->GetObjectClass( env, obj );
+
+    // First get the class object
+    jmethodID mid = (*env)->GetMethodID( env, cls1, "getClass",
+                                         "()Ljava/lang/Class;" );
+    jobject clsObj = (*env)->CallObjectMethod( env, obj, mid );
+
+    // Now get the class object's class descriptor
+    jclass cls2 = (*env)->GetObjectClass( env, clsObj );
+    // Find the getName() method on the class object
+    mid = (*env)->GetMethodID( env, cls2, "getName", "()Ljava/lang/String;" );
+
+    // Call the getName() to get a jstring object back
+    jstring strObj = (jstring)(*env)->CallObjectMethod( env, clsObj, mid );
+
+    jint slen = (*env)->GetStringUTFLength( env, strObj );
+    if ( slen < *outLen ) {
+        *outLen = slen;
+        (*env)->GetStringUTFRegion( env, strObj, 0, slen, out );
+        out[slen] = '\0';
+    } else {
+        *outLen = 0;
+        out[0] = '\0';
+    }
+    deleteLocalRefs( env, clsObj, cls1, cls2, strObj, DELETE_NO_REF );
+    LOG_RETURNF( "%s", out );
 }
 #endif
-
+#endif
 
 /* #ifdef DEBUG */
 /* XP_U32 */

@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.telephony.TelephonyManager;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -28,28 +29,38 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.lang.System;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.GameUtils.BackMoveResult;
+import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
-import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -57,30 +68,36 @@ public class SMSService extends XWService {
 
     private static final String INSTALL_URL = "http://eehouse.org/_/a.py/a ";
     private static final int MAX_SMS_LEN = 140; // ??? differs by network
+    private static final int KITKAT = 19;
 
     private static final String MSG_SENT = "MSG_SENT";
     private static final String MSG_DELIVERED = "MSG_DELIVERED";
 
-    private static final int SMS_PROTO_VERSION = 0;
+    private static final int SMS_PROTO_VERSION_ORIG = 0;
+    private static final int SMS_PROTO_VERSION_WITHPORT = 1;
+    private static final int SMS_PROTO_VERSION = SMS_PROTO_VERSION_WITHPORT;
     private static final int MAX_LEN_TEXT = 100;
     private static final int MAX_LEN_BINARY = 100;
-    private static final int HANDLE = 1;
-    private static final int INVITE = 2;
-    private static final int SEND = 3;
-    private static final int REMOVE = 4;
-    // private static final int MESG_GAMEGONE = 5;
-    private static final int CHECK_MSGDB = 6;
-    private static final int ADDED_MISSING = 7;
-    private static final int STOP_SELF = 8;
-    private static final int HANDLEDATA = 9;
+    private static final int MAX_MSG_COUNT = 16; // 1.6K enough? Should be....
+    private enum SMSAction { _NONE,
+                             INVITE,
+                             SEND,
+                             REMOVE,
+                             ADDED_MISSING,
+                             STOP_SELF,
+                             HANDLEDATA,
+    };
 
     private static final String CMD_STR = "CMD";
     private static final String BUFFER = "BUFFER";
     private static final String BINBUFFER = "BINBUFFER";
     private static final String PHONE = "PHONE";
+    private static final String GAMEDATA_STR = "GD";
+
+    private static final String PHONE_RECS_KEY = 
+        SMSService.class.getName() + "_PHONES";
 
     private static Boolean s_showToasts = null;
-    private static Boolean s_asData = null;
     
     // All messages are base64-encoded byte arrays.  The first byte is
     // always one of these.  What follows depends.
@@ -92,55 +109,108 @@ public class SMSService extends XWService {
 
     private int m_nReceived = 0;
     private static int s_nSent = 0;
-    private static HashMap<String, HashMap <Integer, MsgStore>> s_partialMsgs
+    private static Map<String, HashMap <Integer, MsgStore>> s_partialMsgs
         = new HashMap<String, HashMap <Integer, MsgStore>>();
-    private static HashSet<Integer> s_sentDied = new HashSet<Integer>();
+    private static Set<Integer> s_sentDied = new HashSet<Integer>();
+
+    public static class SMSPhoneInfo {
+        public SMSPhoneInfo( boolean isAPhone, String num, boolean gsm ) {
+            isPhone = isAPhone;
+            number = num;
+            isGSM = gsm;
+        }
+        public boolean isPhone;
+        public String number;
+        public boolean isGSM;
+    }
+    private static SMSPhoneInfo s_phoneInfo;
+
+    public static SMSPhoneInfo getPhoneInfo( Context context )
+    {
+        if ( null == s_phoneInfo ) {
+            String number = null;
+            boolean isGSM = false;
+            boolean isPhone = false;
+            TelephonyManager mgr = (TelephonyManager)
+                context.getSystemService(Context.TELEPHONY_SERVICE);
+            if ( null != mgr ) {
+                number = mgr.getLine1Number();
+                int type = mgr.getPhoneType();
+                isGSM = TelephonyManager.PHONE_TYPE_GSM == type;
+                isPhone = true;
+            }
+
+            String radio = XWPrefs.getPrefsString( context, R.string.key_force_radio );
+            int[] ids = { R.string.radio_name_real,
+                          R.string.radio_name_tablet,
+                          R.string.radio_name_gsm,
+                          R.string.radio_name_cdma,
+            };
+
+            int id = R.string.radio_name_real; // default so don't crash before set
+            for ( int ii = 0; ii < ids.length; ++ii ) {
+                if ( radio.equals(context.getString(ids[ii])) ) {
+                    id = ids[ii];
+                    break;
+                }
+            }
+
+            switch( id ) {
+            case R.string.radio_name_real:
+                break;          // go with above
+            case R.string.radio_name_tablet:
+                number = null;
+                isPhone = false;
+                break;
+            case R.string.radio_name_gsm:
+            case R.string.radio_name_cdma:
+                isGSM = id == R.string.radio_name_gsm;
+                if ( null == number ) {
+                    number = "000-000-0000";
+                }
+                isPhone = true;
+                break;
+            }
+
+            s_phoneInfo = new SMSPhoneInfo( isPhone, number, isGSM );
+        }
+        return s_phoneInfo;
+    }
+
+    public static void resetPhoneInfo()
+    {
+        s_phoneInfo = null;
+    }
 
     public static void smsToastEnable( boolean newVal ) 
     {
         s_showToasts = newVal;
     }
 
-    public static void checkForInvites( Context context )
-    {
-        if ( XWApp.SMSSUPPORTED && Utils.deviceSupportsSMS( context ) ) {
-            Intent intent = getIntentTo( context, CHECK_MSGDB );
-            context.startService( intent );
-        }
-    }
-
     public static void stopService( Context context )
     {
-        Intent intent = getIntentTo( context, STOP_SELF );
+        Intent intent = getIntentTo( context, SMSAction.STOP_SELF );
         context.startService( intent );
     }
 
-    public static void handleFrom( Context context, String buffer, 
-                                   String phone )
-    {
-        Intent intent = getIntentTo( context, HANDLE );
-        intent.putExtra( BUFFER, buffer );
-        intent.putExtra( PHONE, phone );
-        context.startService( intent );
-    }
-
+    // NBS case
     public static void handleFrom( Context context, byte[] buffer, 
                                    String phone )
     {
-        Intent intent = getIntentTo( context, HANDLEDATA );
+        Intent intent = getIntentTo( context, SMSAction.HANDLEDATA );
         intent.putExtra( BUFFER, buffer );
         intent.putExtra( PHONE, phone );
         context.startService( intent );
     }
 
     public static void inviteRemote( Context context, String phone,
-                                     int gameID, String gameName, 
-                                     int lang, String dict, 
-                                     int nPlayersT, int nPlayersH )
+                                     NetLaunchInfo nli )
     {
-        Intent intent = getIntentTo( context, INVITE );
-        fillInviteIntent( intent, phone, gameID, gameName, lang, dict,
-                          nPlayersT, nPlayersH );
+        Intent intent = getIntentTo( context, SMSAction.INVITE );
+        intent.putExtra( PHONE, phone );
+        String asString = nli.toString();
+        DbgUtils.logf( "SMSService.inviteRemote(%s, '%s')", phone, asString );
+        intent.putExtra( GAMEDATA_STR, asString );
         context.startService( intent );
     }
 
@@ -149,7 +219,7 @@ public class SMSService extends XWService {
     {
         int nSent = -1;
         if ( XWPrefs.getSMSEnabled( context ) ) {
-            Intent intent = getIntentTo( context, SEND );
+            Intent intent = getIntentTo( context, SMSAction.SEND );
             intent.putExtra( PHONE, phone );
             intent.putExtra( MultiService.GAMEID, gameID );
             intent.putExtra( BINBUFFER, binmsg );
@@ -163,7 +233,7 @@ public class SMSService extends XWService {
 
     public static void gameDied( Context context, int gameID, String phone )
     {
-        Intent intent = getIntentTo( context, REMOVE );
+        Intent intent = getIntentTo( context, SMSAction.REMOVE );
         intent.putExtra( PHONE, phone );
         intent.putExtra( MultiService.GAMEID, gameID );
         context.startService( intent );
@@ -171,20 +241,9 @@ public class SMSService extends XWService {
 
     public static void onGameDictDownload( Context context, Intent intentOld )
     {
-        Intent intent = getIntentTo( context, ADDED_MISSING );
+        Intent intent = getIntentTo( context, SMSAction.ADDED_MISSING );
         intent.fillIn( intentOld, 0 );
         context.startService( intent );
-    }
-
-    public static String toPublicFmt( String msg )
-    {
-        int msglen = XWApp.SMS_PUBLIC_HEADER.length() + 4 + 1 + msg.length();
-        int urllen = INSTALL_URL.length();
-        String result = String.format( "%s%04X %s%s", XWApp.SMS_PUBLIC_HEADER, 
-                                msg.hashCode() & 0xFFFF,
-                                msglen + urllen < MAX_SMS_LEN? INSTALL_URL : "",
-                                msg );
-        return result;
     }
 
     public static String fromPublicFmt( String msg )
@@ -212,16 +271,20 @@ public class SMSService extends XWService {
         return result;
     }
 
-    private static Intent getIntentTo( Context context, int cmd )
+    private static Intent getIntentTo( Context context, SMSAction cmd )
+    {
+        Intent intent = new Intent( context, SMSService.class );
+        intent.putExtra( CMD_STR, cmd.ordinal() );
+        return intent;
+    }
+
+    private static boolean showToasts( Context context )
     {
         if ( null == s_showToasts ) {
             s_showToasts = 
                 XWPrefs.getPrefsBoolean( context, R.string.key_show_sms, false );
         }
-
-        Intent intent = new Intent( context, SMSService.class );
-        intent.putExtra( CMD_STR, cmd );
-        return intent;
+        return s_showToasts;
     }
 
     @Override
@@ -260,67 +323,49 @@ public class SMSService extends XWService {
     {
         int result = Service.START_NOT_STICKY;
         if ( XWApp.SMSSUPPORTED && null != intent ) {
-            int cmd = intent.getIntExtra( CMD_STR, -1 );
-            switch( cmd ) {
-            case STOP_SELF:
-                stopSelf();
-                break;
-            case CHECK_MSGDB:
-                if ( ! XWPrefs.getHaveCheckedSMS( this ) ) {
-                    XWPrefs.setHaveCheckedSMS( this, true );
-                    new Thread( new Runnable() {
-                            public void run() {
-                                checkMsgDB();
-                            } 
-                        } ).start();
-                }
-                break;
-            case HANDLE:
-            case HANDLEDATA:
-                ++m_nReceived;
-                ConnStatusHandler.
-                    updateStatusIn( this, null,
-                                    CommsConnType.COMMS_CONN_SMS, true );
-                if ( s_showToasts ) {
-                    DbgUtils.showf( this, "got %dth msg", m_nReceived );
-                }
-                String phone = intent.getStringExtra( PHONE );
-                if ( HANDLE == cmd ) {
-                    String buffer = intent.getStringExtra( BUFFER );
-                    receiveBuffer( buffer, phone );
-                } else {
+            int ordinal = intent.getIntExtra( CMD_STR, -1 );
+            if ( -1 == ordinal ) {
+                // ???
+            } else {
+                SMSAction cmd = SMSAction.values()[ordinal];
+                switch( cmd ) {
+                case STOP_SELF:
+                    stopSelf();
+                    break;
+                case HANDLEDATA:
+                    ++m_nReceived;
+                    ConnStatusHandler.
+                        updateStatusIn( this, null,
+                                        CommsConnType.COMMS_CONN_SMS, true );
+                    if ( showToasts( this ) && (0 == (m_nReceived % 5)) ) {
+                        DbgUtils.showf( this, "Got msg %d", m_nReceived );
+                    }
+                    String phone = intent.getStringExtra( PHONE );
                     byte[] buffer = intent.getByteArrayExtra( BUFFER );
                     receiveBuffer( buffer, phone );
+                    break;
+                case INVITE:
+                    phone = intent.getStringExtra( PHONE );
+                    inviteRemote( phone, intent.getStringExtra( GAMEDATA_STR ) );
+                    break;
+                case ADDED_MISSING:
+                    NetLaunchInfo nli
+                        = MultiService.getMissingDictData( this, intent );
+                    phone = intent.getStringExtra( PHONE );
+                    makeForInvite( phone, nli );
+                    break;
+                case SEND:
+                    phone = intent.getStringExtra( PHONE );
+                    byte[] bytes = intent.getByteArrayExtra( BINBUFFER );
+                    int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+                    sendPacket( phone, gameID, bytes );
+                    break;
+                case REMOVE:
+                    gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
+                    phone = intent.getStringExtra( PHONE );
+                    sendDiedPacket( phone, gameID );
+                    break;
                 }
-                break;
-            case INVITE:
-            case ADDED_MISSING:
-                phone = intent.getStringExtra( PHONE );
-                int gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-                String gameName = intent.getStringExtra( MultiService.GAMENAME );
-                int lang = intent.getIntExtra( MultiService.LANG, -1 );
-                String dict = intent.getStringExtra( MultiService.DICT );
-                int nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
-                int nPlayersH = intent.getIntExtra( MultiService.NPLAYERSH, -1 );
-                if ( INVITE == cmd ) {
-                    inviteRemote( phone, gameID, gameName, lang, dict,
-                                  nPlayersT, nPlayersH );
-                } else if ( ADDED_MISSING == cmd ) {
-                    makeForInvite( phone, gameID, gameName, lang, dict, 
-                                   nPlayersT, nPlayersH );
-                }
-                break;
-            case SEND:
-                phone = intent.getStringExtra( PHONE );
-                byte[] bytes = intent.getByteArrayExtra( BINBUFFER );
-                gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-                sendPacket( phone, gameID, bytes );
-                break;
-            case REMOVE:
-                gameID = intent.getIntExtra( MultiService.GAMEID, -1 );
-                phone = intent.getStringExtra( PHONE );
-                sendDiedPacket( phone, gameID );
-                break;
             }
 
             result = Service.START_STICKY;
@@ -334,20 +379,14 @@ public class SMSService extends XWService {
         return result;
     } // onStartCommand
 
-    private void inviteRemote( String phone, int gameID, String gameName, 
-                               int lang, String dict, 
-                               int nPlayersT, int nPlayersH )
+    private void inviteRemote( String phone, String nliData )
     {
+        DbgUtils.logf( "SMSService.inviteRemote()" );
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream das = new DataOutputStream( bas );
+        DataOutputStream dos = new DataOutputStream( bas );
         try {
-            das.writeInt( gameID );
-            das.writeUTF( gameName );
-            das.writeInt( lang );
-            das.writeUTF( dict );
-            das.writeByte( nPlayersT );
-            das.writeByte( nPlayersH );
-            das.flush();
+            dos.writeUTF( nliData );
+            dos.flush();
 
             send( SMS_CMD.INVITE, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
@@ -358,10 +397,10 @@ public class SMSService extends XWService {
     private void ackInvite( String phone, int gameID )
     {
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream das = new DataOutputStream( bas );
+        DataOutputStream dos = new DataOutputStream( bas );
         try {
-            das.writeInt( gameID );
-            das.flush();
+            dos.writeInt( gameID );
+            dos.flush();
 
             send( SMS_CMD.ACK, bas.toByteArray(), phone );
         } catch ( java.io.IOException ioe ) {
@@ -373,10 +412,10 @@ public class SMSService extends XWService {
     {
         if ( !s_sentDied.contains(gameID) ) {
             ByteArrayOutputStream bas = new ByteArrayOutputStream( 32 );
-            DataOutputStream das = new DataOutputStream( bas );
+            DataOutputStream dos = new DataOutputStream( bas );
             try {
-                das.writeInt( gameID );
-                das.flush();
+                dos.writeInt( gameID );
+                dos.flush();
                 send( SMS_CMD.DEATH, bas.toByteArray(), phone );
                 s_sentDied.add( gameID );
             } catch ( java.io.IOException ioe ) {
@@ -389,11 +428,11 @@ public class SMSService extends XWService {
     {
         int nSent = -1;
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream das = new DataOutputStream( bas );
+        DataOutputStream dos = new DataOutputStream( bas );
         try {
-            das.writeInt( gameID );
-            das.write( bytes, 0, bytes.length );
-            das.flush();
+            dos.writeInt( gameID );
+            dos.write( bytes, 0, bytes.length );
+            dos.flush();
             if ( send( SMS_CMD.DATA, bas.toByteArray(), phone ) ) {
                 nSent = bytes.length;
             }
@@ -407,113 +446,80 @@ public class SMSService extends XWService {
         throws java.io.IOException
     {
         ByteArrayOutputStream bas = new ByteArrayOutputStream( 128 );
-        DataOutputStream das = new DataOutputStream( bas );
-        das.writeByte( SMS_PROTO_VERSION );
-        das.writeByte( cmd.ordinal() );
-        das.write( bytes, 0, bytes.length );
-        das.flush();
+        DataOutputStream dos = new DataOutputStream( bas );
+        dos.writeByte( SMS_PROTO_VERSION );
+        if ( SMS_PROTO_VERSION_WITHPORT <= SMS_PROTO_VERSION ) {
+            dos.writeShort( getNBSPort() );
+        }
+        dos.writeByte( cmd.ordinal() );
+        dos.write( bytes, 0, bytes.length );
+        dos.flush();
 
         byte[] data = bas.toByteArray();
-        boolean result;
-        if ( null == s_asData ) {
-            boolean asData = 
-                XWPrefs.getPrefsBoolean( this, R.string.key_send_data_sms,
-                                         true );
-            s_asData = new Boolean( asData );
-        }
-        if ( s_asData ) {
-            byte[][] msgs = breakAndEncode( data );
-            result = sendBuffers( msgs, phone, data );
-        } else {
-            result = sendAsText( data, phone );
-        }
-        return result;
-    }
-
-    private String[] breakAndEncode( String msg ) throws java.io.IOException 
-    {
-        // TODO: as optimization, truncate header when only one packet
-        // required
-        Assert.assertFalse( msg.contains(":") );
-        int count = (msg.length() + (MAX_LEN_TEXT-1)) / MAX_LEN_TEXT;
-        String[] result = new String[count];
-        int msgID = ++s_nSent % 0x000000FF;
-
-        int start = 0;
-        int end = 0;
-        for ( int ii = 0; ii < count; ++ii ) {
-            int len = msg.length() - end;
-            if ( len > MAX_LEN_TEXT ) {
-                len = MAX_LEN_TEXT;
-            }
-            end += len;
-            result[ii] = String.format( "0:%X:%X:%X:%s", msgID, ii, count, 
-                                        msg.substring( start, end ) );
-            start = end;
-        }
+        byte[][] msgs = breakAndEncode( data );
+        boolean result = null != msgs && sendBuffers( msgs, phone );
         return result;
     }
 
     private byte[][] breakAndEncode( byte msg[] ) throws java.io.IOException 
     {
+        byte[][] result = null;
         int count = (msg.length + (MAX_LEN_BINARY-1)) / MAX_LEN_BINARY;
-        byte[][] result = new byte[count][];
-        int msgID = ++s_nSent % 0x000000FF;
+        if ( count < MAX_MSG_COUNT ) {
+            result = new byte[count][];
+            int msgID = ++s_nSent % 0x000000FF;
 
-        int start = 0;
-        int end = 0;
-        for ( int ii = 0; ii < count; ++ii ) {
-            int len = msg.length - end;
-            if ( len > MAX_LEN_BINARY ) {
-                len = MAX_LEN_BINARY;
+            int start = 0;
+            int end = 0;
+            for ( int ii = 0; ii < count; ++ii ) {
+                int len = msg.length - end;
+                if ( len > MAX_LEN_BINARY ) {
+                    len = MAX_LEN_BINARY;
+                }
+                end += len;
+                byte[] part = new byte[4 + len]; 
+                part[0] = (byte)SMS_PROTO_VERSION;
+                part[1] = (byte)msgID;
+                part[2] = (byte)ii;
+                part[3] = (byte)count;
+                System.arraycopy( msg, start, part, 4, len );
+
+                result[ii] = part;
+                start = end;
             }
-            end += len;
-            byte[] part = new byte[4 + len]; 
-            part[0] = (byte)0;  // proto
-            part[1] = (byte)msgID;
-            part[2] = (byte)ii;
-            part[3] = (byte)count;
-            System.arraycopy( msg, start, part, 4, len );
-
-            result[ii] = part;
-            start = end;
+        } else {
+            DbgUtils.logf( "breakAndEncode(): msg count %d too large; dropping",
+                           count );
         }
         return result;
     }
 
     private void receive( SMS_CMD cmd, byte[] data, String phone )
     {
+        DbgUtils.logf( "SMSService.receive(cmd=%s)", cmd.toString() );
         DataInputStream dis = 
             new DataInputStream( new ByteArrayInputStream(data) );
         try {
             switch( cmd ) {
             case INVITE:
-                int gameID = dis.readInt();
-                String gameName = dis.readUTF();
-                int lang = dis.readInt();
-                String dict = dis.readUTF();
-                int nPlayersT = dis.readByte();
-                int nPlayersH = dis.readByte();
-                
-                if ( DictLangCache.haveDict( this, lang, dict ) ) {
-                    makeForInvite( phone, gameID, gameName, lang, dict, 
-                                   nPlayersT, nPlayersH );
+                String nliData = dis.readUTF();
+                NetLaunchInfo nli = new NetLaunchInfo( this, nliData );
+                if ( nli.isValid() && checkNotDupe( nli ) ) {
+                    if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
+                        makeForInvite( phone, nli );
+                    } else {
+                        Intent intent = MultiService
+                            .makeMissingDictIntent( this, nli, 
+                                                    DictFetchOwner.OWNER_SMS );
+                        MultiService.postMissingDictNotification( this, intent, 
+                                                                  nli.gameID() );
+                    }
                 } else {
-                    Intent intent = MultiService
-                        .makeMissingDictIntent( this, gameName, lang, dict, 
-                                                nPlayersT, nPlayersH );
-                    intent.putExtra( PHONE, phone );
-                    intent.putExtra( MultiService.OWNER, 
-                                     MultiService.OWNER_SMS );
-                    intent.putExtra( MultiService.INVITER, 
-                                     Utils.phoneToContact( this, phone, true ) );
-                    intent.putExtra( MultiService.GAMEID, gameID );
-                    MultiService.postMissingDictNotification( this, intent, 
-                                                              gameID );
+                    DbgUtils.logf( "invalid nli from: %s", nliData );
                 }
                 break;
             case DATA:
-                gameID = dis.readInt();
+                int gameID = dis.readInt();
                 byte[] rest = new byte[dis.available()];
                 dis.read( rest );
                 feedMessage( gameID, rest, new CommsAddrRec( phone ) );
@@ -544,32 +550,21 @@ public class SMSService extends XWService {
         int count = buffer[3];
         byte[] rest = new byte[buffer.length - 4];
         System.arraycopy( buffer, 4, rest, 0, rest.length );
-        tryAssemble( senderPhone, id, index, count, rest );
-            
-        sendResult( MultiEvent.SMS_RECEIVE_OK );
-    }
-
-    private void receiveBuffer( String as64, String senderPhone )
-    {
-        String[] parts = as64.split( ":" );
-        Assert.assertTrue( 5 == parts.length );
-        if ( 5 == parts.length ) {
-            byte proto = Byte.valueOf( parts[0], 10 );
-            int id = Integer.valueOf( parts[1], 16 );
-            int index = Integer.valueOf( parts[2], 16 );
-            int count = Integer.valueOf( parts[3], 16 );
-            tryAssemble( senderPhone, id, index, count, parts[4] );
-            
+        if ( tryAssemble( senderPhone, id, index, count, rest ) ) {
             sendResult( MultiEvent.SMS_RECEIVE_OK );
+        } else {
+            DbgUtils.logf( "SMSService: receiveBuffer(): bogus message from"
+                           + " phone %s", senderPhone );
         }
     }
 
-    private void tryAssemble( String senderPhone, int id, int index, 
-                              int count, byte[] msg )
+    private boolean tryAssemble( String senderPhone, int id, int index, 
+                                 int count, byte[] msg )
     {
-        if ( index == 0 && count == 1 ) {
-            disAssemble( senderPhone, msg );
-        } else {
+        boolean success = true;
+        if ( index == 0 && count == 1 ) { // most common case
+            success = disAssemble( senderPhone, msg );
+        } else if ( count > 0 && count < MAX_MSG_COUNT && index < count ) {
             // required?  Should always be in main thread.
             synchronized( s_partialMsgs ) { 
                 HashMap<Integer, MsgStore> perPhone = 
@@ -585,55 +580,43 @@ public class SMSService extends XWService {
                 }
 
                 if ( store.add( index, msg ).isComplete() ) {
-                    disAssemble( senderPhone, store.messageData() );
+                    success = disAssemble( senderPhone, store.messageData() );
                     perPhone.remove( id );
                 }
             }
-        }
-    }
-
-    private void tryAssemble( String senderPhone, int id, int index, 
-                              int count, String msg )
-    {
-        if ( index == 0 && count == 1 ) {
-            disAssemble( senderPhone, msg );
         } else {
-            // required?  Should always be in main thread.
-            synchronized( s_partialMsgs ) { 
-                HashMap<Integer, MsgStore> perPhone = 
-                    s_partialMsgs.get( senderPhone );
-                if ( null == perPhone ) {
-                    perPhone = new HashMap <Integer, MsgStore>();
-                    s_partialMsgs.put( senderPhone, perPhone );
-                }
-                MsgStore store = perPhone.get( id );
-                if ( null == store ) {
-                    store = new MsgStore( id, count, true );
-                    perPhone.put( id, store );
-                }
-
-                if ( store.add( index, msg ).isComplete() ) {
-                    disAssemble( senderPhone, store.messageText() );
-                    perPhone.remove( id );
-                }
-            }
+            success = false;
         }
+        return success;
     }
 
-    private void disAssemble( String senderPhone, byte[] fullMsg )
+    private boolean disAssemble( String senderPhone, byte[] fullMsg )
     {
+        boolean success = false;
         DataInputStream dis = 
             new DataInputStream( new ByteArrayInputStream(fullMsg) );
         try {
             byte proto = dis.readByte();
-            if ( SMS_PROTO_VERSION != proto ) {
-                DbgUtils.logf( "SMSService.disAssemble: bad proto %d; dropping", 
-                               proto );
+            short myPort = getNBSPort();
+            short gotPort;
+            if ( SMS_PROTO_VERSION_WITHPORT > proto ) {
+                gotPort = myPort;
+            } else {
+                gotPort = dis.readShort();
+            }
+            if ( SMS_PROTO_VERSION < proto ) {
+                DbgUtils.logf( "SMSService.disAssemble: bad proto %d from %s;"
+                               + " dropping", proto, senderPhone );
+                sendResult( MultiEvent.BAD_PROTO_SMS, senderPhone );
+            } else if ( gotPort != myPort ) {
+                DbgUtils.logdf( "SMSService.disAssemble(): received on port %d"
+                                + " but expected %d", gotPort, myPort );
             } else {
                 SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
                 byte[] rest = new byte[dis.available()];
                 dis.read( rest );
                 receive( cmd, rest, senderPhone );
+                success = true;
             }
         } catch ( java.io.IOException ioe ) {
             DbgUtils.loge( ioe );
@@ -641,50 +624,24 @@ public class SMSService extends XWService {
             // enum this older code doesn't know about; drop it
             DbgUtils.logf( "disAssemble: dropping message with too-new enum" );
         }
+        return success;
     }
 
-    private void disAssemble( String senderPhone, String fullMsg )
+    private void postNotification( String phone, int gameID, long rowid )
     {
-        byte[] data = XwJNI.base64Decode( fullMsg );
-        DataInputStream dis = 
-            new DataInputStream( new ByteArrayInputStream(data) );
-        try {
-            byte proto = dis.readByte();
-            if ( SMS_PROTO_VERSION != proto ) {
-                DbgUtils.logf( "SMSService.disAssemble: bad proto %d; dropping", 
-                               proto );
-            } else {
-                SMS_CMD cmd = SMS_CMD.values()[dis.readByte()];
-                byte[] rest = new byte[dis.available()];
-                dis.read( rest );
-                receive( cmd, rest, senderPhone );
-            }
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
-        } catch ( ArrayIndexOutOfBoundsException oob ) {
-            // enum this older code doesn't know about; drop it
-            DbgUtils.logf( "disAssemble: dropping message with too-new enum" );
-        }
-    }
-
-    private void makeForInvite( String phone, int gameID, String gameName, 
-                                int lang, String dict, int nPlayersT, 
-                                int nPlayersH )
-    {
-        long rowid = 
-            GameUtils.makeNewSMSGame( this, gameID, 
-                                      new CommsAddrRec( phone ),
-                                      lang, dict, nPlayersT, nPlayersH );
-
-        if ( null != gameName && 0 < gameName.length() ) {
-            DBUtils.setName( this, rowid, gameName );
-        }
         String owner = Utils.phoneToContact( this, phone, true );
         String body = LocUtils.getString( this, R.string.new_name_body_fmt, 
                                           owner );
-        postNotification( gameID, R.string.new_sms_title, body, rowid );
+        GameUtils.postInvitedNotification( this, gameID, body, rowid );
+    }
 
-        ackInvite( phone, gameID );
+    private void makeForInvite( String phone, NetLaunchInfo nli )
+    {
+        long rowid = GameUtils.makeNewMultiGame( this, nli,
+                                                 new SMSMsgSink( this ),
+                                                 getUtilCtxt() );
+        postNotification( phone, nli.gameID(), rowid );
+        ackInvite( phone, nli.gameID() );
     }
 
     private PendingIntent makeStatusIntent( String msg )
@@ -693,75 +650,55 @@ public class SMSService extends XWService {
         return PendingIntent.getBroadcast( this, 0, intent, 0 );
     }
 
-    private boolean sendBuffers( String[] fragments, String phone )
+    private boolean sendBuffers( byte[][] fragments, String phone )
     {
         boolean success = false;
-        try {
-            SmsManager mgr = SmsManager.getDefault();
-            PendingIntent sent = makeStatusIntent( MSG_SENT );
-            PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
-            for ( String fragment : fragments ) {
-                String asPublic = toPublicFmt( fragment );
-                mgr.sendTextMessage( phone, null, asPublic, sent, delivery );
+        if ( XWPrefs.getSMSEnabled( this ) ) {
+
+            // Try send-to-self
+            if ( XWPrefs.getSMSToSelfEnabled( this ) ) {
+                String myPhone = getPhoneInfo( this ).number;
+                if ( PhoneNumberUtils.compare( phone, myPhone ) ) {
+                    for ( byte[] fragment : fragments ) {
+                        handleFrom( this, fragment, phone );
+                    }
+                    success = true;
+                }
             }
-            if ( s_showToasts ) {
-                DbgUtils.showf( this, "sent %dth msg", s_nSent );
+
+            if ( !success ) {
+                short nbsPort = getNBSPort();
+                try {
+                    SmsManager mgr = SmsManager.getDefault();
+                    PendingIntent sent = makeStatusIntent( MSG_SENT );
+                    PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
+                    for ( byte[] fragment : fragments ) {
+                        mgr.sendDataMessage( phone, null, nbsPort, fragment, sent, 
+                                             delivery );
+                        DbgUtils.logf( "SMSService.sendBuffers(): sent %d byte fragment",
+                                       fragment.length );
+                    }
+                    success = true;
+                } catch ( IllegalArgumentException iae ) {
+                    DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
+                } catch ( NullPointerException npe ) {
+                    Assert.fail();      // shouldn't be trying to do this!!!
+                } catch ( Exception ee ) {
+                    DbgUtils.loge( ee );
+                }
             }
-            success = true;
-        } catch ( IllegalArgumentException iae ) {
-            DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
-        } catch ( Exception ee ) {
-            DbgUtils.loge( ee );
+        } else {
+            DbgUtils.logf( "sendBuffers(): dropping because SMS disabled" );
+        }
+
+        if ( showToasts( this ) && success && (0 == (s_nSent % 5)) ) {
+            DbgUtils.showf( this, "Sent msg %d", s_nSent );
         }
 
         ConnStatusHandler.updateStatusOut( this, null, 
                                            CommsConnType.COMMS_CONN_SMS, 
                                            success );
         return success;
-    }
-
-    private boolean sendBuffers( byte[][] fragments, String phone, byte[] data )
-    {
-        boolean success = false;
-        try {
-            SmsManager mgr = SmsManager.getDefault();
-            PendingIntent sent = makeStatusIntent( MSG_SENT );
-            PendingIntent delivery = makeStatusIntent( MSG_DELIVERED );
-            for ( byte[] fragment : fragments ) {
-                mgr.sendDataMessage( phone, null, (short)3344, fragment, 
-                                     sent, delivery );
-            }
-            if ( s_showToasts ) {
-                DbgUtils.showf( this, "sent %dth msg", s_nSent );
-            }
-            success = true;
-        } catch ( IllegalArgumentException iae ) {
-            DbgUtils.logf( "sendBuffers(%s): %s", phone, iae.toString() );
-        } catch ( NullPointerException npe ) {
-            DbgUtils.showf( this, "Switching to regular SMS" );
-            s_asData = new Boolean( false );
-            XWPrefs.setPrefsBoolean( this, R.string.key_send_data_sms,
-                                     false );
-            success = sendAsText( data, phone );
-        } catch ( Exception ee ) {
-            DbgUtils.loge( ee );
-        }
-
-        ConnStatusHandler.updateStatusOut( this, null, 
-                                           CommsConnType.COMMS_CONN_SMS, 
-                                           success );
-        return success;
-    }
-
-    private static void fillInviteIntent( Intent intent, String phone,
-                                          int gameID, String gameName, 
-                                          int lang, String dict, 
-                                          int nPlayersT, int nPlayersH )
-    {
-        intent.putExtra( PHONE, phone );
-        intent.putExtra( MultiService.GAMEID, gameID );
-        MultiService.fillInviteIntent( intent, gameName, lang, dict, 
-                                       nPlayersT, nPlayersH );
     }
 
     private void feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
@@ -770,55 +707,20 @@ public class SMSService extends XWService {
         if ( null == rowids || 0 == rowids.length ) {
             sendDiedPacket( addr.sms_phone, gameID );
         } else {
+            boolean[] isLocalP = new boolean[1];
             for ( long rowid : rowids ) {
-                if ( BoardDelegate.feedMessage( gameID, msg, addr ) ) {
+                if ( BoardDelegate.feedMessage( rowid, msg, addr ) ) {
                     // do nothing
                 } else {
                     SMSMsgSink sink = new SMSMsgSink( this );
+                    BackMoveResult bmr = new BackMoveResult();
                     if ( GameUtils.feedMessage( this, rowid, msg, addr, 
-                                                sink ) ) {
-                        postNotification( gameID, R.string.new_smsmove_title, 
-                                          getString(R.string.new_move_body),
-                                          rowid );
+                                                sink, bmr, isLocalP ) ) {
+                        GameUtils.postMoveNotification( this, rowid, bmr,
+                                                        isLocalP[0] );
                     }
                 }
             }
-        }
-    }
-
-    private void postNotification( int gameID, int title, String body, 
-                                   long rowid )
-    {
-        Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
-        Utils.postNotification( this, intent, title, body, (int)rowid );
-    }
-
-    // Runs in separate thread
-    private void checkMsgDB()
-    {
-        Uri uri = Uri.parse( "content://sms/inbox" );
-        ContentResolver resolver = getContentResolver();
-        String[] columns = new String[] { "body","address" };
-        Cursor cursor = resolver.query( uri, columns, null, null, null );
-        if ( null != cursor ) {
-            if ( 0 < cursor.getCount() ) {
-                try {
-                    int bodyIndex = cursor.getColumnIndexOrThrow( "body" );
-                    int phoneIndex = cursor.getColumnIndexOrThrow( "address" );
-                    while ( cursor.moveToNext() ) {
-                        String msg = fromPublicFmt( cursor.getString( bodyIndex ) );
-                        if ( null != msg ) {
-                            String number = cursor.getString( phoneIndex );
-                            if ( null != number ) {
-                                handleFrom( this, msg, number );
-                            }
-                        }
-                    }
-                } catch ( Exception ee ) {
-                    DbgUtils.loge( ee );
-                }
-            }
-            cursor.close();
         }
     }
 
@@ -849,67 +751,52 @@ public class SMSService extends XWService {
 
         m_receiveReceiver = new BroadcastReceiver() {
                 @Override
-                public void onReceive(Context arg0, Intent arg1) 
+                public void onReceive( Context context, Intent intent )
                 {
-                    DbgUtils.logf( "SMS delivery result: %s",
-                                   Activity.RESULT_OK == getResultCode()
-                                   ? "SUCCESS" : "FAILURE" );
-                }
-            };
-        registerReceiver( m_receiveReceiver, new IntentFilter(MSG_DELIVERED) );
-
-        m_prefsListener = new OnSharedPreferenceChangeListener() {
-                public void onSharedPreferenceChanged( SharedPreferences sp,
-                                                       String key ) {
-                    if ( key.equals( getString( R.string.key_show_sms ) ) ) {
-                        s_showToasts = null;
-                    } else if ( key.equals( getString( R.string
-                                                       .key_send_data_sms ))) {
-                        s_asData = null;
+                    if ( Activity.RESULT_OK != getResultCode() ) {
+                        DbgUtils.logf( "SMS delivery result: FAILURE" );
                     }
                 }
             };
-        SharedPreferences sp
-            = PreferenceManager.getDefaultSharedPreferences( this );
-        sp.registerOnSharedPreferenceChangeListener( m_prefsListener );
+        registerReceiver( m_receiveReceiver, new IntentFilter(MSG_DELIVERED) );
     }
 
-    private boolean sendAsText( byte[] data, String phone ) 
+    private static String matchKeyIf( Map<String, ?> map, final String phone )
     {
-        boolean success = false;
-        try {
-            String[] msgs = breakAndEncode( XwJNI.base64Encode( data ) );
-            success = sendBuffers( msgs, phone );
-        } catch ( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
+        String result = phone;
+        Set<String> keys = map.keySet();
+        if ( ! keys.contains( result ) ) {
+            for ( Iterator<String> iter = keys.iterator(); iter.hasNext(); ) {
+                String key = iter.next();
+                if ( PhoneNumberUtils.compare( key, phone ) ) {
+                    result = key;
+                    break;
+                }
+            }
         }
-        return success;
+        DbgUtils.logf( "matchKeyIf(%s) => %s", phone, result );
+        return result;
+    }
+
+    private static Short s_nbsPort = null;
+    private short getNBSPort()
+    {
+        if ( null == s_nbsPort ) {
+            String asStr = getString( R.string.nbs_port );
+            s_nbsPort = new Short((short)Integer.parseInt( asStr ) );
+        }
+        return s_nbsPort;
     }
 
     private class SMSMsgSink extends MultiMsgSink {
-        private Context m_context;
         public SMSMsgSink( Context context ) {
-            super();
-            m_context = context;
+            super( context );
         }
 
-        /***** TransportProcs interface *****/
-        public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
+        @Override
+        public int sendViaSMS( byte[] buf, int gameID, CommsAddrRec addr )
         {
-            int nSent = -1;
-            if ( null != addr ) {
-                nSent = sendPacket( addr.sms_phone, gameID, buf );
-            } else {
-                DbgUtils.logf( "SMSMsgSink.transportSend: "
-                               + "addr null so not sending" );
-            }
-            return nSent;
-        }
-
-        public boolean relayNoConnProc( byte[] buf, String relayID )
-        {
-            Assert.fail();
-            return false;
+            return sendPacket( addr.sms_phone, gameID, buf );
         }
     }
 

@@ -28,7 +28,7 @@
  */
 
 bool
-StrWPF::catf( const char* fmt, va_list ap )
+StrWPF::catfap( const char* fmt, va_list ap )
 {
     bool success = false;
     const int origsiz = size();
@@ -57,7 +57,7 @@ StrWPF::catf( const char* fmt, ... )
     do {
         va_list ap;
         va_start( ap, fmt );
-        done = catf( fmt, ap );
+        done = catfap( fmt, ap );
         va_end( ap );
     } while ( !done );
 }

@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2011 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009-2015 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,52 +21,73 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.ListActivity;
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.os.Handler;
+import android.widget.Spinner;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Iterator;
 
 import junit.framework.Assert;
 
-public class BTInviteDelegate extends InviteDelegate
-    implements CompoundButton.OnCheckedChangeListener {
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
+
+public class BTInviteDelegate extends InviteDelegate {
 
     private Activity m_activity;
-    private boolean m_firstScan;
-    private int m_checkCount;
+    private Set<LinearLayout> m_checked;
+    private Map<String, Integer> m_counts;
+    private boolean m_setChecked;
+    private BTDevsAdapter m_adapter;
 
-    public static void launchForResult( Activity activity, int nMissing, 
-                                        int requestCode )
+    public static void launchForResult( Activity activity, int nMissing,
+                                        SentInvitesInfo info,
+                                        RequestCode requestCode )
     {
+        Assert.assertTrue( 0 < nMissing ); // don't call if nMissing == 0
         Intent intent = new Intent( activity, BTInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
+        if ( null != info ) {
+            String lastDev = info.getLastDev( InviteMeans.BLUETOOTH );
+            if ( null != lastDev ) {
+                intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
+            }
+        }
+        activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
-    protected BTInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected BTInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.btinviter );
         m_activity = delegator.getActivity();
     }
 
-    protected void init()
+    @Override
+    protected void init( Bundle savedInstanceState )
     {
+        m_checked = new HashSet<LinearLayout>();
+        m_counts = new HashMap<String, Integer>();
+
+        String msg = getString( R.string.bt_pick_addall_button );
+        msg = getQuantityString( R.plurals.invite_bt_desc_fmt, m_nMissing, 
+                                 m_nMissing, msg );
         super.init( R.id.button_invite, R.id.button_rescan, 
-                    R.id.button_clear, R.id.invite_desc,
-                    R.string.invite_bt_desc_fmt );
-        m_firstScan = true;
+                    R.id.button_clear, R.id.invite_desc, msg );
         BTService.clearDevices( m_activity, null ); // will return names
     }
 
@@ -79,24 +100,25 @@ public class BTInviteDelegate extends InviteDelegate
             post( new Runnable() {
                     public void run() {
                         synchronized( BTInviteDelegate.this ) {
-                            stopProgress();
 
+                            String[] btDevAddrs = null;
                             String[] btDevNames = null;
                             if ( 0 < args.length ) {
-                                btDevNames = (String[])(args[0]);
+                                btDevAddrs = (String[])(args[0]);
+                                btDevNames = (String[])(args[1]);
                                 if ( null != btDevNames
                                      && 0 == btDevNames.length ) {
                                     btDevNames = null;
+                                    btDevAddrs = null;
                                 }
                             }
 
-                            if ( null == btDevNames && m_firstScan ) {
-                                BTService.scan( m_activity );
-                            }
-                            setListAdapter( new BTDevsAdapter( btDevNames ) );
-                            m_checkCount = 0;
+                            m_setChecked = null != btDevNames
+                                && m_nMissing == btDevNames.length;
+                            m_adapter = new BTDevsAdapter( btDevAddrs, btDevNames );
+                            setListAdapter( m_adapter );
+                            m_checked.clear();
                             tryEnable();
-                            m_firstScan = false;
                         }
                     }
                 } );
@@ -108,64 +130,149 @@ public class BTInviteDelegate extends InviteDelegate
 
     protected void scan()
     {
-        startProgress( R.string.scan_progress );
-        BTService.scan( m_activity );
+        int count = BTService.getPairedCount( m_activity );
+        if ( 0 < count ) {
+            BTService.scan( m_activity );
+        } else {
+            showConfirmThen( R.string.bt_no_devs, R.string.button_go_settings, 
+                             Action.OPEN_BT_PREFS_ACTION );
+        }
     }
 
     protected void clearSelected()
     {
-        BTService.clearDevices( m_activity, listSelected() );
+        String[][] selected = new String[1][];
+        listSelected( selected, null );
+        BTService.clearDevices( m_activity, selected[0] );
     }
 
-    protected String[] listSelected()
+    protected void listSelected( String[][] devsP, int[][] countsP )
     {
-        ListView list = (ListView)findViewById( android.R.id.list );
-        String[] result = new String[m_checkCount];
-        int count = list.getChildCount();
-        int index = 0;
-        for ( int ii = 0; ii < count; ++ii ) {
-            CheckBox box = (CheckBox)list.getChildAt( ii );
-            if ( box.isChecked() ) {
-                result[index++] = box.getText().toString();
-            }
+        int size = m_checked.size();
+        int[] counts = null;
+        String[] devs = new String[size];
+        devsP[0] = devs;
+        if ( null != countsP ) {
+            counts = new int[size];
+            countsP[0] = counts;
         }
-        return result;
+
+        int nxt = 0;
+        for ( Iterator<LinearLayout> iter = m_checked.iterator();
+              iter.hasNext(); ) {
+            LinearLayout layout = iter.next();
+            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
+            String btAddr = (String)box.getTag();
+            devs[nxt] = btAddr;
+            if ( null != counts ) {
+                counts[nxt] = m_counts.get( btAddr );
+            }
+            ++nxt;
+        }
     }
 
     protected void tryEnable() 
     {
-        m_okButton.setEnabled( m_checkCount == m_nMissing );
-        m_clearButton.setEnabled( 0 < m_checkCount );
-    }
+        String[][] devs = new String[1][];
+        int[][] counts = new int[1][];
+        listSelected( devs, counts );
 
-    public void onCheckedChanged( CompoundButton buttonView, 
-                                  boolean isChecked )
-    {
-        if ( isChecked ) {
-            ++m_checkCount;
-        } else {
-            --m_checkCount;
+        m_clearButton.setEnabled( 0 < devs[0].length );
+
+        int count = 0;
+        for ( int one : counts[0] ) {
+            count += one;
         }
-        DbgUtils.logf( "BTInviteActivity.onCheckedChanged( isChecked=%b ); "
-                       + "count now %d", isChecked, m_checkCount );
-        tryEnable();
+        m_okButton.setEnabled( 0 < count && count <= m_nMissing );
     }
 
     private class BTDevsAdapter extends XWListAdapter {
-        private String[] m_devs;
-        public BTDevsAdapter( String[] devs )
+        private String[] m_devAddrs;
+        private String[] m_devNames;
+
+        public BTDevsAdapter( String[] btAddrs, String[] btNames )
         {
-            super( null == devs? 0 : devs.length );
-            m_devs = devs;
+            super( null == btAddrs? 0 : btAddrs.length );
+            m_devAddrs = btAddrs;
+            m_devNames = btNames;
         }
 
-        public Object getItem( int position) { return m_devs[position]; }
-        public View getView( final int position, View convertView, 
-                             ViewGroup parent ) {
-            CheckBox box = (CheckBox)inflate( R.layout.btinviter_item );
-            box.setText( m_devs[position] );
-            box.setOnCheckedChangeListener( BTInviteDelegate.this );
-            return box;
+        public Object getItem( int position ) { return m_devNames[position]; }
+
+        public View getView( int position, View convertView, ViewGroup parent ) {
+            final String btAddr = m_devAddrs[position];
+            final LinearLayout layout = (LinearLayout)inflate( R.layout.btinviter_item );
+            CheckBox box = (CheckBox)layout.findViewById( R.id.inviter_check );
+            box.setText( m_devNames[position] );
+            box.setTag( btAddr );
+
+            m_counts.put( btAddr, 1 );
+            if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
+                Spinner spinner = (Spinner)
+                    layout.findViewById(R.id.nperdev_spinner);
+                ArrayAdapter<String> adapter = 
+                    new ArrayAdapter<String>( m_activity, android.R.layout
+                                              .simple_spinner_item );
+                for ( int ii = 1; ii <= m_nMissing; ++ii ) {
+                    String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
+                    adapter.add( str );
+                }
+                spinner.setAdapter( adapter );
+                spinner.setVisibility( View.VISIBLE );
+                spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
+                        public void onItemSelected( AdapterView<?> parent, 
+                                                    View view, int pos, 
+                                                    long id )
+                        {
+                            m_counts.put( btAddr, 1 + pos );
+                            tryEnable();
+                        }
+
+                        public void onNothingSelected( AdapterView<?> parent ) {}
+                    } );
+            }
+
+            CompoundButton.OnCheckedChangeListener listener = 
+                new CompoundButton.OnCheckedChangeListener() {
+                    public void onCheckedChanged( CompoundButton buttonView, 
+                                                  boolean isChecked ) {
+                        if ( isChecked ) {
+                            m_checked.add( layout );
+                        } else {
+                            m_checked.remove( layout );
+                            // User's now making changes; don't check new views
+                            m_setChecked = false;
+                        }
+                        tryEnable();
+                    }
+                };
+            box.setOnCheckedChangeListener( listener );
+
+            if ( m_setChecked || m_checked.contains( layout ) ) {
+                box.setChecked( true );
+            } else if ( null != m_lastDev && m_lastDev.equals( btAddr ) ) {
+                m_lastDev = null;
+                box.setChecked( true );
+            }
+            return layout;
+        }
+
+        public String getBTAddr( CheckBox box ) { return (String)box.getTag(); }
+        public String getBTName( CheckBox box ) { return box.getText().toString(); }
+    }
+
+    // DlgDelegate.DlgClickNotify interface
+    @Override
+    public void dlgButtonClicked( Action action, int which, Object[] params )
+    {
+        switch( action ) {
+        case OPEN_BT_PREFS_ACTION:
+            if ( AlertDialog.BUTTON_POSITIVE == which ) {
+                BTService.openBTSettings( m_activity );
+            }
+            break;
+        default:
+            super.dlgButtonClicked( action, which, params );
         }
     }
 }

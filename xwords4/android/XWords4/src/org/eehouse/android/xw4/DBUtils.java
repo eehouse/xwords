@@ -34,6 +34,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.text.TextUtils;
 
+import java.sql.Timestamp;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -52,15 +54,18 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
-import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DBUtils {
     public static final int ROWID_NOTFOUND = -1;
     public static final int ROWIDS_ALL = -2;
     public static final int GROUPID_UNSPEC = -1;
+    public static final String KEY_NEWGAMECOUNT = "DBUtils.newGameCount";
 
     private static final String DICTS_SEP = ",";
 
@@ -91,13 +96,13 @@ public class DBUtils {
     }
 
     public static class HistoryPair {
-        private HistoryPair( String p_msg, boolean p_sourceLocal )
+        private HistoryPair( String p_msg, int p_playerIndx )
         {
             msg = p_msg;
-            sourceLocal = p_sourceLocal;
+            playerIndx = p_playerIndx;
         }
         String msg;
-        boolean sourceLocal;
+        int playerIndx;
     }
 
     public static class DictBrowseState {
@@ -140,9 +145,10 @@ public class DBUtils {
                              DBHelper.ROOMNAME, DBHelper.RELAYID, 
                              /*DBHelper.SMSPHONE,*/ DBHelper.SEED, 
                              DBHelper.DICTLANG, DBHelper.GAMEID,
-                             DBHelper.SCORES, DBHelper.HASMSGS,
+                             DBHelper.SCORES, 
                              DBHelper.LASTPLAY_TIME, DBHelper.REMOTEDEVS,
-                             DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING
+                             DBHelper.LASTMOVE, DBHelper.NPACKETSPENDING,
+                             DBHelper.EXTRAS,
         };
         String selection = String.format( ROW_ID_FMT, lock.getRowid() );
 
@@ -190,6 +196,9 @@ public class DBUtils {
                 summary.gameOver = tmp != 0;
                 summary.lastMoveTime = 
                     cursor.getInt(cursor.getColumnIndex(DBHelper.LASTMOVE));
+                String str = cursor
+                    .getString(cursor.getColumnIndex(DBHelper.EXTRAS));
+                summary.setExtras( str );
 
                 String scoresStr = 
                     cursor.getString( cursor.getColumnIndex(DBHelper.SCORES));
@@ -211,7 +220,7 @@ public class DBUtils {
                 int col = cursor.getColumnIndex( DBHelper.CONTYPE );
                 if ( 0 <= col ) {
                     tmp = cursor.getInt( col );
-                    summary.conType = CommsAddrRec.CommsConnType.values()[tmp];
+                    summary.conTypes = new CommsConnTypeSet( tmp );
                     col = cursor.getColumnIndex( DBHelper.SEED );
                     if ( 0 < col ) {
                         summary.seed = cursor.getInt( col );
@@ -221,36 +230,34 @@ public class DBUtils {
                         summary.nPacketsPending = cursor.getInt( col );
                     }
 
-                    switch ( summary.conType ) {
-                    case COMMS_CONN_RELAY:
-                        col = cursor.getColumnIndex( DBHelper.ROOMNAME );
-                        if ( col >= 0 ) {
-                            summary.roomName = cursor.getString( col );
+                    for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
+                          iter.hasNext(); ) {
+                        switch ( iter.next() ) {
+                        case COMMS_CONN_RELAY:
+                            col = cursor.getColumnIndex( DBHelper.ROOMNAME );
+                            if ( col >= 0 ) {
+                                summary.roomName = cursor.getString( col );
+                            }
+                            col = cursor.getColumnIndex( DBHelper.RELAYID );
+                            if ( col >= 0 ) {
+                                summary.relayID = cursor.getString( col );
+                            }
+                            break;
+                        case COMMS_CONN_BT:
+                        case COMMS_CONN_SMS:
+                            col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
+                            if ( col >= 0 ) {
+                                summary.setRemoteDevs( context, 
+                                                       cursor.getString( col ) );
+                            }
+                            break;
                         }
-                        col = cursor.getColumnIndex( DBHelper.RELAYID );
-                        if ( col >= 0 ) {
-                            summary.relayID = cursor.getString( col );
-                        }
-                        break;
-                    case COMMS_CONN_BT:
-                    case COMMS_CONN_SMS:
-                        col = cursor.getColumnIndex( DBHelper.REMOTEDEVS );
-                        if ( col >= 0 ) {
-                            summary.setRemoteDevs( context, 
-                                                   cursor.getString( col ) );
-                        }
-                        break;
                     }
                 }
 
                 col = cursor.getColumnIndex( DBHelper.SERVERROLE );
                 tmp = cursor.getInt( col );
                 summary.serverRole = CurGameInfo.DeviceRole.values()[tmp];
-
-                col = cursor.getColumnIndex( DBHelper.HASMSGS );
-                if ( col >= 0 ) {
-                    summary.pendingMsgLevel = cursor.getInt( col );
-                }
             }
             cursor.close();
             db.close();
@@ -265,12 +272,7 @@ public class DBUtils {
     public static void saveSummary( Context context, GameLock lock,
                                     GameSummary summary )
     {
-        saveSummary( context, lock, summary, null );
-    }
-
-    public static void saveSummary( Context context, GameLock lock,
-                                    GameSummary summary, String inviteID )
-    {
+        boolean needsTimer = false;
         Assert.assertTrue( lock.canWrite() );
         long rowid = lock.getRowid();
         String selection = String.format( ROW_ID_FMT, rowid );
@@ -289,12 +291,22 @@ public class DBUtils {
             values.put( DBHelper.GAMEID, summary.gameID );
             values.put( DBHelper.GAME_OVER, summary.gameOver? 1 : 0 );
             values.put( DBHelper.LASTMOVE, summary.lastMoveTime );
+
+            // Don't overwrite extras! Sometimes this method is called from
+            // JNIThread which has created the summary from common code that
+            // doesn't know about Android additions. Leave those unset to
+            // avoid overwriting.
+            String extras = summary.getExtras();
+            if ( null != extras ) {
+                values.put( DBHelper.EXTRAS, summary.getExtras() );
+            }
+            long nextNag = summary.nextTurnIsLocal() ?
+                NagTurnReceiver.figureNextNag( context, 
+                                               1000*(long)summary.lastMoveTime )
+                : 0;
+            values.put( DBHelper.NEXTNAG, nextNag );
                 
             values.put( DBHelper.DICTLIST, summary.dictNames(DICTS_SEP) );
-            values.put( DBHelper.HASMSGS, summary.pendingMsgLevel );
-            if ( null != inviteID ) {
-                values.put( DBHelper.INVITEID, inviteID );
-            }
 
             if ( null != summary.scores ) {
                 StringBuffer sb = new StringBuffer();
@@ -304,20 +316,25 @@ public class DBUtils {
                 values.put( DBHelper.SCORES, sb.toString() );
             }
 
-            if ( null != summary.conType ) {
-                values.put( DBHelper.CONTYPE, summary.conType.ordinal() );
+            if ( null != summary.conTypes ) {
+                values.put( DBHelper.CONTYPE, summary.conTypes.toInt() );
                 values.put( DBHelper.SEED, summary.seed );
                 values.put( DBHelper.NPACKETSPENDING, summary.nPacketsPending );
-                switch( summary.conType ) {
-                case COMMS_CONN_RELAY:
-                    values.put( DBHelper.ROOMNAME, summary.roomName );
-                    values.put( DBHelper.RELAYID, summary.relayID );
-                    break;
-                case COMMS_CONN_BT:
-                case COMMS_CONN_SMS:
-                    values.put( DBHelper.REMOTEDEVS, 
-                                summary.summarizeDevs() );
-                    break;
+                for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
+                      iter.hasNext(); ) {
+                    switch ( iter.next() ) {
+                    case COMMS_CONN_RELAY:
+                        values.put( DBHelper.ROOMNAME, summary.roomName );
+                        String relayID = summary.relayID;
+                        values.put( DBHelper.RELAYID, relayID );
+                        needsTimer = null != relayID && 0 < relayID.length();
+                        break;
+                    case COMMS_CONN_BT:
+                    case COMMS_CONN_SMS:
+                        values.put( DBHelper.REMOTEDEVS, 
+                                    summary.summarizeDevs() );
+                        break;
+                    }
                 }
             }
 
@@ -339,7 +356,35 @@ public class DBUtils {
             notifyListeners( rowid, GameChangeType.GAME_CHANGED );
             invalGroupsCache();
         }
+
+        if ( null != summary ) { // nag time may have changed
+            NagTurnReceiver.setNagTimer( context );
+        }
+
+        if ( needsTimer ) {
+            RelayReceiver.setTimer( context );
+        }
     } // saveSummary
+
+    public static void addRematchInfo( Context context, long rowid, String btAddr, 
+                                       String phone, String relayID )
+    {
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            GameLock lock = new GameLock( rowid, true ).lock();
+            GameSummary summary = getSummary( context, lock );
+            if ( null != btAddr ) {
+                summary.putStringExtra( GameSummary.EXTRA_REMATCH_BTADDR, btAddr );
+            }
+            if ( null != phone ) {
+                summary.putStringExtra( GameSummary.EXTRA_REMATCH_PHONE, phone );
+            }
+            if ( null != relayID ) {
+                summary.putStringExtra( GameSummary.EXTRA_REMATCH_RELAY, relayID );
+            }
+            saveSummary( context, lock, summary );
+            lock.unlock();
+        }
+    }
 
     public static int countGamesUsingLang( Context context, int lang )
     {
@@ -381,6 +426,173 @@ public class DBUtils {
             db.close();
         }
         return result;
+    }
+
+    public static class SentInvitesInfo {
+        public long m_rowid;
+        private ArrayList<InviteMeans> m_means;
+        private ArrayList<String> m_targets;
+        private ArrayList<Timestamp> m_timestamps;
+        private int m_cachedCount = 0;
+
+        private SentInvitesInfo( long rowID ) {
+            m_rowid = rowID;
+            m_means = new ArrayList<InviteMeans>();
+            m_targets = new ArrayList<String>();
+            m_timestamps = new ArrayList<Timestamp>();
+        }
+
+        private void addEntry( InviteMeans means, String target, Timestamp ts )
+        {
+            m_means.add( means );
+            m_targets.add( target );
+            m_timestamps.add( ts );
+            m_cachedCount = -1;
+        }
+
+        public InviteMeans getLastMeans()
+        {
+            return 0 < m_means.size() ? m_means.get(0) : null;
+        }
+
+        public String getLastDev( InviteMeans means )
+        {
+            String result = null;
+            for ( int ii = 0; null == result && ii < m_means.size(); ++ii ) {
+                if ( means == m_means.get( ii ) ) {
+                    result = m_targets.get( ii );
+                }
+            }
+            return result;
+        }
+
+        // There will be lots of duplicates, but we can't detect them all. BUT
+        // if means and target are the same it's definitely a dup. So count
+        // them all and return the largest number we have. 99% of the time we
+        // care only that it's non-0.
+        public int getMinPlayerCount() {
+            if ( -1 == m_cachedCount ) {
+                int count = m_timestamps.size();
+                Map<InviteMeans, Set<String>> hashes
+                    = new HashMap<InviteMeans, Set<String>>();
+                int fakeCount = 0; // make all null-targets count for one
+                for ( int ii = 0; ii < count; ++ii ) {
+                    InviteMeans means = m_means.get(ii);
+                    Set<String> devs;
+                    if ( ! hashes.containsKey( means ) ) {
+                        devs = new HashSet<String>();
+                        hashes.put( means, devs );
+                    }
+                    devs = hashes.get( means );
+                    String target = m_targets.get( ii );
+                    if ( null == target ) {
+                        target = String.format( "%d", ++fakeCount );
+                    }
+                    devs.add( target );
+                }
+
+                // Now find the max
+                m_cachedCount = 0;
+                for ( InviteMeans means : InviteMeans.values() ) {
+                    if ( hashes.containsKey( means ) ) {
+                        int siz = hashes.get( means ).size();
+                        m_cachedCount += siz;
+                    }
+                }
+            }
+            return m_cachedCount;
+        }
+
+        public String getAsText( Context context )
+        {
+            String result;
+            int count = m_timestamps.size();
+            if ( 0 == count ) {
+                result = LocUtils.getString( context, R.string.no_invites );
+            } else {
+                String[] strs = new String[count];
+                for ( int ii = 0; ii < count; ++ii ) {
+                    InviteMeans means = m_means.get(ii);
+                    String target = m_targets.get(ii);
+                    String timestamp = m_timestamps.get(ii).toString();
+                    String msg;
+
+                    switch ( means ) {
+                    case SMS:
+                        msg = LocUtils.getString( context, R.string.invit_expl_sms_fmt,
+                                                  target, timestamp );
+                        break;
+                    case BLUETOOTH:
+                        String devName = BTService.nameForAddr( target );
+                        msg = LocUtils.getString( context, R.string.invit_expl_bt_fmt,
+                                                  devName, timestamp );
+                        break;
+                    case RELAY:
+                        msg = LocUtils.getString( context, R.string.invit_expl_relay_fmt,
+                                                  timestamp );
+                        break;
+                    default:
+                        msg = LocUtils.getString( context, R.string.invit_expl_notarget_fmt,
+                                                  means.toString(), timestamp );
+
+                    }
+                    strs[ii] = msg;
+                }
+                result = TextUtils.join( "\n\n", strs );
+            }
+            return result;
+        }
+        
+    }
+
+    public static SentInvitesInfo getInvitesFor( Context context, long rowid )
+    {
+        SentInvitesInfo result = new SentInvitesInfo( rowid );
+
+        String[] columns = { DBHelper.MEANS, DBHelper.TIMESTAMP, DBHelper.TARGET }; 
+        String selection = String.format( "%s = %d", DBHelper.ROW, rowid );
+        String orderBy = DBHelper.TIMESTAMP + " DESC";
+        
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_INVITES, columns, 
+                                      selection, null, null, null, orderBy );
+            if ( 0 < cursor.getCount() ) {
+                int indxMns = cursor.getColumnIndex( DBHelper.MEANS );
+                int indxTS = cursor.getColumnIndex( DBHelper.TIMESTAMP );
+                int indxTrgt = cursor.getColumnIndex( DBHelper.TARGET );
+                
+                while ( cursor.moveToNext() ) {
+                    InviteMeans means = InviteMeans.values()[cursor.getInt( indxMns )];
+                    Timestamp ts = Timestamp.valueOf(cursor.getString(indxTS));
+                    String target = cursor.getString( indxTrgt );
+                    result.addEntry( means, target, ts );
+                }
+            }
+            cursor.close();
+            db.close();
+        }
+        
+        return result;
+    }
+
+    public static void recordInviteSent( Context context, long rowid,
+                                         InviteMeans means, String target )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.ROW, rowid );
+        values.put( DBHelper.MEANS, means.ordinal() );
+        if ( null != target ) {
+            values.put( DBHelper.TARGET, target );
+        }
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.insert( DBHelper.TABLE_NAME_INVITES, null, values );
+            db.close();
+        }
+
     }
 
     private static void setInt( long rowid, String column, int value )
@@ -506,10 +718,10 @@ public class DBUtils {
         return result;
     }
 
-    public static HashMap<Long,CommsConnType> 
+    public static HashMap<Long,CommsConnTypeSet> 
         getGamesWithSendsPending( Context context )
     {
-        HashMap<Long, CommsConnType> result = new HashMap<Long,CommsConnType>();
+        HashMap<Long, CommsConnTypeSet> result = new HashMap<Long,CommsConnTypeSet>();
         String[] columns = { ROW_ID, DBHelper.CONTYPE };
         String selection = String.format( "%s > 0", DBHelper.NPACKETSPENDING );
         initDB( context );
@@ -521,8 +733,11 @@ public class DBUtils {
             int indx2 = cursor.getColumnIndex( DBHelper.CONTYPE );
             for ( int ii = 0; cursor.moveToNext(); ++ii ) {
                 long rowid = cursor.getLong( indx1 );
-                CommsConnType typ = CommsConnType.values()[cursor.getInt(indx2)];
-                result.put( rowid, typ );
+                CommsConnTypeSet typs = new CommsConnTypeSet( cursor.getInt(indx2) );
+                // Better have an address if has pending sends
+                if ( 0 < typs.size() ) {
+                    result.put( rowid, typs );
+                }
             }
             cursor.close();
             db.close();
@@ -572,6 +787,12 @@ public class DBUtils {
                            result.length );
         }
         return result;
+    }
+
+    public static boolean haveGame( Context context, int gameID ) 
+    {
+        long[] rows = getRowIDsFor( context, gameID );
+        return rows != null && 0 < rows.length;
     }
 
     public static boolean haveGame( Context context, long rowid ) 
@@ -643,41 +864,27 @@ public class DBUtils {
 
     // Return creation time of newest game matching this nli, or null
     // if none found.
-    public static Date getMostRecentCreate( Context context, 
-                                            NetLaunchInfo nli )
+    public static Date getMostRecentCreate( Context context, int gameID )
     {
         Date result = null;
-        String[] selectionArgs = new String[] {
-            DBHelper.ROOMNAME, nli.room, 
-            DBHelper.INVITEID, nli.inviteID, 
-            DBHelper.DICTLANG, String.format( "%d", nli.lang ), 
-            DBHelper.NUM_PLAYERS, String.format( "%d", nli.nPlayersT )
-        };
+
+        String selection = String.format("%s=%d", DBHelper.GAMEID, gameID );
+        String[] columns = { DBHelper.CREATE_TIME };
 
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            Cursor cursor = db.rawQuery( "SELECT " + DBHelper.CREATE_TIME +
-                                         " FROM " + DBHelper.TABLE_NAME_SUM +
-                                         " WHERE ?=? AND ?=? AND ?=? AND ?=?",
-                                         selectionArgs );
+
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
             if ( cursor.moveToNext() ) {
-                int indx = cursor.getColumnIndex( DBHelper.CREATE_TIME );
+                int indx = cursor.getColumnIndex( columns[0] );
                 result = new Date( cursor.getLong( indx ) );
             }
             cursor.close();
             db.close();
         }
-        return result;
-    }
 
-    public static Date getMostRecentCreate( Context context, Uri data )
-    {
-        Date result = null;
-        NetLaunchInfo nli = new NetLaunchInfo( context, data );
-        if ( null != nli && nli.isValid() ) {
-            result = getMostRecentCreate( context, nli );
-        }
         return result;
     }
 
@@ -714,6 +921,14 @@ public class DBUtils {
             db.close();
         }
 
+        return result;
+    }
+
+    public static boolean haveRelayIDs( Context context )
+    {
+        long[][] rowIDss = new long[1][];
+        String[] relayIDs = getRelayIDs( context, rowIDss );
+        boolean result = null != relayIDs && 0 < relayIDs.length;
         return result;
     }
 
@@ -788,7 +1003,7 @@ public class DBUtils {
     }
 
     public static GameLock saveNewGame( Context context, byte[] bytes,
-                                        long groupID )
+                                        long groupID, String name )
     {
         Assert.assertTrue( GROUPID_UNSPEC != groupID );
         GameLock lock = null;
@@ -800,6 +1015,11 @@ public class DBUtils {
         values.put( DBHelper.CREATE_TIME, timestamp );
         values.put( DBHelper.LASTPLAY_TIME, timestamp );
         values.put( DBHelper.GROUPID, groupID );
+        if ( null != name ) {
+            values.put( DBHelper.GAME_NAME, name );
+        }
+
+        invalGroupsCache();  // do first in case any listener has cached data
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -814,7 +1034,8 @@ public class DBUtils {
             lock = new GameLock( rowid, true ).lock();
             notifyListeners( rowid, GameChangeType.GAME_CREATED );
         }
-        invalGroupsCache();
+
+        invalGroupsCache();     // then again after
         return lock;
     } // saveNewGame
 
@@ -886,11 +1107,21 @@ public class DBUtils {
     public static void deleteGame( Context context, GameLock lock )
     {
         Assert.assertTrue( lock.canWrite() );
-        String selection = String.format( ROW_ID_FMT, lock.getRowid() );
+        long rowid = lock.getRowid();
+        String selSummaries = String.format( ROW_ID_FMT, rowid );
+        String selInvites = String.format( "%s=%d", DBHelper.ROW, rowid );
+
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            db.delete( DBHelper.TABLE_NAME_SUM, selection, null );
+            db.delete( DBHelper.TABLE_NAME_SUM, selSummaries, null );
+
+            // Delete invitations too
+            db.delete( DBHelper.TABLE_NAME_INVITES, selInvites, null );
+
+            // Delete chats too -- same sel as for invites
+            db.delete( DBHelper.TABLE_NAME_CHAT, selInvites, null );
+            
             db.close();
         }
         notifyListeners( lock.getRowid(), GameChangeType.GAME_DELETED );
@@ -949,24 +1180,183 @@ public class DBUtils {
         updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
     }
 
-    public static HistoryPair[] getChatHistory( Context context, long rowid )
+    private static HistoryPair[] convertChatString( Context context, long rowid,
+                                                    boolean[] playersLocal )
+    {
+        HistoryPair[] result = null;
+        String oldHistory = getChatHistoryStr( context, rowid );
+        if ( null != oldHistory ) {
+            ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
+            ArrayList<HistoryPair> pairs = new ArrayList<HistoryPair>();
+            String localPrefix = LocUtils.getString( context, R.string.chat_local_id );
+            String rmtPrefix = LocUtils.getString( context, R.string.chat_other_id );
+            String[] msgs = oldHistory.split( "\n" );
+            int localPlayerIndx = -1;
+            int remotePlayerIndx = -1;
+            for ( int ii = playersLocal.length - 1; ii >= 0; --ii ) {
+                if ( playersLocal[ii] ) {
+                    localPlayerIndx = ii;
+                } else {
+                    remotePlayerIndx = ii;
+                }
+            }
+            for ( String msg : msgs ) {
+                int indx = -1;
+                String prefix = null;
+                if ( msg.startsWith( localPrefix ) ) {
+                    prefix = localPrefix;
+                    indx = localPlayerIndx;
+                } else if ( msg.startsWith( rmtPrefix ) ) {
+                    prefix = rmtPrefix;
+                    indx = remotePlayerIndx;
+                }
+                if ( -1 != indx ) {
+                    DbgUtils.logf( "removing substring %s; was: %s", prefix, msg );
+                    msg = msg.substring( prefix.length(), msg.length() );
+                    DbgUtils.logf( "removED substring; now %s", msg );
+                    valuess.add( cvForChat( rowid, msg, indx ) );
+
+                    HistoryPair pair = new HistoryPair(msg, indx );
+                    pairs.add( pair );
+                }
+            }
+            result = pairs.toArray( new HistoryPair[pairs.size()] );
+
+            appendChatHistory( context, valuess );
+            // saveChatHistory( context, rowid, null );
+        }
+        return result;
+    }
+
+    public static HistoryPair[] getChatHistory( Context context, long rowid,
+                                                boolean[] playersLocal )
     {
         HistoryPair[] result = null;
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            final String localPrefix =
-                LocUtils.getString( context, R.string.chat_local_id );
-            String history = getChatHistoryStr( context, rowid );
-            if ( null != history ) {
-                String[] msgs = history.split( "\n" );
-                result = new HistoryPair[msgs.length];
-                for ( int ii = 0; ii < result.length; ++ii ) {
-                    String msg = msgs[ii];
-                    boolean isLocal = msg.startsWith( localPrefix );
-                    result[ii] = new HistoryPair( msg, isLocal );
+            String[] columns = { DBHelper.SENDER, DBHelper.MESSAGE };
+            String selection = String.format( "%s=%d", DBHelper.ROW, rowid );
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+                Cursor cursor = db.query( DBHelper.TABLE_NAME_CHAT, columns, 
+                                          selection, null, null, null, null );
+                if ( 0 < cursor.getCount() ) {
+                    result = new HistoryPair[cursor.getCount()];
+                    int msgIndex = cursor.getColumnIndex( DBHelper.MESSAGE );
+                    int plyrIndex = cursor.getColumnIndex( DBHelper.SENDER );
+                    for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                        String msg = cursor.getString( msgIndex );
+                        int plyr = cursor.getInt( plyrIndex );
+                        HistoryPair pair = new HistoryPair(msg, plyr );
+                        result[ii] = pair;
+                    }
                 }
+                cursor.close();
+                db.close();
+            }
+                
+            if ( null == result ) {
+                result = convertChatString( context, rowid, playersLocal );
             }
         }
         return result;
+    }
+
+    public static class NeedsNagInfo {
+        public long m_rowid;
+        public long m_nextNag;
+        public long m_lastMoveMillis;
+        private boolean m_isSolo;
+
+        public NeedsNagInfo( long rowid, long nextNag, long lastMove, 
+                             CurGameInfo.DeviceRole role ) {
+            m_rowid = rowid;
+            m_nextNag = nextNag;
+            m_lastMoveMillis = 1000 * lastMove;
+            m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == role;
+        }
+
+        public boolean isSolo() {
+            return m_isSolo;
+        }
+    }
+
+    public static NeedsNagInfo[] getNeedNagging( Context context )
+    {
+        NeedsNagInfo[] result = null;
+        long now = new Date().getTime(); // in milliseconds
+        String[] columns = { ROW_ID, DBHelper.NEXTNAG, DBHelper.LASTMOVE, 
+                             DBHelper.SERVERROLE };
+        // where nextnag > 0 AND nextnag < now
+        String selection = 
+            String.format( "%s > 0 AND %s < %s", DBHelper.NEXTNAG, 
+                           DBHelper.NEXTNAG, now );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            int count = cursor.getCount();
+            if ( 0 < count ) {
+                result = new NeedsNagInfo[count];
+                int rowIndex = cursor.getColumnIndex(ROW_ID);
+                int nagIndex = cursor.getColumnIndex( DBHelper.NEXTNAG );
+                int lastMoveIndex = cursor.getColumnIndex( DBHelper.LASTMOVE );
+                int roleIndex = cursor.getColumnIndex( DBHelper.SERVERROLE );
+                for ( int ii = 0; ii < result.length && cursor.moveToNext(); ++ii ) {
+                    long rowid = cursor.getLong( rowIndex );
+                    long nextNag = cursor.getLong( nagIndex );
+                    long lastMove = cursor.getLong( lastMoveIndex );
+                    CurGameInfo.DeviceRole role = 
+                        CurGameInfo.DeviceRole.values()[cursor.getInt( roleIndex )];
+                    result[ii] = new NeedsNagInfo( rowid, nextNag, lastMove, role );
+                }
+            }
+
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static long getNextNag( Context context )
+    {
+        long result = 0;
+        String[] columns = { "MIN(" + DBHelper.NEXTNAG + ") as min" };
+        String selection = "NOT " + DBHelper.NEXTNAG + "= 0";
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+            Cursor cursor = db.query( DBHelper.TABLE_NAME_SUM, columns, 
+                                      selection, null, null, null, null );
+            if ( cursor.moveToNext() ) {
+                result = cursor.getLong( cursor.getColumnIndex( "min" ) );
+            }
+            cursor.close();
+            db.close();
+        }
+        return result;
+    }
+
+    public static void updateNeedNagging( Context context, NeedsNagInfo[] needNagging )
+    {
+        String updateQuery = "update %s set %s = ? "
+            + " WHERE %s = ? ";
+        updateQuery = String.format( updateQuery, DBHelper.TABLE_NAME_SUM,
+                                     DBHelper.NEXTNAG, ROW_ID );
+
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            SQLiteStatement updateStmt = db.compileStatement( updateQuery );
+
+            for ( NeedsNagInfo info : needNagging ) {
+                updateStmt.bindLong( 1, info.m_nextNag );
+                updateStmt.bindLong( 2, info.m_rowid );
+                updateStmt.execute();
+            }
+            db.close();
+        }
     }
 
     // Groups stuff
@@ -1052,7 +1442,6 @@ public class DBUtils {
 
             String query = "SELECT rowid, groupname as groups_groupname, "
                 + " groups.expanded as groups_expanded FROM groups";
-            DbgUtils.logf( "query: %s", query );
 
             initDB( context );
             synchronized( s_dbHelper ) {
@@ -1178,7 +1567,6 @@ public class DBUtils {
             cursor.close();
             db.close();
         }
-        DbgUtils.logf( "DBUtils.countGames()=>%d", result );
         return result;
     }
 
@@ -1352,26 +1740,49 @@ public class DBUtils {
         return result;
     }
 
-    public static void appendChatHistory( Context context, long rowid,
-                                          String msg, boolean local )
+    private static void appendChatHistory( Context context, 
+                                           ArrayList<ContentValues> valuess )
     {
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            Assert.assertNotNull( msg );
-            int id = local ? R.string.chat_local_id : R.string.chat_other_id;
-            msg = LocUtils.getString( context, id ) + msg;
-
-            String cur = getChatHistoryStr( context, rowid );
-            if ( null != cur ) {
-                msg = cur + "\n" + msg;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            for ( ContentValues values : valuess ) {
+                db.insert( DBHelper.TABLE_NAME_CHAT, null, values );
             }
-
-            saveChatHistory( context, rowid, msg );
+            db.close();
         }
+    }
+
+    private static ContentValues cvForChat( long rowid, String msg, int plyr )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.ROW, rowid );
+        values.put( DBHelper.MESSAGE, msg );
+        values.put( DBHelper.SENDER, plyr );
+        return values;
+    }
+
+    public static void appendChatHistory( Context context, long rowid,
+                                          String msg, int fromPlayer )
+    {
+        Assert.assertNotNull( msg );
+        Assert.assertFalse( -1 == fromPlayer );
+        ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
+        valuess.add( cvForChat( rowid, msg, fromPlayer ) );
+        appendChatHistory( context, valuess );
+        DbgUtils.logf( "appendChatHistory: inserted \"%s\" from player %d", 
+                       msg, fromPlayer );
     } // appendChatHistory
 
     public static void clearChatHistory( Context context, long rowid )
     {
-        saveChatHistory( context, rowid, null );
+        String selection = String.format( "%s = %d", DBHelper.ROW, rowid );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.delete( DBHelper.TABLE_NAME_CHAT, selection, null );
+            db.close();
+        }
     }
 
     public static void setDBChangeListener( DBChangeListener listener )
@@ -1627,10 +2038,15 @@ public class DBUtils {
 
     public static boolean gameDBExists( Context context )
     {
-        String name = DBHelper.getDBName();
-        File sdcardDB = new File( Environment.getExternalStorageDirectory(),
-                                  name );
-        return sdcardDB.exists();
+        String varName = getVariantDBName();
+        boolean exists = new File( Environment.getExternalStorageDirectory(),
+                                   varName ).exists();
+        if ( !exists ) {
+            // try the old one
+            exists = new File( Environment.getExternalStorageDirectory(),
+                               DBHelper.getDBName() ).exists();
+        }
+        return exists;
     }
 
     public static String[] getColumns( SQLiteDatabase db, String name )
@@ -1837,22 +2253,60 @@ public class DBUtils {
         }
     }
 
-    public static void setStringFor( Context context, String key, String value )
+    private static void setStringForSync( SQLiteDatabase db, String key, String value )
     {
         String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
         ContentValues values = new ContentValues();
         values.put( DBHelper.VALUE, value );
 
+        long result = db.update( DBHelper.TABLE_NAME_PAIRS,
+                                 values, selection, null );
+        if ( 0 == result ) {
+            values.put( DBHelper.KEY, key );
+            db.insert( DBHelper.TABLE_NAME_PAIRS, null, values );
+        }
+    }
+
+    private static String getStringForSync( SQLiteDatabase db, String key, String dflt )
+    {
+        String selection = String.format( "%s = '%s'", DBHelper.KEY, key );
+        String[] columns = { DBHelper.VALUE };
+
+        Cursor cursor = db.query( DBHelper.TABLE_NAME_PAIRS, columns, 
+                                  selection, null, null, null, null );
+        Assert.assertTrue( 1 >= cursor.getCount() );
+        int indx = cursor.getColumnIndex( DBHelper.VALUE );
+        if ( cursor.moveToNext() ) {
+            dflt = cursor.getString( indx );
+        }
+        cursor.close();
+        return dflt;
+    }
+
+    private static interface Modifier {
+        public String modifySync( String curVal );
+    }
+
+    private static String getModStringFor( Context context, String key, Modifier proc )
+    {
+        String result = null;
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            long result = db.update( DBHelper.TABLE_NAME_PAIRS,
-                                     values, selection, null );
-            if ( 0 == result ) {
-                values.put( DBHelper.KEY, key );
-                db.insert( DBHelper.TABLE_NAME_PAIRS, null, values );
-            }
+            result = getStringForSync( db, key, null );
+            result = proc.modifySync( result );
+            setStringForSync( db, key, result );
+            db.close();
+        }
+        return result;
+    }
 
+    public static void setStringFor( Context context, String key, String value )
+    {
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            setStringForSync( db, key, value );
             db.close();
         }
     }
@@ -1865,25 +2319,94 @@ public class DBUtils {
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getReadableDatabase();
-            Cursor cursor = db.query( DBHelper.TABLE_NAME_PAIRS, columns, 
-                                      selection, null, null, null, null );
-            Assert.assertTrue( 1 >= cursor.getCount() );
-            int indx = cursor.getColumnIndex( DBHelper.VALUE );
-            if ( cursor.moveToNext() ) {
-                dflt = cursor.getString( indx );
-            }
-            cursor.close();
+            dflt = getStringForSync( db, key, dflt );
             db.close();
         }
         return dflt;
+    }
+
+    public static void setIntFor( Context context, String key, int value )
+    {
+        // DbgUtils.logdf( "DBUtils.setIntFor(key=%s, val=%d)", key, value );
+        String asStr = String.format( "%d", value );
+        setStringFor( context, key, asStr );
+    }
+
+    public static int getIntFor( Context context, String key, int dflt )
+    {
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            dflt = Integer.parseInt( asStr );
+        }
+        // DbgUtils.logdf( "DBUtils.getIntFor(key=%s)=>%d", key, dflt );
+        return dflt;
+    }
+
+    public static void setBoolFor( Context context, String key, boolean value )
+    {
+        // DbgUtils.logdf( "DBUtils.setBoolFor(key=%s, val=%b)", key, value );
+        String asStr = String.format( "%b", value );
+        setStringFor( context, key, asStr );
+    }
+
+    public static boolean getBoolFor( Context context, String key, boolean dflt )
+    {
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            dflt = Boolean.parseBoolean( asStr );
+        }
+        // DbgUtils.logdf( "DBUtils.getBoolFor(key=%s)=>%b", key, dflt );
+        return dflt;
+    }
+
+    public static int getIncrementIntFor( Context context, String key, int dflt,
+                                          final int incr )
+    {
+        Modifier proc = new Modifier() {
+                public String modifySync( String curVal ) {
+                    int val = null == curVal ? 0 : Integer.parseInt( curVal );
+                    String newVal = String.format( "%d", val + incr );
+                    return newVal;
+                }
+            };
+        String newVal = getModStringFor( context, key, proc );
+        int asInt = Integer.parseInt( newVal );
+        // DbgUtils.logf( "getIncrementIntFor(%s) => %d", key, asInt );
+        return asInt;
+    }
+
+    public static void setBytesFor( Context context, String key, byte[] bytes )
+    {
+        // DbgUtils.logf( "setBytesFor: writing %d bytes", bytes.length );
+        String asStr = XwJNI.base64Encode( bytes );
+        setStringFor( context, key, asStr );
+    }
+
+    public static byte[] getBytesFor( Context context, String key )
+    {
+        byte[] bytes = null;
+        String asStr = getStringFor( context, key, null );
+        if ( null != asStr ) {
+            bytes = XwJNI.base64Decode( asStr );
+            // DbgUtils.logf( "getBytesFor: loaded %d bytes", bytes.length );
+        }
+        return bytes;
     }
 
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
         File gamesDB = context.getDatabasePath( name );
+
+        // Use the variant name EXCEPT where we're copying from sdCard and
+        // only the older name exists.
         File sdcardDB = new File( Environment.getExternalStorageDirectory(),
-                                  name );
+                                  getVariantDBName() );
+        if ( !toSDCard && !sdcardDB.exists() ) {
+            sdcardDB = new File( Environment.getExternalStorageDirectory(),
+                                 name );
+        }
+        
         try {
             File srcDB = toSDCard? gamesDB : sdcardDB;
             if ( srcDB.exists() ) {
@@ -1898,6 +2421,12 @@ public class DBUtils {
         }
     }
 
+    private static String getVariantDBName()
+    {
+        return String.format( "%s_%s", DBHelper.getDBName(),
+                              BuildConstants.VARIANT );
+    }
+    
     // Chat is independent of the GameLock mechanism because it's not
     // touching the SNAPSHOT column.
     private static void saveChatHistory( Context context, long rowid,
@@ -1984,5 +2513,4 @@ public class DBUtils {
         s_cachedRowID = rowid;
         s_cachedBytes = bytes;
     }
-
 }

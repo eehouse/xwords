@@ -27,18 +27,16 @@ import android.widget.LinearLayout;
 
 public class ExpiringLinearLayout extends LinearLayout {
     private ExpiringDelegate m_delegate;
-    private Context m_context;
 
     public ExpiringLinearLayout( Context context, AttributeSet as ) {
         super( context, as );
-        m_context = context;
     }
 
     public void setPct( Handler handler, boolean haveTurn, 
                         boolean haveTurnLocal, long startSecs )
     {
         if ( null == m_delegate ) {
-            m_delegate = new ExpiringDelegate( m_context, this );
+            m_delegate = new ExpiringDelegate( getContext(), this );
             m_delegate.setHandler( handler );
         }
         m_delegate.configure( haveTurn, haveTurnLocal, startSecs );

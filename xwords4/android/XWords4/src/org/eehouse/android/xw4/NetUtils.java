@@ -21,14 +21,34 @@
 package org.eehouse.android.xw4;
 
 import android.content.Context;
+
+import android.text.TextUtils;
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.net.SocketFactory;
+
+import org.json.JSONObject;
+
+import junit.framework.Assert;
 
 public class NetUtils {
 
+    public static final String k_PARAMS = "params";
     public static final byte PROTOCOL_VERSION = 0;
     // from xwrelay.h
     public static byte PRX_PUB_ROOMS = 1;
@@ -182,6 +202,107 @@ public class NetUtils {
         }
         return msgs;
     } // queryRelay
+
+    private static final String FORCE_RELAY_HOST = null;
+    // private static final String FORCE_RELAY_HOST = "eehouse.org";
+    public static String forceHost( String host )
+    {
+        if ( null != FORCE_RELAY_HOST ) {
+            host = FORCE_RELAY_HOST;
+        }
+        return host;
+    }
+
+    protected static HttpURLConnection makeHttpConn( Context context, 
+                                                     String proc )
+    {
+        HttpURLConnection result = null;
+        try {
+            String url = String.format( "%s/%s", 
+                                        XWPrefs.getDefaultUpdateUrl( context ),
+                                        proc );
+            result = (HttpURLConnection)new URL(url).openConnection();
+        } catch ( java.net.MalformedURLException mue ) {
+            Assert.assertNull( result );
+            DbgUtils.loge( mue );
+        } catch ( java.io.IOException ioe ) {
+            Assert.assertNull( result );
+            DbgUtils.loge( ioe );
+        }
+        return result;
+    }
+
+    protected static String runConn( HttpURLConnection conn, JSONObject param )
+    {
+        String result = null;
+        Map<String, String> params = new HashMap<String, String>();
+        params.put( k_PARAMS, param.toString() );
+        String paramsString = getPostDataString( params );
+
+        if ( null != paramsString ) { 
+            try {
+                conn.setReadTimeout( 15000 );
+                conn.setConnectTimeout( 15000 );
+                conn.setRequestMethod( "POST" );
+                conn.setDoInput( true );
+                conn.setDoOutput( true );
+                conn.setFixedLengthStreamingMode( paramsString.length() );
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer 
+                    = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                writer.write( paramsString );
+                writer.flush();
+                writer.close();
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                if ( HttpURLConnection.HTTP_OK == responseCode ) {
+                    InputStream is = conn.getInputStream();
+                    BufferedInputStream bis = new BufferedInputStream( is );
+
+                    ByteArrayOutputStream bas = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    for ( ; ; ) {
+                        int nRead = bis.read( buffer );
+                        if ( 0 > nRead ) {
+                            break;
+                        }
+                        bas.write( buffer, 0, nRead );
+                    }
+                    result = new String( bas.toByteArray() );
+                } else {
+                    DbgUtils.logf( "runConn: responseCode: %d", responseCode );
+                }
+            } catch ( java.net.ProtocolException pe ) {
+                DbgUtils.loge( pe );
+            } catch( java.io.IOException ioe ) {
+                DbgUtils.loge( ioe );
+            }
+        }
+
+        return result;
+    }
+
+    private static String getPostDataString( Map<String, String> params ) 
+    {
+        String result = null;
+        try {
+            ArrayList<String> pairs = new ArrayList<String>();
+            // StringBuilder sb = new StringBuilder();
+            String[] pair = { null, null };
+            for ( Map.Entry<String, String> entry : params.entrySet() ){
+                pair[0] = URLEncoder.encode( entry.getKey(), "UTF-8" );
+                pair[1] = URLEncoder.encode( entry.getValue(), "UTF-8" );
+                pairs.add( TextUtils.join( "=", pair ) );
+            }
+            result = TextUtils.join( "&", pairs );
+        } catch ( java.io.UnsupportedEncodingException uee ) {
+            DbgUtils.loge( uee );
+        }
+
+        return result;
+    }
 
     private static int sumStrings( final String[] strs )
     {

@@ -76,6 +76,14 @@ typedef struct MoveInfo {
     MoveInfoTile tiles[MAX_TRAY_TILES];
 } MoveInfo;
 
+typedef struct _LastMoveInfo {
+    const XP_UCHAR* name;
+    XP_U8 moveType;
+    XP_U16 score;
+    XP_U16 nTiles;
+    XP_UCHAR word[MAX_COLS+1];
+} LastMoveInfo;
+
 typedef XP_U8 TrayTile;
 typedef struct TrayTileSet {
     XP_U8 nTiles;
@@ -114,8 +122,11 @@ void model_writeToTextStream( const ModelCtxt* model, XWStreamCtxt* stream );
 
 void model_setSize( ModelCtxt* model, XP_U16 boardSize );
 void model_destroy( ModelCtxt* model );
-XP_U32 model_getHash( const ModelCtxt* model, XP_U16 version );
+XP_U32 model_getHash( const ModelCtxt* model );
 XP_Bool model_hashMatches( const ModelCtxt* model, XP_U32 hash );
+XP_Bool model_popToHash( ModelCtxt* model, const XP_U32 hash,
+                         PoolContext* pool );
+
 void model_setNPlayers( ModelCtxt* model, XP_U16 numPlayers );
 XP_U16 model_getNPlayers( const ModelCtxt* model );
 
@@ -144,6 +155,8 @@ void model_addPlayerTile( ModelCtxt* model, XP_S16 turn, XP_S16 index,
                           Tile tile );
 void model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
                            XP_S16 indexNew );
+XP_U16 model_getDividerLoc( const ModelCtxt* model, XP_S16 turn );
+void model_setDividerLoc( ModelCtxt* model, XP_S16 turn, XP_U16 loc );
 
 /* As an optimization, return a pointer to the model's array of tiles for a
    player.  Don't even think about modifying the array!!!! */
@@ -246,13 +259,13 @@ void model_countAllTrayTiles( ModelCtxt* model, XP_U16* counts,
 
 /********************* scoring ********************/
 
-typedef XP_Bool (*WordNotifierProc)( const XP_UCHAR* word, XP_Bool isLegal, 
-                                     const DictionaryCtxt* dict,
+typedef void (*WordNotifierProc)( const XP_UCHAR* word, XP_Bool isLegal, 
+                                  const DictionaryCtxt* dict,
 #ifdef XWFEATURE_BOARDWORDS
-                                     const MoveInfo* movei, XP_U16 start, 
-                                     XP_U16 end,
+                                  const MoveInfo* movei, XP_U16 start, 
+                                  XP_U16 end,
 #endif
-                                     void* closure );
+                                  void* closure );
 typedef struct WordNotifierInfo {
     WordNotifierProc proc;
     void* closure;
@@ -264,7 +277,7 @@ XP_Bool getCurrentMoveScoreIfLegal( ModelCtxt* model, XP_S16 turn,
 XP_S16 model_getPlayerScore( ModelCtxt* model, XP_S16 player );
 
 XP_Bool model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
-                                   XP_UCHAR* expl, XP_U16* explLen );
+                                   LastMoveInfo* info );
 #ifdef XWFEATURE_BOARDWORDS
 void model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
                              XWStreamCtxt* stream );

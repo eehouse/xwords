@@ -24,7 +24,7 @@
 #include "gtkutils.h"
 
 GtkWidget*
-makeButton( char* text, GCallback func, gpointer data )
+makeButton( const char* text, GCallback func, gpointer data )
 {
     GtkWidget* button = gtk_button_new_with_label( text );
     g_signal_connect( GTK_OBJECT(button), "clicked", func, data );

@@ -23,6 +23,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text="@string/game_locked"
+            android:checked="true"
             android:visibility="gone"
             android:layout_alignParentTop="true"
             />
@@ -67,8 +68,9 @@
                />
 
       <!-- players -->
-      <TextView style="@style/config_separator"
-                android:id="@+id/players_label"
+      <TextView android:id="@+id/players_label"
+                style="@style/config_separator"
+                android:layout_marginTop="15dp"
                 />
       <LinearLayout android:id="@+id/player_list"
                     android:layout_width="fill_parent"
@@ -78,32 +80,31 @@
    		            android:layout_marginBottom="5sp"
                     />
 
-      <LinearLayout android:layout_width="wrap_content"
+      <LinearLayout android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_gravity="bottom|center"
                     >
         <Button android:id="@+id/add_player"
-                android:layout_width="wrap_content" 
-                android:layout_height="wrap_content"
                 android:text="@string/button_add_player" 
+                style="@style/evenly_spaced_horizontal"
                 />
         <Button android:id="@+id/juggle_players"
-                android:layout_width="wrap_content" 
-                android:layout_height="wrap_content"
                 android:text="@string/button_juggle_players" 
+                style="@style/evenly_spaced_horizontal"
                 />
       </LinearLayout>
+
+      <!-- text added via code -->
+      <TextView android:id="@+id/conns_label"
+                style="@style/config_separator" 
+                android:layout_marginTop="15dp"
+                />
 
       <LinearLayout android:id="@+id/connect_set_relay"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     >
-        <TextView style="@style/config_separator"
-                  android:text="@string/connect_label_relay"
-                  />
-
         <!-- We'll use either the spinner or simple edit text
              depending on whether user is naming room or picking from
              a set one. -->
@@ -119,18 +120,32 @@
                       android:orientation="vertical"
                       >
 
-          <!-- maxLength derives from MAX_INVITE_LEN in xwrelay.h -->
-          <EditText android:id="@+id/room_edit"
-                    android:layout_height="wrap_content"
-                    android:layout_width="fill_parent"
-                    android:scrollHorizontally="false"
-                    android:autoText="false"
-                    android:capitalize="none"
-                    android:singleLine="true"
-                    android:selectAllOnFocus="true"
-                    android:maxLength="31"
-                    android:hint="@string/new_room_hint"
-                    />
+          <LinearLayout android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        >
+            <TextView android:layout_height="wrap_content"
+                      android:layout_width="fill_parent"
+                      android:text="@string/new_room_hint"
+                      android:gravity="left"
+                      android:textAppearance="?android:attr/textAppearanceMedium"
+                      />
+
+            <!-- maxLength derives from MAX_INVITE_LEN in xwrelay.h -->
+            <EditText android:id="@+id/room_edit"
+                      android:layout_height="wrap_content"
+                      android:layout_width="fill_parent"
+                      android:scrollHorizontally="false"
+                      android:autoText="false"
+                      android:capitalize="none"
+                      android:singleLine="true"
+                      android:selectAllOnFocus="true"
+                      android:windowSoftInputMode="stateHidden"
+                      android:maxLength="31"
+                      android:hint="@string/new_room_hint"
+                      />
+          </LinearLayout>
+
           <CheckBox android:id="@+id/advertise_new_room_check"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
@@ -161,31 +176,16 @@
         </LinearLayout>
       </LinearLayout>           <!--connect_set_relay-->
 
-      <LinearLayout android:id="@+id/connect_set_sms"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    >
-        <TextView style="@style/config_separator"
-                  android:text="@string/connect_label_sms"
-                  />
-        <TextView android:layout_height="wrap_content"
-                  android:layout_width="wrap_content"
-                  android:layout_marginLeft="20dip"
-                  android:layout_marginRight="20dip"
-                  android:text="@string/phone_label"
-                  android:gravity="left"
-                  android:textAppearance="?android:attr/textAppearanceMedium"
-                  />
-        <LinearLayout android:id="@+id/sms_phones"
-                      android:layout_width="fill_parent"
-                      android:layout_height="wrap_content"
-                      android:orientation="vertical"
-                      />
-      </LinearLayout>           <!--connect_set_sms-->
+      <Button android:id="@+id/change_connection"
+              android:layout_width="wrap_content" 
+              android:layout_height="wrap_content"
+              android:text="@string/connection_via_label"
+              android:layout_gravity="bottom|center"
+              />
 
       <TextView style="@style/config_separator"
                 android:text="@string/settings_label"
+                android:layout_marginTop="15dp"
                 />
 
       <CheckBox android:id="@+id/hints_allowed"

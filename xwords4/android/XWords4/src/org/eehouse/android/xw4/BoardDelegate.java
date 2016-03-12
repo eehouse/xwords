@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2014 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -23,19 +23,18 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-
+import android.content.Context;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
-
 import android.graphics.Bitmap;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,17 +44,24 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
+
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.DlgClickNotify.InviteMeans;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.JNIThread.*;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 
 public class BoardDelegate extends DelegateBase
     implements TransportProcs.TPMsgHandler, View.OnClickListener,
@@ -64,10 +70,6 @@ public class BoardDelegate extends DelegateBase
                NFCUtils.NFCActor {
 
     public static final String INTENT_KEY_CHAT = "chat";
-
-    private static final int CHAT_REQUEST = 1;
-    private static final int BT_INVITE_RESULT = 2;
-    private static final int SMS_INVITE_RESULT = 3;
 
     private static final int SCREEN_ON_TIME = 10 * 60 * 1000; // 10 mins
 
@@ -83,10 +85,11 @@ public class BoardDelegate extends DelegateBase
     private Activity m_activity;
     private Delegator m_delegator;
     private BoardView m_view;
-    private int m_jniGamePtr;
+    private GamePtr m_jniGamePtr;
     private GameLock m_gameLock;
     private CurGameInfo m_gi;
     private GameSummary m_summary;
+    private boolean m_relayMissing;
     private CommsTransport m_xport;
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
@@ -96,17 +99,20 @@ public class BoardDelegate extends DelegateBase
     private View m_tradeButtons;
     private Button m_exchCommmitButton;
     private Button m_exchCancelButton;
+    private SentInvitesInfo m_sentInfo;
 
     private ArrayList<String> m_pendingChats;
 
     private String m_dlgBytes = null;
-    private EditText m_passwdEdit = null;
-    private LinearLayout m_passwdLyt = null;
+    private EditText m_passwdEdit;
     private int m_dlgTitle;
     private String m_dlgTitleStr;
     private String[] m_texts;
-    private CommsConnType m_connType = CommsConnType.COMMS_CONN_NONE;
+    private CommsConnTypeSet m_connTypes = null;
     private String[] m_missingDevs;
+    private int[] m_missingCounts;
+    private InviteMeans m_missingMeans = null;
+    private boolean m_progressShown = false;
     private String m_curTiles;
     private boolean m_canUndoTiles;
     private boolean m_firingPrefs;
@@ -114,7 +120,6 @@ public class BoardDelegate extends DelegateBase
     private boolean m_volKeysZoom;
     private boolean m_inTrade;  // save this in bundle?
     private BoardUtilCtxt m_utils;
-    private int m_nMissingPlayers = -1;
     private int m_invitesPending;
     private boolean m_gameOver = false;
 
@@ -133,43 +138,21 @@ public class BoardDelegate extends DelegateBase
     private String m_pwdName;
     private String m_getDict;
 
-    private int m_missing;
+    private int m_nMissing = -1;
+    private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
 
-    private static HashSet<BoardDelegate> s_this = new HashSet<BoardDelegate>();
+    private static Set<BoardDelegate> s_this = new HashSet<BoardDelegate>();
 
-    public static boolean feedMessage( int gameID, byte[] msg, 
-                                       CommsAddrRec retAddr )
+    public static boolean feedMessage( long rowid, byte[] msg,
+                                       CommsAddrRec ret )
     {
-        boolean delivered = false;
-        int size;
-        synchronized( s_this ) {
-            size = s_this.size();
-            if ( 1 == size ) {
-                BoardDelegate self = s_this.iterator().next();
-                Assert.assertNotNull( self.m_gi );
-                Assert.assertNotNull( self.m_gameLock );
-                Assert.assertNotNull( self.m_jniThread );
-                if ( gameID == self.m_gi.gameID ) {
-                    self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, retAddr );
-                    delivered = true;
-                }
-            }
-        }
-
-        if ( 1 < s_this.size() ) {
-            noteSkip();
-        }
-        return delivered;
+        return feedMessages( rowid, new byte[][]{msg}, ret );
     }
 
-    public static boolean feedMessage( long rowid, byte[] msg )
-    {
-        return feedMessages( rowid, new byte[][]{msg} );
-    }
-
-    public static boolean feedMessages( long rowid, byte[][] msgs )
+    public static boolean feedMessages( long rowid, byte[][] msgs, 
+                                        CommsAddrRec ret )
     {
         boolean delivered = false;
         Assert.assertNotNull( msgs );
@@ -184,8 +167,7 @@ public class BoardDelegate extends DelegateBase
                 if ( rowid == self.m_rowid ) {
                     delivered = true; // even if no messages!
                     for ( byte[] msg : msgs ) {
-                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, 
-                                                 null );
+                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, ret );
                     }
                 }
             }
@@ -234,7 +216,7 @@ public class BoardDelegate extends DelegateBase
     {
         Dialog dialog = super.onCreateDialog( id );
         if ( null == dialog ) {
-            DialogInterface.OnClickListener lstnr;
+            OnClickListener lstnr;
             AlertDialog.Builder ab = makeAlertBuilder();
 
             final DlgID dlgID = DlgID.values()[id];
@@ -245,28 +227,31 @@ public class BoardDelegate extends DelegateBase
             case DLG_CONNSTAT:
                 ab.setTitle( m_dlgTitle )
                     .setMessage( m_dlgBytes )
-                    .setPositiveButton( R.string.button_ok, null );
+                    .setPositiveButton( android.R.string.ok, null );
                 if ( DlgID.DLG_RETRY == dlgID ) {
-                    lstnr = new DialogInterface.OnClickListener() {
+                    lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
                                 m_jniThread.handle( JNICmd.CMD_RESET );
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
-                } else if ( XWApp.REMATCH_SUPPORTED && DlgID.GAME_OVER == dlgID ) {
-                    lstnr = new DialogInterface.OnClickListener() {
+                } else if ( DlgID.GAME_OVER == dlgID
+                            && rematchSupported( true ) ) {
+                    lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
-                                doRematch();
+                                doRematchIf();
                             }
                         };
                     ab.setNegativeButton( R.string.button_rematch, lstnr );
-                } else if ( DlgID.DLG_CONNSTAT == dlgID &&
-                            CommsConnType.COMMS_CONN_RELAY == m_connType ) {
-                    lstnr = new DialogInterface.OnClickListener() {
+                } else if ( DlgID.DLG_CONNSTAT == dlgID
+                            && BuildConfig.DEBUG && null != m_connTypes
+                            && m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                    lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
+                                NetStateCache.reset( m_activity );
                                 RelayService.reset( m_activity );
                             }
                         };
@@ -278,7 +263,7 @@ public class BoardDelegate extends DelegateBase
 
             case DLG_USEDICT:
             case DLG_GETDICT:
-                lstnr = new DialogInterface.OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
                             if ( DlgID.DLG_USEDICT == dlgID ) {
@@ -303,14 +288,11 @@ public class BoardDelegate extends DelegateBase
             case DLG_DELETED:
                 ab = ab.setTitle( R.string.query_title )
                     .setMessage( R.string.msg_dev_deleted )
-                    .setPositiveButton( R.string.button_ok, null );
-                lstnr = new DialogInterface.OnClickListener() {
+                    .setPositiveButton( android.R.string.ok, null );
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dlg, 
                                              int whichButton ) {
-
-                            waitCloseGame( false );
-                            GameUtils.deleteGame( m_activity, m_rowid, false );
-                            m_delegator.finish();
+                            deleteAndClose();
                         }
                     };
                 ab.setNegativeButton( R.string.button_delete, lstnr );
@@ -325,17 +307,17 @@ public class BoardDelegate extends DelegateBase
                 if ( 0 != m_dlgTitle ) {
                     ab.setTitle( m_dlgTitle );
                 }
-                lstnr = new DialogInterface.OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int whichButton ) {
                             m_resultCode = 1;
                         }
                     };
                 ab.setPositiveButton( DlgID.QUERY_REQUEST_BLK == dlgID ?
-                                      R.string.button_yes : R.string.button_ok,
+                                      R.string.button_yes : android.R.string.ok,
                                       lstnr );
                 if ( DlgID.QUERY_REQUEST_BLK == dlgID ) {
-                    lstnr = new DialogInterface.OnClickListener() {
+                    lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int whichButton ) {
                                 m_resultCode = 0;
@@ -356,11 +338,10 @@ public class BoardDelegate extends DelegateBase
                                 : R.string.button_lookup;
                             buttonTxt = getString( resID );
                         }
-                        lstnr = new DialogInterface.OnClickListener() {
+                        lstnr = new OnClickListener() {
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
-                                    showNotAgainDlgThen( R.string.
-                                                         not_again_lookup, 
+                                    showNotAgainDlgThen( R.string.not_again_lookup, 
                                                          R.string.
                                                          key_na_lookup, 
                                                          Action.LOOKUP_ACTION );
@@ -376,7 +357,7 @@ public class BoardDelegate extends DelegateBase
 
             case PICK_TILE_REQUESTBLANK_BLK:
             case PICK_TILE_REQUESTTRAY_BLK:
-                lstnr = new DialogInterface.OnClickListener() {
+                lstnr = new OnClickListener() {
                         public void onClick( DialogInterface dialog, 
                                              int item ) {
                             m_resultCode = item;
@@ -389,8 +370,7 @@ public class BoardDelegate extends DelegateBase
                 } else {
                     ab.setTitle( getString( R.string.cur_tiles_fmt, m_curTiles ) );
                     if ( m_canUndoTiles ) {
-                        DialogInterface.OnClickListener undoClicked =
-                            new DialogInterface.OnClickListener() {
+                        OnClickListener undoClicked = new OnClickListener() {
                                 public void onClick( DialogInterface dialog, 
                                                      int whichButton ) {
                                     m_resultCode = UtilCtxt.PICKER_BACKUP;
@@ -400,8 +380,7 @@ public class BoardDelegate extends DelegateBase
                         ab.setPositiveButton( R.string.tilepick_undo, 
                                               undoClicked );
                     }
-                    DialogInterface.OnClickListener doAllClicked =
-                        new DialogInterface.OnClickListener() {
+                    OnClickListener doAllClicked = new OnClickListener() {
                             public void onClick( DialogInterface dialog, 
                                                  int whichButton ) {
                                 m_resultCode = UtilCtxt.PICKER_PICKALL;
@@ -416,14 +395,15 @@ public class BoardDelegate extends DelegateBase
                 break;
 
             case ASK_PASSWORD_BLK:
-                if ( null == m_passwdLyt ) {
-                    setupPasswdVars();
-                }
+                m_dlgTitleStr = getString( R.string.msg_ask_password_fmt, m_pwdName );
+                LinearLayout pwdLayout = 
+                    (LinearLayout)inflate( R.layout.passwd_view );
+                m_passwdEdit = (EditText)pwdLayout.findViewById( R.id.edit );
                 m_passwdEdit.setText( "", TextView.BufferType.EDITABLE );
                 ab.setTitle( m_dlgTitleStr )
-                    .setView( m_passwdLyt )
-                    .setPositiveButton( R.string.button_ok,
-                                        new DialogInterface.OnClickListener() {
+                    .setView( pwdLayout )
+                    .setPositiveButton( android.R.string.ok,
+                                        new OnClickListener() {
                                             public void 
                                                 onClick( DialogInterface dlg,
                                                          int whichButton ) {
@@ -438,7 +418,7 @@ public class BoardDelegate extends DelegateBase
                 dialog = ab.setTitle( R.string.query_title )
                     .setMessage( R.string.ids_endnow )
                     .setPositiveButton( R.string.button_yes,
-                                        new DialogInterface.OnClickListener() {
+                                        new OnClickListener() {
                                             public void 
                                                 onClick( DialogInterface dlg, 
                                                          int item ) {
@@ -450,19 +430,47 @@ public class BoardDelegate extends DelegateBase
                     .create();
                 break;
             case DLG_INVITE:
-                if ( null != m_room ) {
-                    lstnr = new DialogInterface.OnClickListener() {
-                            public void onClick( DialogInterface dialog, 
-                                                 int item ) {
-                                showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION );
+                lstnr = new OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            if ( !m_relayMissing ||
+                                 ! m_connTypes.contains(CommsConnType.COMMS_CONN_RELAY) ) {
+                                Assert.assertTrue( 0 < m_nMissing );
+                                if ( m_summary.hasRematchInfo() ) {
+                                    tryRematchInvites( true );
+                                } else {                                
+                                    showInviteChoicesThen( Action.LAUNCH_INVITE_ACTION,
+                                                           m_sentInfo );
+                                }
+                            } else {
+                                askDropRelay();
                             }
-                        };
-                    dialog = ab.setTitle( R.string.query_title )
-                        .setMessage( "" )
-                        .setPositiveButton( R.string.button_yes, lstnr )
-                        .setNegativeButton( R.string.button_no, null )
-                        .create();
-                }
+                        }
+                    };
+                OnClickListener lstnrWait = new OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            finish();
+                        }
+                    };
+                OnClickListener lstnrMore = new OnClickListener() {
+                        public void onClick( DialogInterface dialog, 
+                                             int item ) {
+                            showOKOnlyDialog( m_sentInfo.getAsText( m_activity ) );
+                        }
+                    };
+                
+                dialog = ab.setTitle( "foo" )
+                    .setMessage( "" )
+                    .setPositiveButton( "", lstnr )
+                    .setNegativeButton( R.string.button_wait, lstnrWait )
+                    .setNeutralButton( R.string.newgame_invite_more, lstnrMore )
+                    .setOnCancelListener( new OnCancelListener() {
+                            public void onCancel( DialogInterface dialog ) {
+                                finish();
+                            }
+                        } )
+                    .create();
                 break;
 
             case ENABLE_NFC:
@@ -483,12 +491,88 @@ public class BoardDelegate extends DelegateBase
         switch( dlgID ) {
         case DLG_INVITE:
             AlertDialog ad = (AlertDialog)dialog;
-            String message = 
-                getString( R.string.invite_msg_fmt, m_missing );
-            if ( m_missing > 1 ) {
-                message += getString( R.string.invite_multiple );
+            String message;
+            int titleID;
+            boolean nukeInviteButton = false;
+            boolean nukeNeutButton = true;
+            int buttonTxt = R.string.newgame_invite;
+            if ( m_relayMissing ) {
+                titleID = R.string.seeking_relay;
+                // If relay is only means, don't allow at all
+                boolean relayOnly = 1 >= m_connTypes.size();
+                nukeInviteButton = relayOnly;
+                message = getString( R.string.no_relay_conn );
+                if ( NetStateCache.netAvail( m_activity )
+                     && NetStateCache.onWifi() ) {
+                    message += getString( R.string.wifi_warning );
+                }
+                if ( !relayOnly ) {
+                    CommsConnTypeSet without = (CommsConnTypeSet)
+                        m_connTypes.clone();
+                    without.remove( CommsConnType.COMMS_CONN_RELAY );
+                    message += "\n\n" 
+                        + getString( R.string.drop_relay_warning_fmt, 
+                                     without.toString( m_activity ) );
+                    buttonTxt = R.string.newgame_drop_relay;
+                }
+            } else {
+                m_sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
+                int nSent = m_sentInfo.getMinPlayerCount();
+                boolean invitesSent = nSent >= m_nMissing;
+                if ( invitesSent ) {
+                    if ( m_summary.hasRematchInfo() ) {
+                        titleID = R.string.waiting_rematch_title;
+                        message = getString( R.string.rematch_msg );
+                    } else {
+                        titleID = R.string.waiting_invite_title;
+                        message = getQuantityString( R.plurals.invite_sent_fmt, 
+                                                     nSent, nSent, m_nMissing );
+                    }
+                    buttonTxt = R.string.button_reinvite;
+                    nukeNeutButton = false;
+                } else if ( DeviceRole.SERVER_ISCLIENT == m_gi.serverRole ) {
+                    Assert.assertFalse( m_summary.hasRematchInfo() );
+                    message = getString( R.string.invited_msg );
+                    titleID = R.string.waiting_title;
+                    nukeInviteButton = true;
+                } else {
+                    titleID = R.string.waiting_title;
+                    message = getQuantityString( R.plurals.invite_msg_fmt, 
+                                                 m_nMissing, m_nMissing );
+                }
+
+                if ( ! invitesSent && ! nukeInviteButton ) {
+                    String ps = null;
+                    if ( m_nMissing > 1 ) {
+                        ps = getString( R.string.invite_multiple );
+                    } else {
+                        boolean[] avail = NFCUtils.nfcAvail( m_activity );
+                        if ( avail[1] ) {
+                            ps = getString( R.string.invite_if_nfc );
+                        }
+                    }
+                    if ( null != ps ) {
+                        message += "\n\n" + ps;
+                    }
+                }
+
+                message += "\n\n" + getString( R.string.invite_stays );
             }
+
             ad.setMessage( message );
+            ad.setTitle( titleID );
+
+            Button button = ad.getButton( AlertDialog.BUTTON_POSITIVE );
+            button.setVisibility( nukeInviteButton ? View.GONE : View.VISIBLE );
+            if ( !nukeInviteButton ) {
+                button.setText( buttonTxt );
+            }
+            button = ad.getButton( AlertDialog.BUTTON_NEUTRAL );
+            button.setVisibility( nukeNeutButton ? View.GONE : View.VISIBLE );
+            
+            break;
+        default:
+            super.prepareDialog( dlgID, dialog );
             break;
         }
     }
@@ -503,11 +587,6 @@ public class BoardDelegate extends DelegateBase
     protected void init( Bundle savedInstanceState ) 
     {
         getBundledData( savedInstanceState );
-
-        if ( CommonPrefs.getHideTitleBar( m_activity )
-             && ABUtils.haveMenuKey( m_activity ) ) {
-            requestWindowFeature( Window.FEATURE_NO_TITLE );
-        }
 
         if ( BuildConstants.CHAT_SUPPORTED ) {
             m_pendingChats = new ArrayList<String>();
@@ -545,23 +624,30 @@ public class BoardDelegate extends DelegateBase
 
     protected void onPause()
     {
-        m_handler = null;
-        ConnStatusHandler.setHandler( null );
-        waitCloseGame( true );
+        closeIfFinishing( false );
+        super.onPause();
+    }
+
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        doResume( true );
     }
 
     @Override
     protected void onResume()
     {
         super.onResume();
-        m_handler = new Handler();
-        m_blockingDlgID = DlgID.NONE;
-
-        setKeepScreenOn();
-
-        loadGame();
-
-        ConnStatusHandler.setHandler( this );
+        doResume( false );
+    }
+    
+    @Override
+    protected void onDestroy()
+    {
+        closeIfFinishing( true );
+        GamesListDelegate.boardDestroyed( m_rowid );
+        super.onDestroy();
     }
 
     @Override
@@ -597,9 +683,11 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    @Override
+    protected void onActivityResult( RequestCode requestCode, int resultCode, Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
+            InviteMeans missingMeans = null;
             switch ( requestCode ) {
             case CHAT_REQUEST:
                 if ( BuildConstants.CHAT_SUPPORTED ) {
@@ -611,15 +699,22 @@ public class BoardDelegate extends DelegateBase
                 }
                 break;
             case BT_INVITE_RESULT:
-                // onActivityResult is called immediately *before*
-                // onResume -- meaning m_gi etc are still null.
-                m_missingDevs = data.getStringArrayExtra( BTInviteDelegate.DEVS );
+                missingMeans = InviteMeans.BLUETOOTH;
                 break;
             case SMS_INVITE_RESULT:
-                // onActivityResult is called immediately *before*
-                // onResume -- meaning m_gi etc are still null.
-                m_missingDevs = data.getStringArrayExtra( SMSInviteDelegate.DEVS );
+                missingMeans = InviteMeans.SMS;
                 break;
+            case RELAY_INVITE_RESULT:
+                missingMeans = InviteMeans.RELAY;
+                break;
+            }
+
+            if ( null != missingMeans ) {
+                // onActivityResult is called immediately *before* onResume --
+                // meaning m_gi etc are still null.
+                m_missingDevs = data.getStringArrayExtra( InviteDelegate.DEVS );
+                m_missingCounts = data.getIntArrayExtra( InviteDelegate.COUNTS );
+                m_missingMeans = missingMeans;
             }
         }
     }
@@ -636,6 +731,10 @@ public class BoardDelegate extends DelegateBase
                 // in case of change...
                 setBackgroundColor();
                 setKeepScreenOn();
+            } else if ( ! isFinishing() ) {
+                if ( m_relayMissing || 0 < m_nMissing ) {
+                    showDialog( DlgID.DLG_INVITE );
+                }
             }
         }
     }
@@ -682,6 +781,7 @@ public class BoardDelegate extends DelegateBase
         boolean inTrade = false;
         MenuItem item;
         int strId;
+        boolean enable;
 
         if ( null != m_gsi ) {
             inTrade = m_gsi.inTrade;
@@ -719,8 +819,6 @@ public class BoardDelegate extends DelegateBase
                                   m_gsi.canUndo );
         }
 
-        Utils.setItemVisible( menu, R.id.board_menu_invite, 0 < m_missing );
-
         Utils.setItemVisible( menu, R.id.board_menu_trade_cancel, inTrade );
         Utils.setItemVisible( menu, R.id.board_menu_trade_commit, 
                               inTrade && m_gsi.tradeTilesSelected
@@ -728,10 +826,10 @@ public class BoardDelegate extends DelegateBase
         Utils.setItemVisible( menu, R.id.board_menu_game_resign, !inTrade );
 
         if ( !inTrade ) {
-            boolean enabled = null == m_gsi || m_gsi.curTurnSelected;
+            enable = null == m_gsi || m_gsi.curTurnSelected;
             item = menu.findItem( R.id.board_menu_done );
-            item.setVisible( enabled );
-            if ( enabled ) {
+            item.setVisible( enable );
+            if ( enable ) {
                 if ( 0 >= m_view.curPending() ) {
                     strId = R.string.board_menu_pass;
                 } else {
@@ -746,15 +844,19 @@ public class BoardDelegate extends DelegateBase
             }
         }
 
-        boolean enable = null != m_gi
-            && DeviceRole.SERVER_STANDALONE != m_gi.serverRole;
-        Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, enable );
-        Utils.setItemVisible( menu, R.id.board_menu_game_resend, 
-                              enable && null != m_gsi && 
-                              0 < m_gsi.nPendingMessages );
+        enable = m_gameOver && rematchSupported( false );
+        Utils.setItemVisible( menu, R.id.board_menu_rematch, enable );
 
-        enable = enable && BuildConfig.DEBUG;
+        boolean netGame = null != m_gi
+            && DeviceRole.SERVER_STANDALONE != m_gi.serverRole;
+        Utils.setItemVisible( menu, R.id.gamel_menu_checkmoves, netGame );
+        enable = netGame && null != m_gsi && 0 < m_gsi.nPendingMessages;
+        Utils.setItemVisible( menu, R.id.board_menu_game_resend,  enable );
+
+        enable = netGame && (BuildConfig.DEBUG
+                             || XWPrefs.getDebugEnabled( m_activity ) );
         Utils.setItemVisible( menu, R.id.board_menu_game_netstats, enable );
+        Utils.setItemVisible( menu, R.id.board_menu_game_invites, enable );
                               
         enable = XWPrefs.getStudyEnabled( m_activity );
         Utils.setItemVisible( menu, R.id.games_menu_study, enable );
@@ -773,7 +875,7 @@ public class BoardDelegate extends DelegateBase
         switch ( id ) {
         case R.id.board_menu_done:
             int nTiles = XwJNI.model_getNumTilesInTray( m_jniGamePtr, 
-                                                  m_view.getCurPlayer() );
+                                                        m_view.getCurPlayer() );
             if ( XWApp.MAX_TRAY_TILES > nTiles ) {
                 showNotAgainDlgThen( R.string.not_again_done, 
                                      R.string.key_notagain_done, 
@@ -781,6 +883,10 @@ public class BoardDelegate extends DelegateBase
             } else {
                 dlgButtonClicked( Action.COMMIT_ACTION, AlertDialog.BUTTON_POSITIVE, null );
             }
+            break;
+
+        case R.id.board_menu_rematch:
+            doRematchIf();
             break;
 
         case R.id.board_menu_trade_commit:
@@ -815,7 +921,7 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_trade:
             String msg = getString( R.string.not_again_trading );
             int strID = ABUtils.haveActionBar() ? R.string.not_again_trading_menu
-                : R.string. not_again_trading_buttons;
+                : R.string.not_again_trading_buttons;
             msg += getString( strID );
             showNotAgainDlgThen( msg, R.string.key_notagain_trading,
                                  Action.START_TRADE_ACTION );
@@ -830,15 +936,17 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_game_netstats:
             m_jniThread.handle( JNICmd.CMD_NETSTATS, R.string.netstats_title );
             break;
+        case R.id.board_menu_game_invites:
+            SentInvitesInfo sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
+            showOKOnlyDialog( sentInfo.getAsText( m_activity ) );
+            break;
         case R.id.board_menu_undo_current:
             cmd = JNICmd.CMD_UNDO_CUR;
             break;
         case R.id.board_menu_undo_last:
             showConfirmThen( R.string.confirm_undo_last, Action.UNDO_LAST_ACTION );
             break;
-        case R.id.board_menu_invite:
-            showDialog( DlgID.DLG_INVITE );
-            break;
+
             // small devices only
         case R.id.board_menu_dict:
             String dictName = m_gi.dictName( m_view.getCurPlayer() );
@@ -863,7 +971,7 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.board_menu_game_resend:
-            m_jniThread.handle( JNICmd.CMD_RESEND, true, false );
+            m_jniThread.handle( JNICmd.CMD_RESEND, true, false, true );
             break;
 
         case R.id.gamel_menu_checkmoves:
@@ -875,10 +983,6 @@ public class BoardDelegate extends DelegateBase
         case R.id.board_menu_file_prefs:
             m_firingPrefs = true;
             Utils.launchSettings( m_activity );
-            break;
-
-        case R.id.board_menu_file_about:
-            showAboutDialog();
             break;
 
         default:
@@ -896,26 +1000,12 @@ public class BoardDelegate extends DelegateBase
     // DlgDelegate.DlgClickNotify interface
     //////////////////////////////////////////////////
     @Override
-    public void dlgButtonClicked( Action action, int which, Object[] params )
+    public void dlgButtonClicked( Action action, int which,
+                                  final Object[] params )
     {
-        if ( Action.LAUNCH_INVITE_ACTION == action ) {
-            if ( DlgDelegate.DISMISS_BUTTON != which ) {
-                if ( DlgDelegate.NFC_BTN == which ) {
-                    if ( NFCUtils.nfcAvail( m_activity )[1] ) {
-                        showNotAgainDlgThen( R.string.not_again_sms_ready,
-                                             R.string.key_notagain_sms_ready );
-                    } else {
-                        showDialog( DlgID.ENABLE_NFC );
-                    }
-                } else {
-                    String inviteID = GameUtils.formatGameID( m_gi.gameID );
-                    GameUtils.launchInviteActivity( m_activity, which, m_room, 
-                                                    inviteID, m_gi.dictLang, 
-                                                    m_gi.dictName, 
-                                                    m_gi.nPlayers );
-                }
-            }
-        } else if ( AlertDialog.BUTTON_POSITIVE == which ) {
+        boolean handled = false;
+        if ( AlertDialog.BUTTON_POSITIVE == which ) {
+            handled = true;
             JNICmd cmd = JNICmd.CMD_NONE;
             switch ( action ) {
             case UNDO_LAST_ACTION:
@@ -924,18 +1014,9 @@ public class BoardDelegate extends DelegateBase
             case SYNC_ACTION:
                 doSyncMenuitem();
                 break;
-            case BT_PICK_ACTION:
-                BTInviteDelegate.launchForResult( m_activity, m_nMissingPlayers, 
-                                                  BT_INVITE_RESULT );
-                break;
-            case SMS_PICK_ACTION:
-                SMSInviteDelegate.launchForResult( m_activity, m_nMissingPlayers, 
-                                                   SMS_INVITE_RESULT );
-                break;
             case SMS_CONFIG_ACTION:
                 Utils.launchSettings( m_activity );
                 break;
-
             case COMMIT_ACTION:
                 cmd = JNICmd.CMD_COMMIT;
                 break;
@@ -948,7 +1029,8 @@ public class BoardDelegate extends DelegateBase
                 String curDict = m_gi.dictName( m_view.getCurPlayer() );
                 View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
                 if ( Action.BUTTON_BROWSEALL_ACTION == action &&
-                     DictsActivity.handleDictsPopup( m_activity, button, curDict ) ) {
+                     DictsActivity.handleDictsPopup( m_activity, button, 
+                                                     curDict, m_gi.dictLang ) ){
                     break;
                 }
                 DictBrowseDelegate.launch( m_activity, curDict );
@@ -984,15 +1066,88 @@ public class BoardDelegate extends DelegateBase
             case LOOKUP_ACTION:
                 launchLookup( m_words, m_gi.dictLang );
                 break;
+            case NFC_TO_SELF:
+                GamesListDelegate.sendNFCToSelf( m_activity, makeNFCMessage() );
+                break;
+            case DROP_RELAY_ACTION:
+                dropRelayAndRestart();
+                break;
+            case DELETE_AND_EXIT:
+                deleteAndClose();
+                break;
+
+            case ENABLE_SMS_DO:
+                handled = false; // so super gets called, before
+                                 // retrySMSInvites
+                post( new Runnable() {
+                        public void run() {
+                            retrySMSInvites( params );
+                        }
+                    } );
+                break;
+                
             default:
-                Assert.fail();
+                handled = false;
             }
 
             if ( JNICmd.CMD_NONE != cmd ) {
                 checkAndHandle( cmd );
             }
         }
+
+        if ( !handled ) {
+            super.dlgButtonClicked( action, which, params );
+        }
     } // dlgButtonClicked
+
+    public void inviteChoiceMade( Action action, InviteMeans means, 
+                                  Object[] params )
+    {
+        if ( action == Action.LAUNCH_INVITE_ACTION ) {
+            SentInvitesInfo info = params[0] instanceof SentInvitesInfo
+                ? (SentInvitesInfo)params[0] : null;
+            switch( means ) {
+            case NFC:
+                if ( XWPrefs.getNFCToSelfEnabled( m_activity ) ) {
+                    showConfirmThen( R.string.nfc_to_self, Action.NFC_TO_SELF );
+                } else if ( ! NFCUtils.nfcAvail( m_activity )[1] ) {
+                    showDialog( DlgID.ENABLE_NFC );
+                } else {
+                    showOKOnlyDialog( R.string.nfc_just_tap );
+                }
+                break;
+            case BLUETOOTH:
+                BTInviteDelegate.launchForResult( m_activity, m_nMissing, info,
+                                                  RequestCode.BT_INVITE_RESULT );
+                break;
+            case SMS:
+                SMSInviteDelegate.launchForResult( m_activity, m_nMissing, info,
+                                                   RequestCode.SMS_INVITE_RESULT );
+                break;
+            case RELAY:
+                RelayInviteDelegate.launchForResult( m_activity, m_nMissing, 
+                                                     RequestCode.RELAY_INVITE_RESULT );
+                break;
+            case EMAIL:
+            case CLIPBOARD:
+                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 1,
+                                                       1 + m_nGuestDevs );
+                if ( m_relayMissing ) {
+                    nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
+                }
+                if ( InviteMeans.EMAIL == means ) {
+                    GameUtils.launchEmailInviteActivity( m_activity, nli );
+                } else if ( InviteMeans.CLIPBOARD == means ) {
+                    GameUtils.inviteURLToClip( m_activity, nli );
+                }
+                recordInviteSent( means, null );
+
+                break;
+            default:
+                Assert.fail();
+            }
+        }
+    }
 
     //////////////////////////////////////////////////
     // View.OnClickListener interface
@@ -1032,23 +1187,25 @@ public class BoardDelegate extends DelegateBase
             }
             break;
 
+        case BT_ENABLED:
+            pingBTRemotes();
+            break;
+
             // This can be BT or SMS.  In BT case there's a progress
             // thing going.  Not in SMS case.
         case NEWGAME_FAILURE:
             DbgUtils.logf( "failed to create game" );
-        case NEWGAME_SUCCESS:
-            final boolean success = 
-                MultiService.MultiEvent.NEWGAME_SUCCESS == event;
-            final boolean allHere = 0 == --m_invitesPending;
-            m_handler.post( new Runnable() {
+            break;
+        case NEWGAME_DUP_REJECTED:
+            if ( m_progressShown ) {
+                m_progressShown = false;
+                stopProgress();     // in case it's a BT invite
+            }
+            final String msg = 
+                getString( R.string.err_dup_invite_fmt, (String)args[0] );
+            post( new Runnable() {
                     public void run() {
-                        if ( allHere ) {
-                            stopProgress();
-                        }
-                        if ( success ) {
-                            DbgUtils.showf( m_activity, 
-                                            R.string.invite_success );
-                        }
+                        showOKOnlyDialog( msg );
                     }
                 } );
             break;
@@ -1071,6 +1228,10 @@ public class BoardDelegate extends DelegateBase
             break;
 
         default:
+            if ( m_progressShown ) {
+                m_progressShown = false;
+                stopProgress();     // in case it's a BT invite
+            }
             super.eventOccurred( event, args );
             break;
         }
@@ -1164,17 +1325,40 @@ public class BoardDelegate extends DelegateBase
     //////////////////////////////////////////////////
     // NFCUtils.NFCActor
     //////////////////////////////////////////////////
-
     public String makeNFCMessage()
     {
         String data = null;
-        if ( 0 < m_missing ) {  // Isn't there a better test??
-            String inviteID = String.format( "%X", m_gi.gameID );
-            String room = m_summary.roomName;
-            Assert.assertNotNull( room );
-            data = NetLaunchInfo.makeLaunchJSON( m_activity, room, inviteID,
-                                                 m_gi.dictLang, 
-                                                 m_gi.dictName, m_gi.nPlayers );
+        if ( 0 < m_nMissing ) {  // Isn't there a better test??
+            NetLaunchInfo nli = new NetLaunchInfo( m_gi );
+            Assert.assertTrue( 0 <= m_nGuestDevs );
+            nli.forceChannel = 1 + m_nGuestDevs;
+            for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
+                  iter.hasNext(); ) {
+                CommsConnType typ = iter.next();
+                switch ( typ ) {
+                case COMMS_CONN_RELAY:
+                    String room = m_summary.roomName;
+                    Assert.assertNotNull( room );
+                    String inviteID = String.format( "%X", m_gi.gameID );
+                    nli.addRelayInfo( room, inviteID );
+                    break;
+                case COMMS_CONN_BT:
+                    nli.addBTInfo();
+                    break;
+                case COMMS_CONN_SMS:
+                    nli.addSMSInfo( m_activity );
+                    break;
+                default:
+                    DbgUtils.logf( "Not doing NFC join for conn type %s",
+                                   typ.toString() );
+                }
+            }
+            data = nli.makeLaunchJSON();
+        }
+        if ( null != data ) {
+            removeDialog( DlgID.CONFIRM_THEN );
+
+            recordInviteSent( InviteMeans.NFC, null );
         }
         return data;
     }
@@ -1193,12 +1377,16 @@ public class BoardDelegate extends DelegateBase
 
     public void onStatusClicked()
     {
-        final String msg = ConnStatusHandler.getStatusText( m_activity, m_connType );
+        final String msg = ConnStatusHandler.getStatusText( m_activity, m_connTypes );
         post( new Runnable() {
                 public void run() {
-                    m_dlgBytes = msg;
-                    m_dlgTitle = R.string.info_title;
-                    showDialog( DlgID.DLG_CONNSTAT );
+                    if ( null == msg ) {
+                        askNoAddrsDelete();
+                    } else {
+                        m_dlgBytes = msg;
+                        m_dlgTitle = R.string.info_title;
+                        showDialog( DlgID.DLG_CONNSTAT );
+                    }
                 }
             } );
     }
@@ -1206,6 +1394,43 @@ public class BoardDelegate extends DelegateBase
     public Handler getHandler()
     {
         return m_handler;
+    }
+
+    private void deleteAndClose()
+    {
+        waitCloseGame( false );
+        GameUtils.deleteGame( m_activity, m_rowid, false );
+        finish();
+    }
+
+    private void askNoAddrsDelete()
+    {
+        showConfirmThen( R.string.connstat_net_noaddr, 
+                         R.string.list_item_delete,
+                         Action.DELETE_AND_EXIT );
+    }
+
+    private void askDropRelay()
+    {
+        String msg = getString( R.string.confirm_drop_relay );
+        if ( m_connTypes.contains(CommsConnType.COMMS_CONN_BT) ) {
+            msg += " " + getString( R.string.confirm_drop_relay_bt );
+        }
+        if ( m_connTypes.contains(CommsConnType.COMMS_CONN_SMS) ) {
+            msg += " " + getString( R.string.confirm_drop_relay_sms );
+        }
+        showConfirmThen( msg, Action.DROP_RELAY_ACTION );
+    }
+
+    private void dropRelayAndRestart() {
+        CommsAddrRec addr = new CommsAddrRec();
+        XwJNI.comms_getAddr( m_jniGamePtr, addr );
+        addr.remove( CommsConnType.COMMS_CONN_RELAY );
+        XwJNI.comms_setAddr( m_jniGamePtr, addr );
+
+        finish();
+
+        GameUtils.launchGame( m_activity, m_rowid, m_haveInvited );
     }
 
     private void setGotGameDict( String getDict )
@@ -1297,9 +1522,12 @@ public class BoardDelegate extends DelegateBase
     private void handleConndMessage( String room, int devOrder, // <- hostID
                                      boolean allHere, int nMissing )
     {
+        dismissInviteAlert( nMissing, true );
+
         int naMsg = 0;
         int naKey = 0;
         String toastStr = null;
+        m_nMissing = nMissing;
         if ( allHere ) {
             // All players have now joined the game.  The device that
             // created the room will assign tiles.  Then it will be
@@ -1314,21 +1542,24 @@ public class BoardDelegate extends DelegateBase
                 }
             }
         } else if ( nMissing > 0 ) {
-            if ( !m_haveInvited ) {
-                m_haveInvited = true;
-                m_room = room;
-                m_missing = nMissing;
-                showDialog( DlgID.DLG_INVITE );
-                invalidateOptionsMenuIf();
+            if ( m_summary.hasRematchInfo() ) {
+                tryRematchInvites( false );
             } else {
-                toastStr = getString( R.string.msg_relay_waiting_fmt, devOrder, 
-                                      room, nMissing );
-                if ( devOrder == 1 ) {
-                    naMsg = R.string.not_again_conndfirst;
-                    naKey = R.string.key_notagain_conndfirst;
+                if ( !m_haveInvited ) {
+                    m_haveInvited = true;
+                    m_room = room;
+                    showDialog( DlgID.DLG_INVITE );
+                    invalidateOptionsMenuIf();
                 } else {
-                    naMsg = R.string.not_again_conndmid;
-                    naKey = R.string.key_notagain_conndmid;
+                    toastStr = getQuantityString( R.plurals.msg_relay_waiting_fmt, nMissing,
+                                                  devOrder, room, nMissing );
+                    if ( devOrder == 1 ) {
+                        naMsg = R.string.not_again_conndfirst;
+                        naKey = R.string.key_notagain_conndfirst;
+                    } else {
+                        naMsg = R.string.not_again_conndmid;
+                        naKey = R.string.key_notagain_conndmid;
+                    }
                 }
             }
         }
@@ -1343,7 +1574,6 @@ public class BoardDelegate extends DelegateBase
             }
         }
 
-        m_missing = nMissing;
         invalidateOptionsMenuIf();
     } // handleConndMessage
 
@@ -1420,13 +1650,13 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void playerScoreHeld( int player )
         {
-            String expl = XwJNI.model_getPlayersLastScore( m_jniGamePtr, 
-                                                           player );
-            if ( expl.length() == 0 ) {
+            LastMoveInfo lmi = new LastMoveInfo();
+            XwJNI.model_getPlayersLastScore( m_jniGamePtr, player, lmi );
+            String expl = lmi.format( m_activity );
+            if ( null == expl || 0 == expl.length() ) {
                 expl = getString( R.string.no_moves_made );
             }
-            String name = m_gi.players[player].name;
-            final String text = String.format( "%s\n%s", name, expl );
+            final String text = expl;
             post( new Runnable() {
                     public void run() {
                         showToast( text );
@@ -1500,17 +1730,14 @@ public class BoardDelegate extends DelegateBase
         @Override
         public String askPassword( String name )
         {
-            // call this each time dlg created or will get exception
-            // for reusing m_passwdLyt
             m_pwdName = name;
-            setupPasswdVars();  
 
             waitBlockingDialog( DlgID.ASK_PASSWORD_BLK, 0 );
 
-            String result = null;      // means cancelled
-            if ( 0 != m_resultCode ) {
-                result = m_passwdEdit.getText().toString();
-            }
+            String result = 0 == m_resultCode
+                ? null      // means cancelled
+                : m_passwdEdit.getText().toString();
+            m_passwdEdit = null;
             return result;
         }
 
@@ -1518,10 +1745,11 @@ public class BoardDelegate extends DelegateBase
         public void turnChanged( int newTurn )
         {
             if ( 0 <= newTurn ) {
+                m_nMissing = 0;
                 post( new Runnable() {
                         public void run() {
-                            showNotAgainDlgThen( R.string.not_again_turnchanged, 
-                                                 R.string.key_notagain_turnchanged );
+                            showNotAgainDlg( R.string.not_again_turnchanged, 
+                                             R.string.key_notagain_turnchanged );
                         }
                     } );
                 m_jniThread.handle( JNICmd. CMD_ZOOM, -8 );
@@ -1569,8 +1797,9 @@ public class BoardDelegate extends DelegateBase
         public boolean confirmTrade( String[] tiles )
         {
             m_dlgTitle = R.string.info_title;
-            m_dlgBytes = getString( R.string.query_trade_fmt, 
-                                    TextUtils.join( ", ", tiles ) );
+            m_dlgBytes = 
+                getQuantityString( R.plurals.query_trade_fmt, tiles.length,
+                                   tiles.length, TextUtils.join( ", ", tiles ));
             return 0 != waitBlockingDialog( DlgID.QUERY_REQUEST_BLK, 0 );
         }
 
@@ -1578,6 +1807,7 @@ public class BoardDelegate extends DelegateBase
         public void userError( int code )
         {
             int resid = 0;
+            boolean asToast = false;
             switch( code ) {
             case UtilCtxt.ERR_TILES_NOT_IN_LINE:
                 resid = R.string.str_tiles_not_in_line;
@@ -1623,42 +1853,49 @@ public class BoardDelegate extends DelegateBase
             case ERR_REG_SERVER_SANS_REMOTE:
                 resid = R.string.str_reg_server_sans_remote;
                 break;
+            case ERR_NO_HINT_FOUND:
+                resid = R.string.str_no_hint_found;
+                asToast = true;
+                break;
             }
 
             if ( resid != 0 ) {
-                nonBlockingDialog( DlgID.DLG_OKONLY, getString( resid ) );
+                if ( asToast ) {
+                    final int residf = resid;
+                    runOnUiThread( new Runnable() {
+                            public void run() {
+                                showToast( residf );
+                            }
+                        } );
+                } else {
+                    nonBlockingDialog( DlgID.DLG_OKONLY, getString( resid ) );
+                }
             }
         } // userError
 
+        // Called from server_makeFromStream, whether there's something
+        // missing or not.
         @Override
-        public void informMissing( boolean isServer, CommsConnType connType,
-                                   final int nMissingPlayers )
+        public void informMissing( boolean isServer, CommsConnTypeSet connTypes,
+                                   int nDevs, final int nMissing )
         {
-            m_connType = connType;
+            m_connTypes = connTypes;
+            Assert.assertTrue( isServer || 0 == nMissing );
+            // DbgUtils.logf( "BoardDelegate.informMissing(isServer=%b, nDevs=%d, nMissing=%d)", 
+            //                isServer, nDevs, nMissing );
+            m_nGuestDevs = nDevs;
 
-            Action action = null;
-            if ( 0 < nMissingPlayers && isServer && !m_haveInvited ) {
-                switch( connType ) {
-                case COMMS_CONN_BT:
-                    action = Action.BT_PICK_ACTION;
-                    break;
-                case COMMS_CONN_SMS:
-                    action = Action.SMS_PICK_ACTION;
-                    break;
-                }
-            }
-            if ( null != action ) {
-                m_haveInvited = true;
-                final Action faction = action;
-                final String fmsg = getString( R.string.invite_msg_fmt,
-                                               nMissingPlayers );
+            // If we might have put up an alert earlier, take it down
+            dismissInviteAlert( nMissing, !m_relayMissing );
+
+            m_nMissing = nMissing; // will be 0 unless isServer is true
+
+            if ( null != connTypes && 0 == connTypes.size() ) {
+                askNoAddrsDelete();
+            } else if ( 0 < nMissing && isServer && !m_haveInvited ) {
                 post( new Runnable() {
                         public void run() {
-                            DbgUtils.showf( m_activity,
-                                            getString( R.string.players_miss_fmt,
-                                                       nMissingPlayers ) );
-                            m_nMissingPlayers = nMissingPlayers;
-                            showConfirmThen( fmsg, faction );
+                            showDialog( DlgID.DLG_INVITE );
                         }
                     } );
             }
@@ -1754,13 +1991,14 @@ public class BoardDelegate extends DelegateBase
         // and may stack dialogs on top of this one.  Including later
         // chat-messages.
         @Override
-        public void showChat( final String msg )
+        public void showChat( final String msg, final int fromIndx,
+                              String fromPlayer )
         {
             if ( BuildConstants.CHAT_SUPPORTED ) {
                 post( new Runnable() {
                         public void run() {
-                            DBUtils.appendChatHistory( m_activity,
-                                                       m_rowid, msg, false );
+                            DBUtils.appendChatHistory( m_activity, m_rowid, msg,
+                                                       fromIndx );
                             startChatActivity();
                         }
                     } );
@@ -1768,10 +2006,30 @@ public class BoardDelegate extends DelegateBase
         }
     } // class BoardUtilCtxt 
 
-    private void loadGame()
+    private void doResume( boolean isStart )
     {
-        if ( 0 == m_jniGamePtr ) {
+        boolean firstStart = null == m_handler;
+        if ( firstStart ) {
+            m_handler = new Handler();
+            m_blockingDlgID = DlgID.NONE;
+        }
+
+        try {
+            loadGame( isStart );
+            if ( !isStart ) {
+                setKeepScreenOn();
+                ConnStatusHandler.setHandler( this );
+            }
+        } catch ( GameUtils.NoSuchGameException nsge ) {
+            finish();
+        }
+    }
+
+    private void loadGame( boolean isStart )
+    {
+        if ( null == m_jniGamePtr ) {
             try {
+                String gameName = DBUtils.getName( m_activity, m_rowid );
                 String[] dictNames = GameUtils.dictNames( m_activity, m_rowid );
                 DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, dictNames );
 
@@ -1783,16 +2041,20 @@ public class BoardDelegate extends DelegateBase
 
                     byte[] stream = GameUtils.savedGame( m_activity, m_gameLock );
                     m_gi = new CurGameInfo( m_activity );
+                    m_gi.setName( gameName );
                     XwJNI.gi_from_stream( m_gi, stream );
                     String langName = m_gi.langName();
 
+                    m_summary = DBUtils.getSummary( m_activity, m_gameLock );
+                    m_relayMissing = m_summary.relayConnectPending();
+
                     setThis( this );
 
-                    m_jniGamePtr = XwJNI.initJNI();
+                    m_jniGamePtr = XwJNI.initJNI( m_rowid );
 
                     if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                        m_xport = new CommsTransport( m_jniGamePtr, m_activity, this, 
-                                                      m_rowid, m_gi.serverRole );
+                        m_xport = new CommsTransport( m_activity, this, m_rowid,
+                                                      m_gi.serverRole );
                     }
 
                     CommonPrefs cp = CommonPrefs.get( m_activity );
@@ -1808,9 +2070,6 @@ public class BoardDelegate extends DelegateBase
                                                 dictNames, pairs.m_bytes, 
                                                 pairs.m_paths, langName );
                     }
-
-                    m_summary = new GameSummary( m_activity, m_gi );
-                    XwJNI.game_summarize( m_jniGamePtr, m_summary );
 
                     Handler handler = new Handler() {
                             public void handleMessage( Message msg ) {
@@ -1845,6 +2104,11 @@ public class BoardDelegate extends DelegateBase
                                     m_dlgTitle = msg.arg1;
                                     showDialog( DlgID.GAME_OVER );
                                     break;
+                                case JNIThread.MSGS_SENT:
+                                    int nSent = (Integer)msg.obj;
+                                    showToast( getQuantityString( R.plurals.resent_msgs_fmt, 
+                                                                  nSent, nSent ) );
+                                    break;
                                 }
                             }
                         };
@@ -1857,8 +2121,10 @@ public class BoardDelegate extends DelegateBase
                     m_jniThread.start();
 
                     m_view.startHandling( m_activity, m_jniThread, m_jniGamePtr, m_gi,
-                                          m_connType );
+                                          m_connTypes );
                     if ( null != m_xport ) {
+                        // informMissing should have been called by now
+                        Assert.assertNotNull( m_connTypes );
                         m_xport.setReceiver( m_jniThread, m_handler );
                     }
                     m_jniThread.handle( JNICmd.CMD_START );
@@ -1897,11 +2163,12 @@ public class BoardDelegate extends DelegateBase
                         DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
                     }
 
+                    Utils.cancelNotification( m_activity, (int)m_rowid );
+
                     if ( null != m_xport ) {
                         warnIfNoTransport();
                         trySendChats();
-                        Utils.cancelNotification( m_activity, (int)m_rowid );
-                        m_xport.tickle( m_connType );
+                        tickle( isStart );
                         tryInvites();
                     }
                 }
@@ -1911,6 +2178,59 @@ public class BoardDelegate extends DelegateBase
             }
         }
     } // loadGame
+
+    private void tickle( boolean force )
+    {
+        for ( Iterator<CommsConnType> iter = m_connTypes.iterator();
+              iter.hasNext(); ) {
+            CommsConnType typ = iter.next();
+            switch( typ ) {
+            case COMMS_CONN_BT:
+                pingBTRemotes();
+                break;
+            case COMMS_CONN_RELAY:
+            case COMMS_CONN_SMS:
+                break;
+            default:
+                DbgUtils.logf( "tickle: unexpected type %s", 
+                               typ.toString() );
+                Assert.fail();
+            }
+        }
+
+        if ( 0 < m_connTypes.size() ) {
+            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, force, true, 
+                                false );
+        }
+    }
+
+    private void dismissInviteAlert( final int nMissing, final boolean connected )
+    {
+        runOnUiThread( new Runnable() {
+                public void run() {
+                    if ( m_relayMissing && connected ) {
+                        m_relayMissing = false;
+                    }
+                    if ( 0 == nMissing || !m_relayMissing ) {
+                        dismissDialog( DlgID.DLG_INVITE );
+                    } 
+                }
+            } );
+    }
+
+    private void pingBTRemotes()
+    {
+        if ( null != m_connTypes
+             && m_connTypes.contains( CommsConnType.COMMS_CONN_BT ) ) {
+            CommsAddrRec[] addrs = XwJNI.comms_getAddrs( m_jniGamePtr );
+            for ( CommsAddrRec addr : addrs ) {
+                if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                    BTService.pingHost( m_activity, addr.bt_btAddr,
+                                        m_gi.gameID );
+                }
+            }
+        }
+    }
 
     private void checkAndHandle( JNICmd cmd )
     {
@@ -2052,15 +2372,31 @@ public class BoardDelegate extends DelegateBase
     private void startChatActivity()
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            Intent intent = new Intent( m_activity, ChatActivity.class );
-            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
-            startActivityForResult( intent, CHAT_REQUEST );
+            int curPlayer = XwJNI.board_getSelPlayer( m_jniGamePtr );
+            String[] names = m_gi.playerNames();
+            boolean[] locs = m_gi.playersLocal(); // to convert old histories
+            ChatDelegate.startForResult( m_activity, RequestCode.CHAT_REQUEST,
+                                         m_rowid, curPlayer, names, locs );
+        }
+    }
+
+    private void closeIfFinishing( boolean force )
+    {
+        if ( null == m_handler ) {
+            // DbgUtils.logf( "closeIfFinishing(): already closed" );
+        } else if ( force || isFinishing() ) {
+            // DbgUtils.logf( "closeIfFinishing: closing rowid %d", m_rowid );
+            m_handler = null;
+            ConnStatusHandler.setHandler( null );
+            waitCloseGame( true );
+        } else {
+            // DbgUtils.logf( "closeIfFinishing(): not finishing (yet)" );
         }
     }
 
     private void waitCloseGame( boolean save ) 
     {
-        if ( 0 != m_jniGamePtr ) {
+        if ( null != m_jniGamePtr ) {
             if ( null != m_xport ) {
                 m_xport.waitToStop();
                 m_xport = null;
@@ -2084,8 +2420,8 @@ public class BoardDelegate extends DelegateBase
                 DBUtils.saveThumbnail( m_activity, m_gameLock, thumb );
             }
 
-            XwJNI.game_dispose( m_jniGamePtr );
-            m_jniGamePtr = 0;
+            m_jniGamePtr.release();
+            m_jniGamePtr = null;
             m_gi = null;
 
             m_gameLock.unlock();
@@ -2095,14 +2431,13 @@ public class BoardDelegate extends DelegateBase
 
     private void warnIfNoTransport()
     {
-        switch( m_connType ) {
-        case COMMS_CONN_SMS:
+        if ( m_connTypes.contains( CommsConnType.COMMS_CONN_SMS ) ) {
             if ( XWApp.SMSSUPPORTED && !XWPrefs.getSMSEnabled( m_activity ) ) {
                 showConfirmThen( R.string.warn_sms_disabled, 
-                                 R.string.button_go_settings,
-                                 Action.SMS_CONFIG_ACTION );
+                                 R.string.button_enable_sms,
+                                 R.string.button_later,
+                                 Action.ENABLE_SMS_ASK );
             }
-            break;
         }
     }
     
@@ -2119,32 +2454,61 @@ public class BoardDelegate extends DelegateBase
 
     private void tryInvites()
     {
-        if ( XWApp.BTSUPPORTED || XWApp.SMSSUPPORTED ) {
-            if ( null != m_missingDevs ) {
-                String gameName = GameUtils.getName( m_activity, m_rowid );
-                boolean doProgress = false;
-                m_invitesPending = m_missingDevs.length;
-                for ( String dev : m_missingDevs ) {
-                    switch( m_connType ) {
-                    case COMMS_CONN_BT:
-                        BTService.inviteRemote( m_activity, dev, m_gi.gameID, 
-                                                gameName, m_gi.dictLang, 
-                                                m_gi.dictName, m_gi.nPlayers,
-                                                1 );
-                        break;
-                    case COMMS_CONN_SMS:
-                        SMSService.inviteRemote( m_activity, dev, m_gi.gameID, 
-                                                 gameName, m_gi.dictLang, 
-                                                 m_gi.dictName, m_gi.nPlayers,
-                                                 1 );
-                        break;
+        if ( 0 < m_nMissing && m_summary.hasRematchInfo() ) {
+            tryRematchInvites( false );
+        } else if ( null != m_missingDevs ) {
+            Assert.assertNotNull( m_missingMeans );
+            String gameName = GameUtils.getName( m_activity, m_rowid );
+            m_invitesPending = m_missingDevs.length;
+            for ( int ii = 0; ii < m_missingDevs.length; ++ii ) {
+                String dev = m_missingDevs[ii];
+                int nPlayers = m_missingCounts[ii];
+                Assert.assertTrue( 0 <= m_nGuestDevs );
+                int forceChannel = ii + m_nGuestDevs + 1;
+                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, 
+                                                       nPlayers, forceChannel );
+                if ( m_relayMissing ) {
+                    nli.removeAddress( CommsConnType.COMMS_CONN_RELAY );
+                }
+
+                switch ( m_missingMeans ) {
+                case BLUETOOTH:
+                    if ( ! m_progressShown ) {
+                        m_progressShown = true;
+                        String progMsg = BTService.nameForAddr( dev );
+                        progMsg = getString( R.string.invite_progress_fmt, progMsg );
+                        startProgress( R.string.invite_progress_title, progMsg,
+                                       new OnCancelListener() {
+                                           public void onCancel( DialogInterface dlg )
+                                           {
+                                               m_progressShown = false;
+                                           }
+                                       });
                     }
+                    BTService.inviteRemote( m_activity, dev, nli );
+                    break;
+                case SMS:
+                    sendSMSInviteIf( dev, nli, true );
+                    dev = null; // don't record send a second time
+                    break;
+                case RELAY:
+                    try {
+                        int destDevID = Integer.parseInt( dev ); // failing
+                        RelayService.inviteRemote( m_activity, destDevID, 
+                                                   null, nli );
+                    } catch (NumberFormatException nfi) {
+                        DbgUtils.loge( nfi );
+                    }
+                    break;
                 }
-                if ( doProgress ) {
-                    startProgress( R.string.invite_progress );
+
+                if ( null != dev ) {
+                    recordInviteSent( m_missingMeans, dev );
                 }
-                m_missingDevs = null;
             }
+            m_missingDevs = null;
+            m_missingCounts = null;
+            m_missingMeans = null;
         }
     }
 
@@ -2249,22 +2613,198 @@ public class BoardDelegate extends DelegateBase
         return wordsArray;
     }
 
-    private void setupPasswdVars()
+    // For now, supported if standalone or either BT or SMS used for transport
+    private boolean rematchSupported( boolean showMulti )
     {
-        m_dlgTitleStr = getString( R.string.msg_ask_password_fmt, m_pwdName );
-        m_passwdLyt = (LinearLayout)inflate( R.layout.passwd_view );
-        m_passwdEdit = (EditText)m_passwdLyt.findViewById( R.id.edit );
+        return rematchSupported( showMulti ? m_activity : null,
+                                 m_summary );
     }
 
-    private void doRematch()
+    public static boolean rematchSupported( Context context, long rowID )
     {
-        Intent intent = GamesListDelegate.makeRematchIntent( m_activity, m_gi, m_rowid );
-        if ( null != intent ) {
-            startActivity( intent );
-            m_delegator.finish();
+        GameSummary summary = DBUtils.getSummary( context, rowID, 1 );
+        return null != summary && rematchSupported( null, summary );
+    }
+
+    private static boolean rematchSupported( Context context, 
+                                             GameSummary summary )
+    {
+        boolean supported = false;
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            // standalone games are easy to rematch
+            supported = summary.serverRole == DeviceRole.SERVER_STANDALONE;
+
+            if ( !supported ) {
+                if ( 2 == summary.nPlayers ) {
+                    if ( !summary.anyMissing() ) {
+                        CommsConnTypeSet connTypes = summary.conTypes;
+                        supported = connTypes.contains( CommsConnType.COMMS_CONN_BT )
+                            || connTypes.contains( CommsConnType.COMMS_CONN_SMS  )
+                            || connTypes.contains( CommsConnType.COMMS_CONN_RELAY );
+                    }
+                } else if ( null != context ) {
+                    // show the button if people haven't dismissed the hint yet
+                    supported = ! XWPrefs
+                        .getPrefsBoolean( context, 
+                                          R.string.key_na_rematch_two_only, 
+                                          false );
+                }
+            }
+        }
+        return supported;
+    }
+
+    private void doRematchIf()
+    {
+        // Intent intent = GamesListDelegate.makeRematchIntent( m_activity, m_gi, m_rowid );
+        // if ( null != intent ) {
+        //     startActivity( intent );
+        //     m_delegator.finish();
+        if ( doRematchIf( m_activity, this, m_rowid, m_summary, m_gi, 
+                          m_jniGamePtr ) ) {
+            finish();
+        }
+    }
+
+    private static boolean doRematchIf( Activity activity, DelegateBase dlgt, 
+                                        long rowid, GameSummary summary, 
+                                        CurGameInfo gi, GamePtr jniGamePtr )
+    {
+        boolean success = false;
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            boolean doIt = true;
+            String phone = null;
+            String btAddr = null;
+            String relayID = null;
+            if ( DeviceRole.SERVER_STANDALONE == gi.serverRole ) {
+                // nothing to do??
+            } else if ( 2 != gi.nPlayers ) {
+                Assert.assertNotNull( dlgt );
+                if ( null != dlgt ) {
+                    dlgt.showNotAgainDlg( R.string.not_again_rematch_two_only, 
+                                          R.string.key_na_rematch_two_only );
+                }
+                doIt = false;
+            } else {
+                CommsAddrRec[] addrs = XwJNI.comms_getAddrs( jniGamePtr );
+                for ( int ii = 0; ii < addrs.length; ++ii ) {
+                    CommsAddrRec addr = addrs[ii];
+                    if ( addr.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                        Assert.assertNull( btAddr );
+                        btAddr = addr.bt_btAddr;
+                    } 
+                    if ( addr.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+                        Assert.assertNull( phone );
+                        phone = addr.sms_phone;
+                    }
+                    if ( addr.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                        Assert.assertNull( relayID );
+                        relayID = XwJNI.comms_formatRelayID( jniGamePtr, ii );
+                    }
+                }
+            }
+
+            if ( doIt ) {
+                CommsConnTypeSet connTypes = summary.conTypes;
+                String newName = summary.getRematchName();
+                Intent intent = GamesListDelegate
+                    .makeRematchIntent( activity, rowid, gi, connTypes, btAddr, 
+                                        phone, relayID, newName );
+                if ( null != intent ) {
+                    activity.startActivity( intent );
+                    success = true;
+                }
+            }
+        }
+        return success;
+    }
+
+    public static void setupRematchFor( Activity activity, long rowID )
+    {
+        GameLock lock = new GameLock( rowID, false );
+        if ( lock.tryLock() ) {
+            GameSummary summary = DBUtils.getSummary( activity, lock );
+            CurGameInfo gi = new CurGameInfo( activity );
+            GamePtr gamePtr = GameUtils.loadMakeGame( activity, gi, lock );
+
+            doRematchIf( activity, null, rowID, summary, gi, gamePtr );
+
+            gamePtr.release();
+            lock.unlock();
+        } else {
+            DbgUtils.logf( "setupRematchFor(): unable to lock game" );
+        }
+    }
+
+    private void tryRematchInvites( boolean force )
+    {
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            if ( !force ) {
+                SentInvitesInfo info = DBUtils.getInvitesFor( m_activity, m_rowid );
+                force = 0 == info.getMinPlayerCount();
+            }
+
+            if ( force ) {
+                Assert.assertNotNull( m_summary );
+                Assert.assertNotNull( m_gi );
+                // only supports a single invite for now!
+                int numHere = 1;
+                int forceChannel = 1;
+                NetLaunchInfo nli = new NetLaunchInfo( m_summary, m_gi, numHere, 
+                                                       forceChannel );
+
+                String value;
+                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_PHONE );
+                if ( null != value ) {
+                    sendSMSInviteIf( value, nli, true );
+                }
+                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_BTADDR );
+                if ( null != value ) {
+                    BTService.inviteRemote( m_activity, value, nli );
+                    recordInviteSent( InviteMeans.BLUETOOTH, value );
+                }
+                value = m_summary.getStringExtra( GameSummary.EXTRA_REMATCH_RELAY );
+                if ( null != value ) {
+                    RelayService.inviteRemote( m_activity, 0, value, nli );
+                    recordInviteSent( InviteMeans.RELAY, value );
+                }
+
+                showToast( R.string.rematch_sent_toast );
+            }
+        }
+    }
+
+    private void sendSMSInviteIf( String phone, NetLaunchInfo nli,
+                                  boolean askOk )
+    {
+        if ( XWPrefs.getSMSEnabled( m_activity ) ) {
+            SMSService.inviteRemote( m_activity, phone, nli );
+            recordInviteSent( InviteMeans.SMS, phone );
+        } else if ( askOk ) {
+            showConfirmThen( R.string.warn_sms_disabled,
+                             R.string.button_enable_sms,
+                             R.string.button_later,
+                             Action.ENABLE_SMS_ASK, nli, phone );
+        }
+    }
+
+    private void retrySMSInvites( Object[] params )
+    {
+        if ( null != params && 2 == params.length 
+             && params[0] instanceof NetLaunchInfo
+             && params[1] instanceof String ) {
+            sendSMSInviteIf( (String)params[1], (NetLaunchInfo)params[0],
+                             false );
+        } else {
+            DbgUtils.logf( "retrySMSInvites: tests failed" );
         }
     }
     
+    private void recordInviteSent( InviteMeans means, String dev )
+    {
+        DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
+    }
+
     private static void noteSkip()
     {
         String msg = "BoardActivity.feedMessage[s](): skipped because "

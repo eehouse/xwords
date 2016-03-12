@@ -37,9 +37,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -55,9 +58,11 @@ public class ConnStatusHandler {
     // private static final int RED = 0x7FFF0000;
     private static final int GREEN = 0xFF00FF00;
     private static final int RED = 0xFFFF0000;
+    private static final int BLACK = 0xFF000000;
     private static final int SUCCESS_IN = 0;
     private static final int SUCCESS_OUT = 1;
     private static final int SHOW_SUCCESS_INTERVAL = 1000;
+    private static final boolean SOLO_NOGREEN = true;
 
     private static Rect s_rect;
     private static boolean s_downOnMe = false;
@@ -74,9 +79,6 @@ public class ConnStatusHandler {
         public SuccessRecord()
         {
             m_time = new Time();
-            lastSuccess = 0;
-            lastFailure = 0;
-            successNewer = false;
         }
 
         public boolean haveFailure()
@@ -117,7 +119,7 @@ public class ConnStatusHandler {
             CharSequence seq = 
                 DateUtils.getRelativeDateTimeString( context, 
                                                      time.toMillis(true),
-                                                     DateUtils.MINUTE_IN_MILLIS, 
+                                                     DateUtils.SECOND_IN_MILLIS,
                                                      DateUtils.WEEK_IN_MILLIS, 
                                                      0 );
             return seq.toString();
@@ -132,6 +134,8 @@ public class ConnStatusHandler {
         }
     }
 
+    private ConnStatusHandler() {}
+
     private static HashMap<CommsConnType,SuccessRecord[]> s_records = 
         new HashMap<CommsConnType,SuccessRecord[]>();
     private static Class s_lockObj = ConnStatusHandler.class;
@@ -140,6 +144,11 @@ public class ConnStatusHandler {
     public static void setRect( int left, int top, int right, int bottom )
     {
         s_rect = new Rect( left, top, right, bottom );
+    }
+
+    public static void clearRect()
+    {
+        s_rect = null;
     }
 
     public static void setHandler( ConnStatusCBacks cbacks )
@@ -168,51 +177,59 @@ public class ConnStatusHandler {
         return s_downOnMe && s_rect.contains( xx, yy );
     }
 
-    public static String getStatusText( Context context, CommsConnType connType )
+    public static String getStatusText( Context context, CommsConnTypeSet connTypes )
     {
         String msg;
-        if ( CommsConnType.COMMS_CONN_NONE == connType ) {
-            msg = LocUtils.getString( context, R.string.connstat_nonet );
+        if ( null == connTypes || 0 == connTypes.size() ) {
+            msg = null;
         } else {
             StringBuffer sb = new StringBuffer();
+            String tmp;
             synchronized( s_lockObj ) {
-                String tmp = LocUtils.getString( context, connType2StrID( connType ) );
                 sb.append( LocUtils.getString( context, 
                                                R.string.connstat_net_fmt,
-                                               tmp ) );
-                sb.append("\n\n");
-
-                SuccessRecord record = recordFor( connType, false );
-                tmp = LocUtils.getString( context, record.successNewer? 
-                                          R.string.connstat_succ :
-                                          R.string.connstat_unsucc );
-                sb.append( LocUtils.getString( context, R.string.connstat_lastsend_fmt,
-                                               tmp, record.newerStr( context ) ) );
-                sb.append("\n");
-
-                int fmtId = 0;
-                if ( record.successNewer ) {
-                    if ( record.haveFailure() ) {
-                        fmtId = R.string.connstat_lastother_succ_fmt;
+                                               connTypes.toString( context )));
+                for ( CommsConnType typ : connTypes.getTypes() ) {
+                    String did = "";
+                    if ( BuildConfig.DEBUG
+                         && CommsConnType.COMMS_CONN_RELAY == typ ) {
+                        did = String.format( "(DevID: %d) ", 
+                                             DevID.getRelayDevIDInt(context) );
                     }
-                } else {
+                    sb.append( String.format( "\n\n*** %s %s***\n", 
+                                              typ.longName( context ), did ) );
+                    SuccessRecord record = recordFor( typ, false );
+                    tmp = LocUtils.getString( context, record.successNewer? 
+                                              R.string.connstat_succ :
+                                              R.string.connstat_unsucc );
+                    sb.append( LocUtils
+                               .getString( context, R.string.connstat_lastsend_fmt,
+                                           tmp, record.newerStr( context ) ) );
+
+                    int fmtId = 0;
+                    if ( record.successNewer ) {
+                        if ( record.haveFailure() ) {
+                            fmtId = R.string.connstat_lastother_succ_fmt;
+                        }
+                    } else {
+                        if ( record.haveSuccess() ) {
+                            fmtId = R.string.connstat_lastother_unsucc_fmt;
+                        }
+                    }
+                    if ( 0 != fmtId ) {
+                        sb.append( LocUtils.getString( context, fmtId, 
+                                                       record.olderStr( context )));
+                    }
+                    sb.append( "\n\n" );
+
+                    record = recordFor( typ, true );
                     if ( record.haveSuccess() ) {
-                        fmtId = R.string.connstat_lastother_unsucc_fmt;
+                        sb.append( LocUtils.getString( context, 
+                                                       R.string.connstat_lastreceipt_fmt,
+                                                       record.newerStr( context ) ) );
+                    } else {
+                        sb.append( LocUtils.getString( context, R.string.connstat_noreceipt) );
                     }
-                }
-                if ( 0 != fmtId ) {
-                    sb.append( LocUtils.getString( context, fmtId, 
-                                                   record.olderStr( context ) ) );
-                }
-                sb.append( "\n\n" );
-
-                record = recordFor( connType, true );
-                if ( record.haveSuccess() ) {
-                    sb.append( LocUtils.getString( context, 
-                                                   R.string.connstat_lastreceipt_fmt,
-                                                   record.newerStr( context ) ) );
-                } else {
-                    sb.append( LocUtils.getString( context, R.string.connstat_noreceipt) );
                 }
             }
             msg = sb.toString();
@@ -225,6 +242,13 @@ public class ConnStatusHandler {
         if ( null != s_cbacks ) {
             s_cbacks.invalidateParent();
         }
+    }
+
+    public static void updateStatus( Context context, ConnStatusCBacks cbacks,
+                                     CommsConnType connType, boolean success )
+    {
+        updateStatusImpl( context, cbacks, connType, success, true );
+        updateStatusImpl( context, cbacks, connType, success, false );
     }
 
     public static void updateStatusIn( Context context, ConnStatusCBacks cbacks,
@@ -279,70 +303,77 @@ public class ConnStatusHandler {
     }
 
     public static void draw( Context context, Canvas canvas, Resources res, 
-                             int offsetX, int offsetY, CommsConnType connType )
+                             CommsConnTypeSet connTypes, boolean isSolo )
     {
-        synchronized( s_lockObj ) {
-            if ( null != s_rect ) {
-                int iconID;
-                switch( connType ) {
-                case COMMS_CONN_RELAY:
-                    iconID = R.drawable.relaygame;
-                    break;
-                case COMMS_CONN_SMS:
-                    iconID = android.R.drawable.sym_action_chat;
-                    break;
-                case COMMS_CONN_BT:
-                    iconID = android.R.drawable.stat_sys_data_bluetooth;
-                    break;
-                case COMMS_CONN_NONE:
-                default:
-                    iconID = R.drawable.sologame;
-                    break;
-                }
-
+        if ( !isSolo && null != s_rect ) {
+            synchronized( s_lockObj ) {
                 Rect rect = new Rect( s_rect );
                 int quarterHeight = rect.height() / 4;
-                rect.offset( offsetX, offsetY );
 
-                if ( CommsConnType.COMMS_CONN_NONE != connType ) {
+                if ( isSolo && SOLO_NOGREEN ) {
+                    // paint a black background for the icon
+                    s_fillPaint.setColor( BLACK );
+                    canvas.drawRect( rect, s_fillPaint );
+                } else {
                     int saveTop = rect.top;
                     SuccessRecord record;
-                    boolean enabled = connTypeEnabled( context, connType );
+                    boolean enabled = isSolo || anyTypeEnabled( context, connTypes );
 
-                    // Do the background coloring
-                    rect.bottom = rect.top + quarterHeight * 2;
-                    record = recordFor( connType, false );
-                    s_fillPaint.setColor( enabled && record.successNewer
-                                          ? GREEN : RED );
-                    canvas.drawRect( rect, s_fillPaint );
+                    // Do the background coloring. Top quarter first
+                    rect.bottom = rect.top + quarterHeight;
+                    drawQuarter( canvas, res, rect, connTypes, enabled, false );
+
+                    // paint the middle two quarters black to give the icon a
+                    // clear background
                     rect.top = rect.bottom;
-                    rect.bottom = rect.top + quarterHeight * 2;
-                    record = recordFor( connType, true );
-                    s_fillPaint.setColor( enabled && record.successNewer
-                                          ? GREEN : RED );
+                    rect.bottom += quarterHeight * 2;
+                    s_fillPaint.setColor( BLACK );
                     canvas.drawRect( rect, s_fillPaint );
 
-                    // now the icons
-                    rect.top = saveTop;
+                    // bottom quarter
+                    rect.top = rect.bottom;
                     rect.bottom = rect.top + quarterHeight;
-                    int arrowID = s_showSuccesses[SUCCESS_OUT]? 
-                        R.drawable.out_arrow_active : R.drawable.out_arrow;
-                    drawIn( canvas, res, arrowID, rect );
-
-                    rect.top += 3 * quarterHeight;
-                    rect.bottom = rect.top + quarterHeight;
-                    arrowID = s_showSuccesses[SUCCESS_IN]? 
-                        R.drawable.in_arrow_active : R.drawable.in_arrow;
-                    drawIn( canvas, res, arrowID, rect );
+                    drawQuarter( canvas, res, rect, connTypes, enabled, true );
 
                     rect.top = saveTop;
                 }
 
+                // Center the icon in the remaining (vertically middle) rect
                 rect.top += quarterHeight;
                 rect.bottom = rect.top + (2 * quarterHeight);
+                int halfMin = Math.min( rect.width(), rect.height() ) / 2;
+                int center = rect.centerX();
+                rect.left = center - halfMin;
+                rect.right = center + halfMin;
+                center = rect.centerY();
+                rect.top = center - halfMin;
+                rect.bottom = center + halfMin;
+
+                int iconID = isSolo
+                    ? R.drawable.sologame__gen : R.drawable.multigame__gen;
                 drawIn( canvas, res, iconID, rect );
             }
         }
+    }
+
+    private static void drawQuarter( Canvas canvas, Resources res, Rect rect, 
+                                     CommsConnTypeSet connTypes, 
+                                     boolean enabled, boolean isIn )
+    {
+        enabled = enabled && null != newestSuccess( connTypes, isIn );
+        s_fillPaint.setColor( enabled ? GREEN : RED );
+        canvas.drawRect( rect, s_fillPaint );
+
+        int arrowID;
+        boolean showSuccesses = s_showSuccesses[isIn? SUCCESS_IN : SUCCESS_OUT];
+        if ( isIn ) {
+            arrowID = showSuccesses ? 
+                R.drawable.in_arrow_active : R.drawable.in_arrow;
+        } else {
+            arrowID = showSuccesses ? 
+                R.drawable.out_arrow_active : R.drawable.out_arrow;
+        }
+        drawIn( canvas, res, arrowID, rect );
     }
 
     // This gets rid of lint warning, but I don't like it as it
@@ -354,8 +385,8 @@ public class ConnStatusHandler {
             String as64 = XWPrefs.getPrefsString( context, 
                                                   R.string.key_connstat_data );
             if ( null != as64 && 0 < as64.length() ) {
-                byte[] bytes = XwJNI.base64Decode( as64 );
                 try {
+                    byte[] bytes = XwJNI.base64Decode( as64 );
                     ObjectInputStream ois = 
                         new ObjectInputStream( new ByteArrayInputStream(bytes) );
                     s_records = 
@@ -436,38 +467,38 @@ public class ConnStatusHandler {
     private static void drawIn( Canvas canvas, Resources res, int id, Rect rect )
     {
         Drawable icon = res.getDrawable( id );
+        Assert.assertTrue( icon.getBounds().width() == icon.getBounds().height() );
         icon.setBounds( rect );
         icon.draw( canvas );
     }
 
-    private static int connType2StrID( CommsConnType connType )
+    private static SuccessRecord newestSuccess( CommsConnTypeSet connTypes, 
+                                                boolean isIn )
     {
-        int resID = 0;
-        switch( connType ) {
-        case COMMS_CONN_RELAY:
-            resID = R.string.connstat_relay;
-            break;
-        case COMMS_CONN_SMS:
-            resID = R.string.connstat_sms;
-            break;
-        case COMMS_CONN_BT:
-            resID = R.string.connstat_bt;
-            break;
-        default:
-            Assert.fail();
+        SuccessRecord result = null;
+        if ( null != connTypes ) {
+            Iterator<CommsConnType> iter = connTypes.iterator();
+            while ( iter.hasNext() ) {
+                CommsConnType connType = iter.next();
+                SuccessRecord record = recordFor( connType, isIn );
+                if ( record.successNewer ) {
+                    if ( null == result || result.lastSuccess < record.lastSuccess ) {
+                        result = record;
+                    }
+                }
+            }
         }
-        return resID;
+        return result;
     }
 
     private static SuccessRecord recordFor( CommsConnType connType, boolean isIn )
     {
-        SuccessRecord[] records = s_records.get(connType);
+        SuccessRecord[] records = s_records.get( connType );
         if ( null == records ) {
-            records = new SuccessRecord[2];
+            records = new SuccessRecord[] { new SuccessRecord(), 
+                                            new SuccessRecord(),
+            };
             s_records.put( connType, records );
-            for ( int ii = 0; ii < 2; ++ii ) {
-                records[ii] = new SuccessRecord();
-            }
         }
         return records[isIn?0:1];
     }
@@ -475,7 +506,7 @@ public class ConnStatusHandler {
     private static void doSave( Context context )
     {
         synchronized( s_lockObj ) {
-            DbgUtils.logf( "ConnStatusHandler:doSave() doing save" );
+            // DbgUtils.logf( "ConnStatusHandler:doSave() doing save" );
             ByteArrayOutputStream bas
                 = new ByteArrayOutputStream();
             try {
@@ -494,6 +525,16 @@ public class ConnStatusHandler {
         }
     }
     
+    private static boolean anyTypeEnabled( Context context, CommsConnTypeSet connTypes )
+    {
+        boolean enabled = false;
+        Iterator<CommsConnType> iter = connTypes.iterator();
+        while ( !enabled && iter.hasNext() ) {
+            enabled = connTypeEnabled( context, iter.next() );
+        }
+        return enabled;
+    }
+
     private static boolean connTypeEnabled( Context context,
                                             CommsConnType connType )
     {
@@ -502,6 +543,19 @@ public class ConnStatusHandler {
         case COMMS_CONN_SMS:
             result = XWApp.SMSSUPPORTED && XWPrefs.getSMSEnabled( context )
                 && !getAirplaneModeOn( context );
+            break;
+        case COMMS_CONN_BT:
+            result = XWApp.BTSUPPORTED && BTService.BTEnabled()
+                && BTService.BTEnabled();
+            // No: we can be in airplane mode but with BT turned on manually.
+            //!getAirplaneModeOn( context );
+            break;
+        case COMMS_CONN_RELAY:
+            result = NetStateCache.netAvail( context );
+            break;
+        default:
+            DbgUtils.logf( "ConnStatusHandler:connTypeEnabled: %s not handled",
+                           connType.toString() );
             break;
         }
         return result;
@@ -514,5 +568,4 @@ public class ConnStatusHandler {
                                          Settings.System.AIRPLANE_MODE_ON, 0 );
         return result;
     }
-
 }

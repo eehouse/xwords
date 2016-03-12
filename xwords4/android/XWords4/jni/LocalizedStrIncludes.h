@@ -19,17 +19,14 @@
 # define STR_PHONY_REJECTED                13
 # define STRD_CUMULATIVE_SCORE             14
 # define STRS_NEW_TILES                    15
-# define STR_PASSED                        16
-# define STRSD_SUMMARYSCORED               17
-# define STRD_TRADED                       18
-# define STR_LOSTTURN                      19
-# define STR_COMMIT_CONFIRM                20
-# define STR_BONUS_ALL                     21
-# define STRD_TURN_SCORE                   22
-# define STRD_REMAINS_HEADER               23
-# define STRD_REMAINS_EXPL                 24
-# define STR_RESIGNED                      25
-# define STR_WINNER                        26
+# define STR_COMMIT_CONFIRM                16
+# define STR_BONUS_ALL                     17
+# define STRD_TURN_SCORE                   18
+# define STRD_REMAINS_HEADER               19
+# define STRD_REMAINS_EXPL                 20
+# define STRSD_RESIGNED                    21
+# define STRSD_WINNER                      22
+# define STRDSD_PLACER                     23
 
-# define N_AND_USER_STRINGS                26
+# define N_AND_USER_STRINGS                23
 #endif

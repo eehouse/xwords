@@ -21,7 +21,7 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 
-public class StudyListActivity extends XWListActivity {
+public class StudyListActivity extends XWActivity {
 
     @Override
     protected void onCreate( Bundle savedInstanceState ) 

@@ -25,10 +25,12 @@
 void drawScoreBoard( BoardCtxt* board );
 XP_S16 figureScoreRectTapped( const BoardCtxt* board, XP_U16 x, XP_U16 y );
 void drawTimer( BoardCtxt* board );
+void penTimerFiredScore( const BoardCtxt* board );
 
 #if defined POINTER_SUPPORT || defined KEYBOARD_NAV
 XP_Bool handlePenUpScore( BoardCtxt* board, XP_U16 x, XP_U16 y );
 #endif
+
 
 #ifdef KEYBOARD_NAV
 XP_Bool moveScoreCursor( BoardCtxt* board, XP_Key key, XP_Bool preflightOnly,

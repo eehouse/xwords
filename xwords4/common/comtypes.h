@@ -47,6 +47,9 @@
 #endif
 #define MAX_COLS MAX_ROWS
 
+#define STREAM_VERS_DEVIDS 0x19
+#define STREAM_VERS_MULTIADDR 0x18
+#define STREAM_VERS_MODELDIVIDER 0x17
 #define STREAM_VERS_COMMSBACKOFF 0x16
 #define STREAM_VERS_DICTNAME 0x15
 #ifdef HASH_STREAM 
@@ -83,7 +86,8 @@
 #define STREAM_VERS_41B4 0x02
 #define STREAM_VERS_405  0x01
 
-#define CUR_STREAM_VERS STREAM_VERS_COMMSBACKOFF
+/* search for FIX_NEXT_VERSION_CHANGE next time this is changed */
+#define CUR_STREAM_VERS STREAM_VERS_DEVIDS
 
 typedef struct XP_Rect {
     XP_S16 left;
@@ -140,8 +144,8 @@ typedef struct TrayContext TrayContext;
 typedef struct PoolContext PoolContext;
 typedef struct XW_UtilCtxt XW_UtilCtxt;
 
-/* Low two bits treated as channel; rest can be random to aid detection of
- * duplicate packets. */
+/* Low two bits treated as channel, third as short-term flag indicating
+ * sender's role; rest can be random to aid detection of duplicate packets. */
 #define CHANNEL_MASK 0x0003
 typedef XP_U16 XP_PlayerAddr;
 
@@ -329,7 +333,7 @@ typedef struct _PlayerDicts {
 #  define XP_UNUSED_BT(x) UNUSED__ ## x __attribute__((unused))
 #endif
 
-#if BT_USE_RFCOMM
+#ifdef BT_USE_RFCOMM
 # define XP_UNUSED_RFCOMM(x) x
 #else
 # define XP_UNUSED_RFCOMM(x) UNUSED__ ## x __attribute__((unused))

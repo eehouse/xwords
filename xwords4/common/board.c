@@ -71,7 +71,7 @@
 #endif
 
 #ifndef DIVIDER_RATIO
-# define DIVIDER_RATIO 5        /* 1/5 tray tile width */
+# define DIVIDER_RATIO 3        /* 1/3 tray tile width */
 #endif
 #define DIVIDER_WIDTH(trayWidth) \
     ((trayWidth) / (1 + (MAX_TRAY_TILES*DIVIDER_RATIO)))
@@ -256,7 +256,9 @@ board_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         arrow->vert = (XP_Bool)stream_getBits( stream, 1 );
         arrow->visible = (XP_Bool)stream_getBits( stream, 1 );
 
-        pti->dividerLoc = (XP_U8)stream_getBits( stream, NTILES_NBITS );
+        if ( STREAM_VERS_MODELDIVIDER > version ) {
+            (void)stream_getBits( stream, NTILES_NBITS );
+        }
         pti->traySelBits = (TileBit)stream_getBits( stream, 
                                                     MAX_TRAY_TILES );
         pti->tradeInProgress = (XP_Bool)stream_getBits( stream, 1 );
@@ -343,7 +345,6 @@ board_writeToStream( const BoardCtxt* board, XWStreamCtxt* stream )
         stream_putBits( stream, 1, arrow->vert );
         stream_putBits( stream, 1, arrow->visible );
 
-        stream_putBits( stream, NTILES_NBITS, pti->dividerLoc );
         stream_putBits( stream, MAX_TRAY_TILES, pti->traySelBits );
         stream_putBits( stream, 1, pti->tradeInProgress );
 
@@ -383,7 +384,6 @@ board_reset( BoardCtxt* board )
         PerTurnInfo* pti = &board->pti[ii];
         pti->traySelBits = 0;
         pti->tradeInProgress = XP_FALSE;
-        pti->dividerLoc = 0;
         XP_MEMSET( &pti->boardArrow, 0, sizeof(pti->boardArrow) );
     }
     board->gameOver = XP_FALSE;
@@ -400,7 +400,7 @@ board_reset( BoardCtxt* board )
 } /* board_reset */
 
 #ifdef COMMON_LAYOUT
-# ifdef DEBUG
+# if 0
 static void
 printDims( const BoardDims* dimsp )
 {
@@ -609,7 +609,7 @@ board_getScale( BoardCtxt* board, XP_U16* hScale, XP_U16* vScale )
 #endif
 
 XP_Bool
-board_prefsChanged( BoardCtxt* board, CommonPrefs* cp )
+board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp )
 {
     XP_Bool showArrowChanged;
     XP_Bool hideValChanged;
@@ -796,6 +796,12 @@ board_canHint( const BoardCtxt* board )
     return canHint;
 }
 
+void
+board_sendChat( const BoardCtxt* board, const XP_UCHAR const* msg )
+{
+    server_sendChat( board->server, msg, board->selPlayer );
+}
+
 static XP_U16
 adjustOffset( XP_U16 curOffset, XP_S16 zoomBy )
 {
@@ -940,7 +946,7 @@ hideMiniWindow( BoardCtxt* board, XP_Bool destroy, MiniWindowType winType )
 #endif
 #endif
 
-static XP_Bool
+static void
 warnBadWords( const XP_UCHAR* word, XP_Bool isLegal, 
               const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
@@ -964,7 +970,6 @@ warnBadWords( const XP_UCHAR* word, XP_Bool isLegal,
             && util_warnIllegalWord( board->util, &bwi, turn, XP_FALSE );
         board->badWordRejected = !ok || board->badWordRejected;
     }
-    return ok;
 } /* warnBadWords */
 
 static XP_Bool
@@ -1048,10 +1053,12 @@ board_commitTurn( BoardCtxt* board )
                      || util_userQuery( board->util, QUERY_COMMIT_TURN,
                                         stream ) ) {
                     result = server_commitMove( board->server ) || result;
-                    /* invalidate any selected tiles in case we'll be drawing
-                       this tray again rather than some other -- as is the
-                       case in a two-player game where one's a robot. */
-                    board_invalTrayTiles( board, pti->traySelBits );
+                    /* invalidate all tiles in case we'll be drawing this tray
+                       again rather than some other -- as is the case in a
+                       two-player game where one's a robot. We really only
+                       need the selected tiles and the rightmost (in case it's
+                       showing points-this-turn), but this is easier. */
+                    board_invalTrayTiles( board, ALLTILES );
                     pti->traySelBits = 0x00;
                 }
             }
@@ -1244,35 +1251,7 @@ timerFiredForPen( BoardCtxt* board )
             board->penTimerFired = XP_TRUE;
         }
     } else if ( board->penDownObject == OBJ_SCORE ) {
-        XP_S16 scoreIndex = figureScoreRectTapped( board, board->penDownX, 
-                                                   board->penDownY );
-        /* I've seen this assert fire on simulator.  No log is kept so I can't
-           tell why, but might want to test and do nothing in this case.  */
-        /* XP_ASSERT( player >= 0 ); */
-        if ( scoreIndex > CURSOR_LOC_REM ) {
-            XP_U16 player = scoreIndex - 1;
-#ifdef XWFEATURE_MINIWIN
-            const XP_UCHAR* format;
-            XP_UCHAR scoreExpl[48];
-            XP_U16 explLen;
-            LocalPlayer* lp = &board->gi->players[player];
-            format = util_getUserString( board->util, lp->isLocal? 
-                                         STR_LOCAL_NAME: STR_NONLOCAL_NAME );
-            XP_SNPRINTF( buf, sizeof(buf), format, emptyStringIfNull(lp->name) );
-
-            explLen = sizeof(scoreExpl);
-            if ( model_getPlayersLastScore( board->model, player, scoreExpl, 
-                                            &explLen ) ) {
-                XP_STRCAT( buf, XP_CR );
-                XP_ASSERT( XP_STRLEN(buf) + explLen < sizeof(buf) );
-                XP_STRCAT( buf, scoreExpl );
-            }
-            text = buf;
-#else
-            util_playerScoreHeld( board->util, player );
-#endif
-        }
-
+        penTimerFiredScore( board );
         board->penTimerFired = XP_TRUE;
     }
 
@@ -1905,6 +1884,12 @@ board_get_flipped( const BoardCtxt* board )
     return board->isFlipped;
 }
 
+XP_U16
+board_getSelPlayer( const BoardCtxt* board )
+{
+    return board->selPlayer;
+}
+
 XP_Bool
 board_flip( BoardCtxt* board )
 {
@@ -2022,10 +2007,13 @@ board_requestHint( BoardCtxt* board,
         const Tile* tiles;
         XP_Bool searchComplete = XP_TRUE;
         const XP_U16 selPlayer = board->selPlayer;
+#ifdef XWFEATURE_SEARCHLIMIT
         PerTurnInfo* pti = board->selInfo;
+#endif
         EngineCtxt* engine = server_getEngineFor( board->server, selPlayer );
         const TrayTileSet* tileSet;
         ModelCtxt* model = board->model;
+        XP_U16 dividerLoc = model_getDividerLoc( model, selPlayer );
 
         if ( !!engine && preflight( board, XP_TRUE ) ) {
 
@@ -2047,7 +2035,7 @@ board_requestHint( BoardCtxt* board,
             }
 
             tileSet = model_getPlayerTiles( model, selPlayer );
-            nTiles = tileSet->nTiles - pti->dividerLoc;
+            nTiles = tileSet->nTiles - dividerLoc;
             result = nTiles > 0;
         }
 
@@ -2063,7 +2051,7 @@ board_requestHint( BoardCtxt* board,
 
             (void)board_replaceTiles( board );
 
-            tiles = tileSet->tiles + pti->dividerLoc;
+            tiles = tileSet->tiles + dividerLoc;
 
             board_pushTimerSave( board );
 
@@ -2080,7 +2068,7 @@ board_requestHint( BoardCtxt* board,
 #ifdef XWFEATURE_BONUSALL
             XP_U16 allTilesBonus = 0;
 # ifdef XWFEATURE_BONUSALLHINT
-            if ( 0 == pti->dividerLoc ) {
+            if ( 0 == dividerLoc ) {
                 allTilesBonus = server_figureFinishBonus( board->server, 
                                                           selPlayer );
             }
@@ -2102,6 +2090,7 @@ board_requestHint( BoardCtxt* board,
             if ( searchComplete && canMove ) {
                 model_makeTurnFromMoveInfo( model, selPlayer, &newMove);
             } else {
+                result = XP_FALSE;
                 XP_STATUSF( "unable to complete hint request\n" );
             }
             *workRemainsP = !searchComplete;
@@ -2116,6 +2105,12 @@ board_requestHint( BoardCtxt* board,
                 }
                 setArrowVisible( board, wasVisible );
             }
+        } else {
+            util_userError( board->util, ERR_NO_HINT_FOUND );
+        }
+
+        if ( !result ) {
+            util_userError( board->util, ERR_NO_HINT_FOUND );
         }
     }
     return result || redraw;
@@ -3219,7 +3214,7 @@ invalFocusOwner( BoardCtxt* board )
     case OBJ_TRAY:
         if ( board->focusHasDived ) {
             XP_S16 loc = pti->trayCursorLoc;
-            if ( loc == pti->dividerLoc ) {
+            if ( loc == model_getDividerLoc(board->model, board->selPlayer)) {
                 board->dividerInvalid = XP_TRUE;
             } else {
                 adjustForDivider( board, &loc );
@@ -3708,6 +3703,14 @@ boardTilesChanged( void* p_board, XP_U16 turn, XP_S16 index1, XP_S16 index2 )
     BoardCtxt* board = (BoardCtxt*)p_board;
     if ( turn == board->selPlayer ) {
         invalTrayTilesBetween( board, index1, index2 );
+
+        /* If we're changing the set of ignored tiles, reset the engine */
+        XP_U16 divLoc = model_getDividerLoc( board->model, turn );
+        if ( index1 < divLoc && index2 < divLoc ) {
+            /* both below; no need to reset */
+        } else if ( index1 < divLoc || index2 < divLoc ) {
+            board_resetEngine( board );
+        }
     }
 } /* boardTilesChanged */
 

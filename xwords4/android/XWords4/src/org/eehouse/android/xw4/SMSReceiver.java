@@ -34,39 +34,20 @@ public class SMSReceiver extends BroadcastReceiver {
     public void onReceive( Context context, Intent intent )
     {
         String action = intent.getAction();
-        Bundle bundle = intent.getExtras();
-        DbgUtils.logf( "onReceive: action=%s", action );
-        if ( null != bundle ) {
-            boolean isData = 
-                action.equals("android.intent.action.DATA_SMS_RECEIVED");
-            boolean isMine = false;
-            Object[] pdus = (Object[])bundle.get( "pdus" );
-            SmsMessage[] smses = new SmsMessage[pdus.length];
+        // DbgUtils.logf( "SMSReceiver.onReceive: action=%s", action );
+        if ( action.equals("android.intent.action.DATA_SMS_RECEIVED") ) {
+            Bundle bundle = intent.getExtras();
+            if ( null != bundle ) {
+                Object[] pdus = (Object[])bundle.get( "pdus" );
+                SmsMessage[] smses = new SmsMessage[pdus.length];
 
-            for ( int ii = 0; ii < pdus.length; ++ii ) {
-                SmsMessage sms = SmsMessage.createFromPdu((byte[])pdus[ii]);
-                if ( null == sms ) {
-                    continue;
-                }
-
-                String phone = sms.getOriginatingAddress();
-                if ( isData ) {
-                    byte[] body = sms.getUserData();
-                    SMSService.handleFrom( context, body, phone );
-                } else {
-                    String body = sms.getMessageBody();
-                    String postDetectable = SMSService.fromPublicFmt( body );
-                    isMine = null != postDetectable;
-                    if ( isMine ) {
-                        DbgUtils.logf( "SMSReceiver: \"%s\" from %s", 
-                                       body, phone );
-                        SMSService.handleFrom( context, postDetectable, phone );
+                for ( int ii = 0; ii < pdus.length; ++ii ) {
+                    SmsMessage sms = SmsMessage.createFromPdu((byte[])pdus[ii]);
+                    if ( null != sms ) {
+                        String phone = sms.getOriginatingAddress();
+                        byte[] body = sms.getUserData();
+                        SMSService.handleFrom( context, body, phone );
                     }
-                }
-
-                if ( isMine ) {
-                    DbgUtils.logf( "SMSReceiver: CONSUMING message" );
-                    abortBroadcast();
                 }
             }
         }

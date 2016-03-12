@@ -29,14 +29,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class GamesListActivity extends XWListActivity implements GamesListDelegator {
-
-    // private static final String RELAYIDS_EXTRA = "relayids";
-    private static final String ROWID_EXTRA = "rowid";
-    private static final String GAMEID_EXTRA = "gameid";
-    private static final String REMATCH_ROWID_EXTRA = "rowid_rm";
-    private static final String ALERT_MSG = "alert_msg";
-
+public class GamesListActivity extends XWActivity implements GamesListDelegator {
     private GamesListDelegate m_dlgt;
 
     @Override
@@ -44,6 +37,13 @@ public class GamesListActivity extends XWListActivity implements GamesListDelega
     {
         m_dlgt = new GamesListDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
+
+        // Trying to debug situation where two of this activity are running at
+        // once. finish()ing when Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT is
+        // passed is not the fix, but perhaps there's another
+        // int flags = getIntent().getFlags();
+        // DbgUtils.logf( "GamesListActivity.onCreate(this=%H): flags=0x%x", 
+        //                this, flags );
     } // onCreate
 
     // called when we're brought to the front (probably as a result of

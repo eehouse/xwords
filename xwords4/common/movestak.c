@@ -1,6 +1,6 @@
-/* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
+/* -*- compile-command: "cd ../linux && make -j5 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2001, 2006-2012 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2015 by Eric House (xwords@eehouse.org). All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -67,88 +67,14 @@ stack_init( StackCtxt* stack )
        shrunk to fit as soon as we serialize/deserialize anyway. */
 } /* stack_init */
 
-static XP_U32
-augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
-{
-    XP_ASSERT( 0 < len );
-    // see http://en.wikipedia.org/wiki/Jenkins_hash_function
-    XP_U16 ii;
-    for ( ii = 0; ii < len; ++ii ) {
-        hash += *ptr++;
-        hash += (hash << 10);
-        hash ^= (hash >> 6);
-    }
-    // XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
-    return hash;
-}
-
-static XP_U32
-finishHash( XP_U32 hash )
-{
-    hash += (hash << 3);
-    hash ^= (hash >> 11);
-    hash += (hash << 15);
-    return hash;
-}
-
-static XP_U32
-augmentFor( XP_U32 hash, const StackEntry* entry )
-{
-    switch( entry->moveType ) {
-    case ASSIGN_TYPE: {
-        TrayTileSet tiles;
-        sortTiles( &tiles, &entry->u.assign.tiles );
-        hash = augmentHash( hash, (XP_U8*)&tiles, sizeof(tiles) );
-    }
-        break;
-    case MOVE_TYPE:
-        hash = augmentHash( hash, (XP_U8*)&entry->u.move, 
-                            sizeof(entry->u.move) );
-        break;
-    case TRADE_TYPE:
-        hash = augmentHash( hash, (XP_U8*)&entry->u.trade, 
-                            sizeof(entry->u.trade) );
-        break;
-    case PHONY_TYPE:
-        hash = augmentHash( hash, (XP_U8*)&entry->u.phony, 
-                            sizeof(entry->u.phony) );
-        break;
-    }
-    return hash;
-}
-
-XP_U32
-stack_getHashOld( StackCtxt* stack )
-{
-    XP_U16 nn, nEntries = stack->nEntries;
-    XP_U32 hash = 0L;
-    for ( nn = 0; nn < nEntries; ++nn ) {
-        StackEntry entry;
-        XP_MEMSET( &entry, 0, sizeof(entry) );
-        if ( !stack_getNthEntry( stack, nn, &entry ) ) {
-            XP_ASSERT( 0 );
-        }
-        hash = augmentFor( hash, &entry );
-        // XP_LOGF( "hash after %d: %.8X", nn, (unsigned int)hash );
-    }
-    XP_ASSERT( 0 != hash );
-    hash = finishHash( hash );
-    LOG_RETURNF( "%.8X", (unsigned int)hash );
-    return hash;
-} /* stack_getHashOld */
-
 #ifdef STREAM_VERS_HASHSTREAM
 XP_U32
-stack_getHash( const StackCtxt* stack )
+stack_getHash( const StackCtxt* stack, XP_Bool correct )
 {
-    XP_U32 hash;
-    XP_U16 len = 0;
-    stream_copyBits( stack->data, 0, stack->top, NULL, &len );
-    XP_U8 buf[len];
-    stream_copyBits( stack->data, 0, stack->top, buf, &len );
-    // LOG_HEX( buf, len, __func__ );
-    hash = finishHash( augmentHash( 0L, buf, len ) );
-    // LOG_RETURNF( "%.8X", (unsigned int)hash );
+    XP_U32 hash = 0;
+    if ( !!stack->data ) {
+        hash = stream_getHash( stack->data, stack->top, correct );
+    }
     return hash;
 } /* stack_getHash */
 #endif
@@ -180,7 +106,8 @@ stack_destroy( StackCtxt* stack )
     if ( !!stack->data ) {
         stream_destroy( stack->data );
     }
-    ASSERT_NOT_DIRTY( stack );
+    /* Ok to close with a dirty stack, e.g. if not saving a deleted game */
+    // ASSERT_NOT_DIRTY( stack );
     XP_FREE( stack->mpool, stack );
 } /* stack_destroy */
 
@@ -249,7 +176,7 @@ stack_copy( const StackCtxt* stack )
 }
 
 static void
-pushEntry( StackCtxt* stack, const StackEntry* entry )
+pushEntryImpl( StackCtxt* stack, const StackEntry* entry )
 {
     XP_U16 ii, bitsPerTile;
     XWStreamPos oldLoc;
@@ -307,9 +234,33 @@ pushEntry( StackCtxt* stack, const StackEntry* entry )
     ++stack->nEntries;
     stack->highWaterMark = stack->nEntries;
     stack->top = stream_setPos( stream, POS_WRITE, oldLoc );
-    // XP_LOGSTREAM( stack->data );
+#ifdef DEBUG_HASHING
+    XP_LOGSTREAM( stack->data );
+#endif
     SET_DIRTY( stack );
-} /* pushEntry */
+} /* pushEntryImpl */
+
+static void
+pushEntry( StackCtxt* stack, const StackEntry* entry )
+{
+#ifdef DEBUG_HASHING
+    XP_Bool correct = XP_TRUE;
+    XP_U32 origHash = stack_getHash( stack, correct );
+#endif
+
+    pushEntryImpl( stack, entry );
+
+#ifdef DEBUG_HASHING
+    XP_U32 newHash = stack_getHash( stack, XP_TRUE );
+    StackEntry lastEntry;
+    if ( stack_popEntry( stack, &lastEntry ) ) {
+        XP_ASSERT( origHash == stack_getHash( stack, correct ) );
+        pushEntryImpl( stack, &lastEntry );
+        XP_ASSERT( newHash == stack_getHash( stack, correct ) );
+        XP_LOGF( "%s: all ok", __func__ );
+    }
+#endif
+}
 
 static void
 readEntry( const StackCtxt* stack, StackEntry* entry )
@@ -481,7 +432,9 @@ stack_popEntry( StackCtxt* stack, StackEntry* entry )
         setCacheReadyFor( stack, nn ); /* set cachedPos by side-effect */
         stack->top = stack->cachedPos;
     }
-    // XP_LOGSTREAM( stack->data );
+#ifdef DEBUG_HASHING
+    XP_LOGSTREAM( stack->data );
+#endif
     return found;
 } /* stack_popEntry */
 

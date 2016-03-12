@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.preference.PreferenceManager;
@@ -43,7 +44,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DbgUtils {
-    private static final String TAG = "XW4";
+    private static final String TAG = BuildConstants.DBG_TAG;
     private static boolean s_doLog = BuildConfig.DEBUG;
 
     private static Time s_time = new Time();
@@ -63,10 +64,14 @@ public class DbgUtils {
     public static void logf( String msg ) 
     {
         if ( s_doLog ) {
-            s_time.setToNow();
-            String time = s_time.format("[%H:%M:%S]");
+            String time = "";
+            // No need for timestamp on marshmallow, as the OS provides it
+            if ( true /*Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1*/ ) {
+                s_time.setToNow();
+                time = s_time.format("[%H:%M:%S]-");
+            }
             long id = Thread.currentThread().getId();
-            Log.d( TAG, time + "-" + id + "-" + msg );
+            Log.d( TAG, time + id + "-" + msg );
         }
     } // logf
 
@@ -77,6 +82,14 @@ public class DbgUtils {
             logf( formatter.format( format, args ).toString() );
         }
     } // logf
+
+    public static void logdf( String format, Object... args )
+    {
+        if ( s_doLog && BuildConfig.DEBUG ) {
+            Formatter formatter = new Formatter();
+            logf( formatter.format( format, args ).toString() );
+        }
+    } // logdf
 
     public static void showf( Context context, String format, Object... args )
     {
@@ -103,13 +116,10 @@ public class DbgUtils {
 
     public static void printStack( StackTraceElement[] trace )
     {
-        if ( s_doLog ) {
-            if ( null == trace ) {
-                DbgUtils.logf( "printStack(): null trace" );
-            } else {
-                for ( int ii = 0; ii < trace.length; ++ii ) {
-                    DbgUtils.logf( "ste %d: %s", ii, trace[ii].toString() );
-                }
+        if ( s_doLog && null != trace ) {
+            // 2: skip printStack etc.
+            for ( int ii = 2; ii < trace.length; ++ii ) {
+                DbgUtils.logf( "ste %d: %s", ii, trace[ii].toString() );
             }
         }
     }
@@ -144,6 +154,18 @@ public class DbgUtils {
             logf( "cursor: %s", dump );
         }
     }
+
+    // public static String secondsToDateStr( long seconds )
+    // {
+    //     return millisToDateStr( seconds * 1000 );
+    // }
+
+    // public static String millisToDateStr( long millis )
+    // {
+    //     Time tim = new Time();
+    //     tim.set( millis );
+    //     return tim.format2445();
+    // }
 
     // public static String toString( long[] longs )
     // {

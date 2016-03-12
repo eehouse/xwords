@@ -3,24 +3,79 @@
 set -e -u
 
 STRINGS_HASH=""
+OUT_PATH=""
+VARIANT=""
+CLIENT_VERS_RELAY=""
+CHAT_SUPPORTED=""
+THUMBNAIL_SUPPORTED=""
 
 usage() {
-    echo "usage: $0 <variant> <relay_vers> <chatSupported> <thumbSupported>"
+    echo "usage: $0 --variant <variant> --client-vers <relay_vers> \\"
+	echo "   --chat-enabled <trueOrFalse> --thumbnail-enabled <trueOrFalse> \\"
+	echo "   [--vers-outfile path/to/versout.txt]"
     exit 1
 }
 
-[ $# -eq 4 ] || usage
+while [ $# -gt 0 ]; do
+	echo $1
+	case $1 in
+		--variant)
+			VARIANT=$2
+			shift
+			;;
+		--client-vers)
+			CLIENT_VERS_RELAY=$2
+			shift
+			;;
+		--chat-enabled)
+			CHAT_SUPPORTED=$2
+			shift
+			;;
+		--thumbnail-enabled)
+			THUMBNAIL_SUPPORTED=$2
+			shift
+			;;
+		--vers-outfile)
+			OUT_PATH=$2
+			shift
+			;;
+		*)
+			usage
+			;;
+	esac
+	shift
+done
 
-VARIANT=$1
-CLIENT_VERS_RELAY=$2
-CHAT_SUPPORTED=$3
-THUMBNAIL_SUPPORTED=$4
+[ -n "$VARIANT" -a -n "$CLIENT_VERS_RELAY" -a -n "$CHAT_SUPPORTED" -a -n "$THUMBNAIL_SUPPORTED" ] || usage
 
 BUILD_DIR=$(basename $(pwd))
 cd $(dirname $0)
 cd ../
 
 GITVERSION=$(../scripts/gitversion.sh)
+if [ -n "$OUT_PATH" ]; then
+	echo $GITVERSION > $BUILD_DIR/$OUT_PATH
+	git describe >> $BUILD_DIR/$OUT_PATH
+fi
+
+case $VARIANT in
+	xw4)
+		APPNAME=Crosswords
+		SMSPORT=3344
+		INVITE_PREFIX=/and/
+		DBG_TAG=XW4
+		;;
+	xw4dbg)
+		APPNAME=CrossDbg
+		SMSPORT=3345
+		INVITE_PREFIX=/anddbg/
+		DBG_TAG=X4BG
+		;;
+	*)
+		usage
+		;;
+esac
+
 
 # Need to verify that R.java is unmodified; otherwise we can't set
 # this constant!!!  Shouldn't be a problem with release builds,
@@ -31,18 +86,22 @@ fi
 # TODO: deal with case where there's no hash available -- exported
 # code maybe?  Better: gitversion.sh does that.
 
-cat <<EOF > ${BUILD_DIR}/res/values/git_string.xml
+cat <<EOF > ${BUILD_DIR}/res/values/gen_strings.xml
 <?xml version="1.0" encoding="utf-8"?>
-<!-- auto-generated; do not edit -->
+<!-- auto-generated (by $(basename $0)); do not edit -->
 
 <resources>
+    <string name="app_name">$APPNAME</string>  
     <string name="git_rev">$GITVERSION</string>
+    <string name="nbs_port">$SMSPORT</string>
+    <string name="invite_prefix">$INVITE_PREFIX</string>
 </resources>
 EOF
 
 # Eventually this should pick up a tag if we're at one.  That'll be
 # the way to mark a release
 SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo ${GITVERSION}+)"
+GITHASH=$(git rev-parse --verify HEAD)
 
 cat <<EOF > ${BUILD_DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
 // auto-generated (by $(basename $0)); do not edit
@@ -53,7 +112,9 @@ class BuildConstants {
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
     public static final boolean CHAT_SUPPORTED = $CHAT_SUPPORTED;
     public static final boolean THUMBNAIL_SUPPORTED = $THUMBNAIL_SUPPORTED;
-    public static final String BUILD_STAMP = "$(date +'%F at %R %Z')";
+    public static final long BUILD_STAMP = $(date +'%s');
+    public static final String DBG_TAG = "$DBG_TAG";
+    public static final String VARIANT = "$VARIANT";
 }
 EOF
 

@@ -34,7 +34,7 @@ XP_U16 bitsForMax( XP_U32 n );
 
 void traySetToStream( XWStreamCtxt* stream, const TrayTileSet* ts );
 void traySetFromStream( XWStreamCtxt* stream, TrayTileSet* ts );
-void sortTiles( TrayTileSet* dest, const TrayTileSet* src );
+void sortTiles( TrayTileSet* dest, const TrayTileSet* src, XP_U16 skip );
 void removeTile( TrayTileSet* tiles, XP_U16 index );
 
 XP_S32 signedFromStream( XWStreamCtxt* stream, XP_U16 nBits );
@@ -68,6 +68,8 @@ XP_UCHAR* p_copyString( MPFORMAL const XP_UCHAR* instr
 # define copyString( p, in ) p_copyString( in )
 #endif
 
+XP_U32 augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len );
+XP_U32 finishHash( XP_U32 hash );
 
 void p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, 
                                  const XP_UCHAR* newStr

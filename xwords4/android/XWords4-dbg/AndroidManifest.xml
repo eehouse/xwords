@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- -*- compile-command: "ant install"; -*- -->
-<!-- Copyright (C) 2007 The Android Open Source Project
-
-     Licensed under the Apache License, Version 2.0 (the "License");
-     you may not use this file except in compliance with the License.
-     You may obtain a copy of the License at
-  
-          http://www.apache.org/licenses/LICENSE-2.0
-  
-     Unless required by applicable law or agreed to in writing, software
-     distributed under the License is distributed on an "AS IS" BASIS,
-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     See the License for the specific language governing permissions and
-     limitations under the License.
--->
-
 <!-- Declare the contents of this Android application.  The namespace
      attribute brings in the Android platform namespace, and the package
      supplies a unique name for the application.  When writing your
@@ -22,14 +6,14 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4dbg"
-          android:versionCode="78"
+          android:versionCode="99"
           android:versionName="@string/app_version"
           >
 
-  <!-- BE SURE TO MODIFY project.project AND the variable TARGET in
+  <!-- BE SURE TO MODIFY project.properties AND the variable TARGET in
        ../scripts/setup_local_props.sh if targetSdkVersion changes!!!
        -->
-  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="14" />
+  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="19" />
 
   <supports-screens android:resizeable="true"
                     android:smallScreens="true"
@@ -45,8 +29,10 @@
   <uses-permission android:name="android.permission.VIBRATE" />
   <uses-permission android:name="android.permission.RECEIVE_SMS" /> 
   <uses-permission android:name="android.permission.SEND_SMS" />
-  <uses-permission android:name="android.permission.READ_SMS" />
+  <uses-permission android:name="android.permission.BLUETOOTH" />
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
   <uses-permission android:name="android.permission.READ_CONTACTS" />
+  <uses-permission android:name="android.permission.READ_PHONE_STATE"/> 
 
   <uses-feature android:name="android.hardware.telephony"
                 android:required = "false"
@@ -54,9 +40,9 @@
   <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
   <!-- GCM stuff -->
-  <permission android:name="org.eehouse.android.xw4.permission.C2D_MESSAGE" 
+  <permission android:name="org.eehouse.android.xw4dbg.permission.C2D_MESSAGE" 
               android:protectionLevel="signature" />
-  <uses-permission android:name="org.eehouse.android.xw4.permission.C2D_MESSAGE" /> 
+  <uses-permission android:name="org.eehouse.android.xw4dbg.permission.C2D_MESSAGE" /> 
   <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
   <uses-permission android:name="android.permission.GET_ACCOUNTS" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -68,6 +54,7 @@
   <application android:icon="@drawable/icon48x48"
                android:label="@string/app_name"
                android:name=".XWApp"
+               android:debuggable="true"
                >
 
     <activity android:name="GamesListActivity" 
@@ -93,19 +80,24 @@
               android:configChanges="keyboardHidden|orientation|screenSize"
           />
     
-    <activity android:name="NewGameActivity"
-              android:theme="@android:style/Theme.NoTitleBar"
+    <activity android:name="BTInviteActivity"
+              android:label="@string/bt_invite_title"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
     <activity android:name="SMSInviteActivity"
-              android:theme="@android:style/Theme.Dialog"
+              android:label="@string/sms_invite_title"
               android:configChanges="keyboardHidden|orientation|screenSize"
               android:screenOrientation="sensor"
+              />
+    <activity android:name="RelayInviteActivity"
+              android:label="@string/relay_invite_title"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
     <activity android:name="GameConfigActivity"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation|screenSize"
+              android:windowSoftInputMode="stateAlwaysHidden"
               >
       <intent-filter>
         <action android:name="android.intent.action.EDIT" />
@@ -120,18 +112,21 @@
 
     <activity android:name="BoardActivity"
               android:screenOrientation="portrait"
-              android:configChanges="keyboardHidden"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
               />
 
     <activity android:name="StudyListActivity"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
-    <receiver android:name="RelayReceiver">
+    <receiver android:name="OnBootReceiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
       </intent-filter>
     </receiver>
+    <receiver android:name="RelayReceiver"/>
+    <receiver android:name="NagTurnReceiver"/>
 
     <receiver android:name="UpdateCheckReceiver">
       <intent-filter>
@@ -185,9 +180,6 @@
       </intent-filter> 
     </activity>
 
-    <activity android:name="RelayGameActivity"
-              android:configChanges="keyboardHidden|orientation|screenSize"
-              />
     <activity android:name="DictBrowseActivity"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
@@ -214,15 +206,22 @@
         </intent-filter>
     </receiver>
 
-    <receiver android:name="SMSReceiver" >
-      <intent-filter android:priority="999" >
-        <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+    <receiver android:name="BTReceiver">
+      <intent-filter>
+        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
       </intent-filter>
+      <intent-filter>
+        <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
+      </intent-filter>
+    </receiver>
 
+    <service android:name="BTService"/>
+
+    <receiver android:name="SMSReceiver" >
       <intent-filter>
         <action android:name="android.intent.action.DATA_SMS_RECEIVED" /> 
         <data android:scheme="sms" /> 
-        <data android:port="3344" /> 
+        <data android:port="@string/nbs_port" /> 
         <data android:host="*" /> 
       </intent-filter> 
 
@@ -235,7 +234,7 @@
       <intent-filter>
         <action android:name="com.google.android.c2dm.intent.RECEIVE" />
         <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-        <category android:name="org.eehouse.android.xw4" />
+        <category android:name="org.eehouse.android.xw4dbg" />
       </intent-filter>
     </receiver>
 

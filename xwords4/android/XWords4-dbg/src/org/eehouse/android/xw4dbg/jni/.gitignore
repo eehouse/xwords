@@ -16,3 +16,4 @@ UtilCtxtImpl.java
 UtilCtxt.java
 XwJNI.java
 BoardDims.java
+LastMoveInfo.java

@@ -36,8 +36,8 @@ typedef struct LinuxBMStruct {
 } LinuxBMStruct;
 
 int initListenerSocket( int port );
-XP_S16 linux_send( const XP_U8* buf, XP_U16 buflen, 
-                   const CommsAddrRec* addrRec, 
+XP_S16 linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* msgNo,
+                   const CommsAddrRec* addrRec, CommsConnType conType,
                    XP_U32 gameID, void* closure );
 #ifndef XWFEATURE_STANDALONE_ONLY
 # define LINUX_SEND linux_send
@@ -48,8 +48,8 @@ XP_S16 linux_send( const XP_U8* buf, XP_U16 buflen,
 #ifdef COMMS_HEARTBEAT
 void linux_reset( void* closure );
 #endif
-int linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, 
-                         int bufSize );
+int linux_relay_receive( CommonGlobals* cGlobals, int sock,
+                         unsigned char* buf, int bufSize );
 
 XP_Bool linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why );
 
@@ -106,6 +106,7 @@ void gameGotBuf( CommonGlobals* globals, XP_Bool haveDraw,
                  const XP_U8* buf, XP_U16 len, const CommsAddrRec* from );
 gboolean app_socket_proc( GIOChannel* source, GIOCondition condition, 
                           gpointer data );
+const XP_U32 linux_getDevIDRelay( LaunchParams* params );
 const XP_UCHAR* linux_getDevID( LaunchParams* params, DevIDType* typ );
 void linux_doInitialReg( LaunchParams* params, XP_Bool idIsNew );
 XP_Bool linux_setupDevidParams( LaunchParams* params );

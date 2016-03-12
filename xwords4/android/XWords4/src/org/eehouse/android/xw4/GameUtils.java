@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009-2015 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -45,28 +45,36 @@ import org.json.JSONObject;
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameUtils {
 
     public static final String INVITED = "invited";
     public static final String INTENT_KEY_ROWID = "rowid";
-    public static final String INTENT_FORRESULT_ROWID = "forresult";
 
     private static Integer s_minScreen;
     // Used to determine whether to resend all messages on networking coming
     // back up.  The length of the array determines the number of times in the
     // interval we'll do a send.
     private static long[] s_sendTimes = {0,0,0,0};
-    private static final long RESEND_INTERVAL_SECS = 60 * 60; // 1 hour
+    private static final long RESEND_INTERVAL_SECS = 60 * 5; // 5 minutes
 
     public static class NoSuchGameException extends RuntimeException {
         public NoSuchGameException() {
             super();            // superfluous
             DbgUtils.logf( "creating NoSuchGameException");
         }
+    }
+
+    public static class BackMoveResult {
+        LastMoveInfo m_lmi;     // instantiated on demand
+        String m_chat;
+        String m_chatFrom;
     }
 
     private static Object s_syncObj = new Object();
@@ -101,21 +109,21 @@ public class GameUtils {
 
         // loadMakeGame, if making a new game, will add comms as long
         // as DeviceRole.SERVER_STANDALONE != gi.serverRole
-        int gamePtr = loadMakeGame( context, gi, lockSrc );
+        GamePtr gamePtr = loadMakeGame( context, gi, lockSrc );
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         
         if ( XwJNI.game_hasComms( gamePtr ) ) {
             addr = new CommsAddrRec();
             XwJNI.comms_getAddr( gamePtr, addr );
-            if ( CommsConnType.COMMS_CONN_NONE == addr.conType ) {
+            if ( 0 == addr.conTypes.size() ) {
                 String relayName = XWPrefs.getDefaultRelayHost( context );
                 int relayPort = XWPrefs.getDefaultRelayPort( context );
                 XwJNI.comms_getInitialAddr( addr, relayName, relayPort );
             }
         }
-        XwJNI.game_dispose( gamePtr );
-
+        gamePtr.release();
+        
         gamePtr = XwJNI.initJNI();
         XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get( context ), 
                                 CommonPrefs.get( context ), dictNames,
@@ -156,13 +164,6 @@ public class GameUtils {
         }
     }
 
-    private static GameSummary summarizeAndClose( Context context, 
-                                                  GameLock lock,
-                                                  int gamePtr, CurGameInfo gi )
-    {
-        return summarizeAndClose( context, lock, gamePtr, gi, null );
-    }
-
     private static int setFromFeedImpl( FeedUtilsImpl feedImpl )
     {
         int result = GameSummary.MSG_FLAGS_NONE;
@@ -180,19 +181,15 @@ public class GameUtils {
 
     private static GameSummary summarizeAndClose( Context context, 
                                                   GameLock lock,
-                                                  int gamePtr, CurGameInfo gi,
-                                                  FeedUtilsImpl feedImpl )
+                                                  GamePtr gamePtr, 
+                                                  CurGameInfo gi )
     {
         GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
 
-        if ( null != feedImpl ) {
-            summary.pendingMsgLevel |= setFromFeedImpl( feedImpl );
-        }
-
         DBUtils.saveSummary( context, lock, summary );
 
-        XwJNI.game_dispose( gamePtr );
+        gamePtr.release();
         return summary;
     }
 
@@ -200,8 +197,8 @@ public class GameUtils {
     {
         GameSummary result = null;
         CurGameInfo gi = new CurGameInfo( context );
-        int gamePtr = loadMakeGame( context, gi, lock );
-        if ( 0 < gamePtr ) {
+        GamePtr gamePtr = loadMakeGame( context, gi, lock );
+        if ( null != gamePtr ) {
             result = summarizeAndClose( context, lock, gamePtr, gi );
         }
         return result;
@@ -266,23 +263,29 @@ public class GameUtils {
         return result;
     }
 
-    public static int loadMakeGame( Context context, CurGameInfo gi, 
-                                    TransportProcs tp, GameLock lock )
+    public static String makeDefaultName( Context context )
+    {
+        int count = DBUtils.getIncrementIntFor( context, DBUtils.KEY_NEWGAMECOUNT, 0, 1 );
+        return LocUtils.getString( context, R.string.game_fmt, count );
+    }
+
+    public static GamePtr loadMakeGame( Context context, CurGameInfo gi, 
+                                        TransportProcs tp, GameLock lock )
     {
         return loadMakeGame( context, gi, null, tp, lock );
     }
 
-    public static int loadMakeGame( Context context, CurGameInfo gi, 
+    public static GamePtr loadMakeGame( Context context, CurGameInfo gi, 
                                     GameLock lock )
     {
         return loadMakeGame( context, gi, null, null, lock );
     }
 
-    public static int loadMakeGame( Context context, CurGameInfo gi, 
-                                    UtilCtxt util, TransportProcs tp, 
-                                    GameLock lock )
+    public static GamePtr loadMakeGame( Context context, CurGameInfo gi, 
+                                        UtilCtxt util, TransportProcs tp, 
+                                        GameLock lock )
     {
-        int gamePtr = 0;
+        GamePtr gamePtr = null;
 
         byte[] stream = savedGame( context, lock );
         if ( null == stream ) {
@@ -295,7 +298,7 @@ public class GameUtils {
                 DbgUtils.logf( "loadMakeGame() failing: dicts %s unavailable", 
                                TextUtils.join( ",", dictNames ) );
             } else {
-                gamePtr = XwJNI.initJNI();
+                gamePtr = XwJNI.initJNI( lock.getRowid() );
 
                 String langName = gi.langName();
                 boolean madeGame = 
@@ -322,19 +325,18 @@ public class GameUtils {
         GameLock lock = new GameLock( rowid, false );
         if ( lock.tryLock() ) {
             CurGameInfo gi = new CurGameInfo( activity );
-            int gamePtr = loadMakeGame( activity, gi, lock );
-            if ( 0 != gamePtr ) {
+            GamePtr gamePtr = loadMakeGame( activity, gi, lock );
+            if ( null != gamePtr ) {
                 thumb = takeSnapshot( activity, gamePtr, gi );
-                XwJNI.game_dispose( gamePtr );
+                gamePtr.release();
                 DBUtils.saveThumbnail( activity, lock, thumb );
             }
-
             lock.unlock();
         }
         return thumb;
     }
 
-    public static Bitmap takeSnapshot( Context context, int gamePtr, 
+    public static Bitmap takeSnapshot( Context context, GamePtr gamePtr, 
                                        CurGameInfo gi )
     {
         Bitmap thumb = null;
@@ -374,31 +376,35 @@ public class GameUtils {
         return thumb;
     }
 
-    public static void resendAllIf( Context context, boolean force )
+    public static void resendAllIf( Context context, CommsConnType filter,
+                                    boolean force )
     {
         final boolean showUI = force;
+        long now = Utils.getCurSeconds();
 
         if ( !force ) {
-            long now = Utils.getCurSeconds();
             long oldest = s_sendTimes[s_sendTimes.length - 1];
-            if ( RESEND_INTERVAL_SECS < (now - oldest) ) {
-                System.arraycopy( s_sendTimes, 0, /* src */ 
-                                  s_sendTimes, 1, /* dest */
-                                  s_sendTimes.length - 1 );
-                s_sendTimes[0] = now;
-                force = true;
-            }
+            long age = now - oldest;
+            force = RESEND_INTERVAL_SECS < age;
+            DbgUtils.logdf( "resendAllIf(): based on last send age of %d sec, doit = %b",
+                            age, force );
         }
 
         if ( force ) {
-            HashMap<Long,CommsConnType> games = DBUtils.getGamesWithSendsPending( context );
+            HashMap<Long,CommsConnTypeSet> games = 
+                DBUtils.getGamesWithSendsPending( context );
             if ( 0 < games.size() ) {
-                new ResendTask( context, games, showUI ).execute();
+                new ResendTask( context, games, filter, showUI ).execute();
+
+                System.arraycopy( s_sendTimes, 0, /* src */
+                                  s_sendTimes, 1, /* dest */
+                                  s_sendTimes.length - 1 );
+                s_sendTimes[0] = now;
             }
         }
     }
 
-    public static long saveGame( Context context, int gamePtr, 
+    public static long saveGame( Context context, GamePtr gamePtr, 
                                  CurGameInfo gi, GameLock lock,
                                  boolean setCreate )
     {
@@ -406,11 +412,11 @@ public class GameUtils {
         return saveGame( context, stream, lock, setCreate );
     }
 
-    public static long saveNewGame( Context context, int gamePtr,
+    public static long saveNewGame( Context context, GamePtr gamePtr,
                                     CurGameInfo gi, long groupID )
     {
         byte[] stream = XwJNI.game_saveToStream( gamePtr, gi );
-        GameLock lock = DBUtils.saveNewGame( context, stream, groupID );
+        GameLock lock = DBUtils.saveNewGame( context, stream, groupID, null );
         long rowid = lock.getRowid();
         lock.unlock();
         return rowid;
@@ -430,10 +436,11 @@ public class GameUtils {
     public static GameLock saveNewGame( Context context, byte[] bytes,
                                         long groupID )
     {
-        return DBUtils.saveNewGame( context, bytes, groupID );
+        return DBUtils.saveNewGame( context, bytes, groupID, null );
     }
 
-    public static long saveNew( Context context, CurGameInfo gi, long groupID )
+    public static long saveNew( Context context, CurGameInfo gi, long groupID,
+                                String gameName )
     {
         if ( DBUtils.GROUPID_UNSPEC == groupID ) {
             groupID = XWPrefs.getDefaultNewGameGroup( context );
@@ -442,25 +449,88 @@ public class GameUtils {
         long rowid = DBUtils.ROWID_NOTFOUND;
         byte[] bytes = XwJNI.gi_to_stream( gi );
         if ( null != bytes ) {
-            GameLock lock = DBUtils.saveNewGame( context, bytes, groupID );
+            GameLock lock = DBUtils.saveNewGame( context, bytes, groupID, 
+                                                 gameName );
             rowid = lock.getRowid();
             lock.unlock();
         }
         return rowid;
     }
 
+    public static long makeNewMultiGame( Context context, NetLaunchInfo nli )
+    {
+        return makeNewMultiGame( context, nli, (MultiMsgSink)null, 
+                                 (UtilCtxt)null );
+    }
+
+    public static long makeNewMultiGame( Context context, NetLaunchInfo nli,
+                                         MultiMsgSink sink, UtilCtxt util )
+    {
+        DbgUtils.logdf( "makeNewMultiGame(nli=%s)", nli.toString() );
+        CommsAddrRec addr = nli.makeAddrRec( context );
+
+        return makeNewMultiGame( context, sink, util, DBUtils.GROUPID_UNSPEC, 
+                                 addr, new int[] {nli.lang}, 
+                                 new String[] { nli.dict }, null, nli.nPlayersT, 
+                                 nli.nPlayersH, nli.forceChannel,
+                                 nli.inviteID(), nli.gameID(),
+                                 nli.gameName, false );
+    }
+
+    public static long makeNewMultiGame( Context context, long groupID, 
+                                         String gameName )
+    {
+        return makeNewMultiGame( context, groupID, null, 0, null,
+                                 (CommsConnTypeSet)null, gameName );
+    }
+
+    public static long makeNewMultiGame( Context context, long groupID, 
+                                         String dict, int lang, String jsonData,
+                                         CommsConnTypeSet addrSet, 
+                                         String gameName )
+    {
+        String inviteID = makeRandomID();
+        return makeNewMultiGame( context, groupID, inviteID, dict, lang, 
+                                 jsonData, addrSet, gameName );
+    }
+
     private static long makeNewMultiGame( Context context, long groupID, 
+                                          String inviteID, String dict, 
+                                          int lang, String jsonData,
+                                          CommsConnTypeSet addrSet,
+                                          String gameName )
+    {
+        int[] langArray = {lang};
+        String[] dictArray = {dict};
+        if ( null == addrSet ) {
+            addrSet = XWPrefs.getAddrTypes( context );
+        }
+        CommsAddrRec addr = new CommsAddrRec( addrSet );
+        addr.populate( context );
+        int forceChannel = 0;
+        return makeNewMultiGame( context, (MultiMsgSink)null, (UtilCtxt)null,
+                                 groupID, addr, langArray, dictArray, jsonData,
+                                 2, 1, forceChannel, inviteID, 0, gameName,
+                                 true );
+    }
+
+    private static long makeNewMultiGame( Context context, MultiMsgSink sink, 
+                                          UtilCtxt util, long groupID, 
                                           CommsAddrRec addr,
                                           int[] lang, String[] dict,
+                                          String jsonData, 
                                           int nPlayersT, int nPlayersH, 
-                                          String inviteID, int gameID,
+                                          int forceChannel, String inviteID,
+                                          int gameID, String gameName, 
                                           boolean isHost )
     {
         long rowid = -1;
 
         Assert.assertNotNull( inviteID );
         CurGameInfo gi = new CurGameInfo( context, inviteID );
+        gi.setFrom( jsonData );
         gi.setLang( lang[0], dict[0] );
+        gi.forceChannel = forceChannel;
         lang[0] = gi.dictLang;
         dict[0] = gi.dictName;
         gi.setNPlayers( nPlayersT, nPlayersH );
@@ -474,61 +544,56 @@ public class GameUtils {
         // Will need to add a setNPlayers() method to gi to make this
         // work
         Assert.assertTrue( gi.nPlayers == nPlayersT );
-        rowid = saveNew( context, gi, groupID );
+        rowid = saveNew( context, gi, groupID, gameName );
+        if ( null != sink ) {
+            sink.setRowID( rowid );
+        }
 
         if ( DBUtils.ROWID_NOTFOUND != rowid ) {
             GameLock lock = new GameLock( rowid, true ).lock();
-            applyChanges( context, gi, addr, inviteID, lock, false );
+            applyChanges( context, sink, gi, util, addr, lock, false );
             lock.unlock();
         }
 
         return rowid;
     }
 
-    public static long makeNewNetGame( Context context, long groupID,
-                                       String room, String inviteID, int[] lang,
-                                       String[] dict, int nPlayersT, 
-                                       int nPlayersH )
+    public static long makeNewGame( Context context, MultiMsgSink sink,
+                                    int gameID, CommsAddrRec addr, int lang, 
+                                    String dict, int nPlayersT, 
+                                    int nPlayersH, int forceChannel, 
+                                    String gameName )
     {
-        long rowid = -1;
-        String relayName = XWPrefs.getDefaultRelayHost( context );
-        int relayPort = XWPrefs.getDefaultRelayPort( context );
-        CommsAddrRec addr = new CommsAddrRec( relayName, relayPort );
-        addr.ip_relay_invite = room;
-
-        return makeNewMultiGame( context, groupID, addr, lang, dict, 
-                                 nPlayersT, nPlayersH, inviteID, 0, false );
+        return makeNewGame( context, sink, DBUtils.GROUPID_UNSPEC, gameID, addr, 
+                            lang, dict, nPlayersT, nPlayersH, forceChannel, 
+                            gameName );
     }
 
-    public static long makeNewNetGame( Context context, long groupID, 
-                                       String room, String inviteID, int lang, 
-                                       String dict, int nPlayers )
+    public static long makeNewGame( Context context, int gameID, 
+                                    CommsAddrRec addr, int lang, 
+                                    String dict, int nPlayersT, 
+                                    int nPlayersH, int forceChannel, 
+                                    String gameName )
     {
-        int[] langarr = { lang };
-        String[] dictArr = { dict };
-        return makeNewNetGame( context, groupID, room, inviteID, langarr, 
-                               dictArr, nPlayers, 1 );
-    }
-
-    public static long makeNewNetGame( Context context, NetLaunchInfo info )
-    {
-        return makeNewNetGame( context, DBUtils.GROUPID_UNSPEC, info.room, 
-                               info.inviteID, info.lang, info.dict, 
-                               info.nPlayersT );
-    }
-
-    public static long makeNewBTGame( Context context, int gameID, 
-                                      CommsAddrRec addr, int lang, 
-                                      String dict, int nPlayersT, 
-                                      int nPlayersH )
-    {
-        return makeNewBTGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                              lang, dict, nPlayersT, nPlayersH );
+        return makeNewGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
+                            lang, dict, nPlayersT, nPlayersH, forceChannel, 
+                            gameName );
     }
     
-    public static long makeNewBTGame( Context context, long groupID, 
-                                      int gameID, CommsAddrRec addr, int lang, 
-                                      String dict, int nPlayersT, int nPlayersH )
+    public static long makeNewGame( Context context, long groupID,  int gameID, 
+                                    CommsAddrRec addr, int lang, String dict,
+                                    int nPlayersT, int nPlayersH, 
+                                    int forceChannel, String gameName )
+    {
+        return makeNewGame( context, null, groupID, gameID, addr, lang, dict,
+                            nPlayersT, nPlayersH, forceChannel, gameName );
+    }
+
+    public static long makeNewGame( Context context, MultiMsgSink sink, 
+                                    long groupID,  int gameID, CommsAddrRec addr,
+                                    int lang, String dict, 
+                                    int nPlayersT, int nPlayersH, 
+                                    int forceChannel, String gameName )
     {
         long rowid = -1;
         int[] langa = { lang };
@@ -538,101 +603,148 @@ public class GameUtils {
             addr = new CommsAddrRec( null, null );
         }
         String inviteID = GameUtils.formatGameID( gameID );
-        return makeNewMultiGame( context, groupID, addr, langa, dicta, 
-                                 nPlayersT, nPlayersH, inviteID, gameID, 
+        return makeNewMultiGame( context, sink, (UtilCtxt)null, groupID, addr, 
+                                 langa, dicta, null, nPlayersT, nPlayersH, 
+                                 forceChannel, inviteID, gameID, gameName,
                                  isHost );
     }
 
-    public static long makeNewSMSGame( Context context, int gameID, 
-                                       CommsAddrRec addr, 
-                                       int lang, String dict, int nPlayersT, 
-                                       int nPlayersH )
+    // @SuppressLint({ "NewApi", "NewApi", "NewApi", "NewApi" })
+    // @SuppressWarnings("deprecation")
+    // @TargetApi(11)
+    public static void inviteURLToClip( Context context, NetLaunchInfo nli )
     {
-        return makeNewSMSGame( context, DBUtils.GROUPID_UNSPEC, gameID, addr, 
-                               lang, dict, nPlayersT, nPlayersH );
-    }
+        Uri gameUri = nli.makeLaunchUri( context );
+        String asStr = gameUri.toString();
 
-    public static long makeNewSMSGame( Context context, long groupID,
-                                       int gameID, CommsAddrRec addr, 
-                                       int lang, String dict, int nPlayersT, 
-                                       int nPlayersH )
-    {
-        long rowid = -1;
-        int[] langa = { lang };
-        String[] dicta = { dict };
-        boolean isHost = null == addr;
-        if ( isHost ) { 
-            addr = new CommsAddrRec( CommsConnType.COMMS_CONN_SMS );
-        }
-        String inviteID = GameUtils.formatGameID( gameID );
-        return makeNewMultiGame( context, groupID, addr, langa, dicta, 
-                                 nPlayersT, nPlayersH, inviteID, gameID, 
-                                 isHost );
-    }
-
-    public static void launchInviteActivity( Activity activity, int chosen,
-                                             String room, String inviteID,
-                                             int lang, String dict, 
-                                             int nPlayers )
-    {
-        Assert.assertNotNull( inviteID );
-
-        if ( DlgDelegate.NFC_BTN == chosen ) {
-            Utils.showToast( activity, R.string.sms_ready_text );
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        if ( sdk < android.os.Build.VERSION_CODES.HONEYCOMB ) {
+            android.text.ClipboardManager clipboard = 
+                (android.text.ClipboardManager) 
+                context.getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText( asStr );
         } else {
-            Uri gameUri = NetLaunchInfo.makeLaunchUri( activity, room, inviteID,
-                                                       lang, dict, nPlayers );
-            String msgString = null == gameUri ? null : gameUri.toString();
+            android.content.ClipboardManager clipboard = 
+                (android.content.ClipboardManager) 
+                context.getSystemService(Context.CLIPBOARD_SERVICE); 
+            String label = LocUtils.getString( context, R.string.clip_label );
+            android.content.ClipData clip = android.content.ClipData
+                .newPlainText( label, asStr );
+            clipboard.setPrimaryClip( clip );
+        }
 
-            if ( null != msgString ) {
-                boolean choseEmail = DlgDelegate.EMAIL_BTN == chosen;
+        Utils.showToast( context, R.string.invite_copied );
+    }
 
-                int fmtId = choseEmail? R.string.invite_htm_fmt : R.string.invite_txt_fmt;
-                int choiceID;
-                String message = LocUtils.getString( activity, fmtId, msgString );
+    public static void launchEmailInviteActivity( Activity activity, NetLaunchInfo nli )
+    {
+        // DbgUtils.logf( "launchEmailInviteActivity: nli=%s", nli.makeLaunchJSON() );
+        Uri gameUri = nli.makeLaunchUri( activity );
+        // DbgUtils.logf( "launchEmailInviteActivity: uri=%s", gameUri );
 
-                Intent intent = new Intent();
-                if ( choseEmail ) {
-                    intent.setAction( Intent.ACTION_SEND );
-                    String subject =
-                        LocUtils.getString( activity, R.string.invite_subject_fmt, 
-                                            room );
-                    intent.putExtra( Intent.EXTRA_SUBJECT, subject );
-                    intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+        String msgString = null == gameUri ? null : gameUri.toString();
+        if ( null != msgString ) {
+            int choiceID;
+            String message = LocUtils.getString( activity, R.string.invite_htm_fmt, msgString );
 
-                    File attach = null;
-                    File tmpdir = XWApp.ATTACH_SUPPORTED ? 
-                        DictUtils.getDownloadDir( activity ) : null;
-                    if ( null != tmpdir ) { // no attachment
-                        attach = makeJsonFor( tmpdir, room, inviteID, lang, 
-                                              dict, nPlayers );
-                    }
+            Intent intent = new Intent();
+            intent.setAction( Intent.ACTION_SEND );
+            String subject =
+                LocUtils.getString( activity, R.string.invite_subject_fmt, 
+                                    nli.room );
+            intent.putExtra( Intent.EXTRA_SUBJECT, subject );
+            intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
 
-                    if ( null == attach ) { // no attachment
-                        intent.setType( "message/rfc822");
-                    } else {
-                        String mime = LocUtils.getString( activity, R.string.invite_mime );
-                        intent.setType( mime );
-                        Uri uri = Uri.fromFile( attach );
-                        intent.putExtra( Intent.EXTRA_STREAM, uri );
-                    }
-
-                    choiceID = R.string.invite_chooser_email;
-                } else {
-                    intent.setAction( Intent.ACTION_VIEW );
-                    intent.setType( "vnd.android-dir/mms-sms" );
-                    intent.putExtra( "sms_body", message );
-                    choiceID = R.string.invite_chooser_sms;
-                }
-
-                String choiceType = LocUtils.getString( activity, choiceID );
-                String chooserMsg = 
-                    LocUtils.getString( activity, R.string.invite_chooser_fmt, 
-                                        choiceType );
-                activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
+            File attach = null;
+            File tmpdir = XWApp.ATTACH_SUPPORTED ? 
+                DictUtils.getDownloadDir( activity ) : null;
+            if ( null != tmpdir ) { // no attachment
+                attach = makeJsonFor( tmpdir, nli );
             }
+
+            if ( null == attach ) { // no attachment
+                intent.setType( "message/rfc822");
+            } else {
+                String mime = LocUtils.getString( activity, R.string.invite_mime );
+                intent.setType( mime );
+                Uri uri = Uri.fromFile( attach );
+                intent.putExtra( Intent.EXTRA_STREAM, uri );
+            }
+
+            String choiceType = LocUtils.getString( activity, R.string.invite_chooser_email );
+            String chooserMsg = 
+                LocUtils.getString( activity, R.string.invite_chooser_fmt, 
+                                    choiceType );
+            activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
         }
     }
+
+    // public static void launchInviteActivity( Activity activity, 
+    //                                          InviteMeans means, 
+    //                                          String room, String inviteID,
+    //                                          int lang, String dict, 
+    //                                          int nPlayers )
+    // {
+    //     Assert.assertNotNull( inviteID );
+
+    //     if ( InviteMeans.NFC == means ) {
+    //         Utils.showToast( activity, R.string.sms_ready_text );
+    //     } else {
+    //         // NetLaunchInfo nli = new NetLaunchInfo( 0, lang, dict, nPlayers );
+
+    //         Uri gameUri = NetLaunchInfo.makeLaunchUri( activity, room, inviteID,
+    //                                                    lang, dict, nPlayers );
+    //         String msgString = null == gameUri ? null : gameUri.toString();
+
+    //         if ( null != msgString ) {
+    //             boolean choseEmail = InviteMeans.EMAIL == means;
+
+    //             int fmtId = choseEmail? R.string.invite_htm_fmt : R.string.invite_txt_fmt;
+    //             int choiceID;
+    //             String message = LocUtils.getString( activity, fmtId, msgString );
+
+    //             Intent intent = new Intent();
+    //             if ( choseEmail ) {
+    //                 intent.setAction( Intent.ACTION_SEND );
+    //                 String subject =
+    //                     LocUtils.getString( activity, R.string.invite_subject_fmt, 
+    //                                         room );
+    //                 intent.putExtra( Intent.EXTRA_SUBJECT, subject );
+    //                 intent.putExtra( Intent.EXTRA_TEXT, Html.fromHtml(message) );
+
+    //                 File attach = null;
+    //                 File tmpdir = XWApp.ATTACH_SUPPORTED ? 
+    //                     DictUtils.getDownloadDir( activity ) : null;
+    //                 if ( null != tmpdir ) { // no attachment
+    //                     attach = makeJsonFor( tmpdir, room, inviteID, lang, 
+    //                                           dict, nPlayers );
+    //                 }
+
+    //                 if ( null == attach ) { // no attachment
+    //                     intent.setType( "message/rfc822");
+    //                 } else {
+    //                     String mime = LocUtils.getString( activity, R.string.invite_mime );
+    //                     intent.setType( mime );
+    //                     Uri uri = Uri.fromFile( attach );
+    //                     intent.putExtra( Intent.EXTRA_STREAM, uri );
+    //                 }
+
+    //                 choiceID = R.string.invite_chooser_email;
+    //             } else {
+    //                 intent.setAction( Intent.ACTION_VIEW );
+    //                 intent.setType( "vnd.android-dir/mms-sms" );
+    //                 intent.putExtra( "sms_body", message );
+    //                 choiceID = R.string.invite_chooser_sms;
+    //             }
+
+    //             String choiceType = LocUtils.getString( activity, choiceID );
+    //             String chooserMsg = 
+    //                 LocUtils.getString( activity, R.string.invite_chooser_fmt, 
+    //                                     choiceType );
+    //             activity.startActivity( Intent.createChooser( intent, chooserMsg ) );
+    //         }
+    //     }
+    // }
 
     public static String[] dictNames( Context context, long rowid,
                                       int[] missingLang ) 
@@ -748,8 +860,10 @@ public class GameUtils {
     private static class FeedUtilsImpl extends UtilCtxtImpl {
         private Context m_context;
         private long m_rowid;
+        public String m_chat;
         public boolean m_gotMsg;
         public boolean m_gotChat;
+        public String m_chatFrom;
         public boolean m_gameOver;
 
         public FeedUtilsImpl( Context context, long rowid )
@@ -760,10 +874,13 @@ public class GameUtils {
             m_gotMsg = false;
             m_gameOver = false;
         }
-        public void showChat( String msg )
+        @Override
+        public void showChat( String msg, int fromIndx, String fromName )
         {
-            DBUtils.appendChatHistory( m_context, m_rowid, msg, false );
+            DBUtils.appendChatHistory( m_context, m_rowid, msg, fromIndx );
             m_gotChat = true;
+            m_chatFrom = fromName;
+            m_chat = msg;
         }
         public void turnChanged( int newTurn )
         {
@@ -778,7 +895,8 @@ public class GameUtils {
 
     public static boolean feedMessages( Context context, long rowid,
                                         byte[][] msgs, CommsAddrRec ret,
-                                        MultiMsgSink sink )
+                                        MultiMsgSink sink, BackMoveResult bmr,
+                                        boolean[] isLocalOut )
     {
         boolean draw = false;
         Assert.assertTrue( -1 != rowid );
@@ -792,11 +910,12 @@ public class GameUtils {
             if ( null != lock ) {
                 CurGameInfo gi = new CurGameInfo( context );
                 FeedUtilsImpl feedImpl = new FeedUtilsImpl( context, rowid );
-                int gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
-                if ( 0 != gamePtr ) {
+                GamePtr gamePtr = loadMakeGame( context, gi, feedImpl, sink, lock );
+                if ( null != gamePtr ) {
                     XwJNI.comms_resendAll( gamePtr, false, false );
 
                     for ( byte[] msg : msgs ) {
+                        Assert.assertNotNull( ret );
                         draw = XwJNI.game_receiveMessage( gamePtr, msg, ret )
                             || draw;
                     }
@@ -810,13 +929,30 @@ public class GameUtils {
                         DBUtils.saveThumbnail( context, lock, bitmap );
                     }
 
+                    if ( null != bmr ) {
+                        if ( null != feedImpl.m_chat ) {
+                            bmr.m_chat = feedImpl.m_chat;
+                            bmr.m_chatFrom = feedImpl.m_chatFrom;
+                        } else {
+                            LastMoveInfo lmi = new LastMoveInfo();
+                            XwJNI.model_getPlayersLastScore( gamePtr, -1, lmi );
+                            bmr.m_lmi = lmi;
+                        }
+                    }
+
                     saveGame( context, gamePtr, gi, lock, false );
-                    summarizeAndClose( context, lock, gamePtr, gi, feedImpl );
+                    GameSummary summary = summarizeAndClose( context, lock,
+                                                             gamePtr, gi );
+                    if ( null != isLocalOut ) {
+                        isLocalOut[0] = 0 <= summary.turn
+                            && gi.players[summary.turn].isLocal;
+                    }
 
                     int flags = setFromFeedImpl( feedImpl );
                     if ( GameSummary.MSG_FLAGS_NONE != flags ) {
                         draw = true;
-                        DBUtils.setMsgFlags( rowid, flags );
+                        int curFlags = DBUtils.getMsgFlags( context, rowid );
+                        DBUtils.setMsgFlags( rowid, flags | curFlags );
                     }
                 }
                 lock.unlock();
@@ -826,12 +962,13 @@ public class GameUtils {
     } // feedMessages
 
     public static boolean feedMessage( Context context, long rowid, byte[] msg,
-                                       CommsAddrRec ret, MultiMsgSink sink )
+                                       CommsAddrRec ret, MultiMsgSink sink,
+                                       BackMoveResult bmr, boolean[] isLocalOut )
     {
         Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         byte[][] msgs = new byte[1][];
         msgs[0] = msg;
-        return feedMessages( context, rowid, msgs, ret, sink );
+        return feedMessages( context, rowid, msgs, ret, sink, bmr, isLocalOut );
     }
 
     // This *must* involve a reset if the language is changing!!!
@@ -854,7 +991,7 @@ public class GameUtils {
             DictUtils.DictPairs pairs = DictUtils.openDicts( context, 
                                                              dictNames );
         
-            int gamePtr = XwJNI.initJNI();
+            GamePtr gamePtr = XwJNI.initJNI( rowid );
             XwJNI.game_makeFromStream( gamePtr, stream, gi, dictNames, 
                                        pairs.m_bytes, pairs.m_paths,
                                        gi.langName(), 
@@ -875,15 +1012,17 @@ public class GameUtils {
     } // replaceDicts
 
     public static void applyChanges( Context context, CurGameInfo gi, 
-                                     CommsAddrRec car, GameLock lock, 
+                                     CommsAddrRec car, GameLock lock,
                                      boolean forceNew )
     {
-        applyChanges( context, gi, car, null, lock, forceNew );
+        applyChanges( context, (MultiMsgSink)null, gi, (UtilCtxt)null, car, 
+                      lock, forceNew );
     }
 
-    public static void applyChanges( Context context, CurGameInfo gi, 
-                                     CommsAddrRec car, String inviteID, 
-                                     GameLock lock, boolean forceNew )
+    public static void applyChanges( Context context, MultiMsgSink sink,
+                                     CurGameInfo gi, UtilCtxt util, 
+                                     CommsAddrRec car, GameLock lock,
+                                     boolean forceNew )
     {
         // This should be a separate function, commitChanges() or
         // somesuch.  But: do we have a way to save changes to a gi
@@ -892,7 +1031,7 @@ public class GameUtils {
         String[] dictNames = gi.dictNames();
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
         String langName = gi.langName();
-        int gamePtr = XwJNI.initJNI();
+        GamePtr gamePtr = XwJNI.initJNI( lock.getRowid() );
         boolean madeGame = false;
         CommonPrefs cp = CommonPrefs.get( context );
 
@@ -910,8 +1049,10 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, JNIUtilsImpl.get(context), 
-                                    cp, dictNames, pairs.m_bytes, 
+            XwJNI.game_makeNewGame( gamePtr, gi, util, 
+                                    JNIUtilsImpl.get(context), 
+                                    (DrawCtx)null,
+                                    cp, sink, dictNames, pairs.m_bytes, 
                                     pairs.m_paths, langName );
         }
 
@@ -919,13 +1060,16 @@ public class GameUtils {
             XwJNI.comms_setAddr( gamePtr, car );
         }
 
+        if ( null != sink ) {
+            JNIThread.tryConnectClient( gamePtr, gi );
+        }
+
         saveGame( context, gamePtr, gi, lock, false );
 
         GameSummary summary = new GameSummary( context, gi );
         XwJNI.game_summarize( gamePtr, summary );
-        DBUtils.saveSummary( context, lock, summary, inviteID );
-
-        XwJNI.game_dispose( gamePtr );
+        gamePtr.release();
+        DBUtils.saveSummary( context, lock, summary );
     } // applyChanges
 
     public static void doConfig( Activity activity, long rowid, Class clazz )
@@ -955,28 +1099,76 @@ public class GameUtils {
         do {
             rint = Utils.nextRandomInt();
         } while ( 0 == rint );
-        DbgUtils.logf( "newGameID()=>%X", rint );
+        DbgUtils.logf( "newGameID()=>%X (%d)", rint, rint );
         return rint;
     }
 
+    public static void postMoveNotification( Context context, long rowid, 
+                                             BackMoveResult bmr,
+                                             boolean isTurnNow )
+    {
+        if ( null != bmr ) {
+            Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
+            String msg = null;
+            int titleID = 0;
+            if ( null != bmr.m_chat ) {
+                titleID = R.string.notify_chat_title_fmt;
+                if ( null != bmr.m_chatFrom ) {
+                    msg = LocUtils
+                        .getString( context, R.string.notify_chat_body_fmt,
+                                    bmr.m_chatFrom, bmr.m_chat );
+                } else {
+                    msg = bmr.m_chat;
+                }
+            } else if ( null != bmr.m_lmi ) {
+                if ( isTurnNow ) {
+                    titleID = R.string.notify_title_turn_fmt;
+                } else {
+                    titleID = R.string.notify_title_fmt;
+                }
+                msg = bmr.m_lmi.format( context );
+            }
+
+            if ( 0 != titleID ) {
+                String title = LocUtils.getString( context, titleID,
+                                                   getName( context, rowid ) );
+                Utils.postNotification( context, intent, title, msg, (int)rowid );
+            }
+        } else {
+            DbgUtils.logdf( "postMoveNotification(): posting nothing for lack"
+                            + " of brm" );
+        }
+    }
+
+    public static void postInvitedNotification( Context context, int gameID,
+                                                String body, long rowid )
+    {
+        Intent intent = GamesListDelegate.makeGameIDIntent( context, gameID );
+        Utils.postNotification( context, intent, R.string.invite_notice_title,
+                                body, (int)rowid );
+    }
+    
     private static void tellDied( Context context, GameLock lock, 
                                   boolean informNow )
     {
         GameSummary summary = DBUtils.getSummary( context, lock );
-        switch( summary.conType ) {
-        case COMMS_CONN_RELAY:
-            tellRelayDied( context, summary, informNow );
-            break;
-        case COMMS_CONN_BT:
-            BTService.gameDied( context, summary.gameID );
-            break;
-        case COMMS_CONN_SMS:
-            if ( null != summary.remoteDevs ) {
-                for ( String dev : summary.remoteDevs ) {
-                    SMSService.gameDied( context, summary.gameID, dev );
+        for ( Iterator<CommsConnType> iter = summary.conTypes.iterator();
+              iter.hasNext(); ) {
+            switch( iter.next() ) {
+            case COMMS_CONN_RELAY:
+                tellRelayDied( context, summary, informNow );
+                break;
+            case COMMS_CONN_BT:
+                BTService.gameDied( context, summary.gameID );
+                break;
+            case COMMS_CONN_SMS:
+                if ( null != summary.remoteDevs ) {
+                    for ( String dev : summary.remoteDevs ) {
+                        SMSService.gameDied( context, summary.gameID, dev );
+                    }
                 }
+                break;
             }
-            break;
         }
     }
 
@@ -991,22 +1183,14 @@ public class GameUtils {
         }
     }
 
-    private static File makeJsonFor( File dir, String room, String inviteID,
-                                     int lang, String dict, int nPlayers )
+    private static File makeJsonFor( File dir, NetLaunchInfo nli )
     {
         File result = null;
         if ( XWApp.ATTACH_SUPPORTED ) {
-            JSONObject json = new JSONObject();
-            try {
-                json.put( MultiService.ROOM, room );
-                json.put( MultiService.INVITEID, inviteID );
-                json.put( MultiService.LANG, lang );
-                json.put( MultiService.DICT, dict );
-                json.put( MultiService.NPLAYERST, nPlayers );
-                byte[] data = json.toString().getBytes();
+            byte[] data = nli.makeLaunchJSON().getBytes();
 
-                File file = new File( dir, 
-                                      String.format("invite_%s", room ) );
+            File file = new File( dir, String.format("invite_%d", nli.gameID() ));
+            try {
                 FileOutputStream fos = new FileOutputStream( file );
                 fos.write( data, 0, data.length );
                 fos.close();
@@ -1020,15 +1204,17 @@ public class GameUtils {
 
     private static class ResendTask extends AsyncTask<Void, Void, Void> {
         private Context m_context;
-        private HashMap<Long,CommsConnType> m_games;
+        private HashMap<Long,CommsConnTypeSet> m_games;
         private boolean m_showUI;
-        private int m_nSent = 0;
+        private CommsConnType m_filter;
+        private MultiMsgSink m_sink;
 
-        public ResendTask( Context context, HashMap<Long,CommsConnType> games,
-                           boolean showUI )
+        public ResendTask( Context context, HashMap<Long,CommsConnTypeSet> games,
+                           CommsConnType filter, boolean showUI )
         {
             m_context = context;
             m_games = games;
+            m_filter = filter;
             m_showUI = showUI;
         }
 
@@ -1038,15 +1224,34 @@ public class GameUtils {
             Iterator<Long> iter = m_games.keySet().iterator();
             while ( iter.hasNext() ) {
                 long rowid = iter.next();
+
+                // If we're looking for a specific type, check
+                if ( null != m_filter ) {
+                    CommsConnTypeSet gameSet = m_games.get( rowid );
+                    if ( gameSet != null && ! gameSet.contains( m_filter ) ) {
+                        continue;
+                    }
+                }
+
                 GameLock lock = new GameLock( rowid, false );
                 if ( lock.tryLock() ) {
                     CurGameInfo gi = new CurGameInfo( m_context );
-                    MsgSink sink = new MsgSink( m_context, rowid );
-                    int gamePtr = loadMakeGame( m_context, gi, sink, lock );
-                    if ( 0 != gamePtr ) {
-                        XwJNI.comms_resendAll( gamePtr, true, false );
+                    m_sink = new MultiMsgSink( m_context, rowid );
+                    GamePtr gamePtr = loadMakeGame( m_context, gi, m_sink, lock );
+                    if ( null != gamePtr ) {
+                        int nSent = XwJNI.comms_resendAll( gamePtr, true,
+                                                           m_filter, false );
+                        gamePtr.release();
+                        DbgUtils.logdf( "ResendTask.doInBackground(): sent %d "
+                                        + "messages for rowid %d", nSent, rowid );
+                    } else {
+                        DbgUtils.logdf( "ResendTask.doInBackground(): loadMakeGame()"
+                                        + " failed for rowid %d", rowid );
                     }
                     lock.unlock();
+                } else {
+                    DbgUtils.logf( "ResendTask.doInBackground: unable to unlock %d", 
+                                   rowid );
                 }
             }
             return null;
@@ -1056,36 +1261,13 @@ public class GameUtils {
         protected void onPostExecute( Void unused )
         {
             if ( m_showUI ) {
-                DbgUtils.showf( m_context, R.string.resend_finished_fmt, m_nSent );
-            }
-        }
-
-        private class MsgSink extends MultiMsgSink {
-            private Context m_context;
-            private long m_rowid;
-
-            public MsgSink( Context context, long rowid )
-            {
-                m_context = context;
-                m_rowid = rowid;
-            }
-
-            @Override
-            public boolean relayNoConnProc( byte[] buf, String relayID )
-            {
-                int len = buf.length;
-                if ( len == RelayService.sendNoConnPacket( m_context, m_rowid, 
-                                                           relayID, buf ) ) {
-                    ++m_nSent;
-                }
-                return true;
-            }
-
-            public int transportSend( byte[] buf, final CommsAddrRec addr, int gameID )
-            {
-                return CommsTransport.sendForAddr( m_context, addr, m_rowid, gameID, buf );
+                int nSent = null == m_sink ? 0 : m_sink.numSent();
+                String msg = 
+                    LocUtils.getQuantityString( m_context,
+                                                R.plurals.resend_finished_fmt,
+                                                nSent, nSent );
+                DbgUtils.showf( m_context, msg );
             }
         }
     }
-
 }

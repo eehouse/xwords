@@ -1,6 +1,6 @@
 /* -*- compile-command: "cd ../linux && make -j3 MEMDEBUG=TRUE"; -*- */
 /* 
- * Copyright 2000-2011 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2000-2015 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -78,13 +78,13 @@ static void loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
 static void writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, 
                              const PlayerCtxt* pc );
 static XP_U16 model_getRecentPassCount( ModelCtxt* model );
-static XP_Bool recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
-                           const DictionaryCtxt* dict,
+static void recordWord( const XP_UCHAR* word, XP_Bool isLegal, 
+                        const DictionaryCtxt* dict,
 
 #ifdef XWFEATURE_BOARDWORDS
-                           const MoveInfo* movei, XP_U16 start, XP_U16 end,
+                        const MoveInfo* movei, XP_U16 start, XP_U16 end,
 #endif
-                           void* clsur );
+                        void* clsur );
 #ifdef DEBUG 
 typedef struct _DiffTurnState {
     XP_S16 lastPlayerNum;
@@ -312,34 +312,65 @@ model_destroy( ModelCtxt* model )
 } /* model_destroy */
 
 XP_U32
-model_getHash( const ModelCtxt* model, XP_U16 version )
+model_getHash( const ModelCtxt* model )
 {
 #ifndef STREAM_VERS_HASHSTREAM
     XP_USE(version);
 #endif
     StackCtxt* stack = model->vol.stack;
     XP_ASSERT( !!stack );
-    XP_U32 hash =
-#ifdef STREAM_VERS_HASHSTREAM
-    STREAM_VERS_HASHSTREAM <= version ?
-        stack_getHash( stack ) : 
-#endif
-        stack_getHashOld( stack );
-    /* XP_LOGF( "%s(version=%x)=>%.8X", __func__, version,  */
-    /*          (unsigned int)hash ); */
-    return hash;
+    return stack_getHash( stack, XP_TRUE );
 }
 
 XP_Bool
 model_hashMatches( const ModelCtxt* model, const XP_U32 hash )
 {
     StackCtxt* stack = model->vol.stack;
-    XP_Bool matches = 
-#ifdef STREAM_VERS_HASHSTREAM
-        (hash == stack_getHash( stack )) ||
-#endif
-        (hash == stack_getHashOld( stack ));
+    XP_Bool matches = hash == stack_getHash( stack, XP_TRUE )
+        || hash == stack_getHash( stack, XP_FALSE );
     return matches;
+}
+
+XP_Bool
+model_popToHash( ModelCtxt* model, const XP_U32 hash, PoolContext* pool )
+{
+    XP_U16 nPopped = 0;
+    StackCtxt* stack = model->vol.stack;
+    const XP_U16 nEntries = stack_getNEntries( stack );
+    StackEntry entries[nEntries];
+    XP_S16 foundAt = -1;
+
+    for ( XP_U16 ii = 0; ii < nEntries; ++ii ) {
+        if ( hash == stack_getHash( stack, XP_TRUE )
+             || hash == stack_getHash( stack, XP_FALSE ) ) {
+            foundAt = ii;
+            break;
+        }
+        if ( ! stack_popEntry( stack, &entries[ii] ) ) {
+            break;
+        }
+        ++nPopped;
+    }
+
+    for ( XP_S16 ii = nPopped - 1; ii >= 0; --ii ) {
+        stack_redo( stack, &entries[ii] );
+    }
+
+    XP_Bool found = -1 != foundAt;
+    if ( found ) {
+        XP_LOGF( "%s: undoing %d turns to match hash %X", __func__,
+                 foundAt, hash );
+#ifdef DEBUG
+        XP_Bool success =
+#endif
+            model_undoLatestMoves( model, pool, foundAt, NULL, NULL );
+        XP_ASSERT( success );
+        /* Assert not needed for long */
+        XP_ASSERT( hash == stack_getHash( model->vol.stack, XP_TRUE )
+                   || hash == stack_getHash( model->vol.stack, XP_FALSE ) );
+    }
+
+    return found;
 }
 
 #ifdef STREAM_VERS_BIGBOARD
@@ -798,7 +829,7 @@ replaceNewTiles( ModelCtxt* model, PoolContext* pool, XP_U16 turn,
         model_removePlayerTile( model, turn, index );
     }
     if ( !!pool ) {
-        pool_replaceTiles( pool, tileSet);
+        pool_replaceTiles( pool, tileSet );
     }
 } /* replaceNewTiles */
 
@@ -874,17 +905,12 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
                 undoFromMoveInfo( model, turn, blankTile, 
                                   &entry.u.move.moveInfo );
             } else if ( entry.moveType == TRADE_TYPE ) {
-
+                replaceNewTiles( model, pool, turn, 
+                                 &entry.u.trade.newTiles );
                 if ( pool != NULL ) {
-                    /* If there's no pool, assume we're doing this for
-                       scoring purposes only. */
-                    replaceNewTiles( model, pool, turn, 
-                                     &entry.u.trade.newTiles );
-
                     pool_removeTiles( pool, &entry.u.trade.oldTiles );
-                    assignPlayerTiles( model, turn, &entry.u.trade.oldTiles );
                 }
-
+                assignPlayerTiles( model, turn, &entry.u.trade.oldTiles );
             } else if ( entry.moveType == PHONY_TYPE ) {
                 /* nothing to do, since nothing happened */
             } else {
@@ -1822,6 +1848,23 @@ model_moveTileOnTray( ModelCtxt* model, XP_S16 turn, XP_S16 indexCur,
     notifyTrayListeners( model, turn, indexCur, indexNew );
 } /* model_moveTileOnTray */
 
+XP_U16
+model_getDividerLoc( const ModelCtxt* model, XP_S16 turn )
+{
+    XP_ASSERT( turn >= 0 );
+    const PlayerCtxt* player = &model->players[turn];
+    return player->dividerLoc;
+}
+
+void
+model_setDividerLoc( ModelCtxt* model, XP_S16 turn, XP_U16 loc )
+{
+    XP_ASSERT( turn >= 0 );
+    PlayerCtxt* player = &model->players[turn];
+    XP_ASSERT( loc < 0xFF );
+    player->dividerLoc = (XP_U8)loc;
+}
+
 static void
 assignPlayerTiles( ModelCtxt* model, XP_S16 turn, const TrayTileSet* tiles )
 {
@@ -1838,7 +1881,7 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 {
     XP_ASSERT( turn >= 0 );
     TrayTileSet sorted;
-    sortTiles( &sorted, tiles );
+    sortTiles( &sorted, tiles, 0 );
     stack_addAssign( model->vol.stack, turn, &sorted );
 
     assignPlayerTiles( model, turn, tiles );
@@ -1847,17 +1890,18 @@ model_assignPlayerTiles( ModelCtxt* model, XP_S16 turn,
 void
 model_sortTiles( ModelCtxt* model, XP_S16 turn )
 {
-    XP_S16 nTiles;
+    XP_U16 dividerLoc = model_getDividerLoc( model, turn );
+    const TrayTileSet* curTiles = model_getPlayerTiles( model, turn );
+    if ( curTiles->nTiles >= dividerLoc) { /* any to sort? */
+        TrayTileSet sorted;
+        sortTiles( &sorted, curTiles, dividerLoc );
 
-    TrayTileSet sorted;
-    sortTiles( &sorted, model_getPlayerTiles( model, turn ) );
+        for ( XP_S16 nTiles = sorted.nTiles; nTiles > 0; ) {
+            removePlayerTile( model, turn, --nTiles );
+        }
 
-    nTiles = sorted.nTiles;
-    while ( nTiles > 0 ) {
-        removePlayerTile( model, turn, --nTiles );
+        assignPlayerTiles( model, turn, &sorted );
     }
-
-    assignPlayerTiles( model, turn, &sorted );
 } /* model_sortTiles */
 
 XP_U16
@@ -1978,7 +2022,7 @@ printMovePre( ModelCtxt* model, XP_U16 XP_UNUSED(moveN), const StackEntry* entry
 {
     XWStreamCtxt* stream;
     const XP_UCHAR* format;
-    XP_UCHAR buf[32];
+    XP_UCHAR buf[64];
     XP_UCHAR traybuf[MAX_TRAY_TILES+1];
     MovePrintClosure* closure = (MovePrintClosure*)p_closure;
 
@@ -2104,6 +2148,7 @@ printMovePost( ModelCtxt* model, XP_U16 XP_UNUSED(moveN),
                                          traybuf1, sizeof(traybuf1), 
                                          XP_FALSE ) );
                 printString( stream, buf );
+                stream_catString( stream, (XP_UCHAR*)XP_CR );
             }
         }
 
@@ -2171,7 +2216,7 @@ typedef struct _FirstWordData {
     XP_UCHAR word[32];
 } FirstWordData;
 
-static XP_Bool
+static void
 getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
               const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
@@ -2184,47 +2229,37 @@ getFirstWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
     if ( '\0' == data->word[0] && '\0' != word[0] ) {
         XP_STRCAT( data->word, word );
     }
-    return XP_TRUE;
 }
 
 static void
 scoreLastMove( ModelCtxt* model, MoveInfo* moveInfo, XP_U16 howMany, 
-               XP_UCHAR* buf, XP_U16* bufLen )
+               LastMoveInfo* lmi )
 {
+    XP_U16 score;
+    WordNotifierInfo notifyInfo;
+    FirstWordData data;
 
-    if ( moveInfo->nTiles == 0 ) {
-        const XP_UCHAR* str = util_getUserString( model->vol.util, STR_PASSED );
-        XP_U16 len = XP_STRLEN( str );
-        *bufLen = len;
-        XP_STRNCPY( buf, str, len + 1 );
-    } else {
-        XP_U16 score;
-        const XP_UCHAR* format;
-        WordNotifierInfo notifyInfo;
-        FirstWordData data;
+    ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
+    XP_U16 turn;
+    XP_S16 moveNum = -1;
 
-        ModelCtxt* tmpModel = makeTmpModel( model, NULL, NULL, NULL, NULL );
-        XP_U16 turn;
-        XP_S16 moveNum = -1;
+    copyStack( model, tmpModel->vol.stack, model->vol.stack );
 
-        copyStack( model, tmpModel->vol.stack, model->vol.stack );
-
-        if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn,
-                                     &moveNum ) ) {
-            XP_ASSERT( 0 );
-        }
-
-        data.word[0] = '\0';
-        notifyInfo.proc = getFirstWord;
-        notifyInfo.closure = &data;
-        score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL,
-                                 (XWStreamCtxt*)NULL, &notifyInfo );
-
-        model_destroy( tmpModel );
-
-        format = util_getUserString( model->vol.util, STRSD_SUMMARYSCORED );
-        *bufLen = XP_SNPRINTF( buf, *bufLen, format, data.word, score );
+    if ( !model_undoLatestMoves( tmpModel, NULL, howMany, &turn,
+                                 &moveNum ) ) {
+        XP_ASSERT( 0 );
     }
+
+    data.word[0] = '\0';
+    notifyInfo.proc = getFirstWord;
+    notifyInfo.closure = &data;
+    score = figureMoveScore( tmpModel, turn, moveInfo, (EngineCtxt*)NULL,
+                             (XWStreamCtxt*)NULL, &notifyInfo );
+
+    model_destroy( tmpModel );
+
+    lmi->score = score;
+    XP_SNPRINTF( lmi->word, VSIZE(lmi->word), "%s", data.word );
 } /* scoreLastMove */
 
 static XP_U16
@@ -2271,7 +2306,7 @@ appendWithCR( XWStreamCtxt* stream, const XP_UCHAR* word, XP_U16* counter )
     stream_catString( stream, word );
 }
 
-static XP_Bool 
+static void
 recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
             const DictionaryCtxt* XP_UNUSED(dict),
 #ifdef XWFEATURE_BOARDWORDS
@@ -2283,7 +2318,6 @@ recordWord( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
 {
     RecordWordsInfo* info = (RecordWordsInfo*)closure;
     appendWithCR( info->stream, word, &info->nWords );
-    return XP_TRUE;
 }
 
 WordNotifierInfo* 
@@ -2303,7 +2337,7 @@ typedef struct _ListWordsThroughInfo {
     XP_U16 nWords;
 } ListWordsThroughInfo;
 
-static XP_Bool
+static void
 listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal), 
                   const DictionaryCtxt* XP_UNUSED(dict),
                   const MoveInfo* movei, XP_U16 start, XP_U16 end, 
@@ -2321,8 +2355,6 @@ listWordsThrough( const XP_UCHAR* word, XP_Bool XP_UNUSED(isLegal),
     if ( contained ) {
         appendWithCR( info->stream, word, &info->nWords );
     }
-
-    return XP_TRUE;
 }
 
 /* List every word played that includes the tile on {col,row}.
@@ -2373,48 +2405,50 @@ model_listWordsThrough( ModelCtxt* model, XP_U16 col, XP_U16 row,
 #endif
 
 XP_Bool
-model_getPlayersLastScore( ModelCtxt* model, XP_S16 player,
-                           XP_UCHAR* expl, XP_U16* explLen )
+model_getPlayersLastScore( ModelCtxt* model, XP_S16 player, LastMoveInfo* lmi )
 {
     StackCtxt* stack = model->vol.stack;
     XP_S16 nEntries, which;
     StackEntry entry;
     XP_Bool found = XP_FALSE;
+    XP_MEMSET( lmi, 0, sizeof(*lmi) );
 
     XP_ASSERT( !!stack );
-    XP_ASSERT( player >= 0 );
 
     nEntries = stack_getNEntries( stack );
 
     for ( which = nEntries; which >= 0; ) {
         if ( stack_getNthEntry( stack, --which, &entry ) ) {
-            if ( entry.playerNum == player ) {
+            if ( -1 == player || entry.playerNum == player ) {
                 found = XP_TRUE;
                 break;
             }
         }
     }
 
+
     if ( found ) { /* success? */
-        const XP_UCHAR* format;
-        XP_U16 nTiles;
+        XP_ASSERT( -1 == player || player == entry.playerNum );
+
+        XP_LOGF( "%s: found move %d", __func__, which );
+        lmi->name = model->vol.gi->players[entry.playerNum].name;
+        lmi->moveType = entry.moveType;
+
         switch ( entry.moveType ) {
         case MOVE_TYPE:
-            scoreLastMove( model, &entry.u.move.moveInfo, 
-                           nEntries - which, expl, explLen );
+            lmi->nTiles = entry.u.move.moveInfo.nTiles;
+            if ( 0 < entry.u.move.moveInfo.nTiles ) {
+                scoreLastMove( model, &entry.u.move.moveInfo, nEntries - which,
+                               lmi );
+            }
             break;
         case TRADE_TYPE:
-            nTiles = entry.u.trade.oldTiles.nTiles;
-            format = util_getUserString( model->vol.util, STRD_TRADED );
-            *explLen = XP_SNPRINTF( expl, *explLen, format, nTiles );
+            lmi->nTiles = entry.u.trade.oldTiles.nTiles;
             break;
         case PHONY_TYPE:
-            format = util_getUserString( model->vol.util, STR_LOSTTURN );
-            *explLen = XP_STRLEN( format );
-            XP_STRCAT( expl, format );
             break;
         case ASSIGN_TYPE:
-            found = XP_FALSE;
+            // found = XP_FALSE;
             break;
         }
     }
@@ -2446,6 +2480,10 @@ loadPlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream, XP_U16 version,
         pc->nUndone = (XP_U8)stream_getBits( stream, NTILES_NBITS );
     } else {
         XP_ASSERT( 0 == pc->nUndone );
+    }
+    XP_ASSERT( 0 == pc->dividerLoc );
+    if ( STREAM_VERS_MODELDIVIDER <= version ) {
+        pc->dividerLoc = stream_getBits( stream, NTILES_NBITS );
     }
 
     nTiles = pc->nPending + pc->nUndone;
@@ -2481,6 +2519,7 @@ writePlayerCtxt( const ModelCtxt* model, XWStreamCtxt* stream,
     
     stream_putBits( stream, NTILES_NBITS, pc->nPending );
     stream_putBits( stream, NTILES_NBITS, pc->nUndone );
+    stream_putBits( stream, NTILES_NBITS, pc->dividerLoc );
 
     nTiles = pc->nPending + pc->nUndone;
     for ( pt = pc->pendingTiles; nTiles-- > 0; ++pt ) {

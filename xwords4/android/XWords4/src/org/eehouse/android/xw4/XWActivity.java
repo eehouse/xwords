@@ -23,8 +23,16 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+
+import junit.framework.Assert;
 
 import junit.framework.Assert;
 
@@ -34,6 +42,9 @@ public class XWActivity extends Activity implements Delegator {
 
     protected void onCreate( Bundle savedInstanceState, DelegateBase dlgt )
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onCreate(this=%H)", getClass().getName(), this );
+        }
         super.onCreate( savedInstanceState );
         m_dlgt = dlgt;
 
@@ -55,6 +66,9 @@ public class XWActivity extends Activity implements Delegator {
     @Override
     protected void onPause()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onPause(this=%H)", getClass().getName(), this );
+        }
         m_dlgt.onPause();
         super.onPause();
     }
@@ -62,6 +76,9 @@ public class XWActivity extends Activity implements Delegator {
     @Override
     protected void onResume()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onResume(this=%H)", getClass().getName(), this );
+        }
         super.onResume();
         m_dlgt.onResume();
     }
@@ -69,6 +86,9 @@ public class XWActivity extends Activity implements Delegator {
     @Override
     protected void onStart()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onStart(this=%H)", getClass().getName(), this );
+        }
         super.onStart();
         m_dlgt.onStart();
     }
@@ -76,6 +96,9 @@ public class XWActivity extends Activity implements Delegator {
     @Override
     protected void onStop()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onStop(this=%H)", getClass().getName(), this );
+        }
         m_dlgt.onStop();
         super.onStop();
     }
@@ -83,6 +106,9 @@ public class XWActivity extends Activity implements Delegator {
     @Override
     protected void onDestroy()
     {
+        if ( XWApp.LOG_LIFECYLE ) {
+            DbgUtils.logf( "%s.onDestroy(this=%H)", getClass().getName(), this );
+        }
         m_dlgt.onDestroy();
         super.onDestroy();
     }
@@ -122,6 +148,19 @@ public class XWActivity extends Activity implements Delegator {
     }
 
     @Override
+    public void onCreateContextMenu( ContextMenu menu, View view,
+                                     ContextMenuInfo menuInfo )
+    {
+        m_dlgt.onCreateContextMenu( menu, view, menuInfo );
+    }
+
+    @Override
+    public boolean onContextItemSelected( MenuItem item )
+    {
+        return m_dlgt.onContextItemSelected( item );
+    }
+
+    @Override
     protected Dialog onCreateDialog( int id )
     {
         Dialog dialog = super.onCreateDialog( id );
@@ -143,7 +182,8 @@ public class XWActivity extends Activity implements Delegator {
     protected void onActivityResult( int requestCode, int resultCode, 
                                      Intent data )
     {
-        m_dlgt.onActivityResult( requestCode, resultCode, data );
+        RequestCode rc = RequestCode.values()[requestCode]; 
+        m_dlgt.onActivityResult( rc, resultCode, data );
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -157,5 +197,21 @@ public class XWActivity extends Activity implements Delegator {
     public Bundle getArguments()
     {
         return getIntent().getExtras();
+    }
+
+    public ListView getListView()
+    {
+        ListView view = (ListView)findViewById( android.R.id.list );
+        return view;
+    }
+
+    public void setListAdapter( ListAdapter adapter )
+    { 
+        getListView().setAdapter( adapter );
+    }
+
+    public ListAdapter getListAdapter()
+    {
+        return getListView().getAdapter();
     }
 }

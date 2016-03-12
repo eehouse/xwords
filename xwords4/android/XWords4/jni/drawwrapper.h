@@ -25,7 +25,9 @@
 
 #include "draw.h"
 
-DrawCtx* makeDraw( MPFORMAL JNIEnv** env, jobject j_draw );
+#include "andglobals.h"
+
+DrawCtx* makeDraw( MPFORMAL EnvThreadInfo* ti, jobject j_draw );
 void destroyDraw( DrawCtx** dctx );
 
 

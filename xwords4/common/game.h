@@ -21,6 +21,7 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 
+#include "comtypes.h"
 #include "gameinfo.h"
 #include "model.h"
 #include "board.h"
@@ -59,7 +60,7 @@ typedef struct XWGame {
 
 void game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi, 
                        XW_UtilCtxt* util, DrawCtx* draw, 
-                       CommonPrefs* cp, const TransportProcs* procs
+                       const CommonPrefs* cp, const TransportProcs* procs
 #ifdef SET_GAMESEED
                        ,XP_U16 gameSeed
 #endif
@@ -74,6 +75,9 @@ XP_Bool game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                              const PlayerDicts* dicts, XW_UtilCtxt* util, 
                              DrawCtx* draw, CommonPrefs* cp,
                              const TransportProcs* procs );
+
+void game_saveNewGame( MPFORMAL const CurGameInfo* gi, XW_UtilCtxt* util,
+                       const CommonPrefs* cp, XWStreamCtxt* out );
 
 void game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
                         XWStreamCtxt* stream, XP_U16 saveToken );

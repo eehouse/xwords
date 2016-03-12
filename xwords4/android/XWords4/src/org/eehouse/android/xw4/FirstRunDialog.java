@@ -24,10 +24,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -38,43 +34,13 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class FirstRunDialog {
     public static void show( final Context context )
     {
-        String page = null;
-        InputStream inputStream = null;
-        try {
-            inputStream = context.getResources()
-                .openRawResource(R.raw.changes);
-   
-            final char[] buf = new char[0x1000];
-            StringBuilder stringBuilder = new StringBuilder();
-            Reader reader = new InputStreamReader( inputStream, "UTF-8" );
-            int nRead;
-            do {
-                nRead = reader.read( buf, 0, buf.length );
-                if ( nRead > 0 ) {
-                    stringBuilder.append( buf, 0, nRead );
-                }
-            } while ( nRead >= 0 );
-   
-            page = stringBuilder.toString();
-        }
-        catch ( IOException ioe ) {
-            DbgUtils.loge( ioe );
-        }
-        finally {
-            // could just catch NPE....
-            if ( null != inputStream ) {
-                try {
-                    inputStream.close();
-                } catch ( IOException ioe ) {
-                    DbgUtils.loge( ioe );
-                }
-            }
-        }
-  
+        final boolean showSurvey = !Utils.onFirstVersion( context );
+
         // This won't support e.g mailto refs.  Probably want to
         // launch the browser with an intent eventually.
-        WebView view = new WebView( context );
+        final WebView view = new WebView( context );
         view.setWebViewClient( new WebViewClient() {
+                private boolean m_loaded = false;
                 @Override
                 public boolean shouldOverrideUrlLoading( WebView view, 
                                                          String url ) {
@@ -85,15 +51,25 @@ public class FirstRunDialog {
                     }
                     return result;
                 }
+                // @Override
+                // public void onPageFinished(WebView view, String url)
+                // {
+                //     if ( !m_loaded ) {
+                //         m_loaded = true;
+                //         if ( showSurvey ) {
+                //             view.loadUrl( "javascript:showSurvey();" );
+                //         }
+                //     }
+                // }
             });
-
-        view.loadData( page, "text/html", "utf-8" );
+        view.getSettings().setJavaScriptEnabled( true ); // for surveymonkey
+        view.loadUrl("file:///android_asset/changes.html");
 
         AlertDialog dialog = LocUtils.makeAlertBuilder( context )
             .setIcon(android.R.drawable.ic_menu_info_details)
             .setTitle( R.string.changes_title )
             .setView( view )
-            .setPositiveButton( R.string.button_ok, null)
+            .setPositiveButton( android.R.string.ok, null)
             .create();
         dialog.show();
     }

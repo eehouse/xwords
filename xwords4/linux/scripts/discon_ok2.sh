@@ -6,7 +6,7 @@ APP_NEW=""
 DO_CLEAN=""
 APP_NEW_PARAMS=""
 NGAMES=""
-UDP_PCT_START=5
+UDP_PCT_START=100
 UDP_PCT_INCR=10
 UPGRADE_ODDS=""
 NROOMS=""
@@ -30,19 +30,20 @@ BOARD_SIZES_NEW=(15)
 NAMES=(UNUSED Brynn Ariela Kati Eric)
 SEND_CHAT=''
 CORE_COUNT=$(ls core.* 2>/dev/null | wc -l)
+DUP_PACKETS=''
 
 declare -A PIDS
 declare -A APPS
 declare -A NEW_ARGS
-declare -A ARGS
+declare -a ARGS
 declare -A ARGS_DEVID
 declare -A ROOMS
 declare -A FILES
 declare -A LOGS
 declare -A MINEND
 declare -A ROOM_PIDS
-declare -a APPS_OLD
-declare -a DICTS
+declare -a APPS_OLD=()
+declare -a DICTS=				# wants to be =() too?
 declare -A CHECKED_ROOMS
 
 function cleanup() {
@@ -67,7 +68,7 @@ function cleanup() {
 
 function connName() {
     LOG=$1
-    grep 'got_connect_cmd: connName' $LOG | \
+    grep -a 'got_connect_cmd: connName' $LOG | \
         tail -n 1 | \
         sed 's,^.*connName: \"\(.*\)\" (reconnect=.)$,\1,'
 }
@@ -202,7 +203,7 @@ build_cmds() {
             APPS[$COUNTER]="$APP_NEW"
             NEW_ARGS[$COUNTER]="$APP_NEW_PARAMS"
             BOARD_SIZE="--board-size ${BOARD_SIZES_NEW[$((RANDOM%${#BOARD_SIZES_NEW[*]}))]}"
-            if [ xx = "${APPS_OLD+xx}" ]; then
+            if [ 0 -lt ${#APPS_OLD[@]} ]; then
                 # 50% chance of starting out with old app
                 NAPPS=$((1+${#APPS_OLD[*]}))
                 if [ 0 -lt $((RANDOM%$NAPPS)) ]; then
@@ -215,7 +216,7 @@ build_cmds() {
             PARAMS="$(player_params $NLOCALS $NPLAYERS $DEV)"
             PARAMS="$PARAMS $BOARD_SIZE --room $ROOM --trade-pct 20 --sort-tiles "
             [ $UNDO_PCT -gt 0 ] && PARAMS="$PARAMS --undo-pct $UNDO_PCT "
-            PARAMS="$PARAMS --game-dict $DICT --port $PORT --host $HOST "
+            PARAMS="$PARAMS --game-dict $DICT --relay-port $PORT --host $HOST "
             PARAMS="$PARAMS --slow-robot 1:3 --skip-confirm"
             PARAMS="$PARAMS --db $FILE"
             PARAMS="$PARAMS --drop-nth-packet $DROP_N $PLAT_PARMS"
@@ -223,9 +224,19 @@ build_cmds() {
             if [ -n "$SEND_CHAT" ]; then
                    PARAMS="$PARAMS --send-chat $SEND_CHAT"
             fi
+			if [ -n "$DUP_PACKETS" ]; then
+                   PARAMS="$PARAMS --dup-packets"
+			fi
+			# PARAMS="$PARAMS --my-port 1024"
             # PARAMS="$PARAMS --savefail-pct 10"
             [ -n "$SEED" ] && PARAMS="$PARAMS --seed $RANDOM"
             PARAMS="$PARAMS $PUBLIC"
+            if [ $DEV -gt 1 ]; then
+                PARAMS="$PARAMS --force-channel $((DEV - 1))"
+            else
+                PARAMS="$PARAMS --server"
+            fi
+
             ARGS[$COUNTER]=$PARAMS
             ROOMS[$COUNTER]=$ROOM
             FILES[$COUNTER]=$FILE
@@ -276,6 +287,10 @@ launch() {
     KEY=$1
     LOG=${LOGS[$KEY]}
     APP="${APPS[$KEY]}"
+	if [ -z "$APP" ]; then
+		echo "error: no app set"
+		exit 1
+	fi
     PARAMS="${NEW_ARGS[$KEY]} ${ARGS[$KEY]} ${ARGS_DEVID[$KEY]}"
     exec $APP $PARAMS >/dev/null 2>>$LOG
 }
@@ -315,6 +330,9 @@ close_device() {
     unset ROOMS[$ID]
     unset APPS[$ID]
     unset ARGS_DEVID[$ID]
+
+    COUNT=${#ARGS[*]}
+    echo "$COUNT devices left playing..."
 }
 
 OBITS=""
@@ -338,7 +356,7 @@ maybe_resign() {
     if [ "$RESIGN_RATIO" -gt 0 ]; then
         KEY=$1
         LOG=${LOGS[$KEY]}
-        if grep -q XWRELAY_ALLHERE $LOG; then
+        if grep -aq XWRELAY_ALLHERE $LOG; then
             if [ 0 -eq $(($RANDOM % $RESIGN_RATIO)) ]; then
                 echo "making $LOG $(connName $LOG) resign..."
                 kill_from_log $LOG && close_device $KEY $DEADDIR "resignation forced" || /bin/true
@@ -349,8 +367,8 @@ maybe_resign() {
 
 try_upgrade() {
     KEY=$1
-    if [ xx = "${APPS_OLD+xx}" ]; then
-        if [ $APP_NEW != ${APPS[$KEY]} ]; then
+    if [ 0 -lt ${#APPS_OLD[@]} ]; then
+        if [ $APP_NEW != "${APPS[$KEY]}" ]; then
             # one in five chance of upgrading
             if [ 0 -eq $((RANDOM % UPGRADE_ODDS)) ]; then
                 APPS[$KEY]=$APP_NEW
@@ -367,6 +385,7 @@ try_upgrade_upd() {
     if [ "${CMD/--use-udp/}" = "${CMD}" ]; then
         if [ $((RANDOM % 100)) -lt $UDP_PCT_INCR ]; then
             ARGS[$KEY]="$CMD --use-udp"
+            echo -n "$(date +%r): "
             echo "upgrading key $KEY to use UDP"
         fi
     fi
@@ -378,14 +397,13 @@ check_game() {
     CONNNAME="$(connName $LOG)"
     OTHERS=""
     if [ -n "$CONNNAME" ]; then
-        if grep -q '\[unused tiles\]' $LOG; then
-            ALL_DONE=TRUE
+        if grep -aq '\[unused tiles\]' $LOG ; then
             for INDX in ${!LOGS[*]}; do
                 [ $INDX -eq $KEY ] && continue
                 ALOG=${LOGS[$INDX]}
                 CONNNAME2="$(connName $ALOG)"
                 if [ "$CONNNAME2" = "$CONNNAME" ]; then
-                    if ! grep -q '\[unused tiles\]' $ALOG; then
+                    if ! grep -aq '\[unused tiles\]' $ALOG; then
                         OTHERS=""
                         break
                     fi
@@ -399,17 +417,17 @@ check_game() {
         echo -n "Closing $CONNNAME [$(date)]: "
         # kill_from_logs $OTHERS $KEY
         for ID in $OTHERS $KEY; do
-            echo -n "${LOGS[$ID]}, "
+            echo -n "${ID}:${LOGS[$ID]}, "
             kill_from_log ${LOGS[$ID]} || /bin/true
             close_device $ID $DONEDIR "game over"
         done
         echo ""
         # XWRELAY_ERROR_DELETED may be old
-    elif grep -q 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
+    elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DELETED)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
         kill_from_log $LOG || /bin/true
         close_device $KEY $DEADDIR "other resigned"
-    elif grep -q 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
+    elif grep -aq 'relay_error_curses(XWRELAY_ERROR_DEADGAME)' $LOG; then
         echo "deleting $LOG $(connName $LOG) b/c another resigned"
         kill_from_log $LOG || /bin/true
         close_device $KEY $DEADDIR "other resigned"
@@ -449,20 +467,45 @@ update_ldevid() {
     fi
 }
 
+summarizeTileCounts() {
+	local STR=''
+    local KEYS=( ${!ARGS[*]} )
+	for KEY in ${KEYS[@]}; do
+		local LOG=${LOGS[$KEY]}
+
+		local LINE=$(grep -a pool_removeTiles $LOG | tail -n 1)
+		if [ -n "$LINE" ]; then
+			local NUM=$(echo $LINE | sed 's,^.*removeTiles: \(.*\) tiles.*$,\1,')
+			STR="${STR} ${KEY}:${NUM}"
+		fi
+	done
+
+	if [ -n "${STR}" ]; then 
+		echo "** $(date +%r) tiles left: $STR"
+	fi
+}
+
 run_cmds() {
     ENDTIME=$(($(date +%s) + TIMEOUT))
+	LOOPCOUNT=0
     while :; do
         COUNT=${#ARGS[*]}
         [ 0 -ge $COUNT ] && break
         NOW=$(date '+%s')
         [ $NOW -ge $ENDTIME ] && break
-        if [ $CORE_COUNT -ne "$(ls core.* 2>/dev/null | wc -l)" ]; then
+        if [ $CORE_COUNT -lt "$(ls core.* 2>/dev/null | wc -l)" ]; then
             echo "number of core files changed; exiting..."
             killall "$(basename $APP_NEW)"
             break
         fi
+
+		LOOPCOUNT=$((1 + LOOPCOUNT))
+		if [ 0 -eq $((LOOPCOUNT % 20)) ]; then
+			summarizeTileCounts
+		fi
+
         INDX=$(($RANDOM%COUNT))
-        KEYS=( ${!ARGS[*]} )
+        local KEYS=( ${!ARGS[*]} )
         KEY=${KEYS[$INDX]}
         ROOM=${ROOMS[$KEY]}
         if [ 0 -eq ${PIDS[$KEY]} ]; then
@@ -499,7 +542,7 @@ run_cmds() {
     # kill any remaining games
     if [ $COUNT -gt 0 ]; then
         mkdir -p ${LOGDIR}/not_done
-        echo "processing unfinished games...."
+        echo "$(date): processing unfinished games...."
         for KEY in ${!ARGS[*]}; do
             close_device $KEY ${LOGDIR}/not_done "unfinished game"
         done
@@ -551,25 +594,26 @@ function getArg() {
 function usage() {
     [ $# -gt 0 ] && echo "Error: $1" >&2
     echo "Usage: $(basename $0)                                       \\" >&2
-    echo "    [--udp-start <pct>]                                     \\" >&2
-    echo "    [--udp-incr <pct>]                                      \\" >&2
+    echo "    [--dup-packets]          # send all packets twice       \\" >&2
     echo "    [--clean-start]                                         \\" >&2
     echo "    [--game-dict <path/to/dict>]*                           \\" >&2
-    echo "    [--old-app <path/to/app]*                               \\" >&2
+    echo "    [--help]                                                \\" >&2
+    echo "    [--host <hostname>]                                     \\" >&2
+    echo "    [--max-devs <int>]                                      \\" >&2
+    echo "    [--min-devs <int>]                                      \\" >&2
     echo "    [--new-app <path/to/app]                                \\" >&2
     echo "    [--new-app-args [arg*]]  # passed only to new app       \\" >&2
-    echo "    [--min-devs <int>]                                      \\" >&2
-    echo "    [--max-devs <int>]                                      \\" >&2
-    echo "    [--one-per]              # force one player per device  \\" >&2
     echo "    [--num-games <int>]                                     \\" >&2
     echo "    [--num-rooms <int>]                                     \\" >&2
-    echo "    [--host <hostname>]                                     \\" >&2
+    echo "    [--old-app <path/to/app]*                               \\" >&2
+    echo "    [--one-per]              # force one player per device  \\" >&2
     echo "    [--port <int>]                                          \\" >&2
-    echo "    [--seed <int>]                                          \\" >&2
-    echo "    [--undo-pct <int>]                                      \\" >&2
-    echo "    [--send-chat <interval-in-seconds>                      \\" >&2
     echo "    [--resign-ratio <0 <= n <=1000 >                        \\" >&2
-    echo "    [--help]                                                \\" >&2
+    echo "    [--seed <int>]                                          \\" >&2
+    echo "    [--send-chat <interval-in-seconds>                      \\" >&2
+    echo "    [--udp-incr <pct>]                                      \\" >&2
+    echo "    [--udp-start <pct>]      # default: $UDP_PCT_START                 \\" >&2
+    echo "    [--undo-pct <int>]                                      \\" >&2
 
     exit 1
 }
@@ -602,6 +646,9 @@ while [ "$#" -gt 0 ]; do
         --old-app)
             APPS_OLD[${#APPS_OLD[@]}]=$(getArg $*)
             shift
+            ;;
+        --dup-packets)
+            DUP_PACKETS=1
             ;;
         --new-app)
             APP_NEW=$(getArg $*)
@@ -662,7 +709,7 @@ done
 
 # Assign defaults
 #[ 0 -eq ${#DICTS[@]} ] && DICTS=(dict.xwd)
-[ xx = "${DICTS+xx}" ] || DICTS=(dict.xwd)
+[ 0 -eq ${#DICTS} ] && DICTS=(dict.xwd)
 [ -z "$APP_NEW" ] && APP_NEW=./obj_linux_memdbg/xwords
 [ -z "$MINDEVS" ] && MINDEVS=2
 [ -z "$MAXDEVS" ] && MAXDEVS=4

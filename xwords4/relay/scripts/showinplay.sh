@@ -43,7 +43,7 @@ echo "Row count:" $(psql -t xwgames -c "select count(*) FROM games $QUERY;")
 
 # Games
 echo "SELECT dead as d,connname,cid,room,lang as lg,clntVers as cv ,ntotal as t,nperdevice as nPerDev,nsents as snts, seeds,devids,tokens,ack, mtimes "\
-     "FROM games $QUERY ORDER BY NOT dead, connname LIMIT $LIMIT;" \
+     "FROM games $QUERY ORDER BY NOT dead, ctime DESC LIMIT $LIMIT;" \
     | psql xwgames
 
 # Messages

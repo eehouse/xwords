@@ -98,7 +98,7 @@ class UdpQueue {
     bool handle( const AddrInfo* addr, QueueCallback cb );
     void handle( const AddrInfo* addr, const uint8_t* buf, int len,
                  QueueCallback cb );
-    void newSocket( int socket );
+    void newSocket( int sock );
     void newSocket( const AddrInfo* addr );
 
  private:

@@ -51,6 +51,7 @@ typedef struct CurGameInfo {
     XP_LangCode dictLang;
     XP_U8 nPlayers;
     XP_U8 boardSize;
+    XP_U8 forceChannel;
     DeviceRole serverRole;
 
     XP_Bool hintsNotAllowed;

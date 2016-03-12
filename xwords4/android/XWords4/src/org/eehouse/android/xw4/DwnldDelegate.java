@@ -21,12 +21,12 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,8 +46,8 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-
 import junit.framework.Assert;
 
 public class DwnldDelegate extends ListDelegateBase {
@@ -64,7 +64,11 @@ public class DwnldDelegate extends ListDelegateBase {
         void downloadFinished( String lang, String name, boolean success );
     }
 
-    public DwnldDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    public interface OnGotLcDictListener {
+        void gotDictInfo( boolean success, String lc, String name );
+    }
+
+    public DwnldDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.import_dict );
         m_activity = delegator.getActivity();
@@ -72,16 +76,18 @@ public class DwnldDelegate extends ListDelegateBase {
 
     // Track callbacks for downloads.
     private static class ListenerData {
-        public ListenerData( String name, DownloadFinishedListener lstnr )
+        public ListenerData( Uri uri, String name, DownloadFinishedListener lstnr )
         {
+            m_uri = uri;
             m_name = name;
             m_lstnr = lstnr;
         }
+        public Uri m_uri;
         public String m_name;
         public DownloadFinishedListener m_lstnr;
     }
-    private static Map<String,ListenerData> s_listeners =
-        new HashMap<String,ListenerData>();
+    private static Map<Uri,ListenerData> s_listeners =
+        new HashMap<Uri,ListenerData>();
 
     private class DownloadFilesTask extends AsyncTask<Void, Void, Void> 
         implements DictUtils.DownProgListener {
@@ -240,7 +246,7 @@ public class DwnldDelegate extends ListDelegateBase {
     {
         m_dfts = new ArrayList<DownloadFilesTask>();
         DownloadFilesTask dft = null;
-        String[] urls = null;
+        Uri[] uris = null;
         LinearLayout item = null;
 
         requestWindowFeature( Window.FEATURE_LEFT_ICON );
@@ -253,16 +259,19 @@ public class DwnldDelegate extends ListDelegateBase {
             String appUrl = intent.getStringExtra( APK_EXTRA );
             boolean isApp = null != appUrl;
             if ( isApp ) {
-                urls = new String[] { appUrl };
+                uris = new Uri[] { Uri.parse( appUrl ) };
             } else {
-                urls = intent.getStringArrayExtra( DICTS_EXTRA );
+                Parcelable[] parcels = intent.getParcelableArrayExtra( DICTS_EXTRA );
+                uris = new Uri[parcels.length];
+                for ( int ii = 0; ii < parcels.length; ++ii ) {
+                    uris[ii] = (Uri)(parcels[ii]);
+                }
             }
-            if ( null != urls ) {
+            if ( null != uris ) {
                 m_views = new ArrayList<LinearLayout>();
-                for ( int ii = 0; ii < urls.length; ++ii ) {
+                for ( int ii = 0; ii < uris.length; ++ii ) {
                     item = (LinearLayout)inflate( R.layout.import_dict_item );
-                    m_dfts.add( new DownloadFilesTask( Uri.parse( urls[ii] ), item,
-                                                       isApp ) );
+                    m_dfts.add( new DownloadFilesTask( uris[ii], item, isApp ));
                     m_views.add( item );
                 }
             }
@@ -271,6 +280,7 @@ public class DwnldDelegate extends ListDelegateBase {
                     || uri.toString().endsWith( XWConstants.DICT_EXTN ) ) {
             item = (LinearLayout)inflate( R.layout.import_dict_item );
             dft = new DownloadFilesTask( uri, item, false );
+            uris = new Uri[] { uri };
         }
 
         if ( null != dft ) {
@@ -284,11 +294,11 @@ public class DwnldDelegate extends ListDelegateBase {
         if ( 0 == m_dfts.size() ) {
             finish();
         } else {
-            Assert.assertTrue( m_dfts.size() == urls.length );
+            Assert.assertTrue( m_dfts.size() == uris.length );
             mkListAdapter();
 
-            for ( int ii = 0; ii < urls.length; ++ii ) {
-                String showName = basename( Uri.parse( urls[ii] ).getPath() );
+            for ( int ii = 0; ii < uris.length; ++ii ) {
+                String showName = basename( uris[ii].getPath() );
                 showName = DictUtils.removeDictExtn( showName );
                 String msg = 
                     getString( R.string.downloading_dict_fmt, showName );
@@ -332,45 +342,35 @@ public class DwnldDelegate extends ListDelegateBase {
         return new File(path).getName();
     }
 
-    private static String langFromUrl( String url )
+    private static String langFromUri( Uri uri )
     {
-        String[] parts = TextUtils.split( url, "/" );
-        String result = parts[parts.length - 2];
-        // DbgUtils.logf( "langFromUrl(%s) => %s", url, result );
+        List<String> segs = uri.getPathSegments();
+        String result = segs.get( segs.size() - 2 );
         return result;
     }
 
-    private static void rememberListener( String url, String name, 
+    private static void rememberListener( Uri uri, String name, 
                                           DownloadFinishedListener lstnr )
     {
-        ListenerData ld = new ListenerData( name, lstnr );
+        ListenerData ld = new ListenerData( uri, name, lstnr );
         synchronized( s_listeners ) {
-            s_listeners.put( url, ld );
-        }
-    }
-
-    private static void rememberListener( String url, DownloadFinishedListener lstnr )
-    {
-        ListenerData ld = new ListenerData( url, lstnr );
-        synchronized( s_listeners ) {
-            s_listeners.put( url, ld );
+            s_listeners.put( uri, ld );
         }
     }
 
     private static void callListener( Uri uri, boolean success ) 
     {
         if ( null != uri ) {
-            String url = uri.toString();
             ListenerData ld;
             synchronized( s_listeners ) {
-                ld = s_listeners.get( url );
+                ld = s_listeners.get( uri );
                 if ( null != ld ) {
-                    s_listeners.remove( url );
+                    s_listeners.remove( uri );
                 }
             }
             if ( null != ld ) {
                 String name = ld.m_name;
-                String lang = langFromUrl( url );
+                String lang = langFromUri( uri );
                 if ( null == name ) {
                     name = uri.toString();
                 }
@@ -383,39 +383,40 @@ public class DwnldDelegate extends ListDelegateBase {
                                            String name, 
                                            DownloadFinishedListener lstnr )
     {
-        String url = Utils.makeDictUrl( context, langName, name );
-        // DbgUtils.logf( "downloadDictInBack(lang=%s): url=%s", langName, url );
-        downloadDictInBack( context, url, lstnr );
+        Uri uri = Utils.makeDictUri( context, langName, name );
+        downloadDictInBack( context, uri, name, lstnr );
     }
 
     public static void downloadDictInBack( Context context, int lang, 
                                            String name, 
                                            DownloadFinishedListener lstnr )
     {
-        String url = Utils.makeDictUrl( context, lang, name );
-        // DbgUtils.logf( "downloadDictInBack(lang=%d): url=%s", lang, url );
-        downloadDictInBack( context, url, lstnr );
+        Uri uri = Utils.makeDictUri( context, lang, name );
+        downloadDictInBack( context, uri, name, lstnr );
     }
 
-    public static void downloadDictsInBack( Context context, String[] urls,
+    public static void downloadDictInBack( Context context, Uri uri,
+                                           String name, 
                                            DownloadFinishedListener lstnr )
     {
+        Uri[] uris = new Uri[] { uri };
+        String[] names = new String[] { name };
+        downloadDictsInBack( context, uris, names, lstnr );
+    }
+
+    public static void downloadDictsInBack( Context context, Uri[] uris,
+                                            String[] names, 
+                                            DownloadFinishedListener lstnr )
+    {
         if ( null != lstnr ) {
-            for ( String url : urls ) {
-                rememberListener( url, lstnr );
+            for ( int ii = 0; ii < uris.length; ++ii ) {
+                rememberListener( uris[ii], names[ii], lstnr );
             }
         }
 
         Intent intent = new Intent( context, DwnldActivity.class );
-        intent.putExtra( DICTS_EXTRA, urls );
+        intent.putExtra( DICTS_EXTRA, uris ); // uris implement Parcelable
         context.startActivity( intent );
-    }
-
-    public static void downloadDictInBack( Context context, String url,
-                                           DownloadFinishedListener lstnr )
-    {
-        String[] urls = new String[] { url };
-        downloadDictsInBack( context, urls, lstnr );
     }
 
     public static Intent makeAppDownloadIntent( Context context, String url )

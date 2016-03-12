@@ -3,27 +3,51 @@
 set -e -u
 
 MANIFEST=AndroidManifest.xml
+XWORDS=org.eehouse.android.xw4
+INSTALL=''
+UNINSTALL=''
+CMDS=''
 
 usage() {
     [ $# -ge 1 ] && echo "ERROR: $1"
     echo "usage: $0 <cmds to ant>"
-	echo "   default commands: $CMDS"
     exit 1
 }
 
-CMDS="clean debug install"
-if [ $# -gt 0 ]; then
+uninstall() {
+	adb devices | while read DEV TYPE; do
+		case "$TYPE" in
+			device)
+				adb -s $DEV uninstall $XWORDS
+				;;
+			emulator)
+				adb -s $DEV uninstall $XWORDS
+				;;
+		esac
+	done
+}
+
+while [ $# -gt 0 ]; do
     case $1 in
-	--help|-h|-help|-?)
-	    usage
-	    ;;
-	*)
-	    CMDS="$*"
-	    break;
-	    ;;
+		--help|-h|-help|-?)
+			usage
+			;;
+		clean|debug|release)
+			CMDS="$CMDS $1"
+			;;
+		install)
+			INSTALL=1
+			;;
+		reinstall)
+			UNINSTALL=1
+			INSTALL=1
+			;;
+		*)
+			usage "Unexpected param $1"
+			;;
     esac
     shift
-fi
+done
 
 while [ ! -e $MANIFEST -o $(basename $(pwd)) = 'bin' ]; do
     [ '/' = $(pwd) ] && usage "reached root without finding $MANIFEST"
@@ -42,12 +66,27 @@ case $DIRNAME in
         PKG=xw4
         ;;
     *)
-        usage "running in unexpected directory $DIRNAME"
+        echo "running in unexpected directory $DIRNAME; hope that's ok"
         ;;
 esac
 
+# if we're running for the first time in this directory/variant,
+# generate local.properties
+[ -e local.properties ] || ../scripts/setup_local_props.sh
+
+# If this fails, the "set -e" above means we won't try to install anything
 ant $CMDS
 
-if [ "$CMDS" != "${CMDS%%install}" ]; then
-	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.Main
+if [ -n "$UNINSTALL" ]; then
+	uninstall
 fi
+
+if [ -n "$INSTALL" ]; then
+	# Find the newest apk in this directory and install it
+	APK=$(ls -t bin/*.apk | head -n 1)
+	adb-install.sh -p $APK
+fi
+
+# if [ "$CMDS" != "${CMDS%%install}" ]; then
+# 	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
+# fi

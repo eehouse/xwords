@@ -21,7 +21,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -34,18 +33,26 @@ import android.provider.ContactsContract;
 import android.text.method.DialerKeyListener;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.Spinner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+
+import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DBUtils.SentInvitesInfo;
 
 public class SMSInviteDelegate extends InviteDelegate {
 
-    private static final int GET_CONTACT = 1;
     private static final String SAVE_NAME = "SAVE_NAME";
     private static final String SAVE_NUMBER = "SAVE_NUMBER";
 
@@ -57,15 +64,20 @@ public class SMSInviteDelegate extends InviteDelegate {
     private boolean m_immobileConfirmed;
     private Activity m_activity;
 
-    public static void launchForResult( Activity activity, int nMissing, 
-                                        int requestCode )
+    public static void launchForResult( Activity activity, int nMissing,
+                                        SentInvitesInfo info,
+                                        RequestCode requestCode )
     {
         Intent intent = new Intent( activity, SMSInviteActivity.class );
         intent.putExtra( INTENT_KEY_NMISSING, nMissing );
-        activity.startActivityForResult( intent, requestCode );
+        if ( null != info ) {
+            String lastDev = info.getLastDev( InviteMeans.SMS );
+            intent.putExtra( INTENT_KEY_LASTDEV, lastDev );
+        }
+        activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
-    public SMSInviteDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    public SMSInviteDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.smsinviter );
         m_activity = delegator.getActivity();
@@ -73,9 +85,15 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     protected void init( Bundle savedInstanceState )
     {
-        super.init( R.id.button_invite, R.id.button_add, 
-                    R.id.button_clear, R.id.invite_desc,
-                    R.string.invite_sms_desc_fmt );
+        // super.init( R.id.button_invite, R.id.button_add, 
+        //             R.id.button_clear, R.id.invite_desc,
+        //             R.string.invite_sms_desc_fmt );
+        String msg = getString( R.string.button_invite );
+        msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing, 
+                                 m_nMissing, msg );
+        super.init( R.id.button_invite, R.id.button_add, R.id.button_clear, 
+                    R.id.invite_desc, msg );
+
         getBundledData( savedInstanceState );
 
         m_addButton = (ImageButton)findViewById( R.id.manual_add_button );
@@ -104,7 +122,8 @@ public class SMSInviteDelegate extends InviteDelegate {
         }
     }
     
-    protected void onActivityResult( int requestCode, int resultCode, 
+    @Override
+    protected void onActivityResult( RequestCode requestCode, int resultCode, 
                                      Intent data )
     {
         // super.onActivityResult( requestCode, resultCode, data );
@@ -141,8 +160,8 @@ public class SMSInviteDelegate extends InviteDelegate {
                         }
                     };
                 dialog = makeAlertBuilder()
-                    .setNegativeButton( R.string.button_cancel, null )
-                    .setPositiveButton( R.string.button_ok, lstnr )
+                    .setNegativeButton( android.R.string.cancel, null )
+                    .setPositiveButton( android.R.string.ok, lstnr )
                     .setView( namerView )
                     .create();
                 break;
@@ -157,35 +176,56 @@ public class SMSInviteDelegate extends InviteDelegate {
         Intent intent = new Intent( Intent.ACTION_PICK, 
                                     ContactsContract.Contacts.CONTENT_URI );
         intent.setType( Phone.CONTENT_TYPE );
-        startActivityForResult( intent, GET_CONTACT );
+        startActivityForResult( intent, RequestCode.GET_CONTACT );
     }
 
     protected void clearSelected()
     {
-        showConfirmThen( R.string.confirm_clear, Action.CLEAR_ACTION );
+        int count = countChecks();
+        String msg = getQuantityString( R.plurals.confirm_clear_sms_fmt, 
+                                        count, count );
+        showConfirmThen( msg, Action.CLEAR_ACTION );
     }
 
-    protected String[] listSelected()
+    protected void listSelected( String[][] devsP, int[][] countsP )
     {
         int count = m_adapter.getCount();
         String[] result = new String[countChecks()];
+        int[] counts = new int[result.length];
+
         int index = 0;
         Iterator<PhoneRec> iter = m_phoneRecs.iterator();
         for ( int ii = 0; iter.hasNext(); ++ii ) {
-            if ( iter.next().m_checked ) {
-                result[index++] = 
-                    ((SMSListItem)m_adapter.getItem(ii)).getNumber();
+            PhoneRec rec = iter.next();
+            if ( rec.m_isChecked ) {
+                counts[index] = rec.m_nPlayers;
+                result[index] = ((SMSListItem)m_adapter.getItem(ii)).getNumber();
+                index++;
             }
         }
-        return result;
+        devsP[0] = result;
+        if ( null != countsP ) {
+            countsP[0] = counts;
+        }
     }
 
     @Override
     protected void tryEnable() 
     {
-        int count = countChecks();
-        m_okButton.setEnabled( count == m_nMissing );
-        m_clearButton.setEnabled( 0 < count );
+        if ( null != m_phoneRecs ) {
+            int nPlayers = 0;
+            int nDevs = 0;
+            Iterator<PhoneRec> iter = m_phoneRecs.iterator();
+            while ( iter.hasNext() ) {
+                PhoneRec rec = iter.next();
+                if ( rec.m_isChecked ) {
+                    ++nDevs;
+                    nPlayers += rec.m_nPlayers;
+                }
+            }
+            m_okButton.setEnabled( 0 < nPlayers && nPlayers <= m_nMissing );
+            m_clearButton.setEnabled( 0 < nDevs );
+        }
     }
 
     // DlgDelegate.DlgClickNotify interface
@@ -223,7 +263,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         if ( null != m_phoneRecs ) {
             Iterator<PhoneRec> iter = m_phoneRecs.iterator();
             while ( iter.hasNext() ) {
-                if ( iter.next().m_checked ) {
+                if ( iter.next().m_isChecked ) {
                     ++count;
                 }
             }
@@ -284,7 +324,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         if ( checkIfAll && m_phoneRecs.size() <= m_nMissing ) {
             Iterator<PhoneRec> iter = m_phoneRecs.iterator();
             while ( iter.hasNext() ) {
-                iter.next().m_checked = true;
+                iter.next().m_isChecked = true;
             }
         }
         tryEnable();
@@ -296,7 +336,8 @@ public class SMSInviteDelegate extends InviteDelegate {
 
         m_phoneRecs = new ArrayList<PhoneRec>(phones.length);
         for ( String phone : phones ) {
-            PhoneRec rec = new PhoneRec( phone );
+            boolean matches = phone.equals( m_lastDev );
+            PhoneRec rec = new PhoneRec( null, phone, matches );
             m_phoneRecs.add( rec );
         }
     }
@@ -319,11 +360,11 @@ public class SMSInviteDelegate extends InviteDelegate {
         if ( m_nMissing <= countChecks() ) {
             Iterator<PhoneRec> iter = m_phoneRecs.iterator();
             while ( iter.hasNext() ) {
-                iter.next().m_checked = false;
+                iter.next().m_isChecked = false;
             }
         }
 
-        rec.m_checked = true;
+        rec.m_isChecked = true;
         m_phoneRecs.add( rec );
     }
 
@@ -331,7 +372,7 @@ public class SMSInviteDelegate extends InviteDelegate {
     {
         int count = m_adapter.getCount();
         for ( int ii = count - 1; ii >= 0; --ii ) {
-            if ( m_phoneRecs.get( ii ).m_checked ) {
+            if ( m_phoneRecs.get( ii ).m_isChecked ) {
                 m_phoneRecs.remove( ii );
             }
         }
@@ -341,7 +382,8 @@ public class SMSInviteDelegate extends InviteDelegate {
     private class PhoneRec {
         public String m_phone;
         public String m_name;
-        public boolean m_checked;
+        public boolean m_isChecked;
+        public int m_nPlayers;
         public PhoneRec( String name, String phone )
         {
             this( name, phone, false );
@@ -351,10 +393,11 @@ public class SMSInviteDelegate extends InviteDelegate {
             this( null, phone, false );
         }
 
-        public PhoneRec( String name, String phone, boolean checked )
+        private PhoneRec( String name, String phone, boolean checked )
         {
             m_phone = phone;
-            m_checked = checked;
+            m_isChecked = checked;
+            m_nPlayers = 1;
 
             if ( null == name ) {
                 name = Utils.phoneToContact( m_activity, phone, false );
@@ -376,7 +419,7 @@ public class SMSInviteDelegate extends InviteDelegate {
         }
 
         public Object getItem( final int position ) 
-        { 
+        {
             // For some reason I can't cache items to be returned.
             // Checking/unchecking breaks for some but not all items,
             // with some relation to whether they were scrolled into
@@ -385,33 +428,54 @@ public class SMSInviteDelegate extends InviteDelegate {
 
             SMSListItem item = 
                 (SMSListItem)inflate( R.layout.smsinviter_item );
-            item.setChecked( m_phoneRecs.get(position).m_checked );
+            item.setChecked( m_phoneRecs.get(position).m_isChecked );
 
             CompoundButton.OnCheckedChangeListener lstnr =
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton bv, 
                                                   boolean isChecked ) {
-                        m_phoneRecs.get(position).m_checked = isChecked;
+                        m_phoneRecs.get(position).m_isChecked = isChecked;
                         tryEnable();
                     }
                 };
             item.setOnCheckedChangeListener( lstnr );
-            PhoneRec rec = m_phoneRecs.get( position );
+            final PhoneRec rec = m_phoneRecs.get( position );
             item.setContents( rec.m_name, rec.m_phone );
             m_items[position] = item;
+
+            // Set up spinner
+            Assert.assertTrue( 1 == rec.m_nPlayers );
+            if ( XWPrefs.getCanInviteMulti( m_activity ) && 1 < m_nMissing ) {
+                Spinner spinner = (Spinner)
+                    item.findViewById(R.id.nperdev_spinner);
+                ArrayAdapter<String> adapter = 
+                    new ArrayAdapter<String>( m_activity, android.R.layout
+                                              .simple_spinner_item );
+                for ( int ii = 1; ii <= m_nMissing; ++ii ) {
+                    String str = getQuantityString( R.plurals.nplayers_fmt, ii, ii );
+                    adapter.add( str );
+                }
+                spinner.setAdapter( adapter );
+                spinner.setVisibility( View.VISIBLE );
+                spinner.setOnItemSelectedListener( new OnItemSelectedListener() {
+                        public void onItemSelected( AdapterView<?> parent, 
+                                                    View view, int pos, 
+                                                    long id )
+                        {
+                            rec.m_nPlayers = 1 + pos;
+                            tryEnable();
+                        }
+
+                        public void onNothingSelected( AdapterView<?> parent ) {}
+                    } );
+            }
+
             return item;
         }
 
         public View getView( final int position, View convertView, 
                              ViewGroup parent ) {
             return (View)getItem( position );
-        }
-
-        public boolean isChecked( int index ) 
-        {
-            SMSListItem item = m_items[index];
-            boolean checked = null != item && item.isChecked();
-            return checked;
         }
     }
 }

@@ -33,16 +33,15 @@ import java.util.HashMap;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class DictsActivity extends XWListActivity {
+public class DictsActivity extends XWActivity {
 
     private static interface SafePopup {
-        public void doPopup( Context context, View button, String curDict );
+        public void doPopup( Context context, View button, 
+                             String curDict, int lang );
     }
     private static SafePopup s_safePopup = null;
     // I can't provide a subclass of MenuItem to hold DictAndLoc, so
     // settle for a hash on the side.
-    private static HashMap<MenuItem, DictAndLoc> s_itemData;
-
     private DictsDelegate m_dlgt;
 
     @Override
@@ -52,39 +51,27 @@ public class DictsActivity extends XWListActivity {
         super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
 
-    @Override
-    public void onBackPressed() {
-        if ( !m_dlgt.onBackPressed() ) {
-            super.onBackPressed();
-        }
-    }
-
     private static class SafePopupImpl implements SafePopup {
         public void doPopup( final Context context, View button, 
-                             String curDict ) {
+                             String curDict, int lang ) {
+
+            final HashMap<MenuItem, DictAndLoc> itemData
+                = new HashMap<MenuItem, DictAndLoc>();
 
             MenuItem.OnMenuItemClickListener listener = 
                 new MenuItem.OnMenuItemClickListener() {
                     public boolean onMenuItemClick( MenuItem item )
                     {
-                        DictAndLoc dal = s_itemData.get( item );
-                        s_itemData = null;
+                        DictAndLoc dal = itemData.get( item );
 
-                        if ( null == dal ) {
-                            DictsActivity.start( context );
-                        } else {
-                            DictBrowseDelegate.launch( context, dal.name, 
-                                                       dal.loc );
-                        }
+                        DictBrowseDelegate.launch( context, dal.name, 
+                                                   dal.loc );
                         return true;
                     }
                 };
 
-            s_itemData = new HashMap<MenuItem, DictAndLoc>();
             PopupMenu popup = new PopupMenu( context, button );
             Menu menu = popup.getMenu();
-            menu.add( R.string.show_wordlist_browser )
-                .setOnMenuItemClickListener( listener );
 
             // Add at top but save until have dal info
             MenuItem curItem =
@@ -92,30 +79,32 @@ public class DictsActivity extends XWListActivity {
                                               R.string.cur_menu_marker_fmt, 
                                               curDict ) );
 
-            DictAndLoc[] dals = DictUtils.dictList( context );
+            DictAndLoc[] dals = DictLangCache.getDALsHaveLang( context, lang );
             for ( DictAndLoc dal : dals ) {
                 MenuItem item = dal.name.equals(curDict)
                     ? curItem : menu.add( dal.name );
                 item.setOnMenuItemClickListener( listener );
-                s_itemData.put( item, dal );
+                itemData.put( item, dal );
             }
+
             popup.show();
         }
     }
 
     public static boolean handleDictsPopup( Context context, View button,
-                                            String curDict )
+                                            String curDict, int lang )
     {
-        if ( null == s_safePopup ) {
+        int nDicts = DictLangCache.getLangCount( context, lang );
+        if ( null == s_safePopup && 1 < nDicts ) {
             int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
             if ( 11 <= sdkVersion ) {
                 s_safePopup = new SafePopupImpl();
             }
         }
 
-        boolean canHandle = null != s_safePopup;
+        boolean canHandle = null != s_safePopup && 1 < nDicts;
         if ( canHandle ) {
-            s_safePopup.doPopup( context, button, curDict );
+            s_safePopup.doPopup( context, button, curDict, lang );
         }
         return canHandle;
     }

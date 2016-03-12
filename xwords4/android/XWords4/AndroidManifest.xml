@@ -22,14 +22,14 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4"
-          android:versionCode="80"
+          android:versionCode="99"
           android:versionName="@string/app_version"
           >
 
   <!-- BE SURE TO MODIFY project.project AND the variable TARGET in
        ../scripts/setup_local_props.sh if targetSdkVersion changes!!!
        -->
-  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="14" />
+  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="19" />
 
   <supports-screens android:resizeable="true"
                     android:smallScreens="true"
@@ -45,8 +45,10 @@
   <uses-permission android:name="android.permission.VIBRATE" />
   <uses-permission android:name="android.permission.RECEIVE_SMS" /> 
   <uses-permission android:name="android.permission.SEND_SMS" />
-  <uses-permission android:name="android.permission.READ_SMS" />
+  <uses-permission android:name="android.permission.BLUETOOTH" />
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
   <uses-permission android:name="android.permission.READ_CONTACTS" />
+  <uses-permission android:name="android.permission.READ_PHONE_STATE"/> 
 
   <uses-feature android:name="android.hardware.telephony"
                 android:required = "false"
@@ -96,19 +98,24 @@
               android:configChanges="keyboardHidden|orientation|screenSize"
           />
     
-    <activity android:name="NewGameActivity"
-              android:theme="@android:style/Theme.NoTitleBar"
+    <activity android:name="BTInviteActivity"
+			  android:label="@string/bt_invite_title"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
     <activity android:name="SMSInviteActivity"
-              android:theme="@android:style/Theme.Dialog"
+			  android:label="@string/sms_invite_title"
               android:configChanges="keyboardHidden|orientation|screenSize"
               android:screenOrientation="sensor"
+              />
+    <activity android:name="RelayInviteActivity"
+			  android:label="@string/relay_invite_title"
+              android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
     <activity android:name="GameConfigActivity"
               android:screenOrientation="sensor"
               android:configChanges="keyboardHidden|orientation|screenSize"
+              android:windowSoftInputMode="stateAlwaysHidden"
               >
       <intent-filter>
         <action android:name="android.intent.action.EDIT" />
@@ -123,18 +130,21 @@
 
     <activity android:name="BoardActivity"
               android:screenOrientation="portrait"
-              android:configChanges="keyboardHidden"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              android:windowSoftInputMode="stateAlwaysHidden|adjustPan"
               />
 
     <activity android:name="StudyListActivity"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
-    <receiver android:name="RelayReceiver">
+    <receiver android:name="OnBootReceiver">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
       </intent-filter>
     </receiver>
+    <receiver android:name="RelayReceiver"/>
+    <receiver android:name="NagTurnReceiver"/>
 
     <receiver android:name="UpdateCheckReceiver">
       <intent-filter>
@@ -188,9 +198,6 @@
       </intent-filter> 
     </activity>
 
-    <activity android:name="RelayGameActivity"
-              android:configChanges="keyboardHidden|orientation|screenSize"
-              />
     <activity android:name="DictBrowseActivity"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
@@ -217,15 +224,22 @@
         </intent-filter>
     </receiver>
 
-    <receiver android:name="SMSReceiver" >
-      <intent-filter android:priority="999" >
-        <action android:name="android.provider.Telephony.SMS_RECEIVED" />
+    <receiver android:name="BTReceiver">
+      <intent-filter>
+        <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
       </intent-filter>
+      <intent-filter>
+        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
+      </intent-filter>
+    </receiver>
 
+    <service android:name="BTService"/>
+
+    <receiver android:name="SMSReceiver" >
       <intent-filter>
         <action android:name="android.intent.action.DATA_SMS_RECEIVED" /> 
         <data android:scheme="sms" /> 
-        <data android:port="3344" /> 
+        <data android:port="@string/nbs_port" /> 
         <data android:host="*" /> 
       </intent-filter> 
 

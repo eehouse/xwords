@@ -84,13 +84,20 @@ removeTile( TrayTileSet* tiles, XP_U16 index )
 }
 
 void
-sortTiles( TrayTileSet* dest, const TrayTileSet* src )
+sortTiles( TrayTileSet* dest, const TrayTileSet* src, XP_U16 skip )
 {
+    XP_ASSERT( src->nTiles >= skip );
     TrayTileSet tmp = *src;
-    dest->nTiles = 0;
-    while ( 0 < tmp.nTiles ) {
+
+    /* Copy in the ones we're not sorting */
+    dest->nTiles = skip;
+    if ( 0 < skip ) {
+        XP_MEMCPY( &dest->tiles, &tmp.tiles, skip * sizeof(tmp.tiles[0]) );
+    }
+
+    while ( skip < tmp.nTiles ) {
         XP_U16 ii, smallest;
-        for ( smallest = ii = 0; ii < tmp.nTiles; ++ii ) {
+        for ( smallest = ii = skip; ii < tmp.nTiles; ++ii ) {
             if ( tmp.tiles[ii] < tmp.tiles[smallest] ) {
                 smallest = ii;
             }
@@ -220,6 +227,30 @@ p_replaceStringIfDifferent( MPFORMAL XP_UCHAR** curLoc, const XP_UCHAR* newStr
 
     *curLoc = curStr;
 } /* replaceStringIfDifferent */
+
+XP_U32
+augmentHash( XP_U32 hash, const XP_U8* ptr, XP_U16 len )
+{
+    // see http://en.wikipedia.org/wiki/Jenkins_hash_function
+    for ( XP_U16 ii = 0; ii < len; ++ii ) {
+        hash += *ptr++;
+        hash += (hash << 10);
+        hash ^= (hash >> 6);
+    }
+#ifdef DEBUG_HASHING
+    XP_LOGF( "%s: hashed %d bytes -> %X", __func__, len, (unsigned int)hash );
+#endif
+    return hash;
+}
+
+XP_U32
+finishHash( XP_U32 hash )
+{
+    hash += (hash << 3);
+    hash ^= (hash >> 11);
+    hash += (hash << 15);
+    return hash;
+}
 
 /* 
  * A wrapper for printing etc. potentially null strings.

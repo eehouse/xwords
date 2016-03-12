@@ -53,7 +53,7 @@ while [ $# -ge 1 ]; do
             FILE=$2
             shift
             if [ $FILE != ${FILE#/} ]; then          # starts with / ?
-                :                                    # leave it along
+                :                                    # leave it alone
             elif [ "$FILE" != "${FILE#\./}" ]; then  # starts with ./ ?
                 :                                    # leave it alone
             else

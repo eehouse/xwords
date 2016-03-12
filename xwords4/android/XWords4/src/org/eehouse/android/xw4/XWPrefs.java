@@ -25,10 +25,12 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import com.google.android.gcm.GCMRegistrar;
 import java.util.ArrayList;
 
 import junit.framework.Assert;
+
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 
 public class XWPrefs {
 
@@ -38,6 +40,11 @@ public class XWPrefs {
     public static boolean getSMSEnabled( Context context )
     {
         return getPrefsBoolean( context, R.string.key_enable_sms, false );
+    }
+
+    public static void setSMSEnabled( Context context, boolean enabled )
+    {
+        setPrefsBoolean( context, R.string.key_enable_sms, enabled );
     }
 
     public static boolean getDebugEnabled( Context context )
@@ -50,9 +57,41 @@ public class XWPrefs {
         return getPrefsBoolean( context, R.string.key_enable_dup_invite, false );
     }
 
+    public static boolean getNFCToSelfEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_nfc_toself, false );
+    }
+
+    public static boolean getRelayInviteToSelfEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_relay_toself, false );
+    }
+
+    public static boolean getSMSToSelfEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_sms_toself, false );
+    }
+
+    public static boolean getHideNewgameButtons( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_hide_newgames, 
+                                false );
+    }
+
+    public static boolean getPublicRoomsEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_pubroom, false );
+    }
+
+    public static void setHideNewgameButtons( Context context, boolean set )
+    {
+        setPrefsBoolean( context, R.string.key_hide_newgames, set );
+    }
+
     public static String getDefaultRelayHost( Context context )
     {
-        return getPrefsString( context, R.string.key_relay_host );
+        String host = getPrefsString( context, R.string.key_relay_host );
+        return NetUtils.forceHost( host );
     }
 
     public static int getDefaultRelayPort( Context context )
@@ -111,7 +150,7 @@ public class XWPrefs {
         return result;
     }
 
-    public static long getProxyInterval( Context context )
+    public static long getProxyIntervalSeconds( Context context )
     {
         String value = getPrefsString( context, R.string.key_connect_frequency );
         long result;
@@ -203,24 +242,25 @@ public class XWPrefs {
         return getPrefsStringArray( context, R.string.key_closed_langs );
     }
 
-    public static void setBTNames( Context context, String[] names )
-    {
-        setPrefsStringArray( context, R.string.key_bt_names, names );
-    }
-
     public static void setSMSPhones( Context context, String[] names )
     {
         setPrefsStringArray( context, R.string.key_sms_phones, names );
     }
 
-    public static String[] getBTNames( Context context )
-    {
-        return getPrefsStringArray( context, R.string.key_bt_names );
-    }
-
     public static String[] getSMSPhones( Context context )
     {
         return getPrefsStringArray( context, R.string.key_sms_phones );
+    }
+
+    // Used by RelayInviteDelegate.java
+    public static void setRelayIDs( Context context, String[] names )
+    {
+        setPrefsStringArray( context, R.string.key_relay_ids, names );
+    }
+
+    public static String[] getRelayIDs( Context context )
+    {
+        return getPrefsStringArray( context, R.string.key_relay_ids );
     }
 
     public static void setBTAddresses( Context context, String[] addrs )
@@ -242,61 +282,6 @@ public class XWPrefs {
             setPrefsString( context, R.string.key_dev_id, id );
         }
         return id;
-    }
-
-    public static void setGCMDevID( Context context, String devID )
-    {
-        int curVers = Utils.getAppVersion( context );
-        setPrefsInt( context, R.string.key_gcmvers_regid, curVers );
-        setPrefsBoolean( context, R.string.key_relay_regid_ackd, false );
-    }
-
-    public static String getGCMDevID( Context context )
-    {
-        int curVers = Utils.getAppVersion( context );
-        int storedVers = getPrefsInt( context, R.string.key_gcmvers_regid, 0 );
-        String result;
-        if ( 0 != storedVers && storedVers < curVers ) {
-            result = "";        // Don't trust what registrar has
-        } else {
-            result = GCMRegistrar.getRegistrationId( context );
-        }
-        return result;
-    }
-
-    public static void clearGCMDevID( Context context )
-    {
-        setPrefsBoolean( context, R.string.key_relay_regid_ackd, false );
-    }
-
-    public static String getRelayDevID( Context context )
-    {
-        String result = getPrefsString( context, R.string.key_relay_regid );
-        if ( null != result && 0 == result.length() ) {
-            result = null;
-        }
-        return result;
-    }
-
-    public static void setRelayDevID( Context context, String idRelay )
-    {
-        setPrefsString( context, R.string.key_relay_regid, idRelay );
-        setPrefsBoolean( context, R.string.key_relay_regid_ackd, true );
-    }
-
-    public static void clearRelayDevID( Context context )
-    {
-        clearPrefsKey( context, R.string.key_relay_regid );
-    }
-
-    public static boolean getHaveCheckedSMS( Context context )
-    {
-        return getPrefsBoolean( context, R.string.key_checked_sms, false );
-    }
-
-    public static void setHaveCheckedSMS( Context context, boolean newValue )
-    {
-        setPrefsBoolean( context, R.string.key_checked_sms, newValue );
     }
 
     public static DictUtils.DictLoc getDefaultLoc( Context context )
@@ -427,19 +412,6 @@ public class XWPrefs {
         return result;
     }
 
-    protected static ArrayList<String> getPrefsStringArrayList( Context context, 
-                                                                int keyID )
-    {
-        ArrayList<String> list = new ArrayList<String>();
-        String[] strs = getPrefsStringArray( context, keyID );
-        if ( null != strs ) {
-            for ( int ii = 0; ii < strs.length; ++ii ) {
-                list.add( strs[ii] );
-            }
-        }
-        return list;
-    }
-
     protected static void setPrefsStringArray( Context context, int keyID, 
                                                String[] value )
     {
@@ -466,10 +438,45 @@ public class XWPrefs {
         return getPrefsBoolean( context, key_checked_upgrades, false );
     }
 
+    public static boolean getCanInviteMulti( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_invite_multi, false );
+    }
+
     public static boolean getIsTablet( Context context )
     {
         return isTablet( context ) ||
             getPrefsBoolean( context, R.string.key_force_tablet, false );
+    }
+
+    public static CommsConnTypeSet getAddrTypes( Context context )
+    {
+        CommsConnTypeSet result;
+        int flags = getPrefsInt( context, R.string.key_addrs_pref, -1 );
+        if ( -1 == flags ) {
+            result = new CommsConnTypeSet();
+            result.add( CommsConnType.COMMS_CONN_RELAY );
+            if ( BTService.BTEnabled() ) {
+                result.add( CommsConnType.COMMS_CONN_BT );
+            }
+        } else {
+            result = new CommsConnTypeSet( flags );
+        }
+
+        // Save it if changed
+        int siz = result.size();
+        CommsConnTypeSet.removeUnsupported( context, result );
+        if ( result.size() != siz ) {
+            setAddrTypes( context, result );
+        }
+
+        return result;
+    }
+
+    public static void setAddrTypes( Context context, CommsConnTypeSet set )
+    {
+        int flags = set.toInt();
+        setPrefsInt( context, R.string.key_addrs_pref, flags );
     }
 
     private static Boolean s_isTablet = null;
@@ -479,7 +486,6 @@ public class XWPrefs {
             int screenLayout = 
                 context.getResources().getConfiguration().screenLayout;
             int size = screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
-            DbgUtils.showf( context, "screenSize: %d", size );
             s_isTablet = 
                 new Boolean(Configuration.SCREENLAYOUT_SIZE_LARGE <= size);
         }

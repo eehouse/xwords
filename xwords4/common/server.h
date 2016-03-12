@@ -67,7 +67,7 @@ void server_writeToStream( const ServerCtxt* server, XWStreamCtxt* stream );
 void server_reset( ServerCtxt* server, CommsCtxt* comms );
 void server_destroy( ServerCtxt* server );
 
-void server_prefsChanged( ServerCtxt* server, CommonPrefs* cp );
+void server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp );
 
 typedef void (*TurnChangeListener)( void* data );
 void server_setTurnChangeListener( ServerCtxt* server, TurnChangeListener tl,
@@ -102,6 +102,8 @@ XP_U32 server_getLastMoveTime( const ServerCtxt* server );
 /* Signed in case no dictionary available */
 XP_S16 server_countTilesInPool( ServerCtxt* server );
 
+XP_U16 server_getPendingRegs( const ServerCtxt* server );
+
 XP_Bool server_do( ServerCtxt* server );
 
 XP_Bool server_commitMove( ServerCtxt* server );
@@ -116,11 +118,12 @@ XP_Bool server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming );
 /* client-side messages.  Client (platform code)owns the stream used to talk
  * to the server, and passes it in. */
 #ifndef XWFEATURE_STANDALONE_ONLY
-void server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream );
+XP_Bool server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream );
 #endif
 
 #ifdef XWFEATURE_CHAT
-void server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg );
+void server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg, 
+                      XP_S16 from );
 #endif
 
 void server_formatDictCounts( ServerCtxt* server, XWStreamCtxt* stream,

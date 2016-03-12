@@ -25,6 +25,7 @@
 #include "comtypes.h"
 #include "memstream.h"
 #include "vtabmgr.h"
+#include "strutils.h"
 
 #ifdef CPLUS
 extern "C" {
@@ -184,10 +185,10 @@ mem_stream_getBits( XWStreamCtxt* p_sctx, XP_U16 nBits )
     return result;
 } /* stream_getBits */
 
-#if defined HASH_STREAM || defined DEBUG
+#if defined DEBUG
 static void
-mem_stream_copyBits( const XWStreamCtxt* p_sctx, XWStreamPos XP_UNUSED(startPos),
-                     XWStreamPos endPos, XP_U8* buf, XP_U16* lenp )
+mem_stream_copyBits( const XWStreamCtxt* p_sctx, XWStreamPos endPos,
+                     XP_U8* buf, XP_U16* lenp )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
     XP_U16 len = BYTE_PART(endPos);
@@ -195,7 +196,7 @@ mem_stream_copyBits( const XWStreamCtxt* p_sctx, XWStreamPos XP_UNUSED(startPos)
         XP_ASSERT( len <= stream->nBytesAllocated );
         XP_MEMCPY( buf, stream->buf, len );
         if ( 0 != BIT_PART(endPos) ) {
-            buf[len-1] &= 1 << BIT_PART(endPos);
+            buf[len-1] &= ~(0xFF << BIT_PART(endPos));
         }
     }
     *lenp = len;
@@ -371,6 +372,36 @@ mem_stream_getSize( const XWStreamCtxt* p_sctx )
     return size;
 } /* mem_stream_getSize */
 
+static XP_U32
+mem_stream_getHash( const XWStreamCtxt* p_sctx, XWStreamPos pos,
+                    XP_Bool correct )
+{
+    XP_U32 hash = 0;
+    const MemStreamCtxt* stream = (const MemStreamCtxt*)p_sctx;
+    const XP_U8* ptr = stream->buf; 
+    XP_U16 len = BYTE_PART(pos);
+    XP_U16 bits = BIT_PART(pos);
+    if ( 0 != bits ) {
+        XP_ASSERT( 0 < len );
+        --len;
+    }
+
+    hash = augmentHash( 0, ptr, len );
+    if ( 0 != bits ) {
+        XP_U8 byt = ptr[len];
+        if ( correct ) {
+            byt &= ~(0xFF << bits);
+        } else {
+            byt &= 1 << bits;
+        }
+        hash = augmentHash( hash, &byt, 1 );
+    }
+    hash = finishHash( hash );
+
+    LOG_RETURNF( "%X(%d:%d)", hash, len, bits );
+    return hash;
+} /* mem_stream_getHash */
+
 static const XP_U8*
 mem_stream_getPtr( const XWStreamCtxt* p_sctx )
 {
@@ -396,6 +427,8 @@ static void
 mem_stream_setVersion( XWStreamCtxt* p_sctx, XP_U16 vers )
 {
     MemStreamCtxt* stream = (MemStreamCtxt*)p_sctx;
+    /* Something's wrong if we're changing it -- I think */
+    XP_ASSERT( 0 == stream->version || vers == stream->version );
     stream->version = vers;
 } /* mem_stream_setVersion */
 
@@ -474,7 +507,7 @@ make_vtable( MemStreamCtxt* stream )
     SET_VTABLE_ENTRY( vtable, stream_getU16, mem );
     SET_VTABLE_ENTRY( vtable, stream_getU32, mem );
     SET_VTABLE_ENTRY( vtable, stream_getBits, mem );
-#if defined HASH_STREAM || defined DEBUG
+#if defined DEBUG
     SET_VTABLE_ENTRY( vtable, stream_copyBits, mem );
 #endif
 
@@ -495,6 +528,7 @@ make_vtable( MemStreamCtxt* stream )
     SET_VTABLE_ENTRY( vtable, stream_close, mem );
 
     SET_VTABLE_ENTRY( vtable, stream_getSize, mem );
+    SET_VTABLE_ENTRY( vtable, stream_getHash, mem );
     SET_VTABLE_ENTRY( vtable, stream_getPtr, mem );
     SET_VTABLE_ENTRY( vtable, stream_getAddress, mem );
     SET_VTABLE_ENTRY( vtable, stream_setAddress, mem );

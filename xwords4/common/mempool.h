@@ -31,8 +31,10 @@ extern "C" {
 
 typedef struct MemPoolCtx MemPoolCtx;
 
-MemPoolCtx* mpool_make(void);
+MemPoolCtx* mpool_make( const XP_UCHAR* tag );
 void mpool_destroy( MemPoolCtx* mpool );
+const XP_UCHAR* mpool_getTag( const MemPoolCtx* mpool );
+void mpool_setTag( MemPoolCtx* mpool, const XP_UCHAR* tag );
 
 void* mpool_alloc( MemPoolCtx* mpool, XP_U32 size, 
                    const char* file, const char* func, XP_U32 lineNo );
@@ -55,6 +57,6 @@ XP_U16 mpool_getNUsed( MemPoolCtx* mpool );
 #else
 
 # define mpool_destroy(p)
-
+# define mpool_setTag(t)
 #endif /* MEM_DEBUG */
 #endif /* _MEMPOOL_H_ */

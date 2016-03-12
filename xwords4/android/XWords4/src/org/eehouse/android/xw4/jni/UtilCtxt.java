@@ -20,6 +20,8 @@
 
 package org.eehouse.android.xw4.jni;
 
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+
 public interface UtilCtxt {
     static final int BONUS_NONE = 0;
     static final int BONUS_DOUBLE_LETTER = 1;
@@ -87,19 +89,18 @@ public interface UtilCtxt {
     static final int STR_PHONY_REJECTED =                13;
     static final int STRD_CUMULATIVE_SCORE =             14;
     static final int STRS_NEW_TILES =                    15;
-    static final int STR_PASSED =                        16;
-    static final int STRSD_SUMMARYSCORED =               17;
-    static final int STRD_TRADED =                       18;
-    static final int STR_LOSTTURN =                      19;
-    static final int STR_COMMIT_CONFIRM =                20;
-    static final int STR_BONUS_ALL =                     21;
-    static final int STRD_TURN_SCORE =                   22;
-    static final int STRD_REMAINS_HEADER =               23;
-    static final int STRD_REMAINS_EXPL =                 24;
-    static final int STR_RESIGNED =                      25;
-    static final int STR_WINNER =                        26;
+    static final int STR_COMMIT_CONFIRM =                16;
+    static final int STR_BONUS_ALL =                     17;
+    static final int STRD_TURN_SCORE =                   18;
+    static final int STRD_REMAINS_HEADER =               19;
+    static final int STRD_REMAINS_EXPL =                 20;
+    static final int STRSD_RESIGNED =                    21;
+    static final int STRSD_WINNER =                      22;
+    static final int STRDSD_PLACER  =                    23;
+
 
     String getUserString( int stringCode );
+    String getUserQuantityString( int stringCode, int quantity );
 
     static final int QUERY_COMMIT_TURN = 0;
     static final int QUERY_ROBOT_TRADE = 1;
@@ -124,7 +125,9 @@ public interface UtilCtxt {
     static final int ERR_NO_EMPTY_TRADE = 13;
     static final int ERR_CANT_UNDO_TILEASSIGN = 14;
     static final int ERR_CANT_HINT_WHILE_DISABLED = 15;
-    static final int ERR_RELAY_BASE = 16;
+    static final int ERR_NO_HINT_FOUND = 16;
+
+    static final int ERR_RELAY_BASE = 17;
     void userError( int id );
 
     void informMove( String expl, String words );
@@ -133,8 +136,8 @@ public interface UtilCtxt {
     void informNetDict( int lang, String oldName, String newName, 
                         String newSum, CurGameInfo.XWPhoniesChoice phonies );
 
-    void informMissing( boolean isServer, CommsAddrRec.CommsConnType connType,
-                        int nMissingPlayers );
+    void informMissing( boolean isServer, CommsConnTypeSet connTypes,
+                        int nDevs, int nMissingPlayers );
 
     void notifyGameOver();
     // Don't need this unless we have a scroll thumb to indicate position
@@ -143,7 +146,7 @@ public interface UtilCtxt {
     boolean warnIllegalWord( String dict, String[] words, int turn, 
                              boolean turnLost );
 
-    void showChat( String msg );
+    void showChat( String msg, int fromIndx, String fromName );
 
     boolean phoneNumbersSame( String num1, String num2 );
 }

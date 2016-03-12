@@ -27,10 +27,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
-import java.util.concurrent.LinkedBlockingQueue;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -39,12 +39,13 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 
 public class GameListItem extends LinearLayout 
     implements View.OnClickListener, SelectableItem.LongClickHandler {
@@ -58,7 +59,7 @@ public class GameListItem extends LinearLayout
     private View m_hideable;
     private ImageView m_thumb;
     private ExpiringTextView m_name;
-    private View m_viewUnloaded;
+    private TextView m_viewUnloaded;
     private View m_viewLoaded;
     private LinearLayout m_list;
     private TextView m_state;
@@ -101,6 +102,12 @@ public class GameListItem extends LinearLayout
             } );
     }
 
+    public GameSummary getSummary()
+    {
+        Assert.assertNotNull( m_summary );
+        return m_summary;
+    }
+
     private void init( Handler handler, long rowid, int fieldID, 
                        SelectableItem cb )
     {
@@ -121,6 +128,7 @@ public class GameListItem extends LinearLayout
         // AsyncTask, so let it complete, but drop the results as soon
         // as we're back on the UI thread.
         ++m_loadingCount;
+
         new LoadItemTask().execute();
     }
 
@@ -181,7 +189,7 @@ public class GameListItem extends LinearLayout
         m_name = (ExpiringTextView)findViewById( R.id.game_name );
         m_expandButton = (ImageButton)findViewById( R.id.expander );
         m_expandButton.setOnClickListener( this );
-        m_viewUnloaded = findViewById( R.id.view_unloaded );
+        m_viewUnloaded = (TextView)findViewById( R.id.view_unloaded );
         m_viewLoaded = findViewById( R.id.view_loaded );
         m_list = (LinearLayout)findViewById( R.id.player_list );
         m_state = (TextView)findViewById( R.id.state );
@@ -243,6 +251,7 @@ public class GameListItem extends LinearLayout
                 value = 
                     DictLangCache.getLangName( m_context, 
                                                m_summary.dictLang );
+                value = LocUtils.xlateLang( m_context, value, true );
                 break;
             case R.string.game_summary_field_opponents:
                 value = m_summary.playerNames();
@@ -301,17 +310,8 @@ public class GameListItem extends LinearLayout
                                                             DateFormat.SHORT );
             m_modTime.setText( df.format( new Date( lastMoveTime ) ) );
 
-            int iconID;
-            CommsConnType conType = summary.conType;
-            if ( CommsConnType.COMMS_CONN_RELAY == conType ) {
-                iconID = R.drawable.relaygame;
-            } else if ( CommsConnType.COMMS_CONN_BT == conType ) {
-                iconID = android.R.drawable.stat_sys_data_bluetooth;
-            } else if ( CommsConnType.COMMS_CONN_SMS == conType ) {
-                iconID = android.R.drawable.sym_action_chat;
-            } else {
-                iconID = R.drawable.sologame;
-            }
+            int iconID = summary.isMultiGame() ?
+                R.drawable.multigame__gen : R.drawable.sologame__gen;
             m_marker.setImageResource( iconID );
             m_marker.setOnClickListener( new View.OnClickListener() {
                     @Override
@@ -320,7 +320,7 @@ public class GameListItem extends LinearLayout
                     }
                 } );
 
-            String roleSummary = summary.summarizeRole();
+            String roleSummary = summary.summarizeRole( m_rowid );
             if ( null != roleSummary ) {
                 m_role.setText( roleSummary );
             } else {
@@ -365,6 +365,11 @@ public class GameListItem extends LinearLayout
 
                 setData( summary, expanded );
                 setLoaded( null != m_summary );
+                if ( null == summary ) {
+                    m_viewUnloaded
+                        .setText( LocUtils.getString( m_context, 
+                                                      R.string.summary_busy ) );
+                }
                 synchronized( s_invalRows ) {
                     s_invalRows.remove( m_rowid );
                 }

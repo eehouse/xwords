@@ -21,16 +21,12 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.preference.CheckBoxPreference;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.Spinner;
 
-import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.DlgDelegate.Action;
 
 public class SMSCheckBoxPreference extends CheckBoxPreference {
 
@@ -60,9 +56,16 @@ public class SMSCheckBoxPreference extends CheckBoxPreference {
     {
         if ( checked && m_attached && m_context instanceof PrefsActivity ) {
             PrefsActivity activity = (PrefsActivity)m_context;
-            activity.showDialog( DlgID.CONFIRM_SMS.ordinal() );
+            activity.showSMSEnableDialog( Action.ENABLE_SMS_DO );
         } else {
-            super_setChecked( checked );
+            super.setChecked( checked );
+        }
+    }
+
+    protected static void setChecked()
+    {
+        if ( null != s_this ) {
+            s_this.super_setChecked( true );
         }
     }
 
@@ -70,35 +73,5 @@ public class SMSCheckBoxPreference extends CheckBoxPreference {
     private void super_setChecked( boolean checked )
     {
         super.setChecked( checked );
-    }
-
-    public static Dialog onCreateDialog( final Activity activity, final int id )
-    {
-        final View layout = LocUtils.inflate( activity, R.layout.confirm_sms );
-
-        DialogInterface.OnClickListener lstnr = 
-            new DialogInterface.OnClickListener() {
-                public void onClick( DialogInterface dlg, int item ) {
-                    Spinner reasons = (Spinner)
-                        layout.findViewById( R.id.confirm_sms_reasons );
-                    if ( 0 < reasons.getSelectedItemPosition() ) {
-                        s_this.super_setChecked( true );
-                    }
-                }
-            };
-
-        AlertDialog.Builder ab = LocUtils.makeAlertBuilder( activity )
-            .setTitle( R.string.confirm_sms_title )
-            .setView( layout )
-            .setNegativeButton( R.string.button_ok, lstnr );
-        Dialog dialog = ab.create();
-
-        dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {
-                public void onDismiss( DialogInterface di ) {
-                    activity.removeDialog( id );
-                }
-            } );
-
-        return dialog;
     }
 }

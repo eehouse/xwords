@@ -5,7 +5,7 @@ set -e -u
 usage () {
     echo "usage: $(basename $0) [--tag tagname | --branch branchname] [--variant variant]"
     echo "   # (uses current branch as default)"
-    exit 0
+    exit 1
 }
 
 TAG=""
@@ -51,6 +51,7 @@ fi
 echo "building $VARIANT with ${TAG}${BRANCH}"
 
 BUILDIR=/tmp/$(basename $0)_build_$$
+OUT_FILE=$BUILDIR/apks.txt
 SRCDIR=$(pwd)/$(dirname $0)/../../../
 
 CURDIR=$(pwd)
@@ -62,9 +63,16 @@ cd BUILD
 git checkout ${TAG}${BRANCH}
 cd ./xwords4/android/${VARIANT}
 ../scripts/setup_local_props.sh
-../scripts/arelease.sh --variant ${VARIANT}
+../scripts/arelease.sh --variant ${VARIANT} --apk-list $OUT_FILE
 mkdir -p /tmp/releases_${VARIANT}
 cp *.apk /tmp/releases_${VARIANT}
+
+if [ -n "$XW_RELEASE_SCP_DEST" ]; then
+	cat $OUT_FILE | while read APK; do
+		echo "running: scp /tmp/releases_${VARIANT}/$APK $XW_RELEASE_SCP_DEST ..."
+		scp /tmp/releases_${VARIANT}/$APK $XW_RELEASE_SCP_DEST
+	done
+fi
 
 cd $CURDIR
 echo "remove build dir $BUILDIR? (y or n):"

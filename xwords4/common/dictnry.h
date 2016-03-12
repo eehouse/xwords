@@ -21,9 +21,9 @@
 #ifndef __DICTNRY_H__
 #define __DICTNRY_H__
 
-#ifdef DEBUG
-# define DEBUG_REF 1
-#endif
+/* #ifdef DEBUG */
+/* # define DEBUG_REF 1 */
+/* #endif */
 
 #include <pthread.h>
 

@@ -74,8 +74,6 @@
   <!-- text of first menu item.  Will revert all preferences to
          their default/original values -->
   <string name="button_revert_all">XLATE ME: Restore all</string>
-  <string name="button_ok">OK</string>
-  <string name="button_cancel">Zrušiť</string>
   <string name="button_yes">Áno</string>
   <string name="button_no">Nie</string>
   <string name="button_save">Uložiť</string>
@@ -314,7 +312,7 @@
   <string name="game_item_menu_title_fmt">XLATE ME: \"%1$s\" actions:</string>
   <!-- returned by util_getUserString -->
   <string name="strd_robot_traded_fmt">Robot v tomto ťahu vymenil %1$d kameňov.</string>
-  <string name="str_robot_moved">Robot uskutočnil tento ťah:</string>
+  <!--string name="str_robot_moved">Robot uskutočnil tento ťah:</string-->
   <string name="strs_values_header_fmt">%1$s počet/hodnota:\n</string>
   <string name="strd_remaining_tiles_add_fmt">+ %1$d [všetky zostávajúce kamene]</string>
   <string name="strd_unused_tiles_sub_fmt">- %1$d [nepoužité kamene]</string>
@@ -424,9 +422,7 @@
   <string name="invite_multiple">XLATE ME: \u0020(You are expecting multiple
       remote players.  Be sure to address your invitation to
       that many people.)</string>
-  <!-- Toast shown when players are missing, same time as above
-           but more subtle.  -->
-  <string name="players_miss_fmt">XLATE ME: %1$d player[s] missing</string>
+
   <!-- If a networked game is opened and is not complete, i.e. if it
          is listed as expecting remote players who have not yet shown
          up, then the most likely explanation is that none has been
@@ -1012,7 +1008,7 @@
        always pick the first. -->
   <string name="forced_consistent">XLATE ME: Modified first player.</string>
   <string name="gameOver">Hra skončená</string>
-  <string name="moves_fmt">Bolo zahraných %1$d ťahov</string>
+  <!-- <string name="moves_fmt">Bolo zahraných %1$d ťahov</string> -->
   <!-- When you select the list_item_reset contextual menu, you are
           asked to confirm.  This is the text of the first button
           ("Cancel" is the second).  -->
@@ -1021,7 +1017,7 @@
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the
          second).  -->
-  <string name="button_delete">XLATE ME: Delete</string>
+  <string name="button_delete">Vymazat</string>
   <!-- about dialog stuff -->
   <string name="about_copyright">Copyright (C) 1998-2012 Eric
     House. Tento software je vydaný pod licenciou GNU Public License.</string>
@@ -1212,9 +1208,6 @@
   <string name="connstat_net_fmt">XLATE ME: Network status for game connected via
     %1$s:</string>
   <!--  -->
-  <string name="connstat_nonet">XLATE ME: This is a standalone game. There is
-    no network status.</string>
-  <!--  -->
   <string name="game_list_tmp">XLATE ME: Building game summary…</string>
   <!-- board menu for small devices only -->
   <string name="board_menu_dict">XLATE ME: Browse wordlist</string>
@@ -1248,7 +1241,7 @@
   <!--  -->
   <string name="invite_success">XLATE ME: Invitation received.</string>
   <!--  -->
-  <string name="confirm_clear">XLATE ME: Are you sure you want to delete the
+  <string name="confirm_clear_sms">XLATE ME: Are you sure you want to delete the
     checked phone number[s]?</string>
   <!--  -->
   <string name="get_sms_number">XLATE ME: Enter phone number:</string>
@@ -1271,8 +1264,6 @@
   <string name="new_smsmove_title">XLATE ME: New move via SMS</string>
   <!--  -->
   <string name="new_name_body_fmt">XLATE ME: %1$s has invited you to play</string>
-  <!--  -->
-  <string name="new_sms_title">XLATE ME: New game via SMS</string>
   <!--  -->
   <string name="dft_sms_name_fmt">XLATE ME: SMS Game %1$X</string>
   <!--  -->

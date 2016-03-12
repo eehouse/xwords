@@ -40,7 +40,7 @@ do_dir() {
     for FILE in $SRC_PATH/*; do
         if [ -d $FILE ]; then
             do_dir $SRC_PATH $DEST_PATH $(basename $FILE)
-        else
+        elif [ -e $FILE ]; then
             FILE=${FILE/$SRC_PATH/$DEST_PATH}
             if git ls-files $FILE --error-unmatch 2>/dev/null; then
                 echo "skipping $FILE; it's under version control within this variant"

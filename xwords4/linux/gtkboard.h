@@ -84,6 +84,11 @@ typedef struct ClientStreamRec {
     int sock;
 } ClientStreamRec;
 
+typedef struct _DropTypeData {
+    CommsCtxt* comms;
+    CommsConnType typ;
+} DropTypeData;
+
 typedef struct GtkGameGlobals {
     CommonGlobals cGlobals;
     CurGameInfo gi;
@@ -102,8 +107,10 @@ typedef struct GtkGameGlobals {
 
     GtkWidget* commit_button;
     GtkWidget* invite_button;
-
-
+    GtkWidget* buttons_hbox;
+#if ! defined XWFEATURE_STANDALONE_ONLY && defined DEBUG
+    GtkWidget* drop_checks_vbox;
+#endif
 #ifdef XWFEATURE_CHAT
     GtkWidget* chat_button;
 #endif
@@ -126,8 +133,9 @@ typedef struct GtkGameGlobals {
     XP_UCHAR stateChar;
 #endif
 
+    DropTypeData dropData[COMMS_CONN_NTYPES];
+
     XP_Bool gridOn;
-    XP_Bool dropIncommingMsgs;
     XP_Bool mouseDown;
     XP_Bool altKeyDown;
 #ifdef KEYBOARD_NAV

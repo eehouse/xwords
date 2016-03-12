@@ -21,7 +21,6 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.DataSetObserver;
@@ -88,11 +87,11 @@ public class DictBrowseDelegate extends ListDelegateBase
             XwJNI.dict_iter_setMinMax( m_dictClosure, m_browseState.m_minShown,
                                        m_browseState.m_maxShown );
             m_nWords = XwJNI.dict_iter_wordCount( m_dictClosure );
-
+            
             int format = m_browseState.m_minShown == m_browseState.m_maxShown ?
                 R.string.dict_browse_title1_fmt : R.string.dict_browse_title_fmt;
-            setTitle( getString( format,
-                                 m_name, m_nWords, m_browseState.m_minShown, 
+            setTitle( getString( format, m_name, m_nWords, 
+                                 m_browseState.m_minShown, 
                                  m_browseState.m_maxShown ));
 
             String desc = XwJNI.dict_iter_getDesc( m_dictClosure );
@@ -156,7 +155,7 @@ public class DictBrowseDelegate extends ListDelegateBase
         }
     }
 
-    protected DictBrowseDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected DictBrowseDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.dict_browser );
         m_activity = delegator.getActivity();
@@ -235,6 +234,7 @@ public class DictBrowseDelegate extends ListDelegateBase
             DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
             m_browseState = null;
         }
+        super.onPause();
     }
 
     @Override

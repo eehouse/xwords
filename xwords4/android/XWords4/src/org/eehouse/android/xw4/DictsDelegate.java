@@ -23,13 +23,13 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.ListActivity;
 import android.content.Context;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -46,7 +46,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.apache.http.client.methods.HttpPost;
+import java.net.HttpURLConnection;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,17 +63,19 @@ import java.util.Iterator;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
-import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.DictUtils.DictLoc;
+import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.DwnldDelegate.DownloadFinishedListener;
+import org.eehouse.android.xw4.DwnldDelegate.OnGotLcDictListener;
 
 public class DictsDelegate extends ListDelegateBase
     implements View.OnClickListener, AdapterView.OnItemLongClickListener,
                SelectableItem, MountEventReceiver.SDCardNotifiee, 
                DlgDelegate.DlgClickNotify, GroupStateListener,
-               DwnldDelegate.DownloadFinishedListener, 
-               XWListItem.ExpandedListener {
+               DownloadFinishedListener, XWListItem.ExpandedListener {
 
     protected static final String DICT_SHOWREMOTE = "do_launch";
     protected static final String DICT_LANG_EXTRA = "use_lang";
@@ -99,8 +101,7 @@ public class DictsDelegate extends ListDelegateBase
     private String m_origTitle;
     private boolean m_showRemote = false;
     private String m_filterLang;
-    private Map<String, String> m_needUpdates;
-    private HashMap<String, XWListItem> m_curDownloads;
+    private Map<String, Uri> m_needUpdates;
     private String m_onServerStr;
     private String m_lastLang;
     private String m_lastDict;
@@ -108,13 +109,12 @@ public class DictsDelegate extends ListDelegateBase
 
     private static class DictInfo implements Comparable {
         public String m_name;
-        // public boolean m_needsUpdate;
         public String m_lang;
         public int m_nWords;
         public long m_nBytes;
         public String m_note;
-        public DictInfo( String name, String lang, int nWords, long nBytes, 
-                         String note )
+        public DictInfo( String name, String lang, int nWords, 
+                         long nBytes, String note )
         {
             m_name = name;
             m_lang = lang;
@@ -136,7 +136,6 @@ public class DictsDelegate extends ListDelegateBase
             m_numDicts = numDicts;
         }
     }
-    private HashMap<String, DictAndLoc[]> m_localInfo;
     private HashMap<String, DictInfo[]> m_remoteInfo;
 
     private boolean m_launchedForMissing = false;
@@ -187,8 +186,11 @@ public class DictsDelegate extends ListDelegateBase
                 int langCode = DictLangCache.getLangLangCode( m_context,
                                                               langName );
                 boolean expanded = ! m_closedLangs.contains( langName );
-                String name = getString( R.string.lang_name_fmt, langName, 
-                                         info.m_numDicts );
+                String locLangName = xlateLang( langName );
+                String name = getQuantityString( R.plurals.lang_name_fmt, 
+                                                 info.m_numDicts,
+                                                 locLangName, info.m_numDicts );
+                name = Utils.capitalize( name );
                 result = ListGroup.make( m_context, convertView, 
                                          DictsDelegate.this, groupPos, name, 
                                          expanded );
@@ -297,7 +299,7 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    protected DictsDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected DictsDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.dict_browse, 
                R.menu.dicts_menu );
@@ -358,7 +360,7 @@ public class DictsDelegate extends ListDelegateBase
                 .setSingleChoiceItems( makeDictDirItems(), moveTo[0],
                                        newSelLstnr )
                 .setPositiveButton( R.string.button_move, lstnr )
-                .setNegativeButton( R.string.button_cancel, null )
+                .setNegativeButton( android.R.string.cancel, null )
                 .create();
             break;
 
@@ -368,16 +370,19 @@ public class DictsDelegate extends ListDelegateBase
                     public void onClick( DialogInterface dlg, int item ) {
                         if ( DialogInterface.BUTTON_NEGATIVE == item
                              || DialogInterface.BUTTON_POSITIVE == item ) {
-                            setDefault( row, R.string.key_default_dict );
+                            setDefault( row, R.string.key_default_dict, 
+                                        R.string.key_default_robodict );
                         }
                         if ( DialogInterface.BUTTON_NEGATIVE == item 
                              || DialogInterface.BUTTON_NEUTRAL == item ) {
-                            setDefault( row, R.string.key_default_robodict );
+                            setDefault( row, R.string.key_default_robodict, 
+                                        R.string.key_default_dict );
                         }
                     }
                 };
             String name = row.getText();
             String lang = DictLangCache.getLangName( m_activity, name);
+            lang = xlateLang( lang );
             message = getString( R.string.set_default_message_fmt, name, lang );
             dialog = makeAlertBuilder()
                 .setTitle( R.string.query_title )
@@ -472,6 +477,7 @@ public class DictsDelegate extends ListDelegateBase
                     int lang = intent.getIntExtra( DICT_LANG_EXTRA, 0 );
                     if ( 0 < lang ) {
                         m_filterLang = DictLangCache.getLangNames( m_activity )[lang];
+                        m_closedLangs.remove( m_filterLang );
                     }
                     String name = intent.getStringExtra( DICT_NAME_EXTRA );
                     if ( null == name ) {
@@ -577,22 +583,24 @@ public class DictsDelegate extends ListDelegateBase
             clearSelections();
             break;
         case R.id.dicts_download:
-            String[] urls = new String[countNeedDownload()];
+            Uri[] uris = new Uri[countNeedDownload()];
+            String[] names = new String[uris.length];
             int count = 0;
-            m_curDownloads = new HashMap<String, XWListItem>();
             for ( Iterator<XWListItem> iter = m_selDicts.values().iterator(); 
                   iter.hasNext(); ) {
                 XWListItem litm = iter.next();
                 Object cached = litm.getCached();
                 if ( cached instanceof DictInfo ) {
                     DictInfo info = (DictInfo)cached;
-                    String url = Utils.makeDictUrl( m_activity, info.m_lang, 
-                                                    litm.getText() );
-                    urls[count++] = url;
-                    m_curDownloads.put( url, litm );
+                    String name = litm.getText();
+                    Uri uri = Utils.makeDictUri( m_activity, info.m_lang, 
+                                                 name );
+                    uris[count] = uri;
+                    names[count] = name;
+                    ++count;
                 }
             }
-            DwnldDelegate.downloadDictsInBack( m_activity, urls, this );
+            DwnldDelegate.downloadDictsInBack( m_activity, uris, names, this );
             break;
         default:
             handled = false;
@@ -634,21 +642,41 @@ public class DictsDelegate extends ListDelegateBase
     {
         int loci = intent.getIntExtra( UpdateCheckReceiver.NEW_DICT_LOC, 0 );
         if ( 0 < loci ) {
+            String name = 
+                intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_NAME );
             String url = 
                 intent.getStringExtra( UpdateCheckReceiver.NEW_DICT_URL );
-            DwnldDelegate.downloadDictInBack( m_activity, url, null );
+            Uri uri = Uri.parse( url );
+            DwnldDelegate.downloadDictInBack( m_activity, uri, name, null );
             finish();
         }
     }
 
-    private void setDefault( XWListItem view, int keyId )
+    private void setDefault( XWListItem view, int keyId, int otherKey )
     {
+        String name = view.getText();
+        int langCode = DictLangCache.getDictLangCode( m_activity, name );
+        String curLangName = XWPrefs.getPrefsString( m_activity, R.string.key_default_language );
+        int curLangCode = DictLangCache.getLangLangCode( m_activity, curLangName );
+        boolean changeLang = langCode != curLangCode;
+
         SharedPreferences sp
             = PreferenceManager.getDefaultSharedPreferences( m_activity );
         SharedPreferences.Editor editor = sp.edit();
         String key = getString( keyId );
-        String name = view.getText();
         editor.putString( key, name );
+
+        if ( changeLang ) {
+            // change other dict too
+            key = getString( otherKey );
+            editor.putString( key, name );
+
+            // and change language
+            String langName = DictLangCache.getLangName( m_activity, langCode );
+            key = getString( R.string.key_default_language );
+            editor.putString( key, langName );
+        }
+
         editor.commit();
     }
 
@@ -702,8 +730,8 @@ public class DictsDelegate extends ListDelegateBase
     private void deleteSelected()
     {
         XWListItem[] items = getSelItems();
-        String msg = getString( R.string.confirm_delete_dict_fmt, 
-                                getJoinedNames( items ) );
+        String msg = getQuantityString( R.plurals.confirm_delete_dict_fmt, 
+                                        items.length, getJoinedNames( items ) );
 
         // Confirm.  And for each dict, warn if (after ALL are deleted) any
         // game will no longer be openable without downloading.  For now
@@ -757,8 +785,9 @@ public class DictsDelegate extends ListDelegateBase
             int nLeftAfter = data.nDicts - data.delDicts.size();
 
             if ( 0 == nLeftAfter ) { // last in this language?
+                String locName = xlateLang( data.langName );
                 String newMsg = getString( R.string.confirm_deleteonly_dicts_fmt,
-                                           data.dictsStr(), data.langName );
+                                           data.dictsStr(), locName );
                 msg += "\n\n" + newMsg;
             }
         }
@@ -800,9 +829,17 @@ public class DictsDelegate extends ListDelegateBase
                 mkListAdapter();
                 break;
             case UPDATE_DICTS_ACTION:
-                String[] urls = m_needUpdates.values().
-                    toArray( new String[m_needUpdates.size()] );
-                DwnldDelegate.downloadDictsInBack( m_activity, urls, this );
+                Uri[] uris = new Uri[m_needUpdates.size()];
+                String[] names = new String[uris.length];
+                int count = 0;
+                for ( Iterator<String> iter = m_needUpdates.keySet().iterator();
+                      iter.hasNext();  ) {
+                    String name = iter.next();
+                    names[count] = name;
+                    uris[count] = m_needUpdates.get( name );
+                    ++count;
+                }
+                DwnldDelegate.downloadDictsInBack( m_activity, uris, names, this );
                 break;
             default:
                 Assert.fail();
@@ -943,12 +980,12 @@ public class DictsDelegate extends ListDelegateBase
     {
         Assert.fail();
         return null;
-        // String dict_url = Utils.makeDictUrl( context, lang, dict );
+        // String dict_url = Utils.makeDictUri( context, lang, dict );
         // return mkDownloadIntent( context, dict_url );
     }
 
-    public static void launchForResult( Activity activity, int requestCode, 
-                                        int lang, String name )
+    public static void downloadForResult( Activity activity, RequestCode requestCode, 
+                                          int lang, String name )
     {
         Intent intent = new Intent( activity, DictsActivity.class );
         intent.putExtra( DICT_SHOWREMOTE, true );
@@ -960,18 +997,24 @@ public class DictsDelegate extends ListDelegateBase
             intent.putExtra( DICT_NAME_EXTRA, name );
         }
 
-        activity.startActivityForResult( intent, requestCode );
+        activity.startActivityForResult( intent, requestCode.ordinal() );
     }
 
-    public static void launchForResult( Activity activity, int requestCode,
-                                        int lang )
+    public static void downloadForResult( Activity activity, RequestCode requestCode,
+                                          int lang )
     {
-        launchForResult( activity, requestCode, lang, null );
+        downloadForResult( activity, requestCode, lang, null );
     }
 
-    public static void launchForResult( Activity activity, int requestCode )
+    public static void downloadForResult( Activity activity, RequestCode requestCode )
     {
-        launchForResult( activity, requestCode, 0, null );
+        downloadForResult( activity, requestCode, 0, null );
+    }
+
+    public static void downloadDefaultDict( Context context, String lc,
+                                            OnGotLcDictListener lstnr )
+    {
+        new GetDefaultDictTask( context, lc, lstnr ).execute();
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -1071,6 +1114,94 @@ public class DictsDelegate extends ListDelegateBase
         return result;
     }
 
+    private static class GetDefaultDictTask extends AsyncTask<Void, Void, String> {
+        private Context m_context;
+        private String m_lc;
+        private String m_langName;
+        private OnGotLcDictListener m_lstnr;
+
+        public GetDefaultDictTask( Context context, String lc, 
+                                   OnGotLcDictListener lnr ) {
+            m_context = context;
+            m_lc = lc;
+            m_lstnr = lnr;
+        }
+
+        @Override 
+        public String doInBackground( Void... unused )
+        {
+            // FIXME: this should pass up the language code to retrieve and
+            // parse less data
+            String name = null;
+            String proc = String.format( "listDicts?lc=%s", m_lc );
+            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, proc );
+            if ( null != conn ) {
+                JSONObject theOne = null;
+                String langName = null;
+                String json = NetUtils.runConn( conn, new JSONObject() );
+                if ( null != json ) {
+                    try {
+                        JSONObject obj = new JSONObject( json );
+                        JSONArray langs = obj.optJSONArray( "langs" );
+                        int nLangs = langs.length();
+                        for ( int ii = 0; ii < nLangs; ++ii ) {
+                            JSONObject langObj = langs.getJSONObject( ii );
+                            String langCode = langObj.getString( "lc" );
+                            if ( ! langCode.equals( m_lc ) ) {
+                                continue;
+                            }
+                            // we have our language; look for one marked default;
+                            // otherwise take the largest.
+                            m_langName = langObj.getString( "lang" );
+                            JSONArray dicts = langObj.getJSONArray( "dicts" );
+                            int nDicts = dicts.length();
+                            int theOneNWords = 0;
+                            for ( int jj = 0; jj < nDicts; ++jj ) {
+                                JSONObject dict = dicts.getJSONObject( jj );
+                                if ( dict.optBoolean( "isDflt", false ) ) {
+                                    theOne = dict;
+                                    break;
+                                } else {
+                                    int nWords = dict.getInt( "nWords" );
+                                    if ( null == theOne 
+                                         || nWords > theOneNWords ) {
+                                        theOne = dict;
+                                        theOneNWords = nWords;
+                                    }
+                                }
+                            }
+                        }
+
+                        // If we got here and theOne isn't set, there is
+                        // no wordlist available for this language. Set
+                        // the flag so we don't try again, even though
+                        // we've failed.
+                        if ( null == theOne ) {
+                            XWPrefs.setPrefsBoolean( m_context, 
+                                                     R.string.key_got_langdict, 
+                                                     true );
+                        }
+
+                    } catch ( JSONException ex ) {
+                        DbgUtils.loge( ex );
+                        theOne = null;
+                    }
+                }
+
+                if ( null != theOne ) {
+                    name = theOne.optString( "xwd" );
+                }
+            }
+            return name;
+        }
+
+        @Override
+        protected void onPostExecute( String name )
+        {
+            m_lstnr.gotDictInfo( null != name, m_langName, name );
+        }
+    }
+
     private class FetchListTask extends AsyncTask<Void, Void, Boolean> 
         implements OnCancelListener {
         private Context m_context;
@@ -1078,16 +1209,16 @@ public class DictsDelegate extends ListDelegateBase
         public FetchListTask( Context context )
         {
             m_context = context;
-            startProgress( R.string.remote_empty, this );
+            startProgress( R.string.progress_title, R.string.remote_empty, this );
         }
 
         @Override 
         public Boolean doInBackground( Void... unused )
         {
             boolean success = false;
-            HttpPost post = UpdateCheckReceiver.makePost( m_context, "listDicts" );
-            if ( null != post ) {
-                String json = UpdateCheckReceiver.runPost( post, new JSONObject() );
+            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "listDicts" );
+            if ( null != conn ) {
+                String json = NetUtils.runConn( conn, new JSONObject() );
                 if ( !isCancelled() ) {
                     if ( null != json ) {
                         post( new Runnable() {
@@ -1142,7 +1273,7 @@ public class DictsDelegate extends ListDelegateBase
             boolean success = false;
             JSONArray langs = null;
 
-            m_needUpdates = new HashMap<String, String>();
+            m_needUpdates = new HashMap<String, Uri>();
             if ( null != jsonData ) {
                 Set<String> closedLangs = new HashSet<String>();
                 final Set<String> curLangs =
@@ -1185,9 +1316,8 @@ public class DictsDelegate extends ListDelegateBase
                             if ( 0 == note.length() ) {
                                 note = null;
                             }
-                            DictInfo info = 
-                                new DictInfo( name, langName, nWords, nBytes, 
-                                              note );
+                            DictInfo info = new DictInfo( name, langName, nWords,
+                                                          nBytes, note );
 
                             if ( !m_quickFetchMode ) {
                                 // Check if we have it and it needs an update
@@ -1210,10 +1340,10 @@ public class DictsDelegate extends ListDelegateBase
                                         }
                                     }
                                     if ( !matches ) {
-                                        String url = 
-                                            Utils.makeDictUrl( m_activity, 
+                                        Uri uri = 
+                                            Utils.makeDictUri( m_activity, 
                                                                langName, name );
-                                        m_needUpdates.put( name, url );
+                                        m_needUpdates.put( name, uri );
                                     }
                                 }
                             }
@@ -1227,6 +1357,7 @@ public class DictsDelegate extends ListDelegateBase
                         }
                     }
 
+                    closedLangs.remove( m_filterLang );
                     m_closedLangs.addAll( closedLangs );
 
                     success = true;
@@ -1236,7 +1367,7 @@ public class DictsDelegate extends ListDelegateBase
             }
 
             return success;
-        }
+        } // digestData
 
         /////////////////////////////////////////////////////////////////
         // DialogInterface.OnCancelListener interface

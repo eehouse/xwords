@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2010 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2010 - 2015 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -45,10 +45,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.GameUtils.BackMoveResult;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.jni.UtilCtxt;
+import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.loc.LocUtils;
@@ -59,25 +62,31 @@ public class RelayService extends XWService
     private static final int MAX_BUF = MAX_SEND - 2;
     private static final int REG_WAIT_INTERVAL = 10;
 
-    // One week, in seconds.  Probably should be configurable.
-    private static final long MAX_KEEPALIVE_SECS = 7 * 24 * 60 * 60;
+    // One day, in seconds.  Probably should be configurable.
+    private static final long MAX_KEEPALIVE_SECS = 24 * 60 * 60;
 
     private static final String CMD_STR = "CMD";
 
-    private static enum MsgCmds { INVALID
-            , PROCESS_GAME_MSGS
-            , PROCESS_DEV_MSGS
-            , UDP_CHANGED
-            , SEND
-            , SENDNOCONN
-            , RECEIVE
-            , TIMER_FIRED
-            , RESET
-            , UPGRADE
+    private static enum MsgCmds { INVALID,
+                                  PROCESS_GAME_MSGS,
+                                  PROCESS_DEV_MSGS,
+                                  UDP_CHANGED,
+                                  SEND,
+                                  SENDNOCONN,
+                                  RECEIVE,
+                                  TIMER_FIRED,
+                                  RESET,
+                                  UPGRADE,
+                                  INVITE,
+                                  GOT_INVITE,
     }
 
     private static final String MSGS_ARR = "MSGS_ARR";
     private static final String RELAY_ID = "RELAY_ID";
+    private static final String DEV_ID_SRC = "DEV_ID_SRC";
+    private static final String DEV_ID_DEST = "DEV_ID_DEST";
+    private static final String NLI_DATA = "NLI_DATA";
+    private static final String INVITE_FROM = "INVITE_FROM";
     private static final String ROWID = "ROWID";
     private static final String BINBUFFER = "BINBUFFER";
 
@@ -85,6 +94,8 @@ public class RelayService extends XWService
     private static int s_nextPacketID = 1;
     private static boolean s_gcmWorking = false;
     private static boolean s_registered = false;
+    private static CommsAddrRec s_addr = 
+        new CommsAddrRec( CommsConnType.COMMS_CONN_RELAY );
 
     private Thread m_fetchThread = null;
     private Thread m_UDPReadThread = null;
@@ -107,23 +118,24 @@ public class RelayService extends XWService
     // private static final int XWPDEV_NONE = 0;
 
     // Must be kept in sync with eponymous enum in xwrelay.h
-    private enum XWRelayReg {
-             XWPDEV_NONE
-            ,XWPDEV_UNAVAIL
-            ,XWPDEV_REG
-            ,XWPDEV_REGRSP
-            ,XWPDEV_KEEPALIVE
-            ,XWPDEV_HAVEMSGS
-            ,XWPDEV_RQSTMSGS
-            ,XWPDEV_MSG
-            ,XWPDEV_MSGNOCONN
-            ,XWPDEV_MSGRSP
-            ,XWPDEV_BADREG
-            ,XWPDEV_ACK
-            ,XWPDEV_DELGAME
-            ,XWPDEV_ALERT
-            ,XWPDEV_UPGRADE
-            };
+    private enum XWRelayReg { XWPDEV_NONE,
+                              XWPDEV_UNAVAIL,
+                              XWPDEV_REG,
+                              XWPDEV_REGRSP,
+                              XWPDEV_KEEPALIVE,
+                              XWPDEV_HAVEMSGS,
+                              XWPDEV_RQSTMSGS,
+                              XWPDEV_MSG,
+                              XWPDEV_MSGNOCONN,
+                              XWPDEV_MSGRSP,
+                              XWPDEV_BADREG,
+                              XWPDEV_ACK,
+                              XWPDEV_DELGAME,
+                              XWPDEV_ALERT,
+                              XWPDEV_UPGRADE,
+                              XWPDEV_INVITE,
+                              XWPDEV_GOTINVITE, // test without this!!!
+    };
 
     public static void gcmConfirmed( Context context, boolean confirmed )
     {
@@ -148,6 +160,19 @@ public class RelayService extends XWService
         context.startService( intent );
     }
 
+    public static void inviteRemote( Context context, int destDevID, 
+                                     String relayID, NetLaunchInfo nli )
+    {
+        int myDevID = DevID.getRelayDevIDInt( context );
+        if ( 0 != myDevID ) {
+            context.startService( getIntentTo( context, MsgCmds.INVITE )
+                                  .putExtra( DEV_ID_SRC, myDevID )
+                                  .putExtra( DEV_ID_DEST, destDevID )
+                                  .putExtra( RELAY_ID, relayID )
+                                  .putExtra( NLI_DATA, nli.toString() ) );
+        }
+    }
+
     public static void reset( Context context )
     {
         Intent intent = getIntentTo( context, MsgCmds.RESET );
@@ -162,6 +187,7 @@ public class RelayService extends XWService
 
     public static int sendPacket( Context context, long rowid, byte[] msg )
     {
+        DbgUtils.logdf( "RelayService.sendPacket(len=%d)", msg.length );
         int result = -1;
         if ( NetStateCache.netAvail( context ) ) {
             Intent intent = getIntentTo( context, MsgCmds.SEND )
@@ -195,11 +221,62 @@ public class RelayService extends XWService
         s_registered = false;
     }
 
+    private void receiveInvitation( int srcDevID, NetLaunchInfo nli ) 
+    {
+        DbgUtils.logdf( "receiveInvitation: got nli from %d: %s", srcDevID,
+                       nli.toString() );
+        if ( checkNotDupe( nli ) ) {
+            makeOrNotify( nli );
+        }
+    }
+
+    private void makeOrNotify( NetLaunchInfo nli )
+    {
+        if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
+            makeGame( nli );
+        } else {
+            Intent intent = MultiService
+                .makeMissingDictIntent( this, nli, 
+                                        DictFetchOwner.OWNER_RELAY );
+            MultiService.postMissingDictNotification( this, intent, 
+                                                      nli.gameID() );
+        }
+    }
+
+    private void makeGame( NetLaunchInfo nli )
+    {
+        long[] rowids = DBUtils.getRowIDsFor( this, nli.gameID() );
+        if ( (null == rowids || 0 == rowids.length)
+             || XWPrefs.getRelayInviteToSelfEnabled( this )) {
+
+            if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
+                long rowid = GameUtils.makeNewMultiGame( this, nli, 
+                                                         new RelayMsgSink(),
+                                                         getUtilCtxt() );
+                if ( DBUtils.ROWID_NOTFOUND != rowid ) {
+                    if ( null != nli.gameName && 0 < nli.gameName.length() ) {
+                        DBUtils.setName( this, rowid, nli.gameName );
+                    }
+                    String body = LocUtils.getString( this, 
+                                                      R.string.new_relay_body );
+                    GameUtils.postInvitedNotification( this, nli.gameID(), body, 
+                                                       rowid );
+                }
+            } else {
+                Intent intent = MultiService
+                    .makeMissingDictIntent( this, nli, 
+                                            DictFetchOwner.OWNER_RELAY );
+                MultiService.postMissingDictNotification( this, intent, 
+                                                          nli.gameID() );
+            }
+        }
+    }
+
     // Exists to get incoming data onto the main thread
     private static void postData( Context context, long rowid, byte[] msg )
     {
-        DbgUtils.logf( "RelayService::postData: packet of length %d for token %d", 
-                       msg.length, rowid );
+        DbgUtils.logdf( "RelayService::postData: packet of length %d for token %d", 
+                        msg.length, rowid );
         if ( DBUtils.haveGame( context, rowid ) ) {
             Intent intent = getIntentTo( context, MsgCmds.RECEIVE )
                 .putExtra( ROWID, rowid )
@@ -219,7 +296,6 @@ public class RelayService extends XWService
     public static void processGameMsgs( Context context, String relayId, 
                                         String[] msgs64 )
     {
-        DbgUtils.logf( "RelayService.processGameMsgs" );
         Intent intent = getIntentTo( context, MsgCmds.PROCESS_GAME_MSGS )
             .putExtra( MSGS_ARR, msgs64 )
             .putExtra( RELAY_ID, relayId );
@@ -251,7 +327,7 @@ public class RelayService extends XWService
         m_handler = new Handler();
         m_onInactivity = new Runnable() {
                 public void run() {
-                    DbgUtils.logf( "RelayService: m_onInactivity fired" );
+                    // DbgUtils.logf( "RelayService: m_onInactivity fired" );
                     if ( !shouldMaintainConnection() ) {
                         NetStateCache.unregister( RelayService.this, 
                                                   RelayService.this );
@@ -275,8 +351,8 @@ public class RelayService extends XWService
                 cmd = null;
             }
             if ( null != cmd ) {
-                DbgUtils.logf( "RelayService::onStartCommand: cmd=%s", 
-                               cmd.toString() );
+                DbgUtils.logdf( "RelayService::onStartCommand: cmd=%s", 
+                                cmd.toString() );
                 switch( cmd ) {
                 case PROCESS_GAME_MSGS:
                     String[] relayIDs = new String[1];
@@ -305,20 +381,34 @@ public class RelayService extends XWService
                 case UPGRADE:
                     UpdateCheckReceiver.checkVersions( this, false );
                     break;
+                case GOT_INVITE:
+                    int srcDevID = intent.getIntExtra( INVITE_FROM, 0 );
+                    NetLaunchInfo nli 
+                        = new NetLaunchInfo( this, intent.getStringExtra(NLI_DATA) );
+                    receiveInvitation( srcDevID, nli );
+                    break;
                 case SEND:
                 case RECEIVE:
                 case SENDNOCONN:
                     startUDPThreadsIfNot();
                     long rowid = intent.getLongExtra( ROWID, -1 );
                     byte[] msg = intent.getByteArrayExtra( BINBUFFER );
-                    if ( MsgCmds.SEND.equals( cmd ) ) {
+                    if ( MsgCmds.SEND == cmd ) {
                         sendMessage( rowid, msg );
-                    } else if ( MsgCmds.SENDNOCONN.equals( cmd ) ) {
+                    } else if ( MsgCmds.SENDNOCONN == cmd ) {
                         String relayID = intent.getStringExtra( RELAY_ID );
                         sendNoConnMessage( rowid, relayID, msg );
                     } else {
                         feedMessage( rowid, msg );
                     }
+                    break;
+                case INVITE:
+                    startUDPThreadsIfNot();
+                    srcDevID = intent.getIntExtra( DEV_ID_SRC, 0 );
+                    int destDevID = intent.getIntExtra( DEV_ID_DEST, 0 );
+                    String relayID = intent.getStringExtra( RELAY_ID );
+                    String nliData = intent.getStringExtra( NLI_DATA );
+                    sendInvitation( srcDevID, destDevID, relayID, nliData );
                     break;
                 case TIMER_FIRED:
                     if ( !NetStateCache.netAvail( this ) ) {
@@ -328,6 +418,7 @@ public class RelayService extends XWService
                     } else if ( registerWithRelayIfNot() ) {
                         requestMessages();
                     }
+                    RelayReceiver.setTimer( this );
                     break;
                 default:
                     Assert.fail();
@@ -349,11 +440,9 @@ public class RelayService extends XWService
     @Override
     public void onDestroy()
     {
-        DbgUtils.logf( "RelayService.onDestroy() called" );
-
         if ( shouldMaintainConnection() ) {
             long interval_millis = getMaxIntervalSeconds() * 1000;
-            RelayReceiver.RestartTimer( this, interval_millis );
+            RelayReceiver.setTimer( this, interval_millis );
         }
         stopThreads();
         super.onDestroy();
@@ -365,27 +454,31 @@ public class RelayService extends XWService
         startService( this ); // bad name: will *stop* threads too
     }
 
-    private void setupNotification( String[] relayIDs )
+    private void setupNotifications( String[] relayIDs, BackMoveResult[] bmrs,
+                                     ArrayList<Boolean> locals )
     {
-        for ( String relayID : relayIDs ) {
+        for ( int ii = 0; ii < relayIDs.length; ++ii ) {
+            String relayID = relayIDs[ii];
+            BackMoveResult bmr = bmrs[ii];
             long[] rowids = DBUtils.getRowIDsFor( this, relayID );
             if ( null != rowids ) {
                 for ( long rowid : rowids ) {
-                    setupNotification( rowid );
+                    GameUtils.postMoveNotification( this, rowid, bmr,
+                                                    locals.get(ii) );
                 }
             }
         }
     }
 
-    private void setupNotification( long rowid )
-    {
-        Intent intent = GamesListDelegate.makeRowidIntent( this, rowid );
-        String msg = LocUtils.getString( this, R.string.notify_body_fmt, 
-                                         GameUtils.getName( this, rowid ) );
-        Utils.postNotification( this, intent, R.string.notify_title,
-                                msg, (int)rowid );
-    }
-    
+    // private void setupNotification( long rowid )
+    // {
+    //     Intent intent = GamesListDelegate.makeRowidIntent( this, rowid );
+    //     String msg = LocUtils.getString( this, R.string.notify_body_fmt, 
+    //                                      GameUtils.getName( this, rowid ) );
+    //     Utils.postNotification( this, intent, R.string.notify_title,
+    //                             msg, (int)rowid );
+    // }
+
     private boolean startFetchThreadIf()
     {
         // DbgUtils.logf( "startFetchThreadIf()" );
@@ -417,7 +510,6 @@ public class RelayService extends XWService
 
     private void startUDPThreadsIfNot()
     {
-        DbgUtils.logf( "RelayService.startUDPThreadsIfNot()" );
         if ( XWApp.UDP_ENABLED ) {
 
             if ( null == m_UDPReadThread ) {
@@ -466,6 +558,8 @@ public class RelayService extends XWService
 
                 InetAddress addr = InetAddress.getByName( host );
                 m_UDPSocket.connect( addr, port ); // remember this address
+                DbgUtils.logdf( "RelayService.connectSocket(%s:%d): m_UDPSocket"
+                                + " now %H", host, port, m_UDPSocket );
             } catch( java.net.SocketException se ) {
                 DbgUtils.loge( se );
                 Assert.fail();
@@ -502,15 +596,25 @@ public class RelayService extends XWService
                             try {
                                 DatagramPacket outPacket = outData.assemble();
                                 m_UDPSocket.send( outPacket );
-                                int packetID = outData.m_packetID;
-                                DbgUtils.logf( "Sent udp packet, id=%d, of "
-                                               + "length %d", 
-                                               packetID, outPacket.getLength() );
+                                int pid = outData.m_packetID;
+                                DbgUtils.logdf( "Sent udp packet, cmd=%s, id=%d,"
+                                                + " of length %d", 
+                                                outData.m_cmd.toString(), 
+                                                pid, outPacket.getLength());
                                 synchronized( s_packetsSent ) {
-                                    s_packetsSent.add( packetID );
+                                    s_packetsSent.add( pid );
                                 }
                                 resetExitTimer();
                                 ConnStatusHandler.showSuccessOut();
+                            } catch ( java.net.SocketException se ) {
+                                DbgUtils.loge( se );
+                                DbgUtils.logf( "Restarting threads to force"
+                                               + " new socket" );
+                                m_handler.post( new Runnable() {
+                                        public void run() {
+                                            stopUDPThreadsIf();
+                                        }
+                                    } );
                             } catch ( java.io.IOException ioe ) {
                                 DbgUtils.loge( ioe );
                             } catch ( NullPointerException npe ) {
@@ -529,14 +633,13 @@ public class RelayService extends XWService
 
     private void stopUDPThreadsIf()
     {
-        DbgUtils.logf( "stopUDPThreadsIf" );
         if ( null != m_UDPWriteThread ) {
             // can't add null
             m_queue.add( new PacketData() );
             try {
-                DbgUtils.logf( "joining m_UDPWriteThread" );
+                DbgUtils.logdf( "joining m_UDPWriteThread" );
                 m_UDPWriteThread.join();
-                DbgUtils.logf( "SUCCESSFULLY joined m_UDPWriteThread" );
+                DbgUtils.logdf( "SUCCESSFULLY joined m_UDPWriteThread" );
             } catch( java.lang.InterruptedException ie ) {
                 DbgUtils.loge( ie );
             }
@@ -545,17 +648,14 @@ public class RelayService extends XWService
         }
         if ( null != m_UDPSocket && null != m_UDPReadThread ) {
             m_UDPSocket.close();
-            DbgUtils.logf( "waiting for read thread to exit" );
             try {
                 m_UDPReadThread.join();
             } catch( java.lang.InterruptedException ie ) {
                 DbgUtils.loge( ie );
             }
-            DbgUtils.logf( "read thread exited" );
             m_UDPReadThread = null;
             m_UDPSocket = null;
         }
-        DbgUtils.logf( "stopUDPThreadsIf DONE" );
     }
 
     // MIGHT BE Running on reader thread
@@ -569,7 +669,7 @@ public class RelayService extends XWService
                 if ( !skipAck ) {
                     sendAckIf( header );
                 }
-                DbgUtils.logf( "gotPacket: cmd=%s", header.m_cmd.toString() );
+                DbgUtils.logdf( "RelayService.gotPacket: cmd=%s", header.m_cmd.toString() );
                 switch ( header.m_cmd ) { 
                 case XWPDEV_UNAVAIL:
                     int unavail = dis.readInt();
@@ -588,17 +688,18 @@ public class RelayService extends XWService
                 case XWPDEV_BADREG:
                     str = getVLIString( dis );
                     DbgUtils.logf( "bad relayID \"%s\" reported", str );
-                    XWPrefs.clearRelayDevID( this );
+                    DevID.clearRelayDevID( this );
                     s_registered = false;
                     registerWithRelay();
                     break;
                 case XWPDEV_REGRSP:
                     str = getVLIString( dis );
                     short maxIntervalSeconds = dis.readShort();
-                    DbgUtils.logf( "got relayid %s, maxInterval %d", str, 
-                                   maxIntervalSeconds );
+                    DbgUtils.logdf( "got relayid %s (%d), maxInterval %d", str, 
+                                    Integer.parseInt( str, 16 ), 
+                                    maxIntervalSeconds );
                     setMaxIntervalSeconds( maxIntervalSeconds );
-                    XWPrefs.setRelayDevID( this, str );
+                    DevID.setRelayDevID( this, str );
                     s_registered = true;
                     break;
                 case XWPDEV_HAVEMSGS:
@@ -622,9 +723,27 @@ public class RelayService extends XWService
                     intent = getIntentTo( this, MsgCmds.UPGRADE );
                     startService( intent );
                     break;
+                case XWPDEV_GOTINVITE:
+                    intent = getIntentTo( this, MsgCmds.GOT_INVITE );
+                    int srcDevID = dis.readInt();
+                    short len = dis.readShort();
+                    byte[] nliData = new byte[len];
+                    dis.read( nliData );
+                    NetLaunchInfo nli = XwJNI.nliFromStream( nliData );
+                    intent.putExtra( INVITE_FROM, srcDevID );
+                    String asStr = nli.toString();
+                    DbgUtils.logdf( "got invitation: %s", asStr );
+                    intent.putExtra( NLI_DATA, asStr );
+                    startService( intent );
+                    break;
                 case XWPDEV_ACK:
                     noteAck( vli2un( dis ) );
                     break;
+                // case XWPDEV_MSGFWDOTHERS:
+                //     Assert.assertTrue( 0 == dis.readByte() ); // protocol; means "invite", I guess.
+                //     String nliData = dis.readUTF();
+                //     DbgUtils.logf( "RelayService: got invite: %s", nliData );
+                //     break;
                 default:
                     DbgUtils.logf( "RelayService.gotPacket(): Unhandled cmd" );
                     break;
@@ -642,19 +761,15 @@ public class RelayService extends XWService
         int packetLen = packet.getLength();
         byte[] data = new byte[packetLen];
         System.arraycopy( packet.getData(), 0, data, 0, packetLen );
-        DbgUtils.logf( "RelayService::gotPacket: %d bytes of data", packetLen );
+        // DbgUtils.logf( "RelayService::gotPacket: %d bytes of data", packetLen );
         gotPacket( data, false );
     } // gotPacket
 
     private boolean shouldRegister()
     {
-        String relayID = XWPrefs.getRelayDevID( this );
+        String relayID = DevID.getRelayDevID( this, true );
         boolean registered = null != relayID;
-        if ( registered ) {
-            registered = XWPrefs
-                .getPrefsBoolean( this, R.string.key_relay_regid_ackd, false );
-        }
-        DbgUtils.logf( "shouldRegister()=>%b", !registered );
+        DbgUtils.logdf( "shouldRegister()=>%b", !registered );
         return !registered;
     }
 
@@ -674,7 +789,7 @@ public class RelayService extends XWService
             DbgUtils.logf( "registerWithRelay: skipping because only %d "
                            + "seconds since last start", interval );
         } else {
-            String relayID = XWPrefs.getRelayDevID( this );
+            String relayID = DevID.getRelayDevID( this );
             DevIDType[] typa = new DevIDType[1];
             String devid = getDevID( typa );
             DevIDType typ = typa[0];
@@ -692,8 +807,8 @@ public class RelayService extends XWService
                     writeVLIString( out, devid );
                 }
 
-                DbgUtils.logf( "registering devID \"%s\" (type=%s)", devid, 
-                               typ.toString() );
+                DbgUtils.logdf( "registering devID \"%s\" (type=%s)", devid, 
+                                typ.toString() );
 
                 out.writeShort( BuildConstants.CLIENT_VERS_RELAY );
                 writeVLIString( out, BuildConstants.GIT_REV );
@@ -744,7 +859,6 @@ public class RelayService extends XWService
 
     private void sendMessage( long rowid, byte[] msg )
     {
-        DbgUtils.logf( "RelayService.sendMessage()" );
         ByteArrayOutputStream bas = new ByteArrayOutputStream();
         try {
             DataOutputStream out = new DataOutputStream( bas );
@@ -773,6 +887,40 @@ public class RelayService extends XWService
         } 
     }
 
+    private void sendInvitation( int srcDevID, int destDevID, String relayID,
+                                 String nliStr )
+    {
+        DbgUtils.logdf( "sendInvitation(%d->%d/%s [%s])", srcDevID, destDevID,
+                        relayID, nliStr );
+
+        NetLaunchInfo nli = new NetLaunchInfo( this, nliStr );
+        byte[] nliData = XwJNI.nliToStream( nli );
+        if ( BuildConfig.DEBUG ) {
+            NetLaunchInfo tmp = XwJNI.nliFromStream( nliData );
+            DbgUtils.logdf( "sendInvitation: compare these: %s vs %s", 
+                            nli.toString(), tmp.toString() );
+        }
+
+        ByteArrayOutputStream bas = new ByteArrayOutputStream();
+        try {
+            DataOutputStream out = new DataOutputStream( bas );
+            out.writeInt( srcDevID );
+            if ( 0 == destDevID ) {
+                Assert.assertTrue( null != relayID && 0 < relayID.length() );
+                out.writeBytes( relayID );
+                out.writeByte( 0 ); // null terminator
+            } else {
+                out.writeByte( 0 ); // empty dev
+                out.writeInt( destDevID );
+            }
+            out.writeShort( nliData.length );
+            out.write( nliData, 0, nliData.length );
+            postPacket( bas, XWRelayReg.XWPDEV_INVITE );
+        } catch ( java.io.IOException ioe ) {
+            DbgUtils.loge( ioe );
+        } 
+    }
+
     private void sendAckIf( PacketHeader header )
     {
         if ( 0 != header.m_packetID ) {
@@ -795,7 +943,7 @@ public class RelayService extends XWService
         if ( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() == proto ) {
             int packetID = vli2un( dis );
             if ( 0 != packetID ) {
-                DbgUtils.logf( "readHeader: got packetID %d", packetID );
+                DbgUtils.logdf( "RelayService.readHeader: got packetID %d", packetID );
             }
             byte ordinal = dis.readByte();
             XWRelayReg cmd = XWRelayReg.values()[ordinal];
@@ -825,17 +973,13 @@ public class RelayService extends XWService
 
     private String getDevID( DevIDType[] typp )
     {
-        String devid = null;
         DevIDType typ;
+        String devid = DevID.getRelayDevID( this, true );
 
-        if ( XWPrefs.getPrefsBoolean( this, R.string.key_relay_regid_ackd, 
-                                      false ) ) {
-            devid = XWPrefs.getRelayDevID( this );
-        }
         if ( null != devid && 0 < devid.length() ) {
             typ = DevIDType.ID_TYPE_RELAY;
         } else {
-            devid = XWPrefs.getGCMDevID( this );
+            devid = DevID.getGCMDevID( this );
             if ( null != devid && 0 < devid.length() ) {
                 typ = DevIDType.ID_TYPE_ANDROID_GCM;
             } else {
@@ -853,19 +997,21 @@ public class RelayService extends XWService
 
     private void feedMessage( long rowid, byte[] msg )
     {
-        DbgUtils.logf( "RelayService::feedMessage: %d bytes for rowid %d", 
-                       msg.length, rowid );
-        if ( BoardDelegate.feedMessage( rowid, msg ) ) {
-            DbgUtils.logf( "feedMessage: board ate it" );
+        DbgUtils.logdf( "RelayService::feedMessage: %d bytes for rowid %d", 
+                        msg.length, rowid );
+        if ( BoardDelegate.feedMessage( rowid, msg, s_addr ) ) {
+            DbgUtils.logdf( "feedMessage: board ate it" );
             // do nothing
         } else {
             RelayMsgSink sink = new RelayMsgSink();
             sink.setRowID( rowid );
-            if ( GameUtils.feedMessage( this, rowid, msg, null, 
-                                        sink ) ) {
-                setupNotification( rowid );
+            BackMoveResult bmr = new BackMoveResult();
+            boolean[] isLocalP = new boolean[1];
+            if ( GameUtils.feedMessage( this, rowid, msg, s_addr, 
+                                        sink, bmr, isLocalP ) ) {
+                GameUtils.postMoveNotification( this, rowid, bmr, isLocalP[0] );
             } else {
-                DbgUtils.logf( "feedMessage(): background dropped it" );
+                DbgUtils.logdf( "feedMessage(): background dropped it" );
             }
         }
     }
@@ -882,34 +1028,43 @@ public class RelayService extends XWService
 
     private void process( byte[][][] msgs, long[] rowIDs, String[] relayIDs )
     {
-        DbgUtils.logf( "RelayService.process()" );
         if ( null != msgs ) {
             RelayMsgSink sink = new RelayMsgSink();
             int nameCount = relayIDs.length;
-            DbgUtils.logf( "RelayService.process(): nameCount: %d", nameCount );
             ArrayList<String> idsWMsgs = new ArrayList<String>( nameCount );
+            ArrayList<Boolean> isLocals = new ArrayList<Boolean>( nameCount );
+            ArrayList<BackMoveResult> bmrs = 
+                new ArrayList<BackMoveResult>( nameCount );
 
+            boolean[] isLocalP = new boolean[1];
             for ( int ii = 0; ii < nameCount; ++ii ) {
                 byte[][] forOne = msgs[ii];
 
                 // if game has messages, open it and feed 'em to it.
                 if ( null != forOne ) {
+                    BackMoveResult bmr = new BackMoveResult();
                     sink.setRowID( rowIDs[ii] );
-                    if ( BoardDelegate.feedMessages( rowIDs[ii], forOne )
+                    // since BoardDelegate.feedMessages can't know:
+                    isLocalP[0] = false;
+                    if ( BoardDelegate.feedMessages( rowIDs[ii], forOne, s_addr )
                          || GameUtils.feedMessages( this, rowIDs[ii],
-                                                    forOne, null,
-                                                    sink ) ) {
+                                                    forOne, s_addr,
+                                                    sink, bmr, isLocalP ) ) {
                         idsWMsgs.add( relayIDs[ii] );
+                        bmrs.add( bmr );
+                        isLocals.add( isLocalP[0] );
                     } else {
-                        DbgUtils.logf( "message for %s (rowid %d) not consumed",
-                                       relayIDs[ii], rowIDs[ii] );
+                        DbgUtils.logf( "RelayService.process(): message for %s (rowid %d)"
+                                       + " not consumed", relayIDs[ii], rowIDs[ii] );
                     }
                 }
             }
             if ( 0 < idsWMsgs.size() ) {
                 String[] tmp = new String[idsWMsgs.size()];
                 idsWMsgs.toArray( tmp );
-                setupNotification( tmp );
+                BackMoveResult[] bmrsa = new BackMoveResult[bmrs.size()];
+                bmrs.toArray( bmrsa );
+                setupNotifications( tmp, bmrsa, isLocals );
             }
             sink.send( this );
         }
@@ -959,6 +1114,8 @@ public class RelayService extends XWService
                     if ( msgLen + thisLen > MAX_BUF ) {
                         // Need to deal with this case by sending multiple
                         // packets.  It WILL happen.
+                        DbgUtils.logf( "dropping send for lack of space; FIX ME!!" );
+                        Assert.fail();
                         break;
                     }
                     // got space; now write it
@@ -1004,35 +1161,32 @@ public class RelayService extends XWService
     } // sendToRelay
 
     private class RelayMsgSink extends MultiMsgSink {
-
         private HashMap<String,ArrayList<byte[]>> m_msgLists = null;
-        private long m_rowid = -1;
 
-        public void setRowID( long rowid ) { m_rowid = rowid; }
+        public RelayMsgSink() { super( RelayService.this ); }
 
         public void send( Context context )
         {
-            if ( -1 == m_rowid ) {
+            if ( -1 == getRowID() ) {
                 sendToRelay( context, m_msgLists );
             } else {
                 Assert.assertNull( m_msgLists );
             }
         }
-
-        /***** TransportProcs interface *****/
-
-        public int transportSend( byte[] buf, final CommsAddrRec addr, 
-                                  int gameID )
+        
+        @Override
+        public int sendViaRelay( byte[] buf, int gameID )
         {
-            Assert.assertTrue( -1 != m_rowid );
-            sendPacket( RelayService.this, m_rowid, buf );
+            Assert.assertTrue( -1 != getRowID() );
+            sendPacket( RelayService.this, getRowID(), buf );
             return buf.length;
         }
 
         public boolean relayNoConnProc( byte[] buf, String relayID )
         {
-            if ( -1 != m_rowid ) {
-                sendNoConnMessage( m_rowid, relayID, buf );
+            long rowID = getRowID();
+            if ( -1 != rowID ) {
+                sendNoConnMessage( rowID, relayID, buf );
             } else {
                 if ( null == m_msgLists ) {
                     m_msgLists = new HashMap<String,ArrayList<byte[]>>();
@@ -1068,9 +1222,9 @@ public class RelayService extends XWService
             } else {
                 DbgUtils.logf( "Weird: got ack %d but never sent", packetID );
             }
-            DbgUtils.logf( "RelayService.noteAck(): Got ack for %d; "
-                           + "there are %d unacked packets", 
-                           packetID, s_packetsSent.size() );
+            DbgUtils.logdf( "RelayService.noteAck(): Got ack for %d; "
+                            + "there are %d unacked packets", 
+                            packetID, s_packetsSent.size() );
         }
     }
 
@@ -1088,7 +1242,7 @@ public class RelayService extends XWService
 
     private void startThreads()
     {
-        DbgUtils.logf( "RelayService.startThreads()" );
+        DbgUtils.logdf( "RelayService.startThreads()" );
         if ( !NetStateCache.netAvail( this ) ) {
             stopThreads();
         } else if ( XWApp.UDP_ENABLED ) {
@@ -1103,7 +1257,7 @@ public class RelayService extends XWService
 
     private void stopThreads()
     {
-        DbgUtils.logf( "RelayService.stopThreads()" );
+        DbgUtils.logdf( "RelayService.stopThreads()" );
         stopFetchThreadIf();
         stopUDPThreadsIf();
     }
@@ -1263,8 +1417,8 @@ public class RelayService extends XWService
             try {
                 m_packetID = nextPacketID( m_cmd );
                 DataOutputStream out = new DataOutputStream( bas );
-                DbgUtils.logf( "Building packet with cmd %s", 
-                               m_cmd.toString() );
+                DbgUtils.logdf( "RelayService.makeHeader(): building packet with cmd %s", 
+                                m_cmd.toString() );
                 out.writeByte( XWPDevProto.XWPDEV_PROTO_VERSION_1.ordinal() );
                 un2vli( m_packetID, out );
                 out.writeByte( m_cmd.ordinal() );
@@ -1279,5 +1433,4 @@ public class RelayService extends XWService
         public byte[] m_header;
         public int m_packetID;
     }
-
 }

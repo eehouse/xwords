@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009-2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -41,8 +41,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_STUDYLIST = "study";
     public static final String TABLE_NAME_LOC = "loc";
     public static final String TABLE_NAME_PAIRS = "pairs";
+    public static final String TABLE_NAME_INVITES = "invites";
+    public static final String TABLE_NAME_CHAT = "chat";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 22;
+    private static final int DB_VERSION = 26;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -59,6 +61,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CHAT_HISTORY = "CHAT_HISTORY";
     public static final String GAMEID = "GAMEID";
     public static final String REMOTEDEVS = "REMOTEDEVS";
+    public static final String EXTRAS = "EXTRAS";
     public static final String DICTLANG = "DICTLANG";
     public static final String DICTLIST = "DICTLIST";
     public static final String HASMSGS = "HASMSGS";
@@ -68,11 +71,13 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String CONTYPE = "CONTYPE";
     public static final String SERVERROLE = "SERVERROLE";
     public static final String ROOMNAME = "ROOMNAME";
-    public static final String INVITEID = "INVITEID";
+    // written but never read; can go away
+    // public static final String INVITEID = "INVITEID";
     public static final String RELAYID = "RELAYID";
     public static final String SEED = "SEED";
     public static final String SMSPHONE = "SMSPHONE"; // unused -- so far
     public static final String LASTMOVE = "LASTMOVE";
+    public static final String NEXTNAG = "NEXTNAG";
     public static final String GROUPID = "GROUPID";
     public static final String NPACKETSPENDING = "NPACKETSPENDING";
 
@@ -102,12 +107,19 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String BLESSED = "BLESSED";
     public static final String XLATION = "XLATION";
 
+    public static final String ROW = "ROW";
+    public static final String MEANS = "MEANS";
+    public static final String TARGET = "TARGET";
+    public static final String TIMESTAMP = "TIMESTAMP";
+
+    public static final String SENDER = "SENDER";
+    public static final String MESSAGE = "MESSAGE";
 
     private Context m_context;
 
     private static final String[][] s_summaryColsAndTypes = {
         { "rowid",      "INTEGER PRIMARY KEY AUTOINCREMENT" }
-        ,{ VISID,        "INTEGER" }
+        ,{ VISID,        "INTEGER" } // user-visible ID
         ,{ GAME_NAME,    "TEXT" }
         ,{ NUM_MOVES,   "INTEGER" }
         ,{ TURN,        "INTEGER" }
@@ -119,7 +131,6 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ SERVERROLE,   "INTEGER" }
         ,{ CONTYPE,      "INTEGER" }
         ,{ ROOMNAME,     "TEXT" }
-        ,{ INVITEID,     "TEXT" }
         ,{ RELAYID,      "TEXT" }
         ,{ SEED,         "INTEGER" }
         ,{ DICTLANG,     "INTEGER" }
@@ -129,7 +140,9 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ CHAT_HISTORY, "TEXT" }
         ,{ GAMEID,       "INTEGER" }
         ,{ REMOTEDEVS,   "TEXT" }
+        ,{ EXTRAS,       "TEXT" } // json data, most likely
         ,{ LASTMOVE,     "INTEGER DEFAULT 0" }
+        ,{ NEXTNAG,      "INTEGER DEFAULT 0" }
         ,{ GROUPID,      "INTEGER" }
         // HASMSGS: sqlite doesn't have bool; use 0 and 1
         ,{ HASMSGS,      "INTEGER DEFAULT 0" }
@@ -190,6 +203,19 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ "UNIQUE", "(" + KEY + ")" }
     };
 
+    private static final String[][] s_invitesSchema = {
+        { ROW, "INTEGER" }
+        ,{ TARGET, "TEXT" }
+        ,{ MEANS, "INTEGER" }
+        ,{ TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" }
+    };
+
+    private static final String[][] s_chatsSchema = {
+        { ROW, "INTEGER" }
+        ,{ SENDER, "INTEGER" }
+        ,{ MESSAGE, "TEXT" }
+    };
+
     public DBHelper( Context context )
     {
         super( context, DB_NAME, null, DB_VERSION );
@@ -213,6 +239,8 @@ public class DBHelper extends SQLiteOpenHelper {
         createStudyTable( db );
         createLocTable( db );
         createPairsTable( db );
+        createInvitesTable( db );
+        createChatsTable( db );
     }
 
     @Override
@@ -237,7 +265,6 @@ public class DBHelper extends SQLiteOpenHelper {
         case 9:
             addSumColumn( db, DICTLIST );
         case 10:
-            addSumColumn( db, INVITEID );
         case 11:
             addSumColumn( db, REMOTEDEVS );
         case 12:
@@ -271,6 +298,19 @@ public class DBHelper extends SQLiteOpenHelper {
             createLocTable( db );
         case 21:
             createPairsTable( db );
+        case 22:
+            if ( !madeSumTable ) {
+                addSumColumn( db, NEXTNAG );
+            }
+        case 23:
+            if ( !madeSumTable ) {
+                addSumColumn( db, EXTRAS );
+            }
+        case 24:
+            createInvitesTable( db );
+        case 25:
+            createChatsTable( db );
+            
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
@@ -367,6 +407,16 @@ public class DBHelper extends SQLiteOpenHelper {
     private void createPairsTable( SQLiteDatabase db )
     {
         createTable( db, TABLE_NAME_PAIRS, s_pairsSchema );
+    }
+
+    private void createInvitesTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_INVITES, s_invitesSchema );
+    }
+
+    private void createChatsTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_CHAT, s_chatsSchema );
     }
 
     // Move all existing games to the row previously named "cur games'

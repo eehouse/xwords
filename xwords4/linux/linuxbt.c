@@ -55,7 +55,6 @@
 
 typedef struct LinBtStuff {
     CommonGlobals* globals;
-    void* sockStorage;
     union {
         struct {
             int listener;               /* socket */
@@ -69,6 +68,9 @@ typedef struct LinBtStuff {
     int socket;
     XP_Bool amMaster;
 } LinBtStuff;
+
+static gboolean bt_socket_proc( GIOChannel* source, GIOCondition condition, 
+                                gpointer data );
 
 static LinBtStuff*
 lbt_make( MPFORMAL XP_Bool amMaster )
@@ -184,8 +186,7 @@ lbt_connectSocket( LinBtStuff* btStuff, const CommsAddrRec* addrP )
              // connect to server
              && (0 == connect( sock, (struct sockaddr *)&saddr, sizeof(saddr) )) ) {
             CommonGlobals* globals = btStuff->globals;
-            (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       -1, sock, &btStuff->sockStorage );
+            (*globals->socketAdded)( globals->socketAddedClosure, sock, bt_socket_proc );
             btStuff->socket = sock;
         } else {
             XP_LOGF( "%s: connect->%s; closing socket %d", __func__, strerror(errno), sock );
@@ -214,8 +215,7 @@ lbt_accept( int listener, void* ctxt )
     
     success = sock >= 0;
     if ( success ) {
-        (*globals->socketChanged)( globals->socketChangedClosure, 
-                                   -1, sock, &btStuff->sockStorage );
+        (*globals->socketAdded)( globals->socketAddedClosure, sock, bt_socket_proc );
         XP_ASSERT( btStuff->socket == -1 );
         btStuff->socket = sock;
     } else {
@@ -409,12 +409,6 @@ linux_bt_close( CommonGlobals* globals )
             sleep( 2 );         /* see if this gives palm a chance to not hang */
         }
 
-        if ( btStuff->socket != -1 ) {
-            (*globals->socketChanged)( globals->socketChangedClosure, 
-                                       btStuff->socket, -1, &btStuff->sockStorage );
-            (void)close( btStuff->socket );
-        }
-
         XP_FREE( globals->util->mpool, btStuff );
         globals->btStuff = NULL;
     }
@@ -601,6 +595,26 @@ linux_bt_scan()
     GSList* list = NULL;
     btDevsIterate( append_name_proc, &list );
     return list;
+}
+
+static gboolean
+bt_socket_proc( GIOChannel* source, GIOCondition condition, gpointer data )
+{
+    XP_USE( data );
+    int fd = g_io_channel_unix_get_fd( source );
+    if ( 0 != (G_IO_IN & condition) ) {
+        unsigned char buf[1024];
+#ifdef DEBUG
+        XP_S16 nBytes = 
+#endif
+            linux_bt_receive( fd, buf, sizeof(buf) );
+        XP_ASSERT(nBytes==2 || XP_TRUE);
+
+        XP_ASSERT(0);           /* not implemented beyond this point */
+    } else {
+        XP_ASSERT(0);           /* not implemented beyond this point */
+    }
+    return FALSE;
 }
 
 #endif /* XWFEATURE_BLUETOOTH */

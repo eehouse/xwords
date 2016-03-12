@@ -58,6 +58,7 @@ typedef enum {
 /*     ERR_NOT_YOUR_TURN_TO_MOVE, */
     ERR_CANT_UNDO_TILEASSIGN,
     ERR_CANT_HINT_WHILE_DISABLED,
+    ERR_NO_HINT_FOUND,          /* not really an error... */
 
     ERR_RELAY_BASE,
     ERR_RELAY_END = ERR_RELAY_BASE + XWRELAY_ERROR_LASTERR
@@ -161,6 +162,9 @@ typedef struct UtilVtable {
 
     const XP_UCHAR* (*m_util_getUserString)( XW_UtilCtxt* uc, 
                                              XP_U16 stringCode );
+    const XP_UCHAR* (*m_util_getUserQuantityString)( XW_UtilCtxt* uc, 
+                                                     XP_U16 stringCode,
+                                                     XP_U16 quantity );
 
     XP_Bool (*m_util_warnIllegalWord)( XW_UtilCtxt* uc, BadWordInfo* bwi, 
                                        XP_U16 turn, XP_Bool turnLost );
@@ -182,7 +186,8 @@ typedef struct UtilVtable {
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     void (*m_util_informMissing)(XW_UtilCtxt* uc, XP_Bool isServer, 
-                                 CommsConnType connType, XP_U16 nMissing );
+                                 const CommsAddrRec* addr, XP_U16 nDevs,
+                                 XP_U16 nMissing );
     void (*m_util_addrChange)( XW_UtilCtxt* uc, const CommsAddrRec* oldAddr,
                                const CommsAddrRec* newAddr );
     void (*m_util_setIsServer)(XW_UtilCtxt* uc, XP_Bool isServer );
@@ -194,7 +199,8 @@ typedef struct UtilVtable {
 #endif
 
 #ifdef XWFEATURE_CHAT
-    void (*m_util_showChat)( XW_UtilCtxt* uc, const XP_UCHAR* const msg );
+    void (*m_util_showChat)( XW_UtilCtxt* uc, const XP_UCHAR* const msg, 
+                             XP_S16 from );
 #endif
 
 #ifdef SHOW_PROGRESS
@@ -300,6 +306,8 @@ struct XW_UtilCtxt {
 
 #define util_getUserString( uc, c ) \
          (uc)->vtable->m_util_getUserString((uc),(c))
+#define util_getUserQuantityString( uc, c, q )            \
+         (uc)->vtable->m_util_getUserQuantityString((uc),(c),(q))
 
 #define util_warnIllegalWord( uc, w, p, b ) \
          (uc)->vtable->m_util_warnIllegalWord((uc),(w),(p),(b))
@@ -323,8 +331,8 @@ struct XW_UtilCtxt {
 #endif
 
 #ifndef XWFEATURE_STANDALONE_ONLY
-# define util_informMissing( uc, is, ct, nm )                \
-    (uc)->vtable->m_util_informMissing((uc), (is), (ct), (nm) )
+# define util_informMissing( uc, is, ct, nd, nm )                       \
+    (uc)->vtable->m_util_informMissing((uc), (is), (ct), (nd), (nm) )
 # define util_addrChange( uc, addro, addrn ) \
          (uc)->vtable->m_util_addrChange((uc), (addro), (addrn))
 # define util_setIsServer( uc, is ) \
@@ -339,7 +347,7 @@ struct XW_UtilCtxt {
 #endif
 
 #ifdef XWFEATURE_CHAT
-# define util_showChat( uc, m ) (uc)->vtable->m_util_showChat((uc),(m))
+# define util_showChat( uc, m, f ) (uc)->vtable->m_util_showChat((uc),(m),(f))
 #endif
 
 # ifdef SHOW_PROGRESS

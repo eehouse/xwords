@@ -20,13 +20,42 @@
 
 package org.eehouse.android.xw4.jni;
 
-import org.eehouse.android.xw4.DbgUtils;
-import org.eehouse.android.xw4.Utils;
-
 import android.graphics.Rect;
+
+import junit.framework.Assert;
+
+import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.NetLaunchInfo;
+import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 
 // Collection of native methods and a bit of state
 public class XwJNI {
+
+    public static class GamePtr {
+        private int m_ptr = 0;
+
+        private GamePtr( int ptr ) { m_ptr = ptr; }
+
+        public int ptr() { Assert.assertTrue( 0 != m_ptr ); return m_ptr; }
+
+        // Force (via an assert in finalize() below) that this is called. It's
+        // better if jni stuff isn't being done on the finalizer thread
+        public void release()
+        {
+            if ( 0 != m_ptr ) {
+                game_dispose( this );
+                m_ptr = 0;
+            }
+        }
+
+        // @Override
+        public void finalize() throws java.lang.Throwable
+        {
+            Assert.assertTrue( 0 == m_ptr );
+            super.finalize();
+        }
+    }
 
     private static XwJNI s_JNI = null;
     private static XwJNI getJNI()
@@ -74,25 +103,53 @@ public class XwJNI {
     // how java/jni work (or perhaps my limited understanding of it.)
 
     // callback into jni from java when timer set here fires.
-    public static native boolean timerFired( int gamePtr, int why, 
+    public static native boolean timerFired( GamePtr gamePtr, int why, 
                                              int when, int handle );
 
     // Stateless methods
     public static native byte[] gi_to_stream( CurGameInfo gi );
     public static native void gi_from_stream( CurGameInfo gi, byte[] stream );
+    public static byte[] nliToStream( NetLaunchInfo nli )
+    {
+        nli.freezeAddrs();
+        return nli_to_stream( nli );
+    }
+    private static native byte[] nli_to_stream( NetLaunchInfo nli );
+    public static NetLaunchInfo nliFromStream( byte[] stream )
+    {
+        NetLaunchInfo nli = new NetLaunchInfo();
+        nli_from_stream( nli, stream );
+        nli.unfreezeAddrs();
+        return nli;
+    }
+    private static native void nli_from_stream( NetLaunchInfo nli, byte[] stream );
     public static native void comms_getInitialAddr( CommsAddrRec addr,
-                                                    String relayHost,
+                                                    String relayHost, 
                                                     int relayPort );
     public static native String comms_getUUID();
 
     // Game methods
-    public static int initJNI()
+    public static GamePtr initJNI( long rowid )
     {
         int seed = Utils.nextRandomInt();
-        return initJNI( getJNI().m_ptr, seed );
+        String tag = String.format( "%d", rowid );
+        int ptr = initJNI( getJNI().m_ptr, seed, tag );
+        GamePtr result = 0 == ptr ? null : new GamePtr( ptr );
+        return result;
     }
 
-    public static native void game_makeNewGame( int gamePtr,
+    public static GamePtr initJNI()
+    {
+        return initJNI( 0 );
+    }
+
+    // hack to allow cleanup of env owned by thread that doesn't open game
+    public static void threadDone()
+    {
+        envDone( getJNI().m_ptr );
+    }
+
+    public static native void game_makeNewGame( GamePtr gamePtr,
                                                 CurGameInfo gi, 
                                                 UtilCtxt util,
                                                 JNIUtils jniu,
@@ -103,7 +160,7 @@ public class XwJNI {
                                                 String[] dictPaths, 
                                                 String langName );
 
-    public static native boolean game_makeFromStream( int gamePtr,
+    public static native boolean game_makeFromStream( GamePtr gamePtr,
                                                       byte[] stream, 
                                                       CurGameInfo gi, 
                                                       String[] dictNames,
@@ -118,7 +175,7 @@ public class XwJNI {
 
     // leave out options params for when game won't be rendered or
     // played
-    public static void game_makeNewGame( int gamePtr, CurGameInfo gi,
+    public static void game_makeNewGame( GamePtr gamePtr, CurGameInfo gi,
                                          JNIUtils jniu, CommonPrefs cp, 
                                          String[] dictNames, byte[][] dictBytes, 
                                          String[] dictPaths, String langName ) {
@@ -127,7 +184,16 @@ public class XwJNI {
                           dictNames, dictBytes, dictPaths, langName );
     }
 
-    public static boolean game_makeFromStream( int gamePtr,
+    public static void game_makeNewGame( GamePtr gamePtr, CurGameInfo gi,
+                                         JNIUtils jniu, CommonPrefs cp, 
+                                         TransportProcs procs,
+                                         String[] dictNames, byte[][] dictBytes, 
+                                         String[] dictPaths, String langName ) {
+        game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu, (DrawCtx)null, 
+                          cp, procs, dictNames, dictBytes, dictPaths, langName );
+    }
+
+    public static boolean game_makeFromStream( GamePtr gamePtr,
                                                byte[] stream, 
                                                CurGameInfo gi, 
                                                String[] dictNames,
@@ -142,7 +208,7 @@ public class XwJNI {
                                     (DrawCtx)null, cp, (TransportProcs)null );
     }
 
-    public static boolean game_makeFromStream( int gamePtr,
+    public static boolean game_makeFromStream( GamePtr gamePtr,
                                                byte[] stream, 
                                                CurGameInfo gi, 
                                                String[] dictNames,
@@ -159,17 +225,17 @@ public class XwJNI {
                                     (DrawCtx)null, cp, procs );
     }
 
-    public static native boolean game_receiveMessage( int gamePtr, 
+    public static native boolean game_receiveMessage( GamePtr gamePtr, 
                                                       byte[] stream,
                                                       CommsAddrRec retAddr );
-    public static native void game_summarize( int gamePtr, GameSummary summary );
-    public static native byte[] game_saveToStream( int gamePtr,
+    public static native void game_summarize( GamePtr gamePtr, GameSummary summary );
+    public static native byte[] game_saveToStream( GamePtr gamePtr,
                                                    CurGameInfo gi  );
-    public static native void game_saveSucceeded( int gamePtr );
-    public static native void game_getGi( int gamePtr, CurGameInfo gi );
-    public static native void game_getState( int gamePtr, 
+    public static native void game_saveSucceeded( GamePtr gamePtr );
+    public static native void game_getGi( GamePtr gamePtr, CurGameInfo gi );
+    public static native void game_getState( GamePtr gamePtr, 
                                              JNIThread.GameStateInfo gsi );
-    public static native boolean game_hasComms( int gamePtr );
+    public static native boolean game_hasComms( GamePtr gamePtr );
 
     // Keep for historical purposes.  But threading issues make it
     // impossible to implement this without a ton of work.
@@ -177,15 +243,15 @@ public class XwJNI {
     //                                               String dictName, 
     //                                               byte[] dictBytes, 
     //                                               String dictPath ); 
-    public static native void game_dispose( int gamePtr );
+    private static native void game_dispose( GamePtr gamePtr );
 
     // Board methods
-    public static native void board_setDraw( int gamePtr, DrawCtx draw );
-    public static native void board_invalAll( int gamePtr );
-    public static native boolean board_draw( int gamePtr );
+    public static native void board_setDraw( GamePtr gamePtr, DrawCtx draw );
+    public static native void board_invalAll( GamePtr gamePtr );
+    public static native boolean board_draw( GamePtr gamePtr );
 
     // Only if COMMON_LAYOUT defined
-    public static native void board_figureLayout( int gamePtr, CurGameInfo gi, 
+    public static native void board_figureLayout( GamePtr gamePtr, CurGameInfo gi, 
                                                   int left, int top, int width,
                                                   int height, int scorePct, 
                                                   int trayPct, int scoreWidth,
@@ -193,7 +259,7 @@ public class XwJNI {
                                                   boolean squareTiles, 
                                                   BoardDims dims );
     // Only if COMMON_LAYOUT defined
-    public static native void board_applyLayout( int gamePtr, BoardDims dims );
+    public static native void board_applyLayout( GamePtr gamePtr, BoardDims dims );
 
     // public static native void board_setPos( int gamePtr, int left, int top,
                                             // int width, int height, 
@@ -209,37 +275,39 @@ public class XwJNI {
     //                                              int timerLeft, int timerTop,
     //                                              int timerWidth, 
     //                                              int timerHeight );
-    public static native boolean board_zoom( int gamePtr, int zoomBy, 
+    public static native boolean board_zoom( GamePtr gamePtr, int zoomBy, 
                                              boolean[] canZoom );
-    public static native boolean board_getActiveRect( int gamePtr, Rect rect,
+    public static native boolean board_getActiveRect( GamePtr gamePtr, Rect rect,
                                                       int[] dims );
 
-    public static native boolean board_handlePenDown( int gamePtr, 
+    public static native boolean board_handlePenDown( GamePtr gamePtr, 
                                                       int xx, int yy, 
                                                       boolean[] handled );
-    public static native boolean board_handlePenMove( int gamePtr, 
+    public static native boolean board_handlePenMove( GamePtr gamePtr, 
                                                       int xx, int yy );
-    public static native boolean board_handlePenUp( int gamePtr, 
+    public static native boolean board_handlePenUp( GamePtr gamePtr, 
                                                     int xx, int yy );
 
-    public static native boolean board_juggleTray( int gamePtr );
-    public static native int board_getTrayVisState( int gamePtr );
-    public static native boolean board_hideTray( int gamePtr );
-    public static native boolean board_showTray( int gamePtr );
-    public static native boolean board_toggle_showValues( int gamePtr );
-    public static native boolean board_commitTurn( int gamePtr );
-    public static native boolean board_flip( int gamePtr );
-    public static native boolean board_replaceTiles( int gamePtr );
-    public static native boolean board_redoReplacedTiles( int gamePtr );
-    public static native void board_resetEngine( int gamePtr );
-    public static native boolean board_requestHint( int gamePtr, 
+    public static native boolean board_juggleTray( GamePtr gamePtr );
+    public static native int board_getTrayVisState( GamePtr gamePtr );
+    public static native boolean board_hideTray( GamePtr gamePtr );
+    public static native boolean board_showTray( GamePtr gamePtr );
+    public static native boolean board_toggle_showValues( GamePtr gamePtr );
+    public static native boolean board_commitTurn( GamePtr gamePtr );
+    public static native boolean board_flip( GamePtr gamePtr );
+    public static native boolean board_replaceTiles( GamePtr gamePtr );
+    public static native int board_getSelPlayer( GamePtr gamePtr );
+    public static native boolean board_redoReplacedTiles( GamePtr gamePtr );
+    public static native void board_resetEngine( GamePtr gamePtr );
+    public static native boolean board_requestHint( GamePtr gamePtr, 
                                                     boolean useTileLimits,
                                                     boolean goBackwards,
                                                     boolean[] workRemains );
-    public static native boolean board_beginTrade( int gamePtr );
-    public static native boolean board_endTrade( int gamePtr );
+    public static native boolean board_beginTrade( GamePtr gamePtr );
+    public static native boolean board_endTrade( GamePtr gamePtr );
 
-    public static native String board_formatRemainingTiles( int gamePtr );
+    public static native String board_formatRemainingTiles( GamePtr gamePtr );
+    public static native void board_sendChat( GamePtr gamePtr, String msg );
 
     public enum XP_Key {
         XP_KEY_NONE,
@@ -258,7 +326,7 @@ public class XwJNI {
 
         XP_KEY_LAST
     };
-    public static native boolean board_handleKey( int gamePtr, XP_Key key, 
+    public static native boolean board_handleKey( GamePtr gamePtr, XP_Key key, 
                                                   boolean up, boolean[] handled );
     // public static native boolean board_handleKeyDown( XP_Key key, 
     //                                                   boolean[] handled );
@@ -266,40 +334,47 @@ public class XwJNI {
     //                                                     boolean[] handled );
 
     // Model
-    public static native String model_writeGameHistory( int gamePtr, 
+    public static native String model_writeGameHistory( GamePtr gamePtr, 
                                                         boolean gameOver );
-    public static native int model_getNMoves( int gamePtr );
-    public static native int model_getNumTilesInTray( int gamePtr, int player );
-    public static native String model_getPlayersLastScore( int gamePtr, 
-                                                           int player );
+    public static native int model_getNMoves( GamePtr gamePtr );
+    public static native int model_getNumTilesInTray( GamePtr gamePtr, int player );
+    public static native void model_getPlayersLastScore( GamePtr gamePtr, 
+                                                         int player, 
+                                                         LastMoveInfo lmi );
     // Server
-    public static native void server_reset( int gamePtr );
-    public static native void server_handleUndo( int gamePtr );
-    public static native boolean server_do( int gamePtr );
-    public static native String server_formatDictCounts( int gamePtr, int nCols );
-    public static native boolean server_getGameIsOver( int gamePtr );
-    public static native String server_writeFinalScores( int gamePtr );
-    public static native void server_initClientConnection( int gamePtr );
-    public static native void server_endGame( int gamePtr );
-    public static native void server_sendChat( int gamePtr, String msg );
+    public static native void server_reset( GamePtr gamePtr );
+    public static native void server_handleUndo( GamePtr gamePtr );
+    public static native boolean server_do( GamePtr gamePtr );
+    public static native String server_formatDictCounts( GamePtr gamePtr, int nCols );
+    public static native boolean server_getGameIsOver( GamePtr gamePtr );
+    public static native String server_writeFinalScores( GamePtr gamePtr );
+    public static native boolean server_initClientConnection( GamePtr gamePtr );
+    public static native void server_endGame( GamePtr gamePtr );
 
     // hybrid to save work
-    public static native boolean board_server_prefsChanged( int gamePtr, 
+    public static native boolean board_server_prefsChanged( GamePtr gamePtr, 
                                                             CommonPrefs cp );
 
     // Comms
-    public static native void comms_start( int gamePtr );
-    public static native void comms_stop( int gamePtr );
-    public static native void comms_resetSame( int gamePtr );
-    public static native void comms_getAddr( int gamePtr, CommsAddrRec addr );
-    public static native CommsAddrRec[] comms_getAddrs( int gamePtr );
-    public static native void comms_setAddr( int gamePtr, CommsAddrRec addr );
-    public static native void comms_resendAll( int gamePtr, boolean force,
-                                               boolean andAck );
-    public static native void comms_ackAny( int gamePtr );
-    public static native void comms_transportFailed( int gamePtr );
-    public static native boolean comms_isConnected( int gamePtr );
-    public static native String comms_getStats( int gamePtr );
+    public static native void comms_start( GamePtr gamePtr );
+    public static native void comms_stop( GamePtr gamePtr );
+    public static native void comms_resetSame( GamePtr gamePtr );
+    public static native void comms_getAddr( GamePtr gamePtr, CommsAddrRec addr );
+    public static native CommsAddrRec[] comms_getAddrs( GamePtr gamePtr );
+    public static native void comms_setAddr( GamePtr gamePtr, CommsAddrRec addr );
+    public static native int comms_resendAll( GamePtr gamePtr, boolean force,
+                                              CommsConnType filter,
+                                              boolean andAck );
+    public static int comms_resendAll( GamePtr gamePtr, boolean force,
+                                       boolean andAck ) {
+        return comms_resendAll( gamePtr, force, null, andAck );
+    }
+    public static native void comms_ackAny( GamePtr gamePtr );
+    public static native void comms_transportFailed( GamePtr gamePtr, 
+                                                     CommsConnType failed );
+    public static native boolean comms_isConnected( GamePtr gamePtr );
+    public static native String comms_formatRelayID( GamePtr gamePtr, int indx );
+    public static native String comms_getStats( GamePtr gamePtr );
 
     // Dicts
     public static class DictWrapper {
@@ -376,8 +451,9 @@ public class XwJNI {
 
     // Private methods -- called only here
     private static native int initGlobals();
-    private static native void cleanGlobals( int ptr );
-    private static native int initJNI( int jniState, int seed );
+    private static native void cleanGlobals( int globals );
+    private static native int initJNI( int jniState, int seed, String tag );
+    private static native void envDone( int globals );
     private static native void dict_ref( int dictPtr );
     private static native void dict_unref( int dictPtr );
     private static native boolean dict_getInfo( int jniState, byte[] dict, 

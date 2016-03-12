@@ -24,12 +24,16 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.widget.ArrayAdapter;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DictUtils.DictAndLoc;
@@ -38,16 +42,77 @@ import org.eehouse.android.xw4.jni.JNIUtilsImpl;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.DictInfo;
 import org.eehouse.android.xw4.jni.CommonPrefs;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class DictLangCache {
     private static String[] s_langNames;
     private static HashMap<String, Integer> s_langCodes;
 
     private static int s_adaptedLang = -1;
-    private static ArrayAdapter<String> s_langsAdapter;
+    private static LangsArrayAdapter s_langsAdapter;
     private static ArrayAdapter<String> s_dictsAdapter;
     private static String s_last;
     private static Handler s_handler;
+
+
+    public static class LangsArrayAdapter extends ArrayAdapter<String> {
+        private Context m_context;
+        private Map<String, String> m_map;
+
+        public LangsArrayAdapter( Context context, int itemLayout ) {
+            super( context, itemLayout );
+            m_context = context;
+        }
+
+        public void rebuild()
+        {
+            m_map = new HashMap<String, String>();
+            DictAndLoc[] dals = DictUtils.dictList( m_context );
+            for ( DictAndLoc dal : dals ) {
+                String lang = getLangName( m_context, dal.name );
+                if ( null != lang && 0 != lang.length() ) {
+                    if ( ! m_map.containsValue( lang ) ) {
+                        String locName = LocUtils.xlateLang( m_context, lang, 
+                                                             true );
+                        m_map.put( locName, lang );
+                    }
+                }
+            }
+
+            // Now build the array data
+            clear();
+            for ( Iterator<String> iter = m_map.keySet().iterator(); 
+                  iter.hasNext(); ) {
+                String locName = iter.next();
+                add( locName );
+            }
+            if ( null != s_last ) {
+                add( s_last );
+            }
+            sort( KeepLast );
+        }
+
+        public int getPosForLang( String lang )
+        {
+            int result = -1;
+            for ( int ii = 0; ii < getCount(); ++ii ) {
+                String code = getLangAtPosition( ii );
+                if ( code.equals( lang ) ) {
+                    result = ii;
+                    break;
+                }
+            }
+            return result;
+        }
+
+        public String getLangAtPosition( int position )
+        {
+            String locName = getItem( position );
+            String result = m_map.get( locName );
+            return result;
+        }
+    }
+
     private static Comparator<String> KeepLast = 
         new Comparator<String>() {
             public int compare( String str1, String str2 )
@@ -70,12 +135,10 @@ public class DictLangCache {
             int wordCount = info.wordCount;
             
             String langName = getLangName( context, dal.name );
-            if ( 0 == wordCount ) {
-                result = String.format( "%s (%s)", dal.name, langName );
-            } else {
-                result = String.format( "%s (%s/%d)", dal.name, langName, 
-                                        wordCount );
-            }
+            String locName = LocUtils.xlateLang( context, langName );
+            result = LocUtils.getString( context, R.string.dict_desc_fmt, 
+                                         dal.name, locName,
+                                         wordCount );
         }
         return result;
     }
@@ -280,8 +343,7 @@ public class DictLangCache {
                                                          s_adaptedLang ) );
                         }
                         if ( null != s_langsAdapter ) {
-                            rebuildAdapter( s_langsAdapter, 
-                                            DictLangCache.listLangs( context ) );
+                            s_langsAdapter.rebuild();
                         }
                     }
                 } );
@@ -345,13 +407,13 @@ public class DictLangCache {
         s_handler = new Handler();
     }
 
-    public static ArrayAdapter<String> getLangsAdapter( Context context )
+    public static LangsArrayAdapter getLangsAdapter( Context context )
     {
         if ( null == s_langsAdapter ) {
             s_langsAdapter = 
-                new ArrayAdapter<String>( context,
-                                          android.R.layout.simple_spinner_item );
-            rebuildAdapter( s_langsAdapter, listLangs( context ) );
+                new LangsArrayAdapter( context, 
+                                       android.R.layout.simple_spinner_item );
+            s_langsAdapter.rebuild();
         }
         return s_langsAdapter;
     }

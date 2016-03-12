@@ -28,16 +28,15 @@ typedef struct _SMSProcs {
     void (*inviteReceived)( void* closure, const XP_UCHAR* gameName, 
                             XP_U32 gameID, XP_U16 dictLang, 
                             const XP_UCHAR* dictName, XP_U16 nPlayers, 
-                            XP_U16 nHere, const CommsAddrRec* returnAddr );
-    void (*msgReceived)( void* closure, XP_U32 gameID, const XP_U8* buf, 
-                         XP_U16 len, const CommsAddrRec* from );
+                            XP_U16 nHere, XP_U16 forceChannel,
+                            const CommsAddrRec* returnAddr );
+    void (*msgReceived)( void* closure, const CommsAddrRec* from, XP_U32 gameID,
+                         const XP_U8* buf, XP_U16 len );
     void (*msgNoticeReceived)( void* closure );
     void (*devIDReceived)( void* closure, const XP_UCHAR* devID, 
                            XP_U16 maxInterval );
     void (*msgErrorMsg)( void* closure, const XP_UCHAR* msg );
-    void (*socketChanged)( void* closure, int newSock, int oldSock, 
-                           SockReceiver proc, void* procClosure );
-
+    SocketAddedFunc socketAdded;
 } SMSProcs;
 
 
@@ -47,7 +46,8 @@ XP_S16 linux_sms_send( LaunchParams* params, const XP_U8* buf,
                        XP_U16 buflen, const XP_UCHAR* phone, XP_U16 port, 
                        XP_U32 gameID );
 void linux_sms_invite( LaunchParams* params, const CurGameInfo* info, 
-                       const gchar* gameName, XP_U16 nMissing, 
+                       const CommsAddrRec* addr, const gchar* gameName, 
+                       XP_U16 nMissing, int forceChannel,
                        const gchar* phone, int port );
 void linux_sms_cleanup( LaunchParams* params );
 

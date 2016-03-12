@@ -117,7 +117,6 @@ void board_setTimerLoc( BoardCtxt* board,
 void board_setTrayLoc( BoardCtxt* board, XP_U16 trayLeft, XP_U16 trayTop, 
                        XP_U16 trayWidth, XP_U16 trayHeight );
 
-
 /* Vertical scroll support; offset is in rows, not pixels */
 XP_Bool board_setYOffset( BoardCtxt* board, XP_U16 newOffset );
 XP_U16 board_getYOffset( const BoardCtxt* board );
@@ -129,6 +128,7 @@ XP_Bool board_canHideRack( const BoardCtxt* board );
 XP_Bool board_canTrade( BoardCtxt* board );
 XP_Bool board_canTogglePending( const BoardCtxt* board );
 XP_Bool board_canHint( const BoardCtxt* board );
+void board_sendChat( const BoardCtxt* board, const XP_UCHAR const* msg );
 
 /* zoomBy: >0: zoom in; < 0: zoom out; 0: query only */
 XP_Bool board_zoom( BoardCtxt* board, XP_S16 zoomBy, XP_Bool* canInOut );
@@ -150,13 +150,15 @@ XP_Bool board_toggle_showValues( BoardCtxt* board );
 XP_Bool board_replaceTiles( BoardCtxt* board );
 XP_Bool board_redoReplacedTiles( BoardCtxt* board );
 
+XP_U16 board_getSelPlayer(const BoardCtxt* board );
+
 XP_Bool board_requestHint( BoardCtxt* board, 
 #ifdef XWFEATURE_SEARCHLIMIT
                            XP_Bool useTileLimits,
 #endif
                            XP_Bool usePrev, XP_Bool* workRemainsP );
 
-XP_Bool board_prefsChanged( BoardCtxt* board, CommonPrefs* cp );
+XP_Bool board_prefsChanged( BoardCtxt* board, const CommonPrefs* cp );
 
 BoardObjectType board_getFocusOwner( BoardCtxt* board );
 

@@ -375,6 +375,32 @@ writeStreamIf( XWStreamCtxt* dest, XWStreamCtxt* src )
     }
 }
 
+static void
+informMissing( const ServerCtxt* server )
+{
+    XP_Bool isServer = amServer( server );
+    const CommsCtxt* comms = server->vol.comms;
+    CommsAddrRec addr;
+    CommsAddrRec* addrP;
+    if ( !comms ) {
+        addrP = NULL;
+    } else {
+        addrP = &addr;
+        comms_getAddr( comms, addrP );
+    }
+
+    XP_U16 nDevs = isServer ? server->nv.nDevices - 1 : 0;
+    XP_U16 nPending = isServer ? server->nv.pendingRegistrations : 0;
+    util_informMissing( server->vol.util, isServer, addrP, nDevs, nPending );
+}
+
+XP_U16
+server_getPendingRegs( const ServerCtxt* server )
+{
+    XP_U16 nPending = amServer( server ) ? server->nv.pendingRegistrations : 0;
+    return nPending;
+}
+
 ServerCtxt*
 server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model, 
                        CommsCtxt* comms, XW_UtilCtxt* util, XP_U16 nPlayers )
@@ -416,9 +442,7 @@ server_makeFromStream( MPFORMAL XWStreamCtxt* stream, ModelCtxt* model,
         server->nv.prevWordsStream = readStreamIf( server, stream );
     }
 
-    util_informMissing( util, server->vol.gi->serverRole == SERVER_ISSERVER,
-                        comms_getConType( comms ),
-                        server->nv.pendingRegistrations );
+    informMissing( server );
     return server;
 } /* server_makeFromStream */
 
@@ -522,7 +546,7 @@ figureSleepTime( const ServerCtxt* server )
 #endif
 
 void
-server_prefsChanged( ServerCtxt* server, CommonPrefs* cp )
+server_prefsChanged( ServerCtxt* server, const CommonPrefs* cp )
 {
     server->nv.showRobotScores = cp->showRobotScores;
     server->nv.sortNewTiles = cp->sortNewTiles;
@@ -551,9 +575,10 @@ server_countTilesInPool( ServerCtxt* server )
 #define NAME_LEN_NBITS 6
 #define MAX_NAME_LEN ((1<<(NAME_LEN_NBITS-1))-1)
 #ifndef XWFEATURE_STANDALONE_ONLY
-void
+XP_Bool
 server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 {
+    XP_Bool result;
     LOG_FUNC();
     CurGameInfo* gi = server->vol.gi;
     XP_U16 nPlayers;
@@ -564,7 +589,8 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
 
     XP_ASSERT( gi->serverRole == SERVER_ISCLIENT );
     XP_ASSERT( stream != NULL );
-    if ( server->nv.gameState == XWSTATE_NONE ) {
+    result = server->nv.gameState == XWSTATE_NONE;
+    if ( result ) {
         stream_open( stream );
 
         writeProto( server, stream, XWPROTO_DEVICE_REGISTRATION );
@@ -604,17 +630,20 @@ server_initClientConnection( ServerCtxt* server, XWStreamCtxt* stream )
                  getStateStr(server->nv.gameState) );
     }
     stream_destroy( stream );
+    return result;
 } /* server_initClientConnection */
 #endif
 
 #ifdef XWFEATURE_CHAT
 static void
-sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg )
+sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg,
+            XP_S8 from )
 {
     if ( comms_canChat( server->vol.comms ) ) {
         XWStreamCtxt* stream = messageStreamWithHeader( server, devIndex,
                                                         XWPROTO_CHAT );
         stringToStream( stream, msg );
+        stream_putU8( stream, from );
         stream_destroy( stream );
     } else {
         XP_LOGF( "%s: dropping chat %s; queue too full?", __func__, msg );
@@ -623,23 +652,23 @@ sendChatTo( ServerCtxt* server, XP_U16 devIndex, const XP_UCHAR const* msg )
 
 static void
 sendChatToClientsExcept( ServerCtxt* server, XP_U16 skip, 
-                         const XP_UCHAR const* msg )
+                         const XP_UCHAR const* msg, XP_S8 from )
 {
     XP_U16 devIndex;
     for ( devIndex = 1; devIndex < server->nv.nDevices; ++devIndex ) {
         if ( devIndex != skip ) {
-            sendChatTo( server, devIndex, msg );
+            sendChatTo( server, devIndex, msg, from );
         }
     }
 }
 
 void
-server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg )
+server_sendChat( ServerCtxt* server, const XP_UCHAR const* msg, XP_S16 from )
 {
     if ( server->vol.gi->serverRole == SERVER_ISCLIENT ) {
-        sendChatTo( server, SERVER_DEVICE, msg );
+        sendChatTo( server, SERVER_DEVICE, msg, from );
     } else {
-        sendChatToClientsExcept( server, SERVER_DEVICE, msg );
+        sendChatToClientsExcept( server, SERVER_DEVICE, msg, from );
     }
 }
 #endif
@@ -698,6 +727,8 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
     XP_ASSERT( playersInMsg > 0 );
 
     if ( server->nv.pendingRegistrations < playersInMsg ) {
+        XP_LOGF( "%s: got %d players but missing only %d", __func__, 
+                 playersInMsg, server->nv.pendingRegistrations );
         util_userError( server->vol.util, ERR_REG_UNEXPECTED_USER );
         success = XP_FALSE;
     } else {
@@ -743,6 +774,7 @@ handleRegistrationMsg( ServerCtxt* server, XWStreamCtxt* stream )
             assignTilesToAll( server );
             SETSTATE( server, XWSTATE_RECEIVED_ALL_REG );
         }
+        informMissing( server );
     }
 
     return success;
@@ -877,7 +909,8 @@ makeRobotMove( ServerCtxt* server )
 
             if ( !!stream ) {
                 XP_UCHAR buf[64];
-                str = util_getUserString(util, STRD_ROBOT_TRADED);
+                str = util_getUserQuantityString( util, STRD_ROBOT_TRADED, 
+                                                  MAX_TRAY_TILES );
                 XP_SNPRINTF( buf, sizeof(buf), str, MAX_TRAY_TILES );
 
                 stream_catString( stream, buf );
@@ -983,14 +1016,12 @@ showPrevScore( ServerCtxt* server )
         lp = &gi->players[prevTurn];
 
         if ( LP_IS_LOCAL(lp) ) {
-            /* Why can't a local non-robot have postponed score? */
-            // XP_ASSERT( LP_IS_ROBOT(lp) );
             str = util_getUserString( util, STR_ROBOT_MOVED );
         } else {
             str = util_getUserString( util, STRS_REMOTE_MOVED );
-            XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
-            str = buf;
         }
+        XP_SNPRINTF( buf, sizeof(buf), str, lp->name );
+        str = buf;
 
         stream = mkServerStream( server );
         stream_catString( stream, str );
@@ -1115,6 +1146,7 @@ getIndexForDevice( ServerCtxt* server, XP_PlayerAddr channelNo )
         }
     }
 
+    XP_LOGF( "%s(%x)=>%d", __func__, channelNo, result );
     return result;
 } /* getIndexForDevice */
 
@@ -1234,6 +1266,7 @@ sortTilesIf( ServerCtxt* server, XP_S16 turn )
 static XP_Bool
 client_readInitialMessage( ServerCtxt* server, XWStreamCtxt* stream )
 {
+    LOG_FUNC();
     XP_Bool accepted = 0 == server->nv.addresses[0].channelNo;
 
     /* We should never get this message a second time, but very rarely we do.
@@ -1388,6 +1421,10 @@ makeSendableGICopy( ServerCtxt* server, CurGameInfo* giCopy,
         /* adjust isLocal to client's perspective */
         clientPl->isLocal = server->players[ii].deviceIndex == deviceIndex;
     }
+
+    giCopy->forceChannel = deviceIndex;
+    XP_LOGF( "%s: assigning forceChannel from deviceIndex: %d", __func__, 
+             giCopy->forceChannel );
 
     giCopy->dictName = (XP_UCHAR*)NULL; /* so we don't sent the bytes */
 } /* makeSendableGICopy */
@@ -1892,6 +1929,7 @@ nextTurn( ServerCtxt* server, XP_S16 nxtTurn )
         } else {
             XP_LOGF( "%s: Doing nothing; waiting for server to end game", 
                      __func__ );
+            setTurn( server, -1 );
             /* I'm the client. Do ++nothing++. */
         }
     }
@@ -1937,7 +1975,7 @@ server_setGameOverListener( ServerCtxt* server, GameOverListener gol,
     server->vol.gameOverData = data;
 } /* server_setGameOverListener */
 
-static XP_Bool
+static void
 storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
                const DictionaryCtxt* dict,
 #ifdef XWFEATURE_BOARDWORDS
@@ -1957,7 +1995,6 @@ storeBadWords( const XP_UCHAR* word, XP_Bool isLegal,
         server->illegalWordInfo.words[server->illegalWordInfo.nWords++]
             = copyString( server->mpool, word );
     }
-    return XP_TRUE;
 } /* storeBadWords */
 
 static XP_Bool
@@ -1995,8 +2032,10 @@ sendMoveTo( ServerCtxt* server, XP_U16 devIndex, XP_U16 turn,
     XP_U16 version = stream_getVersion( stream );
     if ( STREAM_VERS_BIGBOARD <= version ) {
         XP_ASSERT( version == server->nv.streamVersion );
-        XP_U32 hash = model_getHash( server->vol.model, version );
-        // XP_LOGF( "%s: adding hash %x", __func__, (unsigned int)hash );
+        XP_U32 hash = model_getHash( server->vol.model );
+#ifdef DEBUG_HASHING
+        XP_LOGF( "%s: adding hash %x", __func__, (unsigned int)hash );
+#endif
         stream_putU32( stream, hash );
     }
 #endif
@@ -2047,10 +2086,16 @@ readMoveInfo( ServerCtxt* server, XWStreamCtxt* stream,
 #ifdef STREAM_VERS_BIGBOARD
     if ( STREAM_VERS_BIGBOARD <= stream_getVersion( stream ) ) {
         XP_U32 hashReceived = stream_getU32( stream );
-        success = model_hashMatches( server->vol.model, hashReceived );
-        if ( !success ) {
-            XP_LOGF( "%s: hash mismatch",__func__);
+        success = model_hashMatches( server->vol.model, hashReceived )
+            || model_popToHash( server->vol.model, hashReceived, server->pool );
+        // XP_ASSERT( success );   /* I need to understand when this can fail */
+#ifdef DEBUG_HASHING
+        if ( success ) {
+            XP_LOGF( "%s: hash match: %X",__func__, hashReceived );
+        } else {
+            XP_LOGF( "%s: hash mismatch: %X not found",__func__, hashReceived );
         }
+#endif
     }
 #endif
     if ( success ) {
@@ -2104,8 +2149,9 @@ makeTradeReportIf( ServerCtxt* server, const TrayTileSet* tradedTiles )
     XWStreamCtxt* stream = NULL;
     if ( server->nv.showRobotScores ) {
         XP_UCHAR tradeBuf[64];
-        const XP_UCHAR* tradeStr = util_getUserString( server->vol.util,
-                                                       STRD_ROBOT_TRADED );
+        const XP_UCHAR* tradeStr = 
+            util_getUserQuantityString( server->vol.util, STRD_ROBOT_TRADED,
+                                        tradedTiles->nTiles );
         XP_SNPRINTF( tradeBuf, sizeof(tradeBuf), tradeStr, 
                      tradedTiles->nTiles );
         stream = mkServerStream( server );
@@ -2548,6 +2594,8 @@ tileCountsOk( const ServerCtxt* server )
 static void
 setTurn( ServerCtxt* server, XP_S16 turn )
 {
+    XP_ASSERT( -1 == turn
+               || (!amServer(server) || (0 == server->nv.pendingRegistrations)));
     if ( server->nv.currentTurn != turn ) {
         server->nv.currentTurn = turn;
         server->nv.lastMoveTime = util_getCurSeconds( server->vol.util );
@@ -2751,12 +2799,13 @@ XP_Bool
 server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
 {
     XP_Bool accepted = XP_FALSE;
+    XP_Bool isServer = amServer( server );
     XW_Proto code = readProto( server, incoming );
 
     printCode( "Receiving", code );
 
     if ( code == XWPROTO_DEVICE_REGISTRATION ) {
-        accepted = amServer( server );
+        accepted = isServer;
         if ( accepted ) {
         /* This message is special: doesn't have the header that's possible
            once the game's in progress and communication's been
@@ -2765,21 +2814,22 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             accepted = handleRegistrationMsg( server, incoming );
         }
     } else if ( code == XWPROTO_CLIENT_SETUP ) {
-        accepted = !amServer( server );
+        accepted = !isServer;
         if ( accepted ) {
             XP_STATUSF( "client got XWPROTO_CLIENT_SETUP" );
-            XP_ASSERT( server->vol.gi->serverRole == SERVER_ISCLIENT );
             accepted = client_readInitialMessage( server, incoming );
         }
 #ifdef XWFEATURE_CHAT
     } else if ( code == XWPROTO_CHAT ) {
         XP_UCHAR* msg = stringFromStream( server->mpool, incoming );
-        if ( server->vol.gi->serverRole == SERVER_ISSERVER ) {
+        XP_S16 from = 1 <= stream_getSize( incoming ) 
+            ? stream_getU8( incoming ) : -1;
+        if ( isServer ) {
             XP_U16 sourceClientIndex = 
                 getIndexForDevice( server, stream_getAddress( incoming ) );
-            sendChatToClientsExcept( server, sourceClientIndex, msg );
+            sendChatToClientsExcept( server, sourceClientIndex, msg, from );
         }
-        util_showChat( server->vol.util, msg );
+        util_showChat( server->vol.util, msg, from );
         XP_FREE( server->mpool, msg );
 #endif
     } else if ( readStreamHeader( server, incoming ) ) {
@@ -2810,8 +2860,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
             break;
 
         case XWPROTO_MOVEMADE_INFO_SERVER: /* server telling me about a move */
-            XP_ASSERT( SERVER_ISCLIENT == server->vol.gi->serverRole );
-            accepted = reflectMove( server, incoming );
+            accepted = !isServer && reflectMove( server, incoming );
             if ( accepted ) {
                 nextTurn( server, PICK_NEXT );
             }
@@ -2851,6 +2900,7 @@ server_receiveMessage( ServerCtxt* server, XWStreamCtxt* incoming )
         } /* switch */
     }
 
+    XP_ASSERT( isServer == amServer( server ) ); /* caching value is ok? */
     stream_close( incoming );
     return accepted;
 } /* server_receiveMessage */
@@ -2924,7 +2974,7 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
 {
     PoolContext* pool = server->pool;
     if ( !!pool ) {
-        XP_UCHAR buf[48];
+        XP_UCHAR buf[128];
         DictionaryCtxt* dict = model_getDictionary( server->vol.model );
         Tile tile;
         XP_U16 nChars = dict_numTileFaces( dict );
@@ -2935,8 +2985,9 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
 
         XP_ASSERT( !!server->vol.model );
 
-        const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
-                                                  STRD_REMAINS_HEADER );
+        const XP_UCHAR* fmt = util_getUserQuantityString( server->vol.util, 
+                                                          STRD_REMAINS_HEADER, 
+                                                          nLeft );
         XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
         stream_catString( stream, buf );
         stream_catString( stream, "\n\n" );
@@ -2974,7 +3025,8 @@ server_formatRemainingTiles( ServerCtxt* server, XWStreamCtxt* stream,
             XP_ASSERT( offset < sizeof(cntsBuf) );
         }
 
-        fmt = util_getUserString( server->vol.util, STRD_REMAINS_EXPL );
+        fmt = util_getUserQuantityString( server->vol.util, STRD_REMAINS_EXPL,
+                                          nLeft );
         XP_SNPRINTF( buf, sizeof(buf), fmt, nLeft );
         stream_catString( stream, buf );
 
@@ -3081,8 +3133,6 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
         XP_UCHAR buf[128]; 
         XP_S16 thisScore = IMPOSSIBLY_LOW_SCORE;
         XP_S16 thisIndex = -1;
-        const XP_UCHAR* placeStr = NULL;
-        XP_UCHAR placeBuf[32];
         XP_UCHAR tmpbuf[48];
         XP_U16 ii, placeKey = 0;
         XP_Bool firstDone;
@@ -3105,21 +3155,12 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
                 XP_ASSERT( !quitterDone );
                 thisIndex = quitter;
                 quitterDone = XP_TRUE;
-                placeKey = STR_RESIGNED;
+                placeKey = STRSD_RESIGNED;
             } else {
                 break; /* we're done */
             }
         } else if ( thisScore == winningScore ) {
-            placeKey = STR_WINNER;
-        }
-
-        if ( !placeStr ) {
-            if ( 0 < placeKey ) {
-                placeStr = util_getUserString( server->vol.util, placeKey );
-            } else {
-                XP_SNPRINTF( placeBuf, VSIZE(placeBuf), "#%d", place );
-                placeStr = placeBuf;
-            }
+            placeKey = STRSD_WINNER;
         }
 
         timeStr = (XP_UCHAR*)"";
@@ -3142,12 +3183,24 @@ server_writeFinalScores( ServerCtxt* server, XWStreamCtxt* stream )
                      tilePenalties.arr[thisIndex]:
                      -tilePenalties.arr[thisIndex] );
 
-        XP_SNPRINTF( buf, sizeof(buf), 
-                     (XP_UCHAR*)"[%s] %s: %d" XP_CR "  (%d %s%s)", placeStr, 
-                     emptyStringIfNull(gi->players[thisIndex].name),
-                     scores.arr[thisIndex], 
+        const XP_UCHAR* name = emptyStringIfNull(gi->players[thisIndex].name);
+        if ( 0 == placeKey ) {
+            const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
+                                                      STRDSD_PLACER );
+            XP_SNPRINTF( buf, sizeof(buf), fmt, place,
+                         name, scores.arr[thisIndex] );
+        } else {
+            const XP_UCHAR* fmt = util_getUserString( server->vol.util, 
+                                                      placeKey );
+            XP_SNPRINTF( buf, sizeof(buf), fmt, name,
+                         scores.arr[thisIndex] );
+        }
+
+        XP_UCHAR buf2[64];
+        XP_SNPRINTF( buf2, sizeof(buf2), XP_CR "  (%d %s%s)",
                      model_getPlayerScore( model, thisIndex ),
                      tmpbuf, timeStr );
+        XP_STRCAT( buf, buf2 );
 
         if ( 1 < place ) {
             stream_catString( stream, XP_CR );

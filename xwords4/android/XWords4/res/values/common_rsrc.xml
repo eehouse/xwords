@@ -2,21 +2,22 @@
 
 <!-- Resources in this file do not require localization -->
 <resources>
-  <!-- The name of the app.  Not localized! -->
-  <string name="app_name">Crosswords</string>  
-
   <!-- prefs keys -->
   <string name="key_color_tiles">key_color_tiles</string>
   <string name="key_show_arrow">key_show_arrow</string>
   <string name="key_square_tiles">key_square_tiles</string>
   <string name="key_explain_robot">key_explain_robot</string>
   <string name="key_skip_confirm">key_skip_confirm</string>
+  <string name="key_disable_nag">key_disable_nag</string>
+  <string name="key_disable_nag_solo">key_disable_nag_solo</string>
   <string name="key_sort_tiles">key_sort_tiles</string>
   <string name="key_peek_other">key_peek_other</string>
   <string name="key_hide_crosshairs">key_hide_crosshairs</string>
   <string name="key_hide_values">key_hide_values</string>
   <string name="key_ringer_zoom">key_ringer_zoom</string>
   <string name="key_hide_title">key_hide_title</string>
+  <string name="key_hide_newgames">key_hide_newgames</string>
+  <string name="key_enable_pubroom">key_enable_pubroom</string>
 
   <string name="key_player0">key_clr_player0</string>
   <string name="key_player1">key_clr_player1</string>
@@ -41,17 +42,15 @@
   <string name="key_dict_host">key_dict_host3</string>
   <string name="key_logging_on">key_logging_on</string>
   <string name="key_show_sms">key_show_sms</string>
-  <string name="key_send_data_sms">key_send_data_sms</string>
   <string name="key_init_hintsallowed">key_init_hintsallowed</string>
   <string name="key_init_nethintsallowed">key_init_nethintsallowed</string>
   <string name="key_init_autojuggle">key_init_autojuggle</string>
   <string name="key_board_size">key_board_size</string>
   <string name="key_initial_player_minutes">key_initial_player_minutes</string>
+  <string name="key_default_language">key_default_language</string>
   <string name="key_default_dict">key_default_dict</string>
   <string name="key_player1_name">key_player1_name</string>
-  <string name="key_player2_name">key_player2_name</string>
-  <string name="key_player3_name">key_player3_name</string>
-  <string name="key_player4_name">key_player4_name</string>
+  <string name="key_robot_name">key_robot_name</string>
   <string name="key_default_robodict">key_default_robodict</string>
   <string name="key_default_phonies">key_default_phonies2</string>
   <string name="key_default_timerenabled">key_default_timerenabled</string>
@@ -59,6 +58,7 @@
   <string name="key_notify_sound">key_notify_sound</string>
   <string name="key_notify_vibrate">key_notify_vibrate</string>
   <string name="key_enable_sms">key_enable_sms</string>
+  <string name="key_network_behavior">key_network_behavior</string>
   <string name="key_keep_screenon">key_keep_screenon</string>
   <string name="key_thumbsize">key_thumbsize3</string>
   <string name="key_studyon">key_studyon</string>
@@ -66,12 +66,14 @@
   <string name="key_summary_field">key_summary_field</string>
   <string name="key_default_loc">key_default_loc</string>
   <string name="key_force_tablet">key_force_tablet</string>
+  <string name="key_force_radio">key_force_radio</string>
+  <string name="key_addrs_pref">key_addrs_pref</string>
 
   <!-- database keys whose entries aren't visible prefs -->
   <string name="key_closed_langs">key_closed_langs</string>
-  <string name="key_bt_names">key_bt_names</string>
   <string name="key_bt_addrs">key_bt_addrs</string>
   <string name="key_sms_phones">key_sms_phones</string>
+  <string name="key_relay_ids">key_relay_ids</string>
   <string name="key_connstat_data">key_connstat_data</string>
   <string name="key_dev_id">key_dev_id</string>
 
@@ -79,14 +81,13 @@
   <string name="key_relay_regid">key_relay_regid</string>
   <string name="key_relay_regid_ackd">key_relay_regid_ackd</string>
 
-  <string name="key_checked_sms">key_checked_sms</string>
   <string name="key_default_group">key_default_group</string>
   <string name="key_group_posns">key_group_posns</string>
   <string name="key_last_packet">key_last_packet</string>
   <string name="key_udp_interval">key_udp_interval</string>
 
   <string name="key_notagain_sync">key_notagain_sync</string>
-  <string name="key_notagain_sms_ready">key_notagain_sms_ready</string>
+  <!-- <string name="key_notagain_sms_ready">key_notagain_sms_ready</string> -->
   <string name="key_notagain_newselect">key_notagain_newselect</string>
   <string name="key_notagain_backclears">key_notagain_backclears</string>
   <string name="key_notagain_chat">key_notagain_chat</string>
@@ -106,18 +107,33 @@
   <string name="key_notagain_turnchanged">key_notagain_turnchanged</string>
   <string name="key_notagain_newfrom">key_notagain_newfrom</string>
   <string name="key_notagain_trading">key_notagain_trading</string>
+  <string name="key_notagain_hidenewgamebuttons">key_notagain_hidenewgamebuttons</string>
   <string name="key_na_lookup">key_na_lookup</string>
   <string name="key_na_browse">key_na_browse</string>
   <string name="key_na_browseall">key_na_browseall</string>
   <string name="key_na_values">key_na_values</string>
   <string name="key_na_studycopy">key_na_studycopy</string>
   <string name="key_na_fmt_expl">key_na_fmt_expl</string>
+  <string name="key_na_clip_expl">key_na_clip_expl</string>
   <string name="key_na_dicts">key_na_dicts</string>
   <string name="key_enable_debug">key_enable_debug</string>
   <string name="key_enable_dup_invite">key_enable_dup_invite</string>
+  <string name="key_enable_nfc_toself">key_enable_nfc_toself</string>
+  <string name="key_enable_sms_toself">key_enable_sms_toself</string>
+  <string name="key_enable_relay_toself">key_enable_relay_toself</string>
+  <string name="key_nag_intervals">key_nag_intervals</string>
   <string name="key_download_path">key_download_path</string>
+  <string name="key_got_langdict">key_got_langdict</string>
   <string name="key_xlations_locale">key_xlations_locale</string>
   <string name="key_xlations_enabled">key_xlations_enabled</string>
+  <string name="key_invite_multi">key_invite_multi</string>
+  <string name="key_notagain_enablepublic">key_notagain_enablepublic</string>
+  <string name="key_na_rematch_two_only">key_notagain_rematch_two_only</string>
+  <string name="key_notagain_dfltname">key_notagain_dfltname</string>
+
+  <string name="key_na_comms_bt">key_na_comms_bt</string>
+  <string name="key_na_comms_sms">key_na_comms_sms</string>
+  <string name="key_na_comms_relay">key_na_comms_relay</string>
 
   <!-- Nor is my email address -->
   <string name="email_author_email">xwords@eehouse.org</string>
@@ -126,42 +142,11 @@
   <string name="default_host">eehouse.org</string>
   <string name="xwords_nfc_mime">application/org.eehouse.android.xw4</string>
   <string name="invite_host">eehouse.org</string>
-  <string name="invite_prefix">/and/</string>
   <string name="invite_mime">application/x-xwordsinvite</string>
-  <string name="game_summary_field_rowid">rowid</string>
-  <string name="game_summary_field_gameid">gameid</string>
-  <string name="game_summary_field_npackets">Pending packet count</string>
   <!--string name="invite_mime">text/plain</string-->
 
   <string name="dict_url">http://eehouse.org/and_wordlists</string>
-  <string name="expl_update_url">Update checks URL</string>
   <string name="default_update_url">http://eehouse.org/xw4/info.py</string>
-
-  <!-- Debugging stuff. No point in localizing it. -->
-  <string name="advanced">For debugging</string>
-  <string name="advanced_summary">You should never need these...</string>
-  <string name="relay_host">Relay host</string>
-  <string name="redir_host">Invite redirect host</string>
-  <string name="dict_host">Wordlist download URL</string>
-  <string name="logging_on">Enable logging</string>
-  <string name="logging_on_summary">(release builds only)</string>
-  <string name="debug_features">Enable debug features</string>
-  <string name="debug_features_summary">Menuitems etc. (release builds
-  only)</string>
-  <string name="title_send_data_sms">Send SMS as data</string>
-  <string name="summary_send_data_sms">(GSM phones only)</string>
-  <string name="board_menu_game_netstats">Network stats</string>
-  <string name="netstats_title">Game network stats</string>
-
-  <string name="git_rev_title">Source version id</string>
-  <string name="relay_port">Relay game port</string>
-  <string name="proxy_port">Relay device port</string>
-  <string name="name_dict_fmt">%1$s/%2$s</string>
-  <string name="gamel_menu_storedb">Write DB to SD card</string>
-  <string name="gamel_menu_loaddb">Load DB from SD card</string>
-  <string name="enable_dupes_title">Accept duplicate invites</string>
-  <string name="xlations_locale">Fake locale for translation</string>
-  <string name="enable_dupes_summary">Accept invitations more than once</string>
 
   <!--string name="dict_url">http://10.0.2.2/~eehouse/and_dicts</string-->
 
@@ -214,6 +199,7 @@
     <item>86400</item>
   </string-array>
 
+  <!-- These two arrays need to be kept in sync -->
   <string-array name="language_names">
     <item>@string/lang_unknown</item> <!-- Unknown -->
     <item>English</item> <!-- 1 -->
@@ -268,8 +254,8 @@
     <item>http://dictionary.com/browse/%2$s</item> -->
     <!--  -->
     <item>TheFreeDictionary.com</item>
-    <item>:en:es:de:</item>
-    <item>http://%1$s.thefreedictionary.com/_/dict.aspx?word=%2$s</item>
+    <item>:en:es:de:it:nl:pt:pl:</item>
+    <item>http://%1$s.thefreedictionary.com/%2$s</item>
     <!--  -->
     <item>Larousse.com</item>
     <item>:fr:</item>
@@ -281,15 +267,23 @@
     <!--  -->
     <item>DIEC</item>
     <item>:ca:</item>
-    <item>http://mdlc.iec.cat/results.asp?txtEntrada=%2$s</item>
+    <item>http://diccionari.totescrable.cat/cercador/?mot=%2$s</item>
     <!--  -->
     <item>Viccionari</item>
     <item>:ca:</item>
-    <item>http://ca.wiktionary.org/w/index.php?search=%2$s</item>
+    <item>http://%1$s.wiktionary.org/w/index.php?search=%2$s</item>
+    <!--  -->
+    <item>Wiktionnaire</item>
+    <item>:fr:</item>
+    <item>http://%1$s.wiktionary.org/w/index.php?search=%2$s</item>
     <!--  -->
     <item>DISC lookup</item>
     <item>:ca:</item>
     <item>http://escrable.montane.cat/diccionari/cercador/?mot=%2$s</item>
+    <!--  -->
+    <item>Wiktionary</item>
+    <item></item>
+    <item>http://%1$s.wiktionary.org/w/index.php?search=%2$s</item>
     <!--  -->
     <item>Google</item>
     <item></item> <!-- means all supported -->
@@ -307,6 +301,13 @@
     <item>@string/confirm_sms_leave</item>
     <item>@string/confirm_sms_unlimited</item>
     <item>@string/confirm_sms_willpay</item>
+  </string-array>
+
+  <string-array name="force_radio_names">
+    <item>@string/radio_name_real</item>
+    <item>@string/radio_name_tablet</item>
+    <item>@string/radio_name_gsm</item>
+    <item>@string/radio_name_cdma</item>
   </string-array>
 
   <!-- Keep in sync with LocSearcher SHOW_BYS enum -->

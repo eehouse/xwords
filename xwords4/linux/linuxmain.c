@@ -118,6 +118,7 @@ streamFromFile( CommonGlobals* cGlobals, char* name, void* closure )
 XWStreamCtxt*
 streamFromDB( CommonGlobals* cGlobals, void* closure )
 {
+    LOG_FUNC();
     XWStreamCtxt* stream = NULL;
     const LaunchParams* params = cGlobals->params;
     const char* name = params->dbFileName;
@@ -172,6 +173,27 @@ makeDictForStream( CommonGlobals* cGlobals, XWStreamCtxt* stream )
     return dict;
 }
 
+static XP_Bool
+processMessage( CommonGlobals* cGlobals, XWStreamCtxt* stream, 
+                const CommsAddrRec* from, XP_Bool doDo )
+{
+    XWGame* game = &cGlobals->game;
+    CommsMsgState state;
+    XP_Bool received = comms_checkIncomingStream( game->comms, stream, from, &state );
+    XP_Bool draw = received && server_receiveMessage( game->server, stream );
+    comms_msgProcessed( game->comms, &state, !draw );
+
+    if ( doDo && draw ) {
+        ServerCtxt* server = cGlobals->game.server;
+        XP_U16 ii;
+        for ( ii = 0; ii < 5; ++ii ) {
+            (void)server_do( server );
+        }
+    }
+
+    return draw;
+}
+
 void
 gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf, 
             XP_U16 len, const CommsAddrRec* from )
@@ -181,11 +203,9 @@ gameGotBuf( CommonGlobals* cGlobals, XP_Bool hasDraw, const XP_U8* buf,
     XWGame* game = &cGlobals->game;
     XWStreamCtxt* stream = stream_from_msgbuf( cGlobals, buf, len );
     if ( !!stream ) {
-        if ( comms_checkIncomingStream( game->comms, stream, from ) ) {
-            redraw = server_receiveMessage( game->server, stream );
-            if ( redraw ) {
-                saveGame( cGlobals );
-            }
+        redraw = processMessage( cGlobals, stream, from, XP_FALSE );
+        if ( redraw ) {
+            saveGame( cGlobals );
         }
         stream_destroy( stream );
 
@@ -387,7 +407,6 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
     XP_ASSERT( opened );
     stream_destroy( stream );
 
-    XP_Bool handled = XP_FALSE;
     unsigned short len;
     for ( ; ; ) {
         ssize_t nRead = blocking_read( fdin, (unsigned char*)&len, 
@@ -410,18 +429,7 @@ handle_messages_from( CommonGlobals* cGlobals, const TransportProcs* procs,
                                   params->vtMgr, cGlobals, CHANNEL_NONE, 
                                   NULL );
         stream_putBytes( stream, buf, len );
-
-        if ( comms_checkIncomingStream( cGlobals->game.comms, 
-                                        stream, NULL ) ) {
-            ServerCtxt* server = cGlobals->game.server;
-            (void)server_do( server );
-            handled = server_receiveMessage( server, stream ) || handled;
-
-            XP_U16 ii;
-            for ( ii = 0; ii < 5; ++ii ) {
-                (void)server_do( server );
-            }
-        }
+        (void)processMessage( cGlobals, stream, NULL, XP_TRUE );
         stream_destroy( stream );
     }
 
@@ -448,7 +456,6 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
     XP_ASSERT( opened );
     stream_destroy( stream );
 
-    XP_Bool handled = XP_FALSE;
     int fd = open( params->pipe, O_RDWR );
     XP_ASSERT( fd >= 0 );
     if ( fd >= 0 ) {
@@ -474,18 +481,7 @@ read_pipe_then_close( CommonGlobals* cGlobals, const TransportProcs* procs )
                                       params->vtMgr, cGlobals, CHANNEL_NONE, 
                                       NULL );
             stream_putBytes( stream, buf, len );
-
-            if ( comms_checkIncomingStream( cGlobals->game.comms, 
-                                            stream, NULL ) ) {
-                ServerCtxt* server = cGlobals->game.server;
-                (void)server_do( server );
-                handled = server_receiveMessage( server, stream ) || handled;
-
-                XP_U16 ii;
-                for ( ii = 0; ii < 5; ++ii ) {
-                    (void)server_do( server );
-                }
-            }
+            (void)processMessage( cGlobals, stream, NULL, XP_TRUE );
             stream_destroy( stream );
         }
 
@@ -558,7 +554,7 @@ secondTimerFired( gpointer data )
     if ( !!game->server && !!game->board ) {
         XP_U16 undoRatio = cGlobals->params->undoRatio;
         if ( 0 != undoRatio ) {
-            if ( (XP_RANDOM() % 100) < undoRatio ) {
+            if ( (XP_RANDOM() % 1000) < undoRatio ) {
                 XP_LOGF( "%s: calling server_handleUndo", __func__ );
                 if ( server_handleUndo( game->server, 1 ) ) {
                     board_draw( game->board );
@@ -582,6 +578,8 @@ typedef enum {
     ,CMD_SKIP_GAMEOVER
     ,CMD_SHOW_OTHERSCORES
     ,CMD_HOSTIP
+    ,CMD_HOSTPORT
+    ,CMD_MYPORT
     ,CMD_DICT
 #ifdef XWFEATURE_WALKDICT
     ,CMD_TESTDICT
@@ -613,7 +611,7 @@ typedef enum {
     ,CMD_PICKTILESFACEUP
     ,CMD_PLAYERNAME
     ,CMD_REMOTEPLAYER
-    ,CMD_PORT
+    ,CMD_RELAY_PORT
     ,CMD_ROBOTNAME
     ,CMD_LOCALSMARTS
     ,CMD_SORTNEW
@@ -633,6 +631,13 @@ typedef enum {
     ,CMD_SPLITPACKETS
     ,CMD_CHAT
     ,CMD_USEUDP
+    ,CMD_NOUDP
+    ,CMD_DROPSENDRELAY
+    ,CMD_DROPRCVRELAY
+    ,CMD_DROPSENDSMS
+    ,CMD_DROPRCVSMS
+    ,CMD_FORCECHANNEL
+
 #ifdef XWFEATURE_CROSSHAIRS
     ,CMD_NOCROSSHAIRS
 #endif
@@ -643,6 +648,7 @@ typedef enum {
 #endif
 #ifdef XWFEATURE_SMS
     ,CMD_SMSNUMBER		/* SMS phone number */
+    ,CMD_SMSPORT
 #endif
 #ifdef XWFEATURE_RELAY
     ,CMD_ROOMNAME
@@ -684,7 +690,9 @@ static CmdInfoRec CmdInfoRecs[] = {
     { CMD_HELP, false, "help", "print this message" }
     ,{ CMD_SKIP_GAMEOVER, false, "skip-final", "skip final scores display" }
     ,{ CMD_SHOW_OTHERSCORES, false, "show-other", "show robot/remote scores" }
-    ,{ CMD_HOSTIP, true, "hostip", "remote host ip address (for direct connect)" }
+    ,{ CMD_HOSTIP, true, "host-ip", "remote host ip address (for direct connect)" }
+    ,{ CMD_HOSTPORT, true, "host-port", "remote host ip address (for direct connect)" }
+    ,{ CMD_MYPORT, true, "my-port", "remote host ip address (for direct connect)" }
     ,{ CMD_DICT, true, "game-dict", "dictionary name for game" }
 #ifdef XWFEATURE_WALKDICT
     ,{ CMD_TESTDICT, true, "test-dict", "dictionary to be used for iterator test" }
@@ -720,7 +728,7 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_PICKTILESFACEUP, false, "pick-face-up", "allow to pick tiles" }
     ,{ CMD_PLAYERNAME, true, "name", "name of local, non-robot player" }
     ,{ CMD_REMOTEPLAYER, false, "remote-player", "add an expected player" }
-    ,{ CMD_PORT, true, "port", "port to connect to on host" }
+    ,{ CMD_RELAY_PORT, true, "relay-port", "port to connect to on relay" }
     ,{ CMD_ROBOTNAME, true, "robot", "name of local, robot player" }
     ,{ CMD_LOCALSMARTS, true, "robot-iq", "smarts for robot (in sequence)" }
     ,{ CMD_SORTNEW, false, "sort-tiles", "sort tiles each time assigned" }
@@ -740,7 +748,15 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_SPLITPACKETS, true, "split-packets", "send tcp packets in "
        "sections every random MOD <n> seconds to test relay reassembly" }
     ,{ CMD_CHAT, true, "send-chat", "send a chat every <n> seconds" }
-    ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp" }
+    ,{ CMD_USEUDP, false, "use-udp", "connect to relay new-style, via udp not tcp (on by default)" }
+    ,{ CMD_NOUDP, false, "no-use-udp", "connect to relay old-style, via tcp not udp" }
+
+    ,{ CMD_DROPSENDRELAY, false, "drop-send-relay", "start new games with relay send disabled" }
+    ,{ CMD_DROPRCVRELAY, false, "drop-receive-relay", "start new games with relay receive disabled" }
+    ,{ CMD_DROPSENDSMS, false, "drop-send-sms", "start new games with sms send disabled" }
+    ,{ CMD_DROPRCVSMS, false, "drop-receive-sms", "start new games with sms receive disabled" }
+    ,{ CMD_FORCECHANNEL, true, "force-channel", "force (clients) to use this hostid/channel" }
+
 #ifdef XWFEATURE_CROSSHAIRS
     ,{ CMD_NOCROSSHAIRS, false, "hide-crosshairs", 
        "don't show crosshairs on board" }
@@ -752,7 +768,8 @@ static CmdInfoRec CmdInfoRecs[] = {
     ,{ CMD_HINTRECT, false, "hintrect", "enable draggable hint-limits rect" }
 #endif
 #ifdef XWFEATURE_SMS
-    ,{ CMD_SMSNUMBER, true, "sms-number", "phone number of host for sms game" }
+    ,{ CMD_SMSNUMBER, true, "sms-number", "this devices's sms phone number" }
+    ,{ CMD_SMSPORT, true, "sms-port", "this devices's sms port" }
 #endif
 #ifdef XWFEATURE_RELAY
     ,{ CMD_ROOMNAME, true, "room", "name of room on relay" }
@@ -804,15 +821,31 @@ make_longopts()
 static void
 usage( char* appName, char* msg )
 {
+    const char* param = "<param>";
     int ii;
     if ( msg != NULL ) {
         fprintf( stderr, "Error: %s\n\n", msg );
     }
     fprintf( stderr, "usage: %s \n", appName );
+
+    int maxWidth = 0;
     for ( ii = 0; ii < VSIZE(CmdInfoRecs); ++ii ) {
         const CmdInfoRec* rec = &CmdInfoRecs[ii];
-        fprintf( stderr, "    --%s %-20s # %s\n", rec->param,
-                 rec->hasArg? "<param>" : "", rec->hint );
+        int width = strlen(rec->param) + 1;
+        if ( rec->hasArg ) {
+            width += strlen(param) + 1;
+        }
+        if ( width > maxWidth ) {
+            maxWidth = width;
+        }
+    }
+
+    for ( ii = 0; ii < VSIZE(CmdInfoRecs); ++ii ) {
+        const CmdInfoRec* rec = &CmdInfoRecs[ii];
+        char buf[120];
+        snprintf( buf, sizeof(buf), "--%s %s", rec->param, 
+                 (rec->hasArg ? param : "") );
+        fprintf( stderr, "  %-*s # %s\n", maxWidth, buf, rec->hint );
     }
     fprintf( stderr, "\n(revision: %s)\n", SVN_REV);
     exit(1);
@@ -862,6 +895,19 @@ linShiftFocus( CommonGlobals* cGlobals, XP_Key key, const BoardObjectType* order
 } /* linShiftFocus */
 #endif
 
+const XP_U32
+linux_getDevIDRelay( LaunchParams* params )
+{
+    XP_U32 result = 0;
+    gchar buf[32];
+    if ( db_fetch( params->pDb, KEY_RDEVID, buf, sizeof(buf) ) ) {
+        sscanf( buf, "%X", &result );
+        XP_LOGF( "%s(): %s => %x", __func__, buf, result );
+    }
+    LOG_RETURNF( "%d", result );
+    return result;
+}
+
 const XP_UCHAR*
 linux_getDevID( LaunchParams* params, DevIDType* typ )
 {
@@ -872,6 +918,10 @@ linux_getDevID( LaunchParams* params, DevIDType* typ )
     if ( !!params->lDevID ) {
         result = params->lDevID;
         *typ = ID_TYPE_LINUX;
+    } else if ( db_fetch( params->pDb, KEY_RDEVID, params->devIDStore, 
+                          sizeof(params->devIDStore) ) ) {
+        result = params->devIDStore;
+        *typ = '\0' == result[0] ? ID_TYPE_ANON : ID_TYPE_RELAY;
     } else if ( db_fetch( params->pDb, KEY_LDEVID, params->devIDStore, 
                           sizeof(params->devIDStore) ) ) {
         result = params->devIDStore;
@@ -984,11 +1034,14 @@ send_or_close( CommonGlobals* cGlobals, const XP_U8* buf, size_t len )
 {
     size_t nSent = send( cGlobals->relaySocket, buf, len, 0 );
     bool success = len == nSent;
-    if ( !success ) {
+    if ( success ) {
+#ifdef COMMS_CHECKSUM
+        gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, len );
+        XP_LOGF( "%s: sent %zd bytes with sum %s", __func__, len, sum );
+        g_free( sum );
+#endif        
+    } else {
         close( cGlobals->relaySocket );
-        (*cGlobals->socketChanged)( cGlobals->socketChangedClosure,
-                                    cGlobals->relaySocket, -1, 
-                                    &cGlobals->storage );
         cGlobals->relaySocket = -1;
 
         /* delete all pending packets since the socket's bad */
@@ -1058,8 +1111,57 @@ send_per_params( const XP_U8* buf, const XP_U16 buflen,
     return success;
 }
 
+static gboolean
+linux_relay_ioproc( GIOChannel* source, GIOCondition condition, gpointer data )
+{
+    gboolean keep = TRUE;
+    if ( 0 != ((G_IO_HUP|G_IO_ERR|G_IO_NVAL) & condition) ) {
+        XP_LOGF( "%s: got error condition; returning FALSE", __func__ );
+        keep = FALSE;
+    } else if ( 0 != (G_IO_IN & condition) ) {
+        CommonGlobals* cGlobals = (CommonGlobals*)data;
+        unsigned char buf[1024];
+        int sock = g_io_channel_unix_get_fd( source );
+        if ( cGlobals->relaySocket != sock ) {
+            XP_LOGF( "%s: changing relaySocket from %d to %d", __func__, cGlobals->relaySocket, sock );
+            cGlobals->relaySocket = sock;
+        }
+        int nBytes = linux_relay_receive( cGlobals, sock, buf, sizeof(buf) );
+
+        if ( nBytes != -1 ) {
+#ifdef COMMS_CHECKSUM
+            gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nBytes );
+            XP_LOGF( "%s: got %d bytes with sum %s", __func__, nBytes, sum );
+            g_free( sum );
+#endif        
+
+            XWStreamCtxt* inboundS;
+            XP_Bool redraw = XP_FALSE;
+            
+            inboundS = stream_from_msgbuf( cGlobals, buf, nBytes );
+            if ( !!inboundS ) {
+                CommsAddrRec addr = {0};
+                addr_addType( &addr, COMMS_CONN_RELAY );
+
+                redraw = processMessage( cGlobals, inboundS, &addr, XP_FALSE );
+
+                stream_destroy( inboundS );
+            }
+                
+            /* if there's something to draw resulting from the
+               message, we need to give the main loop time to reflect
+               that on the screen before giving the server another
+               shot.  So just call the idle proc. */
+            if ( redraw ) {
+                util_requestTime( cGlobals->util );
+            }
+        }
+    }
+    return keep;
+}
+
 static XP_S16
-linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen, 
+linux_relay_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen, 
                 const CommsAddrRec* addrRec )
 {
     XP_S16 result = 0;
@@ -1075,11 +1177,7 @@ linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
         if ( sock == -1 ) {
             XP_LOGF( "%s: socket uninitialized", __func__ );
             sock = linux_init_relay_socket( cGlobals, addrRec );
-            if ( sock != -1 ) {
-                assert( cGlobals->relaySocket == sock );
-                (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
-                                            -1, sock, &cGlobals->storage );
-            }
+            (*cGlobals->socketAdded)( cGlobals, sock, linux_relay_ioproc );
         }
 
         if ( sock != -1 ) {
@@ -1096,7 +1194,7 @@ linux_tcp_send( CommonGlobals* cGlobals, const XP_U8* buf, XP_U16 buflen,
         }
     }
     return result;
-} /* linux_tcp_send */
+} /* linux_relay_send */
 #endif  /* XWFEATURE_RELAY */
 
 #ifdef COMMS_HEARTBEAT
@@ -1136,47 +1234,54 @@ linux_reset( void* closure )
 #endif
 
 XP_S16
-linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
-            XP_U32 gameID, void* closure )
+linux_send( const XP_U8* buf, XP_U16 buflen, const XP_UCHAR* msgNo,
+            const CommsAddrRec* addrRec, CommsConnType conType, XP_U32 gameID, 
+            void* closure )
 {
+    XP_LOGF( "%s(mid=%s)", __func__, msgNo );
     XP_S16 nSent = -1;
     CommonGlobals* cGlobals = (CommonGlobals*)closure;   
-    CommsConnType conType;
 
-    if ( !!addrRec ) {
-        conType = addrRec->conType;
-    } else {
-        conType = cGlobals->params->conType;
-    }
+    /* if ( !!addrRec ) { */
+    /*     conType = addr_getType( addrRec ); */
+    /* } else { */
+    /*     conType = addr_getType( &cGlobals->params->addr ); */
+    /* } */
 
-    if ( 0 ) {
+    switch ( conType ) {
 #ifdef XWFEATURE_RELAY
-    } else if ( conType == COMMS_CONN_RELAY ) {
-        nSent = linux_tcp_send( cGlobals, buf, buflen, addrRec );
+    case COMMS_CONN_RELAY:
+        nSent = linux_relay_send( cGlobals, buf, buflen, addrRec );
         if ( nSent == buflen && cGlobals->params->duplicatePackets ) {
 #ifdef DEBUG
             XP_S16 sentAgain = 
 #endif
-                linux_tcp_send( cGlobals, buf, buflen, addrRec );
+                linux_relay_send( cGlobals, buf, buflen, addrRec );
             XP_ASSERT( sentAgain == nSent );
         }
-
+        break;
 #endif
 #if defined XWFEATURE_BLUETOOTH
-    } else if ( conType == COMMS_CONN_BT ) {
+    case COMMS_CONN_BT: {
         XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
         linux_bt_open( cGlobals, isServer );
         nSent = linux_bt_send( buf, buflen, addrRec, cGlobals );
+    }
+        break;
 #endif
-#if defined XWFEATURE_IP_DIRECT
-    } else if ( conType == COMMS_CONN_IP_DIRECT ) {
+#if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
+    case COMMS_CONN_IP_DIRECT: {
         CommsAddrRec addr;
         comms_getAddr( cGlobals->game.comms, &addr );
-        linux_udp_open( cGlobals, &addr );
-        nSent = linux_udp_send( buf, buflen, addrRec, cGlobals );
+        XP_LOGF( "%s: given %d bytes to send via IP_DIRECT -- which isn't implemented", 
+                 __func__, buflen );
+        // linux_udp_open( cGlobals, &addr );
+        // nSent = linux_udp_send( buf, buflen, addrRec, cGlobals );
+    }
+        break;
 #endif
 #if defined XWFEATURE_SMS
-    } else if ( COMMS_CONN_SMS == conType ) {
+    case COMMS_CONN_SMS: {
         CommsAddrRec addr;
         if ( !addrRec ) {
             comms_getAddr( cGlobals->game.comms, &addr );
@@ -1185,8 +1290,10 @@ linux_send( const XP_U8* buf, XP_U16 buflen, const CommsAddrRec* addrRec,
         nSent = linux_sms_send( cGlobals->params, buf, buflen, 
                                 addrRec->u.sms.phone, addrRec->u.sms.port,
                                 gameID );
+    }
+        break;
 #endif
-    } else {
+    default:
         XP_ASSERT(0);
     }
     return nSent;
@@ -1197,14 +1304,8 @@ void
 linux_close_socket( CommonGlobals* cGlobals )
 {
     LOG_FUNC();
-    int socket = cGlobals->relaySocket;
-
-    (*cGlobals->socketChanged)( cGlobals->socketChangedClosure, 
-                                socket, -1, &cGlobals->storage );
-
-    XP_ASSERT( -1 == cGlobals->relaySocket );
-
-    close( socket );
+    close( cGlobals->relaySocket );
+    cGlobals->relaySocket = -1;
 }
 
 static int
@@ -1241,17 +1342,17 @@ blocking_read( int fd, unsigned char* buf, const int len )
 }
 
 int
-linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
+linux_relay_receive( CommonGlobals* cGlobals, int sock, unsigned char* buf, int bufSize )
 {
     LOG_FUNC();
-    int sock = cGlobals->relaySocket;
     ssize_t nRead = -1;
     if ( 0 <= sock ) {
         unsigned short tmp;
         nRead = blocking_read( sock, (unsigned char*)&tmp, sizeof(tmp) );
         if ( nRead != 2 ) {
             linux_close_socket( cGlobals );
-            comms_transportFailed( cGlobals->game.comms );
+
+            comms_transportFailed( cGlobals->game.comms, COMMS_CONN_RELAY );
             nRead = -1;
         } else {
             unsigned short packetSize = ntohs( tmp );
@@ -1304,7 +1405,7 @@ linux_relay_receive( CommonGlobals* cGlobals, unsigned char* buf, int bufSize )
 
             if ( -1 == nRead ) {
                 linux_close_socket( cGlobals );
-                comms_transportFailed( cGlobals->game.comms );
+                comms_transportFailed( cGlobals->game.comms, COMMS_CONN_RELAY );
             }
         }
     }
@@ -1382,11 +1483,12 @@ linuxFireTimer( CommonGlobals* cGlobals, XWTimerReason why )
 static void
 linux_util_informMissing( XW_UtilCtxt* XP_UNUSED(uc), 
                           XP_Bool XP_UNUSED_DBG(isServer), 
-                          CommsConnType XP_UNUSED_DBG(conType),
+                          const CommsAddrRec* XP_UNUSED_DBG(addr),
+                          XP_U16 XP_UNUSED_DBG(nDevs),
                           XP_U16 XP_UNUSED_DBG(nMissing) )
 {
-    XP_LOGF( "%s(isServer=%d, conType=%d, nMissing=%d)", 
-             __func__, isServer, conType, nMissing );
+    XP_LOGF( "%s(isServer=%d, addr=%p, nDevs=%d, nMissing=%d)", 
+             __func__, isServer, addr, nDevs, nMissing );
 }
 
 static void
@@ -1395,29 +1497,32 @@ linux_util_addrChange( XW_UtilCtxt* uc,
                        const CommsAddrRec* newAddr )
 {
     CommonGlobals* cGlobals = (CommonGlobals*)uc->closure;
-    switch ( newAddr->conType ) {
+    CommsConnType typ;
+    for ( XP_U32 st = 0; addr_iter( newAddr, &typ, &st ); ) {
+        switch ( typ ) {
 #ifdef XWFEATURE_BLUETOOTH
-    case COMMS_CONN_BT: {
-        XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
-        linux_bt_open( cGlobals, isServer );
-    }
-        break;
+        case COMMS_CONN_BT: {
+            XP_Bool isServer = comms_getIsServer( cGlobals->game.comms );
+            linux_bt_open( cGlobals, isServer );
+        }
+            break;
 #endif
 #ifdef XWFEATURE_IP_DIRECT
-    case COMMS_CONN_IP_DIRECT:
-        linux_udp_open( cGlobals, newAddr );
-        break;
+        case COMMS_CONN_IP_DIRECT:
+            linux_udp_open( cGlobals, newAddr );
+            break;
 #endif
 #ifdef XWFEATURE_SMS
-    case COMMS_CONN_SMS:
-        /* nothing to do??? */
-        // XP_ASSERT(0);
-        // linux_sms_init( cGlobals, newAddr );
-        break;
+        case COMMS_CONN_SMS:
+            /* nothing to do??? */
+            // XP_ASSERT(0);
+            // linux_sms_init( cGlobals, newAddr );
+            break;
 #endif
-    default:
-        // XP_ASSERT(0);
-        break;
+        default:
+            // XP_ASSERT(0);
+            break;
+        }
     }
 }
 
@@ -1439,7 +1544,7 @@ linuxChangeRoles( CommonGlobals* cGlobals )
         XWStreamCtxt* stream =
             mem_stream_make( MPPARM(cGlobals->util->mpool) cGlobals->params->vtMgr,
                              cGlobals, CHANNEL_NONE, sendOnClose );
-        server_initClientConnection( server, stream );
+        (void)server_initClientConnection( server, stream );
     }
     (void)server_do( server );
 }
@@ -1811,36 +1916,45 @@ initFromParams( CommonGlobals* cGlobals, LaunchParams* params )
     /* addr */
     CommsAddrRec* addr = &cGlobals->addr;
     XP_MEMSET( addr, 0, sizeof(*addr) );
-    if ( 0 ) {
+
+    CommsConnType typ;
+    for ( XP_U32 st = 0; addr_iter( &params->addr, &typ, &st ); ) {
+        switch( typ ) {
 #ifdef XWFEATURE_RELAY
-    } else if ( params->conType == COMMS_CONN_RELAY ) {
-        addr->conType = COMMS_CONN_RELAY;
-        addr->u.ip_relay.ipAddr = 0;       /* ??? */
-        addr->u.ip_relay.port = params->connInfo.relay.defaultSendPort;
-        addr->u.ip_relay.seeksPublicRoom = 
-            params->connInfo.relay.seeksPublicRoom;
-        addr->u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
-        XP_STRNCPY( addr->u.ip_relay.hostName, 
-                    params->connInfo.relay.relayName,
-                    sizeof(addr->u.ip_relay.hostName) - 1 );
-        XP_STRNCPY( addr->u.ip_relay.invite, params->connInfo.relay.invite,
-                    sizeof(addr->u.ip_relay.invite) - 1 );
+        case COMMS_CONN_RELAY:
+            addr_addType( addr, COMMS_CONN_RELAY );
+            addr->u.ip_relay.ipAddr = 0;       /* ??? */
+            addr->u.ip_relay.port = params->connInfo.relay.defaultSendPort;
+            addr->u.ip_relay.seeksPublicRoom = 
+                params->connInfo.relay.seeksPublicRoom;
+            addr->u.ip_relay.advertiseRoom = params->connInfo.relay.advertiseRoom;
+            XP_STRNCPY( addr->u.ip_relay.hostName, 
+                        params->connInfo.relay.relayName,
+                        sizeof(addr->u.ip_relay.hostName) - 1 );
+            XP_STRNCPY( addr->u.ip_relay.invite, params->connInfo.relay.invite,
+                        sizeof(addr->u.ip_relay.invite) - 1 );
+            break;
 #endif
 #ifdef XWFEATURE_SMS
-    } else if ( params->conType == COMMS_CONN_SMS ) {
-        addr->conType = COMMS_CONN_SMS;
-        XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.phone,
-                    sizeof(addr->u.sms.phone) - 1 );
-        addr->u.sms.port = params->connInfo.sms.port;
+        case COMMS_CONN_SMS:
+            addr_addType( addr, COMMS_CONN_SMS );
+            XP_STRNCPY( addr->u.sms.phone, params->connInfo.sms.phone,
+                        sizeof(addr->u.sms.phone) - 1 );
+            addr->u.sms.port = params->connInfo.sms.port;
+            break;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
-    } else if ( params->conType == COMMS_CONN_BT ) {
-        addr->conType = COMMS_CONN_BT;
-        XP_ASSERT( sizeof(addr->u.bt.btAddr) 
-                   >= sizeof(params->connInfo.bt.hostAddr));
-        XP_MEMCPY( &addr->u.bt.btAddr, &params->connInfo.bt.hostAddr,
-                   sizeof(params->connInfo.bt.hostAddr) );
+        case COMMS_CONN_BT:
+            addr_addType( addr, COMMS_CONN_BT );
+            XP_ASSERT( sizeof(addr->u.bt.btAddr) 
+                       >= sizeof(params->connInfo.bt.hostAddr));
+            XP_MEMCPY( &addr->u.bt.btAddr, &params->connInfo.bt.hostAddr,
+                       sizeof(params->connInfo.bt.hostAddr) );
+            break;
 #endif
+        default:
+            break;
+        }
     }
 }
 
@@ -1863,7 +1977,7 @@ initParams( LaunchParams* params )
     /* XP_MEMSET( params->util, 0, sizeof(params->util) ); */
 
 #ifdef MEM_DEBUG
-    params->mpool = mpool_make();
+    params->mpool = mpool_make(NULL);
 #endif
 
     params->vtMgr = make_vtablemgr(MPPARM_NOCOMMA(params->mpool));
@@ -1911,8 +2025,8 @@ main( int argc, char** argv )
     int opt;
     int totalPlayerCount = 0;
     XP_Bool isServer = XP_FALSE;
-    char* portNum = NULL;
-    char* hostName = "localhost";
+    // char* portNum = NULL;
+    // char* hostName = "localhost";
     unsigned int seed = defaultRandomSeed();
     LaunchParams mainParams;
     XP_U16 nPlayerDicts = 0;
@@ -1934,9 +2048,9 @@ main( int argc, char** argv )
     sigaction( SIGINT, &act, NULL );
     sigaction( SIGTERM, &act, NULL );
     
-    CommsConnType conType = COMMS_CONN_NONE;
+    // CommsConnType conType = COMMS_CONN_NONE;
 #ifdef XWFEATURE_SMS
-    char* phone = NULL;
+    // char* phone = NULL;
 #endif
 #ifdef XWFEATURE_BLUETOOTH
     const char* btaddr = NULL;
@@ -1970,6 +2084,9 @@ main( int argc, char** argv )
     mainParams.connInfo.ip.port = DEFAULT_PORT;
     mainParams.connInfo.ip.hostName = "localhost";
 #endif
+#ifdef XWFEATURE_SMS
+    mainParams.connInfo.sms.port = 1;
+#endif
     mainParams.pgi.boardSize = 15;
     mainParams.quitAfter = -1;
     mainParams.sleepOnAnchor = XP_FALSE;
@@ -1989,6 +2106,8 @@ main( int argc, char** argv )
     mainParams.allowPeek = XP_TRUE;
     mainParams.showRobotScores = XP_FALSE;
     mainParams.useMmap = XP_TRUE;
+    mainParams.useUdp = true;
+    mainParams.dbName = "xwgames.sqldb";
 
     char* envDictPath = getenv( "XW_DICTDIR" );
     XP_LOGF( "%s: envDictPath=%s", __func__, envDictPath );
@@ -2030,18 +2149,22 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_RELAY
         case CMD_ROOMNAME:
-            XP_ASSERT( conType == COMMS_CONN_NONE ||
-                       conType == COMMS_CONN_RELAY );
             mainParams.connInfo.relay.invite = optarg;
-            conType = COMMS_CONN_RELAY;
+            addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
             // isServer = XP_TRUE; /* implicit */
             break;
 #endif
         case CMD_HOSTIP:
-            XP_ASSERT( conType == COMMS_CONN_NONE ||
-                       conType == COMMS_CONN_IP_DIRECT );
-            hostName = optarg;
-            conType = COMMS_CONN_IP_DIRECT;
+            mainParams.connInfo.ip.hostName = optarg;
+            addr_addType( &mainParams.addr, COMMS_CONN_IP_DIRECT );
+            break;
+        case CMD_HOSTPORT:
+            mainParams.connInfo.ip.hostPort = atoi(optarg);
+            addr_addType( &mainParams.addr, COMMS_CONN_IP_DIRECT );
+            break;
+        case CMD_MYPORT:
+            mainParams.connInfo.ip.myPort = atoi(optarg);
+            addr_addType( &mainParams.addr, COMMS_CONN_IP_DIRECT );
             break;
         case CMD_DICT:
             trimDictPath( optarg, dictbuf, VSIZE(dictbuf), &path, &dict );
@@ -2089,6 +2212,7 @@ main( int argc, char** argv )
             break;
         case CMD_GAMEFILE:
             mainParams.fileName = optarg;
+            mainParams.dbName = NULL; /* clear the default */
             break;
         case CMD_DBFILE:
             mainParams.dbName = optarg;
@@ -2106,6 +2230,8 @@ main( int argc, char** argv )
                    "disabling XWFEATURE_SEARCHLIMIT" );
 # endif
             mainParams.dbFileName = optarg;
+            mainParams.dbName = NULL;
+            break;
         case CMD_GAMEDB_ID:
             mainParams.dbFileID = atoi(optarg);
             break;
@@ -2135,9 +2261,12 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_SMS
         case CMD_SMSNUMBER:		/* SMS phone number */
-            XP_ASSERT( COMMS_CONN_NONE == conType );
-            phone = optarg;
-            conType = COMMS_CONN_SMS;
+            mainParams.connInfo.sms.phone = optarg;
+            addr_addType( &mainParams.addr, COMMS_CONN_SMS );
+            break;
+        case CMD_SMSPORT:
+            mainParams.connInfo.sms.port = atoi(optarg);
+            addr_addType( &mainParams.addr, COMMS_CONN_SMS );
             break;
 #endif
         case CMD_DUPPACKETS:
@@ -2165,9 +2294,9 @@ main( int argc, char** argv )
             mainParams.pgi.players[index].isLocal = XP_FALSE;
             ++mainParams.info.serverInfo.nRemotePlayers;
             break;
-        case CMD_PORT:
-            /* could be RELAY or IP_DIRECT or SMS */
-            portNum = optarg;
+        case CMD_RELAY_PORT:
+            addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
+            mainParams.connInfo.relay.defaultSendPort = atoi( optarg );
             break;
         case CMD_ROBOTNAME:
             ++robotCount;
@@ -2200,10 +2329,8 @@ main( int argc, char** argv )
             break;
         case CMD_HOSTNAME:
             /* mainParams.info.clientInfo.serverName =  */
-            XP_ASSERT( conType == COMMS_CONN_NONE ||
-                       conType == COMMS_CONN_RELAY );
-            conType = COMMS_CONN_RELAY;
-            hostName = optarg;
+            addr_addType( &mainParams.addr, COMMS_CONN_RELAY );
+            mainParams.connInfo.relay.relayName = optarg;
             break;
 #ifdef XWFEATURE_RELAY
         case CMD_ADVERTISEROOM:
@@ -2242,9 +2369,7 @@ main( int argc, char** argv )
             break;
 #ifdef XWFEATURE_BLUETOOTH
         case CMD_BTADDR:
-            XP_ASSERT( conType == COMMS_CONN_NONE ||
-                       conType == COMMS_CONN_BT );
-            conType = COMMS_CONN_BT;
+            addr_addType( &mainParams.addr, COMMS_CONN_BT );
             btaddr = optarg;
             break;
 #endif
@@ -2269,6 +2394,26 @@ main( int argc, char** argv )
         case CMD_USEUDP:
             mainParams.useUdp = true;
             break;
+        case CMD_NOUDP:
+            mainParams.useUdp = false;
+            break;
+
+        case CMD_DROPSENDRELAY:
+            mainParams.commsDisableds[COMMS_CONN_RELAY][1] = XP_TRUE;
+            break;
+        case CMD_DROPRCVRELAY:
+            mainParams.commsDisableds[COMMS_CONN_RELAY][0] = XP_TRUE;
+            break;
+        case CMD_DROPSENDSMS:
+            mainParams.commsDisableds[COMMS_CONN_SMS][1] = XP_TRUE;
+            break;
+        case CMD_DROPRCVSMS:
+            mainParams.commsDisableds[COMMS_CONN_SMS][0] = XP_TRUE;
+            break;
+        case CMD_FORCECHANNEL:
+            mainParams.pgi.forceChannel = atoi( optarg );
+            break;
+
 #ifdef XWFEATURE_CROSSHAIRS
         case CMD_NOCROSSHAIRS:
             mainParams.hideCrosshairs = XP_TRUE;
@@ -2276,7 +2421,7 @@ main( int argc, char** argv )
 #endif
         case CMD_ADDPIPE:
             mainParams.pipe = optarg;
-            break;
+            break;   
         case CMD_ADDNBS:
             mainParams.nbs = optarg;
             break;
@@ -2298,8 +2443,8 @@ main( int argc, char** argv )
 #ifdef USE_GLIBLOOP
 	case CMD_UNDOPCT:
             mainParams.undoRatio = atoi( optarg );
-            if ( mainParams.undoRatio < 0 || mainParams.undoRatio > 100 ) {
-                usage(argv[0], "must be 0 <= n <= 100" );
+            if ( mainParams.undoRatio < 0 || mainParams.undoRatio > 1000 ) {
+                usage(argv[0], "must be 0 <= n <= 1000" );
             }
 	    break;
 #endif
@@ -2335,6 +2480,11 @@ main( int argc, char** argv )
     } else {
         XP_ASSERT( mainParams.pgi.nPlayers == mainParams.nLocalPlayers
                    + mainParams.info.serverInfo.nRemotePlayers );
+
+        /* add cur dir if dict search dir path is empty */
+        if ( !mainParams.dictDirs ) {
+            mainParams.dictDirs = g_slist_append( mainParams.dictDirs, "./" );
+        }
 
         if ( isServer ) {
             if ( mainParams.info.serverInfo.nRemotePlayers == 0 ) {
@@ -2421,61 +2571,44 @@ main( int argc, char** argv )
             exit( 0 );
         }
 #endif
-        if ( 0 ) {
-#ifdef XWFEATURE_RELAY
-        } else if ( conType == COMMS_CONN_RELAY ) {
-            mainParams.connInfo.relay.relayName = hostName;
-            if ( NULL == portNum ) {
-                portNum = "10997";
-            }
-            mainParams.connInfo.relay.defaultSendPort = atoi( portNum );
-#endif
-#ifdef XWFEATURE_IP_DIRECT
-        } else if ( conType == COMMS_CONN_IP_DIRECT ) {
-            mainParams.connInfo.ip.hostName = hostName;
-            if ( NULL == portNum ) {
-                portNum = "10999";
-            }
-            mainParams.connInfo.ip.port = atoi( portNum );
-#endif
-#ifdef XWFEATURE_SMS
-        } else if ( conType == COMMS_CONN_SMS ) {
-            mainParams.connInfo.sms.phone = phone;
-            if ( !portNum ) {
-                portNum = "1";
-            }
-            mainParams.connInfo.sms.port = atoi(portNum);
-#endif
+        CommsConnType typ;
+        for ( XP_U32 st = 0; addr_iter( &mainParams.addr, &typ, &st ); ) {
+            switch ( typ ) {
 #ifdef XWFEATURE_BLUETOOTH
-        } else if ( conType == COMMS_CONN_BT ) {
-            bdaddr_t ba;
-            XP_Bool success;
-            XP_ASSERT( btaddr );
-            if ( isServer ) {
-                success = XP_TRUE;
-                /* any format is ok */
-            } else if ( btaddr[1] == ':' ) {
-                success = XP_FALSE;
-                if ( btaddr[0] == 'n' ) {
-                    if ( !nameToBtAddr( btaddr+2, &ba ) ) {
-                        fprintf( stderr, "fatal error: unable to find device %s\n",
-                                 btaddr + 2 );
-                        exit(0);
-                    }
+            case COMMS_CONN_BT: {
+                bdaddr_t ba;
+                XP_Bool success;
+                XP_ASSERT( btaddr );
+                if ( isServer ) {
                     success = XP_TRUE;
-                } else if ( btaddr[0] == 'a' ) {
-                    success = 0 == str2ba( &btaddr[2], &ba );
-                    XP_ASSERT( success );
+                    /* any format is ok */
+                } else if ( btaddr[1] == ':' ) {
+                    success = XP_FALSE;
+                    if ( btaddr[0] == 'n' ) {
+                        if ( !nameToBtAddr( btaddr+2, &ba ) ) {
+                            fprintf( stderr, "fatal error: unable to find device %s\n",
+                                     btaddr + 2 );
+                            exit(0);
+                        }
+                        success = XP_TRUE;
+                    } else if ( btaddr[0] == 'a' ) {
+                        success = 0 == str2ba( &btaddr[2], &ba );
+                        XP_ASSERT( success );
+                    }
                 }
+                if ( !success ) {
+                    usage( argv[0], "bad format for -B param" );
+                }
+                XP_MEMCPY( &mainParams.connInfo.bt.hostAddr, &ba, 
+                           sizeof(mainParams.connInfo.bt.hostAddr) );
             }
-            if ( !success ) {
-                usage( argv[0], "bad format for -B param" );
-            }
-            XP_MEMCPY( &mainParams.connInfo.bt.hostAddr, &ba, 
-                       sizeof(mainParams.connInfo.bt.hostAddr) );
+                break;
 #endif
+            default:
+                break;
+            }
         }
-        mainParams.conType = conType;
+        // addr_setType( &mainParams.addr, conType );
 
         /*     mainParams.pipe = linuxCommPipeCtxtMake( isServer ); */
 

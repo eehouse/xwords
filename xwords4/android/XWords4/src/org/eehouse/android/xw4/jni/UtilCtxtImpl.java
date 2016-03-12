@@ -22,12 +22,14 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.telephony.PhoneNumberUtils;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DbgUtils;
-import org.eehouse.android.xw4.XWApp;
-import org.eehouse.android.xw4.XWPrefs;
 import org.eehouse.android.xw4.R;
+import org.eehouse.android.xw4.XWApp;
+import org.eehouse.android.xw4.DevID;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class UtilCtxtImpl implements UtilCtxt {
@@ -98,11 +100,11 @@ public class UtilCtxtImpl implements UtilCtxt {
     public String getDevID( /*out*/ byte[] typa )
     {
         UtilCtxt.DevIDType typ = UtilCtxt.DevIDType.ID_TYPE_NONE;
-        String result = XWPrefs.getRelayDevID( m_context );
+        String result = DevID.getRelayDevID( m_context );
         if ( null != result ) {
             typ = UtilCtxt.DevIDType.ID_TYPE_RELAY;
         } else {
-            result = XWPrefs.getGCMDevID( m_context );
+            result = DevID.getGCMDevID( m_context );
             if ( result.equals("") ) {
                 result = null;
             } else {
@@ -117,10 +119,10 @@ public class UtilCtxtImpl implements UtilCtxt {
     {
         switch ( devIDType ) {
         case ID_TYPE_RELAY:
-            XWPrefs.setRelayDevID( m_context, idRelay );
+            DevID.setRelayDevID( m_context, idRelay );
             break;
         case ID_TYPE_NONE:
-            XWPrefs.clearRelayDevID( m_context );
+            DevID.clearRelayDevID( m_context );
             break;
         default:
             Assert.fail();
@@ -144,11 +146,8 @@ public class UtilCtxtImpl implements UtilCtxt {
     {
         int id = 0;
         switch( stringCode ) {
-        case UtilCtxt.STRD_ROBOT_TRADED:
-            id = R.string.strd_robot_traded_fmt;
-            break;
         case UtilCtxt.STR_ROBOT_MOVED:
-            id = R.string.str_robot_moved;
+            id = R.string.str_robot_moved_fmt;
             break;
         case UtilCtxt.STRS_VALUES_HEADER:
             id = R.string.strs_values_header_fmt;
@@ -189,18 +188,6 @@ public class UtilCtxtImpl implements UtilCtxt {
         case UtilCtxt.STRS_NEW_TILES:
             id = R.string.strs_new_tiles_fmt;
             break;
-        case UtilCtxt.STR_PASSED:
-            id = R.string.str_passed;
-            break;
-        case UtilCtxt.STRSD_SUMMARYSCORED:
-            id = R.string.strsd_summaryscored_fmt;
-            break;
-        case UtilCtxt.STRD_TRADED:
-            id = R.string.strd_traded_fmt;
-            break;
-        case UtilCtxt.STR_LOSTTURN:
-            id = R.string.str_lostturn;
-            break;
         case UtilCtxt.STR_COMMIT_CONFIRM:
             id = R.string.str_commit_confirm;
             break;
@@ -210,28 +197,42 @@ public class UtilCtxtImpl implements UtilCtxt {
         case UtilCtxt.STRD_TURN_SCORE:
             id = R.string.strd_turn_score_fmt;
             break;
-        case UtilCtxt.STRD_REMAINS_HEADER:
-            id = R.string.strd_remains_header_fmt;
+        case UtilCtxt.STRSD_RESIGNED:
+            id = R.string.str_resigned_fmt;
             break;
-        case UtilCtxt.STRD_REMAINS_EXPL:
-            id = R.string.strd_remains_expl_fmt;
+        case UtilCtxt.STRSD_WINNER:
+            id = R.string.str_winner_fmt;
             break;
-        case UtilCtxt.STR_RESIGNED:
-            id = R.string.str_resigned;
-            break;
-        case UtilCtxt.STR_WINNER:
-            id = R.string.str_winner;
+        case UtilCtxt.STRDSD_PLACER:
+            id = R.string.str_placer_fmt;
             break;
 
         default:
             DbgUtils.logf( "no such stringCode: %d", stringCode );
         }
 
-        String result;
-        if ( 0 == id ) {
-            result = "";
-        } else {
-            result = LocUtils.getString( m_context, id );
+        String result = (0 == id) ? "" : LocUtils.getString( m_context, id );
+        return result;
+    }
+
+    public String getUserQuantityString( int stringCode, int quantity )
+    {
+        int pluralsId = 0;
+        switch ( stringCode ) {
+        case UtilCtxt.STRD_ROBOT_TRADED:
+            pluralsId = R.plurals.strd_robot_traded_fmt;
+            break;
+        case UtilCtxt.STRD_REMAINS_HEADER:
+            pluralsId = R.plurals.strd_remains_header_fmt;
+            break;
+        case UtilCtxt.STRD_REMAINS_EXPL:
+            pluralsId = R.plurals.strd_remains_expl_fmt;
+            break;
+        }
+
+        String result = "";
+        if ( 0 != pluralsId ) {
+            result = LocUtils.getQuantityString( m_context, pluralsId, quantity );
         }
         return result;
     }
@@ -271,8 +272,8 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     public void informMissing( boolean isServer, 
-                               CommsAddrRec.CommsConnType connType,
-                               int nMissingPlayers )
+                               CommsConnTypeSet connTypes,
+                               int nDevices, int nMissingPlayers )
     {
         subclassOverride( "informMissing" );
     }
@@ -292,7 +293,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     // These need to go into some sort of chat DB, not dropped.
-    public void showChat( String msg )
+    public void showChat( String msg, int fromIndx, String fromName )
     {
         subclassOverride( "showChat" );
     }
@@ -301,7 +302,6 @@ public class UtilCtxtImpl implements UtilCtxt {
     {
         Assert.assertTrue( XWApp.SMSSUPPORTED );
         boolean same = PhoneNumberUtils.compare( m_context, num1, num2 );
-        DbgUtils.logf( "phoneNumbersSame => %b", same );
         return same;
     }
 

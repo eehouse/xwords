@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="XWords4" default="release">
 
+    <!-- eeh: allow ant files to refer e.g. to ${env.HOME} -->
+    <property environment="env" />
+
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
          Version Control Systems. -->
@@ -52,22 +55,20 @@
     <!-- extension targets. Uncomment the ones where you want to do custom work
          in between standard targets -->
 
-    <property name="INITIAL_CLIENT_VERS" value="4"/>
+    <property name="INITIAL_CLIENT_VERS" value="8"/>
+    <property name="VARIANT_NAME" value="xw4"/>
+    <property name="APP_NAME" value="Crosswords"/>
+
     <target name="-pre-clean">
         <antcall target="my-pre-clean" />
     </target>
 
     <target name="-pre-build">
-        <antcall target="my-pre-build">
-            <param name="VARIANT_NAME" value="xw4"/>
-            <param name="APP_NAME" value="Crosswords"/>
-        </antcall>
+        <antcall target="my-pre-build" />
     </target>
 
     <target name="-pre-compile">
-        <antcall target="my-pre-compile">
-            <param name="VARIANT_NAME" value="xw4"/>
-        </antcall>
+        <antcall target="my-pre-compile" />
     </target>
 
 <!--

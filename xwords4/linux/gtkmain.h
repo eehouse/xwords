@@ -26,5 +26,7 @@
 int gtkmain( LaunchParams* params );
 void windowDestroyed( GtkGameGlobals* globals );
 void onGameSaved( void* closure, sqlite3_int64 rowid, XP_Bool firstTime );
+void open_row( GtkAppGlobals* apg, sqlite3_int64 row, XP_Bool isNew );
+void make_rematch( GtkAppGlobals* apg, const CommonGlobals* cGlobals );
 
 #endif

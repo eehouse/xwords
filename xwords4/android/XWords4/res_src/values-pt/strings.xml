@@ -54,7 +54,7 @@
   <!-- Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... -->
-  <string name="moves_fmt">%1$d turnos jogados</string>
+  <!-- <string name="moves_fmt">%1$d turnos jogados</string> -->
   <!-- When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the
@@ -163,8 +163,6 @@
   <!-- If you tap the download_dicts button and Android fails to
          find and launch an app that's registered to handle http
          downloads a Toast is posted with this message. -->
-  <string name="no_download_warning">Não foi possível baixar. Você
-    tem um navegador web instalado?</string>
   <!--
        ############################################################
        # :Menus:
@@ -187,8 +185,6 @@
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %s.  Sometimes one of the two
          strings below is appended. -->
-  <string name="confirm_delete_dict_fmt">Você tem certeza que quer
-    excluir %1$s?</string>
   <!-- Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is the last in its language.  The name
@@ -200,9 +196,6 @@
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is NOT the last in its language. The
          name of the language is substituted for %s. -->
-  <string name="confirm_deletemore_dict_fmt">\u0020Ao menos um jogo
-    está usando, mas há outra lista de palavras em %1$s instalada que
-    pode substituí-la.</string>
   <!--
        ############################################################
        # :Dialogs:
@@ -244,7 +237,6 @@
   <!-- alternate window title used when game is networked -->
   <string name="title_gamenet_config_fmt">Configurações de %1$s (rede)</string>
   <!--  -->
-  <string name="title_gamebt_config_fmt">Configurações de %1$s (via Bluetooth)</string>
   <!-- title for popup list of langugages from which user picks -->
   <string name="title_langs_list">Idiomas (baseado nas listas de palavras
     instaladas)</string>
@@ -270,7 +262,6 @@
   <string name="lang_label">Idioma do jogo</string>
   <string name="langdict_label">Idioma do jogo/lista de palavras</string>
   <!-- text of separator marking out the connection area of the dialog -->
-  <string name="connect_label_relay">Conexão (via internet)</string>
   <!-- text of checkbox asking if user wants to search for open
     public rooms -->
   <string name="join_room">Entrar em sala pública</string>
@@ -446,12 +437,8 @@
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
-  <string name="invite_msg_fmt">Faltam %1$d jogador(es) remoto(s) desse
-    jogo. Você gostaria de convidar alguém -- se é que já não
-    convidou?</string>
   <!-- Toast shown when players are missing, same time as above
            but more subtle.  -->
-  <string name="players_miss_fmt">Falta(m) %1$d jogador(es)</string>
   <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
@@ -470,8 +457,6 @@
          the room, and how many additional players have not yet
          registered with the relay in this game.  This should be seen
          only once per game. -->
-  <string name="msg_relay_waiting_fmt">Dispositivo %1$d conectado ao
-    servidor na sala \"%2$s\". Esperando por %3$d jogador(es).</string>
   <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. -->
@@ -574,9 +559,8 @@
        ############################################################
       -->
   <!-- Notifies user of a normal robot move -->
-  <string name="str_robot_moved">O robô fez esta jogada:\u0020</string>
+  <!--string name="str_robot_moved">O robô fez esta jogada:\u0020</string-->
   <!-- Notifies user of a robot trade move -->
-  <string name="strd_robot_traded_fmt">trocou %1$d pedras.</string>
   <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
   <string name="strs_values_header_fmt">%1$s contagens/valores:\n</string>
@@ -610,17 +594,13 @@
   <!-- Used in formatting exchange move summaries: passed means the
          user skipped his turn, or made a move involving 0 tiles for 0
          points -->
-  <string name="str_passed">Passou</string>
   <!-- formats tiles and score together, and probably doesn't need
          translation unless the colon ':' needs to be replaced -->
-  <string name="strsd_summaryscored_fmt">%1$s:%2$d</string>
   <!-- Used in formatting reports of trades (exchanges of tiles).
          Number of tiles traded is substituted for %d-->
-  <string name="strd_traded_fmt">%1$d pedras trocadas</string>
   <!-- Used in formatting history and move reports; means user
          skipped a turn because of an attempted illegal move/play of a
          phony -->
-  <string name="str_lostturn">Vez perdida</string>
   <!-- Beginning of the message presented to a user when asking him
          to confirm committing the current turn-->
   <string name="str_commit_confirm">Executar a jogada atual?\n</string>
@@ -637,10 +617,7 @@
   <string name="strd_turn_score_fmt">Pontuação pela jogada: %1$d\n</string>
   <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
-  <string name="strd_remains_header_fmt">%1$d pedras restantes na pilha.</string>
   <!-- Intro to the paragraph lisiting all of the tiles remaining -->
-  <string name="strd_remains_expl_fmt">%1$d pedras restantes na pilha e
-    com o(s) jogador(es):\n</string>
   <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
   <string name="confirm_undo_last">Você tem certeza que quer desfazer a
@@ -994,26 +971,13 @@
          bluetooth games -->
   <string name="newgame_bt_header">Novo jogo por Bluetooth</string>
   <!-- EXPLAIN ME -->
-  <string name="bt_disabled">Bluetooth não está disponível.  Isso
-    pode significar que seu dispositivo não suporta Bluetooth, ou
-    que a funcionalidade está desligada.</string>
   <!-- EXPLAIN ME -->
-  <string name="bt_networked_desc">Criar um jogo entre dispositivos
-    Bluetooth próximos e pareados com o seu.  Ambos botões iniciarão
-    um jogo com outros dispositivos (um ou mais) que você escolher
-    (entre dispositivos pareados que já tenham Crosswords instalado.)
-    O primeiro usa os padrões; o segundo permite que você modifique
-    as configurações antes do início do jogo.</string>
   <!-- The invitation process begins with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
-  <string name="sms_or_email">Enviar convite através de SMS (mensagem
-    de texto) or por email?</string>
   <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
-  <string name="button_text">SMS/Texto</string>
-  <string name="button_html">Email</string>
   <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
   <string name="invite_subject_fmt">Vamos jogar Crosswords (Sala %1$s)</string>
@@ -1047,8 +1011,6 @@
   <string name="invite_chooser_sms">sms</string>
   <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-  <string name="query_trade_fmt">Você tem certeza que quer trocar as
-    pedras selecionadas (%1$s)?</string>
   <!-- ############################################################
          # :Screens:
          # Chat screen
@@ -1100,19 +1062,8 @@
          -->
   <!-- This is the heading above the list of steps.  The default
          language is substituted for %s. -->
-  <string name="relay_game_explain_fmt">Para iniciar um jogo de rede
-    básico com dois jogadores em %1$s:</string>
   <!-- These four strings are displayed as step-by-step
          instructions-->
-  <string name="explain_b1">• Combinar um nome de sala com o outro
-    jogador.</string>
-  <string name="explain_b2">• Preencher o nome da sala na primeira
-    caixa abaixo. Os nomes de sala em seus dois dispositivos devem
-    ser idênticos.</string>
-  <string name="explain_b3">• Opcionalmente, entrar com os nomes
-    dos jogadores na segunda caixa (um por dispositivo)</string>
-  <string name="explain_b4">• Pressione \"Jogar\" em ambos os
-    dispositivos para iniciar o jogo.</string>
   <!-- This is the "hint" printed in light text in the empty player
          name field -->
   <string name="local_name_hint">Nome do jogador</string>
@@ -1267,8 +1218,6 @@
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
     down. -->
-  <string name="notify_title">Jogadas feitas</string>
-  <string name="notify_body_fmt">Atividade no jogo "%1$s"</string>
   <!--
         ############################################################
         # Dialogs
@@ -1276,8 +1225,6 @@
       -->
   <!-- Text for buttons at the bottom of dialogs.  These first are
       in many places.-->
-  <string name="button_ok">OK</string>
-  <string name="button_cancel">Cancelar</string>
   <string name="button_yes">Sim</string>
   <string name="button_no">Não</string>
   <!-- Used in Game config dialog to confirm saving changes that reset a game -->
@@ -1506,7 +1453,7 @@
       -->
   <!-- String giving version info, which is substituted in. -->
   <string name="about_vers_fmt">Crosswords para Android, Versão %1$s,
-        rev %2$s.</string>
+        rev %2$s, built on %3$s.</string>
   <!-- copyright info -->
   <string name="about_copyright">Copyright (C) 1998-2013 por Eric
         House. Esse software livre/aberto é liberado sob a Licença
@@ -1564,11 +1511,7 @@
   <!--  -->
   <string name="pick_faceup">Escolher pedras viradas para cima</string>
   <!--  -->
-  <string name="dict_browse_title_fmt">%1$s (%2$d palavras usando %3$d-%4$d
-      pedras)</string>
   <!--  -->
-  <string name="dict_browse_title1_fmt">%1$s (%2$d palavras usando %3$d
-      pedras)</string>
   <!--  -->
   <string name="dict_browse_nowords_fmt">Nenhuma palavra em %1$s começa com
       %2$s.</string>
@@ -1597,15 +1540,11 @@
   <!--  -->
   <string name="email_body_rev_fmt">(Se relevante, por favor inclua a
     versão: \"%1$s\"; e marca/modelo do seu telefone ou tablet.)"</string>
-  <string name="newgame_enable_bt">Ligar Bluetooth</string>
   <!--  -->
-  <string name="bt_pick_rescan_button">Varrer novamente</string>
   <!--  -->
   <string name="bt_pick_clear_button">Remover selecionados</string>
   <!--  -->
-  <string name="scan_progress">Procurando por Crosswords em dispositivos pareados</string>
   <!--  -->
-  <string name="invite_progress">Enviando informações do jovo jogo...</string>
   <!--  -->
   <string name="summary_wait_host">Esperando por conexão(ões)</string>
   <!--  -->
@@ -1626,9 +1565,6 @@
   <!--  -->
   <string name="new_move_body">Uma ou mais jogadas chegaram</string>
   <!--  -->
-  <string name="invite_bt_desc_fmt">Por favor selecione o(s) %1$d dispositivo(s)
-    que você quer incluir nesse jogo. Use o botão Varrer novamente se
-    você não vê um dispositivo esperado.</string>
   <!--  -->
   <string name="bt_resend_fmt">Envio por Bluetooth para %1$s falhou; nova
     tentativa %3$d em %2$d segundos.</string>
@@ -1638,41 +1574,25 @@
   <!--  -->
   <string name="button_invite">Convidar marcado(s)</string>
   <!--  -->
-  <string name="btname_label">Nome do novo jogo Bluetooth</string>
   <!--  -->
-  <string name="smsname_label">Nome do novo jogo SMS</string>
   <!--  -->
   <string name="game_btname_title">Nome do jogo Bluetooth</string>
   <!--  -->
-  <string name="game_smsname_title">Nome do seu jogo</string>
   <!--  -->
-  <string name="dft_name_fmt">Jogo %X</string>
   <!--  -->
   <string name="newgame_sms_header">Novo jogo SMS</string>
   <!--  -->
-  <string name="sms_networked_desc">Criar um jogo através de
-    mensagens de texto invisíveis. O botão \"Convidar agora\" inicia
-    um jogo com dois dispositivos e ajuda você a convidar um amigo.
-    Ou aperte \"Configurar primeiro\" para mudar alguns dos padrões
-    antes de iniciar seu jogo SMS. (Você poderá enviar convites
-    posteriormente.)</string>
   <!--  -->
-  <string name="sms_disabled">Jogar por SMS está desabilitado. Você
-    pode habilitar nas configurações de Rede.</string>
   <!--  -->
   <string name="dft_sms_name_fmt">Jogo SMS %X</string>
   <!--  -->
-  <string name="new_sms_title">Novo jogo por SMS</string>
+  <string name="invite_notice_title">Novo jogo</string>
   <!--  -->
   <string name="new_name_body_fmt">%1$s te convidou para jogar</string>
   <!--  -->
-  <string name="new_smsmove_title">Nova jogada por SMS</string>
   <!--  -->
   <string name="button_sms_add">Importar contato</string>
   <!--  -->
-  <string name="invite_sms_desc_fmt">Por favor marque o(s) %1$d número(s)
-    de telefone que você deseja convidar para seu jogo novo, e então
-    pressione \"Convidar marcado(s)\".</string>
   <!--  -->
   <string name="manual_owner_name">(Não está nos contatos)</string>
   <!--  -->
@@ -1685,11 +1605,6 @@
     diretamente.</string>
   <!--  -->
   <string name="get_sms_number">Entre o número telefônico:</string>
-  <!--  -->
-  <string name="confirm_clear">Tem certeza que você quer apagar o(s)
-    número(s) telefônico(s) selecionado(s)?</string>
-  <!--  -->
-  <string name="invite_success">Convite recebido.</string>
   <!--  -->
   <string name="connect_label_sms">Conexão (por SMS/texto)</string>
   <!--  -->
@@ -1723,9 +1638,6 @@
   <!--  -->
   <string name="game_list_tmp">Carregando resumo do jogo...</string>
   <!--  -->
-  <string name="connstat_nonet">Este é um jogo local. Não
-    há informações de rede.</string>
-  <!--  -->
   <string name="connstat_net_fmt">Informações de rede para jogo conectado
     por %1$s:</string>
   <!--  -->
@@ -1748,7 +1660,6 @@
   <!--  -->
   <string name="connstat_sms">sms/texto</string>
   <!--  -->
-  <string name="connstat_bt">bluetooth</string>
   <!--  -->
   <string name="enable_sms">Permitir jogos por SMS</string>
   <!--  -->
@@ -1790,9 +1701,7 @@
   <!--  -->
   <string name="new_app_avail">Toque para baixar e instalar</string>
   <!-- Used in formatting final scores display -->
-  <string name="str_resigned">Desistiu</string>
   <!-- Used in formatting final scores display -->
-  <string name="str_winner">Vencedor</string>
   <!--  -->
   <string name="inform_dict_diffversion_fmt">Você e o hospedeiro
     desse jogo estão usando versões diferentes da lista de palavras
@@ -1833,9 +1742,6 @@
   <string name="group_new_games">Novos jogos</string>
   <string name="rename_group_label">Mudar o nome desse grupo para:</string>
   <string name="game_name_group_title">Nomear grupo</string>
-  <string name="no_move_onegroup">Não é possível mover até que exista
-    mais de um grupo.</string>
-  <string name="group_name_fmt">%1$s (%2$d jogos)</string>
   <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
          just ended. -->
@@ -1843,4 +1749,16 @@
   <string name="square_tiles">Peças quadradas</string>
   <string name="square_tiles_summary">Mesmo se puderem ser mais altas</string>
   <string name="show_wordlist_browser">Listas de palavras</string>
-</resources>
+<string name="rename_label_caveat">Altere o nome deste jogo (apenas neste dispositivo) para:</string>
+
+    <plurals name="confirm_seldeletes_fmt">
+	<item quantity="one">Você tem certeza que deseja excluir o %1$d jogo selecionado? Esta ação não poderá ser desfeita.</item>
+	<item quantity="other">Você tem certeza que deseja excluir os %1$d jogos selecionados? Esta ação não poderá ser desfeita.</item>
+</plurals>
+
+    <plurals name="confirm_reset_fmt">
+	<item quantity="one">Você tem certeza de que deseja redefinir o %1$d jogo selecionado?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
+	<item quantity="other">Você tem certeza de que deseja redefinir os %1$d jogos selecionados?\n\n(Redefinir apaga todos os movimentos e as informações de conexão.)</item>
+</plurals>
+
+    </resources>

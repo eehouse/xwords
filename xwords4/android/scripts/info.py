@@ -1,9 +1,12 @@
 #!/usr/bin/python
 # Script meant to be installed on eehouse.org.
 
-import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct, random
+import logging, shelve, hashlib, sys, json, subprocess, glob, os, struct, random, string, psycopg2
 import mk_for_download, mygit
 import xwconfig
+
+# I'm not checking my key in...
+import mykey
 
 from stat import ST_CTIME
 try:
@@ -20,6 +23,7 @@ k_GVERS = 'gvers'
 k_INSTALLER = 'installer'
 k_DEVOK = 'devOK'
 k_APP = 'app'
+k_DEBUG = "dbg"
 k_DICTS = 'dicts'
 k_XLATEINFO = 'xlatinfo'
 k_CALLBACK = 'callback'
@@ -48,20 +52,18 @@ k_LANGS = 'langs'
 k_LANGSVERS = 'lvers'
 
 # Version for those sticking with RELEASES
-k_REL_REV = 'android_beta_81'
+k_REL_REV = 'android_beta_98'
 
 # Version for those getting intermediate builds
-k_DBG_REV = 'android_beta_81-29-gb776b7c'
-k_DBG_REV = 'android_beta_81-34-g73a1083'
 
 k_suffix = '.xwd'
-k_filebase = "/var/www/"
+k_filebase = "/var/www/html/"
 k_apkDir = "xw4/android/"
 k_shelfFile = k_filebase + 'xw4/info_shelf_2'
 k_urlbase = "http://eehouse.org"
 k_versions = { 'org.eehouse.android.xw4': {
-        'version' : 74,
-        k_AVERS : 74,
+        'version' : 91,
+        k_AVERS : 91,
         k_URL : k_apkDir + 'XWords4-release_' + k_REL_REV + '.apk',
         },
                }
@@ -75,6 +77,20 @@ k_versions = { 'org.eehouse.android.xw4': {
 #                }
 s_shelf = None
 
+g_langs = {'English' : 'en',
+           'Swedish' : 'se',
+           'Portuguese' : 'pt',
+           'Dutch' : 'nl',
+           'Danish' : 'dk',
+           'Czech' : 'cz',
+           'French' : 'fr',
+           'German' : 'de',
+           'Catalan' : 'ca',
+           'Slovak' : 'sk',
+           'Spanish' : 'es',
+           'Polish' : 'pl',
+           'Italian' : 'it',
+}
 
 logging.basicConfig(level=logging.DEBUG
         ,format='%(asctime)s [[%(levelname)s]] %(message)s'
@@ -85,11 +101,16 @@ logging.basicConfig(level=logging.DEBUG
 # This seems to be required to prime the pump somehow.
 # logging.debug( "loaded...." )
 
+def languageCodeFor( lang ):
+    result = ''
+    if lang in g_langs: result = g_langs[lang]
+    return result
+
 def getInternalSum( filePath ):
     filePath = k_filebase + "and_wordlists/" + filePath
     proc = subprocess.Popen(['/usr/bin/perl', 
                              '--',
-                             '/var/www/xw4/dawg2dict.pl', 
+                             k_filebase + 'xw4/dawg2dict.pl', 
                              '-get-sum',
                              '-dict', filePath ],
                             stdout = subprocess.PIPE,
@@ -143,10 +164,13 @@ def getDictSums():
     openShelf()
     return s_shelf[k_SUMS]
 
-def getOrderedApks( path ):
+def getOrderedApks( path, debug ):
+    # logging.debug( "getOrderedApks(" + path + ")" )
     apks = []
 
-    pattern = path + "/XWords4-release_android_beta_*.apk"
+    pattern = path
+    if debug: pattern += "/XWords4-debug-android_*.apk"
+    else: pattern += "/XWords4-release_*android_beta_*.apk"
 
     files = ((os.stat(apk).st_mtime, apk) for apk in glob.glob(pattern))
     for mtime, file in sorted(files, reverse=True):
@@ -154,6 +178,14 @@ def getOrderedApks( path ):
         apks.append( file )
 
     return apks
+
+def getVariantDir( name ):
+    result = ''
+    splits = string.split( name, '.' )
+    last = splits[-1]
+    if not last == 'xw4': result = last + '/'
+    # logging.debug( 'getVariantDir(' + name + ") => " + result )
+    return result
 
 # public, but deprecated
 def curVersion( req, name, avers = 41, gvers = None, installer = None ):
@@ -200,9 +232,22 @@ def getApp( params, name ):
     if k_NAME in params:
         name = params[k_NAME]
     if name:
+        variantDir = getVariantDir( name )
         # If we're a dev device, always push the latest
-        if k_DEVOK in params and params[k_DEVOK]:
-            apks = getOrderedApks( k_filebase + k_apkDir )
+        if k_DEBUG in params and params[k_DEBUG]:
+            dir = k_filebase + k_apkDir + variantDir
+            apks = getOrderedApks( dir, True )
+            if 0 < len(apks):
+                apk = apks[0]
+                curApk = params[k_GVERS] + '.apk'
+                if curApk in apk:
+                    logging.debug( "already have " + curApk )
+                else:
+                    url = k_urlbase + '/' + k_apkDir + variantDir + apk[len(dir):]
+                    logging.debug("url: " + url)
+                    result = {k_URL: url}
+        elif k_DEVOK in params and params[k_DEVOK]:
+            apks = getOrderedApks( k_filebase + k_apkDir, False )
             if 0 < len(apks):
                 apk = apks[0]
                 # Does path NOT contain name of installed file
@@ -267,7 +312,7 @@ def getStats( path ):
 
 # create obj containing array of objects each with 'lang' and 'xwds',
 # the latter an array of objects giving info about a dict.
-def listDicts():
+def listDicts( lc = None ):
     global s_shelf
     langsVers = 2
     # langsVers = random.random()            # change this to force recalc of shelf langs data
@@ -291,6 +336,7 @@ def listDicts():
         langs = []
         for lang, entry in ldict.iteritems():
             obj = { 'lang' : lang,
+                    'lc' : languageCodeFor(lang),
                     'dicts' : entry,
                 }
             langs.append( obj )
@@ -299,6 +345,11 @@ def listDicts():
 
     result = { 'langs' : s_shelf[k_LANGS] }
     closeShelf();
+
+    print "looking for", lc
+    if lc:
+        result['langs'] = [elem for elem in result['langs'] if elem['lc'] == lc]
+
     return result
 
 def getDicts( params ):
@@ -384,7 +435,56 @@ def getXlate( params, name, stringsHash ):
     logging.debug( "getXlate=>%s" % (json.dumps(result)) )
     return result
 
+def init():
+    try:
+        con = psycopg2.connect(port=mykey.psqlPort, database='xwgames', user='relay',
+                               password=mykey.relayPwd, host='localhost')
+    except psycopg2.DatabaseError, e:
+        print 'Error %s' % e 
+        sys.exit(1)
+    return con
+
 # public
+
+# Give a list of relayIDs, e.g. eehouse.org:56022505:64/2, assumed to
+# represent the caller's position in games, return for each a list of
+# relayIDs representing the other devices in the game.
+def opponentIDsFor( req, params ):
+    # build array of connnames by taking the part before the slash
+    params = json.loads( params )
+    relayIDs = params['relayIDs']
+    me = int(params['me'])
+    connnames = {}
+    for relayID in relayIDs:
+        (connname, index) = string.split(relayID, '/')
+        if connname in connnames:
+            connnames[connname].append(int(index))
+        else:
+            connnames[connname] = [int(index)]
+
+    query = "SELECT connname, devids FROM games WHERE connname in ('%s')" % \
+            string.join(connnames.keys(), '\',\'')
+    con = init()
+    cur = con.cursor()
+    cur.execute(query)
+    results = []
+    for row in cur:
+        connname = row[0]
+        indices = connnames[connname]
+        for index in indices:
+            devids = []
+            for devid in row[1]:
+                if not devid == me:
+                    devids.append(str(devid))
+            if 0 < len(devids):
+                results.append({"%s/%d" % (connname, index) : devids})
+        
+    result = { k_SUCCESS : True,
+               'devIDs' : results,
+               'me' : me,
+    }
+    return result
+
 def getUpdates( req, params ):
     result = { k_SUCCESS : True }
     appResult = None
@@ -412,8 +512,9 @@ def getUpdates( req, params ):
     else:
         logging.debug( "NOT FOUND xlate info" )
         
-    logging.debug( 'getUpdates done' )
-    return json.dumps( result )
+    result = json.dumps( result )
+    # logging.debug( result )
+    return result
 
 def clearShelf():
     shelf = shelve.open(k_shelfFile)
@@ -426,6 +527,7 @@ def usage():
     print '                    | --test-get-dicts name lang curSum'
     print '                    | --list-apks [path/to/apks]'
     print '                    | --list-dicts'
+    print '                    | --opponent-ids-for'
     print '                    | --clear-shelf'
     sys.exit(-1)
 
@@ -435,7 +537,9 @@ def main():
     if arg == '--clear-shelf':
         clearShelf()
     elif arg == '--list-dicts':
-        dictsJson = listDicts()
+        if 2 < len(sys.argv): lc = sys.argv[2]
+        else: lc = None
+        dictsJson = listDicts( lc )
         print json.dumps( dictsJson )
     elif arg == '--get-sums':
         dictSums = getDictSums()
@@ -463,10 +567,22 @@ def main():
         if argc >= 4: usage()
         path = ""
         if argc >= 3: path = sys.argv[2]
-        apks = getOrderedApks( path )
+        apks = getOrderedApks( path, False )
         if 0 == len(apks): print "No apks in", path
         for apk in apks:
             print apk
+    elif arg == '--opponent-ids-for':
+        ids = ['eehouse.org:55f90207:7/1',
+               'eehouse.org:55f90207:7/2',
+               'eehouse.org:56022505:5/2',
+               'eehouse.org:56022505:6/1',
+               'eehouse.org:56022505:10/1',
+               'eehouse.org:56022505:64/2',
+               'eehouse.org:56022505:64/1',
+        ]
+        params = {'relayIDs' : ids, 'me' : '80713149'}
+        result = opponentIDsFor(None, json.dumps(params))
+        print json.dumps(result)
     else:
         usage()
 

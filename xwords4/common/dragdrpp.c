@@ -41,10 +41,11 @@ static void setLimitsFrom( const BoardCtxt* board, BdHintLimits* limits );
 #endif
 
 #ifdef XWFEATURE_CROSSHAIRS
-static XP_Bool crosshairs_set( BoardCtxt* board, XP_S16 col, XP_S16 row );
+static XP_Bool crosshairs_set( BoardCtxt* board, XP_S16 col, XP_S16 row,
+                               XP_Bool clearOnMove );
 static void crosshairs_clear( BoardCtxt* board );
 #else
-# define crosshairs_set( board, col, row ) XP_FALSE;
+# define crosshairs_set( board, col, row, com ) XP_FALSE;
 # define crosshairs_clear( board )
 #endif
 
@@ -96,7 +97,7 @@ ddStartBoard( BoardCtxt* board, XP_U16 xx, XP_U16 yy )
     XP_ASSERT( found );
 #ifdef XWFEATURE_CROSSHAIRS
     if ( !board->hideCrosshairs ) {
-        (void)crosshairs_set( board, col, row );
+        (void)crosshairs_set( board, col, row, XP_FALSE );
     }
 #endif
 
@@ -155,7 +156,8 @@ ddStartTray( BoardCtxt* board, XP_U16 x, XP_U16 y )
     if ( canDrag ) {
         if ( onDivider ) {
             board->dividerInvalid = XP_TRUE;
-            ds->start.u.tray.index = board->selInfo->dividerLoc;
+            ds->start.u.tray.index =
+                model_getDividerLoc( board->model, board->selPlayer );
 
             ds->dtype = DT_DIVIDER;
         } else {
@@ -493,7 +495,8 @@ dragDropContinueImpl( BoardCtxt* board, XP_U16 xx, XP_U16 yy,
 #ifdef XWFEATURE_CROSSHAIRS
         if ( !board->hideCrosshairs ) {
             draw = crosshairs_set( board, newInfo.u.board.col, 
-                                   newInfo.u.board.row );
+                                   newInfo.u.board.row, 
+                                   DT_TILE != ds->dtype );
         }
 #endif
     }
@@ -693,29 +696,38 @@ dragDropInCrosshairs( const BoardCtxt* board, XP_U16 col, XP_U16 row,
 } /* dragDropInCrosshairs */
 
 static XP_Bool
-crosshairs_set( BoardCtxt* board, XP_S16 col, XP_S16 row )
+crosshairs_set( BoardCtxt* board, XP_S16 col, XP_S16 row, XP_Bool clearOnMove )
 {
-    XP_Bool changed = XP_FALSE;
+    XP_Bool changed;
     DragState* ds = &board->dragState;
-    if ( ds->crosshairs.col != col ) {
-        if ( ds->crosshairs.col >= 0 ) {
-            invalCol( board, ds->crosshairs.col );
-        }
-        if ( col >= 0 ) {
-            invalCol( board, col );
-        }
-        ds->crosshairs.col = col;
+
+    XP_Bool colMoving = ds->crosshairs.col != col;
+    XP_Bool rowMoving = ds->crosshairs.row != row;
+    if ( clearOnMove && (colMoving || rowMoving) ) {
         changed = XP_TRUE;
-    }
-    if ( ds->crosshairs.row != row ) {
-        if ( ds->crosshairs.row >= 0 ) {
-            invalRow( board, ds->crosshairs.row );
+        crosshairs_clear( board );
+    } else {
+        changed = XP_FALSE;
+        if ( colMoving ) {
+            if ( ds->crosshairs.col >= 0 ) {
+                invalCol( board, ds->crosshairs.col );
+            }
+            if ( col >= 0 ) {
+                invalCol( board, col );
+            }
+            ds->crosshairs.col = col;
+            changed = XP_TRUE;
         }
-        if ( row >= 0 ) {
-            invalRow( board, row );
+        if ( rowMoving ) {
+            if ( ds->crosshairs.row >= 0 ) {
+                invalRow( board, ds->crosshairs.row );
+            }
+            if ( row >= 0 ) {
+                invalRow( board, row );
+            }
+            ds->crosshairs.row = row;
+            changed = XP_TRUE;
         }
-        ds->crosshairs.row = row;
-        changed = XP_TRUE;
     }
     return changed;
 }
@@ -723,7 +735,7 @@ crosshairs_set( BoardCtxt* board, XP_S16 col, XP_S16 row )
 static void
 crosshairs_clear( BoardCtxt* board )
 {
-    crosshairs_set( board, -1, -1 );
+    crosshairs_set( board, -1, -1, XP_FALSE );
 }
 #endif
 

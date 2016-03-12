@@ -73,7 +73,7 @@ typedef struct LaunchParams {
 #ifdef XWFEATURE_DEVID
     char* lDevID;
     XP_Bool noAnonDevid;
-    XP_UCHAR devIDStore[16];
+    XP_UCHAR devIDStore[32];
 #endif
     VTableMgr* vtMgr;
     DictMgrCtxt* dictMgr;
@@ -118,10 +118,11 @@ typedef struct LaunchParams {
     XP_U16 robotThinkMin, robotThinkMax;
     XP_U16 robotTradePct;
 #endif
+    XP_Bool commsDisableds[COMMS_CONN_NTYPES][2];
 
     DeviceRole serverRole;
 
-    CommsConnType conType;
+    CommsAddrRec  addr;
     struct {
 #ifdef XWFEATURE_RELAY
         struct {
@@ -137,10 +138,11 @@ typedef struct LaunchParams {
             bdaddr_t hostAddr;      /* unused if a host */
         } bt;
 #endif
-#ifdef XWFEATURE_IP_DIRECT
+#if defined XWFEATURE_IP_DIRECT || defined XWFEATURE_DIRECTIP
         struct {
             const char* hostName;
-            int port;
+            int hostPort;
+            int myPort;
         } ip;
 #endif
 #ifdef XWFEATURE_SMS
@@ -160,8 +162,7 @@ typedef struct LaunchParams {
 
 typedef struct CommonGlobals CommonGlobals;
 
-typedef void (*SocketChangedFunc)(void* closure, int oldsock, int newsock,
-                                  void** storage );
+typedef void (*SocketAddedFunc)( void* closure, int newsock, GIOFunc func );
 typedef XP_Bool (*Acceptor)( int sock, void* ctxt );
 typedef void (*AddAcceptorFunc)(int listener, Acceptor func, 
                                 CommonGlobals* globals, void** storage );
@@ -196,8 +197,8 @@ struct CommonGlobals {
     sqlite3* pDb;
     sqlite3_int64 selRow;
 
-    SocketChangedFunc socketChanged;
-    void* socketChangedClosure;
+    SocketAddedFunc socketAdded;
+    void* socketAddedClosure;
     OnSaveFunc onSave;
     void* onSaveClosure;
     GSList* packetQueue;
@@ -246,9 +247,8 @@ typedef struct _GtkAppGlobals {
     GtkWidget* window;
     GtkWidget* listWidget;
     GtkWidget* openButton;
+    GtkWidget* rematchButton;
     GtkWidget* deleteButton;
 } GtkAppGlobals;
-
-sqlite3_int64 getSelRow( const GtkAppGlobals* apg );
 
 #endif

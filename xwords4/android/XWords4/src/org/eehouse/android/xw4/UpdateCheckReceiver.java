@@ -30,20 +30,12 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
+import java.net.HttpURLConnection;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -53,6 +45,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
     public static final String NEW_DICT_URL = "NEW_DICT_URL";
     public static final String NEW_DICT_LOC = "NEW_DICT_LOC";
+    public static final String NEW_DICT_NAME = "NEW_DICT_NAME";
     public static final String NEW_XLATION_CBK = "NEW_XLATION_CBK";
 
     // weekly
@@ -63,6 +56,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_NAME = "name";
     private static final String k_AVERS = "avers";
     private static final String k_GVERS = "gvers";
+    private static final String k_GHASH = "ghash";
     private static final String k_INSTALLER = "installer";
     private static final String k_DEVOK = "devOK";
     private static final String k_APP = "app";
@@ -71,8 +65,8 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
     private static final String k_MD5SUM = "md5sum";
     private static final String k_INDEX = "index";
     private static final String k_URL = "url";
-    private static final String k_PARAMS = "params";
     private static final String k_DEVID = "did";
+    private static final String k_DEBUG = "dbg";    
     private static final String k_XLATEINFO = "xlatinfo";
     private static final String k_STRINGSHASH = "strings";
 
@@ -142,10 +136,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
                 appParams.put( k_AVERS, versionCode );
                 appParams.put( k_GVERS, BuildConstants.GIT_REV );
+                appParams.put( k_GHASH, context.getString( R.string.git_rev ) );
                 appParams.put( k_INSTALLER, installer );
                 if ( devOK( context ) ) {
                     appParams.put( k_DEVOK, true );
                 }
+                appParams.put( k_DEBUG, BuildConfig.DEBUG );
                 params.put( k_APP, appParams );
                 params.put( k_DEVID, XWPrefs.getDevID( context ) );
             } catch ( org.json.JSONException jse ) {
@@ -183,7 +179,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                 params.put( k_STRINGSHASH, BuildConstants.STRINGS_HASH );
                 params.put( k_NAME, packageName );
                 params.put( k_AVERS, versionCode );
-                DbgUtils.logf( "current update: %s", params.toString() );
+                DbgUtils.logdf( "current update: %s", params.toString() );
                 new UpdateQueryTask( context, params, fromUI, pm, 
                                      packageName, dals ).execute();
             } catch ( org.json.JSONException jse ) {
@@ -212,48 +208,6 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         if ( 0 < indx ) {
             result = new DictUtils.DictAndLoc[indx];
             System.arraycopy( tmp, 0, result, 0, indx );
-        }
-        return result;
-    }
-
-    protected static HttpPost makePost( Context context, String proc )
-    {
-        String url = String.format( "%s/%s", 
-                                    XWPrefs.getDefaultUpdateUrl( context ),
-                                    proc );
-        HttpPost result;
-        try {
-            result = new HttpPost( url );
-        } catch ( IllegalArgumentException iae ) {
-            DbgUtils.loge( iae );
-            result = null;
-        }
-        return result;
-    }
-
-    protected static String runPost( HttpPost post, JSONObject params )
-    {
-        String result = null;
-        try {
-            String jsonStr = params.toString();
-            List<NameValuePair> nvp = new ArrayList<NameValuePair>();
-            nvp.add( new BasicNameValuePair( k_PARAMS, jsonStr ) );
-            post.setEntity( new UrlEncodedFormEntity(nvp) );
-
-            // Execute HTTP Post Request
-            HttpClient httpclient = new DefaultHttpClient();
-            HttpResponse response = httpclient.execute(post);
-            HttpEntity entity = response.getEntity();
-            if ( null != entity ) {
-                result = EntityUtils.toString( entity );
-                if ( 0 == result.length() ) {
-                    result = null;
-                }
-            }
-        } catch( java.io.UnsupportedEncodingException uee ) {
-            DbgUtils.loge( uee );
-        } catch( java.io.IOException ioe ) {
-            DbgUtils.loge( ioe );
         }
         return result;
     }
@@ -306,10 +260,10 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
 
         @Override protected String doInBackground( Void... unused )
         {
-            HttpPost post = makePost( m_context, "getUpdates" );
+            HttpURLConnection conn = NetUtils.makeHttpConn( m_context, "getUpdates" );
             String json = null;
-            if ( null != post ) {
-                json = runPost( post, m_params );
+            if ( null != conn ) {
+                json = NetUtils.runConn( conn, m_params );
             }
             return json;
         }
@@ -317,12 +271,12 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
         @Override protected void onPostExecute( String json )
         {
             if ( null != json ) {
-                makeNotificationsIf( json );
+                makeNotificationsIf( json, m_params );
                 XWPrefs.setHaveCheckedUpgrades( m_context, true );
             }
         }
 
-        private void makeNotificationsIf( String jstr )
+        private void makeNotificationsIf( String jstr, JSONObject params )
         {
             boolean gotOne = false;
             try {
@@ -384,6 +338,7 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                                 Intent intent = 
                                     new Intent( m_context, DictsActivity.class );
                                 intent.putExtra( NEW_DICT_URL, url );
+                                intent.putExtra( NEW_DICT_NAME, dal.name );
                                 intent.putExtra( NEW_DICT_LOC, dal.loc.ordinal() );
                                 String body = 
                                     LocUtils.getString( m_context, 
@@ -403,15 +358,17 @@ public class UpdateCheckReceiver extends BroadcastReceiver {
                         int nAdded = LocUtils.addXlations( m_context, data );
                         if ( 0 < nAdded ) {
                             gotOne = true;
-                            String msg = LocUtils.getString( m_context, R.string
-                                                             .new_xlations_fmt, 
-                                                             nAdded );
+                            String msg = LocUtils
+                                .getQuantityString( m_context, R.plurals.new_xlations_fmt, 
+                                                    nAdded, nAdded );
                             Utils.showToast( m_context, msg );
                         }
                     }
                 }
             } catch ( org.json.JSONException jse ) {
                 DbgUtils.loge( jse );
+                DbgUtils.logf( "sent: \"%s\"", params.toString() );
+                DbgUtils.logf( "received: \"%s\"", jstr );
             } catch ( PackageManager.NameNotFoundException nnfe ) {
                 DbgUtils.loge( nnfe );
             }

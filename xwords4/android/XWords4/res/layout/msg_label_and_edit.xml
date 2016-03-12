@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="wrap_content" 
+              android:layout_height="wrap_content"
+              android:padding="10dp"
+              >
+
+    <!-- label -->
+    <TextView android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              android:text="@string/game_name_label"
+              />
+
+    <EditText android:id="@+id/edit"
+              android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:scrollHorizontally="true"
+              android:autoText="false"
+              android:capitalize="none"
+              android:textAppearance="?android:attr/textAppearanceMedium" 
+              android:selectAllOnFocus="true"
+              />
+
+    <TextView android:id="@+id/msg"
+              android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:paddingTop="20dp"
+              android:textAppearance="?android:attr/textAppearanceMedium"
+              />
+
+</LinearLayout>

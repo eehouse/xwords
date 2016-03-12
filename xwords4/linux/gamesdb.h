@@ -30,11 +30,12 @@
 typedef struct _GameInfo {
     XP_UCHAR name[128];
     XP_UCHAR room[128];
-    XP_UCHAR conn[8];
+    XP_UCHAR conn[128];
     XP_U32 gameID;
     XP_S16 nMoves;
     XP_Bool gameOver;
     XP_S16 turn;
+    XP_U16 nTotal;
     XP_S16 nMissing;
     XP_U16 seed;
 } GameInfo;
@@ -44,6 +45,8 @@ sqlite3* openGamesDB( const char* dbName );
 void closeGamesDB( sqlite3* dbp );
 
 void writeToDB( XWStreamCtxt* stream, void* closure );
+sqlite3_int64 writeNewGameToDB( XWStreamCtxt* stream, sqlite3* pDb );
+
 void summarize( CommonGlobals* cGlobals );
 
 /* Return GSList whose data is (ptrs to) rowids */
@@ -52,6 +55,10 @@ XP_Bool getGameInfo( sqlite3* dbp, sqlite3_int64 rowid, GameInfo* gib );
 void getRowsForGameID( sqlite3* dbp, XP_U32 gameID, sqlite3_int64* rowids, 
                        int* nRowIDs );
 XP_Bool loadGame( XWStreamCtxt* stream, sqlite3* pDb, sqlite3_int64 rowid );
+void saveInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, 
+                      sqlite3_int64 rowid );
+XP_Bool loadInviteAddrs( XWStreamCtxt* stream, sqlite3* pDb, 
+                         sqlite3_int64 rowid );
 void deleteGame( sqlite3* pDb, sqlite3_int64 rowid );
 
 #define KEY_RDEVID "RDEVID"

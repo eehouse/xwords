@@ -20,25 +20,14 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.view.KeyEvent;
 
 public class GameConfigActivity extends XWActivity {
-
-    private GameConfigDelegate m_dlgt;
 
     @Override
     public void onCreate( Bundle savedInstanceState )
     {
-        m_dlgt = new GameConfigDelegate( this, savedInstanceState );
-        super.onCreate( savedInstanceState, m_dlgt );
+        super.onCreate( savedInstanceState, 
+                        new GameConfigDelegate( this, savedInstanceState ) );
     } // onCreate
-
-    @Override
-    public boolean onKeyDown( int keyCode, KeyEvent event )
-    {
-        boolean consumed = m_dlgt.onKeyDown( keyCode, event );
-        return consumed || super.onKeyDown( keyCode, event );
-    }
 }

@@ -22,13 +22,18 @@ package org.eehouse.android.xw4.jni;
 
 import android.content.Context;
 import android.text.TextUtils;
+import java.util.Iterator;
 
 import junit.framework.Assert;
+import org.json.JSONObject;
 
+import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Utils;
+import org.eehouse.android.xw4.XWApp;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.loc.LocUtils;
 
@@ -36,6 +41,9 @@ import org.eehouse.android.xw4.loc.LocUtils;
  * in CurGameInfo
  */
 public class GameSummary {
+    public static final String EXTRA_REMATCH_BTADDR = "rm_btaddr";
+    public static final String EXTRA_REMATCH_PHONE = "rm_phone";
+    public static final String EXTRA_REMATCH_RELAY = "rm_relay";
 
     public static final int MSG_FLAGS_NONE = 0;
     public static final int MSG_FLAGS_TURN = 1;
@@ -50,32 +58,31 @@ public class GameSummary {
     public int missingPlayers;
     public int[] scores;
     public boolean gameOver;
-    public String[] players;
-    public CommsConnType conType;
+    private String[] m_players;
+    public CommsConnTypeSet conTypes;
     // relay-related fields
     public String roomName;
     public String relayID;
     public int seed;
-    public int pendingMsgLevel;
     public long modtime;
     public int gameID;
-    public String[] remoteDevs; // BTAddr or phone number
+    public String[] remoteDevs; // BTAddrs and phone numbers
 
     public int dictLang;
     public DeviceRole serverRole;
     public int nPacketsPending;
 
-    private int m_giFlags;
+    private Integer m_giFlags;
     private String m_playersSummary;
     private CurGameInfo m_gi;
     private Context m_context;
     private String[] m_remotePhones;
+    private String m_extras;
 
     private GameSummary() {}
 
     public GameSummary( Context context ) {
         m_context = context;
-        pendingMsgLevel = 0;
         gameID = 0;
     }
 
@@ -89,7 +96,13 @@ public class GameSummary {
         m_gi = gi;
     }
 
-    public boolean inNetworkGame()
+    public Context getContext()
+    {
+        Assert.assertNotNull( m_context );
+        return m_context; 
+    }
+
+    public boolean inRelayGame()
     {
         return null != relayID;
     }
@@ -119,6 +132,12 @@ public class GameSummary {
         return result;
     }
 
+    public String getRematchName()
+    {
+        return LocUtils.getString( m_context, R.string.rematch_name_fmt, 
+                                   playerNames() );
+    }
+
     public void setRemoteDevs( Context context, String asString )
     {
         if ( null != asString ) {
@@ -135,7 +154,7 @@ public class GameSummary {
     public void readPlayers( String playersStr ) 
     {
         if ( null != playersStr ) {
-            players = new String[nPlayers];
+            m_players = new String[nPlayers];
             String sep;
             if ( playersStr.contains("\n") ) {
                 sep = "\n";
@@ -150,7 +169,7 @@ public class GameSummary {
                 String name = -1 == nxt ?
                     playersStr.substring( prev ) : 
                     playersStr.substring( prev, nxt );
-                players[ii] = name;
+                m_players[ii] = name;
                 if ( -1 == nxt ) {
                     break;
                 }
@@ -170,61 +189,93 @@ public class GameSummary {
         if ( gameOver ) {
             result = LocUtils.getString( m_context, R.string.gameOver );
         } else {
-            result = LocUtils.getString( m_context, R.string.moves_fmt, nMoves );
+            result = LocUtils.getQuantityString( m_context, R.plurals.moves_fmt,
+                                                 nMoves, nMoves );
         }
         return result;
     }
 
-    public String summarizeRole()
+    // FIXME: should report based on whatever conType is giving us a
+    // successful connection.
+    public String summarizeRole( long rowid )
     {
         String result = null;
         if ( isMultiGame() ) {
             int fmtID = 0;
-            switch ( conType ) {
-            case COMMS_CONN_RELAY:
-                if ( null == relayID || 0 == relayID.length() ) {
-                    fmtID = R.string.summary_relay_conf_fmt;
-                } else if ( anyMissing() ) {
-                    fmtID = R.string.summary_relay_wait_fmt;
+
+            int missing = countMissing();
+            if ( 0 < missing ) {
+                DBUtils.SentInvitesInfo si = DBUtils.getInvitesFor( m_context,
+                                                                    rowid );
+                if ( si.getMinPlayerCount() >= missing ) {
+                    result = LocUtils.getString( m_context,
+                                                 R.string.summary_invites_out );
+                }
+            }
+            
+            // If we're using relay to connect, get status from that
+            if ( null == result
+                 && conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                if ( 0 < missing ) {
+                    if ( null == relayID || 0 == relayID.length() ) {
+                        fmtID = R.string.summary_relay_conf_fmt;
+                    } else {
+                        fmtID = R.string.summary_relay_wait_fmt;
+                    }
                 } else if ( gameOver ) {
                     fmtID = R.string.summary_relay_gameover_fmt;
                 } else {
                     fmtID = R.string.summary_relay_conn_fmt;
                 }
                 result = LocUtils.getString( m_context, fmtID, roomName );
-                break;
-            case COMMS_CONN_BT:
-            case COMMS_CONN_SMS:
-                if ( anyMissing() ) {
-                    if ( DeviceRole.SERVER_ISSERVER == serverRole ) {
-                        fmtID = R.string.summary_wait_host;
+            }
+                
+            // Otherwise, use BT or SMS
+            if ( null == result ) {
+                if ( conTypes.contains( CommsConnType.COMMS_CONN_BT )
+                     || ( conTypes.contains( CommsConnType.COMMS_CONN_SMS))){
+                    if ( 0 < missing ) {
+                        if ( DeviceRole.SERVER_ISSERVER == serverRole ) {
+                            fmtID = R.string.summary_wait_host;
+                        } else {
+                            fmtID = R.string.summary_wait_guest;
+                        }
+                    } else if ( gameOver ) {
+                        fmtID = R.string.summary_gameover;
+                    } else if ( null != remoteDevs 
+                                && conTypes.contains( CommsConnType.COMMS_CONN_SMS)){
+                        result = 
+                            LocUtils.getString( m_context, R.string.summary_conn_sms_fmt,
+                                                TextUtils.join(", ", m_remotePhones) );
                     } else {
-                        fmtID = R.string.summary_wait_guest;
+                        fmtID = R.string.summary_conn;
                     }
-                } else if ( gameOver ) {
-                    fmtID = R.string.summary_gameover;
-                } else if ( null != remoteDevs 
-                            && CommsConnType.COMMS_CONN_SMS == conType ) {
-                    result = 
-                        LocUtils.getString( m_context, R.string.summary_conn_sms_fmt,
-                                            TextUtils.join(", ", m_remotePhones) );
-                } else {
-                    fmtID = R.string.summary_conn;
+                    if ( null == result ) {
+                        result = LocUtils.getString( m_context, fmtID );
+                    }
                 }
-                if ( null == result ) {
-                    result = LocUtils.getString( m_context, fmtID );
-                }
-                break;
             }
         }
         return result;
     }
 
+    public boolean relayConnectPending()
+    {
+        boolean result = conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
+            && (null == relayID || 0 == relayID.length());
+        if ( result ) {
+            // Don't report it as unconnected if a game's happening
+            // anyway, e.g. via BT.
+            result = 0 > turn && !gameOver;
+        }
+        // DbgUtils.logf( "relayConnectPending()=>%b (turn=%d)", result, 
+        //                turn );
+        return result;
+    }
+
     public boolean isMultiGame()
     {
-        // This definition will expand as other transports are added
-        return ( null != conType 
-                 && serverRole != DeviceRole.SERVER_STANDALONE );
+        return ( serverRole != DeviceRole.SERVER_STANDALONE );
     }
 
     private boolean isLocal( int indx )
@@ -238,16 +289,20 @@ public class GameSummary {
         return result;
     }
 
-    private boolean anyMissing()
+    private int countMissing()
     {
-        boolean missing = false;
+        int result = 0;
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             if ( !isLocal(ii) && (0 != ((1 << ii) & missingPlayers) ) ) {
-                missing = true;
-                break;
+                ++result;
             }
         }
-        return missing;
+        return result;
+    }
+    
+    public boolean anyMissing()
+    {
+        return 0 < countMissing();
     }
 
     public int giflags() {
@@ -270,12 +325,12 @@ public class GameSummary {
 
     public void setGiFlags( int flags ) 
     {
-        m_giFlags = flags;
+        m_giFlags = new Integer( flags );
     }
 
     public String summarizePlayer( int indx ) 
     {
-        String player = players[indx];
+        String player = m_players[indx];
         int formatID = 0;
         if ( !isLocal(indx) ) {
             boolean isMissing = 0 != ((1 << indx) & missingPlayers);
@@ -312,12 +367,29 @@ public class GameSummary {
         return result;
     }
 
-    public boolean isNextToPlay( int indx, boolean[] isLocal ) {
+    public boolean isNextToPlay( int indx, boolean[] isLocal ) 
+    {
         boolean isNext = indx == turn;
         if ( isNext ) {
             isLocal[0] = isLocal(indx);
         }
         return isNext;
+    }
+
+    public boolean nextTurnIsLocal()
+    {
+        boolean result = false;
+        if ( !gameOver && 0 <= turn ) {
+            Assert.assertTrue( null != m_gi || null != m_giFlags );
+            result = localTurnNextImpl( giflags(), turn );
+        }
+        return result;
+    }
+
+    public String getPrevPlayer()
+    {
+        int prevTurn = (turn + nPlayers - 1) % nPlayers;
+        return m_players[prevTurn];
     }
 
     public String dictNames( String separator ) 
@@ -328,6 +400,70 @@ public class GameSummary {
             list = TextUtils.join( separator, names );
         }
         return String.format( "%s%s%s", separator, list, separator );
+    }
+
+    public String getExtras()
+    {
+        return m_extras;
+    }
+
+    public void setExtras( String data )
+    {
+        m_extras = data;
+    }
+
+    public void putStringExtra( String key, String value )
+    {
+        String extras = (null == m_extras) ? "{}" : m_extras;
+        try {
+            JSONObject asObj = new JSONObject( extras );
+            if ( null == value ) {
+                asObj.remove( key );
+            } else {
+                asObj.put( key, value );
+            }
+            m_extras = asObj.toString();
+        } catch( org.json.JSONException ex ) {
+            DbgUtils.loge( ex );
+        }
+        DbgUtils.logf( "putStringExtra(%s,%s) => %s", key, value, m_extras );
+    }
+
+    public String getStringExtra( String key )
+    {
+        String result = null;
+        if ( null != m_extras ) {
+            try {
+                JSONObject asObj = new JSONObject( m_extras );
+                result = asObj.optString( key );
+                if ( 0 == result.length() ) {
+                    result = null;
+                }
+            } catch( org.json.JSONException ex ) {
+                DbgUtils.loge( ex );
+            }
+        }
+        DbgUtils.logf( "getStringExtra(%s) => %s", key, result );
+        return result;
+    }
+
+    public boolean hasRematchInfo()
+    {
+        boolean found = false;
+        if ( XWApp.REMATCH_SUPPORTED ) {
+            String[] keys = { EXTRA_REMATCH_BTADDR,
+                              EXTRA_REMATCH_PHONE,
+                              EXTRA_REMATCH_RELAY,
+            };
+            for ( String key : keys ) {
+                found = null != getStringExtra( key );
+                if ( found ) {
+                    break;
+                }
+            }
+            // DbgUtils.logf( "hasRematchInfo() => %b", found );
+        }
+        return found;
     }
 
     private static boolean localTurnNextImpl( int flags, int turn )

@@ -29,6 +29,7 @@ public enum DlgID {
     , DIALOG_ABOUT
     , DIALOG_NOTAGAIN
     , DIALOG_OKONLY
+    , DIALOG_ENABLESMS
     , DICT_OR_DECLINE
     , DLG_CONNSTAT
     , DLG_DELETED
@@ -36,7 +37,6 @@ public enum DlgID {
     , DLG_INVITE
     , DLG_OKONLY
     , ENABLE_NFC
-    , EXPLAIN_TITLE
     , FORCE_REMOTE
     , GAME_OVER
     , GET_NAME
@@ -47,7 +47,7 @@ public enum DlgID {
     , NEW_GROUP
     , NO_NAME_FOUND
     , PLAYER_EDIT
-    , CONFIRM_SMS
+    , ENABLE_SMS
     , QUERY_ENDGAME
     , RENAME_GAME
     , RENAME_GROUP
@@ -68,4 +68,7 @@ public enum DlgID {
     , PICK_TILE_REQUESTTRAY_BLK
     , DLG_USEDICT
     , DLG_GETDICT
+    , GAMES_LIST_NEWGAME
+    , CHANGE_CONN
+    , GAMES_LIST_NAME_REMATCH
 }

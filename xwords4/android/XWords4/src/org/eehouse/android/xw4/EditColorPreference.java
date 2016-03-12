@@ -120,7 +120,7 @@ public class EditColorPreference extends DialogPreference {
             setDialogTitle( newTitle );
         }
 
-        setNegativeButtonText( LocUtils.getString( context, R.string.button_cancel ) );
+        setNegativeButtonText( LocUtils.getString( context, android.R.string.cancel ) );
     }
 
     @Override
@@ -174,7 +174,7 @@ public class EditColorPreference extends DialogPreference {
                 }
             };
 
-        String okText = LocUtils.getString( m_context, R.string.button_ok );
+        String okText = LocUtils.getString( m_context, android.R.string.ok );
         builder.setPositiveButton( okText, lstnr );
         super.onPrepareDialogBuilder( builder );
     }

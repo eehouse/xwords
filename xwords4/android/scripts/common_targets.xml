@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project name="XWords4">
+<project>
 
     <target name="my-pre-clean">
         <exec dir="." executable="../scripts/rm-non-git.sh" output="/dev/null" 
@@ -16,6 +16,12 @@
     </target>
 
     <target name="my-pre-build">
+
+        <exec dir="." executable="../scripts/key-setup.sh" failonerror="true"
+              >
+          <arg value="${build.target}"/>
+        </exec>
+
         <exec dir="." executable="../scripts/ndksetup.sh" output="/dev/null"
               failonerror="true">
             <arg value="${build.target}"/>
@@ -29,9 +35,15 @@
             <arg value="INITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS}" />
             <arg value="CHAT_ENABLED=${CHAT_ENABLED}" />
             <arg value="THUMBNAIL_ENABLED=${THUMBNAIL_ENABLED}" />
+            <arg value="VARIANT=${VARIANT_NAME}" />
+            <arg value="V=1" />
         </exec>
 
         <exec dir="." executable="../scripts/mkimages.sh" 
+              failonerror="true" output="/dev/null" 
+              />
+
+        <exec dir="." executable="../scripts/copy-strings.py" 
               failonerror="true" output="/dev/null" 
               />
 
@@ -47,17 +59,25 @@
         </exec>
 
         <exec dir="." executable="../scripts/gen_gcmid.sh"
-              output="src/org/eehouse/android/${VARIANT_NAME}/GCMConsts.java"
               logError="true" failonerror="true"
               >
+          <arg value="-v"/>
           <arg value="${VARIANT_NAME}"/>
-          </exec>
+          <arg value="-o"/>
+          <arg value="src/org/eehouse/android/${VARIANT_NAME}/GCMConsts.java"/>
+        </exec>
         <exec dir="." executable="../scripts/genvers.sh" output="/dev/null" 
               failonerror="true">
-          <arg value="${VARIANT_NAME}"/>
+          <arg value="--variant" />
+          <arg value="${VARIANT_NAME}" />
+          <arg value="--client-vers" />
           <arg value="${INITIAL_CLIENT_VERS}" />
+          <arg value="--chat-enabled"/>
           <arg value="${CHAT_ENABLED}" />
+          <arg value="--thumbnail-enabled"/>
           <arg value="${THUMBNAIL_ENABLED}" />
+          <arg value="--vers-outfile" />
+          <arg value="./assets/gitvers.txt" />
         </exec>
     </target>
 
@@ -80,6 +100,8 @@
             <arg value="./libs"/>
             <arg value="--dest-dir"/>
             <arg value="./img_src"/>
+            <arg value="--dest-dir"/>
+            <arg value="./res_src"/>
         </exec>
     </target>
 
@@ -98,6 +120,18 @@
             <arg value="-o" />
             <arg value="res_src/values-ca_PS/strings.xml" />
         </exec>
+    </target>
+
+    <target name="-post-build" >
+      <if condition="${build.is.packaging.debug}">
+        <then>
+          <exec executable="git" outputproperty="git-rev" >
+            <arg value="describe" />
+          </exec>  
+          <copy file="bin/XWords4-debug.apk" tofile="XWords4-debug-${git-rev}.apk"/>
+          <echo>Created XWords4-debug-${git-rev}.apk</echo>
+        </then>
+      </if>
     </target>
 
 </project>

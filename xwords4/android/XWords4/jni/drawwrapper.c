@@ -37,7 +37,7 @@ enum {
 
 typedef struct _AndDraw {
     DrawCtxVTable* vtable;
-    JNIEnv** env;
+    EnvThreadInfo* ti;
     jobject jdraw;             /* global ref; free it! */
     XP_LangCode curLang;
     jobject jCache[JCACHE_COUNT];
@@ -48,7 +48,7 @@ typedef struct _AndDraw {
 static jobject
 makeJRect( AndDraw* draw, int indx, const XP_Rect* rect )
 {
-    JNIEnv* env = *draw->env;
+    JNIEnv* env = ENVFORME( draw->ti );
     jobject robj = draw->jCache[indx];
     int right = rect->left + rect->width;
     int bottom = rect->top + rect->height;
@@ -86,8 +86,7 @@ readJRect( JNIEnv* env, XP_Rect* rect, jobject jrect )
 static jobject
 makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
 {
-    XP_U16 ii;
-    JNIEnv* env = *draw->env;
+    JNIEnv* env = ENVFORME( draw->ti );
     jobject jrects = draw->jCache[indx];
     if ( !jrects ) {
         jclass rclass = (*env)->FindClass( env, "android/graphics/Rect");
@@ -98,7 +97,7 @@ makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
         jmethodID initId = (*env)->GetMethodID( env, rclass, "<init>", 
                                                 "()V" );
 
-        for ( ii = 0; ii < nPlayers; ++ii ) {
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
             jobject jrect = (*env)->NewObject( env, rclass, initId );
             (*env)->SetObjectArrayElement( env, jrects, ii, jrect );
             deleteLocalRef( env, jrect );
@@ -121,8 +120,7 @@ makeJRects( AndDraw* draw, int indx, XP_U16 nPlayers, const XP_Rect rects[] )
 static jobject
 makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
 {
-    XP_U16 ii;
-    JNIEnv* env = *draw->env;
+    JNIEnv* env = ENVFORME( draw->ti );
     jobject dsiobjs = draw->jCache[indx];
 
     if ( !dsiobjs ) {
@@ -133,7 +131,7 @@ makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
         dsiobjs = draw->jCache[indx];
 
         jmethodID initId = (*env)->GetMethodID( env, clas, "<init>", "()V" );
-        for ( ii = 0; ii < nPlayers; ++ii ) {
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
             jobject dsiobj = (*env)->NewObject( env, clas, initId );
             (*env)->SetObjectArrayElement( env, dsiobjs, ii, dsiobj );
             deleteLocalRef( env, dsiobj );
@@ -142,7 +140,7 @@ makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
         deleteLocalRef( env, clas );
     }
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         jobject dsiobj = (*env)->GetObjectArrayElement( env, dsiobjs, ii );
         const DrawScoreInfo* dsi = &dsis[ii];
 
@@ -164,7 +162,7 @@ makeDSIs( AndDraw* draw, int indx, XP_U16 nPlayers, const DrawScoreInfo dsis[] )
 static jobject
 makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
 {
-    JNIEnv* env = *draw->env;
+    JNIEnv* env = ENVFORME( draw->ti );
     jobject dsiobj = draw->jCache[indx];
 
     if ( !dsiobj ) {
@@ -193,7 +191,7 @@ makeDSI( AndDraw* draw, int indx, const DrawScoreInfo* dsi )
 
 #define DRAW_CBK_HEADER(nam,sig)                                \
     AndDraw* draw = (AndDraw*)dctx;                             \
-    JNIEnv* env = *draw->env;                                   \
+    JNIEnv* env = ENVFORME( draw->ti );                         \
     XP_ASSERT( !!draw->jdraw );                                 \
     jmethodID mid = getMethodID( env, draw->jdraw, nam, sig );
 
@@ -206,8 +204,8 @@ and_draw_scoreBegin( DrawCtx* dctx, const XP_Rect* rect,
     DRAW_CBK_HEADER("scoreBegin", "(Landroid/graphics/Rect;I[II)Z" );
 
     jint jarr[numPlayers];
-    int ii;
-    for ( ii = 0; ii < numPlayers; ++ii ) {
+
+    for ( int ii = 0; ii < numPlayers; ++ii ) {
         jarr[ii] = scores[ii];
     }
     jintArray jscores = makeIntArray( env, numPlayers, jarr );
@@ -241,7 +239,6 @@ and_draw_score_drawPlayers( DrawCtx* dctx, const XP_Rect* scoreRect,
                             XP_U16 nPlayers, DrawScoreInfo playerData[], 
                             XP_Rect playerRects[] )
 {
-    XP_U16 ii;
     DRAW_CBK_HEADER("score_drawPlayers", "(Landroid/graphics/Rect;"
                     "[L" PKG_PATH("jni/DrawScoreInfo;")
                     "[Landroid/graphics/Rect;)V" );
@@ -251,7 +248,7 @@ and_draw_score_drawPlayers( DrawCtx* dctx, const XP_Rect* scoreRect,
     jobject jrects = makeJRects( draw, JCACHE_RECTS, nPlayers, NULL );
     (*env)->CallVoidMethod( env, draw->jdraw, mid, jrect, jdsis, jrects );
 
-    for ( ii = 0; ii < nPlayers; ++ii ) {
+    for ( int ii = 0; ii < nPlayers; ++ii ) {
         jobject jrect = (*env)->GetObjectArrayElement( env, jrects, ii );
         readJRect( env, &playerRects[ii], jrect );
     }
@@ -518,9 +515,9 @@ static void
 and_draw_dictChanged( DrawCtx* dctx, XP_S16 playerNum, 
                       const DictionaryCtxt* dict )
 {
-    XP_LOGF( "%s(dict=%p); code=%x", __func__, dict, andDictID(dict) );
     AndDraw* draw = (AndDraw*)dctx;
-    if ( NULL != draw->jdraw ) {
+    if ( !!dict && !!draw->jdraw ) {
+        XP_LOGF( "%s(dict=%p); code=%x", __func__, dict, andDictID(dict) );
         XP_LangCode code = 0;   /* A null dict means no-lang */
         if ( NULL != dict ) {
             code = dict_getLangCode( dict );
@@ -549,7 +546,7 @@ and_draw_getMiniWText( DrawCtx* dctx, XWMiniTextType textHint )
 {
     DRAW_CBK_HEADER( "getMiniWText", "(I)Ljava/lang/String;" );
     jstring jstr = (*env)->CallObjectMethod( env, draw->jdraw, mid,
-                                            textHint );
+                                             textHint );
     const char* str = (*env)->GetStringUTFChars( env, jstr, NULL );
     snprintf( draw->miniTextBuf, VSIZE(draw->miniTextBuf), "%s", str );
     (*env)->ReleaseStringUTFChars( env, jstr, str );
@@ -600,19 +597,18 @@ draw_doNothing( DrawCtx* dctx, ... )
 } /* draw_doNothing */
 
 DrawCtx* 
-makeDraw( MPFORMAL JNIEnv** envp, jobject jdraw )
+makeDraw( MPFORMAL EnvThreadInfo* ti, jobject jdraw )
 {
     AndDraw* draw = (AndDraw*)XP_CALLOC( mpool, sizeof(*draw) );
-    JNIEnv* env = *envp;
+    JNIEnv* env = ENVFORME( ti );
     draw->vtable = XP_MALLOC( mpool, sizeof(*draw->vtable) );
     if ( NULL != jdraw ) {
         draw->jdraw = (*env)->NewGlobalRef( env, jdraw );
     }
-    draw->env = envp;
+    draw->ti = ti;
     MPASSIGN( draw->mpool, mpool );
 
-    int ii;
-    for ( ii = 0; ii < sizeof(*draw->vtable)/4; ++ii ) {
+    for ( int ii = 0; ii < sizeof(*draw->vtable)/4; ++ii ) {
         ((void**)(draw->vtable))[ii] = draw_doNothing;
     }
 
@@ -659,13 +655,12 @@ destroyDraw( DrawCtx** dctx )
 {
     if ( !!*dctx ) {
         AndDraw* draw = (AndDraw*)*dctx;
-        JNIEnv* env = *draw->env;
+        JNIEnv* env = ENVFORME( draw->ti );
         if ( NULL != draw->jdraw ) {
             (*env)->DeleteGlobalRef( env, draw->jdraw );
         }
 
-        int ii;
-        for ( ii = 0; ii < JCACHE_COUNT; ++ii ) {
+        for ( int ii = 0; ii < JCACHE_COUNT; ++ii ) {
             jobject jobj = draw->jCache[ii];
             if ( !!jobj ) {
                 (*env)->DeleteGlobalRef( env, jobj );

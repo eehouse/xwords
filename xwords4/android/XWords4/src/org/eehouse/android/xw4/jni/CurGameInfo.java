@@ -20,11 +20,13 @@
 
 package org.eehouse.android.xw4.jni;
 
-import java.util.Random;
 import android.content.Context;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
 import junit.framework.Assert;
+import org.json.JSONObject;
 
 import org.eehouse.android.xw4.DbgUtils;
 import org.eehouse.android.xw4.DictUtils;
@@ -36,6 +38,12 @@ public class CurGameInfo {
 
     public static final int MAX_NUM_PLAYERS = 4;
 
+    private static final String BOARD_SIZE = "BOARD_SIZE";
+    private static final String NO_HINTS = "NO_HINTS";
+    private static final String TIMER = "TIMER";
+    private static final String ALLOW_PICK = "ALLOW_PICK";
+    private static final String PHONIES = "PHONIES";
+
     public enum XWPhoniesChoice { PHONIES_IGNORE, PHONIES_WARN, PHONIES_DISALLOW };
     public enum DeviceRole { SERVER_STANDALONE, SERVER_ISSERVER, SERVER_ISCLIENT };
 
@@ -46,6 +54,7 @@ public class CurGameInfo {
     public int gameSeconds;
     public int nPlayers;
     public int boardSize;
+    public int forceChannel;
     public DeviceRole serverRole;
 
     public boolean hintsNotAllowed;
@@ -57,6 +66,7 @@ public class CurGameInfo {
     // private int[] m_visiblePlayers;
     // private int m_nVisiblePlayers;
     private int m_smartness;
+    private String m_name;      // not shared across the jni boundary
     private Context m_context;
 
     public CurGameInfo( Context context )
@@ -103,8 +113,9 @@ public class CurGameInfo {
         int count = 0;
         for ( int ii = 0; ii < nPlayers; ++ii ) {
             LocalPlayer lp = players[ii];
-            if ( lp.isLocal && !lp.isRobot() ) {
-                lp.name = CommonPrefs.getDefaultPlayerName( context, count++ );
+            if ( lp.isLocal ) {
+                lp.name = lp.isRobot() ? CommonPrefs.getDefaultRobotName( context )
+                    : CommonPrefs.getDefaultPlayerName( context, count++ );
             }
         }
 
@@ -118,6 +129,7 @@ public class CurGameInfo {
     public CurGameInfo( Context context, CurGameInfo src )
     {
         m_context = context;
+        m_name = src.m_name;
         gameID = src.gameID;
         nPlayers = src.nPlayers;
         gameSeconds = src.gameSeconds;
@@ -135,6 +147,42 @@ public class CurGameInfo {
         int ii;
         for ( ii = 0; ii < MAX_NUM_PLAYERS; ++ii ) {
             players[ii] = new LocalPlayer( src.players[ii] );
+        }
+    }
+
+    public String getJSONData()
+    {
+        String jsonData = null;
+        try {
+            JSONObject obj = new JSONObject()
+                .put( BOARD_SIZE, boardSize )
+                .put( NO_HINTS, hintsNotAllowed )
+                .put( TIMER, timerEnabled )
+                .put( ALLOW_PICK, allowPickTiles )
+                .put( PHONIES, phoniesAction.ordinal() )
+                ;
+            jsonData = obj.toString();
+        } catch ( org.json.JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
+
+        return jsonData;
+    }
+
+    public void setFrom( String jsonData )
+    {
+        if ( null != jsonData ) {
+            try {
+                JSONObject obj = new JSONObject( jsonData );
+                boardSize = obj.optInt( BOARD_SIZE, boardSize );
+                hintsNotAllowed = obj.optBoolean( NO_HINTS, hintsNotAllowed );
+                timerEnabled = obj.optBoolean( TIMER, timerEnabled );
+                allowPickTiles = obj.optBoolean( ALLOW_PICK, allowPickTiles );
+                int tmp = obj.optInt( PHONIES, phoniesAction.ordinal() );
+                phoniesAction = XWPhoniesChoice.values()[tmp];
+            } catch ( org.json.JSONException jse ) {
+                DbgUtils.loge( jse );
+            }
         }
     }
 
@@ -207,7 +255,7 @@ public class CurGameInfo {
             || allowPickTiles != other.allowPickTiles
             || phoniesAction != other.phoniesAction;
 
-        if ( !matter && DeviceRole.SERVER_STANDALONE != serverRole ) {
+        if ( !matter ) {
             matter = !dictName.equals( other.dictName );
             for ( int ii = 0; !matter && ii < nPlayers; ++ii ) {
                 LocalPlayer me = players[ii];
@@ -229,7 +277,6 @@ public class CurGameInfo {
                 ++count;
             }
         }
-        DbgUtils.logf( "remoteCount()=>%d", count );
         return count;
     }
 
@@ -246,6 +293,24 @@ public class CurGameInfo {
             }
         }
         return !consistent;
+    }
+
+    public String[] playerNames()
+    {
+        String[] names = new String[nPlayers];
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            names[ii] = players[ii].name;
+        }
+        return names;
+    }
+
+    public boolean[] playersLocal()
+    {
+        boolean[] locs = new boolean[nPlayers];
+        for ( int ii = 0; ii < nPlayers; ++ii ) {
+            locs[ii] = players[ii].isLocal;
+        }
+        return locs;
     }
 
     public String[] visibleNames( boolean withDicts )
@@ -326,6 +391,17 @@ public class CurGameInfo {
         return dname;
     }
 
+    public String getName() 
+    {
+        // Assert.assertNotNull( m_name );
+        return m_name;
+    }
+
+    public void setName( String name ) 
+    {
+        m_name = name;
+    }
+
     public boolean addPlayer() 
     {
         boolean added = nPlayers < MAX_NUM_PLAYERS;
@@ -349,15 +425,6 @@ public class CurGameInfo {
         for ( int ii = 0; ii < nPlayersTotal; ++ii ) {
             players[ii].isLocal = ii < nPlayersHere;
             assert( !players[ii].isRobot() );
-        }
-    }
-
-    public void setFirstLocalName( String name ) {
-        for ( int ii = 0; ii < nPlayers; ++ii ) {
-            if ( players[ii].isLocal ) {
-                players[ii].name = name;
-                break;
-            }
         }
     }
 

@@ -88,9 +88,9 @@ class CRefMgr {
 
 
     void MoveSockets( vector<int> sockets, CookieRef* cref );
-    pthread_mutex_t* GetWriteMutexForSocket( int socket );
+    pthread_mutex_t* GetWriteMutexForSocket( int sock );
     void RemoveSocketRefs( const AddrInfo* addr );
-    void PrintSocketInfo( int socket, string& out );
+    void PrintSocketInfo( int sock, string& out );
 
     void IncrementFullCount( void );
     int GetNumRoomsFilled( void );
@@ -118,9 +118,9 @@ class CRefMgr {
 
     /* connect case */
     CidInfo* getMakeCookieRef( const char* cookie, int nPlayersH,
-                               int nPlayersS, int langCode, int seed,
-                               bool wantsPublic, bool makePublic, 
-                               bool* seenSeed );
+                               int nPlayersS, int langCode, int seed, 
+                               int clientIndx, bool wantsPublic, 
+                               bool makePublic, bool* seenSeed );
 
     /* reconnect case; just the stuff we don't have in db */
     CidInfo* getMakeCookieRef( const char* connName, const char* cookie, 
@@ -137,7 +137,7 @@ class CRefMgr {
     CookieRef* AddNew( const char* cookie, const char* connName, CookieID cid,
                        int langCode, int nPlayers, int nAlreadyHere );
     CookieRef* FindOpenGameFor( const char* cookie, const char* connName,
-                                HostID hid, int socket, int nPlayersH, 
+                                HostID hid, int sock, int nPlayersH, 
                                 int nPlayersS, int gameSeed, int langCode, 
                                 bool wantsPublic, bool* alreadyHere );
 
@@ -172,13 +172,13 @@ class SafeCref {
     /* for connect */
     SafeCref( const char* cookie, const AddrInfo* addr, int clientVers, 
               DevID* devID, int nPlayersH, int nPlayersS, 
-              unsigned short gameSeed, int langCode, bool wantsPublic, 
-              bool makePublic );
+              unsigned short gameSeed, int clientIndx, int langCode, 
+              bool wantsPublic, bool makePublic );
     /* for reconnect */
     SafeCref( const char* connName, const char* cookie, HostID hid, 
               const AddrInfo* addr, int clientVersion, DevID* devID, 
               int nPlayersH, int nPlayersS, unsigned short gameSeed, 
-              int langCode, bool wantsPublic, bool makePublic );
+              int clientIndx, int langCode, bool wantsPublic, bool makePublic );
     SafeCref( const char* const connName );
     SafeCref( CookieID cid, bool failOk = false );
     SafeCref( const AddrInfo* addr );
@@ -207,16 +207,20 @@ class SafeCref {
         }
     }
 
-    bool Connect( int nPlayersH, int nPlayersS, int seed ) {
+    bool Connect( int nPlayersH, int nPlayersS, int seed, HostID srcID ) {
+        bool result = false;
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            return cref->_Connect( m_clientVersion, m_devID,
-                                   nPlayersH, nPlayersS, seed, 
-                                   m_seenSeed, &m_addr );
-        } else {
-            return false;
+            if ( srcID <= nPlayersS ) {
+                result = cref->_Connect( m_clientVersion, m_devID,
+                                         nPlayersH, nPlayersS, seed, srcID, 
+                                         m_seenSeed, &m_addr );
+            } else {
+                logf( XW_LOGERROR, "%s: bad srcID: %d", __func__, srcID );
+            }
         }
+        return result;
     }
     bool Reconnect( int nPlayersH, int nPlayersS, int seed, XWREASON* errp ) {
         bool success = false;
@@ -277,11 +281,11 @@ class SafeCref {
     }
 
 #ifdef RELAY_HEARTBEAT
-    bool HandleHeartbeat( HostID id, int socket ) {
+    bool HandleHeartbeat( HostID id, int sock ) {
         if ( IsValid() ) {
             CookieRef* cref = m_cinfo->GetRef();
             assert( 0 != cref->GetCid() );
-            cref->_HandleHeartbeat( id, socket );
+            cref->_HandleHeartbeat( id, sock );
             return true;
         } else {
             return false;

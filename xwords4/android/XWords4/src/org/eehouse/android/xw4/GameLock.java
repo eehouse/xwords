@@ -32,13 +32,14 @@ public class GameLock {
     private long m_rowid;
     private boolean m_isForWrite;
     private int m_lockCount;
-    StackTraceElement[] m_lockTrace;
+    private StackTraceElement[] m_lockTrace;
 
     private static HashMap<Long, GameLock> 
         s_locks = new HashMap<Long,GameLock>();
 
     public GameLock( long rowid, boolean isForWrite ) 
     {
+        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != rowid );
         m_rowid = rowid;
         m_isForWrite = isForWrite;
         m_lockCount = 0;
@@ -53,9 +54,15 @@ public class GameLock {
     // see if not doing that causes problems.
     public boolean tryLock()
     {
+        return null == tryLockImpl(); // unowned?
+    }
+
+    private GameLock tryLockImpl()
+    {
+        GameLock owner = null;
         boolean gotIt = false;
         synchronized( s_locks ) {
-            GameLock owner = s_locks.get( m_rowid );
+            owner = s_locks.get( m_rowid );
             if ( null == owner ) { // unowned
                 Assert.assertTrue( 0 == m_lockCount );
                 s_locks.put( m_rowid, this );
@@ -63,8 +70,8 @@ public class GameLock {
                 gotIt = true;
                     
                 if ( XWApp.DEBUG_LOCKS ) {
-                    StackTraceElement[] trace = Thread.currentThread().
-                        getStackTrace();
+                    StackTraceElement[] trace
+                        = Thread.currentThread().getStackTrace();
                     m_lockTrace = new StackTraceElement[trace.length];
                     System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
                 }
@@ -75,13 +82,17 @@ public class GameLock {
                 Assert.assertTrue( 0 == m_lockCount );
                 ++m_lockCount;
                 gotIt = true;
+                owner = null;
+            } else if ( XWApp.DEBUG_LOCKS ) {
+                DbgUtils.logf( "tryLock(): rowid %d already held by lock %H", 
+                               m_rowid, owner );
             }
         }
         if ( XWApp.DEBUG_LOCKS ) {
             DbgUtils.logf( "GameLock.tryLock %H (rowid=%d) => %b", 
                            this, m_rowid, gotIt );
         }
-        return gotIt;
+        return owner;
     }
         
     // Wait forever (but may assert if too long)
@@ -104,15 +115,16 @@ public class GameLock {
         }
 
         for ( ; ; ) {
-            if ( tryLock() ) {
+            GameLock curOwner = tryLockImpl();
+            if ( null == curOwner ) {
                 result = this;
                 break;
             }
             if ( XWApp.DEBUG_LOCKS ) {
                 DbgUtils.logf( "GameLock.lock() %H failed; sleeping", this );
                 if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= assertTime ) {
-                    DbgUtils.logf( "lock holding stack:", this );
-                    DbgUtils.printStack( m_lockTrace );
+                    DbgUtils.logf( "lock %H seeking stack:", curOwner );
+                    DbgUtils.printStack( curOwner.m_lockTrace );
                     DbgUtils.logf( "lock %H seeking stack:", this );
                     DbgUtils.printStack();
                 }

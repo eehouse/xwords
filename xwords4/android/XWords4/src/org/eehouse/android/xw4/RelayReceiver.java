@@ -33,25 +33,15 @@ public class RelayReceiver extends BroadcastReceiver {
     @Override
     public void onReceive( Context context, Intent intent )
     {
-        if ( null != intent && null != intent.getAction() 
-             && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
-            DbgUtils.logf("RelayReceiver.onReceive: launching timer on boot");
-            RestartTimer( context );
-        } else {
-            // DbgUtils.logf( "RelayReceiver::onReceive()" );
-            // Toast.makeText( context, "RelayReceiver: timer fired", 
-            //                 Toast.LENGTH_SHORT).show();
-            RelayService.timerFired( context );
-        }
+        RelayService.timerFired( context );
     }
 
-    public static void RestartTimer( Context context )
+    public static void setTimer( Context context )
     {
-        RestartTimer( context, 
-                      1000 * XWPrefs.getProxyInterval( context ) );
+        setTimer( context, 1000 * XWPrefs.getProxyIntervalSeconds( context ) );
     }
 
-    public static void RestartTimer( Context context, long interval_millis )
+    public static void setTimer( Context context, long interval_millis )
     {
         AlarmManager am =
             (AlarmManager)context.getSystemService( Context.ALARM_SERVICE );
@@ -59,13 +49,13 @@ public class RelayReceiver extends BroadcastReceiver {
         Intent intent = new Intent( context, RelayReceiver.class );
         PendingIntent pi = PendingIntent.getBroadcast( context, 0, intent, 0 );
 
-        if ( interval_millis > 0 ) {
-            long first_millis = SystemClock.elapsedRealtime() + interval_millis;
-            am.setInexactRepeating( AlarmManager.ELAPSED_REALTIME_WAKEUP, 
-                                    first_millis, // first firing
-                                    interval_millis, pi );
+        // Check if we have any relay IDs, since we'll be using them to
+        // identify connected games for which we can fetch messages
+        if ( interval_millis > 0 && DBUtils.haveRelayIDs( context ) ) {
+            long fire_millis = SystemClock.elapsedRealtime() + interval_millis;
+            am.set( AlarmManager.ELAPSED_REALTIME_WAKEUP, fire_millis, pi );
         } else {
-            // will happen if user's set getProxyInterval to return 0
+            // will happen if user's set getProxyIntervalSeconds to return 0
             am.cancel( pi );
         }
     }

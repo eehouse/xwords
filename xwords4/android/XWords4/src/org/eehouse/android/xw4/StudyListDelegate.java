@@ -20,8 +20,8 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -38,10 +38,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.Iterator;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -68,7 +67,7 @@ public class StudyListDelegate extends ListDelegateBase
     private ListView m_list;
     private String m_origTitle;
 
-    protected StudyListDelegate( ListDelegator delegator, Bundle savedInstanceState )
+    protected StudyListDelegate( Delegator delegator, Bundle savedInstanceState )
     {
         super( delegator, savedInstanceState, R.layout.studylist, R.menu.studylist );
         m_activity = delegator.getActivity();
@@ -76,7 +75,6 @@ public class StudyListDelegate extends ListDelegateBase
 
     protected void init( Bundle savedInstanceState ) 
     {
-        DbgUtils.logf( "%s.init() called", getClass().getName() );
         m_list = (ListView)findViewById( android.R.id.list );
 
         m_spinner = (Spinner)findViewById( R.id.pick_lang_spinner );
@@ -127,8 +125,8 @@ public class StudyListDelegate extends ListDelegateBase
                                  Action.SL_COPY_ACTION );
             break;
         case R.id.slmenu_clear_sel:
-            String msg = getString( R.string.confirm_studylist_clear_fmt, 
-                                    m_checkeds.size() );
+            String msg = getQuantityString( R.plurals.confirm_studylist_clear_fmt, 
+                                            m_checkeds.size(), m_checkeds.size() );
             showConfirmThen( msg, Action.SL_CLEAR_ACTION );
             break;
 
@@ -175,8 +173,8 @@ public class StudyListDelegate extends ListDelegateBase
                     getSystemService( Context.CLIPBOARD_SERVICE );
                 clipboard.setText( TextUtils.join( "\n", selWords ) );
 
-                String msg = getString( R.string.paste_done_fmt, 
-                                        selWords.length );
+                String msg = getQuantityString( R.plurals.paste_done_fmt, 
+                                                selWords.length, selWords.length );
                 showToast( msg );
                 break;
             default:
@@ -257,8 +255,9 @@ public class StudyListDelegate extends ListDelegateBase
 
         makeAdapter();
 
-        String langName = DictLangCache.getLangNames( m_activity )[lang];
-        m_origTitle = getString( R.string.studylist_title_fmt, langName );
+        String langName = DictLangCache.getLangName( m_activity, lang );
+        m_origTitle = getString( R.string.studylist_title_fmt, 
+                                 xlateLang( langName ) );
         setTitleBar();
     }
 
@@ -288,7 +287,7 @@ public class StudyListDelegate extends ListDelegateBase
             String[] myNames = new String[m_langCodes.length];
             for ( int ii = 0; ii < m_langCodes.length; ++ii ) {
                 int lang = m_langCodes[ii];
-                myNames[ii] = names[lang];
+                myNames[ii] = xlateLang( names[lang], true );
                 if ( lang == startLang ) {
                     startIndex = ii;
                 }

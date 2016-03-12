@@ -29,6 +29,7 @@
 # include <execinfo.h>          /* for backtrace */
 #endif
 
+#include "movestak.h"
 #include "linuxutl.h"
 #include "main.h"
 #include "linuxdict.h"
@@ -309,18 +310,9 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
     case STRD_ROBOT_TRADED:
         return (XP_UCHAR*)"%d tiles traded this turn.";
     case STR_ROBOT_MOVED:
-        return (XP_UCHAR*)"The robot moved:\n";
+        return (XP_UCHAR*)"The robot \"%s\" moved:\n";
     case STRS_REMOTE_MOVED:
         return (XP_UCHAR*)"Remote player \"%s\" moved:\n";
-
-    case STR_PASSED: 
-        return (XP_UCHAR*)"Passed";
-    case STRSD_SUMMARYSCORED: 
-        return (XP_UCHAR*)"%s:%d";
-    case STRD_TRADED: 
-        return (XP_UCHAR*)"Traded %d";
-    case STR_LOSTTURN:
-        return (XP_UCHAR*)"Lost turn";
 
 #ifndef XWFEATURE_STANDALONE_ONLY
     case STR_LOCALPLAYERS:
@@ -338,14 +330,25 @@ linux_util_getUserString( XW_UtilCtxt* XP_UNUSED(uc), XP_U16 code )
         return (XP_UCHAR*)"%d tiles left in pool.";
     case STRD_REMAINS_EXPL:
         return (XP_UCHAR*)"%d tiles left in pool and all tray[s]:\n";
-    case STR_RESIGNED:
-        return "Resigned";
-    case STR_WINNER:
-        return "Winner";
+
+    case STRSD_RESIGNED:
+        return "[Resigned] %s: %d";
+    case STRSD_WINNER:
+        return "[Winner] %s: %d";
+    case STRDSD_PLACER:
+        return "[#%d] %s: %d";
+
     default:
         return (XP_UCHAR*)"unknown code to linux_util_getUserString";
     }
 } /* linux_util_getUserString */
+
+static const XP_UCHAR*
+linux_util_getUserQuantityString( XW_UtilCtxt* uc, XP_U16 code, 
+                                  XP_U16 XP_UNUSED(quantity) )
+{
+    return linux_util_getUserString( uc, code );
+}
 
 #ifdef XWFEATURE_DEVID
 static const XP_UCHAR*
@@ -368,7 +371,7 @@ linux_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ,
         cGlobals->params->lDevID = NULL;
         break;
     case ID_TYPE_RELAY:
-        if ( 0 < strlen( idRelay ) ) {
+        if ( !!cGlobals->pDb && 0 < strlen( idRelay ) ) {
             XP_LOGF( "%s: new id: %s", __func__, idRelay );
             db_store( cGlobals->pDb, KEY_RDEVID, idRelay );
         }
@@ -417,6 +420,7 @@ linux_util_vt_init( MPFORMAL XW_UtilCtxt* util )
     util->vtable->m_util_getSquareBonus = linux_util_getSquareBonus;
     util->vtable->m_util_getCurSeconds = linux_util_getCurSeconds;
     util->vtable->m_util_getUserString = linux_util_getUserString;
+    util->vtable->m_util_getUserQuantityString = linux_util_getUserQuantityString;
 #ifdef XWFEATURE_DEVID
     util->vtable->m_util_getDevID = linux_util_getDevID;
     util->vtable->m_util_deviceRegistered = linux_util_deviceRegistered;
@@ -486,6 +490,10 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 
     case ERR_NO_EMPTY_TRADE:
         message = "No tiles selected; trade cancelled.";
+        break;
+
+    case ERR_NO_HINT_FOUND:
+        message = "Unable to suggest any moves.";
         break;
 
     case ERR_CANT_UNDO_TILEASSIGN:
@@ -569,6 +577,35 @@ linux_getErrString( UtilErrID id, XP_Bool* silent )
 
     return (XP_UCHAR*)message;
 } /* linux_getErrString */
+
+void
+formatLMI( const LastMoveInfo* lmi, XP_UCHAR* buf, XP_U16 len )
+{
+    const XP_UCHAR* name = lmi->name;
+    switch( lmi->moveType ) {
+    case ASSIGN_TYPE:
+        XP_SNPRINTF( buf, len, "Tiles assigned to %s", name );
+        break;
+    case MOVE_TYPE:
+        if ( 0 == lmi->nTiles ) {
+            XP_SNPRINTF( buf, len, "%s passed", name );
+        } else {
+            XP_SNPRINTF( buf, len, "%s played %s for %d points", name,
+                         lmi->word, lmi->score );
+        }
+        break;
+    case TRADE_TYPE:
+        XP_SNPRINTF( buf, len, "%s traded %d tiles", 
+                     name, lmi->nTiles );
+        break;
+    case PHONY_TYPE:
+        XP_SNPRINTF( buf, len, "%s lost a turn", name );
+        break;
+    default:
+        XP_ASSERT(0);
+        break;
+    }
+}
 
 void
 formatConfirmTrade( const XP_UCHAR** tiles, XP_U16 nTiles, 

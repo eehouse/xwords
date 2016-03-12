@@ -25,66 +25,102 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import java.net.URLEncoder;
 import java.io.InputStream;
+import java.util.Iterator;
+import org.json.JSONException;
 import org.json.JSONObject;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.jni.CurGameInfo;
 
 public class NetLaunchInfo {
-    public String room;
-    public String inviteID;
-    public String dict;
-    public int lang;
-    public int nPlayersT;
+    private static final String ADDRS_KEY = "ad";
+    private static final String PHONE_KEY = "phn";
+    private static final String GSM_KEY = "gsm";
+    private static final String OSVERS_KEY = "osv";
+    private static final String BTADDR_KEY = "bta";
+    private static final String BTNAME_KEY = "btn";
+    private static final String ROOM_KEY = "room";
+    private static final String ID_KEY = "id";
+    private static final String WORDLIST_KEY = "wl";
+    private static final String LANG_KEY = "lang";
+    private static final String TOTPLAYERS_KEY = "np";
+    private static final String HEREPLAYERS_KEY = "nh";
+    private static final String GID_KEY = "gid";
+    private static final String FORCECHANNEL_KEY = "fc";
+    private static final String NAME_KEY = "nm";
 
-    private static final String LANG = "netlaunchinfo_lang";
-    private static final String ROOM = "netlaunchinfo_room";
-    private static final String DICT = "netlaunchinfo_dict";
-    private static final String INVITEID = "netlaunchinfo_inviteid";
-    private static final String NPLAYERS = "netlaunchinfo_nplayers";
-    private static final String VALID = "netlaunchinfo_valid";
+    protected String gameName;
+    protected String dict;
+    protected int lang;
+    protected int forceChannel;
+    protected int nPlayersT;
+    protected int nPlayersH;
+    protected String room;      // relay
+    protected String btName;
+    protected String btAddress;
+    // SMS
+    protected String phone;
+    protected boolean isGSM;
+    protected int osVers;
 
+    private int _conTypes;      // for syncing with the c version only!!
+    private int gameID = 0;
+    private CommsConnTypeSet m_addrs;
     private boolean m_valid;
+    private String inviteID;
 
-    public void putSelf( Bundle bundle )
+    public NetLaunchInfo()
     {
-        bundle.putInt( LANG, lang );
-        bundle.putString( ROOM, room );
-        bundle.putString( INVITEID, inviteID );
-        bundle.putString( DICT, dict );
-        bundle.putInt( NPLAYERS, nPlayersT );
-        bundle.putBoolean( VALID, m_valid );
+        m_addrs = new CommsConnTypeSet();
+        // Give it a random number. It may be overwritten, but so what.
+        inviteID = GameUtils.formatGameID( Utils.nextRandomInt() );
     }
 
-    public NetLaunchInfo( String data )
+    public NetLaunchInfo( Context context, String data )
     {
-        try { 
-            JSONObject json = new JSONObject( data );
-            room = json.getString( MultiService.ROOM );
-            inviteID = json.getString( MultiService.INVITEID );
-            lang = json.getInt( MultiService.LANG );
-            dict = json.getString( MultiService.DICT );
-            nPlayersT = json.getInt( MultiService.NPLAYERST );
-            m_valid = true;
-        } catch ( org.json.JSONException jse ) {
-            m_valid = false;
+        init( context, data );
+    }
+
+    private NetLaunchInfo( Bundle bundle )
+    {
+        lang = bundle.getInt( MultiService.LANG );
+        room = bundle.getString( MultiService.ROOM );
+        inviteID = bundle.getString( MultiService.INVITEID );
+        forceChannel = bundle.getInt( MultiService.FORCECHANNEL );
+        dict = bundle.getString( MultiService.DICT );
+        gameName = bundle.getString( MultiService.GAMENAME );
+        nPlayersT = bundle.getInt( MultiService.NPLAYERST );
+        nPlayersH = bundle.getInt( MultiService.NPLAYERSH );
+        gameID = bundle.getInt( MultiService.GAMEID );
+        btName = bundle.getString( MultiService.BT_NAME );
+        btAddress = bundle.getString( MultiService.BT_ADDRESS );
+
+        m_addrs = new CommsConnTypeSet( bundle.getInt( ADDRS_KEY ) );
+    }
+
+    public static NetLaunchInfo makeFrom( Bundle bundle )
+    {
+        NetLaunchInfo nli = null;
+        if ( 0 != bundle.getInt( MultiService.LANG ) ) { // quick test: valid?
+            nli = new NetLaunchInfo( bundle );
+            nli.calcValid();
+            if ( !nli.isValid() ) {
+                nli = null;
+            }
         }
-    }
-
-    public NetLaunchInfo( Bundle bundle )
-    {
-        lang = bundle.getInt( LANG );
-        room = bundle.getString( ROOM );
-        dict = bundle.getString( DICT );
-        inviteID = bundle.getString( INVITEID );
-        nPlayersT = bundle.getInt( NPLAYERS );
-        m_valid = bundle.getBoolean( VALID );
+        return nli;
     }
 
     public NetLaunchInfo( Context context, Uri data )
     {
+        this();
         m_valid = false;
         if ( null != data ) {
             String scheme = data.getScheme();
@@ -100,77 +136,442 @@ public class NetLaunchInfo {
                     JSONObject json = new JSONObject( new String( buf ) );
                     room = json.getString( MultiService.ROOM );
                     inviteID = json.getString( MultiService.INVITEID );
-                    lang = json.getInt( MultiService.LANG );
-                    dict = json.getString( MultiService.DICT );
-                    nPlayersT = json.getInt( MultiService.NPLAYERST );
                 } else {
-                    room = data.getQueryParameter( "room" );
-                    inviteID = data.getQueryParameter( "id" );
-                    dict = data.getQueryParameter( "wl" );
-                    String langStr = data.getQueryParameter( "lang" );
+                    String val = data.getQueryParameter( ADDRS_KEY );
+                    boolean hasAddrs = null != val;
+                    if ( hasAddrs ) {
+                        m_addrs = new CommsConnTypeSet( Integer.decode( val ) );
+                    } else {
+                        m_addrs = new CommsConnTypeSet();
+                    }
+
+                    CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
+                    for ( CommsConnType typ : supported.getTypes() ) {
+                        if ( hasAddrs && !m_addrs.contains( typ ) ) {
+                            continue;
+                        }
+                        boolean doAdd;
+                        switch ( typ ) {
+                        case COMMS_CONN_BT:
+                            btAddress = data.getQueryParameter( BTADDR_KEY );
+                            btName = data.getQueryParameter( BTNAME_KEY );
+                            doAdd = !hasAddrs && null != btAddress;
+                            break;
+                        case COMMS_CONN_RELAY:
+                            room = data.getQueryParameter( ROOM_KEY );
+                            inviteID = data.getQueryParameter( ID_KEY );
+                            doAdd = !hasAddrs && null != room;
+                            break;
+                        case COMMS_CONN_SMS:
+                            phone = data.getQueryParameter( PHONE_KEY );
+                            val = data.getQueryParameter( GSM_KEY );
+                            isGSM = null != val && 1 == Integer.decode( val );
+                            val = data.getQueryParameter( OSVERS_KEY );
+                            if ( null != val ) {
+                                osVers = Integer.decode( val );
+                            }
+                            doAdd = !hasAddrs && null != phone;
+                            break;
+                        default:
+                            doAdd = false;
+                            Assert.fail();
+                        }
+                        if ( doAdd ) {
+                            m_addrs.add( typ );
+                        }
+                    }
+
+                    removeUnsupported( supported );
+
+                    dict = data.getQueryParameter( WORDLIST_KEY );
+                    String langStr = data.getQueryParameter( LANG_KEY );
                     lang = Integer.decode( langStr );
-                    String np = data.getQueryParameter( "np" );
+                    String np = data.getQueryParameter( TOTPLAYERS_KEY );
                     nPlayersT = Integer.decode( np );
+                    String nh = data.getQueryParameter( HEREPLAYERS_KEY );
+                    nPlayersH = nh == null ? 1 : Integer.decode( nh );
+                    val = data.getQueryParameter( GID_KEY );
+                    gameID = null == val ? 0 : Integer.decode( val );
+                    val = data.getQueryParameter( FORCECHANNEL_KEY );
+                    forceChannel = null == val ? 0 : Integer.decode( val );
+                    gameName = data.getQueryParameter( NAME_KEY );
                 }
-                m_valid = true;
+                calcValid();
             } catch ( Exception e ) {
                 DbgUtils.logf( "unable to parse \"%s\"", data.toString() );
             }
         }
+        calcValid();
     }
 
-    public NetLaunchInfo( Intent intent )
+    private NetLaunchInfo( int gamID, String gamNam, int dictLang, 
+                           String dictName, int nPlayers )
     {
-        room = intent.getStringExtra( MultiService.ROOM );
-        inviteID = intent.getStringExtra( MultiService.INVITEID );
-        lang = intent.getIntExtra( MultiService.LANG, -1 );
-        dict = intent.getStringExtra( MultiService.DICT );
-        nPlayersT = intent.getIntExtra( MultiService.NPLAYERST, -1 );
-        m_valid = null != room
-            && -1 != lang
-            && -1 != nPlayersT;
+        this();
+        gameName = gamNam;
+        dict = dictName;
+        lang = dictLang;
+        nPlayersT = nPlayers;
+        nPlayersH = 1;
+        gameID = gamID;
     }
 
-    public static Uri makeLaunchUri( Context context, String room,
-                                     String inviteID, int lang, 
-                                     String dict, int nPlayersT )
+    public NetLaunchInfo( GameSummary summary, CurGameInfo gi, int numHere, int fc )
     {
-        Uri.Builder ub = new Uri.Builder()
-            .scheme( "http" )
-            .path( String.format( "//%s%s", 
-                                  LocUtils.getString(context, R.string.invite_host),
-                                  LocUtils.getString(context, R.string.invite_prefix) ) )
-            .appendQueryParameter( "lang", String.format("%d", lang ) )
-            .appendQueryParameter( "np", String.format( "%d", nPlayersT ) )
-            .appendQueryParameter( "room", room )
-            .appendQueryParameter( "id", inviteID );
-        if ( null != dict ) {
-            ub.appendQueryParameter( "wl", dict );
+        this( summary, gi );
+        nPlayersH = numHere;
+        forceChannel = fc;
+    }
+
+    public NetLaunchInfo( CurGameInfo gi )
+    {
+        this( gi.gameID, gi.getName(), gi.dictLang, gi.dictName, gi.nPlayers );
+    }
+
+    public NetLaunchInfo( GameSummary summary, CurGameInfo gi )
+    {
+        this( gi );
+
+        for ( CommsConnType typ : summary.conTypes.getTypes() ) {
+            // DbgUtils.logf( "NetLaunchInfo(): got type %s", typ.toString() );
+            switch( typ ) {
+            case COMMS_CONN_BT:
+                addBTInfo();
+                break;
+            case COMMS_CONN_RELAY:
+                addRelayInfo( summary.roomName, summary.relayID );
+                break;
+            case COMMS_CONN_SMS:
+                addSMSInfo( summary.getContext() );
+                break;
+            default:
+                Assert.fail();
+                break;
+            }
         }
-        return ub.build();
     }
 
-    public static String makeLaunchJSON( Context context, String room,
-                                         String inviteID, int lang, 
-                                         String dict, int nPlayersT )
+    public boolean contains( CommsConnType typ )
     {
-        String result = null;
-        try {
-            result = new JSONObject()
-                .put( MultiService.ROOM, room )
-                .put( MultiService.INVITEID, inviteID )
-                .put( MultiService.LANG, lang )
-                .put( MultiService.DICT, dict )
-                .put( MultiService.NPLAYERST, nPlayersT )
-                .toString();
-        } catch ( org.json.JSONException jse ) {
-            DbgUtils.loge( jse );
+        return m_addrs.contains( typ );
+    }
+
+    public void removeAddress( CommsConnType typ )
+    {
+        m_addrs.remove( typ );
+    }
+
+    public String inviteID()
+    { 
+        String result = inviteID;
+        if ( null == result ) {
+            result = GameUtils.formatGameID( gameID );
+            // DbgUtils.logf( "inviteID(): m_inviteID null so substituting %s", result );
         }
         return result;
     }
+
+    public int gameID()
+    { 
+        int result = gameID;
+        if ( 0 == result ) {
+            Assert.assertNotNull( inviteID );
+            DbgUtils.logf( "gameID(): looking at inviteID: %s", inviteID );
+            result = Integer.parseInt( inviteID, 16 );
+            // DbgUtils.logf( "gameID(): gameID -1 so substituting %d", result );
+            gameID = result;
+        }
+        Assert.assertTrue( 0 != result );
+        return result;
+    }
+
+    public void putSelf( Bundle bundle )
+    {
+        bundle.putString( MultiService.ROOM, room );
+        bundle.putString( MultiService.INVITEID, inviteID );
+        bundle.putInt( MultiService.LANG, lang );
+        bundle.putString( MultiService.DICT, dict );
+        bundle.putString( MultiService.GAMENAME, gameName );
+        bundle.putInt( MultiService.NPLAYERST, nPlayersT );
+        bundle.putInt( MultiService.NPLAYERSH, nPlayersH );
+        bundle.putInt( MultiService.GAMEID, gameID() );
+        bundle.putString( MultiService.BT_NAME, btName );
+        bundle.putString( MultiService.BT_ADDRESS, btAddress );
+        bundle.putInt( MultiService.FORCECHANNEL, forceChannel );
+
+        int flags = m_addrs.toInt();
+        bundle.putInt( ADDRS_KEY, flags );
+    }
+
+    public String makeLaunchJSON()
+    {
+        String result = null;
+        try {
+            JSONObject obj = new JSONObject()
+                .put( ADDRS_KEY, m_addrs.toInt() )
+                .put( MultiService.LANG, lang )
+                .put( MultiService.DICT, dict )
+                .put( MultiService.GAMENAME, gameName )
+                .put( MultiService.NPLAYERST, nPlayersT )
+                .put( MultiService.NPLAYERSH, nPlayersH )
+                .put( MultiService.GAMEID, gameID() )
+                .put( MultiService.FORCECHANNEL, forceChannel );
+
+            if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+                obj.put( MultiService.ROOM, room )
+                    .put( MultiService.INVITEID, inviteID );
+            }
+
+            if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
+                obj.put( MultiService.BT_NAME, btName )
+                    .put( MultiService.BT_ADDRESS, btAddress );
+            }
+            if ( m_addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+                obj.put( PHONE_KEY, phone )
+                    .put( GSM_KEY, isGSM )
+                    .put( OSVERS_KEY, osVers );
+            }
+            result = obj.toString();
+
+        } catch ( org.json.JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
+        // DbgUtils.logf( "makeLaunchJSON() => %s", result );
+        return result;
+    }
+
+    public CommsAddrRec makeAddrRec( Context context )
+    {
+        CommsAddrRec result = new CommsAddrRec();
+        for ( CommsConnType typ : m_addrs.getTypes() ) {
+            result.conTypes.add( typ );
+            switch( typ ) {
+            case COMMS_CONN_RELAY:
+                String relayName = XWPrefs.getDefaultRelayHost( context );
+                int relayPort = XWPrefs.getDefaultRelayPort( context );
+                result.setRelayParams( relayName, relayPort, room );
+                break;
+            case COMMS_CONN_BT:
+                result.setBTParams( btAddress, btName );
+                break;
+            case COMMS_CONN_SMS:
+                result.setSMSParams( phone );
+                break;
+            default:
+                Assert.fail();
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    private void init( Context context, String data )
+    {
+        CommsConnTypeSet supported = CommsConnTypeSet.getSupported( context );
+        try { 
+            JSONObject json = new JSONObject( data );
+
+            int flags = json.optInt(ADDRS_KEY, -1);
+            boolean hasAddrs = -1 != flags;
+            m_addrs = hasAddrs ? 
+                new CommsConnTypeSet( flags ) : new CommsConnTypeSet();
+
+            lang = json.optInt( MultiService.LANG, -1 );
+            forceChannel = json.optInt( MultiService.FORCECHANNEL, 0 );
+            dict = json.optString( MultiService.DICT );
+            gameName = json.optString( MultiService.GAMENAME );
+            nPlayersT = json.optInt( MultiService.NPLAYERST, -1 );
+            nPlayersH = json.optInt( MultiService.NPLAYERSH, 1 ); // absent ok
+            gameID = json.optInt( MultiService.GAMEID, 0 );
+
+            // Try each type
+            for ( CommsConnType typ : supported.getTypes() ) {
+                if ( hasAddrs && !m_addrs.contains( typ ) ) {
+                    continue;
+                }
+                boolean doAdd;
+                switch ( typ ) {
+                case COMMS_CONN_BT:
+                    btAddress = json.optString( MultiService.BT_ADDRESS );
+                    btName = json.optString( MultiService.BT_NAME );
+                    doAdd = !hasAddrs && !btAddress.isEmpty();
+                    break;
+                case COMMS_CONN_RELAY:
+                    room = json.getString( MultiService.ROOM );
+                    inviteID = json.optString( MultiService.INVITEID );
+                    doAdd = !hasAddrs && !room.isEmpty();
+                    break;
+                case COMMS_CONN_SMS:
+                    phone = json.optString( PHONE_KEY );
+                    isGSM = json.optBoolean( GSM_KEY, false );
+                    osVers = json.optInt( OSVERS_KEY, 0 );
+                    doAdd = !hasAddrs && !phone.isEmpty();
+                    break;
+                default:
+                    doAdd = false;
+                    Assert.fail();
+                }
+                if ( doAdd ) {
+                    m_addrs.add( typ );
+                }
+            }
+
+        } catch ( JSONException jse ) {
+            DbgUtils.loge( jse );
+        }
+
+        removeUnsupported( supported );
+
+        calcValid();
+    }
+
+    private void appendInt( Uri.Builder ub, String key, int value )
+    {
+        ub.appendQueryParameter( key, String.format("%d", value ) );
+    }
+
+    public Uri makeLaunchUri( Context context )
+    {
+        int addrs = m_addrs.toInt();
+        String host = LocUtils.getString( context, R.string.invite_host );
+        host = NetUtils.forceHost( host );
+        Uri.Builder ub = new Uri.Builder()
+            .scheme( "http" )
+            .path( String.format( "//%s%s", host,
+                                  LocUtils.getString(context, R.string.invite_prefix) ) );
+        appendInt( ub, LANG_KEY, lang );
+        appendInt( ub, TOTPLAYERS_KEY, nPlayersT );
+        appendInt( ub, HEREPLAYERS_KEY, nPlayersH );
+        appendInt( ub, GID_KEY, gameID() );
+        appendInt( ub, FORCECHANNEL_KEY, forceChannel );
+        appendInt( ub, ADDRS_KEY, addrs );
+        ub.appendQueryParameter( NAME_KEY, gameName );
+
+        if ( null != dict ) {
+            ub.appendQueryParameter( WORDLIST_KEY, dict );
+        }
+
+        if ( m_addrs.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+            ub.appendQueryParameter( ROOM_KEY, room );
+            ub.appendQueryParameter( ID_KEY, inviteID );
+        }
+        if ( m_addrs.contains( CommsConnType.COMMS_CONN_BT ) ) {
+            ub.appendQueryParameter( BTADDR_KEY, btAddress );
+            ub.appendQueryParameter( BTNAME_KEY, btName );
+        }
+        if ( m_addrs.contains( CommsConnType.COMMS_CONN_SMS ) ) {
+            ub.appendQueryParameter( PHONE_KEY, phone );
+            appendInt( ub, GSM_KEY, (isGSM? 1 : 0) );
+            appendInt( ub, OSVERS_KEY, osVers );
+        }
+        Uri result = ub.build();
+
+        if ( BuildConfig.DEBUG ) { // Test...
+            DbgUtils.logf( "testing %s...", result.toString() );
+            NetLaunchInfo instance = new NetLaunchInfo( context, result );
+            Assert.assertTrue( instance.isValid() );
+        }
+
+        return result;
+    }
     
+    public void addRelayInfo( String aRoom, String inviteID )
+    {
+        room = aRoom;
+        inviteID = inviteID;
+        m_addrs.add( CommsConnType.COMMS_CONN_RELAY );
+    }
+
+    public void addBTInfo()
+    {
+        String[] got = BTService.getBTNameAndAddress();
+        if ( null != got ) {
+            btName = got[0];
+            btAddress = got[1];
+            m_addrs.add( CommsConnType.COMMS_CONN_BT );
+        } else {
+            DbgUtils.logf( "addBTInfo(): no BT info available" );
+        }
+    }
+
+    public void addSMSInfo( Context context )
+    {
+        SMSService.SMSPhoneInfo pi = SMSService.getPhoneInfo( context );
+        phone = pi.number;
+        isGSM = pi.isGSM;
+
+        osVers = Integer.valueOf( android.os.Build.VERSION.SDK );
+
+        m_addrs.add( CommsConnType.COMMS_CONN_SMS );
+    }
+
     public boolean isValid()
     {
+        // DbgUtils.logf( "NetLaunchInfo(%s).isValid() => %b", toString(), m_valid );
         return m_valid;
+    }
+
+    @Override
+    public String toString()
+    {
+        return makeLaunchJSON();
+    }
+
+    public static void putExtras( Intent intent, int gameID, String btAddr )
+    {
+        Assert.fail();
+    }
+
+    public void freezeAddrs()
+    {
+        _conTypes = m_addrs.toInt();
+    }
+
+    public void unfreezeAddrs()
+    {
+        m_addrs = new CommsConnTypeSet( _conTypes, true );
+    }
+
+    private boolean hasCommon()
+    {
+        return null != dict
+            && 0 < lang
+            && 0 < nPlayersT
+            && 0 != gameID();
+    }
+
+    private void removeUnsupported( CommsConnTypeSet supported )
+    {
+        for ( Iterator<CommsConnType> iter = m_addrs.iterator();
+              iter.hasNext(); ) {
+            if ( !supported.contains( iter.next() ) ) {
+                iter.remove();
+            }
+        }
+    }
+
+    private void calcValid()
+    {
+        boolean valid = hasCommon() && null != m_addrs;
+        // DbgUtils.logf( "calcValid(%s)", toString() );
+        if ( valid ) {
+            for ( Iterator<CommsConnType> iter = m_addrs.iterator();
+                  valid && iter.hasNext(); ) {
+                CommsConnType typ = iter.next();
+                switch ( typ ) {
+                case COMMS_CONN_RELAY:
+                    valid = null != room && null != inviteID();
+                    break;
+                case COMMS_CONN_BT:
+                    valid = null != btAddress;
+                    break;
+                case COMMS_CONN_SMS:
+                    valid = null != phone && 0 < osVers;
+                    break;
+                }
+            }
+        }
+        m_valid = valid;
     }
 }

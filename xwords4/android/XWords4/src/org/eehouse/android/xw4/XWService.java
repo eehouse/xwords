@@ -24,12 +24,19 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import org.eehouse.android.xw4.MultiService.MultiEvent;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.jni.UtilCtxt;
+import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 
 public class XWService extends Service {
 
     protected static MultiService s_srcMgr = null;
+    private static Set<String> s_seen = new HashSet<String>();
+
+    private UtilCtxt m_utilCtxt;
 
     @Override
     public IBinder onBind( Intent intent )
@@ -40,7 +47,7 @@ public class XWService extends Service {
     public final static void setListener( MultiService.MultiEventListener li )
     {
         if ( null == s_srcMgr ) {
-            DbgUtils.logf( "XWService.setListener: registering %s", li.getClass().getName() );
+            // DbgUtils.logf( "XWService.setListener: registering %s", li.getClass().getName() );
             s_srcMgr = new MultiService();
         }
         s_srcMgr.setListener( li );
@@ -51,10 +58,31 @@ public class XWService extends Service {
         if ( null != s_srcMgr ) {
             s_srcMgr.sendResult( event, args );
         } else {
-            DbgUtils.logf( "XWService.sendResult: dropping event" );
+            DbgUtils.logdf( "XWService.sendResult: dropping %s event", event.toString() );
         }
     }
 
+    // Check that we aren't already processing an invitation with this
+    // inviteID.
+    protected boolean checkNotDupe( NetLaunchInfo nli )
+    {
+        String inviteID = nli.inviteID();
+        boolean isDupe;
+        synchronized( s_seen ) {
+            isDupe = s_seen.contains( inviteID );
+            if ( !isDupe ) {
+                s_seen.add( inviteID );
+            }
+        }
+        DbgUtils.logdf( "XWService.checkNotDupe(%s) => %b", inviteID, !isDupe );
+        return !isDupe;
+    }
 
-
+    protected UtilCtxt getUtilCtxt()
+    {
+        if ( null == m_utilCtxt ) {
+            m_utilCtxt = new UtilCtxtImpl( this );
+        }
+        return m_utilCtxt;
+    }
 }

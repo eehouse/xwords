@@ -1,6 +1,6 @@
-/* -*-mode: C; compile-command: "cd ..; ../scripts/ndkbuild.sh -j3"; -*- */
+/* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /* 
- * Copyright 2001-2010 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001-2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -28,6 +28,8 @@
 #include "paths.h"
 #include "LocalizedStrIncludes.h"
 
+#define MAX_QUANTITY_STRS 4
+
 typedef struct _TimerStorage {
     XWTimerProc proc;
     void* closure;
@@ -35,10 +37,11 @@ typedef struct _TimerStorage {
 
 typedef struct _AndUtil {
     XW_UtilCtxt util;
-    JNIEnv** env;
+    EnvThreadInfo* ti;
     jobject jutil;  /* global ref to object implementing XW_UtilCtxt */
     TimerStorage timerStorage[NUM_TIMERS_PLUS_ONE];
     XP_UCHAR* userStrings[N_AND_USER_STRINGS];
+    XP_U32 userStringsBits;
 #ifdef XWFEATURE_DEVID
     XP_UCHAR* devIDStorage;
 #endif
@@ -70,7 +73,7 @@ and_util_makeStreamFromAddr( XW_UtilCtxt* uc, XP_PlayerAddr channelNo )
 
 #define UTIL_CBK_HEADER(nam,sig)                                        \
     AndUtil* util = (AndUtil*)uc;                                       \
-    JNIEnv* env = *util->env;                                           \
+    JNIEnv* env = ENVFORME( util->ti );                                 \
     if ( NULL != util->jutil ) {                                        \
         jmethodID mid = getMethodID( env, util->jutil, nam, sig )
 
@@ -376,7 +379,7 @@ XP_U32
 and_util_getCurSeconds( XW_UtilCtxt* uc )
 {
     AndUtil* andutil = (AndUtil*)uc;
-    XP_U32 curSeconds = getCurSeconds( *andutil->env );
+    XP_U32 curSeconds = getCurSeconds( ENVFORME( andutil->ti ) );
     /* struct timeval tv; */
     /* gettimeofday( &tv, NULL ); */
     /* XP_LOGF( "%s: %d vs %d", __func__, (int)tv.tv_sec, (int)curSeconds ); */
@@ -394,7 +397,7 @@ and_util_makeEmptyDict( XW_UtilCtxt* uc )
     AndUtil* andutil = (AndUtil*)uc;
     DictionaryCtxt* result =  
         and_dictionary_make_empty( MPPARM( ((AndUtil*)uc)->util.mpool )
-                                   *andutil->env, globals->jniutil );
+                                   ENVFORME( andutil->ti ), globals->jniutil );
     return dict_ref( result );
 #endif
 }
@@ -406,6 +409,8 @@ and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
     UTIL_CBK_HEADER("getUserString", "(I)Ljava/lang/String;" );
     int index = stringCode - 1; /* see LocalizedStrIncludes.h */
     XP_ASSERT( index < VSIZE( util->userStrings ) );
+
+    XP_ASSERT( 0 == (util->userStringsBits & (1 << index)) );
 
     if ( ! util->userStrings[index] ) {
         jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, 
@@ -426,6 +431,52 @@ and_util_getUserString( XW_UtilCtxt* uc, XP_U16 stringCode )
     return result;
 }
 
+static const XP_UCHAR*
+and_util_getUserQuantityString( XW_UtilCtxt* uc, XP_U16 stringCode, XP_U16 quantity )
+{
+    XP_UCHAR* result = "";
+    UTIL_CBK_HEADER("getUserQuantityString", "(II)Ljava/lang/String;" );
+    int index = stringCode - 1; /* see LocalizedStrIncludes.h */
+    XP_ASSERT( index < VSIZE( util->userStrings ) );
+    XP_UCHAR** ptrs;
+
+    util->userStringsBits |= 1 << index;
+    ptrs = (XP_UCHAR**)util->userStrings[index];
+    if ( !ptrs ) {
+        ptrs = (XP_UCHAR**)XP_CALLOC( util->util.mpool, MAX_QUANTITY_STRS * sizeof(*ptrs) );
+        util->userStrings[index] = (XP_UCHAR*)ptrs;
+    }
+
+    jstring jresult = (*env)->CallObjectMethod( env, util->jutil, mid, 
+                                                stringCode, quantity );
+    const char* jchars = (*env)->GetStringUTFChars( env, jresult, NULL );
+    int indx = 0;
+    for ( ; indx < MAX_QUANTITY_STRS; ++indx ) {
+        if ( !ptrs[indx] ) {
+            XP_LOGF( "%s: found empty slot %d for %s", __func__, indx, jchars );
+            break;
+        } else if ( 0 == XP_STRCMP( jchars, ptrs[indx] ) ) {
+            XP_LOGF( "%s: found %s at slot %d", __func__, jchars, indx );
+            break;
+        }
+    }
+
+    if ( !ptrs[indx] ) {
+        XP_ASSERT( indx < MAX_QUANTITY_STRS );
+        jsize len = (*env)->GetStringUTFLength( env, jresult );
+        XP_UCHAR* buf = XP_MALLOC( util->util.mpool, len + 1 );
+        XP_MEMCPY( buf, jchars, len );
+        buf[len] = '\0';
+        ptrs[indx] = buf;
+    }
+
+    (*env)->ReleaseStringUTFChars( env, jresult, jchars );
+    deleteLocalRef( env, jresult );
+
+    result = ptrs[indx];
+    UTIL_CBK_TAIL();
+    return result;
+}
 
 static XP_Bool
 and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi, 
@@ -450,12 +501,19 @@ and_util_warnIllegalWord( XW_UtilCtxt* uc, BadWordInfo* bwi,
 
 #ifdef XWFEATURE_CHAT
 static void
-and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR const* msg )
+and_util_showChat( XW_UtilCtxt* uc, const XP_UCHAR const* msg, XP_S16 from )
 {
-    UTIL_CBK_HEADER("showChat", "(Ljava/lang/String;)V" );
+    UTIL_CBK_HEADER( "showChat", "(Ljava/lang/String;ILjava/lang/String;)V" );
+    jstring jname = NULL;
+    if ( 0 <= from ) {
+        LocalPlayer* lp = &uc->gameInfo->players[from];
+        XP_ASSERT( !lp->isLocal );
+        jname = (*env)->NewStringUTF( env, lp->name );
+    }
+
     jstring jmsg = (*env)->NewStringUTF( env, msg );
-    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg );
-    deleteLocalRef( env, jmsg );
+    (*env)->CallVoidMethod( env, util->jutil, mid, jmsg, from, jname );
+    deleteLocalRefs( env, jmsg, jname, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
 #endif
@@ -522,15 +580,18 @@ and_util_cellSquareHeld( XW_UtilCtxt* uc, XWStreamCtxt* words )
 #ifndef XWFEATURE_STANDALONE_ONLY
 
 static void
-and_util_informMissing(XW_UtilCtxt* uc, XP_Bool isServer, 
-                       CommsConnType connType, XP_U16 nMissing )
+and_util_informMissing( XW_UtilCtxt* uc, XP_Bool isServer, 
+                        const CommsAddrRec* addr, XP_U16 nDevs, XP_U16 nMissing)
 {
-    UTIL_CBK_HEADER( "informMissing",
-                     "(ZL" PKG_PATH("jni/CommsAddrRec$CommsConnType") ";I)V" );
-    jobject jtyp = intToJEnum( env, connType,
-                               PKG_PATH("jni/CommsAddrRec$CommsConnType") );
-    (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtyp, nMissing );
-    deleteLocalRef( env, jtyp );
+    UTIL_CBK_HEADER( "informMissing", 
+                     "(ZL" PKG_PATH("jni/CommsAddrRec$CommsConnTypeSet") ";II)V" );
+    jobject jtypset = NULL;
+    if ( !!addr ) {
+        jtypset = addrTypesToJ( env, addr );
+    }
+    (*env)->CallVoidMethod( env, util->jutil, mid, isServer, jtypset, nDevs,
+                            nMissing );
+    deleteLocalRef( env, jtypset );
     UTIL_CBK_TAIL();
 }
 
@@ -589,11 +650,11 @@ static void
 and_util_deviceRegistered( XW_UtilCtxt* uc, DevIDType typ, 
                            const XP_UCHAR* idRelay )
 {
-    UTIL_CBK_HEADER( "deviceRegistered", "(Lorg/eehouse/android/xw4/"
-                     "jni/UtilCtxt$DevIDType;Ljava/lang/String;)V" );
+    UTIL_CBK_HEADER( "deviceRegistered", 
+                     "(L" PKG_PATH("jni/UtilCtxt$DevIDType") ";Ljava/lang/String;)V" );
     jstring jstr = (*env)->NewStringUTF( env, idRelay );
     jobject jtyp = intToJEnum( env, typ, 
-                               "org/eehouse/android/xw4/jni/UtilCtxt$DevIDType" );
+                               PKG_PATH("jni/UtilCtxt$DevIDType") );
     (*env)->CallVoidMethod( env, util->jutil, mid, jtyp, jstr );
     deleteLocalRefs( env, jstr, jtyp, DELETE_NO_REF );
     UTIL_CBK_TAIL();
@@ -635,7 +696,7 @@ static XP_UCHAR*
 and_util_md5sum( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len )
 {
     AndUtil* util = (AndUtil*)uc;
-    JNIEnv* env = *util->env;
+    JNIEnv* env = ENVFORME( util->ti );
     AndGlobals* globals = (AndGlobals*)uc->closure;
     struct JNIUtilCtxt* jniutil = globals->jniutil;
     jstring jsum = and_util_getMD5SumForBytes( jniutil, ptr, len );
@@ -647,13 +708,13 @@ and_util_md5sum( XW_UtilCtxt* uc, const XP_U8* ptr, XP_U16 len )
 
 
 XW_UtilCtxt*
-makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi, 
+makeUtil( MPFORMAL EnvThreadInfo* ti, jobject jutil, CurGameInfo* gi, 
           AndGlobals* closure )
 {
     AndUtil* util = (AndUtil*)XP_CALLOC( mpool, sizeof(*util) );
     UtilVtable* vtable = (UtilVtable*)XP_CALLOC( mpool, sizeof(*vtable) );
-    util->env = envp;
-    JNIEnv* env = *envp;
+    util->ti = ti;
+    JNIEnv* env = ENVFORME( util->ti );
     if ( NULL != jutil ) {
         util->jutil = (*env)->NewGlobalRef( env, jutil );
     }
@@ -694,6 +755,7 @@ makeUtil( MPFORMAL JNIEnv** envp, jobject jutil, CurGameInfo* gi,
     SET_PROC(getCurSeconds);
     SET_PROC(makeEmptyDict);
     SET_PROC(getUserString);
+    SET_PROC(getUserQuantityString);
     SET_PROC(warnIllegalWord);
 #ifdef XWFEATURE_CHAT
     SET_PROC(showChat);
@@ -741,13 +803,23 @@ void
 destroyUtil( XW_UtilCtxt** utilc )
 {
     AndUtil* util = (AndUtil*)*utilc;
-    JNIEnv *env = *util->env;
+    JNIEnv* env = ENVFORME( util->ti );
 
-    int ii;
-    for ( ii = 0; ii < VSIZE(util->userStrings); ++ii ) {
+    for ( int ii = 0; ii < VSIZE(util->userStrings); ++ii ) {
         XP_UCHAR* ptr = util->userStrings[ii];
         if ( NULL != ptr ) {
-            XP_FREE( util->util.mpool, ptr );
+            if ( 0 == (util->userStringsBits & (1 << ii)) ) {
+                XP_FREE( util->util.mpool, ptr );
+            } else {
+                XP_UCHAR** ptrs = (XP_UCHAR**)ptr;
+                for ( int jj = 0; jj < MAX_QUANTITY_STRS; ++jj ) {
+                    ptr = ptrs[jj];
+                    if ( !!ptr ) {
+                        XP_FREE( util->util.mpool, ptr );
+                    }
+                }
+                XP_FREE( util->util.mpool, ptrs );
+            }
         }
     }
 

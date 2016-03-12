@@ -49,7 +49,8 @@ static void gi_setDict( MPFORMAL CurGameInfo* gi, const DictionaryCtxt* dict );
 #endif
 
 static void
-checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, XP_U16* nPlayersTotal )
+checkServerRole( CurGameInfo* gi, XP_U16* nPlayersHere, 
+                 XP_U16* nPlayersTotal )
 {
     if ( !!gi ) {
         XP_U16 ii, remoteCount = 0;
@@ -87,7 +88,7 @@ makeGameID( XW_UtilCtxt* util )
 void
 game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
                   XW_UtilCtxt* util, DrawCtx* draw, 
-                  CommonPrefs* cp, const TransportProcs* procs
+                  const CommonPrefs* cp, const TransportProcs* procs
 #ifdef SET_GAMESEED
                   ,XP_U16 gameSeed 
 #endif
@@ -112,7 +113,7 @@ game_makeNewGame( MPFORMAL XWGame* game, CurGameInfo* gi,
         game->comms = comms_make( MPPARM(mpool) util,
                                   gi->serverRole != SERVER_ISCLIENT, 
                                   nPlayersHere, nPlayersTotal, 
-                                  procs
+                                  procs, gi->forceChannel
 #ifdef SET_GAMESEED
                                   , gameSeed
 #endif
@@ -166,7 +167,8 @@ game_reset( MPFORMAL XWGame* game, CurGameInfo* gi,
         } else if ( gi->serverRole != SERVER_STANDALONE ) {
             game->comms = comms_make( MPPARM(mpool) util,
                                       gi->serverRole != SERVER_ISCLIENT, 
-                                      nPlayersHere, nPlayersTotal, procs
+                                      nPlayersHere, nPlayersTotal, procs,
+                                      gi->forceChannel
 #ifdef SET_GAMESEED
                                       , 0
 #endif
@@ -212,8 +214,8 @@ game_changeDict( MPFORMAL XWGame* game, CurGameInfo* gi, DictionaryCtxt* dict )
 XP_Bool
 game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game, 
                      CurGameInfo* gi, DictionaryCtxt* dict, 
-                     const PlayerDicts* dicts,
-                     XW_UtilCtxt* util, DrawCtx* draw, CommonPrefs* cp, 
+                     const PlayerDicts* dicts, XW_UtilCtxt* util, 
+                     DrawCtx* draw, CommonPrefs* cp, 
                      const TransportProcs* procs )
 {
     XP_Bool success = XP_FALSE;
@@ -225,7 +227,8 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     XP_DEBUGF( "%s: strVersion = 0x%x", __func__, (XP_U16)strVersion );
 
     if ( strVersion > CUR_STREAM_VERS ) {
-        XP_LOGF( "%s: aborting; stream version too new!", __func__ );
+        XP_LOGF( "%s: aborting; stream version too new (%d > %d)!", __func__, 
+                 strVersion, CUR_STREAM_VERS );
     } else {
         do { /* do..while so can break */
             stream_setVersion( stream, strVersion );
@@ -255,7 +258,7 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
 
             if ( hasComms ) {
                 game->comms = comms_makeFromStream( MPPARM(mpool) stream, util, 
-                                                    procs );
+                                                    procs, gi->forceChannel );
             } else {
                 game->comms = NULL;
             }
@@ -267,9 +270,9 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
                                                   game->model, game->comms, 
                                                   util, gi->nPlayers );
 
-            game->board = board_makeFromStream( MPPARM(mpool) stream, game->model, 
-                                                game->server, NULL, util, 
-                                                gi->nPlayers );
+            game->board = board_makeFromStream( MPPARM(mpool) stream, 
+                                                game->model, game->server, 
+                                                NULL, util, gi->nPlayers );
             server_prefsChanged( game->server, cp );
             board_prefsChanged( game->board, cp );
             board_setDraw( game->board, draw );
@@ -278,6 +281,28 @@ game_makeFromStream( MPFORMAL XWStreamCtxt* stream, XWGame* game,
     }
     return success;
 } /* game_makeFromStream */
+
+void
+game_saveNewGame( MPFORMAL const CurGameInfo* gi, XW_UtilCtxt* util,
+                  const CommonPrefs* cp, XWStreamCtxt* out )
+{
+    XWGame newGame = {0};
+    CurGameInfo newGI = {0};
+    gi_copy( MPPARM(mpool) &newGI, gi );
+
+    game_makeNewGame( MPPARM(mpool) &newGame, &newGI, util, 
+                      NULL, /* DrawCtx*,  */
+                      cp, NULL /* TransportProcs* procs */
+#ifdef SET_GAMESEED
+                      ,0 
+#endif
+                      );
+
+    game_saveToStream( &newGame, &newGI, out, 1 );
+    game_saveSucceeded( &newGame, 1 );
+    game_dispose( &newGame );
+    gi_disposePlayerInfo( MPPARM(mpool) &newGI );
+}
 
 void
 game_saveToStream( const XWGame* game, const CurGameInfo* gi, 
@@ -431,6 +456,8 @@ gi_copy( MPFORMAL CurGameInfo* destGI, const CurGameInfo* srcGI )
     destGI->timerEnabled = srcGI->timerEnabled;
     destGI->phoniesAction = srcGI->phoniesAction;
     destGI->allowPickTiles = srcGI->allowPickTiles;
+    destGI->forceChannel = srcGI->forceChannel;
+    XP_LOGF( "%s: copied forceChannel: %d", __func__, destGI->forceChannel );
 
     for ( srcPl = srcGI->players, destPl = destGI->players, ii = 0; 
           ii < nPlayers; ++srcPl, ++destPl, ++ii ) {
@@ -501,7 +528,7 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
     gi->nPlayers = (XP_U8)stream_getBits( stream, NPLAYERS_NBITS );
     gi->boardSize = (XP_U8)stream_getBits( stream, nColsNBits );
     gi->serverRole = (DeviceRole)stream_getBits( stream, 2 );
-    XP_LOGF( "%s: read role of %d", __func__, gi->serverRole );
+    XP_LOGF( "%s: read serverRole of %d", __func__, gi->serverRole );
     gi->hintsNotAllowed = stream_getBits( stream, 1 );
     if ( strVersion < STREAM_VERS_ROBOTIQ ) {
         (void)stream_getBits( stream, 2 );
@@ -521,6 +548,11 @@ gi_readFromStream( MPFORMAL XWStreamCtxt* stream, CurGameInfo* gi )
         gi->confirmBTConnect = stream_getBits( stream, 1 );
     } else {
         gi->confirmBTConnect = XP_TRUE; /* safe given all the 650s out there. */
+    }
+
+    if ( STREAM_VERS_MULTIADDR <= strVersion ) {
+        gi->forceChannel = stream_getBits( stream, 2 );
+        XP_LOGF( "%s: loaded forceChannel: %d", __func__, gi->forceChannel );
     }
 
     gi->gameID = strVersion < STREAM_VERS_BLUETOOTH2 ? 
@@ -575,12 +607,15 @@ gi_writeToStream( XWStreamCtxt* stream, const CurGameInfo* gi )
     stream_putBits( stream, NPLAYERS_NBITS, gi->nPlayers );
     stream_putBits( stream, nColsNBits, gi->boardSize );
     stream_putBits( stream, 2, gi->serverRole );
+    XP_LOGF( "%s: wrote serverRole of %d", __func__, gi->serverRole );
     stream_putBits( stream, 1, gi->hintsNotAllowed );
     stream_putBits( stream, 2, gi->phoniesAction );
     stream_putBits( stream, 1, gi->timerEnabled );
     stream_putBits( stream, 1, gi->allowPickTiles );
     stream_putBits( stream, 1, gi->allowHintRect );
     stream_putBits( stream, 1, gi->confirmBTConnect );
+    stream_putBits( stream, 2, gi->forceChannel );
+    XP_LOGF( "%s: wrote forceChannel: %d", __func__, gi->forceChannel );
 
     if ( 0 ) {
 #ifdef STREAM_VERS_BIGBOARD

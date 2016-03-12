@@ -482,10 +482,16 @@ gtk_newgame_col_set( void* closure, XP_U16 player, NewGameColumn col,
 
     switch ( col ) {
     case NG_COL_NAME:
-    case NG_COL_PASSWD:
-        cp = value.ng_cp? value.ng_cp : "";
+    case NG_COL_PASSWD: {
+        gchar buf[32];
+        cp = !!value.ng_cp ? value.ng_cp : "";
+        if ( NG_COL_NAME == col && '\0' == cp[0] ) {
+            sprintf( buf, "Linuser %d", 1 + player );
+            cp = buf;
+        }
         gtk_entry_set_text( GTK_ENTRY(widget), cp );
         break;
+    }
 #ifndef XWFEATURE_STANDALONE_ONLY
     case NG_COL_REMOTE:
 #endif
@@ -541,6 +547,15 @@ gtk_newgame_attr_set( void* closure, NewGameAttr attr, NGValue value )
     }
 }
 
+static void
+setDefaults( CurGameInfo* gi )
+{
+    if ( 0 == gi->nPlayers ) {
+        gi->nPlayers = 2;
+        gi->players[0].isLocal = XP_FALSE;
+    }
+}
+
 gboolean
 newGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr, 
                XP_Bool isNewGame, XP_Bool fireConnDlg )
@@ -561,6 +576,8 @@ newGameDialog( GtkGameGlobals* globals, CurGameInfo* gi, CommsAddrRec* addr,
                                    &state );
     state.isNewGame = isNewGame;
     state.fireConnDlg = fireConnDlg;
+
+    setDefaults( gi );
 
     /* returns when button handler calls gtk_main_quit */
     do {

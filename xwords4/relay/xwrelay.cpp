@@ -147,19 +147,21 @@ logf( XW_LogLevel level, const char* format, ... )
             struct tm result;
             timp = localtime_r( &tv.tv_sec, &result );
 
+            char timeBuf[64];
+            sprintf( timeBuf, "%.2d:%.2d:%.2d", timp->tm_hour, 
+                     timp->tm_min, timp->tm_sec );
+
             /* log the date once/day.  This isn't threadsafe so may be
                repeated but that's harmless. */
             if ( tm_yday != timp->tm_yday ) {
                 tm_yday = timp->tm_yday;
-                fprintf( where, "It's a new day: %.2d/%.2d/%d\n", timp->tm_mday,
+                fprintf( where, "It's a new day: %.2d/%.2d/%d %s\n", timp->tm_mday,
                          1 + timp->tm_mon, /* 0-based */
-                         1900 + timp->tm_year ); /* 1900-based */
+                         1900 + timp->tm_year, /* 1900-based */
+                         timeBuf );
             }
 
-            pthread_t me = pthread_self();
-
-            fprintf( where, "<%p>%.2d:%.2d:%.2d: ", (void*)me, timp->tm_hour, 
-                     timp->tm_min, timp->tm_sec );
+            fprintf( where, "<%p>%s: ", (void*)pthread_self(), timeBuf );
 
             va_list ap;
             va_start( ap, format );
@@ -372,10 +374,15 @@ getHeader( const uint8_t** bufpp, const uint8_t* end,
     uint8_t byt;
     if ( getNetByte( bufpp, end, &byt ) ) {
         header->proto = (XWPDevProto)byt;
-        if ( XWPDEV_PROTO_VERSION_1 == header->proto
-             && vli2un( bufpp, end, &header->packetID )
-             && getNetByte( bufpp, end, &byt )
-             && byt < XWPDEV_N_ELEMS ) {
+        if ( XWPDEV_PROTO_VERSION_1 != header->proto ) {
+            logf( XW_LOGERROR, "%s: bad proto %d", __func__, header->proto );
+        } else if ( !vli2un( bufpp, end, &header->packetID ) ) {
+            logf( XW_LOGERROR, "%s: can't get packet id", __func__ );
+        } else if ( !getNetByte( bufpp, end, &byt ) ) {
+            logf( XW_LOGERROR, "%s: can't get cmd", __func__ );
+        } else if ( XWPDEV_N_ELEMS <= byt ) {
+            logf( XW_LOGERROR, "%s: cmd %d too high", __func__, byt );
+        } else {
             header->cmd = (XWRelayReg)byt;
             success = true;
         }
@@ -405,6 +412,25 @@ getDevID( const uint8_t** bufpp, const uint8_t* end,
     }
 }
 
+static uint8_t
+getClientIndex( const uint8_t** bufpp, const uint8_t* end, 
+                const int nPlayersT )
+{
+    uint8_t result = 0;
+    uint8_t clientIndx;
+    if ( getNetByte( bufpp, end, &clientIndx ) ) {
+        if ( 0 == clientIndx ) {
+            // unset on device: leave it alone
+        } else if ( clientIndx >= nPlayersT ) {
+            logf( XW_LOGERROR, "%s: bogus clientIndx %d > nPlayersT %d", 
+                  __func__, clientIndx, nPlayersT );
+        } else {
+            result = 1 + clientIndx;   // postgres arrays are 1-based
+        }
+    }
+    return result;
+}
+
 static size_t
 un2vli( int nn, uint8_t* buf )
 {
@@ -425,7 +451,7 @@ un2vli( int nn, uint8_t* buf )
 
 #ifdef RELAY_HEARTBEAT
 static bool
-processHeartbeat( uint8_t* buf, int bufLen, int socket )
+processHeartbeat( uint8_t* buf, int bufLen, int sock )
 {
     uint8_t* end = buf + bufLen;
     CookieID cookieID; 
@@ -438,8 +464,8 @@ processHeartbeat( uint8_t* buf, int bufLen, int socket )
               cookieID, hostID );
 
         {
-            SafeCref scr( socket );
-            success = scr.HandleHeartbeat( hostID, socket );
+            SafeCref scr( sock );
+            success = scr.HandleHeartbeat( hostID, sock );
         }
     }
     return success;
@@ -571,12 +597,12 @@ get_addr_info_if( const AddrInfo* addr, int* sockp,
 {
     bool current = addr->isCurrent();
     if ( current ) {
-        int socket = addr->socket();
-        assert( g_udpsock == socket || socket == -1 );
-        if ( -1 == socket ) {
-            socket = g_udpsock;
+        int sock = addr->getSocket();
+        assert( g_udpsock == sock || sock == -1 );
+        if ( -1 == sock ) {
+            sock = g_udpsock;
         }
-        *sockp = socket;
+        *sockp = sock;
         *dest_addr = addr->sockaddr();
     }
     return current;
@@ -584,25 +610,33 @@ get_addr_info_if( const AddrInfo* addr, int* sockp,
 
 static ssize_t
 send_packet_via_udp_impl( vector<uint8_t>& packet, 
-                          int socket, const struct sockaddr* dest_addr )
+                          int sock, const struct sockaddr* dest_addr )
 {
-    ssize_t nSent = sendto( socket, packet.data(), packet.size(), 0 /*flags*/,
+    ssize_t nSent = sendto( sock, packet.data(), packet.size(), 0 /*flags*/,
                             dest_addr, sizeof(*dest_addr) );
     if ( 0 > nSent ) {
         logf( XW_LOGERROR, "%s: sendmsg->errno %d (%s)", __func__, errno, 
               strerror(errno) );
+    } else {
+#ifdef LOG_PACKET_MD5SUMS
+        gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, packet.data(), 
+                                                  packet.size() );
+        logf( XW_LOGINFO, "%s() sent %d bytes (sum=%s)", __func__, 
+              packet.size(), sum );
+        g_free( sum );
+#endif
     }
     return nSent;
 }
 
 static ssize_t
-send_via_udp_impl( int socket, const struct sockaddr* dest_addr, 
+send_via_udp_impl( int sock, const struct sockaddr* dest_addr, 
                    uint32_t* packetIDP, XWRelayReg cmd, va_list& app )
 {
     vector<uint8_t> packet;
     assemble_packet( packet, packetIDP, cmd, app );
 
-    ssize_t nSent = send_packet_via_udp_impl( packet, socket, dest_addr );
+    ssize_t nSent = send_packet_via_udp_impl( packet, sock, dest_addr );
 #ifdef LOG_UDP_PACKETS
     gchar* b64 = g_base64_encode( (uint8_t*)dest_addr, 
                                   sizeof(*dest_addr) );
@@ -620,12 +654,12 @@ static ssize_t
 send_via_udp( const AddrInfo* addr, uint32_t* packetIDP, XWRelayReg cmd, ... )
 {
     ssize_t result = 0;
-    int socket;
+    int sock;
     const struct sockaddr* dest_addr;
-    if ( get_addr_info_if( addr, &socket, &dest_addr ) ) {
+    if ( get_addr_info_if( addr, &sock, &dest_addr ) ) {
         va_list ap;
         va_start( ap, cmd );
-        result = send_via_udp_impl( socket, dest_addr, packetIDP, cmd, ap );
+        result = send_via_udp_impl( sock, dest_addr, packetIDP, cmd, ap );
         va_end( ap );
     } else {
         logf( XW_LOGINFO, "%s: not sending to out-of-date address (token=%x)", __func__, 
@@ -635,12 +669,12 @@ send_via_udp( const AddrInfo* addr, uint32_t* packetIDP, XWRelayReg cmd, ... )
 }
 
 static ssize_t
-send_via_udp( int socket, const struct sockaddr* dest_addr, 
+send_via_udp( int sock, const struct sockaddr* dest_addr, 
               uint32_t* packetIDP, XWRelayReg cmd, ... )
 {
     va_list ap;
     va_start( ap, cmd );
-    ssize_t result = send_via_udp_impl( socket, dest_addr, packetIDP, 
+    ssize_t result = send_via_udp_impl( sock, dest_addr, packetIDP, 
                                         cmd, ap );
     va_end( ap );
     return result;
@@ -681,17 +715,18 @@ send_with_length_unsafe( const AddrInfo* addr, const uint8_t* buf,
 {
     assert( !!addr );
     bool ok = false;
+    int sock = -1;              // UDP case, if we wind up logging
 
     if ( addr->isTCP() ) {
-        int socket = addr->socket();
+        sock = addr->getSocket();
         if ( addr->isCurrent() ) {
             unsigned short len = htons( bufLen );
-            ssize_t nSent = send( socket, &len, sizeof(len), 0 );
+            ssize_t nSent = send( sock, &len, sizeof(len), 0 );
             if ( nSent == sizeof(len) ) {
-                nSent = send( socket, buf, bufLen, 0 );
+                nSent = send( sock, buf, bufLen, 0 );
                 if ( nSent == ssize_t(bufLen) ) {
                     logf( XW_LOGINFO, "%s: sent %d bytes on socket %d", __func__, 
-                          nSent, socket );
+                          nSent, sock );
                     ok = true;
                 } else {
                     logf( XW_LOGERROR, "%s: send failed: %s (errno=%d)", __func__, 
@@ -700,7 +735,7 @@ send_with_length_unsafe( const AddrInfo* addr, const uint8_t* buf,
             }
         } else {
             logf( XW_LOGINFO, "%s: dropping packet: socket %d reused", 
-                  __func__, socket );
+                  __func__, sock );
         }
         if ( NULL != packetIDP ) {
             *packetIDP = UDPAckTrack::PACKETID_NONE;
@@ -710,7 +745,7 @@ send_with_length_unsafe( const AddrInfo* addr, const uint8_t* buf,
     }
 
     if ( !ok ) {
-        logf( XW_LOGERROR, "%s(socket=%d) failed", __func__, socket );
+        logf( XW_LOGERROR, "%s(socket=%d) failed", __func__, sock ); // getting this
     }
 
     return ok;
@@ -764,10 +799,10 @@ post_or_store( DevIDRelay devid, vector<uint8_t>& packet, uint32_t packetID,
     bool sent = false;
     if ( canSendNow ) {
         AddrInfo addr( addru );
-        int socket;
+        int sock;
         const struct sockaddr* dest_addr;
-        if ( get_addr_info_if( &addr, &socket, &dest_addr ) ) {
-            sent = 0 < send_packet_via_udp_impl( packet, socket, dest_addr );
+        if ( get_addr_info_if( &addr, &sock, &dest_addr ) ) {
+            sent = 0 < send_packet_via_udp_impl( packet, sock, dest_addr );
 
             if ( sent ) {
                 MsgClosure* mc = new MsgClosure( devid, &packet,
@@ -807,6 +842,22 @@ post_upgrade( DevIDRelay devid )
     assemble_packet( packet, &packetID, XWPDEV_UPGRADE, NULL );
 
     (void)post_or_store( devid, packet, packetID, NULL, NULL );
+}
+
+void
+post_invite( DevIDRelay sender, DevIDRelay invitee, const uint8_t* ptr, size_t len )
+{
+    vector<uint8_t> packet;
+    uint32_t packetID;
+    sender = htonl( sender );
+    assemble_packet( packet, &packetID, XWPDEV_GOTINVITE, 
+                     &sender, sizeof(sender),
+                     ptr, len, 
+                     NULL );
+
+    bool sent = post_or_store( invitee, packet, packetID, NULL, NULL );
+    logf( XW_LOGINFO, "%s(): post_or_store => %s", __func__, 
+          sent ? "sent" : "stored");
 }
 
 /* A CONNECT message from a device gives us the hostID and socket we'll
@@ -851,9 +902,11 @@ processConnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
             DevID devID;
             getDevID( &bufp, end, flags, &devID );
 
+            uint8_t clientIndx = getClientIndex( &bufp, end, nPlayersT );
+            
             logf( XW_LOGINFO, "%s(): langCode=%d; nPlayersT=%d; "
-                  "wantsPublic=%d; seed=%.4X",
-                  __func__, langCode, nPlayersT, wantsPublic, seed );
+                  "wantsPublic=%d; seed=%.4X; indx=%d",
+                  __func__, langCode, nPlayersT, wantsPublic, seed, clientIndx );
 
             /* Make sure second thread can't create new cref for same cookie
                this one just handled.*/
@@ -861,11 +914,11 @@ processConnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
             MutexLock ml( &s_newCookieLock );
 
             SafeCref scr( cookie, addr, clientVersion, &devID, 
-                          nPlayersH, nPlayersT, seed, langCode, 
+                          nPlayersH, nPlayersT, seed, clientIndx, langCode, 
                           wantsPublic, makePublic );
             /* nPlayersT etc could be slots in SafeCref to avoid passing
                here */
-            success = scr.Connect( nPlayersH, nPlayersT, seed );
+            success = scr.Connect( nPlayersH, nPlayersT, seed, clientIndx );
         } else {
             err = XWRELAY_ERROR_BADPROTO;
         }
@@ -911,9 +964,11 @@ processReconnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
             DevID devID;
             getDevID( &bufp, end, flags, &devID );
 
+            uint8_t clientIndx = getClientIndex( &bufp, end, nPlayersT );
+
             SafeCref scr( connName[0]? connName : NULL, 
                           cookie, srcID, addr, clientVersion, &devID,
-                          nPlayersH, nPlayersT, gameSeed, langCode,
+                          nPlayersH, nPlayersT, gameSeed, clientIndx, langCode,
                           wantsPublic, makePublic );
             success = scr.Reconnect( nPlayersH, nPlayersT, gameSeed, 
                                      &err );
@@ -968,7 +1023,7 @@ processDisconnect( const uint8_t* bufp, int bufLen, const AddrInfo* addr )
 static void
 killSocket( const AddrInfo* addr )
 {
-    logf( XW_LOGINFO, "%s(addr.socket=%d)", __func__, addr->socket() );
+    logf( XW_LOGINFO, "%s(addr.socket=%d)", __func__, addr->getSocket() );
     CRefMgr::Get()->RemoveSocketRefs( addr );
 }
 
@@ -1021,7 +1076,10 @@ forwardMessage( const uint8_t* buf, int buflen, const AddrInfo* addr )
             SafeCref scr( cookieID, true );
             success = scr.Forward( src, addr, dest, buf, buflen );
         }
+    } else {
+        logf( XW_LOGINFO, "%s(): malformed packet", __func__ );
     }
+    logf( XW_LOGINFO, "%s() => %d", __func__, success );
     return success;
 } /* forwardMessage */
 
@@ -1048,7 +1106,7 @@ processMessage( const uint8_t* buf, int bufLen, const AddrInfo* addr )
         break;
 #ifdef RELAY_HEARTBEAT
     case XWRELAY_HEARTBEAT:
-        success = processHeartbeat( buf + 1, bufLen - 1, socket );
+        success = processHeartbeat( buf + 1, bufLen - 1, sock );
         break;
 #endif
     case XWRELAY_MSG_TORELAY:
@@ -1115,6 +1173,7 @@ usage( char* arg0 )
 #ifdef DO_HTTP
              "\t-w <cport>           (localhost port for web interface)\\\n"
 #endif
+             "\t-b                   (block until postgres connection available)\\\n"
              "\t-D                   (don't become daemon)\\\n"
              "\t-F                   (don't fork and wait to respawn child)\\\n"
              "\t-f <conffile>        (config file)\\\n"
@@ -1271,7 +1330,7 @@ handleMsgsMsg( const AddrInfo* addr, bool sendFull,
         memcpy( &out[0], &tmp, sizeof(tmp) );
         tmp = htons( nameCount );
         memcpy( &out[2], &tmp, sizeof(tmp) );
-        ssize_t nwritten = write( addr->socket(), &out[0], out.size() );
+        ssize_t nwritten = write( addr->getSocket(), &out[0], out.size() );
         logf( XW_LOGVERBOSE0, "%s: wrote %d bytes", __func__, nwritten );
         if ( sendFull && nwritten >= 0 && (size_t)nwritten == out.size() ) {
             dbmgr->RecordSent( &msgIDs[0], msgIDs.size() );
@@ -1414,7 +1473,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
 
     if ( len > 0 ) {
         assert( addr->isTCP() );
-        int socket = addr->socket();
+        int sock = addr->getSocket();
         const uint8_t* bufp = utc->buf();
         const uint8_t* end = bufp + len;
         if ( (0 == *bufp++) ) { /* protocol */
@@ -1434,10 +1493,10 @@ proxy_thread_proc( UdpThreadClosure* utc )
                     DBMgr::Get()->PublicRooms( lang, nPlayers, &nNames, names );
                     unsigned short netshort = htons( names.size()
                                                      + sizeof(unsigned short) );
-                    write( socket, &netshort, sizeof(netshort) );
+                    write( sock, &netshort, sizeof(netshort) );
                     netshort = htons( (unsigned short)nNames );
-                    write( socket, &netshort, sizeof(netshort) );
-                    write( socket, names.c_str(), names.size() );
+                    write( sock, &netshort, sizeof(netshort) );
+                    write( sock, names.c_str(), names.size() );
                 }
                 break;
             case PRX_HAS_MSGS:
@@ -1448,7 +1507,7 @@ proxy_thread_proc( UdpThreadClosure* utc )
                 break;          /* PRX_HAS_MSGS */
 
             case PRX_PUT_MSGS:
-                handleProxyMsgs( socket, addr, bufp, end );
+                handleProxyMsgs( sock, addr, bufp, end );
                 break;
 
             case PRX_DEVICE_GONE: {
@@ -1475,11 +1534,11 @@ proxy_thread_proc( UdpThreadClosure* utc )
                     }
                 }
                 int olen = 0;        /* return a 0-length message */
-                write( socket, &olen, sizeof(olen) );
+                write( sock, &olen, sizeof(olen) );
                 break;          /* PRX_DEVICE_GONE */
             }
             default:
-                logf( XW_LOGERROR, "unexpected command %d", __func__, cmd );
+                logf( XW_LOGERROR, "%s: unexpected command %d", __func__, cmd );
                 break;
             }
         }
@@ -1587,12 +1646,12 @@ retrieveMessages( DevID& devID, const AddrInfo* addr )
             success = send_msg_via_udp( addr, msg.token(), msg.msg.data(), 
                                         msg.msg.size(), &packetID );
         } else {
-            int socket;
+            int sock;
             const struct sockaddr* dest_addr;
-            if ( get_addr_info_if( addr, &socket, &dest_addr ) ) {
+            if ( get_addr_info_if( addr, &sock, &dest_addr ) ) {
                 vector<uint8_t> newPacket;
                 assemble_packet( newPacket, &packetID, msg.msg );
-                success = 0 < send_packet_via_udp_impl( newPacket, socket, 
+                success = 0 < send_packet_via_udp_impl( newPacket, sock, 
                                                         dest_addr );
             }
         }
@@ -1616,6 +1675,7 @@ msgToStr( XWRelayReg msg )
     CASE_STR(XWPDEV_UNAVAIL);
     CASE_STR(XWPDEV_REG);
     CASE_STR(XWPDEV_REGRSP);
+    CASE_STR(XWPDEV_INVITE);
     CASE_STR(XWPDEV_KEEPALIVE);
     CASE_STR(XWPDEV_HAVEMSGS);
     CASE_STR(XWPDEV_RQSTMSGS);
@@ -1690,7 +1750,8 @@ handle_udp_packet( UdpThreadClosure* utc )
                 AddrInfo addr( g_udpsock, clientToken, utc->saddr() );
                 (void)processMessage( ptr, end - ptr, &addr );
             } else {
-                logf( XW_LOGERROR, "%s: dropping packet with token of 0" );
+                logf( XW_LOGERROR, "%s: dropping packet with token of 0",
+                      __func__ );
             }
             break;
         }
@@ -1719,6 +1780,25 @@ handle_udp_packet( UdpThreadClosure* utc )
             }
             break;
         }
+
+        case XWPDEV_INVITE: {
+            DevIDRelay sender;
+            string relayID;
+            if ( getNetLong( &ptr, end, &sender ) 
+                 && getNetString( &ptr, end, relayID ) ) {
+                DevIDRelay invitee;
+                if ( 0 < relayID.size() ) {
+                    invitee = DBMgr::Get()->getDevID( relayID );
+                } else if ( !getNetLong( &ptr, end, &invitee ) ) {
+                    break;      // failure
+                }
+                logf( XW_LOGVERBOSE0, "got invite from %d for %d", 
+                      sender, invitee );
+                post_invite( sender, invitee, ptr, end - ptr );
+            }
+            break;
+        }
+            
         case XWPDEV_KEEPALIVE:
         case XWPDEV_RQSTMSGS: {
             DevID devID( ID_TYPE_RELAY );
@@ -1783,8 +1863,11 @@ read_udp_packet( int udpsock )
         gchar* b64 = g_base64_encode( (uint8_t*)&saddr, sizeof(saddr) );
         logf( XW_LOGINFO, "%s: recvfrom=>%d (saddr='%s')", __func__, nRead, b64 );
         g_free( b64 );
-#else
-        logf( XW_LOGINFO, "%s: recvfrom=>%d", __func__, nRead );
+#endif
+#ifdef LOG_PACKET_MD5SUMS
+        gchar* sum = g_compute_checksum_for_data( G_CHECKSUM_MD5, buf, nRead );
+        logf( XW_LOGINFO, "%s: recvfrom=>%d (sum=%s)", __func__, nRead, sum );
+        g_free( sum );
 #endif
 
         AddrInfo addr( udpsock, &saddr, false );
@@ -1948,6 +2031,7 @@ main( int argc, char** argv )
     const char* maint_str = NULL;
     bool doDaemon = true;
     bool doFork = true;
+    bool doBlock = false;
 
     (void)uptime();                /* force capture of start time */
 
@@ -1959,7 +2043,7 @@ main( int argc, char** argv )
        first. */
 
     for ( ; ; ) {
-       int opt = getopt(argc, argv, "h?c:p:M:m:n:f:l:t:s:u:w:"
+       int opt = getopt(argc, argv, "bh?c:p:M:m:n:f:l:t:s:u:w:"
                         "DF" );
 
        if ( opt == -1 ) {
@@ -1970,6 +2054,9 @@ main( int argc, char** argv )
        case 'h':
            usage( argv[0] );
            exit( 0 );
+       case 'b':
+           doBlock = true;
+           break;
        case 'c':
            ctrlport = atoi( optarg );
            break;
@@ -2120,6 +2207,10 @@ main( int argc, char** argv )
     }
 #endif
 
+    if ( doBlock ) {
+        DBMgr::Get()->WaitDBConn();
+    }
+    
     if ( -1 != udpport ) {
         struct sockaddr_in saddr;
         g_udpsock = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP );

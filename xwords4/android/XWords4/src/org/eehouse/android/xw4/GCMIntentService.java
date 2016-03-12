@@ -37,22 +37,22 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onError( Context context, String error ) 
     {
-        DbgUtils.logf("GCMIntentService.onError(%s)", error );
+        DbgUtils.logdf("GCMIntentService.onError(%s)", error );
     }
 
     @Override
     protected void onRegistered( Context context, String regId ) 
     {
-        DbgUtils.logf( "GCMIntentService.onRegistered(%s)", regId );
-        XWPrefs.setGCMDevID( context, regId );
+        DbgUtils.logdf( "GCMIntentService.onRegistered(%s)", regId );
+        DevID.setGCMDevID( context, regId );
         notifyRelayService( context, true );
     }
 
     @Override
     protected void onUnregistered( Context context, String regId ) 
     {
-        DbgUtils.logf( "GCMIntentService.onUnregistered(%s)", regId );
-        XWPrefs.clearGCMDevID( context );
+        DbgUtils.logdf( "GCMIntentService.onUnregistered(%s)", regId );
+        DevID.clearGCMDevID( context );
         RelayService.devIDChanged();
         notifyRelayService( context, false );
     }
@@ -60,13 +60,13 @@ public class GCMIntentService extends GCMBaseIntentService {
     @Override
     protected void onMessage( Context context, Intent intent ) 
     {
-        DbgUtils.logf( "GCMIntentService.onMessage()" );
+        DbgUtils.logdf( "GCMIntentService.onMessage()" );
         notifyRelayService( context, true );
 
         String value;
         boolean ignoreIt = XWApp.GCM_IGNORED;
         if ( ignoreIt ) {
-            DbgUtils.logf( "received GCM but ignoring it" );
+            DbgUtils.logdf( "received GCM but ignoring it" );
         } else {
             value = intent.getStringExtra( "checkUpdates" );
             if ( null != value && Boolean.parseBoolean( value ) ) {
@@ -101,8 +101,15 @@ public class GCMIntentService extends GCMBaseIntentService {
             if ( null != value ) {
                 String title = intent.getStringExtra( "title" );
                 if ( null != title ) {
+                    String teaser = intent.getStringExtra( "teaser" );
+                    if ( null == teaser ) {
+                        teaser = value;
+                    }
+                    Intent alertIntent = GamesListDelegate
+                        .makeAlertIntent( this, value );
                     int code = value.hashCode() ^ title.hashCode();
-                    Utils.postNotification( context, null, title, value, code );
+                    Utils.postNotification( context, alertIntent, title, 
+                                            teaser, code );
                 }
             }
         }
@@ -115,8 +122,8 @@ public class GCMIntentService extends GCMBaseIntentService {
             try {
                 GCMRegistrar.checkDevice( app );
                 // GCMRegistrar.checkManifest( app );
-                String regId = XWPrefs.getGCMDevID( app );
-                if (regId.equals("")) {
+                String regId = DevID.getGCMDevID( app );
+                if ( regId.equals("") ) {
                     GCMRegistrar.register( app, GCMConsts.SENDER_ID );
                 }
             } catch ( UnsupportedOperationException uoe ) {

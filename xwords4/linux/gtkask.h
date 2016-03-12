@@ -32,6 +32,8 @@ typedef struct _AskPair {
     gint result;
 } AskPair;
 
+void gtktell( GtkWidget* parent, const gchar *message );
+
 gint gtkask( GtkWidget* parent, const gchar *message, 
              GtkButtonsType buttons, const AskPair* buttxts );
 gint gtkask_timeout( GtkWidget* parent, const gchar *message, 

@@ -1,4 +1,4 @@
-# -*- mode: Makefile; compile-command: "cd ../; ${NDK_ROOT}/ndk-build -j3"; -*-
+# -*- mode: Makefile; -*-
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
@@ -16,6 +16,7 @@ endif
 LOCAL_DEFINES += \
 	$(LOCAL_DEBUG) \
 	-DXWFEATURE_RELAY \
+	-DXWFEATURE_BLUETOOTH \
 	-DXWFEATURE_SMS \
 	-DXWFEATURE_COMMSACK \
 	-DXWFEATURE_TURNCHANGENOTIFY \
@@ -38,7 +39,10 @@ LOCAL_DEFINES += \
 	-DXWFEATURE_BASE64 \
 	-DXWFEATURE_DEVID \
 	-DCOMMON_LAYOUT \
+	-DNATIVE_NLI \
+	-DCOMMS_VERSION=1 \
 	-DINITIAL_CLIENT_VERS=${INITIAL_CLIENT_VERS} \
+	-DVARIANT_${VARIANT} \
 	-DRELAY_ROOM_DEFAULT=\"\" \
 	-D__LITTLE_ENDIAN \
 
@@ -81,9 +85,9 @@ COMMON_SRC_FILES +=        \
 	$(COMMON_PATH)/memstream.c  \
 	$(COMMON_PATH)/movestak.c   \
 	$(COMMON_PATH)/dbgutil.c    \
+	$(COMMON_PATH)/nli.c    	\
 
-
-LOCAL_CFLAGS+=$(LOCAL_C_INCLUDES) $(LOCAL_DEFINES)
+LOCAL_CFLAGS+=$(LOCAL_C_INCLUDES) $(LOCAL_DEFINES) -Wall -std=c99
 LOCAL_SRC_FILES := $(linux_SRC_FILES) $(LOCAL_SRC_FILES) $(COMMON_SRC_FILES)
 LOCAL_MODULE    := xwjni
 LOCAL_LDLIBS 	:= -L${SYSROOT}/usr/lib -llog -lz 

@@ -1,7 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
- * rights reserved.
+ * Copyright 2009 - 2015 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -23,9 +23,11 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.net.Uri;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import android.widget.TextView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -37,6 +39,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.ImageButton;
 import android.view.KeyEvent;
 import android.widget.Spinner;
@@ -45,21 +48,26 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SpinnerAdapter;
 
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.DlgDelegate.ActionPair;
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
+import org.eehouse.android.xw4.DictLangCache.LangsArrayAdapter;
 
 public class GameConfigDelegate extends DelegateBase
     implements View.OnClickListener
                ,XWListItem.DeleteCallback
                ,RefreshNamesTask.NoNameFound {
 
+    private static final String INTENT_FORRESULT_ROWID = "forresult";
+
     private static final String WHICH_PLAYER = "WHICH_PLAYER";
-    private static final int REQUEST_LANG = 1;
-    private static final int REQUEST_DICT = 2;
 
     private Activity m_activity;
     private CheckBox m_joinPublicCheck;
@@ -68,13 +76,13 @@ public class GameConfigDelegate extends DelegateBase
     private LinearLayout m_publicRoomsSet;
     private LinearLayout m_privateRoomsSet;
 
-    private CommsConnType m_conType;
+    private CommsConnTypeSet m_conTypes;
     private Button m_addPlayerButton;
+    private Button m_changeConnButton;
     private Button m_jugglePlayersButton;
     private Button m_playButton;
     private ImageButton m_refreshRoomsButton;
     private View m_connectSetRelay;
-    private View m_connectSetSMS;
     private Spinner m_dictSpinner;
     private Spinner m_playerDictSpinner;
     private Spinner m_roomChoose;
@@ -83,7 +91,6 @@ public class GameConfigDelegate extends DelegateBase
     private boolean m_forResult;
     private CurGameInfo m_gi;
     private CurGameInfo m_giOrig;
-    private GameLock m_gameLock;
     private int m_whichPlayer;
     // private Spinner m_roleSpinner;
     // private Spinner m_connectSpinner;
@@ -91,6 +98,7 @@ public class GameConfigDelegate extends DelegateBase
     private Spinner m_boardsizeSpinner;
     private Spinner m_langSpinner;
     private Spinner m_smartnessSpinner;
+    private TextView m_connLabel;
     private String m_browseText;
     private LinearLayout m_playerLayout;
     private CommsAddrRec m_carOrig;
@@ -103,22 +111,23 @@ public class GameConfigDelegate extends DelegateBase
     private CommsConnType[] m_types;
     private String[] m_connStrings;
     private static final int[] s_disabledWhenLocked
-        = { R.id.juggle_players
-            ,R.id.add_player
-            ,R.id.lang_spinner
-            ,R.id.dict_spinner
-            ,R.id.join_public_room_check
-            ,R.id.room_edit
-            ,R.id.advertise_new_room_check
-            ,R.id.room_spinner
-            ,R.id.refresh_button
-            ,R.id.hints_allowed
-            ,R.id.pick_faceup
-            ,R.id.boardsize_spinner
-            ,R.id.use_timer
-            ,R.id.timer_minutes_edit
-            ,R.id.smart_robot
-            ,R.id.phonies_spinner
+        = { R.id.juggle_players,
+            R.id.add_player,
+            R.id.lang_spinner,
+            R.id.dict_spinner,
+            R.id.join_public_room_check,
+            R.id.room_edit,
+            R.id.advertise_new_room_check,
+            R.id.room_spinner,
+            R.id.refresh_button,
+            R.id.hints_allowed,
+            R.id.pick_faceup,
+            R.id.boardsize_spinner,
+            R.id.use_timer,
+            R.id.timer_minutes_edit,
+            R.id.smart_robot,
+            R.id.phonies_spinner,
+            R.id.change_connection,
     };
 
     public GameConfigDelegate( Delegator delegator, Bundle savedInstanceState )
@@ -133,8 +142,8 @@ public class GameConfigDelegate extends DelegateBase
         public Object getItem( int position) { return m_gi.players[position]; }
         public View getView( final int position, View convertView, 
                              ViewGroup parent ) {
-            CompoundButton.OnCheckedChangeListener lstnr;
-            lstnr = new CompoundButton.OnCheckedChangeListener() {
+            OnCheckedChangeListener lstnr;
+            lstnr = new OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                  boolean isChecked )
@@ -167,7 +176,7 @@ public class GameConfigDelegate extends DelegateBase
                 dialog = makeAlertBuilder()
                     .setTitle(R.string.player_edit_title)
                     .setView(playerEditView)
-                    .setPositiveButton( R.string.button_ok,
+                    .setPositiveButton( android.R.string.ok,
                                         new DialogInterface.OnClickListener() {
                                             public void 
                                                 onClick( DialogInterface dlg, 
@@ -176,7 +185,7 @@ public class GameConfigDelegate extends DelegateBase
                                                 loadPlayersList();
                                             }
                                         })
-                    .setNegativeButton( R.string.button_cancel, null )
+                    .setNegativeButton( android.R.string.cancel, null )
                     .create();
                 break;
                 // case ROLE_EDIT_RELAY:
@@ -186,14 +195,14 @@ public class GameConfigDelegate extends DelegateBase
                 //         .setTitle(titleForDlg(id))
                 //         .setView( LayoutInflater.from(this)
                 //                   .inflate( layoutForDlg(id), null ))
-                //         .setPositiveButton( R.string.button_ok,
+                //         .setPositiveButton( android.R.string.ok,
                 //                             new DialogInterface.OnClickListener() {
                 //                                 public void onClick( DialogInterface dlg, 
                 //                                                      int whichButton ) {
                 //                                     getRoleSettings();
                 //                                 }
                 //                             })
-                //         .setNegativeButton( R.string.button_cancel, null )
+                //         .setNegativeButton( android.R.string.cancel, null )
                 //         .create();
                 //     break;
 
@@ -207,7 +216,7 @@ public class GameConfigDelegate extends DelegateBase
                 dialog = makeAlertBuilder()
                     .setTitle( R.string.force_title )
                     .setView( inflate( layoutForDlg(dlgID) ) )
-                    .setPositiveButton( R.string.button_ok, dlpos )
+                    .setPositiveButton( android.R.string.ok, dlpos )
                     .create();
                 DialogInterface.OnDismissListener dismiss = 
                     new DialogInterface.OnDismissListener() {
@@ -247,7 +256,7 @@ public class GameConfigDelegate extends DelegateBase
                 } else {
                     dlpos = null;
                 }
-                ab.setNegativeButton( R.string.button_discard, dlpos );
+                ab.setNegativeButton( R.string.button_discard_changes, dlpos );
                 dialog = ab.create();
 
                 dialog.setOnDismissListener( new DialogInterface.
@@ -258,13 +267,45 @@ public class GameConfigDelegate extends DelegateBase
                     });
                 break;
             case NO_NAME_FOUND:
+                String langName = DictLangCache.getLangName( m_activity, 
+                                                             m_gi.dictLang );
                 String msg = getString( R.string.no_name_found_fmt,
-                                        m_gi.nPlayers, DictLangCache.
-                                        getLangName( m_activity, m_gi.dictLang ) );
+                                        m_gi.nPlayers, xlateLang( langName ) );
                 dialog = makeAlertBuilder()
-                    .setPositiveButton( R.string.button_ok, null )
+                    .setPositiveButton( android.R.string.ok, null )
                     // message added below since varies with language etc.
                     .setMessage( msg )
+                    .create();
+                break;
+            case CHANGE_CONN:
+                LinearLayout layout = (LinearLayout)inflate( R.layout.conn_types_display );
+                final ConnViaViewLayout items = (ConnViaViewLayout)
+                    layout.findViewById( R.id.conn_types );
+                final CheckBox cb = (CheckBox)layout
+                    .findViewById(R.id.default_check);
+                cb.setVisibility( View.VISIBLE );
+
+                final DialogInterface.OnClickListener lstnr = 
+                    new DialogInterface.OnClickListener() {
+                        public void onClick( DialogInterface dlg, int button ) {
+                            m_conTypes = items.getTypes();
+                            if ( cb.isChecked()) {
+                                XWPrefs.setAddrTypes( m_activity, m_conTypes );
+                            }
+
+                            m_car.populate( m_activity, m_conTypes );
+
+                            setConnLabel();
+                            setupRelayStuffIf( false );
+                            showHideRelayStuff();
+                        }
+                    };
+                        
+                dialog = makeAlertBuilder()
+                    .setTitle( R.string.title_addrs_pref )
+                    .setView( layout )
+                    .setPositiveButton( android.R.string.ok, lstnr )
+                    .setNegativeButton( android.R.string.cancel, null )
                     .create();
                 break;
             }
@@ -288,6 +329,30 @@ public class GameConfigDelegate extends DelegateBase
         case FORCE_REMOTE:
             ListView listview = (ListView)dialog.findViewById( R.id.players );
             listview.setAdapter( new RemoteChoices() );
+            break;
+
+        case CHANGE_CONN:
+            ConnViaViewLayout items = (ConnViaViewLayout)
+                dialog.findViewById( R.id.conn_types );
+            items.configure( m_conTypes,
+                             new ConnViaViewLayout.CheckEnabledWarner() {
+                                 public void warnDisabled( CommsConnType typ ) {
+                                     switch( typ ) {
+                                     case COMMS_CONN_SMS:
+                                         showConfirmThen( R.string.warn_sms_disabled, 
+                                                          R.string.button_enable_sms,
+                                                          R.string.button_later,
+                                                          Action.ENABLE_SMS_ASK );
+                                         break;
+                                     case COMMS_CONN_BT:
+                                         showConfirmThen( R.string.warn_bt_disabled, 
+                                                          R.string.button_enable_bt,
+                                                          R.string.button_later,
+                                                          Action.ENABLE_BT_DO );
+                                         break;
+                                     }
+                                 }
+                             }, null, this );
             break;
         }
     }
@@ -330,8 +395,8 @@ public class GameConfigDelegate extends DelegateBase
         CheckBox check = (CheckBox)
             dialog.findViewById( R.id.remote_check );
         if ( isServer ) {
-            CompoundButton.OnCheckedChangeListener lstnr =
-                new CompoundButton.OnCheckedChangeListener() {
+            OnCheckedChangeListener lstnr =
+                new OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                   boolean checked ) {
                         localSet.setVisibility( checked ? 
@@ -346,8 +411,8 @@ public class GameConfigDelegate extends DelegateBase
         }
 
         check = (CheckBox)dialog.findViewById( R.id.robot_check );
-        CompoundButton.OnCheckedChangeListener lstnr =
-            new CompoundButton.OnCheckedChangeListener() {
+        OnCheckedChangeListener lstnr =
+            new OnCheckedChangeListener() {
                 public void onCheckedChanged( CompoundButton buttonView, 
                                               boolean checked ) {
                     View view = dialog.findViewById( R.id.password_set );
@@ -392,12 +457,6 @@ public class GameConfigDelegate extends DelegateBase
     {
         getBundledData( savedInstanceState );
 
-        // 1.5 doesn't have SDK_INT.  So parse the string version.
-        // int sdk_int = 0;
-        // try {
-        //     sdk_int = Integer.decode( android.os.Build.VERSION.SDK );
-        // } catch ( Exception ex ) {}
-        // m_canDoSMS = sdk_int >= android.os.Build.VERSION_CODES.DONUT;
         m_browseText = getString( R.string.download_dicts );
         DictLangCache.setLast( m_browseText );
 
@@ -405,17 +464,14 @@ public class GameConfigDelegate extends DelegateBase
 
         Intent intent = getIntent();
         m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
-        m_forResult = intent.getBooleanExtra( GameUtils.INTENT_FORRESULT_ROWID, 
-                                              false );
+        m_forResult = intent.getBooleanExtra( INTENT_FORRESULT_ROWID, false );
 
-        m_connectSetRelay = findViewById(R.id.connect_set_relay);
-        m_connectSetSMS = findViewById(R.id.connect_set_sms);
-        if ( !XWApp.SMSSUPPORTED ) {
-            m_connectSetSMS.setVisibility( View.GONE );
-        }
+        m_connectSetRelay = findViewById( R.id.connect_set_relay );
 
         m_addPlayerButton = (Button)findViewById(R.id.add_player);
         m_addPlayerButton.setOnClickListener( this );
+        m_changeConnButton = (Button)findViewById( R.id.change_connection );
+        m_changeConnButton.setOnClickListener( this );
         m_jugglePlayersButton = (Button)findViewById(R.id.juggle_players);
         m_jugglePlayersButton.setOnClickListener( this );
         m_playButton = (Button)findViewById( R.id.play_button );
@@ -425,12 +481,20 @@ public class GameConfigDelegate extends DelegateBase
         m_phoniesSpinner = (Spinner)findViewById( R.id.phonies_spinner );
         m_boardsizeSpinner = (Spinner)findViewById( R.id.boardsize_spinner );
         m_smartnessSpinner = (Spinner)findViewById( R.id.smart_robot );
-    } // init
 
-    protected void onStart()
-    {
-        loadGame();
-    }
+        m_connLabel = (TextView)findViewById( R.id.conns_label );
+
+        // This should only be in for one ship! Remove it and all associated
+        // strings immediately after shipping it.
+        if ( !Utils.onFirstVersion( m_activity ) 
+             && !XWPrefs.getPublicRoomsEnabled( m_activity ) ) {
+            ActionPair pair = new ActionPair( Action.SET_ENABLE_PUBLIC, 
+                                              R.string.enable_pubroom_title );
+            showNotAgainDlgThen( R.string.not_again_enablepublic,
+                                 R.string.key_notagain_enablepublic,
+                                 Action.SKIP_CALLBACK, pair );
+        }
+    } // init
 
     @Override
     protected void onResume()
@@ -441,11 +505,8 @@ public class GameConfigDelegate extends DelegateBase
 
     protected void onPause()
     {
-        if ( null != m_gameLock ) {
-            m_gameLock.unlock();
-            m_gameLock = null;
-        }
         m_giOrig = null;        // flag for onStart and onResume
+        super.onPause();
     }
 
     protected void onSaveInstanceState( Bundle outState ) 
@@ -454,18 +515,20 @@ public class GameConfigDelegate extends DelegateBase
     }
 
     @Override
-    protected void onActivityResult( int requestCode, int resultCode, Intent data )
+    protected void onActivityResult( RequestCode requestCode, int resultCode, Intent data )
     {
         if ( Activity.RESULT_CANCELED != resultCode ) {
+            loadGame();
             switch( requestCode ) {
             case REQUEST_DICT:
                 String dictName = data.getStringExtra( DictsDelegate.RESULT_LAST_DICT );
-                setSpinnerSelection( m_playerDictSpinner, dictName );
+                configDictSpinner( m_dictSpinner, m_gi.dictLang, dictName );
+                configDictSpinner( m_playerDictSpinner, m_gi.dictLang, dictName );
                 break;
-            case REQUEST_LANG:
+            case REQUEST_LANG_GC:
                 String langName = data.getStringExtra( DictsDelegate.RESULT_LAST_LANG );
                 selLangChanged( langName );
-                setSpinnerSelection( m_langSpinner, langName );
+                setLangSpinnerSelection( langName );
                 break;
             default:
                 Assert.fail();
@@ -478,11 +541,9 @@ public class GameConfigDelegate extends DelegateBase
         if ( null == m_giOrig ) {
             m_giOrig = new CurGameInfo( m_activity );
 
-            // Lock in case we're going to config.  We *could* re-get the
-            // lock once the user decides to make changes.  PENDING.
-            m_gameLock = new GameLock( m_rowid, true ).lock();
-            int gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, m_gameLock );
-            if ( 0 == gamePtr ) {
+            GameLock gameLock = new GameLock( m_rowid, false ).lock();
+            XwJNI.GamePtr gamePtr = GameUtils.loadMakeGame( m_activity, m_giOrig, gameLock );
+            if ( null == gamePtr ) {
                 showDictGoneFinish();
             } else {
                 m_gameStarted = XwJNI.model_getNMoves( gamePtr ) > 0
@@ -493,7 +554,6 @@ public class GameConfigDelegate extends DelegateBase
                         m_gameLockedCheck = 
                             (CheckBox)findViewById( R.id.game_locked_check );
                         m_gameLockedCheck.setVisibility( View.VISIBLE );
-                        m_gameLockedCheck.setChecked( true );
                         m_gameLockedCheck.setOnClickListener( this );
                     }
                     handleLockedChange();
@@ -507,13 +567,16 @@ public class GameConfigDelegate extends DelegateBase
                 if ( XwJNI.game_hasComms( gamePtr ) ) {
                     XwJNI.comms_getAddr( gamePtr, m_carOrig );
                     m_remoteAddrs = XwJNI.comms_getAddrs( gamePtr );
-                } else if (DeviceRole.SERVER_STANDALONE != m_giOrig.serverRole){
+                } else if ( !localOnlyGame() ) {
                     String relayName = XWPrefs.getDefaultRelayHost( m_activity );
                     int relayPort = XWPrefs.getDefaultRelayPort( m_activity );
-                    XwJNI.comms_getInitialAddr( m_carOrig, relayName, relayPort );
+                    XwJNI.comms_getInitialAddr( m_carOrig, relayName, 
+                                                relayPort );
                 }
-                m_conType = m_carOrig.conType;
-                XwJNI.game_dispose( gamePtr );
+                m_conTypes = (CommsConnTypeSet)m_carOrig.conTypes.clone();
+                gamePtr.release();
+
+                gameLock.unlock();
 
                 m_car = new CommsAddrRec( m_carOrig );
 
@@ -529,48 +592,23 @@ public class GameConfigDelegate extends DelegateBase
                     m_dictSpinner = null;
                 }
 
-                if ( m_conType.equals( CommsConnType.COMMS_CONN_RELAY ) ) {
-                    m_joinPublicCheck = 
-                        (CheckBox)findViewById(R.id.join_public_room_check);
-                    m_joinPublicCheck.setOnClickListener( this );
-                    m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
-                    Utils.setChecked( m_activity, R.id.advertise_new_room_check, 
-                                      m_car.ip_relay_advertiseRoom );
-                    m_publicRoomsSet = 
-                        (LinearLayout)findViewById(R.id.public_rooms_set );
-                    m_privateRoomsSet = 
-                        (LinearLayout)findViewById(R.id.private_rooms_set );
-
-                    Utils.setText( m_activity, R.id.room_edit, m_car.ip_relay_invite );
-        
-                    m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
-
-                    m_refreshRoomsButton = 
-                        (ImageButton)findViewById( R.id.refresh_button );
-                    m_refreshRoomsButton.setOnClickListener( this );
-
-                    adjustConnectStuff();
-                }
-
+                setConnLabel();
+                setupRelayStuffIf( false );
                 loadPlayersList();
                 configLangSpinner();
-
-                loadPhones();
 
                 m_phoniesSpinner.setSelection( m_gi.phoniesAction.ordinal() );
 
                 setSmartnessSpinner();
 
-                Utils.setChecked( m_activity, R.id.hints_allowed, 
-                                  !m_gi.hintsNotAllowed );
-                Utils.setChecked( m_activity, R.id.pick_faceup, 
-                                  m_gi.allowPickTiles );
-                Utils.setInt( m_activity, R.id.timer_minutes_edit, 
-                              m_gi.gameSeconds/60/m_gi.nPlayers );
+                setChecked( R.id.hints_allowed, !m_gi.hintsNotAllowed );
+                setChecked( R.id.pick_faceup, m_gi.allowPickTiles );
+                setInt( R.id.timer_minutes_edit, 
+                        m_gi.gameSeconds/60/m_gi.nPlayers );
 
                 CheckBox check = (CheckBox)findViewById( R.id.use_timer );
-                CompoundButton.OnCheckedChangeListener lstnr =
-                    new CompoundButton.OnCheckedChangeListener() {
+                OnCheckedChangeListener lstnr =
+                    new OnCheckedChangeListener() {
                         public void onCheckedChanged( CompoundButton buttonView, 
                                                       boolean checked ) {
                             View view = findViewById( R.id.timer_set );
@@ -578,7 +616,7 @@ public class GameConfigDelegate extends DelegateBase
                         }
                     };
                 check.setOnCheckedChangeListener( lstnr );
-                Utils.setChecked( m_activity, R.id.use_timer, m_gi.timerEnabled );
+                setChecked( R.id.use_timer, m_gi.timerEnabled );
 
                 setBoardsizeSpinner();
             }
@@ -609,20 +647,50 @@ public class GameConfigDelegate extends DelegateBase
     @Override
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
-        switch( action ) {
-        case LOCKED_CHANGE_ACTION:
-            if ( AlertDialog.BUTTON_POSITIVE == button ) {
+        boolean callSuper = false;
+        if ( AlertDialog.BUTTON_POSITIVE == button ) {
+            switch( action ) {
+            case LOCKED_CHANGE_ACTION:
                 handleLockedChange();
+                break;
+            case SMS_CONFIG_ACTION:
+                Utils.launchSettings( m_activity );
+                break;
+            case DELETE_AND_EXIT:
+                if ( m_forResult ) {
+                    deleteGame();
+                }
+                finish();
+                break;
+            case SET_ENABLE_PUBLIC:
+                XWPrefs.setPrefsBoolean( m_activity, R.string.key_enable_pubroom,
+                                         true );
+                setupRelayStuffIf( true );
+                break;
+            default:
+                callSuper = true;
             }
-            break;
-        default:
-            Assert.fail();
+        } else if ( AlertDialog.BUTTON_NEGATIVE == button ) {
+            switch ( action ) {
+            case DELETE_AND_EXIT:
+                showDialog( DlgID.CHANGE_CONN );
+                break;
+            default:
+                callSuper = true;
+                break;
+            }
+        } else { 
+            callSuper = true;
+        }
+
+        if ( callSuper ) {
+            super.dlgButtonClicked( action, button, params );
         }
     }
 
     public void onClick( View view ) 
     {
-        if ( null == m_gameLock ) {
+        if ( isFinishing() ) {
             // do nothing; we're on the way out
         } else if ( m_addPlayerButton == view ) {
             int curIndex = m_gi.nPlayers;
@@ -641,15 +709,24 @@ public class GameConfigDelegate extends DelegateBase
                                  Action.LOCKED_CHANGE_ACTION );
         } else if ( m_refreshRoomsButton == view ) {
             refreshNames();
+        } else if ( m_changeConnButton == view ) {
+            showDialog( DlgID.CHANGE_CONN );
         } else if ( m_playButton == view ) {
             // Launch BoardActivity for m_name, but ONLY IF user
             // confirms any changes required.  So we either launch
             // from here if there's no confirmation needed, or launch
             // a new dialog whose OK button does the same thing.
             saveChanges();
-            if ( m_forResult ) {
+            if ( !localOnlyGame() && 0 == m_conTypes.size() ) {
+                showConfirmThen( R.string.config_no_connvia,
+                                 R.string.button_discard, 
+                                 R.string.button_edit,
+                                 Action.DELETE_AND_EXIT );
+            } else if ( m_forResult ) {
                 applyChanges( true );
-                setResult( Activity.RESULT_OK, null );
+                Intent intent = new Intent();
+                intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
+                setResult( Activity.RESULT_OK, intent );
                 finish();
             } else if ( !m_gameStarted ) { // no confirm needed 
                 applyChanges( true );
@@ -667,135 +744,113 @@ public class GameConfigDelegate extends DelegateBase
         }
     } // onClick
 
-    protected boolean onKeyDown( int keyCode, KeyEvent event )
+    @Override
+    protected boolean onBackPressed()
     {
         boolean consumed = false;
-        if ( null == m_gameLock ) {
-            // Do nothing; we're on our way out
-        } else if ( keyCode == KeyEvent.KEYCODE_BACK ) {
-            saveChanges();
-            if ( !m_gameStarted ) { // no confirm needed 
-                applyChanges( true );
-            } else if ( m_giOrig.changesMatter(m_gi) 
-                        || m_carOrig.changesMatter(m_car) ) {
-                showDialog( DlgID.CONFIRM_CHANGE );
-                consumed = true; // don't dismiss activity yet!
+        if ( ! isFinishing() ) {
+            if ( m_forResult ) {
+                deleteGame();
             } else {
-                applyChanges( false );
+                saveChanges();
+                if ( !m_gameStarted ) { // no confirm needed 
+                    applyChanges( true );
+                } else if ( m_giOrig.changesMatter(m_gi) 
+                            || m_carOrig.changesMatter(m_car) ) {
+                    showDialog( DlgID.CONFIRM_CHANGE );
+                    consumed = true; // don't dismiss activity yet!
+                } else {
+                    applyChanges( false );
+                }
             }
         }
 
         return consumed;
     }
 
+    private void deleteGame()
+    {
+        GameUtils.deleteGame( m_activity, m_rowid, false );
+    }
+
     private void loadPlayersList()
     {
-        m_playerLayout.removeAllViews();
+        if ( !isFinishing() ) {
+            m_playerLayout.removeAllViews();
 
-        String[] names = m_gi.visibleNames( false );
-        // only enable delete if one will remain (or two if networked)
-        boolean canDelete = names.length > 2
-            || (localOnlyGame() && names.length > 1);
-        View.OnClickListener lstnr = new View.OnClickListener() {
-                @Override
-                public void onClick( View view ) {
-                    m_whichPlayer = ((XWListItem)view).getPosition();
-                    showDialog( DlgID.PLAYER_EDIT );
-                }
-            };
+            String[] names = m_gi.visibleNames( false );
+            // only enable delete if one will remain (or two if networked)
+            boolean canDelete = names.length > 2
+                || (localOnlyGame() && names.length > 1);
+            View.OnClickListener lstnr = new View.OnClickListener() {
+                    @Override
+                    public void onClick( View view ) {
+                        m_whichPlayer = ((XWListItem)view).getPosition();
+                        showDialog( DlgID.PLAYER_EDIT );
+                    }
+                };
  
-        boolean localGame = localOnlyGame();
-        for ( int ii = 0; ii < names.length; ++ii ) {
-            final XWListItem view = XWListItem.inflate( m_activity, null );
-            view.setPosition( ii );
-            view.setText( names[ii] );
-            if ( localGame && m_gi.players[ii].isLocal ) {
-                view.setComment( m_gi.dictName(ii) );
+            boolean localGame = localOnlyGame();
+            boolean unlocked = null == m_gameLockedCheck
+                || !m_gameLockedCheck.isChecked();
+            for ( int ii = 0; ii < names.length; ++ii ) {
+                final XWListItem view = XWListItem.inflate( m_activity, null );
+                view.setPosition( ii );
+                view.setText( names[ii] );
+                if ( localGame && m_gi.players[ii].isLocal ) {
+                    view.setComment( m_gi.dictName(ii) );
+                }
+                if ( canDelete ) {
+                    view.setDeleteCallback( this );
+                }
+
+                view.setEnabled( unlocked );
+                view.setOnClickListener( lstnr );
+                m_playerLayout.addView( view );
+
+                View divider = inflate( R.layout.divider_view );
+                m_playerLayout.addView( divider );
             }
-            if ( canDelete ) {
-                view.setDeleteCallback( this );
+
+            m_addPlayerButton
+                .setVisibility( names.length >= CurGameInfo.MAX_NUM_PLAYERS?
+                                View.GONE : View.VISIBLE );
+            m_jugglePlayersButton
+                .setVisibility( names.length <= 1 ?
+                                View.GONE : View.VISIBLE );
+
+            showHideRelayStuff();
+
+            if ( ! localOnlyGame()
+                 && ((0 == m_gi.remoteCount() )
+                     || (m_gi.nPlayers == m_gi.remoteCount()) ) ) {
+                showDialog( DlgID.FORCE_REMOTE );
             }
-
-            view.setOnClickListener( lstnr );
-            m_playerLayout.addView( view );
-
-            View divider = inflate( R.layout.divider_view );
-            m_playerLayout.addView( divider );
+            adjustPlayersLabel();
         }
-
-        m_addPlayerButton
-            .setVisibility( names.length >= CurGameInfo.MAX_NUM_PLAYERS?
-                            View.GONE : View.VISIBLE );
-        m_jugglePlayersButton
-            .setVisibility( names.length <= 1 ?
-                            View.GONE : View.VISIBLE );
-        
-        m_connectSetRelay.
-            setVisibility( m_conType == CommsConnType.COMMS_CONN_RELAY ?
-                           View.VISIBLE : View.GONE );
-        if ( XWApp.SMSSUPPORTED ) {
-            m_connectSetSMS.
-                setVisibility( m_conType == CommsConnType.COMMS_CONN_SMS ?
-                               View.VISIBLE : View.GONE );
-        }
-
-        if ( ! localOnlyGame()
-             && ((0 == m_gi.remoteCount() )
-                 || (m_gi.nPlayers == m_gi.remoteCount()) ) ) {
-            showDialog( DlgID.FORCE_REMOTE );
-        }
-        adjustPlayersLabel();
     } // loadPlayersList
 
     private void configDictSpinner( Spinner dictsSpinner, int lang,
                                     String curDict )
     {
-        String langName = DictLangCache.getLangName( m_activity, lang );
-        dictsSpinner.setPrompt( getString( R.string.dicts_list_prompt_fmt, 
-                                           langName ) );
-
-        OnItemSelectedListener onSel = 
-            new OnItemSelectedListener() {
-                @Override
-                public void onItemSelected( AdapterView<?> parentView, 
-                                            View selectedItemView, 
-                                            int position, long id ) {
-                    String chosen = 
-                        (String)parentView.getItemAtPosition( position );
-
-                    if ( chosen.equals( m_browseText ) ) {
-                        DictsDelegate.launchForResult( m_activity, REQUEST_DICT,
-                                                       m_gi.dictLang );
-                    }
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parentView) {}
-            };
-
-        ArrayAdapter<String> adapter = 
-            DictLangCache.getDictsAdapter( m_activity, lang );
-
-        configSpinnerWDownload( dictsSpinner, adapter, onSel, curDict );
-    }
-
-    private void configLangSpinner()
-    {
-        if ( null == m_langSpinner ) {
-            m_langSpinner = (Spinner)findViewById( R.id.lang_spinner );
+        if ( null != dictsSpinner ) {
+            String langName = DictLangCache.getLangName( m_activity, lang );
+            dictsSpinner.setPrompt( getString( R.string.dicts_list_prompt_fmt, 
+                                               langName ) );
 
             OnItemSelectedListener onSel = 
                 new OnItemSelectedListener() {
                     @Override
-                    public void onItemSelected(AdapterView<?> parentView, 
-                                               View selectedItemView, 
-                                               int position, long id ) {
+                    public void onItemSelected( AdapterView<?> parentView, 
+                                                View selectedItemView, 
+                                                int position, long id ) {
                         String chosen = 
                             (String)parentView.getItemAtPosition( position );
+
                         if ( chosen.equals( m_browseText ) ) {
-                            DictsDelegate.launchForResult( m_activity, REQUEST_LANG );
-                        } else {
-                            selLangChanged( chosen );
+                            DictsDelegate.downloadForResult( m_activity, 
+                                                             RequestCode.REQUEST_DICT,
+                                                             m_gi.dictLang );
                         }
                     }
 
@@ -803,7 +858,44 @@ public class GameConfigDelegate extends DelegateBase
                     public void onNothingSelected(AdapterView<?> parentView) {}
                 };
 
-            ArrayAdapter adapter = DictLangCache.getLangsAdapter( m_activity );
+            ArrayAdapter<String> adapter = 
+                DictLangCache.getDictsAdapter( m_activity, lang );
+
+            configSpinnerWDownload( dictsSpinner, adapter, onSel, curDict );
+        }
+    }
+
+    private void configLangSpinner()
+    {
+        if ( null == m_langSpinner ) {
+            m_langSpinner = (Spinner)findViewById( R.id.lang_spinner );
+
+            final LangsArrayAdapter adapter = DictLangCache.getLangsAdapter( m_activity );
+
+            OnItemSelectedListener onSel = 
+                new OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parentView, 
+                                               View selectedItemView, 
+                                               int position, long id ) {
+                        if ( ! isFinishing() ) { // not on the way out?
+                            String chosen = 
+                                (String)parentView.getItemAtPosition( position );
+                            if ( chosen.equals( m_browseText ) ) {
+                                DictsDelegate.downloadForResult( m_activity, 
+                                                                 RequestCode
+                                                                 .REQUEST_LANG_GC );
+                            } else {
+                                String langName = adapter.getLangAtPosition( position );
+                                selLangChanged( langName );
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parentView) {}
+                };
+
             String lang = DictLangCache.getLangName( m_activity, m_gi.dictLang );
             configSpinnerWDownload( m_langSpinner, adapter, onSel, lang );
         }
@@ -813,9 +905,7 @@ public class GameConfigDelegate extends DelegateBase
     {
         m_gi.setLang( DictLangCache.getLangLangCode( m_activity, chosen ) );
         loadPlayersList();
-        if ( null != m_dictSpinner ) {
-            configDictSpinner( m_dictSpinner, m_gi.dictLang, m_gi.dictName );
-        }
+        configDictSpinner( m_dictSpinner, m_gi.dictLang, m_gi.dictName );
     }
 
     private void configSpinnerWDownload( Spinner spinner, 
@@ -827,7 +917,20 @@ public class GameConfigDelegate extends DelegateBase
         adapter.setDropDownViewResource( resID );
         spinner.setAdapter( adapter );
         spinner.setOnItemSelectedListener( onSel );
-        setSpinnerSelection( spinner, curSel );
+        if ( m_langSpinner == spinner ) {
+            setLangSpinnerSelection( curSel );
+        } else {
+            setSpinnerSelection( spinner, curSel );
+        }
+    }
+
+    private void setLangSpinnerSelection( String sel )
+    {
+        LangsArrayAdapter adapter = (LangsArrayAdapter)m_langSpinner.getAdapter();
+        int pos = adapter.getPosForLang( sel );
+        if ( 0 <= pos ) {
+            m_langSpinner.setSelection( pos, true );
+        }
     }
 
     private void setSpinnerSelection( Spinner spinner, String sel )
@@ -840,23 +943,6 @@ public class GameConfigDelegate extends DelegateBase
                     spinner.setSelection( ii, true );
                     break;
                 }
-            }
-        }
-    }
-
-    private void loadPhones()
-    {
-        if ( XWApp.SMSSUPPORTED && null != m_remoteAddrs ) {
-            LinearLayout phoneList = 
-                (LinearLayout)findViewById(R.id.sms_phones);
-            for ( CommsAddrRec addr : m_remoteAddrs ) {
-                XWListItem item = XWListItem.inflate( m_activity, null );
-                item.setText( addr.sms_phone );
-                String name = Utils.phoneToContact( m_activity, addr.sms_phone, 
-                                                    false );
-                item.setComment( name );
-                item.setEnabled( false );
-                phoneList.addView( item );
             }
         }
     }
@@ -916,41 +1002,6 @@ public class GameConfigDelegate extends DelegateBase
         m_boardsizeSpinner.setSelection( selection );
     }
 
-    // private void configConnectSpinner()
-    // {
-    //     m_connectSpinner = (Spinner)findViewById( R.id.connect_spinner );
-    //     m_connStrings = makeXportStrings();
-    //     ArrayAdapter<String> adapter = 
-    //         new ArrayAdapter<String>( this,
-    //                                   android.R.layout.simple_spinner_item,
-    //                                   m_connStrings );
-    //     adapter.setDropDownViewResource( android.R.layout
-    //                                      .simple_spinner_dropdown_item );
-    //     m_connectSpinner.setAdapter( adapter );
-    //     m_connectSpinner.setSelection( connTypeToPos( m_car.conType ) );
-    //     AdapterView.OnItemSelectedListener
-    //         lstnr = new AdapterView.OnItemSelectedListener() {
-    //                 @Override
-    //                 public void onItemSelected(AdapterView<?> parentView, 
-    //                                            View selectedItemView, 
-    //                                            int position, 
-    //                                            long id ) 
-    //                 {
-    //                     String fmt = getString( R.string.configure_rolef );
-    //                     m_configureButton
-    //                         .setText( String.format( fmt, 
-    //                                                  m_connStrings[position] ));
-    //                 }
-
-    //                 @Override
-    //                 public void onNothingSelected(AdapterView<?> parentView) 
-    //                 {
-    //                 }
-    //             };
-    //     m_connectSpinner.setOnItemSelectedListener( lstnr );
-
-    // } // configConnectSpinner
-
     private void adjustPlayersLabel()
     {
         DbgUtils.logf( "adjustPlayersLabel()" );
@@ -968,27 +1019,15 @@ public class GameConfigDelegate extends DelegateBase
 
     private void adjustConnectStuff()
     {
-        if ( m_joinPublicCheck.isChecked() ) {
-            refreshNames();
-            m_privateRoomsSet.setVisibility( View.GONE );
-            m_publicRoomsSet.setVisibility( View.VISIBLE );
-
-            // // make the room spinner match the saved value if present
-            // String invite = m_car.ip_relay_invite;
-            // ArrayAdapter<String> adapter = 
-            //     (ArrayAdapter<String>)m_roomChoose.getAdapter();
-            // if ( null != adapter ) {
-            //     for ( int ii = 0; ii < adapter.getCount(); ++ii ) {
-            //         if ( adapter.getItem(ii).equals( invite ) ) {
-            //             m_roomChoose.setSelection( ii );
-            //             break;
-            //         }
-            //     }
-            // }
-
-        } else {
-            m_privateRoomsSet.setVisibility( View.VISIBLE );
-            m_publicRoomsSet.setVisibility( View.GONE );
+        if ( XWPrefs.getPublicRoomsEnabled( m_activity ) ) {
+            if ( m_joinPublicCheck.isChecked() ) {
+                refreshNames();
+                m_privateRoomsSet.setVisibility( View.GONE );
+                m_publicRoomsSet.setVisibility( View.VISIBLE );
+            } else {
+                m_privateRoomsSet.setVisibility( View.VISIBLE );
+                m_publicRoomsSet.setVisibility( View.GONE );
+            }
         }
     }
 
@@ -1002,7 +1041,15 @@ public class GameConfigDelegate extends DelegateBase
         m_isLocked = locking;
         for ( int id : s_disabledWhenLocked ) {
             View view = findViewById( id );
-            view.setEnabled( !m_isLocked );
+            view.setEnabled( !locking );
+        }
+
+        int nChildren = m_playerLayout.getChildCount();
+        for ( int ii = 0; ii < nChildren; ++ii ) {
+            View child = m_playerLayout.getChildAt( ii );
+            if ( child instanceof XWListItem ) {
+                ((XWListItem)child).setEnabled( !locking );
+            }
         }
     }
     
@@ -1067,11 +1114,11 @@ public class GameConfigDelegate extends DelegateBase
             }
         }
 
-        m_gi.hintsNotAllowed = !Utils.getChecked( m_activity, R.id.hints_allowed );
-        m_gi.allowPickTiles = Utils.getChecked( m_activity, R.id.pick_faceup );
-        m_gi.timerEnabled = Utils.getChecked(  m_activity, R.id.use_timer );
-        m_gi.gameSeconds = 60 * m_gi.nPlayers *
-            Utils.getInt(  m_activity, R.id.timer_minutes_edit );
+        m_gi.hintsNotAllowed = !getChecked( R.id.hints_allowed );
+        m_gi.allowPickTiles = getChecked( R.id.pick_faceup );
+        m_gi.timerEnabled = getChecked( R.id.use_timer );
+        m_gi.gameSeconds = 
+            60 * m_gi.nPlayers * getInt( R.id.timer_minutes_edit );
 
         int position = m_phoniesSpinner.getSelectedItemPosition();
         m_gi.phoniesAction = CurGameInfo.XWPhoniesChoice.values()[position];
@@ -1082,13 +1129,10 @@ public class GameConfigDelegate extends DelegateBase
         position = m_boardsizeSpinner.getSelectedItemPosition();
         m_gi.boardSize = positionToSize( position );
 
-        switch( m_conType ) {
-        case COMMS_CONN_RELAY:
+        if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
             m_car.ip_relay_seeksPublicRoom = m_joinPublicCheck.isChecked();
-            DbgUtils.logf( "ip_relay_seeksPublicRoom: %b", 
-                           m_car.ip_relay_seeksPublicRoom );
             m_car.ip_relay_advertiseRoom = 
-                Utils.getChecked( m_activity, R.id.advertise_new_room_check );
+                getChecked( R.id.advertise_new_room_check );
             if ( m_car.ip_relay_seeksPublicRoom ) {
                 SpinnerAdapter adapter = m_roomChoose.getAdapter();
                 if ( null != adapter ) {
@@ -1098,29 +1142,30 @@ public class GameConfigDelegate extends DelegateBase
                     }
                 }
             } else {
-                m_car.ip_relay_invite = 
-                    Utils.getText( m_activity, R.id.room_edit ).trim();
+                m_car.ip_relay_invite = getText( R.id.room_edit ).trim();
             }
-            break;
-            // nothing to save for BT yet
         }
 
-        m_car.conType = m_conType;
+        m_car.conTypes = m_conTypes;
     } // saveChanges
 
     private void applyChanges( boolean forceNew )
     {
-        GameUtils.applyChanges( m_activity, m_gi, m_car, m_gameLock, forceNew );
+        if ( !isFinishing() ) {
+            GameLock gameLock = new GameLock( m_rowid, true ).lock();
+            GameUtils.applyChanges( m_activity, m_gi, m_car, gameLock, 
+                                    forceNew );
+            DBUtils.saveThumbnail( m_activity, gameLock, null ); // clear it
+            gameLock.unlock();
+        }
     }
 
     private void launchGame()
     {
-        if ( m_conType == CommsConnType.COMMS_CONN_RELAY 
+        if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY )
              && 0 == m_car.ip_relay_invite.length() ) {
             showOKOnlyDialog( R.string.no_empty_rooms );            
         } else {
-            m_gameLock.unlock();
-            m_gameLock = null;
             GameUtils.launchGameAndFinish( m_activity, m_rowid );
         }
     }
@@ -1136,23 +1181,82 @@ public class GameConfigDelegate extends DelegateBase
     private void setTitle()
     {
         int strID;
-        switch( m_conType ) {
-        case COMMS_CONN_RELAY:
+        if ( null != m_conTypes && 0 < m_conTypes.size() ) {
             strID = R.string.title_gamenet_config_fmt;
-            break;
-        case COMMS_CONN_BT:
-            strID = R.string.title_gamebt_config_fmt;
-            break;
-        default:
+        } else {
             strID = R.string.title_game_config_fmt;
-            break;
         }
-        setTitle( getString( strID, GameUtils.getName( m_activity, m_rowid ) ) );
+        String name = GameUtils.getName( m_activity, m_rowid );
+        setTitle( getString( strID, name ) );
     }
 
     private boolean localOnlyGame()
     {
-        return m_conType == CommsConnType.COMMS_CONN_NONE;
+        return DeviceRole.SERVER_STANDALONE == m_giOrig.serverRole;
     }
 
+    public static void editForResult( Activity parent, RequestCode requestCode, 
+                                      long rowID )
+    {
+        Intent intent = new Intent( parent, GameConfigActivity.class );
+        intent.setAction( Intent.ACTION_EDIT );
+        intent.putExtra( GameUtils.INTENT_KEY_ROWID, rowID );
+        intent.putExtra( INTENT_FORRESULT_ROWID, true );
+        parent.startActivityForResult( intent, requestCode.ordinal() );
+    }
+
+    private void setConnLabel()
+    {
+        if ( localOnlyGame() ) {
+            m_connLabel.setVisibility( View.GONE );
+            m_changeConnButton.setVisibility( View.GONE );
+        } else {
+            String connString = m_conTypes.toString( m_activity );
+            m_connLabel.setText( getString( R.string.connect_label_fmt, connString ) );
+        }
+    }
+
+    private void setupRelayStuffIf( boolean reset )
+    {
+        if ( m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+            boolean publicEnabled = XWPrefs.getPublicRoomsEnabled( m_activity );
+            int vis = publicEnabled ? View.VISIBLE : View.GONE;
+            if ( reset || null == m_joinPublicCheck ) {
+                m_joinPublicCheck = 
+                    (CheckBox)findViewById(R.id.join_public_room_check);
+                m_joinPublicCheck.setVisibility( vis );
+
+                CheckBox advertise = (CheckBox)
+                    findViewById( R.id.advertise_new_room_check );
+                advertise.setVisibility( vis );
+                if ( publicEnabled ) {
+                    m_joinPublicCheck.setOnClickListener( this );
+                    m_joinPublicCheck.setChecked( m_car.ip_relay_seeksPublicRoom );
+                   advertise.setChecked( m_car.ip_relay_advertiseRoom );
+                    m_publicRoomsSet = 
+                        (LinearLayout)findViewById(R.id.public_rooms_set );
+                    m_privateRoomsSet = 
+                        (LinearLayout)findViewById(R.id.private_rooms_set );
+                }
+
+                setText( R.id.room_edit, m_car.ip_relay_invite );
+        
+                m_roomChoose = (Spinner)findViewById( R.id.room_spinner );
+                m_roomChoose.setVisibility( vis );
+
+                m_refreshRoomsButton = 
+                    (ImageButton)findViewById( R.id.refresh_button );
+                m_refreshRoomsButton.setVisibility( vis );
+                m_refreshRoomsButton.setOnClickListener( this );
+
+                adjustConnectStuff();
+            }
+        }
+    }
+
+    private void showHideRelayStuff()
+    {
+        boolean show = m_conTypes.contains( CommsConnType.COMMS_CONN_RELAY );
+        m_connectSetRelay.setVisibility( show ? View.VISIBLE : View.GONE );
+    }
 }

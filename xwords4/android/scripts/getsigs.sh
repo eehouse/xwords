@@ -51,6 +51,7 @@ javap -s org.eehouse.android.${NODE}.jni.XwJNI
 javap -s org.eehouse.android.${NODE}.jni.DrawCtx
 javap -s org.eehouse.android.${NODE}.jni.UtilCtxt
 javap -s org.eehouse.android.${NODE}.jni.CommsAddrRec
+javap -s org.eehouse.android.${NODE}.jni.CommsAddrRec\$CommsConnTypeSet
 javap -s org.eehouse.android.${NODE}.jni.TransportProcs
 javap -s org.eehouse.android.${NODE}.jni.JNIUtils
 javap -s org.eehouse.android.${NODE}.Utils

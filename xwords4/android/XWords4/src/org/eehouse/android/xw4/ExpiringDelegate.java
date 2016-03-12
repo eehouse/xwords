@@ -30,6 +30,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.view.View;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import junit.framework.Assert;
 
 public class ExpiringDelegate {
@@ -47,7 +52,6 @@ public class ExpiringDelegate {
     private int m_backPct = -1;
     private Drawable m_back = null;
     private boolean m_doFrame = false;
-    private Handler m_handler;
     private boolean m_haveTurnLocal = false;
     private long m_startSecs;
     private Runnable m_runnable = null;
@@ -58,12 +62,79 @@ public class ExpiringDelegate {
     private static float[] s_points;
     private DrawSelDelegate m_dsdel;
 
+    // Combine all the timers into one. Since WeakReferences to the same
+    // object aren't equal we need a separate set of their hash codes to
+    // prevent storing duplicates.
+    private static class ExpUpdater implements Runnable {
+        private Handler m_handler;
+        private ArrayList<WeakReference<ExpiringDelegate>> m_refs
+            = new ArrayList<WeakReference<ExpiringDelegate>>();
+        private Set<Integer> m_hashes = new HashSet<Integer>();
+
+        public void run() {
+            int sizeBefore;
+            ArrayList<ExpiringDelegate> dlgts = new ArrayList<ExpiringDelegate>();
+            synchronized( this ) {
+                sizeBefore = m_refs.size();
+                m_hashes.clear();
+                Iterator<WeakReference<ExpiringDelegate>> iter = m_refs.iterator();
+                while ( iter.hasNext() ) {
+                    WeakReference<ExpiringDelegate> ref = iter.next();
+                    ExpiringDelegate dlgt = ref.get();
+                    if ( null == dlgt/* || dlgts.contains( dlgt )*/ ) {
+                        iter.remove();
+                    } else {
+                        dlgts.add(dlgt);
+                        m_hashes.add( dlgt.hashCode() );
+                    }
+                }
+            }
+
+            DbgUtils.logdf( "ExpUpdater: ref had %d refs, now has %d expiringdelegate views", 
+                            sizeBefore, dlgts.size() );
+
+            for ( ExpiringDelegate dlgt : dlgts ) {
+                dlgt.timerFired();
+            }
+
+            reschedule();
+        }
+
+        private void reschedule() 
+        {
+            m_handler.postDelayed( this, INTERVAL_SECS * 1000 / 100 );
+        }
+
+        private void add( ExpiringDelegate self )
+        {
+            int hash = self.hashCode();
+            synchronized( this ) {
+                if ( ! m_hashes.contains( hash ) ) {
+                    m_hashes.add( hash );
+                    m_refs.add( new WeakReference<ExpiringDelegate>(self) );
+                }
+            }
+        }
+
+        private void setHandler( Handler handler )
+        {
+            if ( handler != m_handler ) {
+                DbgUtils.logdf( "handler changing from %H to %H",
+                               m_handler, handler );
+                m_handler = handler;
+                reschedule();
+            }
+        }
+    }
+
+    private static ExpUpdater s_updater;
     static {
         s_rect = new Rect();
         s_paint = new Paint(); 
         s_paint.setStyle(Paint.Style.STROKE);  
         s_paint.setStrokeWidth( 1 );
         s_points = new float[4*6];
+        s_updater = new ExpUpdater();
     }
 
     public ExpiringDelegate( Context context, View view )
@@ -75,7 +146,7 @@ public class ExpiringDelegate {
 
     public void setHandler( Handler handler )
     {
-        m_handler = handler;
+        s_updater.setHandler( handler );
     }
 
     public void configure( boolean haveTurn, boolean haveTurnLocal, 
@@ -201,42 +272,24 @@ public class ExpiringDelegate {
             m_pct = (int)((100 * passed) / INTERVAL_SECS);
             if ( m_pct > 100 ) {
                 m_pct = 100;
-            } else if ( null != m_handler ) {
-                long onePct = INTERVAL_SECS / 100;
-                long lastStart = m_startSecs + (onePct * m_pct);
-                Assert.assertTrue( lastStart <= now );
-                long nextStartIn = lastStart + onePct - now;
-                // DbgUtils.logf( "pct change %d seconds from now", nextStartIn );
-
-                m_handler.postDelayed( mkRunnable(), 1000 * nextStartIn ); // NPE
+            } else if ( m_pct < 0 ) {
+                m_pct = 0;
+            } else {
+                s_updater.add( this );
             }
         }
     }
 
-    private Runnable mkRunnable()
+    private void timerFired()
     {
-        if ( null == m_runnable ) {
-            m_runnable = new Runnable() {
-                    public void run() {
-                        if ( XWApp.DEBUG_EXP_TIMERS ) {
-                            DbgUtils.logf( "ExpiringDelegate: timer fired"
-                                           + " for %H", this );
-                        }
-                        if ( m_active ) {
-                            figurePct();
-                            if ( m_haveTurnLocal ) {
-                                m_back = null;
-                                setBackground();
-                            }
-                            if ( XWApp.DEBUG_EXP_TIMERS ) {
-                                DbgUtils.logf( "ExpiringDelegate: invalidating"
-                                               + " view %H", m_view );
-                            }
-                            m_view.invalidate();
-                        }
-                    }
-                };
+        if ( m_active ) {
+            figurePct();
+            if ( m_haveTurnLocal ) {
+                m_back = null;
+                setBackground();
+            }
+            m_view.invalidate();
         }
-        return m_runnable;
     }
+
 }

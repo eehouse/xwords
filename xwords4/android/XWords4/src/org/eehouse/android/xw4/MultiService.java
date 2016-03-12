@@ -26,10 +26,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class MultiService {
 
+    public static final String FORCECHANNEL = "FC";
     public static final String LANG = "LANG";
     public static final String DICT = "DICT";
     public static final String GAMEID = "GAMEID";
@@ -39,34 +42,50 @@ public class MultiService {
     public static final String NPLAYERST = "NPLAYERST";
     public static final String NPLAYERSH = "NPLAYERSH";
     public static final String INVITER = "INVITER";
-    public static final String OWNER = "OWNER";
+    private static final String OWNER = "OWNER";
+    public static final String BT_NAME = "BT_NAME";
+    public static final String BT_ADDRESS = "BT_ADDRESS";
+    private static final String NLI_DATA = "nli";
 
-    public static final int OWNER_SMS = 1;
-    public static final int OWNER_RELAY = 2;
+    public enum DictFetchOwner { _NONE,
+                                 OWNER_SMS,
+                                 OWNER_RELAY,
+                                 OWNER_BT,
+    };
+
+    private static final String ACTION_FETCH_DICT = "_afd";
 
     private MultiEventListener m_li;
 
-    public enum MultiEvent { BAD_PROTO
-                          , BT_ENABLED
-                          , BT_DISABLED
-                          , SCAN_DONE
-                          , HOST_PONGED
-                          , NEWGAME_SUCCESS
-                          , NEWGAME_FAILURE
-                          , MESSAGE_ACCEPTED
-                          , MESSAGE_REFUSED
-                          , MESSAGE_NOGAME
-                          , MESSAGE_RESEND
-                          , MESSAGE_FAILOUT
-                          , MESSAGE_DROPPED
+    // these do not currently pass between devices so they can change.
+    public enum MultiEvent { _INVALID,
+                             BAD_PROTO_BT,
+                             BAD_PROTO_SMS,
+                             APP_NOT_FOUND,
+                             BT_ENABLED,
+                             BT_DISABLED,
+                             SCAN_DONE,
+                             HOST_PONGED,
+                             NEWGAME_SUCCESS,
+                             NEWGAME_FAILURE,
+                             NEWGAME_DUP_REJECTED,
+                             MESSAGE_ACCEPTED,
+                             MESSAGE_REFUSED,
+                             MESSAGE_NOGAME,
+                             MESSAGE_RESEND,
+                             MESSAGE_FAILOUT,
+                             MESSAGE_DROPPED,
 
-                          , SMS_RECEIVE_OK
-                          , SMS_SEND_OK
-                          , SMS_SEND_FAILED
-                          , SMS_SEND_FAILED_NORADIO
+                             SMS_RECEIVE_OK,
+                             SMS_SEND_OK,
+                             SMS_SEND_FAILED,
+                             SMS_SEND_FAILED_NORADIO,
 
-                          , RELAY_ALERT
-            };
+                             BT_GAME_CREATED,
+                             BT_ERR_COUNT,
+
+                             RELAY_ALERT,
+    };
 
     public interface MultiEventListener {
         public void eventOccurred( MultiEvent event, Object ... args );
@@ -91,42 +110,33 @@ public class MultiService {
         }
     }
 
-    public static void fillInviteIntent( Intent intent, String gameName, 
-                                         int lang, String dict, 
-                                         int nPlayersT, int nPlayersH )
-    {
-        intent.putExtra( GAMENAME, gameName );
-        intent.putExtra( LANG, lang );
-        intent.putExtra( DICT, dict );
-        intent.putExtra( NPLAYERST, nPlayersT ); // both of these used
-        intent.putExtra( NPLAYERSH, nPlayersH );
-    }
-
-    public static Intent makeMissingDictIntent( Context context, String gameName, 
-                                                int lang, String dict, 
-                                                int nPlayersT, int nPlayersH )
+    public static Intent makeMissingDictIntent( Context context, NetLaunchInfo nli,
+                                                DictFetchOwner owner )
     {
         Intent intent = new Intent( context, DictsActivity.class );
-        fillInviteIntent( intent, gameName, lang, dict, nPlayersT, nPlayersH );
-        return intent;
-    }
-
-    public static Intent makeMissingDictIntent( Context context, NetLaunchInfo nli )
-    {
-        Intent intent = makeMissingDictIntent( context, null, nli.lang, nli.dict, 
-                                               nli.nPlayersT, 1 );
-        intent.putExtra( ROOM, nli.room );
+        intent.setAction( ACTION_FETCH_DICT );
+        intent.putExtra( LANG, nli.lang );
+        intent.putExtra( DICT, nli.dict );
+        intent.putExtra( OWNER, owner.ordinal() );
+        intent.putExtra( NLI_DATA, nli.toString() );
         return intent;
     }
 
     public static boolean isMissingDictIntent( Intent intent )
     {
-        return intent.hasExtra( LANG )
-            // && intent.hasExtra( DICT )
-            && (intent.hasExtra( GAMEID ) || intent.hasExtra( ROOM ))
-            && intent.hasExtra( GAMENAME )
-            && intent.hasExtra( NPLAYERST )
-            && intent.hasExtra( NPLAYERSH );
+        String action = intent.getAction();
+        boolean result = null != action && action.equals( ACTION_FETCH_DICT );
+        // DbgUtils.logf( "isMissingDictIntent() => %b", result );
+        return result;
+    }
+
+    public static NetLaunchInfo getMissingDictData( Context context,
+                                                    Intent intent )
+    {
+        Assert.assertTrue( isMissingDictIntent( intent ) );
+        String nliData = intent.getStringExtra( NLI_DATA );
+        NetLaunchInfo nli = new NetLaunchInfo( context, nliData );
+        return nli;
     }
 
     public static Dialog missingDictDialog( Context context, Intent intent,
@@ -139,7 +149,8 @@ public class MultiService {
         String inviter = intent.getStringExtra( INVITER );
         int msgID = (null == inviter) ? R.string.invite_dict_missing_body_noname_fmt
             : R.string.invite_dict_missing_body_fmt;
-        String msg = LocUtils.getString( context, msgID, inviter, dict, langStr );
+        String msg = LocUtils.getString( context, msgID, inviter, dict, 
+                                         LocUtils.xlateLang( context, langStr));
 
         return LocUtils.makeAlertBuilder( context )
             .setTitle( R.string.invite_dict_missing_title )
@@ -159,7 +170,7 @@ public class MultiService {
     // resend the intent, but only if the dict it names is here.  (If
     // it's not, we may need to try again later, e.g. because our cue
     // was a focus gain.)
-    static boolean returnOnDownload( Context context, Intent intent )
+    public static boolean returnOnDownload( Context context, Intent intent )
     {
         boolean downloaded = isMissingDictIntent( intent );
         if ( downloaded ) {
@@ -167,19 +178,23 @@ public class MultiService {
             String dict = intent.getStringExtra( DICT );
             downloaded = DictLangCache.haveDict( context, lang, dict );
             if ( downloaded ) {
-                switch ( intent.getIntExtra( OWNER, -1 ) ) {
-                case OWNER_SMS:
-                    SMSService.onGameDictDownload( context, intent );
-                    break;
-                case OWNER_RELAY:
-                    GamesListDelegate.onGameDictDownload( context, intent );
-                    break;
-                default:
+                int ordinal = intent.getIntExtra( OWNER, -1 );
+                if ( -1 == ordinal ) {
                     DbgUtils.logf( "unexpected OWNER" );
+                } else {
+                    DictFetchOwner owner = DictFetchOwner.values()[ordinal];
+                    switch ( owner ) {
+                    case OWNER_SMS:
+                        SMSService.onGameDictDownload( context, intent );
+                        break;
+                    case OWNER_RELAY:
+                    case OWNER_BT:
+                        GamesListDelegate.onGameDictDownload( context, intent );
+                        break;
+                    }
                 }
             }
         }
         return downloaded;
     }
-
 }

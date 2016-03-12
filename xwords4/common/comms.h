@@ -1,6 +1,6 @@
-/* -*-mode: C; fill-column: 78; c-basic-offset: 4; -*- */
+/* -*- compile-command: "cd ../linux && make MEMDEBUG=TRUE -j3"; -*- */
 /* 
- * Copyright 2001-2009 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2001 - 2014 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -45,6 +45,8 @@ typedef enum {
     ,COMMS_CONN_NTYPES
 } CommsConnType;
 
+typedef XP_U8 CommsConnTypes;
+
 typedef enum {
     COMMS_RELAYSTATE_UNCONNECTED
     , COMMS_RELAYSTATE_DENIED   /* terminal; new game or reset required to
@@ -57,6 +59,7 @@ typedef enum {
 
 #ifdef XWFEATURE_BLUETOOTH
 # define XW_BT_UUID "7be0d084-ff89-4d6d-9c78-594773a6f963"
+# define XW_BT_UUID_DBG "b079b640-35fe-11e5-a432-0002a5d5c51b"
 
 # define XW_BT_NAME "Crosswords"
 #endif
@@ -76,9 +79,9 @@ typedef struct XP_BtAddrStr { XP_UCHAR chars[18]; } XP_BtAddrStr;
 #define MAX_PHONE_LEN    31
 
 typedef struct _CommsAddrRec {
-    CommsConnType conType;
+    XP_U16 _conTypes;
 
-    union {
+    struct {
         struct {
             XP_UCHAR hostName_ip[MAX_HOSTNAME_LEN + 1];
             XP_U32 ipAddr_ip;      /* looked up from above */
@@ -109,7 +112,9 @@ typedef struct _CommsAddrRec {
 } CommsAddrRec;
 
 typedef XP_S16 (*TransportSend)( const XP_U8* buf, XP_U16 len, 
+                                 const XP_UCHAR* msgNo,
                                  const CommsAddrRec* addr,
+                                 CommsConnType conType,
                                  XP_U32 gameID, void* closure );
 #ifdef COMMS_HEARTBEAT
 typedef void (*TransportReset)( void* closure );
@@ -122,7 +127,8 @@ typedef void (*RelayConndProc)( void* closure, XP_UCHAR* const room,
                                 XP_U16 devOrder, /* 1 means created room, etc. */
                                 XP_Bool allHere, XP_U16 nMissing );
 typedef void (*RelayErrorProc)( void* closure, XWREASON relayErr );
-typedef XP_Bool (*RelayNoConnProc)( const XP_U8* buf, XP_U16 len,
+typedef XP_Bool (*RelayNoConnProc)( const XP_U8* buf, XP_U16 len, 
+                                    const XP_UCHAR* msgNo,
                                     const XP_UCHAR* relayID, void* closure );
 #endif
 
@@ -157,7 +163,7 @@ typedef struct _TransportProcs {
 CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
                        XP_Bool isServer, 
                        XP_U16 nPlayersHere, XP_U16 nPlayersTotal,
-                       const TransportProcs* procs
+                       const TransportProcs* procs, XP_U16 forceChannel
 #ifdef SET_GAMESEED
                        ,XP_U16 gameSeed
 #endif
@@ -166,7 +172,7 @@ CommsCtxt* comms_make( MPFORMAL XW_UtilCtxt* util,
 void comms_reset( CommsCtxt* comms, XP_Bool isServer, 
                   XP_U16 nPlayersHere, XP_U16 nPlayersTotal );
 void comms_resetSame( CommsCtxt* comms );
-void comms_transportFailed( CommsCtxt* comms );
+void comms_transportFailed( CommsCtxt* comms, CommsConnType failed );
 
 void comms_destroy( CommsCtxt* comms );
 
@@ -186,6 +192,9 @@ void comms_getAddr( const CommsCtxt* comms, CommsAddrRec* addr );
 void comms_setAddr( CommsCtxt* comms, const CommsAddrRec* addr );
 void comms_getAddrs( const CommsCtxt* comms, CommsAddrRec addr[], 
                      XP_U16* nRecs );
+XP_Bool comms_formatRelayID( const CommsCtxt* comms, XP_U16 indx,
+                             XP_UCHAR* buf, XP_U16* lenp );
+
 XP_U16 comms_countPendingPackets( const CommsCtxt* comms );
 
 
@@ -193,39 +202,71 @@ XP_U16 comms_countPendingPackets( const CommsCtxt* comms );
 XP_Bool comms_getRelayID( const CommsCtxt* comms, XP_UCHAR* buf, XP_U16* len );
 #endif
 
-CommsConnType comms_getConType( const CommsCtxt* comms );
+CommsConnTypes comms_getConTypes( const CommsCtxt* comms );
 XP_Bool comms_getIsServer( const CommsCtxt* comms );
 
 CommsCtxt* comms_makeFromStream( MPFORMAL XWStreamCtxt* stream, 
                                  XW_UtilCtxt* util, 
-                                 const TransportProcs* procs );
+                                 const TransportProcs* procs,
+                                 XP_U16 forceChannel );
 void comms_start( CommsCtxt* comms );
 void comms_stop( CommsCtxt* comms );
 void comms_writeToStream( CommsCtxt* comms, XWStreamCtxt* stream,
                           XP_U16 saveToken );
 void comms_saveSucceeded( CommsCtxt* comms, XP_U16 saveToken );
 
+void addrFromStream( CommsAddrRec* addr, XWStreamCtxt* stream );
+void addrToStream( XWStreamCtxt* stream, const CommsAddrRec* addr );
+
 XP_S16 comms_send( CommsCtxt* comms, XWStreamCtxt* stream );
-XP_Bool comms_resendAll( CommsCtxt* comms, XP_Bool force );
+XP_S16 comms_resendAll( CommsCtxt* comms, CommsConnType filter, XP_Bool force );
 XP_U16 comms_getChannelSeed( CommsCtxt* comms );
 
 #ifdef XWFEATURE_COMMSACK
 void comms_ackAny( CommsCtxt* comms );
 #endif
 
-XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
-                                   const CommsAddrRec* addr );
+typedef struct _CommsMsgState {
+    struct AddressRecord* rec;
+#ifdef DEBUG
+    const CommsCtxt* comms;
+#endif
+} CommsMsgState;
 
+XP_Bool comms_checkIncomingStream( CommsCtxt* comms, XWStreamCtxt* stream, 
+                                   const CommsAddrRec* addr, 
+                                   CommsMsgState* state );
+void comms_msgProcessed( CommsCtxt* comms, CommsMsgState* state, 
+                         XP_Bool rejected );
 XP_Bool comms_checkComplete( const CommsAddrRec* const addr );
 
 XP_Bool comms_canChat( const CommsCtxt* comms );
 XP_Bool comms_isConnected( const CommsCtxt* const comms );
+
+CommsConnType addr_getType( const CommsAddrRec* addr );
+void addr_setType( CommsAddrRec* addr, CommsConnType type );
+void addr_addType( CommsAddrRec* addr, CommsConnType type );
+void types_addType( XP_U16* conTypes, CommsConnType type );
+void addr_rmType( CommsAddrRec* addr, CommsConnType type );
+XP_Bool addr_hasType( const CommsAddrRec* addr, CommsConnType type );
+XP_Bool types_hasType( XP_U16 conTypes, CommsConnType type );
+XP_Bool addr_iter( const CommsAddrRec* addr, CommsConnType* typp, 
+                   XP_U32* state );
+XP_Bool types_iter( XP_U32 conTypes, CommsConnType* typp, XP_U32* state );
 
 # ifdef DEBUG
 void comms_getStats( CommsCtxt* comms, XWStreamCtxt* stream );
 const char* ConnType2Str( CommsConnType typ );
 const char* CommsRelayState2Str( CommsRelayState state );
 const char* XWREASON2Str( XWREASON reason );
+
+void comms_setAddrDisabled( CommsCtxt* comms, CommsConnType typ, 
+                            XP_Bool send, XP_Bool enabled );
+XP_Bool comms_getAddrDisabled( const CommsCtxt* comms, CommsConnType typ, 
+                               XP_Bool send );
+# else
+#  define comms_setAddrDisabled( comms, typ, send, enabled )
+#  define comms_getAddrDisabled( comms, typ, send ) XP_FALSE
 # endif
 
 EXTERN_C_END

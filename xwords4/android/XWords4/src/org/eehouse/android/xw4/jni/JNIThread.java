@@ -31,6 +31,8 @@ import java.lang.InterruptedException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.DBUtils;
@@ -40,11 +42,29 @@ import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
 import org.eehouse.android.xw4.Toolbar;
 import org.eehouse.android.xw4.XWPrefs;
+import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.DrawCtx;
+import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
+
 import junit.framework.Assert;
 
 public class JNIThread extends Thread {
+
+    private static Set<JNIThread> s_curThreads = new HashSet<JNIThread>();
+
+    public static JNIThread getCurrent() {
+        JNIThread result = null;
+        synchronized( s_curThreads ) {
+            // DbgUtils.logf( "JNIThread.getCurrent(): have %d threads", 
+            //                s_curThreads.size() );
+            if ( 1 == s_curThreads.size() ) {
+                result = s_curThreads.iterator().next();
+            }
+        }
+        // DbgUtils.logf( "JNIThread.getCurrent() => %H", result );
+        return result;
+    }
 
     public enum JNICmd { CMD_NONE,
             // CMD_RUN,
@@ -100,6 +120,7 @@ public class JNIThread extends Thread {
     public static final int TOOLBAR_STATES = 4;
     public static final int GOT_WORDS = 5;
     public static final int GAME_OVER = 6;
+    public static final int MSGS_SENT = 7;
 
     public class GameStateInfo implements Cloneable {
         public int visTileCount;
@@ -129,7 +150,7 @@ public class JNIThread extends Thread {
 
     private boolean m_stopped = false;
     private boolean m_saveOnStop = false;
-    private int m_jniGamePtr;
+    private GamePtr m_jniGamePtr;
     private byte[] m_gameAtStart;
     private GameLock m_lock;
     private Context m_context;
@@ -140,7 +161,7 @@ public class JNIThread extends Thread {
     private int m_connsIconID = 0;
     private String m_newDict = null;
 
-    LinkedBlockingQueue<QueueElem> m_queue;
+    private LinkedBlockingQueue<QueueElem> m_queue;
 
     private class QueueElem {
         protected QueueElem( JNICmd cmd, boolean isUI, Object[] args )
@@ -152,10 +173,15 @@ public class JNIThread extends Thread {
         Object[] m_args;
     }
 
-    public JNIThread( int gamePtr, byte[] gameAtStart, CurGameInfo gi, 
+    public JNIThread( GamePtr gamePtr, byte[] gameAtStart, CurGameInfo gi, 
                       SyncedDraw drawer, GameLock lock, Context context, 
                       Handler handler ) 
     {
+        synchronized( s_curThreads ) {
+            s_curThreads.add( this );
+            // DbgUtils.logf( "JNIThread(): added %H; now %d threads", this, s_curThreads.size() );
+        }
+
         m_jniGamePtr = gamePtr;
         m_gameAtStart = gameAtStart;
         m_gi = gi;
@@ -183,6 +209,12 @@ public class JNIThread extends Thread {
             // Assert.assertFalse( isAlive() );
         } catch ( java.lang.InterruptedException ie ) {
             DbgUtils.loge( ie );
+        }
+
+        synchronized( s_curThreads ) {
+            Assert.assertTrue( s_curThreads.contains( this ) );
+            s_curThreads.remove( this );
+            // DbgUtils.logf( "waitToStop: removed %H; now %d threads", this, s_curThreads.size() );
         }
     }
 
@@ -237,13 +269,20 @@ public class JNIThread extends Thread {
 
         boolean squareTiles = XWPrefs.getSquareTiles( m_context );
         XwJNI.board_figureLayout( m_jniGamePtr, m_gi, 0, 0, width, height,
-                                  150, 200, width, fontWidth, 
-                                  fontHeight, squareTiles, dims );
-        int statusWidth = dims.boardWidth / 15;
-        dims.scoreWidth -= statusWidth;
-        int left = dims.scoreLeft + dims.scoreWidth;
-        ConnStatusHandler.setRect( left, dims.top, left + statusWidth, 
-                                   dims.top + dims.scoreHt );
+                                  150 /*scorePct*/, 200 /*trayPct*/, 
+                                  width, fontWidth, fontHeight, squareTiles, 
+                                  dims /* out param */ );
+
+        // Make space for net status icon if appropriate
+        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+            int statusWidth = dims.boardWidth / 15;
+            dims.scoreWidth -= statusWidth;
+            int left = dims.scoreLeft + dims.scoreWidth + dims.timerWidth;
+            ConnStatusHandler.setRect( left, dims.top, left + statusWidth, 
+                                       dims.top + dims.scoreHt );
+        } else {
+            ConnStatusHandler.clearRect();
+        }
 
         XwJNI.board_applyLayout( m_jniGamePtr, dims );
 
@@ -372,11 +411,7 @@ public class JNIThread extends Thread {
                 XwJNI.comms_resetSame( m_jniGamePtr );
                 // FALLTHRU
             case CMD_START:
-                XwJNI.comms_start( m_jniGamePtr );
-                if ( m_gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {
-                    XwJNI.server_initClientConnection( m_jniGamePtr );
-                }
-                draw = XwJNI.server_do( m_jniGamePtr );
+                draw = tryConnectClient( m_jniGamePtr, m_gi );
                 break;
 
             case CMD_SWITCHCLIENT:
@@ -393,9 +428,10 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_RECEIVE:
+                CommsAddrRec ret = (CommsAddrRec)args[1];
+                Assert.assertNotNull( ret );
                 draw = XwJNI.game_receiveMessage( m_jniGamePtr, 
-                                                  (byte[])args[0],
-                                                  (CommsAddrRec)args[1]);
+                                                  (byte[])args[0], ret );
                 handle( JNICmd.CMD_DO );
                 if ( draw ) {
                     handle( JNICmd.CMD_SAVE );
@@ -403,7 +439,8 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_TRANSFAIL:
-                XwJNI.comms_transportFailed( m_jniGamePtr );
+                CommsConnType typ = (CommsConnType)args[0];
+                XwJNI.comms_transportFailed( m_jniGamePtr, typ );
                 break;
 
             case CMD_PREFS_CHANGE:
@@ -515,9 +552,13 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_RESEND:
-                XwJNI.comms_resendAll( m_jniGamePtr, 
-                                       ((Boolean)args[0]).booleanValue(),
-                                       ((Boolean)args[1]).booleanValue() );
+                int nSent = 
+                    XwJNI.comms_resendAll( m_jniGamePtr, 
+                                           ((Boolean)args[0]).booleanValue(),           
+                                           ((Boolean)args[1]).booleanValue() );
+                if ( ((Boolean)args[2]).booleanValue() ) {
+                    Message.obtain(m_handler, MSGS_SENT, nSent).sendToTarget();
+                }
                 break;
             // case CMD_ACKANY:
             //     XwJNI.comms_ackAny( m_jniGamePtr );
@@ -557,7 +598,7 @@ public class JNIThread extends Thread {
                 break;
 
             case CMD_SENDCHAT:
-                XwJNI.server_sendChat( m_jniGamePtr, (String)args[0] );
+                XwJNI.board_sendChat( m_jniGamePtr, (String)args[0] );
                 break;
 
             case CMD_NETSTATS:
@@ -596,6 +637,7 @@ public class JNIThread extends Thread {
         } else {
             DbgUtils.logf( "JNIThread.run(): exiting without saving" );
         }
+        XwJNI.threadDone();
     } // run
 
     public void handleBkgrnd( JNICmd cmd, Object... args )
@@ -614,6 +656,15 @@ public class JNIThread extends Thread {
                            cmd.toString() );
             DbgUtils.printStack();
         }
+    }
+
+    public static boolean tryConnectClient( GamePtr gamePtr, CurGameInfo gi )
+    {
+        XwJNI.comms_start( gamePtr );
+        if ( gi.serverRole == DeviceRole.SERVER_ISCLIENT ) {
+            XwJNI.server_initClientConnection( gamePtr );
+        }
+        return XwJNI.server_do( gamePtr );
     }
 
     // public void run( boolean isUI, Runnable runnable )

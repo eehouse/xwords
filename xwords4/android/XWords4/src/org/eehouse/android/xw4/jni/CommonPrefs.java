@@ -171,23 +171,21 @@ public class CommonPrefs extends XWPrefs {
         return value;
     }
     
+    public static String getDefaultOriginalPlayerName( Context context,
+                                                       int num )
+    {
+        return LocUtils.getString( context, R.string.player_fmt, num + 1 );
+    }
+
     public static String getDefaultPlayerName( Context context, int num,
                                                boolean force )
     {
-        int id = 0;
-        switch( num ) {
-        case 0: id = R.string.key_player1_name; break;
-        case 1: id = R.string.key_player2_name; break;
-        case 2: id = R.string.key_player3_name; break;
-        case 3: id = R.string.key_player4_name; break;
-        }
-        String result = getPrefsString( context, id );
+        String result = getPrefsString( context, R.string.key_player1_name );
         if ( null != result && 0 == result.length() ) {
             result = null;      // be consistent
         }
         if ( force && null == result ) {
-            String fmt = LocUtils.getString( context, R.string.player_fmt );
-            result = String.format( fmt, num + 1 );
+            result = getDefaultOriginalPlayerName( context, num );
         }
         return result;
     }
@@ -195,6 +193,11 @@ public class CommonPrefs extends XWPrefs {
     public static String getDefaultPlayerName( Context context, int num )
     {
         return getDefaultPlayerName( context, num, true );
+    }
+
+    public static String getDefaultRobotName( Context context )
+    {
+        return getPrefsString( context, R.string.key_robot_name );
     }
 
     public static void setDefaultPlayerName( Context context, String value )

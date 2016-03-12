@@ -63,8 +63,6 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
 
     protected void init( Bundle savedInstanceState )
     {
-        // setContentView( R.layout.loc_item_edit );
-
         String key = getIntent().getStringExtra( KEY );
         m_key = key;
 
@@ -85,7 +83,7 @@ public class LocItemEditDelegate extends DelegateBase implements TextWatcher {
         m_edit.setText( LocUtils.getLocalXlation( m_activity, key, true ) );
 
         view = (TextView)findViewById( R.id.english_label );
-        view.setText( LocUtils.getString( m_activity, R.string.loc_main_english ) );
+        view.setText( LocUtils.getString( m_activity, R.string.lang_name_english ) );
 
         String langName = LocUtils.getCurLocaleName( m_activity );
         view = (TextView)findViewById( R.id.blessed_label );

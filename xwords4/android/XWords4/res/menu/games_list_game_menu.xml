@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/games_game_delete"
+          android:title="@string/list_item_delete"
+          />
+    <item android:id="@+id/games_game_rematch"
+          android:title="@string/button_rematch"
+          />
+    <item android:id="@+id/games_game_config"
+          android:title="@string/list_item_config"
+          />
+    <item android:id="@+id/games_game_move"
+          android:title="@string/list_item_move"
+          />
+    <item android:id="@+id/games_game_reset"
+          android:title="@string/list_item_reset"
+          />
+    <item android:id="@+id/games_game_new_from"
+          android:title="@string/list_item_new_from"
+          />
+    <item android:id="@+id/games_game_rename"
+          android:title="@string/list_item_rename"
+          />
+    <item android:id="@+id/games_game_copy"
+          android:title="@string/list_item_copy"
+          />
+    <item android:id="@+id/games_game_select"
+          android:title="@string/list_item_select"
+          />
+    <item android:id="@+id/games_game_deselect"
+          android:title="@string/list_item_deselect"
+          />
+    <!-- Debug only -->
+    <item android:id="@+id/games_game_invites"
+          android:title="@string/board_menu_game_showInvites"
+          />
+    
+</menu>
