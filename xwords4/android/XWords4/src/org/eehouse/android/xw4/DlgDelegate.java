@@ -891,6 +891,15 @@ public class DlgDelegate {
         return result;
     }
 
+    public static void onPrepareDialog( int id, Dialog dialog )
+    {
+        WeakReference<DelegateBase> ref = s_pendings.get( id );
+        DelegateBase dlgt = ref.get();
+        if ( null != dlgt ) {
+            dlgt.prepareDialog( DlgID.values()[id], dialog );
+        }
+    }
+
     private String getString( int id, Object... params )
     {
         return m_dlgt.getString( id, params );

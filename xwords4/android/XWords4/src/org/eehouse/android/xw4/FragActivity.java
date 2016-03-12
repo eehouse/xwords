@@ -95,6 +95,12 @@ public class FragActivity extends FragmentActivity
         return DlgDelegate.onCreateDialog( id );
     }
 
+    @Override
+    protected void onPrepareDialog( int id, Dialog dialog )
+    {
+        DlgDelegate.onPrepareDialog( id, dialog );
+    }
+
     //////////////////////////////////////////////////////////////////////
     // FragmentManager.OnBackStackChangedListener
     //////////////////////////////////////////////////////////////////////

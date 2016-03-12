@@ -33,8 +33,6 @@ import android.widget.ListView;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.loc.LocUtils;
-
 public class XWFragment extends Fragment implements Delegator {
 
     private DelegateBase m_dlgt;
