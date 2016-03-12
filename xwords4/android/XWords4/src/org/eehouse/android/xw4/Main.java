@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2014 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,14 +20,11 @@
 
 package org.eehouse.android.xw4;
 
-import android.content.Intent;
-import android.widget.Button;
 import android.app.Activity;
-import android.view.View;
-import android.view.View.OnClickListener;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
+import android.view.View.OnClickListener;
+import android.view.View;
 
 public class Main extends Activity {
 
@@ -35,30 +32,32 @@ public class Main extends Activity {
     public void onCreate( Bundle savedInstanceState ) 
     {
         super.onCreate( savedInstanceState );
-        setContentView( R.layout.main );
 
-        DbgUtils.logf( "Main.onCreate() called" );
+        if ( BuildConfig.DEBUG ) {
+            setContentView( R.layout.main );
 
-        Button button;
-        button = (Button)findViewById( R.id.activity_button );
-        button.setOnClickListener( new OnClickListener() {
-                @Override
-                public void onClick( View v ) {
-                    startActivity( GamesListActivity.class );
-                }
-            } );
-        button = (Button)findViewById( R.id.fragment_button );
-        button.setOnClickListener( new View.OnClickListener() {
-                @Override
-                public void onClick( View v ) {
-                    startActivity( FragActivity.class );
-                }
-            } );
+            findViewById( R.id.activity_button )
+                .setOnClickListener( new OnClickListener() {
+                        @Override
+                        public void onClick( View v ) {
+                            startActivity( GamesListActivity.class );
+                        }
+                    } );
+            findViewById( R.id.fragment_button )
+                .setOnClickListener( new OnClickListener() {
+                        @Override
+                        public void onClick( View v ) {
+                            startActivity( FragActivity.class );
+                        }
+                    } );
+        } else {
+            startActivity( GamesListActivity.class );
+            finish();
+        }
     }
 
     private void startActivity( Class clazz )
     {
         startActivity( new Intent( this, clazz ) );
     }
-
 }
