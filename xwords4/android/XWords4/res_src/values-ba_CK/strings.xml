@@ -52,12 +52,16 @@
   <string name="summary_relay_conn_fmt">Emag ni yalp ni moor \"%1$s\"</string>
   <!-- Final state: game is over. -->
   <string name="summary_relay_gameover_fmt">Emag revo ni moor \"%1$s\"</string>
+  <string name="summary_invites_out">Sreyalp detivni</string>
   <!-- Games that have ended are listed with this string -->
   <string name="gameOver">Emag revo</string>
   <!-- Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... -->
-  <string name="moves_fmt">%1$d sevom deyalp</string>
+  <plurals name="moves_fmt">
+    <item quantity="one">%1$d evom deyalp</item>
+    <item quantity="other">%1$d sevom deyalp</item>
+  </plurals>
   <!-- When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the
@@ -136,13 +140,24 @@
   <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
   <string name="rename_label">Egnahc eht eman fo siht emag ot:</string>
-  <string name="confirm_seldeletes_fmt">Era uoy erus uoy tnaw ot eteled
-    eht %1$d detceles ?]s[emag Siht noitca tonnac eb enodnu.</string>
+  <string name="rename_label_caveat">Egnahc eht eman fo siht emag
+    no( siht ecived )ylno ot:</string>
+  <plurals name="confirm_seldeletes_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot eteled
+      eht detceles ?emag Siht noitca tonnac eb enodnu.</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot eteled
+      eht %1$d detceles ?semag Siht noitca tonnac eb enodnu.</item>
+  </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-  <string name="confirm_reset_fmt">Era uoy erus uoy tnaw ot teser eht %1$d
-    detceles ?]s[emag\n\ngNitteser( sesare lla sevom dna yna noitcennoc
-    noitamrofni.)</string>
+  <plurals name="confirm_reset_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot teser eht
+      detceles ?emag\n\ngNitteser( sesare lla sevom dna yna noitcennoc
+      noitamrofni.)</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot teser eht %1$d
+      detceles ?semag\n\ngNitteser( sesare lla sevom dna yna noitcennoc
+      noitamrofni.)</item>
+  </plurals>
   <!--
        ############################################################
        # :Screens:
@@ -191,8 +206,12 @@
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %1$s.  Sometimes one of the two
          strings below is appended. -->
-  <string name="confirm_delete_dict_fmt">Era uoy erus uoy tnaw ot
-    eteled eht ]s[tsildrow %1$s?</string>
+  <plurals name="confirm_delete_dict_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot eteled eht
+      tsildrow %1$s?</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot eteled eht
+      stsildrow %1$s?</item>
+  </plurals>
   <!-- Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is the last in its language.  The name
@@ -240,8 +259,6 @@
   <string name="title_game_config_fmt">Sgnittes rof %1$s</string>
   <!-- alternate window title used when game is networked -->
   <string name="title_gamenet_config_fmt">%1$s sgnittes )dekrowten(</string>
-  <!--  -->
-  <string name="title_gamebt_config_fmt">%1$s sgnittes aiv( )htooteulb</string>
   <!-- title for popup list of langugages from which user picks -->
   <string name="title_langs_list">Segaugnal desab( no dellatsni
       )stsildrow</string>
@@ -267,7 +284,7 @@
   <string name="lang_label">Emag egaugnal</string>
   <string name="langdict_label">Emag tsildrow/egaugnal</string>
   <!-- text of separator marking out the connection area of the dialog -->
-  <string name="connect_label_relay">Noitcennoc aiv( )tenretni</string>
+  <string name="connect_label_fmt">Noitcennoc aiv( %1$s)</string>
   <!-- text of checkbox asking if user wants to search for open
     public rooms -->
   <string name="join_room">Nioj cilbup moor</string>
@@ -440,20 +457,48 @@
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
-  <string name="invite_msg_fmt">Siht emag si gnissim %1$d etomer
-      ]s[reyalp.  Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa
-      uoy nevah\'t ?ydaerla</string>
-  <!-- Toast shown when players are missing, same time as above
-           but more subtle.  -->
-  <string name="players_miss_fmt">%1$d ]s[reyalp gnissim</string>
+  <plurals name="invite_msg_fmt">
+    <item quantity="one">Siht emag si gnitiaw rof %1$d etomer
+      reyalp. Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa uoy
+      nevah\'t ?ydaerla</item>
+    <item quantity="other">Siht emag si gnitiaw rof %1$d etomer
+      sreyalp. Dluow uoy ekil ot etivni enoemos ot nioj -- gnimussa
+      uoy nevah\'t ?ydaerla</item>
+  </plurals>
+  <plurals name="invite_sent_fmt">
+    <item quantity="one">Uoy evah ydaerla detivni a etomer reyalp ot
+      siht emag. Ew era gnitiaw rof reh/mih ot dnopser. Esaelp
+      esu eht etivni-er nottub fi uoy kniht eht noitativni did ton og
+      tuo.</item>
+    <item quantity="other">Uoy evah ydaerla tnes %1$d euqinu
+      snoitativni rof siht emag. Ew era gnitiaw rof %2$d fo eht
+      stneipicer ot dnopser. Esaelp esu eht etivni-er nottub fi uoy
+      kniht eht snoitativni did ton og tuo.</item>
+  </plurals>
+  <string name="invited_msg">Siht emag saw detaerc morf na
+    noitativni uoy deviecer. Sa noos sa ti si elba ot tcennoc ot eht
+    rednes dna yna rehto seetivni evah devirra yalp lliw
+    nigeb.</string>
+  <!-- Appended to message above if local device has NFC available -->
+  <string name="invite_if_nfc">Ro tsuj Pat ot Etivni -- fi eht rehto
+    ecived osla sah Diordna Gnimaeb dna si ybraen.</string>
   <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
   <string name="invite_multiple">\u0020uOy( era gnitcepxe elpitlum
-      etomer sreyalp.  Eb erus ot sserdda ruoy noitativni ot
-      taht ynam elpoep.)</string>
+    etomer sreyalp. Uoy nod\'t evah ot etivni meht lla ta ,ecno tub
+    siht trela lliw ton eb dessimsid litnu ydobyreve sah neeb detivni
+    dna lla snoitativni evah neeb detpecca.)</string>
+  <string name="invit_expl_sms_fmt">Etivni tnes aiv SMS ot enohp
+    rebmun %1$s no %2$s</string>
+  <string name="invit_expl_bt_fmt">Etivni tnes aiv Htooteulb ot
+    deriap ecived \"%1$s\" no %2$s</string>
+  <string name="invit_expl_relay_fmt">Etivni dedrawrof yb eht yaler
+    ot rehtona ecived no %1$s</string>
+  <string name="invit_expl_notarget_fmt">Etivni tnes aiv %1$s no
+    %2$s. Tneipicer nwonknu.</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -464,8 +509,12 @@
          the room, and how many additional players have not yet
          registered with the relay in this game.  This should be seen
          only once per game. -->
-  <string name="msg_relay_waiting_fmt">Ecived %1$d detcennoc ot yaler ni
-      moor \"%2$s\". Gnitiaw rof %3$d ]s[reyalp.</string>
+  <plurals name="msg_relay_waiting_fmt">
+    <item quantity="one">Ecived %1$d detcennoc ot yaler ni
+      moor \"%2$s\". Gnitiaw rof %3$d reyalp.</item>
+    <item quantity="other">Ecived %1$d detcennoc ot yaler ni
+      moor \"%2$s\". Gnitiaw rof %3$d sreyalp.</item>
+  </plurals>
   <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. -->
@@ -558,7 +607,10 @@
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
   <string name="board_menu_game_resend">Dneser segassem</string>
-  <string name="resend_finished_fmt">Dneser dehsinif; tnes %1$d ]s[egassem.</string>
+  <plurals name="resend_finished_fmt">
+    <item quantity="one">Dneser dehsinif; tnes eno egassem.</item>
+    <item quantity="other">Dneser dehsinif; tnes %1$d segassem.</item>
+  </plurals>
   <!--       
        ############################################################
        # Board info/error dialog messages
@@ -568,9 +620,12 @@
        ############################################################
       -->
   <!-- Notifies user of a normal robot move -->
-  <string name="str_robot_moved">Eht tobor edam siht evom:\u0020</string>
+  <string name="str_robot_moved_fmt">Eht tobor %1$s edam siht evom:\u0020</string>
   <!-- Notifies user of a robot trade move -->
-  <string name="strd_robot_traded_fmt">degnahcxe %1$d selit.</string>
+  <plurals name="strd_robot_traded_fmt">
+    <item quantity="one">degnahcxe eno elit.</item>
+    <item quantity="other">degnahcxe %1$d selit.</item>
+  </plurals>
   <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
   <string name="strs_values_header_fmt">%1$s seulav/stnuoc:\n</string>
@@ -602,20 +657,6 @@
          phonies is set to lose turn when word used not in wordlist
          -->
   <string name="str_phony_rejected">Lagelli drow ni evom; nrut !tsol</string>
-  <!-- Used in formatting exchange move summaries: passed means the
-         user skipped his turn, or made a move involving 0 tiles for 0
-         points -->
-  <string name="str_passed">Dessap</string>
-  <!-- formats tiles and score together, and probably doesn't need
-         translation unless the colon ':' needs to be replaced -->
-  <string name="strsd_summaryscored_fmt">%1$s:%2$d</string>
-  <!-- Used in formatting reports of trades (exchanges of tiles).
-         Number of tiles traded is substituted for %1$d-->
-  <string name="strd_traded_fmt">Degnahcxe %1$d selit</string>
-  <!-- Used in formatting history and move reports; means user
-         skipped a turn because of an attempted illegal move/play of a
-         phony -->
-  <string name="str_lostturn">Tsol nrut</string>
   <!-- Beginning of the message presented to a user when asking him
          to confirm committing the current turn-->
   <string name="str_commit_confirm">Timmoc eht tnerruc ?evom\n</string>
@@ -632,10 +673,14 @@
   <string name="strd_turn_score_fmt">Erocs rof nrut: %1$d\n</string>
   <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
-  <string name="strd_remains_header_fmt">%1$d selit tfel ni loop.</string>
-  <!-- Intro to the paragraph lisiting all of the tiles remaining -->
-  <string name="strd_remains_expl_fmt">%1$d selit tfel ni loop dna lla
-    ]s[yart:\n</string>
+  <plurals name="strd_remains_header_fmt">
+    <item quantity="other">%1$d selit tfel ni loop.</item>
+  </plurals>
+  <!-- Intro to the paragraph listing all of the tiles remaining -->
+  <plurals name="strd_remains_expl_fmt">
+    <item quantity="other">%1$d selit tfel ni loop dna lla
+      syart:\n</item>
+  </plurals>
   <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
   <string name="confirm_undo_last">Era uoy erus uoy tnaw ot odnu eht
@@ -689,14 +734,16 @@
   <string name="prefs_names">Reyalp seman</string>
   <!-- clarification of the above -->
   <string name="prefs_names_summary">Tluafed reyalp seman</string>
-  <!-- Label for the first "player name" preference -->
+  <!-- Label for the first player color preference -->
   <string name="pref_player1_name">Tsrif reyalp</string>
-  <!-- Label for the second "player name" preference (unused)-->
+  <!-- Label for the second player color preference -->
   <string name="pref_player2_name">Dnoces reyalp</string>
-  <!-- Label for the third "player name" preference (unused) -->
+  <!-- Label for the third player color preference -->
   <string name="pref_player3_name">Driht reyalp</string>
-  <!-- Label for the fourth "player name" preference (unused)-->
+  <!-- Label for the fourth player color preference -->
   <string name="pref_player4_name">Htruof reyalp</string>
+  <!-- Label for the first "human player" name preference -->
+  <string name="pref_human_name">Namuh reyalp</string>
   <!-- Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. -->
   <string name="tell_unused">Ton desu tey…</string>
@@ -764,6 +811,12 @@
   <!-- clarification of above -->
   <string name="hide_title_summary">Gnidih eht emag eman stel eht
         draob eb ylthgils regral</string>
+  <!-- Checkbox that when set prevents showing the newgame buttons
+         on the main screen to save space -->
+  <string name="hide_newgames_title">Edih emagwen snottub</string>
+  <!-- clarification of above -->
+  <string name="hide_newgames_summary">Gnidih eht emagwen snottub ni
+        eht niam neercs sekam erom semag elbisiv</string>
   <!-- Checkbox that when set makes taps on the board manipulate an
          arrow that then directs where tiles go when tapped in the
          tray. -->
@@ -973,35 +1026,36 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">Etivni won</string>
+  <string name="newgame_invite_more">Erom ofni</string>
+  <string name="newgame_drop_relay">Pord Yaler</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">Wen Htooteulb emag</string>
   <!-- EXPLAIN ME -->
-  <string name="bt_disabled">Htooteulb si ton elbaliava.  Siht yam
-      naem taht ruoy ecived nseod\'t troppus ,ti ro taht ti\'s neeb
-      denrut ffo.</string>
-  <!-- EXPLAIN ME -->
-  <string name="bt_networked_desc">Etaerc a emag taht lliw eb deyalp
-      aiv Htooteulb htiw secived taht era ybraen dna deriap htiw
-      sruoy.  Htob snottub lliw etaitini a emag htiw rehto secived
-      eno( ro )erom taht uoy esoohc morf( deriap secived taht ydaerla
-      evah Sdrowssorc dellatsni.)  Eht tsrif sesu stluafed; eht dnoces
-      stel uoy egnahc meht erofeb gninnigeb eht emag.</string>
+  <!-- <string name="bt_disabled">Bluetooth is not available.  This may -->
+  <!--   mean that your device doesn\'t support it, or that it\'s been -->
+  <!--   turned off.</string> -->
   <!-- The invitation process begins with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
-  <string name="sms_or_email">Dnes noitativni gnisu SMS )gnitxet( ro
-       aiv ?liame</string>
-  <string name="nfc_or_email">Dnes noitativni gnisu CFN dIordna(
-    gnimaeb – )WEn ro aiv ?liame</string>
-  <string name="nfc_or_sms_or_email">Dnes noitativni gnisu SMS
-    )gnitxet( ro CFN (\"Diordna gnimaeb\" – )WEn ro aiv ?liame</string>
+  <string name="invite_choice_sms">SMS )gnitxet(</string>
+  <string name="invite_choice_email">Liame</string>
+  <string name="invite_choice_bt">Htooteulb</string>
+  <string name="invite_choice_nfc">CFN (\"Diordna gnimaeb\")</string>
+  <string name="invite_choice_relay">Yaler/tenRetni</string>
+  <string name="invite_choice_title">Gnitivni sreyalp: ?woh</string>
+  <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
+  <!--    via email?</string> -->
+  <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
+  <!-- beaming &#8211; NEW) or via email?</string> -->
+  <!-- <string name="nfc_or_sms_or_email">Send invitation using SMS -->
+  <!-- (texting) or NFC (\"Android beaming\" &#8211; NEW) or via email?</string> -->
   <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
-  <string name="button_text">TXEt/sms</string>
-  <string name="button_html">Liame</string>
-  <string name="button_nfc">CFN</string>
+  <!-- <string name="button_text">SMS/Text</string>   -->
+  <!-- <string name="button_html">Email</string>   -->
+  <!-- <string name="button_nfc">NFC</string> -->
   <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
   <string name="invite_subject_fmt">Tel\'s yalp Sdrowssorc mOor( %1$s)</string>
@@ -1035,8 +1089,12 @@
   <string name="invite_chooser_sms">sms</string>
   <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-  <string name="query_trade_fmt">Era uoy erus uoy tnaw ot egnahcxe eht
-         detceles selit (%1$s?)</string>
+  <plurals name="query_trade_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot egnahcxe eht
+      detceles elit (%2$s?)</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot egnahcxe eht
+      %1$d detceles selit (%2$s?)</item>
+  </plurals>
   <!-- ############################################################
          # :Screens:
          # Chat screen
@@ -1050,7 +1108,7 @@
       -->
   <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-  <string name="chat_title_fmt">%1$s egassem yrotsih</string>
+  <string name="chat_title_fmt">%1$s segassem</string>
   <!-- Prefix for local messages -->
   <string name="chat_local_id">Em:\u0020</string>
   <!-- Prefix for remote messages -->
@@ -1069,38 +1127,6 @@
          other devices in the game: no "clear chat" message is
          transmitted. -->
   <string name="chat_menu_clear">Raelc yrotsih</string>
-  <!-- ############################################################
-         # :Screens:
-         # RelayGameActivity screen
-         #
-         # This screen is a simple alternative to the Game Configure
-         # screen.  You'll get it when you choose the list_item_config
-         # on certain unconfigured simple relay games (currently simple
-         # means they have 2 players.  These days about the only way to
-         # get this screen is to create a relay game manually and to
-         # abort after making the room name empty.  That is, this is
-         # left over from an older way of helping people connect, from
-         # before invitations.
-
-         # The dialog has a list of instructions, two text fields for
-         # room name and local player name, and two buttons.
-         ############################################################
-         -->
-  <!-- This is the heading above the list of steps.  The default
-         language is substituted for %1$s. -->
-  <string name="relay_game_explain_fmt">Ot trats a cisab dekrowten reyalp-owt
-        emag ni %1$s:</string>
-  <!-- These four strings are displayed as step-by-step
-         instructions-->
-  <string name="explain_b1">• Eerga no a moor eman htiw eht rehto
-      reyalp.</string>
-  <string name="explain_b2">• Retne eht moor eman ni eht tsrif xob
-      woleb. Eht moor seman no ruoy owt senohp tsum eb
-      lacitnedi.</string>
-  <string name="explain_b3">• ,yllanoitpo retne reyalp seman ni eht
-      dnoces xob eno( rep )enohp</string>
-  <string name="explain_b4">• Sserp eht \"Yalp emag\" nottub no htob
-      senohp ot trats eht emag.</string>
   <!-- This is the "hint" printed in light text in the empty player
          name field -->
   <string name="local_name_hint">Reyalp eman</string>
@@ -1176,7 +1202,7 @@
          many players are expected and only connects devices where the
          numbers match. -->
   <string name="str_reg_unexpected_user">Desufer tpmetta ot retsiger
-         detcepxenu ]s[resu</string>
+         detcepxenu resu.</string>
   <!-- Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. -->
@@ -1209,16 +1235,14 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-  <string name="no_dict_fmt">Uoy deen ot daolnwod a tnemecalper %2$s
-    tsildrow erofeb uoy nac nepo emag \"%1$s\". eHt( lanigiro yam evah
-    neeb deteled ro derots no na lanretxe drac taht si on regnol
-    elbaliava.)</string>
+  <string name="no_dict_fmt">Emag \"%1$s\" seriuqer a %2$s tsildrow.
+    Esaelp daolnwod eno erofeb gninepo.</string>
   <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
   <string name="no_dict_subst_fmt">Elbanu ot nepo emag \"%1$s\" esuaceb
       tsildrow %2$s ton dnuof. tI( yam evah neeb ,deteled ro derots
-      no na lanretxe drac taht si on regnol elbaliava.) Uoy nac
+      no na lanretxe drac taht si on regnol elbaliava.)\n\nUoy nac
       daolnwod a tnemecalper ro etutitsbus rehtona %3$s
       tsildrow.</string>
   <!-- Text of button displayed when downloading is an option -->
@@ -1252,8 +1276,10 @@
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
     down. -->
-  <string name="notify_title">Sevom edam</string>
-  <string name="notify_body_fmt">Ytivitca ni emag \"%1$s\"</string>
+  <string name="notify_title_fmt">Evom ni emag %1$s</string>
+  <string name="notify_title_turn_fmt">Ruoy nrut ni emag %1$s</string>
+  <string name="notify_chat_title_fmt">Tahc egassem ni emag %1$s</string>
+  <string name="notify_chat_body_fmt">%1$s: %2$s</string>
   <!--
         ############################################################
         # Dialogs
@@ -1261,8 +1287,6 @@
       -->
   <!-- Text for buttons at the bottom of dialogs.  These first are
       in many places.-->
-  <string name="button_ok">KO</string>
-  <string name="button_cancel">Lecnac</string>
   <string name="button_yes">Sey</string>
   <string name="button_no">On</string>
   <!-- Used in Game config dialog to confirm saving changes that reset a game -->
@@ -1332,7 +1356,7 @@
        ########################################################### 
       -->
   <!-- Title of New user info dialog-->
-  <string name="newbie_title">Wen resu ofni</string>
+  <string name="newbie_title">Ereh\'s a pit</string>
   <!-- Text for button in new-user-info dialog with title just
          above.  -->
   <string name="button_notagain">Od ton wohs niaga</string>
@@ -1473,12 +1497,11 @@
        ###########################################################
       -->
   <!-- Welcome dialog title -->
-  <string name="default_name_title">Emoclew</string>
+  <string name="default_name_title">Tluafed reyalp eman</string>
   <!-- Welcome dialog text -->
-  <string name="default_name_message">Sknaht rof gnillatsni
-      !sdrowssorc\n\nLeef eerf ot retne ruoy eman ereh. Ti lliw eb desu
-      nehw gnitaerc wen semag.  uOy( nac egnahc ti retal ni eht \"Wen
-      emag tluafed\" noitces fo Sgnittes.)</string>
+  <string name="default_name_message">Esaelp retne ruoy eman
+    ereh. Ti lliw eb desu nehw gnitaerc wen semag. uOy( nac egnahc ti
+    retal ni eht \"Wen emag tluafed\" noitces fo Sgnittes.)</string>
   <!-- 
        ###########################################################
        # :Dialogs:
@@ -1491,7 +1514,7 @@
   <string name="about_vers_fmt">Sdrowssorc rof ,diordna Noisrev %1$s,
         ver %2$s, tliub no %3$s.</string>
   <!-- copyright info -->
-  <string name="about_copyright">Thgirypoc )C( 4102-8991 yb Cire
+  <string name="about_copyright">Thgirypoc )C( 6102-8991 yb Cire
         Esuoh. Siht nepo/eerf ecruos erawtfos si desaeler rednu eht UNG Cilbup
         Esnecil.</string>
   <!-- Another paragraph in the about dialog -->
@@ -1502,7 +1525,7 @@
   <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language-->
-  <string name="xlator"/>
+  <string name="xlator">]ytpme[</string>
   <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
   <string name="about_credits">Rabloot snoci yb Haras Uhc.</string>
@@ -1535,6 +1558,7 @@
       ,enilno eht sdrow tsuj deyalp.</string>
   <!--  -->
   <string name="button_move">Evom</string>
+  <string name="button_newgroup">Wen puorg</string>
   <!--  -->
   <string name="button_search">Dnif</string>
   <!--  -->
@@ -1549,10 +1573,10 @@
   <string name="pick_faceup">Kcip selit pu-ecaf</string>
   <!--  -->
   <string name="dict_browse_title_fmt">%1$s (%2$d sdrow gnisu %3$d-%4$d
-      )selit</string>
+    )selit</string>
   <!--  -->
   <string name="dict_browse_title1_fmt">%1$s (%2$d sdrow gnisu %3$d
-      )selit</string>
+    )selit</string>
   <!--  -->
   <string name="dict_browse_nowords_fmt">On drow ni %1$s strats htiw
       %2$s.</string>
@@ -1583,15 +1607,14 @@
   <string name="email_body_rev_fmt">fI( ,tnaveler esaelp edulcni eht
       noisrev: \"%1$s\"; dna ledom/ekam fo ruoy enohp ro
       telbat.)</string>
-  <string name="newgame_enable_bt">Nrut Htooteulb no</string>
-  <!--  -->
-  <string name="bt_pick_rescan_button">Nacser</string>
+  <!-- <string name="newgame_enable_bt">Turn Bluetooth on</string> -->
+  <!-- In the Bluetooth invite device dialog -->
+  <string name="bt_pick_addall_button">Dda lla Deriap</string>
   <!--  -->
   <string name="bt_pick_clear_button">Evomer dekcehc</string>
   <!--  -->
-  <string name="scan_progress">Gninnacs rof Sdrowssorc no deriap secived</string>
-  <!--  -->
-  <string name="invite_progress">Gnidnes wen emag ofni…</string>
+  <string name="invite_progress_title">Gnitcennoc...</string>
+  <string name="invite_progress_fmt">Gnidnes noitativni ot Sdrowssorc no %1$s</string>
   <!--  -->
   <string name="summary_wait_host">Gnitiaw rof ]s[noitcennoc</string>
   <!--  -->
@@ -1601,81 +1624,104 @@
   <!--  -->
   <string name="summary_conn">Emag ni yalp</string>
   <!--  -->
-  <string name="new_bt_title">Wen emag aiv Htooteulb</string>
+  <string name="invite_notice_title">Wen emag aiv Noitativni</string>
   <!--  -->
-  <string name="new_bt_body_fmt">Deriap ecived %1$s sah detivni uoy ot
-      yalp</string>
+  <string name="new_bt_body_fmt">A reyalp no eht ecived %1$s stnaw ot trats a emag</string>
+  <string name="new_relay_body">Pat ot nepo eht wen emag</string>
   <!--  -->
-  <string name="bt_bad_proto_fmt">Sdrowssorc no %1$s gnorw noisrev rof
-      Htooteulb yalp.</string>
+  <string name="bt_bad_proto_fmt">Eht noisrev fo Sdrowssorc no
+    \"%1$s\" si elbitapmocni htiw siht eno rof yalp gnisu
+    Htooteulb. Eno fo uoy yam deen ot edargpu erofeb uoy nac
+    eunitnoc.</string>
+  <string name="sms_bad_proto_fmt">Eht noisrev fo Sdrowssorc no eht
+    enohp htiw rebmun \"%1$s\" si elbitapmocni htiw siht eno rof yalp
+    gnisu SMS. Eno fo uoy yam deen ot edargpu erofeb uoy nac
+    eunitnoc.</string>
   <!--  -->
-  <string name="new_btmove_title">Wen evom aiv Htooteulb</string>
+  <string name="new_btmove_title">Noitativni aiv Htooteulb</string>
   <!--  -->
   <string name="new_move_body">Eno ro erom sevom sah devirra</string>
   <!--  -->
-  <string name="invite_bt_desc_fmt">Esaelp tceles eht %1$d ]s[ecived uoy
-        tnaw ot edulcni ni siht emag.  Esu eht Nacser nottub fi uoy
-        nod\'t ees a ecived uoy tcepxe.</string>
+  <plurals name="invite_bt_desc_fmt">
+    <item quantity="one">Esaelp tceles eht ecived
+      uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
+      nottub fi uoy nod\'t ees eht ecived uoy tcepxe.</item>
+    <item quantity="other">Esaelp tceles pu ot %1$d ]s[ecived
+      uoy tnaw ot edulcni ni siht emag.  Esu eht \"%2$s\"
+      nottub fi uoy nod\'t ees a ecived uoy tcepxe.</item>
+  </plurals>
   <!--  -->
-  <string name="bt_resend_fmt">Htooteulb dnes ot %1$s deliaf; yrter %3$d ni
-        %2$d sdnoces.</string>
+  <string name="bt_resend_fmt">Htooteulb dnes ot %1$s deliaf; yrter
+    %3$d ni %2$d sdnoces.</string>
   <!--  -->
   <string name="bt_fail_fmt">Htooteulb sdnes ot %1$s evah deliaf oot ynam
         semit. Nepo-er eht emag ot yrt niaga.</string>
   <!--  -->
   <string name="button_invite">Etivni dekcehc</string>
-  <!--  -->
-  <string name="btname_label">Wen Htooteulb emag eman</string>
-  <!--  -->
-  <string name="smsname_label">Wen SMS emag eman</string>
+  <!-- Title of device picker during invitation to a game via Bluetooth -->
+  <string name="bt_invite_title">Htooteulb Noitativni</string>
+  <!-- Title of phone number picker during invitation to a game via SMS -->
+  <string name="sms_invite_title">SMS Noitativni</string>
+  <string name="relay_invite_title">Yaler Noitativni</string>
   <!--  -->
   <string name="game_btname_title">Htooteulb emag eman</string>
   <!--  -->
-  <string name="game_smsname_title">Eman ruoy emag</string>
+  <string name="game_name_title">Eman ruoy emag</string>
   <!--  -->
-  <string name="dft_name_fmt">Emag %1$X</string>
+  <string name="game_name_label">Wen emag eman:</string>
+  <string name="name_copy_fmt">%1$s ypoc</string>
   <!--  -->
   <string name="newgame_sms_header">Wen SMS Emag</string>
   <!--  -->
-  <string name="sms_networked_desc">Etaerc a emag taht lliw eb
-    deyalp aiv elbisivni txet segassem.  Eht \"Etivni won\" nottub
-    strats a ecived-owt emag dna spleh uoy etivni a dneirf ot nioj ti.
-    Ro sserp \"Erugifnoc tsrif\" ot egnahc emos fo eht stluafed erofeb
-    uoy trats ruoy SMS emag. uOy(\'ll evah a ecnahc ot dnes
-    setivni retal.)</string>
-  <!--  -->
-  <string name="sms_disabled">Gniyalp aiv SMS si yltnerruc delbasid.
-    Uoy nac elbane ti ni Krowten&gt;-sGnittes emag sgnittes.</string>
+  <!-- <string name="sms_disabled">Playing via SMS is currently disabled. -->
+  <!-- You can enable it in Settings->Network game settings.</string> -->
   <!--  -->
   <string name="dft_sms_name_fmt">SMS Emag %1$X</string>
   <!--  -->
-  <string name="new_sms_title">Wen emag aiv SMS</string>
-  <!--  -->
   <string name="new_name_body_fmt">%1$s sah detivni uoy ot yalp</string>
-  <!--  -->
-  <string name="new_smsmove_title">Wen evom aiv SMS</string>
   <!--  -->
   <string name="button_sms_add">Tropmi tcatnoc</string>
   <!--  -->
-  <string name="invite_sms_desc_fmt">Esaelp kcehc eht %1$d enohp
-    ]s[rebmun uoy tnaw ot etivni ot ruoy wen ,emag neht pat \"Etivni
-    dekcehc\".</string>
+  <string name="button_relay_add">Nacs semag</string>
+  <!--  -->
+  <plurals name="invite_sms_desc_fmt">
+    <item quantity="one">Esaelp kcehc eht enohp rebmun uoy tnaw ot
+      etivni ot ruoy wen ,emag neht pat \"%2$s\".</item>
+    <item quantity="other">Esaelp kcehc eht %1$d enohp srebmun uoy
+      tnaw ot etivni ot ruoy wen ,emag neht pat \"%2$s\".</item>
+  </plurals>
+  <!--  -->
+  <plurals name="invite_relay_desc_fmt">
+    <item quantity="one">Esaelp kcehc eht ecived uoy tnaw ot etivni
+      ot ruoy wen ,emag neht pat \"%2$s\".</item>
+    <item quantity="other">Esaelp kcehc eht %1$d secived uoy tnaw ot etivni
+      ot ruoy wen ,emag neht pat \"%2$s\".</item>
+  </plurals>
   <!--  -->
   <string name="manual_owner_name">tOn( ni )stcatnoc</string>
   <!--  -->
   <string name="warn_nomobile_fmt">Eht rebmun %1$s rof %2$s si ton
     a \"elibom\" rebmun. Tropmi ?yawyna</string>
+  <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
+  <string name="empty_sms_inviter">Siht enohp tsil si ytpme. Esu eht
+    \"Tropmi tcatnoc\" nottub ot dda elpoep uoy tnaw ot ,etivni eht +
+    nottub ot retne srebmun yltcerid.</string>
   <!--  -->
-  <string name="empty_sms_inviter">Enohp tsil si ytpme. Esu eht
-    \"Tropmi tcatnoc\" nottub ot dda elpoep uoy tnaw ot
-    ,etivni eht + nottub ot retne srebmun yltcerid.</string>
+  <string name="empty_relay_inviter">Siht tsil fo secived si
+    ytpme. Esu eht \"Nacs semag\" nottub ot nacs ruoy dlo semag
+    rof stnenoppo. Esu eht \"+\" nottub ot retne ecived SDi yltcerid.</string>
   <!--  -->
   <string name="get_sms_number">Retne enohp rebmun:</string>
+  <string name="get_relay_number">Retne ecived DI:</string>
   <!--  -->
-  <string name="confirm_clear">Era uoy erus uoy tnaw ot eteled eht
-    dekcehc enohp ?]s[rebmun</string>
-  <!--  -->
-  <string name="invite_success">Noitativni deviecer.</string>
+  <plurals name="confirm_clear_sms_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot eteled eht dekcehc
+      enohp ?rebmun</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot eteled eht
+       %1$d dekcehc enohp ?srebmun</item>
+  </plurals>
+  <string name="confirm_clear_relay">Era uoy erus uoy tnaw ot eteled eht
+    dekcehc ?]s[ecived</string>
   <!--  -->
   <string name="connect_label_sms">Noitcennoc aiv( )TXet/sms</string>
   <!--  -->
@@ -1707,11 +1753,16 @@
   <string name="board_menu_dict">Esworb tsildrow</string>
   <!--  -->
   <string name="game_list_tmp">Gnidliub emag yrammus…</string>
-  <!--  -->
-  <string name="connstat_nonet">Siht si a enoladnats emag. Ereht si
-    on krowten sutats.</string>
+  <string name="summary_busy">Yrammus elbaliavanu</string>
+  <string name="connstat_net_noaddr">Siht dekrowten emag sah on yaw
+    ot tcennoc dna lliw reven eb elbayalp.\n\ntI( saw ylbaborp detaerc
+    morf na noitativni taht ndid\'t yficeps yna yaw fo gnitcennoc
+    taht ruoy ecived stroppus.)</string>
   <!--  -->
   <string name="connstat_net_fmt">Krowten sutats rof emag detcennoc aiv
+    %1$s:</string>
+  <!-- First line of debug-only Invites list dialog -->
+  <string name="invites_net_fmt">Snoitativni tnes rof emag detcennoc aiv
     %1$s:</string>
   <!--  -->
   <string name="connstat_succ">lufsseccus</string>
@@ -1729,11 +1780,9 @@
   <!--  -->
   <string name="connstat_noreceipt">On segassem evah neeb deviecer.</string>
   <!--  -->
-  <string name="connstat_relay">yaler/tenretni</string>
+  <string name="connstat_relay">Yaler/tenretni</string>
   <!--  -->
-  <string name="connstat_sms">gnitxet/sms</string>
-  <!--  -->
-  <string name="connstat_bt">htooteulb</string>
+  <string name="connstat_sms">GNItxet/sms</string>
   <!--  -->
   <string name="enable_sms">Wolla semag aiv SMS</string>
   <!--  -->
@@ -1757,9 +1806,16 @@
   <string name="confirm_sms_willpay">Sey: I\'ll yap lla reirrac segrahc</string>
   <!--  -->
   <string name="warn_sms_disabled">Yalp aiv SMS si yltnerruc
-    ,delbasid os on sevom lliw eb tnes rof siht emag.  fI( uoy tnaw ot
-    elbane yalp aiv ,SMs og ot Krowten&gt;-sGnittes emag sgnittes.)
+    delbasid. On sevom lliw eb tnes aiv SMS.\n\nUoy nac elbane yalp
+    aiv SMS ,won ro retal.
     </string>
+  <string name="warn_bt_disabled">Htooteulb si yltnerruc ffo no siht
+    ecived. On sevom lliw eb tnes aiv Htooteulb.\n\nUoy nac elbane
+    Htooteulb ,won ro retal.
+    </string>
+  <string name="button_enable_sms">Elbane SMS</string>
+  <string name="button_enable_bt">Elbane Htooteulb</string>
+  <string name="button_later">Retal</string>
   <!--  -->
   <string name="gamel_menu_checkupdates">Kcehc rof setadpu</string>
   <string name="checkupdates_none_found">Gnihtyreve si etad-ot-pu.</string>
@@ -1772,9 +1828,9 @@
   <!--  -->
   <string name="new_app_avail">Pat ot daolnwod dna llatsni</string>
   <!-- Used in formatting final scores display -->
-  <string name="str_resigned">Dengiser</string>
-  <!-- Used in formatting final scores display -->
-  <string name="str_winner">Renniw</string>
+  <string name="str_winner_fmt" formatted="false">]Renniw[ s%: d%</string>
+  <string name="str_resigned_fmt" formatted="false">]Dengiser[ s%: d%</string>
+  <string name="str_placer_fmt" formatted="false">]d%#[ s%: d%</string>
   <!--  -->
   <string name="inform_dict_diffversion_fmt">Uoy dna eht tsoh fo siht
     emag era gnisu tnereffid snoisrev fo eht tsildrow %1$s.</string>
@@ -1787,8 +1843,12 @@
     tsrif.)</string>
   <!-- Shown in toast when relaunching after switching dicts -->
   <string name="reload_new_dict_fmt">Gnidaoler emag htiw %1$s</string>
+  <!-- Title of notification shown when invitation requires a
+	     wordslist that's not installed -->
   <string name="missing_dict_title">Emag noitativni gnidnep</string>
-  <string name="missing_dict_detail">Deriuqer tsildrow gnissim</string>
+  <!-- body of notification shown when invitation requires a
+	     wordslist that's not installed -->
+  <string name="missing_dict_detail">Pat ot daolnwod gnissim tsildrow</string>
   <string name="invite_dict_missing_title">Gnissim tsildrow</string>
   <string name="invite_dict_missing_body_fmt">%1$s sah detivni uoy ot
     yalp Sdrowssorc gnisu eht tsildrow %2$s rof( yalp ni %3$s,) tub ti
@@ -1812,17 +1872,25 @@
   <string name="list_group_movedown">Evom nwod</string>
   <string name="group_cur_games">Ym semag</string>
   <string name="group_new_games">Wen semag</string>
-  <string name="groups_confirm_del_fmt">Era uoy erus uoy tnaw ot eteled
-    eht %1$d detceles ?]s[puorg</string>
-  <string name="groups_confirm_del_games_fmt">\n\n(%1$d ]s[emag lliw
-    osla eb deteled.)</string>
+  <plurals name="groups_confirm_del_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot eteled
+      eht detceles ?puorg</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot eteled
+      eht %1$d detceles ?]s[puorg</item>
+  </plurals>
+  <plurals name="groups_confirm_del_games_fmt">
+    <item quantity="one">\n\neno( emag lliw osla eb deteled.)</item>
+    <item quantity="other">\n\n(%1$d semag lliw osla eb
+      deteled.)</item>
+  </plurals>
   <string name="rename_group_label">Egnahc eht eman fo siht puorg ot:</string>
   <string name="game_name_group_title">Eman puorg</string>
   <string name="cannot_delete_default_group_fmt">Eht puorg rof wen ,semag %1$s, 
     tonnac eb deteled.</string>
-  <string name="no_move_onegroup">Gnivom si elbissopmi litnu ereht
-    si erom naht eno puorg.</string>
-  <string name="group_name_fmt">%1$s (%2$d )semag</string>
+  <plurals name="group_name_fmt">
+    <item quantity="one">%1$s (%2$d )emag</item>
+    <item quantity="other">%1$s (%2$d )semag</item>
+  </plurals>
   <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
          just ended. -->
@@ -1852,13 +1920,11 @@
   <string name="enable_nfc">CFN si denrut ffo no siht ecived. Uoy
     nac esu eht Diordna Sgnittes ppa ot nrut ti no .</string>
   <string name="button_go_settings">Hcnual Sgnittes</string>
-  <string name="no_hide_titlebar">Siht gnittes si derongi no secived
-    ekil sruoy taht dneped no eht \"Noitca rab.\"</string>
   <string name="sms_ready_text">Pat eht gniviecer ecived won</string>
-  <string name="not_again_sms_ready">Uoy evah CFN delbane. Taht
-    snaem taht yna emit a draob taht\'s gnissim a reyalp si ,nepo uoy
-    nac pat a ybraen nosrep\'s ecived ot etivni reh/mih ot
-    yalp – fi ehs/eh si osla gnisu CFN.</string>
+  <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->
+  <!-- means that any time a board that\'s missing a player is open, you -->
+  <!-- can tap a nearby person\'s device to invite him/her to -->
+  <!-- play &#8211; if he/she is also using NFC.</string> -->
   <string name="pct_suffix">\u0020tcp.</string>
   <string name="menu_rateme">Etar Sdrowssorc</string>
   <string name="no_market">Elgoog Yalp ppa ton dnuof</string>
@@ -1869,9 +1935,16 @@
   <string name="gamel_menu_study">Tsilyduts…</string>
   <string name="slmenu_copy_sel">Ypoc ot draobpilc</string>
   <string name="slmenu_clear_sel">Eteled detceles</string>
-  <string name="confirm_studylist_clear_fmt">Era uoy erus uoy tnaw ot
-    eteled eht %1$d detceles ?]s[drow\n\nsIht( noitca tonnac eb enodnu.)</string>
-  <string name="paste_done_fmt">%1$d ]s[drow deipoc</string>
+  <plurals name="confirm_studylist_clear_fmt">
+    <item quantity="one">Era uoy erus uoy tnaw ot eteled eht
+      detceles ?drow\n\nsIht( noitca tonnac eb enodnu.)</item>
+    <item quantity="other">Era uoy erus uoy tnaw ot eteled eht %1$d
+      detceles ?sdrow\n\nsIht( noitca tonnac eb enodnu.)</item>
+  </plurals>
+  <plurals name="paste_done_fmt">
+    <item quantity="one">Eno drow deipoc</item>
+    <item quantity="other">%1$d sdrow deipoc</item>
+  </plurals>
   <string name="add_done_fmt">%1$s dedda ot %2$s tsilyduts</string>
   <string name="studylist_title_fmt">Tsilyduts rof %1$s</string>
   <string name="study_langpick">Ruoy sdrow rof:</string>
@@ -1889,7 +1962,10 @@
   <string name="loc_menu_xlate">Etalsnart</string>
   <string name="loc_lang_blessed">%1$s )laiciffo(</string>
   <string name="loc_lang_local">%1$s )sruoy(</string>
-  <string name="new_xlations_fmt">Dellatsni %1$d wen snoitalsnart</string>
+  <plurals name="new_xlations_fmt">
+    <item quantity="one">Dellatsni eno wen noitalsnart</item>
+    <item quantity="other">Dellatsni %1$d wen snoitalsnart</item>
+  </plurals>
   <string name="xlations_enabled_title">Elbane lacol gnitalsnart</string>
   <string name="xlations_enabled_summary">Dda noitpo ot yreve neercs unem</string>
   <string name="data_gsm_only">SMS Atad si ylno elbaliava no MSG senohp.</string>
@@ -1899,7 +1975,23 @@
   <string name="loc_filters_screen">Tsetal neercs</string>
   <string name="loc_filters_menu">Tsetal unem</string>
   <string name="loc_filters_modified">Deifidom yb em</string>
-  <string name="loc_main_english">Hsilgne</string>
+  <string name="lang_name_english">Hsilgne</string>
+  <string name="lang_name_french">Hcnerf</string>
+  <string name="lang_name_german">Namreg</string>
+  <string name="lang_name_turkish">Hsikrut</string>
+  <string name="lang_name_arabic">Cibara</string>
+  <string name="lang_name_spanish">Hsinaps</string>
+  <string name="lang_name_swedish">Hsidews</string>
+  <string name="lang_name_polish">Hsilop</string>
+  <string name="lang_name_danish">Hsinad</string>
+  <string name="lang_name_italian">Nailati</string>
+  <string name="lang_name_dutch">Hctud</string>
+  <string name="lang_name_catalan">Nalatac</string>
+  <string name="lang_name_portuguese">Eseugutrop</string>
+  <string name="lang_name_russian">Naissur</string>
+  <string name="lang_name_czech">Hcezc</string>
+  <string name="lang_name_greek">Keerg</string>
+  <string name="lang_name_slovak">Kavols</string>
   <!-- for loc item edit menu -->
   <string name="loc_item_clear">Raelc</string>
   <string name="loc_item_check">Kcehc</string>
@@ -1926,11 +2018,15 @@
   <string name="dict_info_fmt">Rebmun fo sdrow: %1$d\nDaolnwod ezis:
     %2$dK\nEton: %3$s</string>
   <string name="note_none">)Enon(</string>
-  <string name="dict_on_server">Elbadaolnwod</string>
-  <string name="lang_name_fmt">%1$s (%2$d )stsildrow</string>
+  <string name="dict_on_server">Pat rof sliated</string>
+  <plurals name="lang_name_fmt">
+    <item quantity="one">%1$s (%2$d )tsildrow</item>
+    <item quantity="other">%1$s (%2$d )stsildrow</item>
+  </plurals>
+  <string name="dict_desc_fmt">%1$s (%2$s/%3$d )sdrow</string>
   <string name="lang_unknown">Nwonknu</string>
   <string name="not_again_dicts">Siht neercs stel uoy llatsni wen
-    stsilsdrow dna weiv eht seno uoy ydaerla evah.\n\nTahw stsildrow
+    stsildrow dna weiv eht seno uoy ydaerla evah.\n\nTahw stsildrow
     uoy evah dellatsni senimreted:\n• Tahw segaugnal uoy nac yalp
     ni\n• Woh trams eht tobor reyalp si\n• Tahw sdrow era
     lagel.\n\nKcehc eht \"Wohs elbadaolnwod\" xob ta eht pot ot ees
@@ -1939,4 +2035,241 @@
   <string name="force_tablet_summary">Neve fi ym neercs si oot llams</string>
   <string name="activity_button">Enap-elgnis</string>
   <string name="fragment_button">Enap-laud</string>
+  <!-- Nagging: title of notification reminder message -->
+  <string name="nag_title">Rednimer: Ti\'s ruoy nrut</string>
+  <!-- body of warning notification reminder message. First three
+    are used to build a string based on the length of time that's then
+    inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
+    4 hour[s] ago." -->
+  <plurals name="nag_minutes_fmt">
+    <item quantity="one">%1$d etunim</item>
+    <item quantity="other">%1$d setunim</item>
+  </plurals>
+  <plurals name="nag_hours_fmt">
+    <item quantity="one">%1$d ruoh</item>
+    <item quantity="other">%1$d sruoh</item>
+  </plurals>
+  <plurals name="nag_days_fmt">
+    <item quantity="one">%1$d yad</item>
+    <item quantity="other">%1$d syad</item>
+  </plurals>
+  <string name="nag_body_fmt">%1$s devom erom naht %2$s oga.</string>
+  <!-- above is inserted in this the last time I warn -->
+  <string name="nag_warn_last_fmt">Tsal gninraw: %1$s</string>
+  <!-- Used when prev player's name can't be looked up -->
+  <string name="prev_player">Ruoy tnenoppo</string>
+  <!-- formatting for last move summary in notifications -->
+  <string name="lmi_pass_fmt">%1$s dessap 0( )stniop</string>
+  <plurals name="lmi_move_fmt">
+    <item quantity="other">%1$s deyalp %2$s rof %3$d stniop</item>
+  </plurals>
+  <plurals name="lmi_trade_fmt">
+    <item quantity="one">%1$s dedart eno elit</item>
+    <item quantity="other">%1$s dedart %2$d selit</item>
+  </plurals>
+  <string name="lmi_phony_fmt">%1$s tsol a nrut</string>
+  <string name="lmi_tiles_fmt">Selit dengissa ot %1$s</string>
+  <string name="bt_no_devs">Uoy yltnerruc evah on deriap Htooteulb
+	secived. Dluow uoy ekil ot nepo eht Diordna Sgnittes Lenap ot dda
+	eno ro ?erom\n\nuOy( yam osla deen ot nepo ti no eht ecived uoy
+	tnaw ot riap htiw.)</string>
+  <string name="app_not_found_fmt">Elbanu ot tcennoc ot Sdrowssorc
+	no eht ecived %1$s.  Esaelp kcehc taht eht ecived si nihtiw egnar
+	dna taht Sdrowssorc si dellatsni no ti.</string>
+  <!-- label within default wordlists in app preferences -->
+  <string name="default_language">Tluafed egaugnal</string>
+  <!-- Title of preference in which you select which addressing
+	     modes network games will use to communicate -->
+  <string name="title_addrs_pref">Etacinummoc aiv</string>
+  <string name="new_game">Wen ecived-eno emag</string>
+  <string name="new_game_networked">Wen dekrowten emag</string>
+  <string name="rematch_name_fmt">Hctamer: %1$s</string>
+  <string name="new_game_message">Dluow uoy ekil ot etaerc siht emag
+    gnisu tluafed ?sgnittes\n\nRo dluow uoy ekil ot erugifnoc ti
+    ?tsrif</string>
+  <string name="new_game_message_nodflt">Siht emag tsum eb
+    derugifnoc erofeb ti nac eb denepo.</string>
+  <string name="new_game_message_net">uOy( lliw evah a ecnahc ot
+    etivni rehto sreyalp nehw ti si nepo.)</string>
+  <string name="use_defaults">Esu stluafed</string>
+  <string name="nplayers_prompt">Rebmun no siht ecived</string>
+  <plurals name="nplayers_fmt">
+    <item quantity="one">Eno reyalp</item>
+    <item quantity="other">%1$d sreyalp</item>
+  </plurals>
+  <string name="err_dup_invite_fmt">Etacilpud noitativni detcejer:
+    ecived \"%1$s\" sah ydaerla detpecca na noitativni ot siht
+    emag.</string>
+  <string name="network_advanced_title">Decnavda</string>
+  <string name="network_advanced_summary">Rof decneirepxe sreyalp</string>
+  <string name="invite_multi_title">Etivni elpitlum</string>
+  <string name="invite_multi_summary">Etivni erom naht eno reyalp rep etomer ecived</string>
+  <string name="enable_pubroom_title">Elbane cilbup smoor</string>
+  <string name="enable_pubroom_summary">Smoor srehto nac ees dna nioj</string>
+  <string name="connection_via_label">Egnahc Etacinummoc aiv</string>
+  <string name="set_pref">Edih snottub</string>
+  <string name="not_again_hidenewgamebuttons">Eseht owt snottub od
+    eht emas gniht sa eht tsrif owt smeti ni siht wodniw\'s Noitca Rab
+    ro( )unem. Fi uoy ekil uoy nac edih eht snottub ot ekam erom semag
+    elbisiv.\n\nfI( uoy retal tnaw ot edihnu meht og ot eht Ecnaraeppa
+    noitces fo Ppa )sgnittes.
+    </string>
+  <string name="waiting_title">Gnitiaw rof sreyalp</string>
+  <!-- Button for alert with title above -->
+  <string name="waiting_invite_title">Gnitiaw rof esnopser</string>
+  <string name="waiting_rematch_title">Hctamer ni ssergorp</string>
+  <!-- Button for alert with title above -->
+  <string name="button_wait">Tiaw</string>
+  <string name="button_reinvite">Etivni-er</string>
+  <string name="invite_stays">sIht( golaid lliw yats pu litnu lla
+    etomer sreyalp evah detcennoc. Uoy nac esolc eht emag fi uoy
+    tcepxe ti ot ekat a elihw. Etomer sreyalp lliw llits eb elba ot
+    ,tcennoc dna uoy lliw eb deifiton nehw yeht od.)</string>
+  <string name="nfc_just_tap">Ot etivni aiv CFN tsuj hcuot eht kcab
+    fo siht ecived tsniaga eht eno uoy tnaw ot yna—etivni emit eht
+    emag si nepo.</string>
+  <string name="warn_no_comms">Yreve dekrowten emag tsum evah ta
+    tsael eno yaw fo gnitacinummoc. Fi uoy evah on tluafed noitcennoc
+    snoitpo yreve wen dekrowten emag lliw evah ot eb derugifnoc
+    yllaunam.</string>
+  <string name="config_no_connvia">Siht emag sah on yaw ot tcennoc
+    dna tonnac eb devas. Dluow uoy ekil ot dracsid ruoy ,segnahc ro
+    tide ot evig ti a yaw ot ?tcennoc</string>
+  <string name="button_edit">Tide</string>
+  <string name="button_discard_changes">Dracsid segnahc</string>
+  <string name="rematch_sent_toast">Hctamer snoitativni tnes</string>
+  <string name="rematch_msg">Siht emag si gnitsoh a ,hctamer dna sah
+    tnes na noitativni. Uoy lliw ees siht egassem litnu ti sah neeb
+    detpecca.</string>
+  <string name="not_again_enablepublic">Cilbup smoor evah neeb edam
+    na \"decnavda\" erutaef ni siht esaeler. Fi uoy erew gnisu meht
+    dna tnaw meht ,kcab elbane meht won. Uoy nac nrut meht ffo niaga
+    ni Sgnittes.</string>
+  <string name="disable_nags_title">Nrut srednimer</string>
+  <string name="disable_nag_title">Elbasid krowten emag srednimer</string>
+  <string name="disable_nag_summary">Od ton yfiton em on rettam
+    woh gnol ti\'s neeb ym nrut</string>
+  <string name="disable_nag_solo_title">Elbasid olos emag srednimer</string>
+  <string name="confirm_get_locdict_fmt">Ruoy ecived si tes pu rof
+  %1$s. Dluow uoy ekil ot daolnwod a tsildrow os uoy nac yalp
+  Sdrowssorc ni %1$s?</string>
+  <!-- Debugging stuff. Localize if you think your langauge users will
+       care. -->
+  <string name="advanced">Rof gniggubed</string>
+  <string name="advanced_summary">Uoy dluohs reven deen eseht...</string>
+  <string name="relay_host">Yaler tsoh</string>
+  <string name="redir_host">Etivni tcerider tsoh</string>
+  <string name="dict_host">Tsildrow daolnwod LRU</string>
+  <string name="logging_on">Elbane gniggol</string>
+  <string name="logging_on_summary">esaeler( sdliub )ylno</string>
+  <string name="debug_features">Elbane gubed serutaef</string>
+  <string name="debug_features_summary">Smetiunem cte. esaeler( sdliub
+  )ylno</string>
+  <string name="title_send_data_sms">Dnes SMS sa atad</string>
+  <string name="summary_send_data_sms">mSG( senohp )ylno</string>
+  <string name="board_menu_game_netstats">Krowten stats</string>
+  <string name="board_menu_game_showInvites">Wohs setivni</string>
+  <string name="netstats_title">Emag krowten stats</string>
+  <string name="git_rev_title">Ecruos noisrev di</string>
+  <string name="devid_title">Ecived DI no( )yaler</string>
+  <string name="relay_port">Yaler emag trop</string>
+  <string name="proxy_port">Yaler ecived trop</string>
+  <string name="name_dict_fmt">%1$s/%2$s</string>
+  <string name="gamel_menu_storedb">Etirw semag ot DS drac</string>
+  <string name="gamel_menu_loaddb">Daol semag morf DS drac</string>
+  <string name="enable_dupes_title">Tpecca etacilpud setivni</string>
+  <string name="xlations_locale">Ekaf elacol rof noitalsnart</string>
+  <string name="enable_dupes_summary">Tpecca snoitativni erom naht ecno</string>
+  <string name="nag_intervals">Rednimer slavretni ,2setunim,1setunim(...)</string>
+  <string name="enable_nfc_toself_title">Elbane CFN ot fles</string>
+  <string name="enable_nfc_toself_summary">Ekaf noitativni ot dia gniggubed</string>
+  <string name="enable_sms_toself_title">Tiucric-trohs SMS ot fles</string>
+  <string name="enable_sms_toself_summary">Piks oidar nehw enohp srebmun emas</string>
+  <string name="force_radio_title">Dneterp ot evah oidar</string>
+  <string name="radio_name_real">Nod\'t dneterp</string>
+  <string name="radio_name_tablet">On/telbat oidar</string>
+  <string name="radio_name_gsm">MSG</string>
+  <string name="radio_name_cdma">AMDC</string>
+  <string name="nfc_to_self">Dnes aiv CFN ot ?fles</string>
+  <string name="game_summary_field_rowid">diwor</string>
+  <string name="game_summary_field_gameid">diemag</string>
+  <string name="game_summary_field_npackets">Gnidnep tekcap tnuoc</string>
+  <string name="expl_update_url">Etadpu skcehc LRU</string>
+  <string name="got_langdict_title">Hctef tluafed tsildrow rof egaugnal</string>
+  <string name="got_langdict_summary">Nod\'t yrt a dnoces emit</string>
+  <string name="pref_group_sms_title">SMS Ffuts</string>
+  <string name="pref_group_sms_summary">Sferp detaler ot sms-aiv-yalp</string>
+  <string name="pref_group_relay_title">Yaler Ffuts</string>
+  <string name="pref_group_relay_summary">Sferp detaler ot yalp aiv yaler/tenretni</string>
+  <string name="pref_group_l10n_title">Noitazilacol Ffuts</string>
+  <string name="pref_group_l10n_summary">Sferp detaler ot ppa-ni noitazilacol</string>
+  <string name="pref_item_update_title">Etadpu neewteb sesaeler</string>
+  <string name="pref_item_update_summary">Teg etaidemretni sdliub</string>
+  <string name="checking_title">Gnikcehc</string>
+  <string name="checking_for_fmt">Gnikcehc rof stsildrow ni %1$s…</string>
+  <string name="db_store_done">DS drac etirw etelpmoc.</string>
+  <string name="seeking_relay">Gnitcennoc ot yaler…</string>
+  <string name="no_relay_conn">Siht emag si derugifnoc ot esu eht
+  yaler )tenretni( rof noitacinummoc tub sah neeb elbanu ot
+  tcennoc.\n\nEsaelp yrt gninepo eht emag niaga retal retfa
+  snoitidnoc evah degnahc.</string>
+  <string name="drop_relay_warning_fmt">sIht( emag nac osla tcennoc
+  aiv %1$s, os fi uoy\'d ekil ot yalp eht emag tuohtiw a yaler
+  noitcennoc uoy nac.)
+  </string>
+  <string name="confirm_drop_relay">Era uoy erus uoy tnaw ot pord siht
+  emag\'s ytiliba ot etacinummoc aiv eht ?yaler</string>
+  <string name="wifi_warning">\u0020Rof ,elpmaxe uoy yam deen ot eb no
+  a tnereffid IfIw krowten.</string>
+  <string name="confirm_drop_relay_bt">Htooteulb ylno skrow rof ybraen
+  secived.</string>
+  <string name="confirm_drop_relay_sms">Ton lla sreirrac troppus yalp
+  aiv SMS.</string>
+  <string name="button_enable">Elbane</string>
+  <string name="not_again_comms_relay">Eht \"yaler\" si a revres no
+  eht tenretni taht sessap segassem neewteb secived taht era gninnur
+  Sdrowssorc. Ti skrow yna emit uoy evah a lanoitcnuf-ylluf tenretni
+  ,noitcennoc tub thgim evah smelborp no detcirtser IfIw
+  skrowten.</string>
+  <string name="not_again_comms_sms">Yalp aiv SMS sesu eht emas
+  ygolonhcet sa \"gnitxet\". Hguoht eht segassem era elbisivni ot ,uoy
+  ruoy reirrac sredisnoc meht ,stxet os uoy tnaw ot diova siht erutaef
+  sselnu uoy evah na detimilnu gnitxet nalp ro( tegdub.) Eton taht
+  Diordna ylno stroppus siht erutaef no secived no a MSG ,reirrac
+  i.e. yreve reirrac ni eht dlrow tpecxe Nozirev dna Tnirps.</string>
+  <string name="not_again_comms_bt">Esu Htooteulb ot yalp tsniaga a
+  ybraen ecived taht\'s \"deriap\" htiw sruoy.</string>
+  <string name="str_no_hint_found">Tonnac dnif yna sevom</string>
+  <string name="not_again_rematch_two_only">Hctamer si detimil ot
+  nosrep-owt ,semag ta tsael rof ,won esuaceb ti\'s redrah htiw erom
+  secived dna I kniht ti\'s erar taht elpoep yalp htiw erom naht
+  owt. Tel em wonk fi I\'m gnorw dna I\'ll pu eht ytiroirp.</string>
+  <string name="enable_relay_toself_title">Elbane yaler setivni ot fles</string>
+  <string name="enable_relay_toself_summary">oT( dia gnitset dna )gniggubed</string>
+  <!-- Shown after "resend messages" menuitem chosen -->
+  <plurals name="resent_msgs_fmt">
+    <item quantity="one">Eno egassem tnes</item>
+    <item quantity="other">%1$s segassem tnes</item>
+  </plurals>
+  <string name="invite_copied">Noitativni ydaer ot etsap</string>
+  <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
+       it's by some Android utility -->
+  <string name="clip_label">Noitativni LRU</string>
+  <!-- EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
+       when chosen -->
+  <string name="not_again_clip_expl_fmt">Eht \"%1$s\" noitpo seipoc na
+  noitativni LRU ot eht draobpilc. Etsap ti otni eht ppa fo ruoy
+  eciohc dna dnes ti ot ruoy dneirf.</string>
+  <string name="confirm_clear_chat">Era uoy erus uoy tnaw ot eteled
+  lla tahc yrotsih rof siht ?emag\n\nsIht( noitca tonnac eb
+  enodnu.)</string>
+  <string name="rel_invite_title">Yaler etivni eltit</string>
+  <string name="fetching_from_relay">Gnihctef semag morf yaler</string>
+  <string name="processing_games">Gnissecorp semag</string>
+  <string name="list_item_select">Tceles</string>
+  <string name="list_item_deselect">Tceles-ed</string>
+  <string name="not_again_dfltname_fmt">Uoy era gnisu eht tluafed
+  reyalp eman \"%1$s\". Dluow uoy ekil ot ezilanosrep htiw ruoy nwo
+  eman erofeb uoy etaerc siht ?emag</string>
+  <string name="no_invites">Siht emag sah tnes on snoitativni</string>
 </resources>

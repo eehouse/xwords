@@ -19,9 +19,9 @@
 
 package org.eehouse.android.xw4;
 
-import android.widget.ListAdapter;
-import android.widget.ListView;
+// import android.widget.ListAdapter;
+// import android.widget.ListView;
 
-public interface GamesListDelegator extends ListDelegator {
+public interface GamesListDelegator extends Delegator {
     void launchGame( long rowID, boolean invited );
 }

@@ -52,12 +52,16 @@
   <string name="summary_relay_conn_fmt">GAME IN PLAY IN ROOM \"%1$s\"</string>
   <!-- Final state: game is over. -->
   <string name="summary_relay_gameover_fmt">GAME OVER IN ROOM \"%1$s\"</string>
+  <string name="summary_invites_out">PLAYERS INVITED</string>
   <!-- Games that have ended are listed with this string -->
   <string name="gameOver">GAME OVER</string>
   <!-- Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... -->
-  <string name="moves_fmt">%1$d MOVES PLAYED</string>
+  <plurals name="moves_fmt">
+    <item quantity="one">%1$d MOVE PLAYED</item>
+    <item quantity="other">%1$d MOVES PLAYED</item>
+  </plurals>
   <!-- When you select the gamel_menu_delete_all menuitem or
          list_item_delete contextual menu, you are asked to confirm.
          This is the text of the first button ("Cancel" is the
@@ -136,13 +140,24 @@
   <!-- text within rename dialog (triggered by selecting
          list_item_rename) -->
   <string name="rename_label">CHANGE THE NAME OF THIS GAME TO:</string>
-  <string name="confirm_seldeletes_fmt">ARE YOU SURE YOU WANT TO DELETE
-    THE %1$d SELECTED GAME[S]? THIS ACTION CANNOT BE UNDONE.</string>
+  <string name="rename_label_caveat">CHANGE THE NAME OF THIS GAME
+    (ON THIS DEVICE ONLY) TO:</string>
+  <plurals name="confirm_seldeletes_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO DELETE
+      THE SELECTED GAME? THIS ACTION CANNOT BE UNDONE.</item>
+    <item quantity="other">ARE YOU SURE YOU WANT TO DELETE
+      THE %1$d SELECTED GAMES? THIS ACTION CANNOT BE UNDONE.</item>
+  </plurals>
   <!-- Text of confirmation dialog posted when list_item_reset menu
          is selected -->
-  <string name="confirm_reset_fmt">ARE YOU SURE YOU WANT TO RESET THE %1$d
-    SELECTED GAME[S]?\n\n(RESETTING ERASES ALL MOVES AND ANY CONNECTION
-    INFORMATION.)</string>
+  <plurals name="confirm_reset_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO RESET THE
+      SELECTED GAME?\n\n(RESETTING ERASES ALL MOVES AND ANY CONNECTION
+      INFORMATION.)</item>
+    <item quantity="other">ARE YOU SURE YOU WANT TO RESET THE %1$d
+      SELECTED GAMES?\n\n(RESETTING ERASES ALL MOVES AND ANY CONNECTION
+      INFORMATION.)</item>
+  </plurals>
   <!--
        ############################################################
        # :Screens:
@@ -191,8 +206,12 @@
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %1$s.  Sometimes one of the two
          strings below is appended. -->
-  <string name="confirm_delete_dict_fmt">ARE YOU SURE YOU WANT TO
-    DELETE THE WORDLIST[S] %1$s?</string>
+  <plurals name="confirm_delete_dict_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO DELETE THE
+      WORDLIST %1$s?</item>
+    <item quantity="other">ARE YOU SURE YOU WANT TO DELETE THE
+      WORDLISTS %1$s?</item>
+  </plurals>
   <!-- Additional text appended to text confirm_delete_dictf in the
          wordlist delete confiration dialog in the case where the
          wordlist to be deleted is the last in its language.  The name
@@ -240,8 +259,6 @@
   <string name="title_game_config_fmt">SETTINGS FOR %1$s</string>
   <!-- alternate window title used when game is networked -->
   <string name="title_gamenet_config_fmt">%1$s SETTINGS (NETWORKED)</string>
-  <!--  -->
-  <string name="title_gamebt_config_fmt">%1$s SETTINGS (VIA BLUETOOTH)</string>
   <!-- title for popup list of langugages from which user picks -->
   <string name="title_langs_list">LANGUAGES (BASED ON INSTALLED
       WORDLISTS)</string>
@@ -267,7 +284,7 @@
   <string name="lang_label">GAME LANGUAGE</string>
   <string name="langdict_label">GAME LANGUAGE/WORDLIST</string>
   <!-- text of separator marking out the connection area of the dialog -->
-  <string name="connect_label_relay">CONNECTION (VIA INTERNET)</string>
+  <string name="connect_label_fmt">CONNECTION (VIA %1$s)</string>
   <!-- text of checkbox asking if user wants to search for open
     public rooms -->
   <string name="join_room">JOIN PUBLIC ROOM</string>
@@ -440,20 +457,48 @@
          open such a game I give the user a chance to issue an
          invititation while trying to warn him not to send duplicates.
          The number of players missing is substituted for "%1$d". -->
-  <string name="invite_msg_fmt">THIS GAME IS MISSING %1$d REMOTE
-      PLAYER[S].  WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
-      YOU HAVEN\'T ALREADY?</string>
-  <!-- Toast shown when players are missing, same time as above
-           but more subtle.  -->
-  <string name="players_miss_fmt">%1$d PLAYER[S] MISSING</string>
+  <plurals name="invite_msg_fmt">
+    <item quantity="one">THIS GAME IS WAITING FOR %1$d REMOTE
+      PLAYER. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING YOU
+      HAVEN\'T ALREADY?</item>
+    <item quantity="other">THIS GAME IS WAITING FOR %1$d REMOTE
+      PLAYERS. WOULD YOU LIKE TO INVITE SOMEONE TO JOIN -- ASSUMING
+      YOU HAVEN\'T ALREADY?</item>
+  </plurals>
+  <plurals name="invite_sent_fmt">
+    <item quantity="one">YOU HAVE ALREADY INVITED A REMOTE PLAYER TO
+      THIS GAME. WE ARE WAITING FOR HIM/HER TO RESPOND. PLEASE
+      USE THE RE-INVITE BUTTON IF YOU THINK THE INVITATION DID NOT GO
+      OUT.</item>
+    <item quantity="other">YOU HAVE ALREADY SENT %1$d UNIQUE
+      INVITATIONS FOR THIS GAME. WE ARE WAITING FOR %2$d OF THE
+      RECIPIENTS TO RESPOND. PLEASE USE THE RE-INVITE BUTTON IF YOU
+      THINK THE INVITATIONS DID NOT GO OUT.</item>
+  </plurals>
+  <string name="invited_msg">THIS GAME WAS CREATED FROM AN
+    INVITATION YOU RECEIVED. AS SOON AS IT IS ABLE TO CONNECT TO THE
+    SENDER AND ANY OTHER INVITEES HAVE ARRIVED PLAY WILL
+    BEGIN.</string>
+  <!-- Appended to message above if local device has NFC available -->
+  <string name="invite_if_nfc">OR JUST TAP TO INVITE -- IF THE OTHER
+    DEVICE ALSO HAS ANDROID BEAMING AND IS NEARBY.</string>
   <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
          the above string to encourage the opener of a game missing
          players to invite, IF the number of missing players is
          greater than one this text is appended to the above. -->
   <string name="invite_multiple">\u0020(YOU ARE EXPECTING MULTIPLE
-      REMOTE PLAYERS.  BE SURE TO ADDRESS YOUR INVITATION TO
-      THAT MANY PEOPLE.)</string>
+    REMOTE PLAYERS. YOU DON\'T HAVE TO INVITE THEM ALL AT ONCE, BUT
+    THIS ALERT WILL NOT BE DISMISSED UNTIL EVERYBODY HAS BEEN INVITED
+    AND ALL INVITATIONS HAVE BEEN ACCEPTED.)</string>
+  <string name="invit_expl_sms_fmt">INVITE SENT VIA SMS TO PHONE
+    NUMBER %1$s ON %2$s</string>
+  <string name="invit_expl_bt_fmt">INVITE SENT VIA BLUETOOTH TO
+    PAIRED DEVICE \"%1$s\" ON %2$s</string>
+  <string name="invit_expl_relay_fmt">INVITE FORWARDED BY THE RELAY
+    TO ANOTHER DEVICE ON %1$s</string>
+  <string name="invit_expl_notarget_fmt">INVITE SENT VIA %1$s ON
+    %2$s. RECIPIENT UNKNOWN.</string>
   <!-- Short for "points", this is shown at the right end of the
          tray in place of the first tile placed along with the points
          the current move would earn if committed. -->
@@ -464,8 +509,12 @@
          the room, and how many additional players have not yet
          registered with the relay in this game.  This should be seen
          only once per game. -->
-  <string name="msg_relay_waiting_fmt">DEVICE %1$d CONNECTED TO RELAY IN
-      ROOM \"%2$s\". WAITING FOR %3$d PLAYER[S].</string>
+  <plurals name="msg_relay_waiting_fmt">
+    <item quantity="one">DEVICE %1$d CONNECTED TO RELAY IN
+      ROOM \"%2$s\". WAITING FOR %3$d PLAYER.</item>
+    <item quantity="other">DEVICE %1$d CONNECTED TO RELAY IN
+      ROOM \"%2$s\". WAITING FOR %3$d PLAYERS.</item>
+  </plurals>
   <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
          play can begin. -->
@@ -558,7 +607,10 @@
          able to remove this from non-debug versions of the game
          because users should not have to do do this EVER. -->
   <string name="board_menu_game_resend">RESEND MESSAGES</string>
-  <string name="resend_finished_fmt">RESEND FINISHED; SENT %1$d MESSAGE[S].</string>
+  <plurals name="resend_finished_fmt">
+    <item quantity="one">RESEND FINISHED; SENT ONE MESSAGE.</item>
+    <item quantity="other">RESEND FINISHED; SENT %1$d MESSAGES.</item>
+  </plurals>
   <!--       
        ############################################################
        # Board info/error dialog messages
@@ -568,9 +620,12 @@
        ############################################################
       -->
   <!-- Notifies user of a normal robot move -->
-  <string name="str_robot_moved">THE ROBOT MADE THIS MOVE:\u0020</string>
+  <string name="str_robot_moved_fmt">THE ROBOT %1$s MADE THIS MOVE:\u0020</string>
   <!-- Notifies user of a robot trade move -->
-  <string name="strd_robot_traded_fmt">EXCHANGED %1$d TILES.</string>
+  <plurals name="strd_robot_traded_fmt">
+    <item quantity="one">EXCHANGED ONE TILE.</item>
+    <item quantity="other">EXCHANGED %1$d TILES.</item>
+  </plurals>
   <!-- title for window you get when you select menu with text
          board_menu_game_counts -->
   <string name="strs_values_header_fmt">%1$s COUNTS/VALUES:\n</string>
@@ -602,20 +657,6 @@
          phonies is set to lose turn when word used not in wordlist
          -->
   <string name="str_phony_rejected">ILLEGAL WORD IN MOVE; TURN LOST!</string>
-  <!-- Used in formatting exchange move summaries: passed means the
-         user skipped his turn, or made a move involving 0 tiles for 0
-         points -->
-  <string name="str_passed">PASSED</string>
-  <!-- formats tiles and score together, and probably doesn't need
-         translation unless the colon ':' needs to be replaced -->
-  <string name="strsd_summaryscored_fmt">%1$s:%2$d</string>
-  <!-- Used in formatting reports of trades (exchanges of tiles).
-         Number of tiles traded is substituted for %1$d-->
-  <string name="strd_traded_fmt">EXCHANGED %1$d TILES</string>
-  <!-- Used in formatting history and move reports; means user
-         skipped a turn because of an attempted illegal move/play of a
-         phony -->
-  <string name="str_lostturn">LOST TURN</string>
   <!-- Beginning of the message presented to a user when asking him
          to confirm committing the current turn-->
   <string name="str_commit_confirm">COMMIT THE CURRENT MOVE?\n</string>
@@ -632,10 +673,14 @@
   <string name="strd_turn_score_fmt">SCORE FOR TURN: %1$d\n</string>
   <!-- First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) -->
-  <string name="strd_remains_header_fmt">%1$d TILES LEFT IN POOL.</string>
-  <!-- Intro to the paragraph lisiting all of the tiles remaining -->
-  <string name="strd_remains_expl_fmt">%1$d TILES LEFT IN POOL AND ALL
-    TRAY[S]:\n</string>
+  <plurals name="strd_remains_header_fmt">
+    <item quantity="other">%1$d TILES LEFT IN POOL.</item>
+  </plurals>
+  <!-- Intro to the paragraph listing all of the tiles remaining -->
+  <plurals name="strd_remains_expl_fmt">
+    <item quantity="other">%1$d TILES LEFT IN POOL AND ALL
+      TRAYS:\n</item>
+  </plurals>
   <!-- text of dialog shown when the menu item board_menu_undo_last
          is chosen. -->
   <string name="confirm_undo_last">ARE YOU SURE YOU WANT TO UNDO THE
@@ -689,14 +734,16 @@
   <string name="prefs_names">PLAYER NAMES</string>
   <!-- clarification of the above -->
   <string name="prefs_names_summary">DEFAULT PLAYER NAMES</string>
-  <!-- Label for the first "player name" preference -->
+  <!-- Label for the first player color preference -->
   <string name="pref_player1_name">FIRST PLAYER</string>
-  <!-- Label for the second "player name" preference (unused)-->
+  <!-- Label for the second player color preference -->
   <string name="pref_player2_name">SECOND PLAYER</string>
-  <!-- Label for the third "player name" preference (unused) -->
+  <!-- Label for the third player color preference -->
   <string name="pref_player3_name">THIRD PLAYER</string>
-  <!-- Label for the fourth "player name" preference (unused)-->
+  <!-- Label for the fourth player color preference -->
   <string name="pref_player4_name">FOURTH PLAYER</string>
+  <!-- Label for the first "human player" name preference -->
+  <string name="pref_human_name">HUMAN PLAYER</string>
   <!-- Used to indicate that a preference is not enabled, i.e. not
          part of the game and that the user should ignore it. -->
   <string name="tell_unused">NOT USED YET…</string>
@@ -764,6 +811,12 @@
   <!-- clarification of above -->
   <string name="hide_title_summary">HIDING THE GAME NAME LETS THE
         BOARD BE SLIGHTLY LARGER</string>
+  <!-- Checkbox that when set prevents showing the newgame buttons
+         on the main screen to save space -->
+  <string name="hide_newgames_title">HIDE NEWGAME BUTTONS</string>
+  <!-- clarification of above -->
+  <string name="hide_newgames_summary">HIDING THE NEWGAME BUTTONS IN
+        THE MAIN SCREEN MAKES MORE GAMES VISIBLE</string>
   <!-- Checkbox that when set makes taps on the board manipulate an
          arrow that then directs where tiles go when tapped in the
          tray. -->
@@ -973,35 +1026,36 @@
          it immediately because an email or messaging app will be
          launched to send your invitation. -->
   <string name="newgame_invite">INVITE NOW</string>
+  <string name="newgame_invite_more">MORE INFO</string>
+  <string name="newgame_drop_relay">DROP RELAY</string>
   <!-- section separator (white-on-gray bar) for third section:
          bluetooth games -->
   <string name="newgame_bt_header">NEW BLUETOOTH GAME</string>
   <!-- EXPLAIN ME -->
-  <string name="bt_disabled">BLUETOOTH IS NOT AVAILABLE.  THIS MAY
-      MEAN THAT YOUR DEVICE DOESN\'T SUPPORT IT, OR THAT IT\'S BEEN
-      TURNED OFF.</string>
-  <!-- EXPLAIN ME -->
-  <string name="bt_networked_desc">CREATE A GAME THAT WILL BE PLAYED
-      VIA BLUETOOTH WITH DEVICES THAT ARE NEARBY AND PAIRED WITH
-      YOURS.  BOTH BUTTONS WILL INITIATE A GAME WITH OTHER DEVICES
-      (ONE OR MORE) THAT YOU CHOOSE (FROM PAIRED DEVICES THAT ALREADY
-      HAVE CROSSWORDS INSTALLED.)  THE FIRST USES DEFAULTS; THE SECOND
-      LETS YOU CHANGE THEM BEFORE BEGINNING THE GAME.</string>
+  <!-- <string name="bt_disabled">Bluetooth is not available.  This may -->
+  <!--   mean that your device doesn\'t support it, or that it\'s been -->
+  <!--   turned off.</string> -->
   <!-- The invitation process begins with this query.  The choice is
          between html and plaintext formatting but I also provide some
          explanation/guidance. -->
-  <string name="sms_or_email">SEND INVITATION USING SMS (TEXTING) OR
-       VIA EMAIL?</string>
-  <string name="nfc_or_email">SEND INVITATION USING NFC (ANDROID
-    BEAMING – NEW) OR VIA EMAIL?</string>
-  <string name="nfc_or_sms_or_email">SEND INVITATION USING SMS
-    (TEXTING) OR NFC (\"ANDROID BEAMING\" – NEW) OR VIA EMAIL?</string>
+  <string name="invite_choice_sms">SMS (TEXTING)</string>
+  <string name="invite_choice_email">EMAIL</string>
+  <string name="invite_choice_bt">BLUETOOTH</string>
+  <string name="invite_choice_nfc">NFC (\"ANDROID BEAMING\")</string>
+  <string name="invite_choice_relay">INTERNET/RELAY</string>
+  <string name="invite_choice_title">INVITING PLAYERS: HOW?</string>
+  <!-- <string name="sms_or_email">Send invitation using SMS (texting) or -->
+  <!--    via email?</string> -->
+  <!-- <string name="nfc_or_email">Send invitation using NFC (Android -->
+  <!-- beaming &#8211; NEW) or via email?</string> -->
+  <!-- <string name="nfc_or_sms_or_email">Send invitation using SMS -->
+  <!-- (texting) or NFC (\"Android beaming\" &#8211; NEW) or via email?</string> -->
   <!-- When an invitation is sent, the user gets to choose between
     plaintext and html formatting.  These two strings are shown in the
     two buttons in the dialog. -->
-  <string name="button_text">SMS/TEXT</string>
-  <string name="button_html">EMAIL</string>
-  <string name="button_nfc">NFC</string>
+  <!-- <string name="button_text">SMS/Text</string>   -->
+  <!-- <string name="button_html">Email</string>   -->
+  <!-- <string name="button_nfc">NFC</string> -->
   <!-- This is the subject line of the email/text sent to invite
          someone to join a game. -->
   <string name="invite_subject_fmt">LET\'S PLAY CROSSWORDS (ROOM %1$s)</string>
@@ -1035,8 +1089,12 @@
   <string name="invite_chooser_sms">SMS</string>
   <!-- Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) -->
-  <string name="query_trade_fmt">ARE YOU SURE YOU WANT TO EXCHANGE THE
-         SELECTED TILES (%1$s)?</string>
+  <plurals name="query_trade_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO EXCHANGE THE
+      SELECTED TILE (%2$s)?</item>
+    <item quantity="other">ARE YOU SURE YOU WANT TO EXCHANGE THE
+      %1$d SELECTED TILES (%2$s)?</item>
+  </plurals>
   <!-- ############################################################
          # :Screens:
          # Chat screen
@@ -1050,7 +1108,7 @@
       -->
   <!-- title of the chat screen.  The name of the current game is
          substituted for %1$s. -->
-  <string name="chat_title_fmt">%1$s MESSAGE HISTORY</string>
+  <string name="chat_title_fmt">%1$s MESSAGES</string>
   <!-- Prefix for local messages -->
   <string name="chat_local_id">ME:\u0020</string>
   <!-- Prefix for remote messages -->
@@ -1069,38 +1127,6 @@
          other devices in the game: no "clear chat" message is
          transmitted. -->
   <string name="chat_menu_clear">CLEAR HISTORY</string>
-  <!-- ############################################################
-         # :Screens:
-         # RelayGameActivity screen
-         #
-         # This screen is a simple alternative to the Game Configure
-         # screen.  You'll get it when you choose the list_item_config
-         # on certain unconfigured simple relay games (currently simple
-         # means they have 2 players.  These days about the only way to
-         # get this screen is to create a relay game manually and to
-         # abort after making the room name empty.  That is, this is
-         # left over from an older way of helping people connect, from
-         # before invitations.
-
-         # The dialog has a list of instructions, two text fields for
-         # room name and local player name, and two buttons.
-         ############################################################
-         -->
-  <!-- This is the heading above the list of steps.  The default
-         language is substituted for %1$s. -->
-  <string name="relay_game_explain_fmt">TO START A BASIC NETWORKED TWO-PLAYER
-        GAME IN %1$s:</string>
-  <!-- These four strings are displayed as step-by-step
-         instructions-->
-  <string name="explain_b1">• AGREE ON A ROOM NAME WITH THE OTHER
-      PLAYER.</string>
-  <string name="explain_b2">• ENTER THE ROOM NAME IN THE FIRST BOX
-      BELOW. THE ROOM NAMES ON YOUR TWO PHONES MUST BE
-      IDENTICAL.</string>
-  <string name="explain_b3">• OPTIONALLY, ENTER PLAYER NAMES IN THE
-      SECOND BOX (ONE PER PHONE)</string>
-  <string name="explain_b4">• PRESS THE \"PLAY GAME\" BUTTON ON BOTH
-      PHONES TO START THE GAME.</string>
   <!-- This is the "hint" printed in light text in the empty player
          name field -->
   <string name="local_name_hint">PLAYER NAME</string>
@@ -1176,7 +1202,7 @@
          many players are expected and only connects devices where the
          numbers match. -->
   <string name="str_reg_unexpected_user">REFUSED ATTEMPT TO REGISTER
-         UNEXPECTED USER[S]</string>
+         UNEXPECTED USER.</string>
   <!-- Shown when a remote device tries to join a game and wants to
          play in a different language.  As with the above, this should
          be impossible when connecting via the relay. -->
@@ -1209,16 +1235,14 @@
          downloading and not opening the game.  This first message
          takes wordlist name and language substituted in for %1$ and
          %2$ -->
-  <string name="no_dict_fmt">YOU NEED TO DOWNLOAD A REPLACEMENT %2$s
-    WORDLIST BEFORE YOU CAN OPEN GAME \"%1$s\". (THE ORIGINAL MAY HAVE
-    BEEN DELETED OR STORED ON AN EXTERNAL CARD THAT IS NO LONGER
-    AVAILABLE.)</string>
+  <string name="no_dict_fmt">GAME \"%1$s\" REQUIRES A %2$s WORDLIST.
+    PLEASE DOWNLOAD ONE BEFORE OPENING.</string>
   <!-- This is an alternative message presented when there's also
          the option of downloading another wordlist.  Game name,
          wordlist name and language are substituted in. -->
   <string name="no_dict_subst_fmt">UNABLE TO OPEN GAME \"%1$s\" BECAUSE
       WORDLIST %2$s NOT FOUND. (IT MAY HAVE BEEN DELETED, OR STORED
-      ON AN EXTERNAL CARD THAT IS NO LONGER AVAILABLE.) YOU CAN
+      ON AN EXTERNAL CARD THAT IS NO LONGER AVAILABLE.)\n\nYOU CAN
       DOWNLOAD A REPLACEMENT OR SUBSTITUTE ANOTHER %3$s
       WORDLIST.</string>
   <!-- Text of button displayed when downloading is an option -->
@@ -1252,8 +1276,10 @@
     posted.  These are its title, which appears in the top bar of the
     device, and the body that appears when you pull the notifications
     down. -->
-  <string name="notify_title">MOVES MADE</string>
-  <string name="notify_body_fmt">ACTIVITY IN GAME \"%1$s\"</string>
+  <string name="notify_title_fmt">MOVE IN GAME %1$s</string>
+  <string name="notify_title_turn_fmt">YOUR TURN IN GAME %1$s</string>
+  <string name="notify_chat_title_fmt">CHAT MESSAGE IN GAME %1$s</string>
+  <string name="notify_chat_body_fmt">%1$s: %2$s</string>
   <!--
         ############################################################
         # Dialogs
@@ -1261,8 +1287,6 @@
       -->
   <!-- Text for buttons at the bottom of dialogs.  These first are
       in many places.-->
-  <string name="button_ok">OK</string>
-  <string name="button_cancel">CANCEL</string>
   <string name="button_yes">YES</string>
   <string name="button_no">NO</string>
   <!-- Used in Game config dialog to confirm saving changes that reset a game -->
@@ -1332,7 +1356,7 @@
        ########################################################### 
       -->
   <!-- Title of New user info dialog-->
-  <string name="newbie_title">NEW USER INFO</string>
+  <string name="newbie_title">HERE\'S A TIP</string>
   <!-- Text for button in new-user-info dialog with title just
          above.  -->
   <string name="button_notagain">DO NOT SHOW AGAIN</string>
@@ -1473,12 +1497,11 @@
        ###########################################################
       -->
   <!-- Welcome dialog title -->
-  <string name="default_name_title">WELCOME</string>
+  <string name="default_name_title">DEFAULT PLAYER NAME</string>
   <!-- Welcome dialog text -->
-  <string name="default_name_message">THANKS FOR INSTALLING
-      CROSSWORDS!\n\nFEEL FREE TO ENTER YOUR NAME HERE. IT WILL BE USED
-      WHEN CREATING NEW GAMES.  (YOU CAN CHANGE IT LATER IN THE \"NEW
-      GAME DEFAULT\" SECTION OF SETTINGS.)</string>
+  <string name="default_name_message">PLEASE ENTER YOUR NAME
+    HERE. IT WILL BE USED WHEN CREATING NEW GAMES. (YOU CAN CHANGE IT
+    LATER IN THE \"NEW GAME DEFAULT\" SECTION OF SETTINGS.)</string>
   <!-- 
        ###########################################################
        # :Dialogs:
@@ -1491,7 +1514,7 @@
   <string name="about_vers_fmt">CROSSWORDS FOR ANDROID, VERSION %1$s,
         REV %2$s, BUILT ON %3$s.</string>
   <!-- copyright info -->
-  <string name="about_copyright">COPYRIGHT (C) 1998-2014 BY ERIC
+  <string name="about_copyright">COPYRIGHT (C) 1998-2016 BY ERIC
         HOUSE. THIS FREE/OPEN SOURCE SOFTWARE IS RELEASED UNDER THE GNU PUBLIC
         LICENSE.</string>
   <!-- Another paragraph in the about dialog -->
@@ -1502,7 +1525,7 @@
   <!-- Empty in English, this should contain the name of the
          translator/creator of the strings.xml file for this
          language-->
-  <string name="xlator"/>
+  <string name="xlator">[EMPTY]</string>
   <!-- Another paragraph giving credit for work done other than by
          Eric House and translators -->
   <string name="about_credits">TOOLBAR ICONS BY SARAH CHU.</string>
@@ -1535,6 +1558,7 @@
       ONLINE, THE WORDS JUST PLAYED.</string>
   <!--  -->
   <string name="button_move">MOVE</string>
+  <string name="button_newgroup">NEW GROUP</string>
   <!--  -->
   <string name="button_search">FIND</string>
   <!--  -->
@@ -1549,10 +1573,10 @@
   <string name="pick_faceup">PICK TILES FACE-UP</string>
   <!--  -->
   <string name="dict_browse_title_fmt">%1$s (%2$d WORDS USING %3$d-%4$d
-      TILES)</string>
+    TILES)</string>
   <!--  -->
   <string name="dict_browse_title1_fmt">%1$s (%2$d WORDS USING %3$d
-      TILES)</string>
+    TILES)</string>
   <!--  -->
   <string name="dict_browse_nowords_fmt">NO WORD IN %1$s STARTS WITH
       %2$s.</string>
@@ -1583,15 +1607,14 @@
   <string name="email_body_rev_fmt">(IF RELEVANT, PLEASE INCLUDE THE
       VERSION: \"%1$s\"; AND MAKE/MODEL OF YOUR PHONE OR
       TABLET.)</string>
-  <string name="newgame_enable_bt">TURN BLUETOOTH ON</string>
-  <!--  -->
-  <string name="bt_pick_rescan_button">RESCAN</string>
+  <!-- <string name="newgame_enable_bt">Turn Bluetooth on</string> -->
+  <!-- In the Bluetooth invite device dialog -->
+  <string name="bt_pick_addall_button">ADD ALL PAIRED</string>
   <!--  -->
   <string name="bt_pick_clear_button">REMOVE CHECKED</string>
   <!--  -->
-  <string name="scan_progress">SCANNING FOR CROSSWORDS ON PAIRED DEVICES</string>
-  <!--  -->
-  <string name="invite_progress">SENDING NEW GAME INFO…</string>
+  <string name="invite_progress_title">CONNECTING...</string>
+  <string name="invite_progress_fmt">SENDING INVITATION TO CROSSWORDS ON %1$s</string>
   <!--  -->
   <string name="summary_wait_host">WAITING FOR CONNECTION[S]</string>
   <!--  -->
@@ -1601,81 +1624,104 @@
   <!--  -->
   <string name="summary_conn">GAME IN PLAY</string>
   <!--  -->
-  <string name="new_bt_title">NEW GAME VIA BLUETOOTH</string>
+  <string name="invite_notice_title">NEW GAME VIA INVITATION</string>
   <!--  -->
-  <string name="new_bt_body_fmt">PAIRED DEVICE %1$s HAS INVITED YOU TO
-      PLAY</string>
+  <string name="new_bt_body_fmt">A PLAYER ON THE DEVICE %1$s WANTS TO START A GAME</string>
+  <string name="new_relay_body">TAP TO OPEN THE NEW GAME</string>
   <!--  -->
-  <string name="bt_bad_proto_fmt">CROSSWORDS ON %1$s WRONG VERSION FOR
-      BLUETOOTH PLAY.</string>
+  <string name="bt_bad_proto_fmt">THE VERSION OF CROSSWORDS ON
+    \"%1$s\" IS INCOMPATIBLE WITH THIS ONE FOR PLAY USING
+    BLUETOOTH. ONE OF YOU MAY NEED TO UPGRADE BEFORE YOU CAN
+    CONTINUE.</string>
+  <string name="sms_bad_proto_fmt">THE VERSION OF CROSSWORDS ON THE
+    PHONE WITH NUMBER \"%1$s\" IS INCOMPATIBLE WITH THIS ONE FOR PLAY
+    USING SMS. ONE OF YOU MAY NEED TO UPGRADE BEFORE YOU CAN
+    CONTINUE.</string>
   <!--  -->
-  <string name="new_btmove_title">NEW MOVE VIA BLUETOOTH</string>
+  <string name="new_btmove_title">INVITATION VIA BLUETOOTH</string>
   <!--  -->
   <string name="new_move_body">ONE OR MORE MOVES HAS ARRIVED</string>
   <!--  -->
-  <string name="invite_bt_desc_fmt">PLEASE SELECT THE %1$d DEVICE[S] YOU
-        WANT TO INCLUDE IN THIS GAME.  USE THE RESCAN BUTTON IF YOU
-        DON\'T SEE A DEVICE YOU EXPECT.</string>
+  <plurals name="invite_bt_desc_fmt">
+    <item quantity="one">PLEASE SELECT THE DEVICE
+      YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
+      BUTTON IF YOU DON\'T SEE THE DEVICE YOU EXPECT.</item>
+    <item quantity="other">PLEASE SELECT UP TO %1$d DEVICE[S]
+      YOU WANT TO INCLUDE IN THIS GAME.  USE THE \"%2$s\"
+      BUTTON IF YOU DON\'T SEE A DEVICE YOU EXPECT.</item>
+  </plurals>
   <!--  -->
-  <string name="bt_resend_fmt">BLUETOOTH SEND TO %1$s FAILED; RETRY %3$d IN
-        %2$d SECONDS.</string>
+  <string name="bt_resend_fmt">BLUETOOTH SEND TO %1$s FAILED; RETRY
+    %3$d IN %2$d SECONDS.</string>
   <!--  -->
   <string name="bt_fail_fmt">BLUETOOTH SENDS TO %1$s HAVE FAILED TOO MANY
         TIMES. RE-OPEN THE GAME TO TRY AGAIN.</string>
   <!--  -->
   <string name="button_invite">INVITE CHECKED</string>
-  <!--  -->
-  <string name="btname_label">NEW BLUETOOTH GAME NAME</string>
-  <!--  -->
-  <string name="smsname_label">NEW SMS GAME NAME</string>
+  <!-- Title of device picker during invitation to a game via Bluetooth -->
+  <string name="bt_invite_title">BLUETOOTH INVITATION</string>
+  <!-- Title of phone number picker during invitation to a game via SMS -->
+  <string name="sms_invite_title">SMS INVITATION</string>
+  <string name="relay_invite_title">RELAY INVITATION</string>
   <!--  -->
   <string name="game_btname_title">BLUETOOTH GAME NAME</string>
   <!--  -->
-  <string name="game_smsname_title">NAME YOUR GAME</string>
+  <string name="game_name_title">NAME YOUR GAME</string>
   <!--  -->
-  <string name="dft_name_fmt">GAME %1$X</string>
+  <string name="game_name_label">NEW GAME NAME:</string>
+  <string name="name_copy_fmt">%1$s COPY</string>
   <!--  -->
   <string name="newgame_sms_header">NEW SMS GAME</string>
   <!--  -->
-  <string name="sms_networked_desc">CREATE A GAME THAT WILL BE
-    PLAYED VIA INVISIBLE TEXT MESSAGES.  THE \"INVITE NOW\" BUTTON
-    STARTS A TWO-DEVICE GAME AND HELPS YOU INVITE A FRIEND TO JOIN IT.
-    OR PRESS \"CONFIGURE FIRST\" TO CHANGE SOME OF THE DEFAULTS BEFORE
-    YOU START YOUR SMS GAME. (YOU\'LL HAVE A CHANCE TO SEND
-    INVITES LATER.)</string>
-  <!--  -->
-  <string name="sms_disabled">PLAYING VIA SMS IS CURRENTLY DISABLED.
-    YOU CAN ENABLE IT IN SETTINGS-&gt;NETWORK GAME SETTINGS.</string>
+  <!-- <string name="sms_disabled">Playing via SMS is currently disabled. -->
+  <!-- You can enable it in Settings->Network game settings.</string> -->
   <!--  -->
   <string name="dft_sms_name_fmt">SMS GAME %1$X</string>
   <!--  -->
-  <string name="new_sms_title">NEW GAME VIA SMS</string>
-  <!--  -->
   <string name="new_name_body_fmt">%1$s HAS INVITED YOU TO PLAY</string>
-  <!--  -->
-  <string name="new_smsmove_title">NEW MOVE VIA SMS</string>
   <!--  -->
   <string name="button_sms_add">IMPORT CONTACT</string>
   <!--  -->
-  <string name="invite_sms_desc_fmt">PLEASE CHECK THE %1$d PHONE
-    NUMBER[S] YOU WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"INVITE
-    CHECKED\".</string>
+  <string name="button_relay_add">SCAN GAMES</string>
+  <!--  -->
+  <plurals name="invite_sms_desc_fmt">
+    <item quantity="one">PLEASE CHECK THE PHONE NUMBER YOU WANT TO
+      INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+    <item quantity="other">PLEASE CHECK THE %1$d PHONE NUMBERS YOU
+      WANT TO INVITE TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+  </plurals>
+  <!--  -->
+  <plurals name="invite_relay_desc_fmt">
+    <item quantity="one">PLEASE CHECK THE DEVICE YOU WANT TO INVITE
+      TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+    <item quantity="other">PLEASE CHECK THE %1$d DEVICES YOU WANT TO INVITE
+      TO YOUR NEW GAME, THEN TAP \"%2$s\".</item>
+  </plurals>
   <!--  -->
   <string name="manual_owner_name">(NOT IN CONTACTS)</string>
   <!--  -->
   <string name="warn_nomobile_fmt">THE NUMBER %1$s FOR %2$s IS NOT
     A \"MOBILE\" NUMBER. IMPORT ANYWAY?</string>
+  <!-- Shows in SMS Invite dialog when no phone numbers have been saved previously -->
+  <string name="empty_sms_inviter">THIS PHONE LIST IS EMPTY. USE THE
+    \"IMPORT CONTACT\" BUTTON TO ADD PEOPLE YOU WANT TO INVITE, THE +
+    BUTTON TO ENTER NUMBERS DIRECTLY.</string>
   <!--  -->
-  <string name="empty_sms_inviter">PHONE LIST IS EMPTY. USE THE
-    \"IMPORT CONTACT\" BUTTON TO ADD PEOPLE YOU WANT TO
-    INVITE, THE + BUTTON TO ENTER NUMBERS DIRECTLY.</string>
+  <string name="empty_relay_inviter">THIS LIST OF DEVICES IS
+    EMPTY. USE THE \"SCAN GAMES\" BUTTON TO SCAN YOUR OLD GAMES
+    FOR OPPONENTS. USE THE \"+\" BUTTON TO ENTER DEVICE IDS DIRECTLY.</string>
   <!--  -->
   <string name="get_sms_number">ENTER PHONE NUMBER:</string>
+  <string name="get_relay_number">ENTER DEVICE ID:</string>
   <!--  -->
-  <string name="confirm_clear">ARE YOU SURE YOU WANT TO DELETE THE
-    CHECKED PHONE NUMBER[S]?</string>
-  <!--  -->
-  <string name="invite_success">INVITATION RECEIVED.</string>
+  <plurals name="confirm_clear_sms_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO DELETE THE CHECKED
+      PHONE NUMBER?</item>
+    <item quantity="other">ARE YOU SURE YOU WANT TO DELETE THE
+       %1$d CHECKED PHONE NUMBERS?</item>
+  </plurals>
+  <string name="confirm_clear_relay">ARE YOU SURE YOU WANT TO DELETE THE
+    CHECKED DEVICE[S]?</string>
   <!--  -->
   <string name="connect_label_sms">CONNECTION (VIA SMS/TEXT)</string>
   <!--  -->
@@ -1707,11 +1753,16 @@
   <string name="board_menu_dict">BROWSE WORDLIST</string>
   <!--  -->
   <string name="game_list_tmp">BUILDING GAME SUMMARY…</string>
-  <!--  -->
-  <string name="connstat_nonet">THIS IS A STANDALONE GAME. THERE IS
-    NO NETWORK STATUS.</string>
+  <string name="summary_busy">SUMMARY UNAVAILABLE</string>
+  <string name="connstat_net_noaddr">THIS NETWORKED GAME HAS NO WAY
+    TO CONNECT AND WILL NEVER BE PLAYABLE.\n\n(IT WAS PROBABLY CREATED
+    FROM AN INVITATION THAT DIDN\'T SPECIFY ANY WAY OF CONNECTING
+    THAT YOUR DEVICE SUPPORTS.)</string>
   <!--  -->
   <string name="connstat_net_fmt">NETWORK STATUS FOR GAME CONNECTED VIA
+    %1$s:</string>
+  <!-- First line of debug-only Invites list dialog -->
+  <string name="invites_net_fmt">INVITATIONS SENT FOR GAME CONNECTED VIA
     %1$s:</string>
   <!--  -->
   <string name="connstat_succ">SUCCESSFUL</string>
@@ -1732,8 +1783,6 @@
   <string name="connstat_relay">INTERNET/RELAY</string>
   <!--  -->
   <string name="connstat_sms">SMS/TEXTING</string>
-  <!--  -->
-  <string name="connstat_bt">BLUETOOTH</string>
   <!--  -->
   <string name="enable_sms">ALLOW GAMES VIA SMS</string>
   <!--  -->
@@ -1757,9 +1806,16 @@
   <string name="confirm_sms_willpay">YES: I\'LL PAY ALL CARRIER CHARGES</string>
   <!--  -->
   <string name="warn_sms_disabled">PLAY VIA SMS IS CURRENTLY
-    DISABLED, SO NO MOVES WILL BE SENT FOR THIS GAME.  (IF YOU WANT TO
-    ENABLE PLAY VIA SMS, GO TO SETTINGS-&gt;NETWORK GAME SETTINGS.)
+    DISABLED. NO MOVES WILL BE SENT VIA SMS.\n\nYOU CAN ENABLE PLAY
+    VIA SMS NOW, OR LATER.
     </string>
+  <string name="warn_bt_disabled">BLUETOOTH IS CURRENTLY OFF ON THIS
+    DEVICE. NO MOVES WILL BE SENT VIA BLUETOOTH.\n\nYOU CAN ENABLE
+    BLUETOOTH NOW, OR LATER.
+    </string>
+  <string name="button_enable_sms">ENABLE SMS</string>
+  <string name="button_enable_bt">ENABLE BLUETOOTH</string>
+  <string name="button_later">LATER</string>
   <!--  -->
   <string name="gamel_menu_checkupdates">CHECK FOR UPDATES</string>
   <string name="checkupdates_none_found">EVERYTHING IS UP-TO-DATE.</string>
@@ -1772,9 +1828,9 @@
   <!--  -->
   <string name="new_app_avail">TAP TO DOWNLOAD AND INSTALL</string>
   <!-- Used in formatting final scores display -->
-  <string name="str_resigned">RESIGNED</string>
-  <!-- Used in formatting final scores display -->
-  <string name="str_winner">WINNER</string>
+  <string name="str_winner_fmt" formatted="false">[WINNER] %S: %D</string>
+  <string name="str_resigned_fmt" formatted="false">[RESIGNED] %S: %D</string>
+  <string name="str_placer_fmt" formatted="false">[#%D] %S: %D</string>
   <!--  -->
   <string name="inform_dict_diffversion_fmt">YOU AND THE HOST OF THIS
     GAME ARE USING DIFFERENT VERSIONS OF THE WORDLIST %1$s.</string>
@@ -1787,8 +1843,12 @@
     FIRST.)</string>
   <!-- Shown in toast when relaunching after switching dicts -->
   <string name="reload_new_dict_fmt">RELOADING GAME WITH %1$s</string>
+  <!-- Title of notification shown when invitation requires a
+	     wordslist that's not installed -->
   <string name="missing_dict_title">GAME INVITATION PENDING</string>
-  <string name="missing_dict_detail">REQUIRED WORDLIST MISSING</string>
+  <!-- body of notification shown when invitation requires a
+	     wordslist that's not installed -->
+  <string name="missing_dict_detail">TAP TO DOWNLOAD MISSING WORDLIST</string>
   <string name="invite_dict_missing_title">MISSING WORDLIST</string>
   <string name="invite_dict_missing_body_fmt">%1$s HAS INVITED YOU TO
     PLAY CROSSWORDS USING THE WORDLIST %2$s (FOR PLAY IN %3$s), BUT IT
@@ -1812,17 +1872,25 @@
   <string name="list_group_movedown">MOVE DOWN</string>
   <string name="group_cur_games">MY GAMES</string>
   <string name="group_new_games">NEW GAMES</string>
-  <string name="groups_confirm_del_fmt">ARE YOU SURE YOU WANT TO DELETE
-    THE %1$d SELECTED GROUP[S]?</string>
-  <string name="groups_confirm_del_games_fmt">\n\n(%1$d GAME[S] WILL
-    ALSO BE DELETED.)</string>
+  <plurals name="groups_confirm_del_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO DELETE
+      THE SELECTED GROUP?</item>
+    <item quantity="other">ARE YOU SURE YOU WANT TO DELETE
+      THE %1$d SELECTED GROUP[S]?</item>
+  </plurals>
+  <plurals name="groups_confirm_del_games_fmt">
+    <item quantity="one">\n\n(ONE GAME WILL ALSO BE DELETED.)</item>
+    <item quantity="other">\n\n(%1$d GAMES WILL ALSO BE
+      DELETED.)</item>
+  </plurals>
   <string name="rename_group_label">CHANGE THE NAME OF THIS GROUP TO:</string>
   <string name="game_name_group_title">NAME GROUP</string>
   <string name="cannot_delete_default_group_fmt">THE GROUP FOR NEW GAMES, %1$s, 
     CANNOT BE DELETED.</string>
-  <string name="no_move_onegroup">MOVING IS IMPOSSIBLE UNTIL THERE
-    IS MORE THAN ONE GROUP.</string>
-  <string name="group_name_fmt">%1$s (%2$d GAMES)</string>
+  <plurals name="group_name_fmt">
+    <item quantity="one">%1$s (%2$d GAME)</item>
+    <item quantity="other">%1$s (%2$d GAMES)</item>
+  </plurals>
   <!-- Button shown in game over dialog triggering creation of new
          game with the same players and parameters as the one that
          just ended. -->
@@ -1852,13 +1920,11 @@
   <string name="enable_nfc">NFC IS TURNED OFF ON THIS DEVICE. YOU
     CAN USE THE ANDROID SETTINGS APP TO TURN IT ON .</string>
   <string name="button_go_settings">LAUNCH SETTINGS</string>
-  <string name="no_hide_titlebar">THIS SETTING IS IGNORED ON DEVICES
-    LIKE YOURS THAT DEPEND ON THE \"ACTION BAR.\"</string>
   <string name="sms_ready_text">TAP THE RECEIVING DEVICE NOW</string>
-  <string name="not_again_sms_ready">YOU HAVE NFC ENABLED. THAT
-    MEANS THAT ANY TIME A BOARD THAT\'S MISSING A PLAYER IS OPEN, YOU
-    CAN TAP A NEARBY PERSON\'S DEVICE TO INVITE HIM/HER TO
-    PLAY – IF HE/SHE IS ALSO USING NFC.</string>
+  <!-- <string name="not_again_sms_ready">You have NFC enabled. That -->
+  <!-- means that any time a board that\'s missing a player is open, you -->
+  <!-- can tap a nearby person\'s device to invite him/her to -->
+  <!-- play &#8211; if he/she is also using NFC.</string> -->
   <string name="pct_suffix">\u0020PCT.</string>
   <string name="menu_rateme">RATE CROSSWORDS</string>
   <string name="no_market">GOOGLE PLAY APP NOT FOUND</string>
@@ -1869,9 +1935,16 @@
   <string name="gamel_menu_study">STUDYLIST…</string>
   <string name="slmenu_copy_sel">COPY TO CLIPBOARD</string>
   <string name="slmenu_clear_sel">DELETE SELECTED</string>
-  <string name="confirm_studylist_clear_fmt">ARE YOU SURE YOU WANT TO
-    DELETE THE %1$d SELECTED WORD[S]?\n\n(THIS ACTION CANNOT BE UNDONE.)</string>
-  <string name="paste_done_fmt">%1$d WORD[S] COPIED</string>
+  <plurals name="confirm_studylist_clear_fmt">
+    <item quantity="one">ARE YOU SURE YOU WANT TO DELETE THE
+      SELECTED WORD?\n\n(THIS ACTION CANNOT BE UNDONE.)</item>
+    <item quantity="other">ARE YOU SURE YOU WANT TO DELETE THE %1$d
+      SELECTED WORDS?\n\n(THIS ACTION CANNOT BE UNDONE.)</item>
+  </plurals>
+  <plurals name="paste_done_fmt">
+    <item quantity="one">ONE WORD COPIED</item>
+    <item quantity="other">%1$d WORDS COPIED</item>
+  </plurals>
   <string name="add_done_fmt">%1$s ADDED TO %2$s STUDYLIST</string>
   <string name="studylist_title_fmt">STUDYLIST FOR %1$s</string>
   <string name="study_langpick">YOUR WORDS FOR:</string>
@@ -1889,7 +1962,10 @@
   <string name="loc_menu_xlate">TRANSLATE</string>
   <string name="loc_lang_blessed">%1$s (OFFICIAL)</string>
   <string name="loc_lang_local">%1$s (YOURS)</string>
-  <string name="new_xlations_fmt">INSTALLED %1$d NEW TRANSLATIONS</string>
+  <plurals name="new_xlations_fmt">
+    <item quantity="one">INSTALLED ONE NEW TRANSLATION</item>
+    <item quantity="other">INSTALLED %1$d NEW TRANSLATIONS</item>
+  </plurals>
   <string name="xlations_enabled_title">ENABLE LOCAL TRANSLATING</string>
   <string name="xlations_enabled_summary">ADD OPTION TO EVERY SCREEN MENU</string>
   <string name="data_gsm_only">SMS DATA IS ONLY AVAILABLE ON GSM PHONES.</string>
@@ -1899,7 +1975,23 @@
   <string name="loc_filters_screen">LATEST SCREEN</string>
   <string name="loc_filters_menu">LATEST MENU</string>
   <string name="loc_filters_modified">MODIFIED BY ME</string>
-  <string name="loc_main_english">ENGLISH</string>
+  <string name="lang_name_english">ENGLISH</string>
+  <string name="lang_name_french">FRENCH</string>
+  <string name="lang_name_german">GERMAN</string>
+  <string name="lang_name_turkish">TURKISH</string>
+  <string name="lang_name_arabic">ARABIC</string>
+  <string name="lang_name_spanish">SPANISH</string>
+  <string name="lang_name_swedish">SWEDISH</string>
+  <string name="lang_name_polish">POLISH</string>
+  <string name="lang_name_danish">DANISH</string>
+  <string name="lang_name_italian">ITALIAN</string>
+  <string name="lang_name_dutch">DUTCH</string>
+  <string name="lang_name_catalan">CATALAN</string>
+  <string name="lang_name_portuguese">PORTUGUESE</string>
+  <string name="lang_name_russian">RUSSIAN</string>
+  <string name="lang_name_czech">CZECH</string>
+  <string name="lang_name_greek">GREEK</string>
+  <string name="lang_name_slovak">SLOVAK</string>
   <!-- for loc item edit menu -->
   <string name="loc_item_clear">CLEAR</string>
   <string name="loc_item_check">CHECK</string>
@@ -1926,11 +2018,15 @@
   <string name="dict_info_fmt">NUMBER OF WORDS: %1$d\nDOWNLOAD SIZE:
     %2$dK\nNOTE: %3$s</string>
   <string name="note_none">(NONE)</string>
-  <string name="dict_on_server">DOWNLOADABLE</string>
-  <string name="lang_name_fmt">%1$s (%2$d WORDLISTS)</string>
+  <string name="dict_on_server">TAP FOR DETAILS</string>
+  <plurals name="lang_name_fmt">
+    <item quantity="one">%1$s (%2$d WORDLIST)</item>
+    <item quantity="other">%1$s (%2$d WORDLISTS)</item>
+  </plurals>
+  <string name="dict_desc_fmt">%1$s (%2$s/%3$d WORDS)</string>
   <string name="lang_unknown">UNKNOWN</string>
   <string name="not_again_dicts">THIS SCREEN LETS YOU INSTALL NEW
-    WORDSLISTS AND VIEW THE ONES YOU ALREADY HAVE.\n\nWHAT WORDLISTS
+    WORDLISTS AND VIEW THE ONES YOU ALREADY HAVE.\n\nWHAT WORDLISTS
     YOU HAVE INSTALLED DETERMINES:\n• WHAT LANGUAGES YOU CAN PLAY
     IN\n• HOW SMART THE ROBOT PLAYER IS\n• WHAT WORDS ARE
     LEGAL.\n\nCHECK THE \"SHOW DOWNLOADABLE\" BOX AT THE TOP TO SEE
@@ -1939,4 +2035,241 @@
   <string name="force_tablet_summary">EVEN IF MY SCREEN IS TOO SMALL</string>
   <string name="activity_button">SINGLE-PANE</string>
   <string name="fragment_button">DUAL-PANE</string>
+  <!-- Nagging: title of notification reminder message -->
+  <string name="nag_title">REMINDER: IT\'S YOUR TURN</string>
+  <!-- body of warning notification reminder message. First three
+    are used to build a string based on the length of time that's then
+    inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
+    4 hour[s] ago." -->
+  <plurals name="nag_minutes_fmt">
+    <item quantity="one">%1$d MINUTE</item>
+    <item quantity="other">%1$d MINUTES</item>
+  </plurals>
+  <plurals name="nag_hours_fmt">
+    <item quantity="one">%1$d HOUR</item>
+    <item quantity="other">%1$d HOURS</item>
+  </plurals>
+  <plurals name="nag_days_fmt">
+    <item quantity="one">%1$d DAY</item>
+    <item quantity="other">%1$d DAYS</item>
+  </plurals>
+  <string name="nag_body_fmt">%1$s MOVED MORE THAN %2$s AGO.</string>
+  <!-- above is inserted in this the last time I warn -->
+  <string name="nag_warn_last_fmt">LAST WARNING: %1$s</string>
+  <!-- Used when prev player's name can't be looked up -->
+  <string name="prev_player">YOUR OPPONENT</string>
+  <!-- formatting for last move summary in notifications -->
+  <string name="lmi_pass_fmt">%1$s PASSED (0 POINTS)</string>
+  <plurals name="lmi_move_fmt">
+    <item quantity="other">%1$s PLAYED %2$s FOR %3$d POINTS</item>
+  </plurals>
+  <plurals name="lmi_trade_fmt">
+    <item quantity="one">%1$s TRADED ONE TILE</item>
+    <item quantity="other">%1$s TRADED %2$d TILES</item>
+  </plurals>
+  <string name="lmi_phony_fmt">%1$s LOST A TURN</string>
+  <string name="lmi_tiles_fmt">TILES ASSIGNED TO %1$s</string>
+  <string name="bt_no_devs">YOU CURRENTLY HAVE NO PAIRED BLUETOOTH
+	DEVICES. WOULD YOU LIKE TO OPEN THE ANDROID SETTINGS PANEL TO ADD
+	ONE OR MORE?\n\n(YOU MAY ALSO NEED TO OPEN IT ON THE DEVICE YOU
+	WANT TO PAIR WITH.)</string>
+  <string name="app_not_found_fmt">UNABLE TO CONNECT TO CROSSWORDS
+	ON THE DEVICE %1$s.  PLEASE CHECK THAT THE DEVICE IS WITHIN RANGE
+	AND THAT CROSSWORDS IS INSTALLED ON IT.</string>
+  <!-- label within default wordlists in app preferences -->
+  <string name="default_language">DEFAULT LANGUAGE</string>
+  <!-- Title of preference in which you select which addressing
+	     modes network games will use to communicate -->
+  <string name="title_addrs_pref">COMMUNICATE VIA</string>
+  <string name="new_game">NEW ONE-DEVICE GAME</string>
+  <string name="new_game_networked">NEW NETWORKED GAME</string>
+  <string name="rematch_name_fmt">REMATCH: %1$s</string>
+  <string name="new_game_message">WOULD YOU LIKE TO CREATE THIS GAME
+    USING DEFAULT SETTINGS?\n\nOR WOULD YOU LIKE TO CONFIGURE IT
+    FIRST?</string>
+  <string name="new_game_message_nodflt">THIS GAME MUST BE
+    CONFIGURED BEFORE IT CAN BE OPENED.</string>
+  <string name="new_game_message_net">(YOU WILL HAVE A CHANCE TO
+    INVITE OTHER PLAYERS WHEN IT IS OPEN.)</string>
+  <string name="use_defaults">USE DEFAULTS</string>
+  <string name="nplayers_prompt">NUMBER ON THIS DEVICE</string>
+  <plurals name="nplayers_fmt">
+    <item quantity="one">ONE PLAYER</item>
+    <item quantity="other">%1$d PLAYERS</item>
+  </plurals>
+  <string name="err_dup_invite_fmt">DUPLICATE INVITATION REJECTED:
+    DEVICE \"%1$s\" HAS ALREADY ACCEPTED AN INVITATION TO THIS
+    GAME.</string>
+  <string name="network_advanced_title">ADVANCED</string>
+  <string name="network_advanced_summary">FOR EXPERIENCED PLAYERS</string>
+  <string name="invite_multi_title">INVITE MULTIPLE</string>
+  <string name="invite_multi_summary">INVITE MORE THAN ONE PLAYER PER REMOTE DEVICE</string>
+  <string name="enable_pubroom_title">ENABLE PUBLIC ROOMS</string>
+  <string name="enable_pubroom_summary">ROOMS OTHERS CAN SEE AND JOIN</string>
+  <string name="connection_via_label">CHANGE COMMUNICATE VIA</string>
+  <string name="set_pref">HIDE BUTTONS</string>
+  <string name="not_again_hidenewgamebuttons">THESE TWO BUTTONS DO
+    THE SAME THING AS THE FIRST TWO ITEMS IN THIS WINDOW\'S ACTION BAR
+    (OR MENU). IF YOU LIKE YOU CAN HIDE THE BUTTONS TO MAKE MORE GAMES
+    VISIBLE.\n\n(IF YOU LATER WANT TO UNHIDE THEM GO TO THE APPEARANCE
+    SECTION OF APP SETTINGS).
+    </string>
+  <string name="waiting_title">WAITING FOR PLAYERS</string>
+  <!-- Button for alert with title above -->
+  <string name="waiting_invite_title">WAITING FOR RESPONSE</string>
+  <string name="waiting_rematch_title">REMATCH IN PROGRESS</string>
+  <!-- Button for alert with title above -->
+  <string name="button_wait">WAIT</string>
+  <string name="button_reinvite">RE-INVITE</string>
+  <string name="invite_stays">(THIS DIALOG WILL STAY UP UNTIL ALL
+    REMOTE PLAYERS HAVE CONNECTED. YOU CAN CLOSE THE GAME IF YOU
+    EXPECT IT TO TAKE A WHILE. REMOTE PLAYERS WILL STILL BE ABLE TO
+    CONNECT, AND YOU WILL BE NOTIFIED WHEN THEY DO.)</string>
+  <string name="nfc_just_tap">TO INVITE VIA NFC JUST TOUCH THE BACK
+    OF THIS DEVICE AGAINST THE ONE YOU WANT TO INVITE—ANY TIME THE
+    GAME IS OPEN.</string>
+  <string name="warn_no_comms">EVERY NETWORKED GAME MUST HAVE AT
+    LEAST ONE WAY OF COMMUNICATING. IF YOU HAVE NO DEFAULT CONNECTION
+    OPTIONS EVERY NEW NETWORKED GAME WILL HAVE TO BE CONFIGURED
+    MANUALLY.</string>
+  <string name="config_no_connvia">THIS GAME HAS NO WAY TO CONNECT
+    AND CANNOT BE SAVED. WOULD YOU LIKE TO DISCARD YOUR CHANGES, OR
+    EDIT TO GIVE IT A WAY TO CONNECT?</string>
+  <string name="button_edit">EDIT</string>
+  <string name="button_discard_changes">DISCARD CHANGES</string>
+  <string name="rematch_sent_toast">REMATCH INVITATIONS SENT</string>
+  <string name="rematch_msg">THIS GAME IS HOSTING A REMATCH, AND HAS
+    SENT AN INVITATION. YOU WILL SEE THIS MESSAGE UNTIL IT HAS BEEN
+    ACCEPTED.</string>
+  <string name="not_again_enablepublic">PUBLIC ROOMS HAVE BEEN MADE
+    AN \"ADVANCED\" FEATURE IN THIS RELEASE. IF YOU WERE USING THEM
+    AND WANT THEM BACK, ENABLE THEM NOW. YOU CAN TURN THEM OFF AGAIN
+    IN SETTINGS.</string>
+  <string name="disable_nags_title">TURN REMINDERS</string>
+  <string name="disable_nag_title">DISABLE NETWORK GAME REMINDERS</string>
+  <string name="disable_nag_summary">DO NOT NOTIFY ME NO MATTER
+    HOW LONG IT\'S BEEN MY TURN</string>
+  <string name="disable_nag_solo_title">DISABLE SOLO GAME REMINDERS</string>
+  <string name="confirm_get_locdict_fmt">YOUR DEVICE IS SET UP FOR
+  %1$s. WOULD YOU LIKE TO DOWNLOAD A WORDLIST SO YOU CAN PLAY
+  CROSSWORDS IN %1$s?</string>
+  <!-- Debugging stuff. Localize if you think your langauge users will
+       care. -->
+  <string name="advanced">FOR DEBUGGING</string>
+  <string name="advanced_summary">YOU SHOULD NEVER NEED THESE...</string>
+  <string name="relay_host">RELAY HOST</string>
+  <string name="redir_host">INVITE REDIRECT HOST</string>
+  <string name="dict_host">WORDLIST DOWNLOAD URL</string>
+  <string name="logging_on">ENABLE LOGGING</string>
+  <string name="logging_on_summary">(RELEASE BUILDS ONLY)</string>
+  <string name="debug_features">ENABLE DEBUG FEATURES</string>
+  <string name="debug_features_summary">MENUITEMS ETC. (RELEASE BUILDS
+  ONLY)</string>
+  <string name="title_send_data_sms">SEND SMS AS DATA</string>
+  <string name="summary_send_data_sms">(GSM PHONES ONLY)</string>
+  <string name="board_menu_game_netstats">NETWORK STATS</string>
+  <string name="board_menu_game_showInvites">SHOW INVITES</string>
+  <string name="netstats_title">GAME NETWORK STATS</string>
+  <string name="git_rev_title">SOURCE VERSION ID</string>
+  <string name="devid_title">DEVICE ID (ON RELAY)</string>
+  <string name="relay_port">RELAY GAME PORT</string>
+  <string name="proxy_port">RELAY DEVICE PORT</string>
+  <string name="name_dict_fmt">%1$s/%2$s</string>
+  <string name="gamel_menu_storedb">WRITE GAMES TO SD CARD</string>
+  <string name="gamel_menu_loaddb">LOAD GAMES FROM SD CARD</string>
+  <string name="enable_dupes_title">ACCEPT DUPLICATE INVITES</string>
+  <string name="xlations_locale">FAKE LOCALE FOR TRANSLATION</string>
+  <string name="enable_dupes_summary">ACCEPT INVITATIONS MORE THAN ONCE</string>
+  <string name="nag_intervals">REMINDER INTERVALS (MINUTES1,MINUTES2,...)</string>
+  <string name="enable_nfc_toself_title">ENABLE NFC TO SELF</string>
+  <string name="enable_nfc_toself_summary">FAKE INVITATION TO AID DEBUGGING</string>
+  <string name="enable_sms_toself_title">SHORT-CIRCUIT SMS TO SELF</string>
+  <string name="enable_sms_toself_summary">SKIP RADIO WHEN PHONE NUMBERS SAME</string>
+  <string name="force_radio_title">PRETEND TO HAVE RADIO</string>
+  <string name="radio_name_real">DON\'T PRETEND</string>
+  <string name="radio_name_tablet">TABLET/NO RADIO</string>
+  <string name="radio_name_gsm">GSM</string>
+  <string name="radio_name_cdma">CDMA</string>
+  <string name="nfc_to_self">SEND VIA NFC TO SELF?</string>
+  <string name="game_summary_field_rowid">ROWID</string>
+  <string name="game_summary_field_gameid">GAMEID</string>
+  <string name="game_summary_field_npackets">PENDING PACKET COUNT</string>
+  <string name="expl_update_url">UPDATE CHECKS URL</string>
+  <string name="got_langdict_title">FETCH DEFAULT WORDLIST FOR LANGUAGE</string>
+  <string name="got_langdict_summary">DON\'T TRY A SECOND TIME</string>
+  <string name="pref_group_sms_title">SMS STUFF</string>
+  <string name="pref_group_sms_summary">PREFS RELATED TO PLAY-VIA-SMS</string>
+  <string name="pref_group_relay_title">RELAY STUFF</string>
+  <string name="pref_group_relay_summary">PREFS RELATED TO PLAY VIA INTERNET/RELAY</string>
+  <string name="pref_group_l10n_title">LOCALIZATION STUFF</string>
+  <string name="pref_group_l10n_summary">PREFS RELATED TO IN-APP LOCALIZATION</string>
+  <string name="pref_item_update_title">UPDATE BETWEEN RELEASES</string>
+  <string name="pref_item_update_summary">GET INTERMEDIATE BUILDS</string>
+  <string name="checking_title">CHECKING</string>
+  <string name="checking_for_fmt">CHECKING FOR WORDLISTS IN %1$s…</string>
+  <string name="db_store_done">SD CARD WRITE COMPLETE.</string>
+  <string name="seeking_relay">CONNECTING TO RELAY…</string>
+  <string name="no_relay_conn">THIS GAME IS CONFIGURED TO USE THE
+  RELAY (INTERNET) FOR COMMUNICATION BUT HAS BEEN UNABLE TO
+  CONNECT.\n\nPLEASE TRY OPENING THE GAME AGAIN LATER AFTER
+  CONDITIONS HAVE CHANGED.</string>
+  <string name="drop_relay_warning_fmt">(THIS GAME CAN ALSO CONNECT
+  VIA %1$s, SO IF YOU\'D LIKE TO PLAY THE GAME WITHOUT A RELAY
+  CONNECTION YOU CAN.)
+  </string>
+  <string name="confirm_drop_relay">ARE YOU SURE YOU WANT TO DROP THIS
+  GAME\'S ABILITY TO COMMUNICATE VIA THE RELAY?</string>
+  <string name="wifi_warning">\u0020FOR EXAMPLE, YOU MAY NEED TO BE ON
+  A DIFFERENT WIFI NETWORK.</string>
+  <string name="confirm_drop_relay_bt">BLUETOOTH ONLY WORKS FOR NEARBY
+  DEVICES.</string>
+  <string name="confirm_drop_relay_sms">NOT ALL CARRIERS SUPPORT PLAY
+  VIA SMS.</string>
+  <string name="button_enable">ENABLE</string>
+  <string name="not_again_comms_relay">THE \"RELAY\" IS A SERVER ON
+  THE INTERNET THAT PASSES MESSAGES BETWEEN DEVICES THAT ARE RUNNING
+  CROSSWORDS. IT WORKS ANY TIME YOU HAVE A FULLY-FUNCTIONAL INTERNET
+  CONNECTION, BUT MIGHT HAVE PROBLEMS ON RESTRICTED WIFI
+  NETWORKS.</string>
+  <string name="not_again_comms_sms">PLAY VIA SMS USES THE SAME
+  TECHNOLOGY AS \"TEXTING\". THOUGH THE MESSAGES ARE INVISIBLE TO YOU,
+  YOUR CARRIER CONSIDERS THEM TEXTS, SO YOU WANT TO AVOID THIS FEATURE
+  UNLESS YOU HAVE AN UNLIMITED TEXTING PLAN (OR BUDGET.) NOTE THAT
+  ANDROID ONLY SUPPORTS THIS FEATURE ON DEVICES ON A GSM CARRIER,
+  I.E. EVERY CARRIER IN THE WORLD EXCEPT VERIZON AND SPRINT.</string>
+  <string name="not_again_comms_bt">USE BLUETOOTH TO PLAY AGAINST A
+  NEARBY DEVICE THAT\'S \"PAIRED\" WITH YOURS.</string>
+  <string name="str_no_hint_found">CANNOT FIND ANY MOVES</string>
+  <string name="not_again_rematch_two_only">REMATCH IS LIMITED TO
+  TWO-PERSON GAMES, AT LEAST FOR NOW, BECAUSE IT\'S HARDER WITH MORE
+  DEVICES AND I THINK IT\'S RARE THAT PEOPLE PLAY WITH MORE THAN
+  TWO. LET ME KNOW IF I\'M WRONG AND I\'LL UP THE PRIORITY.</string>
+  <string name="enable_relay_toself_title">ENABLE RELAY INVITES TO SELF</string>
+  <string name="enable_relay_toself_summary">(TO AID TESTING AND DEBUGGING)</string>
+  <!-- Shown after "resend messages" menuitem chosen -->
+  <plurals name="resent_msgs_fmt">
+    <item quantity="one">ONE MESSAGE SENT</item>
+    <item quantity="other">%1$s MESSAGES SENT</item>
+  </plurals>
+  <string name="invite_copied">INVITATION READY TO PASTE</string>
+  <!-- EXPERIMENTAL: "label" for invite on clipboard. If it's shown
+       it's by some Android utility -->
+  <string name="clip_label">INVITATION URL</string>
+  <!-- EXPERIMENTAL: Newbie hint next when invite_choice_clip shown
+       when chosen -->
+  <string name="not_again_clip_expl_fmt">THE \"%1$s\" OPTION COPIES AN
+  INVITATION URL TO THE CLIPBOARD. PASTE IT INTO THE APP OF YOUR
+  CHOICE AND SEND IT TO YOUR FRIEND.</string>
+  <string name="confirm_clear_chat">ARE YOU SURE YOU WANT TO DELETE
+  ALL CHAT HISTORY FOR THIS GAME?\n\n(THIS ACTION CANNOT BE
+  UNDONE.)</string>
+  <string name="rel_invite_title">RELAY INVITE TITLE</string>
+  <string name="fetching_from_relay">FETCHING GAMES FROM RELAY</string>
+  <string name="processing_games">PROCESSING GAMES</string>
+  <string name="list_item_select">SELECT</string>
+  <string name="list_item_deselect">DE-SELECT</string>
+  <string name="not_again_dfltname_fmt">YOU ARE USING THE DEFAULT
+  PLAYER NAME \"%1$s\". WOULD YOU LIKE TO PERSONALIZE WITH YOUR OWN
+  NAME BEFORE YOU CREATE THIS GAME?</string>
+  <string name="no_invites">THIS GAME HAS SENT NO INVITATIONS</string>
 </resources>

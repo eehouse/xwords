@@ -24,7 +24,7 @@ import android.view.View;
 
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class StudyListFrag extends XWListFragment implements ListDelegator {
+public class StudyListFrag extends XWFragment implements Delegator {
     private StudyListDelegate m_dlgt;
 
     @Override

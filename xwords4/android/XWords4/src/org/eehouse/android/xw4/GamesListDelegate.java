@@ -1115,10 +1115,7 @@ public class GamesListDelegate extends ListDelegateBase
         // an empty room name.
         if ( clicked instanceof GameListItem ) {
             long rowid = ((GameListItem)clicked).getRowID();
-<<<<<<< HEAD
             DbgUtils.logf( "GamesListDelegate.itemClicked(%d)", rowid );
-=======
->>>>>>> android_branch
             if ( ! m_launchedGames.contains( rowid ) ) {
                 showNotAgainDlgThen( R.string.not_again_newselect, 
                                      R.string.key_notagain_newselect,
@@ -2281,18 +2278,15 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
         if ( madeGame ) {
-<<<<<<< HEAD
-            if ( R.id.games_game_reset == m_missingDictMenuId ) {
-                long[] rowIDs = { m_missingDictRowId };
-                doConfirmReset( rowIDs );
-            } else {
-                launchGame( m_missingDictRowId );
-            }
-=======
+            // if ( R.id.games_game_reset == m_missingDictMenuId ) {
+            //     long[] rowIDs = { m_missingDictRowId };
+            //     doConfirmReset( rowIDs );
+            // } else {
+            //     launchGame( m_missingDictRowId );
+            // }
             // save in case checkWarnNoDict needs to set them
             long rowID = m_missingDictRowId;
             int menuID = m_missingDictMenuId;
->>>>>>> android_branch
             m_missingDictRowId = DBUtils.ROWID_NOTFOUND;
             m_missingDictMenuId = -1;
 
@@ -2308,16 +2302,13 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void launchGame( long rowid, boolean invited )
     {
-<<<<<<< HEAD
-        DbgUtils.logf( "launchGame(%d)", rowid );
-        if ( ! m_launchedGames.contains( rowid ) ) {
-            m_launchedGames.add( rowid );
-            m_delegator.launchGame( rowid, invited );
-=======
+        // DbgUtils.logf( "launchGame(%d)", rowid );
+        // if ( ! m_launchedGames.contains( rowid ) ) {
+        //     m_launchedGames.add( rowid );
+        //     m_delegator.launchGame( rowid, invited );
         if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
             GameUtils.launchGame( m_activity, rowid, invited );
->>>>>>> android_branch
         }
     }
 

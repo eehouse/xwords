@@ -28,6 +28,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import junit.framework.Assert;
 
@@ -119,6 +121,10 @@ public class XWFragment extends Fragment {
     {
         Assert.fail();
     }
+
+    public void setListAdapter( ListAdapter adapter ) {}
+    public ListAdapter getListAdapter() { return null; }
+    public ListView getListView() { return null; }
 }
 
 

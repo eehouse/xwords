@@ -40,7 +40,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class GamesListFrag extends XWListFragment implements GamesListDelegator {
+public class GamesListFrag extends XWFragment implements GamesListDelegator {
 
     private GamesListDelegate m_dlgt;
 

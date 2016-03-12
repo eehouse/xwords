@@ -650,12 +650,12 @@ public class BoardDelegate extends DelegateBase
         super.onDestroy();
     }
 
-    @Override
-    protected void onDestroy()
-    {
-        GamesListDelegate.boardDestroyed( m_rowid );
-        super.onDestroy();
-    }
+    // @Override
+    // protected void onDestroy()
+    // {
+    //     GamesListDelegate.boardDestroyed( m_rowid );
+    //     super.onDestroy();
+    // }
 
     protected void onSaveInstanceState( Bundle outState ) 
     {

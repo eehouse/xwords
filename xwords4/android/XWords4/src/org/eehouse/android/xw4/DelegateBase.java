@@ -87,6 +87,8 @@ public class DelegateBase implements DlgClickNotify,
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean onBackPressed() { return false; }
 
+    protected void requestWindowFeature( int feature ) {}
+
     // Fragments only
     protected View inflateView( LayoutInflater inflater, ViewGroup container )
     {
