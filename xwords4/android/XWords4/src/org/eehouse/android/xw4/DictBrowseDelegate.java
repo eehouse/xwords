@@ -163,14 +163,15 @@ public class DictBrowseDelegate extends ListDelegateBase
 
     protected void init( Bundle savedInstanceState ) 
     {
-        Intent intent = getIntent();
-        String name = null == intent? null:intent.getStringExtra( DICT_NAME );
+        Bundle args = getArguments();
+        String name = null == args? null : args.getString( DICT_NAME );
+        Assert.assertNotNull( name );
         if ( null == name ) {
             finish();
         } else {
             m_name = name;
             m_loc = 
-                DictUtils.DictLoc.values()[intent.getIntExtra( DICT_LOC, 0 )];
+                DictUtils.DictLoc.values()[args.getInt( DICT_LOC, 0 )];
             m_lang = DictLangCache.getDictLangCode( m_activity, name );
 
             String[] names = { name };
@@ -363,9 +364,9 @@ public class DictBrowseDelegate extends ListDelegateBase
             DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
             m_browseState = null;
 
-            startActivity( getIntent() );
+            finish(); // pop fragment stack before adding new (only it doesn't work)
 
-            finish();
+            launch( m_activity, getArguments() );
         }
     }
 
@@ -421,14 +422,24 @@ public class DictBrowseDelegate extends ListDelegateBase
         m_maxSpinner.setOnItemSelectedListener( this );
     }
 
+    private static void launch( Context context, Bundle bundle )
+    {
+        if ( context instanceof FragActivity ) {
+            FragActivity.addFragment( new DictBrowseFrag(), bundle );
+        } else {
+            Intent intent = new Intent( context, DictBrowseActivity.class );
+            intent.putExtras( bundle );
+            context.startActivity( intent );
+        }
+    }
 
     public static void launch( Context caller, String name, 
                                DictUtils.DictLoc loc )
     {
-        Intent intent = new Intent( caller, DictBrowseActivity.class );
-        intent.putExtra( DICT_NAME, name );
-        intent.putExtra( DICT_LOC, loc.ordinal() );
-        caller.startActivity( intent );
+        Bundle bundle = new Bundle();
+        bundle.putString( DICT_NAME, name );
+        bundle.putInt( DICT_LOC, loc.ordinal() );
+        launch( caller, bundle );
     }
 
     public static void launch( Context caller, String name )

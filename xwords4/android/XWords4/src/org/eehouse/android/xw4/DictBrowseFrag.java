@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2016 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,15 +21,13 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 
-import org.eehouse.android.xw4.loc.LocUtils;
-
-public class BoardFrag extends XWFragment {
-    private BoardDelegate m_dlgt;
+public class DictBrowseFrag extends XWFragment {
+    private DictBrowseDelegate m_dlgt;
 
     @Override
     public void onCreate( Bundle savedInstanceState )
     {
-        m_dlgt = new BoardDelegate( this, savedInstanceState );
+        m_dlgt = new DictBrowseDelegate( this, savedInstanceState );
         super.onCreate( m_dlgt, savedInstanceState );
     }
 
