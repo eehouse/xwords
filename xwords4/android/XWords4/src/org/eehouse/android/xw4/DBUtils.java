@@ -595,7 +595,7 @@ public class DBUtils {
 
     }
 
-    private static void setInt( long rowid, String column, int value )
+    private static void setSummaryInt( long rowid, String column, int value )
     {
         ContentValues values = new ContentValues();
         values.put( column, value );
@@ -604,13 +604,13 @@ public class DBUtils {
 
     public static void setMsgFlags( long rowid, int flags )
     {
-        setInt( rowid, DBHelper.HASMSGS, flags );
+        setSummaryInt( rowid, DBHelper.HASMSGS, flags );
         notifyListeners( rowid, GameChangeType.GAME_CHANGED );
     }
 
     public static void setExpanded( long rowid, boolean expanded )
     {
-        setInt( rowid, DBHelper.CONTRACTED, expanded?0:1 );
+        setSummaryInt( rowid, DBHelper.CONTRACTED, expanded?0:1 );
     }
 
     private static int getInt( Context context, long rowid, String column,
@@ -1796,7 +1796,7 @@ public class DBUtils {
             // debugged), this can be removed.
             ContentValues values = new ContentValues();
             values.putNull( DBHelper.CHAT_HISTORY );
-            updateRowImpl( db, DBHelper.TABLE_NAME_CHAT, rowid, values );
+            updateRowImpl( db, DBHelper.TABLE_NAME_SUM, rowid, values );
 
             db.close();
         }
