@@ -18,3 +18,4 @@ obj
 proguard.cfg
 res/drawable*/*gen.png
 .idea/
+*.iml
