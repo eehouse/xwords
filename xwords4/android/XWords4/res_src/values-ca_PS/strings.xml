@@ -1747,6 +1747,7 @@
   <string name="menu_zoom">ZOOM IN/OUT</string>
   <!--  -->
   <string name="menu_chat">CHAT</string>
+  <string name="chat_sender_fmt">%1$s:</string>
   <!--  -->
   <string name="menu_toggle_values">TOGGLE VALUES</string>
   <!-- board menu for small devices only -->

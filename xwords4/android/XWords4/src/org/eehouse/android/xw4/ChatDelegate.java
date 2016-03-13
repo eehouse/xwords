@@ -91,7 +91,8 @@ public class ChatDelegate extends DelegateBase {
                     TextView view = (TextView)row.findViewById( R.id.chat_row_text );
                     view.setText( pair.msg );
                     view = (TextView)row.findViewById( R.id.chat_row_name );
-                    view.setText( names[pair.playerIndx] );
+                    view.setText( getString( R.string.chat_sender_fmt, 
+                                             names[pair.playerIndx] ) );
                     layout.addView( row );
                 }
             }
