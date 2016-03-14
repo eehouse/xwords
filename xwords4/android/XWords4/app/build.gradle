@@ -20,7 +20,7 @@ android {
     buildToolsVersion "22.0.1"
     defaultConfig {
         minSdkVersion 7
-        targetSdkVersion 22
+        targetSdkVersion 19
     }
 
     // Rename all output artifacts to include version information

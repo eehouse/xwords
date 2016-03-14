@@ -2020,6 +2020,7 @@
     <string name="menu_zoom">Zoom in/out</string>
     <!--  -->
     <string name="menu_chat">Chat</string>
+    <string name="chat_sender_fmt">%1$s:</string>
     <!--  -->
     <string name="menu_toggle_values">Toggle values</string>
 

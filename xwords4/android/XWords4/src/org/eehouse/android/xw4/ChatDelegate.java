@@ -120,7 +120,8 @@ public class ChatDelegate extends DelegateBase {
         TextView view = (TextView)row.findViewById( R.id.chat_row_text );
         view.setText( msg );
         view = (TextView)row.findViewById( R.id.chat_row_name );
-        view.setText( m_names[playerIndx] );
+        view.setText( getString( R.string.chat_sender_fmt, 
+                                 m_names[playerIndx] ) );
         m_layout.addView( row );
 
         scrollDown();
