@@ -64,6 +64,7 @@ public class ChatDelegate extends DelegateBase {
     @Override
     protected void init( Bundle savedInstanceState ) 
     {
+        DbgUtils.logf( "ChatDelegate.init()" );
         if ( BuildConstants.CHAT_SUPPORTED ) {
             m_edit = (EditText)findViewById( R.id.chat_edit );
             m_edit.addTextChangedListener( new TextWatcher() {
@@ -76,11 +77,11 @@ public class ChatDelegate extends DelegateBase {
                                                int before, int count ) {}
                 } );
 
-            Intent intent = getIntent();
-            m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
-            m_curPlayer = intent.getIntExtra( INTENT_KEY_PLAYER, -1 );
-            m_names = intent.getStringArrayExtra( INTENT_KEY_NAMES );
-            boolean[] locals = intent.getBooleanArrayExtra( INTENT_KEY_LOCS );
+            Bundle args = getArguments();
+            m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
+            m_curPlayer = args.getInt( INTENT_KEY_PLAYER, -1 );
+            m_names = args.getStringArray( INTENT_KEY_NAMES );
+            boolean[] locals = args.getBooleanArray( INTENT_KEY_LOCS );
 
             m_scroll = (ScrollView)findViewById( R.id.scroll );
             m_layout = (TableLayout)findViewById( R.id.chat_history );
@@ -208,11 +209,18 @@ public class ChatDelegate extends DelegateBase {
                                        String[] names, boolean[] locs )
     {
         Assert.assertFalse( -1 == curPlayer );
-        Intent intent = new Intent( parent, ChatActivity.class );
-        intent.putExtra( GameUtils.INTENT_KEY_ROWID, rowID );
-        intent.putExtra( INTENT_KEY_PLAYER, curPlayer );
-        intent.putExtra( INTENT_KEY_NAMES, names );
-        intent.putExtra( INTENT_KEY_LOCS, locs );
-        parent.startActivityForResult( intent, requestCode.ordinal() );
+        Bundle bundle = new Bundle();
+        bundle.putLong( GameUtils.INTENT_KEY_ROWID, rowID );
+        bundle.putInt( INTENT_KEY_PLAYER, curPlayer );
+        bundle.putStringArray( INTENT_KEY_NAMES, names );
+        bundle.putBooleanArray( INTENT_KEY_LOCS, locs );
+
+        if ( parent instanceof FragActivity ) {
+            FragActivity.addFragment( new ChatFrag(), bundle );
+        } else {
+            Intent intent = new Intent( parent, ChatActivity.class );
+            intent.putExtras( bundle );
+            parent.startActivityForResult( intent, requestCode.ordinal() );
+        }
     }
 }

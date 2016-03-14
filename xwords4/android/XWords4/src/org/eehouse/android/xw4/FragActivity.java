@@ -171,7 +171,11 @@ public class FragActivity extends FragmentActivity
 
         if ( !replace && contCount >= m_maxPanes ) {
             int indx = contCount - m_maxPanes;
-            m_root.getChildAt( indx ).setVisibility( View.GONE );
+            View child = m_root.getChildAt( indx );
+            child.setVisibility( View.GONE );
+
+            setMenuVisibility( child, false );
+
             DbgUtils.logf( "hiding %dth container", indx );
         }
 
@@ -191,7 +195,17 @@ public class FragActivity extends FragmentActivity
             boolean visible = ii >= nPanes - m_maxPanes;
             DbgUtils.logf( "pane %d: visible=%b", ii, visible );
             child.setVisibility( visible ? View.VISIBLE : View.GONE );
+            setMenuVisibility( child, visible );
         }
+    }
+
+    private void setMenuVisibility( View cont, boolean visible )
+    {
+        FrameLayout layout = (FrameLayout)cont;
+        FragmentManager fm = getSupportFragmentManager();
+        int hidingId = layout.getId();
+        Fragment frag = fm.findFragmentById( hidingId );
+        frag.setMenuVisibility( visible );
     }
 
     // Walk all Fragment children and if they care notify of change.
