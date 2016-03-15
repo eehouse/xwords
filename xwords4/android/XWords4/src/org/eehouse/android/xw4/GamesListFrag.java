@@ -40,7 +40,7 @@ import junit.framework.Assert;
 import org.eehouse.android.xw4.jni.CommonPrefs;
 import org.eehouse.android.xw4.loc.LocUtils;
 
-public class GamesListFrag extends XWFragment implements GamesListDelegator {
+public class GamesListFrag extends XWFragment {
 
     private GamesListDelegate m_dlgt;
 
@@ -63,14 +63,4 @@ public class GamesListFrag extends XWFragment implements GamesListDelegator {
         super.onActivityCreated( savedInstanceState );
         setHasOptionsMenu( true );
     }
-
-    //////////////////////////////////////////////////////////////////////
-    // ListDelegator interface
-    //////////////////////////////////////////////////////////////////////
-    public void launchGame( long rowid, boolean invited )
-    {
-        DbgUtils.logf( "GamesListFrag.launchGame(%d)", rowid );
-        FragActivity.launchGame( rowid, invited );
-    }
-
 }

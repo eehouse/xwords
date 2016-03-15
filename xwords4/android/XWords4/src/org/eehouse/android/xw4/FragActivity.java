@@ -260,12 +260,6 @@ public class FragActivity extends FragmentActivity
         return s_this;
     }
 
-    public static void launchGame( long rowid, boolean invited )
-    {
-        Bundle args = GameUtils.makeLaunchExtras( rowid, invited );
-        addFragment( new BoardFrag(), args );
-    }
-
     public static void addFragment( Fragment fragment, Bundle bundle )
     {
         addFragment( fragment, bundle, null );

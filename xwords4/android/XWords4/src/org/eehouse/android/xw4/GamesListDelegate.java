@@ -592,7 +592,7 @@ public class GamesListDelegate extends ListDelegateBase
     private Intent m_rematchIntent;
     private Object[] m_newGameParams;
 
-    public GamesListDelegate( GamesListDelegator delegator, Bundle sis )
+    public GamesListDelegate( Delegator delegator, Bundle sis )
     {
         super( delegator, sis, R.layout.game_list, R.menu.games_list_menu );
         m_activity = delegator.getActivity();
