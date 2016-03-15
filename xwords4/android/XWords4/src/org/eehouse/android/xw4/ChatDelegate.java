@@ -204,7 +204,8 @@ public class ChatDelegate extends DelegateBase {
     }
 
 
-    public static void startForResult( Activity parent, RequestCode requestCode,
+    public static void startForResult( Delegator delegator, 
+                                       RequestCode requestCode,
                                        long rowID, int curPlayer, 
                                        String[] names, boolean[] locs )
     {
@@ -215,12 +216,13 @@ public class ChatDelegate extends DelegateBase {
         bundle.putStringArray( INTENT_KEY_NAMES, names );
         bundle.putBooleanArray( INTENT_KEY_LOCS, locs );
 
-        if ( parent instanceof FragActivity ) {
-            FragActivity.addFragment( new ChatFrag(), bundle );
+        Activity activity = delegator.getActivity();
+        if ( activity instanceof FragActivity ) {
+            FragActivity.addFragment( new ChatFrag(), bundle, delegator );
         } else {
-            Intent intent = new Intent( parent, ChatActivity.class );
+            Intent intent = new Intent( activity, ChatActivity.class );
             intent.putExtras( bundle );
-            parent.startActivityForResult( intent, requestCode.ordinal() );
+            activity.startActivityForResult( intent, requestCode.ordinal() );
         }
     }
 }

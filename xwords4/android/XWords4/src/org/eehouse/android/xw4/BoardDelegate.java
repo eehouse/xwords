@@ -83,7 +83,6 @@ public class BoardDelegate extends DelegateBase
     private static final String GETDICT = "GETDICT";
 
     private Activity m_activity;
-    private Delegator m_delegator;
     private BoardView m_view;
     private GamePtr m_jniGamePtr;
     private GameLock m_gameLock;
@@ -581,7 +580,6 @@ public class BoardDelegate extends DelegateBase
     {
         super( delegator, savedInstanceState, R.layout.board, R.menu.board_menu );
         m_activity = delegator.getActivity();
-        m_delegator = delegator;
     }
 
     protected void init( Bundle savedInstanceState ) 
@@ -931,7 +929,7 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
         case R.id.games_menu_study:
-            StudyListDelegate.launchOrAlert( m_activity, m_gi.dictLang, this );
+            StudyListDelegate.launchOrAlert( getDelegator(), m_gi.dictLang, this );
             break;
         case R.id.board_menu_game_netstats:
             m_jniThread.handle( JNICmd.CMD_NETSTATS, R.string.netstats_title );
@@ -950,7 +948,7 @@ public class BoardDelegate extends DelegateBase
             // small devices only
         case R.id.board_menu_dict:
             String dictName = m_gi.dictName( m_view.getCurPlayer() );
-            DictBrowseDelegate.launch( m_activity, dictName );
+            DictBrowseDelegate.launch( getDelegator(), dictName );
             break;
 
         case R.id.board_menu_game_counts:
@@ -1029,11 +1027,11 @@ public class BoardDelegate extends DelegateBase
                 String curDict = m_gi.dictName( m_view.getCurPlayer() );
                 View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
                 if ( Action.BUTTON_BROWSEALL_ACTION == action &&
-                     DictsDelegate.handleDictsPopup( m_activity, button, 
+                     DictsDelegate.handleDictsPopup( getDelegator(), button, 
                                                      curDict, m_gi.dictLang ) ){
                     break;
                 }
-                DictBrowseDelegate.launch( m_activity, curDict );
+                DictBrowseDelegate.launch( getDelegator(), curDict );
                 break;
             case PREV_HINT_ACTION:
                 cmd = JNICmd.CMD_PREV_HINT;
@@ -1439,7 +1437,7 @@ public class BoardDelegate extends DelegateBase
 
         String msg = getString( R.string.reload_new_dict_fmt, getDict );
         showToast( msg );
-        m_delegator.finish();
+        finish();
         GameUtils.launchGame( m_activity, m_rowid, false );
     }
 
@@ -2174,7 +2172,7 @@ public class BoardDelegate extends DelegateBase
                 }
            } catch ( GameUtils.NoSuchGameException nsge ) {
                 DbgUtils.loge( nsge );
-                m_delegator.finish();
+                finish();
             }
         }
     } // loadGame
@@ -2375,7 +2373,7 @@ public class BoardDelegate extends DelegateBase
             int curPlayer = XwJNI.board_getSelPlayer( m_jniGamePtr );
             String[] names = m_gi.playerNames();
             boolean[] locs = m_gi.playersLocal(); // to convert old histories
-            ChatDelegate.startForResult( m_activity, RequestCode.CHAT_REQUEST,
+            ChatDelegate.startForResult( getDelegator(), RequestCode.CHAT_REQUEST,
                                          m_rowid, curPlayer, names, locs );
         }
     }
@@ -2656,10 +2654,6 @@ public class BoardDelegate extends DelegateBase
 
     private void doRematchIf()
     {
-        // Intent intent = GamesListDelegate.makeRematchIntent( m_activity, m_gi, m_rowid );
-        // if ( null != intent ) {
-        //     startActivity( intent );
-        //     m_delegator.finish();
         if ( doRematchIf( m_activity, this, m_rowid, m_summary, m_gi, 
                           m_jniGamePtr ) ) {
             finish();

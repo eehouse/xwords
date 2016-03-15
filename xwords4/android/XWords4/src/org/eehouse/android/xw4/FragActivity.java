@@ -26,6 +26,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentManager.BackStackEntry;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -64,7 +65,7 @@ public class FragActivity extends FragmentActivity
         if ( savedInstanceState == null ) {
             // In case this activity was started with special instructions from an Intent,
             // pass the Intent's extras to the fragment as arguments
-            addFragmentImpl( new GamesListFrag(), getIntent().getExtras() );
+            addFragmentImpl( new GamesListFrag(), getIntent().getExtras(), null );
         }
     }
 
@@ -134,27 +135,40 @@ public class FragActivity extends FragmentActivity
         getSupportFragmentManager().popBackStack();
     }
 
-    private void addFragmentImpl( Fragment fragment, Bundle bundle ) 
+    private void addFragmentImpl( Fragment fragment, Bundle bundle, 
+                                  Delegator parent ) 
     {
         fragment.setArguments( bundle );
-        addFragmentImpl( fragment );
+        addFragmentImpl( fragment, parent );
     }
 
-    private void addFragmentImpl( Fragment fragment ) 
+    private void addFragmentImpl( Fragment fragment, Delegator delegator )
     {
         String newName = fragment.getClass().getName();
         boolean replace = false;
         FragmentManager fm = getSupportFragmentManager();
         int fragCount = fm.getBackStackEntryCount();
-        int contCount = m_root.getChildCount();
-        DbgUtils.logf( "fragCount: %d; contCount: %d", fragCount, contCount );
-        Assert.assertTrue( fragCount == contCount );
+        int containerCount = m_root.getChildCount();
+        DbgUtils.logf( "fragCount: %d; containerCount: %d", fragCount, containerCount );
+        // Assert.assertTrue( fragCount == containerCount );
 
-        if ( 0 < contCount ) {
+        // Replace IF we're adding something of the same class at right OR if
+        // we're adding something with the existing left pane as its parent
+        // (delegator)
+        if ( 0 < fragCount ) {
             FragmentManager.BackStackEntry entry = fm.getBackStackEntryAt( fragCount - 1 );
             String curName = entry.getName();
             DbgUtils.logf( "name of last entry: %s", curName );
             replace = curName.equals( newName );
+
+            if ( !replace && 1 < fragCount ) {
+                entry = fm.getBackStackEntryAt( fragCount - 2 );
+                curName = entry.getName();
+                String delName = delegator.getClass().getName();
+                DbgUtils.logf( "comparing %s, %s", curName, delName );
+                replace = curName.equals( delName );
+            }
+
             if ( replace ) {
                 fm.popBackStack();
             }
@@ -167,10 +181,10 @@ public class FragActivity extends FragmentActivity
         cont.setLayoutParams( new LayoutParams(0, LayoutParams.MATCH_PARENT, 1.0f) );
         int id = --m_nextID;
         cont.setId( id );
-        m_root.addView( cont, replace ? contCount - 1 : contCount );
+        m_root.addView( cont, replace ? containerCount - 1 : containerCount );
 
-        if ( !replace && contCount >= m_maxPanes ) {
-            int indx = contCount - m_maxPanes;
+        if ( !replace && containerCount >= m_maxPanes ) {
+            int indx = containerCount - m_maxPanes;
             View child = m_root.getChildAt( indx );
             child.setVisibility( View.GONE );
 
@@ -205,7 +219,9 @@ public class FragActivity extends FragmentActivity
         FragmentManager fm = getSupportFragmentManager();
         int hidingId = layout.getId();
         Fragment frag = fm.findFragmentById( hidingId );
-        frag.setMenuVisibility( visible );
+        if ( null != frag ) {   // hasn't been popped?
+            frag.setMenuVisibility( visible );
+        }
     }
 
     // Walk all Fragment children and if they care notify of change.
@@ -250,8 +266,14 @@ public class FragActivity extends FragmentActivity
         addFragment( new BoardFrag(), args );
     }
 
-    public static void addFragment( Fragment fragment, Bundle bundle ) 
+    public static void addFragment( Fragment fragment, Bundle bundle )
     {
-        getThis().addFragmentImpl( fragment, bundle );
+        addFragment( fragment, bundle, null );
+    }
+
+    public static void addFragment( Fragment fragment, Bundle bundle, 
+                                    Delegator parent ) 
+    {
+        getThis().addFragmentImpl( fragment, bundle, parent );
     }
 }

@@ -566,7 +566,6 @@ public class GamesListDelegate extends ListDelegateBase
 
     private Activity m_activity;
     private static GamesListDelegate s_self;
-    private GamesListDelegator m_delegator;
     private GameListAdapter m_adapter;
     private Handler m_handler;
     private String m_missingDict;
@@ -596,7 +595,6 @@ public class GamesListDelegate extends ListDelegateBase
     public GamesListDelegate( GamesListDelegator delegator, Bundle sis )
     {
         super( delegator, sis, R.layout.game_list, R.menu.games_list_menu );
-        m_delegator = delegator;
         m_activity = delegator.getActivity();
         m_launchedGames = new HashSet<Long>();
         s_self = this;
@@ -1490,7 +1488,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_study:
-            StudyListDelegate.launchOrAlert( m_activity, StudyListDelegate.NO_LANG, this );
+            StudyListDelegate.launchOrAlert( getDelegator(), StudyListDelegate.NO_LANG, this );
             break;
 
         case R.id.games_menu_about:

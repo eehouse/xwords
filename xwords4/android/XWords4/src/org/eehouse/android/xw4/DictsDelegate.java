@@ -109,13 +109,13 @@ public class DictsDelegate extends ListDelegateBase
     private String m_noteNone;
 
     private static interface SafePopup {
-        public void doPopup( Context context, View button, 
+        public void doPopup( Delegator dlgtor, View button, 
                              String curDict, int lang );
     }
     private static SafePopup s_safePopup = null;
 
     private static class SafePopupImpl implements SafePopup {
-        public void doPopup( final Context context, View button, 
+        public void doPopup( final Delegator dlgtor, View button, 
                              String curDict, int lang ) {
 
             final HashMap<MenuItem, DictAndLoc> itemData
@@ -127,18 +127,19 @@ public class DictsDelegate extends ListDelegateBase
                     {
                         DictAndLoc dal = itemData.get( item );
 
-                        DictBrowseDelegate.launch( context, dal.name, 
+                        DictBrowseDelegate.launch( dlgtor, dal.name, 
                                                    dal.loc );
                         return true;
                     }
                 };
 
+            Context context = dlgtor.getActivity();
             PopupMenu popup = new PopupMenu( context, button );
             Menu menu = popup.getMenu();
 
             // Add at top but save until have dal info
             MenuItem curItem =
-                menu.add( LocUtils.getString( context, 
+                menu.add( LocUtils.getString( context,
                                               R.string.cur_menu_marker_fmt, 
                                               curDict ) );
 
@@ -565,7 +566,7 @@ public class DictsDelegate extends ListDelegateBase
             switchShowingRemote( m_checkbox.isChecked() );
         } else {
             XWListItem item = (XWListItem)view;
-            DictBrowseDelegate.launch( m_activity, item.getText(), 
+            DictBrowseDelegate.launch( getDelegator(), item.getText(), 
                                        (DictLoc)item.getCached() );
         }
     }
@@ -1064,9 +1065,10 @@ public class DictsDelegate extends ListDelegateBase
         new GetDefaultDictTask( context, lc, lstnr ).execute();
     }
 
-    public static boolean handleDictsPopup( Context context, View button,
+    public static boolean handleDictsPopup( Delegator delegator, View button,
                                             String curDict, int lang )
     {
+        Context context = delegator.getActivity();
         int nDicts = DictLangCache.getLangCount( context, lang );
         if ( null == s_safePopup && 1 < nDicts ) {
             int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
@@ -1077,7 +1079,7 @@ public class DictsDelegate extends ListDelegateBase
 
         boolean canHandle = null != s_safePopup && 1 < nDicts;
         if ( canHandle ) {
-            s_safePopup.doPopup( context, button, curDict, lang );
+            s_safePopup.doPopup( delegator, button, curDict, lang );
         }
         return canHandle;
     }

@@ -147,6 +147,8 @@ public class DelegateBase implements DlgClickNotify,
         return m_activity.getIntent();
     }
 
+    protected Delegator getDelegator() { return m_delegator; }
+
     protected int getLayoutID()
     {
         return m_layoutID;

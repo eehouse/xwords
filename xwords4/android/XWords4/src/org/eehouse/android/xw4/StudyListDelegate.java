@@ -345,10 +345,11 @@ public class StudyListDelegate extends ListDelegateBase
         setTitleBar();
     }
 
-    public static void launchOrAlert( Activity activity, int lang, 
+    public static void launchOrAlert( Delegator delegator, int lang, 
                                       DlgDelegate.HasDlgDelegate dlg )
     {
         String msg = null;
+        Activity activity = delegator.getActivity();
         if ( 0 == DBUtils.studyListLangs( activity ).length ) {
             msg = LocUtils.getString( activity, R.string.study_no_lists );
         } else if ( NO_LANG != lang && 
@@ -364,7 +365,7 @@ public class StudyListDelegate extends ListDelegateBase
 
             if ( activity instanceof FragActivity ) {
                 StudyListFrag frag = new StudyListFrag();
-                ((FragActivity)activity).addFragment( frag, bundle );
+                ((FragActivity)activity).addFragment( frag, bundle, delegator );
             } else {
                 Intent intent = new Intent( activity, StudyListActivity.class );
                 intent.putExtras( bundle );
