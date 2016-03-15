@@ -94,6 +94,7 @@ public class XWFragment extends Fragment implements Delegator {
     @Override
     public void onDestroy()
     {
+        DbgUtils.logdf( "%s.onDestroy() called", this.getClass().getName() );
         m_dlgt.onDestroy();
         super.onDestroy();
     }
