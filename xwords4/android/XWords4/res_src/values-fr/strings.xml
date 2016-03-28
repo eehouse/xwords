@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <!-- What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
@@ -3496,4 +3496,15 @@ pour la langue</string>
 
   <string name="not_again_rematch_two_only">Le bouton revanche est désactivé parce que, pour l\'instant en tout cas, les revanches sont limitées à deux adversaires. Je pense qu\'il est rare que les gens jouent à plus de deux. Faite-moi savoir si je me trompe, et j\'essaierai de le faire fonctionner.</string>
 
-</resources>
+<string name="summary_invites_out">Joueurs invités</string>
+
+    <plurals name="invite_sent_fmt">
+	<item quantity="one">Vous avez déjà invité un joueur distant à cette partie. Nous attendons sa réponse. Utilisez le bouton réinviter si vous pensez que l\'invitation n\'est pas partie.</item>
+	<item quantity="other">Vous avez déjà envoyé %1$d invitations uniques pour cette partie. Nous attendons les réponses de %2$d des destinataires. Utilisez le bouton réinviter si vous pensez que les invitations ne sont pas parties.</item>
+</plurals>
+    <string name="invited_msg">Cette partie a été créée depuis une invitation que vous avez reçue. Dès qu\'elle pourra se connecter à l\'expéditeur et que les autres invités seront arrivés, le jeu commencera.</string>
+
+    <string name="newgame_invite_more">Plus d\'informations</string>
+    <string name="notify_title_turn_fmt">Votre tour dans la partie %1$s</string>
+    <string name="empty_relay_inviter">La liste des appareils est vide. Utilisez le bouton \"Scanner les parties\" pour chercher des adversaires dans vos anciennes parties. Utilisez le bouton \"+\" pour saisir les identifiants d\'appareil directement.</string>
+    </resources>
