@@ -1990,9 +1990,7 @@ d\'annuler les changements afin d\'éviter un redémarrage.</string>
     <!--<string name="not_again_conndmid">You have connected and joined a
       game on the relay. You will be notified when the remaining
       device[s] have joined your room and play can begin.</string>-->
-    <string name="not_again_conndmid">Vous vous êtes connecté et avez rejoint
-une partie sur le relai. Vous serez averti quand les périphériques restants
-auront rejoint votre salon et que la partie pourra commencer.</string>
+    <string name="not_again_conndmid">Vous vous êtes connecté et avez rejoint une partie sur le relai. Vous serez averti quand les appareils restants auront rejoint votre salon et que la partie pourra commencer.</string>
 
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are the last device in the
