@@ -478,14 +478,12 @@ changements ?</string>
 
     <!-- title of this dialog -->
     <!--<string name="force_title">Off-device player[s]</string>-->
-    <string name="force_title">Joueur[s] hors-périphérique</string>
+    <string name="force_title">Joueur[s] hors-appareil</string>
     <!-- Explanatory text appears in the dialog -->
     <!--<string name="force_expl">In a multi-device game there must be at
     least one player from and another not from this device.  Please
     check off-device players.</string>-->
-    <string name="force_expl">Lors d\'une partie multi-périphériques il faut au
-moins un joueur sur ce périphérique et un autre extérieur. Vérifiez les joueurs
-hors-périphériques.</string>
+    <string name="force_expl">Lors d\'une partie multi-appareils il faut au moins un joueur sur cet appareil et un autre extérieur. Vérifiez les joueurs hors-appareil.</string>
     
     <!-- Displayed as a "Toast" (mini window briefly displayed) if you
        didn't choose a remote player and I was forced to pick one. I
@@ -510,7 +508,7 @@ hors-périphériques.</string>
          remote.  If remote, then the rest of the fields disappear
          (since they will be set by the remote device.) -->
     <!--<string name="remote_label">Off-device player</string>-->
-    <string name="remote_label">Joueur hors-périphérique</string>
+    <string name="remote_label">Joueur hors-appareil</string>
 
     <!-- text of lable identifying the field in which player's name is
          set/displayed -->
@@ -611,8 +609,7 @@ fait ?</item>
     <!-- Appended to message above if local device has NFC available -->
     <!--<string name="invite_if_nfc">(Or just Tap to Invite - if the
         other device also has Android Beaming and is nearby.)</string>-->
-    <string name="invite_if_nfc">(ou toucher pour inviter -- si un autre
-périphérique a aussi Android Beam et est proche.)</string>
+    <string name="invite_if_nfc">(ou toucher pour inviter -- si un autre appareil a aussi Android Beam et est proche.)</string>
 
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -642,11 +639,9 @@ distants. Assurez-vous d\'envoyer votre invitation à ce nombre de personnes.)</
     <!--<string name="msg_relay_waiting_fmt">Le périphérique %1$d est connecté au
 relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>-->
     <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">Le périphérique %1$d est connecté au
-relai dans le salon \"%2$s\". En attente d\'un joueur.</item>
-        <item quantity="other">Le périphérique %1$d est connecté au
-relai dans le salon \"%2$s\". En attente de %3$d joueurs.</item>
-    </plurals>
+	<item quantity="one">L\'appareil %1$d est connecté au relai dans le salon \"%2$s\". En attente d\'un joueur.</item>
+	<item quantity="other">L\'appareil %1$d est connecté au relai dans le salon \"%2$s\". En attente de %3$d joueurs.</item>
+</plurals>
 
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
@@ -678,8 +673,7 @@ nom. Renommer le vôtre ou réessayer plus tard.</string>
     <!-- (I believe this can no longer occur) -->
     <!--<string name="msg_lost_other">The relay has lost contact with
          another device in this game.</string>-->
-    <string name="msg_lost_other">Le relai a perdu le contact avec un autre
-périphérique dans cette partie.</string>
+    <string name="msg_lost_other">Le relai a perdu le contact avec un autre appareil dans cette partie.</string>
 
     <!-- When a game has been connected and the relay is notified that
          a device in the game has deleted its part of the game, this
@@ -690,8 +684,7 @@ périphérique dans cette partie.</string>
     <!--<string name="msg_dev_deleted">This game has been deleted on
       another device. You will not be able to play any
       further.</string>-->
-    <string name="msg_dev_deleted">Cette partie a été effacée sur un autre
-périphérique. Vous pourrez plus la jouer.</string>
+    <string name="msg_dev_deleted">Cette partie a été effacée sur un autre appareil. Vous pourrez plus la jouer.</string>
 
     <!-- Partial text of alert posted when phonies_warn or
          phonies_disallow is the current setting and a "phony" is
@@ -1014,7 +1007,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
          will default to having the hint feature enabled(string
          elsewhere in this file) -->
     <!--<string name="nethints_allowed_sum">Enable hints for two-device games</string>-->
-    <string name="nethints_allowed_sum">Activer les suggestions pour les parties à deux périphériques</string>
+    <string name="nethints_allowed_sum">Activer les suggestions pour les parties à deux appareils</string>
 
     <!-- Will new games, on default, randomly rearrange the start
          order of players. -->
@@ -1352,11 +1345,7 @@ arrivent</string>
       with your default settings (in %1$s, etc.) just press \"Play
       now\".  To add players or change game settings, press
       \"Configure first\".</string>-->
-    <string name="newgame_local_desc_fmt">Créer une nouvelle partie pour
-laquelle tous les joueurs seront sur ce périphérique. Pour jouer contre un
-robot et avec les paramètres par défaut (en %1$s, etc.) appuyez juste sur
-\"Jouer maintenant\". Pour ajouter des joueurs ou changer les paramètres de la
-partie, appuyez sur \"Configurer d\'abord\".</string>
+    <string name="newgame_local_desc_fmt">Créer une nouvelle partie pour laquelle tous les joueurs seront sur cet appareil. Pour jouer contre un robot et avec les paramètres par défaut (en %1$s, etc.) appuyez juste sur \"Jouer maintenant\". Pour ajouter des joueurs ou changer les paramètres de la partie, appuyez sur \"Configurer d\'abord\".</string>
 
     <!-- Text of first of two buttons for new standalone games.  Tap
          this and a new game will be created and opened.  If the first
@@ -1383,11 +1372,7 @@ partie, appuyez sur \"Configurer d\'abord\".</string>
       press \"Configure first\" to change some of the defaults before
       you start your networked game. (You\'ll have a chance to send
       invites later.)</string>-->
-    <string name="newgame_networked_desc">Créer une partie qui sera jouée en
-réseau. Le bouton \"Inviter maintenant\" démarre un partie à deux périphériques
-et vous aide à inviter un ami à la rejoindre. Ou appuyez sur \"Configurer
-d\'abord\" pour changer quelques paramètres avant de démarrer votre partie en
-réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
+    <string name="newgame_networked_desc">Créer une partie qui sera jouée en réseau. Le bouton \"Inviter maintenant\" démarre un partie à deux appareils et vous aide à inviter un ami à la rejoindre. Ou appuyez sur \"Configurer d\'abord\" pour changer quelques paramètres avant de démarrer votre partie en réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
 
     <!-- Text of first of two buttons for new networked games.  Tap
          this and a game will be created, but you probably won't see
@@ -1958,7 +1943,7 @@ courant.</string>
     <!--<string name="not_again_chat">This button opens the screen for
       messaging between devices in this game.  Messages will be kept
       until you delete the game that contains them.</string>-->
-    <string name="not_again_chat">Ce bouton ouvre l\'écran de discussion entre périphériques pour cette partie. Les messages seront préservés jusqu\'à ce que effaciez la partie qui les contient.</string>
+    <string name="not_again_chat">Ce bouton ouvre l\'écran de discussion entre appareils pour cette partie. Les messages seront préservés jusqu\'à ce que effaciez la partie qui les contient.</string>
     <!-- Shown when you tap the values button on the toolbar of the
          main Board screen.  This is intended to allow players to
          remind themselves how much played tiles are worth while
@@ -1996,10 +1981,7 @@ d\'annuler les changements afin d\'éviter un redémarrage.</string>
       a game in a new room.  Once the remaining devices have joined
       your room and Crosswords has assigned them tiles the game can
       begin.</string>-->
-    <string name="not_again_conndfirst">Vous vous êtes connecté et avez
-démarré une partie dans un nouveau salon. Une fois que les périphériques
-restants auront rejoint votre salon et que Crosswords leur aura attribué des
-jetons, la partie pourra commencer.</string>
+    <string name="not_again_conndfirst">Vous vous êtes connecté et avez démarré une partie dans un nouveau salon. Une fois que les appareils restants auront rejoint votre salon et que Crosswords leur aura attribué des jetons, la partie pourra commencer.</string>
 
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are not the first device
