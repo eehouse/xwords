@@ -320,8 +320,7 @@ installées)</string>
          are substituted for %1$d and %2$d. -->
     <!--<string name="players_label_host_fmt">Players (%1$d local, %2$d
       off-device)</string>-->
-    <string name="players_label_host_fmt">Joueurs (%1$d locaux, %2$d
-hors-périphérique)</string>
+    <string name="players_label_host_fmt">Joueurs (%1$d locaux, %2$d hors-appareil)</string>
 
     <!-- text of button for adding new player to game -->
     <!--<string name="button_add_player">Add player</string>-->
@@ -444,7 +443,7 @@ indiqué "distant" pour une partie démarrée comme hôte.</string>
     <!-- Used as the default name for remote players displayed within
          the Game configure screen -->
     <!--<string name="guest_name">(Off-device player)</string>-->
-    <string name="guest_name">(Joueur hors-périphérique)</string>
+    <string name="guest_name">(Joueur hors-appareil)</string>
 
     <!-- title of confirmation dialog put up when user has unlocked an
          in-progress game and wants to save changes (has hit the
@@ -2945,7 +2944,7 @@ téléchargement : %2$dk\nNote : %2$s</string>
     <!--<string name="note_none">(None)</string>-->
     <string name="note_none">(aucune)</string>
     <!--<string name="dict_on_server">Tap to download</string>-->
-    <string name="dict_on_server">Toucher pour télécharger</string>
+    <string name="dict_on_server">Toucher pour les détails</string>
     <!--<string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    -->
     <!--<string name="lang_name_fmt">%1$s (%2$d listes de mots)</string>    -->
     <plurals name="lang_name_fmt">
@@ -3058,8 +3057,7 @@ Crosswords est installé dessus.</string>
     <!--XLATE-ME-->
     <!--<string name="rename_label_caveat">Change the name of this game
     (on this device only) to:</string>-->
-    <string name="rename_label_caveat">Changer le nom de cette partie
-(uniquement sur ce périphérique) pour :</string>
+    <string name="rename_label_caveat">Changer le nom de cette partie (uniquement sur cet appareil) pour :</string>
     <!--XLATE-ME-->
     <!--<string name="connect_label_fmt">Connection (via %1$s)</string>-->
     <string name="connect_label_fmt">Connexion (par %1$s)</string>
@@ -3190,9 +3188,7 @@ section Apparence des paramètres de l\'application.)</string>
     remote players have connected. You can close the game if you
     expect it to take a while. They will still be able to
     connect.)</string>-->
-    <string name="invite_stays">(Ce message restera jusqu\'à ce que tous les
-joueurs distants se soient connectés. Vous pouvez fermer la partie si vous
-pensez que cela prendra du temps. Ils pourront toujours se connecter.)</string>
+    <string name="invite_stays">(Ce message restera jusqu\'à ce que tous les joueurs distants se soient connectés. Vous pouvez fermer la partie si vous pensez que cela prendra du temps. Les joueurs distants pourront toujours se connecter, et vous en serez notifiés quand ils le feront.)</string>
     <!--XLATE-ME-->
     <!--<string name="nfc_just_tap">To invite via NFC just touch the back
     of this device against the one you want to invite—any time the
@@ -3226,10 +3222,7 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     see this message until it has been accepted.\n\nYou do not need to
     keep this game open while waiting. You will be notified when the
     game is ready to play.</string>-->
-    <string name="rematch_msg">Lancement d\'une invitation de revanche. Vous
-verrez ce message jusqu\'à ce qu\'elle ait été acceptée.\n\nVous n\'avez pas à
-garder cette partie ouverte pendant l\'attente. Vous recevrez une notification
-quand la partie sera prête à être jouée.</string>
+    <string name="rematch_msg">Cette partie héberge une revanche, et a envoyé une invitation. Vous verrez ce message jusqu\'à ce qu\'elle ait été acceptée.</string>
     <!--XLATE-ME-->
     <!--<string name="not_again_enablepublic">Public rooms have been made
     an \"advanced\" feature in this release. If you were using them
@@ -3494,7 +3487,7 @@ pour la langue</string>
   <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur \"%1$s\". Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie ?</string>
   <string name="button_wait">Attendre</string>
 
-  <string name="not_again_rematch_two_only">Le bouton revanche est désactivé parce que, pour l\'instant en tout cas, les revanches sont limitées à deux adversaires. Je pense qu\'il est rare que les gens jouent à plus de deux. Faite-moi savoir si je me trompe, et j\'essaierai de le faire fonctionner.</string>
+  <string name="not_again_rematch_two_only">Les revanches sont limitées aux parties à deux joueurs, au moins pour l\'instant, parce que c\'est plus difficile avec plus d\'appareils et je pense qu\'il est rare que les gens jouent à plus que deux. Faites-le moi savoir si j\'ai tort et je remonterai la priorité.</string>
 
 <string name="summary_invites_out">Joueurs invités</string>
 
@@ -3507,4 +3500,18 @@ pour la langue</string>
     <string name="newgame_invite_more">Plus d\'informations</string>
     <string name="notify_title_turn_fmt">Votre tour dans la partie %1$s</string>
     <string name="empty_relay_inviter">La liste des appareils est vide. Utilisez le bouton \"Scanner les parties\" pour chercher des adversaires dans vos anciennes parties. Utilisez le bouton \"+\" pour saisir les identifiants d\'appareil directement.</string>
+    <string name="confirm_clear_relay">Êtes-vous sûr de vouloir supprimer les appareils sélectionnés ?</string>
+    <string name="invites_net_fmt">Invitations envoyées pour la partie connectée via %1$s :</string>
+    <string name="waiting_invite_title">En attente de réponse</string>
+    <string name="button_reinvite">Réinviter</string>
+
+    <string name="disable_nags_title">Rappels de tour</string>
+    <string name="board_menu_game_showInvites">Montrer les invitations</string>
+  <string name="enable_relay_toself_title">Activer les invitations du relai à lui-même</string>
+  <string name="rel_invite_title">Titre de l\'invitation de relai</string>
+  <string name="no_invites">Cette partie n\'a envoyé aucune invitation</string>
+<string name="rematch_name_fmt">Revanche : %1$s</string>
+
+    <string name="waiting_rematch_title">Revanche en cours</string>
+    <string name="rematch_sent_toast">Invitations à la revanche envoyées</string>
     </resources>
