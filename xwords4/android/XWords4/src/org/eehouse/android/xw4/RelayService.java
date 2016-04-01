@@ -54,6 +54,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RelayService extends XWService 
@@ -999,9 +1000,10 @@ public class RelayService extends XWService
     {
         DbgUtils.logdf( "RelayService::feedMessage: %d bytes for rowid %d", 
                         msg.length, rowid );
-        if ( BoardDelegate.feedMessage( rowid, msg, s_addr ) ) {
+        JNIThread jniThread = JNIThread.getRetained( rowid, false );
+        if ( null != jniThread ) {
+            jniThread.receive( msg, s_addr ).release();
             DbgUtils.logdf( "feedMessage: board ate it" );
-            // do nothing
         } else {
             RelayMsgSink sink = new RelayMsgSink();
             sink.setRowID( rowid );
@@ -1043,19 +1045,31 @@ public class RelayService extends XWService
                 // if game has messages, open it and feed 'em to it.
                 if ( null != forOne ) {
                     BackMoveResult bmr = new BackMoveResult();
-                    sink.setRowID( rowIDs[ii] );
+                    long rowid = rowIDs[ii];
+                    sink.setRowID( rowid );
                     // since BoardDelegate.feedMessages can't know:
                     isLocalP[0] = false;
-                    if ( BoardDelegate.feedMessages( rowIDs[ii], forOne, s_addr )
-                         || GameUtils.feedMessages( this, rowIDs[ii],
-                                                    forOne, s_addr,
-                                                    sink, bmr, isLocalP ) ) {
+                    boolean delivered = true;
+
+                    JNIThread jniThread = JNIThread.getRetained( rowid, false );
+                    if ( null != jniThread ) {
+                        for ( byte[] msg : forOne ) {
+                            jniThread.receive( msg, s_addr );
+                        }
+                        jniThread.release();
+                    } else if ( GameUtils.feedMessages( this, rowid, forOne, s_addr,
+                                                        sink, bmr, isLocalP ) ) {
+                    } else {
+                        delivered = false;
+                    }
+                    
+                    if ( delivered ) {
                         idsWMsgs.add( relayIDs[ii] );
                         bmrs.add( bmr );
                         isLocals.add( isLocalP[0] );
                     } else {
                         DbgUtils.logf( "RelayService.process(): message for %s (rowid %d)"
-                                       + " not consumed", relayIDs[ii], rowIDs[ii] );
+                                       + " not consumed", relayIDs[ii], rowid );
                     }
                 }
             }

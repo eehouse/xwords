@@ -34,18 +34,30 @@ public class XwJNI {
 
     public static class GamePtr {
         private int m_ptr = 0;
+        private int m_refCount = 0;
 
-        private GamePtr( int ptr ) { m_ptr = ptr; }
+        private GamePtr( int ptr ) {
+            m_ptr = ptr;
+            retain();
+        }
 
         public int ptr() { Assert.assertTrue( 0 != m_ptr ); return m_ptr; }
 
+        public synchronized GamePtr retain()
+        {
+            ++m_refCount;
+            return this;
+        }
+        
         // Force (via an assert in finalize() below) that this is called. It's
         // better if jni stuff isn't being done on the finalizer thread
-        public void release()
+        public synchronized void release()
         {
-            if ( 0 != m_ptr ) {
-                game_dispose( this );
-                m_ptr = 0;
+            if ( 0 == --m_refCount ) {
+                if ( 0 != m_ptr ) {
+                    game_dispose( this );
+                    m_ptr = 0;
+                }
             }
         }
 

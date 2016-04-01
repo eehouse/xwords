@@ -30,6 +30,8 @@ import android.os.Message;
 import java.lang.InterruptedException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.HashSet;
 import java.util.Set;
@@ -160,6 +162,8 @@ public class JNIThread extends Thread {
     private static final int kMinDivWidth = 10;
     private int m_connsIconID = 0;
     private String m_newDict = null;
+    private long m_rowid;
+    private int m_refCount;
 
     private LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -173,27 +177,35 @@ public class JNIThread extends Thread {
         Object[] m_args;
     }
 
-    public JNIThread( GamePtr gamePtr, byte[] gameAtStart, CurGameInfo gi, 
-                      SyncedDraw drawer, GameLock lock, Context context, 
-                      Handler handler ) 
+    private JNIThread( long rowid )
     {
-        synchronized( s_curThreads ) {
-            s_curThreads.add( this );
-            // DbgUtils.logf( "JNIThread(): added %H; now %d threads", this, s_curThreads.size() );
+        m_rowid = rowid;
+        m_queue = new LinkedBlockingQueue<QueueElem>();
+    }
+    
+    public JNIThread configure( GamePtr gamePtr, byte[] gameAtStart, CurGameInfo gi, 
+                                SyncedDraw drawer, GameLock lock, Context context, 
+                                Handler handler ) 
+    {
+        if ( null != m_jniGamePtr ) {
+            m_jniGamePtr.release();
         }
-
-        m_jniGamePtr = gamePtr;
+        m_jniGamePtr = gamePtr.retain();
         m_gameAtStart = gameAtStart;
         m_gi = gi;
         m_drawer = drawer;
-        m_lock = lock;
+        Assert.assertTrue( lock.canWrite() );
+        m_lock = lock;          // I own this now!
+        Assert.assertTrue( lock.canWrite() );
         m_context = context;
         m_handler = handler;
 
-        m_queue = new LinkedBlockingQueue<QueueElem>();
+        return this;
     }
 
-    public void waitToStop( boolean save )
+    public GameLock getLock() { return m_lock; }
+
+    private void waitToStop( boolean save )
     {
         synchronized ( this ) {
             m_stopped = true;
@@ -210,12 +222,9 @@ public class JNIThread extends Thread {
         } catch ( java.lang.InterruptedException ie ) {
             DbgUtils.loge( ie );
         }
-
-        synchronized( s_curThreads ) {
-            Assert.assertTrue( s_curThreads.contains( this ) );
-            s_curThreads.remove( this );
-            // DbgUtils.logf( "waitToStop: removed %H; now %d threads", this, s_curThreads.size() );
-        }
+        // m_jniGamePtr.release();
+        // m_jniGamePtr = null;
+        m_lock.unlock();
     }
 
     public boolean busy()
@@ -337,6 +346,22 @@ public class JNIThread extends Thread {
                 // There'd better be no way for saveGame above to fail!
                 XwJNI.game_saveSucceeded( m_jniGamePtr );
             }
+        }
+    }
+
+    boolean m_running = false;
+    public void startOnce()
+    {
+        if ( !m_running ) {
+            m_running = true;
+            start();
+        }
+    }
+
+    public void setDaemonOnce( boolean val )
+    {
+        if ( !m_running ) {
+            setDaemon( val );
         }
     }
 
@@ -637,7 +662,9 @@ public class JNIThread extends Thread {
         } else {
             DbgUtils.logf( "JNIThread.run(): exiting without saving" );
         }
-        XwJNI.threadDone();
+        m_jniGamePtr.release();
+        m_jniGamePtr = null;
+        // XwJNI.threadDone();
     } // run
 
     public void handleBkgrnd( JNICmd cmd, Object... args )
@@ -647,6 +674,17 @@ public class JNIThread extends Thread {
         m_queue.add( elem );
     }
 
+    public JNIThread receive( byte[] msg, CommsAddrRec addr )
+    {
+        handle( JNICmd.CMD_RECEIVE, msg, addr );
+        return this;
+    }
+
+    public void sendChat( String chat )
+    {
+        handle( JNICmd.CMD_SENDCHAT, chat );
+    }
+    
     public void handle( JNICmd cmd, Object... args )
     {
         QueueElem elem = new QueueElem( cmd, true, args );
@@ -667,10 +705,54 @@ public class JNIThread extends Thread {
         return XwJNI.server_do( gamePtr );
     }
 
-    // public void run( boolean isUI, Runnable runnable )
-    // {
-    //     Object[] args = { runnable };
-    //     QueueElem elem = new QueueElem( JNICmd.CMD_RUN, isUI, args );
-    //     m_queue.add( elem );
-    // }
+    private static Map<Long, JNIThread> s_instances = new HashMap<Long, JNIThread>();
+    private void retain_sync()
+    {
+        ++m_refCount;
+        DbgUtils.logf( "JNIThread.retain_sync: m_refCount: %d", m_refCount );
+    }
+    
+    public void retain()
+    {
+        synchronized( s_instances ) {
+            retain_sync();
+        }
+    }
+
+    public void release()
+    {
+        boolean stop = false;
+        synchronized( s_instances ) {
+            if ( 0 == --m_refCount ) {
+                s_instances.remove( m_rowid );
+                stop = true;
+            }
+        }
+        DbgUtils.logf( "JNIThread.release: m_refCount: %d", m_refCount );
+
+        if ( stop ) {
+            waitToStop( true );
+        }
+    }
+
+    public static JNIThread getRetained( long rowid )
+    {
+        return getRetained( rowid, false );
+    }
+
+    public static JNIThread getRetained( long rowid, boolean makeNew )
+    {
+        JNIThread result = null;
+        synchronized( s_instances ) {
+            result = s_instances.get( rowid );
+            if ( null == result && makeNew ) {
+                result = new JNIThread( rowid );
+                s_instances.put( rowid, result );
+            }
+            if ( null != result ) {
+                result.retain_sync();
+            }
+        }
+        return result;
+    }
 }

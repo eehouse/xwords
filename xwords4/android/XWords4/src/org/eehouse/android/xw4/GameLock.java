@@ -28,7 +28,9 @@ import junit.framework.Assert;
 // obtainable when other read locks are granted but not when a
 // write lock is.  Write-locks are exclusive.
 public class GameLock {
-    private static final int SLEEP_TIME = 25;
+    private static final boolean DEBUG_LOCKS = true;
+    private static final int SLEEP_TIME = 100;
+    private static final long ASSERT_TIME = 2000;
     private long m_rowid;
     private boolean m_isForWrite;
     private int m_lockCount;
@@ -43,7 +45,7 @@ public class GameLock {
         m_rowid = rowid;
         m_isForWrite = isForWrite;
         m_lockCount = 0;
-        if ( XWApp.DEBUG_LOCKS ) {
+        if ( DEBUG_LOCKS ) {
             DbgUtils.logf( "GameLock.GameLock(rowid:%d,isForWrite:%b)=>"
                            + "this: %H", rowid, isForWrite, this );
             DbgUtils.printStack();
@@ -69,26 +71,26 @@ public class GameLock {
                 ++m_lockCount;
                 gotIt = true;
                     
-                if ( XWApp.DEBUG_LOCKS ) {
+                if ( DEBUG_LOCKS ) {
                     StackTraceElement[] trace
                         = Thread.currentThread().getStackTrace();
                     m_lockTrace = new StackTraceElement[trace.length];
                     System.arraycopy( trace, 0, m_lockTrace, 0, trace.length );
                 }
             } else if ( this == owner && ! m_isForWrite ) {
-                if ( XWApp.DEBUG_LOCKS ) {
+                if ( DEBUG_LOCKS ) {
                     DbgUtils.logf( "tryLock(): incrementing lock count" );
                 }
                 Assert.assertTrue( 0 == m_lockCount );
                 ++m_lockCount;
                 gotIt = true;
                 owner = null;
-            } else if ( XWApp.DEBUG_LOCKS ) {
+            } else if ( DEBUG_LOCKS ) {
                 DbgUtils.logf( "tryLock(): rowid %d already held by lock %H", 
                                m_rowid, owner );
             }
         }
-        if ( XWApp.DEBUG_LOCKS ) {
+        if ( DEBUG_LOCKS ) {
             DbgUtils.logf( "GameLock.tryLock %H (rowid=%d) => %b", 
                            this, m_rowid, gotIt );
         }
@@ -105,11 +107,10 @@ public class GameLock {
     public GameLock lock( long maxMillis )
     {
         GameLock result = null;
-        final long assertTime = 2000;
-        Assert.assertTrue( maxMillis < assertTime );
+        Assert.assertTrue( maxMillis < ASSERT_TIME );
         long sleptTime = 0;
 
-        if ( XWApp.DEBUG_LOCKS ) {
+        if ( DEBUG_LOCKS ) {
             DbgUtils.logf( "lock %H (rowid:%d, maxMillis=%d)", this, m_rowid, 
                            maxMillis );
         }
@@ -120,9 +121,9 @@ public class GameLock {
                 result = this;
                 break;
             }
-            if ( XWApp.DEBUG_LOCKS ) {
+            if ( DEBUG_LOCKS ) {
                 DbgUtils.logf( "GameLock.lock() %H failed; sleeping", this );
-                if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= assertTime ) {
+                if ( 0 == sleptTime || sleptTime + SLEEP_TIME >= ASSERT_TIME ) {
                     DbgUtils.logf( "lock %H seeking stack:", curOwner );
                     DbgUtils.printStack( curOwner.m_lockTrace );
                     DbgUtils.logf( "lock %H seeking stack:", this );
@@ -137,18 +138,18 @@ public class GameLock {
                 break;
             }
 
-            if ( XWApp.DEBUG_LOCKS ) {
+            if ( DEBUG_LOCKS ) {
                 DbgUtils.logf( "GameLock.lock() %H awake; "
                                + "sleptTime now %d millis", this, sleptTime );
             }
 
             if ( 0 < maxMillis && sleptTime >= maxMillis ) {
                 break;
-            } else if ( sleptTime >= assertTime ) {
-                if ( XWApp.DEBUG_LOCKS ) {
+            } else if ( sleptTime >= ASSERT_TIME ) {
+                if ( DEBUG_LOCKS ) {
                     DbgUtils.logf( "lock %H overlocked", this );
                 }
-                Assert.fail();
+                Assert.fail();  // firing
             }
         }
         // DbgUtils.logf( "GameLock.lock(%s) done", m_path );
@@ -167,7 +168,7 @@ public class GameLock {
             }
             --m_lockCount;
 
-            if ( XWApp.DEBUG_LOCKS ) {
+            if ( DEBUG_LOCKS ) {
                 DbgUtils.logf( "GameLock.unlock: this: %H (rowid:%d) unlocked", 
                                this, m_rowid );
             }

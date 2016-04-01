@@ -53,6 +53,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 import junit.framework.Assert;
@@ -591,9 +592,12 @@ public class BTService extends XWService {
 
                     boolean[] isLocalP = new boolean[1];
                     for ( long rowid : rowids ) {
-                        boolean consumed = 
-                            BoardDelegate.feedMessage( rowid, buffer, addr );
-                        if ( !consumed && haveGame ) {
+                        JNIThread jniThread = JNIThread.getRetained( rowid, false );
+                        boolean consumed = false;
+                        if ( null != jniThread ) {
+                            consumed = true;
+                            jniThread.receive( buffer, addr ).release();
+                        } else if ( haveGame ) {
                             GameUtils.BackMoveResult bmr = 
                                 new GameUtils.BackMoveResult();
                             if ( GameUtils.feedMessage( BTService.this, rowid, 

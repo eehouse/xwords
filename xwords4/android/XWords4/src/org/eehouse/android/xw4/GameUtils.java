@@ -369,6 +369,7 @@ public class GameUtils {
                     ThumbCanvas canvas = new ThumbCanvas( context, thumb );
                     XwJNI.board_setDraw( gamePtr, canvas );
                     XwJNI.board_invalAll( gamePtr );
+                    Assert.assertNotNull( gamePtr );
                     XwJNI.board_draw( gamePtr );
                 }
             }
@@ -745,6 +746,15 @@ public class GameUtils {
     //         }
     //     }
     // }
+
+
+    public static String[] dictNames( Context context, GameLock lock )
+    {
+        byte[] stream = savedGame( context, lock );
+        CurGameInfo gi = new CurGameInfo( context );
+        XwJNI.gi_from_stream( gi, stream );
+        return gi.dictNames();
+    }
 
     public static String[] dictNames( Context context, long rowid,
                                       int[] missingLang ) 

@@ -54,6 +54,7 @@ public class ChatDelegate extends DelegateBase {
     private EditText m_edit;
     private TableLayout m_layout;
     private ScrollView m_scroll;
+    private JNIThread m_jniThreadRef;
 
     public ChatDelegate( Delegator delegator, Bundle savedInstanceState )
     {
@@ -112,6 +113,21 @@ public class ChatDelegate extends DelegateBase {
         }
     }
 
+    @Override
+    protected void onResume() 
+    {
+        m_jniThreadRef = JNIThread.getRetained( m_rowid );
+        Assert.assertNotNull( m_jniThreadRef );
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause()
+    {
+        m_jniThreadRef.release();
+        super.onPause();
+    }
+
     private void addRow( String msg, int playerIndx )
     {
         TableRow row = (TableRow)inflate( R.layout.chat_row );
@@ -167,15 +183,15 @@ public class ChatDelegate extends DelegateBase {
                 addRow( text, m_curPlayer );
                 m_edit.setText( null );
 
-                JNIThread jniThread = JNIThread.getCurrent();
-                if ( null != jniThread ) {
-                    jniThread.handle( JNIThread.JNICmd.CMD_SENDCHAT, text );
-                } else {
-                    Intent result = new Intent();
-                    result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
-                    setResult( Activity.RESULT_OK, result );
-                    finish();
-                }
+                m_jniThreadRef.sendChat( text );
+                // if ( null != jniThread ) {
+                //     jniThread.handle( JNIThread.JNICmd.CMD_SENDCHAT, text );
+                // } else {
+                //     Intent result = new Intent();
+                //     result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
+                //     setResult( Activity.RESULT_OK, result );
+                //     finish();
+                // }
             }
             // finish();
             break;

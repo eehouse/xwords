@@ -62,6 +62,7 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class SMSService extends XWService {
@@ -709,8 +710,9 @@ public class SMSService extends XWService {
         } else {
             boolean[] isLocalP = new boolean[1];
             for ( long rowid : rowids ) {
-                if ( BoardDelegate.feedMessage( rowid, msg, addr ) ) {
-                    // do nothing
+                JNIThread jniThread = JNIThread.getRetained( rowid, false );
+                if ( null != jniThread ) {
+                    jniThread.receive( msg, addr ).release();
                 } else {
                     SMSMsgSink sink = new SMSMsgSink( this );
                     BackMoveResult bmr = new BackMoveResult();
