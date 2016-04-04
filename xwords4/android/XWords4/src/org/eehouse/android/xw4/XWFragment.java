@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -33,7 +34,9 @@ import android.widget.ListView;
 
 import junit.framework.Assert;
 
-public class XWFragment extends Fragment implements Delegator {
+public class XWFragment extends Fragment 
+    implements Delegator, 
+               FragActivity.OrientChangeListener {
 
     private DelegateBase m_dlgt;
 
@@ -120,6 +123,12 @@ public class XWFragment extends Fragment implements Delegator {
     public void finish()
     {
         Assert.fail();
+    }
+
+    // FragActivity.OrientChangeListener
+    public void orientationChanged()
+    {
+        m_dlgt.orientationChanged();
     }
 
     public ListView getListView()

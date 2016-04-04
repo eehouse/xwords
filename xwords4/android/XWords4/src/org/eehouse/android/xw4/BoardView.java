@@ -55,6 +55,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private static final int PINCH_THRESHOLD = 40;
 
     private Context m_context;
+    private BoardDelegate m_boardDlgt;
     private int m_defaultFontHt;
     private int m_mediumFontHt;
     private Runnable m_invalidator;
@@ -142,33 +143,21 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         return wantMore;            // true required to get subsequent events
     }
 
-    // private void printMode( String comment, int mode )
-    // {
-    //     comment += ": ";
-    //     switch( mode ) {
-    //     case View.MeasureSpec.AT_MOST:
-    //         comment += "AT_MOST";
-    //         break;
-    //     case View.MeasureSpec.EXACTLY:
-    //         comment += "EXACTLY";
-    //         break;
-    //     case View.MeasureSpec.UNSPECIFIED:
-    //         comment += "UNSPECIFIED";
-    //         break;
-    //     default:
-    //         comment += "<bogus>";
-    //     }
-    //     DbgUtils.logf( comment );
-    // }
-
     @Override
     protected void onMeasure( int widthMeasureSpec, int heightMeasureSpec )
     {
-        // One of the android sample apps ignores mode entirely:
-        // int w = MeasureSpec.getSize(widthMeasureSpec);
-        // int h = MeasureSpec.getSize(heightMeasureSpec);
-        // int d = w == 0 ? h : h == 0 ? w : w < h ? w : h;
-        // setMeasuredDimension(d, d);
+        // DbgUtils.logf( "onMeasure(width: %s, height: %s)", 
+        //                MeasureSpec.toString( widthMeasureSpec ),
+        //                MeasureSpec.toString( heightMeasureSpec ) );
+
+        if ( null != m_dims ) {
+            if ( m_boardDlgt.isPortrait() != (m_dims.height > m_dims.width) ) {
+                // square possible; will break above!
+                Assert.assertTrue( m_dims.height != m_dims.width );
+                // DbgUtils.logf( "onMeasure: discarding m_dims" );
+                m_dims = null;
+            }
+        }
 
         int width, height;
         m_measuredFromDims = null != m_dims;
@@ -189,7 +178,16 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             width = minWidth;
         }
         setMeasuredDimension( width, height );
+        DbgUtils.logdf( "BoardView.onMeasure: calling setMeasuredDimension( width=%d, height=%d )",
+                        width, height );
     }
+
+    // public void onSizeChanged( int width, int height, int oldWidth, int oldHeight )
+    // {
+    //     DbgUtils.logf( "BoardView.onSizeChanged(): width: %d => %d; height: %d => %d",
+    //                    oldWidth, width, oldHeight, height );
+    //     super.onSizeChanged( width, height, oldWidth, oldHeight );
+    // }
 
     // This will be called from the UI thread
     @Override
@@ -268,6 +266,11 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         return layoutDone;
     } // layoutBoardOnce
 
+    protected void setBoardDelegate( BoardDelegate dlgt )
+    {
+        m_boardDlgt = dlgt;
+    }
+
     // BoardHandler interface implementation
     public void startHandling( Activity parent, JNIThread thread, 
                                XwJNI.GamePtr gamePtr, CurGameInfo gi, 
@@ -332,6 +335,12 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                     requestLayout();
                 }
             });
+    }
+
+    protected void orientationChanged()
+    {
+        m_dims = null;
+        requestLayout();
     }
 
     public void setInTrade( boolean inTrade ) 

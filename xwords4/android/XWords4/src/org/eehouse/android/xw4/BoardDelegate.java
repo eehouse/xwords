@@ -596,6 +596,7 @@ public class BoardDelegate extends DelegateBase
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
         m_view = (BoardView)findViewById( R.id.board_view );
+        m_view.setBoardDelegate( this );
         if ( ! ABUtils.haveActionBar() ) {
             m_tradeButtons = findViewById( R.id.exchange_buttons );
             if ( null != m_tradeButtons ) {
@@ -749,6 +750,26 @@ public class BoardDelegate extends DelegateBase
                     showDialog( DlgID.DLG_INVITE );
                 }
             }
+        }
+    }
+
+    @Override
+    public void orientationChanged()
+    {
+        boolean isPortrait = isPortrait();
+        DbgUtils.logdf( "BoardDelegate.orientationChanged(isPortrait=%b)",
+                        isPortrait );
+        positionToolbar( isPortrait );
+        m_view.orientationChanged();
+    }
+
+    private void positionToolbar( boolean isPortrait )
+    {
+        if ( null != findViewById( R.id.tbar_parent_hor ) ) {
+            if ( null == m_toolbar ) {
+                m_toolbar = new Toolbar( m_activity, this );
+            }
+            m_toolbar.setIsPortrait( isPortrait );
         }
     }
 
@@ -2155,12 +2176,7 @@ public class BoardDelegate extends DelegateBase
                         setTitle( GameUtils.getName( m_activity, m_rowid ) );
                     }
 
-                    if ( null != findViewById( R.id.tbar_parent_hor ) ) {
-                        int orient = m_activity.getResources().getConfiguration().orientation;
-                        boolean isLandscape = Configuration.ORIENTATION_LANDSCAPE == orient;
-                        m_toolbar = new Toolbar( m_activity, this, isLandscape );
-                    }
-
+                    positionToolbar( isPortrait() );
                     populateToolbar();
                     adjustTradeVisibility();
 

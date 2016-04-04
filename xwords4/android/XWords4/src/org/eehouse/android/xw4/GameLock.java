@@ -28,7 +28,7 @@ import junit.framework.Assert;
 // obtainable when other read locks are granted but not when a
 // write lock is.  Write-locks are exclusive.
 public class GameLock {
-    private static final boolean DEBUG_LOCKS = true;
+    private static final boolean DEBUG_LOCKS = false;
     private static final int SLEEP_TIME = 100;
     private static final long ASSERT_TIME = 2000;
     private long m_rowid;

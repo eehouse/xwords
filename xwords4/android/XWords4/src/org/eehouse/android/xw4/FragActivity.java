@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2014-2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.graphics.Rect;
 import android.app.Dialog;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -39,8 +40,10 @@ import junit.framework.Assert;
 public class FragActivity extends FragmentActivity 
     implements FragmentManager.OnBackStackChangedListener {
 
+    private static final int MAX_PANES_LANDSCAPE = 2;
+
     public interface OrientChangeListener {
-        void orientationChanged( int orientation );
+        void orientationChanged();
     }
 
     private static FragActivity s_this;
@@ -79,15 +82,33 @@ public class FragActivity extends FragmentActivity
     @Override
     public void onConfigurationChanged( Configuration newConfig )
     {
-        int orientation = newConfig.orientation;
-        boolean isPortrait = orientation == Configuration.ORIENTATION_PORTRAIT;
-        int maxPanes = isPortrait? 1 : 2;
+        Rect rect = new Rect();
+        m_root.getWindowVisibleDisplayFrame( rect );
+        // DbgUtils.logf( "FragActivity.onConfigurationChanged(): width=%d; height=%d",
+        //                rect.width(), rect.height());
+
+        boolean isPortrait
+            = Configuration.ORIENTATION_PORTRAIT == newConfig.orientation;
+        if ( isPortrait != (rect.width() <= rect.height()) ) {
+            DbgUtils.logdf( "FragActivity.onConfigurationChanged(): isPortrait:"
+                            + " %b; width: %d; height: %d",
+                            isPortrait, rect.width(), rect.height() );
+        }
+        int maxPanes = isPortrait? 1 : MAX_PANES_LANDSCAPE;
         if ( m_maxPanes != maxPanes ) {
             m_maxPanes = maxPanes;
             setVisiblePanes();
-            tellOrientationChanged( orientation );
         }
+        tellOrientationChanged();
         super.onConfigurationChanged( newConfig );
+    }
+
+    protected void getFragmentDims( int[] dims )
+    {
+        Rect rect = new Rect();
+        m_root.getWindowVisibleDisplayFrame( rect );
+        dims[0] = rect.width() / Math.min( m_maxPanes, m_root.getChildCount() );
+        dims[1] = rect.height();
     }
 
     @Override
@@ -225,7 +246,7 @@ public class FragActivity extends FragmentActivity
     }
 
     // Walk all Fragment children and if they care notify of change.
-    private void tellOrientationChanged( int orientation )
+    private void tellOrientationChanged()
     {
         FragmentManager fm = getSupportFragmentManager();
         int nPanes = m_root.getChildCount();
@@ -236,7 +257,7 @@ public class FragActivity extends FragmentActivity
             if ( null == frag ) {
                 DbgUtils.logf( "tellOrienationChanged: NO FRAG at %d, id=%d", ii, id );
             } else if ( frag instanceof OrientChangeListener ) {
-                ((OrientChangeListener)frag).orientationChanged( orientation );
+                ((OrientChangeListener)frag).orientationChanged();
             }
         }
     }

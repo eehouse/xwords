@@ -19,6 +19,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.graphics.Rect;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -86,7 +87,8 @@ public class DelegateBase implements DlgClickNotify,
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean onBackPressed() { return false; }
-
+    public void orientationChanged() {}
+    
     protected void requestWindowFeature( int feature ) {}
 
     // Fragments only
@@ -230,6 +232,29 @@ public class DelegateBase implements DlgClickNotify,
         } else {
             m_activity.finish();
         }
+    }
+
+    protected boolean isPortrait()
+    {
+        int[] containerDims = new int[2];
+        getContainerDims( containerDims );
+        boolean result = containerDims[0] < containerDims[1];
+        DbgUtils.logdf( "%s.isPortrait() => %b", getClass().getName(), result );
+        return result;
+    }
+
+    protected void getContainerDims( int[] outDims )
+    {
+        if ( m_activity instanceof FragActivity ) {
+            ((FragActivity)m_activity).getFragmentDims( outDims );
+        } else {
+            Rect rect = new Rect();
+            m_rootView.getWindowVisibleDisplayFrame( rect );
+            outDims[0] = rect.width();
+            outDims[1] = rect.height();
+        }
+        DbgUtils.logdf( "getContainerDims(): width => %d, height => %d",
+                        outDims[0], outDims[1] );
     }
 
     protected String getString( int resID, Object... params )
