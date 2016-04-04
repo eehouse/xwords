@@ -43,9 +43,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import junit.framework.Assert;
 
-import org.eehouse.android.xw4.jni.GameSummary;
-import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.GameSummary;
+import org.eehouse.android.xw4.jni.JNIThread;
+import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GameListItem extends LinearLayout 
     implements View.OnClickListener, SelectableItem.LongClickHandler {
@@ -358,6 +359,16 @@ public class GameListItem extends LinearLayout
         protected void onPostExecute( GameSummary summary )
         {
             if ( 0 == --m_loadingCount ) {
+                if ( null == summary ) {
+                    // Try again. Maybe it's open
+                    JNIThread thread = JNIThread.getRetained( m_rowid );
+                    if ( null != thread ) {
+                        summary = DBUtils.getSummary( m_context, 
+                                                      thread.getLock() );
+                        thread.release();
+                    }
+                }
+
                 m_summary = summary;
                 boolean expanded = DBUtils.getExpanded( m_context, m_rowid );
 
