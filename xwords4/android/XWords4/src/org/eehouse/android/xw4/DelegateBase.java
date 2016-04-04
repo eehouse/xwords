@@ -236,14 +236,13 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean isPortrait()
     {
-        int[] containerDims = new int[2];
-        getContainerDims( containerDims );
+        int[] containerDims = getContainerDims( new int[2] );
         boolean result = containerDims[0] < containerDims[1];
         DbgUtils.logdf( "%s.isPortrait() => %b", getClass().getName(), result );
         return result;
     }
 
-    protected void getContainerDims( int[] outDims )
+    protected int[] getContainerDims( int[] outDims )
     {
         if ( m_activity instanceof FragActivity ) {
             ((FragActivity)m_activity).getFragmentDims( outDims );
@@ -253,8 +252,9 @@ public class DelegateBase implements DlgClickNotify,
             outDims[0] = rect.width();
             outDims[1] = rect.height();
         }
-        DbgUtils.logdf( "getContainerDims(): width => %d, height => %d",
-                        outDims[0], outDims[1] );
+        DbgUtils.logdf( "%s.getContainerDims(): width => %d, height => %d",
+                        getClass().getName(), outDims[0], outDims[1] );
+        return outDims;
     }
 
     protected String getString( int resID, Object... params )

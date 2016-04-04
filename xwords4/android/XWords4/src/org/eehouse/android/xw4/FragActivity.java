@@ -40,7 +40,7 @@ import junit.framework.Assert;
 public class FragActivity extends FragmentActivity 
     implements FragmentManager.OnBackStackChangedListener {
 
-    private static final int MAX_PANES_LANDSCAPE = 2;
+    private static final int MAX_PANES_LANDSCAPE = 3;
 
     public interface OrientChangeListener {
         void orientationChanged();
@@ -51,6 +51,7 @@ public class FragActivity extends FragmentActivity
     private LinearLayout m_root;
     private int m_nextID = 0x00FFFFFF;
     private int m_maxPanes;
+    private Boolean m_isPortrait;
 
     @Override
     public void onCreate( Bundle savedInstanceState ) 
@@ -84,11 +85,12 @@ public class FragActivity extends FragmentActivity
     {
         Rect rect = new Rect();
         m_root.getWindowVisibleDisplayFrame( rect );
-        // DbgUtils.logf( "FragActivity.onConfigurationChanged(): width=%d; height=%d",
-        //                rect.width(), rect.height());
 
         boolean isPortrait
             = Configuration.ORIENTATION_PORTRAIT == newConfig.orientation;
+        DbgUtils.logf( "FragActivity.onConfigurationChanged(isPortrait=%b)",
+                       isPortrait );
+        m_isPortrait = isPortrait;
         if ( isPortrait != (rect.width() <= rect.height()) ) {
             DbgUtils.logdf( "FragActivity.onConfigurationChanged(): isPortrait:"
                             + " %b; width: %d; height: %d",
@@ -107,8 +109,15 @@ public class FragActivity extends FragmentActivity
     {
         Rect rect = new Rect();
         m_root.getWindowVisibleDisplayFrame( rect );
-        dims[0] = rect.width() / Math.min( m_maxPanes, m_root.getChildCount() );
-        dims[1] = rect.height();
+        int width = rect.width();
+        int height = rect.height();
+        if ( null != m_isPortrait && m_isPortrait && height < width ) {
+            int tmp = width;
+            width = height;
+            height = tmp;
+        }
+        dims[0] = width / Math.min( m_maxPanes, m_root.getChildCount() );
+        dims[1] = height;
     }
 
     @Override

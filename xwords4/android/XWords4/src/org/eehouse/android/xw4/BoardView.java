@@ -63,6 +63,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     private CurGameInfo m_gi;
     private boolean m_isSolo;
     private int m_layoutWidth;
+    private int m_dimsTossCount; // hack hack hack!!
     private int m_layoutHeight;
     private BoardCanvas m_canvas;    // owns the bitmap
     private JNIThread m_jniThread;
@@ -154,8 +155,10 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             if ( m_boardDlgt.isPortrait() != (m_dims.height > m_dims.width) ) {
                 // square possible; will break above!
                 Assert.assertTrue( m_dims.height != m_dims.width );
-                // DbgUtils.logf( "onMeasure: discarding m_dims" );
-                m_dims = null;
+                DbgUtils.logf( "onMeasure: discarding m_dims" );
+                if ( ++m_dimsTossCount < 4 ) {
+                    m_dims = null;
+                }
             }
         }
 
@@ -226,6 +229,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             int timerWidth = scratch.width();
             int fontWidth = 
                 Math.min(m_defaultFontHt, timerWidth / timerTxt.length());
+            DbgUtils.logf( "layoutBoardOnce(): posting JNICmd.CMD_LAYOUT(w=%d, h=%d)", width, height );
             m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, width, height, 
                                 fontWidth, m_defaultFontHt );
             // We'll be back....
@@ -263,6 +267,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             m_layoutHeight = height;
             layoutDone = true;
         }
+        DbgUtils.logf( "layoutBoardOnce()=>%b", layoutDone );
         return layoutDone;
     } // layoutBoardOnce
 
@@ -328,6 +333,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     public void dimsChanged( BoardDims dims )
     {
+        DbgUtils.logdf( "dimsChanged(%s)", dims.toString() );
         m_dims = dims;
         m_parent.runOnUiThread( new Runnable() {
                 public void run()
@@ -340,6 +346,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
     protected void orientationChanged()
     {
         m_dims = null;
+        m_layoutWidth = m_layoutHeight = 0;
+        m_dimsTossCount = 0;
         requestLayout();
     }
 
