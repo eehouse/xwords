@@ -1196,14 +1196,24 @@ public class GameConfigDelegate extends DelegateBase
         return DeviceRole.SERVER_STANDALONE == m_giOrig.serverRole;
     }
 
-    public static void editForResult( Activity parent, RequestCode requestCode, 
+    public static void editForResult( Delegator delegator, 
+                                      RequestCode requestCode, 
                                       long rowID )
     {
-        Intent intent = new Intent( parent, GameConfigActivity.class );
-        intent.setAction( Intent.ACTION_EDIT );
-        intent.putExtra( GameUtils.INTENT_KEY_ROWID, rowID );
-        intent.putExtra( INTENT_FORRESULT_ROWID, true );
-        parent.startActivityForResult( intent, requestCode.ordinal() );
+        Activity activity = delegator.getActivity();
+        Bundle bundle = new Bundle();
+        bundle.putLong( GameUtils.INTENT_KEY_ROWID, rowID );
+        bundle.putBoolean( INTENT_FORRESULT_ROWID, true );
+        
+        if ( activity instanceof FragActivity ) {
+            FragActivity.addFragmentForResult( new GameConfigFrag(), bundle, 
+                                               requestCode, delegator );
+        } else {
+            Intent intent = new Intent( activity, GameConfigActivity.class );
+            intent.setAction( Intent.ACTION_EDIT );
+            intent.putExtras( bundle );
+            activity.startActivityForResult( intent, requestCode.ordinal() );
+        }
     }
 
     private void setConnLabel()

@@ -2483,8 +2483,9 @@ public class GamesListDelegate extends ListDelegateBase
 
             if ( doConfigure ) {
                 // configure it
-                GameConfigDelegate.editForResult( m_activity, RequestCode
-                                                  .CONFIG_GAME, rowID );
+                GameConfigDelegate.editForResult( getDelegator(), 
+                                                  RequestCode.CONFIG_GAME, 
+                                                  rowID );
             } else {
                 // launch it
                 GameUtils.launchGame( getDelegator(), rowID );

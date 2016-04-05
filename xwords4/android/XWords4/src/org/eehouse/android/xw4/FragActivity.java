@@ -300,4 +300,10 @@ public class FragActivity extends FragmentActivity
     {
         getThis().addFragmentImpl( fragment, bundle, parent );
     }
+
+    public static void addFragmentForResult( Fragment fragment, Bundle bundle, 
+                                             RequestCode requestCode, Delegator parent ) 
+    {
+        getThis().addFragmentImpl( fragment, bundle, parent );
+    }
 }
