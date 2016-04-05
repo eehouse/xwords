@@ -29,12 +29,20 @@ import junit.framework.Assert;
 // write lock is.  Write-locks are exclusive.
 public class GameLock {
     private static final boolean DEBUG_LOCKS = false;
+    private static final boolean THROW_ON_LOCKED = true;
     private static final int SLEEP_TIME = 100;
     private static final long ASSERT_TIME = 2000;
+    private static final long THROW_TIME = 750;
     private long m_rowid;
     private boolean m_isForWrite;
     private int m_lockCount;
     private StackTraceElement[] m_lockTrace;
+
+    static {
+        Assert.assertTrue( THROW_TIME <= ASSERT_TIME );
+    }
+
+    public static class GameLockedException extends RuntimeException {}
 
     private static HashMap<Long, GameLock> 
         s_locks = new HashMap<Long,GameLock>();
@@ -145,6 +153,8 @@ public class GameLock {
 
             if ( 0 < maxMillis && sleptTime >= maxMillis ) {
                 break;
+            } else if ( THROW_ON_LOCKED && sleptTime >= THROW_TIME ) {
+                throw new GameLockedException();
             } else if ( sleptTime >= ASSERT_TIME ) {
                 if ( DEBUG_LOCKS ) {
                     DbgUtils.logf( "lock %H overlocked", this );

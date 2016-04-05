@@ -1166,7 +1166,7 @@ public class GameConfigDelegate extends DelegateBase
              && 0 == m_car.ip_relay_invite.length() ) {
             showOKOnlyDialog( R.string.no_empty_rooms );            
         } else {
-            GameUtils.launchGameAndFinish( m_activity, m_rowid );
+            GameUtils.launchGameAndFinish( getDelegator(), m_rowid );
         }
     }
 

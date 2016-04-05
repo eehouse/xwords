@@ -843,12 +843,13 @@ public class GameUtils {
         return bundle;
     }
 
-    public static void launchGame( Activity activity, long rowid,
+    public static void launchGame( Delegator delegator, long rowid,
                                    boolean invited )
     {
+        Activity activity = delegator.getActivity();
         Bundle extras = makeLaunchExtras( rowid, invited );
         if ( activity instanceof FragActivity ) {
-            FragActivity.addFragment( new BoardFrag(), extras );
+            FragActivity.addFragment( new BoardFrag(), extras, delegator );
         } else {
             Intent intent = new Intent( activity, BoardActivity.class );
             intent.putExtras( extras );
@@ -856,15 +857,15 @@ public class GameUtils {
         }
     }
 
-    public static void launchGame( Activity activity, long rowid )
+    public static void launchGame( Delegator delegator, long rowid )
     {
-        launchGame( activity, rowid, false );
+        launchGame( delegator, rowid, false );
     }
 
-    public static void launchGameAndFinish( Activity activity, long rowid )
+    public static void launchGameAndFinish( Delegator delegator, long rowid )
     {
-        launchGame( activity, rowid );
-        activity.finish();
+        launchGame( delegator, rowid );
+        delegator.getActivity().finish();
     }
 
     private static class FeedUtilsImpl extends UtilCtxtImpl {

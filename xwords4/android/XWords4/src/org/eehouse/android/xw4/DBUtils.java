@@ -118,10 +118,14 @@ public class DBUtils {
                                           long maxMillis )
     {
         GameSummary result = null;
-        GameLock lock = new GameLock( rowid, false ).lock( maxMillis );
-        if ( null != lock ) {
-            result = getSummary( context, lock );
-            lock.unlock();
+        try {
+            GameLock lock = new GameLock( rowid, false ).lock( maxMillis );
+            if ( null != lock ) {
+                result = getSummary( context, lock );
+                lock.unlock();
+            }
+        } catch ( GameLock.GameLockedException gle ) {
+            DbgUtils.loge( gle );
         }
         return result;
     }

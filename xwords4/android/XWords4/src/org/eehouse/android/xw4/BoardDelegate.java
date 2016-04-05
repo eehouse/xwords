@@ -666,8 +666,8 @@ public class BoardDelegate extends DelegateBase
             m_jniThreadRef.release();
             m_jniThreadRef = null;
             // Assert.assertNull( m_jniThreadRef ); // firing
-            GamesListDelegate.boardDestroyed( m_rowid );
         }
+        GamesListDelegate.boardDestroyed( m_rowid );
         super.onDestroy();
     }
 
@@ -1464,7 +1464,7 @@ public class BoardDelegate extends DelegateBase
 
         finish();
 
-        GameUtils.launchGame( m_activity, m_rowid, m_haveInvited );
+        GameUtils.launchGame( getDelegator(), m_rowid, m_haveInvited );
     }
 
     private void setGotGameDict( String getDict )
@@ -1474,7 +1474,7 @@ public class BoardDelegate extends DelegateBase
         String msg = getString( R.string.reload_new_dict_fmt, getDict );
         showToast( msg );
         finish();
-        GameUtils.launchGame( m_activity, m_rowid, false );
+        GameUtils.launchGame( getDelegator(), m_rowid, false );
     }
 
     private XwJNI.XP_Key keyCodeToXPKey( int keyCode )

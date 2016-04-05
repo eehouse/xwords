@@ -158,6 +158,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                 DbgUtils.logf( "onMeasure: discarding m_dims" );
                 if ( ++m_dimsTossCount < 4 ) {
                     m_dims = null;
+                    m_layoutWidth = m_layoutHeight = 0;
                 }
             }
         }
@@ -202,7 +203,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                 ConnStatusHandler.draw( m_context, canvas, getResources(), 
                                         m_connTypes, m_isSolo );
             } else {
-                DbgUtils.logf( "board not laid out yet" );
+                DbgUtils.logf( "BoardView.onDraw(): board not laid out yet" );
             }
         }
     }
@@ -213,12 +214,15 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         final int height = getHeight();
         boolean layoutDone = width == m_layoutWidth && height == m_layoutHeight;
         if ( layoutDone ) {
-            // nothing to do
+            DbgUtils.logf( "layoutBoardOnce(): layoutDone true" );
         } else if ( null == m_gi ) {
             // nothing to do either
+            DbgUtils.logf( "layoutBoardOnce(): no m_gi" );
         } else if ( null == m_jniThread ) {
             // nothing to do either
+            DbgUtils.logf( "layoutBoardOnce(): no m_jniThread" );
         } else if ( null == m_dims ) {
+            DbgUtils.logf( "layoutBoardOnce(): null m_dims" );
             // m_canvas = null;
             // need to synchronize??
             Paint paint = new Paint();
@@ -234,6 +238,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                                 fontWidth, m_defaultFontHt );
             // We'll be back....
         } else {
+            DbgUtils.logf( "layoutBoardOnce(): DOING IT" );
             // If board size has changed we need a new bitmap
             int bmHeight = 1 + m_dims.height;
             int bmWidth = 1 + m_dims.width;

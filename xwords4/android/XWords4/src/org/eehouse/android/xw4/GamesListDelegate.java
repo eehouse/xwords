@@ -580,7 +580,7 @@ public class GamesListDelegate extends ListDelegateBase
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
-    private Set<Long> m_launchedGames;
+    private Set<Long> m_launchedGames; // prevent problems with double-taps
     private boolean m_menuPrepared;
     private boolean m_moveAfterNewGroup;
     private Set<Long> m_selGames;
@@ -988,7 +988,9 @@ public class GamesListDelegate extends ListDelegateBase
     protected void onDestroy()
     {
         DBUtils.clearDBChangeListener( this );
-        s_self = null;
+        if ( s_self == this ) {
+            s_self = null;
+        }
     }
 
     protected void onSaveInstanceState( Bundle outState ) 
@@ -1044,16 +1046,7 @@ public class GamesListDelegate extends ListDelegateBase
         if ( hasFocus ) {
             updateField();
 
-            if ( 0 != m_launchedGames.size() ) {
-                long rowid = m_launchedGames.iterator().next();
-                m_launchedGames.remove( rowid );
-
-                if ( m_adapter.inExpandedGroup( rowid ) ) {
-                    setSelGame( rowid );
-                } else {
-                    clearSelections();
-                }
-            }
+            m_launchedGames.clear();
         }
     }
 
@@ -1303,7 +1296,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( !cancelled ) {
                 long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID,
                                                 DBUtils.ROWID_NOTFOUND );
-                GameUtils.launchGame( m_activity, rowID );
+                GameUtils.launchGame( getDelegator(), rowID );
             }
             break;
         }
@@ -2292,7 +2285,7 @@ public class GamesListDelegate extends ListDelegateBase
                 long[] rowIDs = { rowID };
                 doConfirmReset( rowIDs );
             } else if ( checkWarnNoDict( rowID ) ) {
-                GameUtils.launchGame( m_activity, rowID );
+                GameUtils.launchGame( getDelegator(), rowID );
             }
         }
         return madeGame;
@@ -2306,7 +2299,10 @@ public class GamesListDelegate extends ListDelegateBase
         //     m_delegator.launchGame( rowid, invited );
         if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
-            GameUtils.launchGame( m_activity, rowid, invited );
+            if ( m_adapter.inExpandedGroup( rowid ) ) {
+                setSelGame( rowid );
+            }
+            GameUtils.launchGame( getDelegator(), rowid, invited );
         }
     }
 
@@ -2342,8 +2338,13 @@ public class GamesListDelegate extends ListDelegateBase
              && summary.roomName.length() == 0 ) {
             Assert.fail();
         } else {
-            if ( checkWarnNoDict( rowid ) ) {
-                launchGame( rowid );
+            try {
+                if ( checkWarnNoDict( rowid ) ) {
+                    launchGame( rowid );
+                }
+            } catch ( GameLock.GameLockedException gle ) {
+                DbgUtils.loge( gle );
+                finish();
             }
         }
     }
@@ -2486,7 +2487,7 @@ public class GamesListDelegate extends ListDelegateBase
                                                   .CONFIG_GAME, rowID );
             } else {
                 // launch it
-                GameUtils.launchGame( m_activity, rowID );
+                GameUtils.launchGame( getDelegator(), rowID );
             }
         }
     }
