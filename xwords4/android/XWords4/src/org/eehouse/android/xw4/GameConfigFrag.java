@@ -24,7 +24,7 @@ import android.os.Bundle;
 public class GameConfigFrag extends XWFragment {
 
     @Override
-    public void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle sis )
     {
         super.onCreate( new GameConfigDelegate( this, sis ), sis, true );
     }
