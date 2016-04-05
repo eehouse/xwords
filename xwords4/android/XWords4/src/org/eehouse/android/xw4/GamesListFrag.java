@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2014 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -20,47 +20,13 @@
 
 package org.eehouse.android.xw4;
 
-
-import android.content.Context;
-import android.os.Handler;
-import android.app.Activity;
-import android.app.ListActivity;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
-
-import junit.framework.Assert;
-
-import org.eehouse.android.xw4.jni.CommonPrefs;
-import org.eehouse.android.xw4.loc.LocUtils;
 
 public class GamesListFrag extends XWFragment {
 
-    private GamesListDelegate m_dlgt;
-
-    // public GamesListFrag( FragActivity activity )
-    // {
-    //     m_activity = activity;
-    // }
-
     @Override
-    public void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle sis )
     {
-        DbgUtils.logf( "GamesListFrag.onCreate()" );
-        m_dlgt = new GamesListDelegate( this, savedInstanceState );
-        super.onCreate( m_dlgt, savedInstanceState );
-    }
-
-    @Override
-    public void onActivityCreated( Bundle savedInstanceState )
-    {
-        super.onActivityCreated( savedInstanceState );
-        setHasOptionsMenu( true );
+        super.onCreate( new GamesListDelegate( this, sis ), sis, true );
     }
 }

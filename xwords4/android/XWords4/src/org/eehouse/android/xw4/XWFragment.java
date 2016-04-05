@@ -39,8 +39,15 @@ public class XWFragment extends Fragment
                FragActivity.OrientChangeListener {
 
     private DelegateBase m_dlgt;
+    private boolean m_hasOptionsMenu = false;
 
-    public void onCreate( DelegateBase dlgt, Bundle sis )
+    protected void onCreate( DelegateBase dlgt, Bundle sis, boolean hasOptionsMenu )
+    {
+        m_hasOptionsMenu = hasOptionsMenu;
+        this.onCreate( dlgt, sis );
+    }
+
+    protected void onCreate( DelegateBase dlgt, Bundle sis )
     {
         DbgUtils.logdf( "%s.onCreate() called", this.getClass().getName() );
         super.onCreate( sis );
@@ -61,6 +68,9 @@ public class XWFragment extends Fragment
         DbgUtils.logdf( "%s.onActivityCreated() called", this.getClass().getName() );
         m_dlgt.init( savedInstanceState );
         super.onActivityCreated( savedInstanceState );
+        if ( m_hasOptionsMenu ) {
+            setHasOptionsMenu( true );
+        }
     }
 
     @Override

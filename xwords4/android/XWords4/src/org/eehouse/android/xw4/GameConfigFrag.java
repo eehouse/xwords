@@ -1,7 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 - 2016 by Eric House (xwords@eehouse.org).  All rights
- * reserved.
+ * Copyright 2016 by Eric House (xwords@eehouse.org).  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -22,11 +21,11 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 
-public class StudyListFrag extends XWFragment {
+public class GameConfigFrag extends XWFragment {
 
     @Override
-    public void onCreate( Bundle sis )
+    public void onCreate( Bundle savedInstanceState )
     {
-        super.onCreate( new StudyListDelegate( this, sis ), sis, true );
+        super.onCreate( new GameConfigDelegate( this, sis ), sis, true );
     }
 }

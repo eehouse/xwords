@@ -1083,12 +1083,20 @@ public class GameUtils {
         DBUtils.saveSummary( context, lock, summary );
     } // applyChanges
 
-    public static void doConfig( Activity activity, long rowid, Class clazz )
+    public static void doConfig( Delegator delegator, long rowid )
     {
-        Intent intent = new Intent( activity, clazz );
-        intent.setAction( Intent.ACTION_EDIT );
-        intent.putExtra( INTENT_KEY_ROWID, rowid );
-        activity.startActivity( intent );
+        Bundle extras = new Bundle();
+        extras.putLong( INTENT_KEY_ROWID, rowid );
+
+        Activity activity = delegator.getActivity();
+        if ( activity instanceof FragActivity ) {
+            FragActivity.addFragment( new GameConfigFrag(), extras, delegator );
+        } else {
+            Intent intent = new Intent( activity, GameConfigActivity.class );
+            intent.setAction( Intent.ACTION_EDIT );
+            intent.putExtras( extras );
+            activity.startActivity( intent );
+        }
     }
 
     public static String formatGameID( int gameID )

@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2015 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -1676,7 +1676,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_config:
-            GameUtils.doConfig( m_activity, selRowIDs[0], GameConfigActivity.class );
+            GameUtils.doConfig( getDelegator(), selRowIDs[0] );
             break;
 
         case R.id.games_game_move:

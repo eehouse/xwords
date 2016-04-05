@@ -22,19 +22,10 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class ChatFrag extends XWFragment {
-    private ChatDelegate m_dlgt;
 
     @Override
-    public void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle sis )
     {
-        m_dlgt = new ChatDelegate( this, savedInstanceState );
-        super.onCreate( m_dlgt, savedInstanceState );
-    }
-
-    @Override
-    public void onActivityCreated( Bundle savedInstanceState )
-    {
-        super.onActivityCreated( savedInstanceState );
-        setHasOptionsMenu( true );
+        super.onCreate( new ChatDelegate( this, sis ), sis, true );
     }
 }

@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2015 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -462,9 +462,10 @@ public class GameConfigDelegate extends DelegateBase
 
         m_cp = CommonPrefs.get( m_activity );
 
-        Intent intent = getIntent();
-        m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
-        m_forResult = intent.getBooleanExtra( INTENT_FORRESULT_ROWID, false );
+        Bundle args = getArguments();
+        m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, DBUtils.ROWID_NOTFOUND );
+        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != m_rowid );
+        m_forResult = args.getBoolean( INTENT_FORRESULT_ROWID, false );
 
         m_connectSetRelay = findViewById( R.id.connect_set_relay );
 

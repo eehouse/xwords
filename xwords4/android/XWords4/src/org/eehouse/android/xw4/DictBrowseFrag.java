@@ -22,19 +22,10 @@ package org.eehouse.android.xw4;
 import android.os.Bundle;
 
 public class DictBrowseFrag extends XWFragment {
-    private DictBrowseDelegate m_dlgt;
 
     @Override
-    public void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle sis )
     {
-        m_dlgt = new DictBrowseDelegate( this, savedInstanceState );
-        super.onCreate( m_dlgt, savedInstanceState );
-    }
-
-    @Override
-    public void onActivityCreated( Bundle savedInstanceState )
-    {
-        super.onActivityCreated( savedInstanceState );
-        setHasOptionsMenu( true );
+        super.onCreate( new DictBrowseDelegate( this, sis ), sis, true );
     }
 }

@@ -1,6 +1,7 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2014 by Eric House (xwords@eehouse.org).  All rights reserved.
+ * Copyright 2014 - 2016 by Eric House (xwords@eehouse.org).  All rights
+ * reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,22 +22,11 @@ package org.eehouse.android.xw4;
 
 import android.os.Bundle;
 
-import org.eehouse.android.xw4.loc.LocUtils;
-
 public class BoardFrag extends XWFragment {
-    private BoardDelegate m_dlgt;
 
     @Override
-    public void onCreate( Bundle savedInstanceState )
+    public void onCreate( Bundle sis )
     {
-        m_dlgt = new BoardDelegate( this, savedInstanceState );
-        super.onCreate( m_dlgt, savedInstanceState );
-    }
-
-    @Override
-    public void onActivityCreated( Bundle savedInstanceState )
-    {
-        super.onActivityCreated( savedInstanceState );
-        setHasOptionsMenu( true );
+        super.onCreate( new BoardDelegate( this, sis ), sis, true );
     }
 }
