@@ -232,7 +232,7 @@ public class BoardDelegate extends DelegateBase
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
-                                m_jniThread.handle( JNICmd.CMD_RESET );
+                                handleViaThread( JNICmd.CMD_RESET );
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
@@ -422,8 +422,7 @@ public class BoardDelegate extends DelegateBase
                                             public void 
                                                 onClick( DialogInterface dlg, 
                                                          int item ) {
-                                                m_jniThread.
-                                                    handle(JNICmd.CMD_ENDGAME);
+                                                handleViaThread(JNICmd.CMD_ENDGAME);
                                             }
                                         })
                     .setNegativeButton( R.string.button_no, null )
@@ -740,7 +739,7 @@ public class BoardDelegate extends DelegateBase
                 m_firingPrefs = false;
                 m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
                 if ( null != m_jniThread ) {
-                    m_jniThread.handle( JNICmd.CMD_PREFS_CHANGE );
+                    handleViaThread( JNICmd.CMD_PREFS_CHANGE );
                 }
                 // in case of change...
                 setBackgroundColor();
@@ -779,7 +778,7 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_jniThread ) {
             XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
             if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
-                m_jniThread.handle( JNICmd.CMD_KEYDOWN, xpKey );
+                handleViaThread( JNICmd.CMD_KEYDOWN, xpKey );
             } else {
                 switch( keyCode ) {
                 case KeyEvent.KEYCODE_VOLUME_DOWN:
@@ -802,7 +801,7 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_jniThread ) {
             XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
             if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
-                m_jniThread.handle( JNICmd.CMD_KEYUP, xpKey );
+                handleViaThread( JNICmd.CMD_KEYUP, xpKey );
                 handled = true;
             }
         }
@@ -968,7 +967,7 @@ public class BoardDelegate extends DelegateBase
             StudyListDelegate.launchOrAlert( getDelegator(), m_gi.dictLang, this );
             break;
         case R.id.board_menu_game_netstats:
-            m_jniThread.handle( JNICmd.CMD_NETSTATS, R.string.netstats_title );
+            handleViaThread( JNICmd.CMD_NETSTATS, R.string.netstats_title );
             break;
         case R.id.board_menu_game_invites:
             SentInvitesInfo sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
@@ -988,24 +987,23 @@ public class BoardDelegate extends DelegateBase
             break;
 
         case R.id.board_menu_game_counts:
-            m_jniThread.handle( JNICmd.CMD_COUNTS_VALUES,
-                                R.string.counts_values_title );
+            handleViaThread( JNICmd.CMD_COUNTS_VALUES, 
+                             R.string.counts_values_title );
             break;
         case R.id.board_menu_game_left:
-            m_jniThread.handle( JNICmd.CMD_REMAINING,
-                                R.string.tiles_left_title );
+            handleViaThread( JNICmd.CMD_REMAINING, R.string.tiles_left_title );
             break;
 
         case R.id.board_menu_game_history:
-            m_jniThread.handle( JNICmd.CMD_HISTORY, R.string.history_title );
+            handleViaThread( JNICmd.CMD_HISTORY, R.string.history_title );
             break;
 
         case R.id.board_menu_game_resign:
-            m_jniThread.handle( JNICmd.CMD_FINAL, R.string.history_title );
+            handleViaThread( JNICmd.CMD_FINAL, R.string.history_title );
             break;
 
         case R.id.board_menu_game_resend:
-            m_jniThread.handle( JNICmd.CMD_RESEND, true, false, true );
+            handleViaThread( JNICmd.CMD_RESEND, true, false, true );
             break;
 
         case R.id.gamel_menu_checkmoves:
@@ -1025,7 +1023,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( handled && cmd != JNICmd.CMD_NONE ) {
-            m_jniThread.handle( cmd );
+            handleViaThread( cmd );
         }
         return handled;
     }
@@ -1125,7 +1123,7 @@ public class BoardDelegate extends DelegateBase
             }
 
             if ( JNICmd.CMD_NONE != cmd ) {
-                checkAndHandle( cmd );
+                handleViaThread( cmd );
             }
         }
 
@@ -1190,9 +1188,9 @@ public class BoardDelegate extends DelegateBase
     public void onClick( View view ) 
     {
         if ( view == m_exchCommmitButton ) {
-            m_jniThread.handle( JNICmd.CMD_COMMIT );
+            handleViaThread( JNICmd.CMD_COMMIT );
         } else if ( view == m_exchCancelButton ) {
-            m_jniThread.handle( JNICmd.CMD_CANCELTRADE );
+            handleViaThread( JNICmd.CMD_CANCELTRADE );
         }
     }
 
@@ -1621,7 +1619,7 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void requestTime() 
         {
-            post( new Runnable() {
+            runOnUiThread( new Runnable() {
                     public void run() {
                         if ( null != m_jniThread ) {
                             m_jniThread.handleBkgrnd( JNICmd.CMD_DO );
@@ -1633,8 +1631,7 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void remSelected() 
         {
-            m_jniThread.handle( JNICmd.CMD_REMAINING,
-                                R.string.tiles_left_title );
+            handleViaThread( JNICmd.CMD_REMAINING, R.string.tiles_left_title );
         }
 
         @Override
@@ -1645,7 +1642,7 @@ public class BoardDelegate extends DelegateBase
             if ( newRole != m_gi.serverRole ) {
                 m_gi.serverRole = newRole;
                 if ( !isServer ) {
-                    m_jniThread.handle( JNICmd.CMD_SWITCHCLIENT );
+                    handleViaThread( JNICmd.CMD_SWITCHCLIENT );
                 }
             }
         }
@@ -1786,7 +1783,7 @@ public class BoardDelegate extends DelegateBase
                                              R.string.key_notagain_turnchanged );
                         }
                     } );
-                m_jniThread.handle( JNICmd. CMD_ZOOM, -8 );
+                handleViaThread( JNICmd. CMD_ZOOM, -8 );
             }
         }
 
@@ -1989,7 +1986,7 @@ public class BoardDelegate extends DelegateBase
         public void notifyGameOver()
         {
             m_gameOver = true;
-            m_jniThread.handle( JNICmd.CMD_POST_OVER );
+            handleViaThread( JNICmd.CMD_POST_OVER );
         }
 
         // public void yOffsetChange( int maxOffset, int oldOffset, int newOffset )
@@ -2029,11 +2026,14 @@ public class BoardDelegate extends DelegateBase
                               String fromPlayer )
         {
             if ( BuildConstants.CHAT_SUPPORTED ) {
-                post( new Runnable() {
+                runOnUiThread( new Runnable() {
                         public void run() {
                             DBUtils.appendChatHistory( m_activity, m_rowid, msg,
                                                        fromIndx );
-                            startChatActivity();
+                            if ( ! ChatDelegate.append( m_rowid, msg, 
+                                                        fromIndx ) ) {
+                                startChatActivity();
+                            }
                         }
                     } );
             }
@@ -2170,7 +2170,7 @@ public class BoardDelegate extends DelegateBase
                         Assert.assertNotNull( m_connTypes );
                         m_xport.setReceiver( m_jniThread, m_handler );
                     }
-                    m_jniThread.handle( JNICmd.CMD_START );
+                    handleViaThread( JNICmd.CMD_START );
 
                     if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
                         setTitle( GameUtils.getName( m_activity, m_rowid ) );
@@ -2194,7 +2194,7 @@ public class BoardDelegate extends DelegateBase
                         }
                         if ( m_gameOver ) {
                             m_overNotShown = false;
-                            m_jniThread.handle( JNICmd.CMD_POST_OVER, auto );
+                            handleViaThread( JNICmd.CMD_POST_OVER, auto );
                         }
                     }
                     if ( 0 != flags ) {
@@ -2237,8 +2237,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( 0 < m_connTypes.size() ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, force, true, 
-                                false );
+            handleViaThread( JNIThread.JNICmd.CMD_RESEND, force, true, false );
         }
     }
 
@@ -2267,13 +2266,6 @@ public class BoardDelegate extends DelegateBase
                                         m_gi.gameID );
                 }
             }
-        }
-    }
-
-    private void checkAndHandle( JNICmd cmd )
-    {
-        if ( null != m_jniThread ) {
-            m_jniThread.handle( cmd );
         }
     }
 
@@ -2402,7 +2394,7 @@ public class BoardDelegate extends DelegateBase
     {
         boolean handled = null != m_jniThread;
         if ( handled ) {
-            m_jniThread.handle( JNICmd.CMD_ZOOM, zoomBy );
+            handleViaThread( JNICmd.CMD_ZOOM, zoomBy );
         }
         return handled;
     }
@@ -2489,7 +2481,7 @@ public class BoardDelegate extends DelegateBase
         if ( BuildConstants.CHAT_SUPPORTED && null != m_jniThread ) {
             Iterator<String> iter = m_pendingChats.iterator();
             while ( iter.hasNext() ) {
-                m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
+                handleViaThread( JNICmd.CMD_SENDCHAT, iter.next() );
             }
             m_pendingChats.clear();
         }
@@ -2622,7 +2614,8 @@ public class BoardDelegate extends DelegateBase
         if ( canPost ) {
             m_handler.post( runnable );
         } else {
-            DbgUtils.logf( "post: dropping because handler null" );
+            DbgUtils.logf( "BoardDelegate.post(): dropping b/c handler null" );
+            DbgUtils.printStack();
         }
         return canPost;
     }
@@ -2844,10 +2837,13 @@ public class BoardDelegate extends DelegateBase
         DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
     }
 
-    private static void noteSkip()
+    private void handleViaThread( JNICmd cmd, Object... args )
     {
-        String msg = "BoardActivity.feedMessage[s](): skipped because "
-            + "too many open Boards";
-        DbgUtils.logf(msg );
+        if ( null == m_jniThread ) {
+            DbgUtils.logf( "BoardDelegate: not calling handle(%s)", cmd.toString() );
+            DbgUtils.printStack();
+        } else {
+            m_jniThread.handle( cmd, args );
+        }
     }
 } // class BoardDelegate
