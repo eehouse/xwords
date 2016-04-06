@@ -47,6 +47,7 @@ public class ChatDelegate extends DelegateBase {
     private static final String INTENT_KEY_NAMES = "intent_key_names";
     private static final String INTENT_KEY_LOCS = "intent_key_locs";
     
+    private static ChatDelegate s_visibleThis;
     private long m_rowid;
     private int m_curPlayer;
     private String[] m_names;
@@ -116,6 +117,7 @@ public class ChatDelegate extends DelegateBase {
     @Override
     protected void onResume() 
     {
+        s_visibleThis = this;
         m_jniThreadRef = JNIThread.getRetained( m_rowid );
         Assert.assertNotNull( m_jniThreadRef );
         super.onResume();
@@ -125,6 +127,7 @@ public class ChatDelegate extends DelegateBase {
     protected void onPause()
     {
         m_jniThreadRef.release();
+        s_visibleThis = null;
         super.onPause();
     }
 
@@ -219,6 +222,15 @@ public class ChatDelegate extends DelegateBase {
         }
     }
 
+    public static boolean append( long rowid, String msg, int fromIndx )
+    {
+        boolean handled = null != s_visibleThis
+            && s_visibleThis.m_rowid == rowid;
+        if ( handled ) {
+            s_visibleThis.addRow( msg, fromIndx );
+        }
+        return handled;
+    }
 
     public static void startForResult( Delegator delegator, 
                                        RequestCode requestCode,
