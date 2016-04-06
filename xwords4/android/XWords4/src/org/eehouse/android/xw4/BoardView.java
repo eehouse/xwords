@@ -105,17 +105,17 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             case MotionEvent.ACTION_DOWN:
                 m_lastSpacing = MULTI_INACTIVE;
                 if ( !ConnStatusHandler.handleDown( xx, yy ) ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
+                    handle( JNIThread.JNICmd.CMD_PEN_DOWN, xx, yy );
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
                 if ( ConnStatusHandler.handleMove( xx, yy ) ) {
                 } else if ( MULTI_INACTIVE == m_lastSpacing ) {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
+                    handle( JNIThread.JNICmd.CMD_PEN_MOVE, xx, yy );
                 } else {
                     int zoomBy = figureZoom( event );
                     if ( 0 != zoomBy ) {
-                        m_jniThread.handle( JNIThread.JNICmd.CMD_ZOOM, 
+                        handle( JNIThread.JNICmd.CMD_ZOOM, 
                                             zoomBy < 0 ? -2 : 2 );
                     }
                 }
@@ -124,12 +124,12 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                 if ( ConnStatusHandler.handleUp( xx, yy ) ) {
                     // do nothing
                 } else {
-                    m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+                    handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
                 }
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_POINTER_2_DOWN:
-                m_jniThread.handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
+                handle( JNIThread.JNICmd.CMD_PEN_UP, xx, yy );
                 m_lastSpacing = getSpacing( event );
                 break;
             case MotionEvent.ACTION_POINTER_UP:
@@ -234,7 +234,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             int fontWidth = 
                 Math.min(m_defaultFontHt, timerWidth / timerTxt.length());
             DbgUtils.logf( "layoutBoardOnce(): posting JNICmd.CMD_LAYOUT(w=%d, h=%d)", width, height );
-            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, width, height, 
+            handle( JNIThread.JNICmd.CMD_LAYOUT, width, height, 
                                 fontWidth, m_defaultFontHt );
             // We'll be back....
         } else {
@@ -264,8 +264,8 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             } else {
                 m_canvas.setJNIThread( m_jniThread );
             }
-            m_jniThread.handle( JNIThread.JNICmd.CMD_SETDRAW, m_canvas );
-            m_jniThread.handle( JNIThread.JNICmd.CMD_DRAW );
+            handle( JNIThread.JNICmd.CMD_SETDRAW, m_canvas );
+            handle( JNIThread.JNICmd.CMD_DRAW );
 
             // set so we know we're done
             m_layoutWidth = width;
@@ -300,7 +300,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
         // Set the jni layout if we already have one
         if ( null != m_dims ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_LAYOUT, m_dims );
+            handle( JNIThread.JNICmd.CMD_LAYOUT, m_dims );
         }
 
         // Make sure we draw.  Sometimes when we're reloading after
@@ -400,4 +400,13 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         return zoomDir;
     }
 
+    private void handle( JNIThread.JNICmd cmd, Object... args )
+    {
+        if ( null == m_jniThread ) {
+            DbgUtils.logf( "BoardView: not calling handle(%s)", cmd.toString() );
+            DbgUtils.printStack();
+        } else {
+            m_jniThread.handle( cmd, args );
+        }
+    }
 }
