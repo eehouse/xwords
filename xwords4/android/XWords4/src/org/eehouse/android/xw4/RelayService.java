@@ -1003,7 +1003,7 @@ public class RelayService extends XWService
         JNIThread jniThread = JNIThread.getRetained( rowid, false );
         if ( null != jniThread ) {
             jniThread.receive( msg, s_addr ).release();
-            DbgUtils.logdf( "feedMessage: board ate it" );
+            DbgUtils.logdf( "RelayService.feedMessage(): jniThread.receive() ate it" );
         } else {
             RelayMsgSink sink = new RelayMsgSink();
             sink.setRowID( rowid );
