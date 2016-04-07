@@ -1292,7 +1292,7 @@
          message-composition field to be sent. -->
     <string name="chat_send">Send</string>
     <!-- "Hint" in empty chat text field -->
-    <string name="chat_hint">Say something nice</string>
+    <string name="chat_hint">Type here...</string>
 
     <!--
        ############################################################

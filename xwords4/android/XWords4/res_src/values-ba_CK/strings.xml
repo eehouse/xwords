@@ -1117,7 +1117,7 @@
          message-composition field to be sent. -->
   <string name="chat_send">Dnes</string>
   <!-- "Hint" in empty chat text field -->
-  <string name="chat_hint">Yas gnihtemos ecin</string>
+  <string name="chat_hint">Epyt ereh...</string>
   <!--
        ############################################################
        # :Menus:

@@ -1117,7 +1117,7 @@
          message-composition field to be sent. -->
   <string name="chat_send">SEND</string>
   <!-- "Hint" in empty chat text field -->
-  <string name="chat_hint">SAY SOMETHING NICE</string>
+  <string name="chat_hint">TYPE HERE...</string>
   <!--
        ############################################################
        # :Menus:
