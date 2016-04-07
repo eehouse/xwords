@@ -26,7 +26,6 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
 public interface BoardHandler {
 
     void startHandling( Activity parent, JNIThread thread, 
-                        XwJNI.GamePtr gamePtr, CurGameInfo gi,
                         CommsConnTypeSet connTypes );
-
+    void stopHandling();
 }

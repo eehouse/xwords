@@ -615,7 +615,58 @@ public class BoardDelegate extends DelegateBase
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
-        m_jniThreadRef = JNIThread.getRetained( m_rowid, true );
+        Handler handler = new Handler() {
+                public void handleMessage( Message msg ) {
+                    switch( msg.what ) {
+                    case JNIThread.DIALOG:
+                        m_dlgBytes = (String)msg.obj;
+                        m_dlgTitle = msg.arg1;
+                        showDialog( DlgID.DLG_OKONLY );
+                        break;
+                    case JNIThread.QUERY_ENDGAME:
+                        showDialog( DlgID.QUERY_ENDGAME );
+                        break;
+                    case JNIThread.TOOLBAR_STATES:
+                        if ( null != m_jniThread ) {
+                            m_gsi = 
+                                m_jniThread.getGameStateInfo();
+                            updateToolbar();
+                            if ( m_inTrade != m_gsi.inTrade ) {
+                                m_inTrade = m_gsi.inTrade;
+                            }
+                            m_view.setInTrade( m_inTrade );
+                            adjustTradeVisibility();
+                            invalidateOptionsMenuIf();
+                        }
+                        break;
+                    case JNIThread.GOT_WORDS:
+                        CurGameInfo gi = m_jniThreadRef.getGI();
+                        launchLookup( wordsToArray((String)msg.obj), 
+                                      gi.dictLang );
+                        break;
+                    case JNIThread.GAME_OVER:
+                        m_dlgBytes = (String)msg.obj;
+                        m_dlgTitle = msg.arg1;
+                        showDialog( DlgID.GAME_OVER );
+                        break;
+                    case JNIThread.MSGS_SENT:
+                        int nSent = (Integer)msg.obj;
+                        showToast( getQuantityString( R.plurals.resent_msgs_fmt, 
+                                                      nSent, nSent ) );
+                        break;
+                    }
+                }
+            };
+
+        m_jniThreadRef = JNIThread.getRetained( m_rowid, true ).
+            configure( m_activity, m_view, m_utils, this, handler );
+        m_jniGamePtr = m_jniThreadRef.getGamePtr();
+        Assert.assertNotNull( m_jniGamePtr );
+
+        // see http://stackoverflow.com/questions/680180/where-to-stop- \
+        // destroy-threads-in-android-service-class
+        m_jniThreadRef.setDaemonOnce( true ); // firing
+        m_jniThreadRef.startOnce();
 
         NFCUtils.register( m_activity, this ); // Don't seem to need to unregister...
 
@@ -1276,7 +1327,7 @@ public class BoardDelegate extends DelegateBase
     public void tpmRelayConnd( final String room, final int devOrder,
                                final boolean allHere, final int nMissing )
     {
-        post( new Runnable() {
+        runOnUiThread( new Runnable() {
                 public void run() {
                     handleConndMessage( room, devOrder, allHere, nMissing );
                 }
@@ -2049,7 +2100,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         try {
-            loadGame( isStart );
+            resumeGame( isStart );
             if ( !isStart ) {
                 setKeepScreenOn();
                 ConnStatusHandler.setHandler( this );
@@ -2059,165 +2110,176 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void loadGame( boolean isStart )
+    private void resumeGame( boolean isStart )
     {
-        if ( null == m_jniGamePtr ) {
-            try {
-                String gameName = DBUtils.getName( m_activity, m_rowid );
-                String[] dictNames;
+        if ( null == m_jniThread ) {
+            m_jniThread = m_jniThreadRef.retain();
+            m_gi = m_jniThread.getGI();
+            m_summary = m_jniThread.getSummary();
+            m_gameLock = m_jniThread.getLock();
 
-                Assert.assertNull( m_gameLock );
-                m_gameLock = m_jniThreadRef.getLock();
-                if ( null == m_gameLock ) {
-                    dictNames = GameUtils.dictNames( m_activity, m_rowid );
-                } else {
-                    dictNames = GameUtils.dictNames( m_activity, m_gameLock );
+            m_view.startHandling( m_activity, m_jniThread, m_connTypes );
+
+            handleViaThread( JNICmd.CMD_START );
+
+            if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
+                setTitle( GameUtils.getName( m_activity, m_rowid ) );
+            }
+
+            positionToolbar( isPortrait() );
+            populateToolbar();
+            adjustTradeVisibility();
+
+            int flags = DBUtils.getMsgFlags( m_activity, m_rowid );
+            if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
+                startChatActivity();
+            }
+            if ( m_overNotShown ) {
+                boolean auto = false;
+                if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
+                    m_gameOver = true;
+                } else if ( DBUtils.gameOver( m_activity, m_rowid ) ) {
+                    m_gameOver = true;
+                    auto = true;
                 }
-                DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, dictNames );
-
-                if ( pairs.anyMissing( dictNames ) ) {
-                    showDictGoneFinish();
-                } else {
-                    if ( null == m_gameLock ) {
-                        m_gameLock = new GameLock( m_rowid, true ).lock();
-                    }
-
-                    // PENDING: there's no point in re-opening the game if
-                    // it's already open!
-                    byte[] stream = GameUtils.savedGame( m_activity, m_gameLock );
-                    m_gi = new CurGameInfo( m_activity );
-                    m_gi.setName( gameName );
-                    XwJNI.gi_from_stream( m_gi, stream );
-                    String langName = m_gi.langName();
-
-                    m_summary = DBUtils.getSummary( m_activity, m_gameLock );
-                    m_relayMissing = m_summary.relayConnectPending();
-
-                    setThis( this );
-
-                    m_jniGamePtr = XwJNI.initJNI( m_rowid );
-
-                    if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                        m_xport = new CommsTransport( m_activity, this, m_rowid,
-                                                      m_gi.serverRole );
-                    }
-
-                    CommonPrefs cp = CommonPrefs.get( m_activity );
-                    if ( null == stream ||
-                         ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                                      m_gi, dictNames, 
-                                                      pairs.m_bytes, 
-                                                      pairs.m_paths, langName, 
-                                                      m_utils, m_jniu, 
-                                                      null, cp, m_xport ) ) {
-                        XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
-                                                m_jniu, null, cp, m_xport, 
-                                                dictNames, pairs.m_bytes, 
-                                                pairs.m_paths, langName );
-                    }
-
-                    Handler handler = new Handler() {
-                            public void handleMessage( Message msg ) {
-                                switch( msg.what ) {
-                                case JNIThread.DIALOG:
-                                    m_dlgBytes = (String)msg.obj;
-                                    m_dlgTitle = msg.arg1;
-                                    showDialog( DlgID.DLG_OKONLY );
-                                    break;
-                                case JNIThread.QUERY_ENDGAME:
-                                    showDialog( DlgID.QUERY_ENDGAME );
-                                    break;
-                                case JNIThread.TOOLBAR_STATES:
-                                    if ( null != m_jniThread ) {
-                                        m_gsi = 
-                                            m_jniThread.getGameStateInfo();
-                                        updateToolbar();
-                                        if ( m_inTrade != m_gsi.inTrade ) {
-                                            m_inTrade = m_gsi.inTrade;
-                                        }
-                                        m_view.setInTrade( m_inTrade );
-                                        adjustTradeVisibility();
-                                        invalidateOptionsMenuIf();
-                                    }
-                                    break;
-                                case JNIThread.GOT_WORDS:
-                                    launchLookup( wordsToArray((String)msg.obj), 
-                                                  m_gi.dictLang );
-                                    break;
-                                case JNIThread.GAME_OVER:
-                                    m_dlgBytes = (String)msg.obj;
-                                    m_dlgTitle = msg.arg1;
-                                    showDialog( DlgID.GAME_OVER );
-                                    break;
-                                case JNIThread.MSGS_SENT:
-                                    int nSent = (Integer)msg.obj;
-                                    showToast( getQuantityString( R.plurals.resent_msgs_fmt, 
-                                                                  nSent, nSent ) );
-                                    break;
-                                }
-                            }
-                        };
-                    m_jniThread = m_jniThreadRef
-                        .configure( m_jniGamePtr, stream, m_gi, m_view,
-                                    m_gameLock, m_activity, handler );
-                    // see http://stackoverflow.com/questions/680180/where-to-stop-\
-                    // destroy-threads-in-android-service-class
-                    m_jniThread.setDaemonOnce( true ); // firing
-                    m_jniThread.startOnce();
-
-                    m_view.startHandling( m_activity, m_jniThread, m_jniGamePtr, m_gi,
-                                          m_connTypes );
-                    if ( null != m_xport ) {
-                        // informMissing should have been called by now
-                        Assert.assertNotNull( m_connTypes );
-                        m_xport.setReceiver( m_jniThread, m_handler );
-                    }
-                    handleViaThread( JNICmd.CMD_START );
-
-                    if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
-                        setTitle( GameUtils.getName( m_activity, m_rowid ) );
-                    }
-
-                    positionToolbar( isPortrait() );
-                    populateToolbar();
-                    adjustTradeVisibility();
-
-                    int flags = DBUtils.getMsgFlags( m_activity, m_rowid );
-                    if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
-                        startChatActivity();
-                    }
-                    if ( m_overNotShown ) {
-                        boolean auto = false;
-                        if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
-                            m_gameOver = true;
-                        } else if ( DBUtils.gameOver( m_activity, m_rowid ) ) {
-                            m_gameOver = true;
-                            auto = true;
-                        }
-                        if ( m_gameOver ) {
-                            m_overNotShown = false;
-                            handleViaThread( JNICmd.CMD_POST_OVER, auto );
-                        }
-                    }
-                    if ( 0 != flags ) {
-                        DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
-                    }
-
-                    Utils.cancelNotification( m_activity, (int)m_rowid );
-
-                    if ( null != m_xport ) {
-                        warnIfNoTransport();
-                        trySendChats();
-                        tickle( isStart );
-                        tryInvites();
-                    }
+                if ( m_gameOver ) {
+                    m_overNotShown = false;
+                    handleViaThread( JNICmd.CMD_POST_OVER, auto );
                 }
-           } catch ( GameUtils.NoSuchGameException nsge ) {
-                DbgUtils.loge( nsge );
-                finish();
+            }
+            if ( 0 != flags ) {
+                DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
+            }
+
+            Utils.cancelNotification( m_activity, (int)m_rowid );
+
+            if ( null != m_xport ) {
+                warnIfNoTransport();
+                trySendChats();
+                tickle( isStart );
+                tryInvites();
             }
         }
-    } // loadGame
+    } // resumeGame
+
+    // private void loadGame( boolean isStart )
+    // {
+    //     if ( null == m_jniGamePtr ) {
+    //         try {
+    //             String gameName = DBUtils.getName( m_activity, m_rowid );
+    //             String[] dictNames;
+
+    //             Assert.assertNull( m_gameLock );
+    //             m_gameLock = m_jniThreadRef.getLock();
+    //             if ( null == m_gameLock ) {
+    //                 dictNames = GameUtils.dictNames( m_activity, m_rowid );
+    //             } else {
+    //                 dictNames = GameUtils.dictNames( m_activity, m_gameLock );
+    //             }
+    //             DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, dictNames );
+
+    //             if ( pairs.anyMissing( dictNames ) ) {
+    //                 showDictGoneFinish();
+    //             } else {
+    //                 if ( null == m_gameLock ) {
+    //                     m_gameLock = new GameLock( m_rowid, true ).lock();
+    //                 }
+
+    //                 // PENDING: there's no point in re-opening the game if
+    //                 // it's already open!
+    //                 byte[] stream = GameUtils.savedGame( m_activity, m_gameLock );
+    //                 m_gi = new CurGameInfo( m_activity );
+    //                 m_gi.setName( gameName );
+    //                 XwJNI.gi_from_stream( m_gi, stream );
+    //                 String langName = m_gi.langName();
+
+    //                 m_summary = DBUtils.getSummary( m_activity, m_gameLock );
+    //                 m_relayMissing = m_summary.relayConnectPending();
+
+    //                 setThis( this );
+
+    //                 m_jniGamePtr = XwJNI.initJNI( m_rowid );
+
+    //                 if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+    //                     m_xport = new CommsTransport( m_activity, this, m_rowid,
+    //                                                   m_gi.serverRole );
+    //                 }
+
+    //                 CommonPrefs cp = CommonPrefs.get( m_activity );
+    //                 if ( null == stream ||
+    //                      ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+    //                                                   m_gi, dictNames, 
+    //                                                   pairs.m_bytes, 
+    //                                                   pairs.m_paths, langName, 
+    //                                                   m_utils, m_jniu, 
+    //                                                   null, cp, m_xport ) ) {
+    //                     XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
+    //                                             m_jniu, null, cp, m_xport, 
+    //                                             dictNames, pairs.m_bytes, 
+    //                                             pairs.m_paths, langName );
+    //                 }
+
+
+    //                 m_jniThread = m_jniThreadRef.retain();
+
+    //                 // see http://stackoverflow.com/questions/680180/where-to-stop-\
+    //                 // destroy-threads-in-android-service-class
+    //                 // m_jniThread.setDaemonOnce( true ); // firing
+    //                 // m_jniThread.startOnce();
+
+    //                 m_view.startHandling( m_activity, m_jniThread, m_jniGamePtr, m_gi,
+    //                                       m_connTypes );
+    //                 if ( null != m_xport ) {
+    //                     // informMissing should have been called by now
+    //                     Assert.assertNotNull( m_connTypes );
+    //                     m_xport.setReceiver( m_jniThread, m_handler );
+    //                 }
+    //                 handleViaThread( JNICmd.CMD_START );
+
+    //                 if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
+    //                     setTitle( GameUtils.getName( m_activity, m_rowid ) );
+    //                 }
+
+    //                 positionToolbar( isPortrait() );
+    //                 populateToolbar();
+    //                 adjustTradeVisibility();
+
+    //                 int flags = DBUtils.getMsgFlags( m_activity, m_rowid );
+    //                 if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
+    //                     startChatActivity();
+    //                 }
+    //                 if ( m_overNotShown ) {
+    //                     boolean auto = false;
+    //                     if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
+    //                         m_gameOver = true;
+    //                     } else if ( DBUtils.gameOver( m_activity, m_rowid ) ) {
+    //                         m_gameOver = true;
+    //                         auto = true;
+    //                     }
+    //                     if ( m_gameOver ) {
+    //                         m_overNotShown = false;
+    //                         handleViaThread( JNICmd.CMD_POST_OVER, auto );
+    //                     }
+    //                 }
+    //                 if ( 0 != flags ) {
+    //                     DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
+    //                 }
+
+    //                 Utils.cancelNotification( m_activity, (int)m_rowid );
+
+    //                 if ( null != m_xport ) {
+    //                     warnIfNoTransport();
+    //                     trySendChats();
+    //                     tickle( isStart );
+    //                     tryInvites();
+    //                 }
+    //             }
+    //        } catch ( GameUtils.NoSuchGameException nsge ) {
+    //             DbgUtils.loge( nsge );
+    //             finish();
+    //         }
+    //     }
+    // } // loadGame
 
     private void tickle( boolean force )
     {
@@ -2429,10 +2491,13 @@ public class BoardDelegate extends DelegateBase
 
     private void pauseGame()
     {
-        if ( null != m_jniGamePtr ) {
+        if ( null != m_jniThread ) {
             interruptBlockingThread();
 
+            m_jniThread.release();
             m_jniThread = null;
+            m_summary = null;
+
             m_view.stopHandling();
 
             clearThis( this );
@@ -2444,13 +2509,16 @@ public class BoardDelegate extends DelegateBase
                     GameUtils.takeSnapshot( m_activity, m_jniGamePtr, m_gi );
                 DBUtils.saveThumbnail( m_activity, m_gameLock, thumb );
             }
+
+            m_gi = null;
+            m_gameLock = null;
         }
     }
     
     private void waitCloseGame( boolean save )
     {
         pauseGame();
-        if ( null != m_jniGamePtr ) {
+        if ( null != m_jniThread ) {
             if ( null != m_xport ) {
                 m_xport.waitToStop();
                 m_xport = null;
@@ -2458,8 +2526,8 @@ public class BoardDelegate extends DelegateBase
 
             clearThis( this );
 
-            m_jniGamePtr.release();
-            m_jniGamePtr = null;
+            // m_jniGamePtr.release();
+            // m_jniGamePtr = null;
             m_gi = null;
 
             // m_gameLock.unlock(); // likely the problem

@@ -36,9 +36,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eehouse.android.xw4.CommsTransport;
 import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
@@ -153,7 +155,7 @@ public class JNIThread extends Thread {
     private boolean m_stopped = false;
     private boolean m_saveOnStop = false;
     private GamePtr m_jniGamePtr;
-    private byte[] m_gameAtStart;
+    private byte[] m_lastSavedState;
     private GameLock m_lock;
     private Context m_context;
     private CurGameInfo m_gi;
@@ -164,6 +166,8 @@ public class JNIThread extends Thread {
     private String m_newDict = null;
     private long m_rowid;
     private int m_refCount;
+    private CommsTransport m_xport;
+    private GameSummary m_summary;
 
     private LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -183,26 +187,57 @@ public class JNIThread extends Thread {
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
     
-    public JNIThread configure( GamePtr gamePtr, byte[] gameAtStart, CurGameInfo gi, 
-                                SyncedDraw drawer, GameLock lock, Context context, 
-                                Handler handler ) 
+    public JNIThread configure( Context context, SyncedDraw drawer,
+                                UtilCtxtImpl utils, 
+                                TransportProcs.TPMsgHandler xportHandler,
+                                Handler handler )
     {
-        if ( null != m_jniGamePtr ) {
-            m_jniGamePtr.release();
-        }
-        m_jniGamePtr = gamePtr.retain();
-        m_gameAtStart = gameAtStart;
-        m_gi = gi;
-        m_drawer = drawer;
-        Assert.assertTrue( lock.canWrite() );
-        m_lock = lock;          // I own this now!
-        Assert.assertTrue( lock.canWrite() );
         m_context = context;
+        m_drawer = drawer;
         m_handler = handler;
+        m_jniGamePtr = XwJNI.initJNI( m_rowid );
+        m_lock = new GameLock( m_rowid, true ).lock();
 
+        String[] dictNames = GameUtils.dictNames( context, m_lock );
+        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
+        Assert.assertFalse ( pairs.anyMissing( dictNames ) ); // PENDING
+
+        byte[] stream = GameUtils.savedGame( context, m_lock );
+        Assert.assertNotNull( stream );
+        m_gi = new CurGameInfo( context );
+        m_gi.setName( DBUtils.getName( context, m_rowid ) );
+        XwJNI.gi_from_stream( m_gi, stream );
+
+        m_summary = DBUtils.getSummary( context, m_lock );
+        
+        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+            m_xport = new CommsTransport( context, xportHandler, m_rowid,
+                                          m_gi.serverRole );
+        }
+
+        CommonPrefs cp = CommonPrefs.get( context );
+        JNIUtils jniUtils = JNIUtilsImpl.get( context );
+        if ( null == stream ||
+             ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+                                          m_gi, dictNames, 
+                                          pairs.m_bytes, 
+                                          pairs.m_paths, 
+                                          m_gi.langName(), 
+                                          utils, jniUtils,
+                                          null, cp, m_xport ) ) {
+            XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, dictNames, 
+                                    pairs.m_bytes, pairs.m_paths, 
+                                    m_gi.langName(), utils, jniUtils, 
+                                    null, cp, m_xport );
+        }
+
+        m_lastSavedState = stream;
         return this;
     }
 
+    public GamePtr getGamePtr() { return m_jniGamePtr; }
+    public CurGameInfo getGI() { return m_gi; }
+    public GameSummary getSummary() { return m_summary; }
     public GameLock getLock() { return m_lock; }
 
     private void waitToStop( boolean save )
@@ -334,13 +369,13 @@ public class JNIThread extends Thread {
             m_gi.dictName = m_newDict;
         }
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
-        boolean arraysEqual = Arrays.equals( m_gameAtStart, state );
-        boolean hashesEqual = Arrays.hashCode( m_gameAtStart) == Arrays.hashCode(state);
+        boolean arraysEqual = Arrays.equals( m_lastSavedState, state );
+        boolean hashesEqual = Arrays.hashCode( m_lastSavedState) == Arrays.hashCode(state);
         DbgUtils.logf( "arraysEqual: %b; hashesEqual: %b", arraysEqual, hashesEqual );
         // PENDING: once certain this is true, stop saving the full array and
         // instead save the hash. Also, update it after each save.
         Assert.assertTrue( arraysEqual == hashesEqual );
-        if ( Arrays.equals( m_gameAtStart, state ) ) {
+        if ( Arrays.equals( m_lastSavedState, state ) ) {
             DbgUtils.logdf( "JNIThread.save_jni(): no change in game; can skip saving" );
         } else {
             synchronized( this ) {
@@ -351,6 +386,7 @@ public class JNIThread extends Thread {
                 DBUtils.saveSummary( m_context, m_lock, summary );
                 // There'd better be no way for saveGame above to fail!
                 XwJNI.game_saveSucceeded( m_jniGamePtr );
+                m_lastSavedState = state;
             }
         }
     }
@@ -712,11 +748,12 @@ public class JNIThread extends Thread {
                        m_rowid, m_refCount );
     }
     
-    public void retain()
+    public JNIThread retain()
     {
         synchronized( s_instances ) {
             retain_sync();
         }
+        return this;
     }
 
     public void release()

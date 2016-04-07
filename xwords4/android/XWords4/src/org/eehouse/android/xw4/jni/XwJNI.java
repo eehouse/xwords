@@ -170,14 +170,14 @@ public class XwJNI {
 
     public static native void game_makeNewGame( GamePtr gamePtr,
                                                 CurGameInfo gi, 
-                                                UtilCtxt util,
-                                                JNIUtils jniu,
-                                                DrawCtx draw, CommonPrefs cp, 
-                                                TransportProcs procs, 
                                                 String[] dictNames,
                                                 byte[][] dictBytes, 
                                                 String[] dictPaths, 
-                                                String langName );
+                                                String langName,
+                                                UtilCtxt util,
+                                                JNIUtils jniu,
+                                                DrawCtx draw, CommonPrefs cp, 
+                                                TransportProcs procs );
 
     public static native boolean game_makeFromStream( GamePtr gamePtr,
                                                       byte[] stream, 
@@ -198,18 +198,18 @@ public class XwJNI {
                                          JNIUtils jniu, CommonPrefs cp, 
                                          String[] dictNames, byte[][] dictBytes, 
                                          String[] dictPaths, String langName ) {
-        game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu,
-                          (DrawCtx)null, cp, (TransportProcs)null, 
-                          dictNames, dictBytes, dictPaths, langName );
+        game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths, langName,
+                          (UtilCtxt)null, jniu, (DrawCtx)null, cp, 
+                          (TransportProcs)null );
     }
 
     public static void game_makeNewGame( GamePtr gamePtr, CurGameInfo gi,
-                                         JNIUtils jniu, CommonPrefs cp, 
-                                         TransportProcs procs,
                                          String[] dictNames, byte[][] dictBytes, 
-                                         String[] dictPaths, String langName ) {
-        game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu, (DrawCtx)null, 
-                          cp, procs, dictNames, dictBytes, dictPaths, langName );
+                                         String[] dictPaths, String langName,
+                                         JNIUtils jniu, CommonPrefs cp, 
+                                         TransportProcs procs ) {
+        game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths, langName,
+                          (UtilCtxt)null, jniu, (DrawCtx)null, cp, procs );
     }
 
     public static boolean game_makeFromStream( GamePtr gamePtr,

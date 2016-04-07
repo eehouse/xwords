@@ -1065,11 +1065,10 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, util, 
-                                    JNIUtilsImpl.get(context), 
-                                    (DrawCtx)null,
-                                    cp, sink, dictNames, pairs.m_bytes, 
-                                    pairs.m_paths, langName );
+            XwJNI.game_makeNewGame( gamePtr, gi, dictNames, pairs.m_bytes, 
+                                    pairs.m_paths, langName, util, 
+                                    JNIUtilsImpl.get(context), (DrawCtx)null,
+                                    cp, sink );
         }
 
         if ( null != car ) {

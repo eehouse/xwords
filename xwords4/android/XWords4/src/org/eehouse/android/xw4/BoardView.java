@@ -283,20 +283,20 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
 
     // BoardHandler interface implementation
     public void startHandling( Activity parent, JNIThread thread, 
-                               XwJNI.GamePtr gamePtr, CurGameInfo gi, 
                                CommsConnTypeSet connTypes ) 
     {
+        DbgUtils.logf( "BoardView.startHandling(thread=%H)", thread );
         m_parent = parent;
         m_jniThread = thread;
-        m_jniGamePtr = gamePtr;
-        m_gi = gi;
-        m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == gi.serverRole;
+        m_jniGamePtr = thread.getGamePtr();
+        m_gi = thread.getGI();
+        m_isSolo = CurGameInfo.DeviceRole.SERVER_STANDALONE == m_gi.serverRole;
         m_connTypes = connTypes;
         m_layoutWidth = 0;
         m_layoutHeight = 0;
 
-        s_isFirstDraw = s_curGameID != gi.gameID;
-        s_curGameID = gi.gameID;
+        s_isFirstDraw = s_curGameID != m_gi.gameID;
+        s_curGameID = m_gi.gameID;
 
         // Set the jni layout if we already have one
         if ( null != m_dims ) {
