@@ -669,9 +669,8 @@ public class JNIThread extends Thread {
 
     public void handleBkgrnd( JNICmd cmd, Object... args )
     {
-        QueueElem elem = new QueueElem( cmd, false, args );
         // DbgUtils.logf( "adding: %s", cmd.toString() );
-        m_queue.add( elem );
+        m_queue.add( new QueueElem( cmd, false, args ) );
     }
 
     public JNIThread receive( byte[] msg, CommsAddrRec addr )
@@ -687,8 +686,7 @@ public class JNIThread extends Thread {
     
     public void handle( JNICmd cmd, Object... args )
     {
-        QueueElem elem = new QueueElem( cmd, true, args );
-        m_queue.add( elem );
+        m_queue.add( new QueueElem( cmd, true, args ) );
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
             DbgUtils.logf( "WARNING: adding %s to stopped thread!!!", 
                            cmd.toString() );
@@ -709,7 +707,8 @@ public class JNIThread extends Thread {
     private void retain_sync()
     {
         ++m_refCount;
-        DbgUtils.logf( "JNIThread.retain_sync: m_refCount: %d", m_refCount );
+        DbgUtils.logf( "JNIThread.retain_sync(rowid=%d): m_refCount: %d", 
+                       m_rowid, m_refCount );
     }
     
     public void retain()
@@ -728,7 +727,8 @@ public class JNIThread extends Thread {
                 stop = true;
             }
         }
-        DbgUtils.logf( "JNIThread.release: m_refCount: %d", m_refCount );
+        DbgUtils.logf( "JNIThread.release(rowid=%d): m_refCount: %d", 
+                       m_rowid, m_refCount );
 
         if ( stop ) {
             waitToStop( true );
