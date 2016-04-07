@@ -334,8 +334,14 @@ public class JNIThread extends Thread {
             m_gi.dictName = m_newDict;
         }
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
+        boolean arraysEqual = Arrays.equals( m_gameAtStart, state );
+        boolean hashesEqual = Arrays.hashCode( m_gameAtStart) == Arrays.hashCode(state);
+        DbgUtils.logf( "arraysEqual: %b; hashesEqual: %b", arraysEqual, hashesEqual );
+        // PENDING: once certain this is true, stop saving the full array and
+        // instead save the hash. Also, update it after each save.
+        Assert.assertTrue( arraysEqual == hashesEqual );
         if ( Arrays.equals( m_gameAtStart, state ) ) {
-            // DbgUtils.logf( "no change in game; can skip saving" );
+            DbgUtils.logdf( "JNIThread.save_jni(): no change in game; can skip saving" );
         } else {
             synchronized( this ) {
                 Assert.assertNotNull( m_lock );
@@ -393,11 +399,6 @@ public class JNIThread extends Thread {
                     continue;
                 }
                 save_jni();
-                // This is gross: we take the relay connection down
-                // then bring it right back up again each time there's
-                // a message received (to save any state changes it
-                // brought).  There must be a better way.
-                // XwJNI.comms_start( m_jniGamePtr );
                 break;
 
             case CMD_DRAW:
@@ -732,6 +733,8 @@ public class JNIThread extends Thread {
 
         if ( stop ) {
             waitToStop( true );
+        } else {
+            handle( JNICmd.CMD_SAVE );         // in case releaser has made changes
         }
     }
 
