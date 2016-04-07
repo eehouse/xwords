@@ -2383,7 +2383,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         m_dlgBytes = txt;
-        post( new Runnable() {
+        runOnUiThread( new Runnable() {
                 public void run() {
                     showDialog( dlgID );
                 }
@@ -2420,6 +2420,7 @@ public class BoardDelegate extends DelegateBase
             ConnStatusHandler.setHandler( null );
             waitCloseGame( true );
         } else {
+            handleViaThread( JNICmd.CMD_SAVE );
             // DbgUtils.logf( "closeIfFinishing(): not finishing (yet)" );
         }
     }
