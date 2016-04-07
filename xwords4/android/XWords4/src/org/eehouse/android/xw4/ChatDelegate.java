@@ -117,16 +117,22 @@ public class ChatDelegate extends DelegateBase {
     @Override
     protected void onResume() 
     {
-        s_visibleThis = this;
-        m_jniThreadRef = JNIThread.getRetained( m_rowid );
-        Assert.assertNotNull( m_jniThreadRef );
         super.onResume();
+        m_jniThreadRef = JNIThread.getRetained( m_rowid );
+        if ( null == m_jniThreadRef ) {
+            DbgUtils.logf( "ChatDelegate.onResume(): m_jniThreadRef null; exiting" );
+            finish();
+        } else {
+            s_visibleThis = this;
+        }
     }
 
     @Override
     protected void onPause()
     {
-        m_jniThreadRef.release();
+        if ( null != m_jniThreadRef ) {
+            m_jniThreadRef.release();
+        }
         s_visibleThis = null;
         super.onPause();
     }
