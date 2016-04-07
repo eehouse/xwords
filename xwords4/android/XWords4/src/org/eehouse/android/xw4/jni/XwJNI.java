@@ -35,9 +35,11 @@ public class XwJNI {
     public static class GamePtr {
         private int m_ptr = 0;
         private int m_refCount = 0;
+        private long m_rowid;
 
-        private GamePtr( int ptr ) {
+        private GamePtr( int ptr, long rowid ) {
             m_ptr = ptr;
+            m_rowid = rowid;
             retain();
         }
 
@@ -46,6 +48,8 @@ public class XwJNI {
         public synchronized GamePtr retain()
         {
             ++m_refCount;
+            DbgUtils.logdf( "GamePtr.retain(this=%H, rowid=%d): refCount now %d", 
+                            this, m_rowid, m_refCount );
             return this;
         }
         
@@ -53,7 +57,10 @@ public class XwJNI {
         // better if jni stuff isn't being done on the finalizer thread
         public synchronized void release()
         {
-            if ( 0 == --m_refCount ) {
+            --m_refCount;
+            DbgUtils.logdf( "GamePtr.release(this=%H, rowid=%d): refCount now %d", 
+                            this, m_rowid, m_refCount );
+            if ( 0 == m_refCount ) {
                 if ( 0 != m_ptr ) {
                     game_dispose( this );
                     m_ptr = 0;
@@ -146,7 +153,7 @@ public class XwJNI {
         int seed = Utils.nextRandomInt();
         String tag = String.format( "%d", rowid );
         int ptr = initJNI( getJNI().m_ptr, seed, tag );
-        GamePtr result = 0 == ptr ? null : new GamePtr( ptr );
+        GamePtr result = 0 == ptr ? null : new GamePtr( ptr, rowid );
         return result;
     }
 
