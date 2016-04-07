@@ -2082,6 +2082,8 @@ public class BoardDelegate extends DelegateBase
                         m_gameLock = new GameLock( m_rowid, true ).lock();
                     }
 
+                    // PENDING: there's no point in re-opening the game if
+                    // it's already open!
                     byte[] stream = GameUtils.savedGame( m_activity, m_gameLock );
                     m_gi = new CurGameInfo( m_activity );
                     m_gi.setName( gameName );
