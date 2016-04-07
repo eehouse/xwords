@@ -1430,8 +1430,8 @@ public class BoardDelegate extends DelegateBase
 
     private void deleteAndClose()
     {
+        GameUtils.deleteGame( m_activity, m_gameLock, false );
         waitCloseGame( false );
-        GameUtils.deleteGame( m_activity, m_rowid, false );
         finish();
     }
 

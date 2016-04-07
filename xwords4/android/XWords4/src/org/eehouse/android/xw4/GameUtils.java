@@ -220,6 +220,13 @@ public class GameUtils {
         return rowid;
     }
 
+    public static void deleteGame( Context context, GameLock lock, boolean informNow )
+    {
+        tellDied( context, lock, informNow );
+        Utils.cancelNotification( context, (int)lock.getRowid() );
+        DBUtils.deleteGame( context, lock );
+    }
+
     public static boolean deleteGame( Context context, long rowid, 
                                       boolean informNow )
     {
@@ -227,9 +234,7 @@ public class GameUtils {
         // does this need to be synchronized?
         GameLock lock = new GameLock( rowid, true );
         if ( lock.tryLock() ) {
-            tellDied( context, lock, informNow );
-            Utils.cancelNotification( context, (int)rowid );
-            DBUtils.deleteGame( context, lock );
+            deleteGame( context, lock, informNow );
             lock.unlock();
             success = true;
         } else {
