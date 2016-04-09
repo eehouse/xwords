@@ -51,6 +51,8 @@ import org.eehouse.android.xw4.loc.LocUtils;
 public class GameListItem extends LinearLayout 
     implements View.OnClickListener, SelectableItem.LongClickHandler {
 
+    private static final int SUMMARY_WAIT_MSECS = 1000;
+    
     private static HashSet<Long> s_invalRows = new HashSet<Long>();
 
     private Activity m_activity;
@@ -352,7 +354,7 @@ public class GameListItem extends LinearLayout
         @Override
         protected GameSummary doInBackground( Void... unused ) 
         {
-            return DBUtils.getSummary( m_context, m_rowid, 500 );
+            return DBUtils.getSummary( m_context, m_rowid, SUMMARY_WAIT_MSECS );
         } // doInBackground
 
         @Override
