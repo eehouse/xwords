@@ -89,7 +89,6 @@ public class BoardDelegate extends DelegateBase
     private CurGameInfo m_gi;
     private GameSummary m_summary;
     private boolean m_relayMissing;
-    private CommsTransport m_xport;
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
     private Runnable m_screenTimer;
@@ -142,57 +141,6 @@ public class BoardDelegate extends DelegateBase
     private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
-
-    // private static Set<BoardDelegate> s_this = new HashSet<BoardDelegate>();
-
-    // public static boolean feedMessage( long rowid, byte[] msg,
-    //                                    CommsAddrRec ret )
-    // {
-    //     return feedMessages( rowid, new byte[][]{msg}, ret );
-    // }
-
-    // public static boolean feedMessages( long rowid, byte[][] msgs, 
-    //                                     CommsAddrRec ret )
-    // {
-    //     boolean delivered = false;
-    //     // Assert.assertNotNull( msgs );
-    //     // int size;
-    //     // synchronized( s_this ) {
-    //     //     size = s_this.size();
-    //     //     if ( 1 == size ) {
-    //     //         BoardDelegate self = s_this.iterator().next();
-    //     //         Assert.assertNotNull( self.m_gi );
-    //     //         Assert.assertNotNull( self.m_gameLock );
-    //     //         Assert.assertNotNull( self.m_jniThread );
-    //     //         if ( rowid == self.m_rowid ) {
-    //     //             delivered = true; // even if no messages!
-    //     //             for ( byte[] msg : msgs ) {
-    //     //                 self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, ret );
-    //     //             }
-    //     //         }
-    //     //     }
-    //     // }
-    //     // if ( 1 < size ) {
-    //     //     noteSkip();
-    //     // }
-    //     return delivered;
-    // }
-
-    private static void setThis( BoardDelegate self )
-    {
-        // synchronized( s_this ) {
-        //     Assert.assertTrue( !s_this.contains(self) ); // here
-        //     s_this.add( self );
-        // }
-    }
-
-    private static void clearThis( BoardDelegate self )
-    {
-        // synchronized( s_this ) {
-        //     Assert.assertTrue( s_this.contains( self ) );
-        //     s_this.remove( self );
-        // }
-    }
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -2153,7 +2101,7 @@ public class BoardDelegate extends DelegateBase
 
             Utils.cancelNotification( m_activity, (int)m_rowid );
 
-            if ( null != m_xport ) {
+            if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
                 warnIfNoTransport();
                 trySendChats();
                 tickle( isStart );
@@ -2500,8 +2448,6 @@ public class BoardDelegate extends DelegateBase
 
             m_view.stopHandling();
 
-            clearThis( this );
-
             if ( XWPrefs.getThumbEnabled( m_activity ) ) {
                 // Before we dispose, and after JNIThread has
                 // relinquished interest, redraw on smaller scale.
@@ -2519,13 +2465,6 @@ public class BoardDelegate extends DelegateBase
     {
         pauseGame();
         if ( null != m_jniThread ) {
-            if ( null != m_xport ) {
-                m_xport.waitToStop();
-                m_xport = null;
-            }
-
-            clearThis( this );
-
             // m_jniGamePtr.release();
             // m_jniGamePtr = null;
             m_gi = null;
