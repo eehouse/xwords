@@ -32,7 +32,7 @@ public class GameLock {
     private static final boolean THROW_ON_LOCKED = true;
     private static final int SLEEP_TIME = 100;
     private static final long ASSERT_TIME = 2000;
-    private static final long THROW_TIME = 750;
+    private static final long THROW_TIME = 1000;
     private long m_rowid;
     private boolean m_isForWrite;
     private int m_lockCount;
@@ -115,7 +115,8 @@ public class GameLock {
     public GameLock lock( long maxMillis )
     {
         GameLock result = null;
-        Assert.assertTrue( maxMillis < ASSERT_TIME );
+        Assert.assertTrue( maxMillis <= ASSERT_TIME );
+        Assert.assertTrue( maxMillis <= THROW_TIME );
         long sleptTime = 0;
 
         if ( DEBUG_LOCKS ) {
