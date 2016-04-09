@@ -1019,7 +1019,8 @@ public class BTService extends XWService {
         synchronized( m_addrs ) {
             for ( BluetoothDevice dev : pairedDevs ) {
                 int clazz = dev.getBluetoothClass().getMajorDeviceClass();
-                if ( Major.PHONE == clazz || Major.COMPUTER == clazz ) {
+                if ( Major.PHONE == clazz
+                     || (XWApp.BT_SCAN_COMPUTERS && Major.COMPUTER == clazz) ) {
                     m_addrs.add( dev.getAddress() );
                 }
             }

@@ -46,6 +46,7 @@ public class XWApp extends Application {
     public static final boolean LOCUTILS_ENABLED = false;
     public static final boolean CONTEXT_MENUS_ENABLED = true;
     public static final boolean OFFER_DUALPANE = false;
+    public static final boolean BT_SCAN_COMPUTERS = false;
     
     public static final String SMS_PUBLIC_HEADER = "-XW4";
     public static final int MAX_TRAY_TILES = 7; // comtypes.h
