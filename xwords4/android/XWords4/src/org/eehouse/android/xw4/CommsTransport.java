@@ -20,25 +20,23 @@
 
 package org.eehouse.android.xw4;
 
+import android.content.Context;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.ClosedChannelException;
 import java.nio.channels.UnresolvedAddressException;
-import java.nio.ByteBuffer;
-import java.net.InetSocketAddress;
-import java.util.Vector;
 import java.util.Iterator;
+import java.util.Vector;
+
 import junit.framework.Assert;
-import android.content.Context;
-import android.os.Build;
-import android.os.Handler;
-import android.os.Message;
 
 import org.eehouse.android.xw4.jni.*;
-import org.eehouse.android.xw4.jni.JNIThread.*;
-import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
+import org.eehouse.android.xw4.jni.CurGameInfo.DeviceRole;
+import org.eehouse.android.xw4.jni.JNIThread.*;
 
 public class CommsTransport implements TransportProcs, 
                                        NetStateCache.StateChangedIf {
@@ -49,7 +47,6 @@ public class CommsTransport implements TransportProcs,
     private JNIThread m_jniThread;
     private CommsThread m_thread;
     private TransportProcs.TPMsgHandler m_tpHandler;
-    private Handler m_handler;
     private boolean m_done = false;
 
     private Vector<ByteBuffer> m_buffersOut;
@@ -214,10 +211,9 @@ public class CommsTransport implements TransportProcs,
         } // loop
     }
     
-    public void setReceiver( JNIThread jnit, Handler handler )
+    public void setReceiver( JNIThread jnit )
     {
         m_jniThread = jnit;
-        m_handler = handler;
     }
 
     public void waitToStop()

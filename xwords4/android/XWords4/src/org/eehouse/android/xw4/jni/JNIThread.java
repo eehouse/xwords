@@ -200,7 +200,7 @@ public class JNIThread extends Thread {
 
         String[] dictNames = GameUtils.dictNames( context, m_lock );
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
-        Assert.assertFalse ( pairs.anyMissing( dictNames ) ); // PENDING
+        Assert.assertFalse( pairs.anyMissing( dictNames ) ); // PENDING
 
         byte[] stream = GameUtils.savedGame( context, m_lock );
         Assert.assertNotNull( stream );
@@ -213,6 +213,7 @@ public class JNIThread extends Thread {
         if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
             m_xport = new CommsTransport( context, xportHandler, m_rowid,
                                           m_gi.serverRole );
+            m_xport.setReceiver( this );
         }
 
         CommonPrefs cp = CommonPrefs.get( context );
