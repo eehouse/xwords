@@ -75,7 +75,7 @@ esac
 [ -e local.properties ] || ../scripts/setup_local_props.sh
 
 # If this fails, the "set -e" above means we won't try to install anything
-ant $CMDS
+[ -n "$CMDS" ] && ant $CMDS
 
 if [ -n "$UNINSTALL" ]; then
 	uninstall
