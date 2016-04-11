@@ -55,6 +55,7 @@ import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.XwJNI;
 import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.XWService.ReceiveResult;
 
 import junit.framework.Assert;
 
@@ -574,47 +575,20 @@ public class BTService extends XWService {
                     BluetoothDevice host = socket.getRemoteDevice();
                     addAddr( host );
 
-                    // check if still here
-                    long[] rowids = DBUtils.getRowIDsFor( BTService.this, 
-                                                          gameID );
-                    boolean haveGame = null != rowids && 0 < rowids.length;
-                    BTCmd result = haveGame ? 
-                        BTCmd.MESG_ACCPT : BTCmd.MESG_GAMEGONE;
+                    CommsAddrRec addr = new CommsAddrRec( host.getName(), 
+                                                          host.getAddress() );
+                    ReceiveResult rslt
+                        = BTService.this.receiveMessage( BTService.this, gameID, 
+                                                         m_btMsgSink, buffer, addr );
+
+                    BTCmd result = rslt == ReceiveResult.GAME_GONE ? 
+                        BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
 
                     DataOutputStream os = 
                         new DataOutputStream( socket.getOutputStream() );
                     os.writeByte( result.ordinal() );
                     os.flush();
                     socket.close();
-
-                    CommsAddrRec addr = new CommsAddrRec( host.getName(), 
-                                                          host.getAddress() );
-
-                    boolean[] isLocalP = new boolean[1];
-                    for ( long rowid : rowids ) {
-                        JNIThread jniThread = JNIThread.getRetained( rowid, false );
-                        boolean consumed = false;
-                        if ( null != jniThread ) {
-                            consumed = true;
-                            jniThread.receive( buffer, addr ).release();
-                        } else if ( haveGame ) {
-                            GameUtils.BackMoveResult bmr = 
-                                new GameUtils.BackMoveResult();
-                            if ( GameUtils.feedMessage( BTService.this, rowid, 
-                                                        buffer, addr, 
-                                                        m_btMsgSink, bmr,
-                                                        isLocalP ) ) {
-                                consumed = true;
-                                GameUtils.postMoveNotification( BTService.this,
-                                                                rowid, bmr,
-                                                                isLocalP[0] );
-                            }
-                        }
-                        if ( !consumed ) {
-                            DbgUtils.logf( "nobody took msg for gameID %X", 
-                                           gameID );
-                        }
-                    }
                 } else {
                     DbgUtils.logf( "receiveMessages: read only %d of %d bytes",
                                    nRead, len );

@@ -55,6 +55,7 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.eehouse.android.xw4.XWService.ReceiveResult;
 import org.eehouse.android.xw4.GameUtils.BackMoveResult;
 import org.eehouse.android.xw4.MultiService.DictFetchOwner;
 import org.eehouse.android.xw4.MultiService.MultiEvent;
@@ -286,6 +287,12 @@ public class SMSService extends XWService {
                 XWPrefs.getPrefsBoolean( context, R.string.key_show_sms, false );
         }
         return s_showToasts;
+    }
+
+    @Override                   // abstract
+    protected MultiMsgSink getSink( long rowid )
+    {
+        return new SMSMsgSink( this );
     }
 
     @Override
@@ -704,25 +711,9 @@ public class SMSService extends XWService {
 
     private void feedMessage( int gameID, byte[] msg, CommsAddrRec addr )
     {
-        long[] rowids = DBUtils.getRowIDsFor( this, gameID );
-        if ( null == rowids || 0 == rowids.length ) {
+        ReceiveResult rslt = receiveMessage( this, gameID, null, msg, addr );
+        if ( ReceiveResult.GAME_GONE == rslt ) {
             sendDiedPacket( addr.sms_phone, gameID );
-        } else {
-            boolean[] isLocalP = new boolean[1];
-            for ( long rowid : rowids ) {
-                JNIThread jniThread = JNIThread.getRetained( rowid, false );
-                if ( null != jniThread ) {
-                    jniThread.receive( msg, addr ).release();
-                } else {
-                    SMSMsgSink sink = new SMSMsgSink( this );
-                    BackMoveResult bmr = new BackMoveResult();
-                    if ( GameUtils.feedMessage( this, rowid, msg, addr, 
-                                                sink, bmr, isLocalP ) ) {
-                        GameUtils.postMoveNotification( this, rowid, bmr,
-                                                        isLocalP[0] );
-                    }
-                }
-            }
         }
     }
 

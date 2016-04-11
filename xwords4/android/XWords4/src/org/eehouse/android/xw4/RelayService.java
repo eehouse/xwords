@@ -318,6 +318,12 @@ public class RelayService extends XWService
     }
 
     @Override
+    protected MultiMsgSink getSink( long rowid )
+    {
+        return new RelayMsgSink().setRowID( rowid );
+    }
+
+    @Override
     public void onCreate()
     {
         super.onCreate();
@@ -400,7 +406,7 @@ public class RelayService extends XWService
                         String relayID = intent.getStringExtra( RELAY_ID );
                         sendNoConnMessage( rowid, relayID, msg );
                     } else {
-                        feedMessage( rowid, msg );
+                        receiveMessage( this, rowid, null, msg, s_addr );
                     }
                     break;
                 case INVITE:
@@ -996,28 +1002,6 @@ public class RelayService extends XWService
         return devid;
     }
 
-    private void feedMessage( long rowid, byte[] msg )
-    {
-        DbgUtils.logdf( "RelayService::feedMessage: %d bytes for rowid %d", 
-                        msg.length, rowid );
-        JNIThread jniThread = JNIThread.getRetained( rowid, false );
-        if ( null != jniThread ) {
-            jniThread.receive( msg, s_addr ).release();
-            DbgUtils.logdf( "RelayService.feedMessage(): jniThread.receive() ate it" );
-        } else {
-            RelayMsgSink sink = new RelayMsgSink();
-            sink.setRowID( rowid );
-            BackMoveResult bmr = new BackMoveResult();
-            boolean[] isLocalP = new boolean[1];
-            if ( GameUtils.feedMessage( this, rowid, msg, s_addr, 
-                                        sink, bmr, isLocalP ) ) {
-                GameUtils.postMoveNotification( this, rowid, bmr, isLocalP[0] );
-            } else {
-                DbgUtils.logdf( "feedMessage(): background dropped it" );
-            }
-        }
-    }
-
     private void fetchAndProcess()
     {
         long[][] rowIDss = new long[1][];
@@ -1041,44 +1025,13 @@ public class RelayService extends XWService
             boolean[] isLocalP = new boolean[1];
             for ( int ii = 0; ii < nameCount; ++ii ) {
                 byte[][] forOne = msgs[ii];
-
-                // if game has messages, open it and feed 'em to it.
                 if ( null != forOne ) {
-                    BackMoveResult bmr = new BackMoveResult();
                     long rowid = rowIDs[ii];
                     sink.setRowID( rowid );
-                    // since BoardDelegate.feedMessages can't know:
-                    isLocalP[0] = false;
-                    boolean delivered = true;
-
-                    JNIThread jniThread = JNIThread.getRetained( rowid, false );
-                    if ( null != jniThread ) {
-                        for ( byte[] msg : forOne ) {
-                            jniThread.receive( msg, s_addr );
-                        }
-                        jniThread.release();
-                    } else if ( GameUtils.feedMessages( this, rowid, forOne, s_addr,
-                                                        sink, bmr, isLocalP ) ) {
-                    } else {
-                        delivered = false;
-                    }
-                    
-                    if ( delivered ) {
-                        idsWMsgs.add( relayIDs[ii] );
-                        bmrs.add( bmr );
-                        isLocals.add( isLocalP[0] );
-                    } else {
-                        DbgUtils.logf( "RelayService.process(): message for %s (rowid %d)"
-                                       + " not consumed", relayIDs[ii], rowid );
+                    for ( byte[] msg : forOne ) {
+                        receiveMessage( this, rowid, sink, msg, s_addr );
                     }
                 }
-            }
-            if ( 0 < idsWMsgs.size() ) {
-                String[] tmp = new String[idsWMsgs.size()];
-                idsWMsgs.toArray( tmp );
-                BackMoveResult[] bmrsa = new BackMoveResult[bmrs.size()];
-                bmrs.toArray( bmrsa );
-                setupNotifications( tmp, bmrsa, isLocals );
             }
             sink.send( this );
         }
