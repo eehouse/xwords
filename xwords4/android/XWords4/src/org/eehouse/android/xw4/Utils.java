@@ -240,9 +240,11 @@ public class Utils {
 
     public static void playNotificationSound( Context context )
     {
-        Uri uri = RingtoneManager
-            .getDefaultUri( RingtoneManager.TYPE_NOTIFICATION );
-        RingtoneManager.getRingtone( context, uri ).play();
+        if ( CommonPrefs.getSoundNotify( context ) ) {
+            Uri uri = RingtoneManager
+                .getDefaultUri( RingtoneManager.TYPE_NOTIFICATION );
+            RingtoneManager.getRingtone( context, uri ).play();
+        }
     }
 
     // adapted from
