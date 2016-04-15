@@ -239,6 +239,13 @@ public class Utils {
         nm.cancel( id );
     }
 
+    public static void playNotificationSound( Context context )
+    {
+        Uri uri = RingtoneManager
+            .getDefaultUri( RingtoneManager.TYPE_NOTIFICATION );
+        RingtoneManager.getRingtone( context, uri ).play();
+    }
+
     // adapted from
     // http://stackoverflow.com/questions/2174048/how-to-look-up-a-contacts-name-from-their-phone-number-on-android
     public static String phoneToContact( Context context, String phone, 

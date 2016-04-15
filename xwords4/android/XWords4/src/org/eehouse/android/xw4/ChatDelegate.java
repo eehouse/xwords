@@ -234,6 +234,7 @@ public class ChatDelegate extends DelegateBase {
             && s_visibleThis.m_rowid == rowid;
         if ( handled ) {
             s_visibleThis.addRow( msg, fromIndx );
+            Utils.playNotificationSound( s_visibleThis.m_activity );
         }
         return handled;
     }

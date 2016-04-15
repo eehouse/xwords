@@ -1936,6 +1936,7 @@ public class BoardDelegate extends DelegateBase
         {
             m_words = null == words? null : wordsToArray( words );
             nonBlockingDialog( DlgID.DLG_SCORES, expl );
+            Utils.playNotificationSound( m_activity );
         }
 
         @Override
