@@ -130,7 +130,7 @@ public interface UtilCtxt {
     static final int ERR_RELAY_BASE = 17;
     void userError( int id );
 
-    void informMove( String expl, String words );
+    void informMove( int turn, String expl, String words );
     void informUndo();
 
     void informNetDict( int lang, String oldName, String newName, 

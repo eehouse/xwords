@@ -354,8 +354,8 @@ cursesShowFinalScores( CursesAppGlobals* globals )
 } /* cursesShowFinalScores */
 
 static void
-curses_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
-                        XWStreamCtxt* XP_UNUSED(words))
+curses_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn),
+                        XWStreamCtxt* expl, XWStreamCtxt* XP_UNUSED(words))
 {
     CursesAppGlobals* globals = (CursesAppGlobals*)uc->closure;
     char* question = strFromStream( expl );

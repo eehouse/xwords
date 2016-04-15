@@ -1932,11 +1932,21 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void informMove( String expl, String words )
+        public void informMove( int turn, String expl, String words )
         {
             m_words = null == words? null : wordsToArray( words );
             nonBlockingDialog( DlgID.DLG_SCORES, expl );
-            Utils.playNotificationSound( m_activity );
+            if ( isVisible() ) {
+                Utils.playNotificationSound( m_activity );
+            } else {
+                LastMoveInfo lmi = new LastMoveInfo();
+                XwJNI.model_getPlayersLastScore( m_jniGamePtr, turn, lmi );
+                GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
+                bmr.m_lmi = lmi;
+                boolean[] locals = m_gi.playersLocal();
+                GameUtils.postMoveNotification( m_activity, m_rowid, 
+                                                bmr, locals[turn] );
+            }
         }
 
         @Override
@@ -2457,7 +2467,6 @@ public class BoardDelegate extends DelegateBase
                 DBUtils.saveThumbnail( m_activity, m_gameLock, thumb );
             }
 
-            m_gi = null;
             m_gameLock = null;
         }
     }
@@ -2468,7 +2477,6 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_jniThread ) {
             // m_jniGamePtr.release();
             // m_jniGamePtr = null;
-            m_gi = null;
 
             // m_gameLock.unlock(); // likely the problem
             m_gameLock = null;

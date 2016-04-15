@@ -56,6 +56,7 @@ public class DelegateBase implements DlgClickNotify,
     private int m_optionsMenuID;
     private int m_layoutID;
     private View m_rootView;
+    private boolean m_isVisible;
 
     public DelegateBase( Delegator delegator, Bundle bundle, int layoutID )
     {
@@ -112,11 +113,13 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void onResume() 
     {
+        m_isVisible = true;
         XWService.setListener( this );
     }
 
     protected void onPause()
     {
+        m_isVisible = false;
         XWService.setListener( null );
     }
 
@@ -574,6 +577,8 @@ public class DelegateBase implements DlgClickNotify,
     {
         m_dlgDelegate.showSMSEnableDialog( action, params );
     }
+
+    protected boolean isVisible() { return m_isVisible; }
     
     //////////////////////////////////////////////////
     // MultiService.MultiEventListener interface

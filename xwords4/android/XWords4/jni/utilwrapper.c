@@ -250,12 +250,13 @@ and_util_turnChanged( XW_UtilCtxt* uc, XP_S16 turn )
 #endif
 
 static void
-and_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, XWStreamCtxt* words )
+and_util_informMove( XW_UtilCtxt* uc, XP_S16 turn, XWStreamCtxt* expl, 
+                     XWStreamCtxt* words )
 {
-    UTIL_CBK_HEADER( "informMove", "(Ljava/lang/String;Ljava/lang/String;)V" );
+    UTIL_CBK_HEADER( "informMove", "(ILjava/lang/String;Ljava/lang/String;)V" );
     jstring jexpl = streamToJString( env, expl );
     jstring jwords = !!words ? streamToJString( env, words ) : NULL;
-    (*env)->CallVoidMethod( env, util->jutil, mid, jexpl, jwords );
+    (*env)->CallVoidMethod( env, util->jutil, mid, turn, jexpl, jwords );
     deleteLocalRefs( env, jexpl, jwords, DELETE_NO_REF );
     UTIL_CBK_TAIL();
 }
