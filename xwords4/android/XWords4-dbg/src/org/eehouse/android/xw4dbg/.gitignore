@@ -125,3 +125,13 @@ XWConnAddrPreference.java
 XWDevIDPreference.java
 XWExpListAdapter.java
 RequestCode.java
+BoardFrag.java
+ChatFrag.java
+DictBrowseFrag.java
+FragActivity.java
+GameConfigFrag.java
+GamesListFrag.java
+Main.java
+nohup.out
+StudyListFrag.java
+XWFragment.java
