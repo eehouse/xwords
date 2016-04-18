@@ -6,7 +6,7 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4dbg"
-          android:versionCode="99"
+          android:versionCode="100"
           android:versionName="@string/app_version"
           >
 
@@ -57,7 +57,7 @@
                android:debuggable="true"
                >
 
-    <activity android:name="GamesListActivity" 
+    <activity android:name="Main"
               android:label="@string/app_name"
               android:launchMode="standard"
               android:configChanges="keyboardHidden|orientation|screenSize"
@@ -72,8 +72,14 @@
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="@string/xwords_nfc_mime" />
       </intent-filter>
-
     </activity>
+
+    <activity android:name="FragActivity"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
+    <activity android:name="GamesListActivity"
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
 
     <activity android:name="DictsActivity"
               android:label="@string/title_dicts_list"
@@ -81,16 +87,16 @@
           />
     
     <activity android:name="BTInviteActivity"
-              android:label="@string/bt_invite_title"
+			  android:label="@string/bt_invite_title"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
     <activity android:name="SMSInviteActivity"
-              android:label="@string/sms_invite_title"
+			  android:label="@string/sms_invite_title"
               android:configChanges="keyboardHidden|orientation|screenSize"
               android:screenOrientation="sensor"
               />
     <activity android:name="RelayInviteActivity"
-              android:label="@string/relay_invite_title"
+			  android:label="@string/relay_invite_title"
               android:configChanges="keyboardHidden|orientation|screenSize"
               />
 
@@ -208,10 +214,10 @@
 
     <receiver android:name="BTReceiver">
       <intent-filter>
-        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
+        <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
       </intent-filter>
       <intent-filter>
-        <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
+        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
       </intent-filter>
     </receiver>
 
