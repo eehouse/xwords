@@ -2320,12 +2320,18 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void tryStartsFromIntent( Intent intent )
     {
-        startFirstHasDict( intent );
-        startNewNetGame( intent );
-        startHasGameID( intent );
-        startRematch( intent );
-        tryAlert( intent );
-        tryNFCIntent( intent );
+        try {
+            startFirstHasDict( intent );
+            startNewNetGame( intent );
+            startHasGameID( intent );
+            startRematch( intent );
+            tryAlert( intent );
+            tryNFCIntent( intent );
+        } catch ( GameLock.GameLockedException gle ) {
+            DbgUtils.loge( gle );
+            showToast( "Finishing; game already open" ); // FIX ME!!!
+            finish();
+        }
     }
 
     private void doOpenGame( Object[] params )
