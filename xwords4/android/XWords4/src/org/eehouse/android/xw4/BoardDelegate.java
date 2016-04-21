@@ -2685,7 +2685,7 @@ public class BoardDelegate extends DelegateBase
                                              GameSummary summary )
     {
         boolean supported = false;
-        if ( XWApp.REMATCH_SUPPORTED ) {
+        if ( XWApp.REMATCH_SUPPORTED && null != summary ) {
             // standalone games are easy to rematch
             supported = summary.serverRole == DeviceRole.SERVER_STANDALONE;
 
