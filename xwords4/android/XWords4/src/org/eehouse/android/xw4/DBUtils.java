@@ -2070,15 +2070,6 @@ public class DBUtils {
         return exists;
     }
 
-    public static String[] getColumns( SQLiteDatabase db, String name )
-    {
-        String query = String.format( "SELECT * FROM %s LIMIT 1", name );
-        Cursor cursor = db.rawQuery( query, null );
-        String[] colNames = cursor.getColumnNames();
-        cursor.close();
-        return colNames;
-    }
-
     public static void addToStudyList( Context context, String word,
                                        int lang )
     {

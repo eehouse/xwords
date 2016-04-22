@@ -444,7 +444,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.beginTransaction();
         try {
             String query;
-            String[] columnNames = DBUtils.getColumns( db, name );
+            String[] columnNames = getColumns( db, name );
             if ( null != columnNames ) { // no data means no need to copy
                 query = String.format( "ALTER table %s RENAME TO 'temp_%s'",
                                        name, name );
@@ -514,6 +514,15 @@ public class DBHelper extends SQLiteOpenHelper {
         int result = cursor.getInt(0);
         cursor.close();
         return result;
+    }
+
+    private static String[] getColumns( SQLiteDatabase db, String name )
+    {
+        String query = String.format( "SELECT * FROM %s LIMIT 1", name );
+        Cursor cursor = db.rawQuery( query, null );
+        String[] colNames = cursor.getColumnNames();
+        cursor.close();
+        return colNames;
     }
 
     private class TableAndVersion {
