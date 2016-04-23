@@ -54,10 +54,12 @@ public class XWApp extends Application {
 
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;
+    private static Context s_context = null;
 
     @Override
     public void onCreate()
     {
+        s_context = this;
         super.onCreate();
 
         // This one line should always get logged even if logging is
@@ -118,4 +120,6 @@ public class XWApp extends Application {
         }
         return s_onEmulator;
     }
+
+    public static Context getContext() { return s_context; }
 }

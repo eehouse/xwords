@@ -61,7 +61,12 @@ public class DbgUtils {
         logEnable( on );
     }
 
-    public static void logf( String msg ) 
+    public static void logf( String msg )
+    {
+        logf( true, msg );
+    }
+
+    public static void logf( boolean persist, String msg ) 
     {
         if ( s_doLog ) {
             String time = "";
@@ -71,15 +76,25 @@ public class DbgUtils {
                 time = s_time.format("[%H:%M:%S]-");
             }
             long id = Thread.currentThread().getId();
-            Log.d( TAG, time + id + "-" + msg );
+            msg = time + id + "-" + msg;
+            Log.d( TAG, msg );
+
+            if ( persist && BuildConfig.DEBUG ) {
+                DBUtils.appendLog( TAG, msg );
+            }
         }
     } // logf
 
     public static void logf( String format, Object... args )
     {
+        logf( true, format, args );
+    }
+
+    public static void logf( boolean persist, String format, Object... args )
+    {
         if ( s_doLog ) {
             Formatter formatter = new Formatter();
-            logf( formatter.format( format, args ).toString() );
+            logf( persist, formatter.format( format, args ).toString() );
         }
     } // logf
 

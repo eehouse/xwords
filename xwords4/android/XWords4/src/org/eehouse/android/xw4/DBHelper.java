@@ -43,8 +43,9 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_PAIRS = "pairs";
     public static final String TABLE_NAME_INVITES = "invites";
     public static final String TABLE_NAME_CHAT = "chat";
+    public static final String TABLE_NAME_LOGS = "logs";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 26;
+    private static final int DB_VERSION = 27;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -114,6 +115,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String SENDER = "SENDER";
     public static final String MESSAGE = "MESSAGE";
+    public static final String TAG = "TAG";
 
     private Context m_context;
 
@@ -216,6 +218,12 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ MESSAGE, "TEXT" }
     };
 
+    private static final String[][] s_logsSchema = {
+        { TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" },
+        { MESSAGE, "TEXT" },
+        { TAG, "TEXT" },
+    };
+
     public DBHelper( Context context )
     {
         super( context, DB_NAME, null, DB_VERSION );
@@ -241,13 +249,14 @@ public class DBHelper extends SQLiteOpenHelper {
         createPairsTable( db );
         createInvitesTable( db );
         createChatsTable( db );
+        createLogsTable( db );
     }
 
     @Override
     @SuppressWarnings("fallthrough")
     public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ) 
     {
-        DbgUtils.logf( "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
+        DbgUtils.logf( false, "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
 
         boolean madeSumTable = false;
         switch( oldVersion ) {
@@ -310,7 +319,9 @@ public class DBHelper extends SQLiteOpenHelper {
             createInvitesTable( db );
         case 25:
             createChatsTable( db );
-            
+        case 26:
+            createLogsTable( db );
+
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
@@ -417,6 +428,11 @@ public class DBHelper extends SQLiteOpenHelper {
     private void createChatsTable( SQLiteDatabase db )
     {
         createTable( db, TABLE_NAME_CHAT, s_chatsSchema );
+    }
+
+    private void createLogsTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_LOGS, s_logsSchema );
     }
 
     // Move all existing games to the row previously named "cur games'
