@@ -324,9 +324,6 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
         synchronized( this ) {
             if ( null != m_jniGamePtr ) {
                 drew = XwJNI.board_draw( m_jniGamePtr );
-                if ( !drew ) {
-                    DbgUtils.logf( "doJNIDraw: draw not complete" );
-                }
             }
         }
 
