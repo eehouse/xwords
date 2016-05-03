@@ -115,6 +115,18 @@ android {
     }
 }
 
+// Prevent release builds. They haven't been tested, and now that
+// f-droid has been releasing them they're KNOWN not to work.
+android.applicationVariants.all { variant ->
+    if ( variant.name.endsWith("Release") ) {
+        String NAME = "check" + variant.name.capitalize() + "Manifest"
+        task "$NAME"(overwrite: true) << {
+            throw new RuntimeException('<<<<< Release builds should not be built '
+                                       + 'using gradle! Please use ant for now. >>>>>');
+        }
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
