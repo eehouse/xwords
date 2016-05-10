@@ -918,6 +918,9 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected void init( Bundle savedInstanceState ) 
     {
+        m_origTitle = getTitle();
+        Assert.assertTrue( m_origTitle.equals( getString(R.string.app_name) ) );
+
         m_handler = new Handler();
         // Next line useful if contents of DB are crashing app on start
         // DBUtils.saveDB( m_activity );
@@ -951,8 +954,6 @@ public class GamesListDelegate extends ListDelegateBase
         tryStartsFromIntent( getIntent() );
 
         getDictForLangIf();
-
-        m_origTitle = getTitle();
     } // init
 
     // protected View onCreateView( Bundle savedInstanceState )

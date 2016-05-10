@@ -67,8 +67,8 @@ public class DBUtils {
     public static final int GROUPID_UNSPEC = -1;
     public static final String KEY_NEWGAMECOUNT = "DBUtils.newGameCount";
 
-    // how many log rows to keep?
-    private static final int LOGLIMIT = 5000;
+    // how many log rows to keep? (0 means off)
+    private static final int LOGLIMIT = 0;
 
     private static final String DICTS_SEP = ",";
 
@@ -2418,22 +2418,24 @@ public class DBUtils {
 
     private static void appendLog( Context context, String msg )
     {
-        ContentValues values = new ContentValues();
-        values.put( DBHelper.MESSAGE, msg );
+        if ( 0 < LOGLIMIT ) {
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.MESSAGE, msg );
 
-        initDB( context );
-        synchronized( s_dbHelper ) {
-            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-            long rowid = db.insert( DBHelper.TABLE_NAME_LOGS, null, values );
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+                long rowid = db.insert( DBHelper.TABLE_NAME_LOGS, null, values );
 
-            if ( 0 == (rowid % (LOGLIMIT / 10)) ) {
-                String where = 
-                    String.format( "not rowid in (select rowid from %s order by TIMESTAMP desc limit %d)",
-                                   DBHelper.TABLE_NAME_LOGS, LOGLIMIT );
-                int nGone = db.delete( DBHelper.TABLE_NAME_LOGS, where, null );
-                DbgUtils.logf( false, "appendLog(): deleted %d rows", nGone );
+                if ( 0 == (rowid % (LOGLIMIT / 10)) ) {
+                    String where = 
+                        String.format( "not rowid in (select rowid from %s order by TIMESTAMP desc limit %d)",
+                                       DBHelper.TABLE_NAME_LOGS, LOGLIMIT );
+                    int nGone = db.delete( DBHelper.TABLE_NAME_LOGS, where, null );
+                    DbgUtils.logf( false, "appendLog(): deleted %d rows", nGone );
+                }
+                db.close();
             }
-            db.close();
         }
     }
 
