@@ -25,6 +25,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:singleLine="false"
+            android:inputType="textCapSentences"
             android:layout_weight="0"
             android:hint="@string/chat_hint"
             />
