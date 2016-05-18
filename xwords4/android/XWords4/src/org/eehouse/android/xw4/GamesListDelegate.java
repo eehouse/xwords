@@ -1967,7 +1967,13 @@ public class GamesListDelegate extends ListDelegateBase
     private void startFirstHasDict( long rowid )
     {
         if ( -1 != rowid && DBUtils.haveGame( m_activity, rowid ) ) {
-            if ( GameUtils.gameDictsHere( m_activity, rowid ) ) {
+            boolean haveDict;
+            try {
+                haveDict = GameUtils.gameDictsHere( m_activity, rowid );
+            } catch ( GameLock.GameLockedException gle ) {
+                haveDict = true;
+            }
+            if ( haveDict ) {
                 launchGame( rowid );
             }
         }
@@ -2321,18 +2327,12 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void tryStartsFromIntent( Intent intent )
     {
-        try {
-            startFirstHasDict( intent );
-            startNewNetGame( intent );
-            startHasGameID( intent );
-            startRematch( intent );
-            tryAlert( intent );
-            tryNFCIntent( intent );
-        } catch ( GameLock.GameLockedException gle ) {
-            DbgUtils.loge( gle );
-            showToast( "Finishing; game already open" ); // FIX ME!!!
-            finish();
-        }
+        startFirstHasDict( intent );
+        startNewNetGame( intent );
+        startHasGameID( intent );
+        startRematch( intent );
+        tryAlert( intent );
+        tryNFCIntent( intent );
     }
 
     private void doOpenGame( Object[] params )

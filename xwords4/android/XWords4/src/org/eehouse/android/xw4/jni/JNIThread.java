@@ -195,8 +195,18 @@ public class JNIThread extends Thread {
         m_context = context;
         m_drawer = drawer;
         m_handler = handler;
+
+        if ( null == m_lock ) {
+            m_lock = new GameLock( m_rowid, true ).lock();
+        } else {
+            m_jniGamePtr.release(); // let the old game copy go
+        }
+
+        // If this isn't true then the queue has to be allowed to empty,
+        // working on the old game state, before we can re-use any of this.
+        Assert.assertTrue( 0 == m_queue.size() );
+
         m_jniGamePtr = XwJNI.initJNI( m_rowid );
-        m_lock = new GameLock( m_rowid, true ).lock();
 
         String[] dictNames = GameUtils.dictNames( context, m_lock );
         DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
