@@ -633,6 +633,9 @@ public class BoardDelegate extends DelegateBase
     protected void onResume()
     {
         super.onResume();
+        // if( BuildConfig.DEBUG ) {
+        //     GameUtils.postSelfNotification( m_activity, m_rowid );
+        // }
         doResume( false );
     }
     
