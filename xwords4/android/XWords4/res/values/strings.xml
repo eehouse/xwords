@@ -2415,9 +2415,10 @@
 	devices. Would you like to open the Android Settings Panel to add
 	one or more?\n\n(You may also need to open it on the device you
 	want to pair with.)</string>
-	<string name="app_not_found_fmt">Unable to connect to Crosswords
-	on the device %1$s.  Please check that the device is within range
-	and that Crosswords is installed on it.</string>
+	<string name="app_not_found_fmt">Unable to connect via Bluetooth
+	to Crosswords on the device %1$s.  Please check that the device is
+	within Bluetooth range and that Crosswords is installed on
+	it.</string>
 
 	<!-- label within default wordlists in app preferences -->
 	<string name="default_language">Default language</string>

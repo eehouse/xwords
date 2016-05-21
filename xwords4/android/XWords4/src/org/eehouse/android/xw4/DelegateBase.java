@@ -597,7 +597,7 @@ public class DelegateBase implements DlgClickNotify,
         case BAD_PROTO_SMS:
             fmtId = R.string.sms_bad_proto_fmt;
             break;
-        case APP_NOT_FOUND:
+        case APP_NOT_FOUND_BT:
             fmtId = R.string.app_not_found_fmt;
             break;
         case RELAY_ALERT:

@@ -828,7 +828,7 @@ public class BTService extends XWService {
                     }
 
                     if ( null == reply ) {
-                        sendResult( MultiEvent.APP_NOT_FOUND, dev.getName() );
+                        sendResult( MultiEvent.APP_NOT_FOUND_BT, dev.getName() );
                     } else {
                         switch ( reply ) {
                         case BAD_PROTO:
