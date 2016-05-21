@@ -2458,7 +2458,6 @@ public class BoardDelegate extends DelegateBase
 
             m_jniThread.release();
             m_jniThread = null;
-            m_summary = null;
 
             m_view.stopHandling();
 
@@ -2688,7 +2687,7 @@ public class BoardDelegate extends DelegateBase
                                              GameSummary summary )
     {
         boolean supported = false;
-        if ( XWApp.REMATCH_SUPPORTED && null != summary ) {
+        if ( XWApp.REMATCH_SUPPORTED ) {
             // standalone games are easy to rematch
             supported = summary.serverRole == DeviceRole.SERVER_STANDALONE;
 
