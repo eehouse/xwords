@@ -1,58 +1,16 @@
 #!/bin/sh
 
-set -e -u
+set -e -u -x
 
-APK_DIR="app/build/outputs/apk"
 MANIFEST=AndroidManifest.xml
-XWORDS=org.eehouse.android.xw4
-INSTALLS=''
-REINSTALL=''
-TASKS=''
-VARIANTS=''
-BUILDS=''
+# XWORDS=org.eehouse.android.xw4
+INSTALL=''
+UNINSTALL=''
 
 usage() {
     [ $# -ge 1 ] && echo "ERROR: $1"
-    echo "usage: $0 [--task <gradle-task>]*"
-	echo "   [--variant <variantName>|all]*  # variant to install (defaults to all built, or all if not building)"
-	echo "   [--[re]install debug|release]"
-	echo "examples"
-	echo "$0 --install --variant xw4 --build debug # install the debug build of xw4 (main) variant"
-	echo "$0 --reinstall --variant xw4 --build debug # install the debug build of xw4 (main) variant"
+    echo "usage: $0 [--install] [--reinstall] <cmds to gradle>"
     exit 1
-}
-
-checkInstallTarget() {
-	case $1 in
-		debug|release)
-		;;
-		*)
-			usage '"debug" or "release" expected'
-			;;
-	esac
-}
-
-getDevices() {
-	DEVICES="$(adb devices | grep '^.*\sdevice$' | awk '{print $1}')"
-	echo "getDevices() => $DEVICES" >&2
-	echo "$DEVICES"
-}
-
-setVariants() {
-	if [ -z "$VARIANTS" ]; then
-		VARIANTS="xw4"
-	fi
-}
-
-getApks() {
-	APKS=""
-	for VARIANT in $VARIANTS; do
-		for BUILD in $BUILDS; do
-			APKS="$APKS $(ls --sort=time $APK_DIR/app-${VARIANT}-${BUILD}.apk | head -n 1)"
-		done
-	done
-	echo $APKS >&2
-	echo $APKS
 }
 
 uninstall() {
@@ -74,87 +32,44 @@ while [ $# -gt 0 ]; do
 			usage
 			;;
 		--install)
-			shift
-			checkInstallTarget $1
-			INSTALL=$1
-			BUILDS="$BUILDS $1"
+			INSTALL=1
 			;;
 		--reinstall)
-			shift
-			checkInstallTarget $1
-			REINSTALL=$1
-			INSTALL=$1
+			UNINSTALL=1
+			INSTALL=1
 			;;
-		--variant)
-			shift
-			VARIANTS="$VARIANTS $1"
-			;;
-		--task)
-			shift
-			TASKS="$TASKS $1"
-			;;
-		*)						# assumed to be the end of flags
-			usage "unexpected parameter $1"
+		*)
+			break
 			;;
     esac
     shift
 done
 
-while [ ! -e $MANIFEST ]; do
-    [ '/' = $(pwd) ] && usage "reached root without finding $MANIFEST"
+while [ ! -e ./gradlew ]; do
+    [ '/' = $(pwd) ] && usage "reached root without finding gradlew"
     cd ..
 done
 
-DIRNAME=$(basename $(pwd))
-case $DIRNAME in
-    XWords4-bt)
-        PKG=xw4bt
-        ;;
-    XWords4-dbg)
-        PKG=xw4dbg
-        ;;
-    XWords4)
-        PKG=xw4
-        ;;
-    *)
-        echo "running in unexpected directory $DIRNAME; hope that's ok"
-        ;;
-esac
+NOW_FILE=/tmp/NOW_$$
+touch $NOW_FILE
 
-# if we're running for the first time in this directory/variant,
-# generate local.properties
-# [ -e local.properties ] || ../scripts/setup_local_props.sh
+# If this fails, the "set -e" above means we won't try to install anything
+./gradlew $*
 
-# Mark "now" so can look for newer .apks later
-TSFILE=/tmp/ts$$.stamp
-touch $TSFILE
+# Find the newest apk in the build output directory that's newer than our timestamp
+APK=''
+APKS=$(find app/build/outputs/apk/ -name '*.apk' -a -newer $NOW_FILE)
+if [ -n "$APKS" ]; then
+	APK=$(ls -t $APKS | head -n 1)
+fi
+[ -n "$APK" ] || usage "no new .apk files found; did the build succeed?"
 
-
-if [ -n "$TASKS" ]; then
-	./gradlew $TASKS
+if [ -n "$UNINSTALL" ]; then
+	LINE=$(aapt dump badging $APK | grep '^package')
+	PACKAGE=$(echo $LINE | sed "s,.*name='\([^' ]*\)'.*,\1,")
+	adb shell pm uninstall $PACKAGE
 fi
 
-if [ -z "$TASKS" -o 0 = "$?" ]; then
-	setVariants
-	APKS=$(getApks)
-	DEVS="$(getDevices)"
-	for DEV in DEVS; do
-		for APK in $APKS; do
-			[ -n "$REINSTALL" ] && uninstall $APK $DEV
-			[ -n "$INSTALL" ] && installAndLaunch $APK $DEV
-		done
-	done
+if [ -n "$INSTALL" ]; then
+	adb-install.sh -p $APK
 fi
-
-# if [ -n "$UNINSTALL" ]; then
-# 	uninstall
-# fi
-# if [ -n "$INSTALL" ]; then
-# 	adb-install.sh -e -d
-# fi
-
-# if [ "$CMDS" != "${CMDS%%install}" ]; then
-# 	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
-# fi
-
-rm -f $TSFILE
