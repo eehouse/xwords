@@ -2076,9 +2076,10 @@
 	secived. Dluow uoy ekil ot nepo eht Diordna Sgnittes Lenap ot dda
 	eno ro ?erom\n\nuOy( yam osla deen ot nepo ti no eht ecived uoy
 	tnaw ot riap htiw.)</string>
-  <string name="app_not_found_fmt">Elbanu ot tcennoc ot Sdrowssorc
-	no eht ecived %1$s.  Esaelp kcehc taht eht ecived si nihtiw egnar
-	dna taht Sdrowssorc si dellatsni no ti.</string>
+  <string name="app_not_found_fmt">Elbanu ot tcennoc aiv Htooteulb
+	ot Sdrowssorc no eht ecived %1$s.  Esaelp kcehc taht eht ecived si
+	nihtiw Htooteulb egnar dna taht Sdrowssorc si dellatsni no
+	ti.</string>
   <!-- label within default wordlists in app preferences -->
   <string name="default_language">Tluafed egaugnal</string>
   <!-- Title of preference in which you select which addressing
