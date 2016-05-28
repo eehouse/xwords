@@ -19,14 +19,15 @@
 
 package org.eehouse.android.xw4;
 
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
+import android.graphics.Rect;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -55,6 +56,7 @@ public class DelegateBase implements DlgClickNotify,
     private int m_optionsMenuID;
     private int m_layoutID;
     private View m_rootView;
+    private boolean m_isVisible;
 
     public DelegateBase( Delegator delegator, Bundle bundle, int layoutID )
     {
@@ -86,6 +88,23 @@ public class DelegateBase implements DlgClickNotify,
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
     protected boolean onBackPressed() { return false; }
+    public void orientationChanged() {}
+    
+    protected void requestWindowFeature( int feature ) {}
+
+    // Fragments only
+    protected View inflateView( LayoutInflater inflater, ViewGroup container )
+    {
+        View view = null;
+        int layoutID = getLayoutID();
+        if ( 0 < layoutID ) {
+            view = inflater.inflate( layoutID, container, false );
+            LocUtils.xlateView( m_activity, view );
+            setContentView( view );
+        }
+        return view;
+    }
+
     protected void onActivityResult( RequestCode requestCode, int resultCode, 
                                      Intent data ) 
     {
@@ -94,11 +113,13 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void onResume() 
     {
+        m_isVisible = true;
         XWService.setListener( this );
     }
 
     protected void onPause()
     {
+        m_isVisible = false;
         XWService.setListener( null );
     }
 
@@ -130,6 +151,8 @@ public class DelegateBase implements DlgClickNotify,
     {
         return m_activity.getIntent();
     }
+
+    protected Delegator getDelegator() { return m_delegator; }
 
     protected int getLayoutID()
     {
@@ -187,7 +210,11 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void setResult( int result, Intent intent )
     {
-        m_activity.setResult( result, intent );
+        if ( m_activity instanceof FragActivity ) {
+            Assert.fail();
+        } else {
+            m_activity.setResult( result, intent );
+        }
     }
 
     protected void setResult( int result )
@@ -207,7 +234,34 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void finish()
     {
-        m_activity.finish();
+        if ( m_activity instanceof FragActivity ) {
+            ((FragActivity)m_activity).finishFragment();
+        } else {
+            m_activity.finish();
+        }
+    }
+
+    protected boolean isPortrait()
+    {
+        int[] containerDims = getContainerDims( new int[2] );
+        boolean result = containerDims[0] < containerDims[1];
+        DbgUtils.logdf( "%s.isPortrait() => %b", getClass().getName(), result );
+        return result;
+    }
+
+    protected int[] getContainerDims( int[] outDims )
+    {
+        if ( m_activity instanceof FragActivity ) {
+            ((FragActivity)m_activity).getFragmentDims( outDims );
+        } else {
+            Rect rect = new Rect();
+            m_rootView.getWindowVisibleDisplayFrame( rect );
+            outDims[0] = rect.width();
+            outDims[1] = rect.height();
+        }
+        DbgUtils.logdf( "%s.getContainerDims(): width => %d, height => %d",
+                        getClass().getName(), outDims[0], outDims[1] );
+        return outDims;
     }
 
     protected String getString( int resID, Object... params )
@@ -523,6 +577,8 @@ public class DelegateBase implements DlgClickNotify,
     {
         m_dlgDelegate.showSMSEnableDialog( action, params );
     }
+
+    protected boolean isVisible() { return m_isVisible; }
     
     //////////////////////////////////////////////////
     // MultiService.MultiEventListener interface
@@ -541,7 +597,7 @@ public class DelegateBase implements DlgClickNotify,
         case BAD_PROTO_SMS:
             fmtId = R.string.sms_bad_proto_fmt;
             break;
-        case APP_NOT_FOUND:
+        case APP_NOT_FOUND_BT:
             fmtId = R.string.app_not_found_fmt;
             break;
         case RELAY_ALERT:

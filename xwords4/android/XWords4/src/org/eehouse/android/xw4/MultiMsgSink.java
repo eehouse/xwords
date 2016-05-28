@@ -50,7 +50,7 @@ public class MultiMsgSink implements TransportProcs {
     // rowID is used as token to identify game on relay.  Anything that
     // uniquely identifies a game on a device would work
     public long getRowID() { return m_rowid; };
-    public void setRowID( long rowID ) { m_rowid = rowID; };
+    public MultiMsgSink setRowID( long rowID ) { m_rowid = rowID; return this; };
 
     // These will be overridden by e.g. BTService which for sendViaBluetooth()
     // can just insert a message into its queue

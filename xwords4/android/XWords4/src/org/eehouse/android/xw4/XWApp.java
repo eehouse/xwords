@@ -38,14 +38,16 @@ public class XWApp extends Application {
     public static final boolean REMATCH_SUPPORTED = true;
     public static final boolean RELAYINVITE_SUPPORTED = false;
     public static final boolean ATTACH_SUPPORTED = false;
-    public static final boolean DEBUG_LOCKS = false;
-    public static final boolean LOG_LIFECYLE = false;
+    public static final boolean LOG_LIFECYLE = true;
     public static final boolean DEBUG_EXP_TIMERS = false;
     public static final boolean GCM_IGNORED = false;
     public static final boolean UDP_ENABLED = true;
     public static final boolean SMS_INVITE_ENABLED = true;
     public static final boolean LOCUTILS_ENABLED = false;
     public static final boolean CONTEXT_MENUS_ENABLED = true;
+    public static final boolean OFFER_DUALPANE = false;
+    // BT class "COMPUTERS" includes tablets like the Nexus 9
+    public static final boolean BT_SCAN_COMPUTERS = true;
     
     public static final String SMS_PUBLIC_HEADER = "-XW4";
     public static final int MAX_TRAY_TILES = 7; // comtypes.h
@@ -53,10 +55,12 @@ public class XWApp extends Application {
 
     private static UUID s_UUID = null;
     private static Boolean s_onEmulator = null;
+    private static Context s_context = null;
 
     @Override
     public void onCreate()
     {
+        s_context = this;
         super.onCreate();
 
         // This one line should always get logged even if logging is
@@ -117,4 +121,6 @@ public class XWApp extends Application {
         }
         return s_onEmulator;
     }
+
+    public static Context getContext() { return s_context; }
 }

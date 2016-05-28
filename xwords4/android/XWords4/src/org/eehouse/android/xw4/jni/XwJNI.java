@@ -34,18 +34,37 @@ public class XwJNI {
 
     public static class GamePtr {
         private int m_ptr = 0;
+        private int m_refCount = 0;
+        private long m_rowid;
 
-        private GamePtr( int ptr ) { m_ptr = ptr; }
+        private GamePtr( int ptr, long rowid ) {
+            m_ptr = ptr;
+            m_rowid = rowid;
+            retain();
+        }
 
         public int ptr() { Assert.assertTrue( 0 != m_ptr ); return m_ptr; }
 
+        public synchronized GamePtr retain()
+        {
+            ++m_refCount;
+            DbgUtils.logdf( "GamePtr.retain(this=%H, rowid=%d): refCount now %d", 
+                            this, m_rowid, m_refCount );
+            return this;
+        }
+        
         // Force (via an assert in finalize() below) that this is called. It's
         // better if jni stuff isn't being done on the finalizer thread
-        public void release()
+        public synchronized void release()
         {
-            if ( 0 != m_ptr ) {
-                game_dispose( this );
-                m_ptr = 0;
+            --m_refCount;
+            DbgUtils.logdf( "GamePtr.release(this=%H, rowid=%d): refCount now %d", 
+                            this, m_rowid, m_refCount );
+            if ( 0 == m_refCount ) {
+                if ( 0 != m_ptr ) {
+                    game_dispose( this );
+                    m_ptr = 0;
+                }
             }
         }
 
@@ -134,7 +153,7 @@ public class XwJNI {
         int seed = Utils.nextRandomInt();
         String tag = String.format( "%d", rowid );
         int ptr = initJNI( getJNI().m_ptr, seed, tag );
-        GamePtr result = 0 == ptr ? null : new GamePtr( ptr );
+        GamePtr result = 0 == ptr ? null : new GamePtr( ptr, rowid );
         return result;
     }
 
@@ -151,14 +170,14 @@ public class XwJNI {
 
     public static native void game_makeNewGame( GamePtr gamePtr,
                                                 CurGameInfo gi, 
-                                                UtilCtxt util,
-                                                JNIUtils jniu,
-                                                DrawCtx draw, CommonPrefs cp, 
-                                                TransportProcs procs, 
                                                 String[] dictNames,
                                                 byte[][] dictBytes, 
                                                 String[] dictPaths, 
-                                                String langName );
+                                                String langName,
+                                                UtilCtxt util,
+                                                JNIUtils jniu,
+                                                DrawCtx draw, CommonPrefs cp, 
+                                                TransportProcs procs );
 
     public static native boolean game_makeFromStream( GamePtr gamePtr,
                                                       byte[] stream, 
@@ -179,18 +198,18 @@ public class XwJNI {
                                          JNIUtils jniu, CommonPrefs cp, 
                                          String[] dictNames, byte[][] dictBytes, 
                                          String[] dictPaths, String langName ) {
-        game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu,
-                          (DrawCtx)null, cp, (TransportProcs)null, 
-                          dictNames, dictBytes, dictPaths, langName );
+        game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths, langName,
+                          (UtilCtxt)null, jniu, (DrawCtx)null, cp, 
+                          (TransportProcs)null );
     }
 
     public static void game_makeNewGame( GamePtr gamePtr, CurGameInfo gi,
-                                         JNIUtils jniu, CommonPrefs cp, 
-                                         TransportProcs procs,
                                          String[] dictNames, byte[][] dictBytes, 
-                                         String[] dictPaths, String langName ) {
-        game_makeNewGame( gamePtr, gi, (UtilCtxt)null, jniu, (DrawCtx)null, 
-                          cp, procs, dictNames, dictBytes, dictPaths, langName );
+                                         String[] dictPaths, String langName,
+                                         JNIUtils jniu, CommonPrefs cp, 
+                                         TransportProcs procs ) {
+        game_makeNewGame( gamePtr, gi, dictNames, dictBytes, dictPaths, langName,
+                          (UtilCtxt)null, jniu, (DrawCtx)null, cp, procs );
     }
 
     public static boolean game_makeFromStream( GamePtr gamePtr,
@@ -296,6 +315,7 @@ public class XwJNI {
     public static native boolean board_commitTurn( GamePtr gamePtr );
     public static native boolean board_flip( GamePtr gamePtr );
     public static native boolean board_replaceTiles( GamePtr gamePtr );
+    public static native int board_getSelPlayer( GamePtr gamePtr );
     public static native boolean board_redoReplacedTiles( GamePtr gamePtr );
     public static native void board_resetEngine( GamePtr gamePtr );
     public static native boolean board_requestHint( GamePtr gamePtr, 

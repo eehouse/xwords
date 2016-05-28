@@ -1116,6 +1116,8 @@
   <!-- Text on the button that causes the contents of the
          message-composition field to be sent. -->
   <string name="chat_send">Dnes</string>
+  <!-- "Hint" in empty chat text field -->
+  <string name="chat_hint">Epyt ereh...</string>
   <!--
        ############################################################
        # :Menus:
@@ -1747,12 +1749,14 @@
   <string name="menu_zoom">Mooz tuo/ni</string>
   <!--  -->
   <string name="menu_chat">Tahc</string>
+  <string name="chat_sender_fmt">%1$s:</string>
   <!--  -->
   <string name="menu_toggle_values">Elggot seulav</string>
   <!-- board menu for small devices only -->
   <string name="board_menu_dict">Esworb tsildrow</string>
   <!--  -->
   <string name="game_list_tmp">Gnidliub emag yrammus…</string>
+  <string name="summary_busy">Yrammus elbaliavanu</string>
   <string name="connstat_net_noaddr">Siht dekrowten emag sah on yaw
     ot tcennoc dna lliw reven eb elbayalp.\n\ntI( saw ylbaborp detaerc
     morf na noitativni taht ndid\'t yficeps yna yaw fo gnitcennoc
@@ -2032,6 +2036,8 @@
     tahw\'s elbaliava.</string>
   <string name="force_tablet_title">Ecrof telbat tuoyal</string>
   <string name="force_tablet_summary">Neve fi ym neercs si oot llams</string>
+  <string name="activity_button">Enap-elgnis</string>
+  <string name="fragment_button">Enap-laud</string>
   <!-- Nagging: title of notification reminder message -->
   <string name="nag_title">Rednimer: Ti\'s ruoy nrut</string>
   <!-- body of warning notification reminder message. First three

@@ -13,7 +13,8 @@
 ant_out.txt
 bin
 gen
-local.properties
 obj
 proguard.cfg
 res/drawable*/*gen.png
+.idea/
+*.iml

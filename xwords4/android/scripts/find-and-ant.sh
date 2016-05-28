@@ -74,13 +74,17 @@ esac
 # generate local.properties
 [ -e local.properties ] || ../scripts/setup_local_props.sh
 
-ant $CMDS
+# If this fails, the "set -e" above means we won't try to install anything
+[ -n "$CMDS" ] && ant $CMDS
 
 if [ -n "$UNINSTALL" ]; then
 	uninstall
 fi
+
 if [ -n "$INSTALL" ]; then
-	adb-install.sh -e -d
+	# Find the newest apk in this directory and install it
+	APK=$(ls -t bin/*.apk | head -n 1)
+	adb-install.sh -p $APK
 fi
 
 # if [ "$CMDS" != "${CMDS%%install}" ]; then

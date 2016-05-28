@@ -12,6 +12,7 @@ apply plugin: 'com.android.application'
 
 dependencies {
     compile files('../libs/gcm.jar')
+    compile files('../libs/android-support-v13.jar')
 }
 
 android {
@@ -19,7 +20,7 @@ android {
     buildToolsVersion "22.0.1"
     defaultConfig {
         minSdkVersion 7
-        targetSdkVersion 14
+        targetSdkVersion 19
     }
 
     // Rename all output artifacts to include version information
@@ -102,6 +103,27 @@ android {
 
     lintOptions {
         abortOnError false
+    }
+
+    def gitrev = "git describe --tags".execute().text
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            output.outputFile = 
+            new File(output.outputFile.parent,
+                     output.outputFile.name.replace(".apk", "-${gitrev}.apk"))
+        }
+    }
+}
+
+// Prevent release builds. They haven't been tested, and now that
+// f-droid has been releasing them they're KNOWN not to work.
+android.applicationVariants.all { variant ->
+    if ( variant.name.endsWith("Release") ) {
+        String NAME = "check" + variant.name.capitalize() + "Manifest"
+        task "$NAME"(overwrite: true) << {
+            throw new RuntimeException('<<<<< Release builds should not be built '
+                                       + 'using gradle! Please use ant for now. >>>>>');
+        }
     }
 }
 

@@ -53,7 +53,9 @@ import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.loc.LocUtils;
+import org.eehouse.android.xw4.XWService.ReceiveResult;
 
 import junit.framework.Assert;
 
@@ -573,44 +575,20 @@ public class BTService extends XWService {
                     BluetoothDevice host = socket.getRemoteDevice();
                     addAddr( host );
 
-                    // check if still here
-                    long[] rowids = DBUtils.getRowIDsFor( BTService.this, 
-                                                          gameID );
-                    boolean haveGame = null != rowids && 0 < rowids.length;
-                    BTCmd result = haveGame ? 
-                        BTCmd.MESG_ACCPT : BTCmd.MESG_GAMEGONE;
+                    CommsAddrRec addr = new CommsAddrRec( host.getName(), 
+                                                          host.getAddress() );
+                    ReceiveResult rslt
+                        = BTService.this.receiveMessage( BTService.this, gameID, 
+                                                         m_btMsgSink, buffer, addr );
+
+                    BTCmd result = rslt == ReceiveResult.GAME_GONE ? 
+                        BTCmd.MESG_GAMEGONE : BTCmd.MESG_ACCPT;
 
                     DataOutputStream os = 
                         new DataOutputStream( socket.getOutputStream() );
                     os.writeByte( result.ordinal() );
                     os.flush();
                     socket.close();
-
-                    CommsAddrRec addr = new CommsAddrRec( host.getName(), 
-                                                          host.getAddress() );
-
-                    boolean[] isLocalP = new boolean[1];
-                    for ( long rowid : rowids ) {
-                        boolean consumed = 
-                            BoardDelegate.feedMessage( rowid, buffer, addr );
-                        if ( !consumed && haveGame ) {
-                            GameUtils.BackMoveResult bmr = 
-                                new GameUtils.BackMoveResult();
-                            if ( GameUtils.feedMessage( BTService.this, rowid, 
-                                                        buffer, addr, 
-                                                        m_btMsgSink, bmr,
-                                                        isLocalP ) ) {
-                                consumed = true;
-                                GameUtils.postMoveNotification( BTService.this,
-                                                                rowid, bmr,
-                                                                isLocalP[0] );
-                            }
-                        }
-                        if ( !consumed ) {
-                            DbgUtils.logf( "nobody took msg for gameID %X", 
-                                           gameID );
-                        }
-                    }
                 } else {
                     DbgUtils.logf( "receiveMessages: read only %d of %d bytes",
                                    nRead, len );
@@ -850,7 +828,7 @@ public class BTService extends XWService {
                     }
 
                     if ( null == reply ) {
-                        sendResult( MultiEvent.APP_NOT_FOUND, dev.getName() );
+                        sendResult( MultiEvent.APP_NOT_FOUND_BT, dev.getName() );
                     } else {
                         switch ( reply ) {
                         case BAD_PROTO:
@@ -1015,7 +993,8 @@ public class BTService extends XWService {
         synchronized( m_addrs ) {
             for ( BluetoothDevice dev : pairedDevs ) {
                 int clazz = dev.getBluetoothClass().getMajorDeviceClass();
-                if ( Major.PHONE == clazz || Major.COMPUTER == clazz ) {
+                if ( Major.PHONE == clazz
+                     || (XWApp.BT_SCAN_COMPUTERS && Major.COMPUTER == clazz) ) {
                     m_addrs.add( dev.getAddress() );
                 }
             }
@@ -1186,6 +1165,9 @@ public class BTService extends XWService {
 
     private void updateStatusOut( boolean success )
     {
+        // Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
+        // Utils.postNotification( this, intent, R.string.new_btmove_title, 
+                                // body, (int)rowid );
         ConnStatusHandler
             .updateStatusOut( this, null, CommsConnType.COMMS_CONN_BT, success );
     }

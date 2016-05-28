@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2015 by Eric House (xwords@eehouse.org).  All rights
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All rights
  * reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -83,7 +83,6 @@ public class GameConfigDelegate extends DelegateBase
     private Button m_playButton;
     private ImageButton m_refreshRoomsButton;
     private View m_connectSetRelay;
-    private View m_connectSetSMS;
     private Spinner m_dictSpinner;
     private Spinner m_playerDictSpinner;
     private Spinner m_roomChoose;
@@ -463,9 +462,10 @@ public class GameConfigDelegate extends DelegateBase
 
         m_cp = CommonPrefs.get( m_activity );
 
-        Intent intent = getIntent();
-        m_rowid = intent.getLongExtra( GameUtils.INTENT_KEY_ROWID, -1 );
-        m_forResult = intent.getBooleanExtra( INTENT_FORRESULT_ROWID, false );
+        Bundle args = getArguments();
+        m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, DBUtils.ROWID_NOTFOUND );
+        Assert.assertTrue( DBUtils.ROWID_NOTFOUND != m_rowid );
+        m_forResult = args.getBoolean( INTENT_FORRESULT_ROWID, false );
 
         m_connectSetRelay = findViewById( R.id.connect_set_relay );
 
@@ -1167,7 +1167,7 @@ public class GameConfigDelegate extends DelegateBase
              && 0 == m_car.ip_relay_invite.length() ) {
             showOKOnlyDialog( R.string.no_empty_rooms );            
         } else {
-            GameUtils.launchGameAndFinish( m_activity, m_rowid );
+            GameUtils.launchGameAndFinish( getDelegator(), m_rowid );
         }
     }
 
@@ -1196,14 +1196,24 @@ public class GameConfigDelegate extends DelegateBase
         return DeviceRole.SERVER_STANDALONE == m_giOrig.serverRole;
     }
 
-    public static void editForResult( Activity parent, RequestCode requestCode, 
+    public static void editForResult( Delegator delegator, 
+                                      RequestCode requestCode, 
                                       long rowID )
     {
-        Intent intent = new Intent( parent, GameConfigActivity.class );
-        intent.setAction( Intent.ACTION_EDIT );
-        intent.putExtra( GameUtils.INTENT_KEY_ROWID, rowID );
-        intent.putExtra( INTENT_FORRESULT_ROWID, true );
-        parent.startActivityForResult( intent, requestCode.ordinal() );
+        Activity activity = delegator.getActivity();
+        Bundle bundle = new Bundle();
+        bundle.putLong( GameUtils.INTENT_KEY_ROWID, rowID );
+        bundle.putBoolean( INTENT_FORRESULT_ROWID, true );
+        
+        if ( activity instanceof FragActivity ) {
+            FragActivity.addFragmentForResult( new GameConfigFrag(), bundle, 
+                                               requestCode, delegator );
+        } else {
+            Intent intent = new Intent( activity, GameConfigActivity.class );
+            intent.setAction( Intent.ACTION_EDIT );
+            intent.putExtras( bundle );
+            activity.startActivityForResult( intent, requestCode.ordinal() );
+        }
     }
 
     private void setConnLabel()

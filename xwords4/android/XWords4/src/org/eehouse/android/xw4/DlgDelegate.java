@@ -38,11 +38,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -153,6 +155,8 @@ public class DlgDelegate {
         void showNotAgainDlgThen( int msgID, int prefsKey, Action action );
     }
 
+    private static Map<Integer, WeakReference<DelegateBase>> s_pendings
+        = new HashMap<Integer, WeakReference<DelegateBase>>();
     private Activity m_activity;
     private DelegateBase m_dlgt;
     private DlgClickNotify m_clickCallback;
@@ -201,8 +205,12 @@ public class DlgDelegate {
 
     protected void showDialog( DlgID dlgID )
     {
+        int id = dlgID.ordinal();
+        if ( m_activity instanceof FragActivity ) {
+            s_pendings.put( id, new WeakReference<DelegateBase>(m_dlgt) );
+        }
         if ( !m_activity.isFinishing() ) {
-            m_activity.showDialog( dlgID.ordinal() );
+            m_activity.showDialog( id );
         }
     }
     
@@ -870,6 +878,26 @@ public class DlgDelegate {
         // DbgUtils.logf( "addState: serializable is ok" );
 
         m_dlgStates.put( state.m_id, state );
+    }
+
+    public static Dialog onCreateDialog( int id )
+    {
+        Dialog result = null;
+        WeakReference<DelegateBase> ref = s_pendings.get( id );
+        DelegateBase dlgt = ref.get();
+        if ( null != dlgt ) {
+            result = dlgt.onCreateDialog( id );
+        }
+        return result;
+    }
+
+    public static void onPrepareDialog( int id, Dialog dialog )
+    {
+        WeakReference<DelegateBase> ref = s_pendings.get( id );
+        DelegateBase dlgt = ref.get();
+        if ( null != dlgt ) {
+            dlgt.prepareDialog( DlgID.values()[id], dialog );
+        }
     }
 
     private String getString( int id, Object... params )

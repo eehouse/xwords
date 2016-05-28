@@ -22,6 +22,7 @@ package org.eehouse.android.xw4;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
@@ -31,6 +32,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+
+import junit.framework.Assert;
 
 import junit.framework.Assert;
 
@@ -174,6 +177,13 @@ public class XWActivity extends Activity implements Delegator {
     {
         super.onPrepareDialog( id, dialog );
         m_dlgt.prepareDialog( DlgID.values()[id], dialog );
+    }
+
+    @Override
+    public void onConfigurationChanged( Configuration newConfig )
+    {
+        m_dlgt.orientationChanged();
+        super.onConfigurationChanged( newConfig );
     }
 
     @Override

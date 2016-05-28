@@ -72,17 +72,12 @@ public class Toolbar {
     private DlgDelegate.HasDlgDelegate m_dlgDlgt;
     private LinearLayout m_layout;
     private boolean m_visible;
+    private Boolean m_isPortrait;
 
-    private enum ORIENTATION { ORIENT_PORTRAIT, ORIENT_LANDSCAPE };
-    private ORIENTATION m_curOrient = null;
-
-    public Toolbar( Activity activity, HasDlgDelegate dlgDlgt, 
-                    boolean isLandscape )
+    public Toolbar( Activity activity, HasDlgDelegate dlgDlgt )
     {
         m_activity = activity;
         m_dlgDlgt = dlgDlgt;
-
-        setIsLandscape( isLandscape );
     }
 
     public void setVisible( boolean visible )
@@ -123,18 +118,10 @@ public class Toolbar {
         setLongClickListener( index, listener );
     }
 
-    private void setIsLandscape( boolean landscape )
+    protected void setIsPortrait( boolean isPortrait )
     {
-        if ( landscape && m_curOrient == ORIENTATION.ORIENT_LANDSCAPE ) {
-            // do nothing
-        } else if ( !landscape && m_curOrient == ORIENTATION.ORIENT_PORTRAIT ) {
-            // do nothing
-        } else {
-            if ( landscape ) {
-                m_curOrient = ORIENTATION.ORIENT_LANDSCAPE;
-            } else {
-                m_curOrient = ORIENTATION.ORIENT_PORTRAIT;
-            }
+        if ( null == m_isPortrait || m_isPortrait != isPortrait ) {
+            m_isPortrait = isPortrait;
             doShowHide();
         }
     }
@@ -151,20 +138,21 @@ public class Toolbar {
 
     private void doShowHide()
     {
-        Assert.assertTrue( null != m_curOrient );
-        boolean isLandscape = ORIENTATION.ORIENT_LANDSCAPE == m_curOrient;
+        Assert.assertTrue( null != m_isPortrait );
         if ( null == m_layout ) {
             m_layout = (LinearLayout)LocUtils.inflate( m_activity, R.layout.toolbar );
-            m_layout.setOrientation(ORIENTATION.ORIENT_PORTRAIT == m_curOrient
-                                    ? LinearLayout.HORIZONTAL : LinearLayout.VERTICAL );
+        } else {
+            ((ViewGroup)m_layout.getParent()).removeView( m_layout );
+        }
+        m_layout.setOrientation( m_isPortrait ?
+                                 LinearLayout.HORIZONTAL : LinearLayout.VERTICAL );
 
-            int id = isLandscape ? R.id.tbar_parent_vert : R.id.tbar_parent_hor;
-            ViewGroup scroller = (ViewGroup)m_activity.findViewById( id );
-            if ( null != scroller ) {
-                // Google's had reports of a crash adding second view
-                scroller.removeAllViews();
-                scroller.addView( m_layout ); // failing
-            }
+        int id = m_isPortrait ? R.id.tbar_parent_hor : R.id.tbar_parent_vert;
+        ViewGroup scroller = (ViewGroup)m_activity.findViewById( id );
+        if ( null != scroller ) {
+            // Google's had reports of a crash adding second view
+            scroller.removeAllViews();
+            scroller.addView( m_layout );
         }
 
         m_layout.setVisibility( m_visible? View.VISIBLE : View.GONE );

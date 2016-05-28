@@ -829,7 +829,7 @@ replaceNewTiles( ModelCtxt* model, PoolContext* pool, XP_U16 turn,
         model_removePlayerTile( model, turn, index );
     }
     if ( !!pool ) {
-        pool_replaceTiles( pool, tileSet);
+        pool_replaceTiles( pool, tileSet );
     }
 } /* replaceNewTiles */
 
@@ -905,17 +905,12 @@ model_undoLatestMoves( ModelCtxt* model, PoolContext* pool,
                 undoFromMoveInfo( model, turn, blankTile, 
                                   &entry.u.move.moveInfo );
             } else if ( entry.moveType == TRADE_TYPE ) {
-
+                replaceNewTiles( model, pool, turn, 
+                                 &entry.u.trade.newTiles );
                 if ( pool != NULL ) {
-                    /* If there's no pool, assume we're doing this for
-                       scoring purposes only. */
-                    replaceNewTiles( model, pool, turn, 
-                                     &entry.u.trade.newTiles );
-
                     pool_removeTiles( pool, &entry.u.trade.oldTiles );
-                    assignPlayerTiles( model, turn, &entry.u.trade.oldTiles );
                 }
-
+                assignPlayerTiles( model, turn, &entry.u.trade.oldTiles );
             } else if ( entry.moveType == PHONY_TYPE ) {
                 /* nothing to do, since nothing happened */
             } else {

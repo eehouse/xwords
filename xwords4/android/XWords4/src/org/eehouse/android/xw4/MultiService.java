@@ -61,7 +61,7 @@ public class MultiService {
     public enum MultiEvent { _INVALID,
                              BAD_PROTO_BT,
                              BAD_PROTO_SMS,
-                             APP_NOT_FOUND,
+                             APP_NOT_FOUND_BT,
                              BT_ENABLED,
                              BT_DISABLED,
                              SCAN_DONE,
@@ -197,5 +197,4 @@ public class MultiService {
         }
         return downloaded;
     }
-
 }

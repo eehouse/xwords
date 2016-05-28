@@ -21,17 +21,23 @@
 package org.eehouse.android.xw4;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.MultiService.MultiEvent;
+import org.eehouse.android.xw4.jni.CommsAddrRec;
+import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.jni.UtilCtxt;
 import org.eehouse.android.xw4.jni.UtilCtxtImpl;
 
-public class XWService extends Service {
+class XWService extends Service {
+    public static enum ReceiveResult { OK, GAME_GONE, UNCONSUMED };
 
     protected static MultiService s_srcMgr = null;
     private static Set<String> s_seen = new HashSet<String>();
@@ -84,5 +90,57 @@ public class XWService extends Service {
             m_utilCtxt = new UtilCtxtImpl( this );
         }
         return m_utilCtxt;
+    }
+
+    // Meant to be overridden
+    protected MultiMsgSink getSink( long rowid ) { Assert.fail(); return null; }
+
+    protected ReceiveResult receiveMessage( Context context, int gameID, 
+                                            MultiMsgSink sink, byte[] msg, 
+                                            CommsAddrRec addr )
+    {
+        ReceiveResult result;
+        long[] rowids = DBUtils.getRowIDsFor( context, gameID );
+        if ( null == rowids || 0 == rowids.length ) {
+            result = ReceiveResult.GAME_GONE;
+        } else {
+            result = ReceiveResult.UNCONSUMED;
+            for ( long rowid : rowids ) {
+                if ( receiveMessage( context, rowid, sink, msg, addr ) ) {
+                    result = ReceiveResult.OK;
+                }
+            }
+        }
+        return result;
+    }
+
+    protected boolean receiveMessage( Context context, long rowid, 
+                                      MultiMsgSink sink, byte[] msg, 
+                                      CommsAddrRec addr )
+    {
+        boolean allConsumed = true;
+        boolean[] isLocalP = new boolean[1];
+        JNIThread jniThread = JNIThread.getRetained( rowid, false );
+        boolean consumed = false;
+        if ( null != jniThread ) {
+            consumed = true;
+            jniThread.receive( msg, addr ).release();
+        } else {
+            GameUtils.BackMoveResult bmr = 
+                new GameUtils.BackMoveResult();
+            if ( null == sink ) {
+                sink = getSink( rowid );
+            }
+            if ( GameUtils.feedMessage( context, rowid, msg, addr, 
+                                        sink, bmr, isLocalP ) ) {
+                consumed = true;
+                GameUtils.postMoveNotification( context, rowid, bmr,
+                                                isLocalP[0] );
+            }
+        }
+        if ( allConsumed && !consumed ) {
+            allConsumed = false;
+        }
+        return allConsumed;
     }
 }

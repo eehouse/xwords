@@ -237,14 +237,6 @@ public class BTInviteDelegate extends InviteDelegate {
                     public void onCheckedChanged( CompoundButton buttonView, 
                                                   boolean isChecked ) {
                         if ( isChecked ) {
-                            if ( 1 == m_nMissing && 1 == m_checked.size() ) {
-                                LinearLayout checked = m_checked.iterator().next();
-                                CheckBox box = (CheckBox)checked
-                                    .findViewById( R.id.inviter_check );
-                                box.setChecked( false );
-                                m_checked.clear();
-                            }
-                            
                             m_checked.add( layout );
                         } else {
                             m_checked.remove( layout );

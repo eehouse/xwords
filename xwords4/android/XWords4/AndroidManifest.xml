@@ -22,14 +22,14 @@
      to come from a domain that you own or have control over. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="org.eehouse.android.xw4"
-          android:versionCode="99"
+          android:versionCode="101"
           android:versionName="@string/app_version"
           >
 
   <!-- BE SURE TO MODIFY project.project AND the variable TARGET in
        ../scripts/setup_local_props.sh if targetSdkVersion changes!!!
        -->
-  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="14" />
+  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="19" />
 
   <supports-screens android:resizeable="true"
                     android:smallScreens="true"
@@ -69,7 +69,7 @@
                android:name=".XWApp"
                >
 
-    <activity android:name="GamesListActivity" 
+    <activity android:name="Main" 
               android:label="@string/app_name"
               android:launchMode="standard"
               android:configChanges="keyboardHidden|orientation|screenSize"
@@ -84,9 +84,15 @@
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="@string/xwords_nfc_mime" />
       </intent-filter>
-
     </activity>
 
+    <activity android:name="FragActivity" 
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
+    <activity android:name="GamesListActivity" 
+              android:configChanges="keyboardHidden|orientation|screenSize"
+              />
+    
     <activity android:name="DictsActivity"
               android:label="@string/title_dicts_list"
               android:configChanges="keyboardHidden|orientation|screenSize"

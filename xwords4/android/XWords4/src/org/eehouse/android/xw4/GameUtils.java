@@ -27,6 +27,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 
 import android.text.Html;
 import android.text.TextUtils;
@@ -219,6 +220,13 @@ public class GameUtils {
         return rowid;
     }
 
+    public static void deleteGame( Context context, GameLock lock, boolean informNow )
+    {
+        tellDied( context, lock, informNow );
+        Utils.cancelNotification( context, (int)lock.getRowid() );
+        DBUtils.deleteGame( context, lock );
+    }
+
     public static boolean deleteGame( Context context, long rowid, 
                                       boolean informNow )
     {
@@ -226,9 +234,7 @@ public class GameUtils {
         // does this need to be synchronized?
         GameLock lock = new GameLock( rowid, true );
         if ( lock.tryLock() ) {
-            tellDied( context, lock, informNow );
-            Utils.cancelNotification( context, (int)rowid );
-            DBUtils.deleteGame( context, lock );
+            deleteGame( context, lock, informNow );
             lock.unlock();
             success = true;
         } else {
@@ -368,6 +374,7 @@ public class GameUtils {
                     ThumbCanvas canvas = new ThumbCanvas( context, thumb );
                     XwJNI.board_setDraw( gamePtr, canvas );
                     XwJNI.board_invalAll( gamePtr );
+                    Assert.assertNotNull( gamePtr );
                     XwJNI.board_draw( gamePtr );
                 }
             }
@@ -745,6 +752,15 @@ public class GameUtils {
     //     }
     // }
 
+
+    public static String[] dictNames( Context context, GameLock lock )
+    {
+        byte[] stream = savedGame( context, lock );
+        CurGameInfo gi = new CurGameInfo( context );
+        XwJNI.gi_from_stream( gi, stream );
+        return gi.dictNames();
+    }
+
     public static String[] dictNames( Context context, long rowid,
                                       int[] missingLang ) 
     {
@@ -822,26 +838,39 @@ public class GameUtils {
         return file.endsWith( XWConstants.GAME_EXTN );
     }
 
-    public static void launchGame( Activity activity, long rowid,
+    public static Bundle makeLaunchExtras( long rowid, boolean invited )
+    {
+        Bundle bundle = new Bundle();
+        bundle.putLong( INTENT_KEY_ROWID, rowid );
+        if ( invited ) {
+            bundle.putBoolean( INVITED, true );
+        }
+        return bundle;
+    }
+
+    public static void launchGame( Delegator delegator, long rowid,
                                    boolean invited )
     {
-        Intent intent = new Intent( activity, BoardActivity.class );
-        intent.putExtra( INTENT_KEY_ROWID, rowid );
-        if ( invited ) {
-            intent.putExtra( INVITED, true );
+        Activity activity = delegator.getActivity();
+        Bundle extras = makeLaunchExtras( rowid, invited );
+        if ( activity instanceof FragActivity ) {
+            FragActivity.addFragment( new BoardFrag(), extras, delegator );
+        } else {
+            Intent intent = new Intent( activity, BoardActivity.class );
+            intent.putExtras( extras );
+            activity.startActivity( intent );
         }
-        activity.startActivity( intent );
     }
 
-    public static void launchGame( Activity activity, long rowid )
+    public static void launchGame( Delegator delegator, long rowid )
     {
-        launchGame( activity, rowid, false );
+        launchGame( delegator, rowid, false );
     }
 
-    public static void launchGameAndFinish( Activity activity, long rowid )
+    public static void launchGameAndFinish( Delegator delegator, long rowid )
     {
-        launchGame( activity, rowid );
-        activity.finish();
+        launchGame( delegator, rowid );
+        delegator.getActivity().finish();
     }
 
     private static class FeedUtilsImpl extends UtilCtxtImpl {
@@ -862,9 +891,9 @@ public class GameUtils {
             m_gameOver = false;
         }
         @Override
-        public void showChat( String msg, String fromName )
+        public void showChat( String msg, int fromIndx, String fromName )
         {
-            DBUtils.appendChatHistory( m_context, m_rowid, msg, false );
+            DBUtils.appendChatHistory( m_context, m_rowid, msg, fromIndx );
             m_gotChat = true;
             m_chatFrom = fromName;
             m_chat = msg;
@@ -1036,11 +1065,10 @@ public class GameUtils {
         }
 
         if ( forceNew || !madeGame ) {
-            XwJNI.game_makeNewGame( gamePtr, gi, util, 
-                                    JNIUtilsImpl.get(context), 
-                                    (DrawCtx)null,
-                                    cp, sink, dictNames, pairs.m_bytes, 
-                                    pairs.m_paths, langName );
+            XwJNI.game_makeNewGame( gamePtr, gi, dictNames, pairs.m_bytes, 
+                                    pairs.m_paths, langName, util, 
+                                    JNIUtilsImpl.get(context), (DrawCtx)null,
+                                    cp, sink );
         }
 
         if ( null != car ) {
@@ -1059,12 +1087,20 @@ public class GameUtils {
         DBUtils.saveSummary( context, lock, summary );
     } // applyChanges
 
-    public static void doConfig( Activity activity, long rowid, Class clazz )
+    public static void doConfig( Delegator delegator, long rowid )
     {
-        Intent intent = new Intent( activity, clazz );
-        intent.setAction( Intent.ACTION_EDIT );
-        intent.putExtra( INTENT_KEY_ROWID, rowid );
-        activity.startActivity( intent );
+        Bundle extras = new Bundle();
+        extras.putLong( INTENT_KEY_ROWID, rowid );
+
+        Activity activity = delegator.getActivity();
+        if ( activity instanceof FragActivity ) {
+            FragActivity.addFragment( new GameConfigFrag(), extras, delegator );
+        } else {
+            Intent intent = new Intent( activity, GameConfigActivity.class );
+            intent.setAction( Intent.ACTION_EDIT );
+            intent.putExtras( extras );
+            activity.startActivity( intent );
+        }
     }
 
     public static String formatGameID( int gameID )
@@ -1089,6 +1125,14 @@ public class GameUtils {
         DbgUtils.logf( "newGameID()=>%X (%d)", rint, rint );
         return rint;
     }
+
+    // public static void postSelfNotification( Context context, long rowid )
+    // {
+    //     Assert.assertTrue( BuildConfig.DEBUG );
+    //     Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
+    //     Utils.postNotification( context, intent, "launch", 
+    //                             String.format("%d", rowid), (int)rowid );
+    // }
 
     public static void postMoveNotification( Context context, long rowid, 
                                              BackMoveResult bmr,

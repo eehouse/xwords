@@ -54,4 +54,12 @@ public class GamesListActivity extends XWActivity {
         super.onNewIntent( intent );
         m_dlgt.onNewIntent( intent );
     }
+
+    //////////////////////////////////////////////////////////////////////
+    // GamesListDelegator interface
+    //////////////////////////////////////////////////////////////////////
+    public void launchGame( long rowID, boolean invited )
+    {
+        GameUtils.launchGame( this, rowID, invited );
+    }
 }

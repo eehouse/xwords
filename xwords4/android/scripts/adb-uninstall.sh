@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e -u
+set -e -u -x
 
 # use this: adb -s 04bd25af2523aae6 shell "pm  list packages" | grep org.eehouse
 
@@ -29,7 +29,7 @@ getPackage() {
 
 WD=$(pwd)
 while :; do
-	if [ -e ${WD}/android/XWords4/AndroidManifest.xml -a -d ${WD}/common ]; then
+	if [ -e ${WD}/AndroidManifest.xml -a -e ${WD}/build.xml ]; then
 		break
 	elif [ ${WD} = '/' ]; then
 		usage "reached / without finding AndroidManifest.xml"
@@ -37,7 +37,7 @@ while :; do
 		WD=$(cd $WD/.. && pwd)
 	fi
 done
-WD=$(cd $WD/android/XWords4 && pwd)
+WD=$(cd $WD && pwd)
 
 # find aapt
 DIR=$(dirname $(which android))

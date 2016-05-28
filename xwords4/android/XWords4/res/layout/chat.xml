@@ -6,27 +6,28 @@
               android:layout_height="fill_parent"
               >
 
-  <!-- history is kept in a scrolling list of textview elems so
-  different style can be applied based on whether they're local or
-  remote.  Inserted at runtime.... -->
   <ScrollView android:id="@+id/scroll"
               android:orientation="vertical"
               android:layout_width="fill_parent" 
               android:layout_height="wrap_content"
               android:layout_weight="1"
               >
-    <LinearLayout android:id="@+id/chat_history"
-                  android:orientation="vertical"
-                  android:layout_width="fill_parent" 
-                  android:layout_height="wrap_content"
-                  />
+
+    <!-- contents inserted at runtime -->
+    <TableLayout android:id="@+id/chat_history"
+                 android:layout_width="fill_parent" 
+                 android:layout_height="wrap_content"
+                 />
+
   </ScrollView>
 
   <EditText android:id="@+id/chat_edit" 
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:singleLine="false"
+            android:inputType="textCapSentences"
             android:layout_weight="0"
+            android:hint="@string/chat_hint"
             />
 
 </LinearLayout>

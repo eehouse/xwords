@@ -20,7 +20,9 @@
 package org.eehouse.android.xw4;
 
 import android.app.Activity;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -291,6 +293,7 @@ public class StudyListDelegate extends ListDelegateBase
                 }
             }
 
+            DbgUtils.logf( "creating studylist adapter" );
             ArrayAdapter<String> adapter = new
                 ArrayAdapter<String>( m_activity, 
                                       android.R.layout.simple_spinner_item,
@@ -342,10 +345,11 @@ public class StudyListDelegate extends ListDelegateBase
         setTitleBar();
     }
 
-    public static void launchOrAlert( Activity activity, int lang, 
+    public static void launchOrAlert( Delegator delegator, int lang, 
                                       DlgDelegate.HasDlgDelegate dlg )
     {
         String msg = null;
+        Activity activity = delegator.getActivity();
         if ( 0 == DBUtils.studyListLangs( activity ).length ) {
             msg = LocUtils.getString( activity, R.string.study_no_lists );
         } else if ( NO_LANG != lang && 
@@ -359,9 +363,14 @@ public class StudyListDelegate extends ListDelegateBase
                 bundle.putInt( START_LANG, lang );
             }
 
-            Intent intent = new Intent( activity, StudyListActivity.class );
-            intent.putExtras( bundle );
-            activity.startActivity( intent );
+            if ( activity instanceof FragActivity ) {
+                StudyListFrag frag = new StudyListFrag();
+                ((FragActivity)activity).addFragment( frag, bundle, delegator );
+            } else {
+                Intent intent = new Intent( activity, StudyListActivity.class );
+                intent.putExtras( bundle );
+                activity.startActivity( intent );
+            }
         }
 
         if ( null != msg ) {

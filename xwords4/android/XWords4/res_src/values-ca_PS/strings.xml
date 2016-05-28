@@ -1116,6 +1116,8 @@
   <!-- Text on the button that causes the contents of the
          message-composition field to be sent. -->
   <string name="chat_send">SEND</string>
+  <!-- "Hint" in empty chat text field -->
+  <string name="chat_hint">TYPE HERE...</string>
   <!--
        ############################################################
        # :Menus:
@@ -1747,12 +1749,14 @@
   <string name="menu_zoom">ZOOM IN/OUT</string>
   <!--  -->
   <string name="menu_chat">CHAT</string>
+  <string name="chat_sender_fmt">%1$s:</string>
   <!--  -->
   <string name="menu_toggle_values">TOGGLE VALUES</string>
   <!-- board menu for small devices only -->
   <string name="board_menu_dict">BROWSE WORDLIST</string>
   <!--  -->
   <string name="game_list_tmp">BUILDING GAME SUMMARY…</string>
+  <string name="summary_busy">SUMMARY UNAVAILABLE</string>
   <string name="connstat_net_noaddr">THIS NETWORKED GAME HAS NO WAY
     TO CONNECT AND WILL NEVER BE PLAYABLE.\n\n(IT WAS PROBABLY CREATED
     FROM AN INVITATION THAT DIDN\'T SPECIFY ANY WAY OF CONNECTING
@@ -2032,6 +2036,8 @@
     WHAT\'S AVAILABLE.</string>
   <string name="force_tablet_title">FORCE TABLET LAYOUT</string>
   <string name="force_tablet_summary">EVEN IF MY SCREEN IS TOO SMALL</string>
+  <string name="activity_button">SINGLE-PANE</string>
+  <string name="fragment_button">DUAL-PANE</string>
   <!-- Nagging: title of notification reminder message -->
   <string name="nag_title">REMINDER: IT\'S YOUR TURN</string>
   <!-- body of warning notification reminder message. First three

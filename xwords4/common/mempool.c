@@ -30,6 +30,30 @@
 extern "C" {
 #endif
 
+#ifndef MEMPOOL_SYNC_DECL
+# include <pthread.h>
+# define MEMPOOL_SYNC_DECL pthread_mutex_t mutex
+#endif
+
+#ifndef MEMPOOL_SYNC_INIT
+# define MEMPOOL_SYNC_INIT(mp)                  \
+    pthread_mutex_init( &((mp)->mutex), NULL )
+#endif
+
+#ifndef MEMPOOL_SYNC_DESTROY
+# define MEMPOOL_SYNC_DESTROY(mp)               \
+    pthread_mutex_destroy( &((mp)->mutex ) )
+#endif
+
+#ifndef MEMPOOL_SYNC_START
+# define MEMPOOL_SYNC_START(mp)                 \
+    pthread_mutex_lock( &((mp)->mutex) )
+#endif
+#ifndef MEMPOOL_SYNC_END
+# define MEMPOOL_SYNC_END(mp)                   \
+    pthread_mutex_unlock( &((mp)->mutex) )
+#endif
+
 typedef struct MemPoolEntry {
     struct MemPoolEntry* next;
     const char* fileName;
@@ -41,6 +65,7 @@ typedef struct MemPoolEntry {
 } MemPoolEntry;
 
 struct MemPoolCtx {
+    MEMPOOL_SYNC_DECL;
     MemPoolEntry* freeList;
     MemPoolEntry* usedList;
 
@@ -58,6 +83,7 @@ mpool_make( const XP_UCHAR* tag )
 {
     MemPoolCtx* result = (MemPoolCtx*)XP_PLATMALLOC( sizeof(*result) );
     XP_MEMSET( result, 0, sizeof(*result) );
+    MEMPOOL_SYNC_INIT(result);
     mpool_setTag( result, tag );
     return result;
 } /* mpool_make */
@@ -149,10 +175,12 @@ mpool_destroy( MemPoolCtx* mpool )
     }
 
 #ifndef FOR_GREMLINS
-    XP_ASSERT( !mpool->usedList && mpool->nUsed == 0 );
+    XP_ASSERT( !mpool->usedList );
+    XP_ASSERT( mpool->nUsed == 0 );
 #endif
 
     freeList( mpool->freeList );
+    MEMPOOL_SYNC_DESTROY(mpool);
     XP_PLATFREE( mpool );
 } /* mpool_destroy */
 
@@ -161,7 +189,9 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
              const char* func, XP_U32 lineNo )
 {
     MemPoolEntry* entry;
-
+    void* result = NULL;
+    MEMPOOL_SYNC_START(mpool);
+    
     if ( mpool->nFree > 0 ) {
         entry = mpool->freeList;
         mpool->freeList = entry->next;
@@ -188,7 +218,10 @@ mpool_alloc( MemPoolCtx* mpool, XP_U32 size, const char* file,
              __func__, size, entry->index, file, lineNo, entry->ptr );
 #endif
 
-    return entry->ptr;
+    result = entry->ptr;
+    MEMPOOL_SYNC_END(mpool);
+    
+    return result;
 } /* mpool_alloc */
 
 void*
@@ -248,6 +281,8 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
     MemPoolEntry* entry;
     MemPoolEntry* prev;
 
+    MEMPOOL_SYNC_START(mpool);
+
     entry = findEntryFor( mpool, ptr, &prev );
 
     if ( !entry ) {
@@ -278,6 +313,7 @@ mpool_free( MemPoolCtx* mpool, void* ptr, const char* file,
         ++mpool->nFree;
         --mpool->nUsed;
     }
+    MEMPOOL_SYNC_END(mpool);
 } /* mpool_free */
 
 void

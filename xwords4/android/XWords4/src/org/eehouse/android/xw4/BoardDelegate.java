@@ -89,7 +89,6 @@ public class BoardDelegate extends DelegateBase
     private CurGameInfo m_gi;
     private GameSummary m_summary;
     private boolean m_relayMissing;
-    private CommsTransport m_xport;
     private Handler m_handler = null;
     private TimerRunnable[] m_timers;
     private Runnable m_screenTimer;
@@ -128,6 +127,7 @@ public class BoardDelegate extends DelegateBase
 
     private Thread m_blockingThread;
     private JNIThread m_jniThread;
+    private JNIThread m_jniThreadRef;
     private JNIThread.GameStateInfo m_gsi;
     private DlgID m_blockingDlgID = DlgID.NONE;
 
@@ -141,57 +141,6 @@ public class BoardDelegate extends DelegateBase
     private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
-
-    private static Set<BoardDelegate> s_this = new HashSet<BoardDelegate>();
-
-    public static boolean feedMessage( long rowid, byte[] msg,
-                                       CommsAddrRec ret )
-    {
-        return feedMessages( rowid, new byte[][]{msg}, ret );
-    }
-
-    public static boolean feedMessages( long rowid, byte[][] msgs, 
-                                        CommsAddrRec ret )
-    {
-        boolean delivered = false;
-        Assert.assertNotNull( msgs );
-        int size;
-        synchronized( s_this ) {
-            size = s_this.size();
-            if ( 1 == size ) {
-                BoardDelegate self = s_this.iterator().next();
-                Assert.assertNotNull( self.m_gi );
-                Assert.assertNotNull( self.m_gameLock );
-                Assert.assertNotNull( self.m_jniThread );
-                if ( rowid == self.m_rowid ) {
-                    delivered = true; // even if no messages!
-                    for ( byte[] msg : msgs ) {
-                        self.m_jniThread.handle( JNICmd.CMD_RECEIVE, msg, ret );
-                    }
-                }
-            }
-        }
-        if ( 1 < size ) {
-            noteSkip();
-        }
-        return delivered;
-    }
-
-    private static void setThis( BoardDelegate self )
-    {
-        synchronized( s_this ) {
-            Assert.assertTrue( !s_this.contains(self) ); // here
-            s_this.add( self );
-        }
-    }
-
-    private static void clearThis( BoardDelegate self )
-    {
-        synchronized( s_this ) {
-            Assert.assertTrue( s_this.contains( self ) );
-            s_this.remove( self );
-        }
-    }
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -231,7 +180,7 @@ public class BoardDelegate extends DelegateBase
                     lstnr = new OnClickListener() {
                             public void onClick( DialogInterface dlg, 
                                                  int whichButton ) {
-                                m_jniThread.handle( JNICmd.CMD_RESET );
+                                handleViaThread( JNICmd.CMD_RESET );
                             }
                         };
                     ab.setNegativeButton( R.string.button_retry, lstnr );
@@ -421,8 +370,7 @@ public class BoardDelegate extends DelegateBase
                                             public void 
                                                 onClick( DialogInterface dlg, 
                                                          int item ) {
-                                                m_jniThread.
-                                                    handle(JNICmd.CMD_ENDGAME);
+                                                handleViaThread(JNICmd.CMD_ENDGAME);
                                             }
                                         })
                     .setNegativeButton( R.string.button_no, null )
@@ -595,6 +543,7 @@ public class BoardDelegate extends DelegateBase
         m_timers = new TimerRunnable[4]; // needs to be in sync with
                                          // XWTimerReason
         m_view = (BoardView)findViewById( R.id.board_view );
+        m_view.setBoardDelegate( this );
         if ( ! ABUtils.haveActionBar() ) {
             m_tradeButtons = findViewById( R.id.exchange_buttons );
             if ( null != m_tradeButtons ) {
@@ -614,19 +563,64 @@ public class BoardDelegate extends DelegateBase
         m_haveInvited = args.getBoolean( GameUtils.INVITED, false );
         m_overNotShown = true;
 
+        Handler handler = new Handler() {
+                public void handleMessage( Message msg ) {
+                    switch( msg.what ) {
+                    case JNIThread.DIALOG:
+                        m_dlgBytes = (String)msg.obj;
+                        m_dlgTitle = msg.arg1;
+                        showDialog( DlgID.DLG_OKONLY );
+                        break;
+                    case JNIThread.QUERY_ENDGAME:
+                        showDialog( DlgID.QUERY_ENDGAME );
+                        break;
+                    case JNIThread.TOOLBAR_STATES:
+                        if ( null != m_jniThread ) {
+                            m_gsi = 
+                                m_jniThread.getGameStateInfo();
+                            updateToolbar();
+                            if ( m_inTrade != m_gsi.inTrade ) {
+                                m_inTrade = m_gsi.inTrade;
+                            }
+                            m_view.setInTrade( m_inTrade );
+                            adjustTradeVisibility();
+                            invalidateOptionsMenuIf();
+                        }
+                        break;
+                    case JNIThread.GOT_WORDS:
+                        CurGameInfo gi = m_jniThreadRef.getGI();
+                        launchLookup( wordsToArray((String)msg.obj), 
+                                      gi.dictLang );
+                        break;
+                    case JNIThread.GAME_OVER:
+                        m_dlgBytes = (String)msg.obj;
+                        m_dlgTitle = msg.arg1;
+                        showDialog( DlgID.GAME_OVER );
+                        break;
+                    case JNIThread.MSGS_SENT:
+                        int nSent = (Integer)msg.obj;
+                        showToast( getQuantityString( R.plurals.resent_msgs_fmt, 
+                                                      nSent, nSent ) );
+                        break;
+                    }
+                }
+            };
+
+        m_jniThreadRef = JNIThread.getRetained( m_rowid, true ).
+            configure( m_activity, m_view, m_utils, this, handler );
+        m_jniGamePtr = m_jniThreadRef.getGamePtr();
+        Assert.assertNotNull( m_jniGamePtr );
+
+        // see http://stackoverflow.com/questions/680180/where-to-stop- \
+        // destroy-threads-in-android-service-class
+        m_jniThreadRef.setDaemonOnce( true ); // firing
+        m_jniThreadRef.startOnce();
+
         NFCUtils.register( m_activity, this ); // Don't seem to need to unregister...
 
         setBackgroundColor();
         setKeepScreenOn();
     } // init
-
-    protected void onPause()
-    {
-        m_handler = null;
-        ConnStatusHandler.setHandler( null );
-        waitCloseGame( true );
-        super.onPause();
-    }
 
     @Override
     protected void onStart()
@@ -639,12 +633,41 @@ public class BoardDelegate extends DelegateBase
     protected void onResume()
     {
         super.onResume();
+        // if( BuildConfig.DEBUG ) {
+        //     GameUtils.postSelfNotification( m_activity, m_rowid );
+        // }
         doResume( false );
     }
     
+    protected void onPause()
+    {
+        closeIfFinishing( false );
+        m_handler = null;
+        ConnStatusHandler.setHandler( null );
+        waitCloseGame( true );
+        pauseGame();
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop()
+    {
+        if ( isFinishing() ) {
+            m_jniThreadRef.release();
+            m_jniThreadRef = null;
+        }
+        super.onStop();
+    }
+
     @Override
     protected void onDestroy()
     {
+        closeIfFinishing( true );
+        if ( null != m_jniThreadRef ) {
+            m_jniThreadRef.release();
+            m_jniThreadRef = null;
+            // Assert.assertNull( m_jniThreadRef ); // firing
+        }
         GamesListDelegate.boardDestroyed( m_rowid );
         super.onDestroy();
     }
@@ -718,7 +741,7 @@ public class BoardDelegate extends DelegateBase
                 m_firingPrefs = false;
                 m_volKeysZoom = XWPrefs.getVolKeysZoom( m_activity );
                 if ( null != m_jniThread ) {
-                    m_jniThread.handle( JNICmd.CMD_PREFS_CHANGE );
+                    handleViaThread( JNICmd.CMD_PREFS_CHANGE );
                 }
                 // in case of change...
                 setBackgroundColor();
@@ -731,13 +754,33 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
+    @Override
+    public void orientationChanged()
+    {
+        boolean isPortrait = isPortrait();
+        DbgUtils.logdf( "BoardDelegate.orientationChanged(isPortrait=%b)",
+                        isPortrait );
+        positionToolbar( isPortrait );
+        m_view.orientationChanged();
+    }
+
+    private void positionToolbar( boolean isPortrait )
+    {
+        if ( null != findViewById( R.id.tbar_parent_hor ) ) {
+            if ( null == m_toolbar ) {
+                m_toolbar = new Toolbar( m_activity, this );
+            }
+            m_toolbar.setIsPortrait( isPortrait );
+        }
+    }
+
     protected boolean onKeyDown( int keyCode, KeyEvent event )
     {
         boolean handled = false;
         if ( null != m_jniThread ) {
             XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
             if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
-                m_jniThread.handle( JNICmd.CMD_KEYDOWN, xpKey );
+                handleViaThread( JNICmd.CMD_KEYDOWN, xpKey );
             } else {
                 switch( keyCode ) {
                 case KeyEvent.KEYCODE_VOLUME_DOWN:
@@ -760,7 +803,7 @@ public class BoardDelegate extends DelegateBase
         if ( null != m_jniThread ) {
             XwJNI.XP_Key xpKey = keyCodeToXPKey( keyCode );
             if ( XwJNI.XP_Key.XP_KEY_NONE != xpKey ) {
-                m_jniThread.handle( JNICmd.CMD_KEYUP, xpKey );
+                handleViaThread( JNICmd.CMD_KEYUP, xpKey );
                 handled = true;
             }
         }
@@ -923,10 +966,10 @@ public class BoardDelegate extends DelegateBase
             cmd = JNICmd.CMD_TOGGLE_TRAY;
             break;
         case R.id.games_menu_study:
-            StudyListDelegate.launchOrAlert( m_activity, m_gi.dictLang, this );
+            StudyListDelegate.launchOrAlert( getDelegator(), m_gi.dictLang, this );
             break;
         case R.id.board_menu_game_netstats:
-            m_jniThread.handle( JNICmd.CMD_NETSTATS, R.string.netstats_title );
+            handleViaThread( JNICmd.CMD_NETSTATS, R.string.netstats_title );
             break;
         case R.id.board_menu_game_invites:
             SentInvitesInfo sentInfo = DBUtils.getInvitesFor( m_activity, m_rowid );
@@ -942,28 +985,27 @@ public class BoardDelegate extends DelegateBase
             // small devices only
         case R.id.board_menu_dict:
             String dictName = m_gi.dictName( m_view.getCurPlayer() );
-            DictBrowseDelegate.launch( m_activity, dictName );
+            DictBrowseDelegate.launch( getDelegator(), dictName );
             break;
 
         case R.id.board_menu_game_counts:
-            m_jniThread.handle( JNICmd.CMD_COUNTS_VALUES,
-                                R.string.counts_values_title );
+            handleViaThread( JNICmd.CMD_COUNTS_VALUES, 
+                             R.string.counts_values_title );
             break;
         case R.id.board_menu_game_left:
-            m_jniThread.handle( JNICmd.CMD_REMAINING,
-                                R.string.tiles_left_title );
+            handleViaThread( JNICmd.CMD_REMAINING, R.string.tiles_left_title );
             break;
 
         case R.id.board_menu_game_history:
-            m_jniThread.handle( JNICmd.CMD_HISTORY, R.string.history_title );
+            handleViaThread( JNICmd.CMD_HISTORY, R.string.history_title );
             break;
 
         case R.id.board_menu_game_resign:
-            m_jniThread.handle( JNICmd.CMD_FINAL, R.string.history_title );
+            handleViaThread( JNICmd.CMD_FINAL, R.string.history_title );
             break;
 
         case R.id.board_menu_game_resend:
-            m_jniThread.handle( JNICmd.CMD_RESEND, true, false, true );
+            handleViaThread( JNICmd.CMD_RESEND, true, false, true );
             break;
 
         case R.id.gamel_menu_checkmoves:
@@ -983,7 +1025,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( handled && cmd != JNICmd.CMD_NONE ) {
-            m_jniThread.handle( cmd );
+            handleViaThread( cmd );
         }
         return handled;
     }
@@ -1021,11 +1063,11 @@ public class BoardDelegate extends DelegateBase
                 String curDict = m_gi.dictName( m_view.getCurPlayer() );
                 View button = m_toolbar.getViewFor( Toolbar.BUTTON_BROWSE_DICT );
                 if ( Action.BUTTON_BROWSEALL_ACTION == action &&
-                     DictsActivity.handleDictsPopup( m_activity, button, 
+                     DictsDelegate.handleDictsPopup( getDelegator(), button, 
                                                      curDict, m_gi.dictLang ) ){
                     break;
                 }
-                DictBrowseDelegate.launch( m_activity, curDict );
+                DictBrowseDelegate.launch( getDelegator(), curDict );
                 break;
             case PREV_HINT_ACTION:
                 cmd = JNICmd.CMD_PREV_HINT;
@@ -1083,7 +1125,7 @@ public class BoardDelegate extends DelegateBase
             }
 
             if ( JNICmd.CMD_NONE != cmd ) {
-                checkAndHandle( cmd );
+                handleViaThread( cmd );
             }
         }
 
@@ -1148,9 +1190,9 @@ public class BoardDelegate extends DelegateBase
     public void onClick( View view ) 
     {
         if ( view == m_exchCommmitButton ) {
-            m_jniThread.handle( JNICmd.CMD_COMMIT );
+            handleViaThread( JNICmd.CMD_COMMIT );
         } else if ( view == m_exchCancelButton ) {
-            m_jniThread.handle( JNICmd.CMD_CANCELTRADE );
+            handleViaThread( JNICmd.CMD_CANCELTRADE );
         }
     }
 
@@ -1236,7 +1278,7 @@ public class BoardDelegate extends DelegateBase
     public void tpmRelayConnd( final String room, final int devOrder,
                                final boolean allHere, final int nMissing )
     {
-        post( new Runnable() {
+        runOnUiThread( new Runnable() {
                 public void run() {
                     handleConndMessage( room, devOrder, allHere, nMissing );
                 }
@@ -1390,8 +1432,8 @@ public class BoardDelegate extends DelegateBase
 
     private void deleteAndClose()
     {
+        GameUtils.deleteGame( m_activity, m_gameLock, false );
         waitCloseGame( false );
-        GameUtils.deleteGame( m_activity, m_rowid, false );
         finish();
     }
 
@@ -1422,7 +1464,7 @@ public class BoardDelegate extends DelegateBase
 
         finish();
 
-        GameUtils.launchGame( m_activity, m_rowid, m_haveInvited );
+        GameUtils.launchGame( getDelegator(), m_rowid, m_haveInvited );
     }
 
     private void setGotGameDict( String getDict )
@@ -1432,7 +1474,7 @@ public class BoardDelegate extends DelegateBase
         String msg = getString( R.string.reload_new_dict_fmt, getDict );
         showToast( msg );
         finish();
-        GameUtils.launchGame( m_activity, m_rowid, false );
+        GameUtils.launchGame( getDelegator(), m_rowid, false );
     }
 
     private XwJNI.XP_Key keyCodeToXPKey( int keyCode )
@@ -1579,7 +1621,7 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void requestTime() 
         {
-            post( new Runnable() {
+            runOnUiThread( new Runnable() {
                     public void run() {
                         if ( null != m_jniThread ) {
                             m_jniThread.handleBkgrnd( JNICmd.CMD_DO );
@@ -1591,8 +1633,7 @@ public class BoardDelegate extends DelegateBase
         @Override
         public void remSelected() 
         {
-            m_jniThread.handle( JNICmd.CMD_REMAINING,
-                                R.string.tiles_left_title );
+            handleViaThread( JNICmd.CMD_REMAINING, R.string.tiles_left_title );
         }
 
         @Override
@@ -1603,7 +1644,7 @@ public class BoardDelegate extends DelegateBase
             if ( newRole != m_gi.serverRole ) {
                 m_gi.serverRole = newRole;
                 if ( !isServer ) {
-                    m_jniThread.handle( JNICmd.CMD_SWITCHCLIENT );
+                    handleViaThread( JNICmd.CMD_SWITCHCLIENT );
                 }
             }
         }
@@ -1744,7 +1785,7 @@ public class BoardDelegate extends DelegateBase
                                              R.string.key_notagain_turnchanged );
                         }
                     } );
-                m_jniThread.handle( JNICmd. CMD_ZOOM, -8 );
+                handleViaThread( JNICmd. CMD_ZOOM, -8 );
             }
         }
 
@@ -1894,10 +1935,21 @@ public class BoardDelegate extends DelegateBase
         }
 
         @Override
-        public void informMove( String expl, String words )
+        public void informMove( int turn, String expl, String words )
         {
             m_words = null == words? null : wordsToArray( words );
             nonBlockingDialog( DlgID.DLG_SCORES, expl );
+            if ( isVisible() ) {
+                Utils.playNotificationSound( m_activity );
+            } else {
+                LastMoveInfo lmi = new LastMoveInfo();
+                XwJNI.model_getPlayersLastScore( m_jniGamePtr, turn, lmi );
+                GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
+                bmr.m_lmi = lmi;
+                boolean[] locals = m_gi.playersLocal();
+                GameUtils.postMoveNotification( m_activity, m_rowid, 
+                                                bmr, locals[turn] );
+            }
         }
 
         @Override
@@ -1947,7 +1999,7 @@ public class BoardDelegate extends DelegateBase
         public void notifyGameOver()
         {
             m_gameOver = true;
-            m_jniThread.handle( JNICmd.CMD_POST_OVER );
+            handleViaThread( JNICmd.CMD_POST_OVER );
         }
 
         // public void yOffsetChange( int maxOffset, int oldOffset, int newOffset )
@@ -1983,14 +2035,18 @@ public class BoardDelegate extends DelegateBase
         // and may stack dialogs on top of this one.  Including later
         // chat-messages.
         @Override
-        public void showChat( final String msg, String fromPlayer )
+        public void showChat( final String msg, final int fromIndx,
+                              String fromPlayer )
         {
             if ( BuildConstants.CHAT_SUPPORTED ) {
-                post( new Runnable() {
+                runOnUiThread( new Runnable() {
                         public void run() {
-                            DBUtils.appendChatHistory( m_activity,
-                                                       m_rowid, msg, false );
-                            startChatActivity();
+                            DBUtils.appendChatHistory( m_activity, m_rowid, msg,
+                                                       fromIndx );
+                            if ( ! ChatDelegate.append( m_rowid, msg, 
+                                                        fromIndx ) ) {
+                                startChatActivity();
+                            }
                         }
                     } );
             }
@@ -2006,7 +2062,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         try {
-            loadGame( isStart );
+            resumeGame( isStart );
             if ( !isStart ) {
                 setKeepScreenOn();
                 ConnStatusHandler.setHandler( this );
@@ -2016,159 +2072,176 @@ public class BoardDelegate extends DelegateBase
         }
     }
 
-    private void loadGame( boolean isStart )
+    private void resumeGame( boolean isStart )
     {
-        if ( null == m_jniGamePtr ) {
-            try {
-                String gameName = DBUtils.getName( m_activity, m_rowid );
-                String[] dictNames = GameUtils.dictNames( m_activity, m_rowid );
-                DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, dictNames );
+        if ( null == m_jniThread ) {
+            m_jniThread = m_jniThreadRef.retain();
+            m_gi = m_jniThread.getGI();
+            m_summary = m_jniThread.getSummary();
+            m_gameLock = m_jniThread.getLock();
 
-                if ( pairs.anyMissing( dictNames ) ) {
-                    showDictGoneFinish();
-                } else {
-                    Assert.assertNull( m_gameLock );
-                    m_gameLock = new GameLock( m_rowid, true ).lock();
+            m_view.startHandling( m_activity, m_jniThread, m_connTypes );
 
-                    byte[] stream = GameUtils.savedGame( m_activity, m_gameLock );
-                    m_gi = new CurGameInfo( m_activity );
-                    m_gi.setName( gameName );
-                    XwJNI.gi_from_stream( m_gi, stream );
-                    String langName = m_gi.langName();
+            handleViaThread( JNICmd.CMD_START );
 
-                    m_summary = DBUtils.getSummary( m_activity, m_gameLock );
-                    m_relayMissing = m_summary.relayConnectPending();
+            if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
+                setTitle( GameUtils.getName( m_activity, m_rowid ) );
+            }
 
-                    setThis( this );
+            positionToolbar( isPortrait() );
+            populateToolbar();
+            adjustTradeVisibility();
 
-                    m_jniGamePtr = XwJNI.initJNI( m_rowid );
-
-                    if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-                        m_xport = new CommsTransport( m_activity, this, m_rowid,
-                                                      m_gi.serverRole );
-                    }
-
-                    CommonPrefs cp = CommonPrefs.get( m_activity );
-                    if ( null == stream ||
-                         ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-                                                      m_gi, dictNames, 
-                                                      pairs.m_bytes, 
-                                                      pairs.m_paths, langName, 
-                                                      m_utils, m_jniu, 
-                                                      null, cp, m_xport ) ) {
-                        XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
-                                                m_jniu, null, cp, m_xport, 
-                                                dictNames, pairs.m_bytes, 
-                                                pairs.m_paths, langName );
-                    }
-
-                    Handler handler = new Handler() {
-                            public void handleMessage( Message msg ) {
-                                switch( msg.what ) {
-                                case JNIThread.DIALOG:
-                                    m_dlgBytes = (String)msg.obj;
-                                    m_dlgTitle = msg.arg1;
-                                    showDialog( DlgID.DLG_OKONLY );
-                                    break;
-                                case JNIThread.QUERY_ENDGAME:
-                                    showDialog( DlgID.QUERY_ENDGAME );
-                                    break;
-                                case JNIThread.TOOLBAR_STATES:
-                                    if ( null != m_jniThread ) {
-                                        m_gsi = 
-                                            m_jniThread.getGameStateInfo();
-                                        updateToolbar();
-                                        if ( m_inTrade != m_gsi.inTrade ) {
-                                            m_inTrade = m_gsi.inTrade;
-                                        }
-                                        m_view.setInTrade( m_inTrade );
-                                        adjustTradeVisibility();
-                                        invalidateOptionsMenuIf();
-                                    }
-                                    break;
-                                case JNIThread.GOT_WORDS:
-                                    launchLookup( wordsToArray((String)msg.obj), 
-                                                  m_gi.dictLang );
-                                    break;
-                                case JNIThread.GAME_OVER:
-                                    m_dlgBytes = (String)msg.obj;
-                                    m_dlgTitle = msg.arg1;
-                                    showDialog( DlgID.GAME_OVER );
-                                    break;
-                                case JNIThread.MSGS_SENT:
-                                    int nSent = (Integer)msg.obj;
-                                    showToast( getQuantityString( R.plurals.resent_msgs_fmt, 
-                                                                  nSent, nSent ) );
-                                    break;
-                                }
-                            }
-                        };
-                    m_jniThread = 
-                        new JNIThread( m_jniGamePtr, stream, m_gi, 
-                                       m_view, m_gameLock, m_activity, handler );
-                    // see http://stackoverflow.com/questions/680180/where-to-stop-\
-                    // destroy-threads-in-android-service-class
-                    m_jniThread.setDaemon( true );
-                    m_jniThread.start();
-
-                    m_view.startHandling( m_activity, m_jniThread, m_jniGamePtr, m_gi,
-                                          m_connTypes );
-                    if ( null != m_xport ) {
-                        // informMissing should have been called by now
-                        Assert.assertNotNull( m_connTypes );
-                        m_xport.setReceiver( m_jniThread, m_handler );
-                    }
-                    m_jniThread.handle( JNICmd.CMD_START );
-
-                    if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
-                        setTitle( GameUtils.getName( m_activity, m_rowid ) );
-                    }
-
-                    if ( null != findViewById( R.id.tbar_parent_hor ) ) {
-                        int orient = m_activity.getResources().getConfiguration().orientation;
-                        boolean isLandscape = Configuration.ORIENTATION_LANDSCAPE == orient;
-                        m_toolbar = new Toolbar( m_activity, this, isLandscape );
-                    }
-
-                    populateToolbar();
-                    adjustTradeVisibility();
-
-                    int flags = DBUtils.getMsgFlags( m_activity, m_rowid );
-                    if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
-                        startChatActivity();
-                    }
-                    if ( m_overNotShown ) {
-                        boolean auto = false;
-                        if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
-                            m_gameOver = true;
-                        } else if ( DBUtils.gameOver( m_activity, m_rowid ) ) {
-                            m_gameOver = true;
-                            auto = true;
-                        }
-                        if ( m_gameOver ) {
-                            m_overNotShown = false;
-                            m_jniThread.handle( JNICmd.CMD_POST_OVER, auto );
-                        }
-                    }
-                    if ( 0 != flags ) {
-                        DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
-                    }
-
-                    Utils.cancelNotification( m_activity, (int)m_rowid );
-
-                    if ( null != m_xport ) {
-                        warnIfNoTransport();
-                        trySendChats();
-                        tickle( isStart );
-                        tryInvites();
-                    }
+            int flags = DBUtils.getMsgFlags( m_activity, m_rowid );
+            if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
+                startChatActivity();
+            }
+            if ( m_overNotShown ) {
+                boolean auto = false;
+                if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
+                    m_gameOver = true;
+                } else if ( DBUtils.gameOver( m_activity, m_rowid ) ) {
+                    m_gameOver = true;
+                    auto = true;
                 }
-           } catch ( GameUtils.NoSuchGameException nsge ) {
-                DbgUtils.loge( nsge );
-                finish();
+                if ( m_gameOver ) {
+                    m_overNotShown = false;
+                    handleViaThread( JNICmd.CMD_POST_OVER, auto );
+                }
+            }
+            if ( 0 != flags ) {
+                DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
+            }
+
+            Utils.cancelNotification( m_activity, (int)m_rowid );
+
+            if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+                warnIfNoTransport();
+                trySendChats();
+                tickle( isStart );
+                tryInvites();
             }
         }
-    } // loadGame
+    } // resumeGame
+
+    // private void loadGame( boolean isStart )
+    // {
+    //     if ( null == m_jniGamePtr ) {
+    //         try {
+    //             String gameName = DBUtils.getName( m_activity, m_rowid );
+    //             String[] dictNames;
+
+    //             Assert.assertNull( m_gameLock );
+    //             m_gameLock = m_jniThreadRef.getLock();
+    //             if ( null == m_gameLock ) {
+    //                 dictNames = GameUtils.dictNames( m_activity, m_rowid );
+    //             } else {
+    //                 dictNames = GameUtils.dictNames( m_activity, m_gameLock );
+    //             }
+    //             DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, dictNames );
+
+    //             if ( pairs.anyMissing( dictNames ) ) {
+    //                 showDictGoneFinish();
+    //             } else {
+    //                 if ( null == m_gameLock ) {
+    //                     m_gameLock = new GameLock( m_rowid, true ).lock();
+    //                 }
+
+    //                 // PENDING: there's no point in re-opening the game if
+    //                 // it's already open!
+    //                 byte[] stream = GameUtils.savedGame( m_activity, m_gameLock );
+    //                 m_gi = new CurGameInfo( m_activity );
+    //                 m_gi.setName( gameName );
+    //                 XwJNI.gi_from_stream( m_gi, stream );
+    //                 String langName = m_gi.langName();
+
+    //                 m_summary = DBUtils.getSummary( m_activity, m_gameLock );
+    //                 m_relayMissing = m_summary.relayConnectPending();
+
+    //                 setThis( this );
+
+    //                 m_jniGamePtr = XwJNI.initJNI( m_rowid );
+
+    //                 if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+    //                     m_xport = new CommsTransport( m_activity, this, m_rowid,
+    //                                                   m_gi.serverRole );
+    //                 }
+
+    //                 CommonPrefs cp = CommonPrefs.get( m_activity );
+    //                 if ( null == stream ||
+    //                      ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+    //                                                   m_gi, dictNames, 
+    //                                                   pairs.m_bytes, 
+    //                                                   pairs.m_paths, langName, 
+    //                                                   m_utils, m_jniu, 
+    //                                                   null, cp, m_xport ) ) {
+    //                     XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
+    //                                             m_jniu, null, cp, m_xport, 
+    //                                             dictNames, pairs.m_bytes, 
+    //                                             pairs.m_paths, langName );
+    //                 }
+
+
+    //                 m_jniThread = m_jniThreadRef.retain();
+
+    //                 // see http://stackoverflow.com/questions/680180/where-to-stop-\
+    //                 // destroy-threads-in-android-service-class
+    //                 // m_jniThread.setDaemonOnce( true ); // firing
+    //                 // m_jniThread.startOnce();
+
+    //                 m_view.startHandling( m_activity, m_jniThread, m_jniGamePtr, m_gi,
+    //                                       m_connTypes );
+    //                 if ( null != m_xport ) {
+    //                     // informMissing should have been called by now
+    //                     Assert.assertNotNull( m_connTypes );
+    //                     m_xport.setReceiver( m_jniThread, m_handler );
+    //                 }
+    //                 handleViaThread( JNICmd.CMD_START );
+
+    //                 if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
+    //                     setTitle( GameUtils.getName( m_activity, m_rowid ) );
+    //                 }
+
+    //                 positionToolbar( isPortrait() );
+    //                 populateToolbar();
+    //                 adjustTradeVisibility();
+
+    //                 int flags = DBUtils.getMsgFlags( m_activity, m_rowid );
+    //                 if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
+    //                     startChatActivity();
+    //                 }
+    //                 if ( m_overNotShown ) {
+    //                     boolean auto = false;
+    //                     if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
+    //                         m_gameOver = true;
+    //                     } else if ( DBUtils.gameOver( m_activity, m_rowid ) ) {
+    //                         m_gameOver = true;
+    //                         auto = true;
+    //                     }
+    //                     if ( m_gameOver ) {
+    //                         m_overNotShown = false;
+    //                         handleViaThread( JNICmd.CMD_POST_OVER, auto );
+    //                     }
+    //                 }
+    //                 if ( 0 != flags ) {
+    //                     DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
+    //                 }
+
+    //                 Utils.cancelNotification( m_activity, (int)m_rowid );
+
+    //                 if ( null != m_xport ) {
+    //                     warnIfNoTransport();
+    //                     trySendChats();
+    //                     tickle( isStart );
+    //                     tryInvites();
+    //                 }
+    //             }
+    //        } catch ( GameUtils.NoSuchGameException nsge ) {
+    //             DbgUtils.loge( nsge );
+    //             finish();
+    //         }
+    //     }
+    // } // loadGame
 
     private void tickle( boolean force )
     {
@@ -2190,8 +2263,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         if ( 0 < m_connTypes.size() ) {
-            m_jniThread.handle( JNIThread.JNICmd.CMD_RESEND, force, true, 
-                                false );
+            handleViaThread( JNIThread.JNICmd.CMD_RESEND, force, true, false );
         }
     }
 
@@ -2220,13 +2292,6 @@ public class BoardDelegate extends DelegateBase
                                         m_gi.gameID );
                 }
             }
-        }
-    }
-
-    private void checkAndHandle( JNICmd cmd )
-    {
-        if ( null != m_jniThread ) {
-            m_jniThread.handle( cmd );
         }
     }
 
@@ -2344,7 +2409,7 @@ public class BoardDelegate extends DelegateBase
         }
 
         m_dlgBytes = txt;
-        post( new Runnable() {
+        runOnUiThread( new Runnable() {
                 public void run() {
                     showDialog( dlgID );
                 }
@@ -2355,7 +2420,7 @@ public class BoardDelegate extends DelegateBase
     {
         boolean handled = null != m_jniThread;
         if ( handled ) {
-            m_jniThread.handle( JNICmd.CMD_ZOOM, zoomBy );
+            handleViaThread( JNICmd.CMD_ZOOM, zoomBy );
         }
         return handled;
     }
@@ -2363,29 +2428,38 @@ public class BoardDelegate extends DelegateBase
     private void startChatActivity()
     {
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            Intent intent = new Intent( m_activity, ChatActivity.class );
-            intent.putExtra( GameUtils.INTENT_KEY_ROWID, m_rowid );
-            startActivityForResult( intent, RequestCode.CHAT_REQUEST );
+            int curPlayer = XwJNI.board_getSelPlayer( m_jniGamePtr );
+            String[] names = m_gi.playerNames();
+            boolean[] locs = m_gi.playersLocal(); // to convert old histories
+            ChatDelegate.startForResult( getDelegator(), RequestCode.CHAT_REQUEST,
+                                         m_rowid, curPlayer, names, locs );
         }
     }
 
-    private void waitCloseGame( boolean save ) 
+    private void closeIfFinishing( boolean force )
     {
-        if ( null != m_jniGamePtr ) {
-            if ( null != m_xport ) {
-                m_xport.waitToStop();
-                m_xport = null;
-            }
+        if ( null == m_handler ) {
+            // DbgUtils.logf( "closeIfFinishing(): already closed" );
+        } else if ( force || isFinishing() ) {
+            // DbgUtils.logf( "closeIfFinishing: closing rowid %d", m_rowid );
+            m_handler = null;
+            ConnStatusHandler.setHandler( null );
+            waitCloseGame( true );
+        } else {
+            handleViaThread( JNICmd.CMD_SAVE );
+            // DbgUtils.logf( "closeIfFinishing(): not finishing (yet)" );
+        }
+    }
 
+    private void pauseGame()
+    {
+        if ( null != m_jniThread ) {
             interruptBlockingThread();
 
-            if ( null != m_jniThread ) {
-                m_jniThread.waitToStop( save );
-                m_jniThread = null;
-            }
-            m_view.stopHandling();
+            m_jniThread.release();
+            m_jniThread = null;
 
-            clearThis( this );
+            m_view.stopHandling();
 
             if ( XWPrefs.getThumbEnabled( m_activity ) ) {
                 // Before we dispose, and after JNIThread has
@@ -2395,11 +2469,18 @@ public class BoardDelegate extends DelegateBase
                 DBUtils.saveThumbnail( m_activity, m_gameLock, thumb );
             }
 
-            m_jniGamePtr.release();
-            m_jniGamePtr = null;
-            m_gi = null;
+            m_gameLock = null;
+        }
+    }
+    
+    private void waitCloseGame( boolean save )
+    {
+        pauseGame();
+        if ( null != m_jniThread ) {
+            // m_jniGamePtr.release();
+            // m_jniGamePtr = null;
 
-            m_gameLock.unlock();
+            // m_gameLock.unlock(); // likely the problem
             m_gameLock = null;
         }
     }
@@ -2421,7 +2502,7 @@ public class BoardDelegate extends DelegateBase
         if ( BuildConstants.CHAT_SUPPORTED && null != m_jniThread ) {
             Iterator<String> iter = m_pendingChats.iterator();
             while ( iter.hasNext() ) {
-                m_jniThread.handle( JNICmd.CMD_SENDCHAT, iter.next() );
+                handleViaThread( JNICmd.CMD_SENDCHAT, iter.next() );
             }
             m_pendingChats.clear();
         }
@@ -2554,7 +2635,8 @@ public class BoardDelegate extends DelegateBase
         if ( canPost ) {
             m_handler.post( runnable );
         } else {
-            DbgUtils.logf( "post: dropping because handler null" );
+            DbgUtils.logf( "BoardDelegate.post(): dropping b/c handler null" );
+            DbgUtils.printStack();
         }
         return canPost;
     }
@@ -2776,10 +2858,13 @@ public class BoardDelegate extends DelegateBase
         DBUtils.recordInviteSent( m_activity, m_rowid, means, dev );
     }
 
-    private static void noteSkip()
+    private void handleViaThread( JNICmd cmd, Object... args )
     {
-        String msg = "BoardActivity.feedMessage[s](): skipped because "
-            + "too many open Boards";
-        DbgUtils.logf(msg );
+        if ( null == m_jniThread ) {
+            DbgUtils.logf( "BoardDelegate: not calling handle(%s)", cmd.toString() );
+            DbgUtils.printStack();
+        } else {
+            m_jniThread.handle( cmd, args );
+        }
     }
 } // class BoardDelegate

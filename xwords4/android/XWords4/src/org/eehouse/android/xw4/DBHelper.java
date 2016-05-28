@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009-2010 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009-2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -42,8 +42,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_LOC = "loc";
     public static final String TABLE_NAME_PAIRS = "pairs";
     public static final String TABLE_NAME_INVITES = "invites";
+    public static final String TABLE_NAME_CHAT = "chat";
+    public static final String TABLE_NAME_LOGS = "logs";
     private static final String DB_NAME = "xwdb";
-    private static final int DB_VERSION = 25;
+    private static final int DB_VERSION = 27;
 
     public static final String GAME_NAME = "GAME_NAME";
     public static final String VISID = "VISID";
@@ -110,6 +112,10 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String MEANS = "MEANS";
     public static final String TARGET = "TARGET";
     public static final String TIMESTAMP = "TIMESTAMP";
+
+    public static final String SENDER = "SENDER";
+    public static final String MESSAGE = "MESSAGE";
+    public static final String TAG = "TAG";
 
     private Context m_context;
 
@@ -206,6 +212,18 @@ public class DBHelper extends SQLiteOpenHelper {
         ,{ TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" }
     };
 
+    private static final String[][] s_chatsSchema = {
+        { ROW, "INTEGER" }
+        ,{ SENDER, "INTEGER" }
+        ,{ MESSAGE, "TEXT" }
+    };
+
+    private static final String[][] s_logsSchema = {
+        { TIMESTAMP, "DATETIME DEFAULT CURRENT_TIMESTAMP" },
+        { MESSAGE, "TEXT" },
+        { TAG, "TEXT" },
+    };
+
     public DBHelper( Context context )
     {
         super( context, DB_NAME, null, DB_VERSION );
@@ -230,13 +248,15 @@ public class DBHelper extends SQLiteOpenHelper {
         createLocTable( db );
         createPairsTable( db );
         createInvitesTable( db );
+        createChatsTable( db );
+        createLogsTable( db );
     }
 
     @Override
     @SuppressWarnings("fallthrough")
     public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ) 
     {
-        DbgUtils.logf( "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
+        DbgUtils.logf( false, "onUpgrade: old: %d; new: %d", oldVersion, newVersion );
 
         boolean madeSumTable = false;
         switch( oldVersion ) {
@@ -297,7 +317,11 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         case 24:
             createInvitesTable( db );
-            
+        case 25:
+            createChatsTable( db );
+        case 26:
+            createLogsTable( db );
+
             break;
         default:
             db.execSQL( "DROP TABLE " + TABLE_NAME_SUM + ";" );
@@ -401,6 +425,16 @@ public class DBHelper extends SQLiteOpenHelper {
         createTable( db, TABLE_NAME_INVITES, s_invitesSchema );
     }
 
+    private void createChatsTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_CHAT, s_chatsSchema );
+    }
+
+    private void createLogsTable( SQLiteDatabase db )
+    {
+        createTable( db, TABLE_NAME_LOGS, s_logsSchema );
+    }
+
     // Move all existing games to the row previously named "cur games'
     private void moveToCurGames( SQLiteDatabase db )
     {
@@ -426,7 +460,7 @@ public class DBHelper extends SQLiteOpenHelper {
         db.beginTransaction();
         try {
             String query;
-            String[] columnNames = DBUtils.getColumns( db, name );
+            String[] columnNames = getColumns( db, name );
             if ( null != columnNames ) { // no data means no need to copy
                 query = String.format( "ALTER table %s RENAME TO 'temp_%s'",
                                        name, name );
@@ -496,6 +530,15 @@ public class DBHelper extends SQLiteOpenHelper {
         int result = cursor.getInt(0);
         cursor.close();
         return result;
+    }
+
+    private static String[] getColumns( SQLiteDatabase db, String name )
+    {
+        String query = String.format( "SELECT * FROM %s LIMIT 1", name );
+        Cursor cursor = db.rawQuery( query, null );
+        String[] colNames = cursor.getColumnNames();
+        cursor.close();
+        return colNames;
     }
 
     private class TableAndVersion {

@@ -128,8 +128,8 @@ typedef struct UtilVtable {
 #ifdef XWFEATURE_TURNCHANGENOTIFY
     void (*m_util_turnChanged)(XW_UtilCtxt* uc, XP_S16 newTurn);
 #endif
-    void (*m_util_informMove)( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
-                               XWStreamCtxt* words );
+    void (*m_util_informMove)( XW_UtilCtxt* uc, XP_S16 turn, 
+                               XWStreamCtxt* expl, XWStreamCtxt* words );
     void (*m_util_informUndo)( XW_UtilCtxt* uc );
     void (*m_util_informNetDict)( XW_UtilCtxt* uc, XP_LangCode lang,
                                   const XP_UCHAR* oldName,
@@ -262,8 +262,8 @@ struct XW_UtilCtxt {
 # define util_turnChanged( uc, t )
 #endif
 
-#define util_informMove(uc,e,w) \
-         (uc)->vtable->m_util_informMove( (uc),(e),(w))
+#define util_informMove(uc,t,e,w)                               \
+         (uc)->vtable->m_util_informMove( (uc), (t), (e), (w))
 #define util_informUndo(uc) \
          (uc)->vtable->m_util_informUndo( (uc))
 #define util_informNetDict(uc, cd, on, nn, ns, pa )                      \

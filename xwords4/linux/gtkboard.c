@@ -1852,8 +1852,8 @@ gtkShowFinalScores( const GtkGameGlobals* globals, XP_Bool ignoreTimeout )
 } /* gtkShowFinalScores */
 
 static void
-gtk_util_informMove( XW_UtilCtxt* uc, XWStreamCtxt* expl, 
-                     XWStreamCtxt* words )
+gtk_util_informMove( XW_UtilCtxt* uc, XP_S16 XP_UNUSED(turn), 
+                     XWStreamCtxt* expl, XWStreamCtxt* words )
 {
     GtkGameGlobals* globals = (GtkGameGlobals*)uc->closure;
     char* question = strFromStream( !!words? words : expl );

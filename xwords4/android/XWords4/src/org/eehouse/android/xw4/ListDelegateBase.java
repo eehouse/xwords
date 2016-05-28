@@ -69,5 +69,4 @@ public class ListDelegateBase extends DelegateBase {
         setListAdapter( adapter );
         listView.setSelectionFromTop( pos, top );
     }
-
 }

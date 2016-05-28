@@ -1291,6 +1291,8 @@
     <!-- Text on the button that causes the contents of the
          message-composition field to be sent. -->
     <string name="chat_send">Send</string>
+    <!-- "Hint" in empty chat text field -->
+    <string name="chat_hint">Type here...</string>
 
     <!--
        ############################################################
@@ -2020,6 +2022,7 @@
     <string name="menu_zoom">Zoom in/out</string>
     <!--  -->
     <string name="menu_chat">Chat</string>
+    <string name="chat_sender_fmt">%1$s:</string>
     <!--  -->
     <string name="menu_toggle_values">Toggle values</string>
 
@@ -2028,6 +2031,8 @@
 
     <!--  -->
     <string name="game_list_tmp">Building game summary…</string>
+
+    <string name="summary_busy">Summary unavailable</string>
 
     <string name="connstat_net_noaddr">This networked game has no way
     to connect and will never be playable.\n\n(It was probably created
@@ -2367,6 +2372,9 @@
     <string name="force_tablet_title">Force tablet layout</string>
     <string name="force_tablet_summary">Even if my screen is too small</string>
 
+    <string name="activity_button">Single-pane</string>
+    <string name="fragment_button">Dual-pane</string>
+
     <!-- Nagging: title of notification reminder message -->
     <string name="nag_title">Reminder: It\'s your turn</string>
     <!-- body of warning notification reminder message. First three
@@ -2407,9 +2415,10 @@
 	devices. Would you like to open the Android Settings Panel to add
 	one or more?\n\n(You may also need to open it on the device you
 	want to pair with.)</string>
-	<string name="app_not_found_fmt">Unable to connect to Crosswords
-	on the device %1$s.  Please check that the device is within range
-	and that Crosswords is installed on it.</string>
+	<string name="app_not_found_fmt">Unable to connect via Bluetooth
+	to Crosswords on the device %1$s.  Please check that the device is
+	within Bluetooth range and that Crosswords is installed on
+	it.</string>
 
 	<!-- label within default wordlists in app preferences -->
 	<string name="default_language">Default language</string>

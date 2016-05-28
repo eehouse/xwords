@@ -748,10 +748,10 @@ Java_org_eehouse_android_xw4_jni_XwJNI_envDone
 
 JNIEXPORT void JNICALL
 Java_org_eehouse_android_xw4_jni_XwJNI_game_1makeNewGame
-( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject j_gi, jobject j_util, 
-  jobject jniu, jobject j_draw, jobject j_cp, jobject j_procs, 
+( JNIEnv* env, jclass C, GamePtrType gamePtr, jobject j_gi, 
   jobjectArray j_names, jobjectArray j_dicts, jobjectArray j_paths,
-  jstring j_lang )
+  jstring j_lang, jobject j_util, jobject jniu, jobject j_draw, 
+  jobject j_cp, jobject j_procs )
 {
     XWJNI_START_GLOBALS();
     EnvThreadInfo* ti = &state->globalJNI->ti;
@@ -1123,6 +1123,17 @@ Java_org_eehouse_android_xw4_jni_XwJNI_board_1getTrayVisState
     jboolean result;
     XWJNI_START();
     result = board_getTrayVisState( state->game.board );
+    XWJNI_END();
+    return result;
+}
+
+JNIEXPORT jint JNICALL
+Java_org_eehouse_android_xw4_jni_XwJNI_board_1getSelPlayer
+(JNIEnv* env, jclass C, GamePtrType gamePtr)
+{
+    jint result;
+    XWJNI_START();
+    result = board_getSelPlayer( state->game.board );
     XWJNI_END();
     return result;
 }

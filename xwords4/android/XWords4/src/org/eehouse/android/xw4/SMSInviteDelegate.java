@@ -85,6 +85,9 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     protected void init( Bundle savedInstanceState )
     {
+        // super.init( R.id.button_invite, R.id.button_add, 
+        //             R.id.button_clear, R.id.invite_desc,
+        //             R.string.invite_sms_desc_fmt );
         String msg = getString( R.string.button_invite );
         msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing, 
                                  m_nMissing, msg );
@@ -376,24 +379,6 @@ public class SMSInviteDelegate extends InviteDelegate {
         saveAndRebuild();
     }
 
-    private void clearIfSingle()
-    {
-        if ( 1 == m_nMissing ) {
-            int count = m_adapter.getCount();
-            for ( int ii = count - 1; ii >= 0; --ii ) {
-                PhoneRec rec = m_phoneRecs.get( ii );
-                if ( rec.m_isChecked ) {
-                    rec.m_isChecked = false;
-                }
-            }
-            post( new Runnable() {
-                    public void run() {
-                        rebuildList( false );
-                    }
-                } );
-        }
-    }
-
     private class PhoneRec {
         public String m_phone;
         public String m_name;
@@ -449,7 +434,6 @@ public class SMSInviteDelegate extends InviteDelegate {
                 new CompoundButton.OnCheckedChangeListener() {
                     public void onCheckedChanged( CompoundButton bv, 
                                                   boolean isChecked ) {
-                        clearIfSingle();
                         m_phoneRecs.get(position).m_isChecked = isChecked;
                         tryEnable();
                     }

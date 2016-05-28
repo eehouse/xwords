@@ -238,11 +238,8 @@ public class PrefsDelegate extends DelegateBase
     {
         if ( AlertDialog.BUTTON_POSITIVE == button
              && action == Action.ENABLE_SMS_DO ) {
-            boolean enabled = (Boolean)params[0];
-            if ( enabled ) {
-                XWPrefs.setSMSEnabled( m_activity, true );
-                SMSCheckBoxPreference.setChecked();
-            }
+            XWPrefs.setSMSEnabled( m_activity, true );
+            SMSCheckBoxPreference.setChecked();
         } else { 
             super.dlgButtonClicked( action, button, params );
         }

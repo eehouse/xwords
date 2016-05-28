@@ -519,24 +519,26 @@ typedef gboolean (*bt_proc)( const bdaddr_t* bdaddr, int socket, void* closure )
 static void
 btDevsIterate( bt_proc proc, void* closure )
 {
-    int id, socket;
     LOG_FUNC();
-
-    id = hci_get_route( NULL );
-    socket = hci_open_dev( id );
+    int id = hci_get_route( NULL );
+    int socket = hci_open_dev( id );
     if ( id >= 0 && socket >= 0 ) {
-        long flags = IREQ_CACHE_FLUSH;
-        inquiry_info inqInfo[RESPMAX];
-        inquiry_info* inqInfoP = inqInfo;
+        int flags = IREQ_CACHE_FLUSH;
+        inquiry_info* iinfo = (inquiry_info*)
+            malloc( RESPMAX * sizeof(inquiry_info) );
         int count = hci_inquiry( id, 8/*wait seconds*/,
-                                 RESPMAX, NULL, &inqInfoP, flags );
-
+                                 RESPMAX, NULL, &iinfo, flags );
+        XP_LOGF( "%s: hci_inquiry=>%d", __func__, count );
         int ii;
-        for ( ii = 0; ii < count; ++ii ) {
-            const bdaddr_t* bdaddr = &inqInfo[ii].bdaddr;
-            if ( !(*proc)( bdaddr, socket, closure ) ) {
-                break;
+        if ( 0 < count ) {
+            for ( ii = 0; ii < count; ++ii ) {
+                const bdaddr_t* bdaddr = &iinfo[ii].bdaddr;
+                if ( !(*proc)( bdaddr, socket, closure ) ) {
+                    break;
+                }
             }
+        } else {
+            close( socket );
         }
     }
 }

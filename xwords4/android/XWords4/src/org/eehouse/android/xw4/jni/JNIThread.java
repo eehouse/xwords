@@ -30,11 +30,17 @@ import android.os.Message;
 import java.lang.InterruptedException;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.HashSet;
+import java.util.Set;
 
+import org.eehouse.android.xw4.CommsTransport;
 import org.eehouse.android.xw4.ConnStatusHandler;
 import org.eehouse.android.xw4.DBUtils;
 import org.eehouse.android.xw4.DbgUtils;
+import org.eehouse.android.xw4.DictUtils;
 import org.eehouse.android.xw4.GameLock;
 import org.eehouse.android.xw4.GameUtils;
 import org.eehouse.android.xw4.R;
@@ -48,6 +54,21 @@ import org.eehouse.android.xw4.jni.XwJNI.GamePtr;
 import junit.framework.Assert;
 
 public class JNIThread extends Thread {
+
+    private static Set<JNIThread> s_curThreads = new HashSet<JNIThread>();
+
+    public static JNIThread getCurrent() {
+        JNIThread result = null;
+        synchronized( s_curThreads ) {
+            // DbgUtils.logf( "JNIThread.getCurrent(): have %d threads", 
+            //                s_curThreads.size() );
+            if ( 1 == s_curThreads.size() ) {
+                result = s_curThreads.iterator().next();
+            }
+        }
+        // DbgUtils.logf( "JNIThread.getCurrent() => %H", result );
+        return result;
+    }
 
     public enum JNICmd { CMD_NONE,
             // CMD_RUN,
@@ -134,7 +155,7 @@ public class JNIThread extends Thread {
     private boolean m_stopped = false;
     private boolean m_saveOnStop = false;
     private GamePtr m_jniGamePtr;
-    private byte[] m_gameAtStart;
+    private byte[] m_lastSavedState;
     private GameLock m_lock;
     private Context m_context;
     private CurGameInfo m_gi;
@@ -143,6 +164,10 @@ public class JNIThread extends Thread {
     private static final int kMinDivWidth = 10;
     private int m_connsIconID = 0;
     private String m_newDict = null;
+    private long m_rowid;
+    private int m_refCount;
+    private CommsTransport m_xport;
+    private GameSummary m_summary;
 
     private LinkedBlockingQueue<QueueElem> m_queue;
 
@@ -156,22 +181,77 @@ public class JNIThread extends Thread {
         Object[] m_args;
     }
 
-    public JNIThread( GamePtr gamePtr, byte[] gameAtStart, CurGameInfo gi, 
-                      SyncedDraw drawer, GameLock lock, Context context, 
-                      Handler handler ) 
+    private JNIThread( long rowid )
     {
-        m_jniGamePtr = gamePtr;
-        m_gameAtStart = gameAtStart;
-        m_gi = gi;
-        m_drawer = drawer;
-        m_lock = lock;
-        m_context = context;
-        m_handler = handler;
-
+        m_rowid = rowid;
         m_queue = new LinkedBlockingQueue<QueueElem>();
     }
+    
+    public JNIThread configure( Context context, SyncedDraw drawer,
+                                UtilCtxtImpl utils, 
+                                TransportProcs.TPMsgHandler xportHandler,
+                                Handler handler )
+    {
+        m_context = context;
+        m_drawer = drawer;
+        m_handler = handler;
 
-    public void waitToStop( boolean save )
+        if ( null == m_lock ) {
+            m_lock = new GameLock( m_rowid, true ).lock();
+        } else {
+            m_jniGamePtr.release(); // let the old game copy go
+        }
+
+        // If this isn't true then the queue has to be allowed to empty,
+        // working on the old game state, before we can re-use any of this.
+        Assert.assertTrue( 0 == m_queue.size() );
+
+        m_jniGamePtr = XwJNI.initJNI( m_rowid );
+
+        String[] dictNames = GameUtils.dictNames( context, m_lock );
+        DictUtils.DictPairs pairs = DictUtils.openDicts( context, dictNames );
+        Assert.assertFalse( pairs.anyMissing( dictNames ) ); // PENDING
+
+        byte[] stream = GameUtils.savedGame( context, m_lock );
+        Assert.assertNotNull( stream );
+        m_gi = new CurGameInfo( context );
+        m_gi.setName( DBUtils.getName( context, m_rowid ) );
+        XwJNI.gi_from_stream( m_gi, stream );
+
+        m_summary = DBUtils.getSummary( context, m_lock );
+        
+        if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
+            m_xport = new CommsTransport( context, xportHandler, m_rowid,
+                                          m_gi.serverRole );
+            m_xport.setReceiver( this );
+        }
+
+        CommonPrefs cp = CommonPrefs.get( context );
+        JNIUtils jniUtils = JNIUtilsImpl.get( context );
+        if ( null == stream ||
+             ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
+                                          m_gi, dictNames, 
+                                          pairs.m_bytes, 
+                                          pairs.m_paths, 
+                                          m_gi.langName(), 
+                                          utils, jniUtils,
+                                          null, cp, m_xport ) ) {
+            XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, dictNames, 
+                                    pairs.m_bytes, pairs.m_paths, 
+                                    m_gi.langName(), utils, jniUtils, 
+                                    null, cp, m_xport );
+        }
+
+        m_lastSavedState = stream;
+        return this;
+    }
+
+    public GamePtr getGamePtr() { return m_jniGamePtr; }
+    public CurGameInfo getGI() { return m_gi; }
+    public GameSummary getSummary() { return m_summary; }
+    public GameLock getLock() { return m_lock; }
+
+    private void waitToStop( boolean save )
     {
         synchronized ( this ) {
             m_stopped = true;
@@ -188,6 +268,9 @@ public class JNIThread extends Thread {
         } catch ( java.lang.InterruptedException ie ) {
             DbgUtils.loge( ie );
         }
+        // m_jniGamePtr.release();
+        // m_jniGamePtr = null;
+        m_lock.unlock();
     }
 
     public boolean busy()
@@ -297,8 +380,14 @@ public class JNIThread extends Thread {
             m_gi.dictName = m_newDict;
         }
         byte[] state = XwJNI.game_saveToStream( m_jniGamePtr, m_gi );
-        if ( Arrays.equals( m_gameAtStart, state ) ) {
-            // DbgUtils.logf( "no change in game; can skip saving" );
+        boolean arraysEqual = Arrays.equals( m_lastSavedState, state );
+        boolean hashesEqual = Arrays.hashCode( m_lastSavedState) == Arrays.hashCode(state);
+        DbgUtils.logf( "arraysEqual: %b; hashesEqual: %b", arraysEqual, hashesEqual );
+        // PENDING: once certain this is true, stop saving the full array and
+        // instead save the hash. Also, update it after each save.
+        Assert.assertTrue( arraysEqual == hashesEqual );
+        if ( Arrays.equals( m_lastSavedState, state ) ) {
+            DbgUtils.logdf( "JNIThread.save_jni(): no change in game; can skip saving" );
         } else {
             synchronized( this ) {
                 Assert.assertNotNull( m_lock );
@@ -308,7 +397,24 @@ public class JNIThread extends Thread {
                 DBUtils.saveSummary( m_context, m_lock, summary );
                 // There'd better be no way for saveGame above to fail!
                 XwJNI.game_saveSucceeded( m_jniGamePtr );
+                m_lastSavedState = state;
             }
+        }
+    }
+
+    boolean m_running = false;
+    public void startOnce()
+    {
+        if ( !m_running ) {
+            m_running = true;
+            start();
+        }
+    }
+
+    public void setDaemonOnce( boolean val )
+    {
+        if ( !m_running ) {
+            setDaemon( val );
         }
     }
 
@@ -340,11 +446,6 @@ public class JNIThread extends Thread {
                     continue;
                 }
                 save_jni();
-                // This is gross: we take the relay connection down
-                // then bring it right back up again each time there's
-                // a message received (to save any state changes it
-                // brought).  There must be a better way.
-                // XwJNI.comms_start( m_jniGamePtr );
                 break;
 
             case CMD_DRAW:
@@ -609,20 +710,31 @@ public class JNIThread extends Thread {
         } else {
             DbgUtils.logf( "JNIThread.run(): exiting without saving" );
         }
-        XwJNI.threadDone();
+        m_jniGamePtr.release();
+        m_jniGamePtr = null;
+        // XwJNI.threadDone();
     } // run
 
     public void handleBkgrnd( JNICmd cmd, Object... args )
     {
-        QueueElem elem = new QueueElem( cmd, false, args );
         // DbgUtils.logf( "adding: %s", cmd.toString() );
-        m_queue.add( elem );
+        m_queue.add( new QueueElem( cmd, false, args ) );
     }
 
+    public JNIThread receive( byte[] msg, CommsAddrRec addr )
+    {
+        handle( JNICmd.CMD_RECEIVE, msg, addr );
+        return this;
+    }
+
+    public void sendChat( String chat )
+    {
+        handle( JNICmd.CMD_SENDCHAT, chat );
+    }
+    
     public void handle( JNICmd cmd, Object... args )
     {
-        QueueElem elem = new QueueElem( cmd, true, args );
-        m_queue.add( elem );
+        m_queue.add( new QueueElem( cmd, true, args ) );
         if ( m_stopped && ! JNICmd.CMD_NONE.equals(cmd) ) {
             DbgUtils.logf( "WARNING: adding %s to stopped thread!!!", 
                            cmd.toString() );
@@ -639,10 +751,59 @@ public class JNIThread extends Thread {
         return XwJNI.server_do( gamePtr );
     }
 
-    // public void run( boolean isUI, Runnable runnable )
-    // {
-    //     Object[] args = { runnable };
-    //     QueueElem elem = new QueueElem( JNICmd.CMD_RUN, isUI, args );
-    //     m_queue.add( elem );
-    // }
+    private static Map<Long, JNIThread> s_instances = new HashMap<Long, JNIThread>();
+    private void retain_sync()
+    {
+        ++m_refCount;
+        DbgUtils.logf( "JNIThread.retain_sync(rowid=%d): m_refCount: %d", 
+                       m_rowid, m_refCount );
+    }
+    
+    public JNIThread retain()
+    {
+        synchronized( s_instances ) {
+            retain_sync();
+        }
+        return this;
+    }
+
+    public void release()
+    {
+        boolean stop = false;
+        synchronized( s_instances ) {
+            if ( 0 == --m_refCount ) {
+                s_instances.remove( m_rowid );
+                stop = true;
+            }
+        }
+        DbgUtils.logf( "JNIThread.release(rowid=%d): m_refCount: %d", 
+                       m_rowid, m_refCount );
+
+        if ( stop ) {
+            waitToStop( true );
+        } else {
+            handle( JNICmd.CMD_SAVE );         // in case releaser has made changes
+        }
+    }
+
+    public static JNIThread getRetained( long rowid )
+    {
+        return getRetained( rowid, false );
+    }
+
+    public static JNIThread getRetained( long rowid, boolean makeNew )
+    {
+        JNIThread result = null;
+        synchronized( s_instances ) {
+            result = s_instances.get( rowid );
+            if ( null == result && makeNew ) {
+                result = new JNIThread( rowid );
+                s_instances.put( rowid, result );
+            }
+            if ( null != result ) {
+                result.retain_sync();
+            }
+        }
+        return result;
+    }
 }

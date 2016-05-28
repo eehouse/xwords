@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2015 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -566,7 +566,6 @@ public class GamesListDelegate extends ListDelegateBase
 
     private Activity m_activity;
     private static GamesListDelegate s_self;
-    private Delegator m_delegator;
     private GameListAdapter m_adapter;
     private Handler m_handler;
     private String m_missingDict;
@@ -581,7 +580,7 @@ public class GamesListDelegate extends ListDelegateBase
     private String m_nameField;
     private NetLaunchInfo m_netLaunchInfo;
     private GameNamer m_namer;
-    private Set<Long> m_launchedGames;
+    private Set<Long> m_launchedGames; // prevent problems with double-taps
     private boolean m_menuPrepared;
     private boolean m_moveAfterNewGroup;
     private Set<Long> m_selGames;
@@ -596,7 +595,6 @@ public class GamesListDelegate extends ListDelegateBase
     public GamesListDelegate( Delegator delegator, Bundle sis )
     {
         super( delegator, sis, R.layout.game_list, R.menu.games_list_menu );
-        m_delegator = delegator;
         m_activity = delegator.getActivity();
         m_launchedGames = new HashSet<Long>();
         s_self = this;
@@ -920,6 +918,9 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     protected void init( Bundle savedInstanceState ) 
     {
+        m_origTitle = getTitle();
+        Assert.assertTrue( m_origTitle.equals( getString(R.string.app_name) ) );
+
         m_handler = new Handler();
         // Next line useful if contents of DB are crashing app on start
         // DBUtils.saveDB( m_activity );
@@ -946,17 +947,21 @@ public class GamesListDelegate extends ListDelegateBase
         };
 
         mkListAdapter();
-        ListView listView = getListView();
-        listView.setOnItemLongClickListener( this );
+        getListView().setOnItemLongClickListener( this );
 
         NetUtils.informOfDeaths( m_activity );
 
         tryStartsFromIntent( getIntent() );
 
         getDictForLangIf();
-
-        m_origTitle = getTitle();
     } // init
+
+    // protected View onCreateView( Bundle savedInstanceState )
+    // {
+    //     View result = inflate( R.layout.game_list );
+    //     // init( savedInstanceState );
+    //     return result;
+    // }
 
     // called when we're brought to the front (probably as a result of
     // notification)
@@ -984,7 +989,9 @@ public class GamesListDelegate extends ListDelegateBase
     protected void onDestroy()
     {
         DBUtils.clearDBChangeListener( this );
-        s_self = null;
+        if ( s_self == this ) {
+            s_self = null;
+        }
     }
 
     protected void onSaveInstanceState( Bundle outState ) 
@@ -1040,16 +1047,7 @@ public class GamesListDelegate extends ListDelegateBase
         if ( hasFocus ) {
             updateField();
 
-            if ( 0 != m_launchedGames.size() ) {
-                long rowid = m_launchedGames.iterator().next();
-                m_launchedGames.remove( rowid );
-
-                if ( m_adapter.inExpandedGroup( rowid ) ) {
-                    setSelGame( rowid );
-                } else {
-                    clearSelections();
-                }
-            }
+            m_launchedGames.clear();
         }
     }
 
@@ -1103,11 +1101,13 @@ public class GamesListDelegate extends ListDelegateBase
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
+        DbgUtils.logf( "GamesListDelegate.itemClicked()" );
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
         if ( clicked instanceof GameListItem ) {
             long rowid = ((GameListItem)clicked).getRowID();
+            DbgUtils.logf( "GamesListDelegate.itemClicked(%d)", rowid );
             if ( ! m_launchedGames.contains( rowid ) ) {
                 showNotAgainDlgThen( R.string.not_again_newselect, 
                                      R.string.key_notagain_newselect,
@@ -1297,7 +1297,7 @@ public class GamesListDelegate extends ListDelegateBase
             if ( !cancelled ) {
                 long rowID = data.getLongExtra( GameUtils.INTENT_KEY_ROWID,
                                                 DBUtils.ROWID_NOTFOUND );
-                GameUtils.launchGame( m_activity, rowID );
+                GameUtils.launchGame( getDelegator(), rowID );
             }
             break;
         }
@@ -1325,7 +1325,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
-        int nGamesSelected = m_selGames.size();
+        int nGamesSelected = m_selGames.size(); // NPE!
         int nGroupsSelected = m_selGroupIDs.size();
         int groupCount = m_adapter.getGroupCount();
         m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
@@ -1482,7 +1482,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_menu_study:
-            StudyListDelegate.launchOrAlert( m_activity, StudyListDelegate.NO_LANG, this );
+            StudyListDelegate.launchOrAlert( getDelegator(), StudyListDelegate.NO_LANG, this );
             break;
 
         case R.id.games_menu_about:
@@ -1677,7 +1677,7 @@ public class GamesListDelegate extends ListDelegateBase
             break;
 
         case R.id.games_game_config:
-            GameUtils.doConfig( m_activity, selRowIDs[0], GameConfigActivity.class );
+            GameUtils.doConfig( getDelegator(), selRowIDs[0] );
             break;
 
         case R.id.games_game_move:
@@ -1967,7 +1967,13 @@ public class GamesListDelegate extends ListDelegateBase
     private void startFirstHasDict( long rowid )
     {
         if ( -1 != rowid && DBUtils.haveGame( m_activity, rowid ) ) {
-            if ( GameUtils.gameDictsHere( m_activity, rowid ) ) {
+            boolean haveDict;
+            try {
+                haveDict = GameUtils.gameDictsHere( m_activity, rowid );
+            } catch ( GameLock.GameLockedException gle ) {
+                haveDict = true;
+            }
+            if ( haveDict ) {
                 launchGame( rowid );
             }
         }
@@ -2270,6 +2276,12 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
         if ( madeGame ) {
+            // if ( R.id.games_game_reset == m_missingDictMenuId ) {
+            //     long[] rowIDs = { m_missingDictRowId };
+            //     doConfirmReset( rowIDs );
+            // } else {
+            //     launchGame( m_missingDictRowId );
+            // }
             // save in case checkWarnNoDict needs to set them
             long rowID = m_missingDictRowId;
             int menuID = m_missingDictMenuId;
@@ -2280,7 +2292,7 @@ public class GamesListDelegate extends ListDelegateBase
                 long[] rowIDs = { rowID };
                 doConfirmReset( rowIDs );
             } else if ( checkWarnNoDict( rowID ) ) {
-                GameUtils.launchGame( m_activity, rowID );
+                GameUtils.launchGame( getDelegator(), rowID );
             }
         }
         return madeGame;
@@ -2288,9 +2300,16 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void launchGame( long rowid, boolean invited )
     {
+        // DbgUtils.logf( "launchGame(%d)", rowid );
+        // if ( ! m_launchedGames.contains( rowid ) ) {
+        //     m_launchedGames.add( rowid );
+        //     m_delegator.launchGame( rowid, invited );
         if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
-            GameUtils.launchGame( m_activity, rowid, invited );
+            if ( m_adapter.inExpandedGroup( rowid ) ) {
+                setSelGame( rowid );
+            }
+            GameUtils.launchGame( getDelegator(), rowid, invited );
         }
     }
 
@@ -2320,13 +2339,19 @@ public class GamesListDelegate extends ListDelegateBase
     {
         GameSummary summary = (GameSummary)params[1];
         long rowid = (Long)params[0];
+        DbgUtils.logf( "GamesListDelegate.doOpenGame(%d)", rowid );
 
         if ( summary.conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {
             Assert.fail();
         } else {
-            if ( checkWarnNoDict( rowid ) ) {
-                launchGame( rowid );
+            try {
+                if ( checkWarnNoDict( rowid ) ) {
+                    launchGame( rowid );
+                }
+            } catch ( GameLock.GameLockedException gle ) {
+                DbgUtils.loge( gle );
+                finish();
             }
         }
     }
@@ -2465,11 +2490,12 @@ public class GamesListDelegate extends ListDelegateBase
 
             if ( doConfigure ) {
                 // configure it
-                GameConfigDelegate.editForResult( m_activity, RequestCode
-                                                  .CONFIG_GAME, rowID );
+                GameConfigDelegate.editForResult( getDelegator(), 
+                                                  RequestCode.CONFIG_GAME, 
+                                                  rowID );
             } else {
                 // launch it
-                GameUtils.launchGame( m_activity, rowID );
+                GameUtils.launchGame( getDelegator(), rowID );
             }
         }
     }

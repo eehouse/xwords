@@ -35,16 +35,15 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.provider.ContactsContract.PhoneLookup;
 import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.io.File;
@@ -237,6 +236,15 @@ public class Utils {
         NotificationManager nm = (NotificationManager)
             context.getSystemService( Context.NOTIFICATION_SERVICE );
         nm.cancel( id );
+    }
+
+    public static void playNotificationSound( Context context )
+    {
+        if ( CommonPrefs.getSoundNotify( context ) ) {
+            Uri uri = RingtoneManager
+                .getDefaultUri( RingtoneManager.TYPE_NOTIFICATION );
+            RingtoneManager.getRingtone( context, uri ).play();
+        }
     }
 
     // adapted from

@@ -26,6 +26,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.preference.PreferenceManager;
@@ -60,21 +61,40 @@ public class DbgUtils {
         logEnable( on );
     }
 
-    public static void logf( String msg ) 
+    public static void logf( String msg )
+    {
+        logf( true, msg );
+    }
+
+    public static void logf( boolean persist, String msg ) 
     {
         if ( s_doLog ) {
-            s_time.setToNow();
-            String time = s_time.format("[%H:%M:%S]");
+            String time = "";
+            // No need for timestamp on marshmallow, as the OS provides it
+            if ( true /*Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1*/ ) {
+                s_time.setToNow();
+                time = s_time.format("[%H:%M:%S]-");
+            }
             long id = Thread.currentThread().getId();
-            Log.d( TAG, time + "-" + id + "-" + msg );
+            msg = time + id + "-" + msg;
+            Log.d( TAG, msg );
+
+            if ( persist && BuildConfig.DEBUG ) {
+                DBUtils.appendLog( TAG, msg );
+            }
         }
     } // logf
 
     public static void logf( String format, Object... args )
     {
+        logf( true, format, args );
+    }
+
+    public static void logf( boolean persist, String format, Object... args )
+    {
         if ( s_doLog ) {
             Formatter formatter = new Formatter();
-            logf( formatter.format( format, args ).toString() );
+            logf( persist, formatter.format( format, args ).toString() );
         }
     } // logf
 

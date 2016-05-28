@@ -163,14 +163,15 @@ public class DictBrowseDelegate extends ListDelegateBase
 
     protected void init( Bundle savedInstanceState ) 
     {
-        Intent intent = getIntent();
-        String name = null == intent? null:intent.getStringExtra( DICT_NAME );
+        Bundle args = getArguments();
+        String name = null == args? null : args.getString( DICT_NAME );
+        Assert.assertNotNull( name );
         if ( null == name ) {
             finish();
         } else {
             m_name = name;
             m_loc = 
-                DictUtils.DictLoc.values()[intent.getIntExtra( DICT_LOC, 0 )];
+                DictUtils.DictLoc.values()[args.getInt( DICT_LOC, 0 )];
             m_lang = DictLangCache.getDictLangCode( m_activity, name );
 
             String[] names = { name };
@@ -363,9 +364,9 @@ public class DictBrowseDelegate extends ListDelegateBase
             DBUtils.dictsSetOffset( m_activity, m_name, m_loc, m_browseState );
             m_browseState = null;
 
-            startActivity( getIntent() );
+            finish(); // pop fragment stack before adding new (only it doesn't work)
 
-            finish();
+            launch( getDelegator(), getArguments() );
         }
     }
 
@@ -421,19 +422,31 @@ public class DictBrowseDelegate extends ListDelegateBase
         m_maxSpinner.setOnItemSelectedListener( this );
     }
 
-
-    public static void launch( Context caller, String name, 
-                               DictUtils.DictLoc loc )
+    private static void launch( Delegator delegator, Bundle bundle )
     {
-        Intent intent = new Intent( caller, DictBrowseActivity.class );
-        intent.putExtra( DICT_NAME, name );
-        intent.putExtra( DICT_LOC, loc.ordinal() );
-        caller.startActivity( intent );
+        Activity activity = delegator.getActivity();
+        if ( activity instanceof FragActivity ) {
+            FragActivity.addFragment( new DictBrowseFrag(), bundle, delegator );
+        } else {
+            Intent intent = new Intent( activity, DictBrowseActivity.class );
+            intent.putExtras( bundle );
+            activity.startActivity( intent );
+        }
     }
 
-    public static void launch( Context caller, String name )
+    public static void launch( Delegator delegator, String name, 
+                               DictUtils.DictLoc loc )
     {
-        DictUtils.DictLoc loc = DictUtils.getDictLoc( caller, name );
-        launch( caller, name, loc );
+        Bundle bundle = new Bundle();
+        bundle.putString( DICT_NAME, name );
+        bundle.putInt( DICT_LOC, loc.ordinal() );
+        launch( delegator, bundle );
+    }
+
+    public static void launch( Delegator delegator, String name )
+    {
+        DictUtils.DictLoc loc
+            = DictUtils.getDictLoc( delegator.getActivity(), name );
+        launch( delegator, name, loc );
     }
 }

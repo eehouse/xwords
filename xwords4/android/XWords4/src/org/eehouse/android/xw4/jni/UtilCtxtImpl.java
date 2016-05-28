@@ -254,7 +254,7 @@ public class UtilCtxtImpl implements UtilCtxt {
         subclassOverride( "userError" );
     }
 
-    public void informMove( String expl, String words )
+    public void informMove( int turn, String expl, String words )
     {
         subclassOverride( "informMove" );
     }
@@ -293,7 +293,7 @@ public class UtilCtxtImpl implements UtilCtxt {
     }
 
     // These need to go into some sort of chat DB, not dropped.
-    public void showChat( String msg, String fromPlayer )
+    public void showChat( String msg, int fromIndx, String fromName )
     {
         subclassOverride( "showChat" );
     }

@@ -67,6 +67,9 @@ public class DBUtils {
     public static final int GROUPID_UNSPEC = -1;
     public static final String KEY_NEWGAMECOUNT = "DBUtils.newGameCount";
 
+    // how many log rows to keep? (0 means off)
+    private static final int LOGLIMIT = 0;
+
     private static final String DICTS_SEP = ",";
 
     private static final String ROW_ID = "rowid";
@@ -96,13 +99,13 @@ public class DBUtils {
     }
 
     public static class HistoryPair {
-        private HistoryPair( String p_msg, boolean p_sourceLocal )
+        private HistoryPair( String p_msg, int p_playerIndx )
         {
             msg = p_msg;
-            sourceLocal = p_sourceLocal;
+            playerIndx = p_playerIndx;
         }
         String msg;
-        boolean sourceLocal;
+        int playerIndx;
     }
 
     public static class DictBrowseState {
@@ -118,10 +121,14 @@ public class DBUtils {
                                           long maxMillis )
     {
         GameSummary result = null;
-        GameLock lock = new GameLock( rowid, false ).lock( maxMillis );
-        if ( null != lock ) {
-            result = getSummary( context, lock );
-            lock.unlock();
+        try {
+            GameLock lock = new GameLock( rowid, false ).lock( maxMillis );
+            if ( null != lock ) {
+                result = getSummary( context, lock );
+                lock.unlock();
+            }
+        } catch ( GameLock.GameLockedException gle ) {
+            DbgUtils.loge( gle );
         }
         return result;
     }
@@ -595,7 +602,7 @@ public class DBUtils {
 
     }
 
-    private static void setInt( long rowid, String column, int value )
+    private static void setSummaryInt( long rowid, String column, int value )
     {
         ContentValues values = new ContentValues();
         values.put( column, value );
@@ -604,13 +611,13 @@ public class DBUtils {
 
     public static void setMsgFlags( long rowid, int flags )
     {
-        setInt( rowid, DBHelper.HASMSGS, flags );
+        setSummaryInt( rowid, DBHelper.HASMSGS, flags );
         notifyListeners( rowid, GameChangeType.GAME_CHANGED );
     }
 
     public static void setExpanded( long rowid, boolean expanded )
     {
-        setInt( rowid, DBHelper.CONTRACTED, expanded?0:1 );
+        setSummaryInt( rowid, DBHelper.CONTRACTED, expanded?0:1 );
     }
 
     private static int getInt( Context context, long rowid, String column,
@@ -1107,8 +1114,9 @@ public class DBUtils {
     public static void deleteGame( Context context, GameLock lock )
     {
         Assert.assertTrue( lock.canWrite() );
-        String selSummaries = String.format( ROW_ID_FMT, lock.getRowid() );
-        String selInvites = String.format( "%s=%d", DBHelper.ROW, lock.getRowid() );
+        long rowid = lock.getRowid();
+        String selSummaries = String.format( ROW_ID_FMT, rowid );
+        String selInvites = String.format( "%s=%d", DBHelper.ROW, rowid );
 
         initDB( context );
         synchronized( s_dbHelper ) {
@@ -1117,6 +1125,9 @@ public class DBUtils {
 
             // Delete invitations too
             db.delete( DBHelper.TABLE_NAME_INVITES, selInvites, null );
+
+            // Delete chats too -- same sel as for invites
+            db.delete( DBHelper.TABLE_NAME_CHAT, selInvites, null );
             
             db.close();
         }
@@ -1176,21 +1187,92 @@ public class DBUtils {
         updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
     }
 
-    public static HistoryPair[] getChatHistory( Context context, long rowid )
+    private static HistoryPair[] convertChatString( Context context, long rowid,
+                                                    boolean[] playersLocal )
+    {
+        HistoryPair[] result = null;
+        String oldHistory = getChatHistoryStr( context, rowid );
+        if ( null != oldHistory ) {
+            DbgUtils.logdf( "convertChatString(): got string: %s", oldHistory );
+
+            ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
+            ArrayList<HistoryPair> pairs = new ArrayList<HistoryPair>();
+            String localPrefix = LocUtils.getString( context, R.string.chat_local_id );
+            String rmtPrefix = LocUtils.getString( context, R.string.chat_other_id );
+            DbgUtils.logdf( "convertChatString(): prefixes: \"%s\" and \"%s\"", localPrefix, rmtPrefix );
+            String[] msgs = oldHistory.split( "\n" );
+            DbgUtils.logdf( "convertChatString(): split into %d", msgs.length );
+            int localPlayerIndx = -1;
+            int remotePlayerIndx = -1;
+            for ( int ii = playersLocal.length - 1; ii >= 0; --ii ) {
+                if ( playersLocal[ii] ) {
+                    localPlayerIndx = ii;
+                } else {
+                    remotePlayerIndx = ii;
+                }
+            }
+            for ( String msg : msgs ) {
+                DbgUtils.logdf( "convertChatString(): msg: %s", msg );
+                int indx = -1;
+                String prefix = null;
+                if ( msg.startsWith( localPrefix ) ) {
+                    DbgUtils.logdf( "convertChatString(): msg: %s starts with %s", msg, localPrefix );
+                    prefix = localPrefix;
+                    indx = localPlayerIndx;
+                } else if ( msg.startsWith( rmtPrefix ) ) {
+                    DbgUtils.logdf( "convertChatString(): msg: %s starts with %s", msg, rmtPrefix );
+                    prefix = rmtPrefix;
+                    indx = remotePlayerIndx;
+                } else {
+                    DbgUtils.logdf( "convertChatString(): msg: %s starts with neither", msg );
+                }
+                if ( -1 != indx ) {
+                    DbgUtils.logdf( "convertChatString(): removing substring %s; was: %s", prefix, msg );
+                    msg = msg.substring( prefix.length(), msg.length() );
+                    DbgUtils.logdf( "convertChatString(): removED substring; now %s", msg );
+                    valuess.add( cvForChat( rowid, msg, indx ) );
+
+                    HistoryPair pair = new HistoryPair(msg, indx );
+                    pairs.add( pair );
+                }
+            }
+            result = pairs.toArray( new HistoryPair[pairs.size()] );
+
+            appendChatHistory( context, valuess );
+            // clearChatHistoryString( context, rowid );
+        }
+        return result;
+    }
+
+    public static HistoryPair[] getChatHistory( Context context, long rowid,
+                                                boolean[] playersLocal )
     {
         HistoryPair[] result = null;
         if ( BuildConstants.CHAT_SUPPORTED ) {
-            final String localPrefix =
-                LocUtils.getString( context, R.string.chat_local_id );
-            String history = getChatHistoryStr( context, rowid );
-            if ( null != history ) {
-                String[] msgs = history.split( "\n" );
-                result = new HistoryPair[msgs.length];
-                for ( int ii = 0; ii < result.length; ++ii ) {
-                    String msg = msgs[ii];
-                    boolean isLocal = msg.startsWith( localPrefix );
-                    result[ii] = new HistoryPair( msg, isLocal );
+            String[] columns = { DBHelper.SENDER, DBHelper.MESSAGE };
+            String selection = String.format( "%s=%d", DBHelper.ROW, rowid );
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getReadableDatabase();
+                Cursor cursor = db.query( DBHelper.TABLE_NAME_CHAT, columns, 
+                                          selection, null, null, null, null );
+                if ( 0 < cursor.getCount() ) {
+                    result = new HistoryPair[cursor.getCount()];
+                    int msgIndex = cursor.getColumnIndex( DBHelper.MESSAGE );
+                    int plyrIndex = cursor.getColumnIndex( DBHelper.SENDER );
+                    for ( int ii = 0; cursor.moveToNext(); ++ii ) {
+                        String msg = cursor.getString( msgIndex );
+                        int plyr = cursor.getInt( plyrIndex );
+                        HistoryPair pair = new HistoryPair(msg, plyr );
+                        result[ii] = pair;
+                    }
                 }
+                cursor.close();
+                db.close();
+            }
+                
+            if ( null == result ) {
+                result = convertChatString( context, rowid, playersLocal );
             }
         }
         return result;
@@ -1674,26 +1756,57 @@ public class DBUtils {
         return result;
     }
 
-    public static void appendChatHistory( Context context, long rowid,
-                                          String msg, boolean local )
+    private static void appendChatHistory( Context context, 
+                                           ArrayList<ContentValues> valuess )
     {
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            Assert.assertNotNull( msg );
-            int id = local ? R.string.chat_local_id : R.string.chat_other_id;
-            msg = LocUtils.getString( context, id ) + msg;
-
-            String cur = getChatHistoryStr( context, rowid );
-            if ( null != cur ) {
-                msg = cur + "\n" + msg;
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            for ( ContentValues values : valuess ) {
+                db.insert( DBHelper.TABLE_NAME_CHAT, null, values );
             }
-
-            saveChatHistory( context, rowid, msg );
+            db.close();
         }
+    }
+
+    private static ContentValues cvForChat( long rowid, String msg, int plyr )
+    {
+        ContentValues values = new ContentValues();
+        values.put( DBHelper.ROW, rowid );
+        values.put( DBHelper.MESSAGE, msg );
+        values.put( DBHelper.SENDER, plyr );
+        return values;
+    }
+
+    public static void appendChatHistory( Context context, long rowid,
+                                          String msg, int fromPlayer )
+    {
+        Assert.assertNotNull( msg );
+        Assert.assertFalse( -1 == fromPlayer );
+        ArrayList<ContentValues> valuess = new ArrayList<ContentValues>();
+        valuess.add( cvForChat( rowid, msg, fromPlayer ) );
+        appendChatHistory( context, valuess );
+        DbgUtils.logf( "appendChatHistory: inserted \"%s\" from player %d", 
+                       msg, fromPlayer );
     } // appendChatHistory
 
     public static void clearChatHistory( Context context, long rowid )
     {
-        saveChatHistory( context, rowid, null );
+        String selection = String.format( "%s = %d", DBHelper.ROW, rowid );
+        initDB( context );
+        synchronized( s_dbHelper ) {
+            SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+            db.delete( DBHelper.TABLE_NAME_CHAT, selection, null );
+
+            // for now, remove any old-format history too. Later when it's
+            // removed once converted (after that process is completely
+            // debugged), this can be removed.
+            ContentValues values = new ContentValues();
+            values.putNull( DBHelper.CHAT_HISTORY );
+            updateRowImpl( db, DBHelper.TABLE_NAME_SUM, rowid, values );
+
+            db.close();
+        }
     }
 
     public static void setDBChangeListener( DBChangeListener listener )
@@ -1958,15 +2071,6 @@ public class DBUtils {
                                DBHelper.getDBName() ).exists();
         }
         return exists;
-    }
-
-    public static String[] getColumns( SQLiteDatabase db, String name )
-    {
-        String query = String.format( "SELECT * FROM %s LIMIT 1", name );
-        Cursor cursor = db.rawQuery( query, null );
-        String[] colNames = cursor.getColumnNames();
-        cursor.close();
-        return colNames;
     }
 
     public static void addToStudyList( Context context, String word,
@@ -2304,6 +2408,37 @@ public class DBUtils {
         return bytes;
     }
 
+    public static void appendLog( String tag, String msg )
+    {
+        Context context = XWApp.getContext();
+        if ( null != context ) {
+            appendLog( context, msg );
+        }
+    }
+
+    private static void appendLog( Context context, String msg )
+    {
+        if ( 0 < LOGLIMIT ) {
+            ContentValues values = new ContentValues();
+            values.put( DBHelper.MESSAGE, msg );
+
+            initDB( context );
+            synchronized( s_dbHelper ) {
+                SQLiteDatabase db = s_dbHelper.getWritableDatabase();
+                long rowid = db.insert( DBHelper.TABLE_NAME_LOGS, null, values );
+
+                if ( 0 == (rowid % (LOGLIMIT / 10)) ) {
+                    String where = 
+                        String.format( "not rowid in (select rowid from %s order by TIMESTAMP desc limit %d)",
+                                       DBHelper.TABLE_NAME_LOGS, LOGLIMIT );
+                    int nGone = db.delete( DBHelper.TABLE_NAME_LOGS, where, null );
+                    DbgUtils.logf( false, "appendLog(): deleted %d rows", nGone );
+                }
+                db.close();
+            }
+        }
+    }
+
     private static void copyGameDB( Context context, boolean toSDCard )
     {
         String name = DBHelper.getDBName();
@@ -2338,20 +2473,12 @@ public class DBUtils {
                               BuildConstants.VARIANT );
     }
     
-    // Chat is independent of the GameLock mechanism because it's not
-    // touching the SNAPSHOT column.
-    private static void saveChatHistory( Context context, long rowid,
-                                         String history )
-    {
-        ContentValues values = new ContentValues();
-        if ( null != history ) {
-            values.put( DBHelper.CHAT_HISTORY, history );
-        } else {
-            values.putNull( DBHelper.CHAT_HISTORY );
-        }
-        values.put( DBHelper.LASTPLAY_TIME, new Date().getTime() );
-        updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
-    }
+    // private static void clearChatHistoryString( Context context, long rowid )
+    // {
+    //     ContentValues values = new ContentValues();
+    //     values.putNull( DBHelper.CHAT_HISTORY );
+    //     updateRow( context, DBHelper.TABLE_NAME_SUM, rowid, values );
+    // }
 
     private static void initDB( Context context )
     {
@@ -2363,16 +2490,21 @@ public class DBUtils {
         }
     }
 
+    private static int updateRowImpl( SQLiteDatabase db, String table,
+                                      long rowid, ContentValues values )
+    {
+        String selection = String.format( ROW_ID_FMT, rowid );
+        return db.update( table, values, selection, null );
+    }
+
+
     private static void updateRow( Context context, String table,
                                    long rowid, ContentValues values )
     {
-        String selection = String.format( ROW_ID_FMT, rowid );
-
         initDB( context );
         synchronized( s_dbHelper ) {
             SQLiteDatabase db = s_dbHelper.getWritableDatabase();
-
-            int result = db.update( table, values, selection, null );
+            int result = updateRowImpl( db, table, rowid, values );
             db.close();
             if ( 0 == result ) {
                 DbgUtils.logf( "updateRow failed" );

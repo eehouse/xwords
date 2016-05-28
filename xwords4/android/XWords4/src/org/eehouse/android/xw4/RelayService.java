@@ -54,6 +54,7 @@ import org.eehouse.android.xw4.jni.GameSummary;
 import org.eehouse.android.xw4.jni.LastMoveInfo;
 import org.eehouse.android.xw4.jni.UtilCtxt.DevIDType;
 import org.eehouse.android.xw4.jni.XwJNI;
+import org.eehouse.android.xw4.jni.JNIThread;
 import org.eehouse.android.xw4.loc.LocUtils;
 
 public class RelayService extends XWService 
@@ -248,22 +249,26 @@ public class RelayService extends XWService
         long[] rowids = DBUtils.getRowIDsFor( this, nli.gameID() );
         if ( (null == rowids || 0 == rowids.length)
              || XWPrefs.getRelayInviteToSelfEnabled( this )) {
-            CommsAddrRec addr = nli.makeAddrRec( this );
-            // We can't pass a message sink, meaning we can't let the device
-            // connect to the inviting game, because it needs to be open to
-            // make the initial connection -- needs access to util. That
-            // should be fixable -- eventually.
-            RelayMsgSink sink = new RelayMsgSink();
-            long rowid = GameUtils.makeNewMultiGame( this, nli, sink,
-                                                     getUtilCtxt() );
-            if ( DBUtils.ROWID_NOTFOUND != rowid ) {
-                if ( null != nli.gameName && 0 < nli.gameName.length() ) {
-                    DBUtils.setName( this, rowid, nli.gameName );
+
+            if ( DictLangCache.haveDict( this, nli.lang, nli.dict ) ) {
+                long rowid = GameUtils.makeNewMultiGame( this, nli, 
+                                                         new RelayMsgSink(),
+                                                         getUtilCtxt() );
+                if ( DBUtils.ROWID_NOTFOUND != rowid ) {
+                    if ( null != nli.gameName && 0 < nli.gameName.length() ) {
+                        DBUtils.setName( this, rowid, nli.gameName );
+                    }
+                    String body = LocUtils.getString( this, 
+                                                      R.string.new_relay_body );
+                    GameUtils.postInvitedNotification( this, nli.gameID(), body, 
+                                                       rowid );
                 }
-                String body = LocUtils.getString( this, 
-                                                  R.string.new_relay_body );
-                GameUtils.postInvitedNotification( this, nli.gameID(), body, 
-                                                   rowid );
+            } else {
+                Intent intent = MultiService
+                    .makeMissingDictIntent( this, nli, 
+                                            DictFetchOwner.OWNER_RELAY );
+                MultiService.postMissingDictNotification( this, intent, 
+                                                          nli.gameID() );
             }
         }
     }
@@ -310,6 +315,12 @@ public class RelayService extends XWService
         Intent intent = new Intent( context, RelayService.class );
         intent.putExtra( CMD_STR, cmd.ordinal() );
         return intent;
+    }
+
+    @Override
+    protected MultiMsgSink getSink( long rowid )
+    {
+        return new RelayMsgSink().setRowID( rowid );
     }
 
     @Override
@@ -395,7 +406,7 @@ public class RelayService extends XWService
                         String relayID = intent.getStringExtra( RELAY_ID );
                         sendNoConnMessage( rowid, relayID, msg );
                     } else {
-                        feedMessage( rowid, msg );
+                        receiveMessage( this, rowid, null, msg, s_addr );
                     }
                     break;
                 case INVITE:
@@ -465,6 +476,15 @@ public class RelayService extends XWService
             }
         }
     }
+
+    // private void setupNotification( long rowid )
+    // {
+    //     Intent intent = GamesListDelegate.makeRowidIntent( this, rowid );
+    //     String msg = LocUtils.getString( this, R.string.notify_body_fmt, 
+    //                                      GameUtils.getName( this, rowid ) );
+    //     Utils.postNotification( this, intent, R.string.notify_title,
+    //                             msg, (int)rowid );
+    // }
 
     private boolean startFetchThreadIf()
     {
@@ -982,27 +1002,6 @@ public class RelayService extends XWService
         return devid;
     }
 
-    private void feedMessage( long rowid, byte[] msg )
-    {
-        DbgUtils.logdf( "RelayService::feedMessage: %d bytes for rowid %d", 
-                        msg.length, rowid );
-        if ( BoardDelegate.feedMessage( rowid, msg, s_addr ) ) {
-            DbgUtils.logdf( "feedMessage: board ate it" );
-            // do nothing
-        } else {
-            RelayMsgSink sink = new RelayMsgSink();
-            sink.setRowID( rowid );
-            BackMoveResult bmr = new BackMoveResult();
-            boolean[] isLocalP = new boolean[1];
-            if ( GameUtils.feedMessage( this, rowid, msg, s_addr, 
-                                        sink, bmr, isLocalP ) ) {
-                GameUtils.postMoveNotification( this, rowid, bmr, isLocalP[0] );
-            } else {
-                DbgUtils.logdf( "feedMessage(): background dropped it" );
-            }
-        }
-    }
-
     private void fetchAndProcess()
     {
         long[][] rowIDss = new long[1][];
@@ -1026,32 +1025,13 @@ public class RelayService extends XWService
             boolean[] isLocalP = new boolean[1];
             for ( int ii = 0; ii < nameCount; ++ii ) {
                 byte[][] forOne = msgs[ii];
-
-                // if game has messages, open it and feed 'em to it.
                 if ( null != forOne ) {
-                    BackMoveResult bmr = new BackMoveResult();
-                    sink.setRowID( rowIDs[ii] );
-                    // since BoardDelegate.feedMessages can't know:
-                    isLocalP[0] = false;
-                    if ( BoardDelegate.feedMessages( rowIDs[ii], forOne, s_addr )
-                         || GameUtils.feedMessages( this, rowIDs[ii],
-                                                    forOne, s_addr,
-                                                    sink, bmr, isLocalP ) ) {
-                        idsWMsgs.add( relayIDs[ii] );
-                        bmrs.add( bmr );
-                        isLocals.add( isLocalP[0] );
-                    } else {
-                        DbgUtils.logf( "RelayService.process(): message for %s (rowid %d)"
-                                       + " not consumed", relayIDs[ii], rowIDs[ii] );
+                    long rowid = rowIDs[ii];
+                    sink.setRowID( rowid );
+                    for ( byte[] msg : forOne ) {
+                        receiveMessage( this, rowid, sink, msg, s_addr );
                     }
                 }
-            }
-            if ( 0 < idsWMsgs.size() ) {
-                String[] tmp = new String[idsWMsgs.size()];
-                idsWMsgs.toArray( tmp );
-                BackMoveResult[] bmrsa = new BackMoveResult[bmrs.size()];
-                bmrs.toArray( bmrsa );
-                setupNotifications( tmp, bmrsa, isLocals );
             }
             sink.send( this );
         }

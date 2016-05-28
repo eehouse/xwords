@@ -385,8 +385,8 @@ public class ConnStatusHandler {
             String as64 = XWPrefs.getPrefsString( context, 
                                                   R.string.key_connstat_data );
             if ( null != as64 && 0 < as64.length() ) {
-                byte[] bytes = XwJNI.base64Decode( as64 );
                 try {
+                    byte[] bytes = XwJNI.base64Decode( as64 );
                     ObjectInputStream ois = 
                         new ObjectInputStream( new ByteArrayInputStream(bytes) );
                     s_records = 
