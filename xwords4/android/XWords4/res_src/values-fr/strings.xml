@@ -3005,7 +3005,7 @@ pour voir ce qui est disponible.</string>
 	<!--<string name="app_not_found_fmt">Unable to connect to Crosswords
 	on the device %1$s.  Please check that the device is within range
 	and that Crosswords is installed on it.</string>-->
-	<string name="app_not_found_fmt">Impossible de se connecter à Crosswords sur l\'appareil %1$s. Vérifiez que cet appareil est à portée et que Crosswords est installé dessus.</string>
+	<string name="app_not_found_fmt">Impossible de se connecter à Crosswords par Bluetooth sur l\'appareil %1$s. Vérifiez que cet appareil est à portée de Bluetooth et que Crosswords est installé dessus.</string>
 
 	<!-- label within default wordlists in app preferences -->
 	<!--<string name="default_language">Default language</string>-->
@@ -3469,4 +3469,17 @@ pour la langue</string>
 
     <string name="waiting_rematch_title">Revanche en cours</string>
     <string name="rematch_sent_toast">Invitations à la revanche envoyées</string>
+    <string name="invit_expl_sms_fmt">Invitation envoyée par SMS au numéro de téléphone %1$s sur %2$s</string>
+    <string name="invit_expl_bt_fmt">Invitation envoyée par Bluetooth à l\'appareil appairé \"%1$s\" sur %2$s</string>
+    <string name="invit_expl_relay_fmt">Invitation transmise par le relai à un autre appareil sur %1$s</string>
+    <string name="invit_expl_notarget_fmt">Invitation envoyée par %1$s sur %2$s. Destinataire inconnu.</string>
+
+    <string name="chat_hint">Tapez ici…</string>
+
+    <string name="chat_sender_fmt">%1$s :</string>
+    <string name="summary_busy">Résumé indisponible</string>
+
+    <string name="activity_button">Panneau unique</string>
+    <string name="fragment_button">Double panneau</string>
+
     </resources>
