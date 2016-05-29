@@ -1,2 +1,116 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<?xml version='1.0' encoding='UTF-8'?>
+<resources><string name="button_new_game">Spiel hinzufügen</string>
+    <string name="button_new_group">Gruppe hinzufügen</string>
+
+    <string name="str_game_name_fmt">%1$s (%2$s)</string>
+
+    <string name="robot_name_fmt">%1$s (Maschine)</string>
+
+    <string name="missing_player">(noch nicht hier …)</string>
+
+    <string name="summary_relay_conf_fmt">Konfiguriert für Raum „%1$s“</string>
+    <string name="summary_relay_wait_fmt">Auf Spieler in Raum „%1$s“ warten</string>
+    <string name="summary_relay_conn_fmt">Spiel läuft in Raum „%1$s“</string>
+    <string name="summary_relay_gameover_fmt">Spiel vorbei in Raum „%1$s“</string>
+
+    <string name="summary_invites_out">Eingeladene Spieler</string>
+
+    <string name="gameOver">Spiel vorbei</string>
+    <plurals name="moves_fmt">
+	<item quantity="one">%1$d Zug gespielt</item>
+	<item quantity="other">%1$d Züge gespielt</item>
+</plurals>
+
+    <string name="button_delete">Löschen</string>
+    <string name="button_reset">Neustarten</string>
+
+    <string name="gamel_menu_dicts">Wortlisten…</string>
+
+    <string name="menu_prefs">App-Einstellungen…</string>
+
+    <string name="gamel_menu_checkmoves">Züge prüfen</string>
+
+    <string name="board_menu_file_about">Über Crosswords…</string>
+
+    <string name="game_item_menu_title_fmt">Aktionen für „%1$s“:</string>
+
+    <string name="list_item_config">Spieleinstellungen…</string>
+    <string name="list_item_rename">Umbenennen…</string>
+    <string name="list_item_move">In Gruppe verschieben…</string>
+
+    <string name="list_item_delete">Spiel löschen</string>
+    <string name="list_item_reset">Neustarten</string>
+    <string name="list_item_copy">Kopieren</string>
+    <string name="game_rename_title">Partie umbenennen</string>
+    <string name="rename_label">Name dieser Partie ändern in:</string>
+    <string name="rename_label_caveat">Name dieser Partie ändern in (nur auf diesem Gerät):</string>
+
+    <plurals name="confirm_seldeletes_fmt">
+	<item quantity="one">Wollen Sie die ausgewählte Partie löschen? Es gibt kein Rückgängig.</item>
+	<item quantity="other">Wollen Sie die %1$d ausgewählten Partien löschen? Es gibt kein Rückgängig.</item>
+</plurals>
+
+    <string name="title_dicts_list">Crosswords-Wörterlisten</string>   
+    <string name="download_dicts">Weitere herunterladen…</string>
+
+
+    <string name="loc_builtin">Vorinstalliert</string>
+
+    <string name="loc_downloads">Downloads</string>
+
+    <string name="dicts_item_move">Speicherort ändern</string>
+
+    <string name="dicts_item_select">Als Standard festlegen</string>
+
+    <plurals name="confirm_delete_dict_fmt">
+	<item quantity="one">Wollen Sie die Wörterliste „%1$s“ löschen?</item>
+	<item quantity="other">Wollen Sie die Wörterlisten „%1$s“ löschen?</item>
+</plurals>
+
+    <string name="button_default_human">Mensch</string>
+    <string name="button_default_robot">Computer</string>
+    <string name="button_default_both">Beide</string>
+
+    <string name="move_dict_fmt">Speicherort für Wörterliste „%1$s“</string>
+
+    <string name="loc_internal">Intern</string>
+    <string name="loc_external">Extern</string>
+
+    <string name="title_game_config_fmt">Einstellungen für %1$s</string>  
+
+    <string name="title_gamenet_config_fmt">Einstellungen für „%1$s“ (im Netzwerk)</string>  
+
+    <string name="title_langs_list">Sprachen (basierend auf installierten Wörterlisten)</string>
+
+    <string name="button_add_player">Spieler hinzufügen</string>
+
+    <string name="button_juggle_players">Spieler durchmischen</string>
+
+    <string name="lang_label">Sprache der Partie</string>
+    <string name="langdict_label">Sprache der Partie/Wörterliste</string>
+
+    <string name="connect_label_fmt">Verbindung (über %1$s)</string>
+
+    <string name="new_room_hint">Raumname</string>
+
+    <string name="room_public">Neuen Raum öffentlich machen</string>
+
+    <string name="room_public_prompt">Öffentlichen Raum auswählen</string>
+
+    <string name="settings_label">Sonstige Einstellungen</string>
+
+    <string name="hints_allowed">Tipps erlauben</string>
+
+    <string name="nethints_allowed">Tipps erlauben (im Netzwerk)</string>
+
+    <string name="minutes_label">Minuten pro Spieler</string>
+
+    <string name="robot_spinner_prompt">Wie schlau soll der Computer spielen?</string>
+
+    <string name="robot_smart">Schlauer Computer</string>
+    <string name="robot_smarter">Schlauerer Computer</string>
+    <string name="robot_smartest">Schlauester Computer</string>
+
+    <string name="play">Partie spielen</string>
+
+    </resources>
