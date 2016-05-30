@@ -31,7 +31,7 @@ public class GCMIntentService extends GCMBaseIntentService {
 
     public GCMIntentService()
     {
-        super( GCMConsts.SENDER_ID );
+        super( BuildConstants.GCM_SENDER_ID );
     }
 
     @Override
@@ -118,13 +118,13 @@ public class GCMIntentService extends GCMBaseIntentService {
     public static void init( Application app )
     {
         int sdkVersion = Integer.valueOf( android.os.Build.VERSION.SDK );
-        if ( 8 <= sdkVersion && 0 < GCMConsts.SENDER_ID.length() ) {
+        if ( 8 <= sdkVersion && 0 < BuildConstants.GCM_SENDER_ID.length() ) {
             try {
                 GCMRegistrar.checkDevice( app );
                 // GCMRegistrar.checkManifest( app );
                 String regId = DevID.getGCMDevID( app );
                 if ( regId.equals("") ) {
-                    GCMRegistrar.register( app, GCMConsts.SENDER_ID );
+                    GCMRegistrar.register( app, BuildConstants.GCM_SENDER_ID );
                 }
             } catch ( UnsupportedOperationException uoe ) {
                 DbgUtils.logf( "Device can't do GCM." );

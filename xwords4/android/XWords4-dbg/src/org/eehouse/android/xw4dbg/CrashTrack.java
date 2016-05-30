@@ -28,9 +28,9 @@ import com.crittercism.app.Crittercism;
 public class CrashTrack {
 
     public static void init( Context context ) {
-        if ( 0 < GCMConsts.CRITTERCISM_APP_ID.length() ) {
+        if ( 0 < BuildConstants.CRITTERCISM_APP_ID.length() ) {
             Crittercism.initialize(context.getApplicationContext(), 
-                                   GCMConsts.CRITTERCISM_APP_ID );
+                                   BuildConstants.CRITTERCISM_APP_ID );
         }
     }
 }

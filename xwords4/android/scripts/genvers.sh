@@ -8,6 +8,8 @@ VARIANT=""
 CLIENT_VERS_RELAY=""
 CHAT_SUPPORTED=""
 THUMBNAIL_SUPPORTED=""
+GCM_SENDER_ID=${GCM_SENDER_ID:-""}
+CRITTERCISM_APP_ID=${CRITTERCISM_APP_ID:-""}
 
 usage() {
     echo "usage: $0 --variant <variant> --client-vers <relay_vers> \\"
@@ -103,10 +105,17 @@ EOF
 SHORTVERS="$(git describe --always $GITVERSION 2>/dev/null || echo ${GITVERSION}+)"
 GITHASH=$(git rev-parse --verify HEAD)
 
+if [ -z "$GCM_SENDER_ID" ]; then
+    echo "GCM_SENDER_ID empty; GCM use will be disabled" >&2
+fi
+if [ -z "$CRITTERCISM_APP_ID" ]; then
+    echo "CRITTERCISM_APP_ID empty; Crittercism will not be enabled" >&2
+fi
+
 cat <<EOF > ${BUILD_DIR}/src/org/eehouse/android/${VARIANT}/BuildConstants.java
 // auto-generated (by $(basename $0)); do not edit
 package org.eehouse.android.${VARIANT};
-class BuildConstants {
+public class BuildConstants {
     public static final String GIT_REV = "$SHORTVERS";
     public static final String STRINGS_HASH = "$STRINGS_HASH";
     public static final short CLIENT_VERS_RELAY = $CLIENT_VERS_RELAY;
@@ -115,6 +124,8 @@ class BuildConstants {
     public static final long BUILD_STAMP = $(date +'%s');
     public static final String DBG_TAG = "$DBG_TAG";
     public static final String VARIANT = "$VARIANT";
+    public static final String GCM_SENDER_ID = "${GCM_SENDER_ID}";
+    public static final String CRITTERCISM_APP_ID  = "${CRITTERCISM_APP_ID}";
 }
 EOF
 
