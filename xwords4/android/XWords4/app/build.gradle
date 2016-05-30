@@ -154,14 +154,7 @@ task ndkSetup(type: Exec) {
     commandLine "../scripts/ndksetup.sh"
 }
 
-task genGcmid(type: Exec) {
-    workingDir '../'
-    commandLine '../scripts/gen_gcmid.sh', 
-        '-o', "src/org/eehouse/android/$VARIANT_NAME/GCMConsts.java",
-        '-v', "$VARIANT_NAME"
-}
-
-task myPreBuild(dependsOn: ['genVers', 'ndkSetup', 'mkImages', 'copyStrings', 'mkXml', 'genGcmid']) {
+task myPreBuild(dependsOn: ['genVers', 'ndkSetup', 'mkImages', 'copyStrings', 'mkXml']) {
 }
 preBuild.dependsOn myPreBuild
 
