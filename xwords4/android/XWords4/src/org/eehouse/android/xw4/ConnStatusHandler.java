@@ -54,8 +54,6 @@ public class ConnStatusHandler {
         public Handler getHandler();
     }
 
-    // private static final int GREEN = 0x7F00FF00;
-    // private static final int RED = 0x7FFF0000;
     private static final int GREEN = 0xFF00FF00;
     private static final int RED = 0xFFFF0000;
     private static final int BLACK = 0xFF000000;
@@ -310,33 +308,27 @@ public class ConnStatusHandler {
                 Rect rect = new Rect( s_rect );
                 int quarterHeight = rect.height() / 4;
 
-                if ( isSolo && SOLO_NOGREEN ) {
-                    // paint a black background for the icon
-                    s_fillPaint.setColor( BLACK );
-                    canvas.drawRect( rect, s_fillPaint );
-                } else {
-                    int saveTop = rect.top;
-                    SuccessRecord record;
-                    boolean enabled = isSolo || anyTypeEnabled( context, connTypes );
+                int saveTop = rect.top;
+                SuccessRecord record;
+                boolean enabled = anyTypeEnabled( context, connTypes );
 
-                    // Do the background coloring. Top quarter first
-                    rect.bottom = rect.top + quarterHeight;
-                    drawQuarter( canvas, res, rect, connTypes, enabled, false );
+                // Do the background coloring. Top quarter first
+                rect.bottom = rect.top + quarterHeight;
+                drawQuarter( canvas, res, rect, connTypes, enabled, false );
 
-                    // paint the middle two quarters black to give the icon a
-                    // clear background
-                    rect.top = rect.bottom;
-                    rect.bottom += quarterHeight * 2;
-                    s_fillPaint.setColor( BLACK );
-                    canvas.drawRect( rect, s_fillPaint );
+                // paint the middle two quarters black to give the icon a
+                // clear background
+                rect.top = rect.bottom;
+                rect.bottom += quarterHeight * 2;
+                s_fillPaint.setColor( BLACK );
+                canvas.drawRect( rect, s_fillPaint );
 
-                    // bottom quarter
-                    rect.top = rect.bottom;
-                    rect.bottom = rect.top + quarterHeight;
-                    drawQuarter( canvas, res, rect, connTypes, enabled, true );
+                // bottom quarter
+                rect.top = rect.bottom;
+                rect.bottom = rect.top + quarterHeight;
+                drawQuarter( canvas, res, rect, connTypes, enabled, true );
 
-                    rect.top = saveTop;
-                }
+                rect.top = saveTop;
 
                 // Center the icon in the remaining (vertically middle) rect
                 rect.top += quarterHeight;
@@ -349,8 +341,7 @@ public class ConnStatusHandler {
                 rect.top = center - halfMin;
                 rect.bottom = center + halfMin;
 
-                int iconID = isSolo
-                    ? R.drawable.sologame__gen : R.drawable.multigame__gen;
+                int iconID = R.drawable.multigame__gen;
                 drawIn( canvas, res, iconID, rect );
             }
         }
