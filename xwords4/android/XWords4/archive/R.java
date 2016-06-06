@@ -35,6 +35,9 @@ public final class R {
     }
     public static final class attr {
     }
+    public static final class bool {
+        public static final int dualpane_enabled=0x7f070000;
+    }
     public static final class drawable {
         public static final int back__gen=0x7f020000;
         public static final int clear_all__gen=0x7f020001;
@@ -81,218 +84,218 @@ public final class R {
         public static final int zoom=0x7f02002a;
     }
     public static final class id {
-        public static final int about_xlator=0x7f0a0001;
-        public static final int activity_button=0x7f0a0066;
-        public static final int add_player=0x7f0a0033;
-        public static final int advertise_new_room_check=0x7f0a003a;
-        public static final int blessed_label=0x7f0a005a;
-        public static final int board_menu_chat=0x7f0a00a5;
-        public static final int board_menu_dict=0x7f0a00a1;
-        public static final int board_menu_done=0x7f0a008b;
-        public static final int board_menu_file_prefs=0x7f0a0098;
-        public static final int board_menu_flip=0x7f0a00a3;
-        public static final int board_menu_game_counts=0x7f0a0091;
-        public static final int board_menu_game_history=0x7f0a0093;
-        public static final int board_menu_game_invites=0x7f0a009a;
-        public static final int board_menu_game_left=0x7f0a0092;
-        public static final int board_menu_game_netstats=0x7f0a0099;
-        public static final int board_menu_game_resend=0x7f0a0095;
-        public static final int board_menu_game_resign=0x7f0a0094;
-        public static final int board_menu_hint_next=0x7f0a009f;
-        public static final int board_menu_hint_prev=0x7f0a009e;
-        public static final int board_menu_invite=0x7f0a009b;
-        public static final int board_menu_juggle=0x7f0a00a2;
-        public static final int board_menu_rematch=0x7f0a008a;
-        public static final int board_menu_toggle=0x7f0a00a6;
-        public static final int board_menu_trade=0x7f0a008c;
-        public static final int board_menu_trade_cancel=0x7f0a008d;
-        public static final int board_menu_trade_commit=0x7f0a008e;
-        public static final int board_menu_tray=0x7f0a0090;
-        public static final int board_menu_undo_current=0x7f0a00a0;
-        public static final int board_menu_undo_last=0x7f0a008f;
-        public static final int board_menu_zoom=0x7f0a00a4;
-        public static final int board_root=0x7f0a0002;
-        public static final int board_view=0x7f0a0003;
-        public static final int boardsize_spinner=0x7f0a0046;
-        public static final int button_add=0x7f0a0076;
-        public static final int button_clear=0x7f0a000b;
-        public static final int button_done=0x7f0a0065;
-        public static final int button_invite=0x7f0a000c;
-        public static final int button_newgame_multi=0x7f0a0048;
-        public static final int button_newgame_solo=0x7f0a0047;
-        public static final int button_rescan=0x7f0a000a;
-        public static final int button_study=0x7f0a0064;
-        public static final int change_connection=0x7f0a003e;
-        public static final int chat_button=0x7f0a0085;
-        public static final int chat_edit=0x7f0a0011;
-        public static final int chat_history=0x7f0a0010;
-        public static final int chat_menu_clear=0x7f0a00a8;
-        public static final int chat_menu_send=0x7f0a00a7;
-        public static final int chat_row_name=0x7f0a0012;
-        public static final int chat_row_text=0x7f0a0013;
-        public static final int checkbox=0x7f0a0054;
-        public static final int color_display_sample=0x7f0a0014;
-        public static final int color_edit_sample=0x7f0a0015;
-        public static final int confirm_sms_reasons=0x7f0a001c;
-        public static final int conn_types=0x7f0a001d;
-        public static final int connect_set_relay=0x7f0a0036;
-        public static final int conns_label=0x7f0a0035;
-        public static final int default_check=0x7f0a001e;
-        public static final int del=0x7f0a0057;
-        public static final int desc=0x7f0a0021;
-        public static final int details=0x7f0a0077;
-        public static final int dict_label=0x7f0a006e;
-        public static final int dict_spinner=0x7f0a0030;
-        public static final int dictlist_button=0x7f0a0084;
-        public static final int dicts_delete=0x7f0a00ab;
-        public static final int dicts_deselect_all=0x7f0a00aa;
-        public static final int dicts_download=0x7f0a00a9;
-        public static final int dicts_move=0x7f0a00ac;
-        public static final int dicts_select=0x7f0a00ad;
-        public static final int divider=0x7f0a0026;
-        public static final int download_button=0x7f0a0078;
-        public static final int dwnld_message=0x7f0a0052;
-        public static final int edit=0x7f0a0068;
-        public static final int edit_blue=0x7f0a001b;
-        public static final int edit_green=0x7f0a0019;
-        public static final int edit_red=0x7f0a0017;
-        public static final int english_label=0x7f0a0058;
-        public static final int english_view=0x7f0a0059;
-        public static final int exchange_buttons=0x7f0a0004;
-        public static final int exchange_cancel=0x7f0a0006;
-        public static final int exchange_commit=0x7f0a0005;
-        public static final int expander=0x7f0a0028;
-        public static final int filters=0x7f0a005f;
-        public static final int flip_button=0x7f0a0087;
-        public static final int fragment_button=0x7f0a0067;
-        public static final int game_locked_check=0x7f0a002b;
-        public static final int game_name=0x7f0a0049;
-        public static final int gamel_menu_checkmoves=0x7f0a0097;
-        public static final int games_game_config=0x7f0a00b0;
-        public static final int games_game_copy=0x7f0a00b5;
-        public static final int games_game_delete=0x7f0a00ae;
-        public static final int games_game_deselect=0x7f0a00b7;
-        public static final int games_game_invites=0x7f0a00b8;
-        public static final int games_game_move=0x7f0a00b1;
-        public static final int games_game_new_from=0x7f0a00b3;
-        public static final int games_game_rematch=0x7f0a00af;
-        public static final int games_game_rename=0x7f0a00b4;
-        public static final int games_game_reset=0x7f0a00b2;
-        public static final int games_game_select=0x7f0a00b6;
-        public static final int games_group_default=0x7f0a00bc;
-        public static final int games_group_delete=0x7f0a00bb;
-        public static final int games_group_movedown=0x7f0a00ba;
-        public static final int games_group_moveup=0x7f0a00b9;
-        public static final int games_group_rename=0x7f0a00bd;
-        public static final int games_menu_about=0x7f0a00c5;
-        public static final int games_menu_checkmoves=0x7f0a00c7;
-        public static final int games_menu_checkupdates=0x7f0a00c8;
-        public static final int games_menu_dicts=0x7f0a00c3;
-        public static final int games_menu_email=0x7f0a00c4;
-        public static final int games_menu_loaddb=0x7f0a00ca;
-        public static final int games_menu_newgame_net=0x7f0a00bf;
-        public static final int games_menu_newgame_solo=0x7f0a00be;
-        public static final int games_menu_newgroup=0x7f0a00c0;
-        public static final int games_menu_prefs=0x7f0a00c1;
-        public static final int games_menu_rateme=0x7f0a00c2;
-        public static final int games_menu_resend=0x7f0a00c6;
-        public static final int games_menu_storedb=0x7f0a00c9;
-        public static final int games_menu_study=0x7f0a0096;
-        public static final int group_done=0x7f0a0089;
-        public static final int group_exchange=0x7f0a009c;
-        public static final int group_hint=0x7f0a009d;
-        public static final int hideable=0x7f0a004e;
-        public static final int hints_allowed=0x7f0a003f;
-        public static final int invite_desc=0x7f0a0009;
-        public static final int inviter_check=0x7f0a000d;
-        public static final int item_name=0x7f0a0072;
-        public static final int item_score=0x7f0a0073;
-        public static final int join_public_room_check=0x7f0a0037;
-        public static final int juggle_players=0x7f0a0034;
-        public static final int label=0x7f0a0027;
-        public static final int lang_separator=0x7f0a002e;
-        public static final int lang_spinner=0x7f0a002f;
-        public static final int loc_item_check=0x7f0a00cc;
-        public static final int loc_item_clear=0x7f0a00cb;
-        public static final int loc_item_copy_bless=0x7f0a00ce;
-        public static final int loc_item_copy_eng=0x7f0a00cd;
-        public static final int loc_search_button=0x7f0a0061;
-        public static final int loc_search_field=0x7f0a0060;
-        public static final int local_label=0x7f0a005c;
-        public static final int local_player_set=0x7f0a006c;
-        public static final int main_container=0x7f0a002a;
-        public static final int manual_add_button=0x7f0a007a;
-        public static final int modtime=0x7f0a004f;
-        public static final int msg=0x7f0a0069;
-        public static final int msg_marker=0x7f0a004c;
-        public static final int name=0x7f0a007b;
-        public static final int name_edit=0x7f0a001f;
-        public static final int name_label=0x7f0a0079;
-        public static final int nexthint_button=0x7f0a0081;
-        public static final int not_again_check=0x7f0a006a;
-        public static final int nperdev_spinner=0x7f0a000e;
-        public static final int number=0x7f0a007c;
-        public static final int other_lang=0x7f0a0062;
-        public static final int password_edit=0x7f0a0071;
-        public static final int password_set=0x7f0a0070;
-        public static final int phonies_spinner=0x7f0a0044;
-        public static final int pick_faceup=0x7f0a0045;
-        public static final int pick_lang=0x7f0a007d;
-        public static final int pick_lang_spinner=0x7f0a007e;
-        public static final int play_button=0x7f0a002c;
-        public static final int player_list=0x7f0a0032;
-        public static final int player_name_edit=0x7f0a006d;
-        public static final int players=0x7f0a0029;
-        public static final int players_label=0x7f0a0031;
-        public static final int prevhint_button=0x7f0a0080;
-        public static final int private_rooms_set=0x7f0a0038;
-        public static final int progress_bar=0x7f0a0053;
-        public static final int public_rooms_set=0x7f0a003b;
-        public static final int refresh_button=0x7f0a003d;
-        public static final int remote_check=0x7f0a006b;
-        public static final int revert_all=0x7f0a0075;
-        public static final int revert_colors=0x7f0a0074;
-        public static final int robot_check=0x7f0a006f;
-        public static final int role=0x7f0a0051;
-        public static final int room_edit=0x7f0a0039;
-        public static final int room_spinner=0x7f0a003c;
-        public static final int screen=0x7f0a002d;
-        public static final int scroll=0x7f0a000f;
-        public static final int search_button=0x7f0a0023;
-        public static final int seek_blue=0x7f0a001a;
-        public static final int seek_green=0x7f0a0018;
-        public static final int seek_red=0x7f0a0016;
-        public static final int show_remote=0x7f0a0020;
-        public static final int shuffle_button=0x7f0a0082;
-        public static final int slmenu_clear_sel=0x7f0a00d3;
-        public static final int slmenu_copy_sel=0x7f0a00d2;
-        public static final int slmenu_deselect_all=0x7f0a00d1;
-        public static final int slmenu_lookup_sel=0x7f0a00cf;
-        public static final int slmenu_select_all=0x7f0a00d0;
-        public static final int smart_robot=0x7f0a0043;
-        public static final int state=0x7f0a0050;
-        public static final int summary=0x7f0a0063;
-        public static final int tbar_parent_hor=0x7f0a0007;
-        public static final int tbar_parent_vert=0x7f0a0008;
-        public static final int text_item=0x7f0a0055;
-        public static final int text_item2=0x7f0a0056;
-        public static final int thumbnail=0x7f0a004d;
-        public static final int timer_minutes_edit=0x7f0a0042;
-        public static final int timer_set=0x7f0a0041;
-        public static final int toolbar=0x7f0a007f;
-        public static final int undo_button=0x7f0a0083;
-        public static final int use_timer=0x7f0a0040;
-        public static final int values_button=0x7f0a0086;
-        public static final int version_string=0x7f0a0000;
-        public static final int view_loaded=0x7f0a004b;
-        public static final int view_unloaded=0x7f0a004a;
-        public static final int word_edit=0x7f0a0022;
-        public static final int wordlen_max=0x7f0a0025;
-        public static final int wordlen_min=0x7f0a0024;
-        public static final int xlated_view=0x7f0a005e;
-        public static final int xlated_view_blessed=0x7f0a005b;
-        public static final int xlated_view_local=0x7f0a005d;
-        public static final int zoom_button=0x7f0a0088;
+        public static final int about_xlator=0x7f0b0001;
+        public static final int activity_button=0x7f0b0066;
+        public static final int add_player=0x7f0b0033;
+        public static final int advertise_new_room_check=0x7f0b003a;
+        public static final int blessed_label=0x7f0b005a;
+        public static final int board_menu_chat=0x7f0b00a5;
+        public static final int board_menu_dict=0x7f0b00a1;
+        public static final int board_menu_done=0x7f0b008b;
+        public static final int board_menu_file_prefs=0x7f0b0098;
+        public static final int board_menu_flip=0x7f0b00a3;
+        public static final int board_menu_game_counts=0x7f0b0091;
+        public static final int board_menu_game_history=0x7f0b0093;
+        public static final int board_menu_game_invites=0x7f0b009a;
+        public static final int board_menu_game_left=0x7f0b0092;
+        public static final int board_menu_game_netstats=0x7f0b0099;
+        public static final int board_menu_game_resend=0x7f0b0095;
+        public static final int board_menu_game_resign=0x7f0b0094;
+        public static final int board_menu_hint_next=0x7f0b009f;
+        public static final int board_menu_hint_prev=0x7f0b009e;
+        public static final int board_menu_invite=0x7f0b009b;
+        public static final int board_menu_juggle=0x7f0b00a2;
+        public static final int board_menu_rematch=0x7f0b008a;
+        public static final int board_menu_toggle=0x7f0b00a6;
+        public static final int board_menu_trade=0x7f0b008c;
+        public static final int board_menu_trade_cancel=0x7f0b008d;
+        public static final int board_menu_trade_commit=0x7f0b008e;
+        public static final int board_menu_tray=0x7f0b0090;
+        public static final int board_menu_undo_current=0x7f0b00a0;
+        public static final int board_menu_undo_last=0x7f0b008f;
+        public static final int board_menu_zoom=0x7f0b00a4;
+        public static final int board_root=0x7f0b0002;
+        public static final int board_view=0x7f0b0003;
+        public static final int boardsize_spinner=0x7f0b0046;
+        public static final int button_add=0x7f0b0076;
+        public static final int button_clear=0x7f0b000b;
+        public static final int button_done=0x7f0b0065;
+        public static final int button_invite=0x7f0b000c;
+        public static final int button_newgame_multi=0x7f0b0048;
+        public static final int button_newgame_solo=0x7f0b0047;
+        public static final int button_rescan=0x7f0b000a;
+        public static final int button_study=0x7f0b0064;
+        public static final int change_connection=0x7f0b003e;
+        public static final int chat_button=0x7f0b0085;
+        public static final int chat_edit=0x7f0b0011;
+        public static final int chat_history=0x7f0b0010;
+        public static final int chat_menu_clear=0x7f0b00a8;
+        public static final int chat_menu_send=0x7f0b00a7;
+        public static final int chat_row_name=0x7f0b0012;
+        public static final int chat_row_text=0x7f0b0013;
+        public static final int checkbox=0x7f0b0054;
+        public static final int color_display_sample=0x7f0b0014;
+        public static final int color_edit_sample=0x7f0b0015;
+        public static final int confirm_sms_reasons=0x7f0b001c;
+        public static final int conn_types=0x7f0b001d;
+        public static final int connect_set_relay=0x7f0b0036;
+        public static final int conns_label=0x7f0b0035;
+        public static final int default_check=0x7f0b001e;
+        public static final int del=0x7f0b0057;
+        public static final int desc=0x7f0b0021;
+        public static final int details=0x7f0b0077;
+        public static final int dict_label=0x7f0b006e;
+        public static final int dict_spinner=0x7f0b0030;
+        public static final int dictlist_button=0x7f0b0084;
+        public static final int dicts_delete=0x7f0b00ab;
+        public static final int dicts_deselect_all=0x7f0b00aa;
+        public static final int dicts_download=0x7f0b00a9;
+        public static final int dicts_move=0x7f0b00ac;
+        public static final int dicts_select=0x7f0b00ad;
+        public static final int divider=0x7f0b0026;
+        public static final int download_button=0x7f0b0078;
+        public static final int dwnld_message=0x7f0b0052;
+        public static final int edit=0x7f0b0068;
+        public static final int edit_blue=0x7f0b001b;
+        public static final int edit_green=0x7f0b0019;
+        public static final int edit_red=0x7f0b0017;
+        public static final int english_label=0x7f0b0058;
+        public static final int english_view=0x7f0b0059;
+        public static final int exchange_buttons=0x7f0b0004;
+        public static final int exchange_cancel=0x7f0b0006;
+        public static final int exchange_commit=0x7f0b0005;
+        public static final int expander=0x7f0b0028;
+        public static final int filters=0x7f0b005f;
+        public static final int flip_button=0x7f0b0087;
+        public static final int fragment_button=0x7f0b0067;
+        public static final int game_locked_check=0x7f0b002b;
+        public static final int game_name=0x7f0b0049;
+        public static final int gamel_menu_checkmoves=0x7f0b0097;
+        public static final int games_game_config=0x7f0b00b0;
+        public static final int games_game_copy=0x7f0b00b5;
+        public static final int games_game_delete=0x7f0b00ae;
+        public static final int games_game_deselect=0x7f0b00b7;
+        public static final int games_game_invites=0x7f0b00b8;
+        public static final int games_game_move=0x7f0b00b1;
+        public static final int games_game_new_from=0x7f0b00b3;
+        public static final int games_game_rematch=0x7f0b00af;
+        public static final int games_game_rename=0x7f0b00b4;
+        public static final int games_game_reset=0x7f0b00b2;
+        public static final int games_game_select=0x7f0b00b6;
+        public static final int games_group_default=0x7f0b00bc;
+        public static final int games_group_delete=0x7f0b00bb;
+        public static final int games_group_movedown=0x7f0b00ba;
+        public static final int games_group_moveup=0x7f0b00b9;
+        public static final int games_group_rename=0x7f0b00bd;
+        public static final int games_menu_about=0x7f0b00c5;
+        public static final int games_menu_checkmoves=0x7f0b00c7;
+        public static final int games_menu_checkupdates=0x7f0b00c8;
+        public static final int games_menu_dicts=0x7f0b00c3;
+        public static final int games_menu_email=0x7f0b00c4;
+        public static final int games_menu_loaddb=0x7f0b00ca;
+        public static final int games_menu_newgame_net=0x7f0b00bf;
+        public static final int games_menu_newgame_solo=0x7f0b00be;
+        public static final int games_menu_newgroup=0x7f0b00c0;
+        public static final int games_menu_prefs=0x7f0b00c1;
+        public static final int games_menu_rateme=0x7f0b00c2;
+        public static final int games_menu_resend=0x7f0b00c6;
+        public static final int games_menu_storedb=0x7f0b00c9;
+        public static final int games_menu_study=0x7f0b0096;
+        public static final int group_done=0x7f0b0089;
+        public static final int group_exchange=0x7f0b009c;
+        public static final int group_hint=0x7f0b009d;
+        public static final int hideable=0x7f0b004e;
+        public static final int hints_allowed=0x7f0b003f;
+        public static final int invite_desc=0x7f0b0009;
+        public static final int inviter_check=0x7f0b000d;
+        public static final int item_name=0x7f0b0072;
+        public static final int item_score=0x7f0b0073;
+        public static final int join_public_room_check=0x7f0b0037;
+        public static final int juggle_players=0x7f0b0034;
+        public static final int label=0x7f0b0027;
+        public static final int lang_separator=0x7f0b002e;
+        public static final int lang_spinner=0x7f0b002f;
+        public static final int loc_item_check=0x7f0b00cc;
+        public static final int loc_item_clear=0x7f0b00cb;
+        public static final int loc_item_copy_bless=0x7f0b00ce;
+        public static final int loc_item_copy_eng=0x7f0b00cd;
+        public static final int loc_search_button=0x7f0b0061;
+        public static final int loc_search_field=0x7f0b0060;
+        public static final int local_label=0x7f0b005c;
+        public static final int local_player_set=0x7f0b006c;
+        public static final int main_container=0x7f0b002a;
+        public static final int manual_add_button=0x7f0b007a;
+        public static final int modtime=0x7f0b004f;
+        public static final int msg=0x7f0b0069;
+        public static final int msg_marker=0x7f0b004c;
+        public static final int name=0x7f0b007b;
+        public static final int name_edit=0x7f0b001f;
+        public static final int name_label=0x7f0b0079;
+        public static final int nexthint_button=0x7f0b0081;
+        public static final int not_again_check=0x7f0b006a;
+        public static final int nperdev_spinner=0x7f0b000e;
+        public static final int number=0x7f0b007c;
+        public static final int other_lang=0x7f0b0062;
+        public static final int password_edit=0x7f0b0071;
+        public static final int password_set=0x7f0b0070;
+        public static final int phonies_spinner=0x7f0b0044;
+        public static final int pick_faceup=0x7f0b0045;
+        public static final int pick_lang=0x7f0b007d;
+        public static final int pick_lang_spinner=0x7f0b007e;
+        public static final int play_button=0x7f0b002c;
+        public static final int player_list=0x7f0b0032;
+        public static final int player_name_edit=0x7f0b006d;
+        public static final int players=0x7f0b0029;
+        public static final int players_label=0x7f0b0031;
+        public static final int prevhint_button=0x7f0b0080;
+        public static final int private_rooms_set=0x7f0b0038;
+        public static final int progress_bar=0x7f0b0053;
+        public static final int public_rooms_set=0x7f0b003b;
+        public static final int refresh_button=0x7f0b003d;
+        public static final int remote_check=0x7f0b006b;
+        public static final int revert_all=0x7f0b0075;
+        public static final int revert_colors=0x7f0b0074;
+        public static final int robot_check=0x7f0b006f;
+        public static final int role=0x7f0b0051;
+        public static final int room_edit=0x7f0b0039;
+        public static final int room_spinner=0x7f0b003c;
+        public static final int screen=0x7f0b002d;
+        public static final int scroll=0x7f0b000f;
+        public static final int search_button=0x7f0b0023;
+        public static final int seek_blue=0x7f0b001a;
+        public static final int seek_green=0x7f0b0018;
+        public static final int seek_red=0x7f0b0016;
+        public static final int show_remote=0x7f0b0020;
+        public static final int shuffle_button=0x7f0b0082;
+        public static final int slmenu_clear_sel=0x7f0b00d3;
+        public static final int slmenu_copy_sel=0x7f0b00d2;
+        public static final int slmenu_deselect_all=0x7f0b00d1;
+        public static final int slmenu_lookup_sel=0x7f0b00cf;
+        public static final int slmenu_select_all=0x7f0b00d0;
+        public static final int smart_robot=0x7f0b0043;
+        public static final int state=0x7f0b0050;
+        public static final int summary=0x7f0b0063;
+        public static final int tbar_parent_hor=0x7f0b0007;
+        public static final int tbar_parent_vert=0x7f0b0008;
+        public static final int text_item=0x7f0b0055;
+        public static final int text_item2=0x7f0b0056;
+        public static final int thumbnail=0x7f0b004d;
+        public static final int timer_minutes_edit=0x7f0b0042;
+        public static final int timer_set=0x7f0b0041;
+        public static final int toolbar=0x7f0b007f;
+        public static final int undo_button=0x7f0b0083;
+        public static final int use_timer=0x7f0b0040;
+        public static final int values_button=0x7f0b0086;
+        public static final int version_string=0x7f0b0000;
+        public static final int view_loaded=0x7f0b004b;
+        public static final int view_unloaded=0x7f0b004a;
+        public static final int word_edit=0x7f0b0022;
+        public static final int wordlen_max=0x7f0b0025;
+        public static final int wordlen_min=0x7f0b0024;
+        public static final int xlated_view=0x7f0b005e;
+        public static final int xlated_view_blessed=0x7f0b005b;
+        public static final int xlated_view_local=0x7f0b005d;
+        public static final int zoom_button=0x7f0b0088;
     }
     public static final class layout {
         public static final int about_dlg=0x7f030000;
@@ -340,20 +343,20 @@ public final class R {
         public static final int toolbar=0x7f03002a;
     }
     public static final class menu {
-        public static final int board_menu=0x7f090000;
-        public static final int chat_menu=0x7f090001;
-        public static final int dicts_menu=0x7f090002;
-        public static final int empty=0x7f090003;
-        public static final int games_list_game_menu=0x7f090004;
-        public static final int games_list_group_menu=0x7f090005;
-        public static final int games_list_menu=0x7f090006;
-        public static final int loc_item_menu=0x7f090007;
-        public static final int studylist=0x7f090008;
+        public static final int board_menu=0x7f0a0000;
+        public static final int chat_menu=0x7f0a0001;
+        public static final int dicts_menu=0x7f0a0002;
+        public static final int empty=0x7f0a0003;
+        public static final int games_list_game_menu=0x7f0a0004;
+        public static final int games_list_group_menu=0x7f0a0005;
+        public static final int games_list_menu=0x7f0a0006;
+        public static final int loc_item_menu=0x7f0a0007;
+        public static final int studylist=0x7f0a0008;
     }
     public static final class plurals {
         /**   
          */
-        public static final int confirm_clear_sms_fmt=0x7f07000f;
+        public static final int confirm_clear_sms_fmt=0x7f08000f;
         /**  text of confirmation dialog posted when the delete 'X' button
          beside the listing of a wordlist is tapped.  The name of the
          wordlist is substituted for %1$s.  Sometimes one of the two
@@ -363,7 +366,7 @@ public final class R {
          wordlist is substituted for %1$s.  Sometimes one of the two
          strings below is appended. 
          */
-        public static final int confirm_delete_dict_fmt=0x7f070003;
+        public static final int confirm_delete_dict_fmt=0x7f080003;
         /**  Text of confirmation dialog posted when list_item_reset menu
          is selected 
  Text of confirmation dialog posted when list_item_reset menu
@@ -372,33 +375,33 @@ public final class R {
     parties sélectionnées ?\n\n(Recommencer fait perdre tous les coups et
 toutes les informations de connexion.)</string>
          */
-        public static final int confirm_reset_fmt=0x7f070002;
+        public static final int confirm_reset_fmt=0x7f080002;
         /** <string name="confirm_seldeletes_fmt">Êtes-vous sûr de vouloir effacer les
 %1$d parties sélectionnées ? Cette action ne peut pas être annulée.</string>
          */
-        public static final int confirm_seldeletes_fmt=0x7f070001;
+        public static final int confirm_seldeletes_fmt=0x7f080001;
         /** <string name="confirm_studylist_clear_fmt">Are you sure you want to
     delete the %1$d selected word[s]?\n\n(This action cannot be undone.)</string>
 <string name="confirm_studylist_clear_fmt">Êtes-vous sûr de vouloir effacer
 les %1$d mots sélectionnés ?\n\n(Cette action ne peut pas être annulée.)</string>
          */
-        public static final int confirm_studylist_clear_fmt=0x7f070013;
+        public static final int confirm_studylist_clear_fmt=0x7f080013;
         /** <string name="group_name_fmt">%1$s (%2$d games)</string>
 <string name="group_name_fmt">%1$s (%2$d parties)</string>
          */
-        public static final int group_name_fmt=0x7f070012;
+        public static final int group_name_fmt=0x7f080012;
         /** <string name="groups_confirm_del_fmt">Are you sure you want to delete
     the %1$d selected group[s]?</string>
 <string name="groups_confirm_del_fmt">Êtes-vous sûr de vouloir effacer les
 %1$d groupes sélectionnés ?</string>
          */
-        public static final int groups_confirm_del_fmt=0x7f070010;
+        public static final int groups_confirm_del_fmt=0x7f080010;
         /** <string name="groups_confirm_del_games_fmt">\n\n(%1$d game[s] will
     also be deleted.)</string>
 <string name="groups_confirm_del_games_fmt">\n\n(%1$d parties seront aussi
 effacées.)</string>
          */
-        public static final int groups_confirm_del_games_fmt=0x7f070011;
+        public static final int groups_confirm_del_games_fmt=0x7f080011;
         /**   
   
 <string name="invite_bt_desc_fmt">Please select the %1$d device[s]
@@ -408,7 +411,7 @@ effacées.)</string>
 vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne
 voyez pas un périphérique que vous attendez.</string>
          */
-        public static final int invite_bt_desc_fmt=0x7f07000c;
+        public static final int invite_bt_desc_fmt=0x7f08000c;
         /**  If a networked game is opened and is not complete, i.e. if it
          is listed as expecting remote players who have not yet shown
          up, then the most likely explanation is that none has been
@@ -432,11 +435,11 @@ voyez pas un périphérique que vous attendez.</string>
 partie. Voulez-vous inviter quelqu\'un - - à moins que vous ne l\'ayez déjà
 fait ?</string>
          */
-        public static final int invite_msg_fmt=0x7f070004;
+        public static final int invite_msg_fmt=0x7f080004;
         /**   
          */
-        public static final int invite_relay_desc_fmt=0x7f07000e;
-        public static final int invite_sent_fmt=0x7f070005;
+        public static final int invite_relay_desc_fmt=0x7f08000e;
+        public static final int invite_sent_fmt=0x7f080005;
         /**   
   
 <string name="invite_sms_desc_fmt">Please check the %1$d phone
@@ -444,19 +447,19 @@ fait ?</string>
 <string name="invite_sms_desc_fmt">Vérifiez les %1$d numéros de téléphone
 que vous voulez inviter à votre partie, puis touchez \"%2$s\".</string>
          */
-        public static final int invite_sms_desc_fmt=0x7f07000d;
+        public static final int invite_sms_desc_fmt=0x7f08000d;
         /** <string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    
 <string name="lang_name_fmt">%1$s (%2$d listes de mots)</string>    
          */
-        public static final int lang_name_fmt=0x7f070016;
+        public static final int lang_name_fmt=0x7f080016;
         /** <string name="lmi_move_fmt">%1$s played %2$s for %3$d points</string>
 <string name="lmi_move_fmt">%1$s a joué %2$s pour %3$d points</string>
          */
-        public static final int lmi_move_fmt=0x7f07001a;
+        public static final int lmi_move_fmt=0x7f08001a;
         /** <string name="lmi_trade_fmt">%1$s traded %2$d tiles</string>
 <string name="lmi_trade_fmt">%1$s a échangé %2$d jetons</string>
          */
-        public static final int lmi_trade_fmt=0x7f07001b;
+        public static final int lmi_trade_fmt=0x7f08001b;
         /**  Otherwise they're listed with this to give some indication of
          how far along they are.  I may list "tiles left" someday
          instead... 
@@ -464,7 +467,7 @@ que vous voulez inviter à votre partie, puis touchez \"%2$s\".</string>
          how far along they are.  I may list "tiles left" someday
          instead... 
          */
-        public static final int moves_fmt=0x7f070000;
+        public static final int moves_fmt=0x7f080000;
         /**  Text of "toast" (mini window briefly displayed) shown when a
          game first connects to the relay.  The three substitutions
          are the device's order within the game (e.g. 2), the name of
@@ -486,11 +489,11 @@ que vous voulez inviter à votre partie, puis touchez \"%2$s\".</string>
 <string name="msg_relay_waiting_fmt">Le périphérique %1$d est connecté au
 relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>
          */
-        public static final int msg_relay_waiting_fmt=0x7f070006;
+        public static final int msg_relay_waiting_fmt=0x7f080006;
         /** <string name="nag_days_fmt">%1$d day[s]</string>
 <string name="nag_days_fmt">%1$d jour[s]</string>
          */
-        public static final int nag_days_fmt=0x7f070019;
+        public static final int nag_days_fmt=0x7f080019;
         /**  body of warning notification reminder message. First three
     are used to build a string based on the length of time that's then
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
@@ -500,26 +503,26 @@ relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>
 <string name="nag_hours_fmt">%1$d hour[s]</string>
 <string name="nag_hours_fmt">%1$d heure[s]</string>
          */
-        public static final int nag_hours_fmt=0x7f070018;
+        public static final int nag_hours_fmt=0x7f080018;
         /**  body of warning notification reminder message. First three
     are used to build a string based on the length of time that's then
     inserted in the fourth.  E.g "PlayerName moved more than 2 day[s],
     4 hour[s] ago." 
          */
-        public static final int nag_minutes_fmt=0x7f070017;
+        public static final int nag_minutes_fmt=0x7f080017;
         /** <string name="new_xlations_fmt">Installed %1$d new translations</string>
 <string name="new_xlations_fmt">%1$d nouvelles traductions installées</string>
          */
-        public static final int new_xlations_fmt=0x7f070015;
+        public static final int new_xlations_fmt=0x7f080015;
         /** XLATE-ME
 <string name="nplayers_fmt">%1$d player[s]</string>
 <string name="nplayers_fmt">%1$d joueur[s]</string>
          */
-        public static final int nplayers_fmt=0x7f07001c;
+        public static final int nplayers_fmt=0x7f08001c;
         /** <string name="paste_done_fmt">%1$d word[s] copied</string>
 <string name="paste_done_fmt">%1$d mots copiés</string>
          */
-        public static final int paste_done_fmt=0x7f070014;
+        public static final int paste_done_fmt=0x7f080014;
         /**  Text of dialog asking user to confirm a move that exchanges
          tiles (instead of forming a new word to earn points) 
  Text of dialog asking user to confirm a move that exchanges
@@ -529,14 +532,14 @@ relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>
 <string name="query_trade_fmt">Êtes-vous sûr de vouloir échanger les %1$d
 jetons sélectionnés (%2$s) ?</string>
          */
-        public static final int query_trade_fmt=0x7f07000b;
+        public static final int query_trade_fmt=0x7f08000b;
         /** <string name="resend_finished_fmt">Resend finished; sent %1$d message[s].</string>
 <string name="resend_finished_fmt">Renvoi fini ; %1$d message[s] envoyé[s].</string>
          */
-        public static final int resend_finished_fmt=0x7f070007;
+        public static final int resend_finished_fmt=0x7f080007;
         /**  Shown after "resend messages" menuitem chosen 
          */
-        public static final int resent_msgs_fmt=0x7f07001d;
+        public static final int resent_msgs_fmt=0x7f08001d;
         /**  Intro to the paragraph listing all of the tiles remaining 
  Intro to the paragraph lisiting all of the tiles remaining 
 <string name="strd_remains_expl_fmt">%1$d tiles left in pool and all
@@ -544,7 +547,7 @@ jetons sélectionnés (%2$s) ?</string>
 <string name="strd_remains_expl_fmt">%1$d jetons restants dans le sac et
 tous les chevalets :\n</string>
          */
-        public static final int strd_remains_expl_fmt=0x7f07000a;
+        public static final int strd_remains_expl_fmt=0x7f08000a;
         /**  First line in the remaining tiles dialog (reached by tapping
          the number at left end of the scoreboard) 
  First line in the remaining tiles dialog (reached by tapping
@@ -552,7 +555,7 @@ tous les chevalets :\n</string>
 <string name="strd_remains_header_fmt">%1$d tiles left in pool.</string>
 <string name="strd_remains_header_fmt">%1$d jetons restants dans le sac.</string>
          */
-        public static final int strd_remains_header_fmt=0x7f070009;
+        public static final int strd_remains_header_fmt=0x7f080009;
         /**  Notifies user of a robot trade move 
  returned by util_getUserString 
  
@@ -569,7 +572,7 @@ tous les chevalets :\n</string>
 <string name="strd_robot_traded_fmt">a échangé %1$d jetons.</string>
  returned by util_getUserString 
          */
-        public static final int strd_robot_traded_fmt=0x7f070008;
+        public static final int strd_robot_traded_fmt=0x7f080008;
     }
     public static final class string {
         /**  copyright info 
@@ -6974,25 +6977,25 @@ réseau.)</string>
         public static final int xwords_nfc_mime=0x7f05007c;
     }
     public static final class style {
-        public static final int about_items=0x7f080005;
-        public static final int color_edit_text=0x7f080003;
-        public static final int color_seek_bar=0x7f080002;
-        public static final int config_separator=0x7f080000;
-        public static final int evenly_spaced_horizontal=0x7f080008;
-        public static final int expander_button=0x7f080009;
-        public static final int expander_label=0x7f08000a;
-        public static final int group_items=0x7f080006;
-        public static final int new_game_buttons=0x7f08000c;
+        public static final int about_items=0x7f090005;
+        public static final int color_edit_text=0x7f090003;
+        public static final int color_seek_bar=0x7f090002;
+        public static final int config_separator=0x7f090000;
+        public static final int evenly_spaced_horizontal=0x7f090008;
+        public static final int expander_button=0x7f090009;
+        public static final int expander_label=0x7f09000a;
+        public static final int group_items=0x7f090006;
+        public static final int new_game_buttons=0x7f09000c;
         /**  <style name="spaced_buttons"> 
    <item name="android:layout_width">fill_parent</item> 
    <item name="android:layout_height">wrap_content</item> 
    <item name="android:layout_weight">1</item> 
  </style> 
          */
-        public static final int newgame_connicon=0x7f08000b;
-        public static final int relay_explain=0x7f080007;
-        public static final int role_config_hint=0x7f080001;
-        public static final int toolbar_button=0x7f080004;
+        public static final int newgame_connicon=0x7f09000b;
+        public static final int relay_explain=0x7f090007;
+        public static final int role_config_hint=0x7f090001;
+        public static final int toolbar_button=0x7f090004;
     }
     public static final class xml {
         public static final int xwprefs=0x7f040000;

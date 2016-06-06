@@ -33,7 +33,7 @@ public class Main extends Activity {
     {
         super.onCreate( savedInstanceState );
 
-        if ( BuildConfig.DEBUG && XWApp.OFFER_DUALPANE ) {
+        if ( BuildConfig.DEBUG && getResources().getBoolean(R.bool.dualpane_enabled) ) {
             setContentView( R.layout.main );
 
             findViewById( R.id.activity_button )
