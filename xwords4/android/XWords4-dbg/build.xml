@@ -52,8 +52,8 @@
     />
 
 
-<!-- extension targets. Uncomment the ones where you want to do custom work
-     in between standard targets -->
+    <!-- extension targets. Uncomment the ones where you want to do custom work
+         in between standard targets -->
 
     <property name="INITIAL_CLIENT_VERS" value="8"/>
     <property name="VARIANT_NAME" value="xw4dbg"/>
@@ -66,7 +66,7 @@
     <target name="-pre-build" depends="my-copy-src">
         <antcall target="my-pre-build">
             <param name="VARIANT_NAME" value="${VARIANT_NAME}"/>
-            <param name="APP_NAME" value="cWords-DBG"/>
+            <param name="APP_NAME" value="${APP_NAME}"/>
         </antcall>
     </target>
 

@@ -54,7 +54,7 @@
   <application android:icon="@drawable/icon48x48"
                android:label="@string/app_name"
                android:name=".XWApp"
-               android:debuggable="true"
+               android:debuggable="false"
                >
 
     <activity android:name="Main"

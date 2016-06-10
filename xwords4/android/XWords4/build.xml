@@ -63,12 +63,17 @@
         <antcall target="my-pre-clean" />
     </target>
 
-    <target name="-pre-build">
-        <antcall target="my-pre-build" />
+    <target name="-pre-build" depends="my-copy-src">
+        <antcall target="my-pre-build">
+            <param name="VARIANT_NAME" value="${VARIANT_NAME}"/>
+            <param name="APP_NAME" value="${APP_NAME}"/>
+        </antcall>
     </target>
 
     <target name="-pre-compile">
-        <antcall target="my-pre-compile" />
+        <antcall target="my-pre-compile">
+            <param name="VARIANT_NAME" value="${VARIANT_NAME}"/>
+        </antcall>
     </target>
 
 <!--

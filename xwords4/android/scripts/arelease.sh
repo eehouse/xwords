@@ -23,6 +23,10 @@ do_build() {
     cd $WD
 }
 
+if [ -f ./AndroidManifest.xml ]; then # we're in the right directory
+    VARIANT=$(basename $(pwd))
+fi
+
 while [ "$#" -gt 0 ]; do
     case $1 in
         --tag)
