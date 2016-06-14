@@ -57,4 +57,4 @@ case $COUNT in
 		;;
 esac
 
-$ADB $SERIAL logcat
+$ADB $SERIAL logcat | grep -i xw4
