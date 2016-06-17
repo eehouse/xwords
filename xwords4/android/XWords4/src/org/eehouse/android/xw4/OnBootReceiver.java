@@ -20,13 +20,9 @@
 
 package org.eehouse.android.xw4;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
-import android.widget.Toast;
 
 public class OnBootReceiver extends BroadcastReceiver {
 
@@ -35,7 +31,7 @@ public class OnBootReceiver extends BroadcastReceiver {
     {
         if ( null != intent && null != intent.getAction() 
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
-            DbgUtils.logf("OnBootReceiver: got ACTION_BOOT_COMPLETED");
+            DbgUtils.logf( "OnBootReceiver: got ACTION_BOOT_COMPLETED" );
             startTimers( context );
         }
     }
@@ -45,5 +41,4 @@ public class OnBootReceiver extends BroadcastReceiver {
         NagTurnReceiver.restartTimer( context );
         RelayReceiver.setTimer( context );
     }
-
 }
