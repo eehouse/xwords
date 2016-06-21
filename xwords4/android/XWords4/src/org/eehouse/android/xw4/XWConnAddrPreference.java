@@ -27,6 +27,8 @@ import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.View;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.DlgDelegate.Action;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnType;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
@@ -71,6 +73,14 @@ public class XWConnAddrPreference extends DialogPreference {
                                                                 R.string.button_enable_bt,
                                                                 R.string.button_later,
                                                                 Action.ENABLE_BT_DO );
+                                  case COMMS_CONN_RELAY:
+                                      activity.showConfirmThen( R.string.warn_relay_disabled, 
+                                                                R.string.button_enable_relay,
+                                                                R.string.button_later,
+                                                                Action.ENABLE_BT_DO );
+                                      break;
+                                  default:
+                                      Assert.fail();
                                       break;
                                   }
                               }

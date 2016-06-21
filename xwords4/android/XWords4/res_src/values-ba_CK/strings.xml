@@ -948,6 +948,12 @@
   <!-- explanation of the above -->
   <string name="network_behavior_summary">Sgnittes taht ylppa ot
         dekrowten semag</string>
+  <string name="relay_behavior">Yaler yalp sgnittes</string>
+  <!-- explanation of the above -->
+  <string name="relay_behavior_summary">Sgnittes taht ylppa ot
+    detcennoc-tenretni semag </string>
+  <string name="disable_relay">Elbasid yalp aiv eht yaler </string>
+  <string name="disable_relay_summary">Elbasid lla tenretni noitacinummoc</string>
   <!--       
        ############################################################
        # :Screens:
@@ -1816,8 +1822,13 @@
     ecived. On sevom lliw eb tnes aiv Htooteulb.\n\nUoy nac elbane
     Htooteulb ,won ro retal.
     </string>
+  <string name="warn_relay_disabled">Yaler yalp si yltnerruc elbasid no
+    siht ecived. On sevom lliw eb tnes ro deviecer aiv eht
+    yaler.\n\nUoy nac elbane yaler yalp ,won ro retal.
+    </string>
   <string name="button_enable_sms">Elbane SMS</string>
   <string name="button_enable_bt">Elbane Htooteulb</string>
+  <string name="button_enable_relay">Elbane Yaler yalp</string>
   <string name="button_later">Retal</string>
   <!--  -->
   <string name="gamel_menu_checkupdates">Kcehc rof setadpu</string>

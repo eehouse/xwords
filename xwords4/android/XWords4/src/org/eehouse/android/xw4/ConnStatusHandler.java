@@ -542,7 +542,8 @@ public class ConnStatusHandler {
             //!getAirplaneModeOn( context );
             break;
         case COMMS_CONN_RELAY:
-            result = NetStateCache.netAvail( context );
+            result = RelayService.relayEnabled( context )
+                && NetStateCache.netAvail( context );
             break;
         default:
             DbgUtils.logf( "ConnStatusHandler:connTypeEnabled: %s not handled",

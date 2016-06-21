@@ -948,6 +948,12 @@
   <!-- explanation of the above -->
   <string name="network_behavior_summary">SETTINGS THAT APPLY TO
         NETWORKED GAMES</string>
+  <string name="relay_behavior">RELAY PLAY SETTINGS</string>
+  <!-- explanation of the above -->
+  <string name="relay_behavior_summary">SETTINGS THAT APPLY TO
+    INTERNET-CONNECTED GAMES </string>
+  <string name="disable_relay">DISABLE PLAY VIA THE RELAY </string>
+  <string name="disable_relay_summary">DISABLE ALL INTERNET COMMUNICATION</string>
   <!--       
        ############################################################
        # :Screens:
@@ -1816,8 +1822,13 @@
     DEVICE. NO MOVES WILL BE SENT VIA BLUETOOTH.\n\nYOU CAN ENABLE
     BLUETOOTH NOW, OR LATER.
     </string>
+  <string name="warn_relay_disabled">RELAY PLAY IS CURRENTLY DISABLE ON
+    THIS DEVICE. NO MOVES WILL BE SENT OR RECEIVED VIA THE
+    RELAY.\n\nYOU CAN ENABLE RELAY PLAY NOW, OR LATER.
+    </string>
   <string name="button_enable_sms">ENABLE SMS</string>
   <string name="button_enable_bt">ENABLE BLUETOOTH</string>
+  <string name="button_enable_relay">ENABLE RELAY PLAY</string>
   <string name="button_later">LATER</string>
   <!--  -->
   <string name="gamel_menu_checkupdates">CHECK FOR UPDATES</string>

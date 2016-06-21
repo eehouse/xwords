@@ -455,7 +455,9 @@ public class XWPrefs {
         int flags = getPrefsInt( context, R.string.key_addrs_pref, -1 );
         if ( -1 == flags ) {
             result = new CommsConnTypeSet();
-            result.add( CommsConnType.COMMS_CONN_RELAY );
+            if ( RelayService.relayEnabled( context ) ) {
+                result.add( CommsConnType.COMMS_CONN_RELAY );
+            }
             if ( BTService.BTEnabled() ) {
                 result.add( CommsConnType.COMMS_CONN_BT );
             }

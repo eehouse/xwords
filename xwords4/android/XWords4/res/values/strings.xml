@@ -1101,6 +1101,12 @@
     <!-- explanation of the above -->
     <string name="network_behavior_summary">Settings that apply to
         networked games</string>
+    <string name="relay_behavior">Relay play settings</string>
+    <!-- explanation of the above -->
+    <string name="relay_behavior_summary">Settings that apply to
+    internet-connected games </string>
+    <string name="disable_relay">Disable play via the relay </string>
+    <string name="disable_relay_summary">Disable all internet communication</string>
 
     <!--       
        ############################################################
@@ -2097,8 +2103,14 @@
     Bluetooth now, or later.
     </string>
 
+    <string name="warn_relay_disabled">Relay play is currently disable on
+    this device. No moves will be sent or received via the
+    relay.\n\nYou can enable relay play now, or later.
+    </string>
+
     <string name="button_enable_sms">Enable SMS</string>
     <string name="button_enable_bt">Enable Bluetooth</string>
+    <string name="button_enable_relay">Enable Relay play</string>
     <string name="button_later">Later</string>
 
     <!--  -->

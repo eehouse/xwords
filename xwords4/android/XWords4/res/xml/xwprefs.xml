@@ -295,13 +295,22 @@
         android:title="@string/title_addrs_pref"
         />
 
-    <org.eehouse.android.xw4.PollListPreference
-        android:key="@string/key_connect_frequency"
-        android:title="@string/connect_frequency"
-        android:entries="@array/connect_frequencies"
-        android:entryValues="@array/connect_frequencies_values"
-        android:defaultValue="900"
-        />
+    <PreferenceScreen android:title="@string/relay_behavior"
+                      android:summary="@string/relay_behavior_summary"
+                      >
+      <org.eehouse.android.xw4.PollListPreference
+          android:key="@string/key_connect_frequency"
+          android:title="@string/connect_frequency"
+          android:entries="@array/connect_frequencies"
+          android:entryValues="@array/connect_frequencies_values"
+          android:defaultValue="900"
+          />
+      <CheckBoxPreference android:key="@string/key_disable_relay"
+                          android:title="@string/disable_relay"
+                          android:summary="@string/disable_relay_summary"
+                          android:defaultValue="false"
+                          />
+    </PreferenceScreen>
 
     <CheckBoxPreference android:key="@string/key_notify_sound"
                         android:title="@string/notify_sound"

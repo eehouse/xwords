@@ -154,6 +154,18 @@ public class RelayService extends XWService
         }
     }
 
+    public static boolean relayEnabled( Context context )
+    {
+        boolean enabled = ! XWPrefs
+            .getPrefsBoolean( context, R.string.key_disable_relay, false );
+        DbgUtils.logdf( "relayEnabled() => %b", enabled );
+        return enabled;
+    }
+
+    public static void enable( Context context ) {
+        XWPrefs.setPrefsBoolean( context, R.string.key_disable_relay, false );
+    }
+
     public static void startService( Context context )
     {
         DbgUtils.logf( "RelayService.startService()" );
@@ -334,7 +346,7 @@ public class RelayService extends XWService
         m_handler = new Handler();
         m_onInactivity = new Runnable() {
                 public void run() {
-                    // DbgUtils.logf( "RelayService: m_onInactivity fired" );
+                    DbgUtils.logdf( "RelayService: m_onInactivity fired" );
                     if ( !shouldMaintainConnection() ) {
                         NetStateCache.unregister( RelayService.this, 
                                                   RelayService.this );
@@ -517,8 +529,7 @@ public class RelayService extends XWService
 
     private void startUDPThreadsIfNot()
     {
-        if ( XWApp.UDP_ENABLED ) {
-
+        if ( XWApp.UDP_ENABLED && relayEnabled( this ) ) {
             if ( null == m_UDPReadThread ) {
                 m_UDPReadThread = new Thread( null, new Runnable() {
                         public void run() {
@@ -532,6 +543,7 @@ public class RelayService extends XWService
                                 DatagramPacket packet = 
                                     new DatagramPacket( buf, buf.length );
                                 try {
+                                    Assert.assertTrue( relayEnabled( RelayService.this ) );
                                     m_UDPSocket.receive( packet );
                                     resetExitTimer();
                                     gotPacket( packet );
@@ -560,6 +572,7 @@ public class RelayService extends XWService
             int port = XWPrefs.getDefaultRelayPort( this );
             String host = XWPrefs.getDefaultRelayHost( this );
             try { 
+                Assert.assertTrue( relayEnabled( this ) );
                 m_UDPSocket = new DatagramSocket();
                 m_UDPSocket.setSoTimeout(30 * 1000); // timeout so we can log
 
@@ -601,6 +614,7 @@ public class RelayService extends XWService
                             }
 
                             try {
+                                Assert.assertTrue( relayEnabled( RelayService.this ) );
                                 DatagramPacket outPacket = outData.assemble();
                                 m_UDPSocket.send( outPacket );
                                 int pid = outData.m_packetID;
@@ -774,10 +788,14 @@ public class RelayService extends XWService
 
     private boolean shouldRegister()
     {
-        String relayID = DevID.getRelayDevID( this, true );
-        boolean registered = null != relayID;
-        DbgUtils.logdf( "shouldRegister()=>%b", !registered );
-        return !registered;
+        boolean should = relayEnabled( this );
+        if ( should ) {
+            String relayID = DevID.getRelayDevID( this, true );
+            boolean registered = null != relayID;
+            should = !registered;
+        }
+        DbgUtils.logdf( "RelayService.shouldRegister()=>%b", should );
+        return should;
     }
 
     // Register: pass both the relay-assigned relayID (or empty string
@@ -1210,7 +1228,7 @@ public class RelayService extends XWService
     private void startThreads()
     {
         DbgUtils.logdf( "RelayService.startThreads()" );
-        if ( !NetStateCache.netAvail( this ) ) {
+        if ( !relayEnabled( this ) || !NetStateCache.netAvail( this ) ) {
             stopThreads();
         } else if ( XWApp.UDP_ENABLED ) {
             stopFetchThreadIf();
@@ -1330,12 +1348,13 @@ public class RelayService extends XWService
 
     private boolean shouldMaintainConnection()
     {
-        boolean result = XWApp.GCM_IGNORED || !s_gcmWorking;
+        boolean result = !relayEnabled( this )
+            && (XWApp.GCM_IGNORED || !s_gcmWorking);
         if ( result ) {
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;
             result = interval < MAX_KEEPALIVE_SECS;
         }
-        // DbgUtils.logf( "RelayService.shouldMaintainConnection=>%b", result );
+        DbgUtils.logdf( "RelayService.shouldMaintainConnection=>%b", result );
         return result;
     }
 

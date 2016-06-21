@@ -117,6 +117,13 @@ public class ConnViaViewLayout extends LinearLayout {
             break;
         case COMMS_CONN_BT:
             enabled = BTService.BTEnabled();
+            break;
+        case COMMS_CONN_RELAY:
+            enabled = RelayService.relayEnabled( context );
+            break;
+        default:
+            Assert.fail();
+            break;
         }
 
         if ( !enabled && null != m_disabledWarner ) {

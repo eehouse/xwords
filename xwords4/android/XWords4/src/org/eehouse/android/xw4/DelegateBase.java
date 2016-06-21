@@ -637,6 +637,12 @@ public class DelegateBase implements DlgClickNotify,
             case ENABLE_BT_DO:
                 BTService.enable();
                 break;
+            case ENABLE_RELAY_DO:
+                RelayService.enable( m_activity );
+                break;
+            default:
+                Assert.fail();
+                break;
             }
         }
 

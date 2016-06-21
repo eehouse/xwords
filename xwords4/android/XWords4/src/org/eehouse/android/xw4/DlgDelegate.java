@@ -121,6 +121,7 @@ public class DlgDelegate {
         ENABLE_SMS_ASK,
         ENABLE_SMS_DO,
         ENABLE_BT_DO,
+        ENABLE_RELAY_DO,
         __LAST
     }
 
