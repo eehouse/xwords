@@ -59,6 +59,7 @@ public class PrefsDelegate extends DelegateBase
         R.string.key_force_radio,
         R.string.key_disable_nag,
         R.string.key_disable_nag_solo,
+        R.string.key_disable_relay,
     };
     private static Map<String, Integer> s_keysHash = null;
 
@@ -225,6 +226,9 @@ public class PrefsDelegate extends DelegateBase
             case R.string.key_disable_nag:
             case R.string.key_disable_nag_solo:
                 NagTurnReceiver.resetNagsDisabled( m_activity );
+                break;
+            case R.string.key_disable_relay:
+                RelayService.enabledChanged( m_activity );
                 break;
             default:
                 Assert.fail();

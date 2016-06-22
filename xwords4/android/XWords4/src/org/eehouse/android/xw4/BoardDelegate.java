@@ -2495,6 +2495,14 @@ public class BoardDelegate extends DelegateBase
                                  Action.ENABLE_SMS_ASK );
             }
         }
+        if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
+            if ( !RelayService.relayEnabled( m_activity ) ) {
+                showConfirmThen( R.string.warn_relay_disabled, 
+                                 R.string.button_enable_relay,
+                                 R.string.button_later,
+                                 Action.ENABLE_RELAY_DO );
+            }
+        }
     }
     
     private void trySendChats()

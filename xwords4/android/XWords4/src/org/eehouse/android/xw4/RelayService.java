@@ -80,6 +80,7 @@ public class RelayService extends XWService
                                   UPGRADE,
                                   INVITE,
                                   GOT_INVITE,
+                                  STOP,
     }
 
     private static final String MSGS_ARR = "MSGS_ARR";
@@ -162,14 +163,30 @@ public class RelayService extends XWService
         return enabled;
     }
 
-    public static void enable( Context context ) {
-        XWPrefs.setPrefsBoolean( context, R.string.key_disable_relay, false );
+    public static void enabledChanged( Context context ) {
+        boolean enabled = relayEnabled( context );
+        if ( enabled ) {
+            startService( context );
+        } else {
+            stopService( context );
+        }
+    }
+
+    public static void setEnabled( Context context, boolean enabled ) {
+        XWPrefs.setPrefsBoolean( context, R.string.key_disable_relay, enabled );
+        enabledChanged( context );
     }
 
     public static void startService( Context context )
     {
         DbgUtils.logf( "RelayService.startService()" );
         Intent intent = getIntentTo( context, MsgCmds.UDP_CHANGED );
+        context.startService( intent );
+    }
+
+    private static void stopService( Context context )
+    {
+        Intent intent = getIntentTo( context, MsgCmds.STOP );
         context.startService( intent );
     }
 
@@ -439,6 +456,10 @@ public class RelayService extends XWService
                     }
                     RelayReceiver.setTimer( this );
                     break;
+                case STOP:
+                    stopThreads();
+                    stopSelf();
+                    break;
                 default:
                     Assert.fail();
                 }
@@ -489,19 +510,10 @@ public class RelayService extends XWService
         }
     }
 
-    // private void setupNotification( long rowid )
-    // {
-    //     Intent intent = GamesListDelegate.makeRowidIntent( this, rowid );
-    //     String msg = LocUtils.getString( this, R.string.notify_body_fmt, 
-    //                                      GameUtils.getName( this, rowid ) );
-    //     Utils.postNotification( this, intent, R.string.notify_title,
-    //                             msg, (int)rowid );
-    // }
-
     private boolean startFetchThreadIf()
     {
         // DbgUtils.logf( "startFetchThreadIf()" );
-        boolean handled = !XWApp.UDP_ENABLED;
+        boolean handled = relayEnabled( this ) && !XWApp.UDP_ENABLED;
         if ( handled && null == m_fetchThread ) {
             m_fetchThread = new Thread( null, new Runnable() {
                     public void run() {
