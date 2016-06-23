@@ -173,7 +173,7 @@ public class RelayService extends XWService
     }
 
     public static void setEnabled( Context context, boolean enabled ) {
-        XWPrefs.setPrefsBoolean( context, R.string.key_disable_relay, enabled );
+        XWPrefs.setPrefsBoolean( context, R.string.key_disable_relay, !enabled );
         enabledChanged( context );
     }
 
