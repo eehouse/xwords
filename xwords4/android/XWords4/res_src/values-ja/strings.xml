@@ -738,7 +738,7 @@
     <string name="sms_ready_text">受信側のデバイスを今すぐタップしてください</string>
 
     <string name="bt_no_devs">現在、対の Bluetooth デバイスはありません。Android の設定パネルを開いて、1 つまたは複数を追加しますか?\n\n(対にするデバイスでもそれを開く必要があります)</string>
-	<string name="app_not_found_fmt">デバイス %1$s のクロスワードに接続できません。デバイスが範囲内にあること、それにクロスワードがインストールされていることを確認してください。</string>
+	<string name="app_not_found_fmt">デバイス %1$s のクロスワードに Bluetooth で接続できません。デバイスが Bluetooth の範囲内にあること、クロスワードがインストールされていることを確認してください。</string>
 
 	<string name="new_game">1 デバイスの新しいゲーム</string>
     <string name="nplayers_prompt">このデバイスの番号</string>
@@ -1178,4 +1178,12 @@
     <string name="rematch_sent_toast">再戦の招待状を送信しました</string>
     <string name="board_menu_game_showInvites">招待を表示</string>
   <string name="no_invites">このゲームは招待状を送信していません</string>
-</resources>
+<string name="chat_hint">ここに入力...</string>
+
+    <string name="chat_sender_fmt">%1$s:</string>
+    <string name="summary_busy">概要は利用できません</string>
+
+    <string name="activity_button">シングル ペイン</string>
+    <string name="fragment_button">デュアル ペイン</string>
+
+    </resources>

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <!-- What is \u200C? English strings are used as keys, so they all
          need to be unique.  This glyph is non-printing and of
@@ -320,8 +320,7 @@ installées)</string>
          are substituted for %1$d and %2$d. -->
     <!--<string name="players_label_host_fmt">Players (%1$d local, %2$d
       off-device)</string>-->
-    <string name="players_label_host_fmt">Joueurs (%1$d locaux, %2$d
-hors-périphérique)</string>
+    <string name="players_label_host_fmt">Joueurs (%1$d locaux, %2$d hors-appareil)</string>
 
     <!-- text of button for adding new player to game -->
     <!--<string name="button_add_player">Add player</string>-->
@@ -444,7 +443,7 @@ indiqué "distant" pour une partie démarrée comme hôte.</string>
     <!-- Used as the default name for remote players displayed within
          the Game configure screen -->
     <!--<string name="guest_name">(Off-device player)</string>-->
-    <string name="guest_name">(Joueur hors-périphérique)</string>
+    <string name="guest_name">(Joueur hors-appareil)</string>
 
     <!-- title of confirmation dialog put up when user has unlocked an
          in-progress game and wants to save changes (has hit the
@@ -479,14 +478,12 @@ changements ?</string>
 
     <!-- title of this dialog -->
     <!--<string name="force_title">Off-device player[s]</string>-->
-    <string name="force_title">Joueur[s] hors-périphérique</string>
+    <string name="force_title">Joueur[s] hors-appareil</string>
     <!-- Explanatory text appears in the dialog -->
     <!--<string name="force_expl">In a multi-device game there must be at
     least one player from and another not from this device.  Please
     check off-device players.</string>-->
-    <string name="force_expl">Lors d\'une partie multi-périphériques il faut au
-moins un joueur sur ce périphérique et un autre extérieur. Vérifiez les joueurs
-hors-périphériques.</string>
+    <string name="force_expl">Lors d\'une partie multi-appareils il faut au moins un joueur sur cet appareil et un autre extérieur. Vérifiez les joueurs hors-appareil.</string>
     
     <!-- Displayed as a "Toast" (mini window briefly displayed) if you
        didn't choose a remote player and I was forced to pick one. I
@@ -511,7 +508,7 @@ hors-périphériques.</string>
          remote.  If remote, then the rest of the fields disappear
          (since they will be set by the remote device.) -->
     <!--<string name="remote_label">Off-device player</string>-->
-    <string name="remote_label">Joueur hors-périphérique</string>
+    <string name="remote_label">Joueur hors-appareil</string>
 
     <!-- text of lable identifying the field in which player's name is
          set/displayed -->
@@ -612,8 +609,7 @@ fait ?</item>
     <!-- Appended to message above if local device has NFC available -->
     <!--<string name="invite_if_nfc">(Or just Tap to Invite - if the
         other device also has Android Beaming and is nearby.)</string>-->
-    <string name="invite_if_nfc">(ou toucher pour inviter -- si un autre
-périphérique a aussi Android Beam et est proche.)</string>
+    <string name="invite_if_nfc">(ou toucher pour inviter -- si un autre appareil a aussi Android Beam et est proche.)</string>
 
     <!-- Most users create games with only two players, which is the
          default, but Crosswords supports up to four.  When I'm using
@@ -643,11 +639,9 @@ distants. Assurez-vous d\'envoyer votre invitation à ce nombre de personnes.)</
     <!--<string name="msg_relay_waiting_fmt">Le périphérique %1$d est connecté au
 relai dans le salon \"%2$s\". En attente de %3$d joueur[s].</string>-->
     <plurals name="msg_relay_waiting_fmt">
-        <item quantity="one">Le périphérique %1$d est connecté au
-relai dans le salon \"%2$s\". En attente d\'un joueur.</item>
-        <item quantity="other">Le périphérique %1$d est connecté au
-relai dans le salon \"%2$s\". En attente de %3$d joueurs.</item>
-    </plurals>
+	<item quantity="one">L\'appareil %1$d est connecté au relai dans le salon \"%2$s\". En attente d\'un joueur.</item>
+	<item quantity="other">L\'appareil %1$d est connecté au relai dans le salon \"%2$s\". En attente de %3$d joueurs.</item>
+</plurals>
 
     <!-- Text of "toast" shown when a game is notified by the relay
          that all expected players have registered.  At this point
@@ -679,8 +673,7 @@ nom. Renommer le vôtre ou réessayer plus tard.</string>
     <!-- (I believe this can no longer occur) -->
     <!--<string name="msg_lost_other">The relay has lost contact with
          another device in this game.</string>-->
-    <string name="msg_lost_other">Le relai a perdu le contact avec un autre
-périphérique dans cette partie.</string>
+    <string name="msg_lost_other">Le relai a perdu le contact avec un autre appareil dans cette partie.</string>
 
     <!-- When a game has been connected and the relay is notified that
          a device in the game has deleted its part of the game, this
@@ -691,8 +684,7 @@ périphérique dans cette partie.</string>
     <!--<string name="msg_dev_deleted">This game has been deleted on
       another device. You will not be able to play any
       further.</string>-->
-    <string name="msg_dev_deleted">Cette partie a été effacée sur un autre
-périphérique. Vous pourrez plus la jouer.</string>
+    <string name="msg_dev_deleted">Cette partie a été effacée sur un autre appareil. Vous pourrez plus la jouer.</string>
 
     <!-- Partial text of alert posted when phonies_warn or
          phonies_disallow is the current setting and a "phony" is
@@ -1015,7 +1007,7 @@ dernier tour validé ? (Il n\'y a pas d\'option pour le rétablir.)</string>
          will default to having the hint feature enabled(string
          elsewhere in this file) -->
     <!--<string name="nethints_allowed_sum">Enable hints for two-device games</string>-->
-    <string name="nethints_allowed_sum">Activer les suggestions pour les parties à deux périphériques</string>
+    <string name="nethints_allowed_sum">Activer les suggestions pour les parties à deux appareils</string>
 
     <!-- Will new games, on default, randomly rearrange the start
          order of players. -->
@@ -1353,11 +1345,7 @@ arrivent</string>
       with your default settings (in %1$s, etc.) just press \"Play
       now\".  To add players or change game settings, press
       \"Configure first\".</string>-->
-    <string name="newgame_local_desc_fmt">Créer une nouvelle partie pour
-laquelle tous les joueurs seront sur ce périphérique. Pour jouer contre un
-robot et avec les paramètres par défaut (en %1$s, etc.) appuyez juste sur
-\"Jouer maintenant\". Pour ajouter des joueurs ou changer les paramètres de la
-partie, appuyez sur \"Configurer d\'abord\".</string>
+    <string name="newgame_local_desc_fmt">Créer une nouvelle partie pour laquelle tous les joueurs seront sur cet appareil. Pour jouer contre un robot et avec les paramètres par défaut (en %1$s, etc.) appuyez juste sur \"Jouer maintenant\". Pour ajouter des joueurs ou changer les paramètres de la partie, appuyez sur \"Configurer d\'abord\".</string>
 
     <!-- Text of first of two buttons for new standalone games.  Tap
          this and a new game will be created and opened.  If the first
@@ -1384,11 +1372,7 @@ partie, appuyez sur \"Configurer d\'abord\".</string>
       press \"Configure first\" to change some of the defaults before
       you start your networked game. (You\'ll have a chance to send
       invites later.)</string>-->
-    <string name="newgame_networked_desc">Créer une partie qui sera jouée en
-réseau. Le bouton \"Inviter maintenant\" démarre un partie à deux périphériques
-et vous aide à inviter un ami à la rejoindre. Ou appuyez sur \"Configurer
-d\'abord\" pour changer quelques paramètres avant de démarrer votre partie en
-réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
+    <string name="newgame_networked_desc">Créer une partie qui sera jouée en réseau. Le bouton \"Inviter maintenant\" démarre un partie à deux appareils et vous aide à inviter un ami à la rejoindre. Ou appuyez sur \"Configurer d\'abord\" pour changer quelques paramètres avant de démarrer votre partie en réseau. (Vous pourrez envoyer des invitations plus tard.)</string>
 
     <!-- Text of first of two buttons for new networked games.  Tap
          this and a game will be created, but you probably won't see
@@ -1959,7 +1943,7 @@ courant.</string>
     <!--<string name="not_again_chat">This button opens the screen for
       messaging between devices in this game.  Messages will be kept
       until you delete the game that contains them.</string>-->
-    <string name="not_again_chat">Ce bouton ouvre l\'écran de discussion entre périphériques pour cette partie. Les messages seront préservés jusqu\'à ce que effaciez la partie qui les contient.</string>
+    <string name="not_again_chat">Ce bouton ouvre l\'écran de discussion entre appareils pour cette partie. Les messages seront préservés jusqu\'à ce que effaciez la partie qui les contient.</string>
     <!-- Shown when you tap the values button on the toolbar of the
          main Board screen.  This is intended to allow players to
          remind themselves how much played tiles are worth while
@@ -1997,10 +1981,7 @@ d\'annuler les changements afin d\'éviter un redémarrage.</string>
       a game in a new room.  Once the remaining devices have joined
       your room and Crosswords has assigned them tiles the game can
       begin.</string>-->
-    <string name="not_again_conndfirst">Vous vous êtes connecté et avez
-démarré une partie dans un nouveau salon. Une fois que les périphériques
-restants auront rejoint votre salon et que Crosswords leur aura attribué des
-jetons, la partie pourra commencer.</string>
+    <string name="not_again_conndfirst">Vous vous êtes connecté et avez démarré une partie dans un nouveau salon. Une fois que les appareils restants auront rejoint votre salon et que Crosswords leur aura attribué des jetons, la partie pourra commencer.</string>
 
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are not the first device
@@ -2009,9 +1990,7 @@ jetons, la partie pourra commencer.</string>
     <!--<string name="not_again_conndmid">You have connected and joined a
       game on the relay. You will be notified when the remaining
       device[s] have joined your room and play can begin.</string>-->
-    <string name="not_again_conndmid">Vous vous êtes connecté et avez rejoint
-une partie sur le relai. Vous serez averti quand les périphériques restants
-auront rejoint votre salon et que la partie pourra commencer.</string>
+    <string name="not_again_conndmid">Vous vous êtes connecté et avez rejoint une partie sur le relai. Vous serez averti quand les appareils restants auront rejoint votre salon et que la partie pourra commencer.</string>
 
     <!-- This is shown in the Board screen when you successfully
          connecting a game to the relay and are the last device in the
@@ -2021,10 +2000,7 @@ auront rejoint votre salon et que la partie pourra commencer.</string>
       game on the relay; the room is now full. The device that
       created the room will now assign your initial tiles and play can
       begin.</string>-->
-    <string name="not_again_conndall">Vous vous êtes connecté et avez rejoint
-une partie sur le relai ; le salon est maintenant complet. Le périphérique qui
-a créé le salon va maintenant vous attribuer vos jetons initiaux et la partie
-va commencer.</string>
+    <string name="not_again_conndall">Vous vous êtes connecté et avez rejoint une partie sur le relai ; le salon est maintenant complet. L\'appareil qui a créé le salon va maintenant vous attribuer vos jetons initiaux et la partie va commencer.</string>
 
     <!-- This is not currently shown -->
     <!-- <string name="not_again_dicts">Crosswords wordlists, which are -->
@@ -2296,8 +2272,7 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
     <string name="new_bt_title">Nouvelle partie par Bluetooth</string>
       <!--  -->
     <!--<string name="new_bt_body_fmt">From a player on the device %1$s wants to start a game</string>-->
-    <string name="new_bt_body_fmt">Un joueur sur le périphérique %1$s veut
-    démarrer une partie</string>
+    <string name="new_bt_body_fmt">Un joueur sur l\'appareil %1$s veut démarrer une partie</string>
       <!--  -->
     <!--<string name="bt_bad_proto_fmt">The version of Crosswords on
     \"%1$s\" is incompatible with this one for play using
@@ -2318,13 +2293,9 @@ seulement des informations sur les jetons. Il n\'y a pas de mots à parcourir.</
 vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne
 voyez pas un périphérique que vous attendez.</string>-->
     <plurals name="invite_bt_desc_fmt">
-        <item quantity="one">Sélectionnez le périphérique que
-vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne
-voyez pas un périphérique que vous attendez.</item>
-        <item quantity="other">Sélectionnez les %1$d périphériques que
-vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne
-voyez pas un périphérique que vous attendez.</item>
-    </plurals>
+	<item quantity="one">Sélectionnez l\'appareil que vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne voyez pas un appareil que vous attendez.</item>
+	<item quantity="other">Sélectionnez jusqu\'à %1$d appareils que vous voulez intégrer dans cette partie. Utilisez le bouton \"%2$s\" si vous ne voyez pas un appareil que vous attendez.</item>
+</plurals>
         <!--  -->
     <!--<string name="bt_resend_fmt">Bluetooth send to %1$s failed; retry %3$d in
         %2$d seconds.</string>-->
@@ -2414,7 +2385,7 @@ illimités ? Annulez si vous n\'êtes pas sûr.</string>
 
     <!--  -->
     <!--<string name="remote_undone">Remote device undid a turn.</string>-->
-    <string name="remote_undone">Le périphérique distant a annulé un tour.</string>
+    <string name="remote_undone">L\'appareil distant a annulé un tour.</string>
 
     <!--  -->
     <!--<string name="menu_hint_prev">Prev hint</string>-->
@@ -2453,11 +2424,7 @@ illimités ? Annulez si vous n\'êtes pas sûr.</string>
     <!--<string name="game_list_tmp">Building game summary…</string>-->
     <string name="game_list_tmp">Création du résumé de la partie…</string>
 
-    <string name="connstat_net_noaddr"> Cette partie en réseau n\'a
-    aucun moyen de se connecter et ne sera jamais jouable.\n\n(Elle a
-    probablement été créée depuis une invitation qui ne spécifiait
-    aucun moyen de connexion permis par votre périphérique.)
-    </string>
+    <string name="connstat_net_noaddr">Cette partie en réseau n\'a aucun moyen de se connecter et ne sera jamais jouable.\n\n(Elle a probablement été créée depuis une invitation qui ne spécifiait aucun moyen de connexion permis par votre appareil.)</string>
 
     <!--  -->
     <!--<string name="connstat_net_fmt">Network status for game connected via
@@ -2749,13 +2716,12 @@ utilisée pour créer une partie.</string>
 
     <!--<string name="enable_nfc">NFC is turned off on this device. You
     can use the Android Settings app to turn it on .</string>-->
-    <string name="enable_nfc">La NFC est éteinte sur ce périphérique. Vous
-pouvez utiliser l\'application des Paramètres Android pour l\'allumer.</string>
+    <string name="enable_nfc">La NFC est éteinte sur cet appareil. Vous pouvez utiliser l\'application des Paramètres Android pour l\'allumer.</string>
 
     <string name="button_go_settings">Lancer Paramètres</string>
 
     <!--<string name="sms_ready_text">Tap the receiving device now</string>-->
-    <string name="sms_ready_text">Toucher le périphérique récepteur maintenant</string>
+    <string name="sms_ready_text">Toucher l\'appareil récepteur maintenant</string>
 
     <!--<string name="pct_suffix">\u0020pct.</string>-->
     <string name="pct_suffix">\u0020％</string>
@@ -2945,7 +2911,7 @@ téléchargement : %2$dk\nNote : %2$s</string>
     <!--<string name="note_none">(None)</string>-->
     <string name="note_none">(aucune)</string>
     <!--<string name="dict_on_server">Tap to download</string>-->
-    <string name="dict_on_server">Toucher pour télécharger</string>
+    <string name="dict_on_server">Toucher pour les détails</string>
     <!--<string name="lang_name_fmt">%1$s (%2$d wordlists)</string>    -->
     <!--<string name="lang_name_fmt">%1$s (%2$d listes de mots)</string>    -->
     <plurals name="lang_name_fmt">
@@ -3035,16 +3001,11 @@ pour voir ce qui est disponible.</string>
 	devices. Would you like to open the Android Settings Panel to add
 	one or more?\n\n(You may also need to open it on the device you
 	want to pair with.)</string>-->
-	<string name="bt_no_devs">Vous n\'avez pour l\'instant aucun périphérique
-Bluetooth appairé. Voulez-vous ouvrir les paramètres d\'Android pour en ajouter
-un ou plusieurs ?\n\n(Vous pouvez aussi avoir besoin de les ouvrir sur le
-périphérique auquel vous voulez vous appairer.)</string>
+	<string name="bt_no_devs">Vous n\'avez pour l\'instant aucun appareil Bluetooth appairé. Voulez-vous ouvrir les paramètres d\'Android pour en ajouter un ou plusieurs ?\n\n(Vous pouvez aussi avoir besoin de les ouvrir sur l\'appareil auquel vous voulez vous appairer.)</string>
 	<!--<string name="app_not_found_fmt">Unable to connect to Crosswords
 	on the device %1$s.  Please check that the device is within range
 	and that Crosswords is installed on it.</string>-->
-	<string name="app_not_found_fmt">Impossible de se connecter à Crosswords
-sur le périphérique %1$s. Vérifiez que ce périphérique est à portée et que
-Crosswords est installé dessus.</string>
+	<string name="app_not_found_fmt">Impossible de se connecter à Crosswords par Bluetooth sur l\'appareil %1$s. Vérifiez que cet appareil est à portée de Bluetooth et que Crosswords est installé dessus.</string>
 
 	<!-- label within default wordlists in app preferences -->
 	<!--<string name="default_language">Default language</string>-->
@@ -3058,8 +3019,7 @@ Crosswords est installé dessus.</string>
     <!--XLATE-ME-->
     <!--<string name="rename_label_caveat">Change the name of this game
     (on this device only) to:</string>-->
-    <string name="rename_label_caveat">Changer le nom de cette partie
-(uniquement sur ce périphérique) pour :</string>
+    <string name="rename_label_caveat">Changer le nom de cette partie (uniquement sur cet appareil) pour :</string>
     <!--XLATE-ME-->
     <!--<string name="connect_label_fmt">Connection (via %1$s)</string>-->
     <string name="connect_label_fmt">Connexion (par %1$s)</string>
@@ -3093,7 +3053,7 @@ vous doit faire une mise à jour avant de pouvoir continuer.</string>
     device. No moves will be sent via Bluetooth.\n\nYou can enable
     Bluetooth now, or later.
     </string>-->
-    <string name="warn_bt_disabled">"Le Bluetooth est actuellement éteint sur ce périphérique. Aucun coup ne sera envoyé par Bluetooth.\n\nVous pouvez activer le Bluetooth maintenant, ou plus tard. "</string>
+    <string name="warn_bt_disabled">"Le Bluetooth est actuellement éteint sur cet appareil. Aucun coup ne sera envoyé par Bluetooth.\n\nVous pouvez activer le Bluetooth maintenant, ou plus tard. "</string>
     <!--XLATE-ME-->
     <!--<string name="button_enable_sms">Enable SMS</string>-->
     <string name="button_enable_sms">Activer les SMS</string>
@@ -3105,7 +3065,7 @@ vous doit faire une mise à jour avant de pouvoir continuer.</string>
     <string name="button_later">Plus tard</string>
     <!--XLATE-ME-->
     <!--<string name="new_game">New one-device game</string>-->
-    <string name="new_game">Nouvelle partie à un seul périphérique</string>
+    <string name="new_game">Nouvelle partie à un seul appareil</string>
     <!--XLATE-ME-->
     <!--<string name="new_game_networked">New networked game</string>-->
     <string name="new_game_networked">Nouvelle partie en réseau</string>
@@ -3130,7 +3090,7 @@ d\'autres joueurs quand elle sera ouverte.)</string>
     <string name="use_defaults">Utiliser param. par défaut</string>
     <!--XLATE-ME-->
     <!--<string name="nplayers_prompt">Number on this device</string>-->
-    <string name="nplayers_prompt">Nombre sur ce périphérique</string>
+    <string name="nplayers_prompt">Nombre sur ce appareil</string>
     <!--XLATE-ME-->
     <!--<string name="nplayers_fmt">%1$d player[s]</string>-->
     <!--<string name="nplayers_fmt">%1$d joueur[s]</string>-->
@@ -3142,8 +3102,7 @@ d\'autres joueurs quand elle sera ouverte.)</string>
     <!--<string name="err_dup_invite_fmt">Duplicate invitation rejected:
     device \"%1$s\" has already accepted an invitation to this
     game.</string>-->
-    <string name="err_dup_invite_fmt">Invitation redondante rejetée : le
-périphérique \"%2$s\" a déjà accepté une invitation à cette partie.</string>
+    <string name="err_dup_invite_fmt">Invitation redondante rejetée : l\'appareil \"%1$s\" a déjà accepté une invitation à cette partie.</string>
     <!--XLATE-ME-->
     <!--<string name="network_advanced_title">Advanced</string>-->
     <string name="network_advanced_title">Avancé</string>
@@ -3155,8 +3114,7 @@ périphérique \"%2$s\" a déjà accepté une invitation à cette partie.</strin
     <string name="invite_multi_title">Inviter plusieurs</string>
     <!--XLATE-ME-->
     <!--<string name="invite_multi_summary">Invite more than one player per remote device</string>-->
-    <string name="invite_multi_summary">Inviter plus d\'un joueur par
-périphérique distant</string>
+    <string name="invite_multi_summary">Inviter plus d\'un joueur par appareil distant</string>
     <!--XLATE-ME-->
     <!--<string name="enable_pubroom_title">Enable public rooms</string>-->
     <string name="enable_pubroom_title">Activer les salons publics</string>
@@ -3190,16 +3148,12 @@ section Apparence des paramètres de l\'application.)</string>
     remote players have connected. You can close the game if you
     expect it to take a while. They will still be able to
     connect.)</string>-->
-    <string name="invite_stays">(Ce message restera jusqu\'à ce que tous les
-joueurs distants se soient connectés. Vous pouvez fermer la partie si vous
-pensez que cela prendra du temps. Ils pourront toujours se connecter.)</string>
+    <string name="invite_stays">(Ce message restera jusqu\'à ce que tous les joueurs distants se soient connectés. Vous pouvez fermer la partie si vous pensez que cela prendra du temps. Les joueurs distants pourront toujours se connecter, et vous en serez notifiés quand ils le feront.)</string>
     <!--XLATE-ME-->
     <!--<string name="nfc_just_tap">To invite via NFC just touch the back
     of this device against the one you want to invite—any time the
     game is open.</string>-->
-    <string name="nfc_just_tap">Pour inviter par NFC, mettez le dos de ce
-périphérique contre celui que vous voulez inviter – à n\'importe quel moment
-quand la partie est ouverte.</string>
+    <string name="nfc_just_tap">Pour inviter par NFC, mettez le dos de cet appareil contre celui que vous voulez inviter – à n\'importe quel moment quand la partie est ouverte.</string>
     <!--XLATE-ME-->
     <!--<string name="warn_no_comms">Every networked game must have at
     least one way of communicating. If you have no default connection
@@ -3226,10 +3180,7 @@ changement, ou l\'éditer pour lui attribuer une façon de se connecter ?</stri
     see this message until it has been accepted.\n\nYou do not need to
     keep this game open while waiting. You will be notified when the
     game is ready to play.</string>-->
-    <string name="rematch_msg">Lancement d\'une invitation de revanche. Vous
-verrez ce message jusqu\'à ce qu\'elle ait été acceptée.\n\nVous n\'avez pas à
-garder cette partie ouverte pendant l\'attente. Vous recevrez une notification
-quand la partie sera prête à être jouée.</string>
+    <string name="rematch_msg">Cette partie héberge une revanche, et a envoyé une invitation. Vous verrez ce message jusqu\'à ce qu\'elle ait été acceptée.</string>
     <!--XLATE-ME-->
     <!--<string name="not_again_enablepublic">Public rooms have been made
     an \"advanced\" feature in this release. If you were using them
@@ -3295,7 +3246,7 @@ les release builds)</string>
   <string name="relay_port">Port de partie du relai</string>
     <!--XLATE-ME-->
   <!--<string name="proxy_port">Relay device port</string>-->
-  <string name="proxy_port">Port de périphérique du relai</string>
+  <string name="proxy_port">Port d\'appareil du relai</string>
     <!--XLATE-ME-->
   <!--<string name="name_dict_fmt">%1$s/%2$s</string>-->
   <string name="name_dict_fmt">%1$s/%2$s</string>
@@ -3403,9 +3354,7 @@ pour la langue</string>
   <!--<string name="confirm_get_locdict_fmt">Your device is set up for
   %1$s. Would you like to download a wordlist so you can play
   Crosswords in %1$s?</string>-->
-  <string name="confirm_get_locdict_fmt">Votre périphérique est
-  configuré en %1$s. Souhaitez-vous télécharger une liste de mots afin
-  de pouvoir jouer à Crosswords en %1$s ?</string>
+  <string name="confirm_get_locdict_fmt">Votre appareil est configuré en %1$s. Souhaitez-vous télécharger une liste de mots afin de pouvoir jouer à Crosswords en %1$s ?</string>
   <!--<string name="checking_title">Checking</string>-->
   <string name="checking_title">Recherche</string>
   <!--<string name="checking_for_fmt">Checking for wordlists in %1$s…</string>-->
@@ -3431,8 +3380,7 @@ pour la langue</string>
   <string name="wifi_warning">\u0020Vous pourriez, par exemple,
   avoir besoin d\'être sur un réseau Wi-Fi différent.</string>
 
-  <string name="confirm_drop_relay_bt">Le Bluetooth ne marche que pour
-  les périphériques proches.</string>
+  <string name="confirm_drop_relay_bt">Le Bluetooth ne marche que pour les appareils proches.</string>
   <string name="confirm_drop_relay_sms">Jouer par SMS n\'est pas
   possible avec tous les opérateurs.</string>
 
@@ -3444,11 +3392,11 @@ pour la langue</string>
 </plurals>
     <string name="button_enable">Activer</string>
 
-  <string name="not_again_comms_relay">Le \"relai\" est un serveur sur Internet qui permet l\'échange de messages entre périphériques qui font tourner Crosswords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
+  <string name="not_again_comms_relay">Le \"relai\" est un serveur sur Internet qui permet l\'échange de messages entre appareils qui font tourner Crosswords. Il fonctionne dès que vous avez une connexion à Internet pleinement fonctionnelle, mais peut avoir des problèmes sur des réseaux Wifi restreints.</string>
 
   <string name="not_again_comms_sms">Les parties par SMS utilisent la même technologie que l\'envoi de SMS normaux. Bien que les messages soient invisibles pour vous, votre opérateur les considère comme des messages normaux, donc vous pourriez vouloir éviter cette fonctionnalité si vous n\'avez pas un forfait (ou un budget) illimité.</string>
 
-  <string name="not_again_comms_bt">"Utilisez le Bluetooth  pour jouer contre un périphérique à proximité appairé avec le votre."</string>
+  <string name="not_again_comms_bt">"Utilisez le Bluetooth  pour jouer contre un appareil à proximité appairé avec le votre."</string>
 
   <string name="str_no_hint_found">Ne peut trouver aucun coup</string>
 
@@ -3472,17 +3420,17 @@ pour la langue</string>
 
   <string name="button_relay_add">Parcourir les parties</string>
   <plurals name="invite_relay_desc_fmt">
-	<item quantity="one">Cochez le périphérique que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
-	<item quantity="other">Cochez les %1$d périphériques que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
-  </plurals>
-  <string name="get_relay_number">Saisissez l\'identifiant de périphérique :</string>
+	<item quantity="one">Cochez l\'appareil que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
+	<item quantity="other">Cochez les %1$d appareils que vous voulez inviter à votre nouvelle partie, puis touchez \"%2$s\".</item>
+</plurals>
+  <string name="get_relay_number">Saisissez l\'identifiant d\'appareil :</string>
   <plurals name="confirm_clear_sms_fmt">
 	<item quantity="one">Êtes-vous sûr de vouloir effacer le numéro de téléphone coché ?</item>
 	<item quantity="other">Êtes-vous sûr de vouloir effacer les %1$d numéros de téléphone cochés ?</item>
   </plurals>
   <string name="disable_nag_solo_title">Désactiver les rappels de parties en solo</string>
 
-  <string name="devid_title">Identifiant de périphérique (sur le relai)</string>
+  <string name="devid_title">Identifiant d\'appareil (sur le relai)</string>
   <string name="enable_relay_toself_summary">(Pour aider à tester et corriger les bugs)</string>
 
   <string name="fetching_from_relay">Récupération des parties du relai</string>
@@ -3494,6 +3442,44 @@ pour la langue</string>
   <string name="not_again_dfltname_fmt">Vous utilisez le nom par défaut de joueur \"%1$s\". Souhaitez-vous le personnaliser avec votre propre nom avant de créer cette partie ?</string>
   <string name="button_wait">Attendre</string>
 
-  <string name="not_again_rematch_two_only">Le bouton revanche est désactivé parce que, pour l\'instant en tout cas, les revanches sont limitées à deux adversaires. Je pense qu\'il est rare que les gens jouent à plus de deux. Faite-moi savoir si je me trompe, et j\'essaierai de le faire fonctionner.</string>
+  <string name="not_again_rematch_two_only">Les revanches sont limitées aux parties à deux joueurs, au moins pour l\'instant, parce que c\'est plus difficile avec plus d\'appareils et je pense qu\'il est rare que les gens jouent à plus que deux. Faites-le moi savoir si j\'ai tort et je remonterai la priorité.</string>
 
-</resources>
+<string name="summary_invites_out">Joueurs invités</string>
+
+    <plurals name="invite_sent_fmt">
+	<item quantity="one">Vous avez déjà invité un joueur distant à cette partie. Nous attendons sa réponse. Utilisez le bouton réinviter si vous pensez que l\'invitation n\'est pas partie.</item>
+	<item quantity="other">Vous avez déjà envoyé %1$d invitations uniques pour cette partie. Nous attendons les réponses de %2$d des destinataires. Utilisez le bouton réinviter si vous pensez que les invitations ne sont pas parties.</item>
+</plurals>
+    <string name="invited_msg">Cette partie a été créée depuis une invitation que vous avez reçue. Dès qu\'elle pourra se connecter à l\'expéditeur et que les autres invités seront arrivés, le jeu commencera.</string>
+
+    <string name="newgame_invite_more">Plus d\'informations</string>
+    <string name="notify_title_turn_fmt">Votre tour dans la partie %1$s</string>
+    <string name="empty_relay_inviter">La liste des appareils est vide. Utilisez le bouton \"Scanner les parties\" pour chercher des adversaires dans vos anciennes parties. Utilisez le bouton \"+\" pour saisir les identifiants d\'appareil directement.</string>
+    <string name="confirm_clear_relay">Êtes-vous sûr de vouloir supprimer les appareils sélectionnés ?</string>
+    <string name="invites_net_fmt">Invitations envoyées pour la partie connectée via %1$s :</string>
+    <string name="waiting_invite_title">En attente de réponse</string>
+    <string name="button_reinvite">Réinviter</string>
+
+    <string name="disable_nags_title">Rappels de tour</string>
+    <string name="board_menu_game_showInvites">Montrer les invitations</string>
+  <string name="enable_relay_toself_title">Activer les invitations du relai à lui-même</string>
+  <string name="rel_invite_title">Titre de l\'invitation de relai</string>
+  <string name="no_invites">Cette partie n\'a envoyé aucune invitation</string>
+<string name="rematch_name_fmt">Revanche : %1$s</string>
+
+    <string name="waiting_rematch_title">Revanche en cours</string>
+    <string name="rematch_sent_toast">Invitations à la revanche envoyées</string>
+    <string name="invit_expl_sms_fmt">Invitation envoyée par SMS au numéro de téléphone %1$s sur %2$s</string>
+    <string name="invit_expl_bt_fmt">Invitation envoyée par Bluetooth à l\'appareil appairé \"%1$s\" sur %2$s</string>
+    <string name="invit_expl_relay_fmt">Invitation transmise par le relai à un autre appareil sur %1$s</string>
+    <string name="invit_expl_notarget_fmt">Invitation envoyée par %1$s sur %2$s. Destinataire inconnu.</string>
+
+    <string name="chat_hint">Tapez ici…</string>
+
+    <string name="chat_sender_fmt">%1$s :</string>
+    <string name="summary_busy">Résumé indisponible</string>
+
+    <string name="activity_button">Panneau unique</string>
+    <string name="fragment_button">Double panneau</string>
+
+    </resources>
