@@ -135,3 +135,5 @@ Main.java
 nohup.out
 StudyListFrag.java
 XWFragment.java
+ConfirmingCheckBoxPreference.java
+RelayCheckBoxPreference.java
