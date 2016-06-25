@@ -1826,9 +1826,16 @@
     THIS DEVICE. NO MOVES WILL BE SENT OR RECEIVED VIA THE
     RELAY.\n\nYOU CAN ENABLE RELAY PLAY NOW, OR LATER.
     </string>
+  <string name="warn_relay_havegames">ARE YOU SURE YOU WANT TO
+    DISABLE PLAY USING THE RELAY?</string>
+  <plurals name="warn_relay_games_fmt">
+    <item quantity="one">\n\n(YOU HAVE ONE GAME USING IT.)</item>
+    <item quantity="other">\n\n(YOU HAVE %1$d GAMES USING IT.)</item>
+  </plurals>
   <string name="button_enable_sms">ENABLE SMS</string>
   <string name="button_enable_bt">ENABLE BLUETOOTH</string>
   <string name="button_enable_relay">ENABLE RELAY PLAY</string>
+  <string name="button_disable_relay">DISABLE RELAY PLAY</string>
   <string name="button_later">LATER</string>
   <!--  -->
   <string name="gamel_menu_checkupdates">CHECK FOR UPDATES</string>

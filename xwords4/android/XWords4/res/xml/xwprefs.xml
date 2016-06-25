@@ -305,11 +305,13 @@
           android:entryValues="@array/connect_frequencies_values"
           android:defaultValue="900"
           />
-      <CheckBoxPreference android:key="@string/key_disable_relay"
-                          android:title="@string/disable_relay"
-                          android:summary="@string/disable_relay_summary"
-                          android:defaultValue="false"
-                          />
+
+      <org.eehouse.android.xw4.RelayCheckBoxPreference
+          android:key="@string/key_disable_relay"
+          android:title="@string/disable_relay"
+          android:summary="@string/disable_relay_summary"
+          android:defaultValue="false"
+          />
     </PreferenceScreen>
 
     <CheckBoxPreference android:key="@string/key_notify_sound"

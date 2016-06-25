@@ -480,6 +480,11 @@ public class DelegateBase implements DlgClickNotify,
         m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action );
     }
 
+    protected void showConfirmThen( String msg, int posButton, int negButton, Action action )
+    {
+        m_dlgDelegate.showConfirmThen( msg, posButton, negButton, action );
+    }
+
     protected void showConfirmThen( int msg, int posButton, int negButton,
                                     Action action, Object... params )
     {
@@ -639,6 +644,7 @@ public class DelegateBase implements DlgClickNotify,
                 break;
             case ENABLE_RELAY_DO:
                 RelayService.setEnabled( m_activity, true );
+                handled = true;
                 break;
             default:
                 Assert.fail();

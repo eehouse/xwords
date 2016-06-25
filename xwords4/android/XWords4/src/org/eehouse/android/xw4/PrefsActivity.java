@@ -106,13 +106,19 @@ public class PrefsActivity extends PreferenceActivity
         m_dlgt.showOKOnlyDialog( msg );
     }
 
-    public void showNotAgainDlgThen( int msgID, int prefsKey, 
+    public void showNotAgainDlgThen( int msgID, int prefsKey,
                                      DlgDelegate.Action action )
     {
         m_dlgt.showNotAgainDlgThen( msgID, prefsKey, action );
     }
 
-    protected void showConfirmThen( int msg, int posButton, int negButton, 
+    protected void showConfirmThen( int msg, int posButton, int negButton,
+                                    Action action )
+    {
+        m_dlgt.showConfirmThen( msg, posButton, negButton, action );
+    }
+
+    protected void showConfirmThen( String msg, int posButton, int negButton,
                                     Action action )
     {
         m_dlgt.showConfirmThen( msg, posButton, negButton, action );

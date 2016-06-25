@@ -240,11 +240,24 @@ public class PrefsDelegate extends DelegateBase
     @Override
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
-        if ( AlertDialog.BUTTON_POSITIVE == button
-             && action == Action.ENABLE_SMS_DO ) {
-            XWPrefs.setSMSEnabled( m_activity, true );
-            SMSCheckBoxPreference.setChecked();
-        } else { 
+        DbgUtils.logf( "PrefsDelegate.dlgButtonClicked(%s)", action.toString() );
+        boolean handled = AlertDialog.BUTTON_POSITIVE == button;
+        if ( handled ) {
+            switch ( action ) {
+            case ENABLE_SMS_DO:
+                XWPrefs.setSMSEnabled( m_activity, true );
+                SMSCheckBoxPreference.setChecked();
+                break;
+            case DISABLE_RELAY_DO:
+                RelayService.setEnabled( m_activity, false );
+                RelayCheckBoxPreference.setChecked();
+                break;
+            default:
+                handled = false;
+            }
+        }
+
+        if ( !handled ) {
             super.dlgButtonClicked( action, button, params );
         }
     }

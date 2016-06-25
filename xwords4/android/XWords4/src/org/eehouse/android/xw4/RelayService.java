@@ -1360,7 +1360,7 @@ public class RelayService extends XWService
 
     private boolean shouldMaintainConnection()
     {
-        boolean result = !relayEnabled( this )
+        boolean result = relayEnabled( this )
             && (XWApp.GCM_IGNORED || !s_gcmWorking);
         if ( result ) {
             long interval = Utils.getCurSeconds() - m_lastGamePacketReceived;

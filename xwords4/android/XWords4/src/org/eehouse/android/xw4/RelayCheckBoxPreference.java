@@ -27,29 +27,30 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
+import org.eehouse.android.xw4.loc.LocUtils;
 
-public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
+public class RelayCheckBoxPreference extends ConfirmingCheckBoxPreference {
     private static ConfirmingCheckBoxPreference s_this = null;
 
-    public SMSCheckBoxPreference( Context context, AttributeSet attrs )
+    public RelayCheckBoxPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
         s_this = this;
     }
 
     @Override
-    protected void onAttachedToActivity()
-    {
-        super.onAttachedToActivity();
-        if ( !XWApp.SMSSUPPORTED || !Utils.deviceSupportsSMS( getContext() ) ) {
-            setEnabled( false );
-        }
-    }
-
-    @Override
     protected void checkIfConfirmed() {
         PrefsActivity activity = (PrefsActivity)getContext();
-        activity.showSMSEnableDialog( Action.ENABLE_SMS_DO );
+        int count = DBUtils.getRelayGameCount( activity );
+        if ( 0 < count ) {
+            String msg = LocUtils.getString( activity, 
+                                             R.string.warn_relay_havegames );
+            msg += LocUtils.getQuantityString( activity, R.plurals.warn_relay_games_fmt, 
+                                               count, count );
+            activity.showConfirmThen( msg, R.string.button_disable_relay,
+                                      android.R.string.cancel,
+                                      Action.DISABLE_RELAY_DO );
+        }
     }
 
     protected static void setChecked()

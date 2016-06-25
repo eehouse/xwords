@@ -2108,9 +2108,18 @@
     relay.\n\nYou can enable relay play now, or later.
     </string>
 
+    <string name="warn_relay_havegames">Are you sure you want to
+    disable play using the relay?</string>
+
+    <plurals name="warn_relay_games_fmt">
+      <item quantity="one">\n\n(You have one game using it.)</item>
+      <item quantity="other">\n\n(You have %1$d games using it.)</item>
+    </plurals>
+
     <string name="button_enable_sms">Enable SMS</string>
     <string name="button_enable_bt">Enable Bluetooth</string>
     <string name="button_enable_relay">Enable Relay play</string>
+    <string name="button_disable_relay">Disable Relay play</string>
     <string name="button_later">Later</string>
 
     <!--  -->

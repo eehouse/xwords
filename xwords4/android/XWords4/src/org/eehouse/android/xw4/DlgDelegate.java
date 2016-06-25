@@ -122,6 +122,7 @@ public class DlgDelegate {
         ENABLE_SMS_DO,
         ENABLE_BT_DO,
         ENABLE_RELAY_DO,
+        DISABLE_RELAY_DO,
     }
 
     public static class ActionPair {
@@ -375,6 +376,11 @@ public class DlgDelegate {
     public void showConfirmThen( int msg, int posButton, int negButton, Action action )
     {
         showConfirmThen( null, getString(msg), posButton, negButton, action, null );
+    }
+
+    public void showConfirmThen( String msg, int posButton, int negButton, Action action )
+    {
+        showConfirmThen( null, msg, posButton, negButton, action, null );
     }
 
     public void showConfirmThen( int msg, int posButton, int negButton, Action action,

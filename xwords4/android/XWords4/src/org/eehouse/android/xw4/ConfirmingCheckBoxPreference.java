@@ -1,6 +1,6 @@
 /* -*- compile-command: "find-and-ant.sh debug install"; -*- */
 /*
- * Copyright 2009 - 2012 by Eric House (xwords@eehouse.org).  All
+ * Copyright 2009 - 2016 by Eric House (xwords@eehouse.org).  All
  * rights reserved.
  *
  * This program is free software; you can redistribute it and/or
@@ -28,34 +28,35 @@ import android.view.View;
 
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
-public class SMSCheckBoxPreference extends ConfirmingCheckBoxPreference {
-    private static ConfirmingCheckBoxPreference s_this = null;
+public abstract class ConfirmingCheckBoxPreference extends CheckBoxPreference {
+    private boolean m_attached = false;
 
-    public SMSCheckBoxPreference( Context context, AttributeSet attrs )
+    public ConfirmingCheckBoxPreference( Context context, AttributeSet attrs )
     {
         super( context, attrs );
-        s_this = this;
     }
 
     @Override
-    protected void onAttachedToActivity()
-    {
+    protected void onAttachedToActivity() {
         super.onAttachedToActivity();
-        if ( !XWApp.SMSSUPPORTED || !Utils.deviceSupportsSMS( getContext() ) ) {
-            setEnabled( false );
-        }
+        m_attached = true;
     }
+
+    abstract void checkIfConfirmed();
 
     @Override
-    protected void checkIfConfirmed() {
-        PrefsActivity activity = (PrefsActivity)getContext();
-        activity.showSMSEnableDialog( Action.ENABLE_SMS_DO );
+    public void setChecked( boolean checked )
+    {
+        if ( checked && m_attached && getContext() instanceof PrefsActivity ) {
+            checkIfConfirmed();
+        } else {
+            super.setChecked( checked );
+        }
     }
 
-    protected static void setChecked()
+    // Because s_this.super.setChecked() isn't allowed...
+    protected void super_setChecked( boolean checked )
     {
-        if ( null != s_this ) {
-            s_this.super_setChecked( true );
-        }
+        super.setChecked( checked );
     }
 }
