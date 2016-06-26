@@ -44,13 +44,12 @@ setSerial() {
 listSerials
 
 COUNT=${#SERIALS[@]}
-echo "COUNT: $COUNT"
 case $COUNT in
 	0)
 		usage "no devices found"
 		;;
 	1)
-		SERIAL="-s $SERIALS[0]"
+		SERIAL="-s ${SERIALS[0]}"
 		;;
 	*)
 		setSerial
