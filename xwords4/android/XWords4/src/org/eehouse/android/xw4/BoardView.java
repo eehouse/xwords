@@ -186,6 +186,7 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
                         width, height );
     }
 
+    // @Override
     // public void onSizeChanged( int width, int height, int oldWidth, int oldHeight )
     // {
     //     DbgUtils.logf( "BoardView.onSizeChanged(): width: %d => %d; height: %d => %d",

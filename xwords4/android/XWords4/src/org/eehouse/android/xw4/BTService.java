@@ -1165,9 +1165,6 @@ public class BTService extends XWService {
 
     private void updateStatusOut( boolean success )
     {
-        // Intent intent = GamesListDelegate.makeGameIDIntent( this, gameID );
-        // Utils.postNotification( this, intent, R.string.new_btmove_title, 
-                                // body, (int)rowid );
         ConnStatusHandler
             .updateStatusOut( this, null, CommsConnType.COMMS_CONN_BT, success );
     }

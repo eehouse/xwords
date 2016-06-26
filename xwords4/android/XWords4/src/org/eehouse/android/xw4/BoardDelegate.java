@@ -633,9 +633,6 @@ public class BoardDelegate extends DelegateBase
     protected void onResume()
     {
         super.onResume();
-        // if( BuildConfig.DEBUG ) {
-        //     GameUtils.postSelfNotification( m_activity, m_rowid );
-        // }
         doResume( false );
     }
     
@@ -2123,125 +2120,6 @@ public class BoardDelegate extends DelegateBase
             }
         }
     } // resumeGame
-
-    // private void loadGame( boolean isStart )
-    // {
-    //     if ( null == m_jniGamePtr ) {
-    //         try {
-    //             String gameName = DBUtils.getName( m_activity, m_rowid );
-    //             String[] dictNames;
-
-    //             Assert.assertNull( m_gameLock );
-    //             m_gameLock = m_jniThreadRef.getLock();
-    //             if ( null == m_gameLock ) {
-    //                 dictNames = GameUtils.dictNames( m_activity, m_rowid );
-    //             } else {
-    //                 dictNames = GameUtils.dictNames( m_activity, m_gameLock );
-    //             }
-    //             DictUtils.DictPairs pairs = DictUtils.openDicts( m_activity, dictNames );
-
-    //             if ( pairs.anyMissing( dictNames ) ) {
-    //                 showDictGoneFinish();
-    //             } else {
-    //                 if ( null == m_gameLock ) {
-    //                     m_gameLock = new GameLock( m_rowid, true ).lock();
-    //                 }
-
-    //                 // PENDING: there's no point in re-opening the game if
-    //                 // it's already open!
-    //                 byte[] stream = GameUtils.savedGame( m_activity, m_gameLock );
-    //                 m_gi = new CurGameInfo( m_activity );
-    //                 m_gi.setName( gameName );
-    //                 XwJNI.gi_from_stream( m_gi, stream );
-    //                 String langName = m_gi.langName();
-
-    //                 m_summary = DBUtils.getSummary( m_activity, m_gameLock );
-    //                 m_relayMissing = m_summary.relayConnectPending();
-
-    //                 setThis( this );
-
-    //                 m_jniGamePtr = XwJNI.initJNI( m_rowid );
-
-    //                 if ( m_gi.serverRole != DeviceRole.SERVER_STANDALONE ) {
-    //                     m_xport = new CommsTransport( m_activity, this, m_rowid,
-    //                                                   m_gi.serverRole );
-    //                 }
-
-    //                 CommonPrefs cp = CommonPrefs.get( m_activity );
-    //                 if ( null == stream ||
-    //                      ! XwJNI.game_makeFromStream( m_jniGamePtr, stream, 
-    //                                                   m_gi, dictNames, 
-    //                                                   pairs.m_bytes, 
-    //                                                   pairs.m_paths, langName, 
-    //                                                   m_utils, m_jniu, 
-    //                                                   null, cp, m_xport ) ) {
-    //                     XwJNI.game_makeNewGame( m_jniGamePtr, m_gi, m_utils, 
-    //                                             m_jniu, null, cp, m_xport, 
-    //                                             dictNames, pairs.m_bytes, 
-    //                                             pairs.m_paths, langName );
-    //                 }
-
-
-    //                 m_jniThread = m_jniThreadRef.retain();
-
-    //                 // see http://stackoverflow.com/questions/680180/where-to-stop-\
-    //                 // destroy-threads-in-android-service-class
-    //                 // m_jniThread.setDaemonOnce( true ); // firing
-    //                 // m_jniThread.startOnce();
-
-    //                 m_view.startHandling( m_activity, m_jniThread, m_jniGamePtr, m_gi,
-    //                                       m_connTypes );
-    //                 if ( null != m_xport ) {
-    //                     // informMissing should have been called by now
-    //                     Assert.assertNotNull( m_connTypes );
-    //                     m_xport.setReceiver( m_jniThread, m_handler );
-    //                 }
-    //                 handleViaThread( JNICmd.CMD_START );
-
-    //                 if ( !CommonPrefs.getHideTitleBar( m_activity ) ) {
-    //                     setTitle( GameUtils.getName( m_activity, m_rowid ) );
-    //                 }
-
-    //                 positionToolbar( isPortrait() );
-    //                 populateToolbar();
-    //                 adjustTradeVisibility();
-
-    //                 int flags = DBUtils.getMsgFlags( m_activity, m_rowid );
-    //                 if ( 0 != (GameSummary.MSG_FLAGS_CHAT & flags) ) {
-    //                     startChatActivity();
-    //                 }
-    //                 if ( m_overNotShown ) {
-    //                     boolean auto = false;
-    //                     if ( 0 != (GameSummary.MSG_FLAGS_GAMEOVER & flags) ) {
-    //                         m_gameOver = true;
-    //                     } else if ( DBUtils.gameOver( m_activity, m_rowid ) ) {
-    //                         m_gameOver = true;
-    //                         auto = true;
-    //                     }
-    //                     if ( m_gameOver ) {
-    //                         m_overNotShown = false;
-    //                         handleViaThread( JNICmd.CMD_POST_OVER, auto );
-    //                     }
-    //                 }
-    //                 if ( 0 != flags ) {
-    //                     DBUtils.setMsgFlags( m_rowid, GameSummary.MSG_FLAGS_NONE );
-    //                 }
-
-    //                 Utils.cancelNotification( m_activity, (int)m_rowid );
-
-    //                 if ( null != m_xport ) {
-    //                     warnIfNoTransport();
-    //                     trySendChats();
-    //                     tickle( isStart );
-    //                     tryInvites();
-    //                 }
-    //             }
-    //        } catch ( GameUtils.NoSuchGameException nsge ) {
-    //             DbgUtils.loge( nsge );
-    //             finish();
-    //         }
-    //     }
-    // } // loadGame
 
     private void tickle( boolean force )
     {

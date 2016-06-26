@@ -268,8 +268,6 @@ public class JNIThread extends Thread {
         } catch ( java.lang.InterruptedException ie ) {
             DbgUtils.loge( ie );
         }
-        // m_jniGamePtr.release();
-        // m_jniGamePtr = null;
         m_lock.unlock();
     }
 
@@ -712,7 +710,6 @@ public class JNIThread extends Thread {
         }
         m_jniGamePtr.release();
         m_jniGamePtr = null;
-        // XwJNI.threadDone();
     } // run
 
     public void handleBkgrnd( JNICmd cmd, Object... args )
