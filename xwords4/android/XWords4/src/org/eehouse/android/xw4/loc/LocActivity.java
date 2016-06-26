@@ -34,10 +34,4 @@ public class LocActivity extends XWActivity {
         m_dlgt = new LocDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
     } // onCreate
-
-    // @Override
-    // public boolean onCreateOptionsMenu( Menu menu ) 
-    // {
-    //     return m_dlgt.onCreateOptionsMenu( menu );
-    // }
 }

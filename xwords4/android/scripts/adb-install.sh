@@ -17,7 +17,6 @@ DEVICES=''
 DIRNAME=$(basename $(pwd))
 ADB="$(which adb)"
 MAIN=GamesListActivity
-MAIN=Main
 
 case $DIRNAME in
     XWords4-dbg)
