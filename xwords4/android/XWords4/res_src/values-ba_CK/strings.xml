@@ -1822,10 +1822,13 @@
     ecived. On sevom lliw eb tnes aiv Htooteulb.\n\nUoy nac elbane
     Htooteulb ,won ro retal.
     </string>
-  <string name="warn_relay_disabled">Yaler yalp si yltnerruc elbasid no
-    siht ecived. On sevom lliw eb tnes ro deviecer aiv eht
-    yaler.\n\nUoy nac elbane yaler yalp ,won ro retal.
-    </string>
+  <string name="warn_relay_disabled">Yaler yalp si yltnerruc elbasid
+    no siht ecived. On sevom lliw eb tnes ro deviecer aiv eht
+    yaler. </string>
+  <string name="warn_relay_later">Uoy nac elbane yaler yalp ,won ro
+    retal.</string>
+  <string name="warn_relay_remove">Uoy nac elbane yaler yalp ,won ro
+    evomer ti morf siht emag.</string>
   <string name="warn_relay_havegames">Era uoy erus uoy tnaw ot
     elbasid yalp gnisu eht ?yaler</string>
   <plurals name="warn_relay_games_fmt">

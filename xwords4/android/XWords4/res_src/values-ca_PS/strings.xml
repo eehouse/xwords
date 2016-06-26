@@ -1822,10 +1822,13 @@
     DEVICE. NO MOVES WILL BE SENT VIA BLUETOOTH.\n\nYOU CAN ENABLE
     BLUETOOTH NOW, OR LATER.
     </string>
-  <string name="warn_relay_disabled">RELAY PLAY IS CURRENTLY DISABLE ON
-    THIS DEVICE. NO MOVES WILL BE SENT OR RECEIVED VIA THE
-    RELAY.\n\nYOU CAN ENABLE RELAY PLAY NOW, OR LATER.
-    </string>
+  <string name="warn_relay_disabled">RELAY PLAY IS CURRENTLY DISABLE
+    ON THIS DEVICE. NO MOVES WILL BE SENT OR RECEIVED VIA THE
+    RELAY. </string>
+  <string name="warn_relay_later">YOU CAN ENABLE RELAY PLAY NOW, OR
+    LATER.</string>
+  <string name="warn_relay_remove">YOU CAN ENABLE RELAY PLAY NOW, OR
+    REMOVE IT FROM THIS GAME.</string>
   <string name="warn_relay_havegames">ARE YOU SURE YOU WANT TO
     DISABLE PLAY USING THE RELAY?</string>
   <plurals name="warn_relay_games_fmt">

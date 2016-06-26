@@ -1035,7 +1035,22 @@ public class BoardDelegate extends DelegateBase
                                   final Object[] params )
     {
         boolean handled = false;
-        if ( AlertDialog.BUTTON_POSITIVE == which ) {
+        boolean positive = AlertDialog.BUTTON_POSITIVE == which;
+        DbgUtils.logf("BoardDelegate.dlgButtonClicked(%s, %b)", action.toString(), positive );
+
+        if ( Action.ENABLE_RELAY_DO == action ) {
+            handled = true;
+            if ( positive ) {
+                RelayService.setEnabled( m_activity, true );
+            } else {
+                // Things get very confused if askDropRelay() is called here.
+                postDelayed( new Runnable() {
+                        public void run() {
+                            askDropRelay();
+                        }
+                    }, 10 );
+            }
+        } else if ( positive ) {
             handled = true;
             JNICmd cmd = JNICmd.CMD_NONE;
             switch ( action ) {
@@ -2375,9 +2390,10 @@ public class BoardDelegate extends DelegateBase
         }
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
             if ( !RelayService.relayEnabled( m_activity ) ) {
-                showConfirmThen( R.string.warn_relay_disabled, 
-                                 R.string.button_enable_relay,
-                                 R.string.button_later,
+                String msg = getString( R.string.warn_relay_disabled )
+                    + "\n\n" + getString( R.string.warn_relay_remove );
+                showConfirmThen( msg, R.string.button_enable_relay,
+                                 R.string.newgame_drop_relay,
                                  Action.ENABLE_RELAY_DO );
             }
         }

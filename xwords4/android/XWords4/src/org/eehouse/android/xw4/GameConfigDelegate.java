@@ -351,8 +351,9 @@ public class GameConfigDelegate extends DelegateBase
                                                           Action.ENABLE_BT_DO );
                                          break;
                                      case COMMS_CONN_RELAY:
-                                         showConfirmThen( R.string.warn_relay_disabled, 
-                                                          R.string.button_enable_relay,
+                                         String msg = getString( R.string.warn_relay_disabled )
+                                             + "\n\n" + getString( R.string.warn_relay_later );
+                                         showConfirmThen( msg, R.string.button_enable_relay,
                                                           R.string.button_later,
                                                           Action.ENABLE_RELAY_DO );
                                          break;
