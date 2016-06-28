@@ -31,7 +31,7 @@ public class OnBootReceiver extends BroadcastReceiver {
     {
         if ( null != intent && null != intent.getAction() 
              && intent.getAction().equals( Intent.ACTION_BOOT_COMPLETED ) ) {
-            DbgUtils.logf( "OnBootReceiver: got ACTION_BOOT_COMPLETED" );
+            DbgUtils.logdf( "OnBootReceiver: got ACTION_BOOT_COMPLETED" );
             startTimers( context );
         }
     }

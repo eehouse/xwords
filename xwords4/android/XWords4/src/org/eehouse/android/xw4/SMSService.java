@@ -289,7 +289,7 @@ public class SMSService extends XWService {
         return s_showToasts;
     }
 
-    @Override                   // abstract
+    @Override
     protected MultiMsgSink getSink( long rowid )
     {
         return new SMSMsgSink( this );

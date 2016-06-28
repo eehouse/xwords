@@ -85,9 +85,6 @@ public class SMSInviteDelegate extends InviteDelegate {
 
     protected void init( Bundle savedInstanceState )
     {
-        // super.init( R.id.button_invite, R.id.button_add, 
-        //             R.id.button_clear, R.id.invite_desc,
-        //             R.string.invite_sms_desc_fmt );
         String msg = getString( R.string.button_invite );
         msg = getQuantityString( R.plurals.invite_sms_desc_fmt, m_nMissing, 
                                  m_nMissing, msg );

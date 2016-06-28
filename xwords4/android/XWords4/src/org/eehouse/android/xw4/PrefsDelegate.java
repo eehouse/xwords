@@ -240,7 +240,6 @@ public class PrefsDelegate extends DelegateBase
     @Override
     public void dlgButtonClicked( Action action, int button, Object[] params )
     {
-        DbgUtils.logf( "PrefsDelegate.dlgButtonClicked(%s)", action.toString() );
         boolean handled = AlertDialog.BUTTON_POSITIVE == button;
         if ( handled ) {
             switch ( action ) {

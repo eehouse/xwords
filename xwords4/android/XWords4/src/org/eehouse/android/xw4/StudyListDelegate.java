@@ -293,7 +293,6 @@ public class StudyListDelegate extends ListDelegateBase
                 }
             }
 
-            DbgUtils.logf( "creating studylist adapter" );
             ArrayAdapter<String> adapter = new
                 ArrayAdapter<String>( m_activity, 
                                       android.R.layout.simple_spinner_item,

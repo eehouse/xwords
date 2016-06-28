@@ -38,7 +38,7 @@ public class XWApp extends Application {
     public static final boolean REMATCH_SUPPORTED = true;
     public static final boolean RELAYINVITE_SUPPORTED = false;
     public static final boolean ATTACH_SUPPORTED = false;
-    public static final boolean LOG_LIFECYLE = true;
+    public static final boolean LOG_LIFECYLE = false;
     public static final boolean DEBUG_EXP_TIMERS = false;
     public static final boolean GCM_IGNORED = false;
     public static final boolean UDP_ENABLED = true;

@@ -61,7 +61,6 @@ public class XWConnAddrPreference extends DialogPreference {
         m_view.configure( XWPrefs.getAddrTypes( m_context ),
                           new ConnViaViewLayout.CheckEnabledWarner() {
                               public void warnDisabled( CommsConnType typ ) {
-                                  String msg;
                                   switch( typ ) {
                                   case COMMS_CONN_SMS:
                                       activity.showConfirmThen( R.string.warn_sms_disabled, 
@@ -75,7 +74,7 @@ public class XWConnAddrPreference extends DialogPreference {
                                                                 R.string.button_later,
                                                                 Action.ENABLE_BT_DO );
                                   case COMMS_CONN_RELAY:
-                                      msg = LocUtils
+                                      String msg = LocUtils
                                           .getString( m_context, R.string
                                                       .warn_relay_disabled );
                                       msg += "\n\n" + LocUtils

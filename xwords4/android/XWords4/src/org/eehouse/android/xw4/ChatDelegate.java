@@ -66,7 +66,6 @@ public class ChatDelegate extends DelegateBase {
     @Override
     protected void init( Bundle savedInstanceState ) 
     {
-        DbgUtils.logf( "ChatDelegate.init()" );
         if ( BuildConstants.CHAT_SUPPORTED ) {
             m_edit = (EditText)findViewById( R.id.chat_edit );
             m_edit.addTextChangedListener( new TextWatcher() {
@@ -103,7 +102,6 @@ public class ChatDelegate extends DelegateBase {
                     addRow( pair.msg, pair.playerIndx );
                 }
             }
-            // scrollDown();
 
             String title = getString( R.string.chat_title_fmt, 
                                       GameUtils.getName( m_activity, m_rowid ) );
@@ -193,16 +191,7 @@ public class ChatDelegate extends DelegateBase {
                 m_edit.setText( null );
 
                 m_jniThreadRef.sendChat( text );
-                // if ( null != jniThread ) {
-                //     jniThread.handle( JNIThread.JNICmd.CMD_SENDCHAT, text );
-                // } else {
-                //     Intent result = new Intent();
-                //     result.putExtra( BoardDelegate.INTENT_KEY_CHAT, text );
-                //     setResult( Activity.RESULT_OK, result );
-                //     finish();
-                // }
             }
-            // finish();
             break;
         default:
             handled = false;

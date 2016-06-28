@@ -160,7 +160,7 @@ public class GameLock {
                 if ( DEBUG_LOCKS ) {
                     DbgUtils.logf( "lock %H overlocked", this );
                 }
-                Assert.fail();  // firing
+                Assert.fail();
             }
         }
         // DbgUtils.logf( "GameLock.lock(%s) done", m_path );

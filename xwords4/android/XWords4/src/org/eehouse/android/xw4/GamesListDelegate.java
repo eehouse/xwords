@@ -919,7 +919,6 @@ public class GamesListDelegate extends ListDelegateBase
     protected void init( Bundle savedInstanceState ) 
     {
         m_origTitle = getTitle();
-        Assert.assertTrue( m_origTitle.equals( getString(R.string.app_name) ) );
 
         m_handler = new Handler();
         // Next line useful if contents of DB are crashing app on start
@@ -955,13 +954,6 @@ public class GamesListDelegate extends ListDelegateBase
 
         getDictForLangIf();
     } // init
-
-    // protected View onCreateView( Bundle savedInstanceState )
-    // {
-    //     View result = inflate( R.layout.game_list );
-    //     // init( savedInstanceState );
-    //     return result;
-    // }
 
     // called when we're brought to the front (probably as a result of
     // notification)
@@ -1101,13 +1093,11 @@ public class GamesListDelegate extends ListDelegateBase
     public void itemClicked( SelectableItem.LongClickHandler clicked,
                              GameSummary summary )
     {
-        DbgUtils.logf( "GamesListDelegate.itemClicked()" );
         // We need a way to let the user get back to the basic-config
         // dialog in case it was dismissed.  That way it to check for
         // an empty room name.
         if ( clicked instanceof GameListItem ) {
             long rowid = ((GameListItem)clicked).getRowID();
-            DbgUtils.logf( "GamesListDelegate.itemClicked(%d)", rowid );
             if ( ! m_launchedGames.contains( rowid ) ) {
                 showNotAgainDlgThen( R.string.not_again_newselect, 
                                      R.string.key_notagain_newselect,
@@ -1325,7 +1315,7 @@ public class GamesListDelegate extends ListDelegateBase
     @Override
     public boolean onPrepareOptionsMenu( Menu menu ) 
     {
-        int nGamesSelected = m_selGames.size(); // NPE!
+        int nGamesSelected = m_selGames.size();
         int nGroupsSelected = m_selGroupIDs.size();
         int groupCount = m_adapter.getGroupCount();
         m_menuPrepared = 0 == nGamesSelected || 0 == nGroupsSelected;
@@ -2276,12 +2266,6 @@ public class GamesListDelegate extends ListDelegateBase
     {
         boolean madeGame = DBUtils.ROWID_NOTFOUND != m_missingDictRowId;
         if ( madeGame ) {
-            // if ( R.id.games_game_reset == m_missingDictMenuId ) {
-            //     long[] rowIDs = { m_missingDictRowId };
-            //     doConfirmReset( rowIDs );
-            // } else {
-            //     launchGame( m_missingDictRowId );
-            // }
             // save in case checkWarnNoDict needs to set them
             long rowID = m_missingDictRowId;
             int menuID = m_missingDictMenuId;
@@ -2300,10 +2284,6 @@ public class GamesListDelegate extends ListDelegateBase
 
     private void launchGame( long rowid, boolean invited )
     {
-        // DbgUtils.logf( "launchGame(%d)", rowid );
-        // if ( ! m_launchedGames.contains( rowid ) ) {
-        //     m_launchedGames.add( rowid );
-        //     m_delegator.launchGame( rowid, invited );
         if ( ! m_launchedGames.contains( rowid ) ) {
             m_launchedGames.add( rowid );
             if ( m_adapter.inExpandedGroup( rowid ) ) {
@@ -2339,7 +2319,6 @@ public class GamesListDelegate extends ListDelegateBase
     {
         GameSummary summary = (GameSummary)params[1];
         long rowid = (Long)params[0];
-        DbgUtils.logf( "GamesListDelegate.doOpenGame(%d)", rowid );
 
         if ( summary.conTypes.contains( CommsAddrRec.CommsConnType.COMMS_CONN_RELAY )
              && summary.roomName.length() == 0 ) {

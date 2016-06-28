@@ -1126,14 +1126,6 @@ public class GameUtils {
         return rint;
     }
 
-    // public static void postSelfNotification( Context context, long rowid )
-    // {
-    //     Assert.assertTrue( BuildConfig.DEBUG );
-    //     Intent intent = GamesListDelegate.makeRowidIntent( context, rowid );
-    //     Utils.postNotification( context, intent, "launch", 
-    //                             String.format("%d", rowid), (int)rowid );
-    // }
-
     public static void postMoveNotification( Context context, long rowid, 
                                              BackMoveResult bmr,
                                              boolean isTurnNow )

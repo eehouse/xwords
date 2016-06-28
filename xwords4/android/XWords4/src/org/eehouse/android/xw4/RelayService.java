@@ -555,7 +555,6 @@ public class RelayService extends XWService
                                 DatagramPacket packet = 
                                     new DatagramPacket( buf, buf.length );
                                 try {
-                                    Assert.assertTrue( relayEnabled( RelayService.this ) );
                                     m_UDPSocket.receive( packet );
                                     resetExitTimer();
                                     gotPacket( packet );
@@ -583,8 +582,7 @@ public class RelayService extends XWService
         if ( null == m_UDPSocket ) {
             int port = XWPrefs.getDefaultRelayPort( this );
             String host = XWPrefs.getDefaultRelayHost( this );
-            try { 
-                Assert.assertTrue( relayEnabled( this ) );
+            try {
                 m_UDPSocket = new DatagramSocket();
                 m_UDPSocket.setSoTimeout(30 * 1000); // timeout so we can log
 
@@ -626,7 +624,6 @@ public class RelayService extends XWService
                             }
 
                             try {
-                                Assert.assertTrue( relayEnabled( RelayService.this ) );
                                 DatagramPacket outPacket = outData.assemble();
                                 m_UDPSocket.send( outPacket );
                                 int pid = outData.m_packetID;
