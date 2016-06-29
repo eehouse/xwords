@@ -1036,13 +1036,14 @@ public class BoardDelegate extends DelegateBase
     {
         boolean handled = false;
         boolean positive = AlertDialog.BUTTON_POSITIVE == which;
-        DbgUtils.logf("BoardDelegate.dlgButtonClicked(%s, %b)", action.toString(), positive );
+        DbgUtils.logdf("BoardDelegate.dlgButtonClicked(%s, %b)", action.toString(), positive );
 
         if ( Action.ENABLE_RELAY_DO == action ) {
-            handled = true;
             if ( positive ) {
+                handled = true;
                 RelayService.setEnabled( m_activity, true );
-            } else {
+            } else if ( AlertDialog.BUTTON_NEGATIVE == which ) {
+                handled = true;
                 // Things get very confused if askDropRelay() is called here.
                 postDelayed( new Runnable() {
                         public void run() {
