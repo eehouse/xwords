@@ -44,8 +44,11 @@
               />
 
         <exec dir="." executable="../scripts/copy-strings.py" 
-              failonerror="true" output="/dev/null" 
-              />
+              failonerror="true" output="/dev/null"
+              >
+            <arg value="-k"/>
+            <arg value="${SKIP_LANGS}"/>
+        </exec>
 
         <exec dir="." executable="../scripts/mk_xml.py" 
               failonerror="true" 
