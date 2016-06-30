@@ -289,9 +289,10 @@ public class CommsAddrRec {
             CommsConnType conType = iter.next();
             switch( conType ) {
             case COMMS_CONN_RELAY:
-                matter = ! ip_relay_invite.equals( other.ip_relay_invite )
-                    || ! ip_relay_hostName.equals( other.ip_relay_hostName )
-                    || ip_relay_port != other.ip_relay_port;
+                    matter = null == ip_relay_invite
+                        || ! ip_relay_invite.equals( other.ip_relay_invite )
+                        || ! ip_relay_hostName.equals( other.ip_relay_hostName )
+                        || ip_relay_port != other.ip_relay_port;
                 break;
             default:
                 DbgUtils.logf( "changesMatter: not handling case: %s", 
