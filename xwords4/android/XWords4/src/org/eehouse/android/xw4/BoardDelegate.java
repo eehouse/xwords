@@ -141,6 +141,7 @@ public class BoardDelegate extends DelegateBase
     private int m_nGuestDevs = -1;
     private boolean m_haveInvited = false;
     private boolean m_overNotShown;
+    private boolean m_dropOnDismiss;
 
     public class TimerRunnable implements Runnable {
         private int m_why;
@@ -1038,13 +1039,13 @@ public class BoardDelegate extends DelegateBase
         boolean positive = AlertDialog.BUTTON_POSITIVE == which;
         DbgUtils.logdf("BoardDelegate.dlgButtonClicked(%s, %b)", action.toString(), positive );
 
-        if ( Action.ENABLE_RELAY_DO == action ) {
+        if ( Action.ENABLE_RELAY_DO_OR == action ) {
+            handled = true;
             if ( positive ) {
-                handled = true;
                 RelayService.setEnabled( m_activity, true );
             } else if ( AlertDialog.BUTTON_NEGATIVE == which ) {
-                handled = true;
-                // Things get very confused if askDropRelay() is called here.
+                m_dropOnDismiss = true;
+            } else if ( DlgDelegate.DISMISS_BUTTON == which && m_dropOnDismiss ) {
                 postDelayed( new Runnable() {
                         public void run() {
                             askDropRelay();
@@ -2391,11 +2392,12 @@ public class BoardDelegate extends DelegateBase
         }
         if ( m_connTypes.contains( CommsConnType.COMMS_CONN_RELAY ) ) {
             if ( !RelayService.relayEnabled( m_activity ) ) {
+                m_dropOnDismiss = false;
                 String msg = getString( R.string.warn_relay_disabled )
                     + "\n\n" + getString( R.string.warn_relay_remove );
                 showConfirmThen( msg, R.string.button_enable_relay,
                                  R.string.newgame_drop_relay,
-                                 Action.ENABLE_RELAY_DO );
+                                 Action.ENABLE_RELAY_DO_OR );
             }
         }
     }

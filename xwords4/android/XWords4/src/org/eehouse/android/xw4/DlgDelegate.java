@@ -122,6 +122,7 @@ public class DlgDelegate {
         ENABLE_SMS_DO,
         ENABLE_BT_DO,
         ENABLE_RELAY_DO,
+        ENABLE_RELAY_DO_OR,
         DISABLE_RELAY_DO,
     }
 
