@@ -86,14 +86,18 @@ public class ChatDelegate extends DelegateBase {
 
             m_scroll = (ScrollView)findViewById( R.id.scroll );
             m_layout = (TableLayout)findViewById( R.id.chat_history );
-            m_layout.addOnLayoutChangeListener( new OnLayoutChangeListener() {
-                    @Override
-                    public void onLayoutChange( View vv, int ll, int tt, int rr, 
-                                                int bb, int ol, int ot, 
-                                                int or, int ob ) {
-                        scrollDown();
-                    }
-                });
+
+            // OnLayoutChangeListener added in API 11
+            if ( 11 <= Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
+                m_layout.addOnLayoutChangeListener( new OnLayoutChangeListener() {
+                        @Override
+                        public void onLayoutChange( View vv, int ll, int tt, int rr,
+                                                    int bb, int ol, int ot,
+                                                    int or, int ob ) {
+                            scrollDown();
+                        }
+                    });
+            }
      
             DBUtils.HistoryPair[] pairs
                 = DBUtils.getChatHistory( m_activity, m_rowid, locals );
@@ -110,7 +114,7 @@ public class ChatDelegate extends DelegateBase {
             // Should really assert....
             finish();
         }
-    }
+    } // init
 
     @Override
     protected void onResume() 
