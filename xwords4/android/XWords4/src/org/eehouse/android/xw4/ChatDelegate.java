@@ -30,6 +30,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View.OnLayoutChangeListener;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
@@ -98,6 +99,17 @@ public class ChatDelegate extends DelegateBase {
                         }
                     });
             }
+
+            Button sendButton = (Button)findViewById( R.id.chat_send );
+            if ( ABUtils.haveActionBar() ) {
+                sendButton.setVisibility( View.GONE );
+            } else {
+                sendButton.setOnClickListener( new View.OnClickListener() {
+                        public void onClick( View view ) {
+                            handleSend();
+                        }
+                    } );
+            }
      
             DBUtils.HistoryPair[] pairs
                 = DBUtils.getChatHistory( m_activity, m_rowid, locals );
@@ -165,6 +177,20 @@ public class ChatDelegate extends DelegateBase {
             });
     }
 
+    private void handleSend() {
+        String text = m_edit.getText().toString();
+        if ( null == text || text.length() == 0 ) {
+            setResult( Activity.RESULT_CANCELED );
+            finish();
+        } else {
+            DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer );
+            addRow( text, m_curPlayer );
+            m_edit.setText( null );
+
+            m_jniThreadRef.sendChat( text );
+        }
+    }
+
     @Override
     public boolean onPrepareOptionsMenu( Menu menu )
     {
@@ -185,17 +211,7 @@ public class ChatDelegate extends DelegateBase {
             }
             break;
         case R.id.chat_menu_send:
-            String text = m_edit.getText().toString();
-            if ( null == text || text.length() == 0 ) {
-                setResult( Activity.RESULT_CANCELED );
-                finish();
-            } else {
-                DBUtils.appendChatHistory( m_activity, m_rowid, text, m_curPlayer );
-                addRow( text, m_curPlayer );
-                m_edit.setText( null );
-
-                m_jniThreadRef.sendChat( text );
-            }
+            handleSend();
             break;
         default:
             handled = false;
