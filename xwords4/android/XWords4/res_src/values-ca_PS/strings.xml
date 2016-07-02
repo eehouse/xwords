@@ -943,7 +943,8 @@
          tapping. -->
   <string name="hide_crosshairs">DISABLE CROSSHAIRS</string>
   <!-- explanation of the above -->
-  <string name="hide_crosshairs_summary">DO NOT VISUALLY INDICATE WHICH BOARD CELL IS TOUCHED</string>
+  <string name="hide_crosshairs_summary">DO NOT SHOW WHICH BOARD
+    CELL IS TOUCHED</string>
   <string name="network_behavior">NETWORK GAME SETTINGS</string>
   <!-- explanation of the above -->
   <string name="network_behavior_summary">SETTINGS THAT APPLY TO

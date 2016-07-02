@@ -1095,7 +1095,8 @@
          tapping. -->
     <string name="hide_crosshairs">Disable crosshairs</string>
     <!-- explanation of the above -->
-    <string name="hide_crosshairs_summary">Do not visually indicate which board cell is touched</string>
+    <string name="hide_crosshairs_summary">Do not show which board
+    cell is touched</string>
 
     <string name="network_behavior">Network game settings</string>
     <!-- explanation of the above -->

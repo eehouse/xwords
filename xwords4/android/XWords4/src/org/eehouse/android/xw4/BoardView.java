@@ -22,21 +22,14 @@ package org.eehouse.android.xw4;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint.FontMetricsInt;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.util.FloatMath;
 import android.view.MotionEvent;
 import android.view.View;
-import java.nio.IntBuffer;
-import java.util.Set;
 
 import org.eehouse.android.xw4.jni.*;
 import org.eehouse.android.xw4.jni.CommsAddrRec.CommsConnTypeSet;
