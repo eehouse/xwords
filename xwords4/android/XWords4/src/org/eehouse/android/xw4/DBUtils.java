@@ -1150,6 +1150,8 @@ public class DBUtils {
 
             // Delete chats too -- same sel as for invites
             db.delete( DBHelper.TABLE_NAME_CHAT, selInvites, null );
+
+            deleteCurChatsSync( db, rowid );
             
             db.close();
         }
@@ -1298,6 +1300,31 @@ public class DBUtils {
             }
         }
         return result;
+    }
+
+    private static String formatCurChatKey( long rowid ) {
+        return formatCurChatKey( rowid, -1 );
+    }
+
+    private static String formatCurChatKey( long rowid, int player ) {
+        String playerMatch = 0 <= player ? String.format( "%d", player ) : "%";
+        String result = String.format("<<chat/%d/%s>>", rowid, playerMatch );
+        return result;
+    }
+
+    public static String getCurChat( Context context, long rowid, int player ) {
+        String key = formatCurChatKey( rowid, player );
+        return getStringFor( context, key, "" );
+    }
+
+    public static void setCurChat( Context context, long rowid, int player, String text ) {
+        String key = formatCurChatKey( rowid, player );
+        setStringFor( context, key, text );
+    }
+
+    private static void deleteCurChatsSync( SQLiteDatabase db, long rowid ) {
+        String like = formatCurChatKey( rowid );
+        delStringsLikeSync( db, like );
     }
 
     public static class NeedsNagInfo {
@@ -2302,6 +2329,12 @@ public class DBUtils {
             values.put( DBHelper.KEY, key );
             db.insert( DBHelper.TABLE_NAME_PAIRS, null, values );
         }
+    }
+
+    private static void delStringsLikeSync( SQLiteDatabase db, String like )
+    {
+        String selection = String.format( "%s LIKE '%s'", DBHelper.KEY, like );
+        db.delete( DBHelper.TABLE_NAME_PAIRS, selection, null );
     }
 
     private static String getStringForSync( SQLiteDatabase db, String key, String dflt )

@@ -138,6 +138,10 @@ public class ChatDelegate extends DelegateBase {
             finish();
         } else {
             s_visibleThis = this;
+            String curMsg = DBUtils.getCurChat( m_activity, m_rowid, m_curPlayer );
+            if ( null != curMsg && 0 < curMsg.length() ) {
+                m_edit.setText( curMsg );
+            }
         }
     }
 
@@ -148,6 +152,10 @@ public class ChatDelegate extends DelegateBase {
             m_jniThreadRef.release();
         }
         s_visibleThis = null;
+
+        String curText = m_edit.getText().toString();
+        DBUtils.setCurChat( m_activity, m_rowid, m_curPlayer, curText );
+
         super.onPause();
     }
 
