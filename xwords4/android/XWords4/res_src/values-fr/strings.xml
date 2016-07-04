@@ -3482,4 +3482,6 @@ pour la langue</string>
     <string name="activity_button">Panneau unique</string>
     <string name="fragment_button">Double panneau</string>
 
+    <string name="relay_behavior">Paramètres des parties par relai</string>
+    <string name="relay_behavior_summary">"Paramètres des parties connectées à Internet "</string>
     </resources>
