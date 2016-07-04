@@ -1186,4 +1186,23 @@
     <string name="activity_button">シングル ペイン</string>
     <string name="fragment_button">デュアル ペイン</string>
 
+    <string name="relay_behavior">リレー プレイ設定</string>
+    <string name="relay_behavior_summary">"インターネット接続したゲームに適用される設定 "</string>
+    <string name="disable_relay">"リレーを経由したプレイを無効にする "</string>
+    <string name="disable_relay_summary">すべてのインターネット通信を無効にします</string>
+
+    <string name="warn_relay_disabled">"このデバイスでリレー プレイは現在無効です。移動はリレーを介して送信も受信されません。 "</string>
+
+    <string name="warn_relay_later">今すぐ、または後でリレー プレイを有効にすることができます。</string>
+    <string name="warn_relay_remove">今すぐ、リレー プレイを有効にしたり、このゲームから削除できます。</string>
+
+    <string name="warn_relay_havegames">リレーを使用したプレイを無効にしてもよろしいですか?</string>
+
+    <plurals name="warn_relay_games_fmt">
+	<item quantity="one">\n\n(それを使用したゲームが 1 つあります。)</item>
+	<item quantity="other"/>
+</plurals>
+
+    <string name="button_enable_relay">リレー プレイを有効にする</string>
+    <string name="button_disable_relay">リレー プレイを無効にする</string>
     </resources>
