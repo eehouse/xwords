@@ -321,10 +321,10 @@ public class BoardView extends View implements BoardHandler, SyncedDraw {
             }
         }
 
-        // Force update now that we have bits to copy
-        if ( drew ) {
-            m_parent.runOnUiThread( m_invalidator );
-        }
+        // Force update now that we have bits to copy. I don't know why (yet),
+        // but on older versions of Android we need to run this even if drew
+        // is false
+        m_parent.runOnUiThread( m_invalidator );
     }
 
     public void dimsChanged( BoardDims dims )
