@@ -1312,13 +1312,28 @@ public class DBUtils {
         return result;
     }
 
-    public static String getCurChat( Context context, long rowid, int player ) {
+    public static String getCurChat( Context context, long rowid, int player,
+                                     int[] startAndEndOut ) {
+        String result = null;
         String key = formatCurChatKey( rowid, player );
-        return getStringFor( context, key, "" );
+        String all = getStringFor( context, key, "" );
+        String[] parts = TextUtils.split( all, ":" );
+        if ( 3 <= parts.length ) {
+            result = all.substring( 2 + parts[0].length() + parts[1].length() );
+            startAndEndOut[0] = Math.min( result.length(), 
+                                          Integer.parseInt( parts[0] ) );
+            startAndEndOut[1] = Math.min( result.length(), 
+                                          Integer.parseInt( parts[1] ) );
+        }
+        DbgUtils.logdf( "getCurChat(): => %s [%d,%d]", result, 
+                        startAndEndOut[0], startAndEndOut[1] );
+        return result;
     }
 
-    public static void setCurChat( Context context, long rowid, int player, String text ) {
+    public static void setCurChat( Context context, long rowid, int player, 
+                                   String text, int start, int end ) {
         String key = formatCurChatKey( rowid, player );
+        text = String.format( "%d:%d:%s", start, end, text );
         setStringFor( context, key, text );
     }
 

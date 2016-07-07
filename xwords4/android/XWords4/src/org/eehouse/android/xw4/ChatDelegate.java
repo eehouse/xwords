@@ -138,10 +138,12 @@ public class ChatDelegate extends DelegateBase {
             finish();
         } else {
             s_visibleThis = this;
-            String curMsg = DBUtils.getCurChat( m_activity, m_rowid, m_curPlayer );
+            int[] startAndEnd = new int[2];
+            String curMsg = DBUtils.getCurChat( m_activity, m_rowid, 
+                                                m_curPlayer, startAndEnd );
             if ( null != curMsg && 0 < curMsg.length() ) {
                 m_edit.setText( curMsg );
-                m_edit.setSelection( curMsg.length() );
+                m_edit.setSelection( startAndEnd[0], startAndEnd[1] );
             }
         }
     }
@@ -155,7 +157,9 @@ public class ChatDelegate extends DelegateBase {
         s_visibleThis = null;
 
         String curText = m_edit.getText().toString();
-        DBUtils.setCurChat( m_activity, m_rowid, m_curPlayer, curText );
+        DBUtils.setCurChat( m_activity, m_rowid, m_curPlayer, curText,
+                            m_edit.getSelectionStart(),
+                            m_edit.getSelectionEnd() );
 
         super.onPause();
     }
