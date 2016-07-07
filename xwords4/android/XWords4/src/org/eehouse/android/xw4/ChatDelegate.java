@@ -141,6 +141,7 @@ public class ChatDelegate extends DelegateBase {
             String curMsg = DBUtils.getCurChat( m_activity, m_rowid, m_curPlayer );
             if ( null != curMsg && 0 < curMsg.length() ) {
                 m_edit.setText( curMsg );
+                m_edit.setSelection( curMsg.length() );
             }
         }
     }
