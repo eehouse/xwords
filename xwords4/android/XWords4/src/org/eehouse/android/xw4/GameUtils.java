@@ -851,11 +851,11 @@ public class GameUtils {
     public static void launchGame( Delegator delegator, long rowid,
                                    boolean invited )
     {
-        Activity activity = delegator.getActivity();
         Bundle extras = makeLaunchExtras( rowid, invited );
-        if ( activity instanceof FragActivity ) {
-            FragActivity.addFragment( new BoardFrag(), extras, delegator );
+        if ( delegator.inDPMode() ) {
+            delegator.addFragment( new BoardFrag(), extras );
         } else {
+            Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, BoardActivity.class );
             intent.putExtras( extras );
             activity.startActivity( intent );

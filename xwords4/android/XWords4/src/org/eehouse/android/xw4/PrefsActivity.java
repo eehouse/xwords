@@ -26,6 +26,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
+import junit.framework.Assert;
+
 import org.eehouse.android.xw4.loc.LocUtils;
 import org.eehouse.android.xw4.DlgDelegate.Action;
 
@@ -141,4 +143,7 @@ public class PrefsActivity extends PreferenceActivity
     {
         return getIntent().getExtras();
     }
+
+    public boolean inDPMode() { Assert.fail(); return false; }
+    public void addFragment( XWFragment fragment, Bundle extras ) { Assert.fail(); }
 }

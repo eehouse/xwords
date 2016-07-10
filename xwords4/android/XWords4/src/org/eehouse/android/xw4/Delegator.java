@@ -28,6 +28,8 @@ public interface Delegator {
     Activity getActivity();
     Bundle getArguments();
     void finish();
+    boolean inDPMode();
+    void addFragment( XWFragment fragment, Bundle extras );
 
     // For activities with lists
     void setListAdapter( ListAdapter adapter );

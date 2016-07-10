@@ -24,6 +24,7 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -35,9 +36,7 @@ import android.widget.ListView;
 
 import junit.framework.Assert;
 
-import junit.framework.Assert;
-
-public class XWActivity extends Activity implements Delegator {
+public class XWActivity extends FragmentActivity implements Delegator {
 
     private DelegateBase m_dlgt;
 
@@ -222,4 +221,14 @@ public class XWActivity extends Activity implements Delegator {
     {
         return getListView().getAdapter();
     }
+
+    public boolean inDPMode() {
+        return false;
+    }
+
+    public void addFragment( XWFragment fragment, Bundle extras ) 
+    {
+        Assert.fail();
+    }
+
 }

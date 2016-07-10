@@ -135,6 +135,20 @@ public class XWFragment extends Fragment
         Assert.fail();
     }
 
+    @Override
+    public boolean inDPMode() {
+        MainActivity main = (MainActivity)getActivity();
+        Assert.assertTrue( main.inDPMode() ); // otherwise should be somewhere else
+        return true; 
+    }
+
+    @Override
+    public void addFragment( XWFragment fragment, Bundle extras ) 
+    { 
+        MainActivity main = (MainActivity)getActivity();
+        main.addFragment( fragment, extras );
+    }
+
     // FragActivity.OrientChangeListener
     public void orientationChanged()
     {
