@@ -88,5 +88,5 @@ if [ -n "$INSTALL" ]; then
 fi
 
 # if [ "$CMDS" != "${CMDS%%install}" ]; then
-# 	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.GamesListActivity
+# 	adb shell am start -n org.eehouse.android.${PKG}/org.eehouse.android.${PKG}.MainActivity
 # fi

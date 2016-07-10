@@ -2488,13 +2488,13 @@ public class GamesListDelegate extends ListDelegateBase
 
     public static void onGameDictDownload( Context context, Intent intent )
     {
-        intent.setClass( context, GamesListActivity.class );
+        intent.setClass( context, MainActivity.class );
         context.startActivity( intent );
     }
 
     private static Intent makeSelfIntent( Context context )
     {
-        Intent intent = new Intent( context, GamesListActivity.class );
+        Intent intent = new Intent( context, MainActivity.class );
         intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP
                          | Intent.FLAG_ACTIVITY_NEW_TASK );
         return intent;

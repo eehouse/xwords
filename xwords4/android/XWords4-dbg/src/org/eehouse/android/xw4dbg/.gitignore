@@ -86,7 +86,6 @@ XWSumListPreference.java
 XWThumbListPreference.java
 DelegateBase.java
 DlgID.java
-GamesListActivity.java
 GamesListDelegate.java
 LookupAlert.java
 BoardDelegate.java
@@ -137,3 +136,4 @@ StudyListFrag.java
 XWFragment.java
 ConfirmingCheckBoxPreference.java
 RelayCheckBoxPreference.java
+MainActivity.java

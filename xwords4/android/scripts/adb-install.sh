@@ -16,7 +16,7 @@ APKS=''
 DEVICES=''
 DIRNAME=$(basename $(pwd))
 ADB="$(which adb)"
-MAIN=GamesListActivity
+MAIN=MainActivity
 
 case $DIRNAME in
     XWords4-dbg)

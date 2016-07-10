@@ -29,7 +29,7 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 
 import junit.framework.Assert;
 
-public class GamesListActivity extends XWActivity {
+public class MainActivity extends XWActivity {
     private GamesListDelegate m_dlgt;
 
     @Override
@@ -42,7 +42,7 @@ public class GamesListActivity extends XWActivity {
         // once. finish()ing when Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT is
         // passed is not the fix, but perhaps there's another
         // int flags = getIntent().getFlags();
-        // DbgUtils.logf( "GamesListActivity.onCreate(this=%H): flags=0x%x", 
+        // DbgUtils.logf( "MainActivity.onCreate(this=%H): flags=0x%x", 
         //                this, flags );
     } // onCreate
 
