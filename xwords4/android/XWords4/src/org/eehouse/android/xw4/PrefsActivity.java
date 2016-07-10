@@ -146,4 +146,6 @@ public class PrefsActivity extends PreferenceActivity
 
     public boolean inDPMode() { Assert.fail(); return false; }
     public void addFragment( XWFragment fragment, Bundle extras ) { Assert.fail(); }
+    public void addFragmentForResult( XWFragment fragment, Bundle extras,
+                                      RequestCode code ) { Assert.fail(); }
 }

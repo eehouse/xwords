@@ -278,7 +278,6 @@ public class DictBrowseDelegate extends ListDelegateBase
         launchLookup( words, m_lang, true );
     }
 
-
     //////////////////////////////////////////////////
     // AdapterView.OnItemSelectedListener interface
     //////////////////////////////////////////////////
@@ -424,10 +423,10 @@ public class DictBrowseDelegate extends ListDelegateBase
 
     private static void launch( Delegator delegator, Bundle bundle )
     {
-        Activity activity = delegator.getActivity();
-        if ( activity instanceof FragActivity ) {
-            FragActivity.addFragment( new DictBrowseFrag(), bundle, delegator );
+        if ( delegator.inDPMode() ) {
+            delegator.addFragment( new DictBrowseFrag(), bundle );
         } else {
+            Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, DictBrowseActivity.class );
             intent.putExtras( bundle );
             activity.startActivity( intent );

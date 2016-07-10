@@ -1209,15 +1209,14 @@ public class GameConfigDelegate extends DelegateBase
                                       RequestCode requestCode, 
                                       long rowID )
     {
-        Activity activity = delegator.getActivity();
         Bundle bundle = new Bundle();
         bundle.putLong( GameUtils.INTENT_KEY_ROWID, rowID );
         bundle.putBoolean( INTENT_FORRESULT_ROWID, true );
         
-        if ( activity instanceof FragActivity ) {
-            FragActivity.addFragmentForResult( new GameConfigFrag(), bundle, 
-                                               requestCode, delegator );
+        if ( false && delegator.inDPMode() ) {
+            delegator.addFragmentForResult( new GameConfigFrag(), bundle, requestCode );
         } else {
+            Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, GameConfigActivity.class );
             intent.setAction( Intent.ACTION_EDIT );
             intent.putExtras( bundle );

@@ -1092,10 +1092,10 @@ public class GameUtils {
         Bundle extras = new Bundle();
         extras.putLong( INTENT_KEY_ROWID, rowid );
 
-        Activity activity = delegator.getActivity();
-        if ( activity instanceof FragActivity ) {
-            FragActivity.addFragment( new GameConfigFrag(), extras, delegator );
+        if ( delegator.inDPMode() ) {
+            delegator.addFragment( new GameConfigFrag(), extras );
         } else {
+            Activity activity = delegator.getActivity();
             Intent intent = new Intent( activity, GameConfigActivity.class );
             intent.setAction( Intent.ACTION_EDIT );
             intent.putExtras( extras );

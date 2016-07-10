@@ -113,6 +113,14 @@ public class MainActivity extends XWActivity
         addFragmentImpl( fragment, extras, this );
     }
 
+    @Override
+    public void addFragmentForResult( XWFragment fragment, Bundle extras, 
+                                      RequestCode requestCode )
+    {
+        DbgUtils.logf( "addFragmentForResult(): dropping requestCode" );
+        addFragmentImpl( fragment, extras, this );
+    }
+
     //////////////////////////////////////////////////////////////////////
     // FragmentManager.OnBackStackChangedListener
     //////////////////////////////////////////////////////////////////////

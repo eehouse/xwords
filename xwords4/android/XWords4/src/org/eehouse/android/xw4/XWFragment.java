@@ -149,6 +149,14 @@ public class XWFragment extends Fragment
         main.addFragment( fragment, extras );
     }
 
+    @Override
+    public void addFragmentForResult( XWFragment fragment, Bundle extras, 
+                                      RequestCode code ) 
+    { 
+        MainActivity main = (MainActivity)getActivity();
+        main.addFragmentForResult( fragment, extras, code );
+    }
+
     // FragActivity.OrientChangeListener
     public void orientationChanged()
     {

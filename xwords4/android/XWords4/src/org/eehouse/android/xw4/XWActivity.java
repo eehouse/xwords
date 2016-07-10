@@ -231,4 +231,9 @@ public class XWActivity extends FragmentActivity implements Delegator {
         Assert.fail();
     }
 
+    public void addFragmentForResult( XWFragment fragment, Bundle extras, 
+                                      RequestCode request  ) 
+    {
+        Assert.fail();
+    }
 }

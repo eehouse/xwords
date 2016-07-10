@@ -30,7 +30,8 @@ public interface Delegator {
     void finish();
     boolean inDPMode();
     void addFragment( XWFragment fragment, Bundle extras );
-
+    void addFragmentForResult( XWFragment fragment, Bundle extras, 
+                               RequestCode requestCode );
     // For activities with lists
     void setListAdapter( ListAdapter adapter );
     ListAdapter getListAdapter();

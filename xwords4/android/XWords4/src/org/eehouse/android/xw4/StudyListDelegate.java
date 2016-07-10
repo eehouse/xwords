@@ -362,9 +362,8 @@ public class StudyListDelegate extends ListDelegateBase
                 bundle.putInt( START_LANG, lang );
             }
 
-            if ( activity instanceof FragActivity ) {
-                StudyListFrag frag = new StudyListFrag();
-                ((FragActivity)activity).addFragment( frag, bundle, delegator );
+            if ( delegator.inDPMode() ) {
+                delegator.addFragment( new StudyListFrag(), bundle );
             } else {
                 Intent intent = new Intent( activity, StudyListActivity.class );
                 intent.putExtras( bundle );
