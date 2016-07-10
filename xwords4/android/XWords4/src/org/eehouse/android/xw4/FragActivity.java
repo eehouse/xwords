@@ -58,7 +58,7 @@ public class FragActivity extends FragmentActivity
     {
         s_this = this;
         super.onCreate( savedInstanceState );
-        setContentView( R.layout.fragact );
+        setContentView( R.layout.dualcontainer );
 
         m_root = (LinearLayout)findViewById( R.id.main_container );
         getSupportFragmentManager().addOnBackStackChangedListener( this );

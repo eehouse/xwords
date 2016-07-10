@@ -30,12 +30,16 @@ import org.eehouse.android.xw4.jni.CurGameInfo;
 import junit.framework.Assert;
 
 public class MainActivity extends XWActivity {
-    private GamesListDelegate m_dlgt;
+    private DelegateBase m_dlgt;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        m_dlgt = new GamesListDelegate( this, savedInstanceState );
+        if ( XWPrefs.dualpaneEnabled( this ) ) {
+            m_dlgt = new DualpaneDelegate( this, savedInstanceState );
+        } else {
+            m_dlgt = new GamesListDelegate( this, savedInstanceState );
+        }
         super.onCreate( savedInstanceState, m_dlgt );
 
         // Trying to debug situation where two of this activity are running at
@@ -52,7 +56,11 @@ public class MainActivity extends XWActivity {
     protected void onNewIntent( Intent intent )
     {
         super.onNewIntent( intent );
-        m_dlgt.onNewIntent( intent );
+
+        // HACK!!!!! FIXME
+        if ( m_dlgt instanceof GamesListDelegate ) {
+            ((GamesListDelegate)m_dlgt).onNewIntent( intent );
+        }
     }
 
     //////////////////////////////////////////////////////////////////////

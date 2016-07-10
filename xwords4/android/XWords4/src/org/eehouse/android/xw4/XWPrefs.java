@@ -449,6 +449,11 @@ public class XWPrefs {
             getPrefsBoolean( context, R.string.key_force_tablet, false );
     }
 
+    public static boolean dualpaneEnabled( Context context )
+    {
+        return getPrefsBoolean( context, R.string.key_enable_dualpane, false );
+    }
+
     public static CommsConnTypeSet getAddrTypes( Context context )
     {
         CommsConnTypeSet result;

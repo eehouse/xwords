@@ -164,7 +164,7 @@ public final class R {
         public static final int exchange_buttons=0x7f0b0004;
         public static final int exchange_cancel=0x7f0b0006;
         public static final int exchange_commit=0x7f0b0005;
-        public static final int expander=0x7f0b0029;
+        public static final int expander=0x7f0b002a;
         public static final int filters=0x7f0b0060;
         public static final int flip_button=0x7f0b0086;
         public static final int game_locked_check=0x7f0b002c;
@@ -211,7 +211,7 @@ public final class R {
         public static final int item_score=0x7f0b0072;
         public static final int join_public_room_check=0x7f0b0038;
         public static final int juggle_players=0x7f0b0035;
-        public static final int label=0x7f0b0028;
+        public static final int label=0x7f0b0029;
         public static final int lang_separator=0x7f0b002f;
         public static final int lang_spinner=0x7f0b0030;
         public static final int loc_item_check=0x7f0b00cb;
@@ -222,7 +222,7 @@ public final class R {
         public static final int loc_search_field=0x7f0b0061;
         public static final int local_label=0x7f0b005d;
         public static final int local_player_set=0x7f0b006b;
-        public static final int main_container=0x7f0b002b;
+        public static final int main_container=0x7f0b0028;
         public static final int manual_add_button=0x7f0b0079;
         public static final int modtime=0x7f0b0050;
         public static final int msg=0x7f0b0068;
@@ -244,7 +244,7 @@ public final class R {
         public static final int play_button=0x7f0b002d;
         public static final int player_list=0x7f0b0033;
         public static final int player_name_edit=0x7f0b006c;
-        public static final int players=0x7f0b002a;
+        public static final int players=0x7f0b002b;
         public static final int players_label=0x7f0b0032;
         public static final int prevhint_button=0x7f0b007f;
         public static final int private_rooms_set=0x7f0b0039;
@@ -311,9 +311,9 @@ public final class R {
         public static final int dict_browse=0x7f03000b;
         public static final int dict_browser=0x7f03000c;
         public static final int divider_view=0x7f03000d;
-        public static final int expander_header=0x7f03000e;
-        public static final int force_remote=0x7f03000f;
-        public static final int fragact=0x7f030010;
+        public static final int dualcontainer=0x7f03000e;
+        public static final int expander_header=0x7f03000f;
+        public static final int force_remote=0x7f030010;
         public static final int game_config=0x7f030011;
         public static final int game_list=0x7f030012;
         public static final int game_list_group=0x7f030013;
