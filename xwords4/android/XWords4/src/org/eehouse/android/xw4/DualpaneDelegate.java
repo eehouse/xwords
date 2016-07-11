@@ -20,6 +20,7 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Dialog;
 import android.os.Bundle;
 
 public class DualpaneDelegate extends DelegateBase {

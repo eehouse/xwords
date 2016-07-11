@@ -157,8 +157,8 @@ public class DlgDelegate {
         void showNotAgainDlgThen( int msgID, int prefsKey, Action action );
     }
 
-    private static Map<Integer, WeakReference<DelegateBase>> s_pendings
-        = new HashMap<Integer, WeakReference<DelegateBase>>();
+    private static Map<DlgID, WeakReference<DelegateBase>> s_pendings
+        = new HashMap<DlgID, WeakReference<DelegateBase>>();
     private Activity m_activity;
     private DelegateBase m_dlgt;
     private DlgClickNotify m_clickCallback;
@@ -207,10 +207,9 @@ public class DlgDelegate {
 
     protected void showDialog( DlgID dlgID )
     {
-        int id = dlgID.ordinal();
-        s_pendings.put( id, new WeakReference<DelegateBase>(m_dlgt) );
+        s_pendings.put( dlgID, new WeakReference<DelegateBase>(m_dlgt) );
         if ( !m_activity.isFinishing() ) {
-            m_activity.showDialog( id );
+            m_activity.showDialog( dlgID.ordinal() );
         }
     }
     
@@ -888,7 +887,8 @@ public class DlgDelegate {
     public static Dialog onCreateDialog( int id )
     {
         Dialog result = null;
-        WeakReference<DelegateBase> ref = s_pendings.get( id );
+        DlgID dlgID = DlgID.values()[id];
+        WeakReference<DelegateBase> ref = s_pendings.get( dlgID );
         DelegateBase dlgt = ref.get();
         if ( null != dlgt ) {
             result = dlgt.onCreateDialog( id );
@@ -898,10 +898,11 @@ public class DlgDelegate {
 
     public static void onPrepareDialog( int id, Dialog dialog )
     {
-        WeakReference<DelegateBase> ref = s_pendings.get( id );
+        DlgID dlgID = DlgID.values()[id];
+        WeakReference<DelegateBase> ref = s_pendings.get( dlgID );
         DelegateBase dlgt = ref.get();
         if ( null != dlgt ) {
-            dlgt.prepareDialog( DlgID.values()[id], dialog );
+            dlgt.prepareDialog( dlgID, dialog );
         }
     }
 
