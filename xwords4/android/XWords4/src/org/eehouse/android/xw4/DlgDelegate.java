@@ -208,9 +208,7 @@ public class DlgDelegate {
     protected void showDialog( DlgID dlgID )
     {
         int id = dlgID.ordinal();
-        if ( m_activity instanceof FragActivity ) {
-            s_pendings.put( id, new WeakReference<DelegateBase>(m_dlgt) );
-        }
+        s_pendings.put( id, new WeakReference<DelegateBase>(m_dlgt) );
         if ( !m_activity.isFinishing() ) {
             m_activity.showDialog( id );
         }

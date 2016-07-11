@@ -33,4 +33,16 @@ public class DualpaneDelegate extends DelegateBase {
     protected void init( Bundle savedInstanceState ) 
     {
     }
+
+    @Override
+    protected Dialog onCreateDialog( int id )
+    {
+        return DlgDelegate.onCreateDialog( id );
+    }
+
+    @Override
+    protected void prepareDialog( DlgID dlgId, Dialog dialog )
+    {
+        DlgDelegate.onPrepareDialog( dlgId.ordinal(), dialog );
+    }
 }
