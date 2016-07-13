@@ -87,7 +87,7 @@ public class DelegateBase implements DlgClickNotify,
     protected void onStop() {}
     protected void onDestroy() {}
     protected void onWindowFocusChanged( boolean hasFocus ) {}
-    protected boolean onBackPressed() { return false; }
+    protected boolean handleBackPressed() { return false; }
     public void orientationChanged() {}
     
     protected void requestWindowFeature( int feature ) {}

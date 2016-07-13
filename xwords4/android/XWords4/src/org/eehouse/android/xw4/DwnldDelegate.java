@@ -307,7 +307,7 @@ public class DwnldDelegate extends ListDelegateBase {
     } // init
 
     @Override
-    protected boolean onBackPressed() 
+    protected boolean handleBackPressed()
     {  
         // cancel any tasks that remain
         for ( Iterator<DownloadFilesTask> iter = m_dfts.iterator(); 
@@ -315,7 +315,7 @@ public class DwnldDelegate extends ListDelegateBase {
             DownloadFilesTask dft = iter.next();
             dft.cancel( true );
         }
-        return super.onBackPressed();
+        return super.handleBackPressed();
     }
 
     private void mkListAdapter()

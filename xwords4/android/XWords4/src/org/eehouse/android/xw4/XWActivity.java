@@ -128,7 +128,7 @@ public class XWActivity extends FragmentActivity implements Delegator {
 
     @Override
     public void onBackPressed() {
-        if ( !m_dlgt.onBackPressed() ) {
+        if ( !m_dlgt.handleBackPressed() ) {
             super.onBackPressed();
         }
     }

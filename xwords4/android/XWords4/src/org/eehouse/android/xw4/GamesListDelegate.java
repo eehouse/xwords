@@ -1303,7 +1303,7 @@ public class GamesListDelegate extends ListDelegateBase
     }
 
     @Override
-    protected boolean onBackPressed()
+    protected boolean handleBackPressed()
     {
         boolean handled = 0 < m_selGames.size() || 0 < m_selGroupIDs.size();
         if ( handled ) {

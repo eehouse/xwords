@@ -571,7 +571,8 @@ public class DictsDelegate extends ListDelegateBase
         }
     }
 
-    protected boolean onBackPressed() 
+    @Override
+    protected boolean handleBackPressed()
     {
         boolean handled = 0 < m_selDicts.size();
         if ( handled ) {

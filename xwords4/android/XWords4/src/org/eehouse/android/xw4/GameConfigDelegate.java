@@ -755,7 +755,7 @@ public class GameConfigDelegate extends DelegateBase
     } // onClick
 
     @Override
-    protected boolean onBackPressed()
+    protected boolean handleBackPressed()
     {
         boolean consumed = false;
         if ( ! isFinishing() ) {

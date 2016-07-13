@@ -86,7 +86,7 @@ public class StudyListDelegate extends ListDelegateBase
     }
 
     @Override
-    protected boolean onBackPressed() 
+    protected boolean handleBackPressed()
     {
         boolean handled = 0 < m_checkeds.size();
         if ( handled ) {

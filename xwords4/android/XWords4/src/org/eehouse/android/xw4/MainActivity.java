@@ -145,6 +145,19 @@ public class MainActivity extends XWActivity
         return handled;
     }
 
+    /**
+     * The right-most pane only gets a chance to handle on-back-pressed.
+     */
+    protected boolean dispatchBackPressed()
+    {
+        View child = m_root.getChildAt( m_root.getChildCount() - 1 );
+        Fragment frag = getSupportFragmentManager()
+            .findFragmentById( child.getId() );
+        boolean handled = ((XWFragment)frag).getDelegate()
+            .handleBackPressed();
+        return handled;
+    }
+
     //////////////////////////////////////////////////////////////////////
     // Delegator interface
     //////////////////////////////////////////////////////////////////////

@@ -56,7 +56,8 @@ public class LocDelegate extends ListDelegateBase
         m_activity = delegator.getActivity();
     }
 
-    protected boolean onBackPressed()
+    @Override
+    protected boolean handleBackPressed()
     {
         LocUtils.saveLocalData( m_activity );
         return false;
