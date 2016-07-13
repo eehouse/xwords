@@ -955,16 +955,18 @@ public class GamesListDelegate extends ListDelegateBase
         getDictForLangIf();
     } // init
 
-    // called when we're brought to the front (probably as a result of
-    // notification)
-    protected void onNewIntent( Intent intent )
+    @Override
+    protected boolean handleNewIntent( Intent intent )
     {
-        // super.onNewIntent( intent );
+        DbgUtils.logf( "GamesListDelegate.handleNewIntent(%s)", 
+                       intent.toString() );
+
         m_launchedGames.clear();
         Assert.assertNotNull( intent );
         invalRelayIDs( intent.getStringArrayExtra( RELAYIDS_EXTRA ) );
         reloadGame( intent.getLongExtra( ROWID_EXTRA, -1 ) );
         tryStartsFromIntent( intent );
+        return true;            // handled it
     }
 
     protected void onStop()

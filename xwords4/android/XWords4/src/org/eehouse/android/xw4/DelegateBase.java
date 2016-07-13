@@ -585,6 +585,12 @@ public class DelegateBase implements DlgClickNotify,
     }
 
     protected boolean isVisible() { return m_isVisible; }
+
+    protected boolean handleNewIntent( Intent intent ) {
+        DbgUtils.logf( "%s.handleNewIntent(%s): not handling", 
+                       getClass().getSimpleName(), intent.toString() );
+        return false;           // not handled
+    }
     
     //////////////////////////////////////////////////
     // MultiService.MultiEventListener interface
@@ -681,5 +687,4 @@ public class DelegateBase implements DlgClickNotify,
     {
         Assert.fail();
     }
-
 }

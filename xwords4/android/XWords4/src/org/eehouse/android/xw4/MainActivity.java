@@ -93,10 +93,56 @@ public class MainActivity extends XWActivity
     {
         super.onNewIntent( intent );
 
-        // HACK!!!!! FIXME
-        if ( m_dlgt instanceof GamesListDelegate ) {
-            ((GamesListDelegate)m_dlgt).onNewIntent( intent );
+        m_dlgt.handleNewIntent( intent );
+    }
+
+    /**
+     * Run down the list of fragments until one handles the intent. If no
+     * visible one does, pop hidden ones into view until one of them
+     * does. Yes, this will take us back to GamesList being visible even if
+     * nothing handles the intent, but at least now all are handled by
+     * GamesList anyway.
+     */
+    protected boolean dispatchNewIntent( Intent intent )
+    {
+        boolean handled = false;
+        FragmentManager fm = getSupportFragmentManager();
+
+        // First try non-left-most fragments, if any. Once we've eliminated
+        // them we can just iterate on the leftmost fragment.
+        int nNonLeft = m_maxPanes - 1;
+        // include paged-to-left invisible views
+        int viewCount = m_root.getChildCount();
+        for ( int ii = nNonLeft; !handled && 0 < ii; --ii ) {
+            View child = m_root.getChildAt( viewCount - ii );
+            Fragment frag = fm.findFragmentById( child.getId() );
+            handled = ((XWFragment)frag).getDelegate().handleNewIntent( intent );
         }
+
+        while ( !handled ) {
+            // Now iterate on the leftmost, popping if necessary to page new
+            // ones into place
+            int childCount = m_root.getChildCount();
+            int hiddenCount = Math.max( 0, childCount - m_maxPanes );
+            for ( int ii = hiddenCount; ii >= 0; --ii ) {
+                View child = m_root.getChildAt( ii );
+                Fragment frag = fm.findFragmentById( child.getId() );
+                // DbgUtils.logf( "left-most case (child %d): %s", hiddenCount, 
+                //                frag.getClass().getSimpleName() );
+                handled = ((XWFragment)frag).getDelegate()
+                    .handleNewIntent( intent );
+
+                if ( handled ) {
+                    break;
+                } else if ( ii > 0 ) {
+                    DbgUtils.logf( "popping %s", 
+                                   frag.getClass().getSimpleName() );
+                    fm.popBackStackImmediate(); // callback removes view
+                }
+            }
+        }
+
+        return handled;
     }
 
     //////////////////////////////////////////////////////////////////////

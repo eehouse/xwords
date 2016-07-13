@@ -162,6 +162,8 @@ public class XWFragment extends Fragment
         main.addFragmentForResult( fragment, extras, code );
     }
 
+    public DelegateBase getDelegate() { return m_dlgt; }
+
     // FragActivity.OrientChangeListener
     public void orientationChanged()
     {
@@ -184,5 +186,3 @@ public class XWFragment extends Fragment
         return getListView().getAdapter();
     }
 }
-
-

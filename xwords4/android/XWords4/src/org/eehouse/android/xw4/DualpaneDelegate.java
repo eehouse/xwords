@@ -20,14 +20,18 @@
 
 package org.eehouse.android.xw4;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 
 public class DualpaneDelegate extends DelegateBase {
+    private Activity m_activity;
 
     public DualpaneDelegate( Delegator delegator, Bundle sis )
     {
         super( delegator, sis, R.layout.dualcontainer );
+        m_activity = delegator.getActivity();
     }
 
     @Override
@@ -45,5 +49,14 @@ public class DualpaneDelegate extends DelegateBase {
     protected void prepareDialog( DlgID dlgId, Dialog dialog )
     {
         DlgDelegate.onPrepareDialog( dlgId.ordinal(), dialog );
+    }
+
+    @Override
+    protected boolean handleNewIntent( Intent intent )
+    {
+        MainActivity main = (MainActivity)m_activity;
+        boolean handled = main.dispatchNewIntent( intent );
+        DbgUtils.logf( "DualpaneDelegate.handleNewIntent() => %b", handled );
+        return handled;
     }
 }
