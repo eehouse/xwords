@@ -34,9 +34,7 @@ import android.widget.ListView;
 
 import junit.framework.Assert;
 
-public class XWFragment extends Fragment 
-    implements Delegator, 
-               FragActivity.OrientChangeListener {
+public class XWFragment extends Fragment implements Delegator {
 
     private DelegateBase m_dlgt;
     private boolean m_hasOptionsMenu = false;
@@ -163,12 +161,6 @@ public class XWFragment extends Fragment
     }
 
     public DelegateBase getDelegate() { return m_dlgt; }
-
-    // FragActivity.OrientChangeListener
-    public void orientationChanged()
-    {
-        m_dlgt.orientationChanged();
-    }
 
     public ListView getListView()
     {

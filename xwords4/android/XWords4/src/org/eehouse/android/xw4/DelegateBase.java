@@ -19,13 +19,14 @@
 
 package org.eehouse.android.xw4;
 
-import android.graphics.Rect;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.graphics.Point;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -250,26 +251,26 @@ public class DelegateBase implements DlgClickNotify,
 
     protected boolean isPortrait()
     {
-        int[] containerDims = getContainerDims( new int[2] );
-        boolean result = containerDims[0] < containerDims[1];
+        Point size = getContainerSize();
+        boolean result = size.x < size.y;
         DbgUtils.logdf( "%s.isPortrait() => %b", 
                         getClass().getSimpleName(), result );
         return result;
     }
 
-    protected int[] getContainerDims( int[] outDims )
+    private Point getContainerSize()
     {
-        if ( m_activity instanceof FragActivity ) {
-            ((FragActivity)m_activity).getFragmentDims( outDims );
+        Point result = null;
+        if ( m_activity instanceof MainActivity ) {
+            result = ((MainActivity)m_activity).getFragmentSize();
         } else {
             Rect rect = new Rect();
             m_rootView.getWindowVisibleDisplayFrame( rect );
-            outDims[0] = rect.width();
-            outDims[1] = rect.height();
+            result = new Point( rect.width(), rect.height() );
         }
-        DbgUtils.logdf( "%s.getContainerDims(): width => %d, height => %d",
-                        getClass().getSimpleName(), outDims[0], outDims[1] );
-        return outDims;
+        DbgUtils.logdf( "%s.getContainerSize(): width => %d, height => %d",
+                        getClass().getSimpleName(), result.x, result.y );
+        return result;
     }
 
     protected String getString( int resID, Object... params )

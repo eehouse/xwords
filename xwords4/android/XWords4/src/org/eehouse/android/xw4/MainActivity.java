@@ -24,6 +24,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -44,6 +45,8 @@ import junit.framework.Assert;
 
 public class MainActivity extends XWActivity 
     implements FragmentManager.OnBackStackChangedListener {
+    private static final int MAX_PANES_LANDSCAPE = 2;
+
     private DelegateBase m_dlgt;
     private boolean m_dpEnabled;
 
@@ -51,6 +54,7 @@ public class MainActivity extends XWActivity
     private LinearLayout m_root;
     private int m_maxPanes;
     private int m_nextID = 0x00FFFFFF;
+    private Boolean m_isPortrait;
 
     @Override
     protected void onCreate( Bundle savedInstanceState )
@@ -94,6 +98,33 @@ public class MainActivity extends XWActivity
         super.onNewIntent( intent );
 
         m_dlgt.handleNewIntent( intent );
+    }
+
+    @Override
+    public void onConfigurationChanged( Configuration newConfig )
+    {
+        if ( m_dpEnabled ) {
+            Rect rect = new Rect();
+            m_root.getWindowVisibleDisplayFrame( rect );
+
+            boolean isPortrait
+                = Configuration.ORIENTATION_PORTRAIT == newConfig.orientation;
+            DbgUtils.logf( "MainActivity.onConfigurationChanged(isPortrait=%b)",
+                           isPortrait );
+            m_isPortrait = isPortrait;
+            if ( isPortrait != (rect.width() <= rect.height()) ) {
+                DbgUtils.logdf( "FragActivity.onConfigurationChanged(): isPortrait:"
+                                + " %b; width: %d; height: %d",
+                                isPortrait, rect.width(), rect.height() );
+            }
+            int maxPanes = isPortrait? 1 : MAX_PANES_LANDSCAPE;
+            if ( m_maxPanes != maxPanes ) {
+                m_maxPanes = maxPanes;
+                setVisiblePanes();
+            }
+            tellOrientationChanged();
+        }
+        super.onConfigurationChanged( newConfig );
     }
 
     /**
@@ -158,6 +189,21 @@ public class MainActivity extends XWActivity
         return handled;
     }
 
+    protected Point getFragmentSize()
+    {
+        Rect rect = new Rect();
+        m_root.getWindowVisibleDisplayFrame( rect );
+        int width = rect.width();
+        int height = rect.height();
+        if ( null != m_isPortrait && m_isPortrait && height < width ) {
+            int tmp = width;
+            width = height;
+            height = tmp;
+        }
+        return new Point( width / Math.min( m_maxPanes, m_root.getChildCount() ),
+                          height );
+    }
+
     //////////////////////////////////////////////////////////////////////
     // Delegator interface
     //////////////////////////////////////////////////////////////////////
@@ -208,13 +254,30 @@ public class MainActivity extends XWActivity
     // Dualpane mode stuff
     ////////////////////////////////////////////////////////////////////////
 
+    // Walk all Fragment children and if they care notify of change.
+    private void tellOrientationChanged()
+    {
+        FragmentManager fm = getSupportFragmentManager();
+        int nPanes = m_root.getChildCount();
+        for ( int ii = 0; ii < nPanes; ++ii ) {
+            FrameLayout frame = (FrameLayout)m_root.getChildAt( ii );
+            int id = frame.getId();
+            Fragment frag = fm.findFragmentById( id );
+            if ( null == frag ) {
+                DbgUtils.logf( "tellOrienationChanged: NO FRAG at %d, id=%d", ii, id );
+            } else if ( frag instanceof XWFragment ) {
+                ((XWFragment)frag).getDelegate().orientationChanged();
+            }
+        }
+    }
+
     private int maxPanes()
     {
         int result;
         int orientation = getResources().getConfiguration().orientation;
         if ( XWPrefs.getIsTablet( this ) 
              && Configuration.ORIENTATION_LANDSCAPE == orientation ) {
-            result = 2;
+            result = MAX_PANES_LANDSCAPE;
         } else {
             result = 1;
         }
