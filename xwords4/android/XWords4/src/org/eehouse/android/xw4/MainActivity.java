@@ -371,6 +371,10 @@ public class MainActivity extends XWActivity
             .add( id, fragment )
             .addToBackStack( newName )
             .commit();
-        fm.executePendingTransactions();
+        // Don't do this. It causes an exception if e.g. from fragment.start()
+        // I wind up launching another fragment and calling into this code
+        // again. If I need executePendingTransactions() I'm doing something
+        // else wrong.
+        // fm.executePendingTransactions();
     }
 }
