@@ -1519,7 +1519,7 @@ public class GamesListDelegate extends ListDelegateBase
             = (AdapterView.AdapterContextMenuInfo)menuInfo;
         View targetView = info.targetView;
         DbgUtils.logf( "onCreateContextMenu(t=%s)", 
-                       targetView.getClass().getName() );
+                       targetView.getClass().getSimpleName() );
         if ( targetView instanceof GameListItem ) {
             item = (GameListItem)targetView;
             id = R.menu.games_list_game_menu;

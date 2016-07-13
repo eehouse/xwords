@@ -193,7 +193,7 @@ public class LocUtils {
         // DbgUtils.logf( "xlateView(%s, %s)", context.getClass().getName(),
         //                view.getClass().getName() );
         if ( XWApp.LOCUTILS_ENABLED ) {
-            xlateView( context, context.getClass().getName(), view, 0 );
+            xlateView( context, context.getClass().getSimpleName(), view, 0 );
         }
     }
 

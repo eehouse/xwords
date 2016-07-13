@@ -49,7 +49,7 @@ public class XWFragment extends Fragment
 
     protected void onCreate( DelegateBase dlgt, Bundle sis )
     {
-        DbgUtils.logdf( "%s.onCreate() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onCreate() called", this.getClass().getSimpleName() );
         super.onCreate( sis );
         m_dlgt = dlgt;
     }
@@ -58,14 +58,15 @@ public class XWFragment extends Fragment
     public View onCreateView( LayoutInflater inflater, ViewGroup container, 
                               Bundle savedInstanceState ) 
     {
-        DbgUtils.logdf( "%s.onCreateView() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onCreateView() called", this.getClass().getSimpleName() );
         return m_dlgt.inflateView( inflater, container );
     }
 
     @Override
     public void onActivityCreated( Bundle savedInstanceState )
     {
-        DbgUtils.logdf( "%s.onActivityCreated() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onActivityCreated() called", 
+                        this.getClass().getSimpleName() );
         m_dlgt.init( savedInstanceState );
         super.onActivityCreated( savedInstanceState );
         if ( m_hasOptionsMenu ) {
@@ -76,7 +77,8 @@ public class XWFragment extends Fragment
     @Override
     public void onPause()
     {
-        DbgUtils.logdf( "%s.onPause() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onPause() called", 
+                        this.getClass().getSimpleName() );
         m_dlgt.onPause();
         super.onPause();
     }
@@ -91,7 +93,8 @@ public class XWFragment extends Fragment
     @Override
     public void onStart()
     {
-        DbgUtils.logdf( "%s.onStart() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onStart() called", 
+                        this.getClass().getSimpleName() );
         super.onStart();
         m_dlgt.onStart();
     }
@@ -99,7 +102,8 @@ public class XWFragment extends Fragment
     @Override
     public void onStop()
     {
-        DbgUtils.logdf( "%s.onStop() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onStop() called", 
+                        this.getClass().getSimpleName() );
         m_dlgt.onStop();
         super.onStop();
     }
@@ -107,7 +111,8 @@ public class XWFragment extends Fragment
     @Override
     public void onDestroy()
     {
-        DbgUtils.logdf( "%s.onDestroy() called", this.getClass().getName() );
+        DbgUtils.logdf( "%s.onDestroy() called", 
+                        this.getClass().getSimpleName() );
         m_dlgt.onDestroy();
         super.onDestroy();
     }

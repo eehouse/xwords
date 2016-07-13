@@ -245,7 +245,8 @@ public class DelegateBase implements DlgClickNotify,
     {
         int[] containerDims = getContainerDims( new int[2] );
         boolean result = containerDims[0] < containerDims[1];
-        DbgUtils.logdf( "%s.isPortrait() => %b", getClass().getName(), result );
+        DbgUtils.logdf( "%s.isPortrait() => %b", 
+                        getClass().getSimpleName(), result );
         return result;
     }
 
@@ -260,7 +261,7 @@ public class DelegateBase implements DlgClickNotify,
             outDims[1] = rect.height();
         }
         DbgUtils.logdf( "%s.getContainerDims(): width => %d, height => %d",
-                        getClass().getName(), outDims[0], outDims[1] );
+                        getClass().getSimpleName(), outDims[0], outDims[1] );
         return outDims;
     }
 
