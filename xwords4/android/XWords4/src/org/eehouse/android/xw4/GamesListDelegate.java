@@ -404,6 +404,11 @@ public class GamesListDelegate extends ListDelegateBase
             List<Object> alist = new ArrayList<Object>();
             long[] rows = DBUtils.getGroupGames( m_activity, groupID );
             for ( long row : rows ) {
+                if ( false && BuildConfig.DEBUG ) {
+                    GameUtils.BackMoveResult bmr = new GameUtils.BackMoveResult();
+                    bmr.m_lmi = new LastMoveInfo();
+                    GameUtils.postMoveNotification( m_activity, row, bmr, false );
+                }
                 alist.add( new GameRec( row ) );
             }
             // DbgUtils.logf( "GamesListDelegate.makeChildren(%d) => %d kids", groupID, alist.size() );

@@ -191,6 +191,9 @@ public class MainActivity extends XWActivity
         if ( 0 == fragCount ) {
             finish();
         } else if ( fragCount == m_root.getChildCount() - 1 ) {
+            // View child = m_root.getChildAt( fragCount );
+            // DbgUtils.logf( "onBackStackChanged(): removing view with id %x", 
+            //                child.getId() );
             m_root.removeViewAt( fragCount );
             setVisiblePanes();
         }
@@ -283,6 +286,7 @@ public class MainActivity extends XWActivity
         cont.setLayoutParams( new LayoutParams(0, LayoutParams.MATCH_PARENT, 1.0f) );
         int id = --m_nextID;
         cont.setId( id );
+        // DbgUtils.logf( "assigning id %x to view with name %s", id, newName );
         m_root.addView( cont, replace ? containerCount - 1 : containerCount );
 
         if ( !replace && containerCount >= m_maxPanes ) {
