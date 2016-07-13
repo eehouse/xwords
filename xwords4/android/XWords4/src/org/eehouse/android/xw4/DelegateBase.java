@@ -234,9 +234,16 @@ public class DelegateBase implements DlgClickNotify,
 
     protected void finish()
     {
-        if ( m_activity instanceof FragActivity ) {
-            ((FragActivity)m_activity).finishFragment();
-        } else {
+        boolean handled = false;
+        if ( m_activity instanceof MainActivity ) {
+            MainActivity main = (MainActivity)m_activity;
+            if ( main.inDPMode() ) {
+                main.finishFragment();
+                handled = true;
+            }
+        }
+
+        if ( !handled ) {
             m_activity.finish();
         }
     }

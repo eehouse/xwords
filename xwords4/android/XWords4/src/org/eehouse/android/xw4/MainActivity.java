@@ -180,6 +180,11 @@ public class MainActivity extends XWActivity
         addFragmentImpl( fragment, extras, this );
     }
 
+    protected void finishFragment()
+    {
+        getSupportFragmentManager().popBackStack();
+    }
+
     //////////////////////////////////////////////////////////////////////
     // FragmentManager.OnBackStackChangedListener
     //////////////////////////////////////////////////////////////////////
