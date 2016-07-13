@@ -240,7 +240,6 @@ public class MainActivity extends XWActivity
             .add( id, fragment )
             .addToBackStack( newName )
             .commit();
-        // fm.executePendingTransactions();
+        fm.executePendingTransactions();
     }
-
 }
