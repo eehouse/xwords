@@ -184,8 +184,8 @@ public class MainActivity extends XWActivity
         View child = m_root.getChildAt( m_root.getChildCount() - 1 );
         Fragment frag = getSupportFragmentManager()
             .findFragmentById( child.getId() );
-        boolean handled = ((XWFragment)frag).getDelegate()
-            .handleBackPressed();
+        boolean handled = null != frag 
+            &&((XWFragment)frag).getDelegate().handleBackPressed();
         return handled;
     }
 
