@@ -60,12 +60,12 @@ public class MainActivity extends XWActivity
     protected void onCreate( Bundle savedInstanceState )
     {
         m_dpEnabled = XWPrefs.dualpaneEnabled( this );
-        if ( m_dpEnabled ) {
-            m_dlgt = new DualpaneDelegate( this, savedInstanceState );
-            Utils.showToast( this, "dualpane mode" );
-        } else {
-            m_dlgt = new GamesListDelegate( this, savedInstanceState );
+        if ( BuildConfig.DEBUG ) {
+            Utils.showToast( this, "dualpane mode: " + m_dpEnabled );
         }
+
+        m_dlgt = m_dpEnabled ? new DualpaneDelegate( this, savedInstanceState )
+            : new GamesListDelegate( this, savedInstanceState );
         super.onCreate( savedInstanceState, m_dlgt );
 
         if ( m_dpEnabled ) {
@@ -81,13 +81,6 @@ public class MainActivity extends XWActivity
                 addFragmentImpl( new GamesListFrag(), getIntent().getExtras(), null );
             }
         }
-
-        // Trying to debug situation where two of this activity are running at
-        // once. finish()ing when Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT is
-        // passed is not the fix, but perhaps there's another
-        // int flags = getIntent().getFlags();
-        // DbgUtils.logf( "MainActivity.onCreate(this=%H): flags=0x%x", 
-        //                this, flags );
     } // onCreate
 
     // called when we're brought to the front (probably as a result of

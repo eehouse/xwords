@@ -65,67 +65,63 @@ public class ChatDelegate extends DelegateBase {
     }
 
     @Override
-    protected void init( Bundle savedInstanceState ) 
+    protected void init( Bundle savedInstanceState )
     {
-        if ( BuildConstants.CHAT_SUPPORTED ) {
-            m_edit = (EditText)findViewById( R.id.chat_edit );
-            m_edit.addTextChangedListener( new TextWatcher() {
-                    public void afterTextChanged( Editable s ) {
-                        invalidateOptionsMenuIf();
-                    }
-                    public void beforeTextChanged( CharSequence s, int st, 
-                                                   int cnt, int a ) {}
-                    public void onTextChanged( CharSequence s, int start, 
-                                               int before, int count ) {}
-                } );
-
-            Bundle args = getArguments();
-            m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
-            m_curPlayer = args.getInt( INTENT_KEY_PLAYER, -1 );
-            m_names = args.getStringArray( INTENT_KEY_NAMES );
-            boolean[] locals = args.getBooleanArray( INTENT_KEY_LOCS );
-
-            m_scroll = (ScrollView)findViewById( R.id.scroll );
-            m_layout = (TableLayout)findViewById( R.id.chat_history );
-
-            // OnLayoutChangeListener added in API 11
-            if ( 11 <= Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
-                m_layout.addOnLayoutChangeListener( new OnLayoutChangeListener() {
-                        @Override
-                        public void onLayoutChange( View vv, int ll, int tt, int rr,
-                                                    int bb, int ol, int ot,
-                                                    int or, int ob ) {
-                            scrollDown();
-                        }
-                    });
-            }
-
-            Button sendButton = (Button)findViewById( R.id.chat_send );
-            if ( ABUtils.haveActionBar() ) {
-                sendButton.setVisibility( View.GONE );
-            } else {
-                sendButton.setOnClickListener( new View.OnClickListener() {
-                        public void onClick( View view ) {
-                            handleSend();
-                        }
-                    } );
-            }
-     
-            DBUtils.HistoryPair[] pairs
-                = DBUtils.getChatHistory( m_activity, m_rowid, locals );
-            if ( null != pairs ) {
-                for ( DBUtils.HistoryPair pair : pairs ) {
-                    addRow( pair.msg, pair.playerIndx );
+        DbgUtils.logf( "ChatDelegate.init()" );
+        m_edit = (EditText)findViewById( R.id.chat_edit );
+        m_edit.addTextChangedListener( new TextWatcher() {
+                public void afterTextChanged( Editable s ) {
+                    invalidateOptionsMenuIf();
                 }
-            }
+                public void beforeTextChanged( CharSequence s, int st,
+                                               int cnt, int a ) {}
+                public void onTextChanged( CharSequence s, int start,
+                                           int before, int count ) {}
+            } );
 
-            String title = getString( R.string.chat_title_fmt, 
-                                      GameUtils.getName( m_activity, m_rowid ) );
-            setTitle( title );
-        } else {
-            // Should really assert....
-            finish();
+        Bundle args = getArguments();
+        m_rowid = args.getLong( GameUtils.INTENT_KEY_ROWID, -1 );
+        m_curPlayer = args.getInt( INTENT_KEY_PLAYER, -1 );
+        m_names = args.getStringArray( INTENT_KEY_NAMES );
+        boolean[] locals = args.getBooleanArray( INTENT_KEY_LOCS );
+
+        m_scroll = (ScrollView)findViewById( R.id.scroll );
+        m_layout = (TableLayout)findViewById( R.id.chat_history );
+
+        // OnLayoutChangeListener added in API 11
+        if ( 11 <= Integer.valueOf( android.os.Build.VERSION.SDK ) ) {
+            m_layout.addOnLayoutChangeListener( new OnLayoutChangeListener() {
+                    @Override
+                    public void onLayoutChange( View vv, int ll, int tt, int rr,
+                                                int bb, int ol, int ot,
+                                                int or, int ob ) {
+                        scrollDown();
+                    }
+                });
         }
+
+        Button sendButton = (Button)findViewById( R.id.chat_send );
+        if ( ABUtils.haveActionBar() ) {
+            sendButton.setVisibility( View.GONE );
+        } else {
+            sendButton.setOnClickListener( new View.OnClickListener() {
+                    public void onClick( View view ) {
+                        handleSend();
+                    }
+                } );
+        }
+     
+        DBUtils.HistoryPair[] pairs
+            = DBUtils.getChatHistory( m_activity, m_rowid, locals );
+        if ( null != pairs ) {
+            for ( DBUtils.HistoryPair pair : pairs ) {
+                addRow( pair.msg, pair.playerIndx );
+            }
+        }
+
+        String title = getString( R.string.chat_title_fmt,
+                                  GameUtils.getName( m_activity, m_rowid ) );
+        setTitle( title );
     } // init
 
     @Override
