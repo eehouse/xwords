@@ -1382,9 +1382,13 @@ public class GamesListDelegate extends ListDelegateBase
             Utils.setItemVisible( menu, R.id.games_menu_newgame_net,
                                   nothingSelected || 1 == nGroupsSelected );
                 
-            // Multiples can be deleted
-            Utils.setItemVisible( menu, R.id.games_game_delete, 
-                                  0 < nGamesSelected );
+            // Multiples can be deleted, but disable if any selected game is
+            // currently open
+            enable = 0 < nGamesSelected;
+            for ( long row : m_selGames ) {
+                enable = enable && !m_launchedGames.contains( row );
+            }
+            Utils.setItemVisible( menu, R.id.games_game_delete, enable );
 
             // multiple games can be regrouped/reset.
             Utils.setItemVisible( menu, R.id.games_game_move, 
